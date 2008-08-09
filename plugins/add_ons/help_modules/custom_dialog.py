@@ -255,7 +255,6 @@ class ComplexObjectValidator(wx.PyValidator):
          self.value=None
          try:
             self.value=complex(eval(text))
-         
          except StandardError,S:
              wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
              textCtrl.SetBackgroundColour("pink")

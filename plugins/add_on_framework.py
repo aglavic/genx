@@ -119,7 +119,21 @@ class Template:
         
         self.parent.script_editor.SetText(script)
         self.parent.model.set_script(script)
-    
+        
+    def OnNewModel(self):
+        '''OnNewModel(self) --> None
+        
+        Function to be overridden. Called when a new model is being created.
+        '''
+        pass
+        
+    def OnNewData(self):
+        '''OnNewData(self) --> None
+        
+        Function to be overridden. Called when a new data set has been loaded
+        '''
+        pass
+        
     def Remove(self):
         '''Remove(self) --> None
         Removes all components.
