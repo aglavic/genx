@@ -14,7 +14,7 @@ import os
 # Make Modules a search path for python..
 #sys.path.insert(1,os.getcwd()+'/Models')
 
-import models.ModelInterdiff as Model
+import models.interdiff as Model
 
 from help_modules.custom_dialog import *
 
@@ -23,7 +23,7 @@ class SampleHandler:
         self.sample=sample
         self.names=names
         
-    def getStringList(self):
+    def getStringList(self, html_encoding = False):
         '''
         Function to generate a lsit of strings that gives
         a visual representation of the sample.
@@ -43,9 +43,15 @@ class SampleHandler:
         slist.append(self.sample.Ambient.__repr__())
         for item in range(len(slist)):
             if slist[item][0]=='L' and item!=0 and item!=len(slist)-1:
-                slist[item]='  '+self.names[-item-1]+'='+slist[item]
+                if html_encoding:
+                    slist[item]='<pre>   <b>'+self.names[-item-1]+'</b>='+slist[item] + '</pre>'
+                else:
+                    slist[item] = self.names[-item-1] + ' = ' + slist[item]
             else:
-                slist[item]=self.names[-item-1]+'='+slist[item]
+                if html_encoding:
+                    slist[item]='<pre><b>' + self.names[-item-1]+'</b>='+slist[item] + '</pre>'
+                else:
+                    slist[item] = self.names[-item-1] + '=' + slist[item]
         poslist.append((None,None))
         slist.reverse()
         poslist.reverse()
@@ -82,7 +88,10 @@ class SampleHandler:
                     i+=1
                     item=slist[i]
                 i-=1
-                stack_code=stack_code[:-1]+'],'+stack_strings[1]+')\n'
+                if stack_code[-1] != '[':
+                    stack_code=stack_code[:-1]+'],'+stack_strings[1]+')\n'
+                else:
+                    stack_code=stack_code[:]+'],'+stack_strings[1]+')\n'
             i+=1
             item=slist[i]
         # Create the code for the sample
@@ -288,18 +297,28 @@ class SampleHandler:
         else:
             return None
 
+class MyHtmlListBox(wx.HtmlListBox):
+    def SetItemList(self, list):
+        self.html_items = list
+        self.SetItemCount(len(list))
+        self.RefreshAll()
         
+    def OnGetItem(self, n):
+        return self.html_items[n]
+   
 
 class SamplePanel(wx.Panel):
-    def __init__(self,parent,sampleh,refindexlist):
+    def __init__(self,parent,sampleh,refindexlist = []):
         wx.Panel.__init__(self,parent)
         self.sampleh=sampleh
         self.refindexlist=refindexlist
-
+        self.instrument = Model.Instrument()
+        
         boxver = wx.BoxSizer(wx.VERTICAL)
         boxhor = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.listbox=wx.ListBox(self, 60, (80, 50), (90, 120), self.sampleh.getStringList(), wx.LB_SINGLE)
+        self.listbox = MyHtmlListBox(self, -1, style =  wx.BORDER_SUNKEN)
+        self.listbox.SetItemList(self.sampleh.getStringList())
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick , self.listbox)
         boxhor.Add(self.listbox, 1, wx.EXPAND)
         boxbuttons=wx.BoxSizer(wx.VERTICAL)
@@ -318,6 +337,9 @@ class SamplePanel(wx.Panel):
         DeleteButton=wx.Button(self,-1, "Delete")
         boxbuttons.Add(DeleteButton,1,wx.EXPAND)
         self.Bind(wx.EVT_BUTTON, self.DeleteSample, DeleteButton)
+        InstrumentButton = wx.Button(self,-1, "Instrument")
+        boxbuttons.Add(InstrumentButton,1,wx.EXPAND)
+        self.Bind(wx.EVT_BUTTON, self.EditInstrument, InstrumentButton)
         boxhor.Add(boxbuttons)
         boxver.Add(boxhor,1,wx.EXPAND)
         boxhorpar=wx.BoxSizer(wx.HORIZONTAL)
@@ -326,30 +348,57 @@ class SamplePanel(wx.Panel):
         for item in Model.SampleParameters.keys():
             if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
                 boxhorpar.Add(wx.StaticText(self,-1,item+': '),0)
-                self.tc.append(wx.TextCtrl(self, -1, str(self.sampleh.sample.__getattribute__(item)), validator = FloatObjectValidator()))
+                self.tc.append(wx.TextCtrl(self, -1,\
+                 str(self.sampleh.sample.__getattribute__(item)),\
+                 validator = FloatObjectValidator()))
                 boxhorpar.Add(self.tc[-1],0)
         boxver.Add(boxhorpar,0)
         self.SetSizer(boxver)
         
+        self.update_callback = lambda event:''
+        
+    def SetUpdateCallback(self, func):
+        ''' SetUpdateCallback(self, func) --> None
+        
+        Sets the update callback will be called when the sample is updated.
+        The call is on the form func(event)
+        '''
+        self.update_callback = func
+        
     def Update(self):
-        sl = self.sampleh.getStringList()
-        self.listbox.Set(sl)
-        #for index in range(len(sl)):
-        #        self.listbox.SetString(index,sl[index])
+        sl = self.sampleh.getStringList(html_encoding = True)
+        self.listbox.SetItemList(sl)
+        self.update_callback(None)
                 
     def SetSample(self, sample, names):
         self.sampleh.sample = sample
         self.sampleh.names = names
         self.Update()
         
+    def EditInstrument(self, evt):
+        validators = []
+        items = []
+        for item in Model.InstrumentParameters:
+            validators.append(FloatObjectValidator())
+            val = self.instrument.__getattribute__(item)
+            items.append((item, val))
+            
+        dlg = ValidateDialog(self, items, validators,\
+            title = 'Instrument Editor')
+        if dlg.ShowModal()==wx.ID_OK:
+            print 'Pressed OK'
+            vals=dlg.GetValues()
+            for index in range(len(vals)):
+                self.instrument.__setattr__(items[index][0],vals[index])
+            else:
+                print 'Pressed Cancel'
+        dlg.Destroy()
         
-
     def MoveUp(self,evt):
         #print dir(self.listbox)
         sl=self.sampleh.moveUp(self.listbox.GetSelection())
         if sl:
-            for index in range(len(sl)):
-                self.listbox.SetString(index,sl[index])
+            self.Update()
             self.listbox.SetSelection(self.listbox.GetSelection()-1)
 
     def MoveDown(self,evt):
@@ -357,8 +406,7 @@ class SamplePanel(wx.Panel):
         #print self.listbox.GetSelection()
         sl=self.sampleh.moveDown(self.listbox.GetSelection())
         if sl:
-            for index in range(len(sl)):
-                self.listbox.SetString(index,sl[index])
+            self.Update()
             self.listbox.SetSelection(self.listbox.GetSelection()+1)
 
     def InsertStack(self,evt):
@@ -375,9 +423,7 @@ class SamplePanel(wx.Panel):
     
         sl=self.sampleh.insertItem(self.listbox.GetSelection(),'Stack', vals[0])
         if sl:
-            self.listbox.AppendItems([''])
-            for index in range(len(sl)):
-                self.listbox.SetString(index,sl[index])
+            self.Update()
 
     def InsertLay(self,evt):
         # Create Dialog box
@@ -393,19 +439,14 @@ class SamplePanel(wx.Panel):
         #Create the Layer
         sl=self.sampleh.insertItem(self.listbox.GetSelection(),'Layer', vals[0])
         if sl:
-            self.listbox.AppendItems([''])
-            for index in range(len(sl)):
-                self.listbox.SetString(index,sl[index])
+            self.Update()
         dlg.Destroy()
         
     def DeleteSample(self,evt):
         slold=self.sampleh.getStringList()
         sl=self.sampleh.deleteItem(self.listbox.GetSelection())
         if sl:
-            for index in range(len(slold)-len(sl)):
-                self.listbox.Delete(0)
-            for index in range(len(sl)):
-                self.listbox.SetString(index,sl[index])
+            self.Update()
 
     def lbDoubleClick(self,evt):
         sel=self.sampleh.getItem(self.listbox.GetSelection())
@@ -415,12 +456,13 @@ class SamplePanel(wx.Panel):
             validators=[]
             for item in Model.LayerParameters.keys():
                 value=sel.__getattribute__(item)
-                if item!='n' and item!='fb':
+                #if item!='n' and item!='fb':
+                if type(Model.LayerParameters[item]) != type(1+1.0J):
                     validators.append(FloatObjectValidator())
                 else:
                     print 'n exists'
-                    validators.append(MatchTextObjectValidator(self.refindexlist))
-                    #validators.append(ComplexObjectValidator())
+                    #validators.append(MatchTextObjectValidator(self.refindexlist))
+                    validators.append(ComplexObjectValidator())
                 items.append((item,value))
             
             dlg = ValidateDialog(self,items,validators,title='Layer Editor')
@@ -457,118 +499,41 @@ class SamplePanel(wx.Panel):
                 print 'Pressed Cancel'
             dlg.Destroy()
         if sl:
-            for index in range(len(sl)):
-                self.listbox.SetString(index,sl[index])
+            self.Update()
+            #for index in range(len(sl)):
+            #    self.listbox.SetString(index,sl[index])
         
-class RefPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self,parent)
-
-
-        boxhor = wx.BoxSizer(wx.HORIZONTAL)
-        
-        self.listbox=wx.ListBox(self, 60, (80, 50), (90, 120), [], wx.LB_SINGLE)
-        self.namelist=[]
-        self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick , self.listbox)
-        boxhor.Add(self.listbox, 1, wx.EXPAND)
-        boxbuttons=wx.BoxSizer(wx.VERTICAL)
-        InsertButton=wx.Button(self,-1, "Insert")
-        boxbuttons.Add(InsertButton,1,wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.Insert, InsertButton)
-        DeleteButton=wx.Button(self,-1, "Delete")
-        boxbuttons.Add(DeleteButton,1,wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.Delete, DeleteButton)
-        boxhor.Add(boxbuttons, 0)
-        self.SetSizer(boxhor)
-
-    def lbDoubleClick(self,evt):
-        print self.listbox.GetSelection()
-
-    def Insert(self,evt):
-        dlg = ValidateDialog(self,[('Name',''),('Composition','Si1'),('Atomic Density [at./AA3]',0.0)], [NoMatchTextObjectValidator(self.namelist),TextObjectValidator(),FloatObjectValidator()])
-        if dlg.ShowModal()==wx.ID_OK:
-            print 'Pressed OK'
-            vals=dlg.GetValues()
-            string='%s=getn(\'%s\', %s, instrument.getWavelength())'%tuple(vals)
-            self.listbox.AppendItems([string])
-            self.namelist.append(vals[0])
-        else:
-            print 'Pressed Cancel'
-        dlg.Destroy()
-        
-    def Delete(self,evt):
-        pos=self.listbox.GetSelection()
-        #print pos
-        if pos!=-1:
-            self.listbox.Delete(pos)
-            self.namelist.pop(pos)
-            
-class InstrumetPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        
-    def lbDoubleClick(self, evt):
-        pass
-        
-    def Insert(self,evt):
-        pass
-        
-    def Delete(self, evt):
-        pass
-        
-class SimulationPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        
-    def lbDoubleClick(self, evt):
-        pass
-        
-    def Insert(self,evt):
-        pass
-        
-    def Delete(self, evt):
-        pass
         
 class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
         self.model = self.GetModel()
-        #plotpanel = self.NewPlotFolder('Test')
         sample_panel = self.NewInputFolder('Sample')
         sample_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sample_panel.SetSizer(sample_sizer)
-        refindex_panel = self.NewInputFolder('Ref. index')
-        refindex_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        refindex_panel.SetSizer(refindex_sizer)
         
-        self.defs = ['n/f/b', 'Sample', 'Instrument']
+        self.defs = ['Sample', 'Instrument']
         
-        nSi=3.0
-        Fe=Model.Layer(d=10,sigmar=3.0,n=1-2.247e-5+2.891e-6j)
-        Si=Model.Layer(d=15,sigmar=3.0,n='nSi')
-        sub=Model.Layer(sigmar=3.0,n=1-7.577e-6+1.756e-7j)
-        amb=Model.Layer(n=1.0)
-        stack=Model.Stack(Layers=[Fe,Si],Repetitions=20)
-        stack2=Model.Stack(Layers=[Fe,Si])
-        sample=Model.Sample(Stacks=[stack,stack2],Ambient=amb,Substrate=sub,eta_z=500.0,eta_x=100.0)
+        sub = Model.Layer(sigmar=3.0,n=1-7.577e-6+1.756e-7j)
+        amb = Model.Layer(n = 1.0)
+        sample = Model.Sample(Stacks=[], Ambient = amb,\
+            Substrate = sub, eta_z = 500.0, eta_x = 100.0)
         print sample
         
-        inst=Model.Instrument(Wavelength=1.54,Coordinates=1)
-        s = ['Amb','stack1','Fe1','Si1','s2','Fe2','Si2','Sub']
-        self.sampleh=SampleHandler(sample,s)
-        print self.sampleh.getCode()
-        self.refindex_widget=RefPanel(refindex_panel)
-        refindex_sizer.Add(self.refindex_widget, 1, wx. EXPAND)
-        self.sample_widget=SamplePanel(sample_panel,self.sampleh,self.refindex_widget.namelist)
+        inst = Model.Instrument(Wavelength = 1.54, Coordinates = 1)
+        s = ['Amb', 'Sub']
+        self.sampleh=SampleHandler(sample, s)
+        self.sample_widget=SamplePanel(sample_panel, self.sampleh)
         sample_sizer.Add(self.sample_widget, 1, wx.EXPAND)
+        
+        self.sample_widget.SetUpdateCallback(self.UpdateScript)
         
         self.CreateNewModel()
         
-        #datapanel = self.NewDataFolder('Test')
-        #menu = self.NewMenu('Test')
-        #print 'Everyting tested, should be visible :-)'
+    def UpdateScript(self, event):
+        self.WriteModel()
         
-    def CreateNewModel(self, modelname = 'ModelInterdiff'):
+    def CreateNewModel(self, modelname = 'models.interdiff'):
         '''Init the script in the model to yield the 
         correct script for initilization
         '''
@@ -579,7 +544,9 @@ class Plugin(framework.Template):
             script += '# END %s\n\n'%item
             
         script += 'def Sim(data):\n'
-        script += '\tI = sample.SimSpecular(data.x[0], inst)\n'
+        script += '\tI = []\n'
+        script += '\tfor data_set in data:\n'
+        script += '\t\tI.append(sample.SimSpecular(data_set.x, inst))\n'
         script += '\treturn I\n'
         
         self.SetModelScript(script)
@@ -597,7 +564,7 @@ class Plugin(framework.Template):
         script = ''
         # Locate the Sample definition
         line_index = 0
-        for line in script_lines:
+        for line in script_lines[line_index:]:
             script += line
             line_index += 1
             if line.find('# BEGIN Sample') != -1:
@@ -605,7 +572,21 @@ class Plugin(framework.Template):
         script += layer_code + '\n' + stack_code + '\n' + sample_code
         
         for line in script_lines[line_index:]:
-            if line.find('# END Sample') != 1:
+            if line.find('# END Sample') != -1:
+                break
+            line_index += 1
+        
+        for line in script_lines[line_index:]:
+            script += line
+            line_index += 1
+            if line.find('# BEGIN Instrument') != -1:
+                break
+        
+        script += 'inst = ' + self.sample_widget.instrument.__repr__() + '\n'
+        
+        for line in script_lines[line_index:]:
+            if line.find('# END Instrument') != -1:
+                #line_index -= 1
                 break
             line_index += 1
             
@@ -615,50 +596,6 @@ class Plugin(framework.Template):
         
         self.SetModelScript(script)
         
-        
-        
-class SampleFrame(wx.Frame):
-    def __init__(self, parent, id, title,samplehandler):
-        wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition, (500, 300))
-
-        self.sampleh=samplehandler
-        
-        self.Notebook = wx.Notebook(self,wx.NewId())
-        self.refindexf=RefPanel(self.Notebook)
-        self.Notebook.AddPage(self.refindexf,'Ref. index')
-        self.samplef=SamplePanel(self.Notebook,self.sampleh,self.refindexf.namelist)
-        self.Notebook.AddPage(self.samplef,'Sample')
-        self.instrumentf=wx.Panel(self.Notebook)
-        self.Notebook.AddPage(self.instrumentf,'Instrument')
-        #self.parameterPlot=PlotCanvas(self.Notebook)
-        #self.Notebook.AddPage(self.parameterPlot,'Parameters')
-        #self.EscanPlot=PlotCanvas(self.Notebook)
-        #self.Notebook.AddPage(self.EscanPlot,'Escan')
-        
-        self.mainmenu = wx.MenuBar()
-        menu = wx.Menu()
-        menu.Append(200,'&Open..')
-        self.Bind(wx.EVT_MENU,self.MenuOpen,id=200)
-        menu.Append(201,'&Save..')
-        self.Bind(wx.EVT_MENU,self.MenuSave,id=201)
-        #menu.Append(202,'&Up')
-        #self.Bind(wx.EVT_MENU,self.MoveUp,id=202)
-        #menu.Append(203,'&Down')
-        #self.Bind(wx.EVT_MENU,self.MoveDown,id=203)
-        
-        self.mainmenu.Append(menu, '&File')
-
-        self.SetMenuBar(self.mainmenu)
-        self.Show(True)
-    def MenuOpen(self,evt):
-        Fe.setD(50.0)
-        
-    def MenuSave(self,evt):
-        print 'Saving..'
-        self.sampleh.getCode()
-        #test=eval('Model.'+str(self.sampleh.getItem(self.listbox.GetSelection())))
-        #print test
-        pass
         
 if __name__ == '__main__':
 
