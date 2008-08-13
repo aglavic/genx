@@ -120,14 +120,21 @@ class Template:
         self.parent.script_editor.SetText(script)
         self.parent.model.set_script(script)
         
-    def OnNewModel(self):
+    def CompileScript(self):
+        '''CompileScript(self) --> None
+        
+        Compiles the model script
+        '''
+        self.parent.model.compile_script()
+        
+    def OnNewModel(self, event):
         '''OnNewModel(self) --> None
         
         Function to be overridden. Called when a new model is being created.
         '''
         pass
         
-    def OnNewData(self):
+    def OnNewData(self, event):
         '''OnNewData(self) --> None
         
         Function to be overridden. Called when a new data set has been loaded
@@ -253,6 +260,23 @@ class PluginController:
             self.unload_menu.DeleteItem(menuitem)
             # Update the available plugins
             self.update_plugins()
+            
+    def OnNewModel(self, event):
+        '''OnNewModel(self, event) --> None
+        
+        Runs plugin code when the user tries to load a new model 
+        '''
+        for name in self.plugin_handler.loaded_plugins:
+            self.plugin_handler.loaded_plugins[name].OnNewModel(None)
+            
+    def OnNewData(self, event):
+        '''OnNewModel(self, event) --> None
+        
+        Runs plugin code when the user tries to load a new model 
+        '''
+        for name in self.plugin_handler.plugins:
+            self.plugin_handler.loaded_plugins[name].OnNewData(None)
+        
 #==============================================================================
 # Utility Dialog functions..
 def ShowInfoDialog(frame, message):
