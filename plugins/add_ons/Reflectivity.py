@@ -14,20 +14,21 @@ import os
 # Make Modules a search path for python..
 #sys.path.insert(1,os.getcwd()+'/Models')
 
-import models.interdiff as Model
-
 from help_modules.custom_dialog import *
 
 class SampleHandler:
     def __init__(self,sample,names):
         self.sample=sample
         self.names=names
+        self.getStringList()
         
     def getStringList(self, html_encoding = False):
         '''
         Function to generate a lsit of strings that gives
         a visual representation of the sample.
         '''
+        #print 'getStringList sample:'
+        #print self.sample
         slist=[self.sample.Substrate.__repr__()]
         poslist=[(None,None)]
         i=0;j=0
@@ -37,21 +38,21 @@ class SampleHandler:
                 slist.append(layer.__repr__())
                 poslist.append((i,j))
                 j+=1
-            slist.append('Stack: Reptetitions= %s'%str(stack.Repetitions))
+            slist.append('Stack: Repetitions= %s'%str(stack.Repetitions))
             poslist.append((i,None))
             i+=1
         slist.append(self.sample.Ambient.__repr__())
         for item in range(len(slist)):
-            if slist[item][0]=='L' and item!=0 and item!=len(slist)-1:
+            if slist[item][0]=='L' and item != 0 and item != len(slist) - 1:
                 if html_encoding:
                     slist[item]='<pre>   <b>'+self.names[-item-1]+'</b>='+slist[item] + '</pre>'
                 else:
-                    slist[item] = self.names[-item-1] + ' = ' + slist[item]
+                    slist[item] = self.names[-item-1] + ' = model.' + slist[item]
             else:
                 if html_encoding:
                     slist[item]='<pre><b>' + self.names[-item-1]+'</b>='+slist[item] + '</pre>'
                 else:
-                    slist[item] = self.names[-item-1] + '=' + slist[item]
+                    slist[item] = self.names[-item-1] + ' = model.' + slist[item]
         poslist.append((None,None))
         slist.reverse()
         poslist.reverse()
@@ -95,17 +96,17 @@ class SampleHandler:
             i+=1
             item=slist[i]
         # Create the code for the sample
-        sample_code='sample=Sample(Stacks=['
+        sample_code='sample = model.Sample(Stacks = ['
         stack_strings=stack_code.split('\n')
         if stack_strings != ['']:
             for item in stack_strings:
                 itemp=item.split('=')[0]
                 sample_code = sample_code + itemp + ','
-            sample_code = sample_code[:-2] + '],Ambient=Amb,Substrate=Sub)\n'
+            sample_code = sample_code[:-2] + '], Ambient = Amb, Substrate = Sub)\n'
         else:
-            sample_code += '],Ambient=Amb,Substrate=Sub)\n'
+            sample_code += '], Ambient = Amb, Substrate = Sub)\n'
             
-        print layer_code,stack_code,sample_code
+        #print layer_code,stack_code,sample_code
         return layer_code,stack_code, sample_code
 
     def getItem(self,pos):
@@ -175,7 +176,7 @@ class SampleHandler:
         # ambient layer
         if pos !=0 :
             if type=='Stack':
-                stack=Model.Stack(Layers=[])
+                stack=self.model.Stack(Layers=[])
                 if last:
                     self.names.insert(pos,name)
                 else:
@@ -187,7 +188,7 @@ class SampleHandler:
                 added=True
                 
             if type=='Layer' and len(self.poslist)>2:
-                layer=Model.Layer()
+                layer=self.model.Layer()
                 print spos[0]
                 if last:
                     self.names.insert(pos,name)
@@ -201,12 +202,12 @@ class SampleHandler:
                 
         else:
             if type=='Stack':
-                stack=Model.Stack(Layers=[])
+                stack=self.model.Stack(Layers=[])
                 self.sample.Stacks.append(stack)
                 added=True
                 self.names.insert(pos+1,name)
             if type=='Layer' and len(self.poslist)>2:
-                layer=Model.Layer()
+                layer=self.model.Layer()
                 print spos[0]
                 self.sample.Stacks[spos[0]].Layers.append(layer)
                 added=True
@@ -308,17 +309,16 @@ class MyHtmlListBox(wx.HtmlListBox):
    
 
 class SamplePanel(wx.Panel):
-    def __init__(self,parent,sampleh,refindexlist = []):
+    def __init__(self,parent,refindexlist = []):
         wx.Panel.__init__(self,parent)
-        self.sampleh=sampleh
         self.refindexlist=refindexlist
-        self.instrument = Model.Instrument()
+        
         
         boxver = wx.BoxSizer(wx.VERTICAL)
         boxhor = wx.BoxSizer(wx.HORIZONTAL)
         
         self.listbox = MyHtmlListBox(self, -1, style =  wx.BORDER_SUNKEN)
-        self.listbox.SetItemList(self.sampleh.getStringList())
+        #self.listbox.SetItemList(self.sampleh.getStringList())
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick , self.listbox)
         boxhor.Add(self.listbox, 1, wx.EXPAND)
         boxbuttons=wx.BoxSizer(wx.VERTICAL)
@@ -340,19 +340,22 @@ class SamplePanel(wx.Panel):
         InstrumentButton = wx.Button(self,-1, "Instrument")
         boxbuttons.Add(InstrumentButton,1,wx.EXPAND)
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, InstrumentButton)
+        SampleButton = wx.Button(self,-1, "Sample")
+        boxbuttons.Add(SampleButton,1,wx.EXPAND)
+        self.Bind(wx.EVT_BUTTON, self.EditSampleParameters, SampleButton)
         boxhor.Add(boxbuttons)
         boxver.Add(boxhor,1,wx.EXPAND)
         boxhorpar=wx.BoxSizer(wx.HORIZONTAL)
 
-        self.tc=[]
-        for item in Model.SampleParameters.keys():
-            if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
-                boxhorpar.Add(wx.StaticText(self,-1,item+': '),0)
-                self.tc.append(wx.TextCtrl(self, -1,\
-                 str(self.sampleh.sample.__getattribute__(item)),\
-                 validator = FloatObjectValidator()))
-                boxhorpar.Add(self.tc[-1],0)
-        boxver.Add(boxhorpar,0)
+        #self.tc=[]
+        #for item in self.model.SampleParameters.keys():
+        #    if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
+        #        boxhorpar.Add(wx.StaticText(self,-1,item+': '),0)
+        #        self.tc.append(wx.TextCtrl(self, -1,\
+        #         str(self.sampleh.sample.__getattribute__(item)),\
+        #         validator = FloatObjectValidator()))
+        #        boxhorpar.Add(self.tc[-1],0)
+        #boxver.Add(boxhorpar,0)
         self.SetSizer(boxver)
         
         self.update_callback = lambda event:''
@@ -371,14 +374,45 @@ class SamplePanel(wx.Panel):
         self.update_callback(None)
                 
     def SetSample(self, sample, names):
+        print 'SetSample sample:'
+        print sample, '\n'
         self.sampleh.sample = sample
         self.sampleh.names = names
         self.Update()
         
+    def EditSampleParameters(self, evt):
+        validators = []
+        items = []
+        for item in self.model.SampleParameters.keys():
+            if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
+                validators.append(FloatObjectValidator())
+                val = self.sampleh.sample.__getattribute__(item)
+                items.append((item, val))
+        
+        dlg = ValidateDialog(self, items, validators,\
+            title = 'Sample Editor')
+        
+        if dlg.ShowModal()==wx.ID_OK:
+            print 'Pressed OK'
+            vals=dlg.GetValues()
+            for index in range(len(vals)):
+                self.sampleh.sample.__setattr__(items[index][0],vals[index])
+            self.Update()
+        else:
+            print 'Pressed Cancel'
+        dlg.Destroy()
+    
+    def SetInstrument(self, instrument):
+        '''SetInstrument(self, instrument) --> None
+        
+        Sets the intrument
+        '''
+        self.instrument = instrument
+    
     def EditInstrument(self, evt):
         validators = []
         items = []
-        for item in Model.InstrumentParameters:
+        for item in self.model.InstrumentParameters:
             validators.append(FloatObjectValidator())
             val = self.instrument.__getattribute__(item)
             items.append((item, val))
@@ -390,9 +424,11 @@ class SamplePanel(wx.Panel):
             vals=dlg.GetValues()
             for index in range(len(vals)):
                 self.instrument.__setattr__(items[index][0],vals[index])
-            else:
-                print 'Pressed Cancel'
+            self.Update()
+        else:
+            print 'Pressed Cancel'
         dlg.Destroy()
+        
         
     def MoveUp(self,evt):
         #print dir(self.listbox)
@@ -451,13 +487,13 @@ class SamplePanel(wx.Panel):
     def lbDoubleClick(self,evt):
         sel=self.sampleh.getItem(self.listbox.GetSelection())
         sl=None
-        if isinstance(sel,Model.Layer): # Check if the selceted item is a Layer
+        if isinstance(sel,self.model.Layer): # Check if the selceted item is a Layer
             items=[]
             validators=[]
-            for item in Model.LayerParameters.keys():
+            for item in self.model.LayerParameters.keys():
                 value=sel.__getattribute__(item)
                 #if item!='n' and item!='fb':
-                if type(Model.LayerParameters[item]) != type(1+1.0J):
+                if type(self.model.LayerParameters[item]) != type(1+1.0J):
                     validators.append(FloatObjectValidator())
                 else:
                     print 'n exists'
@@ -479,7 +515,7 @@ class SamplePanel(wx.Panel):
         else: # The selected item is a Stack
             items=[]
             validators=[]
-            for item in Model.StackParameters.keys():
+            for item in self.model.StackParameters.keys():
                 if item!='Layers':
                     value=sel.__getattribute__(item)
                     if isinstance(value,float):
@@ -507,23 +543,12 @@ class SamplePanel(wx.Panel):
 class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
-        self.model = self.GetModel()
+        self.model_obj = self.GetModel()
         sample_panel = self.NewInputFolder('Sample')
         sample_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sample_panel.SetSizer(sample_sizer)
-        
-        self.defs = ['Sample', 'Instrument']
-        
-        sub = Model.Layer(sigmar=3.0,n=1-7.577e-6+1.756e-7j)
-        amb = Model.Layer(n = 1.0)
-        sample = Model.Sample(Stacks=[], Ambient = amb,\
-            Substrate = sub, eta_z = 500.0, eta_x = 100.0)
-        print sample
-        
-        inst = Model.Instrument(Wavelength = 1.54, Coordinates = 1)
-        s = ['Amb', 'Sub']
-        self.sampleh=SampleHandler(sample, s)
-        self.sample_widget=SamplePanel(sample_panel, self.sampleh)
+        self.defs = ['Sample', 'Instrument', 'Parameters']
+        self.sample_widget=SamplePanel(sample_panel)
         sample_sizer.Add(self.sample_widget, 1, wx.EXPAND)
         
         self.sample_widget.SetUpdateCallback(self.UpdateScript)
@@ -533,11 +558,17 @@ class Plugin(framework.Template):
     def UpdateScript(self, event):
         self.WriteModel()
         
+    def OnNewModel(self, event):
+        ''' Create a new model
+        '''
+        self.CreateNewModel()
+        
     def CreateNewModel(self, modelname = 'models.interdiff'):
         '''Init the script in the model to yield the 
         correct script for initilization
         '''
-        script = 'from %s import *\n\n'%modelname 
+        script = 'import %s as model\n'%modelname
+        script += 'from models.utils import UserVars\n\n'
         
         for item in self.defs:
             script += '# BEGIN %s DO NOT CHANGE\n'%item
@@ -550,13 +581,23 @@ class Plugin(framework.Template):
         script += '\treturn I\n'
         
         self.SetModelScript(script)
+        self.CompileScript()
+        self.model = self.GetModel().script_module.model
         
         names = ['Amb','Sub']
-        Amb = Model.Layer()
-        Sub = Model.Layer()
-        sample = Model.Sample(Ambient = Amb, Substrate = Sub)
-        self.sample_widget.SetSample(sample, names)
-        self.WriteModel()
+        Amb = self.model.Layer()
+        Sub = self.model.Layer()
+        sample = self.model.Sample(Stacks = [], Ambient = Amb, Substrate = Sub)
+        instrument = self.model.Instrument()
+        #self.sample_widget.SetSample(sample, names)
+        self.sampleh = SampleHandler(sample, names)
+        self.sampleh.model = self.model
+        self.sample_widget.sampleh = self.sampleh
+        self.sample_widget.model = self.model
+        self.sample_widget.SetInstrument(instrument)
+        
+        self.sample_widget.Update()
+        #self.WriteModel()
     
     def WriteModel(self):
         layer_code, stack_code, sample_code = self.sampleh.getCode()
@@ -582,7 +623,7 @@ class Plugin(framework.Template):
             if line.find('# BEGIN Instrument') != -1:
                 break
         
-        script += 'inst = ' + self.sample_widget.instrument.__repr__() + '\n'
+        script += 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
         
         for line in script_lines[line_index:]:
             if line.find('# END Instrument') != -1:
@@ -598,7 +639,8 @@ class Plugin(framework.Template):
         
         
 if __name__ == '__main__':
-
+    import models.interdiff as Model
+    
     nSi=3.0
     Fe=Model.Layer(d=10,sigmar=3.0,n=1-2.247e-5+2.891e-6j)
     Si=Model.Layer(d=15,sigmar=3.0,n='nSi')
