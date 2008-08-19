@@ -680,18 +680,28 @@ def show_about_box(frame, event):
     
     Show an about box about GenX with some info...
     '''
+    import numpy, scipy, matplotlib, platform
+    try:
+        import weave
+    except:
+        weave_version = 'Not installed'
+    else:
+        weave_version = weave.version.version
     info = wx.AboutDialogInfo()
     info.Name = "GenX"
     info.Version = "2.0b1"
     info.Copyright = "(C) 2008 Matts Bjorck"
     info.Description = wordwrap(
         "GenX is a multipurpose refinement program using the differential"
-        "evolution algorithm. It's main purpose is refining x-ray reflectivity"
+        "evolution algorithm. It is developed  mainly for refining x-ray reflectivity"
         "and neutron reflectivity data."
         
-        "\n\nHowever it can, thanks to its extensiblity , be used for any"
-        "fitting/refinement problem that needs a robust optimization "
-        "alogrithm that can avoid local minima. ",
+        "\n\nThe versions of the mandatory libraries are:\n"
+        "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
+        "\nThe non-mandatory but useful packages:\n"
+        "weave: %s"%(platform.python_version(), wx.__version__,\
+            numpy.version.version, scipy.version.version,\
+             matplotlib.__version__, weave_version),
         350, wx.ClientDC(frame))
     info.WebSite = ("http:///genx.sourceforge.net", "GenX homepage")
     # No developers yet
