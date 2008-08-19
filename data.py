@@ -2,7 +2,7 @@
 Library for the classes to store the data. The class DataSet stores 
 on set and the class DataList stores multiple DataSets.
 Programmer Matts Bjorck
-Last changed: 2008 07 07
+Last changed: 2008 08 14
 '''
 
 from numpy import *
@@ -148,15 +148,15 @@ class DataSet:
         y = self.y_raw
         e = self.error_raw
         self.x = eval(self.x_command)
-        print self.x
+        #print self.x
 
     def run_y_command(self):
         x = self.x_raw
         y = self.y_raw
         e = self.error_raw
         self.y = eval(self.y_command)
-        print self.y
-        print self.y_command
+        #print self.y
+        #print self.y_command
         
     def run_error_command(self):
         x = self.x_raw
@@ -271,8 +271,8 @@ class DataSet:
         pars [dictonary] is None that item will be skipped, i.e. keep its old
         value.
         '''
-        print 'data set_data_plot_items: '
-        print pars
+        #print 'data set_data_plot_items: '
+        #print pars
         for name in self.plot_setting_names:
             if pars[name] != None:
                 if type(pars[name]) == type(''):
@@ -291,8 +291,8 @@ class DataSet:
         pars [dictonary] is None that item will be skipped, i.e. keep its old
         value.
         '''
-        print 'data set_sim_plot_items: '
-        print pars
+        #print 'data set_sim_plot_items: '
+        #print pars
         for name in self.plot_setting_names:
             if pars[name] != None:
                 if type(pars[name]) == type(''):
@@ -347,7 +347,7 @@ class DataList:
             self._counter+=1
         else:
             self.items.append(DataSet(name,copy_from=self.items[-1]))
-        print "An empty dataset is appended at postition %i."%(len(self.items)-1)
+        #print "An empty dataset is appended at postition %i."%(len(self.items)-1)
 
     def delete_item(self,pos):
         '''delete_item(self,pos) --> None        
@@ -357,10 +357,10 @@ class DataList:
         ''' 
         if pos<len(self.items) and len(self.items)>1:
             self.items.pop(pos)
-            print "Data set number %i have been removed."%pos
+            #print "Data set number %i have been removed."%pos
             return True
         else:
-            print 'Can not remove dataset number %i.'%pos
+            #print 'Can not remove dataset number %i.'%pos
             return False
             
     def move_up(self, pos):

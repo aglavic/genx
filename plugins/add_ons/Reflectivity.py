@@ -1,15 +1,15 @@
 # Reflectivity.py written by Matts Bjorck
 # A GUI for defineition of Reflectivity models
-# LAst changed 20080523
+# LAst changed 20080817
 # Ported from old GenX to cerate a GUI interface
 # for sample definitions
 
 import plugins.add_on_framework as framework
-
+from plotpanel import PlotPanel
 import  wx
 
-import sys
-import os
+import sys, os, re
+
 
 # Make Modules a search path for python..
 #sys.path.insert(1,os.getcwd()+'/Models')
@@ -536,8 +536,339 @@ class SamplePanel(wx.Panel):
             dlg.Destroy()
         if sl:
             self.Update()
-            #for index in range(len(sl)):
-            #    self.listbox.SetString(index,sl[index])
+            
+class DataParameterPanel(wx.Panel):
+    ''' Widget that defines parameters coupling and different parameters
+    for differnt data sets.
+    '''
+    def __init__(self, parent, plugin):
+        wx.Panel.__init__(self,parent)
+        self.plugin = plugin
+        boxver = wx.BoxSizer(wx.VERTICAL)
+        # Indention for a command - used to seperate commands and data
+        self.command_indent = '<pre>   '
+        self.script_update_func = None
+        
+        # BEGIN BUTTON SECTION
+        boxbuttons = wx.BoxSizer(wx.HORIZONTAL)
+        button_names = ['Insert', 'Delete', 'Move up', 'Move down',\
+            'New Parameter']
+        callbacks = [self.Insert, self.Delete, self.MoveUp, self.MoveDown,\
+            self.NewPar]
+        for i in range(len(button_names)):
+            button = wx.Button(self,-1, button_names[i])
+            boxbuttons.Add(button, 1, wx.EXPAND)
+            self.Bind(wx.EVT_BUTTON, callbacks[i], button)
+        # END BUTTON SECTION
+        boxver.Add(boxbuttons)
+        
+        self.listbox = MyHtmlListBox(self, -1, style =  wx.BORDER_SUNKEN)
+        self.Bind(wx.EVT_LISTBOX_DCLICK, self.Edit , self.listbox)
+        boxver.Add(self.listbox, 1, wx.EXPAND)
+        
+        self.SetSizer(boxver)
+        
+    def SetDataList(self, datalist):
+        '''SetDataList(self, datalist) --> None
+        
+        Sets the name of the available data sets
+        '''
+        self.datalist = datalist
+    
+    def GetDataList(self):
+        '''SetDataList(self) --> list
+        
+        Retrives the data list
+        '''
+        return self.datalist
+        
+    def SetExpressionList(self, expressionlist):
+        '''SetExpressionList(expressionlist) --> None
+        
+        Sets the expression list, should be a 2D list with the 
+        one list for each item in datalist
+        '''
+        if len(expressionlist) != len(self.datalist):
+            raise ValueError('The list of expression has to have the' +\
+                ' same length as the data list')
+        self.expressionlist = expressionlist
+        
+    def GetExpressionList(self):
+        '''GetExpressionList(self) --> expression list
+        
+        Returns the expressionlist
+        '''
+        return self.expressionlist
+    
+    def SetUpdateScriptFunc(self, func):
+        '''SetUpdateScriptFunc(self, func) --> None
+        
+        Sets the function to be called when the script needs to be updated.
+        will only be called as func(event)
+        '''
+        self.script_update_func = func
+    
+    def Update(self):
+        '''Update(self) --> None
+        
+        Update the listbox.
+        '''
+        list_strings = []
+        for i in range(len(self.datalist)):
+            list_strings.append('%s\'s commands:'%self.datalist[i])
+            for item in self.expressionlist[i]:
+                list_strings.append(self.command_indent + '%s</pre>'%item)
+        
+        self.listbox.SetItemList(list_strings)
+        if self.script_update_func:
+            self.script_update_func(None)
+        
+    def get_expression_position(self):
+        '''get_expression_position(self) --> (dataitem, expression)
+        
+        Finds the position in the expression list for a certain item.
+        return -1 if it can not be found.
+        '''
+        index = self.listbox.GetSelection()
+        
+        if index == wx.NOT_FOUND:
+            return (-1, -1)
+
+        dataindex = -1
+        itemindex = -1
+        listindex = -1
+        print self.datalist
+        print self.expressionlist
+        for i in range(len(self.datalist)):
+            dataindex += 1
+            listindex +=1
+            print 'test'
+            if listindex >= index:
+                return (dataindex, itemindex)
+            itemindex = -1
+            for item in self.expressionlist[i]:
+                itemindex += 1
+                listindex += 1
+                if listindex >= index:
+                    return (dataindex, itemindex)
+        # If all other things fail...
+        return (-1, -1)
+            
+            
+    
+    def Edit(self, event):
+        '''Edit(self, event) --> None
+        
+        Edits an entry.
+        '''
+        data_pos, exp_pos = self.get_expression_position()
+        if exp_pos != -1 and data_pos != -1:
+            list_item = self.expressionlist[data_pos][exp_pos]
+            dlg = ParameterExpressionDialog(self, self.plugin.GetModel(),\
+                list_item)
+            if dlg.ShowModal() == wx.ID_OK:
+                exp = dlg.GetExpression()
+                self.expressionlist[data_pos][exp_pos] = exp
+                self.Update()
+        
+    def Insert(self, event):
+        ''' Insert(self, event) --> None
+        
+        Inserts a new operations
+        '''
+        data_pos, exp_pos = self.get_expression_position()
+        print data_pos, exp_pos
+        if data_pos != -1:
+            dlg = ParameterExpressionDialog(self, self.plugin.GetModel())
+            if dlg.ShowModal() == wx.ID_OK:
+                exp = dlg.GetExpression()
+                if exp_pos == -1:
+                    self.expressionlist[data_pos].insert(0, exp)
+                else:
+                    self.expressionlist[data_pos].insert(exp_pos, exp)
+                self.Update()
+        
+    def Delete(self, event):
+        '''Delete(self, event) --> None
+        
+        Deletes an operation
+        '''
+        data_pos, exp_pos = self.get_expression_position()
+        if exp_pos != -1 and data_pos != -1:
+            self.expressionlist[data_pos].pop(exp_pos)
+            self.Update()
+    
+        
+    def MoveUp(self, event):
+        '''MoveUp(self, event) --> None
+        
+        Move an operation up
+        '''
+        pass
+        
+    def MoveDown(self, event):
+        '''MoveDown(self, event) --> None
+        
+        Moves an operation down
+        '''
+        pass
+        
+    def NewPar(self, event):
+        ''' NewPar(self, event) --> None
+        
+        Creates a new parameter
+        '''
+        pass
+        
+    def OnDataChanged(self, event):
+        '''OnDataChanged(self, event) --> None
+        
+        Updated the data list
+        '''
+        self.Update()
+        
+class ParameterExpressionDialog(wx.Dialog):
+    ''' A dialog for setting parameters for fitting
+    '''
+    def __init__(self, parent, model, expression = None):
+        wx.Dialog.__init__(self, parent, -1, 'Parameter expression editor')
+        self.SetAutoLayout(True)
+        self.model = model
+        
+        gbs = wx.GridBagSizer(2, 3)
+        
+        col_labels = ['Object', 'Parameter', 'Expression']
+        
+        for item, index in zip(col_labels, range(len(col_labels))):
+            label = wx.StaticText(self, -1, item)
+            gbs.Add(label,(0, index),flag=wx.ALIGN_LEFT,border=5)
+            
+        # Get the objects that should be in the choiceboxes
+        objlist, funclist = model.get_possible_parameters()
+        print model.compiled
+        self.objlist = objlist
+        self.funclist = funclist
+        self.obj_choice = wx.Choice(self, -1, choices = objlist)
+        self.Bind(wx.EVT_CHOICE, self.on_obj_change, self.obj_choice)
+        
+        self.func_choice = wx.Choice(self, -1)
+        # This will init func_choice
+        self.obj_choice.SetSelection(0)
+        
+        gbs.Add(self.obj_choice, (1,0),\
+            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        gbs.Add(self.func_choice, (1,1),\
+            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+            
+        exp_right = ''
+        if expression:
+            print expression
+            p = expression.find('(')
+            exp_left = expression[:p]
+            obj = exp_left.split('.')[0]
+            func = exp_left.split('.')[1]
+            exp_right = expression[p+1:-1]
+            obj_pos = [i for i in range(len(objlist)) if objlist[i] == obj]
+            if len(obj_pos) > 0:
+                self.obj_choice.SetSelection(obj_pos[0])
+                self.on_obj_change(None)
+                func_pos = [i for i in range(len(funclist[obj_pos[0]]))\
+                                if funclist[obj_pos[0]][i] == func]
+                if len(func_pos) > 0:
+                    self.func_choice.SetSelection(func_pos[0])
+                else:
+                    raise ValueError('The function %s for object %s does not exist'%(func, obj))
+            else:
+                raise Valueerror('The object %s does not exist'%obj)
+    
+        self.expression_ctrl = wx.TextCtrl(self, -1, exp_right,\
+                                size=(300, -1))
+                                
+        gbs.Add(self.expression_ctrl, (1,2),\
+            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        
+        button_sizer = wx.StdDialogButtonSizer()
+        okay_button = wx.Button(self, wx.ID_OK)
+        okay_button.SetDefault()
+        button_sizer.AddButton(okay_button)
+        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+        apply_button = wx.Button(self, wx.ID_APPLY)
+        apply_button.SetDefault()
+        button_sizer.AddButton(apply_button)
+        button_sizer.Realize()
+        self.Bind(wx.EVT_BUTTON, self.OnApply, okay_button)
+        self.Bind(wx.EVT_BUTTON, self.OnApply, apply_button)
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        
+        sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.Layout()
+        
+    def on_obj_change(self, event):
+        '''on_obj_change(self, event) --> None
+        
+        On changing the object the funclist should be updated
+        '''
+        index = self.obj_choice.GetSelection()
+        self.func_choice.SetItems(self.funclist[index])
+        
+    def OnApply(self, event):
+        '''OnApply(self, event) --> None
+        '''
+        evalstring = self.GetExpression()
+        print 'Trying to evaluate evalstring'
+        print evalstring
+        try:
+            self.model.eval_in_model(evalstring)
+        except Exception, e:
+            result = 'Could not evaluate the expression. The python' +\
+            'is: \n' + e.__repr__()
+            dlg = wx.MessageDialog(self, result, 'Error in expression',
+                               wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        else:
+            event.Skip()
+    
+    def GetExpression(self):
+        '''GetExpression(self) --> expression
+        
+        Yields the string that has been edited in the dialog
+        '''
+        objstr = self.obj_choice.GetStringSelection()
+        funcstr = self.func_choice.GetStringSelection()
+        set_expression = self.expression_ctrl.GetValue()
+        evalstring = '%s.%s(%s)'%(objstr, funcstr, set_expression)
+        
+        return evalstring
+        
+
+class SamplePlotPanel(PlotPanel):
+    ''' Widget for plotting the scattering length density of 
+    a sample.
+    '''
+    # TODO: Implement SamplePlotPanel
+    def __init__(self, parent, id = -1, color = None, dpi = None
+    , style = wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
+        ''' Inits the plotpanel
+        '''
+        PlotPanel.__init__(self, parent, id, color, dpi, style, **kwargs)
+        self.update(None)
+        self.ax = self.figure.add_subplot(111)
+        self.ax.set_autoscale_on(True)
+        self.update = self.Plot
+        
+    def Plot(self, Sample):
+        ''' Plot(self, Sample) --> None
+        
+        Plotting the sample Sample.
+        '''
+        pass
         
         
 class Plugin(framework.Template):
@@ -551,9 +882,18 @@ class Plugin(framework.Template):
         self.sample_widget=SamplePanel(sample_panel)
         sample_sizer.Add(self.sample_widget, 1, wx.EXPAND)
         
+        simulation_panel = self.NewInputFolder('Simulations')
+        simulation_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        simulation_panel.SetSizer(simulation_sizer)
+        self.simulation_widget = DataParameterPanel(simulation_panel, self)
+        simulation_sizer.Add(self.simulation_widget, 1, wx.EXPAND)
+        
         self.sample_widget.SetUpdateCallback(self.UpdateScript)
+        self.simulation_widget.SetUpdateScriptFunc(self.UpdateScript)
         
         self.CreateNewModel()
+        
+        self.StatusMessage('Reflectivity plugin loaded')
         
     def UpdateScript(self, event):
         self.WriteModel()
@@ -562,6 +902,49 @@ class Plugin(framework.Template):
         ''' Create a new model
         '''
         self.CreateNewModel()
+    
+    def OnDataChanged(self, event):
+        ''' Take into account changes in data..
+        '''
+        if event.data_moved or event.deleted or event.new_data\
+            or event.name_change:
+            names = [data_set.name for data_set in self.GetModel().get_data()]
+            self.simulation_widget.SetDataList(names)
+            
+            expl = self.simulation_widget.GetExpressionList()
+            if event.deleted:
+                pos = range(len(expl))
+                [self.remove_data_segment(pos[-index-1]) for index in\
+                    range(len(event.position))]
+                [expl.pop(index) for index in event.position]
+            if event.data_moved:
+                if event.up:
+                    # Moving up
+                    for pos in event.position:
+                        tmp = self.items.pop(pos)
+                        expl.insert(pos-1, tmp)
+                else:
+                    #Moving down...
+                    for pos in event.position:
+                        tmp = self.items.pop(pos)
+                        expl.insert(pos+1, tmp)
+                        
+            if len(names)-len(expl) == 1:
+                # Data set has been added:
+                expl.append([])
+                self.insert_new_data_segment(len(expl)-1)
+            
+            self.simulation_widget.SetExpressionList(expl)
+            
+            self.simulation_widget.Update()
+            self.WriteModel()
+        
+    def OnOpenModel(self, event):
+        '''OnOpenModel(self, event) --> None
+        
+        Loads the sample into the plugin...
+        '''
+        self.ReadModel()
         
     def CreateNewModel(self, modelname = 'models.interdiff'):
         '''Init the script in the model to yield the 
@@ -576,8 +959,11 @@ class Plugin(framework.Template):
             
         script += 'def Sim(data):\n'
         script += '\tI = []\n'
-        script += '\tfor data_set in data:\n'
-        script += '\t\tI.append(sample.SimSpecular(data_set.x, inst))\n'
+        for i in range(len(self.GetModel().get_data())):
+            script += '\t# BEGIN Dataset %i DO NOT CHANGE\n'%i
+            script += '\tI.append(sample.SimSpecular(data[%i].x, inst))\n'%i
+            script += '\t# END Dataset %i\n'%i
+            
         script += '\treturn I\n'
         
         self.SetModelScript(script)
@@ -596,47 +982,252 @@ class Plugin(framework.Template):
         self.sample_widget.model = self.model
         self.sample_widget.SetInstrument(instrument)
         
+        names = [data_set.name for data_set in self.GetModel().get_data()]
+        self.simulation_widget.SetDataList(names)
+        # An empty list to the expression widget...
+        self.simulation_widget.SetExpressionList([[] for item in names])
+        self.simulation_widget.Update()
+        
         self.sample_widget.Update()
         #self.WriteModel()
     
     def WriteModel(self):
+        script = self.GetModel().get_script()
+        
         layer_code, stack_code, sample_code = self.sampleh.getCode()
+        code = layer_code + '\n' + stack_code + '\n' + sample_code
+        script = self.insert_code_segment(script, 'Sample', code)
+        
+        code = 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
+        script = self.insert_code_segment(script, 'Instrument', code)
+        
+        for (i,exps) in enumerate(self.simulation_widget.GetExpressionList()):
+            exp = [ex + '\n' for ex in exps]
+            exp.append('I.append(sample.SimSpecular(data[%i].x, inst))\n'%i)
+            code = ''.join(exp)
+            script = self.insert_code_segment(script, 'Dataset %i'%i, code)
+        
+        self.SetModelScript(script)
+        
+    def insert_new_data_segment(self, number):
+        '''insert_new_data_segment(self, number) --> None
+        
+        Inserts a new data segment into the script
+        '''
+        code = self.GetModel().get_script()
+        script_lines = code.splitlines(True)
+        line_index = 0
+        found = 0
+        for line in script_lines[line_index:]:
+            line_index += 1
+            if line.find('\treturn I') != -1:
+                found = 1
+                break
+            
+        if found < 1:
+            raise LookupError('Could not fing return I in the script')
+        
+        script = ''.join(script_lines[:line_index-1])
+        script += '\t# BEGIN Dataset %i DO NOT CHANGE\n'%number
+        script += '\tI.append(sample.SimSpecular(data[%i].x, inst))\n'%number
+        script += '\t# END Dataset %i\n'%number
+        script += ''.join(script_lines[line_index-1:])
+        self.SetModelScript(script)
+        
+    def remove_data_segment(self, number):
+        '''remove_data_segment(self, number) --> None
+        
+        Removes data segment number
+        '''
+        code = self.GetModel().get_script()
+        found = 0
+        script_lines = code.splitlines(True)
+        start_index = -1
+        stop_index = -1
+        for line in range(len(script_lines)):
+            if script_lines[line].find('# BEGIN Dataset %i'%number) != -1:
+                start_index = line+1
+            if script_lines[line].find('# END Dataset %i'%number) != -1:
+                stop_index = line-1
+                break
+            
+        # Check so everything have preceeded well
+        if stop_index < 0 and start_index < 0:
+            raise LookupError('Code segement: %s could not be found'%descriptor)
+        
+        script = ''.join(script_lines[:start_index-1])
+        script += ''.join(script_lines[stop_index+2:])
+        self.SetModelScript(script)
+        
+    def find_code_segment(self, code, descriptor):
+        '''find_code_segment(self, code, descriptor) --> string
+        
+        Finds a segment of code between BEGIN descriptor and END descriptor
+        returns a LookupError if the segement can not be found
+        '''
+        found = 0
+        script_lines = code.splitlines(True)
+        line_index = 0
+        for line in script_lines[line_index:]:
+            line_index += 1
+            if line.find('# BEGIN %s'%descriptor) != -1:
+                found += 1
+                break
+            
+        text = ''
+        for line in script_lines[line_index:]:
+            line_index += 1
+            if line.find('# END %s'%descriptor) != -1:
+                found += 1
+                break
+            text += line
+        
+        if found != 2:
+            raise LookupError('Code segement: %s could not be found'%descriptor)
+        
+        return text
+    
+    def insert_code_segment(self, code, descriptor, insert_code):
+        '''insert_code_segment(self, code, descriptor, insert_code) --> None
+        
+        Inserts code segment into the file. See find_code segment.
+        '''
+        found = 0
+        script_lines = code.splitlines(True)
+        start_index = -1
+        stop_index = -1
+        for line in range(len(script_lines)):
+            if script_lines[line].find('# BEGIN %s'%descriptor) != -1:
+                start_index = line+1
+            if script_lines[line].find('# END %s'%descriptor) != -1:
+                stop_index = line-1
+                break
+            
+        # Check so everything have preceeded well
+        if stop_index < 0 and start_index < 0:
+            raise LookupError('Code segement: %s could not be found'%descriptor)
+        
+        # Find the tablevel
+        tablevel = len(['\t' for char in script_lines[stop_index+1]\
+            if char == '\t'])
+        # Make the new code tabbed
+        tabbed_code = ['\t'*tablevel + line for line in\
+            insert_code.splitlines(True)]
+        # Replace the new code segment with the new
+        new_code = ''.join(script_lines[:start_index] + tabbed_code\
+            + script_lines[stop_index+1:])
+            
+        return new_code
+        
+    def ReadModel(self):
+        '''ReadModel(self)  --> None
+        
+        Reads in the current model and locates layers and stacks
+        and sample defined inside BEGIN Sample section.
+        '''
+        self.StatusMessage('Compiling the script...')
+        #print 'Reflectivity'
+        #print self.parent.model.script
+        try:
+            self.CompileScript()
+        except modellib.GenericError, e:
+            self.ShowErrorDialog(str(e))
+            self.StatusMessage('Error when compiling the script')
+            return
+        except Exception, e:
+            outp = StringIO.StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            self.ShowErrorDialog(val)
+            self.Statusmessage('Fatal Error - compling, Reflectivity')
+            return
+        self.StatusMessage('Script compiled!')
+        
+        self.StatusMessage('Trying to interpret the script...')
+        # Get the current script and split the lines into list items
         script_lines = self.GetModel().get_script().splitlines(True)
         script = ''
         # Locate the Sample definition
         line_index = 0
+        # Start by finding the right section
+        found = 0
         for line in script_lines[line_index:]:
-            script += line
             line_index += 1
             if line.find('# BEGIN Sample') != -1:
+                found += 1
                 break
-        script += layer_code + '\n' + stack_code + '\n' + sample_code
-        
-        for line in script_lines[line_index:]:
-            if line.find('# END Sample') != -1:
-                break
-            line_index += 1
-        
-        for line in script_lines[line_index:]:
-            script += line
-            line_index += 1
-            if line.find('# BEGIN Instrument') != -1:
-                break
-        
-        script += 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
-        
-        for line in script_lines[line_index:]:
-            if line.find('# END Instrument') != -1:
-                #line_index -= 1
-                break
-            line_index += 1
             
+        sample_text = ''
         for line in script_lines[line_index:]:
-            script += line
             line_index += 1
+            sample_text += line
+            if line.find('# END Sample') != -1:
+                found += 1
+                break
         
-        self.SetModelScript(script)
+        if found != 2:
+            self.ShowErrorDialog('Could not find the sample section' + \
+                ' in the model script.\n Can not load the sample in the editor.')
+            self.StatusMessage('ERROR No sample section in script')
+            return
         
+        re_layer = re.compile('([A-Za-z]\w*)\s*=\s*model\.Layer\s*\(.*\n')
+        re_stack = re.compile('([A-Za-z]\w*)\s*=\s*model\.Stack\s*\(\s*Layers=\[(.*)\].*\n')
+        
+        layer_names = re_layer.findall(sample_text)
+        stacks = re_stack.findall(sample_text)
+        
+        if len(layer_names) == 0:
+            self.ShowErrorDialog('Could not find any Layers in the' +\
+                ' model script. Check the script.')
+            self.StatusMessage('ERROR No Layers in script')
+            return
+        
+        
+        all_names = []
+        for stack in stacks:
+            first_name = stack[1].split(',')[0].strip()
+            #print first_name
+            # Find all items above the first name in the stack
+            while(layer_names[0] != first_name):
+                all_names.append(layer_names.pop(0))
+                #print 'all names ',all_names[-1]
+            all_names.append(stack[0])
+                
+        all_names += layer_names
+        
+        # Load the simulation parameters
+        script = self.GetModel().script
+        #print script
+        sim_exp = []
+        data_names = []
+        data = self.GetModel().get_data()
+        for i in range(len(data)):
+            code = self.find_code_segment(script, 'Dataset %i'%i)
+            sim_exp.append([])
+            data_names.append(data[i].name)
+            for line in code.splitlines()[:-1]:
+                sim_exp[-1].append(line.strip())
+        print data_names
+        print sim_exp
+        
+        
+        self.model = self.GetModel().script_module.model
+        sample = self.GetModel().script_module.sample
+        print all_names
+        #print sample
+        self.sampleh = SampleHandler(sample, all_names)
+        self.sampleh.model = self.model
+        self.sample_widget.sampleh = self.sampleh
+        self.sample_widget.model = self.model
+        self.sample_widget.SetInstrument(self.GetModel().script_module.inst)
+        
+        self.simulation_widget.SetDataList(data_names)
+        self.simulation_widget.SetExpressionList(sim_exp)
+        self.sample_widget.Update()
+        self.simulation_widget.Update()
+        self.StatusMessage('New sample loaded to plugin!')
         
 if __name__ == '__main__':
     import models.interdiff as Model

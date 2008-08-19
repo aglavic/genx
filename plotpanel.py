@@ -169,7 +169,8 @@ class PlotPanel(wx.Panel):
             #greater than zero. check so that y data contain data before min
             # is applied
             ymin = min([compress(line.get_ydata()>0, line.get_ydata()).min()\
-                   for line in self.ax.lines if len(line.get_ydata()) > 0])
+                   for line in self.ax.lines if any(array(line.get_ydata()) > 0,0)])
+            # Note that any returns False if the lenght is zero
         else:
             ymin = min([array(line.get_ydata()).min()\
                      for line in self.ax.lines if len(line.get_ydata()) > 0])
@@ -290,7 +291,7 @@ class PlotPanel(wx.Panel):
                         self.cur_pos[1] - self.start_pos[1])
                 self._DrawAndErase(new_rect, self.cur_rect)
                 self.cur_rect = new_rect
-        event.Skip()
+        #event.Skip()
         
     def OnLeftMouseButtonUp(self, event):
         if self.canvas.HasCapture():
@@ -300,8 +301,10 @@ class PlotPanel(wx.Panel):
                 # Note: The coordinte system for matplotlib have a different 
                 # direction of the y-axis and a different origin!
                 size = self.canvas.GetClientSize()
-                xstart, ystart = self.ax.transData.inverse_xy_tup((self.start_pos[0], size.height-self.start_pos[1]))
-                xend, yend = self.ax.transData.inverse_xy_tup((self.cur_pos[0], size.height-self.cur_pos[1]))
+                xstart, ystart = self.ax.transData.inverse_xy_tup(\
+                    (self.start_pos[0], size.height-self.start_pos[1]))
+                xend, yend = self.ax.transData.inverse_xy_tup(\
+                    (self.cur_pos[0], size.height-self.cur_pos[1]))
                 #print xstart, xend
                 #print ystart, yend
                 self.ax.set_xlim(min(xstart,xend), max(xstart,xend))
@@ -364,6 +367,7 @@ class PlotPanel(wx.Panel):
         def yscale(event):
             if self.ax:
                 self.SetYScale(yscalemenu.GetLabelText(event.GetId()))
+                self.AutoScale()
                 self.flush_plot()
         self.Bind(wx.EVT_MENU, yscale, id = logID)
         self.Bind(wx.EVT_MENU, yscale, id = linID)
@@ -465,9 +469,12 @@ class DataPlotPanel(PlotPanel):
         #print 'OnDataListEvent runs'
         data_list = event.GetData()
         if event.data_changed:
-            self.update = self.plot_data
-            self.update(data_list)
-            self.AutoScale()
+            if event.new_data:
+                self.update = self.plot_data
+                self.update(data_list)
+                self.AutoScale()
+            else:
+                self.update(data_list)
         else:
             #self.update(data_list)
             pass

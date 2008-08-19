@@ -52,8 +52,12 @@ def open(frame, event):
         _post_new_model_event(frame, frame.model)
         path, filename = os.path.split(path)
         set_title(frame, filename, path)
+        # Letting the plugin do their stuff...
+        frame.plugin_control.OnOpenModel(None)
         frame.main_frame_statusbar.SetStatusText('Model loaded from file', 1)
     dlg.Destroy()
+    
+    
     
     
 def on_new_model(frame, event):
@@ -635,19 +639,24 @@ def change_data_grid_view(frame, event):
     print event.GetSelection()
     dataset = frame.model.data[event.GetSelection()]
     rows = frame.data_grid.GetNumberRows()
-    new_rows = len(dataset.x)
+    new_rows = max(len(dataset.x), len(dataset.x_raw))
     if new_rows > rows:
         frame.data_grid.AppendRows(new_rows - rows)
     elif new_rows < rows:
         frame.data_grid.DeleteRows(rows - new_rows)
     
-    for row in range(new_rows):
-        frame.data_grid.SetCellValue(row, 0, '%.3e'%dataset.x_raw[row])
-        frame.data_grid.SetCellValue(row, 1, '%.3e'%dataset.y_raw[row])
-        frame.data_grid.SetCellValue(row, 2, '%.3e'%dataset.error_raw[row])
-        frame.data_grid.SetCellValue(row, 3, '%.3e'%dataset.x[row])
-        frame.data_grid.SetCellValue(row, 4, '%.3e'%dataset.y[row])
-        frame.data_grid.SetCellValue(row, 5, '%.3e'%dataset.error[row])
+    [frame.data_grid.SetCellValue(row, 0, '%.3e'%dataset.x_raw[row])\
+        for row in range(len(dataset.x_raw))]
+    [frame.data_grid.SetCellValue(row, 1, '%.3e'%dataset.y_raw[row])\
+        for row in range(len(dataset.y_raw))]
+    [frame.data_grid.SetCellValue(row, 2, '%.3e'%dataset.error_raw[row])\
+        for row in range(len(dataset.error_raw))]
+    [frame.data_grid.SetCellValue(row, 3, '%.3e'%dataset.x[row])\
+        for row in range(len(dataset.x))]
+    [frame.data_grid.SetCellValue(row, 4, '%.3e'%dataset.y[row])\
+        for row in range(len(dataset.y))]
+    [frame.data_grid.SetCellValue(row, 5, '%.3e'%dataset.error[row])\
+        for row in range(len(dataset.error))]
         
 def update_data_grid_choice(frame, event):
     '''update_data_grid_choice(frame, event) --> None
@@ -658,6 +667,13 @@ def update_data_grid_choice(frame, event):
     names = [data_set.name for data_set in data]
     frame.data_grid_choice.SetItems(names)
     event.Skip()
+    
+def update_data(frame, event):
+    '''update_data(frame, event) --> None
+    
+    callback for updating data, right now in the plugins
+    '''
+    frame.plugin_control.OnDataChanged(event)
     
 def show_about_box(frame, event):
     '''show_about_box(frame, event) --> None

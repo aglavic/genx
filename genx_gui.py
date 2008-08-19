@@ -255,6 +255,9 @@ class MainFrame(wx.Frame):
         self.Bind(datalist.EVT_DATA_LIST,\
             self.eh_external_update_data_grid_choice,\
             self.data_list.list_ctrl)
+        self.Bind(datalist.EVT_DATA_LIST,\
+            self.eh_external_update_data,\
+            self.data_list.list_ctrl)
         self.Bind(event_handlers.EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent,\
                     self)
         self.Bind(event_handlers.EVT_SIM_PLOT, self.eh_external_fom_value,\
@@ -571,6 +574,9 @@ class MainFrame(wx.Frame):
         
     def eh_external_update_data_grid_choice(self, event):
         event_handlers.update_data_grid_choice(self, event)
+        
+    def eh_external_update_data(self, event):
+        event_handlers.update_data(self, event)
 
 # end of class MainFrame
 

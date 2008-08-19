@@ -56,6 +56,7 @@ class Template:
                     
             if dlg.ShowModal() == wx.ID_OK:
                 self.LoadData(selected_items[0], dlg.GetPath())
+                return True
             dlg.Destroy()
         else:
             if n_selected > 1:
@@ -68,7 +69,8 @@ class Template:
                     , caption = 'No active dataset'
                     , style = wx.OK|wx.ICON_INFORMATION)
             dlg.ShowModal()
-            dlg.Destroy()    
+            dlg.Destroy()
+        return False
     
     def LoadData(self, data_item, file_path):
         '''LoadData(self, data_item, file_path) --> None

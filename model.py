@@ -40,7 +40,9 @@ class Model:
         
         # Registred classes that is looked for in the model
         self.registred_classes = ['Layer','Stack','Sample','Instrument',\
-                                    'UserVars','Surface','Bulk']
+                                    'model.Layer', 'model.Stack',\
+                                     'model.Sample','model.Instrument',\
+                                     'UserVars','Surface','Bulk']
         self.set_func = 'set'
         self._reset_module()
 
@@ -530,7 +532,8 @@ class Model:
             funclist = [[member for member in dir(self.eval_in_model(obj))\
                         if member[:len(self.set_func)] == self.set_func]\
                             for obj in objlist]
-            
+        #print 'Magic parameters...'
+        #print objlist, funclist
         return objlist, funclist
     
     # Set functions - a necessary evil...
