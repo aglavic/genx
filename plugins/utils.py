@@ -84,8 +84,7 @@ class PluginHandler:
         Load a module given by name
         '''
         #print 'Trying to load module: ', module_name
-        module = __import__(module_name, globals(), locals(),\
-                        fromlist = ['plugins'])
+        module = __import__(module_name, globals(), locals(), ['plugins'])
         return module
         
     def unload_plugin(self, plugin_name):
