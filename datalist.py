@@ -329,7 +329,7 @@ class VirtualDataList(wx.ListCtrl):
         # Get selected items
         indices = self._GetSelectedItems()
         # Sort them in ascending order
-        indices.sort(reverse = False)
+        indices.sort()
         # Move only if all elements can be moved!
         if indices[0] != 0:
             # Move the items in the DataSet
@@ -353,7 +353,8 @@ class VirtualDataList(wx.ListCtrl):
         # Get selected items
         indices = self._GetSelectedItems()
         # Sort them in ascending order
-        indices.sort(reverse = True)
+        indices.sort()
+        indices.reverse()
         # Move only if all elements can be moved!
         if indices[0] != self.data_cont.get_count()-1:
             # Move the items in the DataSet
