@@ -6,7 +6,7 @@ Implements one Controller and a customiized ListController
 for data. The class that should be used for the outside world
 is the DataListController. This has a small toolbar ontop.
 Programmer: Matts Bjorck
-Last changed: 2008 05 31
+Last changed: 2008 08 14
 '''
 
 import wx
@@ -165,7 +165,13 @@ class DataListEvent(wx.PyCommandEvent):
         wx.PyCommandEvent.__init__(self, evt_type, id)
         self.data = data
         self.data_changed = True
+        self.new_data = False
         self.description = ''
+        self.data_moved = False
+        self.position = 0
+        self.up = False
+        self.deleted = False
+        self.name_change = False
         
     def GetData(self):
         return self.data
@@ -176,11 +182,29 @@ class DataListEvent(wx.PyCommandEvent):
     def SetDataChanged(self, data_changed):
         self.data_changed = data_changed
         
+    def SetDataMoved(self, position, up = True):
+        self.data_moved = True
+        self.position = position
+        self.up = up
+        
+    def SetDataDeleted(self, position):
+        self.deleted = True
+        self.position = position
+        
+    def SetNewData(self, new_data = True):
+        self.new_data = new_data
+        
     def SetDescription(self, desc):
         '''
         Set a string that describes the event that has occurred
         '''
         self.description = desc
+    def SetNameChange(self):
+        '''SetNameChange(self) --> None
+        
+        Sets that a name of the has changed
+        '''
+        self.name_change = True
         
 # Generating an event type:
 myEVT_DATA_LIST = wx.NewEventType()
@@ -233,7 +257,9 @@ class VirtualDataList(wx.ListCtrl):
         indices.pop(-1)
         return indices
         
-    def _UpdateData(self, desc, data_changed = True):
+    def _UpdateData(self, desc, data_changed = True, new_data = False,\
+            position = None, moved = False, direction_up = True,\
+             deleted = False, name_change = False):
         '''
         Internal funciton to send an event to update data
         '''
@@ -241,7 +267,13 @@ class VirtualDataList(wx.ListCtrl):
         evt = DataListEvent(myEVT_DATA_LIST, self.GetId(),\
         self.data_cont.get_data())
         evt.SetDataChanged(data_changed)
+        evt.SetNewData(new_data)
+        evt.SetNameChange()
         evt.SetDescription(desc)
+        if moved:
+            evt.SetDataMoved(position, direction_up)
+        if deleted:
+            evt.SetDataDeleted(position)
         # Process the event!
         self.GetEventHandler().ProcessEvent(evt)
     
@@ -283,14 +315,15 @@ class VirtualDataList(wx.ListCtrl):
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
             # Send update event
-            self._UpdateData('Data Deleted')
+            self._UpdateData('Data Deleted', deleted = True,\
+                position = indices)
 
         dlg.Destroy()
         
     def AddItem(self):
         self.data_cont.add_item()
         self.SetItemCount(self.data_cont.get_count())
-        self._UpdateData('Item added', data_changed = False)
+        self._UpdateData('Item added', data_changed = True, new_data = True)
         
     def MoveItemUp(self):
         # Get selected items
@@ -307,7 +340,8 @@ class VirtualDataList(wx.ListCtrl):
             [self.Select(index-1,1) for index in indices]
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
-            self._UpdateData('Item moved', data_changed = False)
+            self._UpdateData('Item moved', data_changed = False, moved = True,\
+                direction_up = True, position = index)
         else:
             dlg = wx.MessageDialog(self, \
                 'The first dataset can not be moved up'
@@ -330,7 +364,8 @@ class VirtualDataList(wx.ListCtrl):
             [self.Select(index+1,1) for index in indices]
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
-            self._UpdateData('Item moved', data_changed = False)
+            self._UpdateData('Item moved', data_changed = False, moved = True,\
+                direction_up = False, position = index)
         else:
             dlg = wx.MessageDialog(self, \
                 'The last dataset can not be moved down',\
@@ -369,8 +404,8 @@ class VirtualDataList(wx.ListCtrl):
         Loads data into the the model
         '''
         self.data_loader.SetData(self.data_cont.get_data())
-        self.data_loader.LoadDataFile(self._GetSelectedItems())
-        self._UpdateData('New data added')
+        if self.data_loader.LoadDataFile(self._GetSelectedItems()):
+            self._UpdateData('New data added', new_data = True)
             
     def ChangeDataLoader(self):
         '''ChangeDataLoader(self, evt) --> None
@@ -399,7 +434,8 @@ class VirtualDataList(wx.ListCtrl):
     def OnEndEdit(self, evt):
         if not evt.IsEditCancelled():
             self.data_cont.set_name(evt.GetIndex(),evt.GetLabel())
-        self._UpdateData('Data set name changed', data_changed = False)
+        self._UpdateData('Data set name changed', data_changed = False,\
+            name_change = True)
         evt.Skip()
     
     def OnPlotSettings(self, evt):
@@ -518,7 +554,7 @@ class VirtualDataList(wx.ListCtrl):
             lambda command: self.data_cont.test_commands(command, indices)
         def command_runner(command):
             result = self.data_cont.run_commands(command, indices)
-            self._UpdateData('New calculation', data_changed = False)
+            self._UpdateData('New calculation', data_changed = True)
             return result
             
         dlg.SetCommandTester(command_tester)
@@ -1036,7 +1072,7 @@ class CalcDialog(wx.Dialog):
                 result = self.command_runner(current_command)
                 if result != '':
                     result = 'There is an error that the command tester did' + \
-                     'not catch please give the following informaiton to' + \
+                     'not catch please give the following information to' + \
                      'the developer:\n\n' +  result
                     dlg = wx.MessageDialog(self, result, 'Error in GenX',
                                wx.OK | wx.ICON_ERROR)

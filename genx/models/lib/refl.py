@@ -114,9 +114,9 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
             s='Layer('
         
             for k in self.__dict__.keys():
-                stemp='%s = %s,' % (k,str(self.__getattribute__(k)))
+                stemp='%s = %s, ' % (k,str(self.__getattribute__(k)))
                 s=s+stemp
-            return s[:-1]+')'
+            return s[:-2]+')'
         def _todict(self):
             dic={}
             for key in self.__dict__.keys():
@@ -142,9 +142,9 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
             s='Stack: '
             for k in self.__dict__.keys():
                 if k != 'Layers':
-                    stemp='%s = %s,' %(k,str(self.__getattribute__(k)))
+                    stemp='%s = %s, ' %(k,str(self.__getattribute__(k)))
                     s=s+stemp
-            s=s[:-1]+'\n'
+            s=s[:-2]+'\n'
             it=len(self.Layers)
             for lay in range(it-1,-1,-1):
                 s=s+'\t'+repr(self.Layers[lay])+'\n'
@@ -191,9 +191,9 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
             Add='Sample: '
             for k in self.__dict__.keys():
                 if k != 'Stacks' and k!='Ambient' and k!='Substrate':
-                    temp='%s = %d,' %(k,self.__getattribute__(k))
+                    temp='%s = %d, ' %(k,self.__getattribute__(k))
                     Add=Add+temp
-            Add=Add[:-1]+'\n'
+            Add=Add[:-2]+'\n'
             temp=[repr(x) for x in self.Stacks]
             temp.reverse()
             return Add+'Ambient:\n\t'+repr(self.Ambient)+'\n'+''.join(temp)+'Substrate:\n\t'+repr(self.Substrate)

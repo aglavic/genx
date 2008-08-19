@@ -93,6 +93,34 @@ class Template:
         self.menus.append(index)
         
         return menu
+    
+    def StatusMessage(self, text):
+        '''StatusMessage(self, text) --> None
+        
+        Method that sets the staustext in the main window
+        '''
+        self.parent.main_frame_statusbar.SetStatusText(text, 1)
+        
+    def ShowErrorDialog(self, message):
+        '''ShowErrorDialog(self, message) --> None
+        
+        Shows an error dialog with message [string]
+        '''
+        ShowErrorDialog(self.parent, message)
+    
+    def ShowInfoDialog(self, message):
+        '''ShowInfoDialog(self, message) --> None
+        
+        Shows an info dialog with message [string]
+        '''
+        ShowInfoDialog(self.parent, message)
+        
+    def ShowWarningDialog(self, message):
+        '''ShowWarningDialog(self, message) --> None
+        
+        Shows an warning dialog with message [string]
+        '''
+        ShowWarningDialog(self.parent, message)
         
     def GetModel(self):
         '''GetModel(self) --> model 
@@ -101,6 +129,7 @@ class Template:
         object thus it will automatically always conatin the newest information.        
         '''
         return self.parent.model
+    
     
     def GetSolverControl(self):
         '''GetSolverControl(self) --> solver_control
@@ -134,10 +163,19 @@ class Template:
         '''
         pass
         
-    def OnNewData(self, event):
-        '''OnNewData(self) --> None
+    def OnDataChanged(self, event):
+        '''OnDataChanged(self) --> None
         
         Function to be overridden. Called when a new data set has been loaded
+        or deleted.
+        '''
+        pass
+        
+    def OnOpenModel(self, event):
+        '''OnOpenModel(self, event) --> None
+        
+        Function that is called after a new model has been loaded.
+        Used to set up plugin specific model stuff. To be overridden
         '''
         pass
         
@@ -267,15 +305,23 @@ class PluginController:
         Runs plugin code when the user tries to load a new model 
         '''
         for name in self.plugin_handler.loaded_plugins:
-            self.plugin_handler.loaded_plugins[name].OnNewModel(None)
+            self.plugin_handler.loaded_plugins[name].OnNewModel(event)
             
-    def OnNewData(self, event):
+    def OnDataChanged(self, event):
         '''OnNewModel(self, event) --> None
         
-        Runs plugin code when the user tries to load a new model 
+        Runs plugin code when the user tries to load new data
         '''
-        for name in self.plugin_handler.plugins:
-            self.plugin_handler.loaded_plugins[name].OnNewData(None)
+        for name in self.plugin_handler.loaded_plugins:
+            self.plugin_handler.loaded_plugins[name].OnDataChanged(event)
+            
+    def OnOpenModel(self, event):
+        '''OnOpenModel(self, event) --> None
+        
+        Runs plugin code when the user tries to open a model 
+        '''
+        for name in self.plugin_handler.loaded_plugins:
+            self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
         
 #==============================================================================
 # Utility Dialog functions..
