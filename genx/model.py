@@ -256,8 +256,9 @@ class Model:
         '''
         object = self.eval_in_model(str)
         #print type(object)
-        # Is it a function
-        if type(object) == type(self.get_sim_pars):
+        # Is it a function or a method!
+        name = type(object).__name__
+        if name == 'instancemethod' or name == 'function':
             return object
         # Nope lets make a function of it
         else:

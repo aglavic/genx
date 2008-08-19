@@ -423,8 +423,9 @@ class VirtualDataList(wx.ListCtrl):
         # Set the data in the data_cont.
         self.data_cont.set_data(evt.GetModel().get_data())
         self.SetItemCount(self.data_cont.get_count())      
-        self._UpdateData('Data from model loaded')
-        print "new data from model loaded"
+        self._UpdateData('Data from model loaded', data_changed = True,\
+                new_data = True)
+        #print "new data from model loaded"
         
     def OnBeginEdit(self,evt):
         print (evt.GetIndex(),evt.GetColumn())

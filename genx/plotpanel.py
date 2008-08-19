@@ -364,13 +364,18 @@ class PlotPanel(wx.Panel):
         else:
             yscalemenu.Check(linID, True)
         
-        def yscale(event):
+        def yscale_log(event):
             if self.ax:
-                self.SetYScale(yscalemenu.GetLabelText(event.GetId()))
+                self.SetYScale('log')
                 self.AutoScale()
                 self.flush_plot()
-        self.Bind(wx.EVT_MENU, yscale, id = logID)
-        self.Bind(wx.EVT_MENU, yscale, id = linID)
+        def yscale_lin(event):
+            if self.ax:
+                self.SetYScale('lin')
+                self.AutoScale()
+                self.flush_plot()
+        self.Bind(wx.EVT_MENU, yscale_log, id = logID)
+        self.Bind(wx.EVT_MENU, yscale_lin, id = linID)
         
         autoscaleID = wx.NewId()
         menu.AppendCheckItem(autoscaleID, "Autoscale")
@@ -467,9 +472,11 @@ class DataPlotPanel(PlotPanel):
         i.e. update of the plots when the data has changed
         '''
         #print 'OnDataListEvent runs'
+        #print event.data_changed, event.new_data
         data_list = event.GetData()
         if event.data_changed:
             if event.new_data:
+                #print 'updating plot'
                 self.update = self.plot_data
                 self.update(data_list)
                 self.AutoScale()
