@@ -25,10 +25,16 @@ class DataSet:
         self.y_raw = array([])
         self.error_raw = array([])
         
+        self.extra_data = {}
+        
         # The different commands to transform raw data to normal data
         self.x_command = 'x'
         self.y_command = 'y'
         self.error_command = 'e'
+        
+        # Should we display the dataset, ie plot it
+        # This should be default for ALL datasets..
+        self.show = True
         
         # Special list for settings when setting the plotting properties
         self.plot_setting_names = ['color', 'symbol', 'symbolsize', 'linetype',\
@@ -78,6 +84,32 @@ class DataSet:
             self.sim_linetype = '-'
             self.sim_linethickness = 2
             
+    def get_extra_data_names(self):
+        '''get_extra_data_names(self) --> names [list]
+        
+        returns the names of the extra data
+        '''
+        return self.extra_data.keys()
+    
+    def set_extra_data(self, name, value):
+        '''set_extra_data_names(self, name, value)
+        
+        sets extra data name, if it does not exist a new entry is created.
+        name should be a string and value can be any object
+        '''
+        self.extra_data[name] = value
+    
+    def get_extra_data(self, name):
+        '''get_extra_data(self, name) --> object
+        
+        returns the extra_data object with name name [string] if does not
+        exist an LookupError is yielded.
+        '''
+        if not self.extra_data.has_key(name):
+            raise LookupError('Can not find extra data with name %s'%name)
+        
+        return self.extra_data[name]
+    
     def loadfile(self,filename, sep='\t', pos=0):
         '''
         Function to load data from a file.
