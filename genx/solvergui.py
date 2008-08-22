@@ -241,7 +241,7 @@ class SolverController:
             print 'Resetting the values in the grid to ',\
                 self.start_parameter_values
             evt = update_parameters(values = self.start_parameter_values,\
-                desc = 'Parameter Update', new_best = solver.new_best, \
+                desc = 'Parameter Update', new_best = True, \
                 update_errors = False, fitting = False)
             wx.PostEvent(self.parent, evt)
             

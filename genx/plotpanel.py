@@ -47,8 +47,9 @@ class PlotPanel(wx.Panel):
         # Flags and bindings for zooming
         self.zoom = False
         self.zooming = False
-        
+        self.scale = 'linear'
         self.autoscale = True
+        
         
         self.canvas.Bind(wx.EVT_LEFT_DOWN, self.OnLeftMouseButtonDown)
         self.canvas.Bind(wx.EVT_LEFT_UP, self.OnLeftMouseButtonUp)
@@ -58,7 +59,7 @@ class PlotPanel(wx.Panel):
         
         cursor = wx.StockCursor(wx.CURSOR_CROSS)
         self.canvas.SetCursor(cursor)
-        
+        self.old_scale_state = True
         self.ax = None
         
     
@@ -113,7 +114,10 @@ class PlotPanel(wx.Panel):
                         yscale = self.GetYScale(), autoscale = self.autoscale)
                 wx.PostEvent(self.callback_window, evt)
             if self.ax:
-                self.ax.set_autoscale_on(False)
+                #self.ax.set_autoscale_on(False)
+                self.old_scale_state = self.GetAutoScale()
+                self.SetAutoScale(False)
+                 
         else:
             #self.zoom_sel.ignore = lambda x: True
             self.zoom = False
@@ -124,7 +128,8 @@ class PlotPanel(wx.Panel):
                     yscale = self.GetYScale(), autoscale = self.autoscale)
                 wx.PostEvent(self.callback_window, evt)
             if self.ax:
-                self.ax.set_autoscale_on(self.autoscale)
+                #self.ax.set_autoscale_on(self.autoscale)
+                self.SetAutoScale(self.old_scale_state)
         
         
     def GetZoom(self):
@@ -141,7 +146,7 @@ class PlotPanel(wx.Panel):
         Sets autoscale of the main axes wheter or not it should autoscale
         when plotting
         '''
-        self.ax.set_autoscale_on(state)
+        #self.ax.set_autoscale_on(state)
         self.autoscale = state
         evt = state_changed(zoomstate = self.GetZoom(),\
                         yscale = self.GetYScale(), autoscale = self.autoscale)
@@ -161,6 +166,8 @@ class PlotPanel(wx.Panel):
         A log safe way to autoscale the plots - the ordinary axis tight 
         does not work for negative log data. This works!
         '''
+        if not self.autoscale:
+            return
         # If nothing is plotted no autoscale...
         if sum([len(line.get_ydata()) > 0 for line in self.ax.lines]) == 0:
             return
@@ -183,6 +190,7 @@ class PlotPanel(wx.Panel):
         # Set the limits
         self.ax.set_xlim(xmin, xmax)
         self.ax.set_ylim(ymin, ymax)
+        self.ax.set_yscale(self.scale)
         self.flush_plot()
         
     def SetYScale(self, scalestring):
@@ -193,8 +201,10 @@ class PlotPanel(wx.Panel):
         '''
         if self.ax:
             if scalestring == 'log':
+                self.scale = 'log'
                 self.ax.set_yscale('log')
             elif scalestring == 'linear' or scalestring == 'lin':
+                self.scale = 'linear'
                 self.ax.set_yscale('linear')
             self.AutoScale()
             self.flush_plot()
@@ -259,9 +269,13 @@ class PlotPanel(wx.Panel):
     
     def OnLeftDblClick(self, event):
         if self.ax and self.zoom:
+            tmp = self.GetAutoScale()
+            self.SetAutoScale(True)
             self.AutoScale()
-            self.flush_plot()
-            self.ax.set_autoscale_on(False)
+            self.SetAutoScale(tmp)
+            #self.AutoScale()
+            #self.flush_plot()
+            #self.ax.set_autoscale_on(False)
     
     def OnLeftMouseButtonDown(self, event):
         self.start_pos = event.GetPositionTuple()
@@ -343,8 +357,11 @@ class PlotPanel(wx.Panel):
         zoomallID = wx.NewId()
         menu.Append(zoomallID, 'Zoom All')
         def zoomall(event):
+            tmp = self.GetAutoScale()
+            self.SetAutoScale(True)
             self.AutoScale()
-            self.flush_plot()
+            self.SetAutoScale(tmp)
+            #self.flush_plot()
         self.Bind(wx.EVT_MENU, zoomall, id = zoomallID)
         
         copyID = wx.NewId()
@@ -392,6 +409,7 @@ class PlotPanel(wx.Panel):
     def flush_plot(self):
         #self._SetSize()
         #self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
+        self.ax.set_yscale(self.scale)
         self.canvas.draw()
         
     def update(self, data):
@@ -407,7 +425,8 @@ class DataPlotPanel(PlotPanel):
         self.update=self.singleplot
         self.update(None)
         self.update = self.plot_data
-                
+        self.SetAutoScale(False)
+        
     def singleplot(self, data):
         if not self.ax:
                 self.ax = self.figure.add_subplot(111)
@@ -425,17 +444,56 @@ class DataPlotPanel(PlotPanel):
         # Clear axes
         #self.ax.cla()
         self.ax.lines = []
+        self.ax.collections = []
         # plot the data
         #[self.ax.semilogy(data_set.x,data_set.y) for data_set in data]
         [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
+            lw = data_set.data_linethickness, ls = data_set.data_linetype, \
+            marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+            for data_set in data if not data_set.use_error and data_set.show]
+        # With errorbars
+        [self.ax.errorbar(data_set.x, data_set.y,\
+            yerr = c_[data_set.error*(data_set.error > 0),\
+             data_set.error].transpose(),\
+            c = data_set.data_color, lw = data_set.data_linethickness,\
+            ls = data_set.data_linetype, marker = data_set.data_symbol,\
+            ms = data_set.data_symbolsize)\
+         for data_set in data if data_set.use_error and data_set.show]
+        self.AutoScale()
+        # Force an update of the plot
+        #self.flush_plot()
+        #self.canvas.draw()
+        #print 'Data plotted'
+    
+    def plot_data_fit(self, data):
+        
+        if not self.ax:
+                self.ax = self.figure.add_subplot(111)
+        
+        # This will be somewhat inefficent since everything is updated
+        # at once would be better to update the things that has changed...
+        # Clear axes
+        #self.ax.cla()
+        self.ax.lines = []
+        self.ax.collections = []
+        #self.ax.set_title('FOM: None')
+        # plot the data
+        #[self.ax.semilogy(data_set.x, data_set.y, '.'\
+        # ,data_set.x, data_set.y_sim) for data_set in data]
+        [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
         lw = data_set.data_linethickness, ls = data_set.data_linetype, \
         marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
-         for data_set in data]
+         for data_set in data if data_set.show]
+        # The same thing for the simulation
+        [self.ax.plot(data_set.x, data_set.y_sim, c = data_set.sim_color, \
+        lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
+        marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
+         for data_set in data if data_set.show]
         # Force an update of the plot
         self.flush_plot()
         #self.canvas.draw()
         #print 'Data plotted'
-    
+        
     def plot_data_sim(self, data):
         
         if not self.ax:
@@ -446,21 +504,32 @@ class DataPlotPanel(PlotPanel):
         # Clear axes
         #self.ax.cla()
         self.ax.lines = []
+        self.ax.collections = []
         #self.ax.set_title('FOM: None')
         # plot the data
         #[self.ax.semilogy(data_set.x, data_set.y, '.'\
         # ,data_set.x, data_set.y_sim) for data_set in data]
+        # Plot the data sets without errorbars
         [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
-        lw = data_set.data_linethickness, ls = data_set.data_linetype, \
-        marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
-         for data_set in data]
+            lw = data_set.data_linethickness, ls = data_set.data_linetype, \
+            marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+            for data_set in data if not data_set.use_error and data_set.show]
+        # With errorbars
+        [self.ax.errorbar(data_set.x, data_set.y,\
+            yerr = c_[data_set.error*(data_set.error > 0),\
+             data_set.error].transpose(),\
+            c = data_set.data_color, lw = data_set.data_linethickness,\
+            ls = data_set.data_linetype, marker = data_set.data_symbol,\
+            ms = data_set.data_symbolsize)\
+         for data_set in data if data_set.use_error and data_set.show]
         # The same thing for the simulation
         [self.ax.plot(data_set.x, data_set.y_sim, c = data_set.sim_color, \
-        lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
-        marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
-         for data_set in data]
+            lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
+            marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
+            for data_set in data if data_set.show]
+        self.AutoScale()
         # Force an update of the plot
-        self.flush_plot()
+        #self.flush_plot()
         #self.canvas.draw()
         #print 'Data plotted'
     
@@ -479,7 +548,10 @@ class DataPlotPanel(PlotPanel):
                 #print 'updating plot'
                 self.update = self.plot_data
                 self.update(data_list)
+                tmp = self.GetAutoScale()
+                self.SetAutoScale(True)
                 self.AutoScale()
+                self.SetAutoScale(tmp)
             else:
                 self.update(data_list)
         else:
@@ -506,7 +578,10 @@ class DataPlotPanel(PlotPanel):
         #print 'plotting'
         if event.update_fit:
             data_list = event.model.get_data()
-            self.update = self.plot_data_sim
+            if self.update != self.plot_data_fit:
+                self.update = self.plot_data_fit
+                self.ax.cla()
+                self.SetAutoScale(False)
             self.update(data_list)
         # Do not forget - pass the event on
         event.Skip()
@@ -525,7 +600,7 @@ class ErrorPlotPanel(PlotPanel):
     def errorplot(self, data):
         if not self.ax:
             self.ax = self.figure.add_subplot(111)
-            self.ax.set_autoscale_on(True)
+            self.ax.set_autoscale_on(False)
             
         #self.ax.cla()
         
@@ -537,6 +612,7 @@ class ErrorPlotPanel(PlotPanel):
             #print 'plotting ...', data
             self.ax.plot(data[:,0],data[:,1], '-r')
             self.ax.set_ylim(data[:,1].min()*0.95, data[:,1].max()*1.05)
+            self.AutoScale()
         
         self.flush_plot()
         self.canvas.draw()
@@ -562,7 +638,7 @@ class ParsPlotPanel(PlotPanel):
         PlotPanel.__init__(self, parent, id, color, dpi, style, **kwargs)
         self.update(None)
         self.ax = self.figure.add_subplot(111)
-        self.ax.set_autoscale_on(True)
+        #self.ax.set_autoscale_on(True)
         self.update = self.Plot
     
     def Plot(self, data):

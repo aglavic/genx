@@ -491,7 +491,7 @@ def on_zoom_check(frame, event):
     sel = frame.plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
-        zoom_state = not frame.plot_data.GetZoom()
+        zoom_state = not pages[sel].GetZoom()
         pages[sel].SetZoom(zoom_state)
             
         frame.main_frame_toolbar.ToggleTool(10009, zoom_state)
@@ -644,7 +644,8 @@ def change_data_grid_view(frame, event):
         frame.data_grid.AppendRows(new_rows - rows)
     elif new_rows < rows:
         frame.data_grid.DeleteRows(rows - new_rows)
-    
+    [[frame.data_grid.SetCellValue(row, col, '-') for col in range(6)]\
+        for row in range(new_rows)]
     [frame.data_grid.SetCellValue(row, 0, '%.3e'%dataset.x_raw[row])\
         for row in range(len(dataset.x_raw))]
     [frame.data_grid.SetCellValue(row, 1, '%.3e'%dataset.y_raw[row])\
@@ -706,7 +707,8 @@ def show_about_box(frame, event):
     info.WebSite = ("http:///genx.sourceforge.net", "GenX homepage")
     # No developers yet
     #info.Developers = []
-    license_text = file('LICENSE.txt','r').read()
+    head, tail = os.path.split(__file__)
+    license_text = file(head + '/LICENSE.txt','r').read()
     info.License = license_text#wordwrap(license_text, 500, wx.ClientDC(self))
 
     

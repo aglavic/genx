@@ -310,7 +310,8 @@ class VirtualDataList(wx.ListCtrl):
             indices = self._GetSelectedItems()
             #Sort the list in descending order, this maintains the 
             # indices in the list
-            indices.sort(reverse = True)
+            indices.sort()
+            indices.reverse()
             [self.data_cont.delete_item(index) for index in indices]
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
