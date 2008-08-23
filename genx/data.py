@@ -2,7 +2,7 @@
 Library for the classes to store the data. The class DataSet stores 
 on set and the class DataList stores multiple DataSets.
 Programmer Matts Bjorck
-Last changed: 2008 08 14
+Last changed: 2008 08 22
 '''
 
 from numpy import *
@@ -83,6 +83,47 @@ class DataSet:
             self.sim_symbolsize = 1
             self.sim_linetype = '-'
             self.sim_linethickness = 2
+            
+    def safe_copy(self, new_set):
+        '''safe_copy(self, new_set) --> None
+        
+        A safe copy from one dataset to another. 
+        Note, not totally safe since references are not broken
+        '''
+        self.name = new_set.name
+        self.x = new_set.x
+        self.y = new_set.y
+        self.y_sim = new_set.y_sim
+        self.error = new_set.error
+        # The raw data
+        self.x_raw = new_set.x_raw
+        self.y_raw = new_set.y_raw
+        self.error_raw = new_set.error_raw
+    
+        self.extra_data = new_set.extra_data
+    
+        # The different commands to transform raw data to normal data
+        self.x_command = new_set.x_command
+        self.y_command = new_set.y_command
+        self.error_command = new_set.error_command
+    
+        self.show = new_set.show
+        self.use = new_set.use
+        #Should the error be used
+        self.use_error = new_set.use_error
+        #The columns to load
+        #The different colors for the data and simulation
+        self.data_color = new_set.data_color
+        self.sim_color = new_set.sim_color
+        # The different linetypes and symbols incl. sizes
+        self.data_symbol = new_set.data_symbol
+        self.data_symbolsize = new_set.data_symbolsize
+        self.data_linetype = new_set.data_linetype
+        self.data_linethickness = new_set.data_linethickness
+        self.sim_symbol = new_set.sim_symbol
+        self.sim_symbolsize = new_set.sim_symbolsize
+        self.sim_linetype = new_set.sim_linetype
+        self.sim_linethickness = new_set.sim_linethickness
             
     def get_extra_data_names(self):
         '''get_extra_data_names(self) --> names [list]
@@ -367,6 +408,17 @@ class DataList:
         Returns the nmber of datasers in the list.
         '''
         return self.items.__len__()
+    
+    def safe_copy(self, new_data):
+        '''safe_copy(self, new_data) --> None
+        
+        Conduct a safe copy of a data set into this data set.
+        This is intended to produce version safe import of data sets.
+        '''
+        self.items = []
+        for new_set in new_data:
+            self.items.append(DataSet())
+            self.items[-1].safe_copy(new_set)
         
     def add_new(self,name=''):
         ''' add_new(self,name='') --> None

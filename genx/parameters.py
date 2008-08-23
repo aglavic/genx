@@ -186,7 +186,14 @@ class Parameters:
             return True
         else:
             return False
+    
+    def safe_copy(self, object):
+        '''safe_copy(self, object) --> None
         
+        Does a safe copy from object into this object.
+        '''
+        self.data = object.data[:]
+    
     def copy(self):
         '''get_copy(self) --> copy of Parameters
         
