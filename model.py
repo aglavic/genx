@@ -61,7 +61,8 @@ class Model:
         except StandardError, e:
             raise IOError(str(e), filename)
         try:
-            self.data = pickle.loads(loadfile.read('data'))
+            new_data = pickle.loads(loadfile.read('data'))
+            self.data.safe_copy(new_data)
         except StandardError, e:
             raise IOError(str(e), filename)
         try:
@@ -70,7 +71,8 @@ class Model:
             raise IOError(str(e), filename)
         
         try:
-            self.parameters = pickle.loads(loadfile.read('parameters'))
+            new_parameters = pickle.loads(loadfile.read('parameters'))
+            self.parameters.safe_copy(new_parameters)
         except StandardError:
             raise IOError(str(e), filename)
         try:

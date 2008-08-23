@@ -703,6 +703,7 @@ class FomScanPlotPanel(PlotPanel):
         ''' Plots each variable and its max and min value in the
         population.
         '''
+        self.ax.cla()
         x, y = data
         if self.type.lower() == 'project':
             self.ax.plot(x, y, 'ob')

@@ -30,7 +30,7 @@ class DataController:
         return self.data
     
     def get_column_headers(self):
-        return ['Name','Active','Errors']
+        return ['Name','Show','Active','Errors']
         
     def get_count(self):
         return self.data.get_len()
@@ -40,8 +40,10 @@ class DataController:
         if col == 0:
             return self.data.get_name(item)
         if col == 1:
-            return bool_output[self.data.get_use(item)]
+            return bool_output[self.data[item].show]
         if col == 2:
+            return bool_output[self.data.get_use(item)]
+        if col == 3:
             return bool_output[self.data.get_use_error(item)]
         #if col == 3:
         #    return '(%i,%i,%i)'%self.data.get_cols(item)
@@ -66,6 +68,15 @@ class DataController:
         
     def delete_item(self, pos):
         self.data.delete_item(pos)
+        
+    def get_colors(self):
+        colors = []
+        for data_set in self.data:
+            dc = data_set.data_color
+            sc = data_set.sim_color
+            colors.append(((int(dc[0]*255), int(dc[1]*255), int(dc[2]*255)),\
+                (int(sc[0]*255), int(sc[1]*255), int(sc[2]*255))))
+        return colors
         
     def load(self, pos, path):
         self.data[pos].loadfile(path)
@@ -236,6 +247,9 @@ class VirtualDataList(wx.ListCtrl):
         cols=self.data_cont.get_column_headers()
         for col,text in enumerate(cols):
             self.InsertColumn(col,text)
+            
+        # Trying to get images out...
+        self._UpdateImageList()
     
         self.Bind(wx.EVT_LIST_BEGIN_LABEL_EDIT,self.OnBeginEdit)
         self.Bind(wx.EVT_LIST_END_LABEL_EDIT,self.OnEndEdit)
@@ -243,7 +257,40 @@ class VirtualDataList(wx.ListCtrl):
         
     def OnGetItemText(self,item,col):
         return self.data_cont.get_item_text(item,col)
-       
+    
+    def OnGetItemImage(self, item):
+        #return self.image_list.GetBitmap(item)
+        return item
+        
+    def _CreateBmpIcon(self, color_fit, color_data):
+        '''_CreateBmpIcon(color_fit, color_data) --> bmp
+        
+        Creates an bmp icon for decorating the list
+        '''
+        bmp = wx.EmptyBitmap(16, 16)
+        dc = wx.MemoryDC()
+        dc.SelectObject(bmp)
+        dc.SetBackground(wx.Brush(color_fit))
+        dc.Clear()
+        dc.SetBrush(wx.Brush(color_data))
+        dc.SetPen(wx.Pen(color_data,0.0))
+        #dc.DrawRectangle(3,3,11,11)
+        dc.DrawCircle(8, 8, 7)
+        dc.SelectObject(wx.NullBitmap)
+        return bmp
+    
+    def _UpdateImageList(self):
+        '''_UpdateImageList(self) --> None
+        
+        Updates the image list so that all items has the right icons
+        '''
+        self.image_list = wx.ImageList(16, 16)
+        for data_color, sim_color in self.data_cont.get_colors():
+            bmp = self._CreateBmpIcon(sim_color, data_color)
+            self.image_list.Add(bmp)
+            
+        self.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
+    
     def _GetSelectedItems(self):
         ''' _GetSelectedItems(self) --> indices [list of integers]
         Function that yields a list of the currently selected items
@@ -313,6 +360,7 @@ class VirtualDataList(wx.ListCtrl):
             indices.sort()
             indices.reverse()
             [self.data_cont.delete_item(index) for index in indices]
+            self._UpdateImageList()
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
             # Send update event
@@ -321,10 +369,13 @@ class VirtualDataList(wx.ListCtrl):
 
         dlg.Destroy()
         
+        
     def AddItem(self):
         self.data_cont.add_item()
+        self._UpdateImageList()
         self.SetItemCount(self.data_cont.get_count())
         self._UpdateData('Item added', data_changed = True, new_data = True)
+        
         
     def MoveItemUp(self):
         # Get selected items
@@ -339,10 +390,12 @@ class VirtualDataList(wx.ListCtrl):
             [self.Select(index,0) for index in indices]
             # Select the new items/positions
             [self.Select(index-1,1) for index in indices]
+            self._UpdateImageList()
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
             self._UpdateData('Item moved', data_changed = False, moved = True,\
                 direction_up = True, position = index)
+            
         else:
             dlg = wx.MessageDialog(self, \
                 'The first dataset can not be moved up'
@@ -364,10 +417,12 @@ class VirtualDataList(wx.ListCtrl):
             [self.Select(index,0) for index in indices]
             # Select the new items/positions
             [self.Select(index+1,1) for index in indices]
+            self._UpdateImageList()
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
             self._UpdateData('Item moved', data_changed = False, moved = True,\
                 direction_up = False, position = index)
+            
         else:
             dlg = wx.MessageDialog(self, \
                 'The last dataset can not be moved down',\
@@ -424,7 +479,8 @@ class VirtualDataList(wx.ListCtrl):
         '''
         # Set the data in the data_cont.
         self.data_cont.set_data(evt.GetModel().get_data())
-        self.SetItemCount(self.data_cont.get_count())      
+        self._UpdateImageList()
+        self.SetItemCount(self.data_cont.get_count())
         self._UpdateData('Data from model loaded', data_changed = True,\
                 new_data = True)
         #print "new data from model loaded"
@@ -470,6 +526,7 @@ class VirtualDataList(wx.ListCtrl):
         def apply_plotsettings(sim_par, data_par):
             self.data_cont.set_items_plotsettings(indices,\
                     [sim_par]*len(indices), [data_par]*len(indices))
+            self._UpdateImageList()
             self._UpdateData('Plot settings changed', data_changed = True)
         
         # Dialog business start here
