@@ -175,18 +175,19 @@ class FloatObjectValidator(wx.PyValidator):
      """ This validator is used to ensure that the user has entered something
          into the text object editor dialog's text field.
      """
-     def __init__(self):
+     def __init__(self, eval_func = eval):
          """ Standard constructor.
          """
          wx.PyValidator.__init__(self)
          self.value=None
+         self.eval_func = eval_func
 
      def Clone(self):
          """ Standard cloner.
 
              Note that every validator must implement the Clone() method.
          """
-         return FloatObjectValidator()
+         return FloatObjectValidator(self.eval_func)
 
 
      def Validate(self, win):
@@ -196,7 +197,7 @@ class FloatObjectValidator(wx.PyValidator):
          text = textCtrl.GetValue()
          self.value=None
          try:
-            self.value=float(eval(text))
+            self.value=float(self.eval_func(text))
          
          except StandardError,S:
              wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
@@ -233,18 +234,19 @@ class ComplexObjectValidator(wx.PyValidator):
      """ This validator is used to ensure that the user has entered something
          into the text object editor dialog's text field.
      """
-     def __init__(self):
+     def __init__(self, eval_func = eval):
          """ Standard constructor.
          """
          wx.PyValidator.__init__(self)
          self.value=None
-
+         self.eval_func = eval_func
+     
      def Clone(self):
          """ Standard cloner.
 
              Note that every validator must implement the Clone() method.
          """
-         return ComplexObjectValidator()
+         return ComplexObjectValidator(self.eval_func)
 
 
      def Validate(self, win):
@@ -254,7 +256,7 @@ class ComplexObjectValidator(wx.PyValidator):
          text = textCtrl.GetValue()
          self.value=None
          try:
-            self.value=complex(eval(text))
+            self.value=complex(self.eval_func(text))
          except StandardError,S:
              wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
              textCtrl.SetBackgroundColour("pink")
@@ -300,9 +302,12 @@ class ValidateDialog(wx.Dialog):
         self.tc=[]
         for index in range(len(pars)):
             label = wx.StaticText(self, -1, pars[index][0]+': ')
-            gbs.Add(label,(index,0),flag=wx.ALIGN_RIGHT,border=5)
-            self.tc.append(wx.TextCtrl(self, -1, str(pars[index][1]), validator = validators[index]))
-            gbs.Add(self.tc[index],(index,1),flag=wx.ALIGN_CENTER|wx.EXPAND,border=5)
+            gbs.Add(label,(index,0), \
+                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+            self.tc.append(wx.TextCtrl(self, -1, str(pars[index][1]),\
+                validator = validators[index]))
+            gbs.Add(self.tc[index], (index, 1),\
+                flag = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 5)
 
 
         buttons = wx.StdDialogButtonSizer() #wx.BoxSizer(wx.HORIZONTAL)

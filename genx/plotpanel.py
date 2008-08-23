@@ -461,7 +461,7 @@ class DataPlotPanel(PlotPanel):
          for data_set in data if data_set.use_error and data_set.show]
         self.AutoScale()
         # Force an update of the plot
-        #self.flush_plot()
+        self.flush_plot()
         #self.canvas.draw()
         #print 'Data plotted'
     
@@ -529,7 +529,7 @@ class DataPlotPanel(PlotPanel):
             for data_set in data if data_set.show]
         self.AutoScale()
         # Force an update of the plot
-        #self.flush_plot()
+        self.flush_plot()
         #self.canvas.draw()
         #print 'Data plotted'
     

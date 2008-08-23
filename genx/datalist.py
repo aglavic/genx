@@ -147,7 +147,15 @@ class DataController:
                     i,j in zip(pos, lpos)]
         [self.data[i].set_data_plot_items(data_list[j]) for\
                      i,j in zip(pos, lpos)]
-                    
+    
+    def toggle_show_data(self, positions):
+        '''toggle_show_data(self, pos) --> None
+        toggles the show value for the data elements at positions.
+        positions should be an iteratable yielding integers
+        , i.e. list of integers
+        '''
+        [self.data.toggle_show(pos) for pos in positions]
+        
     def toggle_use_data(self, positions):
         '''toggle_use_data(self, pos) --> None
         toggles the use_data value for the data elements at positions.
@@ -538,7 +546,15 @@ class VirtualDataList(wx.ListCtrl):
             data_par = dlg.GetDataPar()
             apply_plotsettings(sim_par, data_par)
         dlg.Destroy()
-        
+
+    def OnShowData(self, evt):
+        '''OnShowData(self, evt) --> None
+        Callback for toggling the state of all selected data.
+        '''
+        indices = self._GetSelectedItems()
+        self.data_cont.toggle_show_data(indices)
+        self._UpdateData('Show data set flag toggled', data_changed = True)
+            
     def OnUseData(self, evt):
         '''OnUseData(self, evt) --> None
         Callback for toggling the state of all selected data.
@@ -588,10 +604,10 @@ class VirtualDataList(wx.ListCtrl):
         #Check if we have a config file:
         if self.config:
             try:
-                predef_names = self.config.get('data commands', 'names').split(',')
-                cmds_x = self.config.get('data commands', 'x commands').split(',')
-                cmds_y = self.config.get('data commands', 'y commands').split(',')
-                cmds_e = self.config.get('data commands', 'e commands').split(',')
+                predef_names = self.config.get('data commands', 'names').split(';')
+                cmds_x = self.config.get('data commands', 'x commands').split(';')
+                cmds_y = self.config.get('data commands', 'y commands').split(';')
+                cmds_e = self.config.get('data commands', 'e commands').split(';')
             except io.OptionError, e:
                 ShowWarningDialog(self.parent, str(e), 'datalist.OnCalcEdit')
                 predef_names = None
@@ -634,6 +650,7 @@ class VirtualDataList(wx.ListCtrl):
         '''
         #print 'On Right Click', (evt.GetIndex(),evt.GetColumn())
         menu = wx.Menu()
+        check_showID = wx.NewId()
         check_fitID = wx.NewId()
         check_errorID = wx.NewId()
         calcID = wx.NewId()
@@ -641,12 +658,14 @@ class VirtualDataList(wx.ListCtrl):
         plot_settingsID = wx.NewId()
         # Create the menu
         menu = wx.Menu()
+        menu.Append(check_showID, "Toggle show")
         menu.Append(check_fitID, "Toggle active")
         menu.Append(check_errorID, "Toggle errorbars")
         menu.Append(calcID, "Calculations")
         menu.Append(import_settingsID, "Import settings")
         menu.Append(plot_settingsID, "Plot settings")
         
+        self.Bind(wx.EVT_MENU, self.OnShowData, id = check_showID)
         self.Bind(wx.EVT_MENU, self.OnUseData, id = check_fitID)
         self.Bind(wx.EVT_MENU, self.OnUseError, id = check_errorID)
         self.Bind(wx.EVT_MENU, self.OnImportSettings, id = import_settingsID)

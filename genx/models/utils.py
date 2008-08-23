@@ -22,6 +22,12 @@ class UserVars:
         setattr(self,name,value)
         setattr(self,'set'+name[0].upper()+name[1:],lambda value:setattr(self,name,value))
         setattr(self,'get'+name[0].upper()+name[1:],lambda :getattr(self,name,value))
+        
+    def new_var(self,name,value):
+        #name=name.lower()
+        setattr(self,name,value)
+        setattr(self,'set'+name[0].upper()+name[1:],lambda value:setattr(self,name,value))
+        setattr(self,'get'+name[0].upper()+name[1:],lambda :getattr(self,name,value))
 
 #==============================================================================
 # Now create default databases for scattering lengths and form factors

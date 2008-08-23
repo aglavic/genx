@@ -22,7 +22,7 @@ InstrumntGUIChoices = {'Coordinates': ['Q','2Theta'],\
     'Footype': ['No correction', 'Gaussian beam', 'Square beam']}
     
 InstrumentParameters={'Wavelength':1.54,'Coordinates':1,'I0':1.0,'Res':0.001,\
-    'Restype':0,'Respoints':5,'Resintrange':2,'Beaw':0.01,'Footype':0.0,\
+    'Restype':0,'Respoints':5,'Resintrange':2,'Beaw':0.01,'Footype': 0,\
     'Samlen':10.0}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
@@ -39,8 +39,8 @@ InstrumentParameters={'Wavelength':1.54,'Coordinates':1,'I0':1.0,'Res':0.001,\
 #            2: Correction for square profile => Beaw given in full width mm
 # Samlen= Samplelength in mm.
 
-LayerParameters = {'sigmai':0.0, 'sigmar':0.0, 'reldens':1.0, 'd':0.0,\
-    'n':1.0+0.0j}
+LayerParameters = {'sigmai':0.0, 'sigmar':0.0, 'dens':1.0, 'd':0.0,\
+    'f':0.0+0.0j}
 StackParameters = {'Layers':[], 'Repetitions':1}
 SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 'h':1.0,\
     'eta_z':10.0, 'eta_x':10.0}
@@ -60,8 +60,10 @@ def Specular(TwoThetaQz, sample, instrument):
     
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
-    n = array(parameters['n'], dtype = complex64)
-    reldens = array(parameters['reldens'], dtype = complex64)
+    dens = array(parameters['dens'], dtype = complex64)
+    f = array(parameters['f'], dtype = complex64)
+    re = 2.82e-13*1e2/1e-10
+    n = 1 - dens*re*lamda**2/2/pi*f*1e-4
     d = array(parameters['d'], dtype = float64)
     d = d[1:-1]
     sigmar = array(parameters['sigmar'], dtype = float64)
@@ -71,8 +73,7 @@ def Specular(TwoThetaQz, sample, instrument):
     sigma = sqrt(sigmai**2 + sigmar**2)
     #print sigma
     
-    R=Paratt.Refl(theta, lamda,\
-            (n-1.0)*reldens + 1.0,d,sigma)*instrument.getI0()
+    R = Paratt.Refl(theta, lamda, n, d, sigma)*instrument.getI0()
 
     #FootprintCorrections
     
@@ -96,7 +97,7 @@ def Specular(TwoThetaQz, sample, instrument):
           range = instrument.getResintrange())
     return R
 
-def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx,sample, instrument):
+def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     lamda = instrument.getWavelength()
     if instrument.getCoordinates() == 1: # Sample Coords is theta-2theta
         alphaR1 = ThetaQx
