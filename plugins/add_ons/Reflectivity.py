@@ -309,10 +309,10 @@ class MyHtmlListBox(wx.HtmlListBox):
    
 
 class SamplePanel(wx.Panel):
-    def __init__(self,parent,refindexlist = []):
-        wx.Panel.__init__(self,parent)
-        self.refindexlist=refindexlist
-        
+    def __init__(self, parent, plugin, refindexlist = []):
+        wx.Panel.__init__(self, parent)
+        self.refindexlist = refindexlist
+        self.plugin = plugin
         
         boxver = wx.BoxSizer(wx.VERTICAL)
         boxhor = wx.BoxSizer(wx.HORIZONTAL)
@@ -486,6 +486,7 @@ class SamplePanel(wx.Panel):
 
     def lbDoubleClick(self,evt):
         sel=self.sampleh.getItem(self.listbox.GetSelection())
+        eval_func = self.plugin.GetModel().eval_in_model
         sl=None
         if isinstance(sel,self.model.Layer): # Check if the selceted item is a Layer
             items=[]
@@ -494,22 +495,23 @@ class SamplePanel(wx.Panel):
                 value=sel.__getattribute__(item)
                 #if item!='n' and item!='fb':
                 if type(self.model.LayerParameters[item]) != type(1+1.0J):
-                    validators.append(FloatObjectValidator())
+                    validators.append(FloatObjectValidator(eval_func))
                 else:
-                    print 'n exists'
+                    #print 'n exists'
                     #validators.append(MatchTextObjectValidator(self.refindexlist))
-                    validators.append(ComplexObjectValidator())
+                    validators.append(ComplexObjectValidator(eval_func))
                 items.append((item,value))
             
             dlg = ValidateDialog(self,items,validators,title='Layer Editor')
             if dlg.ShowModal()==wx.ID_OK:
-                print 'Pressed OK'
+                #print 'Pressed OK'
                 vals=dlg.GetValues()
                 for index in range(len(vals)):
                     sel.__setattr__(items[index][0],vals[index])
                 sl=self.sampleh.getStringList()
             else:
-                print 'Pressed Cancel'
+                pass
+                #print 'Pressed Cancel'
             dlg.Destroy()
 
         else: # The selected item is a Stack
@@ -519,20 +521,21 @@ class SamplePanel(wx.Panel):
                 if item!='Layers':
                     value=sel.__getattribute__(item)
                     if isinstance(value,float):
-                        validators.append(FloatObjectValidator())
+                        validators.append(FloatObjectValidator(eval_func))
                     else:
                         validators.append(TextObjectValidator())
                     items.append((item,value))
             
             dlg = ValidateDialog(self,items,validators,title='Stack Editor')
             if dlg.ShowModal()==wx.ID_OK:
-                print 'Pressed OK'
+                #print 'Pressed OK'
                 vals=dlg.GetValues()
                 for index in range(len(vals)):
                     sel.__setattr__(items[index][0],vals[index])
                 sl=self.sampleh.getStringList()
             else:
-                print 'Pressed Cancel'
+                #print 'Pressed Cancel'
+                pass
             dlg.Destroy()
         if sl:
             self.Update()
@@ -548,13 +551,16 @@ class DataParameterPanel(wx.Panel):
         # Indention for a command - used to seperate commands and data
         self.command_indent = '<pre>   '
         self.script_update_func = None
+        self.parameterlist = []
         
         # BEGIN BUTTON SECTION
         boxbuttons = wx.BoxSizer(wx.HORIZONTAL)
-        button_names = ['Insert', 'Delete', 'Move up', 'Move down',\
-            'New Parameter']
-        callbacks = [self.Insert, self.Delete, self.MoveUp, self.MoveDown,\
-            self.NewPar]
+        #button_names = ['Insert', 'Delete', 'Move up', 'Move down',\
+        #    'Edit Parameters']
+        #callbacks = [self.Insert, self.Delete, self.MoveUp, self.MoveDown,\
+        #    self.EditPars]
+        button_names = ['Insert', 'Delete', 'User Variables']
+        callbacks = [self.Insert, self.Delete, self.EditPars]
         for i in range(len(button_names)):
             button = wx.Button(self,-1, button_names[i])
             boxbuttons.Add(button, 1, wx.EXPAND)
@@ -581,6 +587,20 @@ class DataParameterPanel(wx.Panel):
         Retrives the data list
         '''
         return self.datalist
+    
+    def SetParameterList(self, parameterlist):
+        '''SetParameterList(self, parameterlist) --> None
+        
+        Sets the code list for all definition of custom parameters
+        '''
+        self.parameterlist = parameterlist
+    
+    def GetParameterList(self):
+        '''SetParameterList(self) --> list
+        
+        Retrives the parameter list
+        '''
+        return self.parameterlist
         
     def SetExpressionList(self, expressionlist):
         '''SetExpressionList(expressionlist) --> None
@@ -713,12 +733,17 @@ class DataParameterPanel(wx.Panel):
         '''
         pass
         
-    def NewPar(self, event):
-        ''' NewPar(self, event) --> None
+    def EditPars(self, event):
+        ''' EditPars(self, event) --> None
         
         Creates a new parameter
         '''
-        pass
+        dlg = EditCustomParameters(self, self.plugin.GetModel(),\
+            self.parameterlist)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.parameterlist = dlg.GetLines()
+            self.Update()
+        dlg.Destroy()
         
     def OnDataChanged(self, event):
         '''OnDataChanged(self, event) --> None
@@ -727,6 +752,114 @@ class DataParameterPanel(wx.Panel):
         '''
         self.Update()
         
+class EditCustomParameters(wx.Dialog):
+    def __init__(self, parent, model, lines):
+        wx.Dialog.__init__(self, parent, -1, 'Custom parameter editor')
+        self.SetAutoLayout(True)
+        self.model = model
+        self.lines = lines
+        self.var_name = 'cp'
+        
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        name_ctrl_sizer = wx.GridBagSizer(2,3)
+        
+        col_labels = ['Name', 'Value']
+        
+        for item, index in zip(col_labels, range(len(col_labels))):
+            label = wx.StaticText(self, -1, item)
+            name_ctrl_sizer.Add(label,(0, index),flag=wx.ALIGN_LEFT,border=5)
+        
+        self.name_ctrl = wx.TextCtrl(self, -1, size = (120, -1))
+        name_ctrl_sizer.Add(self.name_ctrl, (1,0),\
+            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        self.value_ctrl = wx.TextCtrl(self, -1, size = (120, -1))
+        name_ctrl_sizer.Add(self.value_ctrl, (1,1),\
+            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        self.add_button = wx.Button(self, -1, 'Add')
+        name_ctrl_sizer.Add(self.add_button, (1,2), \
+            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        sizer.Add(name_ctrl_sizer)
+        self.Bind(wx.EVT_BUTTON, self.OnAdd, self.add_button)
+
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        
+        self.listbox = MyHtmlListBox(self, -1, size = (-1,150),\
+            style =  wx.BORDER_SUNKEN)
+        self.listbox.SetItemList(self.lines)
+        sizer.Add(self.listbox, 1, wx.GROW|wx.ALL, 10)
+        
+        self.delete_button = wx.Button(self, -1, 'Delete')
+        sizer.Add(self.delete_button, 0, wx.CENTRE, 0)
+        self.Bind(wx.EVT_BUTTON, self.OnDelete, self.delete_button)
+        
+        button_sizer = wx.StdDialogButtonSizer()
+        okay_button = wx.Button(self, wx.ID_OK)
+        #okay_button.SetDefault()
+        button_sizer.AddButton(okay_button)
+        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+        button_sizer.Realize()
+        self.Bind(wx.EVT_BUTTON, self.OnApply, okay_button)
+        
+        
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        
+        sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.Layout()
+        
+    def OnApply(self, event):
+        '''OnApply(self, event) --> None
+        
+        Callback for ok button click or apply button
+        '''
+        event.Skip()
+        
+    def OnAdd(self, event):
+        '''OnAdd(self, event) --> None
+        
+        Callback for adding an entry
+        '''
+        line = '%s.new_var(\'%s\', %s)'%(self.var_name,\
+            self.name_ctrl.GetValue(), self.value_ctrl.GetValue())
+        try:
+            self.model.eval_in_model(line)
+        except Exception, e:
+            result = 'Could not evaluate the expression. The python error' +\
+            'is: \n' + e.__repr__()
+            dlg = wx.MessageDialog(self, result, 'Error in expression',
+                               wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        else:
+            self.lines.append(line)
+            self.listbox.SetItemList(self.lines)
+        
+        
+    def OnDelete(self, event):
+        '''OnDelete(self, event) --> None
+        
+        Callback for deleting an entry
+        '''
+        result = 'Do you want to delete the expression?\n' + \
+            'Remember to check if parameter is used elsewhere!'
+        dlg = wx.MessageDialog(self, result, 'Delete expression?',
+                               wx.YES_NO | wx.NO_DEFAULT| wx.ICON_INFORMATION)
+        if dlg.ShowModal() == wx.ID_YES:
+            self.lines.pop(self.listbox.GetSelection())
+            self.listbox.SetItemList(self.lines)
+        dlg.Destroy()
+        
+    def GetLines(self):
+        '''GetLines(self) --> uservars lines [list]
+        
+        Returns the list user variables.
+        '''
+        return self.lines
+    
 class ParameterExpressionDialog(wx.Dialog):
     ''' A dialog for setting parameters for fitting
     '''
@@ -792,12 +925,12 @@ class ParameterExpressionDialog(wx.Dialog):
         okay_button.SetDefault()
         button_sizer.AddButton(okay_button)
         button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
-        apply_button = wx.Button(self, wx.ID_APPLY)
-        apply_button.SetDefault()
-        button_sizer.AddButton(apply_button)
+        #apply_button = wx.Button(self, wx.ID_APPLY)
+        #apply_button.SetDefault()
+        #button_sizer.AddButton(apply_button)
         button_sizer.Realize()
         self.Bind(wx.EVT_BUTTON, self.OnApply, okay_button)
-        self.Bind(wx.EVT_BUTTON, self.OnApply, apply_button)
+        #self.Bind(wx.EVT_BUTTON, self.OnApply, apply_button)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
@@ -878,8 +1011,8 @@ class Plugin(framework.Template):
         sample_panel = self.NewInputFolder('Sample')
         sample_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sample_panel.SetSizer(sample_sizer)
-        self.defs = ['Sample', 'Instrument', 'Parameters']
-        self.sample_widget=SamplePanel(sample_panel)
+        self.defs = ['Sample', 'Instrument']
+        self.sample_widget=SamplePanel(sample_panel, self)
         sample_sizer.Add(self.sample_widget, 1, wx.EXPAND)
         
         simulation_panel = self.NewInputFolder('Simulations')
@@ -951,12 +1084,15 @@ class Plugin(framework.Template):
         correct script for initilization
         '''
         script = 'import %s as model\n'%modelname
-        script += 'from models.utils import UserVars\n\n'
+        script += 'from models.utils import UserVars, fp\n\n'
         
         for item in self.defs:
             script += '# BEGIN %s DO NOT CHANGE\n'%item
             script += '# END %s\n\n'%item
-            
+        
+        script += '# BEGIN Parameters DO NOT CHANGE\n'
+        script += 'cp = UserVars()\n'
+        script += '# END Parameters\n\n'
         script += 'def Sim(data):\n'
         script += '\tI = []\n'
         for i in range(len(self.GetModel().get_data())):
@@ -1000,6 +1136,11 @@ class Plugin(framework.Template):
         
         code = 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
         script = self.insert_code_segment(script, 'Instrument', code)
+        
+        code = 'cp = UserVars()\n'
+        code += ''.join([line + '\n' for line in\
+            self.simulation_widget.GetParameterList()])
+        script = self.insert_code_segment(script, 'Parameters', code)
         
         for (i,exps) in enumerate(self.simulation_widget.GetExpressionList()):
             exp = [ex + '\n' for ex in exps]
@@ -1212,6 +1353,11 @@ class Plugin(framework.Template):
         print data_names
         print sim_exp
         
+        # Load the custom parameters:
+        code = self.find_code_segment(script, 'Parameters')
+        uservars_lines = code[1:].splitlines()
+        print code
+        print uservars_lines
         
         self.model = self.GetModel().script_module.model
         sample = self.GetModel().script_module.sample
@@ -1225,6 +1371,7 @@ class Plugin(framework.Template):
         
         self.simulation_widget.SetDataList(data_names)
         self.simulation_widget.SetExpressionList(sim_exp)
+        self.simulation_widget.SetParameterList(uservars_lines)
         self.sample_widget.Update()
         self.simulation_widget.Update()
         self.StatusMessage('New sample loaded to plugin!')

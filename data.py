@@ -523,6 +523,12 @@ class DataList:
         '''
         self.items[pos].use = not self.items[pos].use
         
+    def toggle_show(self, pos):
+        '''toggle_show(self, pos) --> None
+        Toggles the show flag for dataset at position pos.
+        '''
+        self.items[pos].show = not self.items[pos].show
+        
     def set_name(self,pos,name):
         '''
         set_name(self,pos,name) --> None
