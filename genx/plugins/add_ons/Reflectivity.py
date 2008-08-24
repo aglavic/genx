@@ -413,7 +413,10 @@ class SamplePanel(wx.Panel):
         validators = []
         items = []
         for item in self.model.InstrumentParameters:
-            validators.append(FloatObjectValidator())
+            if self.model.instrument_string_choices.has_key(item):
+                validators.append(self.model.instrument_string_choices[item])
+            else:
+                validators.append(FloatObjectValidator())
             val = self.instrument.__getattribute__(item)
             items.append((item, val))
             

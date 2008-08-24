@@ -322,6 +322,8 @@ class MainFrame(wx.Frame):
         # end wxGlade
         # Turn Line numbering on for the editor
         self.script_editor.setDisplayLineNumbers(True)
+        self.ver_splitter.SetMinimumPaneSize(1)
+        self.hor_splitter.SetMinimumPaneSize(1)
 
     def __do_layout(self):
         # begin wxGlade: MainFrame.__do_layout

@@ -294,6 +294,7 @@ class ValidateDialog(wx.Dialog):
     def __init__(self, parent, pars, validators, title="Validated Dialog"):
         wx.Dialog.__init__(self, parent, -1, title)
         self.pars = pars
+        self.validators = validators
         self.SetAutoLayout(True)
         VSPACE = 10
 
@@ -304,10 +305,25 @@ class ValidateDialog(wx.Dialog):
             label = wx.StaticText(self, -1, pars[index][0]+': ')
             gbs.Add(label,(index,0), \
                 flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
-            self.tc.append(wx.TextCtrl(self, -1, str(pars[index][1]),\
-                validator = validators[index]))
+            # If the current validator is a string, we should give the
+            # user only choices...
+            if type(validators[index]) == type([]):
+                self.tc.append(wx.Choice(self, -1,\
+                                    choices = validators[index]))
+                # Since we want to work with strings we have to find the right
+                # strings positons
+                pos = 0
+                for i in range(len(validators[index])):
+                    if validators[index][i] == pars[index]:
+                        pos = i
+                        break
+                self.tc[-1].SetSelection(pos)
+            # Otherwise it should be a validator ...
+            else:
+                self.tc.append(wx.TextCtrl(self, -1, str(pars[index][1]),\
+                    validator = validators[index]))
             gbs.Add(self.tc[index], (index, 1),\
-                flag = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 5)
+                    flag = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 5)
 
 
         buttons = wx.StdDialogButtonSizer() #wx.BoxSizer(wx.HORIZONTAL)
@@ -329,7 +345,14 @@ class ValidateDialog(wx.Dialog):
         #print self.tc[0].GetValue()
         p=[]
         for index in range(len(self.pars)):
-            p.append(self.tc[index].GetValue())
+            if type(self.validators[index]) == type([]):
+                # have to pad teh text to make it a string inside a string...
+                text = '\'' 
+                text += self.validators[index][self.tc[index].GetSelection()]
+                text += '\''
+                p.append(text)
+            else:
+                p.append(self.tc[index].GetValue())
         return p
 
 class ZoomFrame(wx.MiniFrame):
