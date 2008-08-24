@@ -1,9 +1,15 @@
-
+''' interdiff is a model for specular and off specular simulations including
+the effects of interdiffusion in hte calculations. The specular simulations
+is conducted with Parrats recursion formula. The off-specular, diffuse
+calculations are done with the distorted Born wave approximation (DWBA) as
+derived by Holy and with the extensions done by Wormington to include 
+diffuse interfaces.
+'''
 import lib.paratt as Paratt
 
 __offspec__ = 1
 try:
-    import offspec2_weave
+    import lib.offspec2_weave
 except StandardError,S:
     print 'Failed to import: offspec2_weave, No off-specular simulations possible'
     print S
@@ -16,14 +22,14 @@ from lib.instrument import *
 # Preamble to define the parameters needed for the models outlined below:
 ModelID='MingInterdiff'
 # Used for making choices in the GUI
-InstrumntGUIChoices = {'Coordinates': ['Q','2Theta'],\
-    'Restype': ['No convolution', 'Fast convolution',\
-     'Full convolution + varying res.', 'Fast convolution + varying res.'],\
-    'Footype': ['No correction', 'Gaussian beam', 'Square beam']}
+instrument_string_choices = {'coords': ['q','tth'],\
+    'restype': ['no conv', 'fast conv',\
+     'full conv and varying res.', 'fast conv + varying res.'],\
+    'footype': ['no corr', 'gauss beam', 'square beam']}
     
-InstrumentParameters={'Wavelength':1.54,'Coordinates':1,'I0':1.0,'Res':0.001,\
-    'Restype':0,'Respoints':5,'Resintrange':2,'Beaw':0.01,'Footype': 0,\
-    'Samlen':10.0}
+InstrumentParameters={'wavelength':1.54,'coords':1,'I0':1.0,'res':0.001,\
+    'restype':0,'respoints':5,'resintrange':2,'beamw':0.01,'footype': 0,\
+    'samplelen':10.0}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
 #Res stddev of resolution
@@ -35,8 +41,8 @@ InstrumentParameters={'Wavelength':1.54,'Coordinates':1,'I0':1.0,'Res':0.001,\
 #ResIntrange Number of standard deviatons to integrate over default 2
 # Parameters for footprint coorections
 # Footype: 0: No corections for footprint
-#            1: Correction for Gaussian beam => Beaw given in mm and stddev
-#            2: Correction for square profile => Beaw given in full width mm
+#          1: Correction for Gaussian beam => Beaw given in mm and stddev
+#          2: Correction for square profile => Beaw given in full width mm
 # Samlen= Samplelength in mm.
 
 LayerParameters = {'sigmai':0.0, 'sigmar':0.0, 'dens':1.0, 'd':0.0,\
@@ -49,13 +55,15 @@ def Specular(TwoThetaQz, sample, instrument):
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
 
-    if restype == 2:
+    if restype == 2 or restype == instrument_string_choices['restype'][2]:
             (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:], \
                 instrument.getRes(), instrument.getRespoints(),\
                  range=instrument.getResintrange())
-    if instrument.getCoordinates() == 1:
+    if instrument.getCoords() == 1 or\
+        instrument.getCoords() == instrument_string_choices['coords'][1]:
         theta = TwoThetaQz/2
-    else:
+    elif instrument.getCoords() == 0 or\
+        instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     
     lamda = instrument.getWavelength()
@@ -79,22 +87,29 @@ def Specular(TwoThetaQz, sample, instrument):
     
     foocor = 1.0
     footype = instrument.getFootype()
-    beamw = instrument.getBeaw()
-    samlen = instrument.getSamlen()
-    if footype == 1:
+    beamw = instrument.getBeamw()
+    samlen = instrument.getSamplelen()
+    if footype == 1 or footype == instrument_string_choices['footype'][0]:
+        foocor = 1.0
+    elif footype == 1 or footype == instrument_string_choices['footype'][1]:
         foocor = GaussIntensity(theta, samlen/2.0, samlen/2.0, beamw)
-    elif footype == 2:
+    elif footype == 2 or footype == instrument_string_choices['footype'][2]:
         foocor = SquareIntensity(theta, samlen, beamw)
-        
+    else:
+        raise ValueError('Variable footype has an unvalid value')
     
-    if restype == 1:
+    if restype == 0 or restype == instrument_string_choices['restype'][0]:
+        pass
+    elif restype == 1 or restype == instrument_string_choices['restype'][1]:
         R = ConvoluteFast(TwoThetaQz,R[:]*foocor, instrument.getRes(),\
             range = instrument.getResintrange())
-    elif restype == 2:
+    elif restype == 2 or restype == instrument_string_choices['restype'][2]:
         R = ConvoluteResolutionVector(TwoThetaQz,R[:]*foocor, weight)
-    elif restype == 3:
+    elif restype == 3 or restype == instrument_string_choices['restype'][3]:
         R = ConvoluteFastVar(TwoThetaQz,R[:]*foocor, instrument.getRes(),\
           range = instrument.getResintrange())
+    else:
+        raise ValueError('Variable restype has an unvalid value')
     return R
 
 def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
@@ -111,10 +126,14 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     #print qx
     #print qz
     parameters = sample.resolveLayerParameters()
-    def toarray(a,code):
+    def toarray(a, code):
         a.reverse()
         return array(a, dtype = code)
-    n = toarray(parameters['n'], code = complex64)
+    dens = array(parameters['dens'], dtype = complex64)
+    f = array(parameters['f'], dtype = complex64)
+    re = 2.82e-13*1e2/1e-10
+    n = 1 - dens*re*lamda**2/2/pi*f*1e-4
+    n = toarray(n, code = complex64)
     sigmar = toarray(parameters['sigmar'], code = float64)
     sigmar = sigmar[1:]
     #print sigmar
@@ -140,7 +159,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     return real(I)*instrument.getI0()
 
 SimulationFunctions = {'Specular':Specular,\
-    'OffSpecular':OffSpecularMingInterdiff}
+                        'OffSpecular':OffSpecularMingInterdiff}
 
 import lib.refl as Refl
 (Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,\
