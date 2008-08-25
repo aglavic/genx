@@ -33,7 +33,7 @@ class PlotPanel(wx.Panel):
         wx.Panel.__init__(self,parent, id = id, style = style, **kwargs)
         
         self.parent = parent
-        self.callback_window = None
+        self.callback_window = self
         self.figure = Figure(None,dpi)
         self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
         self.canvas.SetExtraStyle(wx.EXPAND)
