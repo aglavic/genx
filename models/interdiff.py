@@ -5,6 +5,7 @@ calculations are done with the distorted Born wave approximation (DWBA) as
 derived by Holy and with the extensions done by Wormington to include 
 diffuse interfaces.
 '''
+
 import lib.paratt as Paratt
 
 __offspec__ = 1
@@ -89,7 +90,7 @@ def Specular(TwoThetaQz, sample, instrument):
     footype = instrument.getFootype()
     beamw = instrument.getBeamw()
     samlen = instrument.getSamplelen()
-    if footype == 1 or footype == instrument_string_choices['footype'][0]:
+    if footype == 0 or footype == instrument_string_choices['footype'][0]:
         foocor = 1.0
     elif footype == 1 or footype == instrument_string_choices['footype'][1]:
         foocor = GaussIntensity(theta, samlen/2.0, samlen/2.0, beamw)

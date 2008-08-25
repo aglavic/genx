@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 '''
 Library for GUI+interface layer for the data class. 
@@ -119,6 +118,20 @@ class DataController:
             except Exception, e:
                 result += 'Error occured for data set %i'%i + e.__str__()
                 break
+        return result
+    
+    def compare_sim_y_length(self, pos):
+        '''compare_sim_y_length(self, pos) --> bool
+        
+        Method that compares the length of the simulation and y data to see
+        if they are the same pos is the position that should be compared [list]
+        '''
+        result = True
+        for index in pos:
+            if self.data[index].y.shape != self.data[index].y_sim.shape:
+                result = False
+                break
+            
         return result
     
     def get_items_commands(self, pos):
@@ -630,7 +643,11 @@ class VirtualDataList(wx.ListCtrl):
             lambda command: self.data_cont.test_commands(command, indices)
         def command_runner(command):
             result = self.data_cont.run_commands(command, indices)
-            self._UpdateData('New calculation', data_changed = True)
+            if not self.data_cont.compare_sim_y_length(indices):
+                self._UpdateData('New calculation', data_changed = True,\
+                    new_data = True)
+            else:
+                self._UpdateData('New calculation', data_changed = True)
             return result
             
         dlg.SetCommandTester(command_tester)
@@ -1159,7 +1176,7 @@ class CalcDialog(wx.Dialog):
                     dlg.Destroy()
             else:
                 result = 'There is an error in the typed expression.\n' + \
-                 + result
+                 result
                 dlg = wx.MessageDialog(self, result, 'Expression not correct',
                                wx.OK | wx.ICON_WARNING)
                 dlg.ShowModal()
