@@ -10,7 +10,6 @@ import  wx
 import  wx.grid as gridlib
 import wx.lib.printout as printout
 from numpy import *
-
 import parameters
 
 #=============================================================================
@@ -22,9 +21,9 @@ class ParameterDataTable(gridlib.PyGridTableBase):
     Mostly a compatability layer between the Parameters class
     and the grid.
     '''
-    def __init__(self):
+    def __init__(self, parent):
         gridlib.PyGridTableBase.__init__(self)
-        
+        self.parent = parent
         self.pars = parameters.Parameters()
 
         self.data_types = [gridlib.GRID_VALUE_STRING,
@@ -38,7 +37,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
     # required methods for the wxPyGridTableBase interface
     
     def GetNumberRows(self):
-        return self.pars.get_len_rows() + 1
+        return self.pars.get_len_rows()
 
     def GetNumberCols(self):
         return self.pars.get_len_cols()
@@ -70,7 +69,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
     def SetValue(self, row, col, value):
         try:
             self.pars.set_value(row, col, value)
-        except IndexError:
+        except IndexError, e:
             # add a new row
             self.pars.append()
             #print 'Value:', value
@@ -85,27 +84,45 @@ class ParameterDataTable(gridlib.PyGridTableBase):
             self.GetView().ProcessTableMessage(msg)
             self.pars.set_value(row, col, value)
         # For updating the column labels according to the number of fitted parameters
-        if col==2:
+        if col == 2:
              self.GetView().ForceRefresh()
 
     def DeleteRows(self,rows):
         delete_count = self.pars.delete_rows(rows)
         
-        msg=gridlib.GridTableMessage(self,gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,self.GetNumberRows(),deleteCount)
+        msg = gridlib.GridTableMessage(self,\
+            gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.GetNumberRows(),\
+             delete_count)
         self.GetView().ProcessTableMessage(msg)
-        msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        msg = gridlib.GridTableMessage(self,\
+                    gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         #print self.data
         
-    def AppendRow(self,row):
-        self.pars.insert(row)
+    def InsertRow(self,row):
+        self.pars.insert_row(row)
         
-        msg = gridlib.GridTableMessage(self,gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,1)
+        msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
         self.GetView().ProcessTableMessage(msg)
-        msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
-
+        return True
+    
+    def AppendRows(self, num_rows = 1):
+        print num_rows
+        [self.pars.append() for i in range(rows)]
+        
+        msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, rows)
+        self.GetView().ProcessTableMessage(msg)
+        msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        return True
 
     # Called when the grid needs to display labels
     def GetColLabelValue(self, col):
@@ -139,14 +156,19 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         '''
         # Start by deleting all rows:
         msg=gridlib.GridTableMessage(self,\
-            gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,0,\
-            self.GetNumberRows()-1)
+            gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,\
+             self.parent.GetNumberRows(), self.parent.GetNumberRows())
+        self.pars = parameters.Parameters()
+        self.GetView().ProcessTableMessage(msg)
+        msg = gridlib.GridTableMessage(self,\
+            gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
         self.GetView().ProcessTableMessage(msg)
         
-        self.pars = pars
+        self.GetView().ForceRefresh()
         
+        self.pars = pars
         msg = gridlib.GridTableMessage(self,\
-            gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,self.pars.get_len_rows())
+            gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, self.pars.get_len_rows()+1)
         self.GetView().ProcessTableMessage(msg)
         
         msg = gridlib.GridTableMessage(self,\
@@ -154,7 +176,6 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         self.GetView().ProcessTableMessage(msg)
         
         self.GetView().ForceRefresh()
-        
         #print 'In parametergrid ', self.pars.data
         
         
@@ -181,7 +202,7 @@ class ParameterGrid(gridlib.Grid):
         self.project_func = None
         self.scan_func = None
         
-        self.table = ParameterDataTable()
+        self.table = ParameterDataTable(self)
         
         self.variable_span = 0.25
         #The functions has to begin with the following letters:
@@ -303,12 +324,12 @@ class ParameterGrid(gridlib.Grid):
             if not self.GetSelectedRows():
                 self.SelectRow(row)
             #making the menus
-            appendID = wx.NewId()
+            insertID = wx.NewId()
             deleteID = wx.NewId()
             projectID = wx.NewId()
             scanID = wx.NewId()
             menu = wx.Menu()
-            menu.Append(appendID, "Append Row")
+            menu.Append(insertID, "Insert Row")
             menu.Append(deleteID, "Delete Row(s)")
             # Item is checked for fitting
             if self.table.GetValue(row, 2):
@@ -316,8 +337,8 @@ class ParameterGrid(gridlib.Grid):
             if self.table.GetValue(row, 0) != '':
                 menu.Append(scanID, "Scan FOM")
             
-            def append(event, self=self, row=row):
-                self.table.AppendRow(row)
+            def insert(event, self=self, row=row):
+                self.table.InsertRow(row)
 
             def delete(event, self=self, row=row):
                 rows = self.GetSelectedRows()
@@ -332,7 +353,7 @@ class ParameterGrid(gridlib.Grid):
                     self.scan_func(row)
             
             
-            self.Bind(wx.EVT_MENU, append, id = appendID)
+            self.Bind(wx.EVT_MENU, insert, id = insertID)
             self.Bind(wx.EVT_MENU, delete, id = deleteID)
             # Item is checked for fitting
             if self.table.GetValue(row, 2):
@@ -384,8 +405,11 @@ class ParameterGrid(gridlib.Grid):
         2. The current value of the parameter in Value
         3. The min and max values
         '''
-        item=self.pmenu.FindItemById(event.GetId())
-        text=item.GetText()
+        item = self.pmenu.FindItemById(event.GetId())
+        # GetText seems to screw up underscores a bit replacing the with a 
+        # double one - this fixes it
+        text = item.GetText().replace('__','_')
+        print text, self.objlist, self.funclist
         self.SetCellValue(self.CurSelection[0],self.CurSelection[1],text)
         # Try to find out if the values also has an get function so that
         # we can init the value to the default!

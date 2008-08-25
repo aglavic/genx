@@ -278,9 +278,13 @@ class DataSet:
             except Exception, e:
                 result += 'Error in evaluating e expression.\n\nPython output:\n'\
                         + e.__str__() + '\n'
-        print 'Debug, datatry: ', xt, yt, et
+        
+        # If we got an error - report it
+        if result != '':
+            return result
+        #print 'Debug, datatry: ', xt, yt, et
         # Finally check so that all the arrays have the same size
-        if (not (xt.shape == yt.shape) and (xt.shape == et.shape))\
+        if (xt.shape != yt.shape or xt.shape != et.shape)\
             and result == '':
             result += 'The resulting arrays are not of the same size:\n' + \
                        'len(x) = %d, len(y) = %d, len(e) = %d'\

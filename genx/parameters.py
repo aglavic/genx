@@ -37,24 +37,24 @@ class Parameters:
         
     def delete_rows(self, rows):
         ''' Delete the rows in the list rows ...'''
-        delete_count=0
+        delete_count = 0
         rows=rows[:]
         rows.sort()
         
         for i in rows:
             #Note index changes as we delete values. thats why rows has to be sorted
             try:
-                self.data.pop(i-delete_count)
+                self.data.pop(i - delete_count)
             except:
                 pass
             else:
-                delete_count+=1
+                delete_count += 1
                 
         return delete_count
     
     def insert_row(self, row):
         ''' Insert a new row at row(int). '''
-        self.data.insert(row,self.init_data[:])
+        self.data.insert(row, self.init_data[:])
         
     def append(self):
         self.data.append(self.init_data[:])
@@ -65,10 +65,10 @@ class Parameters:
         rows = range(len(self.data))
         row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
                 not self.data[nmb][0]=='']
-        funcs=[row[0] for row in self.data if row[2] and not row[0]=='']
-        mytest=[row[1] for row in self.data if row[2] and not row[0]=='']
-        min=[row[3] for row in self.data if row[2] and not row[0]=='']
-        max=[row[4] for row in self.data if row[2] and not row[0]=='']
+        funcs=[row[0] for row in self.data if row[2] and not row[0] == '']
+        mytest=[row[1] for row in self.data if row[2] and not row[0] == '']
+        min=[row[3] for row in self.data if row[2] and not row[0] == '']
+        max=[row[4] for row in self.data if row[2] and not row[0] == '']
         return (row_nmb, funcs, mytest, min, max)
     
     def get_pos_from_row(self, row):
@@ -76,42 +76,42 @@ class Parameters:
         
         Transform the row row to the position in the fit_pars list
         '''
-        rows = range(row+1)
+        rows = range(row + 1)
         row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
-                not self.data[nmb][0]=='']
+                not self.data[nmb][0] == '']
         return len(row_nmb) - 1
         
     def get_sim_pars(self):
         ''' Returns the variables needed for simulation '''
-        funcs=[row[0] for row in self.data if not row[0]=='']
-        mytest=[row[1] for row in self.data if not row[0]=='']
+        funcs = [row[0] for row in self.data if not row[0] == '']
+        mytest = [row[1] for row in self.data if not row[0] == '']
         return (funcs, mytest)
        
     def set_value_pars(self, value):
         ''' Set the values of the parameters '''
-        valueindex=0
+        valueindex = 0
         for row in  self.data:
-            if row[2] and not row[0]=='':
-                row[1]=value[valueindex]
-                valueindex=valueindex+1
+            if row[2] and not row[0] == '':
+                row[1] = value[valueindex]
+                valueindex = valueindex + 1
                 
     def set_error_pars(self, value):
         ''' Set the errors on the parameters '''
-        valueindex=0
+        valueindex = 0
         for row in  self.data:
-            if row[2] and not row[0]=='':
-                row[5]=value[valueindex]
-                valueindex=valueindex+1
+            if row[2] and not row[0] == '':
+                row[5] = value[valueindex]
+                valueindex = valueindex + 1
                 
     def set_data(self, data):
-        rowi=0
-        coli=0
+        rowi = 0
+        coli = 0
         for row in data:
             for col in row:
-                self.set_value(rowi,coli,col)
-                coli=coli+1
-            rowi=rowi+1
-            coli=0
+                self.set_value(rowi, coli, col)
+                coli = coli + 1
+            rowi = rowi + 1
+            coli = 0
             
     def get_data(self):
         return self.data[:]
@@ -133,7 +133,7 @@ class Parameters:
                 if type(item) == type(10.0):
                     text += '%.4e\t'%item
                 else:
-                    text += item.__str__()+'\t'
+                    text += item.__str__() + '\t'
         return text
     
     def _parse_ascii_input(self, text):

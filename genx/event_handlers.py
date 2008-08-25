@@ -268,6 +268,31 @@ def import_table(frame, event):
     _post_new_model_event(frame, frame.model)
     frame.main_frame_statusbar.SetStatusText('Table imported from file', 1)
     
+def evaluate(frame, event):
+    '''evaluate(frame, event) --> None
+    
+    Envent handler for only evaluating the Sim function - no recompiling
+    '''
+    frame.main_frame_statusbar.SetStatusText('Simulating...', 1)
+    # Compile is not necessary when using simualate...
+    #frame.model.compile_script()
+    try:
+        frame.model.simulate(compile = False)
+    except modellib.GenericError, e:
+        ShowModelErrorDialog(frame, str(e))
+        frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
+        return
+    except Exception, e:
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        ShowErrorDialog(frame, val)
+        frame.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
+        return
+    else:
+        _post_sim_plot_event(frame, frame.model, 'Simulation')
+        frame.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
     
 def simulate(frame, event):
     '''
@@ -277,6 +302,7 @@ def simulate(frame, event):
     '''
     # Just a debugging output...
     # print frame.script_editor.GetText()
+    frame.main_frame_statusbar.SetStatusText('Simulating...', 1)
     frame.model.set_script(frame.script_editor.GetText())
     # Compile is not necessary when using simualate...
     #frame.model.compile_script()
@@ -505,6 +531,10 @@ def zoomall(frame, event):
     sel = frame.plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
+        tmp = pages[sel].GetAutoScale()
+        pages[sel].SetAutoScale(True)
+        pages[sel].AutoScale()
+        pages[sel].SetAutoScale(tmp)
         pages[sel].AutoScale()
         
 def set_yscale(frame, type):

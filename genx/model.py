@@ -230,6 +230,12 @@ class Model:
             outp.close()
             raise ModelError(str(val), 1)
         
+        # check so that the Sim function returns anything
+        if not simulated_data:
+            text = 'The Sim function does not return anything, it should' +\
+            ' return a list of the same length as the number of data sets.'
+            raise ModelError(text, 1)
+        # Check so the number of data sets is correct
         if len(simulated_data) != len(self.data):
             text = 'The number of simulated data sets returned by the Sim function'\
              + ' has to be same as the number of loaded data sets.\n' +\
@@ -330,12 +336,14 @@ class Model:
         
         return (funcs, vals)
     
-    def simulate(self):
-        '''simulate(self) --> None
+    def simulate(self, compile = True):
+        '''simulate(self, compile = True) --> None
         
         Simulates the data sets using the values given in parameters...
+        also compiles the script if asked for (default)
         '''
-        self.compile_script()
+        if compile:
+            self.compile_script()
         (funcs, vals) = self.get_sim_pars()
         # print 'Functions to evulate: ', funcs
         # Set the parameter values in the model

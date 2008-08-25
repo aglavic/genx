@@ -15,6 +15,7 @@ import sys, os, re
 #sys.path.insert(1,os.getcwd()+'/Models')
 
 from help_modules.custom_dialog import *
+import help_modules.reflectivity_images as images
 
 class SampleHandler:
     def __init__(self,sample,names):
@@ -314,36 +315,52 @@ class SamplePanel(wx.Panel):
         self.refindexlist = refindexlist
         self.plugin = plugin
         
-        boxver = wx.BoxSizer(wx.VERTICAL)
-        boxhor = wx.BoxSizer(wx.HORIZONTAL)
-        
+        boxver = wx.BoxSizer(wx.HORIZONTAL)
+        boxhor = wx.BoxSizer(wx.VERTICAL)
+        boxbuttons=wx.BoxSizer(wx.HORIZONTAL)
+        boxhor.Add(boxbuttons, 0)
         self.listbox = MyHtmlListBox(self, -1, style =  wx.BORDER_SUNKEN)
         #self.listbox.SetItemList(self.sampleh.getStringList())
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick , self.listbox)
         boxhor.Add(self.listbox, 1, wx.EXPAND)
-        boxbuttons=wx.BoxSizer(wx.VERTICAL)
-        MUpButton=wx.Button(self,-1, "MoveUp")
-        boxbuttons.Add(MUpButton,1,wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.MoveUp, MUpButton)
-        MDownButton=wx.Button(self,-1, "MoveDown")
-        boxbuttons.Add(MDownButton,1,wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.MoveDown, MDownButton)
-        InsertLayButton=wx.Button(self,-1, "Insert Layer")
-        boxbuttons.Add(InsertLayButton,1,wx.EXPAND)
+        
+        #InsertLayButton = wx.Button(self,-1, "Insert Layer")
+        InsertLayButton =  wx.BitmapButton(self, -1
+        , images.getinsert_layerBitmap(), style=wx.NO_BORDER)
+        boxbuttons.Add(InsertLayButton,0)
         self.Bind(wx.EVT_BUTTON, self.InsertLay, InsertLayButton)
-        InsertStackButton=wx.Button(self,-1, "Insert Stack")
-        boxbuttons.Add(InsertStackButton,1,wx.EXPAND)
+        #InsertStackButton=wx.Button(self,-1, "Insert Stack")
+        InsertStackButton = wx.BitmapButton(self, -1
+        , images.getinsert_stackBitmap(), style=wx.NO_BORDER)
+        boxbuttons.Add(InsertStackButton, 0)
         self.Bind(wx.EVT_BUTTON, self.InsertStack, InsertStackButton)
-        DeleteButton=wx.Button(self,-1, "Delete")
-        boxbuttons.Add(DeleteButton,1,wx.EXPAND)
+        #DeleteButton=wx.Button(self,-1, "Delete")
+        DeleteButton = wx.BitmapButton(self, -1
+        , images.getdeleteBitmap(), style=wx.NO_BORDER)
+        boxbuttons.Add(DeleteButton, 0)
         self.Bind(wx.EVT_BUTTON, self.DeleteSample, DeleteButton)
-        InstrumentButton = wx.Button(self,-1, "Instrument")
-        boxbuttons.Add(InstrumentButton,1,wx.EXPAND)
-        self.Bind(wx.EVT_BUTTON, self.EditInstrument, InstrumentButton)
-        SampleButton = wx.Button(self,-1, "Sample")
-        boxbuttons.Add(SampleButton,1,wx.EXPAND)
+        #MUpButton=wx.Button(self,-1, "MoveUp")
+        MUpButton = wx.BitmapButton(self, -1
+        , images.getmove_downBitmap(), style=wx.NO_BORDER)
+        boxbuttons.Add(MUpButton, 0)
+        self.Bind(wx.EVT_BUTTON, self.MoveUp, MUpButton)
+        #MDownButton=wx.Button(self,-1, "MoveDown")
+        MDownButton = wx.BitmapButton(self, -1
+        , images.getmove_upBitmap(), style=wx.NO_BORDER)
+        boxbuttons.Add(MDownButton, 0)
+        self.Bind(wx.EVT_BUTTON, self.MoveDown, MDownButton)
+        #SampleButton = wx.Button(self,-1, "Sample")
+        SampleButton = wx.BitmapButton(self, -1
+        , images.getsampleBitmap(), style=wx.NO_BORDER)
+        boxbuttons.Add(SampleButton, 0)
         self.Bind(wx.EVT_BUTTON, self.EditSampleParameters, SampleButton)
-        boxhor.Add(boxbuttons)
+        #InstrumentButton = wx.Button(self,-1, "Instrument")
+        InstrumentButton = wx.BitmapButton(self, -1
+        , images.getinstrumentBitmap(), style=wx.NO_BORDER)
+        boxbuttons.Add(InstrumentButton, 0)
+        self.Bind(wx.EVT_BUTTON, self.EditInstrument, InstrumentButton)
+        
+        #boxhor.Add(boxbuttons)
         boxver.Add(boxhor,1,wx.EXPAND)
         boxhorpar=wx.BoxSizer(wx.HORIZONTAL)
 
@@ -563,9 +580,13 @@ class DataParameterPanel(wx.Panel):
         #callbacks = [self.Insert, self.Delete, self.MoveUp, self.MoveDown,\
         #    self.EditPars]
         button_names = ['Insert', 'Delete', 'User Variables']
+        button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
+            images.getsampleBitmap()]
         callbacks = [self.Insert, self.Delete, self.EditPars]
         for i in range(len(button_names)):
-            button = wx.Button(self,-1, button_names[i])
+            #button = wx.Button(self,-1, button_names[i])
+            button = wx.BitmapButton(self, -1, button_images[i],\
+                    style=wx.NO_BORDER)
             boxbuttons.Add(button, 1, wx.EXPAND)
             self.Bind(wx.EVT_BUTTON, callbacks[i], button)
         # END BUTTON SECTION
