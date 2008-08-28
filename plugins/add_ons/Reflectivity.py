@@ -581,7 +581,7 @@ class DataParameterPanel(wx.Panel):
         #    self.EditPars]
         button_names = ['Insert', 'Delete', 'User Variables']
         button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
-            images.getsampleBitmap()]
+            images.getcustom_parameterBitmap()]
         callbacks = [self.Insert, self.Delete, self.EditPars]
         for i in range(len(button_names)):
             #button = wx.Button(self,-1, button_names[i])

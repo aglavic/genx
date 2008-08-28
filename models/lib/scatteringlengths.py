@@ -84,7 +84,7 @@ class FormFactor(Database):
         '''
         # First check so we actually change the wavelength ...
         if abs(wavelength\
-            - object.__setattr__(self, 'wavelength', wavelength)) > 1e-10:
+            - object.__getattribute__(self, 'wavelength')) > 1e-10:
             object.__setattr__(self, 'wavelength', wavelength)
             object.__getattribute__(self, 'reset_database')()
         
