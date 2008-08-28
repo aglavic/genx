@@ -3,4 +3,7 @@
 </pre>
 <!--#exec cmd="chmod +x index.html" -->
 <!--#exec cmd="chmod +x install.html" -->
-<!--#exec cmd="chmod +x svn_update.html" -->
+<!--#exec cmd="chmod +x svn_update.shtml" -->
+<pre>
+<!--#exec cmd="ls" -->
+</pre>
