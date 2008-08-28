@@ -720,20 +720,21 @@ class DataListControl(wx.Panel):
         self.sizer_vert.Fit(self)
         
     def do_toolbar(self):
+        size = (20, 20)
         self.bitmap_button_open = wx.BitmapButton(self.tool_panel, -1
-        , img.getopen_smallBitmap(), style=wx.NO_BORDER)
+        , img.getopen_smallBitmap(), style=wx.NO_BORDER, size = size)
         self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1
-        , img.getaddBitmap(), style = wx.NO_BORDER)
+        , img.getaddBitmap(), style = wx.NO_BORDER, size = size)
         self.bitmap_button_delete = wx.BitmapButton(self.tool_panel, -1
-        , img.getdeleteBitmap(), style = wx.NO_BORDER)
+        , img.getdeleteBitmap(), style = wx.NO_BORDER, size = size)
         self.bitmap_button_move_up = wx.BitmapButton(self.tool_panel, -1
-        , img.getmove_upBitmap(), style = wx.NO_BORDER)
+        , img.getmove_upBitmap(), style = wx.NO_BORDER, size = size)
         self.bitmap_button_move_down = wx.BitmapButton(self.tool_panel, -1
-        , img.getmove_downBitmap(), style = wx.NO_BORDER)
+        , img.getmove_downBitmap(), style = wx.NO_BORDER, size = size)
         self.bitmap_button_plotting = wx.BitmapButton(self.tool_panel, -1
-        , img.getplottingBitmap(), style = wx.NO_BORDER)
+        , img.getplottingBitmap(), style = wx.NO_BORDER, size = size)
         self.bitmap_button_calc = wx.BitmapButton(self.tool_panel, -1
-        , img.getcalcBitmap(), style = wx.NO_BORDER)
+        , img.getcalcBitmap(), style = wx.NO_BORDER, size = size)
 
         
         self.sizer_hor.Add(self.bitmap_button_open,proportion=0)

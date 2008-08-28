@@ -81,7 +81,7 @@ class PlotPanel(wx.Panel):
         if self._resizeflag:
             self._resizeflag = False
             self._SetSize()
-            self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
+            #self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
 
             
     def _SetSize(self, pixels = None):

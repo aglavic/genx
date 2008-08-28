@@ -229,15 +229,15 @@ class MainFrame(wx.Frame):
         
         # Create objects needed
         
-        self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
-            '        FOM: ', size = (200, -1))
-        font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.NORMAL, wx.NORMAL)
-        self.main_frame_fom_text.SetFont(font)
-        self.main_frame_fom_text.SetLabel('        FOM: None')
-        #self.main_frame_fom_text.SetEditable(False)
+        #self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
+        #    '        FOM: ', size = (200, -1))
+        #font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.NORMAL, wx.NORMAL)
+        #self.main_frame_fom_text.SetFont(font)
+        #self.main_frame_fom_text.SetLabel('        FOM: None')
+        ##self.main_frame_fom_text.SetEditable(False)
         #self.main_frame_toolbar.AddSeparator()
-        self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
-
+        #self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
+        
         
         self.model = model.Model()
         self.solver_control = solvergui.SolverController(self, self.config)
@@ -303,6 +303,17 @@ class MainFrame(wx.Frame):
         #### End Manual config
         
     def __set_properties(self):
+        self.main_frame_toolbar.SetToolBitmapSize((32,32))
+        
+        self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
+            '        FOM: ', size = (200, -1))
+        font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.NORMAL, wx.NORMAL)
+        self.main_frame_fom_text.SetFont(font)
+        self.main_frame_fom_text.SetLabel('        FOM: None')
+        #self.main_frame_fom_text.SetEditable(False)
+        self.main_frame_toolbar.AddSeparator()
+        self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
+        
         # begin wxGlade: MainFrame.__set_properties
         self.SetTitle("GenX")
         _icon = wx.EmptyIcon()
@@ -330,6 +341,7 @@ class MainFrame(wx.Frame):
         self.script_editor.setDisplayLineNumbers(True)
         self.ver_splitter.SetMinimumPaneSize(1)
         self.hor_splitter.SetMinimumPaneSize(1)
+        
 
     def __do_layout(self):
         # begin wxGlade: MainFrame.__do_layout
