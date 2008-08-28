@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Your description goes here" />
+	<meta name="keywords" content="your,keywords,goes,here" />
+	<meta name="author" content="Matts Bjorck"/>
+	<link rel="stylesheet" type="text/css" href="default.css" title="GenX" media="screen,projection" />
+	<title>GenX - Home</title>
+</head>
+
+<body>
+<div id="container" >
+	<div id="header">
+		<!-- <h1>GenX</h1>
+		<h2>still ignoring the trends</h2> -->
+	</div>
+
+	<div id="navigation">
+		<ul>
+			<li class="selected"><a href="#">Home</a></li>
+			<!-- <li><a href="#">About</a></li>
+			<li><a href="#">Download</a></li>
+			<li><a href="#">Documentation</a></li>
+			<li><a href="#">FAQ</a></li> -->
+		</ul>
+	</div>
+
+	<div id="content">
+		<h2>What is GenX ?</h2>
+		<p>GenX is a versatile program using the differential evolution algorithm for 
+		fitting X-ray and neutron reflectivity data. It utilizes the Parratt recursion 
+		formula for simulating specular reflectivity. The program is easily extensible
+		, allowing users to incorporate their own models into the program. This can be 
+		useful for fitting data from other scattering experiments, or for any other 
+		minimization problem which has a large number of input parameters and/or contains 
+		many local minima, where the differential evolution algorithm is suitable. 
+		In addition, GenX manages to fit an arbitrary number of data sets 
+		simultaneously. A detailed description has been published in 
+		<a href="http://www.iucr.org/cgi-bin/paper?aj5091">J. Appl. Cryst. 40, 1174 (2007)</a> </p>
+		
+		<h2>How to use it?</h2>		
+		<p>GenX is written in <a href="http://www.python.org">python</a> and uses the 
+		<a href="hhtp://www.wxpython.org">wxpython</a> package for the Graphical User Interface (GUI).
+		The program is perhaps best described as integrated development environment for 
+		<a href="Screenshot.png"><img src="Screenshot_tumbnail.png" width="253" height="158" 
+		border="3" alt="Screenshot" align="right"/></a> 
+		building scattering/reflectivity models. In the basic configuration the user writes
+		a script which defines the physical model of the sample and instrument.		
+		This is
+		then loaded into the fitting environment and the user defined parameters can be fitted.</p>
+	
+		
+
+		<p>The new version of GenX contains several improvements in comparison to the older.
+		Most noteworthy are a plugin architecture for add-ons and data loaders as well as new GUI design
+		with easier handling of large data sets. The add-on feature allows expert users to create
+		problem specific GUI components. For example, right know a GUI for defining multilayered sampled
+		for reflectivity is being developed. The data loaders allow different type of data to be loaded
+		by writing plugins that take care of that part. Both of these components can be changed run time.</p>
+		
+		
+		<h2>News</h2>
+		<dl>
+		<dt>2008-08-05</dt>
+		<dd>New homepage added - Welcome to the home of GenX2</dd>
+		</dl>
+
+	</div>
+
+	<div id="subcontent">
+		<!--#include virtual="/footer.html" -->
+
+		<h2>Content</h2>
+		<ul class="menublock">
+			<li><a href="#">What is GenX?</a></li>
+			<li><a href="#">How to use it?</a></li>
+			<li><a href="#">News</a></li>
+		</ul>
+		<h2>Hosted by:</h2>
+		<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=235219&amp;type=2"
+		 width="125" height="37" border="0" alt="SourceForge.net Logo" /></a>
+
+	</div>
+
+	<div id="footer">
+		<p>&copy; 2008 Matts Bj&ouml;rck | <a href="http://andreasviklund.com/templates/" title="Original CSS template design">Original design</a> by <a href="http://andreasviklund.com/" title="Andreas Viklund">Andreas Viklund</a></p>
+	</div>
+
+	</div>
+</body>
+</html>
