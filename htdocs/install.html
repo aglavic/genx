@@ -12,8 +12,16 @@
 <body>
 <div id="container" >
 	<!--#include file="header.html" -->
+	<div id="navigation">
+		<ul>
+			<li><a href = "/index.html">Home</a></li>
+			<li class = "selected"><a href="/install.html">Install</a></li>
+			<!--<li><a href="#">Documentation</a></li>
+			<li><a href="#">FAQ</a></li> -->
+		</ul>
+	</div>
 	<div id="content">
-		<h2>Requirements</h2>		
+		<a name = "Requirements"><h2>Requirements</h2>		
 		<p> In order to install GenX python and a couple of packages for numerical computing
 		and plotting has to be installed on the computer. These packages are usually simple to install
 		on most modern operating systems. The packages needed are:
@@ -38,11 +46,12 @@
 		is also possible to download wxPython.  Then go to the bottom of <a href = 
 		"http://www.scipy.org/Download">the scipy download page</a> and download the Scipy Superpack
 		for Python 2.5.</p>
-		<h2>Installation</h2>
+		
+		<a name = "Installation"><h2>Installation</h2>
 		<p>For GenX there are two alternatives either you download the last release (yet to come)
 		from the box in the upper right corner. This is a zipped archive which you can extract
 		to a suitable location. To start the program under windows just double click on the 
-		<pre>genx_gui.py</pre> file and the program should start. On Mac and Linux open a terminal in the 
+		genx_gui.py file and the program should start. On Mac and Linux open a terminal in the 
 		unpacked folder and type <pre>python genx_gui.py</pre>.</p>
 		
 		<p>For the more adventurous folks there is also the trunk version (the version I am currently developing)
@@ -65,9 +74,8 @@
 
 		<h2>Content</h2>
 		<ul class="menublock">
-			<li><a href="#">What is GenX?</a></li>
-			<li><a href="#">How to use it?</a></li>
-			<li><a href="#">News</a></li>
+			<li><a href="#Requirements">Requirements</a></li>
+			<li><a href="#Installation">Installation</a></li>
 		</ul>
 		<!--#include file="left_links.html" -->
 
