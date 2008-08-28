@@ -722,28 +722,28 @@ class DataListControl(wx.Panel):
     def do_toolbar(self):
         size = (20, 20)
         self.bitmap_button_open = wx.BitmapButton(self.tool_panel, -1
-        , img.getopen_smallBitmap(), style=wx.NO_BORDER, size = size)
+        , img.getopen_smallBitmap(), style=wx.NO_BORDER)
         self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1
-        , img.getaddBitmap(), style = wx.NO_BORDER, size = size)
+        , img.getaddBitmap(), style = wx.NO_BORDER)
         self.bitmap_button_delete = wx.BitmapButton(self.tool_panel, -1
-        , img.getdeleteBitmap(), style = wx.NO_BORDER, size = size)
+        , img.getdeleteBitmap(), style = wx.NO_BORDER)
         self.bitmap_button_move_up = wx.BitmapButton(self.tool_panel, -1
-        , img.getmove_upBitmap(), style = wx.NO_BORDER, size = size)
+        , img.getmove_upBitmap(), style = wx.NO_BORDER)
         self.bitmap_button_move_down = wx.BitmapButton(self.tool_panel, -1
-        , img.getmove_downBitmap(), style = wx.NO_BORDER, size = size)
+        , img.getmove_downBitmap(), style = wx.NO_BORDER)
         self.bitmap_button_plotting = wx.BitmapButton(self.tool_panel, -1
-        , img.getplottingBitmap(), style = wx.NO_BORDER, size = size)
+        , img.getplottingBitmap(), style = wx.NO_BORDER)
         self.bitmap_button_calc = wx.BitmapButton(self.tool_panel, -1
-        , img.getcalcBitmap(), style = wx.NO_BORDER, size = size)
+        , img.getcalcBitmap(), style = wx.NO_BORDER)
 
         
-        self.sizer_hor.Add(self.bitmap_button_open,proportion=0)
-        self.sizer_hor.Add(self.bitmap_button_add,proportion=0)
-        self.sizer_hor.Add(self.bitmap_button_delete,proportion=0)
-        self.sizer_hor.Add(self.bitmap_button_move_up,proportion=0)
-        self.sizer_hor.Add(self.bitmap_button_move_down,proportion=0)
-        self.sizer_hor.Add(self.bitmap_button_plotting,proportion=0)
-        self.sizer_hor.Add(self.bitmap_button_calc,proportion=0)
+        self.sizer_hor.Add(self.bitmap_button_open,proportion = 0, border = 2)
+        self.sizer_hor.Add(self.bitmap_button_add,proportion = 0, border = 2)
+        self.sizer_hor.Add(self.bitmap_button_delete,proportion = 0, border = 2)
+        self.sizer_hor.Add(self.bitmap_button_move_up,proportion = 0, border = 2)
+        self.sizer_hor.Add(self.bitmap_button_move_down,proportion = 0, border = 2)
+        self.sizer_hor.Add(self.bitmap_button_plotting,proportion = 0, border = 2)
+        self.sizer_hor.Add(self.bitmap_button_calc,proportion = 0, border = 2)
         
         
         self.Bind(wx.EVT_BUTTON, self.eh_tb_open, self.bitmap_button_open)

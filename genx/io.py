@@ -35,13 +35,11 @@ class Config:
         Loads a config from a string str.  Raises an IOError if the string can not be
         read.
         '''
-        buffer = StringIO.StringIO()
-        buffer.write(str)
+        buffer = StringIO.StringIO(str)
         try:
             self.model_config.readfp(buffer)
         except Exception, e:
             raise IOError('Could not load model config file')
-        self.model_dump()
         
     def _getf(self, default_function, model_function, section, option):
         '''_getf(default_function, model_function, section, option) --> object

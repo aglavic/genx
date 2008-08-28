@@ -151,7 +151,7 @@ class MainFrame(wx.Frame):
         self.main_frame_statusbar = self.CreateStatusBar(3, 0)
         
         # Tool Bar
-        self.main_frame_toolbar = wx.ToolBar(self, -1)
+        self.main_frame_toolbar = wx.ToolBar(self, -1, style=wx.TB_HORIZONTAL|wx.TB_FLAT|wx.TB_HORZ_LAYOUT)
         self.SetToolBar(self.main_frame_toolbar)
         self.main_frame_toolbar.AddLabelTool(10001, "tb_new", (img.getnewBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N", "Create a new model | Ctrl+N")
         self.main_frame_toolbar.AddLabelTool(10002, "tb_open", (img.getopenBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O", "Open an existing model | Ctrl+O")
@@ -324,6 +324,7 @@ class MainFrame(wx.Frame):
         main_frame_statusbar_fields = ["", "", "x,y"]
         for i in range(len(main_frame_statusbar_fields)):
             self.main_frame_statusbar.SetStatusText(main_frame_statusbar_fields[i], i)
+        self.main_frame_toolbar.SetToolBitmapSize((32, 32))
         self.main_frame_toolbar.Realize()
         self.data_grid_choice.SetSelection(0)
         self.static_line_1.SetMinSize((-1,5))
