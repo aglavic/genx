@@ -11,7 +11,7 @@
 
 <body>
 <div id="container" >
-	<!--#include file="/header.html" -->
+	<!--#include file="header.html" -->
 	<div id="content">
 		<h2>What is GenX ?</h2>
 		<p>GenX is a versatile program using the differential evolution algorithm for 
@@ -53,11 +53,13 @@
 		<dt>2008-08-05</dt>
 		<dd>New homepage added - Welcome to the home of GenX2</dd>
 		</dl>
-
+	<br><br>
+	<!--#config timefmt="%A %B %d, %Y" -->
+	<span class="small">Last updated: <!--#echo var="LAST_MODIFIED" --></span></p>
 	</div>
 
 	<div id="subcontent">
-		<!--#include file="/download_box.html" -->
+		<!--#include file="download_box.html" -->
 
 		<h2>Content</h2>
 		<ul class="menublock">
@@ -65,11 +67,11 @@
 			<li><a href="#">How to use it?</a></li>
 			<li><a href="#">News</a></li>
 		</ul>
-		<!--#include file="/left_links.html" -->
+		<!--#include file="left_links.html" -->
 
 	</div>
 
-	<!--#include file="/footer.html" -->
+	<!--#include file="footer.html" -->
 
 	</div>
 </body>
