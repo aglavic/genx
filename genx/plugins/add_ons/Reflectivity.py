@@ -323,45 +323,49 @@ class SamplePanel(wx.Panel):
         #self.listbox.SetItemList(self.sampleh.getStringList())
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick , self.listbox)
         boxhor.Add(self.listbox, 1, wx.EXPAND)
-        
+
+        if os.name == 'nt':
+            size = (24, 24)
+        else:
+            size = (-1, -1)        
         #InsertLayButton = wx.Button(self,-1, "Insert Layer")
         InsertLayButton =  wx.BitmapButton(self, -1
-        , images.getinsert_layerBitmap(), style=wx.NO_BORDER)
+        , images.getinsert_layerBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InsertLayButton,0)
         self.Bind(wx.EVT_BUTTON, self.InsertLay, InsertLayButton)
         #InsertStackButton=wx.Button(self,-1, "Insert Stack")
         InsertStackButton = wx.BitmapButton(self, -1
-        , images.getinsert_stackBitmap(), style=wx.NO_BORDER)
+        , images.getinsert_stackBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InsertStackButton, 0)
         self.Bind(wx.EVT_BUTTON, self.InsertStack, InsertStackButton)
         #DeleteButton=wx.Button(self,-1, "Delete")
         DeleteButton = wx.BitmapButton(self, -1
-        , images.getdeleteBitmap(), style=wx.NO_BORDER)
+        , images.getdeleteBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(DeleteButton, 0)
         self.Bind(wx.EVT_BUTTON, self.DeleteSample, DeleteButton)
         #MUpButton=wx.Button(self,-1, "MoveUp")
         MUpButton = wx.BitmapButton(self, -1
-        , images.getmove_downBitmap(), style=wx.NO_BORDER)
+        , images.getmove_downBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(MUpButton, 0)
         self.Bind(wx.EVT_BUTTON, self.MoveUp, MUpButton)
         #MDownButton=wx.Button(self,-1, "MoveDown")
         MDownButton = wx.BitmapButton(self, -1
-        , images.getmove_upBitmap(), style=wx.NO_BORDER)
+        , images.getmove_upBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(MDownButton, 0)
         self.Bind(wx.EVT_BUTTON, self.MoveDown, MDownButton)
         #SampleButton = wx.Button(self,-1, "Sample")
         SampleButton = wx.BitmapButton(self, -1
-        , images.getsampleBitmap(), style=wx.NO_BORDER)
+        , images.getsampleBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(SampleButton, 0)
         self.Bind(wx.EVT_BUTTON, self.EditSampleParameters, SampleButton)
         #InstrumentButton = wx.Button(self,-1, "Instrument")
         InstrumentButton = wx.BitmapButton(self, -1
-        , images.getinstrumentBitmap(), style=wx.NO_BORDER)
+        , images.getinstrumentBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InstrumentButton, 0)
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, InstrumentButton)
         
         #boxhor.Add(boxbuttons)
-        boxver.Add(boxhor,1,wx.EXPAND)
+        boxver.Add(boxhor, 1 ,  wx.EXPAND)
         boxhorpar=wx.BoxSizer(wx.HORIZONTAL)
 
         #self.tc=[]
@@ -579,6 +583,10 @@ class DataParameterPanel(wx.Panel):
         #    'Edit Parameters']
         #callbacks = [self.Insert, self.Delete, self.MoveUp, self.MoveDown,\
         #    self.EditPars]
+        if os.name == 'nt':
+            size = (24, 24)
+        else:
+            size = (-1, -1)
         button_names = ['Insert', 'Delete', 'User Variables']
         button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
             images.getcustom_parameterBitmap()]
@@ -586,7 +594,7 @@ class DataParameterPanel(wx.Panel):
         for i in range(len(button_names)):
             #button = wx.Button(self,-1, button_names[i])
             button = wx.BitmapButton(self, -1, button_images[i],\
-                    style=wx.NO_BORDER)
+                    style=wx.NO_BORDER, size = size)
             boxbuttons.Add(button, 1, wx.EXPAND)
             self.Bind(wx.EVT_BUTTON, callbacks[i], button)
         # END BUTTON SECTION
@@ -1036,14 +1044,16 @@ class Plugin(framework.Template):
         sample_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sample_panel.SetSizer(sample_sizer)
         self.defs = ['Sample', 'Instrument']
-        self.sample_widget=SamplePanel(sample_panel, self)
-        sample_sizer.Add(self.sample_widget, 1, wx.EXPAND)
+        self.sample_widget = SamplePanel(sample_panel, self)
+        sample_sizer.Add(self.sample_widget, 1, wx.EXPAND|wx.GROW|wx.ALL)
+        sample_panel.Layout()
         
         simulation_panel = self.NewInputFolder('Simulations')
         simulation_sizer = wx.BoxSizer(wx.HORIZONTAL)
         simulation_panel.SetSizer(simulation_sizer)
         self.simulation_widget = DataParameterPanel(simulation_panel, self)
-        simulation_sizer.Add(self.simulation_widget, 1, wx.EXPAND)
+        simulation_sizer.Add(self.simulation_widget, 1, wx.EXPAND|wx.GROW|wx.ALL)
+        simulation_panel.Layout()
         
         self.sample_widget.SetUpdateCallback(self.UpdateScript)
         self.simulation_widget.SetUpdateScriptFunc(self.UpdateScript)

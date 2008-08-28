@@ -151,7 +151,7 @@ class MainFrame(wx.Frame):
         self.main_frame_statusbar = self.CreateStatusBar(3, 0)
         
         # Tool Bar
-        self.main_frame_toolbar = wx.ToolBar(self, -1, style=wx.TB_HORIZONTAL|wx.TB_FLAT|wx.TB_HORZ_LAYOUT)
+        self.main_frame_toolbar = wx.ToolBar(self, -1, style=wx.TB_HORIZONTAL|wx.TB_FLAT)
         self.SetToolBar(self.main_frame_toolbar)
         self.main_frame_toolbar.AddLabelTool(10001, "tb_new", (img.getnewBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N", "Create a new model | Ctrl+N")
         self.main_frame_toolbar.AddLabelTool(10002, "tb_open", (img.getopenBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O", "Open an existing model | Ctrl+O")
@@ -228,7 +228,8 @@ class MainFrame(wx.Frame):
         #### Begin Manual Config
         
         # Create objects needed
-        
+        # Set the style on the toolbar to
+        # style=wx.TB_HORIZONTAL|wx.TB_FLAT
         #self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
         #    '        FOM: ', size = (200, -1))
         #font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.NORMAL, wx.NORMAL)
