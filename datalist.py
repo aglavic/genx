@@ -8,7 +8,7 @@ Programmer: Matts Bjorck
 Last changed: 2008 08 14
 '''
 
-import wx
+import wx, os
 import wx.lib.colourselect as  csel
 
 
@@ -720,22 +720,24 @@ class DataListControl(wx.Panel):
         self.sizer_vert.Fit(self)
         
     def do_toolbar(self):
-        size = (20, 20)
+        if os.name == 'nt':
+            size = (24, 24)
+        else:
+            size = (-1, -1)
         self.bitmap_button_open = wx.BitmapButton(self.tool_panel, -1
-        , img.getopen_smallBitmap(), style=wx.NO_BORDER)
+        , img.getopen_smallBitmap(), size = size, style=wx.NO_BORDER)
         self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1
-        , img.getaddBitmap(), style = wx.NO_BORDER)
+        , img.getaddBitmap(), size = size, style = wx.NO_BORDER)
         self.bitmap_button_delete = wx.BitmapButton(self.tool_panel, -1
-        , img.getdeleteBitmap(), style = wx.NO_BORDER)
+        , img.getdeleteBitmap(), size = size, style = wx.NO_BORDER)
         self.bitmap_button_move_up = wx.BitmapButton(self.tool_panel, -1
-        , img.getmove_upBitmap(), style = wx.NO_BORDER)
+        , img.getmove_upBitmap(), size = size, style = wx.NO_BORDER)
         self.bitmap_button_move_down = wx.BitmapButton(self.tool_panel, -1
-        , img.getmove_downBitmap(), style = wx.NO_BORDER)
+        , img.getmove_downBitmap(), size = size, style = wx.NO_BORDER)
         self.bitmap_button_plotting = wx.BitmapButton(self.tool_panel, -1
-        , img.getplottingBitmap(), style = wx.NO_BORDER)
+        , img.getplottingBitmap(), size = size, style = wx.NO_BORDER)
         self.bitmap_button_calc = wx.BitmapButton(self.tool_panel, -1
-        , img.getcalcBitmap(), style = wx.NO_BORDER)
-
+        , img.getcalcBitmap(), size = size, style = wx.NO_BORDER)
         
         self.sizer_hor.Add(self.bitmap_button_open,proportion = 0, border = 2)
         self.sizer_hor.Add(self.bitmap_button_add,proportion = 0, border = 2)
