@@ -2,8 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<meta name="description" content="Your description goes here" />
-	<meta name="keywords" content="your,keywords,goes,here" />
+	<meta name="description" content="GenX is a versitaile fitting software for x-ray and neutron reflectivity" />
+	<meta name="keywords" content="differential evolution, reflectivity, x-ray, xray, neutron, diffraction, fitting, refinement" />
 	<meta name="author" content="Matts Bjorck"/>
 	<link rel="stylesheet" type="text/css" href="default.css" title="GenX" media="screen,projection" />
 	<title>GenX - Home</title>
@@ -11,21 +11,7 @@
 
 <body>
 <div id="container" >
-	<div id="header">
-		<!-- <h1>GenX</h1>
-		<h2>still ignoring the trends</h2> -->
-	</div>
-
-	<div id="navigation">
-		<ul>
-			<li class="selected"><a href="#">Home</a></li>
-			<!-- <li><a href="#">About</a></li>
-			<li><a href="#">Download</a></li>
-			<li><a href="#">Documentation</a></li>
-			<li><a href="#">FAQ</a></li> -->
-		</ul>
-	</div>
-
+	<!--#include file="/header.html" -->
 	<div id="content">
 		<h2>What is GenX ?</h2>
 		<p>GenX is a versatile program using the differential evolution algorithm for 
@@ -62,6 +48,8 @@
 		
 		<h2>News</h2>
 		<dl>
+		<dt>2008-09-28</dt>
+		<dd>Install section added to the homepage</dd>
 		<dt>2008-08-05</dt>
 		<dd>New homepage added - Welcome to the home of GenX2</dd>
 		</dl>
@@ -69,7 +57,7 @@
 	</div>
 
 	<div id="subcontent">
-		<!--#include virtual="/download_box.html" -->
+		<!--#include file="/download_box.html" -->
 
 		<h2>Content</h2>
 		<ul class="menublock">
@@ -77,15 +65,11 @@
 			<li><a href="#">How to use it?</a></li>
 			<li><a href="#">News</a></li>
 		</ul>
-		<h2>Hosted by:</h2>
-		<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=235219&amp;type=2"
-		 width="125" height="37" border="0" alt="SourceForge.net Logo" /></a>
+		<!--#include file="/left_links.html" -->
 
 	</div>
 
-	<div id="footer">
-		<p>&copy; 2008 Matts Bj&ouml;rck | <a href="http://andreasviklund.com/templates/" title="Original CSS template design">Original design</a> by <a href="http://andreasviklund.com/" title="Andreas Viklund">Andreas Viklund</a></p>
-	</div>
+	<!--#include file="/footer.html" -->
 
 	</div>
 </body>

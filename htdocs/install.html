@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="How to install GenX" />
+	<meta name="keywords" content="differential evolution, reflectivity, x-ray, xray, neutron, diffraction, fitting, refinement" />
+	<meta name="author" content="Matts Bjorck"/>
+	<link rel="stylesheet" type="text/css" href="default.css" title="GenX" media="screen,projection" />
+	<title>GenX - Installing</title>
+</head>
+
+<body>
+<div id="container" >
+	<!--#include file="/header.html" -->
+	<div id="content">
+		<h2>Requirements</h2>		
+		<p> In order to install GenX python and a couple of packages for numerical computing
+		and plotting has to be installed on the computer. These packages are usually simple to install
+		on most modern operating systems. The packages needed are:
+		<ul>
+			<li><a href="http://www.python.org">Python</a> newer than 2.3.5</li>
+			<li><a href="http://www.wxpython.org">wxPython</a></li>
+			<li><a href="http://numpy.scipy.org/">NumPy</a>, version > 1.0</li>
+			<li><a href="http://scipy.org/">Scipy</a>, version > 0.5</li>
+			<li><a href="http://matplotlib.sourceforge.net/">Matplotlib</a>, version > 0.9</li>
+		</ul></p>
+		<h3>Linux</h3>
+		<p>Most Linux versions have a package manager where these packages can be installed.
+		In fact GenX is developed on Ubuntu 8.04 with packages from the respiratory.</p>
+		<h3>Windows</h3>
+		<p>For windows I personally recommend the <a href = "http://www.enthought.com/products/epd.php">
+		Enthought Python Distribution</a> (EPD). EPD contains all packages necessary to run GenX and
+		I try to keep GenX fully compatible with that distribution. Otherwise one can always install
+		the packages separately, all packages have install files for windows.</p>
+		<h3> Mac</h3>
+		<p>On Mac OSX python could be installed already (Leopard) otherwise download it from <a href = 
+		"http://www.pythonmac.org/packages/py25-fat/index.html">pythonmac</a>. Form there it
+		is also possible to download wxPython.  Then go to the bottom of <a href = 
+		"http://www.scipy.org/Download">the scipy download page</a> and download the Scipy Superpack
+		for Python 2.5.</p>
+		<h2>Installation</h2>
+		<p>For GenX there are two alternatives either you download the last release (yet to come)
+		from the box in the upper right corner. This is a zipped archive which you can extract
+		to a suitable location. To start the program under windows just double click on the 
+		<pre>genx_gui.py</pre> file and the program should start. On Mac and Linux open a terminal in the 
+		unpacked folder and type <pre>python genx_gui.py</pre>.</p>
+		
+		<p>For the more adventurous folks there is also the trunk version (the version I am currently developing)
+		this has no guarantee that it will work. However it is the most updated version. It can be 
+		downloaded as a tarball (zipped tar file) from <a href = 
+		"http://genx.svn.sourceforge.net/viewvc/genx/trunk/genx.tar.gz?view=tar">here</a>. Yet another
+		alternative is to access the svn respiratory itself with an svn client. For windows
+		I would recommend <a href = "http://tortoisesvn.net/">tortoise svn</a> on Linux machines
+		svn is usually already installed and typing:  
+		<pre>svn co https://genx.svn.sourceforge.net/svnroot/genx/trunk/genx genx</pre> will download the latest 
+		revision into the folder genx.</p>
+	
+	 <!--#config timefmt="%A %B %d, %Y" -->
+	 <span class="small">Last updated: <!--#echo var="LAST_MODIFIED" --></span></p>
+
+	</div>
+
+	<div id="subcontent">
+		<!--#include file="/download_box.html" -->
+
+		<h2>Content</h2>
+		<ul class="menublock">
+			<li><a href="#">What is GenX?</a></li>
+			<li><a href="#">How to use it?</a></li>
+			<li><a href="#">News</a></li>
+		</ul>
+		<!--#include file="/left_links.html" -->
+
+	</div>
+
+	<!--#include file="/footer.html" -->
+
+	</div>
+</body>
+</html>
