@@ -15,6 +15,8 @@ from numpy import *
 import wx
 import wx.lib.newevent
 
+import io
+
 # Event for a click inside an plot which yields a number
 (plot_position, EVT_PLOT_POSITION) = wx.lib.newevent.NewEvent()
 # Event to tell the main window that the zoom state has changed
@@ -28,12 +30,15 @@ class PlotPanel(wx.Panel):
         the plots. 
     '''
     def __init__(self, parent, id = -1, color = None, dpi = None
-    , style = wx.NO_FULL_REPAINT_ON_RESIZE|wx.EXPAND|wx.ALL, **kwargs):
+            , style = wx.NO_FULL_REPAINT_ON_RESIZE|wx.EXPAND|wx.ALL
+            , config = None, config_name = '', **kwargs):
         
         wx.Panel.__init__(self,parent, id = id, style = style, **kwargs)
         
         self.parent = parent
         self.callback_window = self
+        self.config = config
+        self.config_name = config_name
         self.figure = Figure(None,dpi)
         self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
         self.canvas.SetExtraStyle(wx.EXPAND)
@@ -94,7 +99,57 @@ class PlotPanel(wx.Panel):
         self.canvas.SetSize(pixels)
         self.figure.set_size_inches(pixels[0]/self.figure.get_dpi()
         , pixels[1]/self.figure.get_dpi())
+    
+    def ReadConfig(self):
+        '''ReadConfig(self) --> None
         
+        Reads in the config file
+        '''
+        bool_items = ['zoom', 'autoscale']
+        bool_func = [self.SetZoom, self.SetAutoScale]
+        
+        if not self.config:
+            return
+        
+        
+        vals = []
+        for index in range(len(bool_items)):
+            try:
+                val = self.config.get_boolean(self.config_name,\
+                        bool_items[index])
+            except io.OptionError, e:
+                print 'Could not locate option %s.%s'\
+                %(self.config_name, bool_items[index])
+                vals.append(None)
+            else:
+                vals.append(val)
+                
+        try:
+            scale = self.config.get(self.config_name, 'y scale')
+            string_sucess = True
+        except io.OptionError, e:
+            string_sucess = False
+            print 'Could not locate option %s.%s'\
+            %(self.config_name, 'scale')
+        else:
+            self.SetYScale(scale)
+        
+        # This is done due to that the zoom and autoscale has to read 
+        # before any commands are issued in order not to overwrite 
+        # the config
+        [bool_func[i](vals[i]) for i in range(len(vals)) if vals[i]]
+        
+            
+    def WriteConfig(self):
+        '''WriteConfig(self) --> None
+        
+        Writes the current settings to the config file
+        '''
+        if self.config:
+            self.config.set(self.config_name, 'zoom', self.GetZoom())
+            self.config.set(self.config_name, 'autoscale', self.GetAutoScale())
+            self.config.set(self.config_name, 'y scale', self.GetYScale())
+    
     def SetZoom(self, active = False):
         '''
         set the zoomstate
@@ -130,7 +185,7 @@ class PlotPanel(wx.Panel):
             if self.ax:
                 #self.ax.set_autoscale_on(self.autoscale)
                 self.SetAutoScale(self.old_scale_state)
-        
+        self.WriteConfig()
         
     def GetZoom(self):
         '''GetZoom(self) --> state [bool]
@@ -148,9 +203,11 @@ class PlotPanel(wx.Panel):
         '''
         #self.ax.set_autoscale_on(state)
         self.autoscale = state
+        self.WriteConfig()
         evt = state_changed(zoomstate = self.GetZoom(),\
                         yscale = self.GetYScale(), autoscale = self.autoscale)
         wx.PostEvent(self.callback_window, evt)
+        
             
     def GetAutoScale(self):
         '''GetAutoScale(self) --> state [bool]
@@ -190,7 +247,7 @@ class PlotPanel(wx.Panel):
         # Set the limits
         self.ax.set_xlim(xmin, xmax)
         self.ax.set_ylim(ymin, ymax)
-        self.ax.set_yscale(self.scale)
+        #self.ax.set_yscale(self.scale)
         self.flush_plot()
         
     def SetYScale(self, scalestring):
@@ -211,6 +268,7 @@ class PlotPanel(wx.Panel):
             evt = state_changed(zoomstate = self.GetZoom(),\
                         yscale = self.GetYScale(), autoscale = self.autoscale)
             wx.PostEvent(self.callback_window, evt)
+            self.WriteConfig()
             
     def GetYScale(self):
         '''GetYScale(self) --> String
@@ -409,7 +467,7 @@ class PlotPanel(wx.Panel):
     def flush_plot(self):
         #self._SetSize()
         #self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
-        self.ax.set_yscale(self.scale)
+        #self.ax.set_yscale(self.scale)
         self.canvas.draw()
         
     def update(self, data):
@@ -425,7 +483,7 @@ class DataPlotPanel(PlotPanel):
         self.update=self.singleplot
         self.update(None)
         self.update = self.plot_data
-        self.SetAutoScale(False)
+        self.SetAutoScale(True)
         
     def singleplot(self, data):
         if not self.ax:

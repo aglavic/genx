@@ -49,6 +49,7 @@ def open(frame, event):
         path = dlg.GetPath()
         frame.model.load(dlg.GetPath())
         frame.config.load_model(frame.model.load_addition('config'))
+        [p.ReadConfig() for p in get_pages(frame)]
         _post_new_model_event(frame, frame.model)
         path, filename = os.path.split(path)
         set_title(frame, filename, path)
