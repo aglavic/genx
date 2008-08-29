@@ -112,7 +112,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         return True
     
     def AppendRows(self, num_rows = 1):
-        print num_rows
+        #print num_rows
         [self.pars.append() for i in range(rows)]
         
         msg = gridlib.GridTableMessage(self,\
@@ -380,7 +380,7 @@ class ParameterGrid(gridlib.Grid):
         #print dir(evt)
         col=evt.GetCol()
         row=evt.GetRow()
-        print row,col
+        #print row,col
         if col==0:
             self.CurSelection=(row,col)
             self.SetGridCursor(row,col)
@@ -409,7 +409,7 @@ class ParameterGrid(gridlib.Grid):
         # GetText seems to screw up underscores a bit replacing the with a 
         # double one - this fixes it
         text = item.GetText().replace('__','_')
-        print text, self.objlist, self.funclist
+        #print text, self.objlist, self.funclist
         self.SetCellValue(self.CurSelection[0],self.CurSelection[1],text)
         # Try to find out if the values also has an get function so that
         # we can init the value to the default!
