@@ -91,7 +91,7 @@ class PluginHandler:
         ''' unload_plugin(self, plugin_name) --> None
         Used to remove the plugin from the system.
         '''
-        print self.loaded_plugins.keys()
+        #print self.loaded_plugins.keys()
         self.loaded_plugins[plugin_name].Remove()
         del self.loaded_plugins[plugin_name]
         
