@@ -4,7 +4,7 @@ plugins.
 Programmer: Matts Bjorck
 Last changed: 2008 07 23
 '''
-# TODO: Code needs clean up from print statements
+
 import os
 import wx, StringIO, traceback
 
@@ -192,7 +192,7 @@ class Template:
             self.parent.plot_notebook.DeletePage(i)
         for i in self.input_pages:
             self.parent.input_notebook.DeletePage(i)
-            print 'deleted page', i
+            #print 'deleted page', i
         for i in self.data_pages:
             self.parent.data_notebook.DeletePage(i)
         

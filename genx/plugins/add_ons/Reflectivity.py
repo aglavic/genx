@@ -1,8 +1,9 @@
-# Reflectivity.py written by Matts Bjorck
-# A GUI for defineition of Reflectivity models
-# LAst changed 20080817
-# Ported from old GenX to cerate a GUI interface
-# for sample definitions
+''' Reflectivity.py written by Matts Bjorck
+ A GUI for defineition of Reflectivity models
+ LAst changed 20080829
+ Ported from old GenX to cerate a GUI interface
+ for sample definitions. Works as a plugin
+'''
 
 import plugins.add_on_framework as framework
 from plotpanel import PlotPanel
@@ -137,7 +138,7 @@ class SampleHandler:
             self.sample.Stacks.pop(self.poslist[pos][0])
             p = self.poslist[pos][0]
             pt = pos
-            print self.poslist
+            #print self.poslist
             while self.poslist[pt][0] == p:
                 pt += 1
             pt -=1
@@ -172,7 +173,7 @@ class SampleHandler:
             stackp=True
         if spos[0]==None:
             spos=(0,spos[1])
-        print spos
+        
         # If it not the first item i.e. can't insert anything before the 
         # ambient layer
         if pos !=0 :
@@ -190,7 +191,7 @@ class SampleHandler:
                 
             if type=='Layer' and len(self.poslist)>2:
                 layer=self.model.Layer()
-                print spos[0]
+                #print spos[0]
                 if last:
                     self.names.insert(pos,name)
                 else:
@@ -209,7 +210,7 @@ class SampleHandler:
                 self.names.insert(pos+1,name)
             if type=='Layer' and len(self.poslist)>2:
                 layer=self.model.Layer()
-                print spos[0]
+                #print spos[0]
                 self.sample.Stacks[spos[0]].Layers.append(layer)
                 added=True
                 self.names.insert(pos+2,name)
@@ -238,7 +239,7 @@ class SampleHandler:
                 temps=[]
                 for index in range(len(temp.Layers)+1):
                     temps.append(self.names.pop(pos))
-                print temps
+                #print temps
                 for index in range(len(temp.Layers)+1):
                     self.names.insert(pos-len(self.sample.Stacks[self.poslist[pos][0]].Layers)-1,temps[-index-1])
                 self.sample.Stacks.insert(self.poslist[pos][0]+1,temp)
@@ -274,8 +275,8 @@ class SampleHandler:
                     temps=[]
                     for index in range(len(temp.Layers)+1):
                         temps.append(self.names.pop(pos))
-                    print temps
-                    print pos
+                    #print temps
+                    #print pos
                     for index in range(len(temp.Layers)+1):
                         self.names.insert(pos+len(self.sample.Stacks[self.poslist[pos][0]-1].Layers)+1,temps[-index-1])
                     self.sample.Stacks.insert(self.poslist[pos][0]-1,temp)
@@ -285,11 +286,11 @@ class SampleHandler:
                     
             else: #i.e. it is a layer we move
                 if pos < len(self.poslist)-2:
-                    print 'Moving a layer'
+                    #print 'Moving a layer'
                     temp=self.sample.Stacks[self.poslist[pos][0]].Layers.pop(self.poslist[pos][1])
                     temps=self.names.pop(pos)
                     if self.poslist[pos+1][1]==None: # Next item a Stack i.e. jump down
-                        print self.sample.Stacks[self.poslist[pos+1][0]]
+                        #print self.sample.Stacks[self.poslist[pos+1][0]]
                         self.sample.Stacks[self.poslist[pos+1][0]].Layers.insert(len(self.sample.Stacks[self.poslist[pos+1][0]].Layers),temp)
                         self.names.insert(pos+1,temps)
                     else: #Moving inside a stack
@@ -345,12 +346,12 @@ class SamplePanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.DeleteSample, DeleteButton)
         #MUpButton=wx.Button(self,-1, "MoveUp")
         MUpButton = wx.BitmapButton(self, -1
-        , images.getmove_downBitmap(), size = size, style=wx.NO_BORDER)
+        , images.getmove_upBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(MUpButton, 0)
         self.Bind(wx.EVT_BUTTON, self.MoveUp, MUpButton)
         #MDownButton=wx.Button(self,-1, "MoveDown")
         MDownButton = wx.BitmapButton(self, -1
-        , images.getmove_upBitmap(), size = size, style=wx.NO_BORDER)
+        , images.getmove_downBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(MDownButton, 0)
         self.Bind(wx.EVT_BUTTON, self.MoveDown, MDownButton)
         #SampleButton = wx.Button(self,-1, "Sample")
@@ -395,8 +396,8 @@ class SamplePanel(wx.Panel):
         self.update_callback(None)
                 
     def SetSample(self, sample, names):
-        print 'SetSample sample:'
-        print sample, '\n'
+        #print 'SetSample sample:'
+        #print sample, '\n'
         self.sampleh.sample = sample
         self.sampleh.names = names
         self.Update()
@@ -414,13 +415,13 @@ class SamplePanel(wx.Panel):
             title = 'Sample Editor')
         
         if dlg.ShowModal()==wx.ID_OK:
-            print 'Pressed OK'
+            #print 'Pressed OK'
             vals=dlg.GetValues()
             for index in range(len(vals)):
                 self.sampleh.sample.__setattr__(items[index][0],vals[index])
             self.Update()
         else:
-            print 'Pressed Cancel'
+            #print 'Pressed Cancel'
         dlg.Destroy()
     
     def SetInstrument(self, instrument):
@@ -444,13 +445,13 @@ class SamplePanel(wx.Panel):
         dlg = ValidateDialog(self, items, validators,\
             title = 'Instrument Editor')
         if dlg.ShowModal()==wx.ID_OK:
-            print 'Pressed OK'
+            #print 'Pressed OK'
             vals=dlg.GetValues()
             for index in range(len(vals)):
                 self.instrument.__setattr__(items[index][0],vals[index])
             self.Update()
         else:
-            print 'Pressed Cancel'
+            #print 'Pressed Cancel'
         dlg.Destroy()
         
         
@@ -472,35 +473,41 @@ class SamplePanel(wx.Panel):
     def InsertStack(self,evt):
         
         # Create Dialog box
-        items = [('Name', 'new_name')]
+        items = [('Name', 'name')]
         validators = [NoMatchTextObjectValidator(self.sampleh.names)]
-        dlg = ValidateDialog(self,items,validators,title='Give Stack Name')
+        dlg = ValidateDialog(self, items, validators, title='Give Stack Name')
         
         # Show the dialog
         if dlg.ShowModal()==wx.ID_OK:
-                print 'Pressed OK'
                 vals=dlg.GetValues()
-    
-        sl=self.sampleh.insertItem(self.listbox.GetSelection(),'Stack', vals[0])
+        dlg.Destroy()
+        # if not a value is selected operate on first
+        pos = max(self.listbox.GetSelection(),0)
+        sl = self.sampleh.insertItem(pos, 'Stack',  vals[0])
         if sl:
             self.Update()
-
+        else:
+            self.plugin.ShowWarningDialog('Can not insert a stack at the'
+            ' current position.')
     def InsertLay(self,evt):
         # Create Dialog box
-        items = [('Name', 'new_name')]
+        items = [('Name', 'name')]
         validators = [NoMatchTextObjectValidator(self.sampleh.names)]
         dlg = ValidateDialog(self,items,validators,title='Give Layer Name')
         
         # Show the dialog
         if dlg.ShowModal()==wx.ID_OK:
-                print 'Pressed OK'
                 vals=dlg.GetValues()
-        
+        dlg.Destroy()
+        # if not a value is selected operate on first
+        pos = max(self.listbox.GetSelection(),0)
         #Create the Layer
-        sl=self.sampleh.insertItem(self.listbox.GetSelection(),'Layer', vals[0])
+        sl = self.sampleh.insertItem(pos, 'Layer', vals[0])
         if sl:
             self.Update()
-        dlg.Destroy()
+        else:
+            self.plugin.ShowWarningDialog('Can not insert a layer at the'
+            ' current position. Layers has to be part of a stack.')
         
     def DeleteSample(self,evt):
         slold=self.sampleh.getStringList()
@@ -689,12 +696,12 @@ class DataParameterPanel(wx.Panel):
         dataindex = -1
         itemindex = -1
         listindex = -1
-        print self.datalist
-        print self.expressionlist
+        #print self.datalist
+        #print self.expressionlist
         for i in range(len(self.datalist)):
             dataindex += 1
             listindex +=1
-            print 'test'
+            #print 'test'
             if listindex >= index:
                 return (dataindex, itemindex)
             itemindex = -1
@@ -729,7 +736,7 @@ class DataParameterPanel(wx.Panel):
         Inserts a new operations
         '''
         data_pos, exp_pos = self.get_expression_position()
-        print data_pos, exp_pos
+        #print data_pos, exp_pos
         if data_pos != -1:
             dlg = ParameterExpressionDialog(self, self.plugin.GetModel())
             if dlg.ShowModal() == wx.ID_OK:
@@ -910,7 +917,7 @@ class ParameterExpressionDialog(wx.Dialog):
             
         # Get the objects that should be in the choiceboxes
         objlist, funclist = model.get_possible_parameters()
-        print model.compiled
+        #print model.compiled
         self.objlist = objlist
         self.funclist = funclist
         self.obj_choice = wx.Choice(self, -1, choices = objlist)
@@ -927,7 +934,7 @@ class ParameterExpressionDialog(wx.Dialog):
             
         exp_right = ''
         if expression:
-            print expression
+            #print expression
             p = expression.find('(')
             exp_left = expression[:p]
             obj = exp_left.split('.')[0]
@@ -986,8 +993,8 @@ class ParameterExpressionDialog(wx.Dialog):
         '''OnApply(self, event) --> None
         '''
         evalstring = self.GetExpression()
-        print 'Trying to evaluate evalstring'
-        print evalstring
+        #print 'Trying to evaluate evalstring'
+        #print evalstring
         try:
             self.model.eval_in_model(evalstring)
         except Exception, e:
@@ -1378,25 +1385,25 @@ class Plugin(framework.Template):
         sim_exp = []
         data_names = []
         data = self.GetModel().get_data()
-        for i in range(len(data)):
-            code = self.find_code_segment(script, 'Dataset %i'%i)
-            sim_exp.append([])
-            data_names.append(data[i].name)
-            for line in code.splitlines()[:-1]:
-                sim_exp[-1].append(line.strip())
-        print data_names
-        print sim_exp
-        
+        try:
+            for i in range(len(data)):
+                code = self.find_code_segment(script, 'Dataset %i'%i)
+                sim_exp.append([])
+                data_names.append(data[i].name)
+                for line in code.splitlines()[:-1]:
+                    sim_exp[-1].append(line.strip())
+        except LookupError:
+            self.ShowErrorDialog('Could not locate all data sets in the'
+            ' script. There should be %i datasets'%len(data))
+            self.StatusMessage('ERROR No Layers in script')
+            return
         # Load the custom parameters:
         code = self.find_code_segment(script, 'Parameters')
         uservars_lines = code[1:].splitlines()
-        print code
-        print uservars_lines
-        
+
         self.model = self.GetModel().script_module.model
         sample = self.GetModel().script_module.sample
-        print all_names
-        #print sample
+
         self.sampleh = SampleHandler(sample, all_names)
         self.sampleh.model = self.model
         self.sample_widget.sampleh = self.sampleh
