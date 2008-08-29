@@ -100,6 +100,26 @@ class MainFrame(wx.Frame):
         self.mb_edit.AppendItem(self.mb_copy_sim)
         self.mb_copy_table = wx.MenuItem(self.mb_edit, wx.NewId(), "Copy Table", "Copy the parameter grid", wx.ITEM_NORMAL)
         self.mb_edit.AppendItem(self.mb_copy_table)
+        self.mb_edit_sub = wx.Menu()
+        self.mb_new_data_set = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&New data set\tAlt+N", "Appends a new data set", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_new_data_set)
+        self.mb_data_delete = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Delete\tAlt+D", "Deletes the selected data sets", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_data_delete)
+        self.mb_data_move_down = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Lower item\tAlt+L", "Move selected item down", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_data_move_down)
+        self.mb_data_move_up = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Raise item\tAlt+R", "Moves selected data sets up", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_data_move_up)
+        self.mb_edit_sub.AppendSeparator()
+        self.mb_toggle_show = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "Toggle &Show\tAlt+S", "Toggle show on and off for the selected data set", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_toggle_show)
+        self.mb_toggle_use = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "Toggle &Use\tAlt+U", "Toggle use on and off for the selected data sets", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_toggle_use)
+        self.mb_toggle_error = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "Toggle &Error\tAlt+E", "Turn the use of error on and off", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_toggle_error)
+        self.mb_edit_sub.AppendSeparator()
+        self.mb_toggle_calc = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Calculations\tAlt+C", "OPens dialog box to define dataset calculations", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_toggle_calc)
+        self.mb_edit.AppendMenu(wx.NewId(), "Data", self.mb_edit_sub, "")
         self.main_frame_menubar.Append(self.mb_edit, "Edit")
         self.mb_view = wx.Menu()
         self.mb_view_zoom = wx.MenuItem(self.mb_view, wx.NewId(), "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK)
@@ -137,6 +157,10 @@ class MainFrame(wx.Frame):
         self.mb_set.AppendItem(self.mb_set_opt)
         self.mb_set_dataloader = wx.MenuItem(self.mb_set, wx.NewId(), "Data Loader\tShift+Ctrl+D", "", wx.ITEM_NORMAL)
         self.mb_set.AppendItem(self.mb_set_dataloader)
+        self.mb_set_import = wx.MenuItem(self.mb_set, wx.NewId(), "Import\tShift+Ctrl+I", "Import settings for the data sets", wx.ITEM_NORMAL)
+        self.mb_set.AppendItem(self.mb_set_import)
+        self.mb_set_dataplot = wx.MenuItem(self.mb_set, wx.NewId(), "Plot Markers\tShift+Ctrl+P", "Set the symbols and lines of data and simulations", wx.ITEM_NORMAL)
+        self.mb_set.AppendItem(self.mb_set_dataplot)
         self.main_frame_menubar.Append(self.mb_set, "Settings")
         wxglade_tmp_menu = wx.Menu()
         self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Show Manual...", "Show the manual", wx.ITEM_NORMAL)
@@ -168,10 +192,10 @@ class MainFrame(wx.Frame):
         self.data_grid_choice = wx.Choice(self.data_notebook_pane_2, -1, choices=["test2", "test1"])
         self.static_line_1 = wx.StaticLine(self.data_notebook_pane_2, -1)
         self.data_grid = wx.grid.Grid(self.data_notebook_pane_2, -1, size=(1, 1))
-        self.plot_data = plotpanel.DataPlotPanel(self.plot_notebook_data)
-        self.plot_fom = plotpanel.ErrorPlotPanel(self.plot_notebook_fom)
-        self.plot_pars = plotpanel.ParsPlotPanel(self.plot_notebook_Pars)
-        self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook_foms)
+        self.plot_data = plotpanel.DataPlotPanel(self.plot_notebook_data, config = self.config, config_name = 'data plot', )
+        self.plot_fom = plotpanel.ErrorPlotPanel(self.plot_notebook_fom, config = self.config, config_name = 'fom plot', )
+        self.plot_pars = plotpanel.ParsPlotPanel(self.plot_notebook_Pars, config = self.config, config_name = 'pars plot', )
+        self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook_foms, config = self.config, config_name = 'fom scan plot', )
         self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook_grid)
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, -1)
         self.shell = wx.py.shell.Shell(self.input_notebook_shell, -1, locals = locals())
@@ -196,6 +220,14 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_graph, self.mb_copy_graph)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_sim, self.mb_copy_sim)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, self.mb_copy_table)
+        self.Bind(wx.EVT_MENU, self.eh_data_new_set, self.mb_new_data_set)
+        self.Bind(wx.EVT_MENU, self.eh_data_delete, self.mb_data_delete)
+        self.Bind(wx.EVT_MENU, self.eh_data_move_down, self.mb_data_move_down)
+        self.Bind(wx.EVT_MENU, self.eh_data_move_up, self.mb_data_move_up)
+        self.Bind(wx.EVT_MENU, self.eh_data_toggle_show, self.mb_toggle_show)
+        self.Bind(wx.EVT_MENU, self.eh_data_toggle_use, self.mb_toggle_use)
+        self.Bind(wx.EVT_MENU, self.eh_data_toggle_error, self.mb_toggle_error)
+        self.Bind(wx.EVT_MENU, self.eh_data_calc, self.mb_toggle_calc)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_zoom, self.mb_view_zoom)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_zoomall, self.mb_view_zoomall)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_log, self.mb_view_yscale_log)
@@ -209,6 +241,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_fit_analyze, self.mb_fit_analyze)
         self.Bind(wx.EVT_MENU, self.eh_mb_set_opt, self.mb_set_opt)
         self.Bind(wx.EVT_MENU, self.eh_mb_set_dal, self.mb_set_dataloader)
+        self.Bind(wx.EVT_MENU, self.eh_data_import, self.mb_set_import)
+        self.Bind(wx.EVT_MENU, self.eh_data_plots, self.mb_set_dataplot)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, self.mb_misc_showman)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_prettyplot, self.mb_misc_prettyplot)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, self.mb_misc_about)
@@ -240,7 +274,7 @@ class MainFrame(wx.Frame):
         #self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
         
         
-        self.model = model.Model()
+        self.model = model.Model(config = self.config)
         self.solver_control = solvergui.SolverController(self, self.config)
     
         self.plugin_control = \
@@ -418,8 +452,7 @@ class MainFrame(wx.Frame):
         self.hor_splitter.SetSashGravity(0.75)
             
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
-        print "Event handler `eh_mb_new' not implemented"
-        event.Skip()
+        event_handlers.new(self, event)
 
     def eh_mb_open(self, event): # wxGlade: MainFrame.<event_handler>
         #print "Event handler `eh_mb_open' not implemented"
@@ -605,6 +638,36 @@ class MainFrame(wx.Frame):
 
     def eh_mb_fit_evaluate(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.evaluate(self, event)
+
+    def eh_data_new_set(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.eh_tb_add(event)
+
+    def eh_data_delete(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.eh_tb_delete(event)
+
+    def eh_data_move_down(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.list_ctrl.MoveItemDown()
+
+    def eh_data_move_up(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.list_ctrl.MoveItemUp()
+
+    def eh_data_toggle_show(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.list_ctrl.OnShowData(event)
+
+    def eh_data_toggle_use(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.list_ctrl.OnUseData(event)
+
+    def eh_data_toggle_error(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.list_ctrl.OnUseError(event)
+        
+    def eh_data_calc(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.list_ctrl.OnCalcEdit(event)
+
+    def eh_data_import(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.list_ctrl.OnImportSettings(event)
+
+    def eh_data_plots(self, event): # wxGlade: MainFrame.<event_handler>
+        self.data_list.list_ctrl.OnPlotSettings(event)
 
 # end of class MainFrame
 

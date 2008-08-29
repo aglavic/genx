@@ -26,10 +26,11 @@ class Model:
         the model and the data + various other attributes.
     '''
     
-    def __init__(self):
+    def __init__(self, config = None):
         '''
         Create a instance and init all the varaibles.
         '''
+        self.config = config
         self.data = data.DataList()
         self.script = ''
         self.parameters = parameters.Parameters()
@@ -39,11 +40,12 @@ class Model:
         self.fom = None # The value of the fom function
         
         # Registred classes that is looked for in the model
-        self.registred_classes = ['Layer','Stack','Sample','Instrument',\
-                                    'model.Layer', 'model.Stack',\
-                                     'model.Sample','model.Instrument',\
-                                     'UserVars','Surface','Bulk']
-        self.set_func = 'set'
+        self.registred_classes = []
+        #self.registred_classes = ['Layer','Stack','Sample','Instrument',\
+        #                            'model.Layer', 'model.Stack',\
+        #                             'model.Sample','model.Instrument',\
+        #                             'UserVars','Surface','Bulk']
+        self.set_func = 'set' #'set'
         self._reset_module()
 
         # Temporary stuff that needs to keep track on
@@ -51,7 +53,26 @@ class Model:
         self.saved = False
         self.compiled = False
         
-        
+    def read_config(self):
+        '''Read in the config file
+        '''
+        # Ceck so that config is loaded
+        if not self.config:
+            return
+        try:
+            val = self.config.get('parameters', 'registred classes')
+        except:
+            print 'Could not find config for parameters, registered classes'
+        else:
+            self.registred_classes = [s.strip() for s in val.split(';')]
+        try:
+            val = self.config.get('parameters', 'set func')
+        except:
+            print 'Could not find config for parameters, set func'
+        else:
+            self.set_func = val
+            
+    
     def load(self,filename):
         ''' 
         Function to load the necessary parameters from a model file.
@@ -518,10 +539,31 @@ class Model:
         the classes defined by self.registred_classes.
         To be used in the parameter grid.
         '''
-        #First find the classes that exists..
+        # Start by updating the config file
+        self.read_config()
+        # First we should see if any of the 
+        # classes is defnined in model.__pars__
+        # or in __pars__
+        pars = []
+        try:
+            # Check if the have a pars in module named model
+            pars = self.eval_in_model('model.__pars__')
+            pars = ['model.%s'%p for p in pars]
+        except:
+            # Check if we have a __pars__ in the main script
+            try:
+                pars = self.eval_in_model('__pars__')
+                pars = ['%s'%p for p in pars]
+            except:
+                pass
+        isstrings = all([type(p) == type('') for p in pars])
+        if not isstrings:
+            pars = []
+        print pars
+        # First find the classes that exists..
         # and defined in self.registred_classes
         classes=[]
-        for c in self.registred_classes:
+        for c in self.registred_classes + pars:
             try:
                 ctemp = self.eval_in_model(c)
             except:
@@ -543,9 +585,11 @@ class Model:
             funclist = [[member for member in dir(self.eval_in_model(obj))\
                         if member[:len(self.set_func)] == self.set_func]\
                             for obj in objlist]
+            return objlist, funclist
         #print 'Magic parameters...'
         #print objlist, funclist
-        return objlist, funclist
+        return [],[]
+        
     
     # Set functions - a necessary evil...
         

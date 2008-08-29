@@ -22,6 +22,8 @@ from lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:
 ModelID='MingInterdiff'
+# Automatic loading of parameters possible by including this list
+__pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
 # Used for making choices in the GUI
 instrument_string_choices = {'coords': ['q','tth'],\
     'restype': ['no conv', 'fast conv',\

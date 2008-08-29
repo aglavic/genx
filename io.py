@@ -1,7 +1,6 @@
 '''
 File: genxio.py 
-io function for Genx. These include loading of initilazation files and
-model files.
+io function for Genx. These include loading of initilazation files.
 Programmed by: Matts Bjorck
 Last changed: 2008 06 28
 '''

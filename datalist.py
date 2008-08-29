@@ -29,7 +29,7 @@ class DataController:
         return self.data
     
     def get_column_headers(self):
-        return ['Name','Show','Active','Errors']
+        return ['Name','Show','Use','Errors']
         
     def get_count(self):
         return self.data.get_len()
@@ -567,6 +567,8 @@ class VirtualDataList(wx.ListCtrl):
         indices = self._GetSelectedItems()
         self.data_cont.toggle_show_data(indices)
         self._UpdateData('Show data set flag toggled', data_changed = True)
+        # Forces update of list control
+        self.SetItemCount(self.data_cont.get_count())
             
     def OnUseData(self, evt):
         '''OnUseData(self, evt) --> None
@@ -575,6 +577,8 @@ class VirtualDataList(wx.ListCtrl):
         indices = self._GetSelectedItems()
         self.data_cont.toggle_use_data(indices)
         self._UpdateData('Use data set flag toggled', data_changed = True)
+        # Forces update of list control
+        self.SetItemCount(self.data_cont.get_count())
         
     def OnUseError(self, evt):
         '''OnUseData(self, evt) --> None
@@ -583,6 +587,8 @@ class VirtualDataList(wx.ListCtrl):
         indices = self._GetSelectedItems()
         self.data_cont.toggle_use_error(indices)
         self._UpdateData('Use error in data set toggeled', data_changed = True)
+        # Forces update of list control
+        self.SetItemCount(self.data_cont.get_count())
         
     def OnCalcEdit(self, evt):
         '''OnCalcEdit(self, evt) --> None
