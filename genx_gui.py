@@ -332,7 +332,7 @@ class MainFrame(wx.Frame):
         # To force an update of the menubar...
         self.plot_data.SetZoom(False)
         event_handlers.new(self, None)
-        
+        print self.GetSize()
         #### End Manual config
         
     def __set_properties(self):
@@ -439,18 +439,29 @@ class MainFrame(wx.Frame):
         self.Layout()
         self.Centre()
         # end wxGlade
-        if os.name == 'mac':
+        
+
+    def Show(self):
+        ''' Overiding the default method since any resizing has to come AFTER
+            the calls to Show
+        '''
+        wx.Frame.Show(self)
+        if os.name == 'mac' or os.name == '':
             self.Maximize()
             self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
             self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*5.5/10.)
         else:
             size = wx.DisplaySize()
+            #print size
             self.SetSize((size[0]*3./4., size[1]*3./4.))
+            #print self.GetSize()
             self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
-            self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*2./3.)
+            self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*1./2.)
+            self.Centre()
         #Gravity sets how much the upper/left window is resized default 0
         self.hor_splitter.SetSashGravity(0.75)
         #self.Maximize()
+
             
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.new(self, event)
