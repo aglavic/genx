@@ -38,7 +38,6 @@ class MainFrame(wx.Frame):
         self.hor_splitter = wx.SplitterWindow(self.main_panel, -1, style=wx.SP_3D|wx.SP_BORDER)
         self.input_panel = wx.Panel(self.hor_splitter, -1)
         self.input_notebook = wx.Notebook(self.input_panel, -1, style=wx.NB_BOTTOM)
-        self.input_notebook_shell = wx.Panel(self.input_notebook, -1)
         self.input_notebook_script = wx.Panel(self.input_notebook, -1)
         self.input_notebook_grid = wx.Panel(self.input_notebook, -1)
         self.plot_panel = wx.Panel(self.hor_splitter, -1)
@@ -198,7 +197,6 @@ class MainFrame(wx.Frame):
         self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook_foms, config = self.config, config_name = 'fom scan plot', )
         self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook_grid)
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, -1)
-        self.shell = wx.py.shell.Shell(self.input_notebook_shell, -1, locals = locals())
 
         self.__set_properties()
         self.__do_layout()
@@ -384,7 +382,6 @@ class MainFrame(wx.Frame):
         frame_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         input_sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer_9 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_8 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_7 = wx.BoxSizer(wx.HORIZONTAL)
         plot_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -428,11 +425,8 @@ class MainFrame(wx.Frame):
         self.input_notebook_grid.SetSizer(sizer_7)
         sizer_8.Add(self.script_editor, 1, wx.EXPAND, 0)
         self.input_notebook_script.SetSizer(sizer_8)
-        sizer_9.Add(self.shell, 1, wx.EXPAND, 0)
-        self.input_notebook_shell.SetSizer(sizer_9)
         self.input_notebook.AddPage(self.input_notebook_grid, "Grid")
         self.input_notebook.AddPage(self.input_notebook_script, "Script")
-        self.input_notebook.AddPage(self.input_notebook_shell, "Shell")
         input_sizer.Add(self.input_notebook, 1, wx.EXPAND, 0)
         self.input_panel.SetSizer(input_sizer)
         self.hor_splitter.SplitHorizontally(self.plot_panel, self.input_panel)
@@ -445,11 +439,18 @@ class MainFrame(wx.Frame):
         self.Layout()
         self.Centre()
         # end wxGlade
-        #self.Maximize()
-        #self.ver_splitter.SetSashPosition(\
-        #    self.data_list.GetEffectiveMinSize().GetWidth())
+        if os.name == 'mac':
+            self.Maximize()
+            self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
+            self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*5.5/10.)
+        else:
+            size = wx.DisplaySize()
+            self.SetSize((size[0]*3./4., size[1]*3./4.))
+            self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
+            self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*2./3.)
         #Gravity sets how much the upper/left window is resized default 0
         self.hor_splitter.SetSashGravity(0.75)
+        #self.Maximize()
             
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.new(self, event)
