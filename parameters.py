@@ -61,7 +61,7 @@ class Parameters:
         
     def get_fit_pars(self):
         ''' Returns the variables needed for fitting '''
-        print 'Data in the parameters class: ', self.data
+        #print 'Data in the parameters class: ', self.data
         rows = range(len(self.data))
         row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
                 not self.data[nmb][0]=='']

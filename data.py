@@ -99,15 +99,21 @@ class DataSet:
         self.x_raw = new_set.x_raw
         self.y_raw = new_set.y_raw
         self.error_raw = new_set.error_raw
-    
-        self.extra_data = new_set.extra_data
+        
+        try:
+            self.extra_data = new_set.extra_data
+        except AttributeError:
+            self.extra_data = {}
     
         # The different commands to transform raw data to normal data
         self.x_command = new_set.x_command
         self.y_command = new_set.y_command
         self.error_command = new_set.error_command
-    
-        self.show = new_set.show
+        try:
+            self.show = new_set.show
+        except AttributeError:
+            self.show = True
+        
         self.use = new_set.use
         #Should the error be used
         self.use_error = new_set.use_error
@@ -431,7 +437,8 @@ class DataList:
         will be given an automatic name
         '''
         if name=='':
-            self.items.append(DataSet('Data %d'%self._counter,copy_from=self.items[-1]))
+            self.items.append(DataSet('Data %d'%self._counter,\
+                        copy_from=self.items[-1]))
             self._counter+=1
         else:
             self.items.append(DataSet(name,copy_from=self.items[-1]))

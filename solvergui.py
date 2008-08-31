@@ -69,10 +69,11 @@ class SolverController:
                          self.optimizer.set_sleep_time]
 
         options_bool = ['use pop mult', 'use max generations',\
-                        'use start guess']
+                        'use start guess', 'use boundaries']
         setfunctions_bool = [ self.optimizer.set_use_pop_mult,\
                             self.optimizer.set_use_max_generations,\
-                            self.optimizer.set_use_start_guess]
+                            self.optimizer.set_use_start_guess, \
+                            self.optimizer.set_use_boundaries]
         
         # Make sure that the config is set
         if self.config:
@@ -96,6 +97,15 @@ class SolverController:
                             options_bool[index]
                 else:
                     setfunctions_bool[index](val)
+            try:
+                val = self.config.get('solver', 'create trial')
+            except io.OptionError, e:
+                print 'Could not read option solver.create trial'
+            else:
+                try:
+                    self.optimizer.set_create_trial(val)
+                except LookupError:
+                    print 'The mutation scheme %s does not exist'%val
 
     def WriteConfig(self):
         ''' WriteConfig(self) --> None
@@ -115,10 +125,11 @@ class SolverController:
                          self.optimizer.sleep_time]
 
         options_bool = ['use pop mult', 'use max generations',\
-                        'use start guess']
+                        'use start guess', 'use boundaries']
         set_bool = [ self.optimizer.use_pop_mult,\
                             self.optimizer.use_max_generations,\
-                            self.optimizer.use_start_guess]
+                            self.optimizer.use_start_guess,\
+                            self.optimizer.use_boundaries]
         
         # Make sure that the config is set
         if self.config:
@@ -137,9 +148,15 @@ class SolverController:
                     val = self.config.set('solver',\
                             options_bool[index], set_bool[index])
                 except io.OptionError, e:
-                    print 'Could not read option solver.' +\
+                    print 'Could not write option solver.' +\
                             options_bool[index]
         
+            try:
+                self.config.set('solver', 'create trial',\
+                    self.optimizer.get_create_trial())
+            except io.OptionError, e:
+                print 'Could not write option solver.create trial'
+                
     def ParametersDialog(self, frame):
         '''ParametersDialog(self, frame) --> None
         
@@ -158,6 +175,7 @@ class SolverController:
             exectext = 'fom_funcs.' + fom_func_name +\
                         ' = self.parent.model.fom_func'
             exec exectext in locals(), globals()
+        
         dlg = SettingsDialog(frame, self.optimizer, fom_func_name)
         
         def applyfunc(object):
@@ -238,8 +256,8 @@ class SolverController:
         if dlg.ShowModal() == wx.ID_YES:
             pass
         else:
-            print 'Resetting the values in the grid to ',\
-                self.start_parameter_values
+            #print 'Resetting the values in the grid to ',\
+            #    self.start_parameter_values
             evt = update_parameters(values = self.start_parameter_values,\
                 desc = 'Parameter Update', new_best = True, \
                 update_errors = False, fitting = False)
@@ -352,7 +370,7 @@ class SolverController:
         model = self.parent.model
         self.start_parameter_values = model.get_fit_values()
         self.optimizer.start_fit(model)
-        print 'Optimizer starting'
+        #print 'Optimizer starting'
         
     def StopFit(self):
         ''' StopFit(self) --> None
@@ -381,6 +399,12 @@ class SolverController:
 #==============================================================================
 class SettingsDialog(wx.Dialog):
     def __init__(self, parent, solver, fom_string):
+        '''__init__(self, parent, solver, fom_string, mut_schemes,\
+                    current_mut_scheme)
+                    
+        parent - parent window, solver - the solver (Diffev alg.)
+        fom_string - the fom function string
+        '''
         wx.Dialog.__init__(self, parent, -1, 'Optimizer settings')
         #self.SetAutoLayout(True)
         self.solver = solver
@@ -400,7 +424,7 @@ class SettingsDialog(wx.Dialog):
             fractionWidth = 2, integerWidth = 2)
         km_sizer.Add(km_text,0, \
                 wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        km_sizer.Add(self.km_control,0, \
+        km_sizer.Add(self.km_control,1, \
                 wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         km_sizer.Add((10, 20), 0, wx.EXPAND)
         de_grid.Add(km_sizer, (0,0),\
@@ -412,7 +436,7 @@ class SettingsDialog(wx.Dialog):
         kr_text = wx.StaticText(self, -1, 'k_r ')
         self.kr_control = NumCtrl(self, value = self.solver.kr,\
             fractionWidth = 2, integerWidth = 2)
-        kr_sizer.Add(kr_text, 0, \
+        kr_sizer.Add(kr_text, 1, \
                 wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         kr_sizer.Add(self.kr_control, 0, \
                 wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
@@ -422,13 +446,16 @@ class SettingsDialog(wx.Dialog):
         
         method_sizer = wx.BoxSizer(wx.HORIZONTAL)
         method_text = wx.StaticText(self, -1, 'Method ')
-        self.method_choice = wx.Choice(self, -1,choices = ['best1_bin'])
+        mut_schemes = [f.__name__ for f in self.solver.mutation_schemes]
+        self.method_choice = wx.Choice(self, -1,\
+            choices = mut_schemes)
+        self.method_choice.SetSelection(self.solver.get_create_trial(True))
         method_sizer.Add(method_text,0, \
             wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         method_sizer.Add(self.method_choice,0,\
             wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         de_grid.Add(method_sizer, (1,0),(1,2), \
-                    flag = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL,\
+                    flag = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,\
                     border = 5)
         
         de_box_sizer.Add(de_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
@@ -438,11 +465,20 @@ class SettingsDialog(wx.Dialog):
         fit_box = wx.StaticBox(self, -1, "Fitting" )
         fit_box_sizer = wx.StaticBoxSizer(fit_box, wx.VERTICAL )
         
+        # Make a sizer for the check boxes
+        cb_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        fit_box_sizer.Add(cb_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
         # Check box for start guess
-        startguess_control = wx.CheckBox(self, -1, "Use start guess")
-        fit_box_sizer.Add(startguess_control, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        startguess_control = wx.CheckBox(self, -1, "Start guess")
+        cb_sizer.Add(startguess_control, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
         startguess_control.SetValue(self.solver.use_start_guess)
         self.startguess_control = startguess_control
+        
+        # Check box for using boundaries
+        bound_control = wx.CheckBox(self, -1, "Use (M   ax, Min)")
+        cb_sizer.Add(bound_control, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        bound_control.SetValue(self.solver.use_boundaries)
+        self.bound_control = bound_control
         
         # FOM choice
         fom_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -609,6 +645,8 @@ class SettingsDialog(wx.Dialog):
         self.solver.use_max_generations = self.gen_fixedsize_radio.GetValue()
         self.solver.use_pop_mult = self.pop_multsize_radio.GetValue()
         self.solver.use_start_guess = self.startguess_control.GetValue()
+        self.solver.use_boundaries = self.bound_control.GetValue()
+        self.solver.set_create_trial(self.method_choice.GetStringSelection())
         if self.apply_change:
             self.apply_change(self)
             

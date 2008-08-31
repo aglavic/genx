@@ -98,10 +98,12 @@ class SampleHandler:
             i+=1
             item=slist[i]
         # Create the code for the sample
-        sample_code='sample = model.Sample(Stacks = ['
-        stack_strings=stack_code.split('\n')
+        sample_code = 'sample = model.Sample(Stacks = ['
+        stack_strings = stack_code.split('\n')
         if stack_strings != ['']:
-            for item in stack_strings:
+            # Added 20080831 MB bugfix
+            stack_strings.reverse()
+            for item in stack_strings[1:]:
                 itemp=item.split('=')[0]
                 sample_code = sample_code + itemp + ','
             sample_code = sample_code[:-2] + '], Ambient = Amb, Substrate = Sub)\n'
@@ -422,6 +424,7 @@ class SamplePanel(wx.Panel):
             self.Update()
         else:
             #print 'Pressed Cancel'
+            pass
         dlg.Destroy()
     
     def SetInstrument(self, instrument):
@@ -452,6 +455,7 @@ class SamplePanel(wx.Panel):
             self.Update()
         else:
             #print 'Pressed Cancel'
+            pass
         dlg.Destroy()
         
         
@@ -1118,6 +1122,7 @@ class Plugin(framework.Template):
         
         Loads the sample into the plugin...
         '''
+        
         self.ReadModel()
         
     def CreateNewModel(self, modelname = 'models.interdiff'):
@@ -1354,18 +1359,28 @@ class Plugin(framework.Template):
             self.StatusMessage('ERROR No sample section in script')
             return
         
-        re_layer = re.compile('([A-Za-z]\w*)\s*=\s*model\.Layer\s*\(.*\n')
+        re_layer = re.compile('([A-Za-z]\w*)\s*=\s*model\.Layer\s*\((.*)\)\n')
         re_stack = re.compile('([A-Za-z]\w*)\s*=\s*model\.Stack\s*\(\s*Layers=\[(.*)\].*\n')
         
-        layer_names = re_layer.findall(sample_text)
+        layers = re_layer.findall(sample_text)
+        layer_names = [t[0] for t in layers]
         stacks = re_stack.findall(sample_text)
-        
+        print stacks
+        print layers
+        print layer_names
         if len(layer_names) == 0:
             self.ShowErrorDialog('Could not find any Layers in the' +\
                 ' model script. Check the script.')
             self.StatusMessage('ERROR No Layers in script')
             return
         
+        # Now its time to set all the parameters so that we have the strings
+        # instead of the evaluated value - looks better
+        for lay in layers:
+            for par in lay[1].split(','):
+                vars = par.split('=')
+                exec '%s.%s = "%s"'%(lay[0], vars[0].strip(), vars[1].strip())\
+                                    in self.GetModel().script_module.__dict__
         
         all_names = []
         for stack in stacks:
@@ -1378,6 +1393,8 @@ class Plugin(framework.Template):
             all_names.append(stack[0])
                 
         all_names += layer_names
+            
+        print all_names
         
         # Load the simulation parameters
         script = self.GetModel().script
@@ -1403,7 +1420,7 @@ class Plugin(framework.Template):
 
         self.model = self.GetModel().script_module.model
         sample = self.GetModel().script_module.sample
-
+        
         self.sampleh = SampleHandler(sample, all_names)
         self.sampleh.model = self.model
         self.sample_widget.sampleh = self.sampleh

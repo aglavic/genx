@@ -21,6 +21,8 @@ class DiffEv:
     function.
     '''
     def __init__(self):
+        # Mutation schemes implemented
+        self.mutation_schemes = [self.best_1_bin, self.rand_1_bin]
         
         self.km = 0.7 # Mutation constant
         self.kr = 0.7 # Cross over constant
@@ -37,6 +39,8 @@ class DiffEv:
         
         # Flag to choose whether or not to use a starting guess
         self.use_start_guess = True
+        # Flag to choose wheter or not to use the boundaries
+        self.use_boundaries = True
         
         # Sleeping time for every generation
         self.sleep_time = 0.2
@@ -343,14 +347,53 @@ class DiffEv:
         trial = where(recombine, mut_vec, vec)
         
         # Implementation of constrained optimization
-        # Check so that the parameters lie indside the bounds
-        ok = bitwise_and(self.par_max > trial, self.par_min < trial)
-        # If not inside make a random re-initilazation of that parameter
-        trial = where(ok, trial, random.rand(self.n_dim)*\
-        (self.par_max - self.par_min) + self.par_min)
+        if self.use_boundaries:
+            # Check so that the parameters lie indside the bounds
+            ok = bitwise_and(self.par_max > trial, self.par_min < trial)
+            # If not inside make a random re-initilazation of that parameter
+            trial = where(ok, trial, random.rand(self.n_dim)*\
+            (self.par_max - self.par_min) + self.par_min)
         
         return trial
         
+    def rand_1_bin(self, vec):
+        '''best_1_bin(self, vec) --> trial [1D array]
+        
+        The default create_trial function for this class. 
+        uses the best1bin method to create a new vector from the population.
+        '''
+        # Create mutation vector
+        # Select three random vectors for the mutation
+        index1 = int(random.rand(1)*self.n_pop)
+        index2 = int(random.rand(1)*self.n_pop)
+        # Make sure it is not the same vector 
+        while index2 == index1:
+            index2 = int(random.rand(1)*self.n_pop)
+        index3 = int(random.rand(1)*self.n_pop)
+        while index3 == index1 or index3 == index2:
+            index3 = int(random.rand(1)*self.n_pop)
+            
+        # Calculate the mutation vector according to the rand/1 scheme
+        mut_vec = self.pop_vec[index3] + self.km*(self.pop_vec[index1]\
+         - self.pop_vec[index2])
+        
+        # Binomial test to detemine which parameters to change
+        # given by the recombination constant kr
+        recombine = random.rand(self.n_dim)<self.kr
+        # Make sure at least one parameter is changed
+        recombine[int(random.rand(1)*self.n_dim)]=1
+        # Make the recombination
+        trial = where(recombine, mut_vec, vec)
+        
+        # Implementation of constrained optimization
+        if self.use_boundaries:
+            # Check so that the parameters lie indside the bounds
+            ok = bitwise_and(self.par_max > trial, self.par_min < trial)
+            # If not inside make a random re-initilazation of that parameter
+            trial = where(ok, trial, random.rand(self.n_dim)*\
+            (self.par_max - self.par_min) + self.par_min)
+        
+        return trial
     # Different function for acessing and setting parameters that 
     # the user should have control over.
         
@@ -406,6 +449,20 @@ class DiffEv:
         '''
         return array(self.fom_log)
     
+    def get_create_trial(self, index = False):
+        '''get_create_trial(self, index = False) --> string or int
+        
+        returns the current create trial function name if index is False as
+        a string or as index in the mutation_schemes list.
+        '''
+        pos = self.mutation_schemes.index(self.create_trial)
+        if index:
+            # return the position
+            return pos
+        else:
+            # return the name
+            return self.mutation_schemes[pos].__name__
+    
     def set_km(self, val):
         '''set_km(self, val) --> None
         '''
@@ -415,6 +472,18 @@ class DiffEv:
         '''set_kr(self, val) --> None
         '''
         self.kr = val
+        
+    def set_create_trial(self, val):
+        '''set_create_trial(self, val) --> None
+        
+        Raises LookupError if the value val [string] does not correspond
+        to a mutation scheme/trial function
+        '''
+        # Get the names of the available functions
+        names = [f.__name__ for f in self.mutation_schemes]
+        # Find the postion of val
+        pos = names.index(val)
+        self.create_trial = self.mutation_schemes[pos]
         
     def set_pop_mult(self, val):
         '''set_pop_mult(self, val) --> None
@@ -455,6 +524,12 @@ class DiffEv:
         '''set_use_start_guess(self, val) --> None
         '''
         self.use_start_guess = val
+    
+    def set_use_boundaries(self, val):
+        '''set_use_boundaries(self, val) --> None
+        '''
+        self.use_boundaries = val
+        
     
     
 #==============================================================================
