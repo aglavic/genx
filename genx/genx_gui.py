@@ -332,7 +332,6 @@ class MainFrame(wx.Frame):
         # To force an update of the menubar...
         self.plot_data.SetZoom(False)
         event_handlers.new(self, None)
-        print self.GetSize()
         #### End Manual config
         
     def __set_properties(self):
@@ -456,7 +455,7 @@ class MainFrame(wx.Frame):
             self.SetSize((size[0]*3./4., size[1]*3./4.))
             #print self.GetSize()
             self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
-            self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*1./2.)
+            self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*6.0/10.)
             self.Centre()
         #Gravity sets how much the upper/left window is resized default 0
         self.hor_splitter.SetSashGravity(0.75)

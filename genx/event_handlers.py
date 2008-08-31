@@ -50,12 +50,14 @@ def open(frame, event):
         frame.model.load(dlg.GetPath())
         frame.config.load_model(frame.model.load_addition('config'))
         [p.ReadConfig() for p in get_pages(frame)]
-        _post_new_model_event(frame, frame.model)
-        path, filename = os.path.split(path)
-        set_title(frame, filename, path)
         # Letting the plugin do their stuff...
         frame.plugin_control.OnOpenModel(None)
         frame.main_frame_statusbar.SetStatusText('Model loaded from file', 1)
+        # Post an event to update everything else
+        _post_new_model_event(frame, frame.model)
+        path, filename = os.path.split(path)
+        set_title(frame, filename, path)
+        
     dlg.Destroy()
     
     
@@ -667,7 +669,7 @@ def change_data_grid_view(frame, event):
     
     change the data displayed in the grid...
     '''
-    print event.GetSelection()
+    #print event.GetSelection()
     dataset = frame.model.data[event.GetSelection()]
     rows = frame.data_grid.GetNumberRows()
     new_rows = max(len(dataset.x), len(dataset.x_raw))

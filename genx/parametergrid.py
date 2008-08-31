@@ -84,7 +84,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
             self.GetView().ProcessTableMessage(msg)
             self.pars.set_value(row, col, value)
         # For updating the column labels according to the number of fitted parameters
-        if col == 2:
+        if col == 2 or col == 3 or col == 4:
              self.GetView().ForceRefresh()
 
     def DeleteRows(self,rows):
@@ -123,21 +123,39 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         return True
-
-    # Called when the grid needs to display labels
+    
+    def GetAttr(self, row, col, kind):
+        '''Called by the grid to find the attributes of the cell,
+        bkg color, text colour, font and so on.
+        '''
+        attr = gridlib.GridCellAttr()
+        if col == 1 and row < self.pars.get_len_rows():
+            val = self.pars.get_value(row,1)
+            max_val = self.pars.get_value(row,4)
+            min_val = self.pars.get_value(row,3)
+            if  val > max_val or val < min_val:
+                attr.SetBackgroundColour(wx.Colour(204, 0, 0))
+                attr.SetTextColour(wx.Colour(255, 255, 255))
+                
+        return attr
+        
     def GetColLabelValue(self, col):
+        '''Called when the grid needs to display labels
+        '''
         return self.pars.get_col_headers()[col]
 
-    # Called to determine the kind of editor/renderer to use by
-    # default, doesn't necessarily have to be the same type used
-    # natively by the editor/renderer if they know how to convert.
     def GetTypeName(self, row, col):
+        '''Called to determine the kind of editor/renderer to use by
+        default, doesn't necessarily have to be the same type used
+        natively by the editor/renderer if they know how to convert.
+        '''
         return self.data_types[col]
 
-    # Called to determine how the data can be fetched and stored by the
-    # editor and renderer.  This allows you to enforce some type-safety
-    # in the grid.
     def CanGetValueAs(self, row, col, type_name):
+        '''Called to determine how the data can be fetched and stored by the
+        editor and renderer.  This allows you to enforce some type-safety
+        in the grid.
+        '''
         col_type = self.data_types[col].split(':')[0]
         if type_name == col_type:
             return True
@@ -147,37 +165,42 @@ class ParameterDataTable(gridlib.PyGridTableBase):
     def CanSetValueAs(self, row, col, type_name):
         return self.CanGetValueAs(row, col, type_name)
 
-    def SetParameters(self, pars):
+    def SetParameters(self, pars, clear = True):
         '''
         SetParameters(self, pars) --> None
         
         Set the parameters in the table to pars. 
         pars has to an instance of Parameters.
         '''
-        # Start by deleting all rows:
-        msg=gridlib.GridTableMessage(self,\
-            gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,\
-             self.parent.GetNumberRows(), self.parent.GetNumberRows())
-        self.pars = parameters.Parameters()
-        self.GetView().ProcessTableMessage(msg)
-        msg = gridlib.GridTableMessage(self,\
-            gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
-        self.GetView().ProcessTableMessage(msg)
-        
-        self.GetView().ForceRefresh()
-        
-        self.pars = pars
-        msg = gridlib.GridTableMessage(self,\
-            gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, self.pars.get_len_rows()+1)
-        self.GetView().ProcessTableMessage(msg)
-        
-        msg = gridlib.GridTableMessage(self,\
-            gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
-        self.GetView().ProcessTableMessage(msg)
-        
-        self.GetView().ForceRefresh()
-        #print 'In parametergrid ', self.pars.data
-        
+        if clear:
+            # Start by deleting all rows:
+            msg=gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,\
+                self.parent.GetNumberRows(), self.parent.GetNumberRows())
+            self.pars = parameters.Parameters()
+            self.GetView().ProcessTableMessage(msg)
+            msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
+            self.GetView().ProcessTableMessage(msg)
+            
+            self.GetView().ForceRefresh()
+            
+            self.pars = pars
+            msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, self.pars.get_len_rows()+1)
+            self.GetView().ProcessTableMessage(msg)
+            
+            msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
+            self.GetView().ProcessTableMessage(msg)
+            
+            self.GetView().ForceRefresh()
+            #print 'In parametergrid ', self.pars.data
+        else:
+            self.pars = pars
+            msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
+            self.GetView().ProcessTableMessage(msg)
         
 
 
@@ -292,7 +315,7 @@ class ParameterGrid(gridlib.Grid):
         '''
         if evt.new_best:
             self.table.pars.set_value_pars(evt.values)
-            self.table.SetParameters(self.table.pars)
+            self.table.SetParameters(self.table.pars, clear = False)
         
         evt.Skip()
         

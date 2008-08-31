@@ -1,0 +1,14 @@
+2008-08-31:
+    Fixed problem with that the grid resetted, moved to the beginning of the
+    grid, during update when fitting.
+    Removed some print statements to silence the program.
+    Added a red background to the parameter that are out of bounds.
+    Added the possiblity to change the mutation scheme method.
+    Added the possiblity to do unconstrained fitting.
+    Fixed a couple of bugs in Reflectivity (empty print statements)
+    which caused the plugin to fail loading.
+    Found a bug in Reflectivity, could not load more than one stack - 
+    otherwise the order got screwed up. Fixed it. 
+    Made so that the Reflectivity module actually loads the expressions
+    rather than the values in the sample. This makes it possible to
+    store expressions.
