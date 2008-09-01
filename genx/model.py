@@ -556,7 +556,7 @@ class Model:
                 pars = ['%s'%p for p in pars]
             except:
                 pass
-        isstrings = all([type(p) == type('') for p in pars])
+        isstrings = sum([type(p) == type('') for p in pars]) == len(pars)
         if not isstrings:
             pars = []
         print pars
