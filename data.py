@@ -558,7 +558,7 @@ class DataList:
         # Check if we shoudlstart picking data sets to export
         
         if indices:
-            if not all([i < len(self.items) for i in indices]):
+            if not sum([i < len(self.items) for i in indices]) == len(indices):
                 raise 'Error in export_data_to_files'
         else:
             indices = range(len(self.items))
@@ -578,7 +578,7 @@ class DataList:
         '''
         
         if indices:
-            if not all([i < len(self.items) for i in indices]):
+            if not sum([i < len(self.items) for i in indices]) == len(indices):
                 raise 'Error in get_data_as_asciitable'
         else:
             indices = range(len(self.items))

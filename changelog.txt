@@ -1,3 +1,7 @@
+2008-09-01:
+    Problem with that all does not exist in the standard library for 
+    python versions < 2.5. Removed all all statements.
+
 2008-08-31:
     Fixed problem with that the grid resetted, moved to the beginning of the
     grid, during update when fitting.
