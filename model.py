@@ -203,6 +203,8 @@ class Model:
         '''
         
         self._reset_module()
+        # Testing to see if this works under windows
+        self.script = '\n'.join(self.script.splitlines())
         try:
             exec self.script in self.script_module.__dict__
         except Exception, e:
@@ -559,7 +561,7 @@ class Model:
         isstrings = sum([type(p) == type('') for p in pars]) == len(pars)
         if not isstrings:
             pars = []
-        print pars
+        
         # First find the classes that exists..
         # and defined in self.registred_classes
         classes=[]

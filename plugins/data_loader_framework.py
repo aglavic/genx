@@ -4,7 +4,7 @@ Library that implements a template (Template) class for classes that
 loads data into GenX. Also included here is a DataLoaderController which
 takes care of the use of the DataLoaders. 
 '''
-import wx, os
+import wx, os, StringIO, traceback
 
 from utils import PluginHandler
 
@@ -36,6 +36,25 @@ class Template:
         Sets the data connection to the plugin.
         '''
         self.data = data
+        
+    def UpdateDataList(self):
+        '''UpdateDataList(self) --> None
+        
+        Forces the data list to update. This is only necessary if new
+        data sets have been added when the data has been loaded
+        '''
+        # Just a force update of the data_list
+        self.parent.SetItemCount(\
+            self.parent.data_cont.get_count())
+        # Updating the imagelist as well
+        self.parent._UpdateImageList()
+        
+    def SetStatusText(self, text):
+        '''SetStatusText(self, text) --> None
+        
+        Set a status text in the main frame for user information 
+        '''
+        self.parent.SetStatusText(text)
     
     def LoadDataFile(self, selected_items):
         '''LoadDataFile(self, seleceted_items) --> None
@@ -70,6 +89,7 @@ class Template:
                     , style = wx.OK|wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
+        
         return False
     
     def LoadData(self, data_item, file_path):
@@ -120,18 +140,18 @@ class PluginController:
         # Unload the plugins
         names = self.plugin_handler.loaded_plugins.copy()
         try:
-            [self.plugin_handler.unload_plugin(plugin) for plugin\
-                in names]
+            [self.plugin_handler.unload_plugin(pl) for pl in names]
+            self.parent.SetStatusText('Unloaded data loader %s'%names.keys()[0])
         except:
             outp = StringIO.StringIO()
             traceback.print_exc(200, outp)
             tbtext = outp.getvalue()
             outp.close()
             ShowErrorDialog(self.parent, 'Can NOT unload plugin object'+ \
-            self.plugin_handler.loaded_plugins[0]\
-             + '\nPython traceback below:\n\n' + tbtext)
+                names.keys()[0] + '\nPython traceback below:\n\n' + tbtext)
         try:
             self.plugin_handler.load_plugin(plugin)
+            self.parent.SetStatusText('Loaded data loader: %s'%plugin)
         except:
             outp = StringIO.StringIO()
             traceback.print_exc(200, outp)
@@ -199,4 +219,27 @@ class PluginDialog(wx.Dialog):
         if self.load_plugin_func != None:
             self.load_plugin_func(self.choice_control.GetStringSelection())
         event.Skip()
-        
+
+# Utility Dialog functions..
+def ShowInfoDialog(frame, message):
+    dlg = wx.MessageDialog(frame, message,
+                               'Information',
+                               wx.OK | wx.ICON_INFORMATION
+                               )
+    dlg.ShowModal()
+    dlg.Destroy()
+    
+def ShowErrorDialog(frame, message, position = ''):
+    dlg = wx.MessageDialog(frame, message,
+                               'ERROR',
+                               wx.OK | wx.ICON_ERROR
+                               )
+    dlg.ShowModal()
+    dlg.Destroy()
+
+def ShowWarningDialog(frame, message):
+    dlg = wx.MessageDialog(frame, message, 'Warning',
+                               wx.OK | wx.ICON_ERROR
+                               )
+    dlg.ShowModal()
+    dlg.Destroy()

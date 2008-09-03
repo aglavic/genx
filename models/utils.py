@@ -34,6 +34,8 @@ class UserVars:
 # for now only x-rays at single wavelengths
 # The non-disersive part but angle dependent
 __f0_dict__ = sl.load_f0dabax(__MODULE_DIR__+'/databases/f0_CromerMann.dat')
+# Workaround for the oxygen
+__f0_dict__['o2m'] = __f0_dict__['o2-.']
 f0 = sl.ScatteringLength(__f0_dict__)
 # Dispersive part at Q = 0
 __lookup_fp__ = sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_cxro/')

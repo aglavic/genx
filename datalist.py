@@ -250,12 +250,14 @@ class VirtualDataList(wx.ListCtrl):
     '''
     The listcontrol for the data
     '''
-    def __init__(self, parent, data_controller, config = None):
+    def __init__(self, parent, data_controller, config = None,\
+            status_text = None):
         wx.ListCtrl.__init__(self,parent,-1,\
         style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_EDIT_LABELS)
         self.data_cont = data_controller
         self.config = config
         self.parent = parent
+        self.status_text = status_text
         # This will set by the register function in the
         # plugin function !
         self.data_loader = None 
@@ -299,6 +301,16 @@ class VirtualDataList(wx.ListCtrl):
         dc.DrawCircle(8, 8, 7)
         dc.SelectObject(wx.NullBitmap)
         return bmp
+    
+    def SetStatusText(self, text):
+        '''SetStatusText(self, text) --> None
+        
+        Sets the status text of the frame
+        '''
+        class event:
+            pass
+        event.text = text
+        self.status_text(event)
     
     def _UpdateImageList(self):
         '''_UpdateImageList(self) --> None
@@ -704,13 +716,14 @@ class DataListControl(wx.Panel):
     '''
     The Control window for the whole Data list including a small toolbar
     '''
-    def __init__(self, parent, id=-1, config = None):
+    def __init__(self, parent, id=-1, config = None, status_text = None):
         wx.Panel.__init__(self,parent)
         # The two major windows:
         self.tool_panel=wx.Panel(self)
         mydata=data.DataList()
         self.data_cont=DataController(mydata)
-        self.list_ctrl=VirtualDataList(self, self.data_cont, config = config)
+        self.list_ctrl=VirtualDataList(self, self.data_cont, config = config,\
+            status_text = status_text)
         
         self.sizer_vert=wx.BoxSizer(wx.VERTICAL)
         self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
