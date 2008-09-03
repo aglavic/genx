@@ -47,7 +47,7 @@ class Plugin(Template):
         if load_array.shape[1]-1 < max(self.h_col, self.k_col, self.l_col,\
                 self.I_col, self.eI_col):
             ShowWarningDialog(self.parent, 'The data file does not contain'\
-                    + 'enough number of columns. It has ' + str(load_array[1])\
+                    + 'enough number of columns. It has ' + str(load_array.shape[1])\
                     + ' columns. Rember that the column index start at zero!')
             # Okay now we have showed a dialog lets bail out ...
             return

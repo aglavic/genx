@@ -1074,12 +1074,22 @@ class Plugin(framework.Template):
         self.StatusMessage('Reflectivity plugin loaded')
         
     def UpdateScript(self, event):
+        #print 'Updating the script'
+        #print dir(event)
         self.WriteModel()
         
     def OnNewModel(self, event):
         ''' Create a new model
         '''
-        self.CreateNewModel()
+        #print 'New model'
+        dlg = wx.SingleChoiceDialog(self.parent, 'Choose a model type to use',\
+                'Models', ['interdiff', 'spec_nx'], 
+                wx.CHOICEDLG_STYLE
+                )
+
+        if dlg.ShowModal() == wx.ID_OK:
+            self.CreateNewModel('models.%s'%dlg.GetStringSelection())
+        dlg.Destroy()
     
     def OnDataChanged(self, event):
         ''' Take into account changes in data..
@@ -1113,9 +1123,10 @@ class Plugin(framework.Template):
                 self.insert_new_data_segment(len(expl)-1)
             
             self.simulation_widget.SetExpressionList(expl)
-            
-            self.simulation_widget.Update()
-            self.WriteModel()
+            # Check so we have not clicked on new model button
+            if self.GetModel().script != '':
+                self.simulation_widget.Update()
+                self.WriteModel()
         
     def OnOpenModel(self, event):
         '''OnOpenModel(self, event) --> None
