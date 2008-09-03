@@ -312,11 +312,15 @@ class ValidateDialog(wx.Dialog):
                                     choices = validators[index]))
                 # Since we want to work with strings we have to find the right
                 # strings positons
+                #print validators[index], pars[index]
                 pos = 0
-                for i in range(len(validators[index])):
-                    if validators[index][i] == pars[index]:
-                        pos = i
-                        break
+                if type(pars[index][1]) == type(''):
+                    for i in range(len(validators[index])):
+                        if validators[index][i] == pars[index][1]:
+                            pos = i
+                            break
+                elif type(pars[index][1]) == type(1):
+                    pos = pars[index][1]
                 self.tc[-1].SetSelection(pos)
             # Otherwise it should be a validator ...
             else:
@@ -347,9 +351,9 @@ class ValidateDialog(wx.Dialog):
         for index in range(len(self.pars)):
             if type(self.validators[index]) == type([]):
                 # have to pad teh text to make it a string inside a string...
-                text = '\'' 
-                text += self.validators[index][self.tc[index].GetSelection()]
-                text += '\''
+                #text = '\'' 
+                text = self.validators[index][self.tc[index].GetSelection()]
+                #text += '\''
                 p.append(text)
             else:
                 p.append(self.tc[index].GetValue())

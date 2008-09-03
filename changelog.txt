@@ -11,6 +11,7 @@
      fixed.
     Added a show status text function to the datalist and data loader plugin
     Tested extra_data in the DataSet class. 
+    Added spec_nx to the models. Tested at looks as it works!
     
 2008-09-01:
     Problem with that all does not exist in the standard library for 

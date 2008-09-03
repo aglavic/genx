@@ -70,7 +70,11 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
             s='Instrument('
         
             for k in self.__dict__.keys():
-                stemp='%s = %s,' % (k,str(self.__getattribute__(k)))
+                # if the type is a string...
+                if type(self.__getattribute__(k)) == type(''):
+                    stemp = "%s = '%s'," % (k, str(self.__getattribute__(k)))
+                else:
+                    stemp='%s = %s,' % (k, str(self.__getattribute__(k)))
                 s=s+stemp
             return s[:-1]+')'
 
