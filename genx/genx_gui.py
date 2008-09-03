@@ -29,6 +29,7 @@ class MainFrame(wx.Frame):
         
         self.config = io.Config()
         self.config.load_default('./genx.conf')
+        status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__
         kwds["style"] = wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|wx.MAXIMIZE|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
@@ -186,7 +187,7 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.AddLabelTool(1008, "tb_calc_error_bars", (img.getcalc_error_barBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
         self.main_frame_toolbar.AddLabelTool(10009, "tb_zoom", (img.getzoomBitmap()), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
         # Tool Bar end
-        self.data_list = datalist.DataListControl(self.data_notebook_data, -1, self.config)
+        self.data_list = datalist.DataListControl(self.data_notebook_data, -1, self.config, status_text)
         self.label_2 = wx.StaticText(self.data_notebook_pane_2, -1, "  Data set: ")
         self.data_grid_choice = wx.Choice(self.data_notebook_pane_2, -1, choices=["test2", "test1"])
         self.static_line_1 = wx.StaticLine(self.data_notebook_pane_2, -1)
@@ -497,13 +498,12 @@ class MainFrame(wx.Frame):
         event_handlers.export_script(self, event)
 
     def eh_mb_quit(self, event): # wxGlade: MainFrame.<event_handler>
-        print "Event handler `eh_mb_quit' not implemented"
-        event.Skip()
+        self.Destroy()
 
     def eh_mb_copy_graph(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.copy_graph(self, event)
         #event.Skip()
-
+        
     def eh_mb_copy_sim(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.copy_sim(self, event)
         #event.Skip()

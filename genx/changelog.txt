@@ -1,6 +1,22 @@
+2008-09-03:
+    Implemented Quit callback.
+    Fixed link for the homepage in the About box. One slash was missing
+    Added the R-factor as one of the possible FOM's
+     that is R1 and R2
+    Fixed a bug under windows, the lineending gave an error
+    upon compiling. No the compile function splits all the lines and
+    adds a proper lineending to them.
+    Found a  bug in the loading of plugin - A new plugin could not be loaded
+    since I had overwritten that variable name with the previous plugins name,
+     fixed.
+    Added a show status text function to the datalist and data loader plugin
+    Tested extra_data in the DataSet class. 
+    
 2008-09-01:
     Problem with that all does not exist in the standard library for 
     python versions < 2.5. Removed all all statements.
+    Bugfix, the data table (view folder) was not completely cleared due to
+    misuse of DeleteRows method.
 
 2008-08-31:
     Fixed problem with that the grid resetted, moved to the beginning of the

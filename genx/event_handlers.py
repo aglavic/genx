@@ -672,11 +672,10 @@ def change_data_grid_view(frame, event):
     #print event.GetSelection()
     dataset = frame.model.data[event.GetSelection()]
     rows = frame.data_grid.GetNumberRows()
-    new_rows = max(len(dataset.x), len(dataset.x_raw))
-    if new_rows > rows:
-        frame.data_grid.AppendRows(new_rows - rows)
-    elif new_rows < rows:
-        frame.data_grid.DeleteRows(rows - new_rows)
+    new_rows = max(len(dataset.x), len(dataset.y),\
+                    len(dataset.x_raw), len(dataset.y_raw))
+    frame.data_grid.DeleteRows(numRows = rows)
+    frame.data_grid.AppendRows(new_rows)
     [[frame.data_grid.SetCellValue(row, col, '-') for col in range(6)]\
         for row in range(new_rows)]
     [frame.data_grid.SetCellValue(row, 0, '%.3e'%dataset.x_raw[row])\
@@ -737,7 +736,7 @@ def show_about_box(frame, event):
             numpy.version.version, scipy.version.version,\
              matplotlib.__version__, weave_version),
         350, wx.ClientDC(frame))
-    info.WebSite = ("http:///genx.sourceforge.net", "GenX homepage")
+    info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")
     # No developers yet
     #info.Developers = []
     head, tail = os.path.split(__file__)
