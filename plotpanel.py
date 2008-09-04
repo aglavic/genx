@@ -217,34 +217,53 @@ class PlotPanel(wx.Panel):
         '''
         return self.autoscale
     
-    def AutoScale(self):
+    def AutoScale(self, force = False):
         '''AutoScale(self) --> None
         
         A log safe way to autoscale the plots - the ordinary axis tight 
         does not work for negative log data. This works!
         '''
-        if not self.autoscale:
+        if not self.autoscale and not force:
             return
         # If nothing is plotted no autoscale...
         if sum([len(line.get_ydata()) > 0 for line in self.ax.lines]) == 0:
             return
-        if self.ax.get_yscale() == 'log':
+        if self.scale == 'log':
+            #print 'log scaling'
             # Find the lowest possible value of all the y-values that are 
             #greater than zero. check so that y data contain data before min
             # is applied
-            ymin = min([compress(line.get_ydata()>0, line.get_ydata()).min()\
-                   for line in self.ax.lines if any(array(line.get_ydata()) > 0,0)])
-            # Note that any returns False if the lenght is zero
+            tmp = [line.get_ydata().compress(line.get_ydata() > 0.0).min()\
+                   for line in self.ax.lines if array(line.get_ydata() > 0.0).sum() > 0]
+            if len(tmp) > 0:
+                ymin = min(tmp)
+            else:
+                ymin = 1e-3
+            tmp = [line.get_ydata().compress(line.get_ydata() > 0.0).max()\
+                   for line in self.ax.lines if array(line.get_ydata() > 0.0).sum() > 0]
+            if len(tmp) > 0:
+                ymax = max(tmp)
+            else:
+                ymax = 1
         else:
             ymin = min([array(line.get_ydata()).min()\
                      for line in self.ax.lines if len(line.get_ydata()) > 0])
-        ymax = max([array(line.get_ydata()).max()\
+            ymax = max([array(line.get_ydata()).max()\
                    for line in self.ax.lines if len(line.get_ydata()) > 0])
-        xmin = min([array(line.get_xdata()).min()\
-                    for line in self.ax.lines if len(line.get_ydata()) > 0])
-        xmax = max([array(line.get_xdata()).max()\
-                    for line in self.ax.lines if len(line.get_ydata()) > 0])
+        tmp = [array(line.get_xdata()).min()\
+                    for line in self.ax.lines if len(line.get_ydata()) > 0]
+        if len(tmp) > 0:
+            xmin = min(tmp)
+        else:
+            xmin = 0
+        tmp = [array(line.get_xdata()).max()\
+                    for line in self.ax.lines if len(line.get_ydata()) > 0]
+        if len(tmp) > 0:
+            xmax = max(tmp)
+        else:
+            xmax = 1
         # Set the limits
+        #print ymin, ymax
         self.ax.set_xlim(xmin, xmax)
         self.ax.set_ylim(ymin, ymax)
         #self.ax.set_yscale(self.scale)
@@ -259,11 +278,15 @@ class PlotPanel(wx.Panel):
         if self.ax:
             if scalestring == 'log':
                 self.scale = 'log'
-                self.ax.set_yscale('log')
+                self.AutoScale(force = True)
+                try:
+                    self.ax.set_yscale('log')
+                except OverflowError:
+                    self.AutoScale(force = True)
             elif scalestring == 'linear' or scalestring == 'lin':
                 self.scale = 'linear'
                 self.ax.set_yscale('linear')
-            self.AutoScale()
+                self.AutoScale()
             self.flush_plot()
             evt = state_changed(zoomstate = self.GetZoom(),\
                         yscale = self.GetYScale(), autoscale = self.autoscale)
@@ -484,6 +507,8 @@ class DataPlotPanel(PlotPanel):
         self.update(None)
         self.update = self.plot_data
         self.SetAutoScale(True)
+        self.ax = self.figure.add_subplot(111)
+        self.ax.set_autoscale_on(False)
         
     def singleplot(self, data):
         if not self.ax:
@@ -505,18 +530,32 @@ class DataPlotPanel(PlotPanel):
         self.ax.collections = []
         # plot the data
         #[self.ax.semilogy(data_set.x,data_set.y) for data_set in data]
-        [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
-            lw = data_set.data_linethickness, ls = data_set.data_linetype, \
-            marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
-            for data_set in data if not data_set.use_error and data_set.show]
-        # With errorbars
-        [self.ax.errorbar(data_set.x, data_set.y,\
-            yerr = c_[data_set.error*(data_set.error > 0),\
-             data_set.error].transpose(),\
-            c = data_set.data_color, lw = data_set.data_linethickness,\
-            ls = data_set.data_linetype, marker = data_set.data_symbol,\
-            ms = data_set.data_symbolsize)\
-         for data_set in data if data_set.use_error and data_set.show]
+        if self.scale == 'linear':
+            [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
+                lw = data_set.data_linethickness, ls = data_set.data_linetype, \
+                marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+                for data_set in data if not data_set.use_error and data_set.show]
+            # With errorbars
+            [self.ax.errorbar(data_set.x, data_set.y,\
+                yerr = c_[data_set.error*(data_set.error > 0),\
+                 data_set.error].transpose(),\
+                c = data_set.data_color, lw = data_set.data_linethickness,\
+                ls = data_set.data_linetype, marker = data_set.data_symbol,\
+                ms = data_set.data_symbolsize)\
+             for data_set in data if data_set.use_error and data_set.show]
+        if self.scale == 'log':
+            [self.ax.plot(data_set.x.compress(data_set.y > 0), data_set.y.compress(data_set.y > 0), c = data_set.data_color, \
+                lw = data_set.data_linethickness, ls = data_set.data_linetype, \
+                marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+                for data_set in data if not data_set.use_error and data_set.show]
+            # With errorbars
+            [self.ax.errorbar(data_set.x.compress(data_set.y > 0), data_set.y.compress(data_set.y > 0),\
+                yerr = c_[data_set.error*(data_set.error > 0),\
+                 data_set.error].transpose().compress(data_set.y > 0),\
+                c = data_set.data_color, lw = data_set.data_linethickness,\
+                ls = data_set.data_linetype, marker = data_set.data_symbol,\
+                ms = data_set.data_symbolsize)\
+             for data_set in data if data_set.use_error and data_set.show]
         self.AutoScale()
         # Force an update of the plot
         self.flush_plot()
@@ -568,6 +607,7 @@ class DataPlotPanel(PlotPanel):
         #[self.ax.semilogy(data_set.x, data_set.y, '.'\
         # ,data_set.x, data_set.y_sim) for data_set in data]
         # Plot the data sets without errorbars
+
         [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
             lw = data_set.data_linethickness, ls = data_set.data_linetype, \
             marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
@@ -584,7 +624,7 @@ class DataPlotPanel(PlotPanel):
         [self.ax.plot(data_set.x, data_set.y_sim, c = data_set.sim_color, \
             lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
             marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
-            for data_set in data if data_set.show]
+            for data_set in data if data_set.show and data_set.use]
         self.AutoScale()
         # Force an update of the plot
         self.flush_plot()
