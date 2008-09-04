@@ -1,3 +1,9 @@
+2008-09-04:
+    Added bc as a database in models.utils. The coherent neutron scattering 
+    lengths as given in Neutron News. 
+    Made some small changes to plotpanel to resolves 0 problems when plotting.
+    Updated the homepage with the first tutorial.
+
 2008-09-03:
     Implemented Quit callback.
     Fixed link for the homepage in the About box. One slash was missing

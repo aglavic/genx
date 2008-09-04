@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Neutron tutorial" />
+	<meta name="keywords" content="differential evolution, reflectivity, x-ray, xray, neutron, diffraction, fitting, refinement" />
+	<meta name="author" content="Matts Bjorck"/>
+	<link rel="stylesheet" type="text/css" href="../default.css" title="GenX" media="screen,projection" />
+	<title>GenX - Neutron tutorial I</title>
+</head>
+
+<body>
+<div id="container" >
+	<!--#include file="../header.html" -->
+	<div id="navigation">
+		<ul>
+			<li><a href = "../index.html">Home</a></li>
+			<li><a href="../install.html">Install</a></li>
+			<li class = "selected"><a href="../howtouse.html">HowToUse</a></li>
+			<!--<li><a href="#">Documentation</a></li>
+			<li><a href="#">FAQ</a></li> -->
+		</ul>
+	</div>
+	<div id="content">
+		<a name = "Start"></a><h2>Getting started</h2>		
+		<p> Start by opening GenX. Load the reflectivity plugin by going to the menu
+		Settings - Plugins - Load - Reflectivity. The computer will work abit then
+		two new tabs will appear in the lower right section of the window, Sample and 
+		Simulations. This is where we will define our sample later.</p>
+		
+		<a name = "Sample"></a><h2>Creating a sample</h2>
+		<p>Time to create the sample! Click on the Sample tab to get up our main working area at the moment.
+		Next, create a new model by clicking on the new model
+		button on the main toolbar (1). This will bring up a dialog window (2). Choose
+		the spec_nx model, this includes neutron simulations.</p>
+		<a href = "neutrons1_1.png"><img src="neutrons1_1.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a> <br>
+		<h3>Making a substrate</h3>
+		<p>So now we have the right model to simulate neutron reflectivty. The first step is to define
+		a substrate. Double click on the substrate line in the list in the Sample tab, see below.
+		This will pop up a dialog for feeding in numbers that defines the substrate layer. Put in the same
+		numbers as the ones below. Note that the <b>b</b> box should say: bc.Mg + bc.O and in the f box should be
+		fp.Mg + fp.O</p>
+		<a href = "neutrons1_2.png"><img src="neutrons1_2.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br>
+		
+		<p>So what does all this mean? Here is a short explanations
+		<dl>
+		<dt>b</dt>
+		<dd>The neutron scattering length per formula unit in fm (fermi meter = 1e-15m)</dd>
+		<dt>d</dt>
+		<dd>The thickness of the layer in AA (Angstroms = 1e-10m)</dd>
+		<dt>f</dt>
+		<dd>The x-ray scattering length per formula unit in electrons. To be strict it is the
+		number of Thompson scattering lengths for each formula unit.</dd>
+		<dt>dens</dt>
+		<dd>The density of formula units in units per Angstroms. Note the units!</dd>
+		<dt>magn_ang</dt>
+		<dd>The angle of the magnetic moment in degress. 0 degrees correspond to
+		a moment collinear with the neutron spin.</dd>
+		<dt>magn</dt>
+		<dd>The magnetic moment per formula unit (same formula unit as b and dens refer to)</dd>
+		<dt>sigma</dt>
+		<dd>The root mean square roughness of the top interface of the layer in Angstroms.</dd>		
+		</dl>
+		</p> 
+		
+		<a name = "Simulation"></a><h2>Doing a simulation</h2>
+		<h3>Making artifical data</h3>
+		<p>First we have make some x-data (q values) so we need what to simulate. 
+		First mark Data0 in the Data tab. Next, click on the calculator above it to 
+		the right. This gives a dialog box. Choose the alternative: Simulation in the 
+		Import from, Predefined choice box. Edit it so it looks like the picture below.
+		Click OK. Note that some data has occured in the plot window now. 
+		</p>
+		<a href = "neutrons1_3.png"><img src="neutrons1_3.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br>
+		
+		<h3>Defing the instrument</h3>
+		<p>Now we have to tell the program what we mean with the data we have given it. 
+		Click on the instrument icon in the Sample tab (1). This gives the follwing
+		dialog. Change the probe to <b>neutron</b> and coords to <b>q</b>. Thats it for 
+		now. Click Ok.</p>
+		<a href = "neutrons1_4.png"><img src="neutrons1_4.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br>
+		
+		<h3>Simulation</h3>
+		<p>Press the simualtion button! (The big lightning in the main toolbar).
+		This should produce something like this:
+		
+		<a href = "neutrons1_5.png"><img src="neutrons1_5.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br>
+		
+		Okay, we have total reflectivty edge. Change the plot to logscale instead.
+		Do this by going to the menu <b>view - y-scale - log</b>.
+		So mission completed we have the first neutron simulation.
+		Next step is to make a more complicated model and include polarized neutrons.
+		</p>
+		
+		<a name = "Layers"></a><h2>Adding Layers</h2>
+		<p>Just simulating the reflectivity of a single substrate is not very fun.
+		So, lets add another layer. Why not a magnetic? so we can play around with magnetic
+		neutron reflectivity. Before we start adding layers we have to add a stack 
+		which will contain the layers. So Add a stack by clicking on the second 
+		toolbar button in the sample tab (The one with a stack of layers and a plus).
+		Name it to Lays for example (In the popup dialog).
+		Now we can add a layer (First button with <b>one</b> layer and a plus), 
+		call it Fe for example. Look on the screenshot below for the
+		parameters.
+		<a href = "neutrons1_6.png"><img src="neutrons1_6.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br> 
+		</p>
+		<p>Click on the simulate button again and have look at some 
+		Kiessig fringes.</p>
+		
+		<a name = "Polarized"></a><h2>Polarised Neutron Refelctivity</h2>
+		<p>Lets start the polarized neutron reflectivty by turining the
+		polarization on in the clalculations. Go to the instrument
+		again and choose probe: <b>neutron pol</b>. At the same have look
+		at the values for the pol parameter. That is the polarisation state
+		of the instrument: <b>uu, dd</b> or <b>ud</b>. The last one is only valid
+		for spin-flip calculations. Press simulate again and observe the
+		change in the curve on the screen. For fun, change the polarisation to
+		<b>dd</b> and observe the other spin channel. 
+		It would be nice to see both spin channels at the same time...
+		But then we need two data sets.
+		<a href = "neutrons1_7.png"><img src="neutrons1_7.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br>
+		</p>
+		
+		<h3>Two spin channels</h3>
+		<h4>Adding a new data set</h4>
+		<p>Add a new data set by clicking on the Add data button, the green cross above the
+		data list. Clicking on that gives a new data set: <b>Data 1</b>. Mark it and click on
+		the calculator again. Now instead of typing all that we had to the last time we import
+		the calculations from Data 0. Click on the choice box at the top left and choose Data 0.
+		Voila! The calculations is imported. Clik on Ok. It should look like this:
+		<a href = "neutrons1_8.png"><img src="neutrons1_8.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br>
+		</p>
+		
+		<h4>Making two different simulations</h4>
+		<p>So now we have to data sets but we have to tie them to two different polarization states.
+		How do we do that?
+		Start by going to the simulation tab. Mark data set 0 in the list. Click the green button above
+		and the a dilog box appears. Make the inputs look like this:
+		<a href = "neutrons1_9.png"><img src="neutrons1_9.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br>
+		Note that the last box has to have quotation mark around it it should read <b>'uu'</b>.
+		Next, do the same for Data1. Mark the item in the list and click the green plus. 
+		This time the last box should read <b>'dd'</b>.
+		<a href = "neutrons1_10.png"><img src="neutrons1_10.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a><br>
+		Okay everything is set up now press simulate and ther we go: Two different spin channels 
+		in the same plot. 
+		</p>
+		
+		<h4>Finishing off</h4>
+		<p>Perhaps the names are not so exciting, Data0 and Data1. They can be renamed by a slow double click 
+		on the name in data tab. Perhaps uu and dd is more appropriate. Also the colour on the line can be changes 
+		so you can tell the differnce. Mark one data set and click on the plot symbol in the small toolbar in 
+		data tab. You can then change the colour and linewidth.</p>
+		
+		<p>You can of course do other things and not only spin polarized calculations. Perhaps simulating
+		the x-ray reflectivty of the same sample? Just remeber that the wavelength has to set as well as
+		the probe. I guess that you can think of a couple other uses. </p>
+		
+		
+		
+				
+		
+	 <br><br>
+	 <!--#config timefmt="%A %B %d, %Y" -->
+	 <span class="small">Last updated: <!--#echo var="LAST_MODIFIED" --></span></p>
+
+	</div>
+
+	<div id="subcontent">
+		<!--#include file="download_box.html" -->
+
+		<h2>Content</h2>
+		<ul class="menublock">
+			<li><a href="#Start">Getting Started</a></li>
+			<li><a href="#Sample">Creating a Sample</a></li>
+			<li><a href="#Simulation">Doing a Simulation</a></li>
+			<li><a href="#Layers">Adding Layers</a></li>
+			<li><a href="#Polarized">Polarised Neutron Refelctivity</a></li>
+		</ul>
+		<!--#include file="../left_links.html" -->
+
+	</div>
+
+	<!--#include file="../footer.html" -->
+
+	</div>
+</body>
+</html>

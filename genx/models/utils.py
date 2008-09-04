@@ -43,6 +43,9 @@ fp = sl.FormFactor(1.54, __lookup_fp__)
 # The total angle dependent form factor
 __lookup_f__ = sl.create_f_lookup(__lookup_fp__, __f0_dict__)
 f = sl.FormFactor(1.54, __lookup_f__)
+# The coherent scattering length for neutrons
+__bc_dict__ = sl.load_bdabax(__MODULE_DIR__+'/databases/DeBe_NeutronNews.dat')
+bc = sl.ScatteringLength(__bc_dict__)
 
 if __name__=='__main__':
     MyVars=UserVars()

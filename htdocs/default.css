@@ -59,7 +59,7 @@ img.right {float:right; margin:0 0 5px 12px;}
 #searchbar #searchbutton {width:auto; padding:0 1px; border:1px solid #808080; font-size:0.9em; text-align:center;}
 
 /* Footer styles */
-#footer {clear:both; width:758px; padding:5px 0; margin:0 1px; font-size:0.9em; color:#f0f0f0; background:#f57900;}
+#footer {clear:both; width:758px; padding:5px 0; margin:0 1px; font-size:0.9em; color:#f0f0f0; background:#fcaf3e;}
 #footer p {padding:0; margin:0; text-align:center;}
 #footer a {color:#f0f0f0; background-color:inherit; font-weight:bold;}
 #footer a:hover {color:#ffffff; background-color:inherit; text-decoration: underline;}

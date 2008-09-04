@@ -1054,7 +1054,7 @@ class Plugin(framework.Template):
         sample_panel = self.NewInputFolder('Sample')
         sample_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sample_panel.SetSizer(sample_sizer)
-        self.defs = ['Sample', 'Instrument']
+        self.defs = ['Instrument', 'Sample']
         self.sample_widget = SamplePanel(sample_panel, self)
         sample_sizer.Add(self.sample_widget, 1, wx.EXPAND|wx.GROW|wx.ALL)
         sample_panel.Layout()
@@ -1141,7 +1141,7 @@ class Plugin(framework.Template):
         correct script for initilization
         '''
         script = 'import %s as model\n'%modelname
-        script += 'from models.utils import UserVars, fp\n\n'
+        script += 'from models.utils import UserVars, fp, bc\n\n'
         
         for item in self.defs:
             script += '# BEGIN %s DO NOT CHANGE\n'%item
@@ -1187,12 +1187,13 @@ class Plugin(framework.Template):
     def WriteModel(self):
         script = self.GetModel().get_script()
         
+        code = 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
+        code += 'fp.set_wavelength(inst.wavelength)\n'
+        script = self.insert_code_segment(script, 'Instrument', code)
+        
         layer_code, stack_code, sample_code = self.sampleh.getCode()
         code = layer_code + '\n' + stack_code + '\n' + sample_code
         script = self.insert_code_segment(script, 'Sample', code)
-        
-        code = 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
-        script = self.insert_code_segment(script, 'Instrument', code)
         
         code = 'cp = UserVars()\n'
         code += ''.join([line + '\n' for line in\

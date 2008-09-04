@@ -92,7 +92,7 @@ def Specular(TwoThetaQz,sample,instrument):
     if type ==  instrument_string_choices['probe'][0] or type==0:
         fb = array(parameters['f'], dtype = complex64)
     else: 
-        fb = array(parameters['b'], dtype = complex64)
+        fb = array(parameters['b'], dtype = complex64)*1e-5
     
     dens = array(parameters['dens'], dtype = complex64)
     d = array(parameters['d'], dtype = float64)

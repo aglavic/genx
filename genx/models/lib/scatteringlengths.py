@@ -237,3 +237,47 @@ def create_f_lookup(lookup_fp, f0):
         return f
     
     return lookup_func
+
+def load_bdabax(filename):
+    '''load_bdabax(filename) --> b (dictonary)
+    
+    loads a dabax file with b (sld for neutrons) values 
+    and return a dictonary with b for the elements and isotopes 
+    given by the key name.
+    '''
+    def tofloat(x):
+        try:
+            f = float(x)
+        except:
+            f = np.nan
+        return f
+    f = open(filename)
+    real_label = ''
+    temp_dict = {}
+    for line in f.readlines():
+        # Get the label for each line
+        if line[0]=='#':
+            label=line[1]
+            ret=line[1:-1]
+        else:
+            label='D'
+            ret=line[:-1]
+        # Gets the real label, atom name
+        if label == 'S':
+            real_label = ret.split()[-1]
+        # The row contains data
+        if label == 'D':
+            # To get all values in the table
+            temp_dict[real_label.lower()] = map(lambda x:\
+                tofloat(x.split('(')[0]), ret.split())
+    
+    # We are intrested in the scatttering lengths
+    b_c = {}
+    for key in temp_dict:
+        val = temp_dict[key][1] + temp_dict[key][2]*1.0J
+        if key[0].isdigit():
+            b_c['i' + key] = val
+        else:
+            b_c[key] = val
+            
+    return b_c
