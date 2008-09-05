@@ -223,10 +223,12 @@ class PlotPanel(wx.Panel):
         A log safe way to autoscale the plots - the ordinary axis tight 
         does not work for negative log data. This works!
         '''
-        if not self.autoscale and not force:
+        if not (self.autoscale or force):
             return
-        # If nothing is plotted no autoscale...
+        # If nothing is plotted no autoscale use defaults...
         if sum([len(line.get_ydata()) > 0 for line in self.ax.lines]) == 0:
+            self.ax.set_xlim(0, 1)
+            self.ax.set_ylim(1e-3, 1.0)
             return
         if self.scale == 'log':
             #print 'log scaling'
@@ -263,7 +265,7 @@ class PlotPanel(wx.Panel):
         else:
             xmax = 1
         # Set the limits
-        #print ymin, ymax
+        #print 'Autoscaling to: ', ymin, ymax
         self.ax.set_xlim(xmin, xmax)
         self.ax.set_ylim(ymin, ymax)
         #self.ax.set_yscale(self.scale)
@@ -286,7 +288,9 @@ class PlotPanel(wx.Panel):
             elif scalestring == 'linear' or scalestring == 'lin':
                 self.scale = 'linear'
                 self.ax.set_yscale('linear')
-                self.AutoScale()
+                self.AutoScale(force = True)
+            else:
+                raise ValueError('Not allowed scaling')
             self.flush_plot()
             evt = state_changed(zoomstate = self.GetZoom(),\
                         yscale = self.GetYScale(), autoscale = self.autoscale)
@@ -544,14 +548,18 @@ class DataPlotPanel(PlotPanel):
                 ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
         if self.scale == 'log':
-            [self.ax.plot(data_set.x.compress(data_set.y > 0), data_set.y.compress(data_set.y > 0), c = data_set.data_color, \
+            [self.ax.plot(data_set.x.compress(data_set.y > 0),\
+             data_set.y.compress(data_set.y > 0), c = data_set.data_color, \
                 lw = data_set.data_linethickness, ls = data_set.data_linetype, \
                 marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
-            [self.ax.errorbar(data_set.x.compress(data_set.y > 0), data_set.y.compress(data_set.y > 0),\
+            [self.ax.errorbar(data_set.x.compress(data_set.y\
+                    - data_set.error > 0),\
+                data_set.y.compress(data_set.y -data_set.error > 0),\
                 yerr = c_[data_set.error*(data_set.error > 0),\
-                 data_set.error].transpose().compress(data_set.y > 0),\
+                data_set.error].transpose().compress(data_set.y -\
+                 data_set.error > 0),\
                 c = data_set.data_color, lw = data_set.data_linethickness,\
                 ls = data_set.data_linetype, marker = data_set.data_symbol,\
                 ms = data_set.data_symbolsize)\
@@ -606,20 +614,37 @@ class DataPlotPanel(PlotPanel):
         # plot the data
         #[self.ax.semilogy(data_set.x, data_set.y, '.'\
         # ,data_set.x, data_set.y_sim) for data_set in data]
-        # Plot the data sets without errorbars
-
-        [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
-            lw = data_set.data_linethickness, ls = data_set.data_linetype, \
-            marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
-            for data_set in data if not data_set.use_error and data_set.show]
-        # With errorbars
-        [self.ax.errorbar(data_set.x, data_set.y,\
-            yerr = c_[data_set.error*(data_set.error > 0),\
-             data_set.error].transpose(),\
-            c = data_set.data_color, lw = data_set.data_linethickness,\
-            ls = data_set.data_linetype, marker = data_set.data_symbol,\
-            ms = data_set.data_symbolsize)\
-         for data_set in data if data_set.use_error and data_set.show]
+        # Plot the data sets and take care if it is log scaled data
+        if self.scale == 'linear':
+            [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
+                lw = data_set.data_linethickness, ls = data_set.data_linetype, \
+                marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+                for data_set in data if not data_set.use_error and data_set.show]
+            # With errorbars
+            [self.ax.errorbar(data_set.x, data_set.y,\
+                yerr = c_[data_set.error*(data_set.error > 0),\
+                 data_set.error].transpose(),\
+                c = data_set.data_color, lw = data_set.data_linethickness,\
+                ls = data_set.data_linetype, marker = data_set.data_symbol,\
+                ms = data_set.data_symbolsize)\
+             for data_set in data if data_set.use_error and data_set.show]
+        if self.scale == 'log':
+            [self.ax.plot(data_set.x.compress(data_set.y > 0),\
+             data_set.y.compress(data_set.y > 0), c = data_set.data_color, \
+                lw = data_set.data_linethickness, ls = data_set.data_linetype, \
+                marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+                for data_set in data if not data_set.use_error and data_set.show]
+            # With errorbars
+            [self.ax.errorbar(data_set.x.compress(data_set.y\
+                    - data_set.error > 0),\
+                data_set.y.compress(data_set.y -data_set.error > 0),\
+                yerr = c_[data_set.error*(data_set.error > 0),\
+                data_set.error].transpose().compress(data_set.y -\
+                 data_set.error > 0),\
+                c = data_set.data_color, lw = data_set.data_linethickness,\
+                ls = data_set.data_linetype, marker = data_set.data_symbol,\
+                ms = data_set.data_symbolsize)\
+             for data_set in data if data_set.use_error and data_set.show]
         # The same thing for the simulation
         [self.ax.plot(data_set.x, data_set.y_sim, c = data_set.sim_color, \
             lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \

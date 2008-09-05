@@ -81,6 +81,7 @@ def save(frame, event):
     
     Event handler for saving a model file ...
     '''
+    frame.model.set_script(frame.script_editor.GetText())
     fname = frame.model.get_filename()
     # If model hasn't been saved
     if  fname == '':
