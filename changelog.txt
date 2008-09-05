@@ -1,3 +1,9 @@
+2008-09-05:
+    Hopefully fixed problem with negative numbers and errorbars in
+    the plotpanel module. 
+    Made everything that is in the script saved. (before only the simulated
+    part was saved)
+    
 2008-09-04:
     Added bc as a database in models.utils. The coherent neutron scattering 
     lengths as given in Neutron News. 
