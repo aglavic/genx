@@ -745,18 +745,25 @@ class DataListControl(wx.Panel):
             size = (-1, -1)
         self.bitmap_button_open = wx.BitmapButton(self.tool_panel, -1
         , img.getopen_smallBitmap(), size = size, style=wx.NO_BORDER)
+        self.bitmap_button_open.SetToolTipString('Import a data set')
         self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1
         , img.getaddBitmap(), size = size, style = wx.NO_BORDER)
+        self.bitmap_button_add.SetToolTipString('Add a new data set')
         self.bitmap_button_delete = wx.BitmapButton(self.tool_panel, -1
         , img.getdeleteBitmap(), size = size, style = wx.NO_BORDER)
+        self.bitmap_button_delete.SetToolTipString('Delete a data set')
         self.bitmap_button_move_up = wx.BitmapButton(self.tool_panel, -1
         , img.getmove_upBitmap(), size = size, style = wx.NO_BORDER)
+        self.bitmap_button_move_up.SetToolTipString('Move up')
         self.bitmap_button_move_down = wx.BitmapButton(self.tool_panel, -1
         , img.getmove_downBitmap(), size = size, style = wx.NO_BORDER)
+        self.bitmap_button_move_down.SetToolTipString('Move down')
         self.bitmap_button_plotting = wx.BitmapButton(self.tool_panel, -1
         , img.getplottingBitmap(), size = size, style = wx.NO_BORDER)
+        self.bitmap_button_open.SetToolTipString('Plot settings')
         self.bitmap_button_calc = wx.BitmapButton(self.tool_panel, -1
         , img.getcalcBitmap(), size = size, style = wx.NO_BORDER)
+        self.bitmap_button_open.SetToolTipString('Data Calculations')
         
         self.sizer_hor.Add(self.bitmap_button_open,proportion = 0, border = 2)
         self.sizer_hor.Add(self.bitmap_button_add,proportion = 0, border = 2)

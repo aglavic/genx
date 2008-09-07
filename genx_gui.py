@@ -163,10 +163,10 @@ class MainFrame(wx.Frame):
         self.mb_set.AppendItem(self.mb_set_dataplot)
         self.main_frame_menubar.Append(self.mb_set, "Settings")
         wxglade_tmp_menu = wx.Menu()
+        self.mb_models_help = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Models Help...", "Show help for the models", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.AppendItem(self.mb_models_help)
         self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Show Manual...", "Show the manual", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_showman)
-        self.mb_misc_prettyplot = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Pretty Plot", "Produce an almost publication quality plot", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.AppendItem(self.mb_misc_prettyplot)
         self.mb_misc_about = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "About...", "Shows information about GenX", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_about)
         self.main_frame_menubar.Append(wxglade_tmp_menu, "Misc")
@@ -242,8 +242,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_set_dal, self.mb_set_dataloader)
         self.Bind(wx.EVT_MENU, self.eh_data_import, self.mb_set_import)
         self.Bind(wx.EVT_MENU, self.eh_data_plots, self.mb_set_dataplot)
+        self.Bind(wx.EVT_MENU, self.eh_mb_models_help, self.mb_models_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, self.mb_misc_showman)
-        self.Bind(wx.EVT_MENU, self.eh_mb_misc_prettyplot, self.mb_misc_prettyplot)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, self.mb_misc_about)
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=10001)
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=10002)
@@ -531,12 +531,7 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def eh_mb_misc_showman(self, event): # wxGlade: MainFrame.<event_handler>
-        print "Event handler `eh_mb_misc_showman' not implemented"
-        event.Skip()
-
-    def eh_mb_misc_prettyplot(self, event): # wxGlade: MainFrame.<event_handler>
-        print "Event handler `eh_mb_misc_prettyplot' not implemented"
-        event.Skip()
+        event_handlers.show_manual(frame, event)
 
     def eh_mb_misc_about(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.show_about_box(self, event)
@@ -679,6 +674,9 @@ class MainFrame(wx.Frame):
 
     def eh_data_plots(self, event): # wxGlade: MainFrame.<event_handler>
         self.data_list.list_ctrl.OnPlotSettings(event)
+
+    def eh_mb_models_help(self, event): # wxGlade: MainFrame.<event_handler>
+        event_handlers.models_help(self, event)
 
 # end of class MainFrame
 

@@ -1,3 +1,10 @@
+2008-09-07:
+    Added colourized html text to the Refelctvity plugin.
+    Added tooltips to reflectivity plugin and data panel.
+    Added a frame to display doc strings html formatted from the
+    different modules in the models directory.
+===============================================================================
+2008-09-05: GenX2.0b2 released
 2008-09-05:
     Hopefully fixed problem with negative numbers and errorbars in
     the plotpanel module. 
@@ -45,3 +52,5 @@
     Made so that the Reflectivity module actually loads the expressions
     rather than the values in the sample. This makes it possible to
     store expressions.
+===============================================================================
+2008-08-29: GenX2.0b1 released

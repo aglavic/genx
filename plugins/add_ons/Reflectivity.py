@@ -40,26 +40,47 @@ class SampleHandler:
                 slist.append(layer.__repr__())
                 poslist.append((i,j))
                 j+=1
-            slist.append('Stack: Repetitions= %s'%str(stack.Repetitions))
+            slist.append('Stack: Repetitions = %s'%str(stack.Repetitions))
             poslist.append((i,None))
             i+=1
         slist.append(self.sample.Ambient.__repr__())
         for item in range(len(slist)):
             if slist[item][0]=='L' and item != 0 and item != len(slist) - 1:
                 if html_encoding:
-                    slist[item]='<pre>   <b>'+self.names[-item-1]+'</b>='+slist[item] + '</pre>'
+                    slist[item]='<code>&nbsp;&nbsp;&nbsp;<b>'+self.names[-item-1]+'</b> = '+slist[item] + '</code>'
+                    #slist[item] = self.htmlize(self.names[-item-1] + ' = model.' + slist[item])
                 else:
                     slist[item] = self.names[-item-1] + ' = model.' + slist[item]
             else:
-                if html_encoding:
-                    slist[item]='<pre><b>' + self.names[-item-1]+'</b>='+slist[item] + '</pre>'
+                if item == 0 or item == len(slist) - 1:
+                    # This is then the ambient or substrates
+                    if html_encoding:
+                        slist[item]='<code><b>' + self.names[-item-1]+'</b> = '+slist[item] + '</code>'
+                        #slist[item] = self.htmlize(self.names[-item-1] + ' = model.' + slist[item])
+                    else:
+                        slist[item] = self.names[-item-1] + ' = model.' + slist[item]
                 else:
-                    slist[item] = self.names[-item-1] + ' = model.' + slist[item]
+                    # This is a stack!
+                    if html_encoding:
+                        slist[item]='<font color = "BLUE"><code><b>' + self.names[-item-1]+'</b> = '+slist[item] + '</code></font>'
+                        #slist[item] = self.htmlize(self.names[-item-1] + ' = model.' + slist[item])
+                    else:
+                        slist[item] = self.names[-item-1] + ' = model.' + slist[item]
         poslist.append((None,None))
         slist.reverse()
         poslist.reverse()
         self.poslist=poslist
         return slist
+    
+    def htmlize(self, code): 
+        '''htmlize(self, code) --> code
+        
+        htmlize the code for display
+        '''
+        p = code.index('=')
+        name = '<code><b>%s</b></code>'%code[:p]
+        items = code[p:].split(',')
+        return name + ''.join(['<code>%s,</code>'%item for item in items])
 
     def getCode(self):
         '''
@@ -335,36 +356,43 @@ class SamplePanel(wx.Panel):
         InsertLayButton =  wx.BitmapButton(self, -1
         , images.getinsert_layerBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InsertLayButton,0)
+        InsertLayButton.SetToolTipString('Insert a new layer')
         self.Bind(wx.EVT_BUTTON, self.InsertLay, InsertLayButton)
         #InsertStackButton=wx.Button(self,-1, "Insert Stack")
         InsertStackButton = wx.BitmapButton(self, -1
         , images.getinsert_stackBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InsertStackButton, 0)
+        InsertStackButton.SetToolTipString('Insert a new stack')
         self.Bind(wx.EVT_BUTTON, self.InsertStack, InsertStackButton)
         #DeleteButton=wx.Button(self,-1, "Delete")
         DeleteButton = wx.BitmapButton(self, -1
         , images.getdeleteBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(DeleteButton, 0)
+        DeleteButton.SetToolTipString('Delete')
         self.Bind(wx.EVT_BUTTON, self.DeleteSample, DeleteButton)
         #MUpButton=wx.Button(self,-1, "MoveUp")
         MUpButton = wx.BitmapButton(self, -1
         , images.getmove_upBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(MUpButton, 0)
+        MUpButton.SetToolTipString('Move item up')
         self.Bind(wx.EVT_BUTTON, self.MoveUp, MUpButton)
         #MDownButton=wx.Button(self,-1, "MoveDown")
         MDownButton = wx.BitmapButton(self, -1
         , images.getmove_downBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(MDownButton, 0)
+        MDownButton.SetToolTipString('Move item down')
         self.Bind(wx.EVT_BUTTON, self.MoveDown, MDownButton)
         #SampleButton = wx.Button(self,-1, "Sample")
         SampleButton = wx.BitmapButton(self, -1
         , images.getsampleBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(SampleButton, 0)
+        SampleButton.SetToolTipString('Edit sample parameters')
         self.Bind(wx.EVT_BUTTON, self.EditSampleParameters, SampleButton)
         #InstrumentButton = wx.Button(self,-1, "Instrument")
         InstrumentButton = wx.BitmapButton(self, -1
         , images.getinstrumentBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InstrumentButton, 0)
+        InstrumentButton.SetToolTipString('Edit instrument')
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, InstrumentButton)
         
         #boxhor.Add(boxbuttons)
@@ -602,11 +630,13 @@ class DataParameterPanel(wx.Panel):
         button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
             images.getcustom_parameterBitmap()]
         callbacks = [self.Insert, self.Delete, self.EditPars]
+        tooltips = ['Insert a command', 'Delete command', 'Edit user variables']
         for i in range(len(button_names)):
             #button = wx.Button(self,-1, button_names[i])
             button = wx.BitmapButton(self, -1, button_images[i],\
                     style=wx.NO_BORDER, size = size)
             boxbuttons.Add(button, 1, wx.EXPAND)
+            button.SetToolTipString(tooltips[i])
             self.Bind(wx.EVT_BUTTON, callbacks[i], button)
         # END BUTTON SECTION
         boxver.Add(boxbuttons)

@@ -4,11 +4,13 @@ Programmer: Matts Bjorck
 Last changed: 2008 06 24
 '''
 
+__version__ = '2.0b trunk'
+
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
 
 import model as modellib
-import solvergui
+import solvergui, help
 
 def get_pages(frame):
     pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
@@ -17,9 +19,9 @@ def get_pages(frame):
 
 def set_title(frame, filename, path):
     if filename != '':
-        frame.SetTitle(filename + ' - ' + path + ' - GenX 2.0b1')
+        frame.SetTitle(filename + ' - ' + path + ' - ' + __version__)
     else:
-        frame.SetTitle('GenX 2.0b1')
+        frame.SetTitle('GenX ' + __version__)
 
 def new(frame, event):
     '''
@@ -708,7 +710,24 @@ def update_data(frame, event):
     callback for updating data, right now in the plugins
     '''
     frame.plugin_control.OnDataChanged(event)
+
+def models_help(frame, event):
+    '''models_help(frame, event) --> None
     
+    Show a help dialog for information about the different models.
+    '''
+    dlg = help.ModelsHelpDialog(frame,'models')
+    dlg.Show()
+    #dlg.ShowModal()
+    #dlg.Destroy()
+    
+def show_manual(frame, event):
+    '''show_manual(frame, event) --> None
+    
+    Callback to show the manual
+    '''
+    ShowNotificationDialog(frame, 'There is no manual yet!')
+
 def show_about_box(frame, event):
     '''show_about_box(frame, event) --> None
     
@@ -723,7 +742,7 @@ def show_about_box(frame, event):
         weave_version = weave.version.version
     info = wx.AboutDialogInfo()
     info.Name = "GenX"
-    info.Version = "2.0b1"
+    info.Version = __version__
     info.Copyright = "(C) 2008 Matts Bjorck"
     info.Description = wordwrap(
         "GenX is a multipurpose refinement program using the differential"
