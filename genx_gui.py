@@ -531,7 +531,7 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def eh_mb_misc_showman(self, event): # wxGlade: MainFrame.<event_handler>
-        event_handlers.show_manual(frame, event)
+        event_handlers.show_manual(self, event)
 
     def eh_mb_misc_about(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.show_about_box(self, event)
