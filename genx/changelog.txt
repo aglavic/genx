@@ -1,3 +1,7 @@
+2008-09-08:
+    Fixed the scattering factor database acess to automagically update
+    the values when changing the database references.
+    
 2008-09-07:
     Added colourized html text to the Refelctvity plugin.
     Added tooltips to reflectivity plugin and data panel.

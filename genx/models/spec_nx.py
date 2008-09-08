@@ -1,7 +1,102 @@
-''' Library for combined x-ray and neutrons simulations.
-
-The neutron simulations is capable of handling non-magnetic, 
-magnetic non-spin flip as well as neutron spin-flip reflectivity. 
+''' <h1>Library for combined x-ray and neutrons simulations.</h1>
+<p>The neutron simulations is capable of handling non-magnetic, 
+magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
+<h2>Classes</h2>
+<h3>Layer</h3>
+<code> Layer(b = 0.0, d = 0.0, f = 0.0+0.0J, dens = 1.0, magn_ang = 0.0, magn = 0.0, sigma = 0.0)</code>
+    <dl>
+    <dt><code><b>b</b></code></dt>
+    <dd>The neutron scattering length per formula unit in fm (fermi meter = 1e-15m)</dd>
+    <dt><code><b>d</b></code></dt>
+    <dd>The thickness of the layer in AA (Angstroms = 1e-10m)</dd>
+    <dt><code><b>f</b></code></dt>
+    <dd>The x-ray scattering length per formula unit in electrons. To be strict it is the
+    number of Thompson scattering lengths for each formula unit.</dd>
+    <dt><code><b>dens</b></code></dt>
+    <dd>The density of formula units in units per Angstroms. Note the units!</dd>
+    <dt><code><b>magn_ang</b></code></dt>
+    <dd>The angle of the magnetic moment in degress. 0 degrees correspond to
+    a moment collinear with the neutron spin.</dd>
+    <dt><code><b>magn</b></code></dt>
+    <dd>The magnetic moment per formula unit (same formula unit as b and dens refer to)</dd>
+    <dt><code><b>sigma</b></code></dt>
+    <dd>The root mean square roughness of the top interface of the layer in Angstroms.</dd>		
+    </dl>
+<h3>Stack</h3>
+<code> Stack(Layers = [], Repetitions = 1)</code>
+    <dl>
+    <dt><code><b>Layers</b></code></dt>
+    <dd>A <code>list</code> consiting of <code>Layer</code>s in the stack
+    the first item is the layer closest to the bottom</dd>
+    <dt><code><b>Repetitions</b></code></dt>
+    <dd>The number of repsetions of the stack</dd>
+    </dl>
+<h3>Sample</h3>
+<code> Sample(Stacks = [], Ambient = Layer(), Substrate = Layer())</code>
+    <dl>
+    <dt><code><b>Stacks</b></code></dt>
+    <dd>A <code>list</code> consiting of <code>Stack</code>s in the stacks
+    the first item is the layer closest to the bottom</dd>
+    <dt><code><b>Ambient</b></code></dt>
+    <dd>A <code>Layer</code> describing the Ambient (enviroment above the sample).
+     Only the scattering lengths and density of the layer is used.</dd>
+    <dt><code><b>Substrate</b></code></dt>
+    <dd>A <code>Layer</code> describing the substrate (enviroment below the sample).
+     Only the scattering lengths, density and  roughness of the layer is used.</dd>
+    </dl>
+    
+<h3>Instrument</h3>
+<code>Instrument(probe = 'x-ray', wavelength = 1.54, coords = 'tth',
+     I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2,
+     beamw = 0.01, footype = 'no corr', samplelen = 10.0, incangle = 0.0, pol = 'uu')</code>
+    <dl>
+    <dt><code><b>probe</b></code></dt>
+    <dd>Describes the radiation and measurments used is one of:
+    'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip', 'neutron tof', 'neutron pol tof' 
+    or the respective
+    number 0, 1, 2, 3, 4, 5, 6. The calculations for x-rays uses <code>f</code> for the scattering
+    length for neutrons <code>b</code> for 'neutron pol', 'neutron pol spin flip' and 
+    'neutron pol tof' alternatives the <code>magn</code>
+    is used in the calculations. Note that the angle of magnetization <code>magn_ang</code>
+    is only used in the last alternative.</dd>
+    <dt><code><b>wavelength</b></code></dt>
+    <dd>The wavalelngth of the radiation givenin AA (Angstroms)</dd>
+    <dt><code><b>coords</b></code></dt>
+    <dd>The coordinates of the data given to the SimSpecular function.
+    The available alternatives are: 'q' or 'tth'. Alternatively the numbers
+    0 (q) or 1 (tth) can be used.</dd>
+    <dt><code><b>I0</b></code></dt>
+    <dd>The incident intensity (a scaling factor)</dd>
+    <dt><code><b>res</b></code></dt>
+    <dd>The resolution of the instrument given in the coordinates of
+     <code>coords</code>. This assumes a gaussian reloution function and
+    <code>res</code> is the standard deviation of that gaussian.</dd>
+    <dt><code><b>restype</b></code></dt>
+    <dd>Describes the rype of the resolution calculated. One of the alterantives:
+    'no conv', 'fast conv', 'full conv and varying res.' or 'fast conv + varying res.'.
+    The respective numbers 0-3 also works. Note that fast convolution only alllows
+    a single value into res wheras the other can also take an array with the
+    same length as the x-data (varying resolution)</dd>
+    <dt><code><b>respoints</b></code></dt>
+    <dd>The number of points to include in the resolution calculation. This is only
+    used for 'full conv and vaying res.' and 'fast conv + varying res'</dd>
+    <dt><code><b>resintrange</b></code></dt>
+    <dd>Number of standard deviatons to integrate the resolution fucntion times
+    the relfectivty over</dd>
+    <dt><code><b>footype</b></code></dt>
+    <dd>Which type of footprint correction is to be applied to the simulation.
+    One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, 
+    the number 0-2 are also valid. The different choices are self expnalatory.</dd>
+    <dt><code><b>beamw</b></code></dt>
+    <dd>The width of the beam given in mm. For 'gauss beam' it should be
+    the standard deviation. For 'square beam' it is the full width of the beam.</dd>
+    <dt><code><b>samplelen</b></code></dt>
+    <dd>The length of the sample given in mm</dd>
+    <dt><code><b>incangle</b></code></dt>
+    <dd>The incident angle of the neutrons, only valid in tof mode</dd>
+    <dt><code><b>pol</b></code></dt>
+    <dd>The measured polarization of the instrument. Valid options are:
+    'uu','dd' or 'ud', or the respective number 0-2 also works.</dd>
 '''
 from numpy import *
 
@@ -16,7 +111,7 @@ ModelID='SpecNX'
 #    'Footype':0.0, 'Samlen':10.0, 'Incangle':0.0}
 __pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
 instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',\
-    'neutron pol spin flip', 'neutron tof', 'n pol tof'], 'coords': ['q','tth'],\
+    'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q','tth'],\
     'restype': ['no conv', 'fast conv',\
      'full conv and varying res.', 'fast conv + varying res.'],\
     'footype': ['no corr', 'gauss beam', 'square beam'],\
