@@ -81,7 +81,7 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
         def _todict(self):
             dic={}
             for key in self.__dict__.keys():
-                dic[key]=self.__getattribute__(key)
+                dic[key] = self.__getattribute__(key)
             return dic
         def _fromdict(self,dic):
             error=0
@@ -118,14 +118,15 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
             s='Layer('
         
             for k in self.__dict__.keys():
-                stemp='%s = %s, ' % (k,str(self.__getattribute__(k)))
+                stemp='%s = %s, ' % (k, str(self.__getattribute__(k)))
                 s=s+stemp
             return s[:-2]+')'
         def _todict(self):
             dic={}
             for key in self.__dict__.keys():
-                dic[key]=self.__getattribute__(key)
+                dic[key] = self.__getattribute__(key) + 0.0
             return dic
+        
         def _fromdict(self,dic):
             error=0
             for key in dic.keys():
@@ -154,7 +155,7 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
                 s=s+'\t'+repr(self.Layers[lay])+'\n'
             return s
         def resolveLayerParameter(self,parameter):
-            par=[lay.__getattribute__(parameter) for lay in self.Layers]*self.Repetitions
+            par=[lay.__getattribute__(parameter)+0.0 for lay in self.Layers]*self.Repetitions
             return par
 
         def _todict(self):
@@ -208,8 +209,8 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
                 par[k]=[self.Substrate.__getattribute__(k)]
             for k in Layer().__dict__.keys():
                 for stack in self.Stacks:
-                    par[k]=par[k]+stack.resolveLayerParameter(k)
-                par[k]=par[k]+[self.Ambient.__getattribute__(k)]
+                    par[k] = par[k] + stack.resolveLayerParameter(k)
+                par[k ]= par[k] + [self.Ambient.__getattribute__(k)]
             return par
 
         def _todict(self):
