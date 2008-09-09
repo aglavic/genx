@@ -22,10 +22,12 @@ class DiffEv:
     '''
     def __init__(self):
         # Mutation schemes implemented
-        self.mutation_schemes = [self.best_1_bin, self.rand_1_bin]
+        self.mutation_schemes = [self.best_1_bin, self.rand_1_bin,\
+            self.best_either_or, self.rand_either_or]
         
         self.km = 0.7 # Mutation constant
         self.kr = 0.7 # Cross over constant
+        self.pf = 0.5 # probablility for mutation
         
         # Flag to choose beween the two alternatives below
         self.use_pop_mult = False
@@ -355,6 +357,38 @@ class DiffEv:
             (self.par_max - self.par_min) + self.par_min)
         
         return trial
+    
+    def best_either_or(self, vec):
+        '''best_either_or(self, vec) --> trial [1D array]
+        
+        The either/or scheme for creating a trial. Using the best vector
+        as base vector.
+        '''
+        # Create mutation vector
+        # Select two random vectors for the mutation
+        index1 = int(random.rand(1)*self.n_pop)
+        index2 = int(random.rand(1)*self.n_pop)
+        # Make sure it is not the same vector 
+        while index2 == index1:
+            index2 = int(random.rand(1)*self.n_pop)
+        
+        if random.rand(1) < self.pf:
+            # Calculate the mutation vector according to the best/1 scheme
+            trial = self.best_vec + self.km*(self.pop_vec[index1]\
+            - self.pop_vec[index2])
+        else:
+            trial = self.best_vec + self.kr*(self.pop_vec[index1]\
+            + self.pop_vec[index2] - 2*self.best_vec)
+        
+        # Implementation of constrained optimization
+        if self.use_boundaries:
+            # Check so that the parameters lie indside the bounds
+            ok = bitwise_and(self.par_max > trial, self.par_min < trial)
+            # If not inside make a random re-initilazation of that parameter
+            trial = where(ok, trial, random.rand(self.n_dim)*\
+            (self.par_max - self.par_min) + self.par_min)
+        
+        return trial
         
     def rand_1_bin(self, vec):
         '''best_1_bin(self, vec) --> trial [1D array]
@@ -394,6 +428,43 @@ class DiffEv:
             (self.par_max - self.par_min) + self.par_min)
         
         return trial
+    
+    def rand_either_or(self, vec):
+        '''rand_either_or(self, vec) --> trial [1D array]
+        
+        random base vector either/or trial scheme
+        '''
+        # Create mutation vector
+        # Select two random vectors for the mutation
+        index1 = int(random.rand(1)*self.n_pop)
+        index2 = int(random.rand(1)*self.n_pop)
+        # Make sure it is not the same vector 
+        while index2 == index1:
+            index2 = int(random.rand(1)*self.n_pop)
+        index0 = int(random.rand(1)*self.n_pop)
+        while index0 == index1 or index0 == index2:
+            index0 = int(random.rand(1)*self.n_pop)
+        
+        if random.rand(1) < self.pf:
+            # Calculate the mutation vector according to the best/1 scheme
+            trial = self.pop_vec[index0] + self.km*(self.pop_vec[index1]\
+            - self.pop_vec[index2])
+        else:
+            # Calculate a continous recomibination
+            trial = self.pop_vec[index0] + self.kr*(self.pop_vec[index1]\
+            + self.pop_vec[index2] - 2*self.pop_vec[index0])
+        
+        # Implementation of constrained optimization
+        if self.use_boundaries:
+            # Check so that the parameters lie indside the bounds
+            ok = bitwise_and(self.par_max > trial, self.par_min < trial)
+            # If not inside make a random re-initilazation of that parameter
+            trial = where(ok, trial, random.rand(self.n_dim)*\
+            (self.par_max - self.par_min) + self.par_min)
+        
+        return trial
+    
+    
     # Different function for acessing and setting parameters that 
     # the user should have control over.
         
