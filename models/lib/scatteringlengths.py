@@ -71,7 +71,7 @@ class Proxy(object):
         '__truediv__', '__xor__', 'next',
     ]
     
-    @classmethod
+    #@classmethod #This is the new way of doing a classmethod, starting from python 2.4
     def _create_class_proxy(cls, theclass):
         """creates a proxy for the given class"""
         
@@ -85,6 +85,8 @@ class Proxy(object):
             if hasattr(theclass, name) and not hasattr(cls, name):
                 namespace[name] = make_method(name)
         return type("%s(%s)" % (cls.__name__, theclass.__name__), (cls,), namespace)
+    # And, this is the old way. Which I stck with for compatiblity reasons
+    _create_class_proxy = classmethod(_create_class_proxy)
     
     def __new__(cls, obj, *args, **kwargs):
         """
@@ -207,6 +209,7 @@ class FormFactor(Database):
         if name == 'set_wavelength':
             return object.__getattribute__(self, 'set_wavelength')
         else:
+            #print 'getting value'
             return Database.__getattribute__(self, name)
         
     def lookup_value(self, name):
