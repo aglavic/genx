@@ -75,10 +75,11 @@ class ModelsHelpDialog(wx.Frame):
         '''
         docs = ''
         try:
-            mod = __import__('%s.%s'%(module, sub_module), fromlist = [None])
+            mod = __import__('%s.%s'%(module, sub_module), globals(), locals(), [None])
             docs = mod.__doc__
-        except:
-            docs = 'Could not load docstring for %s'%sub_module
+        except Exception, e:
+            docs = 'Could not load docstring for %s.'%sub_module
+            docs += '\n The following exception occured: %s'%str(e)
         if type(docs) != type(''):
             docs = 'The doc string is of the wrong type in module %s'%sub_module
         return docs
