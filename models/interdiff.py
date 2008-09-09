@@ -1,9 +1,98 @@
-''' interdiff is a model for specular and off specular simulations including
+''' <h1> Library for specular and off-specular x-ray reflectivity</h1>
+interdiff is a model for specular and off specular simulations including
 the effects of interdiffusion in hte calculations. The specular simulations
 is conducted with Parrats recursion formula. The off-specular, diffuse
 calculations are done with the distorted Born wave approximation (DWBA) as
 derived by Holy and with the extensions done by Wormington to include 
 diffuse interfaces.
+<h2>Classes</h2>
+<h3>Layer</h3>
+<code> Layer(b = 0.0, d = 0.0, f = 0.0+0.0J, dens = 1.0, magn_ang = 0.0, magn = 0.0, sigma = 0.0)</code>
+    <dl>
+    <dt><code><b>d</b></code></dt>
+    <dd>The thickness of the layer in AA (Angstroms = 1e-10m)</dd>
+    <dt><code><b>f</b></code></dt>
+    <dd>The x-ray scattering length per formula unit in electrons. To be strict it is the
+    number of Thompson scattering lengths for each formula unit.</dd>
+    <dt><code><b>dens</b></code></dt>
+    <dd>The density of formula units in units per Angstroms. Note the units!</dd>
+    <dt><code><b>sigmai</b></code></dt>
+    <dd>The root mean square <em>interdiffusion</em> of the top interface of the layer in Angstroms.</dd>		
+    <dt><code><b>sigmar</b></code></dt>
+    <dd>The root mean square <em>roughness</em> of the top interface of the layer in Angstroms.</dd>
+    </dl>
+<h3>Stack</h3>
+<code> Stack(Layers = [], Repetitions = 1)</code>
+    <dl>
+    <dt><code><b>Layers</b></code></dt>
+    <dd>A <code>list</code> consiting of <code>Layer</code>s in the stack
+    the first item is the layer closest to the bottom</dd>
+    <dt><code><b>Repetitions</b></code></dt>
+    <dd>The number of repsetions of the stack</dd>
+    </dl>
+<h3>Sample</h3>
+<code> Sample(Stacks = [], Ambient = Layer(), Substrate = Layer(), eta_z = 10.0,
+    eta_x = 10.0, h = 1.0)</code>
+    <dl>
+    <dt><code><b>Stacks</b></code></dt>
+    <dd>A <code>list</code> consiting of <code>Stack</code>s in the stacks
+    the first item is the layer closest to the bottom</dd>
+    <dt><code><b>Ambient</b></code></dt>
+    <dd>A <code>Layer</code> describing the Ambient (enviroment above the sample).
+     Only the scattering lengths and density of the layer is used.</dd>
+    <dt><code><b>Substrate</b></code></dt>
+    <dd>A <code>Layer</code> describing the substrate (enviroment below the sample).
+     Only the scattering lengths, density and  roughness of the layer is used.</dd>
+    <dt><code><b>eta_z</b></code></dt>
+    <dd>The out-of plane (vertical) correlation length of the roughness
+    in the sample. Given in AA. </dd>
+    <dt><code><b>eta_x</b></code></dt>
+    <dd>The in-plane global correlation length (it is assumed equal for all layers).
+    Given in AA.</dd>
+    <dt><code><b>h</b></code></dt>
+    <dd>The jaggedness parameter, should be between 0 and 1.0. This describes
+    how jagged the interfaces are. This is also a global parameter for all
+    interfaces.</dd>
+    </dl>
+    
+<h3>Instrument</h3>
+<code>Instrument(wavelength = 1.54, coords = 'tth',
+     I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2,
+     beamw = 0.01, footype = 'no corr', samplelen = 10.0)</code>
+    <dl>
+    <dt><code><b>wavelength</b></code></dt>
+    <dd>The wavalelngth of the radiation givenin AA (Angstroms)</dd>
+    <dt><code><b>coords</b></code></dt>
+    <dd>The coordinates of the data given to the SimSpecular function.
+    The available alternatives are: 'q' or 'tth'. Alternatively the numbers
+    0 (q) or 1 (tth) can be used.</dd>
+    <dt><code><b>I0</b></code></dt>
+    <dd>The incident intensity (a scaling factor)</dd>
+    <dt><code><b>res</b></code></dt>
+    <dd>The resolution of the instrument given in the coordinates of
+     <code>coords</code>. This assumes a gaussian reloution function and
+    <code>res</code> is the standard deviation of that gaussian.</dd>
+    <dt><code><b>restype</b></code></dt>
+    <dd>Describes the rype of the resolution calculated. One of the alterantives:
+    'no conv', 'fast conv', 'full conv and varying res.' or 'fast conv + varying res.'.
+    The respective numbers 0-3 also works. Note that fast convolution only alllows
+    a single value into res wheras the other can also take an array with the
+    same length as the x-data (varying resolution)</dd>
+    <dt><code><b>respoints</b></code></dt>
+    <dd>The number of points to include in the resolution calculation. This is only
+    used for 'full conv and vaying res.' and 'fast conv + varying res'</dd>
+    <dt><code><b>resintrange</b></code></dt>
+    <dd>Number of standard deviatons to integrate the resolution fucntion times
+    the relfectivty over</dd>
+    <dt><code><b>footype</b></code></dt>
+    <dd>Which type of footprint correction is to be applied to the simulation.
+    One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, 
+    the number 0-2 are also valid. The different choices are self expnalatory.</dd>
+    <dt><code><b>beamw</b></code></dt>
+    <dd>The width of the beam given in mm. For 'gauss beam' it should be
+    the standard deviation. For 'square beam' it is the full width of the beam.</dd>
+    <dt><code><b>samplelen</b></code></dt>
+    <dd>The length of the sample given in mm</dd>
 '''
 
 import lib.paratt as Paratt
@@ -30,8 +119,8 @@ instrument_string_choices = {'coords': ['q','tth'],\
      'full conv and varying res.', 'fast conv + varying res.'],\
     'footype': ['no corr', 'gauss beam', 'square beam']}
     
-InstrumentParameters={'wavelength':1.54,'coords':1,'I0':1.0,'res':0.001,\
-    'restype':0,'respoints':5,'resintrange':2,'beamw':0.01,'footype': 0,\
+InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
+    'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',\
     'samplelen':10.0}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input

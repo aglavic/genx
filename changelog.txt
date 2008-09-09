@@ -1,3 +1,9 @@
+2008-09-09:
+    Implemented some more help on the modules with my help scheme, 
+    html docstrings. 
+    IMplemented the either or algorithm in DiffEv both with random
+    base vector as well as the best vector as base. Tested and works
+    
 2008-09-08:
     Fixed the scattering factor database acess to automagically update
     the values when changing the database references.
