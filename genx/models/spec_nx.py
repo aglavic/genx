@@ -67,6 +67,9 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     0 (q) or 1 (tth) can be used.</dd>
     <dt><code><b>I0</b></code></dt>
     <dd>The incident intensity (a scaling factor)</dd>
+    <dt><code><b>Ibkg</b></code></dt>
+    <dd>The background intensity. Added as a constant value to the calculated
+    reflectivity</dd>
     <dt><code><b>res</b></code></dt>
     <dd>The resolution of the instrument given in the coordinates of
      <code>coords</code>. This assumes a gaussian reloution function and
@@ -120,7 +123,8 @@ instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',\
 InstrumentParameters={'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',\
      'I0':1.0, 'res':0.001,\
     'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,\
-     'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu'}
+     'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu',\
+    'Ibkg': 0.0}
 # Coordinates=1 or 'tth' => twothetainput
 # Coordinates=0 or 'q'=> Q input
 # probe: Type of simulation
@@ -200,23 +204,21 @@ def Specular(TwoThetaQz,sample,instrument):
 
     # Ordinary Paratt X-rays
     if type == instrument_string_choices['probe'][0] or type == 0:
-        R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)\
-                *instrument.getI0()
+        R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
     #Ordinary Paratt Neutrons
     elif type == instrument_string_choices['probe'][1] or type == 1:
-        R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-sld,d,sigma)\
-            *instrument.getI0()
+        R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-sld,d,sigma)
     #Ordinary Paratt but with magnetization
     elif type == instrument_string_choices['probe'][2] or type == 2:
         msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
         # Polarization uu or ++
         if pol == instrument_string_choices['pol'][0] or pol == 0:
             R = Paratt.ReflQ(Q,instrument.getWavelength(),\
-                1.0-sld-msld,d,sigma)*instrument.getI0()
+                1.0-sld-msld,d,sigma)
         # Polarization dd or --
         elif pol == instrument_string_choices['pol'][1] or pol == 1:
             R = Paratt.ReflQ(Q,instrument.getWavelength(),\
-                 1.0-sld+msld,d,sigma)*instrument.getI0()
+                 1.0-sld+msld,d,sigma)
         else:
             raise ValueError('The value of the polarization is WRONG.'
                 ' It should be uu(0) or dd(1)')
@@ -246,7 +248,6 @@ def Specular(TwoThetaQz,sample,instrument):
         else:
             raise ValueError('The value of the polarization is WRONG.'
                 ' It should be uu(0), dd(1) or ud(2)')
-        R = R*instrument.getI0()
         
     # tof
     elif type == instrument_string_choices['probe'][4] or type == 4:
@@ -254,7 +255,7 @@ def Specular(TwoThetaQz,sample,instrument):
                 (4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
         R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
             (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
-                1.0-sld,d,sigma)*instrument.getI0()
+                1.0-sld,d,sigma)
     # tof spin polarized
     elif type == instrument_string_choices['probe'][5] or type == 5:
         sld = dens[:,newaxis]*fb[:,newaxis]*\
@@ -265,12 +266,12 @@ def Specular(TwoThetaQz,sample,instrument):
         if pol == instrument_string_choices['pol'][0] or pol == 0:
             R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
                 (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
-                 1.0-sld-msld,d,sigma)*instrument.getI0()
+                 1.0-sld-msld,d,sigma)
         # polarization dd or --
         elif pol == instrument_string_choices['pol'][1] or pol == 1:
             R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
              (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
-              1.0-sld+msld,d,sigma)*instrument.getI0()
+              1.0-sld+msld,d,sigma)
         else:
             raise ValueError('The value of the polarization is WRONG.'
                 ' It should be uu(0) or dd(1)')
@@ -303,12 +304,12 @@ def Specular(TwoThetaQz,sample,instrument):
         R = ConvoluteFastVar(TwoThetaQz,R[:]*foocor,instrument.getRes(),\
             range = instrument.getResintrange())
     elif restype == instrument_string_choices['restype'][0] or restype == 0:
-        pass
+        R = R[:]*foocor
     else:
         raise ValueError('The choice of resolution type, restype,'
             'is WRONG')
     
-    return R
+    return R*instrument.getI0() + instrument.getIbkg()
     
 
 def OffSpecularMingInterdiff(TwoThetaQz,ThetaQx,sample,instrument):

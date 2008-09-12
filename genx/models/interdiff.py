@@ -68,6 +68,9 @@ diffuse interfaces.
     0 (q) or 1 (tth) can be used.</dd>
     <dt><code><b>I0</b></code></dt>
     <dd>The incident intensity (a scaling factor)</dd>
+    <dt><code><b>Ibkg</b></code></dt>
+    <dd>The background intensity. Added as a constant value to the calculated
+    reflectivity</dd>
     <dt><code><b>res</b></code></dt>
     <dd>The resolution of the instrument given in the coordinates of
      <code>coords</code>. This assumes a gaussian reloution function and
@@ -121,7 +124,7 @@ instrument_string_choices = {'coords': ['q','tth'],\
     
 InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
     'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',\
-    'samplelen':10.0}
+    'samplelen':10.0, 'Ibkg': 0.0}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
 #Res stddev of resolution
@@ -248,7 +251,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
             sigmar, sigmai, eta, h, eta_z, d)
     else:
         I=ones(len(qx*qz))
-    return real(I)*instrument.getI0()
+    return real(I)*instrument.getI0() + instrument.getIbkg()
 
 SimulationFunctions = {'Specular':Specular,\
                         'OffSpecular':OffSpecularMingInterdiff}
