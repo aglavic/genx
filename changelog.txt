@@ -1,3 +1,8 @@
+2008-09-12:
+    Fixed a bug reported by Gunnar needed resolution to have footprint
+    correction.
+    Added background as a paraemter to interdiff and spec_nx
+
 2008-09-09:
     Implemented some more help on the modules with my help scheme, 
     html docstrings. 
