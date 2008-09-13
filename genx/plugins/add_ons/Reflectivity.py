@@ -86,7 +86,7 @@ class SampleHandler:
         '''
         Generate the python code for the current sample structure.
         '''
-        slist=self.getStringList()
+        slist = self.getStringList()
         layer_code=''
         
         # Create code for the layers:
@@ -102,22 +102,26 @@ class SampleHandler:
         while(i<maxi):
             if item.find('Stack')>-1:
                 stack_strings=item.split(':')
-                stack_code=stack_code+stack_strings[0]+'(Layers=['
-                i+=1
-                item=slist[i]
-                while(item.find('Stack')<0 and i<maxi):
-                    itemp=item.split('=')[0]
-                    itemp=itemp.lstrip()
-                    stack_code=stack_code+itemp+','
-                    i+=1
-                    item=slist[i]
+                stack_code = stack_code + stack_strings[0] + '(Layers=['
+                i += 1
+                item = slist[i]
+                stack_layers = []
+                while(item.find('Stack') < 0 and i < maxi):
+                    itemp = item.split('=')[0]
+                    itemp = itemp.lstrip()
+                    stack_layers.append(itemp)
+                    #stack_code = stack_code + itemp+','
+                    i += 1
+                    item = slist[i]
+                stack_layers.reverse()
+                stack_code += ', '.join(stack_layers)
                 i-=1
                 if stack_code[-1] != '[':
-                    stack_code=stack_code[:-1]+'],'+stack_strings[1]+')\n'
+                    stack_code = stack_code[:-1]+'],'+stack_strings[1]+')\n'
                 else:
-                    stack_code=stack_code[:]+'],'+stack_strings[1]+')\n'
+                    stack_code = stack_code[:]+'],'+stack_strings[1]+')\n'
             i+=1
-            item=slist[i]
+            item = slist[i]
         # Create the code for the sample
         sample_code = 'sample = model.Sample(Stacks = ['
         stack_strings = stack_code.split('\n')
@@ -1407,9 +1411,9 @@ class Plugin(framework.Template):
         layers = re_layer.findall(sample_text)
         layer_names = [t[0] for t in layers]
         stacks = re_stack.findall(sample_text)
-        print stacks
-        print layers
-        print layer_names
+        #print stacks
+        #print layers
+        #print layer_names
         if len(layer_names) == 0:
             self.ShowErrorDialog('Could not find any Layers in the' +\
                 ' model script. Check the script.')
@@ -1424,19 +1428,19 @@ class Plugin(framework.Template):
                 exec '%s.%s = "%s"'%(lay[0], vars[0].strip(), vars[1].strip())\
                                     in self.GetModel().script_module.__dict__
         
-        all_names = []
+        all_names = [layer_names.pop(0)]
         for stack in stacks:
+            all_names.append(stack[0])
             first_name = stack[1].split(',')[0].strip()
             #print first_name
             # Find all items above the first name in the stack
             while(layer_names[0] != first_name):
                 all_names.append(layer_names.pop(0))
                 #print 'all names ',all_names[-1]
-            all_names.append(stack[0])
-                
+            all_names.append(layer_names.pop(0))
         all_names += layer_names
             
-        print all_names
+        #print all_names
         
         # Load the simulation parameters
         script = self.GetModel().script

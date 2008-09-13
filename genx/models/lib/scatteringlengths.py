@@ -218,7 +218,7 @@ class FormFactor(Database):
         looks up a value in the external database
         '''
         wl = object.__getattribute__(self, 'wavelength')
-        f = Proxy(object.__getattribute__(self, 'f_calc')(name, wl))
+        f = Proxy((object.__getattribute__(self, 'f_calc')(name, wl)))
         return f
     
 #==============================================================================

@@ -164,6 +164,7 @@ def Specular(TwoThetaQz, sample, instrument):
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
     dens = array(parameters['dens'], dtype = complex64)
+    #print [type(f) for f in parameters['f']]
     f = array(parameters['f'], dtype = complex64)
     re = 2.82e-13*1e2/1e-10
     n = 1 - dens*re*lamda**2/2/pi*f*1e-4

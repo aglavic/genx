@@ -86,6 +86,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         # For updating the column labels according to the number of fitted parameters
         if col == 2 or col == 3 or col == 4:
              self.GetView().ForceRefresh()
+        self.parent._grid_changed()
 
     def DeleteRows(self,rows):
         delete_count = self.pars.delete_rows(rows)
@@ -97,6 +98,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         msg = gridlib.GridTableMessage(self,\
                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
+        self.parent._grid_changed()
         #print self.data
         
     def InsertRow(self,row):
@@ -109,6 +111,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
                 gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
+        self.parent._grid_changed()
         return True
     
     def AppendRows(self, num_rows = 1):
@@ -122,6 +125,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
                 gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
+        self.parent._grid_changed()
         return True
     
     def GetAttr(self, row, col, kind):
@@ -165,7 +169,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
     def CanSetValueAs(self, row, col, type_name):
         return self.CanGetValueAs(row, col, type_name)
 
-    def SetParameters(self, pars, clear = True):
+    def SetParameters(self, pars, clear = True, permanent_change = True):
         '''
         SetParameters(self, pars) --> None
         
@@ -201,6 +205,8 @@ class ParameterDataTable(gridlib.PyGridTableBase):
             msg = gridlib.GridTableMessage(self,\
                 gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
             self.GetView().ProcessTableMessage(msg)
+        if permanent_change:
+            self.parent._grid_changed()
         
 
 
@@ -211,9 +217,9 @@ class ParameterGrid(gridlib.Grid):
     '''
     The GUI component itself. This is the thing to use in a GUI.
     '''
-    def __init__(self, parent):
+    def __init__(self, parent, frame):
         gridlib.Grid.__init__(self, parent, -1)
-
+        self.parent = frame
         self.prt = printout.PrintTable(parent)
         
         
@@ -259,7 +265,16 @@ class ParameterGrid(gridlib.Grid):
         self.Bind(gridlib.EVT_GRID_CMD_CELL_RIGHT_CLICK, self.OnRightClick)
         self.Bind(gridlib.EVT_GRID_LABEL_RIGHT_CLICK,self.OnLabelRightClick)
         self.Bind(wx.EVT_SIZE,self.OnResize)
+    
+    def _grid_changed(self):
+        '''_grid_changed(self) --> None
         
+        internal function to yield a EVT_PARAMETER_GRID_CHANGE
+        '''
+        #print 'Posting'
+        evt = grid_change()
+        wx.PostEvent(self.parent, evt)
+    
     def _update_printer(self):
         '''_update_printer(self) --> None
         
@@ -297,7 +312,8 @@ class ParameterGrid(gridlib.Grid):
         '''
         # Set the parameters in the table 
         # this also updates the grid. 
-        self.table.SetParameters(evt.GetModel().get_parameters())
+        self.table.SetParameters(evt.GetModel().get_parameters(),\
+                permanent_change = False)
         # Let the event proceed to other fucntions that have signed up.
         evt.Skip()
     
@@ -314,8 +330,10 @@ class ParameterGrid(gridlib.Grid):
         new_best: A boolean indicating if there are a new best.
         '''
         if evt.new_best:
+            #print evt.fitting
             self.table.pars.set_value_pars(evt.values)
-            self.table.SetParameters(self.table.pars, clear = False)
+            self.table.SetParameters(self.table.pars, clear = False,\
+                permanent_change = evt.permanent_change)
         
         evt.Skip()
         
@@ -493,4 +511,9 @@ class ParameterGrid(gridlib.Grid):
         Function that returns the parameters - Is this needed anymore?
         '''
         return self.table.pars
-            
+    
+#==============================================================================
+# Custom events needed for updating and message parsing between the different
+# modules.
+
+(grid_change, EVT_PARAMETER_GRID_CHANGE) = wx.lib.newevent.NewEvent()

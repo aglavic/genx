@@ -1,7 +1,16 @@
+2008-09-13:
+    Made modification so the user can see wheter or not any changes has been
+    made since the last saving of the model. This is displayed by a little
+    star after teh filename
+
 2008-09-12:
     Fixed a bug reported by Gunnar needed resolution to have footprint
     correction.
     Added background as a paraemter to interdiff and spec_nx
+    Fixed a bug found by Gunnar in the reflectivty module: The module did
+    not handle layers correctly (order changed in the stacks)
+    Fixed a new bug found by me: The new implementation of proxy objects did
+    not work with the custom dialog module used in the reflectivity module.
 
 2008-09-09:
     Implemented some more help on the modules with my help scheme, 

@@ -17,11 +17,27 @@ def get_pages(frame):
                 frame.plot_fomscan]
     return pages
 
-def set_title(frame, filename, path):
+def set_title(frame):
+    filepath, filename = os.path.split(frame.model.filename)
     if filename != '':
-        frame.SetTitle(filename + ' - ' + path + ' - ' + __version__)
+        if frame.model.saved:
+            frame.SetTitle(filename + ' - ' + filepath + ' - GenX '\
+                + __version__)
+        else:
+            frame.SetTitle(filename + '* - ' + filepath + ' - GenX '\
+                + __version__)
     else:
         frame.SetTitle('GenX ' + __version__)
+        
+def models_changed(frame, event):
+    '''models_changed(frame, event) --> None
+    
+    callback when something has changed in the model so that the 
+    user can be made aware that the model needs saving.
+    '''
+    frame.model.saved = False
+    set_title(frame)
+
 
 def new(frame, event):
     '''
@@ -35,7 +51,7 @@ def new(frame, event):
     _post_new_model_event(frame, frame.model, desc = 'Fresh model')
     frame.plugin_control.OnNewModel(None)
     frame.main_frame_statusbar.SetStatusText('New model created', 1)
-    set_title(frame, '', '')
+    set_title(frame)
     
 def open(frame, event):
     '''
@@ -57,8 +73,9 @@ def open(frame, event):
         frame.main_frame_statusbar.SetStatusText('Model loaded from file', 1)
         # Post an event to update everything else
         _post_new_model_event(frame, frame.model)
-        path, filename = os.path.split(path)
-        set_title(frame, filename, path)
+        # Needs to put it to saved since all the widgets will have been updated
+        frame.model.saved = True
+        set_title(frame)
         
     dlg.Destroy()
     
@@ -92,8 +109,7 @@ def save(frame, event):
     else:
         # If it has been saved just save it
         frame.model.save(fname)
-        path, filename = os.path.split(fname)
-        set_title(frame, filename, path)
+        set_title(frame)
         frame.model.save_addition('config', frame.config.model_dump())
         
     frame.main_frame_statusbar.SetStatusText('Model saved to file', 1)
@@ -112,8 +128,7 @@ def save_as(frame, event):
         frame.model.set_script(frame.script_editor.GetText())
         fname = dlg.GetPath()
         frame.model.save(fname)
-        path, filename = os.path.split(fname)
-        set_title(frame, filename, path)
+        set_title(frame)
         frame.model.save_addition('config', frame.config.model_dump())
     dlg.Destroy()
     
