@@ -228,7 +228,8 @@ class SolverController:
                 max_val = solver.par_max, \
                 min_val = solver.par_min, \
                 fitting = True,\
-                desc = 'Parameter Update', update_errors = False)
+                desc = 'Parameter Update', update_errors = False,\
+                permanent_change = False)
         wx.PostEvent(self.parent, evt)
         
     def FittingEnded(self, solver):
@@ -254,13 +255,18 @@ class SolverController:
         dlg = wx.MessageDialog(self.parent, message,'Keep the fit?', 
             wx.YES_NO|wx.ICON_QUESTION)
         if dlg.ShowModal() == wx.ID_YES:
-            pass
+            evt = update_parameters(values = solver.best_vec.copy(),\
+                desc = 'Parameter Update', new_best = True, \
+                update_errors = False, fitting = False,\
+                 permanent_change = True)
+            wx.PostEvent(self.parent, evt)
         else:
             #print 'Resetting the values in the grid to ',\
             #    self.start_parameter_values
             evt = update_parameters(values = self.start_parameter_values,\
                 desc = 'Parameter Update', new_best = True, \
-                update_errors = False, fitting = False)
+                update_errors = False, fitting = False,\
+                 permanent_change = False)
             wx.PostEvent(self.parent, evt)
             
     def CalcErrorBars(self):

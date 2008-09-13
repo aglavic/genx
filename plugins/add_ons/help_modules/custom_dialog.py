@@ -1,292 +1,288 @@
 import wx
 
 class TextObjectValidator(wx.PyValidator):
-     """ This validator is used to ensure that the user has entered something
-         into the text object editor dialog's text field.
-     """
-     def __init__(self):
-         """ Standard constructor.
-         """
-         wx.PyValidator.__init__(self)
+    """ This validator is used to ensure that the user has entered something
+        into the text object editor dialog's text field.
+    """
+    def __init__(self):
+        """ Standard constructor.
+        """
+        wx.PyValidator.__init__(self)
 
 
+    def Clone(self):
+        """ Standard cloner.
 
-     def Clone(self):
-         """ Standard cloner.
-
-             Note that every validator must implement the Clone() method.
-         """
-         return TextObjectValidator()
+           Note that every validator must implement the Clone() method.
+        """
+        return TextObjectValidator()
 
 
-     def Validate(self, win):
-         """ Validate the contents of the given text control.
-         """
-         textCtrl = self.GetWindow()
-         text = textCtrl.GetValue()
+    def Validate(self, win):
+        """ Validate the contents of the given text control.
+        """
+        textCtrl = self.GetWindow()
+        text = textCtrl.GetValue()
 
-         if len(text) == 0:
-             wx.MessageBox("A text object must contain some text!", "Error")
-             textCtrl.SetBackgroundColour("pink")
-             textCtrl.SetFocus()
-             textCtrl.Refresh()
-             return False
-         else:
-             textCtrl.SetBackgroundColour(
+        if len(text) == 0:
+            wx.MessageBox("A text object must contain some text!", "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        else:
+            textCtrl.SetBackgroundColour(
                  wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
-             textCtrl.Refresh()
-             return True
+            textCtrl.Refresh()
+            return True
 
 
-     def TransferToWindow(self):
-         """ Transfer data from validator to window.
+    def TransferToWindow(self):
+        """ Transfer data from validator to window.
 
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
+
+
+    def TransferFromWindow(self):
+        """ Transfer data from window to validator.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
          """
-         return True # Prevent wxDialog from complaining.
-
-
-     def TransferFromWindow(self):
-         """ Transfer data from window to validator.
-
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True # Prevent wxDialog from complaining.
+        return True # Prevent wxDialog from complaining.
 
 class MatchTextObjectValidator(wx.PyValidator):
-     """ This validator is used to ensure that the user has entered something
-         into the text object editor dialog's text field.
-     """
-     def __init__(self,stringlist):
-         """ Standard constructor.
-         """
-         wx.PyValidator.__init__(self)
-         self.stringlist=stringlist
+    """ This validator is used to ensure that the user has entered something
+        into the text object editor dialog's text field.
+    """
+    def __init__(self,stringlist):
+        """ Standard constructor.
+        """
+        wx.PyValidator.__init__(self)
+        self.stringlist=stringlist
+
+    def Clone(self):
+        """ Standard cloner.
+
+            Note that every validator must implement the Clone() method.
+        """
+        return MatchTextObjectValidator(self.stringlist)
 
 
-     def Clone(self):
-         """ Standard cloner.
+    def Validate(self, win):
+        """ Validate the contents of the given text control.
+        """
+        textCtrl = self.GetWindow()
+        text = textCtrl.GetValue()
 
-             Note that every validator must implement the Clone() method.
-         """
-         return MatchTextObjectValidator(self.stringlist)
-
-
-     def Validate(self, win):
-         """ Validate the contents of the given text control.
-         """
-         textCtrl = self.GetWindow()
-         text = textCtrl.GetValue()
-
-         if self.stringlist.__contains__(text):
-             textCtrl.SetBackgroundColour(
-                 wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
-             textCtrl.Refresh()
-             return True
-         else:
-             wx.MessageBox("The name is not defined!", "Error")
-             textCtrl.SetBackgroundColour("pink")
-             textCtrl.SetFocus()
-             textCtrl.Refresh()
-             return False
+        if self.stringlist.__contains__(text):
+            textCtrl.SetBackgroundColour(
+                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            textCtrl.Refresh()
+            return True
+        else:
+            wx.MessageBox("The name is not defined!", "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
 
 
-     def TransferToWindow(self):
-         """ Transfer data from validator to window.
+    def TransferToWindow(self):
+        """ Transfer data from validator to window.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
 
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True # Prevent wxDialog from complaining.
 
+    def TransferFromWindow(self):
+        """ Transfer data from window to validator.
 
-     def TransferFromWindow(self):
-         """ Transfer data from window to validator.
-
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True # Prevent wxDialog from complaining.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
 
 class NoMatchTextObjectValidator(wx.PyValidator):
-     """ This validator is used to ensure that the user has entered something
-         into the text object editor dialog's text field.
-     """
-     def __init__(self,stringlist):
-         """ Standard constructor.
-         """
-         wx.PyValidator.__init__(self)
-         self.stringlist=stringlist
+    """ This validator is used to ensure that the user has entered something
+        into the text object editor dialog's text field.
+    """
+    def __init__(self,stringlist):
+        """ Standard constructor.
+        """
+        wx.PyValidator.__init__(self)
+        self.stringlist=stringlist
+
+    def Clone(self):
+        """ Standard cloner.
+            Note that every validator must implement the Clone() method.
+        """
+        return NoMatchTextObjectValidator(self.stringlist)
+
+    def Validate(self, win):
+        """ Validate the contents of the given text control.
+        """
+        textCtrl = self.GetWindow()
+        text = textCtrl.GetValue()
+        if len(text) == 0:
+            wx.MessageBox("A text object must contain some text!", "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        elif self.stringlist.__contains__(text):
+            wx.MessageBox("Duplicates are not allowed!", "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        else:
+            textCtrl.SetBackgroundColour(
+                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            textCtrl.Refresh()
+            return True
+
+    def TransferToWindow(self):
+        """ Transfer data from validator to window.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
 
 
-     def Clone(self):
-         """ Standard cloner.
-
-             Note that every validator must implement the Clone() method.
-         """
-         return NoMatchTextObjectValidator(self.stringlist)
-
-
-     def Validate(self, win):
-         """ Validate the contents of the given text control.
-         """
-         textCtrl = self.GetWindow()
-         text = textCtrl.GetValue()
-
-         if len(text) == 0:
-             wx.MessageBox("A text object must contain some text!", "Error")
-             textCtrl.SetBackgroundColour("pink")
-             textCtrl.SetFocus()
-             textCtrl.Refresh()
-             return False
-         elif self.stringlist.__contains__(text):
-             wx.MessageBox("Duplicates are not allowed!", "Error")
-             textCtrl.SetBackgroundColour("pink")
-             textCtrl.SetFocus()
-             textCtrl.Refresh()
-             return False
-         else:
-             textCtrl.SetBackgroundColour(
-                 wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
-             textCtrl.Refresh()
-             return True
-
-
-     def TransferToWindow(self):
-         """ Transfer data from validator to window.
-
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True # Prevent wxDialog from complaining.
-
-
-     def TransferFromWindow(self):
-         """ Transfer data from window to validator.
-
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True # Prevent wxDialog from complaining.
+    def TransferFromWindow(self):
+        """ Transfer data from window to validator.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
 
 class FloatObjectValidator(wx.PyValidator):
-     """ This validator is used to ensure that the user has entered something
-         into the text object editor dialog's text field.
-     """
-     def __init__(self, eval_func = eval):
-         """ Standard constructor.
-         """
-         wx.PyValidator.__init__(self)
-         self.value=None
-         self.eval_func = eval_func
+    """ This validator is used to ensure that the user has entered something
+        into the text object editor dialog's text field.
+    """
+    def __init__(self, eval_func = eval):
+        """ Standard constructor.
+        """
+        wx.PyValidator.__init__(self)
+        self.value=None
+        self.eval_func = eval_func
 
-     def Clone(self):
-         """ Standard cloner.
+    def Clone(self):
+        """ Standard cloner.
 
-             Note that every validator must implement the Clone() method.
-         """
-         return FloatObjectValidator(self.eval_func)
-
-
-     def Validate(self, win):
-         """ Validate the contents of the given text control.
-         """
-         textCtrl = self.GetWindow()
-         text = textCtrl.GetValue()
-         self.value=None
-         try:
-            self.value=float(self.eval_func(text))
-         
-         except StandardError,S:
-             wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
-             textCtrl.SetBackgroundColour("pink")
-             textCtrl.SetFocus()
-             textCtrl.Refresh()
-             return False
-         else:
-             #print 'OK'
-             textCtrl.SetBackgroundColour(
-                 wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
-             textCtrl.Refresh()
-             return True
+            Note that every validator must implement the Clone() method.
+        """
+        return FloatObjectValidator(self.eval_func)
 
 
-     def TransferToWindow(self):
-         """ Transfer data from validator to window.
+    def Validate(self, win):
+        """ Validate the contents of the given text control.
+        """
+        textCtrl = self.GetWindow()
+        text = textCtrl.GetValue()
+        self.value=None
+        try:
+           self.value=float(self.eval_func(text))
+        
+        except StandardError,S:
+            wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        else:
+            #print 'OK'
+            textCtrl.SetBackgroundColour(
+                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            textCtrl.Refresh()
+            return True
 
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True
+    def TransferToWindow(self):
+        """ Transfer data from validator to window.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True
 
 
-     def TransferFromWindow(self):
-         """ Transfer data from window to validator.
+    def TransferFromWindow(self):
+        """ Transfer data from window to validator.
 
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True
          
 class ComplexObjectValidator(wx.PyValidator):
-     """ This validator is used to ensure that the user has entered something
-         into the text object editor dialog's text field.
-     """
-     def __init__(self, eval_func = eval):
-         """ Standard constructor.
-         """
-         wx.PyValidator.__init__(self)
-         self.value=None
-         self.eval_func = eval_func
+    """ This validator is used to ensure that the user has entered something
+       into the text object editor dialog's text field.
+    """
+    def __init__(self, eval_func = eval):
+        """ Standard constructor.
+        """
+        wx.PyValidator.__init__(self)
+        self.value=None
+        self.eval_func = eval_func
      
-     def Clone(self):
-         """ Standard cloner.
-
-             Note that every validator must implement the Clone() method.
-         """
-         return ComplexObjectValidator(self.eval_func)
-
-
-     def Validate(self, win):
-         """ Validate the contents of the given text control.
-         """
-         textCtrl = self.GetWindow()
-         text = textCtrl.GetValue()
-         self.value=None
-         try:
-            self.value=complex(self.eval_func(text))
-         except StandardError,S:
-             wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
-             textCtrl.SetBackgroundColour("pink")
-             textCtrl.SetFocus()
-             textCtrl.Refresh()
-             return False
-         else:
-             #print 'OK'
-             textCtrl.SetBackgroundColour(
-                 wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
-             textCtrl.Refresh()
-             return True
+    def Clone(self):
+        """ Standard cloner.
+            Note that every validator must implement the Clone() method.
+        """
+        return ComplexObjectValidator(self.eval_func)
 
 
-     def TransferToWindow(self):
-         """ Transfer data from validator to window.
+    def Validate(self, win):
+        """ Validate the contents of the given text control.
+        """
+        textCtrl = self.GetWindow()
+        text = textCtrl.GetValue()
+        self.value=None
+        try:
+           # Have to do it differentily to work with proxys
+           # self.value=complex(self.eval_func(text))
+           val = self.eval_func(text)
+           self.value = complex(val.real, val.imag)
+        except AttributeError,S:
+            try:
+               self.value = complex(val)
+            except StandardError,S:
+                wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
+                textCtrl.SetBackgroundColour("pink")
+                textCtrl.SetFocus()
+                textCtrl.Refresh()
+                return False
+        except StandardError, S:
+            wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        else:
+            #print 'OK'
+            textCtrl.SetBackgroundColour(
+                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            textCtrl.Refresh()
+            return True
 
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True
+
+    def TransferToWindow(self):
+        """ Transfer data from validator to window.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True
 
 
-     def TransferFromWindow(self):
-         """ Transfer data from window to validator.
-
-             The default implementation returns False, indicating that an error
-             occurred.  We simply return True, as we don't do any data transfer.
-         """
-         return True
+    def TransferFromWindow(self):
+        """ Transfer data from window to validator.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True
 
 #----------------------------------------------------------------------
 

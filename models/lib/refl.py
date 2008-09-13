@@ -206,11 +206,11 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
         def resolveLayerParameters(self):
             par=self.Substrate.__dict__.copy()
             for k in par.keys():
-                par[k]=[self.Substrate.__getattribute__(k)]
+                par[k]=[self.Substrate.__getattribute__(k)+0.0]
             for k in Layer().__dict__.keys():
                 for stack in self.Stacks:
                     par[k] = par[k] + stack.resolveLayerParameter(k)
-                par[k ]= par[k] + [self.Ambient.__getattribute__(k)]
+                par[k ]= par[k] + [self.Ambient.__getattribute__(k)+0.0]
             return par
 
         def _todict(self):
