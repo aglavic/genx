@@ -8,7 +8,7 @@ in the models directory.
 import wx, os
 import  wx.html as  html
 
-class ModelsHelpDialog(wx.Frame):
+class PluginHelpDialog(wx.Frame):
     def __init__(self, parent, module):
         wx.Frame.__init__(self, parent, -1, 'Models help')
         #self.SetAutoLayout(True)
