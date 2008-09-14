@@ -314,6 +314,8 @@ def evaluate(frame, event):
     else:
         _post_sim_plot_event(frame, frame.model, 'Simulation')
         frame.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
+        frame.plugin_control.OnSimulate(None)
+        
     
 def simulate(frame, event):
     '''
@@ -343,6 +345,7 @@ def simulate(frame, event):
         return
     else:
         _post_sim_plot_event(frame, frame.model, 'Simulation')
+        frame.plugin_control.OnSimulate(None)
         frame.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
     
     
@@ -618,7 +621,7 @@ def print_plot(frame, event):
     
     prints the current plot in the plot notebook.
     '''
-    sel = event.GetSelection()
+    sel = frame.plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].Print()
@@ -628,7 +631,7 @@ def print_preview_plot(frame, event):
     
     prints a preview of the current plot int the plot notebook.
     '''
-    sel = event.GetSelection()
+    sel = frame.plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].PrintPreview()
@@ -654,7 +657,7 @@ def copy_graph(frame, event):
     Callback that copies the current graph in the plot notebook to
     the clipboard.
     '''
-    sel = event.GetSelection()
+    sel = frame.plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].CopyToClipboard()
@@ -731,7 +734,7 @@ def models_help(frame, event):
     
     Show a help dialog for information about the different models.
     '''
-    dlg = help.ModelsHelpDialog(frame,'models')
+    dlg = help.PluginHelpDialog(frame,'models')
     dlg.Show()
     #dlg.ShowModal()
     #dlg.Destroy()

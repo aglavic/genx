@@ -1,3 +1,8 @@
+2008-09-14:
+    Fixed bug in the printing and copying of the plots. Could only print
+    or copy the first plot.
+    Implemented scatttering lengths plots in the reflectivity plugin.
+    
 2008-09-13:
     Made modification so the user can see wheter or not any changes has been
     made since the last saving of the model. This is displayed by a little

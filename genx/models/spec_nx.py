@@ -316,7 +316,55 @@ def OffSpecularMingInterdiff(TwoThetaQz,ThetaQx,sample,instrument):
     raise NotImplementedError('Not implemented use model interdiff insteads')
     return TwoThetaQz,ThetaQx
 
-SimulationFunctions={'Specular':Specular, 'OffSpecular':OffSpecularMingInterdiff}
+def SLD_calculations(z, sample, inst):
+    ''' Calculates the scatteringlength density as at the positions z
+    '''
+    parameters = sample.resolveLayerParameters()
+    dens = array(parameters['dens'], dtype = complex64)
+    f = array(parameters['f'], dtype = complex64)
+    b = array(parameters['b'], dtype = complex64)
+    type = inst.getProbe()
+    magnetic = False
+    mag_sld = 0
+    if type == instrument_string_choices['probe'][0] or type == 0:
+        sld = dens*f
+    elif type == instrument_string_choices['probe'][1] or type == 1 or\
+        type == instrument_string_choices['probe'][4] or type == 4:
+        sld = dens*b
+    else:
+        magnetic = True
+        sld = dens*b
+        magn = array(parameters['magn'], dtype = float64)
+        #Transform to radians
+        magn_ang = array(parameters['magn_ang'], dtype = float64)*pi/180.0
+        mag_sld = 2.645*magn*dens
+        
+    d = array(parameters['d'], dtype = float64)
+    d = d[1:-1]
+    # Include one extra element - the zero pos (substrate/film interface)
+    int_pos = cumsum(r_[0,d])
+    sigma = array(parameters['sigma'], dtype = float64)[:-1] + 1e-7
+    if z == None:
+        z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
+    if not magnetic:
+        rho = sum((sld[:-1] - sld[1:])*(0.5 -\
+            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)
+        dic = {'real sld': real(rho), 'imag sld': imag(rho), 'z':z}
+    else:
+        sld_p = sld + mag_sld
+        sld_m = sld - mag_sld
+        rho_p = sum((sld_p[:-1] - sld_p[1:])*(0.5 -\
+            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)
+        rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -\
+            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)
+        dic = {'real sld +': real(rho_p), 'imag sld +': imag(rho_p),\
+                'real sld -': real(rho_m), 'imag sld -': imag(rho_m), 'z':z}
+    return dic
+
+SimulationFunctions={'Specular':Specular, \
+                     'OffSpecular':OffSpecularMingInterdiff, \
+                     'SLD': SLD_calculations\
+                    }
 
 import lib.refl as Refl
 (Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,\

@@ -55,12 +55,12 @@ _Angles_=1
 
 
 # Function! to create classes with the model given by the input parameters
-def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerParameters={'d':0.0,'sigma':0.0,'n':0.0+0.0j},StackParameters={'Layers':[],'Repetitions':1},SampleParameters={'Stacks':[],'Ambient':None,'Substrate':None},SimulationFunctions={'Specular':0,'OffSpecular':0},ModelID='Standard'):
-    #global Instrument
-    #global Layer
-    #global Repeat
-    #global Sample
-    
+def MakeClasses(InstrumentParameters = {'Wavelength':1.54,'Coordinates':1},\
+        LayerParameters = {'d':0.0, 'sigma':0.0, 'n':0.0+0.0j},\
+        StackParameters = {'Layers':[], 'Repetitions':1}, \
+        SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None}, \
+        SimulationFunctions = {'Specular':0,'OffSpecular':0},\
+        ModelID = 'Standard'):
     
     class Instrument:
         __dict__=InstrumentParameters
@@ -268,5 +268,11 @@ def MakeClasses(InstrumentParameters={'Wavelength':1.54,'Coordinates':1},LayerPa
 
         def SimOffSpecular(self,TwoThetaQz,ThetaQx,instrument):
             return SimulationFunctions['OffSpecular'](TwoThetaQz,ThetaQx,self,instrument)
+
+        def SimSLD(self, z, instrument):
+            if SimulationFunctions.has_key('SLD'):
+                return SimulationFunctions['SLD'](z, self, instrument)
+            else:
+                return {}
 
     return (Instrument,Layer,Stack,Sample)

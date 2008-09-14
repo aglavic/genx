@@ -9,6 +9,7 @@ import plugins.add_on_framework as framework
 from plotpanel import PlotPanel
 import  wx
 
+import numpy as np
 import sys, os, re
 
 
@@ -507,7 +508,6 @@ class SamplePanel(wx.Panel):
             self.listbox.SetSelection(self.listbox.GetSelection()+1)
 
     def InsertStack(self,evt):
-        
         # Create Dialog box
         items = [('Name', 'name')]
         validators = [NoMatchTextObjectValidator(self.sampleh.names)]
@@ -525,6 +525,7 @@ class SamplePanel(wx.Panel):
         else:
             self.plugin.ShowWarningDialog('Can not insert a stack at the'
             ' current position.')
+            
     def InsertLay(self,evt):
         # Create Dialog box
         items = [('Name', 'name')]
@@ -1058,28 +1059,49 @@ class ParameterExpressionDialog(wx.Dialog):
         return evalstring
         
 
-class SamplePlotPanel(PlotPanel):
+class SamplePlotPanel(wx.Panel):
     ''' Widget for plotting the scattering length density of 
     a sample.
     '''
     # TODO: Implement SamplePlotPanel
-    def __init__(self, parent, id = -1, color = None, dpi = None
+    def __init__(self, parent, plugin, id = -1, color = None, dpi = None
     , style = wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
         ''' Inits the plotpanel
         '''
-        PlotPanel.__init__(self, parent, id, color, dpi, style, **kwargs)
-        self.update(None)
-        self.ax = self.figure.add_subplot(111)
-        self.ax.set_autoscale_on(True)
-        self.update = self.Plot
+        wx.Panel.__init__(self, parent)
+        self.plot = PlotPanel(self, -1, color, dpi, style, **kwargs)
+        self.plugin = plugin
         
-    def Plot(self, Sample):
-        ''' Plot(self, Sample) --> None
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
+        
+        self.plot.update(None)
+        self.plot.ax = self.plot.figure.add_subplot(111)
+        self.plot.ax.set_autoscale_on(True)
+        self.plot.update = self.Plot
+        self.SetSizer(sizer)
+        self.plot.ax.set_autoscale_on(False)
+        
+    def Plot(self):
+        ''' Plot(self) --> None
         
         Plotting the sample Sample.
         '''
-        pass
-        
+        colors = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
+        model = self.plugin.GetModel().script_module
+        plot_dict = model.sample.SimSLD(None, model.inst)
+        self.plot.ax.lines = []
+        i = 0
+        for key in plot_dict:
+            if key != 'z': 
+                self.plot.ax.plot(plot_dict['z'], plot_dict[key],\
+                    colors[i%len(colors)])
+                i += 1
+        keys = plot_dict.keys()
+        keys.pop(keys.index('z'))
+        self.plot.ax.legend(tuple(keys))
+        self.plot.flush_plot()
+        self.plot.AutoScale()
         
 class Plugin(framework.Template):
     def __init__(self, parent):
@@ -1102,6 +1124,14 @@ class Plugin(framework.Template):
         
         self.sample_widget.SetUpdateCallback(self.UpdateScript)
         self.simulation_widget.SetUpdateScriptFunc(self.UpdateScript)
+        
+        # Create the SLD plot
+        sld_plot_panel = self.NewPlotFolder('SLD')
+        sld_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sld_plot_panel.SetSizer(sld_sizer)
+        self.sld_plot = SamplePlotPanel(sld_plot_panel, self)
+        sld_sizer.Add(self.sld_plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
+        sld_plot_panel.Layout()
         
         self.CreateNewModel()
         
@@ -1169,6 +1199,14 @@ class Plugin(framework.Template):
         '''
         
         self.ReadModel()
+        
+    def OnSimulate(self, event):
+        '''OnSimulate(self, event) --> None
+        
+        Updates stuff after simulation
+        '''
+        # Calculate and update the sld plot
+        self.sld_plot.Plot()
         
     def CreateNewModel(self, modelname = 'models.interdiff'):
         '''Init the script in the model to yield the 

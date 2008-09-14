@@ -178,6 +178,14 @@ class Template:
         Used to set up plugin specific model stuff. To be overridden
         '''
         pass
+    
+    def OnSimulate(self, event):
+        '''OnSimulate(self, event) --> None
+        
+        Function that is called after a simulation has been done.
+        To be overridden
+        '''
+        pass
         
     def Remove(self):
         '''Remove(self) --> None
@@ -322,6 +330,14 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
+            
+    def OnSimulate(self, event):
+        '''OnOpenModel(self, event) --> None
+        
+        Runs plugin code when the user has simulated the model
+        '''
+        for name in self.plugin_handler.loaded_plugins:
+            self.plugin_handler.loaded_plugins[name].OnSimulate(event)
         
 #==============================================================================
 # Utility Dialog functions..

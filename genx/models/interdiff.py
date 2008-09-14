@@ -110,6 +110,7 @@ except StandardError,S:
     
 
 from numpy import *
+from scipy.special import erf
 from lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:
@@ -254,8 +255,32 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
         I=ones(len(qx*qz))
     return real(I)*instrument.getI0() + instrument.getIbkg()
 
+def SLD_calculations(z, sample, inst):
+    ''' Calculates the scatteringlength density as at the positions z
+    '''
+    parameters = sample.resolveLayerParameters()
+    dens = array(parameters['dens'], dtype = complex64)
+    f = array(parameters['f'], dtype = complex64)
+    sld = dens*f
+    d_sld = sld[:-1] - sld[1:]
+    d = array(parameters['d'], dtype = float64)
+    d = d[1:-1]
+    # Include one extra element - the zero pos (substrate/film interface)
+    int_pos = cumsum(r_[0,d])
+    sigmar = array(parameters['sigmar'], dtype = float64)
+    sigmar = sigmar[:-1]
+    sigmai = array(parameters['sigmai'], dtype = float64)
+    sigmai = sigmai[:-1]
+    sigma = sqrt(sigmai**2 + sigmar**2)+1e-7
+    if z == None:
+        z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
+    rho = sum(d_sld*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)
+    return {'real sld': real(rho), 'imag sld': imag(rho), 'z':z}
+    
+
 SimulationFunctions = {'Specular':Specular,\
-                        'OffSpecular':OffSpecularMingInterdiff}
+                        'OffSpecular':OffSpecularMingInterdiff,\
+                        'SLD': SLD_calculations}
 
 import lib.refl as Refl
 (Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,\
