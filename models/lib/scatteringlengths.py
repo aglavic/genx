@@ -197,9 +197,13 @@ class FormFactor(Database):
             object.__setattr__(self, 'wavelength', wavelength)
             #object.__getattribute__(self, 'reset_database')()
             stored_vals = object.__getattribute__(self, 'stored_values')
+            #for key in stored_vals:
+            #    f = object.__getattribute__(self, 'lookup_value')(key)
+            #    change_proxyobject(stored_vals[key], f)
+            # Removing a bug with proxy adding does not work properly
             for key in stored_vals:
                 f = object.__getattribute__(self, 'lookup_value')(key)
-                change_proxyobject(stored_vals[key], f)
+                stored_vals[key] = f
         
     def __getattribute__(self, name):
         '''__getattribute__(self, name) --> value
@@ -218,7 +222,9 @@ class FormFactor(Database):
         looks up a value in the external database
         '''
         wl = object.__getattribute__(self, 'wavelength')
-        f = Proxy((object.__getattribute__(self, 'f_calc')(name, wl)))
+        #f = Proxy((object.__getattribute__(self, 'f_calc')(name, wl)))
+        # Removing a bug with proxy adding does not work properly
+        f = object.__getattribute__(self, 'f_calc')(name, wl)
         return f
     
 #==============================================================================
