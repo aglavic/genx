@@ -2,7 +2,7 @@
 in an efficent way. Based on a base class database which is subclassed
 for each case.
 Programmer: Matts Bjorck
-Last changed: 2008-08-22
+Last changed: 2008-10-08
 '''
 
 import numpy as np
@@ -307,11 +307,13 @@ def create_fp_lookup(path):
             raise ValueError('The energy/wavelength is outside the databse'\
                 + 'range, the energy should be inside [%f,%f] '%(e[1],e[-2]))
         pos1 = np.argmin(abs(e - energy))
-        if pos1 + 1 < e.shape[0] and pos1 - 1 < e.shape[0]:
-            if abs(e[pos1 + 1] - energy) > abs(e[pos1 - 1] - energy):
-                pos2 = pos1 -1
-            else:
-                pos2 = pos1 + 1
+        # Is the energy point to the right or left of the current point
+        # If it is ontop it doesn't matter since the interpolation will be exact at
+        # the endpoints
+        if (e[pos1] - energy) > 0: 
+            pos2 = pos1 - 1
+        else:
+            pos2 = pos1 + 1
         # A quick linear interpolation:
         f1_e = (energy - e[pos1])*(f1[pos2] - f1[pos1])/(e[pos2] - e[pos1])\
                 + f1[pos1]
