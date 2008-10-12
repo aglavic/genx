@@ -1,0 +1,85 @@
+2008-09-14:
+    Fixed bug in the printing and copying of the plots. Could only print
+    or copy the first plot.
+    Implemented scatttering lengths plots in the reflectivity plugin.
+    
+2008-09-13:
+    Made modification so the user can see wheter or not any changes has been
+    made since the last saving of the model. This is displayed by a little
+    star after teh filename
+
+2008-09-12:
+    Fixed a bug reported by Gunnar needed resolution to have footprint
+    correction.
+    Added background as a paraemter to interdiff and spec_nx
+    Fixed a bug found by Gunnar in the reflectivty module: The module did
+    not handle layers correctly (order changed in the stacks)
+    Fixed a new bug found by me: The new implementation of proxy objects did
+    not work with the custom dialog module used in the reflectivity module.
+
+2008-09-09:
+    Implemented some more help on the modules with my help scheme, 
+    html docstrings. 
+    IMplemented the either or algorithm in DiffEv both with random
+    base vector as well as the best vector as base. Tested and works
+    
+2008-09-08:
+    Fixed the scattering factor database acess to automagically update
+    the values when changing the database references.
+    
+2008-09-07:
+    Added colourized html text to the Refelctvity plugin.
+    Added tooltips to reflectivity plugin and data panel.
+    Added a frame to display doc strings html formatted from the
+    different modules in the models directory.
+===============================================================================
+2008-09-05: GenX2.0b2 released
+2008-09-05:
+    Hopefully fixed problem with negative numbers and errorbars in
+    the plotpanel module. 
+    Made everything that is in the script saved. (before only the simulated
+    part was saved)
+    
+2008-09-04:
+    Added bc as a database in models.utils. The coherent neutron scattering 
+    lengths as given in Neutron News. 
+    Made some small changes to plotpanel to resolves 0 problems when plotting.
+    Updated the homepage with the first tutorial.
+
+2008-09-03:
+    Implemented Quit callback.
+    Fixed link for the homepage in the About box. One slash was missing
+    Added the R-factor as one of the possible FOM's
+     that is R1 and R2
+    Fixed a bug under windows, the lineending gave an error
+    upon compiling. No the compile function splits all the lines and
+    adds a proper lineending to them.
+    Found a  bug in the loading of plugin - A new plugin could not be loaded
+    since I had overwritten that variable name with the previous plugins name,
+     fixed.
+    Added a show status text function to the datalist and data loader plugin
+    Tested extra_data in the DataSet class. 
+    Added spec_nx to the models. Tested at looks as it works!
+    
+2008-09-01:
+    Problem with that all does not exist in the standard library for 
+    python versions < 2.5. Removed all all statements.
+    Bugfix, the data table (view folder) was not completely cleared due to
+    misuse of DeleteRows method.
+
+2008-08-31:
+    Fixed problem with that the grid resetted, moved to the beginning of the
+    grid, during update when fitting.
+    Removed some print statements to silence the program.
+    Added a red background to the parameter that are out of bounds.
+    Added the possiblity to change the mutation scheme method.
+    Added the possiblity to do unconstrained fitting.
+    Fixed a couple of bugs in Reflectivity (empty print statements)
+    which caused the plugin to fail loading.
+    Found a bug in Reflectivity, could not load more than one stack - 
+    otherwise the order got screwed up. Fixed it. 
+    Made so that the Reflectivity module actually loads the expressions
+    rather than the values in the sample. This makes it possible to
+    store expressions.
+===============================================================================
+2008-08-29: GenX2.0b1 released
