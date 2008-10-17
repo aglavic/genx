@@ -134,6 +134,7 @@ class Parameters:
                     text += '%.4e\t'%item
                 else:
                     text += item.__str__() + '\t'
+            text += '\n'
         return text
     
     def _parse_ascii_input(self, text):
