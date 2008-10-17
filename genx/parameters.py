@@ -146,9 +146,9 @@ class Parameters:
         table = []
         sucess = True
         lines = text.split('\n')
-        for line in lines:
+        for line in lines[:-1]:
             # If line not commented
-            if line[0] != '#':
+            if line[0] != '#' and line[0] != '\n':
                 line_strs = line.split('\t')
                 # Check the format is it valid?
                 if len(line_strs) > 7 or len(line_strs) < 6:
@@ -181,7 +181,6 @@ class Parameters:
         to the one given in text.
         '''
         table = self._parse_ascii_input(text)
-        print table
         if table:
             self.data = table
             return True
