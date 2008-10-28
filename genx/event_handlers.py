@@ -127,12 +127,18 @@ def save_as(frame, event):
     if dlg.ShowModal() == wx.ID_OK:
         frame.model.set_script(frame.script_editor.GetText())
         fname = dlg.GetPath()
-        frame.model.save(fname)
-        set_title(frame)
-        frame.model.save_addition('config', frame.config.model_dump())
+        result = True
+        if os.path.exists(fname):
+            filepath, filename = os.path.split(frame.model.filename)
+            result = ShowQuestionDialog(frame, \
+            'The file %s already exists. Do you wish to overwrite it?'%filename\
+            , 'Overwrite?')
+        if result:
+            frame.model.save(fname)
+            set_title(frame)
+            frame.model.save_addition('config', frame.config.model_dump())
+            frame.main_frame_statusbar.SetStatusText('Model Saved to file', 1)
     dlg.Destroy()
-    
-    frame.main_frame_statusbar.SetStatusText('Model Saved to file', 1)
     
 def export_data(frame, event):
     '''export_data(frame, event) --> None
@@ -169,21 +175,29 @@ def export_script(frame, event):
                          style=wx.SAVE | wx.CHANGE_DIR 
                        )
     if dlg.ShowModal() == wx.ID_OK:
-        try:
-            frame.model.export_script(dlg.GetPath())
-        except modellib.IOError, e:
-            ShowModelErrorDialog(frame, str(e))
-            frame.main_frame_statusbar.SetStatusText(\
-                    'Error when exporting script', 1)
-            return
-        except Exception, e:
-            ShowErrorDialog(frame, str(e),\
-                                'export script - model.export_script')
-            frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-            return
-        else:
-            frame.main_frame_statusbar.SetStatusText(\
-                                            'Script exported to file', 1)
+        fname = dlg.GetPath()
+        result = True
+        if os.path.exists(fname):
+            filepath, filename = os.path.split(frame.model.filename)
+            result = ShowQuestionDialog(frame, \
+            'The file %s already exists. Do you wish to overwrite it?'%filename\
+            , 'Overwrite?')
+        if result:
+            try:
+                frame.model.export_script(dlg.GetPath())
+            except modellib.IOError, e:
+                ShowModelErrorDialog(frame, str(e))
+                frame.main_frame_statusbar.SetStatusText(\
+                        'Error when exporting script', 1)
+                return
+            except Exception, e:
+                ShowErrorDialog(frame, str(e),\
+                                    'export script - model.export_script')
+                frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+                return
+            else:
+                frame.main_frame_statusbar.SetStatusText(\
+                                                'Script exported to file', 1)
             
     dlg.Destroy()
     
@@ -197,20 +211,28 @@ def export_table(frame, event):
                          style=wx.SAVE | wx.CHANGE_DIR 
                        )
     if dlg.ShowModal() == wx.ID_OK:
-        try:
-            frame.model.export_table(dlg.GetPath())
-        except modellib.IOError, e:
-            ShowModelErrorDialog(frame, str(e))
-            frame.main_frame_statusbar.SetStatusText(\
-                    'Error when exporting table', 1)
-            return
-        except Exception, e:
-            ShowErrorDialog(frame, str(e),\
-                                'export table - model.export_table')
-            frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-            return
-        else:
-            frame.main_frame_statusbar.SetStatusText(\
+        fname = dlg.GetPath()
+        result = True
+        if os.path.exists(fname):
+            filepath, filename = os.path.split(frame.model.filename)
+            result = ShowQuestionDialog(frame, \
+            'The file %s already exists. Do you wish to overwrite it?'%filename\
+            , 'Overwrite?')
+        if result:
+            try:
+                frame.model.export_table(dlg.GetPath())
+            except modellib.IOError, e:
+                ShowModelErrorDialog(frame, str(e))
+                frame.main_frame_statusbar.SetStatusText(\
+                        'Error when exporting table', 1)
+                return
+            except Exception, e:
+                ShowErrorDialog(frame, str(e),\
+                                    'export table - model.export_table')
+                frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+                return
+            else:
+                frame.main_frame_statusbar.SetStatusText(\
                                                 'Table exported to file', 1)
             
     dlg.Destroy()
@@ -839,6 +861,15 @@ def _post_sim_plot_event(parent, model, desc = ''):
 
 #==============================================================================
 ## Functions for showing error dialogs
+
+def ShowQuestionDialog(frame, message, title = 'Question?'):
+    dlg = wx.MessageDialog(frame, message,
+                               title,
+                               wx.YES_NO | wx.ICON_QUESTION
+                               )
+    result = dlg.ShowModal() == wx.ID_YES
+    dlg.Destroy()
+    return result
 
 def ShowModelErrorDialog(frame, message):
     dlg = wx.MessageDialog(frame, message,

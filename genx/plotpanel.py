@@ -699,6 +699,7 @@ class DataPlotPanel(PlotPanel):
         update the plot with the simulation
         '''
         #print 'plotting'
+        
         if event.update_fit:
             data_list = event.model.get_data()
             if self.update != self.plot_data_fit:
@@ -734,7 +735,8 @@ class ErrorPlotPanel(PlotPanel):
             #print 'plotting ...', data
             self.ax.plot(data[:,0],data[:,1], '-r')
             self.ax.set_ylim(data[:,1].min()*0.95, data[:,1].max()*1.05)
-            self.AutoScale()
+            self.ax.set_xlim(data[:,0].min(), data[:,0].max())
+            #self.AutoScale()
         
         self.flush_plot()
         self.canvas.draw()

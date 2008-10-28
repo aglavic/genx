@@ -228,9 +228,12 @@ class DiffEv:
             
             # Time measurent to track the speed
             t = time.clock() - t_start
-            
+            if t > 0:
+                speed = self.n_pop/t
+            else:
+                speed = 999999
             self.text_output('FOM: %.3f Generation: %d Speed: %.1f'%\
-            (self.best_fom,gen,self.n_pop/t))
+            (self.best_fom,gen,speed))
             
             self.new_best = False
 
@@ -377,8 +380,9 @@ class DiffEv:
             trial = self.best_vec + self.km*(self.pop_vec[index1]\
             - self.pop_vec[index2])
         else:
-            trial = self.best_vec + self.kr*(self.pop_vec[index1]\
-            + self.pop_vec[index2] - 2*self.best_vec)
+            # Trying something else out more like normal recombination
+            trial = vec + self.kr*(self.pop_vec[index1]\
+            + self.pop_vec[index2] - 2*vec)
         
         # Implementation of constrained optimization
         if self.use_boundaries:
@@ -451,8 +455,11 @@ class DiffEv:
             - self.pop_vec[index2])
         else:
             # Calculate a continous recomibination
-            trial = self.pop_vec[index0] + self.kr*(self.pop_vec[index1]\
-            + self.pop_vec[index2] - 2*self.pop_vec[index0])
+            # Trying something else out more like normal recombination
+            #trial = self.pop_vec[index0] + self.kr*(self.pop_vec[index1]\
+            #+ self.pop_vec[index2] - 2*self.pop_vec[index0])
+            trial = vec + self.kr*(self.pop_vec[index1]\
+                    + self.pop_vec[index2] - 2*vec)
         
         # Implementation of constrained optimization
         if self.use_boundaries:
