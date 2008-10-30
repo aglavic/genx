@@ -42,51 +42,51 @@ class Plugin(Template):
             ShowWarningDialog(self.parent, 'Could not load the file: ' +\
                     filename + ' \nPlease check the format.\n\n numpy.loadtxt'\
                     + ' gave the following error:\n'  +  str(e))
-        
-        # Check so we have enough columns
-        if load_array.shape[1]-1 < max(self.h_col, self.k_col, self.l_col,\
-                self.I_col, self.eI_col):
-            ShowWarningDialog(self.parent, 'The data file does not contain'\
-                    + 'enough number of columns. It has ' + str(load_array.shape[1])\
-                    + ' columns. Rember that the column index start at zero!')
-            # Okay now we have showed a dialog lets bail out ...
-            return
-        # The data is set by the default Template.__init__ function, neat hu
-        # Note that the loaded data goes into *_raw so that they are not
-        # changed by the transforms
-        
-        # Create an record array so we can sort the data properly
-        data = np.rec.fromarrays([\
-                 load_array[:,self.h_col].round().astype(type(1)),\
-                 load_array[:,self.k_col].round().astype(type(1)),\
-                 load_array[:,self.l_col], load_array[:,self.I_col],\
-                 load_array[:,self.eI_col]\
-                ],\
-                 names = 'h, k, l, I, eI')
-        # Sort the data
-        data.sort(order = ('h','k','l'))
-        i = 0
-        while i < (len(data)-1):
-            # Find all the data for each rod
-            tmp = data.compress(np.bitwise_and(data['h'] == data[i]['h'],\
-                                data['k'] == data[i]['k']))
-            self.data.add_new('(%i, %i)'%(tmp['h'][0], tmp['k'][0]))
-            self.data[-1].x_raw = tmp['l']
-            self.data[-1].y_raw =tmp['I']
-            self.data[-1].error_raw = tmp['eI']
-            # Run the commands on the data - this also sets the x,y, error memebers
-            # of that data item.
-            self.data[-1].run_command()
-            self.data[-1].set_extra_data('h', tmp['h'])
-            self.data[-1].set_extra_data('k', tmp['k'])
-            # Increase the index
-            i += len(tmp)
-        
-        # Update the data list
-        self.UpdateDataList()
-        # Send an update that new data has been loaded
-        self.SendUpdateDataEvent()
-        
+        else:
+            # Check so we have enough columns
+            if load_array.shape[1]-1 < max(self.h_col, self.k_col, self.l_col,\
+                    self.I_col, self.eI_col):
+                ShowWarningDialog(self.parent, 'The data file does not contain'\
+                        + 'enough number of columns. It has ' + str(load_array.shape[1])\
+                        + ' columns. Rember that the column index start at zero!')
+                # Okay now we have showed a dialog lets bail out ...
+                return
+            # The data is set by the default Template.__init__ function, neat hu
+            # Note that the loaded data goes into *_raw so that they are not
+            # changed by the transforms
+            
+            # Create an record array so we can sort the data properly
+            data = np.rec.fromarrays([\
+                     load_array[:,self.h_col].round().astype(type(1)),\
+                     load_array[:,self.k_col].round().astype(type(1)),\
+                     load_array[:,self.l_col], load_array[:,self.I_col],\
+                     load_array[:,self.eI_col]\
+                    ],\
+                     names = 'h, k, l, I, eI')
+            # Sort the data
+            data.sort(order = ('h','k','l'))
+            i = 0
+            while i < (len(data)-1):
+                # Find all the data for each rod
+                tmp = data.compress(np.bitwise_and(data['h'] == data[i]['h'],\
+                                    data['k'] == data[i]['k']))
+                self.data.add_new('(%i, %i)'%(tmp['h'][0], tmp['k'][0]))
+                self.data[-1].x_raw = tmp['l']
+                self.data[-1].y_raw =tmp['I']
+                self.data[-1].error_raw = tmp['eI']
+                # Run the commands on the data - this also sets the x,y, error memebers
+                # of that data item.
+                self.data[-1].run_command()
+                self.data[-1].set_extra_data('h', tmp['h'])
+                self.data[-1].set_extra_data('k', tmp['k'])
+                # Increase the index
+                i += len(tmp)
+            
+            # Update the data list
+            self.UpdateDataList()
+            # Send an update that new data has been loaded
+            self.SendUpdateDataEvent()
+            
         
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None
