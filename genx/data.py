@@ -26,6 +26,9 @@ class DataSet:
         self.error_raw = array([])
         
         self.extra_data = {}
+        self.extra_data_raw = {}
+        # This is to add datasets that can be oprated upon as x,y and z
+        self.extra_commands = {}
         
         # The different commands to transform raw data to normal data
         self.x_command = 'x'
@@ -100,11 +103,20 @@ class DataSet:
         self.y_raw = new_set.y_raw
         self.error_raw = new_set.error_raw
         
+        # The dictonaries for the extra data
         try:
             self.extra_data = new_set.extra_data
         except AttributeError:
             self.extra_data = {}
-    
+        try:
+            self.extra_data_raw = new_set.extra_raw
+        except AttributeError:
+            self.extra_data_raw = self.extra_data.copy()
+        try:
+            self.extra_commands = new_set.extra_commands
+        except AttributeError:
+            self.extra_commands = {}
+        
         # The different commands to transform raw data to normal data
         self.x_command = new_set.x_command
         self.y_command = new_set.y_command
@@ -138,13 +150,18 @@ class DataSet:
         '''
         return self.extra_data.keys()
     
-    def set_extra_data(self, name, value):
-        '''set_extra_data_names(self, name, value)
+    def set_extra_data(self, name, value, command = None):
+        '''set_extra_data_names(self, name, value, command = None)
         
         sets extra data name, if it does not exist a new entry is created.
-        name should be a string and value can be any object
+        name should be a string and value can be any object.
+        If command is set, this means that the data set can be operated upon
+        with commands just as the x,y and e data members.
         '''
         self.extra_data[name] = value
+        self.extra_data_raw[name] = value
+        if command:
+            self.extra_commands[name] = command
     
     def get_extra_data(self, name):
         '''get_extra_data(self, name) --> object
@@ -259,9 +276,18 @@ class DataSet:
         y = self.y_raw
         e = self.error_raw
         
+        #Know we have to do this with the extra data
+        for key in self.extra_data_raw:
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+            
+        
         xt = self.x
         yt = self.y
         et = self.error
+        
+        #Know we have to do this with the extra data
+        for key in self.extra_data_raw:
+            exec('%st = self.extra_data["%s"]'%(key, key))
         
         # Try to evaluate all the expressions
         if command_dict['x'] != '':
@@ -284,25 +310,39 @@ class DataSet:
             except Exception, e:
                 result += 'Error in evaluating e expression.\n\nPython output:\n'\
                         + e.__str__() + '\n'
-        
+                        
+        for key in self.extra_commands:
+            if command_dict[key] != '':
+                try:
+                    exec('%st = eval(command_dict["%s"]'%(key, key))
+                except Exception, e:
+                    result += 'Error in evaluating %s expression.\n\nPython output:\n'%key\
+                            + e.__str__() + '\n'
+            
         # If we got an error - report it
         if result != '':
             return result
         #print 'Debug, datatry: ', xt, yt, et
         # Finally check so that all the arrays have the same size
-        if (xt.shape != yt.shape or xt.shape != et.shape)\
+        extra_shape = not all([eval('%s.shape'%key) == xt.shape for \
+                            key in self.extra_commands])
+        if (xt.shape != yt.shape or xt.shape != et.shape or extra_shape)\
             and result == '':
             result += 'The resulting arrays are not of the same size:\n' + \
                        'len(x) = %d, len(y) = %d, len(e) = %d'\
                     %(xt.shape[0], yt.shape[0], et.shape[0])
-        
+            for key in self.extra_commands:
+                result += ', len(%s) = %d'%(key, eval('%s.shape[0]'%key))
         return result
             
     def get_commands(self):
         ''' get_commands(self) --> list of dicts
         Returns the commnds as a dictonary with items x, y, z
         '''
-        return {'x':self.x_command,'y':self.y_command, 'e':self.error_command}
+        cmds = {'x':self.x_command, 'y':self.y_command, 'e':self.error_command}
+        for key in self.extra_commands:
+            cmds[key] = self.extra_commands[key]
+        return cmds
     
     def set_commands(self, command_dict):
         ''' set_commands(self, command_dict) --> None
@@ -315,7 +355,11 @@ class DataSet:
             self.y_command = command_dict['y']
         if command_dict['e'] != '':
             self.error_command = command_dict['e']
-        
+        # Lets do it for the extra commands as well
+        for key in command_dict:
+            if self.extra_commands.has_key(key):
+                if command_dict[key] != '':
+                    self.extra_commands = command_dict[key]
     
     def set_simulated_data(self, simulated_data):
         self.y_sim = simulated_data

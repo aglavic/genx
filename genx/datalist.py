@@ -623,13 +623,18 @@ class VirtualDataList(wx.ListCtrl):
         # Find which values are the same for all lists in sim and data.
         # Note that the lists are treated seperately...
         command_par = commands[0].copy()
-        keys = commands[0].keys()
         
         for command_dict in commands:
             # Iterate through the keys and mark the one that are
             # not identical with None!
-            for key in keys:
-                if not command_dict[key] == command_par[key]:
+            for key in command_dict:
+                # Check if the key exist in my commmand dict
+                if command_par.has_key(key):
+                    # Check so the command is the same
+                    if not command_dict[key] == command_par[key]:
+                        command_par[key] = ''
+                else:
+                    # Add a new key and set it to ''
                     command_par[key] = ''
         
         #Check if we have a config file:
@@ -1115,24 +1120,20 @@ class CalcDialog(wx.Dialog):
         gbs = wx.GridBagSizer(3, 2)
         
         # Do the labels first
-        row_labels = ['X =  ', 'Y = ', 'E(Y) = ']
-            
-        for item, index in zip(row_labels, range(len(row_labels))):
-            label = wx.StaticText(self, -1, item)
+        #command_names = ['x', 'y', 'e']
+        command_names = commands.keys()
+        for item, index in zip(command_names, range(len(command_names))):
+            label = wx.StaticText(self, -1, '%s = '%item)
             gbs.Add(label,(index,0),\
                 flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
-        
-        # Add the text controls - hold the commands
-        self.xcommand_ctrl = wx.TextCtrl(self, -1, commands['x'],\
+        # Create the text controls - hold the commands
+        self.command_ctrl = {}
+        for name in command_names:
+            self.command_ctrl[name] = wx.TextCtrl(self, -1, commands[name],\
                                 size=(300, -1))
-        self.ycommand_ctrl = wx.TextCtrl(self, -1, commands['y'],\
-                                size=(300, -1))
-        self.ecommand_ctrl = wx.TextCtrl(self, -1, commands['e']\
-                                , size=(300, -1))
         # add to the gridbag sizer
-        gbs.Add(self.xcommand_ctrl, (0,1), flag = wx.EXPAND)
-        gbs.Add(self.ycommand_ctrl, (1,1), flag = wx.EXPAND)
-        gbs.Add(self.ecommand_ctrl, (2,1), flag = wx.EXPAND)
+        for index, name in enumerate(command_names):
+            gbs.Add(self.command_ctrl[name], (index, 1), flag = wx.EXPAND)
         
         # Add the Dilaog buttons
         button_sizer = wx.StdDialogButtonSizer()
@@ -1172,9 +1173,9 @@ class CalcDialog(wx.Dialog):
         Callback for the Predefined choice box
         '''
         item = self.predef_choice.GetSelection()
-        self.xcommand_ctrl.SetValue(self.predef_commands[item]['x'])
-        self.ycommand_ctrl.SetValue(self.predef_commands[item]['y'])
-        self.ecommand_ctrl.SetValue(self.predef_commands[item]['e'])
+        self.command_ctrl['x'].SetValue(self.predef_commands[item]['x'])
+        self.command_ctrl['y'].SetValue(self.predef_commands[item]['y'])
+        self.command_ctrl['e'].SetValue(self.predef_commands[item]['e'])
         
         
     def OnDataChoice(self, event):
@@ -1182,14 +1183,34 @@ class CalcDialog(wx.Dialog):
         Callback for the data coiche box
         '''
         item = self.data_choice.GetSelection()
-        self.xcommand_ctrl.SetValue(self.data_commands[item]['x'])
-        self.ycommand_ctrl.SetValue(self.data_commands[item]['y'])
-        self.ecommand_ctrl.SetValue(self.data_commands[item]['e'])
+        failed = []
+        for name in self.command_ctrl:
+            val = self.command_ctrl[name].GetValue()
+            try:
+                val = self.data_commands[item][name]
+            except KeyError:
+                failed.append(name)
+            self.command_ctrl[name].SetValue(val)
+        if len(failed) > 0:
+            dlg = wx.MessageDialog(self, 'The data operations for the' + \
+                'following memebers of the data set could not be copied: '+
+                ' ,'.join(failed),
+                               'Copy failed',
+                               wx.OK | wx.ICON_WARNING
+                               )
+            dlg.ShowModal()
+            dlg.Destroy()
+        #self.command_ctrl['x'].SetValue(self.data_commands[item]['x'])
+        #self.command_ctrl['y'].SetValue(self.data_commands[item]['y'])
+        #self.command_ctrl['e'].SetValue(self.data_commands[item]['e'])
         
     def OnClickExecute(self, event):
-        current_command = {'x':  self.xcommand_ctrl.GetValue(),\
-                            'y':  self.ycommand_ctrl.GetValue(), \
-                            'e':  self.ecommand_ctrl.GetValue() }
+        #current_command = {'x':  self.xcommand_ctrl.GetValue(),\
+        #                    'y':  self.ycommand_ctrl.GetValue(), \
+        #                    'e':  self.ecommand_ctrl.GetValue() }
+        current_command = {}
+        for name in self.command_ctrl:
+            current_command[name] = self.command_ctrl[name].GetValue()
         
         if self.command_tester and self. command_runner: 
             result = self.command_tester(current_command)

@@ -1,4 +1,8 @@
-
+2008-10-30:
+    Implemented additional commands for extra data. Have only tested that the
+    the function remains with original data. Full testing remains to be done.
+    Also fixed an error handling bug in data_loader/default.py and sls_sxrd.py
+    
 2008-10-28:
     Added question for save as if an existing file is overwritten.
     This was also done for export script and export table.
