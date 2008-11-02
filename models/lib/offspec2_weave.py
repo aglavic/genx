@@ -27,7 +27,8 @@ def make_F(q,h):
     F=I
     return F
 
-def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0]):
+def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0],\
+                    taylor_n = 1):
     #sigmaid-interdiffused part
     #sigma-roughness
     k=2*math.pi/lamda
@@ -79,7 +80,7 @@ def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0]):
     print G.shape
     # Setting up for the Fourier integral as given by Pape et.al.
     print 'Prepearing the Fourier integral'
-    maxn=1
+    maxn = taylor_n
     print 'n= ', maxn
     # New dqmin tested 20051201
     dqmin=min(abs(qx[:-1]-qx[1:]))*eta/(maxn**(1.0/2.0/h))
@@ -158,7 +159,7 @@ def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0]):
 
 
 
-def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0]):
+def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     k=2*math.pi/lamda
     qx=array(qx,dtype=float64)
     sqn=n**2
@@ -211,7 +212,7 @@ def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0]):
     print G.shape
     # Setting up for the Fourier integral as given by Pape et.al.
     print 'Prepearing the Fourier integral'
-    maxn=10
+    maxn = taylor_n
     print 'n= ', maxn
     dqmin=(qx[1]-qx[0])*eta/(maxn**(1.0/2.0/h))    
     print dqmin
@@ -278,7 +279,7 @@ def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0]):
     s=I
     return (s,omega+omegap,omegap-omega)
 
-def Born(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0]):
+def Born(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     k=2*math.pi/lamda
     qx=array(qx,dtype=float64)
     sqn=n**2
@@ -331,7 +332,7 @@ def Born(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0]):
     #print G.shape
     # Setting up for the Fourier integral as given by Pape et.al.
     print 'Prepearing the Fourier integral'
-    maxn=1
+    maxn=taylor_n
     dqmin=(qx[1]-qx[0])*eta/(maxn**(1.0/2.0/h))
     q_min=arange(qx[0]*eta/(maxn**(1.0/2.0/h)),qx[-1]*eta+2*dqmin,dqmin,dtype=float64)
     #print q_min.shape

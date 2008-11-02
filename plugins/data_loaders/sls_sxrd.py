@@ -77,8 +77,8 @@ class Plugin(Template):
                 # Run the commands on the data - this also sets the x,y, error memebers
                 # of that data item.
                 self.data[-1].run_command()
-                self.data[-1].set_extra_data('h', tmp['h'])
-                self.data[-1].set_extra_data('k', tmp['k'])
+                self.data[-1].set_extra_data('h', tmp['h'], 'h')
+                self.data[-1].set_extra_data('k', tmp['k'], 'k')
                 # Increase the index
                 i += len(tmp)
             

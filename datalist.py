@@ -116,7 +116,7 @@ class DataController:
                 self.data[i].set_commands(command)
                 self.data[i].run_command()
             except Exception, e:
-                result += 'Error occured for data set %i'%i + e.__str__()
+                result += 'Error occured for data set %i: '%i + e.__str__()
                 break
         return result
     
@@ -1117,23 +1117,35 @@ class CalcDialog(wx.Dialog):
         
         
         # Layout for the command controls
-        gbs = wx.GridBagSizer(3, 2)
+        gbs = wx.GridBagSizer(len(commands), 2)
         
         # Do the labels first
-        #command_names = ['x', 'y', 'e']
-        command_names = commands.keys()
-        for item, index in zip(command_names, range(len(command_names))):
-            label = wx.StaticText(self, -1, '%s = '%item)
-            gbs.Add(label,(index,0),\
-                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
-        # Create the text controls - hold the commands
+        command_names_standard = ['x', 'y', 'e']
+        # We should for simplicity and layout beuty treat x,y,e seperate from
+        #the rest
         self.command_ctrl = {}
-        for name in command_names:
-            self.command_ctrl[name] = wx.TextCtrl(self, -1, commands[name],\
-                                size=(300, -1))
-        # add to the gridbag sizer
-        for index, name in enumerate(command_names):
-            gbs.Add(self.command_ctrl[name], (index, 1), flag = wx.EXPAND)
+        for name, index in zip(command_names_standard,\
+                                    range(len(command_names_standard))):
+            if commands.has_key(name):
+                label = wx.StaticText(self, -1, '%s = '%name)
+                gbs.Add(label,(index,0),\
+                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+                self.command_ctrl[name] = wx.TextCtrl(self, -1,\
+                                    commands[name], size=(300, -1))
+                gbs.Add(self.command_ctrl[name], (index, 1), flag = wx.EXPAND)
+
+        command_names = commands.keys()
+        command_names.sort()
+        index_offset = len(command_names_standard) - 1
+        for name, index in zip(command_names, range(len(command_names))):
+            if not (name in command_names_standard):
+                label = wx.StaticText(self, -1, '%s = '%name)
+                gbs.Add(label,(index + index_offset, 0),\
+                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+                self.command_ctrl[name] = wx.TextCtrl(self, -1,\
+                        commands[name], size=(300, -1))
+                gbs.Add(self.command_ctrl[name], (index + index_offset, 1),\
+                            flag = wx.EXPAND)
         
         # Add the Dilaog buttons
         button_sizer = wx.StdDialogButtonSizer()
@@ -1218,8 +1230,8 @@ class CalcDialog(wx.Dialog):
                 result = self.command_runner(current_command)
                 if result != '':
                     result = 'There is an error that the command tester did' + \
-                     'not catch please give the following information to' + \
-                     'the developer:\n\n' +  result
+                     ' not catch please give the following information to' + \
+                     ' the developer:\n\n' +  result
                     dlg = wx.MessageDialog(self, result, 'Error in GenX',
                                wx.OK | wx.ICON_ERROR)
                     dlg.ShowModal()

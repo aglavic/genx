@@ -58,7 +58,7 @@ diffuse interfaces.
 <h3>Instrument</h3>
 <code>Instrument(wavelength = 1.54, coords = 'tth',
      I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2,
-     beamw = 0.01, footype = 'no corr', samplelen = 10.0)</code>
+     beamw = 0.01, footype = 'no corr', samplelen = 10.0, taylor_n = 1)</code>
     <dl>
     <dt><code><b>wavelength</b></code></dt>
     <dd>The wavalelngth of the radiation givenin AA (Angstroms)</dd>
@@ -90,12 +90,17 @@ diffuse interfaces.
     <dt><code><b>footype</b></code></dt>
     <dd>Which type of footprint correction is to be applied to the simulation.
     One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, 
-    the number 0-2 are also valid. The different choices are self expnalatory.</dd>
+    the number 0-2 are also valid. The different choices are self explanatory.
+    </dd>
     <dt><code><b>beamw</b></code></dt>
     <dd>The width of the beam given in mm. For 'gauss beam' it should be
     the standard deviation. For 'square beam' it is the full width of the beam.</dd>
     <dt><code><b>samplelen</b></code></dt>
     <dd>The length of the sample given in mm</dd>
+    <dt><code><b>taylor_n</b></code></dt>
+    <dd>The number terms taken into account in the taylor expansion of 
+    the fourier integral of the correlation function. More terms more accurate
+    calculation but also much slower.</dd>
 '''
 
 import lib.paratt as Paratt
@@ -125,7 +130,7 @@ instrument_string_choices = {'coords': ['q','tth'],\
     
 InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
     'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',\
-    'samplelen':10.0, 'Ibkg': 0.0}
+    'samplelen':10.0, 'Ibkg': 0.0, 'taylor_n': 1}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
 #Res stddev of resolution
@@ -250,7 +255,8 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     #print eta_z
     if __offspec__:
         (I, alpha, omega) = offspec2_weave.DWBA_Interdiff(qx, qz, lamda, n, z,\
-            sigmar, sigmai, eta, h, eta_z, d)
+            sigmar, sigmai, eta, h, eta_z, d,\
+                taylor_n = parameters['taylor_n'])
     else:
         I=ones(len(qx*qz))
     return real(I)*instrument.getI0() + instrument.getIbkg()

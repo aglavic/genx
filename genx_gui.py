@@ -331,6 +331,9 @@ class MainFrame(wx.Frame):
             self.script_editor)
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_model_changed,\
                     self.data_list.list_ctrl)
+                    
+        # Adding close event so I can take care of it...
+        self.Bind(wx.EVT_CLOSE, self.eh_mb_quit)
         
         proj_func = lambda row: event_handlers.project_fom_parameter(self, row)
         scan_func = lambda row: event_handlers.scan_parameter(self, row)
@@ -505,7 +508,7 @@ class MainFrame(wx.Frame):
         event_handlers.export_script(self, event)
 
     def eh_mb_quit(self, event): # wxGlade: MainFrame.<event_handler>
-        self.Destroy()
+        event_handlers.quit(self, event)
 
     def eh_mb_copy_graph(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.copy_graph(self, event)

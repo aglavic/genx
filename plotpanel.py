@@ -267,7 +267,7 @@ class PlotPanel(wx.Panel):
         # Set the limits
         #print 'Autoscaling to: ', ymin, ymax
         self.ax.set_xlim(xmin, xmax)
-        self.ax.set_ylim(ymin, ymax)
+        self.ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
         #self.ax.set_yscale(self.scale)
         self.flush_plot()
         
@@ -717,26 +717,27 @@ class ErrorPlotPanel(PlotPanel):
     def __init__(self, parent, id = -1, color = None, dpi = None
     , style = wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
         PlotPanel.__init__(self, parent, id, color, dpi, style, **kwargs)
-        self.update=self.errorplot
+        self.update = self.errorplot
         self.update(None)
         
     def errorplot(self, data):
         if not self.ax:
             self.ax = self.figure.add_subplot(111)
-            self.ax.set_autoscale_on(False)
             
         #self.ax.cla()
+        self.ax.set_autoscale_on(False)
         
         self.ax.lines = []
         if data == None:
             theta = arange(0.1,10,0.001)
             self.ax.plot(theta,floor(15-theta),'-r')
-        else:
+        else:            
             #print 'plotting ...', data
             self.ax.plot(data[:,0],data[:,1], '-r')
-            self.ax.set_ylim(data[:,1].min()*0.95, data[:,1].max()*1.05)
-            self.ax.set_xlim(data[:,0].min(), data[:,0].max())
-            #self.AutoScale()
+            if self.GetAutoScale():
+                self.ax.set_ylim(data[:,1].min()*0.95, data[:,1].max()*1.05)
+                self.ax.set_xlim(data[:,0].min(), data[:,0].max())
+                #self.AutoScale()
         
         self.flush_plot()
         self.canvas.draw()
@@ -780,11 +781,13 @@ class ParsPlotPanel(PlotPanel):
             self.ax.cla()
             width = 0.8
             x = arange(len(best))
+            self.ax.set_autoscale_on(False)
             self.ax.bar(x - width/2.0, pop_max - pop_min, bottom = pop_min,\
                         color = 'b', width = width)
             self.ax.plot(x, best, 'ro')
-            self.ax.axis([x.min() - width, x.max() +    width,\
-                          0., 1.])
+            if self.GetAutoScale():
+                self.ax.axis([x.min() - width, x.max() +    width,\
+                            0., 1.])
         
         self.flush_plot()
         self.canvas.draw()
