@@ -1,3 +1,14 @@
+2008-11-02:
+    Tested and corrected bugs for the commands on the extra data. This is
+    now fully implemented and working.
+    Fixed plotting of FOM and Pars. Autoscale flag had no effect on the
+    updating. Fixed and tested.
+    Added a question if the model is not saved when exiting the program.
+    Added also scaling to linear autoscaling 5%. Just makes linear plots look
+    a bit nicer.
+    Implemented a new parameter in the model interdiff.py, taylor_n so that 
+    the number of terms in the taylor expansion can be controlled.
+
 2008-10-30:
     Implemented additional commands for extra data. Have only tested that the
     the function remains with original data. Full testing remains to be done.

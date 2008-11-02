@@ -1063,7 +1063,6 @@ class SamplePlotPanel(wx.Panel):
     ''' Widget for plotting the scattering length density of 
     a sample.
     '''
-    # TODO: Implement SamplePlotPanel
     def __init__(self, parent, plugin, id = -1, color = None, dpi = None
     , style = wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
         ''' Inits the plotpanel

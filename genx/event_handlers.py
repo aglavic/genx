@@ -528,10 +528,14 @@ def quit(frame, event):
     
     Quit the program 
     '''
-    # TODO:Cleaning before exiting
-    # Should add some checking if the model has been saved...
+    # Check so the model is saved before quitting
+    if not frame.model.saved:
+        ans = ShowQuestionDialog(frame, 'The current model is not saved! '\
+        'Do you '\
+        ' want to quit and loose all unsaved data?', 'Quit without saving?')
+        if ans:
+            frame.Destroy()
 
-    frame.Destroy()
     
 def status_text(frame, event):
     '''status_text(frame, event) --> None

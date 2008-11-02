@@ -243,6 +243,10 @@ class DataSet:
         x = self.x_raw
         y = self.y_raw
         e = self.error_raw
+        
+        for key in self.extra_data_raw:
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+        
         self.x = eval(self.x_command)
         #print self.x
 
@@ -250,6 +254,10 @@ class DataSet:
         x = self.x_raw
         y = self.y_raw
         e = self.error_raw
+        
+        for key in self.extra_data_raw:
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+        
         self.y = eval(self.y_command)
         #print self.y
         #print self.y_command
@@ -258,12 +266,30 @@ class DataSet:
         x = self.x_raw
         y = self.y_raw
         e = self.error_raw
+        
+        for key in self.extra_data_raw:
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+        
         self.error = eval(self.error_command)
+        
+    def run_extra_commands(self):
+        x = self.x_raw
+        y = self.y_raw
+        e = self.error_raw
+        
+        for key in self.extra_data_raw:
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+        
+        for key in self.extra_commands:
+            exec('self.extra_data["%s"] = eval(self.extra_commands["%s"])'\
+                    %(key, key))    
+        
         
     def run_command(self):
         self.run_x_command()
         self.run_y_command()
         self.run_error_command()
+        self.run_extra_commands()
         
     def try_commands(self, command_dict):
         ''' try_commands(self, command_dict) --> tuple of bool
@@ -280,7 +306,6 @@ class DataSet:
         for key in self.extra_data_raw:
             exec('%s = self.extra_data_raw["%s"]'%(key, key))
             
-        
         xt = self.x
         yt = self.y
         et = self.error
@@ -314,7 +339,7 @@ class DataSet:
         for key in self.extra_commands:
             if command_dict[key] != '':
                 try:
-                    exec('%st = eval(command_dict["%s"]'%(key, key))
+                    exec('%st = eval(command_dict["%s"])'%(key, key))
                 except Exception, e:
                     result += 'Error in evaluating %s expression.\n\nPython output:\n'%key\
                             + e.__str__() + '\n'
@@ -324,7 +349,7 @@ class DataSet:
             return result
         #print 'Debug, datatry: ', xt, yt, et
         # Finally check so that all the arrays have the same size
-        extra_shape = not all([eval('%s.shape'%key) == xt.shape for \
+        extra_shape = not all([eval('%st.shape'%key) == xt.shape for \
                             key in self.extra_commands])
         if (xt.shape != yt.shape or xt.shape != et.shape or extra_shape)\
             and result == '':
@@ -332,7 +357,7 @@ class DataSet:
                        'len(x) = %d, len(y) = %d, len(e) = %d'\
                     %(xt.shape[0], yt.shape[0], et.shape[0])
             for key in self.extra_commands:
-                result += ', len(%s) = %d'%(key, eval('%s.shape[0]'%key))
+                result += ', len(%s) = %d'%(key, eval('%st.shape[0]'%key))
         return result
             
     def get_commands(self):
@@ -359,7 +384,7 @@ class DataSet:
         for key in command_dict:
             if self.extra_commands.has_key(key):
                 if command_dict[key] != '':
-                    self.extra_commands = command_dict[key]
+                    self.extra_commands[key] = command_dict[key]
     
     def set_simulated_data(self, simulated_data):
         self.y_sim = simulated_data
