@@ -284,11 +284,11 @@ def Specular(TwoThetaQz,sample,instrument):
     beamw = instrument.getBeamw()
     samlen = instrument.getSamplelen()
     theta = arcsin(Q*instrument.getWavelength()/4.0/pi)*180/pi
-    if footype == 1 or instrument_string_choices['footype'][1]:
+    if footype == 1 or footype == instrument_string_choices['footype'][1]:
         foocor = GaussIntensity(theta, samlen/2.0, samlen/2.0, beamw)
-    elif footype == 2 or instrument_string_choices['footype'][2]:
+    elif footype == 2 or footype == instrument_string_choices['footype'][2]:
         foocor=SquareIntensity(theta, samlen, beamw)
-    elif footype == 0 or instrument_string_choices['footype'][0]:
+    elif footype == 0 or footype == instrument_string_choices['footype'][0]:
         pass
     else:
         raise ValueError('The choice of footprint correction, footype,'
@@ -348,15 +348,15 @@ def SLD_calculations(z, sample, inst):
         z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     if not magnetic:
         rho = sum((sld[:-1] - sld[1:])*(0.5 -\
-            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)
+            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
         dic = {'real sld': real(rho), 'imag sld': imag(rho), 'z':z}
     else:
         sld_p = sld + mag_sld
         sld_m = sld - mag_sld
         rho_p = sum((sld_p[:-1] - sld_p[1:])*(0.5 -\
-            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)
+            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld_p[-1]
         rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -\
-            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)
+            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
         dic = {'real sld +': real(rho_p), 'imag sld +': imag(rho_p),\
                 'real sld -': real(rho_m), 'imag sld -': imag(rho_m), 'z':z}
     return dic
