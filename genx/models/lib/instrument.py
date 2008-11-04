@@ -75,10 +75,10 @@ def ResolutionVector(Q,dQ,points,range=3):
     #if type(dQ)!=type(array([])):
     #    dQ=dQ*ones(Q.shape)
     Qstep=2*range*dQ/points
-    Qres=Q+(arange(points)-(points-1)/2)[:,NewAxis]*Qstep
+    Qres=Q+(arange(points)-(points-1)/2)[:,newaxis]*Qstep
     
-    weight=1/sqrt(2*pi)/dQ*exp(-(transpose(Q[:,NewAxis])-Qres)**2/(dQ)**2/2)
-    Qret=reshape(Qres,(1,Qres.shape[0]*Qres.shape[1]))[0]
+    weight=1/sqrt(2*pi)/dQ*exp(-(transpose(Q[:,newaxis])-Qres)**2/(dQ)**2/2)
+    Qret = Qres.flatten()#reshape(Qres,(1,Qres.shape[0]*Qres.shape[1]))[0]
     #print Qres
     #print Qres.shape
     #print Qret.shape
@@ -87,11 +87,11 @@ def ResolutionVector(Q,dQ,points,range=3):
 # Include the resolution with Qret and weight calculated from ResolutionVector
 # and I the calculated intensity at each point. returns the intensity
 def ConvoluteResolutionVector(Qret,I,weight):
-    Qret=reshape(Qret,(weight.shape[0],weight.shape[1]))
+    Qret2 = Qret.reshape(weight.shape[0], weight.shape[1])
     #print Qret.shape,weight.shape
-    I=reshape(I,(weight.shape[0],weight.shape[1]))
+    I2 = I.reshape(weight.shape[0], weight.shape[1])
     #print (I*weight).shape,Qret.shape
-    Int=integrate.trapz(I*weight,x=Qret,axis=0)
+    Int = integrate.trapz(I2*weight, x = Qret2, axis = 0)
     #print Int.shape
     return Int
 
@@ -108,10 +108,10 @@ def ConvoluteFast(Q,I,dQ,range=3):
 # constant spacing between the dat.
 def ConvoluteFastVar(Q,I,dQ,range=3):
     Qstep=Q[1]-Q[0]
-    steps=max(dQ)*range/Qstep
+    steps=max(dQ*ones(Q.shape))*range/Qstep
     
-    weight=1/sqrt(2*pi)/dQ*exp(-(Q[:,NewAxis]-Q)**2/(dQ)**2/2)
-    Itemp=I[:,NewAxis]*ones(I.shape)
+    weight=1/sqrt(2*pi)/dQ*exp(-(Q[:,newaxis]-Q)**2/(dQ)**2/2)
+    Itemp=I[:,newaxis]*ones(I.shape)
     Int=integrate.trapz(Itemp*weight,axis=0)
     return Int
 
