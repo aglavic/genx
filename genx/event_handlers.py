@@ -4,7 +4,7 @@ Programmer: Matts Bjorck
 Last changed: 2008 06 24
 '''
 
-__version__ = '2.0b trunk'
+__version__ = '2.0b4'
 
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
