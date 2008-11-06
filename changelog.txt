@@ -1,3 +1,13 @@
+2008-11-03: 
+    Added and sucessfully tested a new plugin UserFuncs to GenX.
+    This allow the user to run custom functions defined in the script.
+    Fixed a bug that the program wont close when a saved model is in 
+    active...
+    Fixed the bug with the boolean flag when importing a table with fit
+    parameters into GenX
+    
+===============================================================================
+2008-11-03: GenX2.0b4 released
 2008-11-02:
     Tested and corrected bugs for the commands on the extra data. This is
     now fully implemented and working.
