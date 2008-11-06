@@ -1,0 +1,1507 @@
+#F nb_NeutronNews.dat
+#UT Neutron Scattering Lengths and cross sections
+#UIDL xndebe
+#UD Neutron Scattering Lengths and cross sections
+#UD 
+#UD All of these data were taken from the Special Feature section of
+#UD neutron scattering lengths and cross sections of the elements and
+#UD their isotopes in Neutron News, Vol. 3, No. 3, 1992, pp.  29-37.
+#UD 
+#UD The contents of the columns are as follows:
+#UD Column	Unit	Quantity	
+#UD 1	                Natural abundance (For radioisotopes the half-life is given instead)
+#UD 2           fm      real part of the bound coherent scattering length
+#UD 3		fm	imaginary part of the bound coherent scattering length
+#UD 4		fm	real part of the bound incoherent scattering length
+#UD 5		fm	imaginary part of the bound incoherent scattering length
+#UD 6		barn	bound coherent scattering cross section
+#UD 7		barn	bound incoherent scattering cross section
+#UD 8		barn	total bound scattering cross section
+#UD 9		barn	absorption cross section for 2200 m/s neutrons
+#UD Note: 1fm=1E-15 m, 1barn=1E-24 cm^2, scattering lengths and cross sections in 
+#UD parenthesis are uncertainties (not reported)
+#UD
+#S  1    H
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	-3.739	0	9999	1.7568	80.26	82.02	0.3326
+#S  2    He
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	3.26	0	9999	1.34	0	1.34	0.00747
+#S  3    Li
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	-1.9	0	9999	0.454	0.92	1.37	70.5
+#S  4    Be
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	7.79	0	0.12	7.63	0.0018	7.63	0.0076
+#S  5    B
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.3	-0.213	9999	3.54	1.7	5.24	767.(8.)
+#S  6    C
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	6.646	0	9999	5.551	0.001	5.551	0.0035
+#S  7    N
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9.36	0	9999	11.01	0.5	11.51	1.9
+#S  8    O
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.803	0	9999	4.232	0.0008	4.232	0.00019
+#S  9    F
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	5.654	0	-0.082	4.017	0.0008	4.018	0.0096
+#S  10   Ne
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	4.566	0	9999	2.62	0.008	2.628	0.039
+#S  11   Na
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	3.63	0	3.59	1.66	1.62	3.28	0.53
+#S  12   Mg
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.375	0	9999	3.631	0.08	3.71	0.063
+#S  13   Al
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	3.449	0	0.256	1.495	0.0082	1.503	0.231
+#S  14   Si
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	4.1491	0	9999	2.163	0.004	2.167	0.171
+#S  15   P
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	5.13	0	0.2	3.307	0.005	3.312	0.172
+#S  16   S
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	2.847	0	9999	1.0186	0.007	1.026	0.53
+#S  17   Cl
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9.577	0	9999	11.5257	5.3	16.8	33.5
+#S  18   Ar
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	1.909	0	9999	0.458	0.225	0.683	0.675
+#S  19   K
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	3.67	0	9999	1.69	0.27	1.96	2.1
+#S  20   Ca
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	4.7	0	9999	2.78	0.05	2.83	0.43
+#S  21   Sc
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	12.29	0	-6	19	4.5	23.5	27.5
+#S  22   Ti
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	-3.438	0	9999	1.485	2.87	4.35	6.09
+#S  23   V
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	-0.3824	0	9999	0.0184	5.08	5.1	5.08
+#S  24   Cr
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	3.635	0	9999	1.66	1.83	3.49	3.05
+#S  25   Mn
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	-3.73	0	1.79	1.75	0.4	2.15	13.3
+#S  26   Fe
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9.45	0	9999	11.22	0.4	11.62	2.56
+#S  27   Co
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	2.49	0	-6.2	0.779	4.8	5.6	37.18
+#S  28   Ni
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	10.3	0	9999	13.3	5.2	18.5	4.49
+#S  29   Cu
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.718	0	9999	7.485	0.55	8.03	3.78
+#S  30   Zn
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.68	0	9999	4.054	0.077	4.131	1.11
+#S  31   Ga
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.288	0	9999	6.675	0.16	6.83	2.75
+#S  32   Ge
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	8.185	0	9999	8.42	0.18	8.6	2.2
+#S  33   As
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	6.58	0	-0.69	5.44	0.06	5.5	4.5
+#S  34   Se
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.97	0	9999	7.98	0.32	8.3	11.7
+#S  35   Br
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	6.795	0	9999	5.8	0.1	5.9	6.9
+#S  36   Kr
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.81	0	9999	7.67	0.01	7.68	25.(1.)
+#S  37   Rb
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.09	0	9999	6.32	0.5	6.8	0.38
+#S  38   Sr
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.02	0	9999	6.19	0.06	6.25	1.28
+#S  39   Y
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	7.75	0	1.1	7.55	0.15	7.7	1.28
+#S  40   Zr
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.16	0	9999	6.44	0.02	6.46	0.185
+#S  41   Nb
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	7.054	0	-0.139	6.253	0.0024	6.255	1.15
+#S  42   Mo
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	6.715	0	9999	5.67	0.04	5.71	2.48
+#S  43   Tc
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.3E5a	6.8	0	9999	5.8	0.5	6.3	20.(1.)
+#S  44   Ru
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.03	0	9999	6.21	0.4	6.6	2.56
+#S  45   Rh
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	5.88	0	9999	4.34	0.3	4.6	144.8
+#S  46   Pd
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.91	0	9999	4.39	0.093	4.48	6.9
+#S  47   Ag
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.922	0	9999	4.407	0.58	4.99	63.3
+#S  48   Cd
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	4.87	-0.7	9999	3.04	3.46	6.5	2520.(50.)
+#S  49   In
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	4.065	-0.0539	9999	2.08	0.54	2.62	193.8(1.5)
+#S  50   Sn
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	6.225	0	9999	4.871	0.022	4.892	0.626
+#S  51   Sb
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.57	0	9999	3.9	0.007	3.9	4.91
+#S  52   Te
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.8	0	9999	4.23	0.09	4.32	4.7
+#S  53   I
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	5.28	0	1.58	3.5	0.31	3.81	6.15
+#S  54   Xe
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	4.92	0	3.04	2.96	0	0	23.9(1.2)
+#S  55   Cs
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	5.42	0	1.29	3.69	0.21	3.9	29.0(1.5)
+#S  56   Ba
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	5.07	0	9999	3.23	0.15	3.38	1.1
+#S  57   La
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	8.24	0	9999	8.53	1.13	9.66	8.97
+#S  58   Ce
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	4.84	0	9999	2.94	0.001	2.94	0.63
+#S  59   Pr
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	4.58	0	-0.35	2.64	0.015	2.66	11.5
+#S  60   Nd
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.69	0	9999	7.43	9.2	16.6	50.5(1.2)
+#S  61   Pm
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.62a	12.6	0	(+/-)3.2(2.5)	20.0(1.3)	1.3(2.0)	21.3(1.5)	168.4(3.5)
+#S  62   Sm
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	0.8	-1.65	9999	0.422	39.(3.)	39.(3.)	5922.(56.)
+#S  63   Eu
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.22	-1.26	9999	6.57	2.5	9.2	4530.(40.)
+#S  64   Gd
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	6.5	-13.82	9999	29.3	151.(2.)	180.(2.)	49700.(125.)
+#S  65   Tb
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	7.38	0	-0.17	6.84	0.004	6.84	23.4
+#S  66   Dy
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	16.9	-0.276	9999	35.9	54.4(1.2)	90.3	994.(13.)
+#S  67   Ho
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	8.01	0	-1.7	8.06	0.36	8.42	64.7(1.2)
+#S  68   Er
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.79	0	9999	7.63	1.1	8.7	159.(4.)
+#S  69   Tm
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	7.07	0	0.9	6.28	0.1	6.38	100.(2.)
+#S  70   Yb
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	12.43	0	9999	19.42	4	23.4	34.8
+#S  71   Lu
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.21	0	9999	6.53	0.7	7.2	74.(2.)
+#S  72   Hf
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	7.7	0	9999	7.6	2.6	10.2	104.1
+#S  73   Ta
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	6.91	0	9999	6	0.01	6.01	20.6
+#S  74   W
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	4.86	0	9999	2.97	1.63	4.6	18.3
+#S  75   Re
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9.2	0	9999	10.6	0.9	11.5	89.7(1.)
+#S  76   Os
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	10.7	0	9999	14.4	0.3	14.7	16
+#S  77   Ir
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	10.6	0	9999	14.1	0.(3.)	14.(3.)	425.(2.)
+#S  78   Pt
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9.6	0	9999	11.58	0.13	11.71	10.3
+#S  79   Au
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	7.63	0	-1.84	7.32	0.43	7.75	98.65
+#S  80   Hg
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	12.692	0	9999	20.24	6.6	26.8	372.3(4.0)
+#S  81   Tl
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	8.776	0	9999	9.678	0.21	9.89	3.43
+#S  82   Pb
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9.405	0	9999	11.115	0.003	11.118	0.171
+#S  83   Bi
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	8.532	0	9999	9.148	0.0084	9.156	0.0338
+#S  84   Po
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9999	0	0.259	0	9999	9999	9999
+#S  85   At
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9999	0	9999	0	9999	9999	9999
+#S  86   Rn
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9999	0	9999	0	9999	12.6	9999
+#S  87   Fr
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9999	0	9999	0	9999	9999	9999
+#S  88   Ra
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.60E3a	10.0(1.0)	0	0	13.(3.)	0	13.(3.)	12.8(1.5)
+#S  89   Ac
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9999	0	9999	0	9999	9999	9999
+#S  90   Th
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+100	10.31	0	0	13.36	0	13.36	7.37
+#S  91   Pa
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+3.28E4a	9.1	0	9999	10.4	0.1(3.3)	10.5(3.2)	200.6(2.3)
+#S  92   U
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	8.417	0	9999	8.903	0.005	8.908	7.57
+#S  93   Np
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.14E6a	10.55	0	9999	14	0.5	14.5	175.9(2.9)
+#S  94   Pu
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9999	0	9999	9999	9999	9999	9999
+#S  95   Am
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.37E3a	8.3	0	(+/-)2.(7.)	8.7	0.3	9.0(2.6)	75.3(1.8)
+#S  96   Cm
+#N 8
+#L Concentration  b_c_r  b_c_i  b_i_r  coh_cs  incoh_cs  scat_cs  abs_cs  
+1	9999	0	9999	0	9999	9999	9999
+#S  1    1H 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.985  -3.7406  0.0  25.274  0.0  1.7583  80.27  82.03  0.3326
+#S  2    2H 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.015  6.671  0.0  4.04  0.0  5.592  2.05  7.64  0.000519
+#S  3    3H 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(12.32a)  4.792  0.0  -1.04  0.0  2.89  0.14  3.03  0
+#S  3    3He 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.00014  5.74  -1.483  -2.5  +2.568  4.42  1.6  6  5333.(7.)
+#S  4    4He 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.99986  3.26  0.0  0  0.0  1.34  0  1.34  0
+#S  6    6Li 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.5  2.00  -0.261  -1.89  +0.26  0.51  0.46  0.97  940.(4.)
+#S  7    7Li 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+92.5  -2.22  0.0  -2.49  0.0  0.619  0.78  1.4  0.0454
+#S  10   10B 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+20  -0.1  -1.066  -4.7  +1.231  0.144  3  3.1  3835.(9.)
+#S  11   11B 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+80  6.65  0.0  -1.3  0.0  5.56  0.21  5.77  0.0055
+#S  12   12C 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+98.9  6.6511  0.0  0  0.0  5.559  0  5.559  0.00353
+#S  13   13C 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.1  6.19  0.0  -0.52  0.0  4.81  0.034  4.84  0.00137
+#S  14   14N 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.63  9.37  0.0  2.0  0.0  11.03  0.5  11.53  1.91
+#S  15   15N 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.37  6.44  0.0  -0.02  0.0  5.21  0.00005  5.21  0.000024
+#S  16   16O 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.762  5.803  0.0  0  0.0  4.232  0  4.232  0.0001
+#S  17   17O 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.038  5.78  0.0  0.18  0.0  4.2  0.004  4.2  0.236
+#S  18   18O 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.2  5.84  0.0  0  0.0  4.29  0  4.29  0.00016
+#S  20   20Ne 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+90.51  4.631  0.0  0  0.0  2.695  0  2.695  0.036
+#S  21   21Ne 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.27  6.66  0.0  (+/-)0.6  0.0  5.6  0.05  5.7  0.67
+#S  22   22Ne 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+9.22  3.87  0.0  0  0.0  1.88  0  1.88  0.046
+#S  24   24Mg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+78.99  5.66  0.0  0  0.0  4.03  0  4.03  0.05
+#S  25   25Mg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+10  3.62  0.0  1.48  0.0  1.65  0.28  1.93  0.19
+#S  26   26Mg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.01  4.89  0.0  0  0.0  3  0  3  0.0382
+#S  28   28Si 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+92.23  4.107  0.0  0  0.0  2.12  0  2.12  0.177
+#S  29   29Si 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+4.67  4.70  0.0  0.09  0.0  2.78  0.001  2.78  0.101
+#S  30   30Si 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+3.1  4.58  0.0  0  0.0  2.64  0  2.64  0.107
+#S  32   32S 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+95.02  2.804  0.0  0  0.0  0.988  0  0.988  0.54
+#S  33   33S 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.75  4.74  0.0  1.5  0.0  2.8  0.3  3.1  0.54
+#S  34   34S 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+4.21  3.48  0.0  0  0.0  1.52  0  1.52  0.227
+#S  36   36S 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.02  3.(1.)  0.0  0  0.0  1.1  0  1.1  0.15
+#S  35   35Cl 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+75.77  11.65  0.0  6.1  0.0  17.06  4.7  21.8  44.1
+#S  37   37Cl 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+24.23  3.08  0.0  0.1  0.0  1.19  0.001  1.19  0.433
+#S  36   36Ar 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.337  24.90  0.0  0  0.0  77.9  0  77.9  5.2
+#S  38   38Ar 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.063  3.5  0.0  0  0.0  1.5(3.1)  0  1.5(3.1)  0.8
+#S  40   40Ar 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.6  1.830  0.0  0  0.0  0.421  0  0.421  0.66
+#S  39   39K 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+93.258  3.74  0.0  1.4  0.0  1.76  0.25  2.01  2.1
+#S  40   40K 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.012  3.(1.)  0.0  9999  0.0  1.1  0.5  1.6  35.(8.)
+#S  41   41K 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+6.73  2.69  0.0  1.5  0.0  0.91  0.3  1.2  1.46
+#S  40   40Ca 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+96.941  4.80  0.0  0  0.0  2.9  0  2.9  0.41
+#S  42   42Ca 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.647  3.36  0.0  0  0.0  1.42  0  1.42  0.68
+#S  43   43Ca 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.135  -1.56  0.0  9999  0.0  0.31  0.5  0.8  6.2
+#S  44   44Ca 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.086  1.42  0.0  0  0.0  0.25  0  0.25  0.88
+#S  46   46Ca 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.004  3.6  0.0  0  0.0  1.6  0  1.6  0.74
+#S  48   48Ca 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.187  0.39  0.0  0  0.0  0.019  0  0.019  1.09
+#S  46   46Ti 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+8.2  4.93  0.0  0  0.0  3.05  0  3.05  0.59
+#S  47   47Ti 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.4  3.63  0.0  -3.5  0.0  1.66  1.5  3.2  1.7
+#S  48   48Ti 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+73.8  -6.08  0.0  0  0.0  4.65  0  4.65  7.84
+#S  49   49Ti 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+5.4  1.04  0.0  5.1  0.0  0.14  3.3  3.4  2.2
+#S  50   50Ti 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+5.2  6.18  0.0  0  0.0  4.8  0  4.8  0.179
+#S  50   50V 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.25  7.6  0.0  9999  0.0  7.3(1.1)  0.5  7.8(1.0)  60.(40.)
+#S  51   51V 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.75  -0.402  0.0  6.35  0.0  0.0203  5.07  5.09  4.9
+#S  50   50Cr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+4.35  -4.50  0.0  0  0.0  2.54  0  2.54  15.8
+#S  52   52Cr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+83.79  4.920  0.0  0  0.0  3.042  0  3.042  0.76
+#S  53   53Cr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+9.5  -4.20  0.0  6.87  0.0  2.22  5.93  8.15  18.1(1.5)
+#S  54   54Cr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.36  4.55  0.0  0  0.0  2.6  0  2.6  0.36
+#S  54   54Fe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+5.8  4.2  0.0  0  0.0  2.2  0  2.2  2.25
+#S  56   56Fe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+91.7  9.94  0.0  0  0.0  12.42  0  12.42  2.59
+#S  57   57Fe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.2  2.3  0.0  9999  0.0  0.66  0.3  1  2.48
+#S  58   58Fe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.3  15.(7.)  0.0  0  0.0  28  0  28.(26.)  1.28
+#S  58   58Ni 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+68.27  14.4  0.0  0  0.0  26.1  0  26.1  4.6
+#S  60   60Ni 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+26.1  2.8  0.0  0  0.0  0.99  0  0.99  2.9
+#S  61   61Ni 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.13  7.60  0.0  (+/-)3.9  0.0  7.26  1.9  9.2  2.5
+#S  62   62Ni 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+3.59  -8.7  0.0  0  0.0  9.5  0  9.5  14.5
+#S  64   64Ni 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.91  -0.37  0.0  0  0.0  0.017  0  0.017  1.52
+#S  63   63Cu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+69.17  6.43  0.0  0.22  0.0  5.2  0.006  5.2  4.5
+#S  65   65Cu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+30.83  10.61  0.0  1.79  0.0  14.1  0.4  14.5  2.17
+#S  64   64Zn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+48.6  5.22  0.0  0  0.0  3.42  0  3.42  0.93
+#S  66   66Zn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+27.9  5.97  0.0  0  0.0  4.48  0  4.48  0.62
+#S  67   67Zn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+4.1  7.56  0.0  -1.50  0.0  7.18  0.28  7.46  6.8
+#S  68   68Zn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+18.8  6.03  0.0  0  0.0  4.57  0  4.57  1.1
+#S  70   70Zn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.6  6.(1.)  0.0  0  0.0  4.5  0  4.5(1.5)  0.092
+#S  69   69Ga 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+60.1  7.88  0.0  -0.85  0.0  7.8  0.091  7.89  2.18
+#S  71   71Ga 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+39.9  6.40  0.0  -0.82  0.0  5.15  0.084  5.23  3.61
+#S  70   70Ge 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+20.5  10.0  0.0  0  0.0  12.6  0  12.6  3
+#S  72   72Ge 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+27.4  8.51  0.0  0  0.0  9.1  0  9.1  0.8
+#S  73   73Ge 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.8  5.02  0.0  3.4  0.0  3.17  1.5  4.7  15.1
+#S  74   74Ge 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+36.5  7.58  0.0  0  0.0  7.2  0  7.2  0.4
+#S  76   76Ge 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.8  8.2  0.0  0  0.0  8.(3.)  0  8.(3.)  0.16
+#S  74   74Se 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.9  0.8  0.0  0  0.0  0.1  0  0.1  51.8(1.2)
+#S  76   76Se 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+9  12.2  0.0  0  0.0  18.7  0  18.7  85.(7.)
+#S  77   77Se 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.6  8.25  0.0  (+/-)0.6(1.6)  0.0  8.6  0.05  8.65  42.(4.)
+#S  78   78Se 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+23.5  8.24  0.0  0  0.0  8.5  0  8.5  0.43
+#S  80   80Se 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+49.6  7.48  0.0  0  0.0  7.03  0  7.03  0.61
+#S  82   82Se 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+9.4  6.34  0.0  0  0.0  5.05  0  5.05  0.044
+#S  79   79Br 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+50.69  6.80  0.0  -1.1  0.0  5.81  0.15  5.96  11
+#S  81   81Br 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+49.31  6.79  0.0  0.6  0.0  5.79  0.05  5.84  2.7
+#S  78   78Kr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.35  9999  0.0  0  0.0  9999  0  9999  6.4
+#S  80   80Kr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.25  9999  0.0  0  0.0  9999  0  9999  11.8
+#S  82   82Kr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.6  9999  0.0  0  0.0  9999  0  9999  29.(20.)
+#S  83   83Kr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.5  9999  0.0  9999  0.0  9999  9999  9999  185.(30.)
+#S  84   84Kr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+57  9999  0.0  0  0.0  9999  0  6.6  0.113
+#S  86   86Kr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+17.3  8.1  0.0  0  0.0  8.2  0  8.2  0.003
+#S  85   85Rb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+72.17  7.03  0.0  9999  0.0  6.2  0.5  6.7  0.48
+#S  87   87Rb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+27.83  7.23  0.0  9999  0.0  6.6  0.5  7.1  0.12
+#S  84   84Sr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.56  7.(1.)  0.0  0  0.0  6.(2.)  0  6.(2.)  0.87
+#S  86   86Sr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+9.86  5.67  0.0  0  0.0  4.04  0  4.04  1.04
+#S  87   87Sr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7  7.40  0.0  9999  0.0  6.88  0.5  7.4  16.(3.)
+#S  88   88Sr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+82.58  7.15  0.0  0  0.0  6.42  0  6.42  0.058
+#S  90   90Zr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+51.45  6.4  0.0  0  0.0  5.1  0  5.1  0.011
+#S  91   91Zr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.32  8.7  0.0  -1.08  0.0  9.5  0.15  9.7  1.17
+#S  92   92Zr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+17.19  7.4  0.0  0  0.0  6.9  0  6.9  0.22
+#S  94   94Zr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+17.28  8.2  0.0  0  0.0  8.4  0  8.4  0.0499
+#S  96   96Zr 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.76  5.5  0.0  0  0.0  3.8  0  3.8  0.0229
+#S  92   92Mo 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+14.84  6.91  0.0  0  0.0  6  0  6  0.019
+#S  94   94Mo 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+9.25  6.80  0.0  0  0.0  5.81  0  5.81  0.015
+#S  95   95Mo 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+15.92  6.91  0.0  9999  0.0  6  0.5  6.5  13.1
+#S  96   96Mo 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+16.68  6.20  0.0  0  0.0  4.83  0  4.83  0.5
+#S  97   97Mo 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+9.55  7.24  0.0  9999  0.0  6.59  0.5  7.1  2.5
+#S  98   98Mo 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+24.13  6.58  0.0  0  0.0  5.44  0  5.44  0.127
+#S  100  100Mo 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+9.63  6.73  0.0  0  0.0  5.69  0  5.69  0.4
+#S  96   96Ru 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+5.5  9999  0.0  0  0.0  9999  0  9999  0.28
+#S  98   98Ru 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.9  9999  0.0  0  0.0  9999  0  9999  <8.
+#S  99   99Ru 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+12.7  9999  0.0  9999  0.0  9999  9999  9999  6.9(1.0)
+#S  100  100Ru 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+12.6  9999  0.0  0  0.0  9999  0  9999  4.8
+#S  101  101Ru 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+17  9999  0.0  9999  0.0  9999  9999  9999  3.3
+#S  102  102Ru 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+31.6  9999  0.0  0  0.0  9999  0  144.8  1.17
+#S  104  104Ru 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+18.7  9999  0.0  0  0.0  9999  0  4.483  0.31
+#S  102  102Pd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.02  7.7(7)  0.0  0  0.0  7.5(1.4)  0  7.5(1.4)  3.4
+#S  104  104Pd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.14  7.7(7)  0.0  0  0.0  7.5(1.4)  0  7.5(1.4)  0.6
+#S  105  105Pd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+22.33  5.5  0.0  -2.6(1.6)  0.0  3.8  0.8  4.6(1.1)  20.(3.)
+#S  106  106Pd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+27.33  6.4  0.0  0  0.0  5.1  0  5.1  0.304
+#S  108  108Pd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+26.46  4.1  0.0  0  0.0  2.1  0  2.1  8.55
+#S  110  110Pd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.72  7.7(7)  0.0  0  0.0  7.5(1.4)  0  7.5(1.4)  0.226
+#S  107  107Ag 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+51.83  7.555  0.0  1.00  0.0  7.17  0.13  7.3  37.6(1.2)
+#S  109  109Ag 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+48.17  4.165  0.0  -1.60  0.0  2.18  0.32  2.5  91.0(1.0)
+#S  106  106Cd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.25  5.(2.)  0.0  0  0.0  3.1  0  3.1(2.5)  1
+#S  108  108Cd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.89  5.4  0.0  0  0.0  3.7  0  3.7  1.1
+#S  110  110Cd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+12.51  5.9  0.0  0  0.0  4.4  0  4.4  11
+#S  111  111Cd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+12.81  6.5  0.0  9999  0.0  5.3  0.3  5.6  24
+#S  112  112Cd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+24.13  6.4  0.0  0  0.0  5.1  0  5.1  2.2
+#S  113  113Cd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+12.22  -8.0  -5.73  9999  0.0  12.1  0.3  12.4  20600.(400.)
+#S  114  114Cd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+28.72  7.5  0.0  0  0.0  7.1  0  7.1  0.34
+#S  116  116Cd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.47  6.3  0.0  0  0.0  5  0  5  0.075
+#S  113  113In 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+4.3  5.39  0.0  (+/-)0.017  0.0  3.65  0.000037  3.65  12.0(1.1)
+#S  115  115In 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+95.7  4.01  -0.0562  -2.1  0.0  2.02  0.55  2.57  202.(2.)
+#S  112  112Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1  6.(1.)  0.0  0  0.0  4.5(1.5)  0  4.5(1.5)  1
+#S  114  114Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.7  6.2  0.0  0  0.0  4.8  0  4.8  0.114
+#S  115  115Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.4  6.(1.)  0.0  9999  0.0  4.5(1.5)  0.3  4.8(1.5)  30.(7.)
+#S  116  116Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+14.7  5.93  0.0  0  0.0  4.42  0  4.42  0.14
+#S  117  117Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.7  6.48  0.0  9999  0.0  5.28  0.3  5.6  2.3
+#S  118  118Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+24.3  6.07  0.0  0  0.0  4.63  0  4.63  0.22
+#S  119  119Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+8.6  6.12  0.0  9999  0.0  4.71  0.3  5  2.2
+#S  120  120Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+32.4  6.49  0.0  0  0.0  5.29  0  5.29  0.14
+#S  122  122Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+4.6  5.74  0.0  0  0.0  4.14  0  4.14  0.18
+#S  124  124Sn 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+5.6  5.97  0.0  0  0.0  4.48  0  4.48  0.133
+#S  121  121Sb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+57.3  5.71  0.0  -0.05  0.0  4.1  0.0003  4.1  5.75
+#S  123  123Sb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+42.7  5.38  0.0  -0.10  0.0  3.64  0.001  3.64  3.8
+#S  120  120Te 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.096  5.3  0.0  0  0.0  3.5  0  3.5  2.3
+#S  122  122Te 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.6  3.8  0.0  0  0.0  1.8  0  1.8  3.4
+#S  123  123Te 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.908  -0.05  -0.116  -2.04  0.0  0.002  0.52  0.52  418.(30.)
+#S  124  124Te 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+4.816  7.96  0.0  0  0.0  8  0  8  6.8(1.3)
+#S  125  125Te 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.14  5.02  0.0  -0.26  0.0  3.17  0.008  3.18  1.55
+#S  126  126Te 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+18.95  5.56  0.0  0  0.0  3.88  0  3.88  1.04
+#S  128  128Te 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+31.69  5.89  0.0  0  0.0  4.36  0  4.36  0.215
+#S  130  130Te 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+33.8  6.02  0.0  0  0.0  4.55  0  4.55  0.29
+#S  124  124Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.1  9999  0.0  0  0.0  9999  0  9999  165.(20.)
+#S  126  126Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.09  9999  0.0  0  0.0  9999  0  9999  3.5
+#S  128  128Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.91  9999  0.0  0  0.0  9999  0  9999  <8
+#S  129  129Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+26.4  9999  0.0  9999  0.0  9999  9999  9999  21.(5.)
+#S  130  130Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+4.1  9999  0.0  0  0.0  9999  0  9999  <26.
+#S  131  131Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+21.2  9999  0.0  9999  0.0  9999  9999  9999  85.(10.)
+#S  132  132Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+26.9  9999  0.0  0  0.0  9999  0  9999  0.45
+#S  134  134Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+10.4  9999  0.0  0  0.0  9999  0  9999  0.265
+#S  136  136Xe 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+8.9  9999  0.0  0  0.0  9999  0  9999  0.26
+#S  130  130Ba 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.11  -3.6  0.0  0  0.0  1.6  0  1.6  30.(5.)
+#S  132  132Ba 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.1  7.8  0.0  0  0.0  7.6  0  7.6  7
+#S  134  134Ba 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.42  5.7  0.0  0  0.0  4.08  0  4.08  2.0(1.6)
+#S  135  135Ba 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+6.59  4.67  0.0  9999  0.0  2.74  0.5  3.2  5.8
+#S  136  136Ba 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.85  4.91  0.0  0  0.0  3.03  0  3.03  0.68
+#S  137  137Ba 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.23  6.83  0.0  9999  0.0  5.86  0.5  6.4  3.6
+#S  138  138Ba 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+71.7  4.84  0.0  0  0.0  2.94  0  2.94  0.27
+#S  138  138La 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.09  8.(2.)  0.0  9999  0.0  8.(4.)  0.5  8.5(4.0)  57.(6.)
+#S  139  139La 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.91  8.24  0.0  3.0  0.0  8.53  1.13  9.66  8.93
+#S  136  136Ce 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.19  5.80  0.0  0  0.0  4.23  0  4.23  7.3(1.5)
+#S  138  138Ce 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.25  6.70  0.0  0  0.0  5.64  0  5.64  1.1
+#S  140  140Ce 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+88.48  4.84  0.0  0  0.0  2.94  0  2.94  0.57
+#S  142  142Ce 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.08  4.75  0.0  0  0.0  2.84  0  2.84  0.95
+#S  142  142Nd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+27.16  7.7  0.0  0  0.0  7.5  0  7.5  18.7
+#S  143  143Nd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+12.18  14.(2.)  0.0  (+/-)21.(1.)  0.0  25.(7.)  55.(7.)  80.(2.)  337.(10.)
+#S  144  144Nd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+23.8  2.8  0.0  0  0.0  1  0  1  3.6
+#S  145  145Nd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+8.29  14.(2.)  0.0  9999  0.0  25.(7.)  5.(5.)  30.(9.)  42.(2.)
+#S  146  146Nd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+17.19  8.7  0.0  0  0.0  9.5  0  9.5  1.4
+#S  148  148Nd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+5.75  5.7  0.0  0  0.0  4.1  0  4.1  2.5
+#S  150  150Nd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+5.63  5.3  0.0  0  0.0  3.5  0  3.5  1.2
+#S  144  144Sm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+3.1  -3.(4.)  0.0  0  0.0  1.(3.)  0  1.(3.)  0.7
+#S  147  147Sm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+15.1  14.(3.)  0.0  (+/-)11.(7.)  0.0  25.(11.)  143(19.)  39.(16.)  57.(3.)
+#S  148  148Sm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+11.3  -3.(4.)  0.0  0  0.0  1.(3.)  0  1.(3.)  2.4
+#S  149  149Sm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+13.9  -19.2  -11.7  (+/-)31.4  -10.3  63.5  137.(5.)  200.(5.)  42080.(400.)
+#S  150  150Sm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.4  14.(3.)  0.0  0  0.0  25.(11.)  0  25.(11.)  104.(4.)
+#S  152  152Sm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+26.6  -5.0  0.0  0  0.0  3.1  0  3.1  206.(6.)
+#S  154  154Sm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+22.6  9.3  0.0  0  0.0  11.(2.)  0  11.(2.)  8.4
+#S  151  151Eu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+47.8  6.13  -2.53  (+/-)4.5  -2.14  5.5  3.1  8.6  9100.(100.)
+#S  153  153Eu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+52.2  8.22  0.0  (+/-)3.2  0.0  8.5  1.3  9.8  312.(7.)
+#S  152  152Gd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.2  10.(3.)  0.0  0  0.0  13.(8.)  0  13.(8.)  735.(20.)
+#S  154  154Gd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.1  10.(3.)  0.0  0  0.0  13.(8.)  0  13.(8.)  85.(12.)
+#S  155  155Gd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+14.8  6.0  -17.0  (+/-)5.(5.)  -13.16  40.8  25.(6.)  66.(6.)  61100.(400.)
+#S  156  156Gd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+20.6  6.3  0.0  0  0.0  5  0  5  1.5(1.2)
+#S  157  157Gd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+15.7  -1.14  -71.9  (+/-)5.(5.)  -55.8  650.(4.)  394.(7.)  1044.(8.)  259000.(700.)
+#S  158  158Gd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+24.8  9.(2.)  0.0  0  0.0  10.(5.)  0  10.(5.)  2.2
+#S  160  160Gd 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+21.8  9.15  0.0  0  0.0  10.52  0  10.52  0.77
+#S  156  156Dy 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.06  6.1  0.0  0  0.0  4.7  0  4.7  33.(3.)
+#S  158  158Dy 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.1  6.(4.)  0.0  0  0.0  5.(6.)  0  5.(6.)  43.(6.)
+#S  160  160Dy 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.34  6.7  0.0  0  0.0  5.6  0  5.6  56.(5.)
+#S  161  161Dy 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+19  10.3  0.0  (+/-)4.9  0.0  13.3  3.(1.)  16.(1.)  600.(25.)
+#S  162  162Dy 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+25.5  -1.4  0.0  0  0.0  0.25  0  0.25  194.(10.)
+#S  163  163Dy 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+24.9  5.0  0.0  1.3  0.0  3.1  0.21  3.3  124.(7.)
+#S  164  164Dy 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+28.1  49.4  -0.79  0  0.0  307.(3.)  0  307.(3.)  2840.(40.)
+#S  162  162Er 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.14  8.8  0.0  0  0.0  9.7  0  9.7  19.(2.)
+#S  164  164Er 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.56  8.2  0.0  0  0.0  8.4  0  8.4  13.(2.)
+#S  166  166Er 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+33.4  10.6  0.0  0  0.0  14.1  0  14.1  19.6(1.5)
+#S  167  167Er 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+22.9  3.0  0.0  1.0  0.0  1.1  0.13  1.2  659.(16.)
+#S  168  168Er 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+27.1  7.4  0.0  0  0.0  6.9  0  6.9  2.74
+#S  170  170Er 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+14.9  9.6  0.0  0  0.0  11.6  0  11.6(1.2)  5.8
+#S  168  168Yb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.14  -4.07  -0.62  0  0.0  2.13  0  2.13  2230.(40.)
+#S  170  170Yb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+3.06  6.77  0.0  0  0.0  5.8  0  5.8  11.4(1.0)
+#S  171  171Yb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+14.3  9.66  0.0  -5.59  0.0  11.7  3.9  15.6  48.6(2.5)
+#S  172  172Yb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+21.9  9.43  0.0  0  0.0  11.2  0  11.2  0.8
+#S  173  173Yb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+16.1  9.56  0.0  -5.3  0.0  11.5  3.5  15  17.1(1.3)
+#S  174  174Yb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+31.8  19.3  0.0  0  0.0  46.8  0  46.8  69.4(5.0)
+#S  176  176Yb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+12.7  8.72  0.0  0  0.0  9.6  0  9.6  2.85
+#S  175  175Lu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+97.39  7.24  0.0  (+/-)2.2  0.0  6.59  0.6  7.2  21.(3.)
+#S  176  176Lu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+2.61  6.1  -0.57  (+/-)3.0  +0.61  4.7  1.2  5.9  2065.(35.)
+#S  174  174Hf 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.2  10.9(1.1)  0.0  0  0.0  15.(3.)  0  15.(3.)  561.(35.)
+#S  176  176Hf 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+5.2  6.61  0.0  0  0.0  5.5  0  5.5  23.5(3.1)
+#S  177  177Hf 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+18.6  0.8(1.0)  0.0  (+/-)0.9(1.3)  0.0  0.1  0.1  0.2  373.(10.)
+#S  178  178Hf 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+27.1  5.9  0.0  0  0.0  4.4  0  4.4  84.(4.)
+#S  179  179Hf 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+13.7  7.46  0.0  (+/-)1.06  0.0  7  0.14  7.1  41.(3.)
+#S  180  180Hf 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+35.2  13.2  0.0  0  0.0  21.9  0  21.9(1.0)  13.04
+#S  180  180Ta 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.012  7.(2.)  0.0  9999  0.0  6.2  0.5  7.(4.)  563.(60.)
+#S  181  181Ta 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.988  6.91  0.0  -0.29  0.0  6  0.011  6.01  20.5
+#S  180  180W 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.1  5.(3.)  0.0  0  0.0  3.(4.)  0  3.(4.)  30.(20.)
+#S  182  182W 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+26.3  6.97  0.0  0  0.0  6.1  0  6.1  20.7
+#S  183  183W 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+14.3  6.53  0.0  9999  0.0  5.36  0.3  5.7  10.1
+#S  184  184W 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+30.7  7.48  0.0  0  0.0  7.03  0  7.03  1.7
+#S  186  186W 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+28.6  -0.72  0.0  0  0.0  0.065  0  0.065  37.9
+#S  185  185Re 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+37.4  9.0  0.0  (+/-)2.0  0.0  10.2  0.5  10.7  112.(2.)
+#S  187  187Re 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+62.6  9.3  0.0  (+/-)2.8  0.0  10.9  1  11.9  76.4(1.)
+#S  184  184Os 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.02  10.(2.)  0.0  0  0.0  13.(5.)  0  13.(5.)  3000.(150.)
+#S  186  186Os 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.58  11.6(1.7)  0.0  0  0.0  17.(5.)  0  17.(5.)  80.(13.)
+#S  187  187Os 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.6  10.(2.)  0.0  9999  0.0  13.(5.)  0.3  13.(5.)  320.(10.)
+#S  188  188Os 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+13.3  7.6  0.0  0  0.0  7.3  0  7.3  4.7
+#S  189  189Os 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+16.1  10.7  0.0  9999  0.0  14.4  0.5  14.9  25.(4.)
+#S  190  190Os 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+26.4  11.0  0.0  0  0.0  15.2  0  15.2  13.1
+#S  192  192Os 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+41  11.5  0.0  0  0.0  16.6  0  16.6(1.2)  2
+#S  191  191Ir 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+37.3  9999  0.0  9999  0.0  9999  9999  9999  954.(10.)
+#S  193  193Ir 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+62.7  9999  0.0  9999  0.0  9999  9999  9999  111.(5.)
+#S  190  190Pt 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.01  9.0  0.0  0  0.0  10.(2.)  0  10.(2.)  152.(4.)
+#S  192  192Pt 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.79  9.9  0.0  0  0.0  12.3(1.2)  0  12.3(1.2)  10.0(2.5)
+#S  194  194Pt 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+32.9  10.55  0.0  0  0.0  14  0  14  1.44
+#S  195  195Pt 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+33.8  8.83  0.0  -1.00  0.0  9.8  0.13  9.9  27.5(1.2)
+#S  196  196Pt 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+25.3  9.89  0.0  0  0.0  12.3  0  12.3  0.72
+#S  198  198Pt 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+7.2  7.8  0.0  0  0.0  7.6  0  7.6  3.66
+#S  196  196Hg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.2  30.3(1.0)  0.0  0  0.0  115.(8.)  0  115.(8.)  3080.(180.)
+#S  198  198Hg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+10.1  9999  0.0  0  0.0  9999  0  9999  2
+#S  199  199Hg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+17  16.9  0.0  (+/-)15.5  0.0  36.(2.)  30.(3.)  66.(2.)  2150.(48.)
+#S  200  200Hg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+23.1  9999  0.0  0  0.0  9999  0  9999  <60.
+#S  201  201Hg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+13.2  9999  0.0  9999  0.0  9999  9999  9999  7.8(2.0)
+#S  202  202Hg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+29.6  9999  0.0  0  0.0  9999  0  9.828  4.89
+#S  204  204Hg 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+6.8  9999  0.0  0  0.0  9999  0  9999  0.43
+#S  203  203Tl 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+29.524  6.99  0.0  1.06  0.0  6.14  0.14  6.28  11.4
+#S  205  205Tl 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+70.476  9.52  0.0  -0.242  0.0  11.39  0.007  11.4  0.104
+#S  204  204Pb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+1.4  9.90  0.0  0  0.0  12.3  0  12.3  0.65
+#S  206  206Pb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+24.1  9.22  0.0  0  0.0  10.68  0  10.68  0.03
+#S  207  207Pb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+22.1  9.28  0.0  0.14  0.0  10.82  0.002  10.82  0.699
+#S  208  208Pb 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+52.4  9.50  0.0  0  0.0  11.34  0  11.34  0.00048
+#S  233  233U 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(1.59E5a)  10.1  0.0  (+/-)1.(3.)  0.0  12.8  0.1  12.9  574.7(1.0)
+#S  234  234U 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.005  12.4  0.0  0  0.0  19.3  0  19.3  100.1(1.3)
+#S  235  235U 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+0.72  10.47  0.0  (+/-)1.3  0.0  13.78  0.2  14  680.9(1.1)
+#S  238  238U 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+99.275  8.402  0.0  0  0.0  8.871  0  8.871  2.68
+#S  238  238Pu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(87.74a)  14.1  0.0  0  0.0  25.0(1.8)  0  25.0(1.8)  558.(7.)
+#S  239  239Pu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(2.41E4a)  7.7  0.0  (+/-)1.3(1.9)  0.0  7.5  0.2  7.7  1017.3(2.1)
+#S  240  240Pu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(6.56E3a)  3.5  0.0  0  0.0  1.54  0  1.54  289.6(1.4)
+#S  242  242Pu 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(3.76E5a)  8.1  0.0  0  0.0  8.2  0  8.2  18.5
+#S  244  244Cm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(18.10a)  9.5  0.0  0  0.0  11.3  0  11.3  16.2(1.2)
+#S  246  246Cm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(4.7E3a)  9.3  0.0  0  0.0  10.9  0  10.9  1.36
+#S  248  248Cm 
+#N 9
+#L Concentration  b_c_r  b_c_i  b_i_r  b_i_i  coh_cs  incoh_cs  scat_cs  abs_cs  
+(3.5E5a)  7.7  0.0  0  0.0  7.5  0  7.5  3.0
