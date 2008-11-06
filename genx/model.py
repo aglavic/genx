@@ -190,7 +190,7 @@ class Model:
         ''' 
         Internal method for resetting the module before compilation
         '''
-        self.script_module = new.module('model')
+        self.script_module = new.module('genx_script_module')
         #self.script_module = Temp()
         #self.script_module.__dict__ = {}
         # Bind data for preprocessing with the script

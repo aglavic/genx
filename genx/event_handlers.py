@@ -535,6 +535,8 @@ def quit(frame, event):
         ' want to quit and loose all unsaved data?', 'Quit without saving?')
         if ans:
             frame.Destroy()
+    else:
+        frame.Destroy()
 
     
 def status_text(frame, event):

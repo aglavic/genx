@@ -160,7 +160,8 @@ class Parameters:
                 try:
                     par = line_strs[0]
                     val = float(line_strs[1])
-                    fitted = bool(line_strs[2])
+                    fitted = line_strs[2].strip() == 'True'\
+                                or line_strs[2].strip() == '1'
                     min = float(line_strs[3])
                     max = float(line_strs[4])
                     error = line_strs[5]
