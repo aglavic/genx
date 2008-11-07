@@ -831,11 +831,14 @@ class FomScanPlotPanel(PlotPanel):
         population.
         '''
         self.ax.cla()
-        x, y = data
+        x, y, bestx, besty, e_scale = data[0], data[1], data[2], data[3],\
+                                        data[4]
         if self.type.lower() == 'project':
             self.ax.plot(x, y, 'ob')
         elif self.type.lower() == 'scan':
             self.ax.plot(x, y, 'b')
+        self.ax.plot([bestx], [besty], 'or')
+        self.ax.hlines(besty*e_scale, x.min(), x.max(), 'r')
         
         self.flush_plot()
         self.canvas.draw()
