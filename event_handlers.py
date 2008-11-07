@@ -466,8 +466,13 @@ def scan_parameter(frame, row):
         frame.main_frame_statusbar.SetStatusText('Scanning parameter', 1)
         try:
             x, y = frame.solver_control.ScanParameter(row, dlg.GetValue())
+            fs, pars = frame.model.get_sim_pars()
+            bestx = pars[row]
+            besty = frame.model.fom
+            
             frame.plot_fomscan.SetPlottype('scan')
-            frame.plot_fomscan.Plot((x,y))
+            frame.plot_fomscan.Plot((x, y, bestx, besty,\
+                        frame.solver_control.fom_error_bars_level))
         except Exception, e:
             outp = StringIO.StringIO()
             traceback.print_exc(200, outp)
@@ -493,8 +498,12 @@ def project_fom_parameter(frame, row):
     frame.main_frame_statusbar.SetStatusText('Trying to project fom', 1)
     try:
         x, y = frame.solver_control.ProjectEvals(row)
+        fs, pars = frame.model.get_sim_pars()
+        bestx = pars[row]
+        besty = frame.model.fom
         frame.plot_fomscan.SetPlottype('project')
-        frame.plot_fomscan.Plot((x,y))
+        frame.plot_fomscan.Plot((x, y, bestx, besty,\
+                        frame.solver_control.fom_error_bars_level))
     except Exception, e:
         outp = StringIO.StringIO()
         traceback.print_exc(200, outp)
@@ -764,8 +773,6 @@ def models_help(frame, event):
     '''
     dlg = help.PluginHelpDialog(frame,'models')
     dlg.Show()
-    #dlg.ShowModal()
-    #dlg.Destroy()
     
 def show_manual(frame, event):
     '''show_manual(frame, event) --> None

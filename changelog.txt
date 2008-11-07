@@ -1,3 +1,11 @@
+2008-11-07: 
+    Added errorbar level to the configuration file. It is now possible
+    to change the default value.
+    Fixed the reset problem of parameters when scanning them.
+    Added a point for the current paraemtervalue in the fomscan plot.
+    Also added a horizontal line for increase of the fom that determines 
+    the errorbars.
+
 2008-11-03: 
     Added and sucessfully tested a new plugin UserFuncs to GenX.
     This allow the user to run custom functions defined in the script.
@@ -5,7 +13,6 @@
     active...
     Fixed the bug with the boolean flag when importing a table with fit
     parameters into GenX
-    
 ===============================================================================
 2008-11-03: GenX2.0b4 released
 2008-11-02:

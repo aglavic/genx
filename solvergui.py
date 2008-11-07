@@ -60,13 +60,14 @@ class SolverController:
         # Define all the options we want to set
         options_float = ['km', 'kr', 'pop mult', 'pop size',\
                          'max generations', 'max generation mult',\
-                         'sleep time']
+                         'sleep time', 'errorbar level']
         setfunctions_float = [self.optimizer.set_km, self.optimizer.set_kr,
                           self.optimizer.set_pop_mult,\
                           self.optimizer.set_pop_size,\
                          self.optimizer.set_max_generations,\
                          self.optimizer.set_max_generation_mult,\
-                         self.optimizer.set_sleep_time]
+                         self.optimizer.set_sleep_time,\
+                        self.set_error_bars_level]
 
         options_bool = ['use pop mult', 'use max generations',\
                         'use start guess', 'use boundaries']
@@ -116,13 +117,14 @@ class SolverController:
         # Define all the options we want to set
         options_float = ['km', 'kr', 'pop mult', 'pop size',\
                          'max generations', 'max generation mult',\
-                         'sleep time']
+                         'sleep time', 'errorbar level']
         set_float = [self.optimizer.km, self.optimizer.kr,
                           self.optimizer.pop_mult,\
                           self.optimizer.pop_size,\
                          self.optimizer.max_generations,\
                          self.optimizer.max_generation_mult,\
-                         self.optimizer.sleep_time]
+                         self.optimizer.sleep_time,\
+                        self.fom_error_bars_level]
 
         options_bool = ['use pop mult', 'use max generations',\
                         'use start guess', 'use boundaries']
@@ -351,12 +353,13 @@ class SolverController:
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
-            ShowWarningDialog(self.parent, 'Error while evaluation the' + \
+            ShowWarningDialog(self.parent, 'Error while evaluatating the' + \
             ' simulation and fom. Please check so it is possible to simulate'+\
             ' your model. Detailed output below: \n\n' + val)
         else:
             dlg.Destroy()
-        
+        # resetting the scanned parameter
+        funcs[row](vals[row])
         return par_vals, fom_vals
         
     def ResetOptimizer(self):
@@ -399,8 +402,17 @@ class SolverController:
         Returns true if a fit has been started otherwise False
         '''
         return self.start_parameter_values != None
+    
         
+    def set_error_bars_level(self, value):
+        '''set_error_bars_level(value) --> None
         
+        Sets the value of increase of the fom used for errorbar calculations
+        '''
+        if value < 1:
+            raise ValueError('fom_error_bars_level has to be above 1')
+        else:
+            self.fom_error_bars_level = value
 
 #==============================================================================
 class SettingsDialog(wx.Dialog):
