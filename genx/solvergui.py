@@ -13,8 +13,6 @@ import diffev, fom_funcs
 import io
 import numpy as np
 
-# TODO: Include mutation schemes
-
 #==============================================================================
 class SolverController:
     '''
@@ -70,11 +68,13 @@ class SolverController:
                         self.set_error_bars_level]
 
         options_bool = ['use pop mult', 'use max generations',\
-                        'use start guess', 'use boundaries']
+                        'use start guess', 'use boundaries',\
+                         'use parallel processing' ]
         setfunctions_bool = [ self.optimizer.set_use_pop_mult,\
                             self.optimizer.set_use_max_generations,\
                             self.optimizer.set_use_start_guess, \
-                            self.optimizer.set_use_boundaries]
+                            self.optimizer.set_use_boundaries,\
+                            self.optimizer.set_use_parallel_processing]
         
         # Make sure that the config is set
         if self.config:
@@ -127,11 +127,13 @@ class SolverController:
                         self.fom_error_bars_level]
 
         options_bool = ['use pop mult', 'use max generations',\
-                        'use start guess', 'use boundaries']
+                        'use start guess', 'use boundaries', \
+                        'use parallel processing']
         set_bool = [ self.optimizer.use_pop_mult,\
                             self.optimizer.use_max_generations,\
                             self.optimizer.use_start_guess,\
-                            self.optimizer.use_boundaries]
+                            self.optimizer.use_boundaries,\
+                            self.optimizer.use_parallel_processing]
         
         # Make sure that the config is set
         if self.config:

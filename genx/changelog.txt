@@ -1,3 +1,13 @@
+2008-11-20:
+    Implemented parallel processing for the model calculation
+    with the help of the processing package. Tested and seems to work
+    under Linux. However I only see a about 50% speed increase could it 
+    be that I have some over head?
+
+2008-11-08:
+    Found and corrected a bug in reflectivity, the tabbing of the data
+    sets was not compatible with the editor.
+
 2008-11-07: 
     Added errorbar level to the configuration file. It is now possible
     to change the default value.

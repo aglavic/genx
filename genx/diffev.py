@@ -8,8 +8,19 @@ from numpy import *
 import thread
 import time
 
-# Parallel python
-#import pp
+import sys, os
+
+__PARALLEL__ = 0
+
+try:
+    import processing
+    __PARALLEL__ = 1
+except:
+    print 'processing not installed no parallel processing possible'
+
+# Add current path to the system paths
+# just in case some user make a directory change
+sys.path.append(os.getcwd())
 
 #==============================================================================
 # class: DiffEv
@@ -46,6 +57,8 @@ class DiffEv:
         
         # Sleeping time for every generation
         self.sleep_time = 0.2
+        # Flag if we should use parallel processing 
+        self.use_parallel_processing = __PARALLEL__*0
         
         # Functions that are user definable
         self.plot_output = default_plot_output
@@ -174,17 +187,18 @@ class DiffEv:
         algorithm. Note that this method does not run in a separate thread.
         For threading use start_fit, stop_fit and resume_fit instead.
         '''
+        # Setting up for parallel processing
+        if self.use_parallel_processing:
+            self.text_output('Setting up a pool of workers ...')
+            self.setup_parallel()
+            eval_fom = self.calc_trial_fom_parallel
+        else:
+            eval_fom = self.calc_trial_fom
+            
         self.text_output('Calculating start FOM ...')
-        
         self.running = True
         #print self.pop_vec
         self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
-        #print self.fom_vec
-        # test for parallel python which will hopefully work some day
-        #self.setup_pp()
-        #self.calc_pp_fom()
-        #print "Sucess?"
-        # End test part
         #print self.fom_vec
         best_index = argmin(self.fom_vec)
         #print best_index
@@ -209,8 +223,13 @@ class DiffEv:
             # Create the vectors who will be compared to the 
             # population vectors
             self.trial_vec = [self.create_trial(vec) for vec in self.pop_vec]
+            eval_fom()
             # Calculate the fom of the trial vectors and update the population
             [self.update_pop(index) for index in range(self.n_pop)]
+            
+            # Add the evaluation to the logging
+            self.par_evals = append(self.par_evals, self.trial_vec, axis = 0)
+            self.fom_evals = append(self.fom_evals, self.trial_fom)
             
             # Add the best value to the fom log
             self.fom_log = r_[self.fom_log,\
@@ -239,6 +258,10 @@ class DiffEv:
 
         self.text_output('Stopped at Generation: %d ...'%gen)
         
+        # Lets clean up and delete our pool of workers
+        if self.use_parallel_processing:
+            self.dismount_parallel()
+        
         # Now the optimization has stopped
         self.running = False
         
@@ -255,12 +278,13 @@ class DiffEv:
         map(lambda func, value:func(value), self.par_funcs, vec)
         fom = self.model.evaluate_fit_func()
         
-        # Add the evaluation to the logging
-        self.par_evals = append(self.par_evals, [vec], axis = 0)
-        self.fom_evals = append(self.fom_evals, fom)
-        
         return fom 
     
+    def calc_trial_fom(self):
+        '''
+        Function to calculate the fom values for the trial vectors
+        '''
+        self.trial_fom = [self.calc_fom(vec) for vec in self.trial_vec]
     
     def calc_sim(self, vec):
         ''' calc_sim(self, vec) --> None
@@ -272,19 +296,32 @@ class DiffEv:
         
         self.model.evaluate_sim_func()
         
-    def setup_pp(self):
-        self.job_server = pp.Server()
-        print "Starting pp with", self.job_server.get_ncpus(), "workers"
-        # Thats it now pp is set up to go ...
+    def setup_parallel(self):
+        '''setup_parallel(self) --> None
+        
+        setup for parallel proccesing. Creates a pool of workers with
+        as many cpus there is available
+        '''
+        self.pool = processing.Pool(processes = processing.cpuCount(),\
+                        initializer = parallel_init,\
+                        initargs = (self.model.pickable_copy(), ))
+        print "Starting a pool with ", processing.cpuCount(), " workers ..."
+        
+    def dismount_parallel(self):
+        ''' dismount_parallel(self) --> None
+        Used to close the pool and all its processes
+        '''
+        self.pool.close()
+        self.pool.join()
+        
+        del self.pool
     
-    def calc_pp_fom(self):
+    def calc_trial_fom_parallel(self):
+        '''calc_trial_fom_parallel(self) --> None
+        
+        Function to calculate the fom in parallel using the pool
         '''
-        Function to calculate the fom in parallel using parallel python
-        '''
-        jobs = [self.job_server.submit(_calc_fom,\
-            (self.model, vec, self.par_funcs)) for vec in self.pop_vec]
-        for job in jobs:
-            print job()
+        self.trial_fom = self.pool.map(parallel_calc_fom, self.trial_vec)
     
     def calc_error_bar(self, index, fom_level):
         '''calc_error_bar(self, parameter) --> (error_bar_low, error_bar_high)
@@ -315,7 +352,8 @@ class DiffEv:
         and compares it to the current population vector and also cehecks
         if it is better than the current best.
         '''
-        fom = self.calc_fom(self.trial_vec[index])
+        #fom = self.calc_fom(self.trial_vec[index])
+        fom = self.trial_fom[index]
         if fom < self.fom_vec[index]:
             self.pop_vec[index] = self.trial_vec[index].copy()
             self.fom_vec[index] = fom
@@ -608,6 +646,43 @@ class DiffEv:
         '''
         self.use_boundaries = val
         
+    def set_use_parallel_processing(self, val):
+        '''set_use_parallel_processing(self, val) --> None
+        '''
+        self.use_parallel_processing = val
+        
+    
+#==============================================================================
+# Functions that is needed for parallel processing!
+def parallel_init(model_copy):
+    '''parallel_init(model_copy) --> None
+    
+    parallel initilization of a pool of processes. The function takes a
+    pickle safe copy of the model and resets the script module and the compiles
+    the script and creates function to set the variables.
+    '''
+    global model, par_funcs
+    model = model_copy
+    model._reset_module()
+    model.compile_script()
+    (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars()
+    print 'Sucess!'
+    
+def parallel_calc_fom(vec):
+    '''parallel_calc_fom(vec) --> fom (float)
+    
+    function that is used to calculate the fom in a parallel process.
+    It is a copy of calc_fom in the DiffEv class
+    '''
+    global model, par_funcs
+    #print 'Trying to set parameters'
+    # set the parameter values in the model
+    map(lambda func, value:func(value), par_funcs, vec)
+    #print 'Trying to evaluate'
+    # evaluate the model and calculate the fom
+    fom = model.evaluate_fit_func()
+        
+    return fom 
     
     
 #==============================================================================
