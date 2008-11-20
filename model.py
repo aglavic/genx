@@ -400,6 +400,24 @@ class Model:
         # Temporary stuff that needs to keep track on
         self.filename = ''
         self.saved = False
+        
+    def pickable_copy(self):
+        '''pickable_copy(self) --> model
+        
+        Creates a pickable object of the model. Can be used for saving or
+        sending to other processes, i.e., parallel processing.
+        '''
+        model_copy = Model(self.config)
+        model_copy.data = self.data
+        model_copy.script = self.script
+        model_copy.parameters = self.parameters
+        model_copy.fom_func = self.fom_func
+        # The most important stuff - a module is not pickable
+        model_copy.script_module = None
+        model_copy.filename = self.filename
+        model_copy.saved = self.saved
+        
+        return model_copy
     
     def get_table_as_ascii(self):
         '''get_table_as_ascii(self) --> None

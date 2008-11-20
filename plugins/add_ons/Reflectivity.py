@@ -1378,10 +1378,14 @@ class Plugin(framework.Template):
             raise LookupError('Code segement: %s could not be found'%descriptor)
         
         # Find the tablevel
-        tablevel = len(['\t' for char in script_lines[stop_index+1]\
-            if char == '\t'])
+        #tablevel = len([' ' for char in script_lines[stop_index+1]\
+        #    if char == ' '])
+        tablevel = len(script_lines[stop_index+1])\
+                    - len(script_lines[stop_index+1].lstrip())
+        #print insert_code
+        #print tablevel
         # Make the new code tabbed
-        tabbed_code = ['\t'*tablevel + line for line in\
+        tabbed_code = [' '*tablevel + line for line in\
             insert_code.splitlines(True)]
         # Replace the new code segment with the new
         new_code = ''.join(script_lines[:start_index] + tabbed_code\
