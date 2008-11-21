@@ -6,6 +6,7 @@ Last changed: 2008 08 22
 '''
 
 from numpy import *
+import os, time
 
 #==============================================================================
 #BEGIN: Class DataSet
@@ -227,9 +228,14 @@ class DataSet:
             self.y.shape == self.error.shape and\
             self.x.shape == self.y.shape:
             # save the file
-            print self.y.shape, self.y_sim.shape
-            print c_[self.x, self.y_sim, self.y, self.error]
-            savetxt(filename, c_[self.x, self.y_sim, self.y, self.error])
+            #print self.y.shape, self.y_sim.shape
+            #print c_[self.x, self.y_sim, self.y, self.error]
+            f = open(filename, 'w')
+            f.write('# Dataset "%s" exported from GenX on %s\n'%\
+                            (self.name, time.ctime()))
+            f.write('# Column lables:\n')
+            f.write('# x\tI_simulated\tI\terror(I)\n')
+            savetxt(f, c_[self.x, self.y_sim, self.y, self.error])
         else:
             debug = 'y_sim.shape: ' + str(self.y_sim.shape) + '\ny.shape: ' +\
             str(self.y.shape) + '\nx.shape: ' + str(self.x.shape) +\
@@ -631,9 +637,12 @@ class DataList:
                 raise 'Error in export_data_to_files'
         else:
             indices = range(len(self.items))
-        print 'Output: ', indices, len(self.items)
-        [self.items[index].save_file(basename + '%3d'%index + '.dat')\
-            for index in indices]
+        #print 'Output: ', indices, len(self.items)
+        for index in indices:
+            base, ext = os.path.splitext(basename)
+            if ext == '':
+                ext = '.dat'
+            self.items[index].save_file(base + '%03d'%index + ext)
         
     
     def get_data_as_asciitable(self, indices = None):

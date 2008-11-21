@@ -1,3 +1,13 @@
+2008-11-21:
+    Fixed bug in exporting data sets to a dat file. Now it is a 
+    data set 3 digits wide with zeros!. Also if an extension is added
+    it will not overwrite it. Also added an header with the time that the
+    data was exported - can be handy.
+    Fixed the normalization problem that Gunnar found for reflectivity 
+    measurements. Fixed it up and did a nice normalization of the 
+    weight function in /lib/instrument.py. However Convolute fast with
+    varying resolution does not work.
+
 2008-11-20:
     Implemented parallel processing for the model calculation
     with the help of the processing package. Tested and seems to work
