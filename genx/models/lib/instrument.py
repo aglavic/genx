@@ -91,7 +91,8 @@ def ConvoluteResolutionVector(Qret,I,weight):
     #print Qret.shape,weight.shape
     I2 = I.reshape(weight.shape[0], weight.shape[1])
     #print (I*weight).shape,Qret.shape
-    Int = integrate.trapz(I2*weight, x = Qret2, axis = 0)
+    norm_fact = integrate.trapz(weight, x = Qret2, axis = 0)
+    Int = integrate.trapz(I2*weight, x = Qret2, axis = 0)/norm_fact
     #print Int.shape
     return Int
 
@@ -101,18 +102,19 @@ def ConvoluteFast(Q,I,dQ,range=3):
     Qstep=Q[1]-Q[0]
     resvector=arange(-range*dQ,range*dQ+Qstep,Qstep)
     weight=1/sqrt(2*pi)/dQ*exp(-(resvector)**2/(dQ)**2/2)
-    Iconv=convolve(r_[ones(resvector.shape)*I[0],I,ones(resvector.shape)*I[-1]], weight, mode=1)[resvector.shape[0]:-resvector.shape[0]]
+    Iconv=convolve(r_[ones(resvector.shape)*I[0],I,ones(resvector.shape)*I[-1]], weight/weight.sum(), mode=1)[resvector.shape[0]:-resvector.shape[0]]
     return Iconv
 
 # Fast convolution - varying resolution
 # constant spacing between the dat.
 def ConvoluteFastVar(Q,I,dQ,range=3):
-    Qstep=Q[1]-Q[0]
-    steps=max(dQ*ones(Q.shape))*range/Qstep
+    Qstep = Q[1]-Q[0]
+    steps = max(dQ*ones(Q.shape))*range/Qstep
     
-    weight=1/sqrt(2*pi)/dQ*exp(-(Q[:,newaxis]-Q)**2/(dQ)**2/2)
-    Itemp=I[:,newaxis]*ones(I.shape)
-    Int=integrate.trapz(Itemp*weight,axis=0)
+    weight = 1/sqrt(2*pi)/dQ*exp(-(Q[:,newaxis]-Q)**2/(dQ)**2/2)
+    Itemp = I[:,newaxis]*ones(I.shape)
+    norm_fact = integrate.trapz(weight, axis = 0)
+    Int = integrate.trapz(Itemp*weight,axis=0)/norm_fact
     return Int
 
 
