@@ -1,3 +1,13 @@
+2008-11-22: 
+    Solved the problem with the convolute fast. All three methods
+    give very simlair results. However it is dependent on step size
+    integration range etc.
+    Added the possiblity to work with g/cm^3 as the density. Implemented
+    a new scattering database for x-rays and neutrons fw, bw that makes
+    this possible. Not tested yet.
+    Added help frames for data loaders and plugins as well. The documentation
+    still to be written.
+
 2008-11-21:
     Fixed bug in exporting data sets to a dat file. Now it is a 
     data set 3 digits wide with zeros!. Also if an extension is added

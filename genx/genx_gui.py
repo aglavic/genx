@@ -164,6 +164,10 @@ class MainFrame(wx.Frame):
         wxglade_tmp_menu = wx.Menu()
         self.mb_models_help = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Models Help...", "Show help for the models", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_models_help)
+        self.mb_plugins_help = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Plugins Helps...", "Show help for the plugins", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.AppendItem(self.mb_plugins_help)
+        self.mb_data_loaders_help = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Data loaders Help...", "Show help for the data loaders", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.AppendItem(self.mb_data_loaders_help)
         self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Show Manual...", "Show the manual", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_showman)
         self.mb_misc_about = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "About...", "Shows information about GenX", wx.ITEM_NORMAL)
@@ -242,6 +246,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_data_import, self.mb_set_import)
         self.Bind(wx.EVT_MENU, self.eh_data_plots, self.mb_set_dataplot)
         self.Bind(wx.EVT_MENU, self.eh_mb_models_help, self.mb_models_help)
+        self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, self.mb_plugins_help)
+        self.Bind(wx.EVT_MENU, self.eh_mb_data_loaders_help, self.mb_data_loaders_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, self.mb_misc_showman)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, self.mb_misc_about)
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=10001)
@@ -691,6 +697,13 @@ class MainFrame(wx.Frame):
     def eh_external_model_changed(self, event):
         event_handlers.models_changed(self, event)
         event.Skip()
+    
+    def eh_mb_plugins_help(self, event): # wxGlade: MainFrame.<event_handler>
+        event_handlers.plugins_help(self, event)
+
+    def eh_mb_data_loaders_help(self, event): # wxGlade: MainFrame.<event_handler>
+        event_handlers.data_loaders_help(self, event)
+
 # end of class MainFrame
 
 

@@ -6,7 +6,7 @@ Last changed: 2008-10-08
 '''
 
 import numpy as np
-import re
+import re, string
 
 #==============================================================================
 class Func(object):
@@ -361,12 +361,49 @@ def create_f_lookup(lookup_fp, f0):
     
     return lookup_func
 
+def create_fw_lookup(lookup_fp, weight):
+    '''create_fw_lookup(lookup_fp, weight) --> lookup_func(name, wavelength)
+    
+    combines a f0 dictonary [dict] witht the lookup function for the
+     anoumoulous scattering factors. Note that it is assumed that lookup_fp 
+    is a function on the form lookup_fp(name, wavelength) --> f1 - 1.0Jf2
+    where name is the name of the element!
+    '''
+    def lookup_func(name, wavelength):
+        ''' Looks up the total form factor at Q = 0
+        f = f1 + 1.0J*f2 of element name. 
+        '''
+        fp = lookup_fp(name, wavelength)
+        w = weight[name]
+        
+        return fp/(w/0.6022141)
+    
+    return lookup_func
+
 def load_bdabax(filename):
     '''load_bdabax(filename) --> b (dictonary)
     
     loads a dabax file with b (sld for neutrons) values 
     and return a dictonary with b for the elements and isotopes 
     given by the key name.
+    '''
+    temp_dict = read_dabax(filename)
+    # We are intrested in the scatttering lengths
+    b_c = {}
+    for key in temp_dict:
+        val = temp_dict[key][1] + temp_dict[key][2]*1.0J
+        if key[0].isdigit():
+            b_c['i' + key] = val
+        else:
+            b_c[key] = val
+            
+    return b_c
+
+def read_dabax(filename):
+    '''read_dabax_dict(filename) --> temp_dict [dict]
+    
+    Loads an entire dabax file to a dictonary. Scan names are the 
+    keys.
     '''
     def tofloat(x):
         try:
@@ -379,28 +416,52 @@ def load_bdabax(filename):
     temp_dict = {}
     for line in f.readlines():
         # Get the label for each line
-        if line[0]=='#':
-            label=line[1]
+        if line[0] == '#':
+            label = line[1]
             ret=line[1:-1]
         else:
-            label='D'
-            ret=line[:-1]
+            label = 'Data'
+            ret = line[:-1]
         # Gets the real label, atom name
         if label == 'S':
             real_label = ret.split()[-1]
         # The row contains data
-        if label == 'D':
+        if label == 'Data':
             # To get all values in the table
             temp_dict[real_label.lower()] = map(lambda x:\
                 tofloat(x.split('(')[0]), ret.split())
+                
+    return temp_dict
+
+def load_atomic_weights_dabax(filename):
+    '''load__atomic_weights_dabax(filename) --> w (dictonary)
     
+    loads a dabax file with w (sld for neutrons) values 
+    and return one dictonary with the atomic weights for the elements 
+    by the key name. Note that all isotopes are includes with the an
+    i in front of them.
+    '''
+    
+    temp_dict = read_dabax(filename)
     # We are intrested in the scatttering lengths
-    b_c = {}
+    w_mean = {}
     for key in temp_dict:
-        val = temp_dict[key][1] + temp_dict[key][2]*1.0J
         if key[0].isdigit():
-            b_c['i' + key] = val
-        else:
-            b_c[key] = val
+            # This is an isotope
+            w_mean['i' + key] = temp_dict[key][0]
+            if len(temp_dict[key]) == 3:
+                # The mean atomic mass for the element
+                w_mean[key.lstrip(string.digits)] = temp_dict[key][2]
             
-    return b_c
+    return w_mean
+
+def create_scatt_weight(scatt_dict, w_dict):
+    '''create_bw(scatt_dict, w_dict) --> sw_dict
+    
+    Makes a scattering length database for using with densities (g/cm3)
+    '''
+    sw_dict = {}
+    for key in scatt_dict:
+        if w_dict.has_key(key):
+            sw_dict[key] = scatt_dict[key]/(w_dict[key]/0.6022141)
+    return sw_dict

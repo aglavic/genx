@@ -110,11 +110,10 @@ def ConvoluteFast(Q,I,dQ,range=3):
 def ConvoluteFastVar(Q,I,dQ,range=3):
     Qstep = Q[1]-Q[0]
     steps = max(dQ*ones(Q.shape))*range/Qstep
-    
     weight = 1/sqrt(2*pi)/dQ*exp(-(Q[:,newaxis]-Q)**2/(dQ)**2/2)
     Itemp = I[:,newaxis]*ones(I.shape)
     norm_fact = integrate.trapz(weight, axis = 0)
-    Int = integrate.trapz(Itemp*weight,axis=0)/norm_fact
+    Int = integrate.trapz(Itemp*weight,axis = 0)/norm_fact
     return Int
 
 
