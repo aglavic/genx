@@ -1,8 +1,53 @@
-''' Reflectivity.py written by Matts Bjorck
- A GUI for defineition of Reflectivity models
- LAst changed 20080829
- Ported from old GenX to cerate a GUI interface
- for sample definitions. Works as a plugin
+''' <h1>Refelctivity plugin </h1>
+Reflectivity is a plugin for providing a graphical user
+interface to define multilayer structures in GenX. It works
+on quite general principels with dynamic generation of the
+graphical user interface depending on the model. It also
+dynamically generates the script for the model. Thus, it is 
+always possible to go in and edit the script manually. <p>
+
+The plugin consists of the following components:
+<h2>Sample tab</h2>
+This tab has the definitons for the layers and stacks. 
+remember that a layer has to be inside a stack. 
+Also, the name of the layers must be uniqe and can not be change
+after the layer has been created. The functions of the buttons 
+from left to right are:
+<dl>
+    <dt><b>Add Layer</b></dt>
+    <dd>Add a new layer to the current position</dd>
+    <dt><b>Add Stack</b></dt>
+    <dd>Add a new stack to the current position</dd>
+    <dt><b>Remove item</b></dt>
+    <dd>Removes the current item. Note that the substrate, Sub, and the 
+    ambient material can not be removed.</dd>
+    <dt><b>Move item up</b></dt>
+    <dd>Move item up</dd>
+    <dt><b>Move item down</b></dt>
+    <dd>Move item down</dd>
+    <dt><b>Sample parameters</b></dt>
+    <dd>Edit global parameters for the entire sample</dd>
+    <dt><b>Instrument</b></dt>
+    <dd>Edit parameters such as resolution and incident intesnity that
+    is defines the instrument.</dd>
+</dl>
+<h2>Simulation tab</h2>
+Here it is possible to add commands that are conducted before a data 
+set is calculated. This done by adding a new command by pressing the green
+plus sign. This brings up a dialog where the object and paraemter can
+be chosen and the expression typed in. Note that the list one can choose from 
+is <b>only</b> updated when the simulation button is pressed.<p>
+
+The blue nut button to the right brings up a menu that allows the definition
+of custom variables. These can be used to define problem specific parameters
+ such as, for example, compostion of layers. One can also use this for parameter
+coupling that yields a speedup in fitting. For example, fitting the repetition
+length for a multilayer. 
+
+<h2>SLD tab</h2>
+This shows the real and imaginary part of the scattering length as a function
+of depth for the sample. The substrate is to the left and the ambient material
+is to the right. 
 '''
 
 import plugins.add_on_framework as framework
@@ -1212,7 +1257,7 @@ class Plugin(framework.Template):
         correct script for initilization
         '''
         script = 'import %s as model\n'%modelname
-        script += 'from models.utils import UserVars, fp, bc\n\n'
+        script += 'from models.utils import UserVars, fp, fw, bc, bw\n\n'
         
         for item in self.defs:
             script += '# BEGIN %s DO NOT CHANGE\n'%item
@@ -1222,13 +1267,13 @@ class Plugin(framework.Template):
         script += 'cp = UserVars()\n'
         script += '# END Parameters\n\n'
         script += 'def Sim(data):\n'
-        script += '\tI = []\n'
+        script += '    I = []\n'
         for i in range(len(self.GetModel().get_data())):
-            script += '\t# BEGIN Dataset %i DO NOT CHANGE\n'%i
-            script += '\tI.append(sample.SimSpecular(data[%i].x, inst))\n'%i
-            script += '\t# END Dataset %i\n'%i
+            script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%i
+            script += '    I.append(sample.SimSpecular(data[%i].x, inst))\n'%i
+            script += '    # END Dataset %i\n'%i
             
-        script += '\treturn I\n'
+        script += '    return I\n'
         
         self.SetModelScript(script)
         self.CompileScript()
@@ -1298,9 +1343,9 @@ class Plugin(framework.Template):
             raise LookupError('Could not fing return I in the script')
         
         script = ''.join(script_lines[:line_index-1])
-        script += '\t# BEGIN Dataset %i DO NOT CHANGE\n'%number
-        script += '\tI.append(sample.SimSpecular(data[%i].x, inst))\n'%number
-        script += '\t# END Dataset %i\n'%number
+        script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%number
+        script += '    I.append(sample.SimSpecular(data[%i].x, inst))\n'%number
+        script += '    # END Dataset %i\n'%number
         script += ''.join(script_lines[line_index-1:])
         self.SetModelScript(script)
         

@@ -540,9 +540,8 @@ def quit(frame, event):
     # Check so the model is saved before quitting
     if not frame.model.saved:
         ans = ShowQuestionDialog(frame, 'The current model is not saved! '\
-        'Do you '\
-        ' want to quit and loose all unsaved data?', 'Quit without saving?')
-        if ans:
+        'Do you want to abort quitting and save your data?', 'Abort close?')
+        if not ans:
             frame.Destroy()
     else:
         frame.Destroy()
@@ -773,6 +772,22 @@ def models_help(frame, event):
     '''
     dlg = help.PluginHelpDialog(frame,'models')
     dlg.Show()
+    
+def plugins_help(frame, event):
+    '''plugins_help(frame, event) --> None
+    
+    Show a help dialog for information about the different plugins.
+    '''
+    dlg = help.PluginHelpDialog(frame,'plugins.add_ons')
+    dlg.Show()
+
+def data_loaders_help(frame, event):
+    '''data_loaders_help(frame, event) --> None
+    
+    Show a help dialog for information about the different data_loaders.
+    '''
+    dlg = help.PluginHelpDialog(frame,'plugins.data_loaders')
+    dlg.Show()    
     
 def show_manual(frame, event):
     '''show_manual(frame, event) --> None

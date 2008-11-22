@@ -46,7 +46,8 @@ The bc data base contains the coherent scattering length for neutrons according
 to the data published in Neutron News, Vol. 3, No. 3, 1992, pp.  29-37.
 The data file is taken from the Dabax library compiled by esrf
 <a href = "http://ftp.esrf.eu/pub/scisoft/xop2.3/DabaxFiles/">
-http://ftp.esrf.eu/pub/scisoft/xop2.3/DabaxFiles/</a>
+http://ftp.esrf.eu/pub/scisoft/xop2.3/DabaxFiles/</a>.
+To use isotopes just add "i" in front of the name i.e., bc.i57Fe.
 
 <h4>f</h4>
 The f database contains the <em>scattering vector dependent</em> isotropic
@@ -112,6 +113,13 @@ f = sl.FormFactor(1.54, __lookup_f__)
 # The coherent scattering length for neutrons
 __bc_dict__ = sl.load_bdabax(__MODULE_DIR__+'/databases/DeBe_NeutronNews.dat')
 bc = sl.ScatteringLength(__bc_dict__)
+__w_dict__ = sl.load_atomic_weights_dabax(__MODULE_DIR__ +\
+                        '/databases/AtomicWeights.dat')
+__bw_dict__ = sl.create_scatt_weight(__bc_dict__, __w_dict__)
+bw = sl.ScatteringLength(__bw_dict__)
+__lookup_fw__ = sl.create_fw_lookup(__lookup_fp__, __w_dict__)
+fw = sl.FormFactor(1.54, __lookup_fw__)
+
 
 if __name__=='__main__':
     MyVars=UserVars()

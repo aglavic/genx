@@ -64,7 +64,9 @@ class PluginHelpDialog(wx.Frame):
         Finds all modules in a directory. Only finds .py files and not files
         beginning _
         '''
-        mod = __import__(module)
+        # Load the package, note the non-empty fromlist that 
+        # makes subpackages being loaded
+        mod = __import__(module, fromlist = [''])
         return [s[:-3] for s in os.listdir(mod.__path__[0])\
                     if s[0] != '_' and s[-3:] == '.py']
                     
