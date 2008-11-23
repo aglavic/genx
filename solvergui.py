@@ -267,7 +267,7 @@ class SolverController:
         else:
             #print 'Resetting the values in the grid to ',\
             #    self.start_parameter_values
-            evt = update_parameters(values = self.start_parameter_values,\
+            evt = update_parameters(values = solver.start_guess,\
                 desc = 'Parameter Update', new_best = True, \
                 update_errors = False, fitting = False,\
                  permanent_change = False)
@@ -279,8 +279,8 @@ class SolverController:
         Method that calculates the errorbars for the fit that has been
         done. Note that the fit has to been conducted before this is runned.
         '''
-        if self.start_parameter_values != None and not self.optimizer.running:
-            n_elements = len(self.start_parameter_values)
+        if self.optimizer.start_guess != None and not self.optimizer.running:
+            n_elements = len(self.optimizer.start_guess)
             #print 'Number of elemets to calc errobars for ', n_elements
             error_values = []
             dlg = wx.ProgressDialog("Calculating", \
@@ -314,7 +314,7 @@ class SolverController:
         '''
         model  = self.parent.model
         row = model.parameters.get_pos_from_row(parameter)
-        if self.start_parameter_values != None and not self.optimizer.running:
+        if self.optimizer.start_guess != None and not self.optimizer.running:
             return self.optimizer.par_evals[:,row],\
                 self.optimizer.fom_evals
         else:
@@ -379,7 +379,7 @@ class SolverController:
         # Make sure that the config of the solver is updated..
         self.ReadConfig()
         model = self.parent.model
-        self.start_parameter_values = model.get_fit_values()
+        #self.start_parameter_values = model.get_fit_values()
         self.optimizer.start_fit(model)
         #print 'Optimizer starting'
         
@@ -396,14 +396,15 @@ class SolverController:
         '''
         # Make sure teh settings are updated..
         self.ReadConfig()
-        self.optimizer.resume_fit()
+        model = self.parent.model
+        self.optimizer.resume_fit(model)
         
     def IsFitted(self):
         '''IsFitted(self) --> bool
         
         Returns true if a fit has been started otherwise False
         '''
-        return self.start_parameter_values != None
+        return self.optimizer.start_guess != None
     
         
     def set_error_bars_level(self, value):

@@ -66,6 +66,12 @@ def open(frame, event):
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
         frame.model.load(dlg.GetPath())
+        #try:
+        frame.solver_control.optimizer.pickle_load(\
+                                    frame.model.load_addition('optimizer'))
+        #except Exception, e:
+        #    ShowNotificationDialog(frame, 'The optimizer could not be loaded'\
+        #        'from the saved file')
         frame.config.load_model(frame.model.load_addition('config'))
         [p.ReadConfig() for p in get_pages(frame)]
         # Letting the plugin do their stuff...
@@ -110,6 +116,8 @@ def save(frame, event):
         # If it has been saved just save it
         frame.model.save(fname)
         set_title(frame)
+        frame.model.save_addition('optimizer',\
+                                frame.solver_control.optimizer.pickle_string())
         frame.model.save_addition('config', frame.config.model_dump())
         
     frame.main_frame_statusbar.SetStatusText('Model saved to file', 1)
@@ -136,6 +144,8 @@ def save_as(frame, event):
         if result:
             frame.model.save(fname)
             set_title(frame)
+            frame.model.save_addition('optimizer',\
+                                frame.solver_control.optimizer.pickle_string())
             frame.model.save_addition('config', frame.config.model_dump())
             frame.main_frame_statusbar.SetStatusText('Model Saved to file', 1)
     dlg.Destroy()
@@ -396,16 +406,20 @@ def start_fit(frame, event):
     
     Event handler to start fitting
     '''
-    try:
-        frame.solver_control.StartFit()
-    except modellib.GenericError, e:
-        ShowModelErrorDialog(frame, str(e))
-        frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-    except Exception, e:
-        ShowErrorDialog(frame, str(e))
-        frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+    if frame.model.compiled:
+        try:
+            frame.solver_control.StartFit()
+        except modellib.GenericError, e:
+            ShowModelErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
+        except Exception, e:
+            ShowErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+        else:
+            frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
     else:
-        frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
+        ShowNotificationDialog(frame, 'The script is not compiled, do a'\
+        ' simulation before you start fitting.')
     
 def stop_fit(frame, event):
     '''stop_fit(frame, event) --> None
@@ -419,16 +433,20 @@ def resume_fit(frame, event):
     
     Event handler to resume the fitting routine. No initilization.
     '''
-    try:
-        frame.solver_control.ResumeFit()
-    except modellib.GenericError, e:
-        ShowModelErrorDialog(frame, str(e))
-        frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-    except Exception, e:
-        ShowErrorDialog(frame, str(e))
-        frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+    if frame.model.compiled:
+        try:
+            frame.solver_control.ResumeFit()
+        except modellib.GenericError, e:
+            ShowModelErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
+        except Exception, e:
+            ShowErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+        else:
+            frame.main_frame_statusbar.SetStatusText('Fitting starting ...',1)
     else:
-        frame.main_frame_statusbar.SetStatusText('Fitting starting ...',1)
+        ShowNotificationDialog(frame, 'The script is not compiled, do a'\
+        ' simulation before you start fitting.')
     
     
 def calculate_error_bars(frame, evt):
@@ -808,6 +826,13 @@ def show_about_box(frame, event):
         weave_version = 'Not installed'
     else:
         weave_version = weave.version.version
+    try:
+        import processing
+    except:
+        processing_version = 'Not installed'
+    else:
+        processing_version = processing.__version__
+        
     info = wx.AboutDialogInfo()
     info.Name = "GenX"
     info.Version = __version__
@@ -820,9 +845,9 @@ def show_about_box(frame, event):
         "\n\nThe versions of the mandatory libraries are:\n"
         "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
         "\nThe non-mandatory but useful packages:\n"
-        "weave: %s"%(platform.python_version(), wx.__version__,\
+        "weave: %s, processing: %s"%(platform.python_version(), wx.__version__,\
             numpy.version.version, scipy.version.version,\
-             matplotlib.__version__, weave_version),
+             matplotlib.__version__, weave_version, processing_version),
         350, wx.ClientDC(frame))
     info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")
     # No developers yet

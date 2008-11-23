@@ -1,6 +1,10 @@
+2008-11-23:
+    Added procssing as an package in the about box. 
+    Added code so that the fit state also is saved to the model. 
+
 2008-11-22: 
     Solved the problem with the convolute fast. All three methods
-    give very simlair results. However it is dependent on step size
+    give very similair results. However it is dependent on step size
     integration range etc.
     Added the possiblity to work with g/cm^3 as the density. Implemented
     a new scattering database for x-rays and neutrons fw, bw that makes

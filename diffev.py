@@ -1,20 +1,20 @@
 '''File: diffev.py an implementation of the differential evolution algoithm
 for fitting.
 Programmed by: Matts Bjorck
-Last changed: 2008 06 01
+Last changed: 2008 11 23
 '''
 
 from numpy import *
 import thread
 import time
 
-import sys, os
+import sys, os, pickle
 
-__PARALLEL__ = 0
+__parallel_loaded__ = 0
 
 try:
     import processing
-    __PARALLEL__ = 1
+    __parallel_loaded__ = 1
 except:
     print 'processing not installed no parallel processing possible'
 
@@ -58,7 +58,7 @@ class DiffEv:
         # Sleeping time for every generation
         self.sleep_time = 0.2
         # Flag if we should use parallel processing 
-        self.use_parallel_processing = __PARALLEL__*0
+        self.use_parallel_processing = __parallel_loaded__*0
         
         # Functions that are user definable
         self.plot_output = default_plot_output
@@ -79,19 +79,102 @@ class DiffEv:
         self.fom_log = []
         self.par_evals = array([[]])[0:0]
         self.fom_evals = array([])
-
+    
+    def safe_copy(self, object):
+        '''safe_copy(self, object) --> None
+        
+        Does a safe copy of object to this object. Makes copies of everything 
+        if necessary. The two objects become decoupled.
+        '''
+        self.km = object.km # Mutation constant
+        self.kr = object.kr # Cross over constant
+        self.pf = object.pf # probablility for mutation
+        
+        # Flag to choose beween the two alternatives below
+        self.use_pop_mult = object.use_pop_mult
+        self.pop_mult = object.pop_mult
+        self.pop_size = object.pop_size 
+        
+        # Flag to choose between the two alternatives below
+        self.use_max_generations = object.use_max_generations  
+        self.max_generations = object.max_generations
+        self.max_generation_mult = object.max_generation_mult
+        
+        # Flag to choose whether or not to use a starting guess
+        self.use_start_guess = object.use_start_guess
+        # Flag to choose wheter or not to use the boundaries
+        self.use_boundaries = object.use_boundaries
+        
+        # Sleeping time for every generation
+        self.sleep_time = object.sleep_time
+        # Flag if we should use parallel processing 
+        if __parallel_loaded__:
+            self.use_parallel_processing = object.use_parallel_processing
+        else:
+            self.use_parallel_processing = False
+        
+        # Definition for the create_trial function
+        #self.create_trial = object.create_trial
+        
+        self.setup_ok = object.setup_ok # True if the optimization have been setup
+        
+        # Logging variables
+        self.fom_log = object.fom_log[:]
+        self.par_evals = object.par_evals.copy()
+        self.fom_evals = object.fom_evals.copy()
+        
+        if self.setup_ok:
+            self.n_pop = object.n_pop
+            self.max_gen = object.max_gen
+        
+            # Starting values setup
+            self.pop_vec = object.pop_vec
+            
+            self.start_guess = object.start_guess
+            
+            self.trial_vec = object.trial_vec
+            self.best_vec = object.best_vec
+            
+            self.fom_vec = object.fom_vec
+            self.best_fom = object.best_fom
+            
+    def pickle_string(self):
+        '''pickle_string(self) --> pickeled [string]
+        
+        Saves a copy into a oickled string note that the dynamic
+        functions will not be saved. For normal use this is taken care of
+        outside this class with the config object.
+        '''
+        cpy = DiffEv()
+        cpy.safe_copy(self)
+        cpy.create_trial = None
+        cpy.plot_output = None
+        cpy.text_output = None
+        cpy.parameter_output = None
+        cpy.fitting_ended = None
+        
+        return pickle.dumps(cpy)
+    
+    def pickle_load(self, pickled_string):
+        '''load_pickles(self, pickled_string) --> None
+        
+        Loads the pickled string into the this object. See pickle_string.
+        '''
+        self.safe_copy(pickle.loads(pickled_string))
+        
+        
     def reset(self):
         ''' reset(self) --> None
         
         Resets the optimizer
         '''
         self.setup_ok = False
+    
+    def connect_model(self, model):
+        '''connect_model(self, model) --> None
         
-    def init_fitting(self, model):
-        '''
-        Function to run before a new fit is started with start_fit.
-        It initilaize the population and sets the limits on the number
-        of generation and the population size.
+        Connects the model [model] to this object. Retrives the function
+        that sets the variables  and stores a reference to the model.
         '''
         # Retrive parameters from the model
         (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars()
@@ -102,6 +185,16 @@ class DiffEv:
         self.par_funcs = par_funcs
         self.model = model
         self.n_dim = len(par_funcs)
+        if not self.setup_ok:
+            self.start_guess = start_guess
+    
+    def init_fitting(self, model):
+        '''
+        Function to run before a new fit is started with start_fit.
+        It initilaize the population and sets the limits on the number
+        of generation and the population size.
+        '''
+        self.connect_model(model)
         if self.use_pop_mult:
             self.n_pop = int(self.pop_mult*self.n_dim)
         else:
@@ -116,7 +209,7 @@ class DiffEv:
          self.par_min) for i in range(self.n_pop)]
         
         if self.use_start_guess:
-            self.pop_vec[0] = array(start_guess)
+            self.pop_vec[0] = array(self.start_guess)
             
         self.trial_vec = [zeros(self.n_dim) for i in range(self.n_pop)]
         self.best_vec = self.pop_vec[0]
@@ -126,14 +219,13 @@ class DiffEv:
 
         # Logging varaibles
         self.fom_log = []
-        self.par_evals = array([par_min])[0:0]
+        self.par_evals = array([self.par_min])[0:0]
         self.fom_evals = array([])
         
         self.text_output('DE initilized')
         
         # Remeber that everything has been setup ok
         self.setup_ok = True
-        
         
     def start_fit(self, model):
         '''
@@ -142,6 +234,7 @@ class DiffEv:
         # If it is not already running
         if not self.running:
             #Initilize the parameters to fit
+            self.reset()
             self.init_fitting(model)
             self.stop = False
             # Start fitting in a new thread
@@ -167,16 +260,23 @@ class DiffEv:
         else:
             self.text_output('The fit is not running')
         
-    def resume_fit(self):
+    def resume_fit(self, model):
         '''
         Resumes the fitting if has been stopped with stop_fit.
         '''
         if not self.running:
             self.stop = False
-            thread.start_new_thread(self.optimize, ())
-            self.text_output('Restarting the fit...')
-            self.running = True
-            return True
+            self.connect_model(model)
+            n_dim_old = self.n_dim
+            if self.n_dim == n_dim_old:
+                thread.start_new_thread(self.optimize, ())
+                self.text_output('Restarting the fit...')
+                self.running = True
+                return True
+            else:
+                self.text_output('The number of parameters has changed'\
+                ' restart the fit.')
+                return False
         else:
             self.text_output('Fit is already running, stop and then start')
             return False
