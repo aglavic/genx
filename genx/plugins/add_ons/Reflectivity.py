@@ -47,7 +47,7 @@ length for a multilayer.
 <h2>SLD tab</h2>
 This shows the real and imaginary part of the scattering length as a function
 of depth for the sample. The substrate is to the left and the ambient material
-is to the right. 
+is to the right. This is updated when the simulation button is pressed.
 '''
 
 import plugins.add_on_framework as framework

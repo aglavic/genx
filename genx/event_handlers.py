@@ -10,7 +10,7 @@ import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
 
 import model as modellib
-import solvergui, help
+import solvergui, help, io
 
 def get_pages(frame):
     pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
@@ -66,12 +66,12 @@ def open(frame, event):
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
         frame.model.load(dlg.GetPath())
-        #try:
-        frame.solver_control.optimizer.pickle_load(\
+        try:
+            frame.solver_control.optimizer.pickle_load(\
                                     frame.model.load_addition('optimizer'))
-        #except Exception, e:
-        #    ShowNotificationDialog(frame, 'The optimizer could not be loaded'\
-        #        'from the saved file')
+        except Exception, e:
+            ShowNotificationDialog(frame, 'The optimizer could not be loaded'\
+                'from the saved file')
         frame.config.load_model(frame.model.load_addition('config'))
         [p.ReadConfig() for p in get_pages(frame)]
         # Letting the plugin do their stuff...
@@ -114,11 +114,14 @@ def save(frame, event):
         save_as(frame, event)
     else:
         # If it has been saved just save it
-        frame.model.save(fname)
+        #frame.model.save(fname)
+        io.save_gx(fname, frame.model, frame.solver_control.optimizer,\
+                        frame.config)
         set_title(frame)
-        frame.model.save_addition('optimizer',\
-                                frame.solver_control.optimizer.pickle_string())
-        frame.model.save_addition('config', frame.config.model_dump())
+        
+        #frame.model.save_addition('optimizer',\
+        #                        frame.solver_control.optimizer.pickle_string())
+        #frame.model.save_addition('config', frame.config.model_dump())
         
     frame.main_frame_statusbar.SetStatusText('Model saved to file', 1)
     
@@ -142,12 +145,14 @@ def save_as(frame, event):
             'The file %s already exists. Do you wish to overwrite it?'%filename\
             , 'Overwrite?')
         if result:
-            frame.model.save(fname)
+            #frame.model.save(fname)
+            io.save_gx(fname, frame.model, frame.solver_control.optimizer,\
+                        frame.config)
             set_title(frame)
-            frame.model.save_addition('optimizer',\
-                                frame.solver_control.optimizer.pickle_string())
-            frame.model.save_addition('config', frame.config.model_dump())
-            frame.main_frame_statusbar.SetStatusText('Model Saved to file', 1)
+            #frame.model.save_addition('optimizer',\
+            #                    frame.solver_control.optimizer.pickle_string())
+            #frame.model.save_addition('config', frame.config.model_dump())
+            #frame.main_frame_statusbar.SetStatusText('Model Saved to file', 1)
     dlg.Destroy()
     
 def export_data(frame, event):
@@ -188,7 +193,7 @@ def export_script(frame, event):
         fname = dlg.GetPath()
         result = True
         if os.path.exists(fname):
-            filepath, filename = os.path.split(frame.model.filename)
+            filepath, filename = os.path.split(fname)
             result = ShowQuestionDialog(frame, \
             'The file %s already exists. Do you wish to overwrite it?'%filename\
             , 'Overwrite?')
@@ -224,7 +229,7 @@ def export_table(frame, event):
         fname = dlg.GetPath()
         result = True
         if os.path.exists(fname):
-            filepath, filename = os.path.split(frame.model.filename)
+            filepath, filename = os.path.split(fname)
             result = ShowQuestionDialog(frame, \
             'The file %s already exists. Do you wish to overwrite it?'%filename\
             , 'Overwrite?')

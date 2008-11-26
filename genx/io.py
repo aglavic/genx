@@ -2,12 +2,29 @@
 File: genxio.py 
 io function for Genx. These include loading of initilazation files.
 Programmed by: Matts Bjorck
-Last changed: 2008 06 28
+Last changed: 2008 11 26
 '''
 
 import ConfigParser as CP
 import StringIO
 
+# Functions to save the gx files
+#==============================================================================
+def save_gx(fname, model, optimizer, config):
+    model.save(fname)
+    model.save_addition('optimizer', optimizer.pickle_string())
+    model.save_addition('config', config.model_dump())
+    
+
+# Not yet used ...
+def load_gx(fname, model, optimizer, config):
+    model.load(dlg.GetPath())
+    try:
+        optimizer.pickle_load(model.load_addition('optimizer'))
+    except Exception, e:
+        ShowNotificationDialog(frame, 'The optimizer could not be loaded'\
+                'from the saved file')
+    config.load_model(model.load_addition('config'))
 
 
 #==============================================================================

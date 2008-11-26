@@ -1,9 +1,19 @@
-'''A plugin so that users can include their own user function into
-the model script and execute them inside the GUI of GenX.
+'''<h1>UserFuncs</h1>
+A plugin so that users can include their own user function into
+the model script and execute them inside the GUI of GenX.<p>
 
 The following design criteria exists:
-1) The function has to be defined inside the script
-2) The function has to take zero input arguments
+The function has to be defined inside the script.
+The function has to take zero input arguments.
+<p>
+Thus the following example can serve as an template:
+<pre>def myuserfunc():
+    # Do something
+    print 'It works!'
+</pre>
+This should be added somewhere in the script. This provides a great way
+to, for example, dump some internal data into a file or for checking the status
+of some variables.
 '''
 import plugins.add_on_framework as framework
 import types, wx, StringIO, traceback

@@ -1,3 +1,13 @@
+2008-11-26:
+    Added documentation to the plugins.
+    Added documentation to the data loaders.
+    Fixed export scritp+export table bug. When asked to overwrite the file
+    the program asks about the gx file.
+    Implemented autosaving every X generation. If wanted by the user, default
+     off.
+    Also added also atosave, errobar level, parallel processeing alternatives
+    to the optimizer settings dialog box.
+    
 2008-11-23:
     Added procssing as an package in the about box. 
     Added code so that the fit state also is saved to the model. 

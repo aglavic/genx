@@ -1,8 +1,16 @@
-''' The default data loader. 
+''' <h1>Default data loader</h1>
+
 Loads the data from whitespace seperated column formatted ascii data files.
 The module allows the specification of which columns that correspond to the
-x, y and y_error columns in the data file. If y_error is not used the 
-it can safely be set to the same column as y.
+x, y and y_error columns in the data file. 
+If y_error is not used the it can safely be set to the same column as y. <p>
+
+Which columns that are imported are determined from the dialog box in 
+import settings. Note that these settings apply to the marked data set(s).
+Other possible tunings are the definitions of delimiter, None means any 
+white space characthre (default). Skip rows is how many rows are skipped before 
+the file is started to be read. Comment is the first chrachter of a commented 
+line.
 '''
 
 import numpy as np
