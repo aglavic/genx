@@ -1,14 +1,17 @@
-''' The sls sxrd data loader. 
+''' <h1>sls sxrd data loader</h1>
 Loads the data from whitespace seperated column formatted ascii data files.
-The data should be on the following format:
-First column h values
-Second column k values
-Third values l values
-Fourth column Intensites
-Fifth column The standard deviation of the intensities
+It is intended for surface x-ray diffraction data where the data sets consists
+of rod scans along the l-direction (perpendicular to the surface). The plugin
+sorts each rod with equal h and k values into one data sets. The l-direction 
+is also sorted. <p>
+The default columns are the following:<br>
+First column h values; Second column k values; Third values l values;
+Fourth column Intensites;
+Fifth column The standard deviation of the intensities.
+ The other settings are just as in the default data loader.<p>
 
 The h,k values is stored as extra data in data.extra_data dictonary as
-h and k
+h and k. 
 '''
 
 import numpy as np

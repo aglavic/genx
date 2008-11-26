@@ -10,13 +10,14 @@ import time
 
 import sys, os, pickle
 
-__parallel_loaded__ = 0
+__parallel_loaded__ = False
 
 try:
     import processing
-    __parallel_loaded__ = 1
+    __parallel_loaded__ = True
 except:
     print 'processing not installed no parallel processing possible'
+    
 
 # Add current path to the system paths
 # just in case some user make a directory change
@@ -59,11 +60,18 @@ class DiffEv:
         self.sleep_time = 0.2
         # Flag if we should use parallel processing 
         self.use_parallel_processing = __parallel_loaded__*0
+        self.processes = processing.cpuCount()
+        self.chunksize = 1
+        # Flag for using autosave
+        self.use_autosave = True
+        # autosave interval in generations        
+        self.autosave_interval = 10
         
         # Functions that are user definable
         self.plot_output = default_plot_output
         self.text_output = default_text_output
         self.parameter_output = default_parameter_output
+        self.autosave = defualt_autosave
         self.fitting_ended = default_fitting_ended
         
         
@@ -151,6 +159,7 @@ class DiffEv:
         cpy.plot_output = None
         cpy.text_output = None
         cpy.parameter_output = None
+        cpy.autosaves = None
         cpy.fitting_ended = None
         
         return pickle.dumps(cpy)
@@ -218,7 +227,7 @@ class DiffEv:
         self.best_fom = 1e20
 
         # Logging varaibles
-        self.fom_log = []
+        self.fom_log = array([[0,1]])[0:0]
         self.par_evals = array([self.par_min])[0:0]
         self.fom_evals = array([])
         
@@ -306,15 +315,18 @@ class DiffEv:
         #print self.best_vec
         self.best_fom = self.fom_vec[best_index]
         #print self.best_fom
-        self.fom_log= array([[len(self.fom_log),self.best_fom]])
+        self.fom_log= r_[self.fom_log,\
+                                [[len(self.fom_log),self.best_fom]]]
         # Flag to keep track if there has been any improvemnts
         # in the fit - used for updates
         self.new_best = True
         
         self.text_output('Going into optimization ...')
         
-        gen = 0 # Just making gen live in this scope as well...
-        for gen in range(self.max_gen):
+        # Just making gen live in this scope as well...
+        gen = self.fom_log[-1,0] 
+        for gen in range(int(self.fom_log[-1,0]) + 1, self.max_gen\
+                                + int(self.fom_log[-1,0]) + 1):
             if self.stop:
                 break
             
@@ -352,9 +364,12 @@ class DiffEv:
             else:
                 speed = 999999
             self.text_output('FOM: %.3f Generation: %d Speed: %.1f'%\
-            (self.best_fom,gen,speed))
+                                (self.best_fom, gen, speed))
             
             self.new_best = False
+            # Do an autosave if activated and the interval is coorect
+            if gen%self.autosave_interval == 0 and self.use_autosave:
+                self.autosave()
 
         self.text_output('Stopped at Generation: %d ...'%gen)
         
@@ -402,7 +417,7 @@ class DiffEv:
         setup for parallel proccesing. Creates a pool of workers with
         as many cpus there is available
         '''
-        self.pool = processing.Pool(processes = processing.cpuCount(),\
+        self.pool = processing.Pool(processes = self.processes,\
                         initializer = parallel_init,\
                         initargs = (self.model.pickable_copy(), ))
         print "Starting a pool with ", processing.cpuCount(), " workers ..."
@@ -421,7 +436,8 @@ class DiffEv:
         
         Function to calculate the fom in parallel using the pool
         '''
-        self.trial_fom = self.pool.map(parallel_calc_fom, self.trial_vec)
+        self.trial_fom = self.pool.map(parallel_calc_fom, self.trial_vec,\
+                        chunksize = self.chunksize)
     
     def calc_error_bar(self, index, fom_level):
         '''calc_error_bar(self, parameter) --> (error_bar_low, error_bar_high)
@@ -650,8 +666,17 @@ class DiffEv:
        The default function is no output whatsoever
        '''
        self.fitting_ended = func
+
+    def set_autosave_func(self, func):
+        '''set_autosave_func(self, func) --> None
+        
+        Set the function that the optimizer uses to do an autosave
+        of the current fit. Function func should not take any arguments.
+        '''
+        self.autosave = func
+
     # Some get functions
-    
+   
     def get_model(self):
         '''get_model(self) --> model
         Getter that returns the model in use in solver.
@@ -746,10 +771,33 @@ class DiffEv:
         '''
         self.use_boundaries = val
         
+    def set_use_autosave(self, val):
+        '''set_use_autosave(self, val) --> None
+        '''
+        self.use_autosave = val
+        
+    def set_autosave_interval(self, val):
+        '''set_autosave_interval(self, val) --> None
+        '''
+        self.autosave_interval = val
+        
     def set_use_parallel_processing(self, val):
         '''set_use_parallel_processing(self, val) --> None
         '''
-        self.use_parallel_processing = val
+        if __parallel_loaded__:
+            self.use_parallel_processing = val
+        else:
+            self.use_parallel_processing = False
+    
+    def set_processes(self, val):
+        '''set_processes(self, val) --> None
+        '''
+        self.processes = val
+        
+    def set_chunksize(self, val):
+        '''set_chunksize(self, val) --> None
+        '''
+        self.chunksize = val
         
     
 #==============================================================================
@@ -798,6 +846,8 @@ def default_parameter_output(solver):
 def default_fitting_ended(solver):
     pass
     
+def defualt_autosave():
+    pass
 
 def _calc_fom(model, vec, par_funcs):
         '''
