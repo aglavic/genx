@@ -268,11 +268,15 @@ class SampleHandler:
                 if last:
                     self.names.insert(pos,name)
                 else:
+                    #print 'spos : ', spos
                     if spos[1] >= 0:
                         self.names.insert(pos+1,name)
                     else:
                         self.names.insert(pos+len(self.sample.Stacks[spos[0]].Layers)+1,name)
-                self.sample.Stacks[spos[0]].Layers.insert(spos[1],layer)
+                if spos[1] == 0:
+                    self.sample.Stacks[spos[0]].Layers.append(layer)
+                else:
+                    self.sample.Stacks[spos[0]].Layers.insert(spos[1], layer)
                 added=True
                 
         else:
@@ -1335,7 +1339,7 @@ class Plugin(framework.Template):
         found = 0
         for line in script_lines[line_index:]:
             line_index += 1
-            if line.find('\treturn I') != -1:
+            if line.find('    return I') != -1:
                 found = 1
                 break
             
