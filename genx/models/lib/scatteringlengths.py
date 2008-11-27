@@ -462,6 +462,7 @@ def create_scatt_weight(scatt_dict, w_dict):
     '''
     sw_dict = {}
     for key in scatt_dict:
+        #print key, ' ',scatt_dict[key], ' ',w_dict[key]
         if w_dict.has_key(key):
-            sw_dict[key] = scatt_dict[key]/(w_dict[key]/0.6022141)
+            sw_dict[key] = scatt_dict[key]/complex(w_dict[key]/0.6022141)
     return sw_dict

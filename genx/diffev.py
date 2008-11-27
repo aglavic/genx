@@ -60,7 +60,10 @@ class DiffEv:
         self.sleep_time = 0.2
         # Flag if we should use parallel processing 
         self.use_parallel_processing = __parallel_loaded__*0
-        self.processes = processing.cpuCount()
+        if __parallel_loaded__:
+            self.processes = processing.cpuCount()
+        else:
+            self.processes = 0
         self.chunksize = 1
         # Flag for using autosave
         self.use_autosave = True
