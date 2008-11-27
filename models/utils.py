@@ -113,14 +113,14 @@ f = sl.FormFactor(1.54, __lookup_f__)
 # The coherent scattering length for neutrons
 __bc_dict__ = sl.load_bdabax(__MODULE_DIR__+'/databases/DeBe_NeutronNews.dat')
 bc = sl.ScatteringLength(__bc_dict__)
-print 'Loading atomic weights'
+#print 'Loading atomic weights'
 __w_dict__ = sl.load_atomic_weights_dabax(__MODULE_DIR__ +\
                         '/databases/AtomicWeights.dat')
-print 'Making bw dict'
+#print 'Making bw dict'
 __bw_dict__ = sl.create_scatt_weight(__bc_dict__, __w_dict__)
-print 'Making bw scattering lengths'
+#print 'Making bw scattering lengths'
 bw = sl.ScatteringLength(__bw_dict__)
-print 'Making fw scattering lengths'
+#print 'Making fw scattering lengths'
 __lookup_fw__ = sl.create_fw_lookup(__lookup_fp__, __w_dict__)
 fw = sl.FormFactor(1.54, __lookup_fw__)
 
