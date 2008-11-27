@@ -782,7 +782,7 @@ class DiffEv:
     def set_autosave_interval(self, val):
         '''set_autosave_interval(self, val) --> None
         '''
-        self.autosave_interval = val
+        self.autosave_interval = int(val)
         
     def set_use_parallel_processing(self, val):
         '''set_use_parallel_processing(self, val) --> None
@@ -795,12 +795,12 @@ class DiffEv:
     def set_processes(self, val):
         '''set_processes(self, val) --> None
         '''
-        self.processes = val
+        self.processes = int(val)
         
     def set_chunksize(self, val):
         '''set_chunksize(self, val) --> None
         '''
-        self.chunksize = val
+        self.chunksize = int(val)
         
     
 #==============================================================================
