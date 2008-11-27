@@ -212,7 +212,7 @@ def Specular(TwoThetaQz, sample, instrument):
           range = instrument.getResintrange())
     else:
         raise ValueError('Variable restype has an unvalid value')
-    return R
+    return R + instrument.getIbkg()
 
 def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     lamda = instrument.getWavelength()

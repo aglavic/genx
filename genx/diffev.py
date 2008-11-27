@@ -10,6 +10,7 @@ import time
 
 import sys, os, pickle
 
+
 __parallel_loaded__ = False
 
 try:
@@ -18,6 +19,8 @@ try:
 except:
     print 'processing not installed no parallel processing possible'
     
+
+import model
 
 # Add current path to the system paths
 # just in case some user make a directory change
@@ -33,9 +36,12 @@ class DiffEv:
     function.
     '''
     def __init__(self):
+        
         # Mutation schemes implemented
         self.mutation_schemes = [self.best_1_bin, self.rand_1_bin,\
             self.best_either_or, self.rand_either_or]
+            
+        self.model = model.Model()
         
         self.km = 0.7 # Mutation constant
         self.kr = 0.7 # Cross over constant
@@ -87,7 +93,7 @@ class DiffEv:
         self.setup_ok = False # True if the optimization have been setup
         
         # Logging variables
-        self.fom_log = []
+        self.fom_log = array([[0,0]])[0:0]
         self.par_evals = array([[]])[0:0]
         self.fom_evals = array([])
     
@@ -310,9 +316,13 @@ class DiffEv:
         self.text_output('Calculating start FOM ...')
         self.running = True
         #print self.pop_vec
+        #eval_fom()
+        #self.fom_vec = self.trial_fom[:]
+        # Old leftovers before going parallel
         self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
         #print self.fom_vec
         best_index = argmin(self.fom_vec)
+        #print self.fom_vec
         #print best_index
         self.best_vec = copy(self.pop_vec[best_index])
         #print self.best_vec
@@ -325,6 +335,10 @@ class DiffEv:
         self.new_best = True
         
         self.text_output('Going into optimization ...')
+        
+        # Update the plot data for any gui or other output
+        self.plot_output(self)
+        self.parameter_output(self)
         
         # Just making gen live in this scope as well...
         gen = self.fom_log[-1,0] 
@@ -423,7 +437,10 @@ class DiffEv:
         self.pool = processing.Pool(processes = self.processes,\
                         initializer = parallel_init,\
                         initargs = (self.model.pickable_copy(), ))
-        print "Starting a pool with ", processing.cpuCount(), " workers ..."
+        self.text_output("Starting a pool with %i workers ..."%\
+                            (self.processes, ))
+        time.sleep(1.0)
+        #print "Starting a pool with ", self.processes, " workers ..."
         
     def dismount_parallel(self):
         ''' dismount_parallel(self) --> None
@@ -817,7 +834,7 @@ def parallel_init(model_copy):
     model._reset_module()
     model.compile_script()
     (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars()
-    print 'Sucess!'
+    #print 'Sucess!'
     
 def parallel_calc_fom(vec):
     '''parallel_calc_fom(vec) --> fom (float)

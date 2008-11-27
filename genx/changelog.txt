@@ -1,3 +1,7 @@
+2008-11-27:
+    Added Ibkg to the interdiff model (not implemented previously)
+    Added revival of the FOM vs generations plot after loading of data.
+
 2008-11-26:
     Added documentation to the plugins.
     Added documentation to the data loaders.

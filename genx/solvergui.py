@@ -3,7 +3,7 @@ Controller class for the differnetial evolution class diffev
 Takes care of stopping and starting - output to the gui as well
 as some input from dialog boxes.
 Programmer Matts Bjorck
-Last Changed 2008 09 03
+Last Changed 2008 11 27
 '''
 import wx, StringIO, traceback
 import  wx.lib.newevent
@@ -245,6 +245,17 @@ class SolverController:
                 fitting = True,\
                 desc = 'Parameter Update', update_errors = False,\
                 permanent_change = False)
+        wx.PostEvent(self.parent, evt)
+        
+    def ModelLoaded(self):
+        '''ModelLoaded(self) --> None
+        
+        Function that takes care of resetting everything when a model has
+        been loaded.
+        '''
+        evt = update_plot(model = self.optimizer.get_model(), \
+                fom_log = self.optimizer.get_fom_log(), update_fit = False,\
+                desc = 'Fitting update')
         wx.PostEvent(self.parent, evt)
         
     def AutoSave(self):

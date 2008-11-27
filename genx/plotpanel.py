@@ -734,7 +734,7 @@ class ErrorPlotPanel(PlotPanel):
         else:            
             #print 'plotting ...', data
             self.ax.plot(data[:,0],data[:,1], '-r')
-            if self.GetAutoScale():
+            if self.GetAutoScale() and len(data) > 0:
                 self.ax.set_ylim(data[:,1].min()*0.95, data[:,1].max()*1.05)
                 self.ax.set_xlim(data[:,0].min(), data[:,0].max())
                 #self.AutoScale()

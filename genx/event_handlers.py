@@ -97,6 +97,8 @@ def on_new_model(frame, event):
     '''
     # Set the string in the script_editor
     frame.script_editor.SetText(event.GetModel().get_script())
+    # Let the solvergui do its loading and updating:
+    frame.solver_control.ModelLoaded()
     # Let other event handlers recieve the event as well
     event.Skip()
 
@@ -583,8 +585,10 @@ def fom_value(frame, event):
     Callback to update the fom_value displayed by the gui
     '''
     fom_value = event.model.fom
-    frame.main_frame_fom_text.SetLabel('        FOM: %.4e'%fom_value)
-    
+    if fom_value:
+        frame.main_frame_fom_text.SetLabel('        FOM: %.4e'%fom_value)
+    else:
+        frame.main_frame_fom_text.SetLabel('        FOM: None')
 def point_pick(frame, event):
     '''point_pick(frame, event) --> None
     Callback for the picking of a data point in a plotting window.
