@@ -12,19 +12,17 @@ import StringIO
 #==============================================================================
 def save_gx(fname, model, optimizer, config):
     model.save(fname)
-    model.save_addition('optimizer', optimizer.pickle_string())
     model.save_addition('config', config.model_dump())
+    model.save_addition('optimizer', optimizer.pickle_string())
+    
     
 
 # Not yet used ...
 def load_gx(fname, model, optimizer, config):
-    model.load(dlg.GetPath())
-    try:
-        optimizer.pickle_load(model.load_addition('optimizer'))
-    except Exception, e:
-        ShowNotificationDialog(frame, 'The optimizer could not be loaded'\
-                'from the saved file')
-    config.load_model(model.load_addition('config'))
+    model.load(fname)
+    config.load_model(model.load_addition('config'))   
+    optimizer.pickle_load(model.load_addition('optimizer'))
+
 
 
 #==============================================================================

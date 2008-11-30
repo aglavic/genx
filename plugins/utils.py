@@ -59,6 +59,13 @@ class PluginHandler:
                         + self.plugin_folder) if '.py' == s[-3:] 
                         and s[:2] != '__']
         return plugins
+    
+    def get_loaded_plugins(self):
+        '''get_loaded_plugins(self) --> plugins [list]
+        
+        returns a list of the loaded plugins
+        '''
+        return self.loaded_plugins.keys()
         
     def load_plugin(self, plugin_name):
         '''load_plugin(self, plugin_name) --> plugin object
@@ -77,7 +84,7 @@ class PluginHandler:
         Returns True if plugin with name plugin_name is loaded, 
         otherwise False.
         '''
-        return self.loaded_plugins(plugin_name)
+        return self.loaded_plugins.has_key(plugin_name)
     
     def _load_module(self, module_name):
         ''' _load_module(self, module) --> module

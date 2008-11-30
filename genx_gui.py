@@ -282,7 +282,7 @@ class MainFrame(wx.Frame):
         self.solver_control = solvergui.SolverController(self, self.config)
     
         self.plugin_control = \
-                add_on.PluginController(self, mb_set_plugins)
+                add_on.PluginController(self, mb_set_plugins, self.config)
         
         # Bind all the events that are needed to occur when a new model has
         # been loaded
@@ -474,9 +474,12 @@ class MainFrame(wx.Frame):
             self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
             self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*6.0/10.)
             self.Centre()
+        ## Begin Manual Config
         #Gravity sets how much the upper/left window is resized default 0
         self.hor_splitter.SetSashGravity(0.75)
+        self.plugin_control.LoadDefaultPlugins()
         #self.Maximize()
+        ## End Manual Config
 
             
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>

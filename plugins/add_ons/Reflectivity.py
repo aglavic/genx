@@ -1,4 +1,4 @@
-''' <h1>Refelctivity plugin </h1>
+''' <h1>Reflectivity plugin </h1>
 Reflectivity is a plugin for providing a graphical user
 interface to define multilayer structures in GenX. It works
 on quite general principels with dynamic generation of the
@@ -1181,7 +1181,10 @@ class Plugin(framework.Template):
         sld_sizer.Add(self.sld_plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
         sld_plot_panel.Layout()
         
-        self.CreateNewModel()
+        if self.model_obj.filename != '' and self.model_obj.script != '':
+            self.ReadModel()
+        else:
+            self.CreateNewModel()
         
         self.StatusMessage('Reflectivity plugin loaded')
         
@@ -1318,6 +1321,7 @@ class Plugin(framework.Template):
         code = 'cp = UserVars()\n'
         code += ''.join([line + '\n' for line in\
             self.simulation_widget.GetParameterList()])
+        #print self.simulation_widget.GetParameterList()
         script = self.insert_code_segment(script, 'Parameters', code)
         
         for (i,exps) in enumerate(self.simulation_widget.GetExpressionList()):
@@ -1552,8 +1556,8 @@ class Plugin(framework.Template):
             return
         # Load the custom parameters:
         code = self.find_code_segment(script, 'Parameters')
-        uservars_lines = code[1:].splitlines()
-
+        uservars_lines = code.splitlines()[1:]
+        
         self.model = self.GetModel().script_module.model
         sample = self.GetModel().script_module.sample
         

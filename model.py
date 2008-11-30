@@ -80,26 +80,26 @@ class Model:
         try:
             loadfile = zipfile.ZipFile(filename, 'r')
         except StandardError, e:
-            raise IOError(str(e), filename)
+            raise IOError('Could not open file.', filename)
         try:
             new_data = pickle.loads(loadfile.read('data'))
             self.data.safe_copy(new_data)
         except StandardError, e:
-            raise IOError(str(e), filename)
+            raise IOError('Could not locate the data section.', filename)
         try:
             self.script = pickle.loads(loadfile.read('script'))
         except StandardError, e:
-            raise IOError(str(e), filename)
+            raise IOError('Could not locate the script.', filename)
         
         try:
             new_parameters = pickle.loads(loadfile.read('parameters'))
             self.parameters.safe_copy(new_parameters)
         except StandardError:
-            raise IOError(str(e), filename)
+            raise IOError('Could not locate the parameters section.', filename)
         try:
             self.fom_func = pickle.loads(loadfile.read('fomfunction'))
         except StandardError:
-           raise IOError(str(e), filename)
+           raise IOError('Could not locate the fomfunction section.', filename)
         
         loadfile.close()
         
@@ -177,12 +177,13 @@ class Model:
         try:
             loadfile = zipfile.ZipFile(self.filename, 'r')
         except StandardError, e:
-            raise IOError(str(e), self.filename)
+            raise IOError('Could not open the file', self.filename)
         
         try:
             text = loadfile.read(name)
         except StandardError, e:
-            raise IOError(str(e), self.filename)
+            raise IOError('Could not read the section named: %s'%name,\
+                            self.filename)
         loadfile.close()
         return text
         
