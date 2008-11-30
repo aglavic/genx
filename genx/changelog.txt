@@ -1,3 +1,19 @@
+2008-11-30:
+    Changes to the Reflectivty plugin. It now tries to load an existing model
+    when the plugin is loaded.
+    The loaded plugins is also saved as the model is saved and are tried to
+    be loded when the model loaded again. Also it is possible to define 
+    default plugins in genx.conf.
+    Found a bug in reflectivity plugin:
+    The parameter section got many: "p = UserVars()" upon saving. Fixed
+
+2008-11-28:
+    Fixed the Key error given when shutting GenX down. Due to that the pool
+    of workers where living in a thread. When removed from that thread the
+    error disappeared.
+    Added alot of error checking for loading and saving files. Should be almost
+    idiot proof now.
+
 2008-11-27:
     Added Ibkg to the interdiff model (not implemented previously)
     Added revival of the FOM vs generations plot after loading of data.

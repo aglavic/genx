@@ -65,21 +65,45 @@ def open(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
-        frame.model.load(dlg.GetPath())
         try:
-            frame.solver_control.optimizer.pickle_load(\
-                                    frame.model.load_addition('optimizer'))
+            io.load_gx(path, frame.model,\
+                                frame.solver_control.optimizer,\
+                                frame.config)
+        except modellib.IOError, e:
+            ShowModelErrorDialog(frame, e.__str__())
         except Exception, e:
-            ShowNotificationDialog(frame, 'The optimizer could not be loaded'\
-                'from the saved file')
-        frame.config.load_model(frame.model.load_addition('config'))
-        [p.ReadConfig() for p in get_pages(frame)]
+            outp = StringIO.StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            ShowErrorDialog(frame, 'Could not open the file. Python Error:'\
+                        '\n%s'%(val,))
+            return
+        try:
+            [p.ReadConfig() for p in get_pages(frame)]
+        except Exception, e:
+            outp = StringIO.StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            ShowErrorDialog(frame, 'Could not read the config for the'
+                    ' plots. Python Error:\n%s'%(val,))
         # Letting the plugin do their stuff...
-        frame.plugin_control.OnOpenModel(None)
-        frame.main_frame_statusbar.SetStatusText('Model loaded from file', 1)
+        try:
+            frame.plugin_control.OnOpenModel(None)
+        except Exception, e:
+            outp = StringIO.StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            ShowErrorDialog(frame, 'Problems when plugins processed model.'\
+                        ' Python Error:\n%s'%(val,))
+        frame.main_frame_statusbar.SetStatusText('Model loaded from file',\
+                                                1)
         # Post an event to update everything else
         _post_new_model_event(frame, frame.model)
-        # Needs to put it to saved since all the widgets will have been updated
+        # Needs to put it to saved since all the widgets will have 
+        # been updated
         frame.model.saved = True
         set_title(frame)
         
@@ -116,14 +140,19 @@ def save(frame, event):
         save_as(frame, event)
     else:
         # If it has been saved just save it
-        #frame.model.save(fname)
-        io.save_gx(fname, frame.model, frame.solver_control.optimizer,\
+        try:
+            io.save_gx(fname, frame.model, frame.solver_control.optimizer,\
                         frame.config)
+        except modellib.IOError, e:
+            ShowModelErrorDialog(frame, e.__str__())
+        except Exception, e:
+            outp = StringIO.StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            ShowErrorDialog(frame, 'Could not save the file. Python Error:'\
+                        '\n%s'%(val,))
         set_title(frame)
-        
-        #frame.model.save_addition('optimizer',\
-        #                        frame.solver_control.optimizer.pickle_string())
-        #frame.model.save_addition('config', frame.config.model_dump())
         
     frame.main_frame_statusbar.SetStatusText('Model saved to file', 1)
     
@@ -147,14 +176,20 @@ def save_as(frame, event):
             'The file %s already exists. Do you wish to overwrite it?'%filename\
             , 'Overwrite?')
         if result:
-            #frame.model.save(fname)
-            io.save_gx(fname, frame.model, frame.solver_control.optimizer,\
+            try:
+                io.save_gx(fname, frame.model, frame.solver_control.optimizer,\
                         frame.config)
+            except modellib.IOError, e:
+                ShowModelErrorDialog(frame, e.__str__())
+            except Exception, e:
+                outp = StringIO.StringIO()
+                traceback.print_exc(200, outp)
+                val = outp.getvalue()
+                outp.close()
+                ShowErrorDialog(frame, 'Could not save the file. Python Error:'\
+                            '\n%s'%(val,))
             set_title(frame)
-            #frame.model.save_addition('optimizer',\
-            #                    frame.solver_control.optimizer.pickle_string())
-            #frame.model.save_addition('config', frame.config.model_dump())
-            #frame.main_frame_statusbar.SetStatusText('Model Saved to file', 1)
+        
     dlg.Destroy()
     
 def export_data(frame, event):

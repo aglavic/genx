@@ -219,7 +219,7 @@ class PluginController:
     so we can load and unload modules as well as
     update the module list.
     '''
-    def __init__(self, parent, menu):
+    def __init__(self, parent, menu, config):
         '''__init__(self, parent, menu) --> None
         
         Insertes menuitems for controlling plugins in menu. 
@@ -228,6 +228,7 @@ class PluginController:
         self.plugin_handler = PluginHandler(parent, __MODULE_DIR__ \
                             , 'add_ons')
         self.parent = parent
+        self.config = config
         
         # make the menus
         self.load_menu = wx.Menu()
@@ -238,6 +239,8 @@ class PluginController:
         menu.Append(-1, 'Update module list')
         
         self.update_plugins()
+        
+        
         
     def update_plugins(self):
         '''update_modules(self) --> None
@@ -255,6 +258,8 @@ class PluginController:
         for mod in modlist:
             menu = self.load_menu.Append(-1, mod)
             self.parent.Bind(wx.EVT_MENU, self.LoadPlugin, menu)
+        
+        self.update_config()
             
     def RegisterPlugin(self, plugin):
         ''' RegisterPlugin(self, plugin) --> None
@@ -264,6 +269,48 @@ class PluginController:
         menu = self.unload_menu.Append(-1, plugin)
         self.parent.Bind(wx.EVT_MENU, self.UnLoadPlugin, menu)
         self.update_plugins()
+        
+        
+    def update_config(self):
+        '''update_config(self) --> None
+        
+        Updates the config object
+        '''
+        loaded_plugins = self.plugin_handler.get_loaded_plugins()
+        plugins_str = ';'.join(loaded_plugins)
+        self.config.set('plugins', 'loaded plugins', plugins_str)
+    
+    def LoadDefaultPlugins(self):
+        '''LoadDefaultPlugins(self) --> None
+        
+        Tries to load the default plugins from the config object
+        if they are not already loaded.
+        '''
+        plugin_str = self.config.get('plugins', 'loaded plugins')
+        # Check so we have any plugins to load else bail out
+        if plugin_str == '':
+            return
+        existing_plugins = self.plugin_handler.get_possible_plugins()
+        
+        for plugin in plugin_str.split(';'):
+            # Check so the plugin is not loaded and that is exist 
+            if not self.plugin_handler.is_loaded(plugin):
+                if plugin in existing_plugins:
+                    try:
+                        self.plugin_handler.load_plugin(plugin)
+                    except:
+                        outp = StringIO.StringIO()
+                        traceback.print_exc(200, outp)
+                        tbtext = outp.getvalue()
+                        outp.close()
+                        ShowErrorDialog(self.parent, 'Can NOT load plugin '\
+                         + plugin + '\nPython traceback below:\n\n' + tbtext)
+                        self.RegisterPlugin(plugin)
+                else:
+                    ShowInfoDialog(self.parent, 'Could not find plugin "%s"'\
+                        '. Either there is an error in the config file'\
+                        ' or the plugin is not installed.'%(plugin))
+        self.update_config()
         
     # Callbacks
     def LoadPlugin(self, event):
@@ -283,7 +330,8 @@ class PluginController:
             outp.close()
             ShowErrorDialog(self.parent, 'Can NOT load plugin ' + plugin\
              + '\nPython traceback below:\n\n' + tbtext)
-        self.RegisterPlugin(plugin)
+        else:
+            self.RegisterPlugin(plugin)
             
     def UnLoadPlugin(self, event):
         '''UnLoadPlugin(self, event) --> None
@@ -327,9 +375,10 @@ class PluginController:
         '''OnOpenModel(self, event) --> None
         
         Runs plugin code when the user tries to open a model 
-        '''
+        '''        
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
+        self.LoadDefaultPlugins()
             
     def OnSimulate(self, event):
         '''OnOpenModel(self, event) --> None

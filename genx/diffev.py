@@ -246,6 +246,19 @@ class DiffEv:
         # Remeber that everything has been setup ok
         self.setup_ok = True
         
+    def init_fom_eval(self):
+        '''init_fom_eval(self) --> None
+        
+        Makes the eval_fom function
+        '''
+        # Setting up for parallel processing
+        if self.use_parallel_processing:
+            self.text_output('Setting up a pool of workers ...')
+            self.setup_parallel()
+            self.eval_fom = self.calc_trial_fom_parallel
+        else:
+            self.eval_fom = self.calc_trial_fom
+        
     def start_fit(self, model):
         '''
         Starts fitting in a seperate thred.
@@ -255,6 +268,7 @@ class DiffEv:
             #Initilize the parameters to fit
             self.reset()
             self.init_fitting(model)
+            self.init_fom_eval()
             self.stop = False
             # Start fitting in a new thread
             thread.start_new_thread(self.optimize, ())
@@ -286,6 +300,7 @@ class DiffEv:
         if not self.running:
             self.stop = False
             self.connect_model(model)
+            self.init_fom_eval()
             n_dim_old = self.n_dim
             if self.n_dim == n_dim_old:
                 thread.start_new_thread(self.optimize, ())
@@ -306,13 +321,6 @@ class DiffEv:
         algorithm. Note that this method does not run in a separate thread.
         For threading use start_fit, stop_fit and resume_fit instead.
         '''
-        # Setting up for parallel processing
-        if self.use_parallel_processing:
-            self.text_output('Setting up a pool of workers ...')
-            self.setup_parallel()
-            eval_fom = self.calc_trial_fom_parallel
-        else:
-            eval_fom = self.calc_trial_fom
             
         self.text_output('Calculating start FOM ...')
         self.running = True
@@ -353,7 +361,7 @@ class DiffEv:
             # Create the vectors who will be compared to the 
             # population vectors
             self.trial_vec = [self.create_trial(vec) for vec in self.pop_vec]
-            eval_fom()
+            self.eval_fom()
             # Calculate the fom of the trial vectors and update the population
             [self.update_pop(index) for index in range(self.n_pop)]
             
@@ -394,6 +402,7 @@ class DiffEv:
         # Lets clean up and delete our pool of workers
         if self.use_parallel_processing:
             self.dismount_parallel()
+        self.eval_fom = None
         
         # Now the optimization has stopped
         self.running = False
@@ -450,7 +459,7 @@ class DiffEv:
         self.pool.close()
         self.pool.join()
         
-        del self.pool
+        #del self.pool
     
     def calc_trial_fom_parallel(self):
         '''calc_trial_fom_parallel(self) --> None
