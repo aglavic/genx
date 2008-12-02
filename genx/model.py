@@ -416,6 +416,8 @@ class Model:
         # The most important stuff - a module is not pickable
         model_copy.script_module = None
         model_copy.filename = self.filename
+        model_copy.compiled = self.compiled
+        mode_copy.fom = self.fom
         model_copy.saved = self.saved
         
         return model_copy

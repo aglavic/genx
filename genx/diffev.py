@@ -842,7 +842,7 @@ def parallel_init(model_copy):
     global model, par_funcs
     model = model_copy
     model._reset_module()
-    model.compile_script()
+    model.simulate()
     (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars()
     #print 'Sucess!'
     
