@@ -4,6 +4,8 @@ from numpy import *
 # "Ordinary" implementaion of Parrats recursion formula
 # theta-vector, lamda- can be a vector,n-1Dvector, d-1Dvector, sigma-1Dvector
 def Refl(theta,lamda,n,d,sigma):
+    d=d[1:-1]
+    sigma=sigma[:-1]
     # Length of k-vector in vaccum
     k=2*math.pi/lamda
     # Calculates the wavevector in each layer
@@ -61,6 +63,8 @@ def ReflQ(Q,lamda,n,d,sigma):
 
 # Parrats recursion formula for varying n given by n_func-function
 def Refl_nvary(theta,lamda,n_func,d,sigma):
+    d=d[1:-1]
+    sigma=sigma[:-1]
     # Length of k-vector in vaccum
     k=2*math.pi/lamda
     # Calculates the wavevector in each layer
@@ -94,6 +98,8 @@ def Refl_nvary(theta,lamda,n_func,d,sigma):
     #return r
 
 def ReflProfiles(theta,lamda,n,d,sigma,profile):
+    d=d[1:-1]
+    sigma=sigma[:-1]
     # Length of k-vector in vaccum
     k=2*math.pi/lamda
     # Calculates the wavevector in each layer
@@ -137,6 +143,8 @@ def ReflProfiles(theta,lamda,n,d,sigma,profile):
 
 # paratts algorithm for n as function of lamda or theta
 def Refl_nvary2(theta,lamda,n_vector,d,sigma):
+    d=d[1:-1]
+    sigma=sigma[:-1]
     # Length of k-vector in vaccum
     k=2*math.pi/lamda
     # Calculates the wavevector in each layer
@@ -149,6 +157,7 @@ def Refl_nvary2(theta,lamda,n_vector,d,sigma):
     n=n_vector
     #print n
     Qj=2*k*sqrt(n**2-cos(theta*math.pi/180)**2)
+    #print sigma.shape, Qj.shape
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     #print rp.shape #For debugging

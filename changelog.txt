@@ -1,3 +1,13 @@
+2008-12-11:
+    Found a bug in the tof measurements for neutrons sigma and d had needed
+    some truncation in order to get them working. Fixed.
+    
+2008-12-10:
+    Fixed a bug that occured in my bugfix in the Reflectivty plugin from 
+    2008-11-21, spotted by Gunnar. 
+    Fixed bug in the optimizer saving routines, appeared only on windows and 
+    mac...
+
 2008-11-30:
     Changes to the Reflectivty plugin. It now tries to load an existing model
     when the plugin is loaded.
