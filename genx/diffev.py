@@ -171,6 +171,7 @@ class DiffEv:
         cpy.autosaves = None
         cpy.fitting_ended = None
         cpy.model = None
+        cpy.mutation_schemes = None
         
         return pickle.dumps(cpy)
     

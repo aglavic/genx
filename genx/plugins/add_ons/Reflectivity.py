@@ -273,7 +273,10 @@ class SampleHandler:
                         self.names.insert(pos+1,name)
                     else:
                         self.names.insert(pos+len(self.sample.Stacks[spos[0]].Layers)+1,name)
-                if spos[1] == 0:
+                #print 'spos ', spos
+                #print 'poslist ', self.poslist
+                if self.poslist[pos][1] == None:
+                    #print spos
                     self.sample.Stacks[spos[0]].Layers.append(layer)
                 else:
                     self.sample.Stacks[spos[0]].Layers.insert(spos[1], layer)
