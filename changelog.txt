@@ -1,3 +1,5 @@
+===============================================================================
+2009-01-14: GenX 2b5.1
 2008-12-11:
     Found a bug in the tof measurements for neutrons sigma and d had needed
     some truncation in order to get them working. Fixed.
