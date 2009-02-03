@@ -1,0 +1,1371 @@
+#F AtomicWeights.dat
+#D Thu Apr  3 11:57:33 2003
+#UT Atomic Weights and Isotopic Composition
+#UD   Atomic Weights and Isotopic Composition
+#UD   
+#UD   This file contains information about atomic weights of isotopes and
+#UD   relative abundance. 
+#UD   
+#UD   The data have been taken from: 
+#UD     Coursey, J. S., Schwab, D. J., and Dragoset, R. A. (2001), Atomic
+#UD     Weights and Isotopic Compositions (version 2.4). 
+#UD     [Online] Available:
+#UD     http://physics.nist.gov/Comp [2003, April 3]
+#UD     National Institute of Standards and Technology, Gaithersburg, MD.
+#UD  
+#UD   Originally published as T.B. Coplen, Atomic Weights of the Elements
+#UD     1999, Pure Appl. Chem. 73(4), 667 (2001); K.J.R. Rosman and P.D.P.
+#UD     Taylor, Isotopic Compositions of the Elements 1997, J. Phys. Chem. Ref.
+#UD     Data 27(6), 1275 (1998); and G. Audi and A.H. Wapstra, The 1995 Update
+#UD     To The Atomic Mass Evaluation, Nuclear Physics A 595(4), 409 (1995). 
+#UD   
+#UD   Data present in this file corresponds to the "most common isotopes".
+#UD   
+#UD   Column information: 
+#UD      Col1: AtomicMass: Relative atomic mass
+#UD      Col2: Abundance: isotopic composition in %
+#UD      Col3: AveragedAtomicMass: Standard Atomic Weight
+#S  1 1H
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    1.007825032140    99.98857000000    1.007947000000
+#S  1 2H
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    2.014101778040  0.01157000000000    1.007947000000
+#S  1 3H
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    3.016049267511    0.000000000000    1.007947000000
+#S  2 3He
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    3.016029309790 0.0001373000000000    4.002602200000
+#S  2 4He
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    4.002603249710    99.99986330000    4.002602200000
+#S  3 6Li
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    6.015122350000    7.594000000000    6.941200000000
+#S  3 7Li
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    7.016004050000    92.41400000000    6.941200000000
+#S  4 9Be
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    9.012182140000    100.0000000000    9.012182300000
+#S  5 10B
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    10.01293704000    19.97000000000    10.81170000000
+#S  5 11B
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    11.00930555000    80.17000000000    10.81170000000
+#S  6 12C
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    12.00000000000    98.93800000000    12.01078000000
+#S  6 13C
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    13.00335483781    1.078000000000    12.01078000000
+#S  6 14C
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    14.00324198840    0.000000000000    12.01078000000
+#S  7 14N
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    14.00307400529    99.63270000000    14.00672000000
+#S  7 15N
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    15.00010889849   0.3687000000000    14.00672000000
+#S  8 16O
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    15.99491462211    99.75716000000    15.99943000000
+#S  8 17O
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    16.99913150220  0.03810000000000    15.99943000000
+#S  8 18O
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    17.99916049000   0.2051400000000    15.99943000000
+#S  9 19F
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    18.99840320700    100.0000000000    18.99840325000
+#S  10 20Ne
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    19.99244017592    90.48300000000    20.17976000000
+#S  10 21Ne
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    20.99384674400   0.2710000000000    20.17976000000
+#S  10 22Ne
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    21.99138551230    9.253000000000    20.17976000000
+#S  11 23Na
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    22.98976967230    100.0000000000    22.98977020000
+#S  12 24Mg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    23.98504190200    78.99400000000    24.30506000000
+#S  12 25Mg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    24.98583702200    10.00100000000    24.30506000000
+#S  12 26Mg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    25.98259304210    11.01300000000    24.30506000000
+#S  13 27Al
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    26.98153844140    100.0000000000    26.98153820000
+#S  14 28Si
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    27.97692653272    92.22977000000    28.08553000000
+#S  14 29Si
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    28.97649472300    4.683250000000    28.08553000000
+#S  14 30Si
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    29.97377022500    3.087250000000    28.08553000000
+#S  15 31P
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    30.97376151200    100.0000000000    30.97376120000
+#S  16 32S
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    31.97207069120    94.93310000000    32.06550000000
+#S  16 33S
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    32.97145850120   0.7620000000000    32.06550000000
+#S  16 34S
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    33.96786683110    4.292800000000    32.06550000000
+#S  16 36S
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    35.96708088250  0.02100000000000    32.06550000000
+#S  17 35Cl
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    34.96885271400    75.78400000000    35.45320000000
+#S  17 37Cl
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    36.96590260500    24.22400000000    35.45320000000
+#S  18 36Ar
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    35.96754628270   0.3365300000000    39.94810000000
+#S  18 38Ar
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    37.96273225000  0.06325000000000    39.94810000000
+#S  18 40Ar
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    39.96238312330    99.60033000000    39.94810000000
+#S  19 39K
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    38.96370693000    93.25814400000    39.09831000000
+#S  19 40K
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    39.96399867290  0.01171000000000    39.09831000000
+#S  19 41K
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    40.96182597280    6.730244000000    39.09831000000
+#S  20 40Ca
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    39.96259123000    96.94115600000    40.07840000000
+#S  20 42Ca
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    41.95861834000   0.6472300000000    40.07840000000
+#S  20 43Ca
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    42.95876685000   0.1351000000000    40.07840000000
+#S  20 44Ca
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    43.95548119000    2.086110000000    40.07840000000
+#S  20 46Ca
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    45.95369282500 0.004300000000000    40.07840000000
+#S  20 48Ca
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    47.95253440000   0.1872100000000    40.07840000000
+#S  21 45Sc
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    44.95591021200    100.0000000000    44.95591080000
+#S  22 46Ti
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    45.95262951200    8.253000000000    47.86710000000
+#S  22 47Ti
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    46.95176381000    7.442000000000    47.86710000000
+#S  22 48Ti
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    47.94794711000    73.72300000000    47.86710000000
+#S  22 49Ti
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    48.94787081000    5.412000000000    47.86710000000
+#S  22 50Ti
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    49.94479211100    5.182000000000    47.86710000000
+#S  23 50V
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    49.94716281400   0.2504000000000    50.94151000000
+#S  23 51V
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    50.94396371400    99.75040000000    50.94151000000
+#S  24 50Cr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    49.94604961400    4.345130000000    51.99616000000
+#S  24 52Cr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    51.94051191500    83.78918000000    51.99616000000
+#S  24 53Cr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    52.94065381500    9.501170000000    51.99616000000
+#S  24 54Cr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    53.93888491500    2.365700000000    51.99616000000
+#S  25 55Mn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    54.93804961400    100.0000000000    54.93804990000
+#S  26 54Fe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    53.93961481400    5.845350000000    55.84520000000
+#S  26 56Fe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    55.93494211500    91.75436000000    55.84520000000
+#S  26 57Fe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    56.93539871500    2.119100000000    55.84520000000
+#S  26 58Fe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    57.93328051500   0.2824000000000    55.84520000000
+#S  27 59Co
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    58.93320021500    100.0000000000    58.93320090000
+#S  28 58Ni
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    57.93534791500    68.07698900000    58.69342000000
+#S  28 60Ni
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    59.93079061500    26.22317700000    58.69342000000
+#S  28 61Ni
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    60.93106041500    1.139960000000    58.69342000000
+#S  28 62Ni
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    61.92834881500    3.634517000000    58.69342000000
+#S  28 64Ni
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    63.92796961600   0.9256900000000    58.69342000000
+#S  29 63Cu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    62.92960111500    69.17300000000    63.54630000000
+#S  29 65Cu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    64.92779371900    30.83300000000    63.54630000000
+#S  30 64Zn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    63.92914661800    48.63600000000    65.39200000000
+#S  30 66Zn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    65.92603681600    27.90270000000    65.39200000000
+#S  30 67Zn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    66.92713091700    4.101300000000    65.39200000000
+#S  30 68Zn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    67.92484761700    18.75510000000    65.39200000000
+#S  30 70Zn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    69.92532540000   0.6230000000000    65.39200000000
+#S  31 69Ga
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    68.92558130000    60.10890000000    69.72310000000
+#S  31 71Ga
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    70.92470501900    39.89290000000    69.72310000000
+#S  32 70Ge
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    69.92425041900    20.84870000000    72.64100000000
+#S  32 72Ge
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    71.92207621600    27.54340000000    72.64100000000
+#S  32 73Ge
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    72.92345941600    7.735000000000    72.64100000000
+#S  32 74Ge
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    73.92117821600    36.28730000000    72.64100000000
+#S  32 76Ge
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    75.92140271600    7.613800000000    72.64100000000
+#S  33 75As
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    74.92159641800    100.0000000000    74.92160200000
+#S  34 74Se
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    73.92247661600   0.8940000000000    78.96300000000
+#S  34 76Se
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    75.91921411600    9.372900000000    78.96300000000
+#S  34 77Se
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    76.91991461600    7.631600000000    78.96300000000
+#S  34 78Se
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    77.91730951600    23.77280000000    78.96300000000
+#S  34 80Se
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    79.91652182000    49.61410000000    78.96300000000
+#S  34 82Se
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    81.91670002200    8.732200000000    78.96300000000
+#S  35 79Br
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    78.91833762000    50.69700000000    79.90410000000
+#S  35 81Br
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    80.91629130000    49.31700000000    79.90410000000
+#S  36 78Kr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    77.92038670000   0.3510000000000    83.80100000000
+#S  36 80Kr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    79.91637840000    2.286000000000    83.80100000000
+#S  36 82Kr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    81.91348462800    11.58140000000    83.80100000000
+#S  36 83Kr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    82.91413630000    11.49600000000    83.80100000000
+#S  36 84Kr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    83.91150730000    57.00400000000    83.80100000000
+#S  36 86Kr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    85.91061031200    17.30220000000    83.80100000000
+#S  37 85Rb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    84.91178932500    72.17200000000    85.46783000000
+#S  37 87Rb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    86.90918352700    27.83200000000    85.46783000000
+#S  38 84Sr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    83.91342540000   0.5610000000000    87.62100000000
+#S  38 86Sr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    85.90926242400    9.861000000000    87.62100000000
+#S  38 87Sr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    86.90887932400    7.001000000000    87.62100000000
+#S  38 88Sr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    87.90561432400    82.58100000000    87.62100000000
+#S  39 89Y
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    88.90584792500    100.0000000000    88.90585200000
+#S  40 90Zr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    89.90470372300    51.45400000000    91.22420000000
+#S  40 91Zr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    90.90564502300    11.22500000000    91.22420000000
+#S  40 92Zr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    91.90504012300    17.15800000000    91.22420000000
+#S  40 93Zr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    92.90647562300    0.000000000000    91.22420000000
+#S  40 94Zr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    93.90631582500    17.38280000000    91.22420000000
+#S  40 96Zr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    95.90827630000    2.809000000000    91.22420000000
+#S  41 93Nb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    92.90637752400    100.0000000000    92.90638200000
+#S  42 92Mo
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    91.90681040000    14.84350000000    95.94100000000
+#S  42 94Mo
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    93.90508762000    9.251200000000    95.94100000000
+#S  42 95Mo
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    94.90584152000    15.92130000000    95.94100000000
+#S  42 96Mo
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    95.90467892000    16.68200000000    95.94100000000
+#S  42 97Mo
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    96.90602102000    9.558000000000    95.94100000000
+#S  42 98Mo
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    97.90540782000    24.13310000000    95.94100000000
+#S  42 100Mo
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    99.90747760000    9.632300000000    95.94100000000
+#S  43 97Tc
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    96.90636550000    0.000000000000    98.00000000000
+#S  43 98Tc
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    97.90721640000    0.000000000000    98.00000000000
+#S  43 99Tc
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    98.90625462100    0.000000000000    98.00000000000
+#S  44 96Ru
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    95.90759880000    5.541400000000    101.0720000000
+#S  44 98Ru
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    97.90528770000    1.873000000000    101.0720000000
+#S  44 99Ru
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    98.90593932100    12.76140000000    101.0720000000
+#S  44 100Ru
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    99.90421972200    12.60700000000    101.0720000000
+#S  44 101Ru
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    100.9055822220    17.06200000000    101.0720000000
+#S  44 102Ru
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    101.9043495220    31.55140000000    101.0720000000
+#S  44 104Ru
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    103.9054304000    18.62270000000    101.0720000000
+#S  45 103Rh
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    102.9055043000    100.0000000000    102.9055020000
+#S  46 102Pd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    101.9056083000    1.021000000000    106.4210000000
+#S  46 104Pd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    103.9040355000    11.14800000000    106.4210000000
+#S  46 105Pd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    104.9050845000    22.33800000000    106.4210000000
+#S  46 106Pd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    105.9034835000    27.33300000000    106.4210000000
+#S  46 108Pd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    107.9038944000    26.46900000000    106.4210000000
+#S  46 110Pd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    109.9051521200    11.72900000000    106.4210000000
+#S  47 107Ag
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    106.9050936000    51.83980000000    107.8682200000
+#S  47 109Ag
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    108.9047563000    48.16180000000    107.8682200000
+#S  48 106Cd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    105.9064586000    1.256000000000    112.4118000000
+#S  48 108Cd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    107.9041836000   0.8930000000000    112.4118000000
+#S  48 110Cd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    109.9030063000    12.49180000000    112.4118000000
+#S  48 111Cd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    110.9041823000    12.80120000000    112.4118000000
+#S  48 112Cd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    111.9027572300    24.13210000000    112.4118000000
+#S  48 113Cd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    112.9044009300    12.22120000000    112.4118000000
+#S  48 114Cd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    113.9033581300    28.73420000000    112.4118000000
+#S  48 116Cd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    115.9047553000    7.491800000000    112.4118000000
+#S  49 113In
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    112.9040614000    4.295000000000    114.8183000000
+#S  49 115In
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    114.9038785000    95.71500000000    114.8183000000
+#S  50 112Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    111.9048215000   0.9710000000000    118.7107000000
+#S  50 114Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    113.9027823000   0.6610000000000    118.7107000000
+#S  50 115Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    114.9033463000   0.3410000000000    118.7107000000
+#S  50 116Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    115.9017443000    14.54900000000    118.7107000000
+#S  50 117Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    116.9029543000    7.687000000000    118.7107000000
+#S  50 118Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    117.9016063000    24.22900000000    118.7107000000
+#S  50 119Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    118.9033093000    8.594000000000    118.7107000000
+#S  50 120Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    119.9021966270    32.58900000000    118.7107000000
+#S  50 122Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    121.9034401290    4.633000000000    118.7107000000
+#S  50 124Sn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    123.9052746150    5.795000000000    118.7107000000
+#S  51 121Sb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    120.9038180240    57.21500000000    121.7601000000
+#S  51 123Sb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    122.9042157220    42.79500000000    121.7601000000
+#S  52 120Te
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    119.9040201100  0.09100000000000    127.6030000000
+#S  52 122Te
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    121.9030471200    2.551200000000    127.6030000000
+#S  52 123Te
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    122.9042730190   0.8930000000000    127.6030000000
+#S  52 124Te
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    123.9028195160    4.741400000000    127.6030000000
+#S  52 125Te
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    124.9044247200    7.071500000000    127.6030000000
+#S  52 126Te
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    125.9033055200    18.84250000000    127.6030000000
+#S  52 128Te
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    127.9044614190    31.74800000000    127.6030000000
+#S  52 130Te
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    129.9062228210    34.08620000000    127.6030000000
+#S  53 127I
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    126.9044684000    100.0000000000    126.9044730000
+#S  54 124Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    123.9058958210  0.09100000000000    131.2936000000
+#S  54 126Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    125.9042697000  0.09100000000000    131.2936000000
+#S  54 128Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    127.9035304150    1.923000000000    131.2936000000
+#S  54 129Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    128.9047795900    26.44240000000    131.2936000000
+#S  54 130Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    129.9035079100    4.082000000000    131.2936000000
+#S  54 131Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    130.9050819100    21.18300000000    131.2936000000
+#S  54 132Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    131.9041545120    26.89600000000    131.2936000000
+#S  54 134Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    133.9053945900    10.44100000000    131.2936000000
+#S  54 136Xe
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    135.9072208000    8.871600000000    131.2936000000
+#S  55 133Cs
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    132.9054473000    100.0000000000    132.9054520000
+#S  56 130Ba
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    129.9063107000   0.1061000000000    137.3277000000
+#S  56 132Ba
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    131.9050563000   0.1011000000000    137.3277000000
+#S  56 134Ba
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    133.9045033000    2.417180000000    137.3277000000
+#S  56 135Ba
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    134.9056833000    6.592120000000    137.3277000000
+#S  56 136Ba
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    135.9045703000    7.854240000000    137.3277000000
+#S  56 137Ba
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    136.9058213000    11.23224000000    137.3277000000
+#S  56 138Ba
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    137.9052413000    71.69842000000    137.3277000000
+#S  57 138La
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    137.9071074000  0.09010000000000    138.9055200000
+#S  57 139La
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    138.9063483000    99.91010000000    138.9055200000
+#S  58 136Ce
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    135.9071405000   0.1852000000000    140.1161000000
+#S  58 138Ce
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    137.9059861100   0.2512000000000    140.1161000000
+#S  58 140Ce
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    139.9054343000    88.45051000000    140.1161000000
+#S  58 142Ce
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    141.9092404000    11.11451000000    140.1161000000
+#S  59 141Pr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    140.9076483000    100.0000000000    140.9076520000
+#S  60 142Nd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    141.9077193000    27.25000000000    144.2430000000
+#S  60 143Nd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    142.9098103000    12.22000000000    144.2430000000
+#S  60 144Nd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    143.9100833000    23.83000000000    144.2430000000
+#S  60 145Nd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    144.9125693000    8.310000000000    144.2430000000
+#S  60 146Nd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    145.9131123000    17.23000000000    144.2430000000
+#S  60 148Nd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    147.9168893000    5.710000000000    144.2430000000
+#S  60 150Nd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    149.9208874000    5.620000000000    144.2430000000
+#S  61 145Pm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    144.9127444000    0.000000000000    145.0000000000
+#S  61 147Pm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    146.9151343000    0.000000000000    145.0000000000
+#S  62 144Sm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    143.9119954000    3.077000000000    150.3630000000
+#S  62 147Sm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    146.9148933000    14.99180000000    150.3630000000
+#S  62 148Sm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    147.9148183000    11.24100000000    150.3630000000
+#S  62 149Sm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    148.9171803000    13.82700000000    150.3630000000
+#S  62 150Sm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    149.9172713000    7.381000000000    150.3630000000
+#S  62 152Sm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    151.9197283000    26.75160000000    150.3630000000
+#S  62 154Sm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    153.9222053000    22.75290000000    150.3630000000
+#S  63 151Eu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    150.9198463000    47.81300000000    151.9641000000
+#S  63 153Eu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    152.9212263000    52.19300000000    151.9641000000
+#S  64 152Gd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    151.9197883000   0.2010000000000    157.2530000000
+#S  64 154Gd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    153.9208623000    2.183000000000    157.2530000000
+#S  64 155Gd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    154.9226193000    14.80120000000    157.2530000000
+#S  64 156Gd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    155.9221203000    20.47900000000    157.2530000000
+#S  64 157Gd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    156.9239573000    15.65200000000    157.2530000000
+#S  64 158Gd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    157.9241013000    24.84700000000    157.2530000000
+#S  64 160Gd
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    159.9270513000    21.86190000000    157.2530000000
+#S  65 159Tb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    158.9253433000    100.0000000000    158.9253420000
+#S  66 156Dy
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    155.9242787000  0.06100000000000    162.5030000000
+#S  66 158Dy
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    157.9244054000   0.1010000000000    162.5030000000
+#S  66 160Dy
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    159.9251943000    2.348000000000    162.5030000000
+#S  66 161Dy
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    160.9269303000    18.91240000000    162.5030000000
+#S  66 162Dy
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    161.9267953000    25.51260000000    162.5030000000
+#S  66 163Dy
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    162.9287283000    24.90160000000    162.5030000000
+#S  66 164Dy
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    163.9291713000    28.18370000000    162.5030000000
+#S  67 165Ho
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    164.9303193000    100.0000000000    164.9303220000
+#S  68 162Er
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    161.9287754000   0.1410000000000    167.2593000000
+#S  68 164Er
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    163.9291974000    1.613000000000    167.2593000000
+#S  68 166Er
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    165.9302903000    33.61350000000    167.2593000000
+#S  68 167Er
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    166.9320453000    22.93170000000    167.2593000000
+#S  68 168Er
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    167.9323683000    26.78260000000    167.2593000000
+#S  68 170Er
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    169.9354603000    14.93270000000    167.2593000000
+#S  69 169Tm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    168.9342113000    100.0000000000    168.9342120000
+#S  70 168Yb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    167.9338945000   0.1310000000000    173.0430000000
+#S  70 170Yb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    169.9347593000    3.041500000000    173.0430000000
+#S  70 171Yb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    170.9363223000    14.28570000000    173.0430000000
+#S  70 172Yb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    171.9363777300    21.83670000000    173.0430000000
+#S  70 173Yb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    172.9382068300    16.13270000000    173.0430000000
+#S  70 174Yb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    173.9388581300    31.83920000000    173.0430000000
+#S  70 176Yb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    175.9425683000    12.76410000000    173.0430000000
+#S  71 175Lu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    174.9407679280    97.41200000000    174.9671000000
+#S  71 176Lu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    175.9426824280    2.592000000000    174.9671000000
+#S  72 174Hf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    173.9400403000   0.1610000000000    178.4920000000
+#S  72 176Hf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    175.9414018290    5.267000000000    178.4920000000
+#S  72 177Hf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    176.9432200270    18.60900000000    178.4920000000
+#S  72 178Hf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    177.9436977270    27.28700000000    178.4920000000
+#S  72 179Hf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    178.9458151270    13.62200000000    178.4920000000
+#S  72 180Hf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    179.9465488270    35.08160000000    178.4920000000
+#S  73 180Ta
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    179.9474663000  0.01220000000000    180.9479100000
+#S  73 181Ta
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    180.9479963000    99.98820000000    180.9479100000
+#S  74 180W
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    179.9467065000   0.1210000000000    183.8410000000
+#S  74 182W
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    181.9482063000    26.50160000000    183.8410000000
+#S  74 183W
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    182.9502245290    14.31400000000    183.8410000000
+#S  74 184W
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    183.9509326290    30.64200000000    183.8410000000
+#S  74 186W
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    185.9543623000    28.43190000000    183.8410000000
+#S  75 185Re
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    184.9529557300    37.40200000000    186.2071000000
+#S  75 187Re
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    186.9557508300    62.60200000000    186.2071000000
+#S  76 184Os
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    183.9524913000  0.02100000000000    190.2330000000
+#S  76 186Os
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    185.9538383000    1.593000000000    190.2330000000
+#S  76 187Os
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    186.9557479300    1.962000000000    190.2330000000
+#S  76 188Os
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    187.9558360300    13.24800000000    190.2330000000
+#S  76 189Os
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    188.9581449300    16.15500000000    190.2330000000
+#S  76 190Os
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    189.9584453000    26.26200000000    190.2330000000
+#S  76 192Os
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    191.9614794000    40.78190000000    190.2330000000
+#S  77 191Ir
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    190.9605913000    37.32000000000    192.2173000000
+#S  77 193Ir
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    192.9629243000    62.72000000000    192.2173000000
+#S  78 190Pt
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    189.9599307000  0.01410000000000    195.0782000000
+#S  78 192Pt
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    191.9610354000   0.7827000000000    195.0782000000
+#S  78 194Pt
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    193.9626643000    32.96799000000    195.0782000000
+#S  78 195Pt
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    194.9647743000    33.83210000000    195.0782000000
+#S  78 196Pt
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    195.9649353000    25.24241000000    195.0782000000
+#S  78 198Pt
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    197.9678764000    7.163550000000    195.0782000000
+#S  79 197Au
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    196.9665523000    100.0000000000    196.9665520000
+#S  80 196Hg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    195.9658154000   0.1510000000000    200.5920000000
+#S  80 198Hg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    197.9667523000    9.972000000000    200.5920000000
+#S  80 199Hg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    198.9682623000    16.87220000000    200.5920000000
+#S  80 200Hg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    199.9683093000    23.10190000000    200.5920000000
+#S  80 201Hg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    200.9702853000    13.18900000000    200.5920000000
+#S  80 202Hg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    201.9706263000    29.86260000000    200.5920000000
+#S  80 204Hg
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    203.9734763000    6.871500000000    200.5920000000
+#S  81 203Tl
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    202.9723293000    29.52414000000    204.3833200000
+#S  81 205Tl
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    204.9744123000    70.47614000000    204.3833200000
+#S  82 204Pb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    203.9730293000    1.410000000000    207.2100000000
+#S  82 206Pb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    205.9744493000    24.11000000000    207.2100000000
+#S  82 207Pb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    206.9758813000    22.11000000000    207.2100000000
+#S  82 208Pb
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    207.9766363000    52.41000000000    207.2100000000
+#S  83 209Bi
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    208.9803833000    100.0000000000    208.9803820000
+#S  84 209Po
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    208.9824163000    0.000000000000    209.0000000000
+#S  84 210Po
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    209.9828573000    0.000000000000    209.0000000000
+#S  85 210At
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    209.9871319000    0.000000000000    210.0000000000
+#S  85 211At
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    210.9874814000    0.000000000000    210.0000000000
+#S  86 211Rn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    210.9905858000    0.000000000000    222.0000000000
+#S  86 220Rn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    220.0113841290    0.000000000000    222.0000000000
+#S  86 222Rn
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    222.0175705270    0.000000000000    222.0000000000
+#S  87 223Fr
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    223.0197307290    0.000000000000    223.0000000000
+#S  88 223Ra
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    223.0184973000    0.000000000000    226.0000000000
+#S  88 224Ra
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    224.0202020290    0.000000000000    226.0000000000
+#S  88 226Ra
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    226.0254026270    0.000000000000    226.0000000000
+#S  88 228Ra
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    228.0310641270    0.000000000000    226.0000000000
+#S  89 227Ac
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    227.0277470290    0.000000000000    227.0000000000
+#S  90 230Th
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    230.0331266220    0.000000000000    232.0381100000
+#S  90 232Th
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    232.0380504220    100.0000000000    232.0381100000
+#S  91 231Pa
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    231.0358789280    100.0000000000    231.0358820000
+#S  92 233U
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    233.0396283000    0.000000000000    238.0289130000
+#S  92 234U
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    234.0409456210 0.005520000000000    238.0289130000
+#S  92 235U
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    235.0439231210   0.7200510000000    238.0289130000
+#S  92 236U
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    236.0455619210    0.000000000000    238.0289130000
+#S  92 238U
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    238.0507826210    99.27451060000    238.0289130000
+#S  93 237Np
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    237.0481673210    0.000000000000    237.0000000000
+#S  93 239Np
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    239.0529314230    0.000000000000    237.0000000000
+#S  94 238Pu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    238.0495534210    0.000000000000    244.0000000000
+#S  94 239Pu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    239.0521565210    0.000000000000    244.0000000000
+#S  94 240Pu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    240.0538075210    0.000000000000    244.0000000000
+#S  94 241Pu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    241.0568453210    0.000000000000    244.0000000000
+#S  94 242Pu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    242.0587368210    0.000000000000    244.0000000000
+#S  94 244Pu
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    244.0641985000    0.000000000000    244.0000000000
+#S  95 241Am
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    241.0568229210    0.000000000000    243.0000000000
+#S  95 243Am
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    243.0613727230    0.000000000000    243.0000000000
+#S  96 243Cm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    243.0613822240    0.000000000000    247.0000000000
+#S  96 244Cm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    244.0627463210    0.000000000000    247.0000000000
+#S  96 245Cm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    245.0654856290    0.000000000000    247.0000000000
+#S  96 246Cm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    246.0672176240    0.000000000000    247.0000000000
+#S  96 247Cm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    247.0703475000    0.000000000000    247.0000000000
+#S  96 248Cm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    248.0723425000    0.000000000000    247.0000000000
+#S  97 247Bk
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    247.0702996000    0.000000000000    247.0000000000
+#S  97 249Bk
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    249.0749803000    0.000000000000    247.0000000000
+#S  98 249Cf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    249.0748473000    0.000000000000    251.0000000000
+#S  98 250Cf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    250.0764000240    0.000000000000    251.0000000000
+#S  98 251Cf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    251.0795805000    0.000000000000    251.0000000000
+#S  98 252Cf
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    252.0816205000    0.000000000000    251.0000000000
+#S  99 252Es
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    252.0829705000    0.000000000000    252.0000000000
+#S  100 257Fm
+#N  3
+#L  AtomicMass  Abundance  AveragedAtomicMass
+    257.0950997000    0.000000000000    257.0000000000
