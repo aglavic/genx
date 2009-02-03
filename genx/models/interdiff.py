@@ -175,11 +175,11 @@ def Specular(TwoThetaQz, sample, instrument):
     re = 2.82e-13*1e2/1e-10
     n = 1 - dens*re*lamda**2/2/pi*f*1e-4
     d = array(parameters['d'], dtype = float64)
-    d = d[1:-1]
+    #d = d[1:-1]
     sigmar = array(parameters['sigmar'], dtype = float64)
-    sigmar = sigmar[:-1]
+    #sigmar = sigmar[:-1]
     sigmai = array(parameters['sigmai'], dtype = float64)
-    sigmai = sigmai[:-1]
+    #sigmai = sigmai[:-1]
     sigma = sqrt(sigmai**2 + sigmar**2)
     #print sigma
     
