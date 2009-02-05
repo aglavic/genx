@@ -253,7 +253,7 @@ class DiffEv:
         Makes the eval_fom function
         '''
         # Setting up for parallel processing
-        if self.use_parallel_processing:
+        if self.use_parallel_processing and __parallel_loaded__:
             self.text_output('Setting up a pool of workers ...')
             self.setup_parallel()
             self.eval_fom = self.calc_trial_fom_parallel
