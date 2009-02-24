@@ -1529,12 +1529,14 @@ class Plugin(framework.Template):
         for stack in stacks:
             all_names.append(stack[0])
             first_name = stack[1].split(',')[0].strip()
-            #print first_name
-            # Find all items above the first name in the stack
-            while(layer_names[0] != first_name):
+            # check so stack is non-empty
+            if first_name != '':
+                print first_name
+                # Find all items above the first name in the stack
+                while(layer_names[0] != first_name):
+                    all_names.append(layer_names.pop(0))
+                    print 'all names ',all_names[-1]
                 all_names.append(layer_names.pop(0))
-                #print 'all names ',all_names[-1]
-            all_names.append(layer_names.pop(0))
         all_names += layer_names
             
         #print all_names
