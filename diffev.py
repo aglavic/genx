@@ -338,8 +338,8 @@ class DiffEv:
         #print self.best_vec
         self.best_fom = self.fom_vec[best_index]
         #print self.best_fom
-        self.fom_log= r_[self.fom_log,\
-                                [[len(self.fom_log),self.best_fom]]]
+        #self.fom_log= r_[self.fom_log,\
+        #                        [[len(self.fom_log),self.best_fom]]]
         # Flag to keep track if there has been any improvemnts
         # in the fit - used for updates
         self.new_best = True

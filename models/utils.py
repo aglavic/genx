@@ -64,18 +64,26 @@ The data is also fetched from the Dabax library at:
 <a href = "http://ftp.esrf.eu/pub/scisoft/xop2.3/DabaxFiles/">
 http://ftp.esrf.eu/pub/scisoft/xop2.3/DabaxFiles/</a>
 This database is the non-dispersive (without resonant contribution).
+
+<h4>fw<h4>
+Same thing as f but scaled so that is can be used with a density
+in g/cm<sup>3<sup>.
+
+<h4>bw<h4>
+Same thing as bc but scaled so that is can be used with a density
+in g/cm<sup>3<sup>.
 '''
 import numpy as np
 import lib.scatteringlengths as sl
 import os
 
-head, tail = os.path.split(__file__)
+_head, _tail = os.path.split(__file__)
 # Look only after the file name and not the ending since
 # the file ending can be pyc if compiled... 
-__FILENAME__ = tail.split('.')[0]
+__FILENAME__ = _tail.split('.')[0]
 # This assumes that plugin is under the current dir may need 
 # changing
-__MODULE_DIR__ = head
+__MODULE_DIR__ = _head
 if __MODULE_DIR__ == '':
     __MODULE_DIR__ = '.'
 
