@@ -17,6 +17,11 @@ import wx.lib.newevent
 
 import io
 
+# Okay due to compabiltiy issues with version above 0.91
+spl = matplotlib.__version__.split('.')
+mat_ver = float(spl[0]+'.'+spl[1])
+print mat_ver
+zoom_ver = 0.90
 # Event for a click inside an plot which yields a number
 (plot_position, EVT_PLOT_POSITION) = wx.lib.newevent.NewEvent()
 # Event to tell the main window that the zoom state has changed
@@ -365,8 +370,16 @@ class PlotPanel(wx.Panel):
     def OnLeftMouseButtonDown(self, event):
         self.start_pos = event.GetPositionTuple()
         #print 'Left Mouse button pressed ', self.ax.transData.inverse_xy_tup(self.start_pos)
+        class Point:
+            pass
+        p = Point()
+        p.x, p.y = self.start_pos
         if self.zoom and self.ax:
-            if self.ax.in_axes(*self.start_pos):
+            if mat_ver > zoom_ver:
+                in_axes = self.ax.in_axes(p)
+            else:
+                in_axes = self.ax.in_axes(*self.start_pos)
+            if in_axes:
                 self.zooming = True
                 self.cur_rect = None
                 self.canvas.CaptureMouse()
@@ -384,7 +397,15 @@ class PlotPanel(wx.Panel):
         if self.zooming and event.Dragging() and event.LeftIsDown():
             self.cur_pos = event.GetPositionTuple()
             #print 'Mouse Move ', self.ax.transData.inverse_xy_tup(self.cur_pos)
-            if self.ax.in_axes(*self.cur_pos):
+            class Point:
+                pass
+            p = Point()
+            p.x, p.y = self.cur_pos
+            if mat_ver > zoom_ver:
+                in_axes = self.ax.in_axes(p)
+            else:
+                in_axes = self.ax.in_axes(*self.start_pos)
+            if in_axes:
                 new_rect = (self.start_pos[0], self.start_pos[1],\
                         self.cur_pos[0] - self.start_pos[0],\
                         self.cur_pos[1] - self.start_pos[1])
@@ -400,10 +421,19 @@ class PlotPanel(wx.Panel):
                 # Note: The coordinte system for matplotlib have a different 
                 # direction of the y-axis and a different origin!
                 size = self.canvas.GetClientSize()
-                xstart, ystart = self.ax.transData.inverse_xy_tup(\
-                    (self.start_pos[0], size.height-self.start_pos[1]))
-                xend, yend = self.ax.transData.inverse_xy_tup(\
-                    (self.cur_pos[0], size.height-self.cur_pos[1]))
+                if mat_ver > zoom_ver:
+                    start = self.ax.transData.inverted().transform(\
+                    array([self.start_pos[0], size.height-self.start_pos[1]])[newaxis,:])
+                    end = self.ax.transData.inverted().transform(\
+                    array([self.cur_pos[0], size.height-self.cur_pos[1]])[newaxis, :])
+                    xend, yend = end[0,0], end[0,1]
+                    xstart, ystart = start[0,0], start[0,1]
+                else:
+                    xstart, ystart = self.ax.transData.inverse_xy_tup(\
+                        (self.start_pos[0], size.height-self.start_pos[1]))
+                    xend, yend = self.ax.transData.inverse_xy_tup(\
+                        (self.cur_pos[0], size.height-self.cur_pos[1]))
+                
                 #print xstart, xend
                 #print ystart, yend
                 self.ax.set_xlim(min(xstart,xend), max(xstart,xend))

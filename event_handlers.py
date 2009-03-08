@@ -782,6 +782,82 @@ def copy_sim(frame, event):
     if wx.TheClipboard.Open():
         wx.TheClipboard.SetData(text)
         wx.TheClipboard.Close()
+
+def on_findreplace(frame, event):
+    '''Show the find and replace dialog box.
+    '''
+    frame.findreplace_dlg.Show(True)
+
+def on_find_event(frame, event):
+    '''callback for find events - coupled to the script
+    '''
+    evtype = event.GetEventType()
+    def find():
+        find_str = event.GetFindString()
+        ##print frame.findreplace_data.GetFlags()
+        flags = event.GetFlags()
+        if flags & 1:
+            ##print "Searching down"
+            pos = frame.script_editor.SearchNext(flags, find_str)
+        else:
+            ##print "Searching up"
+            pos = frame.script_editor.SearchPrev(flags, find_str)
+        if pos == -1:
+            frame.main_frame_statusbar.SetStatusText(\
+                'Could not find text %s'%find_str, 1)
+        return pos
+
+    def replace():
+        replace_str = event.GetReplaceString()
+        frame.script_editor.ReplaceSelection(replace_str)
+        
+    # Deal with the different cases
+    if evtype == wx.wxEVT_COMMAND_FIND:
+        frame.script_editor.SearchAnchor()
+        find()
+        
+    elif evtype == wx.wxEVT_COMMAND_FIND_NEXT:
+        pnew = frame.script_editor.GetSelectionEnd()
+        ##print pnew
+        frame.script_editor.GotoPos(pnew)
+        frame.script_editor.SetAnchor(pnew)
+        frame.script_editor.SearchAnchor()
+        ##print 'Finding next'
+        find()
+        
+    elif evtype == wx.wxEVT_COMMAND_FIND_REPLACE:
+        print 'find and replace'
+        # If we do not have found text already
+        # or if we have marked other text by mistake...
+        if frame.script_editor.GetSelectedText() != \
+               event.GetFindString():
+            find()
+        # We already have found and marked text that we should
+        # replace
+        else:
+            frame.script_editor.ReplaceSelection(\
+                event.GetReplaceString())
+            # Find a new text to replace
+            find()
+    elif evtype == wx.wxEVT_COMMAND_FIND_REPLACE_ALL:
+        print 'find and replace all'
+        if frame.script_editor.GetSelectedText() != \
+               event.GetFindString():
+            pos = find()
+        i = 0
+        while pos != -1:
+            frame.script_editor.ReplaceSelection(\
+                event.GetReplaceString())
+            i += 1
+            pos = find()
+        frame.main_frame_statusbar.SetStatusText(\
+                'Replaces %d occurancies of  %s'%(i,\
+                 event.GetFindString()), 1)
+        
+    ##else:
+    ##    ShowErrorDialog(frame, 'Faulty event supplied in find and'\
+    ##                    ' repalce functionallity', 'on_find_event')
+    
         
 def change_data_grid_view(frame, event):
     '''change_data_grid_view(frame, event) --> None
