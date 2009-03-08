@@ -99,6 +99,8 @@ class MainFrame(wx.Frame):
         self.mb_edit.AppendItem(self.mb_copy_sim)
         self.mb_copy_table = wx.MenuItem(self.mb_edit, wx.NewId(), "Copy Table", "Copy the parameter grid", wx.ITEM_NORMAL)
         self.mb_edit.AppendItem(self.mb_copy_table)
+        self.mb_findreplace = wx.MenuItem(self.mb_edit, wx.NewId(), "&Find/Replace...\tCtrl+F", "Find and replace in the script", wx.ITEM_NORMAL)
+        self.mb_edit.AppendItem(self.mb_findreplace)
         self.mb_edit_sub = wx.Menu()
         self.mb_new_data_set = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&New data set\tAlt+N", "Appends a new data set", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_new_data_set)
@@ -139,7 +141,7 @@ class MainFrame(wx.Frame):
         self.mb_fit.AppendItem(self.mb_fit_simulate)
         self.mb_fit_evaluate = wx.MenuItem(self.mb_fit, wx.NewId(), "&Evaluate\tF5", "Evaluate the Sim function only - no recompiling", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_evaluate)
-        self.mb_fit_start = wx.MenuItem(self.mb_fit, wx.NewId(), "Start &Fit\tCtrl+F", "Start fitting", wx.ITEM_NORMAL)
+        self.mb_fit_start = wx.MenuItem(self.mb_fit, wx.NewId(), "S&tart Fit\tCtrl+T", "Start fitting", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_start)
         self.mb_fit_stop = wx.MenuItem(self.mb_fit, wx.NewId(), "&Halt Fit\tCtrl+H", "Stop fitting", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_stop)
@@ -222,6 +224,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_graph, self.mb_copy_graph)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_sim, self.mb_copy_sim)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, self.mb_copy_table)
+        self.Bind(wx.EVT_MENU, self.eh_mb_findreplace, self.mb_findreplace)
         self.Bind(wx.EVT_MENU, self.eh_data_new_set, self.mb_new_data_set)
         self.Bind(wx.EVT_MENU, self.eh_data_delete, self.mb_data_delete)
         self.Bind(wx.EVT_MENU, self.eh_data_move_down, self.mb_data_move_down)
@@ -337,6 +340,21 @@ class MainFrame(wx.Frame):
             self.script_editor)
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_model_changed,\
                     self.data_list.list_ctrl)
+
+        # Stuff for the find and replace functionallity
+        self.findreplace_data = wx.FindReplaceData()
+        # Make search down as default
+        self.findreplace_data.SetFlags(1)
+        self.findreplace_dlg = wx.FindReplaceDialog(self,\
+                                                  self.findreplace_data,\
+                                                  "Find & replace",\
+                                                  wx.FR_REPLACEDIALOG)
+        self.Bind(wx.EVT_FIND, self.eh_external_find)
+        self.Bind(wx.EVT_FIND_NEXT, self.eh_external_find)
+        self.Bind(wx.EVT_FIND_REPLACE, self.eh_external_find)
+        self.Bind(wx.EVT_FIND_REPLACE_ALL, self.eh_external_find)
+        self.Bind(wx.EVT_FIND_CLOSE, self.eh_external_find)
+        
                     
         # Adding close event so I can take care of it...
         self.Bind(wx.EVT_CLOSE, self.eh_mb_quit)
@@ -706,6 +724,14 @@ class MainFrame(wx.Frame):
 
     def eh_mb_data_loaders_help(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.data_loaders_help(self, event)
+
+    def eh_mb_findreplace(self, event): # wxGlade: MainFrame.<event_handler>
+        #print "Event handler `eh_mb_findreplace' not implemented"
+        #event.Skip()
+        event_handlers.on_findreplace(self, event)
+
+    def eh_external_find(self, event):
+        event_handlers.on_find_event(self, event)
 
 # end of class MainFrame
 
