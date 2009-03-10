@@ -1,13 +1,15 @@
 # File: plotpanel.py a extension of panel that implements matplotlib plotting
 # libary.
 # Programmed by: Matts Bjorck
-# Last changed: 2008 09 03
+# Last changed: 2009 03 10
 
 import matplotlib
 matplotlib.interactive(False)
 # Use WXAgg backend Wx to slow
 matplotlib.use('Agg')
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+from matplotlib.backends.backend_agg import FigureCanvasAgg, RendererAgg
+from matplotlib.transforms import Bbox, Point, Value
 from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector
 
@@ -20,7 +22,7 @@ import io
 # Okay due to compabiltiy issues with version above 0.91
 spl = matplotlib.__version__.split('.')
 mat_ver = float(spl[0]+'.'+spl[1])
-print mat_ver
+#print mat_ver
 zoom_ver = 0.90
 # Event for a click inside an plot which yields a number
 (plot_position, EVT_PLOT_POSITION) = wx.lib.newevent.NewEvent()
@@ -71,6 +73,9 @@ class PlotPanel(wx.Panel):
         self.canvas.SetCursor(cursor)
         self.old_scale_state = True
         self.ax = None
+
+        # Init printout stuff
+        self.fig_printer = FigurePrinter(self)
         
     
     def SetColor(self, rgbtuple=None):
@@ -313,45 +318,39 @@ class PlotPanel(wx.Panel):
         else:
             return None
         
-    def CopyToClipboard(self):
+    def CopyToClipboard(self, event = None):
         '''CopyToClipboard(self, event) --> None
         
         Copy the plot to the clipboard.
         '''
-        self.canvas.Copy_to_Clipboard(event=None)
+        self.canvas.Copy_to_Clipboard(event = event)
         
-    def PrintSetup(self):
+    def PrintSetup(self, event = None):
         '''PrintSetup(self) --> None
         
         Sets up the printer. Creates a dialog box
         '''
-        self.canvas.Printer_Setup(event=None)
+        self.fig_printer.pageSetup()
 
-    def PrintPreview(self):
+    def PrintPreview(self, event = None):
         '''PrintPreview(self) --> None
         
         Prints a preview on screen.
         '''
-        #size = self.figure.get_size_inches()
-        #self.figure.set_size_inches(self.print_size)
-        self.canvas.Printer_Preview(event=None)
-        #self.figure.set_size_inches(size)
+        self.fig_printer.previewFigure(self.figure)
         
-    def Print(self):
+    def Print(self, event= None):
         '''Print(self) --> None
         
         Print the figure.
         '''
-        # TODO: Fix plot ptinting with a better printout class
-        #size = self.figure.get_size_inches()
-        #self.figure.set_size_inches(self.print_size)
-        self.canvas.Printer_Print(event=None)
-        #self.figure.set_size_inches(size)
+        self.fig_printer.printFigure(self.figure)
+
         
     def SetCallbackWindow(self, window):
         '''SetCallbackWindow(self, window) --> None
         
-        Sets teh callback window that should recieve the events from 
+        Sets the callback window that should recieve the events from 
         picking.
         '''
         
@@ -529,6 +528,274 @@ class PlotPanel(wx.Panel):
         
     def update(self, data):
         pass
+
+#==============================================================================
+# Print out class borrowed from wxmpl
+wx.PostScriptDC_SetResolution(300)
+
+class FigurePrinter:
+    """
+    Provides a simplified interface to the wxPython printing framework that's
+    designed for printing matplotlib figures.
+    """
+
+    def __init__(self, view, printData=None):
+        """
+        Create a new C{FigurePrinter} associated with the wxPython widget
+        C{view}.  The keyword argument C{printData} supplies a C{wx.PrintData}
+        object containing the default printer settings.
+        """
+        self.view = view
+
+        if printData is None:
+            self.pData = wx.PrintData()
+        else:
+            self.pData = printData
+
+    def destroy(self):
+        """
+        Sets this object's C{view} attribute to C{None}.
+        """
+        self.view = None
+
+    def getPrintData(self):
+        """
+        Return the current printer settings in their C{wx.PrintData} object.
+        """
+        return self.pData
+
+    def setPrintData(self, printData):
+        """
+        Use the printer settings in C{printData}.
+        """
+        self.pData = printData
+
+    def pageSetup(self):
+        dlg = wx.PrintDialog(self.view)
+        pdData = dlg.GetPrintDialogData()
+        pdData.SetPrintData(self.pData)
+        pdData.SetSetupDialog(True)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            self.pData = pdData.GetPrintData()
+        dlg.Destroy()
+        self.copyPrintData()
+
+    def previewFigure(self, figure, title=None):
+        """
+        Open a "Print Preview" window for the matplotlib chart C{figure}.  The
+        keyword argument C{title} provides the printing framework with a title
+        for the print job.
+        """
+        window = self.view
+        while not isinstance(window, wx.Frame):
+            window = window.GetParent()
+            assert window is not None
+
+        fpo = FigurePrintout(figure, title)
+        fpo4p = FigurePrintout(figure, title)
+        preview = wx.PrintPreview(fpo, fpo4p, self.pData)
+        frame = wx.PreviewFrame(preview, window, 'Print Preview')
+        if self.pData.GetOrientation() == wx.PORTRAIT:
+            frame.SetSize(wx.Size(450, 625))
+        else:
+            frame.SetSize(wx.Size(600, 500))
+        frame.Initialize()
+        frame.Show(True)
+        self.copyPrintData()
+        
+    def printFigure(self, figure, title=None):
+        """
+        Open a "Print" dialog to print the matplotlib chart C{figure}.  The
+        keyword argument C{title} provides the printing framework with a title
+        for the print job.
+        """
+        pdData = wx.PrintDialogData()
+        pdData.SetPrintData(self.pData)
+        printer = wx.Printer(pdData)
+        fpo = FigurePrintout(figure, title)
+        if printer.Print(self.view, fpo, True):
+            self.pData = pdData.GetPrintData()
+        self.copyPrintData()
+            
+
+    def copyPrintData(self):
+        '''Create a copy of the print data to avoid seg faults
+        '''
+        pData_new = wx.PrintData()
+        pData_new.SetBin(self.pData.GetBin())
+        pData_new.SetCollate(self.pData.GetCollate())
+        pData_new.SetColour(self.pData.GetColour())
+        pData_new.SetDuplex(self.pData.GetDuplex())
+        pData_new.SetFilename(self.pData.GetFilename())
+        pData_new.SetNoCopies(self.pData.GetNoCopies())
+        pData_new.SetOrientation(self.pData.GetOrientation())
+        pData_new.SetPaperId(self.pData.GetPaperId())
+        pData_new.SetPaperSize(self.pData.GetPaperSize())
+        pData_new.SetPrinterName(self.pData.GetPrinterName())
+        pData_new.SetPrintMode(self.pData.GetPrintMode())
+        pData_new.SetPrivData(self.pData.GetPrivData())
+        pData_new.SetQuality(self.pData.GetQuality())
+        self.pData = pData_new
+
+        
+class FigurePrintout(wx.Printout):
+    """
+    Render a matplotlib C{Figure} to a page or file using wxPython's printing
+    framework.
+    """
+
+    ASPECT_RECTANGULAR = 1
+    ASPECT_SQUARE = 2
+
+    def __init__(self, figure, title=None, size=None, aspectRatio=None):
+        """
+        Create a printout for the matplotlib chart C{figure}.  The
+        keyword argument C{title} provides the printing framework with a title
+        for the print job.  The keyword argument C{size} specifies how to scale
+        the figure, from 1 to 100 percent.  The keyword argument C{aspectRatio}
+        determines whether the printed figure will be rectangular or square.
+        """
+        self.figure = figure
+
+        figTitle = figure.gca().title.get_text()
+        if not figTitle:
+            figTitle = title or 'GenX plot'
+
+        if size is None:
+            size = 100
+        elif size < 0 or size > 100:
+            raise ValueError('invalid figure size')
+        self.size = size
+
+        if aspectRatio is None:
+            aspectRatio = self.ASPECT_RECTANGULAR
+        elif (aspectRatio != self.ASPECT_RECTANGULAR
+        and aspectRatio != self.ASPECT_SQUARE):
+            raise ValueError('invalid aspect ratio')
+        self.aspectRatio = aspectRatio
+
+        wx.Printout.__init__(self, figTitle)
+
+    def GetPageInfo(self):
+        """
+        Overrides wx.Printout.GetPageInfo() to provide the printing framework
+        with the number of pages in this print job.
+        """
+        return (1, 1, 1, 1)
+
+    def OnPrintPage(self, pageNumber):
+        """
+        Overrides wx.Printout.OnPrintPage to render the matplotlib figure to
+        a printing device context.
+        """
+        # % of printable area to use
+        imgPercent = max(1, min(100, self.size)) / 100.0
+
+        # ratio of the figure's width to its height
+        if self.aspectRatio == self.ASPECT_RECTANGULAR:
+            aspectRatio = 1.61803399
+        elif self.aspectRatio == self.ASPECT_SQUARE:
+            aspectRatio = 1.0
+        else:
+            raise ValueError('invalid aspect ratio')
+
+        # Device context to draw the page
+        dc = self.GetDC()
+
+        # PPI_P: Pixels Per Inch of the Printer
+        wPPI_P, hPPI_P = [float(x) for x in self.GetPPIPrinter()]
+        PPI_P = (wPPI_P + hPPI_P)/2.0
+
+        # PPI: Pixels Per Inch of the DC
+        if self.IsPreview():
+            wPPI, hPPI = [float(x) for x in self.GetPPIScreen()]
+        else:
+            wPPI, hPPI = wPPI_P, hPPI_P
+        PPI = (wPPI + hPPI)/2.0
+
+        # Pg_Px: Size of the page (pixels)
+        wPg_Px,  hPg_Px  = [float(x) for x in self.GetPageSizePixels()]
+
+        # Dev_Px: Size of the DC (pixels)
+        wDev_Px, hDev_Px = [float(x) for x in self.GetDC().GetSize()]
+
+        # Pg: Size of the page (inches)
+        wPg = wPg_Px / PPI_P
+        hPg = hPg_Px / PPI_P
+
+        # minimum margins (inches)
+        # TODO: make these arguments to __init__()
+        wM = 0.75
+        hM = 0.75
+
+        # Area: printable area within the margins (inches)
+        wArea = wPg - 2*wM
+        hArea = hPg - 2*hM
+
+        # Fig: printing size of the figure
+        # hFig is at a maximum when wFig == wArea
+        max_hFig = wArea / aspectRatio
+        hFig = min(imgPercent * hArea, max_hFig)
+        wFig = aspectRatio * hFig
+
+        # scale factor = device size / page size (equals 1.0 for real printing)
+        S = ((wDev_Px/PPI)/wPg + (hDev_Px/PPI)/hPg)/2.0
+
+        # Fig_S: scaled printing size of the figure (inches)
+        # M_S: scaled minimum margins (inches)
+        wFig_S = S * wFig
+        hFig_S = S * hFig
+        wM_S = S * wM
+        hM_S = S * hM
+
+        # Fig_Dx: scaled printing size of the figure (device pixels)
+        # M_Dx: scaled minimum margins (device pixels)
+        wFig_Dx = int(S * PPI * wFig)
+        hFig_Dx = int(S * PPI * hFig)
+        wM_Dx = int(S * PPI * wM)
+        hM_Dx = int(S * PPI * hM)
+
+        image = self.render_figure_as_image(wFig, hFig, PPI)
+
+        if self.IsPreview():
+            image = image.Scale(wFig_Dx, hFig_Dx)
+        self.GetDC().DrawBitmap(image.ConvertToBitmap(), wM_Dx, hM_Dx, False)
+
+        return True
+
+    def render_figure_as_image(self, wFig, hFig, dpi):
+        """
+        Renders a matplotlib figure using the Agg backend and stores the result
+        in a C{wx.Image}.  The arguments C{wFig} and {hFig} are the width and
+        height of the figure, and C{dpi} is the dots-per-inch to render at.
+        """
+        figure = self.figure
+
+        old_dpi = figure.dpi.get()
+        figure.dpi.set(dpi)
+        old_width = figure.figwidth.get()
+        figure.figwidth.set(wFig)
+        old_height = figure.figheight.get()
+        figure.figheight.set(hFig)
+        old_frameon = figure.frameon
+        figure.frameon = False
+
+        wFig_Px = int(figure.bbox.width())
+        hFig_Px = int(figure.bbox.height())
+
+        agg = RendererAgg(wFig_Px, hFig_Px, Value(dpi))
+        figure.draw(agg)
+
+        figure.dpi.set(old_dpi)
+        figure.figwidth.set(old_width)
+        figure.figheight.set(old_height)
+        figure.frameon = old_frameon
+
+        image = wx.EmptyImage(wFig_Px, hFig_Px)
+        image.SetData(agg.tostring_rgb())
+        return image
+
 
 #==============================================================================
 class DataPlotPanel(PlotPanel):
