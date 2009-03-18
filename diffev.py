@@ -868,6 +868,7 @@ def parallel_calc_fom(vec):
 #==============================================================================
 def default_text_output(text):
     print text
+    sys.stdout.flush()
 
 def default_plot_output(solver):
     pass
