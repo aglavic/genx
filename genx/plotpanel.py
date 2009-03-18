@@ -574,7 +574,7 @@ class FigurePrinter:
         dlg = wx.PrintDialog(self.view)
         pdData = dlg.GetPrintDialogData()
         pdData.SetPrintData(self.pData)
-        pdData.SetSetupDialog(True)
+        #pdData.SetSetupDialog(True)
 
         if dlg.ShowModal() == wx.ID_OK:
             self.pData = pdData.GetPrintData()
@@ -614,6 +614,7 @@ class FigurePrinter:
         pdData.SetPrintData(self.pData)
         printer = wx.Printer(pdData)
         fpo = FigurePrintout(figure, title)
+        fpo.SetPPIPrinter(300, 300)
         if printer.Print(self.view, fpo, True):
             self.pData = pdData.GetPrintData()
         self.copyPrintData()
@@ -657,6 +658,7 @@ class FigurePrintout(wx.Printout):
         determines whether the printed figure will be rectangular or square.
         """
         self.figure = figure
+        
 
         figTitle = figure.gca().title.get_text()
         if not figTitle:
@@ -676,6 +678,7 @@ class FigurePrintout(wx.Printout):
         self.aspectRatio = aspectRatio
 
         wx.Printout.__init__(self, figTitle)
+        #self.SetPPIPrinter(300, 300)
 
     def GetPageInfo(self):
         """
