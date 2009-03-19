@@ -2,7 +2,7 @@
 in an efficent way. Based on a base class database which is subclassed
 for each case.
 Programmer: Matts Bjorck
-Last changed: 2008-10-08
+Last changed: 2009-03-19
 '''
 
 import numpy as np
@@ -248,7 +248,7 @@ class ScatteringLength(Database):
 # Function to load databases and or values
 
 
-def load_f0dabax(filename):
+def load_f0dabax(filename, create_rho = False):
     '''load_dabax(filename) --> f0 (dictonary)
     
     loads a dabax file with f0 values and return a dictonary with 
@@ -264,6 +264,15 @@ def load_f0dabax(filename):
                 *sin_over_lambda**2), 0)
         return f
 
+    def create_rho(a, b, c):
+        def rho(r, fp, wb, occ):
+            return (sum(a[:, np.newaxis]/\
+                    (8.0*(np.pi*(b[:, np.newaxis]/16/np.pi**2+wb))**1.5)\
+                     *np.exp(-(r**2.0)/4.0/(b[:, np.newaxis]/16/np.pi**2+wb)),\
+                        0) + (c + fp)/(8.0*(np.pi*wb)**1.5)*\
+                    np.exp(-(r**2.0)/4.0/wb))*occ
+        return rho
+    
     f = open(filename)
     real_label = ''
     temp_dict = {}
@@ -282,7 +291,8 @@ def load_f0dabax(filename):
         if label == 'D':
             temp_dict[real_label.lower()] = map(lambda x: float(x),ret.split())
     
-    f0={}    
+    f0 = {}
+    rho0 = {}
     for key in temp_dict.keys():
         temp = temp_dict[key]
         # change the name to not have operators...
@@ -291,7 +301,11 @@ def load_f0dabax(filename):
         if key[-1] == '+':
             key = key[:-1] + 'p'
         f0[key] = create_f(np.array(temp[:4]), np.array(temp[5:]), temp[4])
-    return f0
+        rho0[key] = create_rho(np.array(temp[:4]), np.array(temp[5:]), temp[4])
+    if create_rho:
+        return f0, rho0
+    else:
+        return f0
 
 def create_fp_lookup(path):
     '''create_f_lookup(filename) --> lookup_func(name, wavelength)
@@ -358,6 +372,38 @@ def create_f_lookup(lookup_fp, f0):
             return f0_name(sin_over_lambda) + fp
         
         return f
+    
+    return lookup_func
+
+def create_rho_lookup(lookup_fp, rho0, f0):
+    '''create_rho_lookup(lookup_fp, rho0, f0) --> lookup_func(name, wavelength)
+    
+    combines a rho0 dictonary [dict] with the lookup function for the
+     anoumoulous scattering factors. Note that it is assumed that lookup_fp 
+    is a function on the form lookup_fp(name, wavelength) --> f1 - 1.0Jf2
+    where name is the name of the element!
+    '''
+    def lookup_func(name, wavelength):
+        ''' Looks up the "electron density" of an atom as described by
+        its formfactor, f = f0 + f1 + 1.0J*f2, of element name.
+        The dispersive part is independent on the ionicity but f0 not.
+        '''
+        # Check if name corrspond to an ion
+        element = None
+        if len(name) > 1:
+            if name[-2].isdigit():
+                element = name[:-2]
+            else:
+                element = name
+        else:
+            element = name
+        # Remove the non dispersive part for the given element
+        fp = lookup_fp(element, wavelength) - f0[element](0)
+        rho0_name = rho0[name]
+        def rho(r, wb, occ):
+            return rho0_name(r, fp, wb, occ) 
+        
+        return rho
     
     return lookup_func
 
