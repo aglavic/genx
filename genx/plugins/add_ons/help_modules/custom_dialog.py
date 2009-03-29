@@ -1,5 +1,7 @@
 import wx
 
+import string
+
 class TextObjectValidator(wx.PyValidator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
@@ -135,6 +137,88 @@ class NoMatchTextObjectValidator(wx.PyValidator):
             return False
         elif self.stringlist.__contains__(text):
             wx.MessageBox("Duplicates are not allowed!", "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        else:
+            textCtrl.SetBackgroundColour(
+                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            textCtrl.Refresh()
+            return True
+
+    def TransferToWindow(self):
+        """ Transfer data from validator to window.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
+
+
+    def TransferFromWindow(self):
+        """ Transfer data from window to validator.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
+
+class NoMatchValidTextObjectValidator(wx.PyValidator):
+    """ This validator is used to ensure that the user has entered something
+        into the text object editor dialog's text field. It should not match
+        a name in stringlist and it should be a valid varaible name. I.e 
+        is should start with a letter and can only contains ordinary
+        letters as in string.letters as well as numbers as in string.digits
+        or _
+    """
+    def __init__(self,stringlist):
+        """ Standard constructor.
+        """
+        wx.PyValidator.__init__(self)
+        self.stringlist = stringlist
+        self.reserved_words = ['and', 'del', 'from', 'not', 'while', 'as',\
+                    'elif', 'global', 'or', 'with', 'assert', 'else', 'if',\
+                    'pass', 'yield', 'break', 'except', 'import', 'print',\
+                    'class', 'exec', 'in', 'raise', 'continue', 'finally', \
+                    'is', 'return', 'def', 'for', 'lambda', 'try']
+
+        self.allowed_chars = string.digits+string.letters + '_'
+
+    def Clone(self):
+        """ Standard cloner.
+            Note that every validator must implement the Clone() method.
+        """
+        return NoMatchValidTextObjectValidator(self.stringlist)
+
+    def Validate(self, win):
+        """ Validate the contents of the given text control.
+        """
+        textCtrl = self.GetWindow()
+        text = textCtrl.GetValue()
+        #print text, len(text)
+        #print sum([char in self.allowed_chars for char in text])
+        if len(text) == 0:
+            wx.MessageBox("A text object must contain some text!", "Bad Input")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        elif self.stringlist.__contains__(text):
+            wx.MessageBox("Duplicates are not allowed!", "Bad Input")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        elif text in self.reserved_words:
+            wx.MessageBox("Python keywords are not allowed!", "Bad Input")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        elif sum([char in self.allowed_chars for char in text]) != len(text)\
+            or text[0] in string.digits:
+            wx.MessageBox("Not a vaild name. Names can only contain letters"\
+            ", digits and underscores(_) and not start with a digit.",\
+             "Bad Input")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
             textCtrl.Refresh()

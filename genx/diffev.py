@@ -92,10 +92,15 @@ class DiffEv:
         self.stop = False # true if the optimization should stop
         self.setup_ok = False # True if the optimization have been setup
         
+        
         # Logging variables
+        # Maximum number of logged elements
+        self.max_log = 100000
         self.fom_log = array([[0,0]])[0:0]
-        self.par_evals = array([[]])[0:0]
-        self.fom_evals = array([])
+        #self.par_evals = array([[]])[0:0]
+        self.par_evals = CircBuffer(self.max_log, buffer = array([[]])[0:0])
+        #self.fom_evals = array([])
+        self.fom_evals = CircBuffer(self.max_log)
     
     def safe_copy(self, object):
         '''safe_copy(self, object) --> None
@@ -137,8 +142,8 @@ class DiffEv:
         
         # Logging variables
         self.fom_log = object.fom_log[:]
-        self.par_evals = object.par_evals.copy()
-        self.fom_evals = object.fom_evals.copy()
+        self.par_evals.copy_from(object.par_evals)
+        self.fom_evals.copy_from(object.fom_evals)
         
         if self.setup_ok:
             self.n_pop = object.n_pop
@@ -239,8 +244,8 @@ class DiffEv:
 
         # Logging varaibles
         self.fom_log = array([[0,1]])[0:0]
-        self.par_evals = array([self.par_min])[0:0]
-        self.fom_evals = array([])
+        self.par_evals.reset(array([self.par_min])[0:0]) #array([self.par_min])[0:0]
+        self.fom_evals.reset() #array([])
         
         self.text_output('DE initilized')
         
@@ -368,8 +373,11 @@ class DiffEv:
             [self.update_pop(index) for index in range(self.n_pop)]
             
             # Add the evaluation to the logging
-            self.par_evals = append(self.par_evals, self.trial_vec, axis = 0)
-            self.fom_evals = append(self.fom_evals, self.trial_fom)
+            #self.par_evals = append(self.par_evals, self.trial_vec, axis = 0)
+            [self.par_evals.append([vec], axis = 0)\
+                    for vec in self.trial_vec]
+            #self.fom_evals = append(self.fom_evals, self.trial_fom)
+            [self.fom_evals.append(vec) for vec in self.trial_fom]
             
             # Add the best value to the fom log
             self.fom_log = r_[self.fom_log,\
@@ -484,7 +492,7 @@ class DiffEv:
         if self.setup_ok: #and len(self.par_evals) != 0:
             par_values = self.par_evals[:,index]        
             #print (self.fom_evals < fom_level).sum()
-            values_under_level = compress(self.fom_evals <\
+            values_under_level = compress(self.fom_evals[:] <\
                                     fom_level*self.best_fom, par_values)
             #print values_under_level
             error_bar_low = values_under_level.min() - self.best_vec[index]
@@ -783,6 +791,11 @@ class DiffEv:
         '''
         self.sleep_time = val
         
+    def set_max_log(self, val):
+        '''Sets the maximum number of logged elements
+        '''
+        self.max_log = val
+        
     def set_use_pop_mult(self, val):
         '''set_use_pop_mult(self, val) --> None
         '''
@@ -892,6 +905,63 @@ def _calc_fom(model, vec, par_funcs):
         
         return model.evaluate_fit_func()
 
+#==============================================================================
+# BEGIN: class CircBuffer
+class CircBuffer:
+    '''A buffer with a fixed length to store the logging data from the diffev 
+    class. Initilized to a maximumlength after which it starts to overwrite
+    '''
+    def __init__(self, maxlen, buffer = array([])):
+        '''Inits the class with a certain maximum length maxlen.
+        '''
+        self.maxlen = maxlen
+        self.pos = -1
+        self.buffer = buffer
+        
+    def reset(self, buffer = array([])):
+        '''Resets the buffer to the initial state
+        '''
+        self.pos = -1
+        self.buffer = buffer
+        #self.buffer = ones([0]*self.dims)
+        
+    def append(self, item, axis = None):
+        '''Appends an element to the last position of the buffer
+        '''
+        new_pos = (self.pos + 1)%self.maxlen
+        if len(self.buffer) >= self.maxlen:
+            self.buffer[new_pos] = item
+        else:
+            self.buffer = append(self.buffer, item, axis = axis)
+        self.pos = new_pos
+        
+    def array(self):
+        '''returns an ordered array instead of the circular
+        working version
+        '''
+        return r_[self.buffer[self.pos+1:], self.buffer[:self.pos+1]]
+        
+    def copy_from(self, object):
+        '''Add copy support
+        '''
+        if type(object) == type(array([])):
+            self.buffer = object[-self.maxlen:]
+        elif object.__class__ == self.__class__:
+            self.buffer = object.buffer.copy()
+            self.maxlen = object.maxlen
+            self.pos = object.pos
+        else:
+            raise TypeError('CircBuffer support only copying from CircBuffer'\
+                        ' and arrays.')
+                        
+                        
+    def __getitem__(self, key):
+        return self.array().__getitem__(key)
+    
+    
+
+# END: class CircBuffer
+#==============================================================================
 class GenericError(Exception):
     ''' Just a empty class used for inheritance. Only useful
     to check if the errors are originating from the model library.

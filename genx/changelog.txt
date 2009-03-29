@@ -1,3 +1,26 @@
+2009-03-29:
+    Fixed yet another bug in plotpanel relating to the new version of
+    matplotlib.
+    Fixed a bug in the search replace:
+    no scrolling when searching the scriptbug, ID: 2720666
+    Fixed bug in the refelctivity plugin:
+    Bug in adding a layer with substrate marked, ID: 2633020 
+    Fixed bug in the refelctivity plugin:
+    ID: 2720662, Plugin does not check if the names are valid
+    Fixed bug with no limit on the number of logged fom evaluations
+    ID: 2681825, Memory error during fitting
+    This was fixed by adding a new class CircBuff in the diffev module.
+    It has a maximum length of the buffer before it starts to overwrite
+    the oldest value (FIFO). A new parameter in genx.conf "max log elements"
+    has been introduced.
+    Added the possiblity to change the names of the Layer and stacks in the
+    reflectivity plugin.
+    ID:2720837, change the Layer/Stack name
+    
+    
+2009-03-10:
+    Changed plotpanel. Problems under newer versions of matplotlib
+
 2009-02-12:
     Chaged utils a bit so that it can safely be imported with a *
 

@@ -266,7 +266,7 @@ class SampleHandler:
                 layer=self.model.Layer()
                 #print spos[0]
                 if last:
-                    self.names.insert(pos,name)
+                    self.names.insert(pos, name)
                 else:
                     #print 'spos : ', spos
                     if spos[1] >= 0:
@@ -275,11 +275,14 @@ class SampleHandler:
                         self.names.insert(pos+len(self.sample.Stacks[spos[0]].Layers)+1,name)
                 #print 'spos ', spos
                 #print 'poslist ', self.poslist
-                if self.poslist[pos][1] == None:
-                    #print spos
-                    self.sample.Stacks[spos[0]].Layers.append(layer)
+                if last:
+                    self.sample.Stacks[spos[0]].Layers.insert(0,layer)
                 else:
-                    self.sample.Stacks[spos[0]].Layers.insert(spos[1], layer)
+                    if self.poslist[pos][1] == None:
+                        #print spos
+                        self.sample.Stacks[spos[0]].Layers.append(layer)
+                    else:
+                        self.sample.Stacks[spos[0]].Layers.insert(spos[1], layer)
                 added=True
                 
         else:
@@ -305,8 +308,18 @@ class SampleHandler:
     def canInsertLayer():
         return self.poslist>2
 
-    def checkName(name):
+    def checkName(self, name):
         return self.names.__contains__(name)
+    
+    def changeName(self, pos, name):
+        if name in self.names and name != self.names[pos]:
+            return False
+        elif pos == len(self.names)-1 or pos == 0:
+            return False
+        else:
+            self.names[pos] = name
+            return True
+            
     
     def moveUp(self,pos):
         '''
@@ -427,6 +440,11 @@ class SamplePanel(wx.Panel):
         boxbuttons.Add(DeleteButton, 0)
         DeleteButton.SetToolTipString('Delete')
         self.Bind(wx.EVT_BUTTON, self.DeleteSample, DeleteButton)
+        CNameButton = wx.BitmapButton(self, -1
+        , images.getchange_nameBitmap(), size = size, style=wx.NO_BORDER)
+        boxbuttons.Add(CNameButton, 0)
+        DeleteButton.SetToolTipString('Change Name')
+        self.Bind(wx.EVT_BUTTON, self.ChangeName, CNameButton)
         #MUpButton=wx.Button(self,-1, "MoveUp")
         MUpButton = wx.BitmapButton(self, -1
         , images.getmove_upBitmap(), size = size, style=wx.NO_BORDER)
@@ -562,7 +580,7 @@ class SamplePanel(wx.Panel):
     def InsertStack(self,evt):
         # Create Dialog box
         items = [('Name', 'name')]
-        validators = [NoMatchTextObjectValidator(self.sampleh.names)]
+        validators = [NoMatchValidTextObjectValidator(self.sampleh.names)]
         dlg = ValidateDialog(self, items, validators, title='Give Stack Name')
         
         # Show the dialog
@@ -581,9 +599,8 @@ class SamplePanel(wx.Panel):
     def InsertLay(self,evt):
         # Create Dialog box
         items = [('Name', 'name')]
-        validators = [NoMatchTextObjectValidator(self.sampleh.names)]
+        validators = [NoMatchValidTextObjectValidator(self.sampleh.names)]
         dlg = ValidateDialog(self,items,validators,title='Give Layer Name')
-        
         # Show the dialog
         if dlg.ShowModal()==wx.ID_OK:
                 vals=dlg.GetValues()
@@ -603,6 +620,31 @@ class SamplePanel(wx.Panel):
         sl=self.sampleh.deleteItem(self.listbox.GetSelection())
         if sl:
             self.Update()
+            
+    def ChangeName(self, evt):
+        '''Change the name of the current selected item.
+        '''
+        pos = self.listbox.GetSelection()
+        if pos == 0 or pos == len(self.sampleh.names) - 1:
+            self.plugin.ShowInfoDialog('It is forbidden to change the'\
+                'name of the substrate (Sub) and the Ambient (Amb) layers.')
+        else:
+            unallowed_names = self.sampleh.names[:pos] +\
+                                self.sampleh.names[max(0,pos - 1):]
+            items = [('Name', self.sampleh.names[pos])]
+            validators = [NoMatchValidTextObjectValidator(unallowed_names)]
+            dlg = ValidateDialog(self,items,validators,title='Give New Name')
+            
+            if dlg.ShowModal()==wx.ID_OK:
+                    vals=dlg.GetValues()
+                    result = self.sampleh.changeName(pos, vals[0])
+                    if result:
+                        self.Update()
+                    else:
+                        print 'Unexpected problems...'
+            dlg.Destroy()
+        
+        
 
     def lbDoubleClick(self,evt):
         sel=self.sampleh.getItem(self.listbox.GetSelection())
@@ -1531,11 +1573,11 @@ class Plugin(framework.Template):
             first_name = stack[1].split(',')[0].strip()
             # check so stack is non-empty
             if first_name != '':
-                print first_name
+                #print first_name
                 # Find all items above the first name in the stack
                 while(layer_names[0] != first_name):
                     all_names.append(layer_names.pop(0))
-                    print 'all names ',all_names[-1]
+                    #print 'all names ',all_names[-1]
                 all_names.append(layer_names.pop(0))
         all_names += layer_names
             

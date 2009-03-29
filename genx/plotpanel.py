@@ -9,7 +9,7 @@ matplotlib.interactive(False)
 matplotlib.use('Agg')
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_agg import FigureCanvasAgg, RendererAgg
-from matplotlib.transforms import Bbox, Point, Value
+from matplotlib.transforms import Bbox#, Point, Value
 from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector
 
@@ -24,6 +24,9 @@ spl = matplotlib.__version__.split('.')
 mat_ver = float(spl[0]+'.'+spl[1])
 #print mat_ver
 zoom_ver = 0.90
+if mat_ver < zoom_ver:
+    from matplotlib.transforms import Value 
+
 # Event for a click inside an plot which yields a number
 (plot_position, EVT_PLOT_POSITION) = wx.lib.newevent.NewEvent()
 # Event to tell the main window that the zoom state has changed
@@ -384,7 +387,13 @@ class PlotPanel(wx.Panel):
                 self.canvas.CaptureMouse()
         elif self.ax:
             size = self.canvas.GetClientSize()
-            x, y = self.ax.transData.inverse_xy_tup(\
+            if mat_ver > zoom_ver:
+                xy = self.ax.transData.inverted().transform(\
+                    array([self.start_pos[0], size.height-self.start_pos[1]])\
+                    [newaxis,:])
+                x, y = xy[0,0], xy[0,1]
+            else:
+                x, y = self.ax.transData.inverse_xy_tup(\
                     (self.start_pos[0], size.height - self.start_pos[1]))
             if self.callback_window:
                 evt = plot_position(text = '(%.3e, %.3e)'%(x, y))
@@ -775,25 +784,46 @@ class FigurePrintout(wx.Printout):
         """
         figure = self.figure
 
-        old_dpi = figure.dpi.get()
-        figure.dpi.set(dpi)
-        old_width = figure.figwidth.get()
-        figure.figwidth.set(wFig)
-        old_height = figure.figheight.get()
-        figure.figheight.set(hFig)
-        old_frameon = figure.frameon
-        figure.frameon = False
+        if mat_ver < zoom_ver:
+            old_dpi = figure.dpi.get()
+            figure.dpi.set(dpi)
+            old_width = figure.figwidth.get()
+            figure.figwidth.set(wFig)
+            old_height = figure.figheight.get()
+            figure.figheight.set(hFig)
 
-        wFig_Px = int(figure.bbox.width())
-        hFig_Px = int(figure.bbox.height())
+            wFig_Px = int(figure.bbox.width())
+            hFig_Px = int(figure.bbox.height())
 
-        agg = RendererAgg(wFig_Px, hFig_Px, Value(dpi))
+            agg = RendererAgg(wFig_Px, hFig_Px, Value(dpi))
+        else:
+            old_dpi = figure.get_dpi()
+            figure.set_dpi(dpi)
+            old_width = figure.get_figwidth()
+            figure.set_figwidth(wFig)
+            old_height = figure.get_figheight()
+            figure.set_figheight(hFig)
+            old_frameon = figure.frameon
+            figure.frameon = False
+
+            wFig_Px = int(figure.bbox.width)
+            hFig_Px = int(figure.bbox.height)
+
+            agg = RendererAgg(wFig_Px, hFig_Px, dpi)
+        
+
+            
         figure.draw(agg)
 
-        figure.dpi.set(old_dpi)
-        figure.figwidth.set(old_width)
-        figure.figheight.set(old_height)
-        figure.frameon = old_frameon
+        if mat_ver < zoom_ver:
+            figure.dpi.set(old_dpi)
+            figure.figwidth.set(old_width)
+            figure.figheight.set(old_height)
+        else:
+            figure.set_dpi(old_dpi)
+            figure.set_figwidth(old_width)
+            figure.set_figheight(old_height)
+            figure.frameon = old_frameon
 
         image = wx.EmptyImage(wFig_Px, hFig_Px)
         image.SetData(agg.tostring_rgb())
