@@ -59,7 +59,7 @@ class SolverController:
         # Define all the options we want to set
         options_float = ['km', 'kr', 'pop mult', 'pop size',\
                          'max generations', 'max generation mult',\
-                         'sleep time', 'errorbar level', 'autosave interval',\
+                         'sleep time','max log elements','errorbar level', 'autosave interval',\
                         'parallel processes', 'parallel chunksize']
         setfunctions_float = [self.optimizer.set_km, self.optimizer.set_kr,
                           self.optimizer.set_pop_mult,\
@@ -67,6 +67,7 @@ class SolverController:
                          self.optimizer.set_max_generations,\
                          self.optimizer.set_max_generation_mult,\
                          self.optimizer.set_sleep_time,\
+                        self.optimizer.set_max_log,\
                         self.set_error_bars_level,\
                         self.optimizer.set_autosave_interval,\
                         self.optimizer.set_processes,\
@@ -123,7 +124,8 @@ class SolverController:
         # Define all the options we want to set
         options_float = ['km', 'kr', 'pop mult', 'pop size',\
                          'max generations', 'max generation mult',\
-                         'sleep time', 'errorbar level', 'autosave interval',\
+                         'sleep time', 'max log elements','errorbar level',\
+                         'autosave interval',\
                         'parallel processes', 'parallel chunksize']
         set_float = [self.optimizer.km, self.optimizer.kr,
                           self.optimizer.pop_mult,\
@@ -131,6 +133,7 @@ class SolverController:
                          self.optimizer.max_generations,\
                          self.optimizer.max_generation_mult,\
                          self.optimizer.sleep_time,\
+                        self.optimizer.max_log, \
                         self.fom_error_bars_level,\
                          self.optimizer.autosave_interval,\
                         self.optimizer.processes,\
@@ -347,7 +350,7 @@ class SolverController:
         row = model.parameters.get_pos_from_row(parameter)
         if self.optimizer.start_guess != None and not self.optimizer.running:
             return self.optimizer.par_evals[:,row],\
-                self.optimizer.fom_evals
+                self.optimizer.fom_evals[:]
         else:
             raise ErrorBarError()
 

@@ -857,7 +857,9 @@ def on_find_event(frame, event):
     ##else:
     ##    ShowErrorDialog(frame, 'Faulty event supplied in find and'\
     ##                    ' repalce functionallity', 'on_find_event')
-    
+    # This will scroll the editor to the right position so we can see
+    # the text
+    frame.script_editor.EnsureCaretVisible()
         
 def change_data_grid_view(frame, event):
     '''change_data_grid_view(frame, event) --> None
