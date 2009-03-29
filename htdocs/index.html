@@ -11,78 +11,58 @@
 
 <body>
 <div id="container" >
-	<!--#include file="header.html" -->
-	<div id="navigation">
-		<ul>
-			<li class="selected"><a href="/index.html">Home</a></li>
-			<li><a href="/install.html">Install</a></li>
-			<li><a href="/howtouse.html">HowToUse</a></li>
-			<li><a href="/publ.html">Publications</a></li>
-			<!--<li><a href="#">Documentation</a></li>
-			<li><a href="#">FAQ</a></li> -->
-		</ul>
-	</div>
-	<div id="content">
-		<h2>What is Genx?</h2>
-		<p>GenX is a versatile program using the differential evolution algorithm for 
-		fitting X-ray and neutron reflectivity data. It utilizes the Parratt recursion 
-		formula for simulating specular reflectivity. The program is easily extensible
-		, allowing users to incorporate their own models into the program. This can be 
-		useful for fitting data from other scattering experiments, or for any other 
-		minimization problem which has a large number of input parameters and/or contains 
-		many local minima, where the differential evolution algorithm is suitable. 
-		In addition, GenX manages to fit an arbitrary number of data sets 
-		simultaneously. A detailed description has been published in 
-		<a href="http://www.iucr.org/cgi-bin/paper?aj5091">J. Appl. Cryst. 40, 1174 (2007)</a> </p>
-		
-		<h2>Details</h2>		
-		<p>GenX is written in <a href="http://www.python.org">python</a> and uses the 
-		<a href="hhtp://www.wxpython.org">wxpython</a> package for the Graphical User Interface (GUI).
-		The program is perhaps best described as integrated development environment for 
-		<a href="Screenshot.png"><img src="Screenshot_tumbnail.png" width="253" height="158" 
-		border="3" alt="Screenshot" align="right"/></a> 
-		building scattering/reflectivity models. In the basic configuration the user writes
-		a script which defines the physical model of the sample and instrument.		
-		This is
-		then loaded into the fitting environment and the user defined parameters can be fitted.</p>
-	
-		
+  <!--#include file="header.html" -->
+  <div id="navigation">
+    <ul>
+      <li class="selected"><a href="/index.html">Home</a></li>
+      <li><a href="/install.html">Install</a></li>
+      <li><a href="/howtouse.html">HowToUse</a></li>
+      <li><a href="/publ.html">Publications</a></li>
+      <!--<li><a href="#">Documentation</a></li>
+	  <li><a href="#">FAQ</a></li> -->
+    </ul>
+  </div>
+  <div id="content">
+    <h2>What is Genx?</h2>
+    <p>GenX is a versatile program using the differential evolution algorithm for 
+    fitting, primarily,  X-ray and neutron reflectivity data. The differential evolution
+    algorithm constitutes a robust method which avoids local minima but at same 
+    is a highly effective fitting algorithm. GenX is written in 
+    <a href="http://www.python.org">python</a> and uses the 
+    <a href="hhtp://www.wxpython.org">wxpython</a> package 
+    for the Graphical User Interface (GUI) <a href="Screenshot.png">
+    <img src="Screenshot_tumbnail.png" width="253" height="158"
+    border="3" alt="Screenshot" align="right"/></a>. A model to fit 
+    is defined either through a pre-written GUI plug-in or via a python script.
+    This makes it easy and effortless to develop completely new fitting model.
+    Clearly, GenX is extremely modular, making it possible to extend the program with 
+    models and plug-ins for most fitting problems. At the present GenX is shipped
+    with models for x-ray and neutron specular reflectivity as well as module
+    for off-specular x-ray reflectivity. A detailed description has been published in 
+    <a href="http://www.iucr.org/cgi-bin/paper?aj5091">
+    J. Appl. Cryst. 40, 1174 (2007)</a>. The program can be downloaded by clicking 
+    on the link on the left hand side.</p>
 
-		<p>The new version of GenX contains several improvements in comparison to the older.
-		Most noteworthy are a plugin architecture for add-ons and data loaders as well as new GUI design
-		with easier handling of large data sets. The add-on feature allows expert users to create
-		problem specific GUI components. For example, right now a GUI for defining multilayered sampled
-		for reflectivity is being developed. The data loaders allow different type of data to be loaded
-		by writing plugins that take care of that part. Both of these components can be changed run time.</p>
-		
-		
-		<h2>News</h2>
-		<dl>
-		<dt>2009-01-14</dt>
-		<dd>
-		Vital bugfixes has been done. There arose problems with saving under windows an mac.
-		This is fixed in the new version. 
-		</dd>
-		<dt>2008-12-02</dt>
-		<dd>GenX goes parallel with the new release! Additional features in the new
-		release also includes automatic saving of the <b>entire</b> state of the fit.
-		Of course many bugs has also been fixed.</dd>
-		<dt>2008-11-07</dt>
-		<dd>A new beta realase with among others new functionality for extra data. Also
-		a couple of bugfixes.</dd>
-		<dt>2008-10-12</dt>
-		<dd>Serious bug in the interpolation of scatteringlenghts found. An additional bug in
-		the arithmetic of scattering lengths wass found. Please update as soon as possible.
-		The correct version is GenX2b3.1</dd>
-		<dt>2008-09-14</dt>
-		<dd>Third beta released</dd>
-		<dt>2008-08-29</dt>
-		<dd>First beta release!</dd>
-		<dt>2008-08-28</dt>
-		<dd>Install section added to the homepage</dd>
-		<dt>2008-08-05</dt>
-		<dd>New homepage added - Welcome to the home of GenX2</dd>
-		</dl>
+    <h2>Feedback and Help</h2>
+    Naturally a program does not become better if I do not get feedback from you!
+    If you found a bug or want to have something included in the program follow these
+    links and submit a tracker. This also applies if you want to have support, i.e. questions. 
+    <ul>
+      <li><a href = "http://sourceforge.net/tracker/?group_id=235219&atid=1096267">Bug report</a></li>
+      <li><a href = "http://sourceforge.net/tracker/?group_id=235219&atid=1096270">Feature request</a></li>
+      <li><a href = "http://sourceforge.net/tracker/?group_id=235219&atid=1096268">Support request</a></li>
+    </ul>
+    The reason for using this system is that I will, in time, build up an database of question and
+    answers. In addition I will not forget to implement feature X in GenX when I have some time at my
+    hands.
+    If you feel <b>very</b> uncomfortable with giving your e-mail address in a web-form you can
+    also drop me an e-mail at <a href = "mattsb@sourceforge.net">mattsb at sourceforge.net</a>.
+    
+
+
+    <h2>News <a href="https://sourceforge.net/export/rss2_projnews.php?group_id=235219&rss_fulltext=1"><img src="feed-icon-14x14.png"/></a></h2>
+    <!--#include file="news.php" -->
+		</dl>-->
 	<br><br>
 	<!--#config timefmt="%A %B %d, %Y" -->
 	<span class="small">Last updated: <!--#echo var="LAST_MODIFIED" --></span></p>
@@ -94,7 +74,7 @@
 		<h2>Content</h2>
 		<ul class="menublock">
 			<li><a href="#">What is GenX?</a></li>
-			<li><a href="#">How to use it?</a></li>
+			<li><a href="#">Feedback and Help</a></li>
 			<li><a href="#">News</a></li>
 		</ul>
 		<!--#include file="left_links.html" -->

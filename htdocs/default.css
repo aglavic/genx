@@ -5,7 +5,7 @@ For more information, see http://andreasviklund.com/templates/andreas08/
 
 /* Body and tag styles */
 * {margin:0; padding:0;}
-body {font:76% Verdana,Tahoma,Arial,sans-serif; line-height:1.4em; text-align:center; color:#303030; background:#f7eddf;}
+body {font:80% Verdana,Tahoma,Arial,sans-serif; line-height:1.4em; text-align:center; color:#303030; background:#f7eddf;}
 a {color:#f57900; font-weight:bold; text-decoration:none; background-color:inherit;}
 a:hover {color:#ce5c00; text-decoration:none; background-color:inherit;}
 a img {border:none;}
@@ -37,6 +37,7 @@ img.right {float:right; margin:0 0 5px 12px;}
 #content dl {margin:0 5px 10px 25px;}
 #content dt {font-weight:bold; margin-bottom:5px;}
 #content dd {margin:0 0 10px 15px;}
+#content code {font-size: 1em;}
 
 /* Sidebar styles */
 #subcontent {float:right; width:170px; padding:20px 20px 10px 0; line-height:1.4em;}
@@ -74,3 +75,4 @@ img.right {float:right; margin:0 0 5px 12px;}
 .textright {text-align:right;}
 .important {color:#f02025; background-color:inherit; font-weight:bold;}
 .box {margin:0 0 20px 0; padding:10px; border:1px solid #c0c0c0; background-color:#fcfbfa; color:#505050; line-height:1.5em;}
+.code {font-size: 1em;}

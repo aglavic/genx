@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32px"
+   height="32px"
+   id="svg2160"
+   sodipodi:version="0.32"
+   inkscape:version="0.45"
+   sodipodi:docbase="/home/matts/GenX2/MyIcons"
+   sodipodi:docname="stop_fit.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/home/matts/GenX2/MyIcons/stop_fit.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:modified="TRUE">
+  <defs
+     id="defs2162">
+    <linearGradient
+       id="linearGradient3242">
+      <stop
+         style="stop-color:#a40000;stop-opacity:1;"
+         offset="0"
+         id="stop3244" />
+      <stop
+         style="stop-color:#ff9191;stop-opacity:1;"
+         offset="1"
+         id="stop3246" />
+    </linearGradient>
+    <filter
+       inkscape:collect="always"
+       id="filter3216">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.097593026"
+         id="feGaussianBlur3218" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter3220">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.19935937"
+         id="feGaussianBlur3222" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3242"
+       id="linearGradient3248"
+       x1="15.257694"
+       y1="18.262121"
+       x2="24.025063"
+       y2="5.8698559"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="12.71875"
+     inkscape:cx="16"
+     inkscape:cy="16"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:grid-bbox="true"
+     inkscape:document-units="px"
+     inkscape:window-width="910"
+     inkscape:window-height="626"
+     inkscape:window-x="202"
+     inkscape:window-y="76" />
+  <metadata
+     id="metadata2165">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer">
+    <path
+       style="fill:url(#linearGradient3248);fill-opacity:1.0;stroke:#000000;stroke-width:1.29999995;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter3220)"
+       d="M 11.0625,3.65 L 3.65625,11.05625 L 3.65625,21.525 L 11.0625,28.93125 L 21.53125,28.93125 L 28.9375,21.49375 L 28.9375,11.0875 L 21.53125,3.65 L 11.0625,3.65 z "
+       id="rect2176"
+       transform="matrix(1.1166512,0,0,1.1166512,-2.0389174,-2.3499536)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:7.16670752px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#eeeeec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter3216);font-family:Arial Black"
+       x="5.751545"
+       y="18.541719"
+       id="text3194"
+       sodipodi:linespacing="125%"
+       transform="matrix(1.1166512,0,0,1.1166512,-2.0389174,-2.3499536)"><tspan
+         sodipodi:role="line"
+         id="tspan3196"
+         x="5.751545"
+         y="18.541719">STOP</tspan></text>
+    <path
+       id="path3224"
+       d="M 11.0625,3.65 L 3.65625,11.05625 L 3.65625,21.525 L 11.0625,28.93125 L 21.53125,28.93125 L 28.9375,21.49375 L 28.9375,11.0875 L 21.53125,3.65 L 11.0625,3.65 z "
+       style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:1.29999995;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter3220)"
+       transform="matrix(1.0341175,0,0,1.0341175,-0.6811279,-1.0854212)" />
+  </g>
+</svg>
