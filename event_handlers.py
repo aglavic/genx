@@ -905,6 +905,12 @@ def update_data(frame, event):
     '''
     frame.plugin_control.OnDataChanged(event)
 
+def fom_help(frame, event):
+    '''Show a help dialog for information about the different fom.
+    '''
+    dlg = help.PluginHelpDialog(frame, 'fom_funcs')
+    dlg.Show()
+
 def models_help(frame, event):
     '''models_help(frame, event) --> None
     
