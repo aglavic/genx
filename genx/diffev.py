@@ -191,7 +191,8 @@ class DiffEv:
     def reset(self):
         ''' reset(self) --> None
         
-        Resets the optimizer
+        Resets the optimizer. Note this has to be run if the optimizer is to
+        be restarted.
         '''
         self.setup_ok = False
     

@@ -23,7 +23,7 @@ import io
 spl = matplotlib.__version__.split('.')
 mat_ver = float(spl[0]+'.'+spl[1])
 #print mat_ver
-zoom_ver = 0.90
+zoom_ver = 0.91
 if mat_ver < zoom_ver:
     from matplotlib.transforms import Value 
 
