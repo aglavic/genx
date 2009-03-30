@@ -99,8 +99,6 @@ class MainFrame(wx.Frame):
         self.mb_edit.AppendItem(self.mb_copy_sim)
         self.mb_copy_table = wx.MenuItem(self.mb_edit, wx.NewId(), "Copy Table", "Copy the parameter grid", wx.ITEM_NORMAL)
         self.mb_edit.AppendItem(self.mb_copy_table)
-        self.mb_findreplace = wx.MenuItem(self.mb_edit, wx.NewId(), "&Find/Replace...\tCtrl+F", "Find and replace in the script", wx.ITEM_NORMAL)
-        self.mb_edit.AppendItem(self.mb_findreplace)
         self.mb_edit_sub = wx.Menu()
         self.mb_new_data_set = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&New data set\tAlt+N", "Appends a new data set", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_new_data_set)
@@ -141,7 +139,7 @@ class MainFrame(wx.Frame):
         self.mb_fit.AppendItem(self.mb_fit_simulate)
         self.mb_fit_evaluate = wx.MenuItem(self.mb_fit, wx.NewId(), "&Evaluate\tF5", "Evaluate the Sim function only - no recompiling", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_evaluate)
-        self.mb_fit_start = wx.MenuItem(self.mb_fit, wx.NewId(), "S&tart Fit\tCtrl+T", "Start fitting", wx.ITEM_NORMAL)
+        self.mb_fit_start = wx.MenuItem(self.mb_fit, wx.NewId(), "Start &Fit\tCtrl+F", "Start fitting", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_start)
         self.mb_fit_stop = wx.MenuItem(self.mb_fit, wx.NewId(), "&Halt Fit\tCtrl+H", "Stop fitting", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_stop)
@@ -164,12 +162,16 @@ class MainFrame(wx.Frame):
         self.mb_set.AppendItem(self.mb_set_dataplot)
         self.main_frame_menubar.Append(self.mb_set, "Settings")
         wxglade_tmp_menu = wx.Menu()
-        self.mb_models_help = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Models Help...", "Show help for the models", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.AppendItem(self.mb_models_help)
-        self.mb_plugins_help = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Plugins Helps...", "Show help for the plugins", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.AppendItem(self.mb_plugins_help)
-        self.mb_data_loaders_help = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Data loaders Help...", "Show help for the data loaders", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.AppendItem(self.mb_data_loaders_help)
+        mb_help = wx.Menu()
+        self.mb_models_help = wx.MenuItem(mb_help, wx.NewId(), "Models Help...", "Show help for the models", wx.ITEM_NORMAL)
+        mb_help.AppendItem(self.mb_models_help)
+        self.mb_fom_help = wx.MenuItem(mb_help, wx.NewId(), "FOM Help", "Show help about the fom", wx.ITEM_NORMAL)
+        mb_help.AppendItem(self.mb_fom_help)
+        self.mb_plugins_help = wx.MenuItem(mb_help, wx.NewId(), "Plugins Helps...", "Show help for the plugins", wx.ITEM_NORMAL)
+        mb_help.AppendItem(self.mb_plugins_help)
+        self.mb_data_loaders_help = wx.MenuItem(mb_help, wx.NewId(), "Data loaders Help...", "Show help for the data loaders", wx.ITEM_NORMAL)
+        mb_help.AppendItem(self.mb_data_loaders_help)
+        wxglade_tmp_menu.AppendMenu(wx.NewId(), "Help", mb_help, "")
         self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Show Manual...", "Show the manual", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_showman)
         self.mb_misc_about = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "About...", "Shows information about GenX", wx.ITEM_NORMAL)
@@ -224,7 +226,6 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_graph, self.mb_copy_graph)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_sim, self.mb_copy_sim)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, self.mb_copy_table)
-        self.Bind(wx.EVT_MENU, self.eh_mb_findreplace, self.mb_findreplace)
         self.Bind(wx.EVT_MENU, self.eh_data_new_set, self.mb_new_data_set)
         self.Bind(wx.EVT_MENU, self.eh_data_delete, self.mb_data_delete)
         self.Bind(wx.EVT_MENU, self.eh_data_move_down, self.mb_data_move_down)
@@ -249,6 +250,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_data_import, self.mb_set_import)
         self.Bind(wx.EVT_MENU, self.eh_data_plots, self.mb_set_dataplot)
         self.Bind(wx.EVT_MENU, self.eh_mb_models_help, self.mb_models_help)
+        self.Bind(wx.EVT_MENU, self.eh_mb_fom_help, self.mb_fom_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, self.mb_plugins_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_data_loaders_help, self.mb_data_loaders_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, self.mb_misc_showman)
@@ -732,6 +734,9 @@ class MainFrame(wx.Frame):
 
     def eh_external_find(self, event):
         event_handlers.on_find_event(self, event)
+
+    def eh_mb_fom_help(self, event): # wxGlade: MainFrame.<event_handler>
+        event_handlers.fom_help(self, event)
 
 # end of class MainFrame
 

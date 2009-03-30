@@ -13,12 +13,17 @@ class PluginHelpDialog(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Models help')
         #self.SetAutoLayout(True)
         self.module = module
+        self.sub_modules = True
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         choice_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        choice_sizer.Add(wx.StaticText(self, -1, 'Model: '),0 , wx.CENTER)
-        self.choice = wx.Choice(self, -1, choices = self.find_modules(module))
-        choice_sizer.Add(self.choice, 0, flag = wx.EXPAND|wx.CENTER, border = 20)
+        choice_sizer.Add(wx.StaticText(self, -1, 'Module: '),0 , wx.CENTER)
+        mod_list = self.find_modules(module)
+	#if mod_list == []:
+        #    mod_list = [module]
+        self.choice = wx.Choice(self, -1, choices = mod_list)
+        choice_sizer.Add(self.choice, 0, flag = wx.EXPAND|wx.CENTER,\
+				 border = 20)
         self.Bind(wx.EVT_CHOICE, self.on_choice, self.choice)
         sizer.Add(choice_sizer, 0, wx.EXPAND, border = 20)
         
@@ -55,7 +60,10 @@ class PluginHelpDialog(wx.Frame):
         Callback for a choice selction in the choice window
         '''
         sub_module = self.choice.GetStringSelection()
-        doc = self.load_doc(self.module, sub_module)
+        if self.sub_modules:
+            doc = self.load_doc(self.module, sub_module)
+        else:
+            doc = self.load_doc(self.module)
         self.html_win.SetPage(doc)
         
     def find_modules(self, module):
@@ -67,17 +75,27 @@ class PluginHelpDialog(wx.Frame):
         # Load the package, note the non-empty fromlist that 
         # makes subpackages being loaded
         mod = __import__(module, globals(), locals(), [''])
-        return [s[:-3] for s in os.listdir(mod.__path__[0])\
+        try:
+            modules = [s[:-3] for s in os.listdir(mod.__path__[0])\
                     if s[0] != '_' and s[-3:] == '.py']
+        except AttributeError:
+            modules = [module]
+            self.sub_modules = False
+        return modules
                     
-    def load_doc(self, module, sub_module):
+    def load_doc(self, module, sub_module = None):
         '''load_doc(self, module, sub_moduls) --> doc string
         
         Returns the doc string for module.sub_module list
         '''
         docs = ''
         try:
-            mod = __import__('%s.%s'%(module, sub_module), globals(), locals(), [''])
+            if sub_module != None:
+                mod = __import__('%s.%s'%(module, sub_module), \
+                             globals(), locals(), [''])
+            else:
+                mod = __import__('%s'%(module), \
+                             globals(), locals(), [''])
             docs = mod.__doc__
         except Exception, e:
             docs = 'Could not load docstring for %s.'%sub_module

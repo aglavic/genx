@@ -1,3 +1,8 @@
+2009-03-30:
+    Fixed long standing issue with the speed display in when using
+    parallel processing.
+    Added help on the FOM functions.
+
 2009-03-29:
     Fixed yet another bug in plotpanel relating to the new version of
     matplotlib.

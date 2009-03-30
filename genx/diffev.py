@@ -364,7 +364,7 @@ class DiffEv:
             if self.stop:
                 break
             
-            t_start = time.clock()
+            t_start = time.time()
             
             # Create the vectors who will be compared to the 
             # population vectors
@@ -395,7 +395,7 @@ class DiffEv:
             time.sleep(self.sleep_time)
             
             # Time measurent to track the speed
-            t = time.clock() - t_start
+            t = time.time() - t_start
             if t > 0:
                 speed = self.n_pop/t
             else:
