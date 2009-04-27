@@ -96,7 +96,7 @@ class DiffEv:
         
         # Logging variables
         # Maximum number of logged elements
-        self.max_log = 800000
+        self.max_log = 500000
         self.fom_log = array([[0,0]])[0:0]
         #self.par_evals = array([[]])[0:0]
         
