@@ -17,7 +17,8 @@ try:
     import processing
     __parallel_loaded__ = True
 except:
-    print 'processing not installed no parallel processing possible'
+    #print 'processing not installed no parallel processing possible'
+    pass
     
 
 import model
@@ -95,9 +96,10 @@ class DiffEv:
         
         # Logging variables
         # Maximum number of logged elements
-        self.max_log = 100000
+        self.max_log = 800000
         self.fom_log = array([[0,0]])[0:0]
         #self.par_evals = array([[]])[0:0]
+        
         self.par_evals = CircBuffer(self.max_log, buffer = array([[]])[0:0])
         #self.fom_evals = array([])
         self.fom_evals = CircBuffer(self.max_log)
@@ -245,8 +247,12 @@ class DiffEv:
 
         # Logging varaibles
         self.fom_log = array([[0,1]])[0:0]
-        self.par_evals.reset(array([self.par_min])[0:0]) #array([self.par_min])[0:0]
-        self.fom_evals.reset() #array([])
+        self.par_evals = CircBuffer(self.max_log,
+                                    buffer = array([self.par_min])[0:0])
+        #self.fom_evals = array([])
+        self.fom_evals = CircBuffer(self.max_log)
+        #self.par_evals.reset(array([self.par_min])[0:0])
+        #self.fom_evals.reset()
         
         self.text_output('DE initilized')
         
@@ -375,7 +381,7 @@ class DiffEv:
             
             # Add the evaluation to the logging
             #self.par_evals = append(self.par_evals, self.trial_vec, axis = 0)
-            [self.par_evals.append([vec], axis = 0)\
+            [self.par_evals.append(vec, axis = 0)\
                     for vec in self.trial_vec]
             #self.fom_evals = append(self.fom_evals, self.trial_fom)
             [self.fom_evals.append(vec) for vec in self.trial_fom]
@@ -911,26 +917,49 @@ def _calc_fom(model, vec, par_funcs):
 class CircBuffer:
     '''A buffer with a fixed length to store the logging data from the diffev 
     class. Initilized to a maximumlength after which it starts to overwrite
+    the data again.
     '''
-    def __init__(self, maxlen, buffer = array([])):
+    def __init__(self, maxlen, buffer = None):
         '''Inits the class with a certain maximum length maxlen.
         '''
-        self.maxlen = maxlen
+        self.maxlen = int(maxlen)
         self.pos = -1
-        self.buffer = buffer
+        self.filled = False
+        if buffer == None:
+            self.buffer = array([0]*int(self.maxlen))
+        else:
+            if len(buffer) != 0:
+                self.buffer = array(buffer).repeat(
+                    ceil(self.maxlen/(len(buffer)*1.0)), 0)[:self.maxlen]
+                self.pos = len(buffer) - 1
+            else:
+               self.buffer = zeros((self.maxlen,) + buffer.shape[1:])
+
         
-    def reset(self, buffer = array([])):
+    def reset(self, buffer = None):
         '''Resets the buffer to the initial state
         '''
         self.pos = -1
-        self.buffer = buffer
-        #self.buffer = ones([0]*self.dims)
+        self.filled = False
+        #self.buffer = buffer
+        if buffer == None:
+            self.buffer = array([0]*int(self.maxlen))
+        else:
+            if len(buffer) != 0:
+                self.buffer = array(buffer).repeat(
+                    ceil(self.maxlen/(len(buffer)*1.0)), 0)[:self.maxlen]
+                self.pos = len(buffer) - 1
+            else:
+                self.buffer = zeros((self.maxlen,) + buffer.shape[1:])
+
+
         
     def append(self, item, axis = None):
         '''Appends an element to the last position of the buffer
         '''
         new_pos = (self.pos + 1)%self.maxlen
         if len(self.buffer) >= self.maxlen:
+            self.filled = True
             self.buffer[new_pos] = item
         else:
             self.buffer = append(self.buffer, item, axis = axis)
@@ -940,7 +969,10 @@ class CircBuffer:
         '''returns an ordered array instead of the circular
         working version
         '''
-        return r_[self.buffer[self.pos+1:], self.buffer[:self.pos+1]]
+        if self.filled:
+            return r_[self.buffer[self.pos+1:], self.buffer[:self.pos+1]]
+        else:
+            return r_[self.buffer[:self.pos+1]]
         
     def copy_from(self, object):
         '''Add copy support
@@ -951,6 +983,10 @@ class CircBuffer:
             self.buffer = object.buffer.copy()
             self.maxlen = object.maxlen
             self.pos = object.pos
+            try:
+                self.filled = object.filled
+            except:
+                self.filled = False
         else:
             raise TypeError('CircBuffer support only copying from CircBuffer'\
                         ' and arrays.')
