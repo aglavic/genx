@@ -92,11 +92,11 @@ class DiffEv:
         self.running = False # true if optimization is running
         self.stop = False # true if the optimization should stop
         self.setup_ok = False # True if the optimization have been setup
-        
+       
         
         # Logging variables
         # Maximum number of logged elements
-        self.max_log = 500000
+        self.max_log = 100000
         self.fom_log = array([[0,0]])[0:0]
         #self.par_evals = array([[]])[0:0]
         
@@ -926,7 +926,7 @@ class CircBuffer:
         self.pos = -1
         self.filled = False
         if buffer == None:
-            self.buffer = array([0]*int(self.maxlen))
+            self.buffer = zeros((self.maxlen,))
         else:
             if len(buffer) != 0:
                 self.buffer = array(buffer).repeat(
@@ -943,7 +943,7 @@ class CircBuffer:
         self.filled = False
         #self.buffer = buffer
         if buffer == None:
-            self.buffer = array([0]*int(self.maxlen))
+             self.buffer = zeros((self.maxlen,))
         else:
             if len(buffer) != 0:
                 self.buffer = array(buffer).repeat(
@@ -959,7 +959,8 @@ class CircBuffer:
         '''
         new_pos = (self.pos + 1)%self.maxlen
         if len(self.buffer) >= self.maxlen:
-            self.filled = True
+            if self.pos >= (self.maxlen - 1):
+                self.filled = True
             self.buffer[new_pos] = item
         else:
             self.buffer = append(self.buffer, item, axis = axis)
