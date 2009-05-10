@@ -80,12 +80,20 @@ class Parameters:
         row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
                 not self.data[nmb][0] == '']
         return len(row_nmb) - 1
-        
+    
     def get_sim_pars(self):
         ''' Returns the variables needed for simulation '''
         funcs = [row[0] for row in self.data if not row[0] == '']
         mytest = [row[1] for row in self.data if not row[0] == '']
         return (funcs, mytest)
+
+    def get_sim_pos_from_row(self, row):
+        '''Transform a row to a psoitions in the sim list 
+        that is returned by get_sim_pars
+        '''
+        rows = range(row + 1)
+        row_nmb=[nmb for nmb in rows if not self.data[nmb][0] == '']
+        return len(row_nmb) - 1
        
     def set_value_pars(self, value):
         ''' Set the values of the parameters '''
@@ -102,6 +110,11 @@ class Parameters:
             if row[2] and not row[0] == '':
                 row[5] = value[valueindex]
                 valueindex = valueindex + 1
+
+    def clear_error_pars(self):
+        ''' clears the errors in the parameters'''
+        for row in  self.data:
+            row[5] = '-' 
                 
     def set_data(self, data):
         rowi = 0

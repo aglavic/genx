@@ -104,6 +104,7 @@ class Model:
         loadfile.close()
         
         self.filename = os.path.abspath(filename)
+        self.compiled = False
         self.saved = True
         
     def save(self,filename):

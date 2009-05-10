@@ -1,3 +1,16 @@
+2009-05-10:
+    Fixed problem with icons in the refelctivity plugin (compability issues)
+    Made changes in event_handlers to cope with odler version installed
+    on my kubuntu machine.
+    Fixed bug ID: 2737390, the pars plot now updates when a model is loaded.
+    Fixed bug ID: 2748261 in interdiff.py. Should still refactor them but not
+    now.
+    Fixed bug ID: ID: 2737406. Errorbars are completely removed when a
+    new fit is started.
+    Added so that diffev works with the standardlibrary package multiprocessing
+    as well as the odler processing. Parallel should work out of
+    the box for Python > 2.6
+
 2009-03-30:
     Fixed long standing issue with the speed display in when using
     parallel processing.

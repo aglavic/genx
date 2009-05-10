@@ -201,7 +201,7 @@ def Specular(TwoThetaQz, sample, instrument):
         raise ValueError('Variable footype has an unvalid value')
     
     if restype == 0 or restype == instrument_string_choices['restype'][0]:
-        pass
+        R = R[:]*foocor
     elif restype == 1 or restype == instrument_string_choices['restype'][1]:
         R = ConvoluteFast(TwoThetaQz,R[:]*foocor, instrument.getRes(),\
             range = instrument.getResintrange())

@@ -527,7 +527,7 @@ def scan_parameter(frame, row):
         try:
             x, y = frame.solver_control.ScanParameter(row, dlg.GetValue())
             fs, pars = frame.model.get_sim_pars()
-            bestx = pars[row]
+            bestx = frame.model.parameters.get_data()[row][1]
             besty = frame.model.fom
             
             frame.plot_fomscan.SetPlottype('scan')
@@ -895,7 +895,9 @@ def update_data_grid_choice(frame, event):
     '''
     data = event.GetData()
     names = [data_set.name for data_set in data]
-    frame.data_grid_choice.SetItems(names)
+    #frame.data_grid_choice.SetItems(names)
+    frame.data_grid_choice.Clear()
+    frame.data_grid_choice.AppendItems(names)
     event.Skip()
     
 def update_data(frame, event):
