@@ -258,8 +258,26 @@ class SolverController:
         '''
         evt = update_plot(model = self.optimizer.get_model(), \
                 fom_log = self.optimizer.get_fom_log(), update_fit = False,\
-                desc = 'Fitting update')
+                desc = 'Model loaded')
         wx.PostEvent(self.parent, evt)
+        
+        # Update the parameter plot ... 
+        if self.optimizer.setup_ok:
+            # remeber to add a check 
+            solver = self.optimizer
+            try:
+                evt = update_parameters(values = solver.best_vec.copy(),\
+                    new_best = False,\
+                    population = solver.pop_vec,\
+                    max_val = solver.par_max, \
+                    min_val = solver.par_min, \
+                    fitting = True,\
+                    desc = 'Parameter Update', update_errors = False,\
+                    permanent_change = False)
+            except:
+                print 'Could not create data for paraemters'
+            else:
+                wx.PostEvent(self.parent, evt)
         
     def AutoSave(self):
         '''DoAutoSave(self) --> None
@@ -366,7 +384,7 @@ class SolverController:
         (funcs, vals) = model.get_sim_pars()
         minval = model.parameters.get_data()[row][3]
         maxval = model.parameters.get_data()[row][4]
-        parfunc = funcs[row]
+        parfunc = funcs[model.parameters.get_sim_pos_from_row(row)]
         step = (maxval - minval)/points
         par_vals = np.arange(minval, maxval + step, step)
         fom_vals = np.array([])
@@ -379,6 +397,8 @@ class SolverController:
                                style = wx.PD_APP_MODAL| wx.PD_ELAPSED_TIME
                                | wx.PD_REMAINING_TIME | wx.PD_AUTO_HIDE)
         try:
+            # Start with setting all values
+            [f(v) for (f, v) in zip(funcs, vals)]
             for par_val in par_vals:
                 parfunc(par_val)
                 fom_vals = np.append(fom_vals, model.evaluate_fit_func())
@@ -413,6 +433,8 @@ class SolverController:
         # Make sure that the config of the solver is updated..
         self.ReadConfig()
         model = self.parent.model
+        # Reset all the errorbars
+        model.parameters.clear_error_pars()
         #self.start_parameter_values = model.get_fit_values()
         self.optimizer.start_fit(model)
         #print 'Optimizer starting'
@@ -428,9 +450,11 @@ class SolverController:
         
         Function to resume the fitting after it has been stopped
         '''
-        # Make sure teh settings are updated..
+        # Make sure the settings are updated..
         self.ReadConfig()
         model = self.parent.model
+        # Remove all previous erros ...
+        
         self.optimizer.resume_fit(model)
         
     def IsFitted(self):

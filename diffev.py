@@ -12,13 +12,20 @@ import sys, os, pickle
 
 
 __parallel_loaded__ = False
+_cpu_count = 1
 
 try:
-    import processing
+    import multiprocessing as processing
     __parallel_loaded__ = True
+    _cpu_count = processing.cpu_count
 except:
-    #print 'processing not installed no parallel processing possible'
-    pass
+    try:
+        import processing
+        __parallel_loaded__ = True
+        _cpu_count = processing.cpuCount()
+    except:
+        #print 'processing not installed no parallel processing possible'
+        pass
     
 
 import model
@@ -68,7 +75,7 @@ class DiffEv:
         # Flag if we should use parallel processing 
         self.use_parallel_processing = __parallel_loaded__*0
         if __parallel_loaded__:
-            self.processes = processing.cpuCount()
+            self.processes = _cpu_count
         else:
             self.processes = 0
         self.chunksize = 1
@@ -161,6 +168,14 @@ class DiffEv:
             
             self.fom_vec = object.fom_vec
             self.best_fom = object.best_fom
+            # Not all implementaions has these copied within their files
+            # Just ignore if an error occur
+            try:
+                self.n_dim = object.n_dim
+                self.par_min = object.par_min
+                self.par_max = object.par_max
+            except:
+                pass
             
     def pickle_string(self):
         '''pickle_string(self) --> pickeled [string]
