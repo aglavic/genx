@@ -3,7 +3,7 @@ Controller class for the differnetial evolution class diffev
 Takes care of stopping and starting - output to the gui as well
 as some input from dialog boxes.
 Programmer Matts Bjorck
-Last Changed 2008 11 27
+Last Changed 2009 05 12
 '''
 import wx, StringIO, traceback
 import  wx.lib.newevent
@@ -59,29 +59,34 @@ class SolverController:
         # Define all the options we want to set
         options_float = ['km', 'kr', 'pop mult', 'pop size',\
                          'max generations', 'max generation mult',\
-                         'sleep time','max log elements','errorbar level', 'autosave interval',\
-                        'parallel processes', 'parallel chunksize']
+                         'sleep time','max log elements','errorbar level', 
+                         'autosave interval', 'parallel processes', 
+                         'parallel chunksize',]
         setfunctions_float = [self.optimizer.set_km, self.optimizer.set_kr,
-                          self.optimizer.set_pop_mult,\
-                          self.optimizer.set_pop_size,\
-                         self.optimizer.set_max_generations,\
-                         self.optimizer.set_max_generation_mult,\
-                         self.optimizer.set_sleep_time,\
-                        self.optimizer.set_max_log,\
-                        self.set_error_bars_level,\
-                        self.optimizer.set_autosave_interval,\
-                        self.optimizer.set_processes,\
-                        self.optimizer.set_chunksize]
+                              self.optimizer.set_pop_mult,
+                              self.optimizer.set_pop_size,
+                              self.optimizer.set_max_generations,
+                              self.optimizer.set_max_generation_mult,
+                              self.optimizer.set_sleep_time,
+                              self.optimizer.set_max_log,
+                              self.set_error_bars_level,
+                              self.optimizer.set_autosave_interval,
+                              self.optimizer.set_processes,
+                              self.optimizer.set_chunksize,
+                              ]
 
-        options_bool = ['use pop mult', 'use max generations',\
-                        'use start guess', 'use boundaries',\
-                         'use parallel processing', 'use autosave' ]
-        setfunctions_bool = [ self.optimizer.set_use_pop_mult,\
-                            self.optimizer.set_use_max_generations,\
-                            self.optimizer.set_use_start_guess, \
-                            self.optimizer.set_use_boundaries,\
-                            self.optimizer.set_use_parallel_processing,\
-                            self.optimizer.set_use_autosave]
+        options_bool = ['use pop mult', 'use max generations',
+                        'use start guess', 'use boundaries',
+                         'use parallel processing', 'use autosave', 
+                         'save all evals']
+        setfunctions_bool = [ self.optimizer.set_use_pop_mult,
+                              self.optimizer.set_use_max_generations,
+                              self.optimizer.set_use_start_guess, 
+                              self.optimizer.set_use_boundaries,
+                              self.optimizer.set_use_parallel_processing,
+                              self.optimizer.set_use_autosave,
+                              self.set_save_all_evals,
+                              ]
         
         # Make sure that the config is set
         if self.config:
@@ -139,15 +144,19 @@ class SolverController:
                         self.optimizer.processes,\
                         self.optimizer.chunksize ]
 
-        options_bool = ['use pop mult', 'use max generations',\
-                        'use start guess', 'use boundaries', \
-                        'use parallel processing', 'use autosave' ]
-        set_bool = [ self.optimizer.use_pop_mult,\
-                            self.optimizer.use_max_generations,\
-                            self.optimizer.use_start_guess,\
-                            self.optimizer.use_boundaries,\
-                            self.optimizer.use_parallel_processing, \
-                            self.optimizer.use_autosave ]
+        options_bool = ['use pop mult', 'use max generations',
+                        'use start guess', 'use boundaries', 
+                        'use parallel processing', 'use autosave',
+                        'save all evals',
+                        ]
+        set_bool = [ self.optimizer.use_pop_mult,
+                     self.optimizer.use_max_generations,
+                     self.optimizer.use_start_guess,
+                     self.optimizer.use_boundaries,
+                     self.optimizer.use_parallel_processing,
+                     self.optimizer.use_autosave,
+                     self.save_all_evals,
+                     ]
         
         # Make sure that the config is set
         if self.config:
@@ -207,9 +216,7 @@ class SolverController:
         #if dlg.ShowModal() == wx.ID_OK:
         #    pass
         dlg.Destroy()
-        
-        
-        
+               
     def TextOutput(self, text):
         '''TextOutput(self, text) --> None
         Function to present the output from the optimizer to the user. 
@@ -474,6 +481,11 @@ class SolverController:
             raise ValueError('fom_error_bars_level has to be above 1')
         else:
             self.fom_error_bars_level = value
+    
+    def set_save_all_evals(self, value):
+        '''Sets the boolean value to save all evals to file
+        '''
+        self.save_all_evals = bool(value)
 
 #==============================================================================
 class SettingsDialog(wx.Dialog):
@@ -539,7 +551,37 @@ class SettingsDialog(wx.Dialog):
                     border = 5)
         
         de_box_sizer.Add(de_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        row_sizer1.Add(de_box_sizer, 1, wx.EXPAND, 5)
+        row_sizer1.Add(de_box_sizer, 0, wx.EXPAND, 5)
+
+        #FOM BOX SIZER
+        fom_box = wx.StaticBox(self, -1, "FOM" )
+        fom_box_sizer = wx.StaticBoxSizer(fom_box, wx.VERTICAL )
+        
+        # FOM choice
+        fom_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        fom_text = wx.StaticText(self, -1, 'Figure of merit ')
+        self.fom_choice = wx.Choice(self, -1,choices = fom_funcs.func_names)
+        self.fom_choice.SetSelection(fom_funcs.func_names.index(fom_string))
+        fom_sizer.Add(fom_text,0, \
+            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        fom_sizer.Add(self.fom_choice,0,\
+            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 10)
+        fom_box_sizer.Add(fom_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        
+        # Errorbar level 
+        errorbar_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        errorbar_text = wx.StaticText(self, -1, 'Error bar level ')
+        self.errorbar_control = NumCtrl(self, value =\
+                        self.solvergui.fom_error_bars_level,\
+                        fractionWidth = 2, integerWidth = 2)
+        errorbar_sizer.Add(errorbar_text,0, \
+                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        errorbar_sizer.Add(self.errorbar_control,1, \
+                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        errorbar_sizer.Add((10, 20), 0, wx.EXPAND)
+        fom_box_sizer.Add(errorbar_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        
+        row_sizer1.Add(fom_box_sizer, 0, wx.EXPAND, 5)
         
         # Make the Fitting box
         fit_box = wx.StaticBox(self, -1, "Fitting" )
@@ -569,45 +611,32 @@ class SettingsDialog(wx.Dialog):
         autosave_sc.SetValue(self.solver.autosave_interval)
         autosave_sc.Enable(True)
         autosave_sizer.Add(use_autosave_control, 0, \
-            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
         autosave_sizer.Add(autosave_sc,0,\
-            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
         self.autosave_sc = autosave_sc
         self.use_autosave_control = use_autosave_control
         fit_box_sizer.Add(autosave_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+
+        # Checkbox for saving all evals
+        save_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        save_all_control = wx.CheckBox(self, -1, "Save evals, buffer ")
+        save_all_control.SetValue(self.solvergui.save_all_evals)
+        buffer_sc = wx.SpinCtrl(self)
+        buffer_sc.SetRange(1000,100000000)
+        buffer_sc.SetValue(self.solver.max_log)
+        buffer_sc.Enable(True)
+        save_sizer.Add(save_all_control, 0, \
+            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+        save_sizer.Add(buffer_sc,0,\
+            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+        self.buffer_sc = buffer_sc
+        self.save_all_control = save_all_control
+        fit_box_sizer.Add(save_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
         
         row_sizer1.Add(fit_box_sizer, 1, wx.EXPAND, 5)
         
-        #FOM BOX SIZER
-        fom_box = wx.StaticBox(self, -1, "FOM" )
-        fom_box_sizer = wx.StaticBoxSizer(fom_box, wx.VERTICAL )
-        
-        # FOM choice
-        fom_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        fom_text = wx.StaticText(self, -1, 'Figure of merit ')
-        self.fom_choice = wx.Choice(self, -1,choices = fom_funcs.func_names)
-        self.fom_choice.SetSelection(fom_funcs.func_names.index(fom_string))
-        fom_sizer.Add(fom_text,0, \
-            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        fom_sizer.Add(self.fom_choice,0,\
-            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 10)
-        fom_box_sizer.Add(fom_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        
-        # Errorbar level 
-        errorbar_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        errorbar_text = wx.StaticText(self, -1, 'Error bar level ')
-        self.errorbar_control = NumCtrl(self, value =\
-                        self.solvergui.fom_error_bars_level,\
-                        fractionWidth = 2, integerWidth = 2)
-        errorbar_sizer.Add(errorbar_text,0, \
-                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        errorbar_sizer.Add(self.errorbar_control,1, \
-                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        errorbar_sizer.Add((10, 20), 0, wx.EXPAND)
-        fom_box_sizer.Add(errorbar_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        
-        row_sizer1.Add(fom_box_sizer, 1, wx.EXPAND, 5)
-        
+       
         col_sizer.Add(row_sizer1, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
         
         row_sizer2 = wx.BoxSizer(wx.VERTICAL)
@@ -814,6 +843,8 @@ class SettingsDialog(wx.Dialog):
         self.solvergui.fom_error_bars_level = self.errorbar_control.GetValue()
         self.solver.use_autosave = self.use_autosave_control.GetValue()
         self.solver.autosave_interval = self.autosave_sc.GetValue()
+        self.solvergui.save_all_evals = self.save_all_control.GetValue()
+        self.solver.max_log = self.buffer_sc.GetValue()
         if self.apply_change:
             self.apply_change(self)
             

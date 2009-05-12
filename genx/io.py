@@ -13,10 +13,10 @@ import StringIO
 def save_gx(fname, model, optimizer, config):
     model.save(fname)
     model.save_addition('config', config.model_dump())
-    model.save_addition('optimizer', optimizer.pickle_string())
-    
-    
-
+    model.save_addition('optimizer', 
+            optimizer.pickle_string(clear_evals = 
+                                    not config.get_boolean('solver', 
+                                                           'save all evals')))
 # Not yet used ...
 def load_gx(fname, model, optimizer, config):
     model.load(fname)

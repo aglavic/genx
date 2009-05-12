@@ -147,7 +147,8 @@ class DiffEv:
         # Definition for the create_trial function
         #self.create_trial = object.create_trial
         
-        self.setup_ok = object.setup_ok # True if the optimization have been setup
+        # True if the optimization have been setup
+        self.setup_ok = object.setup_ok 
         
         # Logging variables
         self.fom_log = object.fom_log[:]
@@ -177,15 +178,18 @@ class DiffEv:
             except:
                 pass
             
-    def pickle_string(self):
-        '''pickle_string(self) --> pickeled [string]
-        
-        Saves a copy into a oickled string note that the dynamic
+    def pickle_string(self, clear_evals = False):
+        '''Pickle the object.
+
+        Saves a copy into a pickled string note that the dynamic
         functions will not be saved. For normal use this is taken care of
         outside this class with the config object.
         '''
         cpy = DiffEv()
         cpy.safe_copy(self)
+        if clear_evals:
+            cpy.par_evals.buffer = cpy.par_evals.buffer[0:0]
+            cpy.fom_evals.buffer = cpy.fom_evals.buffer[0:0]
         cpy.create_trial = None
         cpy.plot_output = None
         cpy.text_output = None
@@ -976,7 +980,7 @@ class CircBuffer:
         if len(self.buffer) >= self.maxlen:
             if self.pos >= (self.maxlen - 1):
                 self.filled = True
-            self.buffer[new_pos] = item
+            self.buffer[new_pos] = array(item)
         else:
             self.buffer = append(self.buffer, item, axis = axis)
         self.pos = new_pos
@@ -996,13 +1000,17 @@ class CircBuffer:
         if type(object) == type(array([])):
             self.buffer = object[-self.maxlen:]
         elif object.__class__ == self.__class__:
-            self.buffer = object.buffer.copy()
-            self.maxlen = object.maxlen
-            self.pos = object.pos
-            try:
-                self.filled = object.filled
-            except:
-                self.filled = False
+            # Check if the buffer has been removed.
+            if len(object.buffer) == 0:
+                self.__init__(object.maxlen, object.buffer)
+            else:
+                self.buffer = object.buffer.copy()
+                self.maxlen = object.maxlen
+                self.pos = object.pos
+                try:
+                    self.filled = object.filled
+                except:
+                    self.filled = False
         else:
             raise TypeError('CircBuffer support only copying from CircBuffer'\
                         ' and arrays.')
