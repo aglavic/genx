@@ -48,7 +48,9 @@ Crystallographic R2 factor, assumes that the loaded data are intensities.
 )<sup>2</sup>/&#8721;<sub><var>i</var></sub><var>Y<sub>i</sub><sup>2</sup></var>
 <br></huge>
 <h2>Customisation</h2>
-
+See the manual at 
+<a href = "http://apps.sourceforge.net/trac/genx/wiki/DocPages/WriteFom">
+http://apps.sourceforge.net/trac/genx/wiki/DocPages/WriteFom </a>
 '''
 
 import numpy as np

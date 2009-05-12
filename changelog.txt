@@ -1,3 +1,9 @@
+2009-05-12:
+    Made some final changes to the fom_duncs.py builtin documentation.
+    Created a config variable called "save all evals" so that saving all
+    evals into a file is supressed. Helps with filesizes.
+    Has also implemented this in the Optimizer Settings dilaog box togheter
+    with the buffer size for logging. Feature request ID: 2787480.
 2009-05-10:
     Fixed problem with icons in the refelctivity plugin (compability issues)
     Made changes in event_handlers to cope with odler version installed
