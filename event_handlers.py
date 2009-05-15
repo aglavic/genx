@@ -1,7 +1,10 @@
 '''
 Just a library of the different eventhandler needed in the GUI
-Programmer: Matts Bjorck
-Last changed: 2008 06 24
+File started by: Matts Bjorck
+
+$Rev::                                  $:  Revision of last commit
+$Author::                               $:  Author of last commit
+$Date::                                 $:  Date of last commit
 '''
 
 __version__ = '2.0b trunk'
@@ -123,6 +126,9 @@ def on_new_model(frame, event):
     frame.script_editor.SetText(event.GetModel().get_script())
     # Let the solvergui do its loading and updating:
     frame.solver_control.ModelLoaded()
+    # Lets update the mb_use_toggle_show Menu item
+    frame.mb_use_toggle_show.Check(frame.config.get_boolean('data handling', 
+                                                              'toggle show'))
     # Let other event handlers recieve the event as well
     event.Skip()
 
@@ -171,7 +177,7 @@ def save_as(frame, event):
         fname = dlg.GetPath()
         result = True
         if os.path.exists(fname):
-            filepath, filename = os.path.split(frame.model.filename)
+            filepath, filename = os.path.split(fname)
             result = ShowQuestionDialog(frame, \
             'The file %s already exists. Do you wish to overwrite it?'%filename\
             , 'Overwrite?')

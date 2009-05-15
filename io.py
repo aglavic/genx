@@ -1,8 +1,11 @@
-'''
-File: genxio.py 
-io function for Genx. These include loading of initilazation files.
-Programmed by: Matts Bjorck
-Last changed: 2008 11 26
+'''I/O functions for GenX. 
+These include loading of initilazation files.
+Also included is the config object.
+File started by: Matts Bjorck
+
+$Rev::                                  $:  Revision of last commit
+$Author::                               $:  Author of last commit
+$Date::                                 $:  Date of last commit
 '''
 
 import ConfigParser as CP
