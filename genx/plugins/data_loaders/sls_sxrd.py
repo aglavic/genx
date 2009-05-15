@@ -46,6 +46,9 @@ class Plugin(Template):
                     filename + ' \nPlease check the format.\n\n numpy.loadtxt'\
                     + ' gave the following error:\n'  +  str(e))
         else:
+            # For the freak case of only one data point
+            if len(load_array.shape) < 2:
+                load_array = np.array([load_array])
             # Check so we have enough columns
             if load_array.shape[1]-1 < max(self.h_col, self.k_col, self.l_col,\
                     self.I_col, self.eI_col):
@@ -69,7 +72,7 @@ class Plugin(Template):
             # Sort the data
             data.sort(order = ('h','k','l'))
             i = 0
-            while i < (len(data)-1):
+            while i < len(data):
                 # Find all the data for each rod
                 tmp = data.compress(np.bitwise_and(data['h'] == data[i]['h'],\
                                     data['k'] == data[i]['k']))

@@ -43,6 +43,9 @@ class Plugin(Template):
                     filename + ' \nPlease check the format.\n\n numpy.loadtxt'\
                     + ' gave the following error:\n'  +  str(e))
         else:
+            # For the freak case of only one data point
+            if len(load_array.shape) < 2:
+                load_array = np.array([load_array])
             # Check so we have enough columns
             if load_array.shape[1]-1 < max(self.x_col, self.y_col, self.e_col):
                 ShowWarningDialog(self.parent, 'The data file does not contain'\
