@@ -159,6 +159,9 @@ class DataSet:
         If command is set, this means that the data set can be operated upon
         with commands just as the x,y and e data members.
         '''
+        if name in ['x', 'y', 'e']:
+            raise KeyError('The extra data can not support the key'
+                           'names x, y or e.')
         self.extra_data[name] = value
         self.extra_data_raw[name] = value
         if command:
@@ -461,6 +464,11 @@ class DataSet:
                     self.sim_color = (c[0]/255.0, c[1]/255.0, c[2]/255.0)
                 else:
                     exec('self.sim_' + name + ' = ' + pars[name].__str__())
+
+    def set_show(self, val):
+        '''Set show true - show data set in plots
+        '''
+        self.show = bool(val)
 #END: Class DataSet
 #==============================================================================
 #BEGIN: Class DataList
@@ -614,6 +622,14 @@ class DataList:
         Toggles the show flag for dataset at position pos.
         '''
         self.items[pos].show = not self.items[pos].show
+
+    def show_items(self, positions):
+        '''show_items(self, positions) --> None
+        Will put the datasets at positions [list] to show all 
+        other of no show, hide.
+        '''
+        [item.set_show(i in positions) for i, item in enumerate(self.items)]
+
         
     def set_name(self,pos,name):
         '''

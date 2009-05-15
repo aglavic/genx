@@ -4,8 +4,11 @@ Library for GUI+interface layer for the data class.
 Implements one Controller and a customiized ListController
 for data. The class that should be used for the outside world
 is the DataListController. This has a small toolbar ontop.
-Programmer: Matts Bjorck
-Last changed: 2008 08 14
+File started by: Matts Bjorck
+
+$Rev::                                  $:  Revision of last commit
+$Author::                               $:  Author of last commit
+$Date::                                 $:  Date of last commit
 '''
 
 import wx, os
@@ -161,6 +164,12 @@ class DataController:
         [self.data[i].set_data_plot_items(data_list[j]) for\
                      i,j in zip(pos, lpos)]
     
+    def show_data(self, positions):
+        '''Show only data at the indices given in position
+        all other should be hidden.
+        '''
+        self.data.show_items(positions)
+
     def toggle_show_data(self, positions):
         '''toggle_show_data(self, pos) --> None
         toggles the show value for the data elements at positions.
@@ -231,6 +240,7 @@ class DataListEvent(wx.PyCommandEvent):
         Set a string that describes the event that has occurred
         '''
         self.description = desc
+
     def SetNameChange(self):
         '''SetNameChange(self) --> None
         
@@ -262,6 +272,7 @@ class VirtualDataList(wx.ListCtrl):
         # plugin function !
         self.data_loader = None 
         self.data_loader_cont = dlf.PluginController(self)
+        self.show_indices = []
         
         # Set list length
         self.SetItemCount(self.data_cont.get_count())      
@@ -277,7 +288,32 @@ class VirtualDataList(wx.ListCtrl):
         self.Bind(wx.EVT_LIST_BEGIN_LABEL_EDIT,self.OnBeginEdit)
         self.Bind(wx.EVT_LIST_END_LABEL_EDIT,self.OnEndEdit)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK,self.OnListRightClick)
+        # For binding selction showing data sets
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelectionChanged)
+        self.toggleshow = self.config.get_boolean('data handling', 
+                                                  'toggle show')
+            
+    def SetShowToggle(self, toggle):
+        '''Sets the selction type of the show. If toggle is true
+        then the selection is via toggle if false via selection of
+        data set only.
+        '''
+        self.toggleshow = bool(toggle)
+        self.config.set('data handling', 'toggle show', toggle)
         
+
+    def OnSelectionChanged(self, evt):
+        if not self.toggleshow:
+            indices = self._GetSelectedItems()
+            indices.sort()
+            if not indices == self.show_indices:
+                self.data_cont.show_data(indices)
+                self._UpdateData('Show data set flag toggled', 
+                                 data_changed = True)
+                # Forces update of list control
+                self.SetItemCount(self.data_cont.get_count())
+        evt.Skip()
+
     def OnGetItemText(self,item,col):
         return self.data_cont.get_item_text(item,col)
     
@@ -516,6 +552,8 @@ class VirtualDataList(wx.ListCtrl):
         self.SetItemCount(self.data_cont.get_count())
         self._UpdateData('Data from model loaded', data_changed = True,\
                 new_data = True)
+        self.toggleshow = self.config.get_boolean('data handling', 
+                                                  'toggle show')
         #print "new data from model loaded"
         
     def OnBeginEdit(self,evt):

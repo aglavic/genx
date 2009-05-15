@@ -1,3 +1,13 @@
+2009-05-15: 
+    Fixed feature request #4 If the show parameter should be toggeled
+    or if just the selected should be shown.
+    Fixed a small unoticed bug in the save over question for save as
+    showed only the current filename and not the file that would be written
+    over.
+    Fixed feature request #9. The SLD profile can now be exported.
+    Fixed bug #3. The set_extra_data function will raise an KeyError
+    if the name of the extra data x,y or e.
+    
 2009-05-12:
     Made some final changes to the fom_duncs.py builtin documentation.
     Created a config variable called "save all evals" so that saving all

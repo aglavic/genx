@@ -121,6 +121,13 @@ class Template:
         Shows an warning dialog with message [string]
         '''
         ShowWarningDialog(self.parent, message)
+
+    def ShowQuestionDialog(self, message):
+        '''ShowWarningDialog(self, message) --> None
+        
+        Shows an warning dialog with message [string]
+        '''
+        return ShowQuestionDialog(self.parent, message)
         
     def GetModel(self):
         '''GetModel(self) --> model 
@@ -412,3 +419,13 @@ def ShowWarningDialog(frame, message):
                                )
     dlg.ShowModal()
     dlg.Destroy()
+
+def ShowQuestionDialog(frame, message, title = 'Question'):
+    dlg = wx.MessageDialog(frame, message,
+                               title,
+                               wx.YES_NO | wx.ICON_QUESTION
+                               )
+    result = dlg.ShowModal() == wx.ID_YES
+    dlg.Destroy()
+    return result
+

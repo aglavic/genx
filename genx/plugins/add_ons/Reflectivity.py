@@ -55,7 +55,7 @@ from plotpanel import PlotPanel
 import  wx
 
 import numpy as np
-import sys, os, re
+import sys, os, re, time, StringIO, traceback
 
 
 # Make Modules a search path for python..
@@ -1174,6 +1174,7 @@ class SamplePlotPanel(wx.Panel):
         self.plot.update = self.Plot
         self.SetSizer(sizer)
         self.plot.ax.set_autoscale_on(False)
+        self.plot_dict = {}
         
     def Plot(self):
         ''' Plot(self) --> None
@@ -1182,23 +1183,45 @@ class SamplePlotPanel(wx.Panel):
         '''
         colors = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
         model = self.plugin.GetModel().script_module
-        plot_dict = model.sample.SimSLD(None, model.inst)
+        self.plot_dict = model.sample.SimSLD(None, model.inst)
         self.plot.ax.lines = []
         i = 0
-        for key in plot_dict:
+        for key in self.plot_dict:
             if key != 'z': 
-                self.plot.ax.plot(plot_dict['z'], plot_dict[key],\
+                self.plot.ax.plot(self.plot_dict['z'], self.plot_dict[key],\
                     colors[i%len(colors)])
                 i += 1
-        keys = plot_dict.keys()
+        keys = self.plot_dict.keys()
         keys.pop(keys.index('z'))
         self.plot.ax.legend(tuple(keys))
         self.plot.flush_plot()
         self.plot.AutoScale()
+    
+    def SavePlotData(self, filename):
+        ''' Save the data that is plotted to file with filename.'''
+        save_array = np.array([self.plot_dict['z']])
+        print save_array.shape
+        header = 'z\t' 
+        for key in self.plot_dict:
+            if key != 'z':
+                print self.plot_dict[key].shape
+                save_array = np.r_[save_array, [self.plot_dict[key]]]
+                header += key + '\t'
+        print save_array.shape
+        f = open(filename, 'w')
+        f.write("# File exported from GenX's Reflectivity plugin\n")
+        f.write("# File created: %s\n"%time.ctime())
+        f.write("# Headers: \n")
+        f.write('#' + header + '\n')
+        np.savetxt(f, save_array.transpose())
+        f.close()
+        
+        
         
 class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
+        #self.parent = parent
         self.model_obj = self.GetModel()
         sample_panel = self.NewInputFolder('Sample')
         sample_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1231,12 +1254,49 @@ class Plugin(framework.Template):
         else:
             self.CreateNewModel()
         
+        # Create a menu for handling the plugin
+        menu = self.NewMenu('Reflec')
+        self.mb_export_sld = wx.MenuItem(menu, wx.NewId(), 
+                                         "Export SLD...", 
+                                         "Export the SLD to a ASCII file", 
+                                         wx.ITEM_NORMAL)
+        menu.AppendItem(self.mb_export_sld)
+        self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         self.StatusMessage('Reflectivity plugin loaded')
         
     def UpdateScript(self, event):
         #print 'Updating the script'
         #print dir(event)
         self.WriteModel()
+    
+    def OnExportSLD(self, evt):
+        dlg = wx.FileDialog(self.parent, message="Export SLD to ...", 
+                            defaultFile="",
+                            wildcard="Dat File (*.dat)|*.dat",
+                            style=wx.SAVE | wx.CHANGE_DIR 
+                            )
+        if dlg.ShowModal() == wx.ID_OK:
+            fname = dlg.GetPath()
+            result = True
+            if os.path.exists(fname):
+                filepath, filename = os.path.split(fname)
+                result = self.ShowQuestionDialog('The file %s already exists.'
+                                                 ' Do'
+                                                 ' you wish to overwrite it?'
+                                                 %filename)
+            if result:
+                try:
+                    self.sld_plot.SavePlotData(fname)
+                except IOError, e:
+                    self.ShowErrorDialog(e.__str__())
+                except Exception, e:
+                    outp = StringIO.StringIO()
+                    traceback.print_exc(200, outp)
+                    val = outp.getvalue()
+                    outp.close()
+                    self.ShowErrorDialog('Could not save the file.'
+                                         ' Python Error:\n%s'%(val,))
+        dlg.Destroy()
         
     def OnNewModel(self, event):
         ''' Create a new model
