@@ -50,7 +50,7 @@ instrument contains instrument variables. See below for a full list.
 <code> [Slab].copy()</code><br>
     Creates a copy of object [Slab]. This decouples the new object
     returned by copy from the original [Slab].
-<code> [Slab].find_atom(expression)</code><br>
+<code> [Slab].find_atoms(expression)</code><br>
     Function to locate atoms in a slab in order to connect parameters
     between them. Returns an AtomGroup. 
     <dl>
@@ -59,6 +59,9 @@ instrument contains instrument variables. See below for a full list.
     a string that will evaluate to true or false for each atom.
     Allowed variables are: <code>x, y, z, id, el, u, ov, m,/code></dd>
     </dl>
+<code> [Slab].all_atoms()</code><br>
+    Yields all atoms inside a slab as an AtomGroup.
+    Returns an AtomGroup. 
 <code> [Slab][id]</code><br>
     Locates atom that has id <code>id</code>. Returns an AtomGroup
     <dl>
@@ -92,17 +95,19 @@ bulk_sym = []) </code><br>
     no symetry operations at all.
     </dd>
     </dl>
-<code>[Sample].calc_f(h, k, l)</code>
+<code>[Sample].calc_f(h, k, l)</code><br>
 Calculates the total structure factor (complex number) from the
 the surface and bulk strucutre. Returns an array of the same size
 as h, k, l. (h, k, l should be of the same legth and is given in
 coordinates of the reciprocal lattice as defnined by the uit_cell coords)
-<code>[Sample].turbo_calc_f(h, k, l)</code>
+<code>[Sample].turbo_calc_f(h, k, l)</code><br>
 A faster version of <code>calc_f</code> which uses inline c code to increase
 the speed. Can be more unstable than <code>calc_f</code> use on your own risk.
-<code>[Sample].calc_rhos(x, y, z, sb)</code>
+<code>[Sample].calc_rhos(x, y, z, sb)</code><br>
 Calculate the the surface electron density of a model. The parameter sb is a Gaussian convolution factor given the width of the Gaussian in reciprocal space.
-Used mainly for comparison with direct methods, i.e. DCAF. 
+Used mainly for comparison with direct methods, i.e. DCAF.
+NOTE that the transformation from the width of the window function given
+in <code>dimes.py</code> is <code>sqrt(2)*pi*[]</code>
 '''
 
 import numpy as np
@@ -703,6 +708,9 @@ class AtomGroup:
     def __init__(self, slab = None, id = None):
         self.ids = []
         self.slabs = []
+        # Variable for composition ...
+        self.comp = 1.0
+        self.oc = 1.0
         if slab != None and  id != None:
             self.add_atom(slab, id)
 
@@ -718,8 +726,8 @@ class AtomGroup:
         '''create a function that gets all atom paramater par'''
         funcs = [getattr(slab, 'get' + id + par) for id, slab
                  in zip(self.ids, self.slabs)]
-        def get_pars(val):
-            [func()  for func in funcs]
+        def get_pars():
+            return np.mean([func()  for func in funcs])
         return get_pars
 
     def update_setget_funcs(self):
@@ -737,6 +745,146 @@ class AtomGroup:
         self.ids.append(id)
         self.slabs.append(slab)
         self.update_setget_funcs()
+
+    def _copy(self):
+        '''Creates a copy of self And looses all connection to the
+        previously created compositions conenctions
+        '''
+        cpy = AtomGroup()
+        cpy.ids = self.ids[:]
+        cpy.slabs = self.slabs[:]
+        cpy.update_setget_funcs()
+        return cpy
+
+    def comp_coupl(self, other, self_copy = False, exclusive = True):
+        '''Method to create set-get methods to use compositions
+        in the atomic groups. Note that this does not affect
+        the slabs global occupancy. If self_copy is True the
+        returned value will be a copy of self.
+        If exculive is true reomves all methods from the
+        previous AtomGroups that are coupled.
+        '''
+        if not type(self) == type(other):
+            raise TypeError('To create a composition function both objects'
+                            ' has to be of the type AtomGroup')
+        if hasattr(other, '_setoc_'):
+            raise AttributeError('The right hand side AtomicGroup has already'
+                                 'been coupled to another one before.'
+                                 ' Only one connection'
+                                 'is allowed')
+        if hasattr(self, '_setoc'):
+            raise AttributeError('The left hand side AtomicGroup has already'
+                                 'been coupled to another one before.'
+                                 ' Only one connection'
+                                 'is allowed')
+        if self_copy:
+            s = self._copy()
+        else:
+            s = self
+            
+        def set_comp(comp):
+            print "Executing comp function"
+            s.comp = float(comp)
+            s._setoc(comp*s.oc)
+            other._setoc_((1.0 - comp)*s.oc)
+
+        def set_oc(oc):
+            print "Executing oc function"
+            s.oc = float(oc)
+            s._setoc(s.comp*s.oc)
+            other._setoc_((1 - s.comp)*s.oc)
+        
+        def get_comp():
+            return s.comp
+
+        def get_oc():
+            return s.oc
+
+        # Functions to couple the other parameters, set
+        def create_set_func(par):
+            sf_set = getattr(s, 'set' + par)
+            of_set = getattr(other, 'set' + par)
+            def _set_func(val):
+                p = str(par)
+                print 'Setting %s to %s'%(p, val)
+                sf_set(val)
+                of_set(val)
+            return _set_func
+        
+        # Functions to couple the other parameters, set
+        def create_get_func(par):
+            sf_get = getattr(s, 'get' + par)
+            of_get = getattr(other, 'get' + par)
+            def _get_func():
+                p = str(par)
+                return (sf_get() + of_get())/2
+            return _get_func
+
+        # Do it (couple) for all parameters except the occupations
+        if exclusive:
+            for par in s.par_names:
+                if not str(par) == 'oc':
+                    print par
+                    setattr(s, 'set' + par, create_set_func(par))
+                    setattr(s, 'get' + par, create_get_func(par))
+
+        # Create new set and get methods for the composition
+        setattr(s, 'setcomp', set_comp)
+        setattr(s, 'getcomp', get_comp)
+
+        # Store the original setoc for future use safely
+        setattr(s, '_setoc', s.setoc)
+        setattr(other, '_setoc_', getattr(other, 'setoc'))
+
+        setattr(s, 'setoc', set_oc)
+        setattr(s, 'getoc', get_oc)
+
+        # Now remove all the coupled attribute from other.
+        if exclusive:
+            for par in s.par_names:
+                delattr(other, 'set' + par)
+
+        s.setcomp(1.0)
+        
+        return s
+        
+        
+    
+    def __xor__(self, other):
+        '''Method to create set-get methods to use compositions
+        in the atomic groups. Note that this does not affect
+        the slabs global occupancy. Note that the
+        first element (left hand side of ^) will be copied
+        and loose all its previous connections.
+        Note that all the move methods that are not coupled will
+        be removed.
+        '''
+        return self.comp_coupl(other, self_copy = True, exclusive = True)
+        
+    def __ixor__(self, other):
+        '''Method to create set-get methods to use compositions
+        in the atomic groups. Note that this does not affect
+        the slabs global occupancy.
+        Note that all the move methods that are not coupled will
+        be removed.
+        '''
+        self.comp_coupl(other, exclusive = True)
+
+    def __or__(self, other):
+        '''Method to create set-get methods to use compositions
+        in the atomic groups. Note that this does not affect
+        the slabs global occupancy. Note that the
+        first element (left hand side of |) will be copied
+        and loose all its previous connections.
+        '''
+        return self.comp_coupl(other, self_copy = True, exclusive = False)
+        
+    def __ior__(self, other):
+        '''Method to create set-get methods to use compositions
+        in the atomic groups. Note that this does not affect
+        the slabs global occupancy.
+        '''
+        self.comp_coupl(other, exclusive = False)
 
     def __add__(self, other):
         '''Adds two Atomic groups togheter
@@ -865,7 +1013,7 @@ class SymTrans:
 
 #==============================================================================
 # Utillity functions
-def scale_sim(data, sim_list):
+def scale_sim(data, sim_list, scale_func = None):
     '''Scale the data according to a miminimazation of
     sum (data-I_list)**2
     '''
@@ -875,9 +1023,11 @@ def scale_sim(data, sim_list):
                  if data[i].use])
     scale = numerator/denominator
     scaled_sim_list = [sim*scale for sim in sim_list]
+    if not scale_func == None:
+        scale_func(scale)
     return scaled_sim_list
 
-def scale_sqrt_sim(data, sim_list):
+def scale_sqrt_sim(data, sim_list, scale_func = None):
     '''Scale the data according to a miminimazation of
     sum (sqrt(data)-sqrt(I_list))**2
     '''
@@ -888,6 +1038,8 @@ def scale_sqrt_sim(data, sim_list):
                  if data[i].use])
     scale = numerator/denominator
     scaled_sim_list = [sim*scale**2 for sim in sim_list]
+    if not scale_func == None:
+        scale_func(scale)
     return scaled_sim_list
 
 ## def scale_log_sim(data, sim_list):
