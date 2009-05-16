@@ -72,6 +72,9 @@ class DiffEv:
         
         # Sleeping time for every generation
         self.sleep_time = 0.2
+        # Allowed disagreement between the two different fom
+        # evaluations
+        self.fom_allowed_dis = 1e-10
         # Flag if we should use parallel processing 
         self.use_parallel_processing = __parallel_loaded__*0
         if __parallel_loaded__:
@@ -99,7 +102,7 @@ class DiffEv:
         self.running = False # true if optimization is running
         self.stop = False # true if the optimization should stop
         self.setup_ok = False # True if the optimization have been setup
-       
+        self.error = False # True/string if an error ahs occured
         
         # Logging variables
         # Maximum number of logged elements
@@ -356,6 +359,7 @@ class DiffEv:
             
         self.text_output('Calculating start FOM ...')
         self.running = True
+        self.error = False
         #print self.pop_vec
         #eval_fom()
         #self.fom_vec = self.trial_fom[:]
@@ -410,7 +414,18 @@ class DiffEv:
                                 [[len(self.fom_log),self.best_fom]]]
             
             # Let the model calculate the simulation of the best.
-            self.calc_sim(self.best_vec)
+            sim_fom = self.calc_sim(self.best_vec)
+
+            # Sanity of the model does the simualtions fom agree with
+            # the best fom
+            if abs(sim_fom - self.best_fom) > self.fom_allowed_dis:
+                self.text_output('Disagrement between two different fom'
+                                 ' evaluations')
+                self.error = ('The disagreement between two subsequent '
+                              'evaluations is larger than %s. Check the '
+                              'model for circular assignments.'
+                              %self.fom_allowed_dis)
+                break
             
             # Update the plot data for any gui or other output
             self.plot_output(self)
@@ -433,7 +448,8 @@ class DiffEv:
             if gen%self.autosave_interval == 0 and self.use_autosave:
                 self.autosave()
 
-        self.text_output('Stopped at Generation: %d ...'%gen)
+        if not self.error:
+            self.text_output('Stopped at Generation: %d ...'%gen)
         
         # Lets clean up and delete our pool of workers
         if self.use_parallel_processing:
@@ -473,6 +489,7 @@ class DiffEv:
         map(lambda func, value:func(value), self.par_funcs, vec)
         
         self.model.evaluate_sim_func()
+        return self.model.fom
         
     def setup_parallel(self):
         '''setup_parallel(self) --> None
@@ -869,6 +886,11 @@ class DiffEv:
         '''set_chunksize(self, val) --> None
         '''
         self.chunksize = int(val)
+
+    def set_fom_allowed_dis(self, val):
+        '''set_chunksize(self, val) --> None
+        '''
+        self.fom_allowed_dis = float(val)
         
     
 #==============================================================================

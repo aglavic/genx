@@ -1,3 +1,11 @@
+2009-05-16:
+    Fixed feature request #10 alphabetiacal sorting of the parameter
+    selection pop-up. And at the same time task #11 was fixed and a new
+    hirarchy was implemented.
+    Fixed defect #2 the fitting now checks whether the fom have change
+    appreciably. A config item in solver, 'allowed fom discrepancy'
+    has been added, default 1e-20 that sets the limit.
+
 2009-05-15: 
     Fixed feature request #4 If the show parameter should be toggeled
     or if just the selected should be shown.

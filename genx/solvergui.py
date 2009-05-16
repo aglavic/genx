@@ -61,7 +61,7 @@ class SolverController:
                          'max generations', 'max generation mult',\
                          'sleep time','max log elements','errorbar level', 
                          'autosave interval', 'parallel processes', 
-                         'parallel chunksize',]
+                         'parallel chunksize', 'allowed fom discrepancy']
         setfunctions_float = [self.optimizer.set_km, self.optimizer.set_kr,
                               self.optimizer.set_pop_mult,
                               self.optimizer.set_pop_size,
@@ -73,6 +73,7 @@ class SolverController:
                               self.optimizer.set_autosave_interval,
                               self.optimizer.set_processes,
                               self.optimizer.set_chunksize,
+                              self.optimizer.set_fom_allowed_dis,
                               ]
 
         options_bool = ['use pop mult', 'use max generations',
@@ -131,7 +132,8 @@ class SolverController:
                          'max generations', 'max generation mult',\
                          'sleep time', 'max log elements','errorbar level',\
                          'autosave interval',\
-                        'parallel processes', 'parallel chunksize']
+                        'parallel processes', 'parallel chunksize', 
+                         'allowed fom discrepancy']
         set_float = [self.optimizer.km, self.optimizer.kr,
                           self.optimizer.pop_mult,\
                           self.optimizer.pop_size,\
@@ -142,7 +144,9 @@ class SolverController:
                         self.fom_error_bars_level,\
                          self.optimizer.autosave_interval,\
                         self.optimizer.processes,\
-                        self.optimizer.chunksize ]
+                        self.optimizer.chunksize,\
+                      self.optimizer.fom_allowed_dis
+                     ]
 
         options_bool = ['use pop mult', 'use max generations',
                         'use start guess', 'use boundaries', 
@@ -304,6 +308,8 @@ class SolverController:
         '''
         evt = fitting_ended(solver = solver, desc = 'Fitting Ended')
         wx.PostEvent(self.parent, evt)
+            
+            
     
     def OnFittingEnded(self, evt):
         '''OnFittingEnded(self, solver) --> None
@@ -312,7 +318,10 @@ class SolverController:
         the fit. Calculates errors on the parameters and updates the grid.
         '''
         solver = evt.solver
-        
+        if solver.error:
+            ShowErrorDialog(self.parent, solver.error)
+            return 
+
         message = 'Do you want to keep the parameter values from' +\
                 'the fit?'
         dlg = wx.MessageDialog(self.parent, message,'Keep the fit?', 
@@ -872,6 +881,20 @@ def ShowWarningDialog(frame, message):
     dlg = wx.MessageDialog(frame, message,
                                'Warning',
                                wx.OK | wx.ICON_WARNING
+                               )
+    dlg.ShowModal()
+    dlg.Destroy()
+
+def ShowErrorDialog(frame, message, position = ''):
+    if position != '':
+        dlg = wx.MessageDialog(frame, message + '\n' + 'Position: ' + position,
+                               'ERROR',
+                               wx.OK | wx.ICON_ERROR
+                               )
+    else:
+        dlg = wx.MessageDialog(frame, message,
+                               'ERROR',
+                               wx.OK | wx.ICON_ERROR
                                )
     dlg.ShowModal()
     dlg.Destroy()
