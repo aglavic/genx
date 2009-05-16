@@ -595,24 +595,33 @@ class Model:
             else:
                 classes.append(ctemp)
         #Check so there are any classes defined before we proceed
-        if len(classes)>0:
+        if len(classes) > 0:
             # Get all the objects in the compiled module
             names = self.script_module.__dict__.keys()
             # Create a tuple of the classes we dfined above
             tuple_of_classes = tuple(classes)
+            # Creating a dictionary that holds the name of the classes
+            # eaxh item for a classes is a new dictonary that holds the
+            # object name and then a list of the methods.
+            par_dict = {}
+            [par_dict.__setitem__(clas.__name__, {}) for clas in classes]
             # find all the names of the objects that belongs to 
             # one of the classes
-            objlist = [name for name in names if\
-                        isinstance(self.eval_in_model(name), tuple_of_classes)]
-            # Now find all the members that match our criteria of
-            # namesgiven by the string in self.set_func
-            funclist = [[member for member in dir(self.eval_in_model(obj))\
-                        if member[:len(self.set_func)] == self.set_func]\
-                            for obj in objlist]
-            return objlist, funclist
-        #print 'Magic parameters...'
-        #print objlist, funclist
-        return [],[]
+            objs = [(name, self.eval_in_model(name)) for name in names]
+            valid_objs = [(name, obj) for name, obj in objs 
+                          if isinstance(obj, tuple_of_classes)]
+            # nested for loop for finding for each valid object
+            # the right name as given by self.set_func
+            # Add this to the right item in par_dict given
+            # its class and name.
+            [par_dict[obj.__class__.__name__].__setitem__(name, 
+                     [member for member in dir(obj)
+                        if member[:len(self.set_func)] == self.set_func])
+             for name,obj in valid_objs]
+
+            return par_dict
+        
+        return {}
         
     
     # Set functions - a necessary evil...

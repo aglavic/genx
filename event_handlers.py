@@ -432,7 +432,7 @@ def simulate(frame, event):
     # Now we should find the parameters that we can use to
     # in the grid
     try:
-        objlist, funclist = frame.model.get_possible_parameters()
+        pardict = frame.model.get_possible_parameters()
     except Exception, e:
         ShowErrorDialog(frame, str(e),\
             'simulate - model.get_possible_parameters')
@@ -440,7 +440,7 @@ def simulate(frame, event):
         return
     
     try:
-        frame.paramter_grid.SetParameterSelections(objlist, funclist)
+        frame.paramter_grid.SetParameterSelections(pardict)
     except Exception, e:
         ShowErrorDialog(frame, str(e),\
             'simulate - parameter_grid.SetParameterSelection')

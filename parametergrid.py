@@ -257,8 +257,7 @@ class ParameterGrid(gridlib.Grid):
         #Test cases for the parameter choosing function of the grid
         #self.objlist=['t','e']
         #self.funclist=[['e','w'],['x','y']]
-        self.objlist=[]
-        self.funclist=[]
+        self.par_dict = {}
 
         self.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
         self.Bind(gridlib.EVT_GRID_CMD_CELL_LEFT_CLICK, self.OnLeftClick)
@@ -427,13 +426,26 @@ class ParameterGrid(gridlib.Grid):
             self.SetGridCursor(row,col)
             pos=evt.GetPosition()
             self.pmenu=wx.Menu()
-            for index in range(len(self.objlist)):
-                sm=wx.Menu()
-                for func in self.funclist[index]:
-                    item=sm.Append(-1,self.objlist[index]+'.'+func)
-                    self.Bind(wx.EVT_MENU,self.OnPopUpItemSelected,item)
-                #print self.objlist[index]
-                item=self.pmenu.AppendMenu(-1,self.objlist[index],sm)
+            par_dict = self.par_dict
+            classes = par_dict.keys()
+            classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
+            for cl in classes:
+                # Create a submenu for each class
+                clmenu = wx.Menu()
+                obj_dict = par_dict[cl]
+                objs = obj_dict.keys()
+                objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                # Create a submenu for each object
+                for obj in objs:
+                    obj_menu = wx.Menu()
+                    funcs = obj_dict[obj]
+                    funcs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                    # Create an item for each method
+                    for func in funcs:
+                        item = obj_menu.Append( -1, obj + '.' + func)
+                        self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
+                    clmenu.AppendMenu(-1, obj, obj_menu)
+                self.pmenu.AppendMenu(-1, cl, clmenu)
             self.PopupMenu(self.pmenu, evt.GetPosition())
             self.pmenu.Destroy()
             
@@ -472,20 +484,14 @@ class ParameterGrid(gridlib.Grid):
     def OnResize(self, evt):
         self.SetColWidths()
     
-    def SetParameterSelections(self,objlist,funclist):
+    def SetParameterSelections(self, par_dict): #objlist,funclist):
         '''SetParameterSelections(self,objlist,funclist) --> None
         
         Function to set which parameter function that are chooseable 
         in the popup menu. objlist and funclist are lists of strings which
         has to be of the same size
         '''
-        if len(objlist) == len(funclist):
-            self.objlist = objlist
-            self.funclist = funclist
-        else:
-            print 'Wrong Format to popupmenu in the grid'
-            print objlist
-            print funclist
+        self.par_dict = par_dict
             
     def SetEvalFunc(self,func):
         '''
