@@ -1049,7 +1049,14 @@ class ParameterExpressionDialog(wx.Dialog):
             gbs.Add(label,(0, index),flag=wx.ALIGN_LEFT,border=5)
             
         # Get the objects that should be in the choiceboxes
-        objlist, funclist = model.get_possible_parameters()
+        par_dict = model.get_possible_parameters()
+	objlist = []
+	funclist = []
+	for cl in par_dict:
+	    obj_dict = par_dict[cl]
+	    for obj in obj_dict:
+		objlist.append(obj)
+		funclist.append(obj_dict[obj])
         #print model.compiled
         self.objlist = objlist
         self.funclist = funclist
