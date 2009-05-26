@@ -91,8 +91,8 @@ def ConvoluteResolutionVector(Qret,I,weight):
     #print Qret.shape,weight.shape
     I2 = I.reshape(weight.shape[0], weight.shape[1])
     #print (I*weight).shape,Qret.shape
-    norm_fact = integrate.trapz(weight, x = Qret2, axis = 0)
-    Int = integrate.trapz(I2*weight, x = Qret2, axis = 0)/norm_fact
+    norm_fact = trapz(weight, x = Qret2, axis = 0)
+    Int = trapz(I2*weight, x = Qret2, axis = 0)/norm_fact
     #print Int.shape
     return Int
 
@@ -112,8 +112,8 @@ def ConvoluteFastVar(Q,I,dQ,range=3):
     steps = max(dQ*ones(Q.shape))*range/Qstep
     weight = 1/sqrt(2*pi)/dQ*exp(-(Q[:,newaxis]-Q)**2/(dQ)**2/2)
     Itemp = I[:,newaxis]*ones(I.shape)
-    norm_fact = integrate.trapz(weight, axis = 0)
-    Int = integrate.trapz(Itemp*weight,axis = 0)/norm_fact
+    norm_fact = trapz(weight, axis = 0)
+    Int = trapz(Itemp*weight,axis = 0)/norm_fact
     return Int
 
 

@@ -362,6 +362,29 @@ class Sample:
         #print x,y,z, u
 
         return x, y, z, u, oc, el
+    
+    def create_uc_output(self):
+        ''' Create atomic positions and such for output '''
+        x, y, z, u, oc, el = self._surf_pars()
+        ids = []
+	[ids.extend(slab._extract_ids()) for slab in self.slabs]
+        xout = np.array([])
+        yout = np.array([])
+        zout = np.array([])
+        uout = np.array([])
+        ocout = np.array([])
+        elout = el[0:0].copy()
+	idsout = []
+        for sym_op in self.surface_sym:
+            xout = np.r_[xout, sym_op.trans_x(x, y)]
+            yout = np.r_[yout, sym_op.trans_y(x, y)]
+            zout = np.r_[zout, z]
+            uout = np.r_[uout, u]
+            ocout = np.r_[ocout, oc]
+            elout = np.r_[elout, el]
+	    idsout.extend(ids)
+            
+        return xout, yout, zout, uout, ocout, elout, idsout
 
     def _get_f(self, el, dinv):
         '''from the elements extract an array with atomic structure factors
@@ -492,7 +515,7 @@ class UnitCell:
 class Slab:
     par_names = ['dx', 'dy', 'dz',
                           'u', 'oc', 'm']
-    def __init__(self, c = 1.0, slab_oc = 1.0):
+    def __init__(self, name = '', c = 1.0, slab_oc = 1.0):
         try:
             self.c = float(c)
         except:
@@ -513,10 +536,10 @@ class Slab:
         self.m = np.array([], dtype = np.float64)
         self.id = np.array([], dtype = np.str)
         self.el = np.array([], dtype = np.str)
-
+	
         # TODO: Type checking and defaults!
         #self.inst = inst
-
+	self.name = str(name)
     def copy(self):
         '''Returns a copy of the object.
         '''
@@ -702,6 +725,10 @@ class Slab:
     def _extract_values(self):
         return  self.x + self.dx, self.y + self.dy, self.z + self.dz,\
                self.el, self.u, self.oc*self.m*self.slab_oc, self.c
+    
+    def _extract_ids(self):
+	'Extract the ids of the atoms'
+	return [self.name + '.' + str(id) for id in self.id]
 
 class AtomGroup:
     par_names = ['dx', 'dy', 'dz', 'u', 'oc']

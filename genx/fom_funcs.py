@@ -47,6 +47,28 @@ Crystallographic R2 factor, assumes that the loaded data are intensities.
 (<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>
 )<sup>2</sup>/&#8721;<sub><var>i</var></sub><var>Y<sub>i</sub><sup>2</sup></var>
 <br></huge>
+<h3>chi2bars</h3>
+Chi2 Fom measurement including error bars<br>
+<huge>FOM<sub>sqrt</sub> = 1/(N-1) &#8721;<sub><var>i</var></sub>
+((<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>)/<var>E<sub>i</sub></var>
+)<sup>2</sup><br></huge>
+<h3>chibars</h3>
+Chi squared but without the squaring<br>
+<huge>FOM<sub>sqrt</sub> = 1/(N-1) &#8721;<sub><var>i</var></sub>
+&#124;(<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>)/<var>E<sub>i</sub></var>
+&#124;<br></huge>
+<h3>log</h3>
+Absolute logarithmic (base 10) difference<br>
+<HUGE>FOM<sub>logbars</sub> = 1/(N-1) &#8721;<sub><var>i</var></sub>
+&#124;log<sub>10</sub>(<var>Y<sub>i</sub></var>) -
+log<sub>10</sub>(<var>S<sub>i</sub></var>)&#124;/<var>E<sub>i</sub></var>*ln(10)*<var>Y<sub>i</sub></var><br></HUGE>
+
+<h3>sintth4</h3>
+scales the absolute difference with a sin(tth)<sup>4</sup> term. 
+This will divide away the Fresnel reflectivity.<br>
+<huge>FOM<sub>diff</sub> = 1/(N-1) &#8721;<sub><var>i</var></sub>
+&#124;<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>&#124;sin(<var>tth</var>)<sup>4</sup><br></huge>
+
 <h2>Customisation</h2>
 See the manual at 
 <a href = "http://apps.sourceforge.net/trac/genx/wiki/DocPages/WriteFom">
@@ -83,7 +105,29 @@ def R2(simulations, data):
     denom = np.sum([np.sum(dataset.y**2) for dataset in data if dataset.use])
     return 1.0/denom*np.sum([np.sum((dataset.y - sim)**2)\
             for (dataset, sim) in zip(data,simulations) if dataset.use])
+
+def chi2bars(simulations, data):
+    N = np.sum([len(dataset.y)*dataset.use for dataset in data])
+    return 1.0/(N-1)*np.sum([np.sum((dataset.y - sim)**2/dataset.error**2)\
+            for (dataset, sim) in zip(data,simulations) if dataset.use])
+
+def chibars(simulations, data):
+    N = np.sum([len(dataset.y)*dataset.use for dataset in data])
+    return 1.0/(N-1)*np.sum([np.sum(np.abs((dataset.y - sim)/dataset.error))\
+            for (dataset, sim) in zip(data,simulations) if dataset.use])
+
+def logbars(simulations, data):
+    N = np.sum([len(dataset.y)*dataset.use for dataset in data])
+    return 1.0/(N-1)*np.sum([np.sum(np.abs((np.log10(dataset.y) - np.log10(sim))
+					   /dataset.error*np.log(10)*dataset.y))\
+            for (dataset, sim) in zip(data,simulations) if dataset.use])
             
+def sintth4(simulations, data):
+    N = np.sum([len(dataset.y)*dataset.use for dataset in data])
+    return 1.0/(N-1)*np.sum([np.sum(np.sin(dataset.x*np.pi/360.0)**4*
+			    np.abs(dataset.y - sim))\
+            for (dataset, sim) in zip(data,simulations) if dataset.use])
+
 # END fom function definition
 #==============================================================================
 # create introspection variables so that everything updates automatically
