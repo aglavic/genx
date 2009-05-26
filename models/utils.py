@@ -65,11 +65,11 @@ The data is also fetched from the Dabax library at:
 http://ftp.esrf.eu/pub/scisoft/xop2.3/DabaxFiles/</a>
 This database is the non-dispersive (without resonant contribution).
 
-<h4>fw<h4>
+<h4>fw</h4>
 Same thing as f but scaled so that is can be used with a density
 in g/cm<sup>3<sup>.
 
-<h4>bw<h4>
+<h4>bw</h4>
 Same thing as bc but scaled so that is can be used with a density
 in g/cm<sup>3<sup>.
 '''
