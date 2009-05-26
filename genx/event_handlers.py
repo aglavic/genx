@@ -6,8 +6,8 @@ $Rev::                                  $:  Revision of last commit
 $Author::                               $:  Author of last commit
 $Date::                                 $:  Date of last commit
 '''
-
-__version__ = '2.0b trunk'
+import version
+__version__ = version.version #'2.0b trunk'
 
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
