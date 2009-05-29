@@ -693,10 +693,10 @@ class DiffEv:
         else:
             # Calculate a continous recomibination
             # Trying something else out more like normal recombination
-            #trial = self.pop_vec[index0] + self.kr*(self.pop_vec[index1]\
-            #+ self.pop_vec[index2] - 2*self.pop_vec[index0])
-            trial = vec + self.kr*(self.pop_vec[index1]\
-                    + self.pop_vec[index2] - 2*vec)
+            trial = self.pop_vec[index0] + self.kr*(self.pop_vec[index1]\
+            + self.pop_vec[index2] - 2*self.pop_vec[index0])
+            #trial = vec + self.kr*(self.pop_vec[index1]\
+            #        + self.pop_vec[index2] - 2*vec)
         
         # Implementation of constrained optimization
         if self.use_boundaries:
@@ -1002,7 +1002,7 @@ class CircBuffer:
         if len(self.buffer) >= self.maxlen:
             if self.pos >= (self.maxlen - 1):
                 self.filled = True
-            self.buffer[new_pos] = array(item)
+            self.buffer[new_pos] = array(item).real
         else:
             self.buffer = append(self.buffer, item, axis = axis)
         self.pos = new_pos

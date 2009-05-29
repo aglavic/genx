@@ -485,7 +485,7 @@ class UnitCell:
         (x1, y1, z1) and (x2, y2, z2). The coords has to be unit cell
         coordinates.
         '''
-        print 'Warning works only with orth cryst systems!'
+        #print 'Warning works only with orth cryst systems!'
         return np.sqrt(((x1 - x2)*self.a)**2 + ((y1 - y2)*self.b)**2 +
                        ((z1 - z2)*self.c)**2)
 
@@ -543,7 +543,7 @@ class Slab:
     def copy(self):
         '''Returns a copy of the object.
         '''
-        cpy = Slab(self.c, self.slab_oc)
+        cpy = Slab(c = self.c, slab_oc = self.slab_oc)
         for i in range(len(self.id)):
             cpy.add_atom(str(self.id[i]), str(self.el[i]),
                          self.x[i], self.y[i],
@@ -577,7 +577,7 @@ class Slab:
         self.oc = np.append(self.oc, oc)
         self.m = np.append(self.m, m)
         self.id = np.append(self.id, id)
-        self.el = np.append(self.el, element.lower())
+        self.el = np.append(self.el, str(element))
         item = len(self.id) - 1
         # Create the set and get functions dynamically
         for par in self.par_names:
@@ -810,13 +810,13 @@ class AtomGroup:
             s = self
             
         def set_comp(comp):
-            print "Executing comp function"
+            #print "Executing comp function"
             s.comp = float(comp)
             s._setoc(comp*s.oc)
             other._setoc_((1.0 - comp)*s.oc)
 
         def set_oc(oc):
-            print "Executing oc function"
+            #print "Executing oc function"
             s.oc = float(oc)
             s._setoc(s.comp*s.oc)
             other._setoc_((1 - s.comp)*s.oc)
@@ -833,7 +833,7 @@ class AtomGroup:
             of_set = getattr(other, 'set' + par)
             def _set_func(val):
                 p = str(par)
-                print 'Setting %s to %s'%(p, val)
+                #print 'Setting %s to %s'%(p, val)
                 sf_set(val)
                 of_set(val)
             return _set_func
@@ -851,7 +851,7 @@ class AtomGroup:
         if exclusive:
             for par in s.par_names:
                 if not str(par) == 'oc':
-                    print par
+                    #print par
                     setattr(s, 'set' + par, create_set_func(par))
                     setattr(s, 'get' + par, create_get_func(par))
 
