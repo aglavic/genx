@@ -923,6 +923,21 @@ class AtomGroup:
         slabs = self.slabs + other.slabs
         out = AtomGroup()
         [out.add_atom(slab, id) for slab, id in zip(slabs, ids)]
+
+        s = self
+        
+        def set_oc(oc):
+            #print "Executing oc function"
+            s.oc = float(oc)
+            s.setoc(s.oc)
+            other.setoc(s.oc)
+        
+        def get_oc():
+            return s.oc
+
+        setattr(out, 'setoc', set_oc)
+        setattr(out, 'getoc', get_oc)
+        
         return out
 
 class Instrument:
