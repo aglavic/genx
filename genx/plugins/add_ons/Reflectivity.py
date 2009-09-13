@@ -412,7 +412,9 @@ class SamplePanel(wx.Panel):
         boxver = wx.BoxSizer(wx.HORIZONTAL)
         boxhor = wx.BoxSizer(wx.VERTICAL)
         boxbuttons=wx.BoxSizer(wx.HORIZONTAL)
+        boxhor.Add((-1,2))
         boxhor.Add(boxbuttons, 0)
+        boxhor.Add((-1,2))
         self.listbox = MyHtmlListBox(self, -1, style =  wx.BORDER_SUNKEN)
         #self.listbox.SetItemList(self.sampleh.getStringList())
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick , self.listbox)
@@ -421,57 +423,67 @@ class SamplePanel(wx.Panel):
         if os.name == 'nt':
             size = (24, 24)
         else:
-            size = (-1, -1)        
+            size = (-1, -1)
+        space = (2, -1)
         #InsertLayButton = wx.Button(self,-1, "Insert Layer")
         InsertLayButton =  wx.BitmapButton(self, -1
         , images.getinsert_layerBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InsertLayButton,0)
+        boxbuttons.Add(space)
         InsertLayButton.SetToolTipString('Insert a new layer')
         self.Bind(wx.EVT_BUTTON, self.InsertLay, InsertLayButton)
         #InsertStackButton=wx.Button(self,-1, "Insert Stack")
         InsertStackButton = wx.BitmapButton(self, -1
         , images.getinsert_stackBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InsertStackButton, 0)
+        boxbuttons.Add(space)
         InsertStackButton.SetToolTipString('Insert a new stack')
         self.Bind(wx.EVT_BUTTON, self.InsertStack, InsertStackButton)
         #DeleteButton=wx.Button(self,-1, "Delete")
         DeleteButton = wx.BitmapButton(self, -1
         , images.getdeleteBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(DeleteButton, 0)
+        boxbuttons.Add(space)
         DeleteButton.SetToolTipString('Delete')
         self.Bind(wx.EVT_BUTTON, self.DeleteSample, DeleteButton)
         CNameButton = wx.BitmapButton(self, -1
         , images.getchange_nameBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(CNameButton, 0)
+        boxbuttons.Add(space)
         DeleteButton.SetToolTipString('Change Name')
         self.Bind(wx.EVT_BUTTON, self.ChangeName, CNameButton)
         #MUpButton=wx.Button(self,-1, "MoveUp")
         MUpButton = wx.BitmapButton(self, -1
         , images.getmove_upBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(MUpButton, 0)
+        boxbuttons.Add(space)
         MUpButton.SetToolTipString('Move item up')
         self.Bind(wx.EVT_BUTTON, self.MoveUp, MUpButton)
         #MDownButton=wx.Button(self,-1, "MoveDown")
         MDownButton = wx.BitmapButton(self, -1
         , images.getmove_downBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(MDownButton, 0)
+        boxbuttons.Add(space)
         MDownButton.SetToolTipString('Move item down')
         self.Bind(wx.EVT_BUTTON, self.MoveDown, MDownButton)
         #SampleButton = wx.Button(self,-1, "Sample")
         SampleButton = wx.BitmapButton(self, -1
         , images.getsampleBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(SampleButton, 0)
+        boxbuttons.Add(space)
         SampleButton.SetToolTipString('Edit sample parameters')
         self.Bind(wx.EVT_BUTTON, self.EditSampleParameters, SampleButton)
         #InstrumentButton = wx.Button(self,-1, "Instrument")
         InstrumentButton = wx.BitmapButton(self, -1
         , images.getinstrumentBitmap(), size = size, style=wx.NO_BORDER)
         boxbuttons.Add(InstrumentButton, 0)
+        boxbuttons.Add(space)
         InstrumentButton.SetToolTipString('Edit instrument')
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, InstrumentButton)
         
         #boxhor.Add(boxbuttons)
         boxver.Add(boxhor, 1 ,  wx.EXPAND)
+        
         boxhorpar=wx.BoxSizer(wx.HORIZONTAL)
 
         #self.tc=[]
@@ -704,7 +716,7 @@ class SamplePanel(wx.Panel):
             
 class DataParameterPanel(wx.Panel):
     ''' Widget that defines parameters coupling and different parameters
-    for differnt data sets.
+    for different data sets.
     '''
     def __init__(self, parent, plugin):
         wx.Panel.__init__(self,parent)
@@ -725,6 +737,7 @@ class DataParameterPanel(wx.Panel):
             size = (24, 24)
         else:
             size = (-1, -1)
+        space = (2, -1)
         button_names = ['Insert', 'Delete', 'User Variables']
         button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
             images.getcustom_parameterBitmap()]
@@ -735,10 +748,13 @@ class DataParameterPanel(wx.Panel):
             button = wx.BitmapButton(self, -1, button_images[i],\
                     style=wx.NO_BORDER, size = size)
             boxbuttons.Add(button, 1, wx.EXPAND)
+            boxbuttons.Add(space)
             button.SetToolTipString(tooltips[i])
             self.Bind(wx.EVT_BUTTON, callbacks[i], button)
         # END BUTTON SECTION
+        boxver.Add((-1,2))
         boxver.Add(boxbuttons)
+        boxver.Add((-1,2))
         
         self.listbox = MyHtmlListBox(self, -1, style =  wx.BORDER_SUNKEN)
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.Edit , self.listbox)
