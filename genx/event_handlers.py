@@ -48,6 +48,14 @@ def new(frame, event):
     
     Event handler for creating a new model
     '''
+    if not frame.model.saved:
+        ans = ShowQuestionDialog(frame, 'The current model is not saved! '\
+                                 'Do you want to abort so you can save'
+                                 ' your model?', 
+                                 'Abort new model?')
+        if ans:
+           return
+    
     # Reset the model - remove everything from the previous model
     frame.model.new_model()
     # Update all components so all the traces are gone.
