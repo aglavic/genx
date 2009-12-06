@@ -367,14 +367,14 @@ class Sample:
         ''' Create atomic positions and such for output '''
         x, y, z, u, oc, el = self._surf_pars()
         ids = []
-	[ids.extend(slab._extract_ids()) for slab in self.slabs]
+        [ids.extend(slab._extract_ids()) for slab in self.slabs]
         xout = np.array([])
         yout = np.array([])
         zout = np.array([])
         uout = np.array([])
         ocout = np.array([])
         elout = el[0:0].copy()
-	idsout = []
+        idsout = []
         for sym_op in self.surface_sym:
             xout = np.r_[xout, sym_op.trans_x(x, y)]
             yout = np.r_[yout, sym_op.trans_y(x, y)]
@@ -382,7 +382,7 @@ class Sample:
             uout = np.r_[uout, u]
             ocout = np.r_[ocout, oc]
             elout = np.r_[elout, el]
-	    idsout.extend(ids)
+        idsout.extend(ids)
             
         return xout, yout, zout, uout, ocout, elout, idsout
 
@@ -536,10 +536,11 @@ class Slab:
         self.m = np.array([], dtype = np.float64)
         self.id = np.array([], dtype = np.str)
         self.el = np.array([], dtype = np.str)
-	
+        
         # TODO: Type checking and defaults!
         #self.inst = inst
-	self.name = str(name)
+        self.name = str(name)
+    
     def copy(self):
         '''Returns a copy of the object.
         '''
@@ -592,12 +593,19 @@ class Slab:
         if not id in self.id:
             raise ValueError('Can not remove atom with id %s -'
                              'namedoes not exist')
-        item = argwhere(self.id == id)[0][0]
+        item = np.argwhere(self.id == id)[0][0]
         if item < len(self.x) - 1:
             ar = getattr(self, 'id')
             setattr(self, 'id', r_[ar[:item], at[item+1:]])
             ar = getattr(self, 'el')
             setattr(self, 'el', r_[ar[:item], at[item+1:]])
+            ar = getattr(self, 'x')
+            setattr(self, 'x', r_[ar[:item], at[item+1:]])
+            ar = getattr(self, 'y')
+            setattr(self, 'y', r_[ar[:item], at[item+1:]])
+            ar = getattr(self, 'z')
+            setattr(self, 'z', r_[ar[:item], at[item+1:]])
+            
             for par in self.par_names:
                 ar = getattr(self, par)
                 setattr(self, par, r_[ar[:item], at[item+1:]])
@@ -608,12 +616,19 @@ class Slab:
             setattr(self, 'id', ar[:-1])
             ar = getattr(self, 'el')
             setattr(self, 'el', ar[:-1])
+            ar = getattr(self, 'x')
+            setattr(self, 'x', ar[:-1])
+            ar = getattr(self, 'y')
+            setattr(self, 'y', ar[:-1])
+            ar = getattr(self, 'z')
+            setattr(self, 'z', ar[:-1])
 
             for par in self.par_names:
                 ar = getattr(self, par)
                 setattr(self, par, ar[:-1])
                 delattr(self, 'set' + id + par)
                 delattr(self, 'get' + id + par)
+
             
 
     def find_atoms(self, expression):
@@ -673,7 +688,7 @@ class Slab:
         '''
         self.slab_oc = oc
 
-    def get_oc(self, oc):
+    def get_oc(self):
         '''Get the global occupancy of the slab
         '''
         return self.slab_oc
@@ -727,8 +742,8 @@ class Slab:
                self.el, self.u, self.oc*self.m*self.slab_oc, self.c
     
     def _extract_ids(self):
-	'Extract the ids of the atoms'
-	return [self.name + '.' + str(id) for id in self.id]
+        'Extract the ids of the atoms'
+        return [self.name + '.' + str(id) for id in self.id]
 
 class AtomGroup:
     par_names = ['dx', 'dy', 'dz', 'u', 'oc']
