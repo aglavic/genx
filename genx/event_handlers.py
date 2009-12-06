@@ -55,6 +55,7 @@ def new(frame, event):
     frame.plugin_control.OnNewModel(None)
     frame.main_frame_statusbar.SetStatusText('New model created', 1)
     set_title(frame)
+    frame.model.saved = True
     
 def open(frame, event):
     '''
@@ -62,6 +63,15 @@ def open(frame, event):
     
     Event handler for opening a model file...
     '''
+    # Check so the model is saved before quitting
+    if not frame.model.saved:
+        ans = ShowQuestionDialog(frame, 'The current model is not saved! '\
+                                 'Do you want to abort so you can save'
+                                 ' your model?', 
+                                 'Abort loading model?')
+        if ans:
+           return
+     
     dlg = wx.FileDialog(frame, message="Open", defaultFile="",\
                         wildcard="GenX File (*.gx)|*.gx",\
                          style=wx.OPEN | wx.CHANGE_DIR 

@@ -50,7 +50,7 @@ class Model:
 
         # Temporary stuff that needs to keep track on
         self.filename = ''
-        self.saved = False
+        self.saved = True
         self.compiled = False
         
     def read_config(self):
