@@ -389,17 +389,12 @@ class Sample:
     def _get_f(self, el, dinv):
         '''from the elements extract an array with atomic structure factors
         '''
-        fdict = {}
-        f = np.transpose(np.array([self._fatom_eval(fdict, elem, dinv/2.0)
-                             for elem in el], dtype = np.complex128))
-
-        return f
+        return _get_f(self.inst, el, dinv)
 
     def _get_rho(self, el):
         '''Returns the rho functions for all atoms in el
         '''
-        rhos = [getattr(self.inst.rholib, elem) for elem in el]
-        return rhos
+        return _get_rho(el)
     
     def _fatom_eval(self, f, element, s):
         '''Smart (fast) evaluation of f_atom. Only evaluates f if not
@@ -409,14 +404,7 @@ class Sample:
         f - dictonary for lookup
         s - sintheta_over_lambda array
         '''
-        try:
-            fret = f[element]
-        except KeyError:
-            fret = getattr(self.inst.flib, element)(s)
-            f[element] = fret
-            #print element, fret[0]
-        return fret
-            
+        return _fatom_eval(inst, f, element, s)    
 
 class UnitCell:
     '''Class containing the  unitcell.
@@ -1112,6 +1100,36 @@ def scale_sqrt_sim(data, sim_list, scale_func = None):
 ##     scaled_sim_list = [sim*(10**-scale) for sim in sim_list]
 ##     return scaled_sim_list
 
+def _get_f(inst, el, dinv):
+    '''from the elements extract an array with atomic structure factors
+    '''
+    fdict = {}
+    f = np.transpose(np.array([_fatom_eval(inst, fdict, elem, dinv/2.0)
+                             for elem in el], dtype = np.complex128))
+
+    return f
+
+def _get_rho(el):
+    '''Returns the rho functions for all atoms in el
+    '''
+    rhos = [getattr(self.inst.rholib, elem) for elem in el]
+    return rhos
+    
+def _fatom_eval(inst, f, element, s):
+    '''Smart (fast) evaluation of f_atom. Only evaluates f if not
+    evaluated before.
+    
+    element - element string
+    f - dictonary for lookup
+    s - sintheta_over_lambda array
+    '''
+    try:
+        fret = f[element]
+    except KeyError:
+        fret = getattr(inst.flib, element)(s)
+        f[element] = fret
+            #print element, fret[0]
+    return fret
 #=============================================================================
 
 if __name__ == '__main__':
