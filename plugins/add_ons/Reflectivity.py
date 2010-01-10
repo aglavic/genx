@@ -1439,7 +1439,8 @@ class Plugin(framework.Template):
         script = self.GetModel().get_script()
         
         code = 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
-        code += 'fp.set_wavelength(inst.wavelength)\n'
+        code += ('fp.set_wavelength(inst.wavelength)\n'
+                'fw.set_wavelength(inst.wavelength)\n')
         script = self.insert_code_segment(script, 'Instrument', code)
         
         layer_code, stack_code, sample_code = self.sampleh.getCode()
