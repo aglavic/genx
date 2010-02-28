@@ -21,18 +21,19 @@ import images as img
 
 import plugins.add_on_framework as add_on
 
-
-
 # Add current path to the system paths
 # just in case some user make a directory change
 sys.path.append(os.getcwd())
-
-
+_path = os.getcwd()
+_path, _file = os.path.split(__file__)
+print _path
+#raise Exception(_path)
 class MainFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         
         self.config = io.Config()
         self.config.load_default('./genx.conf')
+        #self.config.load_default(_path + '/genx.conf')
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__

@@ -771,15 +771,18 @@ class DataListControl(wx.Panel):
         self.sizer_vert=wx.BoxSizer(wx.VERTICAL)
         self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(self.sizer_vert)
+        
+        self.do_toolbar()
         self.sizer_vert.Add(self.tool_panel, proportion = 0, flag = wx.EXPAND
-        , border = 0)
+        , border = 5)
+        self.sizer_vert.Add((-1,2))
         self.sizer_vert.Add(self.list_ctrl, proportion = 1, flag = wx.EXPAND
-        , border = 0)
+        , border = 5)
         
         self.tool_panel.SetSizer(self.sizer_hor)
         
-        self.do_toolbar()
-        self.sizer_vert.Fit(self)
+        
+        #self.sizer_vert.Fit(self)
         
     def do_toolbar(self):
         if os.name == 'nt':
@@ -787,7 +790,7 @@ class DataListControl(wx.Panel):
         else:
             size = (-1, -1)
         self.bitmap_button_open = wx.BitmapButton(self.tool_panel, -1
-        , img.getopen_smallBitmap(), size = size, style=wx.NO_BORDER)
+        , img.getopen_smallBitmap(), size = size, style = wx.NO_BORDER)
         self.bitmap_button_open.SetToolTipString('Import a data set')
         self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1
         , img.getaddBitmap(), size = size, style = wx.NO_BORDER)
@@ -808,12 +811,20 @@ class DataListControl(wx.Panel):
         , img.getcalcBitmap(), size = size, style = wx.NO_BORDER)
         self.bitmap_button_open.SetToolTipString('Data Calculations')
         
-        self.sizer_hor.Add(self.bitmap_button_open,proportion = 0, border = 2)
+        space = (2, -1)
+        self.sizer_hor.Add(self.bitmap_button_open, proportion = 0,
+                           border = 2)
+        self.sizer_hor.Add(space)
         self.sizer_hor.Add(self.bitmap_button_add,proportion = 0, border = 2)
+        self.sizer_hor.Add(space)
         self.sizer_hor.Add(self.bitmap_button_delete,proportion = 0, border = 2)
+        self.sizer_hor.Add(space)
         self.sizer_hor.Add(self.bitmap_button_move_up,proportion = 0, border = 2)
+        self.sizer_hor.Add(space)
         self.sizer_hor.Add(self.bitmap_button_move_down,proportion = 0, border = 2)
+        self.sizer_hor.Add(space)
         self.sizer_hor.Add(self.bitmap_button_plotting,proportion = 0, border = 2)
+        self.sizer_hor.Add(space)
         self.sizer_hor.Add(self.bitmap_button_calc,proportion = 0, border = 2)
         
         

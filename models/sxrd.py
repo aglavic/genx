@@ -367,14 +367,14 @@ class Sample:
         ''' Create atomic positions and such for output '''
         x, y, z, u, oc, el = self._surf_pars()
         ids = []
-	[ids.extend(slab._extract_ids()) for slab in self.slabs]
+        [ids.extend(slab._extract_ids()) for slab in self.slabs]
         xout = np.array([])
         yout = np.array([])
         zout = np.array([])
         uout = np.array([])
         ocout = np.array([])
         elout = el[0:0].copy()
-	idsout = []
+        idsout = []
         for sym_op in self.surface_sym:
             xout = np.r_[xout, sym_op.trans_x(x, y)]
             yout = np.r_[yout, sym_op.trans_y(x, y)]
@@ -382,24 +382,19 @@ class Sample:
             uout = np.r_[uout, u]
             ocout = np.r_[ocout, oc]
             elout = np.r_[elout, el]
-	    idsout.extend(ids)
+        idsout.extend(ids)
             
         return xout, yout, zout, uout, ocout, elout, idsout
 
     def _get_f(self, el, dinv):
         '''from the elements extract an array with atomic structure factors
         '''
-        fdict = {}
-        f = np.transpose(np.array([self._fatom_eval(fdict, elem, dinv/2.0)
-                             for elem in el], dtype = np.complex128))
-
-        return f
+        return _get_f(self.inst, el, dinv)
 
     def _get_rho(self, el):
         '''Returns the rho functions for all atoms in el
         '''
-        rhos = [getattr(self.inst.rholib, elem) for elem in el]
-        return rhos
+        return _get_rho(el)
     
     def _fatom_eval(self, f, element, s):
         '''Smart (fast) evaluation of f_atom. Only evaluates f if not
@@ -409,14 +404,7 @@ class Sample:
         f - dictonary for lookup
         s - sintheta_over_lambda array
         '''
-        try:
-            fret = f[element]
-        except KeyError:
-            fret = getattr(self.inst.flib, element)(s)
-            f[element] = fret
-            #print element, fret[0]
-        return fret
-            
+        return _fatom_eval(inst, f, element, s)    
 
 class UnitCell:
     '''Class containing the  unitcell.
@@ -536,10 +524,11 @@ class Slab:
         self.m = np.array([], dtype = np.float64)
         self.id = np.array([], dtype = np.str)
         self.el = np.array([], dtype = np.str)
-	
+        
         # TODO: Type checking and defaults!
         #self.inst = inst
-	self.name = str(name)
+        self.name = str(name)
+    
     def copy(self):
         '''Returns a copy of the object.
         '''
@@ -592,12 +581,19 @@ class Slab:
         if not id in self.id:
             raise ValueError('Can not remove atom with id %s -'
                              'namedoes not exist')
-        item = argwhere(self.id == id)[0][0]
+        item = np.argwhere(self.id == id)[0][0]
         if item < len(self.x) - 1:
             ar = getattr(self, 'id')
             setattr(self, 'id', r_[ar[:item], at[item+1:]])
             ar = getattr(self, 'el')
             setattr(self, 'el', r_[ar[:item], at[item+1:]])
+            ar = getattr(self, 'x')
+            setattr(self, 'x', r_[ar[:item], at[item+1:]])
+            ar = getattr(self, 'y')
+            setattr(self, 'y', r_[ar[:item], at[item+1:]])
+            ar = getattr(self, 'z')
+            setattr(self, 'z', r_[ar[:item], at[item+1:]])
+            
             for par in self.par_names:
                 ar = getattr(self, par)
                 setattr(self, par, r_[ar[:item], at[item+1:]])
@@ -608,12 +604,19 @@ class Slab:
             setattr(self, 'id', ar[:-1])
             ar = getattr(self, 'el')
             setattr(self, 'el', ar[:-1])
+            ar = getattr(self, 'x')
+            setattr(self, 'x', ar[:-1])
+            ar = getattr(self, 'y')
+            setattr(self, 'y', ar[:-1])
+            ar = getattr(self, 'z')
+            setattr(self, 'z', ar[:-1])
 
             for par in self.par_names:
                 ar = getattr(self, par)
                 setattr(self, par, ar[:-1])
                 delattr(self, 'set' + id + par)
                 delattr(self, 'get' + id + par)
+
             
 
     def find_atoms(self, expression):
@@ -673,7 +676,7 @@ class Slab:
         '''
         self.slab_oc = oc
 
-    def get_oc(self, oc):
+    def get_oc(self):
         '''Get the global occupancy of the slab
         '''
         return self.slab_oc
@@ -727,8 +730,8 @@ class Slab:
                self.el, self.u, self.oc*self.m*self.slab_oc, self.c
     
     def _extract_ids(self):
-	'Extract the ids of the atoms'
-	return [self.name + '.' + str(id) for id in self.id]
+        'Extract the ids of the atoms'
+        return [self.name + '.' + str(id) for id in self.id]
 
 class AtomGroup:
     par_names = ['dx', 'dy', 'dz', 'u', 'oc']
@@ -1097,6 +1100,36 @@ def scale_sqrt_sim(data, sim_list, scale_func = None):
 ##     scaled_sim_list = [sim*(10**-scale) for sim in sim_list]
 ##     return scaled_sim_list
 
+def _get_f(inst, el, dinv):
+    '''from the elements extract an array with atomic structure factors
+    '''
+    fdict = {}
+    f = np.transpose(np.array([_fatom_eval(inst, fdict, elem, dinv/2.0)
+                             for elem in el], dtype = np.complex128))
+
+    return f
+
+def _get_rho(el):
+    '''Returns the rho functions for all atoms in el
+    '''
+    rhos = [getattr(self.inst.rholib, elem) for elem in el]
+    return rhos
+    
+def _fatom_eval(inst, f, element, s):
+    '''Smart (fast) evaluation of f_atom. Only evaluates f if not
+    evaluated before.
+    
+    element - element string
+    f - dictonary for lookup
+    s - sintheta_over_lambda array
+    '''
+    try:
+        fret = f[element]
+    except KeyError:
+        fret = getattr(inst.flib, element)(s)
+        f[element] = fret
+            #print element, fret[0]
+    return fret
 #=============================================================================
 
 if __name__ == '__main__':
