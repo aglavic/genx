@@ -2,7 +2,7 @@
 <p> The model is based on Fullertons algorithm for superlattices as
 described in Phys. Rev. B vol. 45 p. 9292 (1992). 
 '''
-# Programmed by Matts Björck 20091215
+# Programmed by Matts Bjorck 20091215
 
 import numpy as np
 import sxrd
@@ -74,7 +74,7 @@ class SLSample:
         '''
         bulk_i = np.abs(self.calc_fb(h, k, l))**2
         sl_i = np.abs(self.superlattice.calc_i(h, k, l))
-        return bulk_i + sl_i
+        return (bulk_i + sl_i)*self.inst.inten
 
     def calc_fb(self, h, k, l):
         '''Calculate the structure factors from the bulk
@@ -280,6 +280,7 @@ if __name__ == '__main__':
     from pylab import *
 
     inst = sxrd.Instrument(wavel = 0.77, alpha = 0.2)
+    inst.set_inten(100.0)
 
     lay_a = sxrd.Slab()
     lay_a.add_atom('Sr', 'sr', 0.0, 0.0, 0.0, 0.001, 1.0)

@@ -394,6 +394,11 @@ class SampleHandler:
             return None
 
 class MyHtmlListBox(wx.HtmlListBox):
+
+    def __init__(self, parent, id, style = wx.BORDER_SUNKEN):
+        wx.HtmlListBox.__init__(self, parent, id, style = wx.BORDER_SUNKEN)
+        self.SetItemList(['Starting up...'])
+
     def SetItemList(self, list):
         self.html_items = list
         self.SetItemCount(len(list))
@@ -1440,7 +1445,9 @@ class Plugin(framework.Template):
         
         code = 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
         code += ('fp.set_wavelength(inst.wavelength)\n'
-                'fw.set_wavelength(inst.wavelength)\n')
+                 '#Compability issues for pre-fw created gx files\n'
+                 'try:\n\t fw\nexcept:\n\tpass\nelse:\n'
+                '\tfw.set_wavelength(inst.wavelength)\n')
         script = self.insert_code_segment(script, 'Instrument', code)
         
         layer_code, stack_code, sample_code = self.sampleh.getCode()
