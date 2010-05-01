@@ -394,7 +394,7 @@ class Sample:
     def _get_rho(self, el):
         '''Returns the rho functions for all atoms in el
         '''
-        return _get_rho(el)
+        return _get_rho(self.inst, el)
     
     def _fatom_eval(self, f, element, s):
         '''Smart (fast) evaluation of f_atom. Only evaluates f if not
@@ -1109,10 +1109,10 @@ def _get_f(inst, el, dinv):
 
     return f
 
-def _get_rho(el):
+def _get_rho(inst, el):
     '''Returns the rho functions for all atoms in el
     '''
-    rhos = [getattr(self.inst.rholib, elem) for elem in el]
+    rhos = [getattr(inst.rholib, elem) for elem in el]
     return rhos
     
 def _fatom_eval(inst, f, element, s):
