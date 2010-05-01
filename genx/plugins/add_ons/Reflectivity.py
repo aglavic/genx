@@ -403,6 +403,7 @@ class MyHtmlListBox(wx.HtmlListBox):
         self.html_items = list
         self.SetItemCount(len(list))
         #self.RefreshAll()
+        self.Refresh()
         
     def OnGetItem(self, n):
         return self.html_items[n]
