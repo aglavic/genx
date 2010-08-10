@@ -395,8 +395,9 @@ class SampleHandler:
 
 class MyHtmlListBox(wx.HtmlListBox):
 
-    def __init__(self, parent, id, style = wx.BORDER_SUNKEN):
-        wx.HtmlListBox.__init__(self, parent, id, style = wx.BORDER_SUNKEN)
+    def __init__(self, parent, id, size = (-1, -1), style = wx.BORDER_SUNKEN):
+        wx.HtmlListBox.__init__(self, parent, id, size = size, 
+                                style = wx.BORDER_SUNKEN)
         self.SetItemList(['Starting up...'])
 
     def SetItemList(self, list):
