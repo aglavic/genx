@@ -469,7 +469,7 @@ class ParameterGrid(gridlib.Grid):
         lis=text.split('.'+self.set_func)
         if len(lis)==2:
             try:
-                value = self.evalf(lis[0]+'.'+self.get_func+lis[1])()
+                value = self.evalf(lis[0]+'.'+self.get_func+lis[1])().real
                 #print value
                 self.table.SetValue(self.CurSelection[0],1,value)
                 # Takes care so that also negative numbers give the

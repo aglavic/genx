@@ -1,4 +1,5 @@
 import shelve
+import numpy as np
 
 # Helper functions for meta class
 
@@ -29,13 +30,42 @@ def _makeSetter(compiledName):
     """Return a method that sets compiledName's value."""    
     return lambda self, value: setattr(self, compiledName, value)
 
+def _makeGetterReal(compiledName):
+    """Return a method that gets compiledName's value."""
+    return lambda self: self.__getattribute__(compiledName[:-4]).real
+
+def _makeGetterImag(compiledName):
+    """Return a method that gets compiledName's value."""
+    return lambda self: self.__getattribute__(compiledName[:-4]).imag
+
+def _makeSetterReal(compiledName):
+    """Return a method that sets compiledName's value."""    
+    return lambda self, value: setattr(self, compiledName[:-4], value +
+                                       1.0J*self.__getattribute__(compiledName[:-4]).imag)
+
+def _makeSetterImag(compiledName):
+    """Return a method that sets compiledName's value."""    
+    return lambda self, value: setattr(self, compiledName[:-4], 
+                                       self.__getattribute__(compiledName[:-4]).real + 
+                                       1.0J*value)
+
 # Start Metaclass
 class Meta(type):
     """Adds accessor methods to a class."""
     def __new__(cls, clsName, bases, dict):
         for fldName in dict['__dict__'].keys():
-            _addMethod(fldName, clsName, 'get', _makeGetter, dict)
-            _addMethod(fldName, clsName, 'set', _makeSetter, dict)
+            #print fldName, dict['__dict__'][fldName]
+            if np.iscomplex(dict['__dict__'][fldName]):
+                _addMethod(fldName + 'Real', clsName, 'get', _makeGetterReal, dict)
+                _addMethod(fldName + 'Real', clsName, 'set', _makeSetterReal, dict)
+                _addMethod(fldName + 'Imag', clsName, 'get', _makeGetterImag, dict)
+                _addMethod(fldName + 'Imag', clsName, 'set', _makeSetterImag, dict)
+                _addMethod(fldName, clsName, 'get', _makeGetter, dict)
+                _addMethod(fldName, clsName, 'set', _makeSetter, dict)
+
+            else:
+                _addMethod(fldName, clsName, 'get', _makeGetter, dict)
+                _addMethod(fldName, clsName, 'set', _makeSetter, dict)
 
         def __init__(self, **kw):
             """ Simplistic __init__: first set all attributes to default
