@@ -92,7 +92,7 @@ class PlotPanel(wx.Panel):
         
     def _onSize(self, evt):
         self._resizeflag = True
-        #self._SetSize()
+        self._SetSize()
         #self.canvas.draw(repaint = False)
         
     def _onIdle(self, evt):
@@ -110,8 +110,8 @@ class PlotPanel(wx.Panel):
             pixels = self.GetClientSize()
 
         self.canvas.SetSize(pixels)
-        self.figure.set_size_inches(pixels[0]/self.figure.get_dpi()
-        , pixels[1]/self.figure.get_dpi())
+        #self.figure.set_size_inches(pixels[0]/self.figure.get_dpi()
+        #, pixels[1]/self.figure.get_dpi())
     
     def ReadConfig(self):
         '''ReadConfig(self) --> None
