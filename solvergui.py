@@ -286,7 +286,7 @@ class SolverController:
                     desc = 'Parameter Update', update_errors = False,\
                     permanent_change = False)
             except:
-                print 'Could not create data for paraemters'
+                print 'Info: Could not create data for parameters'
             else:
                 wx.PostEvent(self.parent, evt)
         

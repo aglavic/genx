@@ -1,1 +1,1 @@
-version = '2.0b trunk'
+version = "6.2"
