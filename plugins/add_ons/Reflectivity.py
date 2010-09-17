@@ -64,6 +64,8 @@ import sys, os, re, time, StringIO, traceback
 from help_modules.custom_dialog import *
 import help_modules.reflectivity_images as images
 
+_avail_models = ['interdiff', 'spec_nx', 'xmag']
+
 class SampleHandler:
     def __init__(self,sample,names):
         self.sample=sample
@@ -1333,7 +1335,7 @@ class Plugin(framework.Template):
         '''
         #print 'New model'
         dlg = wx.SingleChoiceDialog(self.parent, 'Choose a model type to use',\
-                'Models', ['interdiff', 'spec_nx'], 
+                'Models', _avail_models, 
                 wx.CHOICEDLG_STYLE
                 )
 
