@@ -49,11 +49,10 @@ def new(frame, event):
     Event handler for creating a new model
     '''
     if not frame.model.saved:
-        ans = ShowQuestionDialog(frame, 'The current model is not saved! '\
-                                 'Do you want to abort so you can save'
-                                 ' your model?', 
-                                 'Abort new model?')
-        if ans:
+        ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
+                                 'your model will not be saved.', 
+                                 'Model not saved')
+        if not ans:
            return
     
     # Reset the model - remove everything from the previous model
@@ -73,11 +72,10 @@ def open(frame, event):
     '''
     # Check so the model is saved before quitting
     if not frame.model.saved:
-        ans = ShowQuestionDialog(frame, 'The current model is not saved! '\
-                                 'Do you want to abort so you can save'
-                                 ' your model?', 
-                                 'Abort loading model?')
-        if ans:
+        ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
+                                 'your model will not be saved.', 
+                                 'Model not saved')
+        if not ans:
            return
      
     dlg = wx.FileDialog(frame, message="Open", defaultFile="",\
@@ -623,9 +621,10 @@ def quit(frame, event):
     '''
     # Check so the model is saved before quitting
     if not frame.model.saved:
-        ans = ShowQuestionDialog(frame, 'The current model is not saved! '\
-        'Do you want to abort quitting and save your data?', 'Abort close?')
-        if not ans:
+        ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
+                                 'your model will not be saved.', 
+                                 'Model not saved')
+        if ans:
             frame.Destroy()
     else:
         frame.Destroy()
@@ -1072,9 +1071,9 @@ def _post_sim_plot_event(parent, model, desc = ''):
 def ShowQuestionDialog(frame, message, title = 'Question?'):
     dlg = wx.MessageDialog(frame, message,
                                title,
-                               wx.YES_NO | wx.ICON_QUESTION
+                               #wx.YES_NO | wx.ICON_QUESTION
                                )
-    result = dlg.ShowModal() == wx.ID_YES
+    result = dlg.ShowModal() == wx.ID_OK
     dlg.Destroy()
     return result
 
