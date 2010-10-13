@@ -469,13 +469,17 @@ class ParameterGrid(gridlib.Grid):
         lis=text.split('.'+self.set_func)
         if len(lis)==2:
             try:
-                value = self.evalf(lis[0]+'.'+self.get_func+lis[1])()
+                value = self.evalf(lis[0]+'.'+self.get_func+lis[1])().real
                 #print value
                 self.table.SetValue(self.CurSelection[0],1,value)
-                self.table.SetValue(self.CurSelection[0],3,value*(1-
-                self.variable_span))
-                self.table.SetValue(self.CurSelection[0],4,value*(1
-                +self.variable_span))
+                # Takes care so that also negative numbers give the
+                # correct values in the min and max cells
+                minval = value*(1 - self.variable_span)
+                maxval = value*(1 + self.variable_span)
+                self.table.SetValue(self.CurSelection[0],3, 
+                                    min(minval, maxval))
+                self.table.SetValue(self.CurSelection[0],4,
+                                    max(minval, maxval))
             except StandardError,S:
                 print "Not possible to init the variable automatically"
                 #print S
