@@ -1225,6 +1225,7 @@ class SamplePlotPanel(wx.Panel):
                 i += 1
         keys = self.plot_dict.keys()
         keys.pop(keys.index('z'))
+        #self.plot.ax.legend(tuple(keys), bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
         self.plot.ax.legend(tuple(keys))
         self.plot.flush_plot()
         self.plot.AutoScale()

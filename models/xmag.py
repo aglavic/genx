@@ -255,7 +255,7 @@ def SLD_calculations(z, sample, inst):
     d = d[1:-1]
     # Include one extra element - the zero pos (substrate/film interface)
     int_pos = cumsum(r_[0,d])
-    sigma = sldc*0.0+1e-7
+    sigma = int_pos*0.0+1e-7
     if z == None:
         z = arange(min(-sigma[0]*5, -5), max(int_pos.max()+sigma[-1]*5, 5), 0.5)
     rho_c = sum(d_sldc*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldc[-1]
@@ -279,11 +279,4 @@ import lib.refl as Refl
 
 
 if __name__=='__main__':
-    Fe=Layer(d=10,sigmar=3.0,n=1-2.247e-5+2.891e-6j)
-    Si=Layer(d=15,sigmar=3.0,n=1-7.577e-6+1.756e-7j)
-    sub=Layer(sigmar=3.0,n=1-7.577e-6+1.756e-7j)
-    amb=Layer(n=1.0,sigmar=1.0)
-    stack=Stack(Layers=[Fe,Si],Repetitions=20)
-    sample=Sample(Stacks=[stack],Ambient=amb,Substrate=sub,eta_z=500.0,eta_x=100.0)
-    print sample
-    inst=Instrument(Wavelength=1.54,Coordinates=1)
+    pass

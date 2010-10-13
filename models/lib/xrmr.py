@@ -381,6 +381,7 @@ def det4(A):
 def roots4thdegree(a, b, c, d, e):
     ''' Function that solves a fourth degree polynomial according to
     Ferraris solution alogirthm from: http://en.wikipedia.org/wiki/Quartic_function
+    a*x**4 + b*x**3 + c*x**2 + d*x + e = 0
     '''
     alpha = -3*b**2/8/a**2 + c/a
     beta = b**3/8/a**3 - b*c/2/a**2 + d/a
