@@ -100,6 +100,7 @@ Note: The documentation is not updated from the interdiff model!
 '''
 
 import lib.xrmr
+import lib.paratt as Paratt
 
 from numpy import *
 from scipy.special import erf
@@ -116,13 +117,14 @@ instrument_string_choices = {'coords': ['q','tth'],
                                          'fast conv + varying res.'],
                              'footype': ['no corr', 'gauss beam', 
                                          'square beam'],
-                             'pol':['circ+','circ-','tot', 'ass', 'sigma', 'pi']
+                             'pol':['circ+','circ-','tot', 'ass', 'sigma', 'pi'],
+                             'theory': ['full', 'non-anisotropic'],
      }
 
     
 InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
     'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',\
-    'samplelen':10.0, 'Ibkg': 0.0, 'pol':'circ+'}
+    'samplelen':10.0, 'Ibkg': 0.0, 'pol':'circ+', 'theory':'full',}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
 #Res stddev of resolution
@@ -181,29 +183,60 @@ def Specular(TwoThetaQz, sample, instrument):
     d = array(parameters['d'], dtype = float64)
     g_0 = sin(theta*pi/180.0)
     phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
-    theta = array(parameters['theta_m'], dtype = float64)*pi/180.0
-    M = c_[cos(theta)*cos(phi), cos(theta)*sin(phi), sin(theta)]
+    theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
+    M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
-    W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
-    trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
-    Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
-    #Different polarization channels:
-    pol = instrument.getPol()
-    if pol == 0 or pol == instrument_string_choices['pol'][0]:
-        R = abs(Wc[0,0])**2 + abs(Wc[0,1])**2
-    elif pol == 1 or pol == instrument_string_choices['pol'][1]:
-        R = abs(Wc[1,0])**2 + abs(Wc[1,1])**2
-    elif pol == 2 or pol == instrument_string_choices['pol'][2]:
-        R = (abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)/2
-    elif pol == 3 or pol == instrument_string_choices['pol'][3]:
-        R = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)
-    elif pol == 4 or pol == instrument_string_choices['pol'][4]:
-        R = abs(W[0,0])**2 + abs(W[0,1])**2
-    elif pol == 5 or pol == instrument_string_choices['pol'][5]:
-        R = abs(W[1,0])**2 + abs(W[1,1])**2
+    theory = instrument.getTheory()
+    if  theory == 0 or theory == instrument_string_choices['theory'][0]:
+        W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
+        trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
+        Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
+        #Different polarization channels:
+        pol = instrument.getPol()
+        if pol == 0 or pol == instrument_string_choices['pol'][0]:
+            # circ +
+            R = abs(Wc[0,0])**2 + abs(Wc[0,1])**2
+        elif pol == 1 or pol == instrument_string_choices['pol'][1]:
+            # circ -
+            R = abs(Wc[1,0])**2 + abs(Wc[1,1])**2
+        elif pol == 2 or pol == instrument_string_choices['pol'][2]:
+            # tot
+            R = (abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)/2
+        elif pol == 3 or pol == instrument_string_choices['pol'][3]:
+            # ass
+            R = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)
+        elif pol == 4 or pol == instrument_string_choices['pol'][4]:
+            # sigma
+            R = abs(W[0,0])**2 + abs(W[0,1])**2
+        elif pol == 5 or pol == instrument_string_choices['pol'][5]:
+            # pi
+            R = abs(W[1,0])**2 + abs(W[1,1])**2
+        else:
+            raise ValueError('Variable pol has an unvalid value')
+    elif theory == 1 or theory == instrument_string_choices['theory'][1]:
+        pol = instrument.getPol()
+        re = 2.82e-13*1e2/1e-10
+        if pol == 0 or pol == instrument_string_choices['pol'][0]:
+            # circ +
+            f = fc[:, newaxis]-(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180)
+            n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
+            print n.shape, theta.shape, d.shape
+            R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(phi.shape))
+        elif pol == 1 or pol == instrument_string_choices['pol'][1]:
+            # circ -
+            f = fc[:, newaxis]+(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180)
+            n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
+            R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(phi.shape))
+        elif pol == 2 or pol == instrument_string_choices['pol'][2]:
+            # tot
+            raise ValueError('Variable pol has an unvalid value')
+        elif pol == 3 or pol == instrument_string_choices['pol'][3]:
+            # ass
+            raise ValueError('Variable pol has an unvalid value')
+        else:
+            raise ValueError('Variable pol has an unvalid value')
     else:
-        raise ValueError('Variable pol has an unvalid value')
-
+        raise ValueError('Variable theory has an unvalid value')
     #FootprintCorrections
     foocor = 1.0
     footype = instrument.getFootype()
