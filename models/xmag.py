@@ -100,6 +100,7 @@ Note: The documentation is not updated from the interdiff model!
 '''
 
 import lib.xrmr
+import lib.edm_slicing as edm
 import lib.paratt as Paratt
 
 from numpy import *
@@ -119,12 +120,16 @@ instrument_string_choices = {'coords': ['q','tth'],
                                          'square beam'],
                              'pol':['circ+','circ-','tot', 'ass', 'sigma', 'pi'],
                              'theory': ['full', 'non-anisotropic'],
+                             'compress':['yes', 'no'],
+                             'slicing':['yes', 'no'],
      }
+
 
     
 InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
     'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',\
-    'samplelen':10.0, 'Ibkg': 0.0, 'pol':'circ+', 'theory':'full',}
+    'samplelen':10.0, 'Ibkg': 0.0, 'pol':'circ+', 'theory':'full', 
+    'slice_depth':1.0,'compress': 'yes', 'slicing':'no'}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
 #Res stddev of resolution
@@ -142,21 +147,31 @@ InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
 #
 #
 
-LayerParameters = {'dens':1.0, 'd':0.0, 'fc':(0.0 + 1e-20J), 
+LayerParameters = {'dens':1.0, 'd':0.0, 'f': (0.0 + 1e-20J), 
+                   'fr':(0.0 + 1e-20J), 'fc':(0.0 + 1e-20J),
                    'fm1':(0.0 + 1e-20J), 'fm2':(0.0 + 1e-20J), 
-                   'phi_m':0.0, 'theta_m':0.0, 'mag_dens':1.0}
+                   'phi_m':0.0, 'theta_m':0.0, 'mag_dens':1.0,
+                   'sigma_c':0.0, 'sigma_m':0.0}
 StackParameters = {'Layers':[], 'Repetitions':1}
-SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None}
+SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 
+                    'compress':'yes', 'slicing':'no', 'slice_depth':1.0,
+                    }
+sample_string_choices = {'compress':['yes', 'no'],
+                          'slicing':['yes', 'no'],
+                          }
 
 # A buffer to save previous calculations for spin-flip calculations
 class Buffer:
     W = None
     parameters = None
+    g_0 = None
+    coords = None
+    wavelength = None
 
 def Specular(TwoThetaQz, sample, instrument):
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
-
+    weight = None
     if restype == 2 or restype == instrument_string_choices['restype'][2]:
             (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:], \
                 instrument.getRes(), instrument.getRespoints(),\
@@ -168,27 +183,112 @@ def Specular(TwoThetaQz, sample, instrument):
         instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     
+    R = reflectivity_xmag(sample, instrument, theta)
+    #FootprintCorrections
+    foocor = footprint_correction(instrument, theta)
+    
+    R = correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
+   
+    return R*instrument.getI0() + instrument.getIbkg()
+
+def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
+   raise NotImplementedError('Off specular calculations are not implemented for magnetic x-ray reflectivity')
+
+
+def SLD_calculations(z, sample, inst):
+    ''' Calculates the scatteringlength density as at the positions z
+    '''
+    parameters = sample.resolveLayerParameters()
+    dens = array(parameters['dens'], dtype = complex64)
+    mag_dens = array(parameters['mag_dens'], dtype = complex64)
+    f = array(parameters['f'], dtype = complex64)
+    fr = array(parameters['fr'], dtype = complex64)
+    sldc = dens*(f + mag_dens*fr)
+    d_sldc = sldc[:-1] - sldc[1:]
+    fm1 = array(parameters['fm1'], dtype = complex64)
+    fm2 = array(parameters['fm2'], dtype = complex64)
+    sldm1 = dens*mag_dens*fm1
+    sldm2 = dens*mag_dens*fm2
+    d_sldm1 = sldm1[:-1] - sldm1[1:]
+    d_sldm2 = sldm2[:-1] - sldm2[1:]
+    d = array(parameters['d'], dtype = float64)
+    d = d[1:-1]
+    # Include one extra element - the zero pos (substrate/film interface)
+    int_pos = cumsum(r_[0,d])
+    sigma = int_pos*0.0+1e-7
+    if z == None:
+        z = arange(min(-sigma[0]*5, -5), max(int_pos.max()+sigma[-1]*5, 5), 0.5)
+    rho_c = sum(d_sldc*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldc[-1]
+    rho_m1 = sum(d_sldm1*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldm1[-1]
+    rho_m2 = sum(d_sldm2*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldm2[-1]
+    
+    return {'real charge sld': real(rho_c), 'imag charge sld': imag(rho_c),
+            'real mag_1 sld': real(rho_m1), 'imag mag_1 sld': imag(rho_m1),
+            'real mag_2 sld': real(rho_m2), 'imag mag_2 sld': imag(rho_m2),
+            'z':z}
+
+def reflectivity_xmag(sample, instrument, theta):
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
     dens = array(parameters['dens'], dtype = complex128)
-    dens = array(parameters['mag_dens'], dtype = complex128)
+    mag_dens = array(parameters['mag_dens'], dtype = complex128)
     #print [type(f) for f in parameters['f']]
-    fc = array(parameters['fc'], dtype = complex128) + (1-1J)*1e-20
+    f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
+    fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
     fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
     fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
     re = 2.8179402894e-5
-    A = -lamda**2*re/pi*dens*fc
-    B = lamda**2*re/pi*dens*fm1
-    C = lamda**2*re/pi*dens*fm2
     d = array(parameters['d'], dtype = float64)
+    sl_c = dens*(f + mag_dens*fr) 
+    sl_m1 = dens*mag_dens*fm1
+    sl_m2 = dens*mag_dens*fm2
+    
     g_0 = sin(theta*pi/180.0)
     phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
     M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
+    
+    sigma_c = array(parameters['sigma_c'], dtype = float64)
+    sigma_m = array(parameters['sigma_m'], dtype = float64)
+    #print A, B
+    if instrument.getSlicing() == instrument_string_choices['slicing'][0]:
+        dz = instrument.getSlice_depth()
+        reply= edm.create_profile_cm(d[1:-1], sigma_c[:-1].real, sigma_m[:-1].real, sl_c, sl_m1, [edm.erf_profile]*len(sl_c), 
+                                 dz = dz, mult = 4.0, buffer = 20., delta = 5.)
+        z, pdens_c, pdens_m, pdens_indiv_c, pdens_indiv_m  = reply
+        #print sigma_c, sigma_m, A, B, d
+        print 'Uncompressed:', z.shape
+        if instrument.getCompress() == instrument_string_choices['compress'][0]:
+            #Compressing the profile..
+            z, pdens_c, pdens_m = edm.compress_profile2(z, pdens_c, pdens_m, 0.1)
+            print 'Compressed: ', z.shape, pdens_c.shape
+        sl_c = pdens_c
+        sl_m1 = pdens_m
+        sl_m2 = sl_m1*0
+        print 'WARNING: fm2 and M is ignored!'
+        d = r_[z[1:] - z[:-1],1]
+        #print d.shape, A.shape
+        #print A, B
+        M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
+    
+    A = -lamda**2*re/pi*sl_c
+    B = lamda**2*re/pi*sl_m1
+    C = lamda**2*re/pi*sl_m2
+    
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
     if  theory == 0 or theory == instrument_string_choices['theory'][0]:
-        W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
+        if (Buffer.parameters != parameters or Buffer.coords != instrument.getCoords()
+            or any(not_equal(Buffer.g_0,g_0)) or Buffer.wavelength != lamda):
+            W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
+            Buffer.W = W
+            Buffer.parameters = parameters.copy()
+            Buffer.coords = instrument.getCoords()
+            Buffer.g_0 = g_0.copy()
+            Buffer.wavelength = lamda
+        else:
+            #print 'Reusing W'
+            W = Buffer.W
         trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
         Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
         #Different polarization channels:
@@ -198,7 +298,7 @@ def Specular(TwoThetaQz, sample, instrument):
             R = abs(Wc[0,0])**2 + abs(Wc[0,1])**2
         elif pol == 1 or pol == instrument_string_choices['pol'][1]:
             # circ -
-            R = abs(Wc[1,0])**2 + abs(Wc[1,1])**2
+            R = abs(Wc[1,1])**2 + abs(Wc[1,0])**2
         elif pol == 2 or pol == instrument_string_choices['pol'][2]:
             # tot
             R = (abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)/2
@@ -218,14 +318,18 @@ def Specular(TwoThetaQz, sample, instrument):
         re = 2.82e-13*1e2/1e-10
         if pol == 0 or pol == instrument_string_choices['pol'][0]:
             # circ +
-            f = fc[:, newaxis]-(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180)
-            n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
+            #f = f[:, newaxis] + mag_dens[:, newaxis]*(fr[:, newaxis]-(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180))
+            #n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
+            sld = sl_c[:, newaxis] - (sl_m1*M[:,0])[:, newaxis]*cos(theta*pi/180)
+            n = 1 - re*lamda**2/2/pi*sld*1e-4
             print n.shape, theta.shape, d.shape
             R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(phi.shape))
         elif pol == 1 or pol == instrument_string_choices['pol'][1]:
             # circ -
-            f = fc[:, newaxis]+(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180)
-            n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
+            #f = f[:, newaxis] + mag_dens[:, newaxis]*(fr[:, newaxis]+(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180))
+            #n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
+            sld = sl_c[:, newaxis] + (sl_m1*M[:,0])[:, newaxis]*cos(theta*pi/180)
+            n = 1 - re*lamda**2/2/pi*sld*1e-4
             R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(phi.shape))
         elif pol == 2 or pol == instrument_string_choices['pol'][2]:
             # tot
@@ -237,7 +341,9 @@ def Specular(TwoThetaQz, sample, instrument):
             raise ValueError('Variable pol has an unvalid value')
     else:
         raise ValueError('Variable theory has an unvalid value')
-    #FootprintCorrections
+    return R
+
+def footprint_correction(instrument, theta):
     foocor = 1.0
     footype = instrument.getFootype()
     beamw = instrument.getBeamw()
@@ -250,7 +356,10 @@ def Specular(TwoThetaQz, sample, instrument):
         foocor = SquareIntensity(theta, samlen, beamw)
     else:
         raise ValueError('Variable footype has an unvalid value')
+    return foocor
     
+def correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight):
+    restype = instrument.getRestype()
     if restype == 0 or restype == instrument_string_choices['restype'][0]:
         R = R[:]*foocor
     elif restype == 1 or restype == instrument_string_choices['restype'][1]:
@@ -263,42 +372,7 @@ def Specular(TwoThetaQz, sample, instrument):
           range = instrument.getResintrange())
     else:
         raise ValueError('Variable restype has an unvalid value')
-    return R*instrument.getI0() + instrument.getIbkg()
-
-def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
-   raise NotImplementedError('Off specular calculations are not implemented for magnetic x-ray reflectivity')
-
-
-def SLD_calculations(z, sample, inst):
-    ''' Calculates the scatteringlength density as at the positions z
-    '''
-    parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = complex64)
-    mag_dens = array(parameters['mag_dens'], dtype = complex64)
-    fc = array(parameters['fc'], dtype = complex64)
-    sldc = dens*fc
-    d_sldc = sldc[:-1] - sldc[1:]
-    fm1 = array(parameters['fm1'], dtype = complex64)
-    fm2 = array(parameters['fm2'], dtype = complex64)
-    sldm1 = mag_dens*fm1
-    sldm2 = mag_dens*fm2
-    d_sldm1 = sldm1[:-1] - sldm1[1:]
-    d_sldm2 = sldm2[:-1] - sldm2[1:]
-    d = array(parameters['d'], dtype = float64)
-    d = d[1:-1]
-    # Include one extra element - the zero pos (substrate/film interface)
-    int_pos = cumsum(r_[0,d])
-    sigma = int_pos*0.0+1e-7
-    if z == None:
-        z = arange(min(-sigma[0]*5, -5), max(int_pos.max()+sigma[-1]*5, 5), 0.5)
-    rho_c = sum(d_sldc*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldc[-1]
-    rho_m1 = sum(d_sldm1*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldm1[-1]
-    rho_m2 = sum(d_sldm2*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldm2[-1]
-    
-    return {'real charge sld': real(rho_c), 'imag charge sld': imag(rho_c),
-            'real mag_1 sld': real(rho_m1), 'imag mag_1 sld': imag(rho_m1),
-            'real mag_2 sld': real(rho_m2), 'imag mag_2 sld': imag(rho_m2),
-            'z':z}
+    return R
     
 
 SimulationFunctions = {'Specular':Specular,\

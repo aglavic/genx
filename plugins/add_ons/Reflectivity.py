@@ -531,9 +531,17 @@ class SamplePanel(wx.Panel):
     def EditSampleParameters(self, evt):
         validators = []
         items = []
+        try:
+            print self.model.sample_string_choices
+            string_choices = self.model.sample_string_choices
+        except Exception, e:
+            string_choices = {}
         for item in self.model.SampleParameters.keys():
             if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
-                validators.append(FloatObjectValidator())
+                if string_choices.has_key(item):
+                    validators.append(string_choices[item])
+                else:
+                    validators.append(FloatObjectValidator())
                 val = self.sampleh.sample.__getattribute__(item)
                 items.append((item, val))
         
