@@ -17,7 +17,7 @@ from numpy import *
 import wx
 import wx.lib.newevent
 
-import io
+import filehandling as io
 
 # Okay due to compabiltiy issues with version above 0.91
 spl = matplotlib.__version__.split('.')

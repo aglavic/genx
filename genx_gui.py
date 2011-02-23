@@ -13,8 +13,8 @@ import wx.lib.plot as wxplot
 
 import os, sys
 
-import data, model, io
-
+import data, model
+import filehandling as io
 import plotpanel, solvergui, parametergrid, datalist
 import event_handlers
 import images as img
