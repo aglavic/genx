@@ -13,7 +13,8 @@ import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
 
 import model as modellib
-import solvergui, help, io
+import solvergui, help
+import filehandling as io
 
 def get_pages(frame):
     pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
