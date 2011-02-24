@@ -9,7 +9,7 @@ def Refl(theta,lamda,n,d,sigma):
     # Length of k-vector in vaccum
     k=2*math.pi/lamda
     # Calculates the wavevector in each layer
-    Qj=2*k*sqrt(n[:,newaxis]**2-cos(theta*math.pi/180)**2)
+    Qj=2*n[-1]*k*sqrt(n[:,newaxis]**2/n[-1]**2-cos(theta*math.pi/180)**2)
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     #print rp.shape #For debugging
@@ -39,7 +39,7 @@ def ReflQ(Q,lamda,n,d,sigma):
     sigma=sigma[:-1]
     Q0=4*pi/lamda
     # Calculates the wavevector in each layer
-    Qj=sqrt((n[:,newaxis]**2-1)*Q0**2+Q**2)
+    Qj=sqrt((n[:,newaxis]**2 - n[-1]**2)*Q0**2 + n[-1]**2*Q**2)
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     #print rp.shape #For debugging
@@ -75,7 +75,7 @@ def Refl_nvary(theta,lamda,n_func,d,sigma):
     #print len(n_func)
     n=array(map(lambda f,val:f(val),n_func,ss))
     #print n
-    Qj=2*k*sqrt(n**2-cos(theta*math.pi/180)**2)
+    Qj=2*k*n[-1]*sqrt(n**2/n[-1]**2-cos(theta*math.pi/180)**2)
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     #print rp.shape #For debugging
@@ -103,7 +103,7 @@ def ReflProfiles(theta,lamda,n,d,sigma,profile):
     # Length of k-vector in vaccum
     k=2*math.pi/lamda
     # Calculates the wavevector in each layer
-    Qj=2*k*sqrt(n[:,newaxis]**2-cos(theta*math.pi/180)**2)
+    Qj=2*n[-1]*k*sqrt(n[:,newaxis]**2/n[-1]**2 - cos(theta*math.pi/180)**2)
     # Function to map caclulate the roughness values
     def w(QiQj,sigma,profile):
         # erf profile
@@ -156,7 +156,7 @@ def Refl_nvary2(theta,lamda,n_vector,d,sigma):
     #n=array(map(lambda f,val:f(val),n_func,ss))
     n=n_vector
     #print n
-    Qj=2*k*sqrt(n**2-cos(theta*math.pi/180)**2)
+    Qj=2*n[-1]*k*sqrt(n**2/n[-1]**2-cos(theta*math.pi/180)**2)
     #print sigma.shape, Qj.shape
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
