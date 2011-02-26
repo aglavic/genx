@@ -22,13 +22,14 @@ def make_Sigma(q_p,q_m,sigma):
     return mat([[ep,0,0,0],[0,1,0,0],[0,0,em,0],[0,0,0,1]])
 
 
-def Refl(Q,Vp,Vm,d,M_ang):
+def Refl(Q, wavelength, np, nm, d, M_ang):
     ''' Calculates spin-polarized reflectivity according to S.J. Blundell 
         and J.A.C. Blnd Phys rev. B. vol 46 3391 (1992)
         Input parameters:   Q : Scattering vector in reciprocal 
                                 angstroms Q=4*pi/lambda *sin(theta)
-                            Vp: Neutron potential for spin up
-                            Vm: Neutron potential for spin down
+                            wavelength: wavelenght of the neutron
+                            np: Neutron ref. index for spin up
+                            nm: Neutron ref. index for spin down
                             d: layer thickness
                             M_ang: Angle of the magnetic 
                                     moment(radians!) M_ang=0 =>M//nuetron spin
@@ -36,11 +37,16 @@ def Refl(Q,Vp,Vm,d,M_ang):
         Returns:            (Ruu,Rdd,Rud,Rdu)
                             (up-up,down-down,up-down,down-up)
     '''
+    k0 = (2*pi/wavelength)
+    Vp = k0**2*(1-np**2)
+    Vm = k0**2*(1-nm**2)
     # Assume first element=substrate and last=ambient!
     Q=Q/2.0
     # Wavevectors in the layers
-    Qi_p=sqrt(Q[:,newaxis]**2-Vp)
-    Qi_m=sqrt(Q[:,newaxis]**2-Vm)
+    #Qi_p=sqrt(Q[:,newaxis]**2-Vp)
+    #Qi_m=sqrt(Q[:,newaxis]**2-Vm)
+    Qi_p = sqrt(np[-1]**2*Q[:, newaxis]**2 + (np**2 - np[-1]**2)*k0**2)
+    Qi_m = sqrt(nm[-1]**2*Q[:, newaxis]**2 + (nm**2 - nm[-1]**2)*k0**2)
     #print Qi_p.shape
     #print d.shape
     #print M_ang.shape
