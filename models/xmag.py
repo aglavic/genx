@@ -148,13 +148,16 @@ InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
 #
 
 LayerParameters = {'dens':1.0, 'd':0.0, 'f': (0.0 + 1e-20J), 
-                   'fr':(0.0 + 1e-20J), 'fc':(0.0 + 1e-20J),
+                   'fr':(0.0 + 1e-20J),
                    'fm1':(0.0 + 1e-20J), 'fm2':(0.0 + 1e-20J), 
-                   'phi_m':0.0, 'theta_m':0.0, 'mag_dens':1.0,
-                   'sigma_c':0.0, 'sigma_m':0.0}
+                   'phi_m': 0.0, 'theta_m': 0.0, 'mag_dens': 1.0,
+                   'sigma_c': 0.0, 'sigma_m': 0.0, 'mag':1.0,
+                   'dm_l': 1.0, 'dm_u': 1.0}
 StackParameters = {'Layers':[], 'Repetitions':1}
 SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 
                     'compress':'yes', 'slicing':'no', 'slice_depth':1.0,
+                    'sld_mult':4.0, 'sld_buffer': 20.0, 'sld_delta': 5.0,
+                    'dsld_max':0.1,
                     }
 sample_string_choices = {'compress':['yes', 'no'],
                           'slicing':['yes', 'no'],
@@ -198,52 +201,45 @@ def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
 def SLD_calculations(z, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
     '''
-    parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = complex64)
-    mag_dens = array(parameters['mag_dens'], dtype = complex64)
-    f = array(parameters['f'], dtype = complex64)
-    fr = array(parameters['fr'], dtype = complex64)
-    sldc = dens*(f + mag_dens*fr)
-    d_sldc = sldc[:-1] - sldc[1:]
-    fm1 = array(parameters['fm1'], dtype = complex64)
-    fm2 = array(parameters['fm2'], dtype = complex64)
-    sldm1 = dens*mag_dens*fm1
-    sldm2 = dens*mag_dens*fm2
-    d_sldm1 = sldm1[:-1] - sldm1[1:]
-    d_sldm2 = sldm2[:-1] - sldm2[1:]
-    d = array(parameters['d'], dtype = float64)
-    d = d[1:-1]
-    # Include one extra element - the zero pos (substrate/film interface)
-    int_pos = cumsum(r_[0,d])
-    sigma = int_pos*0.0+1e-7
-    if z == None:
-        z = arange(min(-sigma[0]*5, -5), max(int_pos.max()+sigma[-1]*5, 5), 0.5)
-    rho_c = sum(d_sldc*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldc[-1]
-    rho_m1 = sum(d_sldm1*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldm1[-1]
-    rho_m2 = sum(d_sldm2*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sldm2[-1]
-    
-    return {'real charge sld': real(rho_c), 'imag charge sld': imag(rho_c),
-            'real mag_1 sld': real(rho_m1), 'imag mag_1 sld': imag(rho_m1),
-            'real mag_2 sld': real(rho_m2), 'imag mag_2 sld': imag(rho_m2),
+    d, sl_c, sl_m1, sl_m2, M = compose_sld(sample, inst)
+    new_size = len(d)*2
+    sl_cp = zeros(new_size)
+    sl_cp[::2] = sl_c
+    sl_cp[1::2] = sl_c
+    sl_m1p = zeros(new_size)
+    sl_m1p[::2] = sl_m1
+    sl_m1p[1::2] = sl_m1
+    sl_m2p = zeros(new_size)
+    sl_m2p[::2] = sl_m2
+    sl_m2p[1::2] = sl_m2
+    z = zeros(len(d)*2)
+    z[::2] = cumsum(r_[0,d[:-1]])
+    z[1::2] = cumsum(r_[d])
+    print d, z
+    #print z.shape, sl_c.shape
+    return {'real sld_c': real(sl_cp), 'imag sld_c': imag(sl_cp),
+            'real sld_m1': real(sl_m1p), 'imag sld_m1': imag(sl_m1p),
+            'real sld_m2': real(sl_m2p), 'imag sld_m2': imag(sl_m2p),
             'z':z}
 
-def reflectivity_xmag(sample, instrument, theta):
+def compose_sld(sample, instrument):
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
     dens = array(parameters['dens'], dtype = complex128)
     mag_dens = array(parameters['mag_dens'], dtype = complex128)
+    mag = array(parameters['mag'], dtype = complex128)
     #print [type(f) for f in parameters['f']]
     f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
     fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
     fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
     fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
-    re = 2.8179402894e-5
+    
     d = array(parameters['d'], dtype = float64)
     sl_c = dens*(f + mag_dens*fr) 
-    sl_m1 = dens*mag_dens*fm1
-    sl_m2 = dens*mag_dens*fm2
+    sl_m1 = dens*mag_dens*mag*fm1
+    sl_m2 = dens*mag_dens*mag*fm2
     
-    g_0 = sin(theta*pi/180.0)
+    #g_0 = sin(theta*pi/180.0)
     phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
     M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
@@ -251,16 +247,19 @@ def reflectivity_xmag(sample, instrument, theta):
     sigma_c = array(parameters['sigma_c'], dtype = float64)
     sigma_m = array(parameters['sigma_m'], dtype = float64)
     #print A, B
-    if instrument.getSlicing() == instrument_string_choices['slicing'][0]:
-        dz = instrument.getSlice_depth()
+    print type(sample.getSld_buffer())
+    if sample.getSlicing() == sample_string_choices['slicing'][0]:
+        dz = sample.getSlice_depth()
         reply= edm.create_profile_cm(d[1:-1], sigma_c[:-1].real, sigma_m[:-1].real, sl_c, sl_m1, [edm.erf_profile]*len(sl_c), 
-                                 dz = dz, mult = 4.0, buffer = 20., delta = 5.)
+                                 dz = dz, mult = sample.getSld_mult(), 
+                                 buffer = sample.getSld_buffer(), 
+                                 delta = sample.getSld_delta())
         z, pdens_c, pdens_m, pdens_indiv_c, pdens_indiv_m  = reply
         #print sigma_c, sigma_m, A, B, d
         print 'Uncompressed:', z.shape
-        if instrument.getCompress() == instrument_string_choices['compress'][0]:
+        if sample.getCompress() == sample_string_choices['compress'][0]:
             #Compressing the profile..
-            z, pdens_c, pdens_m = edm.compress_profile2(z, pdens_c, pdens_m, 0.1)
+            z, pdens_c, pdens_m = edm.compress_profile2(z, pdens_c, pdens_m, sample.getDsld_max())
             print 'Compressed: ', z.shape, pdens_c.shape
         sl_c = pdens_c
         sl_m1 = pdens_m
@@ -270,13 +269,20 @@ def reflectivity_xmag(sample, instrument, theta):
         #print d.shape, A.shape
         #print A, B
         M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
+    return d, sl_c, sl_m1, sl_m2, M
+
+def reflectivity_xmag(sample, instrument, theta):
+    lamda = instrument.getWavelength()
     
+    d, sl_c, sl_m1, sl_m2, M = compose_sld(sample, instrument)
+    re = 2.8179402894e-5
     A = -lamda**2*re/pi*sl_c
     B = lamda**2*re/pi*sl_m1
     C = lamda**2*re/pi*sl_m2
     
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
+    # Full theory
     if  theory == 0 or theory == instrument_string_choices['theory'][0]:
         if (Buffer.parameters != parameters or Buffer.coords != instrument.getCoords()
             or any(not_equal(Buffer.g_0,g_0)) or Buffer.wavelength != lamda):
@@ -313,6 +319,7 @@ def reflectivity_xmag(sample, instrument, theta):
             R = abs(W[1,0])**2 + abs(W[1,1])**2
         else:
             raise ValueError('Variable pol has an unvalid value')
+    # Simplified theory
     elif theory == 1 or theory == instrument_string_choices['theory'][1]:
         pol = instrument.getPol()
         re = 2.82e-13*1e2/1e-10
@@ -323,14 +330,14 @@ def reflectivity_xmag(sample, instrument, theta):
             sld = sl_c[:, newaxis] - (sl_m1*M[:,0])[:, newaxis]*cos(theta*pi/180)
             n = 1 - re*lamda**2/2/pi*sld*1e-4
             print n.shape, theta.shape, d.shape
-            R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(phi.shape))
+            R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
         elif pol == 1 or pol == instrument_string_choices['pol'][1]:
             # circ -
             #f = f[:, newaxis] + mag_dens[:, newaxis]*(fr[:, newaxis]+(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180))
             #n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
             sld = sl_c[:, newaxis] + (sl_m1*M[:,0])[:, newaxis]*cos(theta*pi/180)
             n = 1 - re*lamda**2/2/pi*sld*1e-4
-            R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(phi.shape))
+            R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
         elif pol == 2 or pol == instrument_string_choices['pol'][2]:
             # tot
             raise ValueError('Variable pol has an unvalid value')

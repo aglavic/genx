@@ -173,15 +173,20 @@ class SampleHandler:
         # Create the code for the sample
         sample_code = 'sample = model.Sample(Stacks = ['
         stack_strings = stack_code.split('\n')
+        rest_sample_rep = '], '
+        sample_string_pars = self.sample.__repr__().split(':')[1].lstrip().split('\n')[0]
+        if len(sample_string_pars) != 0:
+            sample_string_pars += ', '
+        rest_sample_rep += sample_string_pars + 'Ambient = Amb, Substrate = Sub)\n'
         if stack_strings != ['']:
             # Added 20080831 MB bugfix
             stack_strings.reverse()
             for item in stack_strings[1:]:
                 itemp=item.split('=')[0]
                 sample_code = sample_code + itemp + ','
-            sample_code = sample_code[:-2] + '], Ambient = Amb, Substrate = Sub)\n'
+            sample_code = sample_code[:-2] + rest_sample_rep
         else:
-            sample_code += '], Ambient = Amb, Substrate = Sub)\n'
+            sample_code += rest_sample_rep
             
         #print layer_code,stack_code,sample_code
         return layer_code,stack_code, sample_code
@@ -544,6 +549,7 @@ class SamplePanel(wx.Panel):
                     validators.append(FloatObjectValidator())
                 val = self.sampleh.sample.__getattribute__(item)
                 items.append((item, val))
+        #print items, validators
         
         dlg = ValidateDialog(self, items, validators,\
             title = 'Sample Editor')
@@ -551,8 +557,12 @@ class SamplePanel(wx.Panel):
         if dlg.ShowModal()==wx.ID_OK:
             #print 'Pressed OK'
             vals=dlg.GetValues()
+            #print vals
             for index in range(len(vals)):
-                self.sampleh.sample.__setattr__(items[index][0],vals[index])
+                if string_choices.has_key(items[index][0]):
+                    self.sampleh.sample.__setattr__(items[index][0],vals[index])
+                else:
+                    self.sampleh.sample.__setattr__(items[index][0],float(vals[index]))
             self.Update()
         else:
             #print 'Pressed Cancel'
@@ -582,6 +592,7 @@ class SamplePanel(wx.Panel):
         if dlg.ShowModal()==wx.ID_OK:
             #print 'Pressed OK'
             vals=dlg.GetValues()
+            #print vals
             for index in range(len(vals)):
                 self.instrument.__setattr__(items[index][0],vals[index])
             self.Update()
