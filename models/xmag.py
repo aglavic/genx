@@ -107,6 +107,8 @@ from numpy import *
 from scipy.special import erf
 from lib.instrument import *
 
+mag_limit = 1e-8
+mpy_limit = 1e-8
 # Preamble to define the parameters needed for the models outlined below:
 ModelID='StephanovXRMR'
 # Automatic loading of parameters possible by including this list
@@ -120,8 +122,8 @@ instrument_string_choices = {'coords': ['q','tth'],
                                          'square beam'],
                              'pol':['circ+','circ-','tot', 'ass', 'sigma', 'pi'],
                              'theory': ['full', 'non-anisotropic'],
-                             'compress':['yes', 'no'],
-                             'slicing':['yes', 'no'],
+                             #'compress':['yes', 'no'],
+                             #'slicing':['yes', 'no'],
      }
 
 
@@ -152,12 +154,22 @@ LayerParameters = {'dens':1.0, 'd':0.0, 'f': (0.0 + 1e-20J),
                    'fm1':(0.0 + 1e-20J), 'fm2':(0.0 + 1e-20J), 
                    'phi_m': 0.0, 'theta_m': 0.0, 'mag_dens': 1.0,
                    'sigma_c': 0.0, 'sigma_m': 0.0, 'mag':1.0,
-                   'dm_l': 1.0, 'dm_u': 1.0}
+                   'dmag_l': 1.0, 'dmag_u': 1.0,
+                   #'dtheta_l': 0.0, 'dtheta_u':0.0, 'dphi_l':0.0, 'dphi_u':0.0,
+                   }
+layer_groups = [[('Scatt. len.', ('b', 'f', 'fr', 'fm1', 'fm2')), 
+                 ('Magnetism',('mag', 'mag_dens', 'phi_m','theta_m'))
+                 ], 
+                 [('Misc.',('sigma_c', 'dens')),
+                  ('Interf. Mag. Mom.',('dmag_l, dmag_u', 'sigma_m'))
+                  ],
+                  ]
+#('Interf. Mag. Ang.', ('dtheta_l', 'dtheta_u', 'dphi_l', 'dphi_u'))
 StackParameters = {'Layers':[], 'Repetitions':1}
 SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 
                     'compress':'yes', 'slicing':'no', 'slice_depth':1.0,
                     'sld_mult':4.0, 'sld_buffer': 20.0, 'sld_delta': 5.0,
-                    'dsld_max':0.1,
+                    'dsld_max':0.1, 'dang_max':1.0,
                     }
 sample_string_choices = {'compress':['yes', 'no'],
                           'slicing':['yes', 'no'],
@@ -201,33 +213,36 @@ def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
 def SLD_calculations(z, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
     '''
-    d, sl_c, sl_m1, sl_m2, M = compose_sld(sample, inst)
+    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy = compose_sld(sample, inst, array([0.0,]))
     new_size = len(d)*2
-    sl_cp = zeros(new_size)
+    sl_cp = zeros(new_size, dtype = complex128)
     sl_cp[::2] = sl_c
     sl_cp[1::2] = sl_c
-    sl_m1p = zeros(new_size)
+    sl_m1p = zeros(new_size, dtype = complex128)
     sl_m1p[::2] = sl_m1
     sl_m1p[1::2] = sl_m1
-    sl_m2p = zeros(new_size)
+    sl_m2p = zeros(new_size, dtype = complex128)
     sl_m2p[::2] = sl_m2
     sl_m2p[1::2] = sl_m2
+    #print sl_m2p
     z = zeros(len(d)*2)
     z[::2] = cumsum(r_[0,d[:-1]])
     z[1::2] = cumsum(r_[d])
-    print d, z
+    #print d, z
     #print z.shape, sl_c.shape
-    return {'real sld_c': real(sl_cp), 'imag sld_c': imag(sl_cp),
-            'real sld_m1': real(sl_m1p), 'imag sld_m1': imag(sl_m1p),
-            'real sld_m2': real(sl_m2p), 'imag sld_m2': imag(sl_m2p),
+    return {'real sld_c': sl_cp.real, 'imag sld_c': sl_cp.imag,
+            'real sld_m1': sl_m1p.real, 'imag sld_m1': sl_m1p.imag,
+            'real sld_m2': sl_m2p.real, 'imag sld_m2': sl_m2p.imag,
             'z':z}
 
-def compose_sld(sample, instrument):
+def compose_sld(sample, instrument, theta):
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = complex128)
-    mag_dens = array(parameters['mag_dens'], dtype = complex128)
-    mag = array(parameters['mag'], dtype = complex128)
+    dens = array(parameters['dens'], dtype = float64)
+    mag_dens = array(parameters['mag_dens'], dtype = float64)
+    mag = array(parameters['mag'], dtype = float64)
+    dmag_l = array(parameters['dmag_l'], dtype = float64)
+    dmag_u = array(parameters['dmag_u'], dtype = float64)
     #print [type(f) for f in parameters['f']]
     f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
     fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
@@ -236,64 +251,138 @@ def compose_sld(sample, instrument):
     
     d = array(parameters['d'], dtype = float64)
     sl_c = dens*(f + mag_dens*fr) 
-    sl_m1 = dens*mag_dens*mag*fm1
-    sl_m2 = dens*mag_dens*mag*fm2
+    sl_m1 = dens*mag_dens*fm1
+    sl_m2 = dens*mag_dens*fm2 #mag is multiplied in later
     
     #g_0 = sin(theta*pi/180.0)
     phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
     M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
-    
+    #print M
     sigma_c = array(parameters['sigma_c'], dtype = float64)
     sigma_m = array(parameters['sigma_m'], dtype = float64)
     #print A, B
-    print type(sample.getSld_buffer())
+    #print type(sample.getSld_buffer())
     if sample.getSlicing() == sample_string_choices['slicing'][0]:
         dz = sample.getSlice_depth()
-        reply= edm.create_profile_cm(d[1:-1], sigma_c[:-1].real, sigma_m[:-1].real, sl_c, sl_m1, [edm.erf_profile]*len(sl_c), 
-                                 dz = dz, mult = sample.getSld_mult(), 
-                                 buffer = sample.getSld_buffer(), 
-                                 delta = sample.getSld_delta())
-        z, pdens_c, pdens_m, pdens_indiv_c, pdens_indiv_m  = reply
+        reply= edm.create_profile_cm(d[1:-1], sigma_c[:-1].real, sigma_m[:-1].real, 
+                                     [edm.erf_profile]*len(sl_c),
+                                     [edm.erf_interf]*len(sigma_c[:]),
+                                     dmag_l, dmag_u, mag,
+                                     dz = dz, mult = sample.getSld_mult(), 
+                                     buffer = sample.getSld_buffer(), 
+                                     delta = sample.getSld_delta())
+        z, comp_prof, mag_prof = reply
+        sl_c_lay = comp_prof*sl_c[:, newaxis]
+        sl_c = sl_c_lay.sum(0)
+        sl_m1_lay = comp_prof*mag_prof*sl_m1[:, newaxis]
+        sl_m1 = sl_m1_lay.sum(0)
+        sl_m2_lay = comp_prof*mag_prof*sl_m2[:, newaxis]
+        sl_m2 = sl_m2_lay.sum(0)
+        print comp_prof.shape, sl_m1_lay.shape, sl_c_lay.shape
+        M = rollaxis(array((ones(comp_prof.shape)*M[:,0][:, newaxis], 
+               ones(comp_prof.shape)*M[:,1][:, newaxis], 
+               ones(comp_prof.shape)*M[:,2][:, newaxis])),0, 3)
+        
+        #print 'M', M
+        #print M[...,1].shape
+        re = 2.8179402894e-5
+        A = -lamda**2*re/pi*sl_c_lay
+        B = lamda**2*re/pi*sl_m1_lay
+        C = lamda**2*re/pi*sl_m2_lay
+        g_0 = sin(theta*pi/180.0)
+        #M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
+        chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
+                                       B, C, M, d)
+        chi = tuple([c.sum(0) for c in chi[0] + chi[1] + chi[2]])
+        #print chi[0]
+        #M = c_[(M[:,0][:,newaxis]*sl_m1_tmp).sum(0)/sl_m1,
+        #       (M[:,1][:,newaxis]*sl_m1_tmp).sum(0)/sl_m1,
+        #       (M[:,2][:,newaxis]*sl_m1_tmp).sum(0)/sl_m1
+        #       ].real
+        #print M
+        #print sl_m2
         #print sigma_c, sigma_m, A, B, d
         print 'Uncompressed:', z.shape
         if sample.getCompress() == sample_string_choices['compress'][0]:
             #Compressing the profile..
-            z, pdens_c, pdens_m = edm.compress_profile2(z, pdens_c, pdens_m, sample.getDsld_max())
-            print 'Compressed: ', z.shape, pdens_c.shape
-        sl_c = pdens_c
-        sl_m1 = pdens_m
-        sl_m2 = sl_m1*0
-        print 'WARNING: fm2 and M is ignored!'
+            #z, pdens_c, pdens_m = edm.compress_profile2(z, sl_c, sl_m1, sample.getDsld_max())
+            dsld_max = sample.getDsld_max()
+            #z, pdens = edm.compress_profile_n(z, (sl_c, sl_m1, sl_m2), 
+            #                                  (dsld_max, dsld_max, dsld_max))
+            #sl_c, sl_m1, sl_m2 = pdens
+            
+            #print chi[0].shape
+            index, z = edm.compress_profile_index_n(z, chi, 
+                                                (dsld_max*lamda**2*re/pi, )*9)
+            reply = edm.create_compressed_profile((sl_c, sl_m1, sl_m2) + 
+                                                  chi, 
+                                                  index)
+            sl_c, sl_m1, sl_m2, chi_xx, chi_xy, chi_xz, chi_yx, chi_yy, chi_yz, chi_zx, chi_zy, chi_zz = reply
+            non_mag = ((abs(chi_xy) < mag_limit)
+                       *(abs(chi_xz) < mag_limit)
+                       *(abs(chi_yz) < mag_limit))
+            mpy = (abs(chi_yz) < mpy_limit)*(abs(chi_xy) < mpy_limit)*bitwise_not(non_mag)
+            #print mpy
+            chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
+        else:
+            (chi_xx, chi_xy, chi_xz, chi_yx, chi_yy, chi_yz,chi_zx, chi_zy, chi_zz) = chi
+            non_mag = ((abs(chi_xy) < mag_limit)
+                       *(abs(chi_xz) < mag_limit)
+                       *(abs(chi_yz) < mag_limit))
+            mpy = (abs(chi_yz) < mpy_limit)*(abs(chi_xy) < mpy_limit)*bitwise_not(non_mag)
+            chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
         d = r_[z[1:] - z[:-1],1]
+        print 'Compressed: ', z.shape, sl_c.shape
+        print 'WARNING: M is ignored!'
+    else:
+        print 'test'
+        re = 2.8179402894e-5
+        A = -lamda**2*re/pi*sl_c  
+        B = lamda**2*re/pi*sl_m1
+        C = lamda**2*re/pi*sl_m2
+        g_0 = sin(theta*pi/180.0)
+        #M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
+        chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
+                                                    B, C, M, d)
+        #chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
+        #sl_c = pdens_c
+        #sl_m1 = pdens_m
+        #sl_m2 = sl_m1*0
+        
+        
         #print d.shape, A.shape
         #print A, B
-        M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
-    return d, sl_c, sl_m1, sl_m2, M
+        #M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
+        #print 'Sl_m2: ', sl_m2, 'END'
+    return d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy
 
 def reflectivity_xmag(sample, instrument, theta):
     lamda = instrument.getWavelength()
+    parameters = sample.resolveLayerParameters()
     
-    d, sl_c, sl_m1, sl_m2, M = compose_sld(sample, instrument)
-    re = 2.8179402894e-5
-    A = -lamda**2*re/pi*sl_c
-    B = lamda**2*re/pi*sl_m1
-    C = lamda**2*re/pi*sl_m2
-    
+    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy = compose_sld(sample, instrument, theta)
+    #re = 2.8179402894e-5
+    #A = -lamda**2*re/pi*sl_c
+    #B = lamda**2*re/pi*sl_m1
+    #C = lamda**2*re/pi*sl_m2
+    g_0 = sin(theta*pi/180.0)
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
     # Full theory
     if  theory == 0 or theory == instrument_string_choices['theory'][0]:
         if (Buffer.parameters != parameters or Buffer.coords != instrument.getCoords()
             or any(not_equal(Buffer.g_0,g_0)) or Buffer.wavelength != lamda):
-            W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
+            #W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
+            print 'Calc W'
+            W = lib.xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
             Buffer.W = W
             Buffer.parameters = parameters.copy()
             Buffer.coords = instrument.getCoords()
             Buffer.g_0 = g_0.copy()
             Buffer.wavelength = lamda
         else:
-            #print 'Reusing W'
+            print 'Reusing W'
             W = Buffer.W
         trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
         Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
@@ -327,16 +416,20 @@ def reflectivity_xmag(sample, instrument, theta):
             # circ +
             #f = f[:, newaxis] + mag_dens[:, newaxis]*(fr[:, newaxis]-(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180))
             #n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
-            sld = sl_c[:, newaxis] - (sl_m1*M[:,0])[:, newaxis]*cos(theta*pi/180)
-            n = 1 - re*lamda**2/2/pi*sld*1e-4
+            #sld = sl_c[:, newaxis] - (sl_m1*M[:,0])[:, newaxis]*cos(theta*pi/180)
+            #n = 1 - re*lamda**2/2/pi*sld*1e-4
+            chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
+            n = 1 + chi_temp/2.0
             print n.shape, theta.shape, d.shape
             R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
         elif pol == 1 or pol == instrument_string_choices['pol'][1]:
             # circ -
             #f = f[:, newaxis] + mag_dens[:, newaxis]*(fr[:, newaxis]+(fm1*cos(theta_m)*cos(phi))[:, newaxis]*cos(theta*pi/180))
             #n = 1 - dens[:, newaxis]*re*lamda**2/2/pi*f*1e-4
-            sld = sl_c[:, newaxis] + (sl_m1*M[:,0])[:, newaxis]*cos(theta*pi/180)
-            n = 1 - re*lamda**2/2/pi*sld*1e-4
+            #sld = sl_c[:, newaxis] + (sl_m1*M[:,0])[:, newaxis]*cos(theta*pi/180)
+            #n = 1 - re*lamda**2/2/pi*sld*1e-4
+            chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
+            n = 1 + chi_temp/2.0
             R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
         elif pol == 2 or pol == instrument_string_choices['pol'][2]:
             # tot

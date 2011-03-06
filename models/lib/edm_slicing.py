@@ -13,6 +13,9 @@ def erf_profile(z, z0, d, sigma0, sigma1):
                        -erf((z - z0 - d)/sqrt(2.)/sigma1)))
     return p
 
+def erf_interf(z, sigma):
+    return 0.5 + 0.5*erf(z/sqrt(2.)/sigma)
+
 def _lin(z, sigma):
     p = zeros(z.shape)
     p = ((z > sqrt(3)*sigma)*1.0 + 
@@ -114,6 +117,43 @@ def compress_profile2(z, p1, p2, delta_max):
     p2ret = array([p2[inew[i]:inew[i+1]+1].mean() for i in range(len(inew)-1)])
     return znew, p1ret, p2ret
 
+def compress_profile_n(z, ps, delta_maxs):
+    ''' Compresses multiple profiles, each profile: ps[i], 
+    by merging the neighbouring layers that
+    has an density difference of maximum delta_maxs[i]'''
+    inew, znew = compress_profile_index_n(z, ps, delta_maxs)
+    psnew = create_compressed_profile(ps, inew)
+    return znew, psnew
+    
+def compress_profile_index_n(z, ps, delta_maxs):
+    znew = z.copy()
+    inew = arange(len(ps[0]))
+    psnew = [ps_i.copy() for ps_i in ps]
+    i = 0
+    index = array([False])
+    while any(bitwise_not(index)):
+        #print i
+        i += 1
+        index = array([True]*len(psnew[0]))
+        test = [abs(ps_i[:-2:2] - ps_i[2::2]) > delta_maxs_i 
+                                            for ps_i, delta_maxs_i in zip(psnew, delta_maxs)]
+        #print len(test), len(index)
+        #for t in test:
+        #    print len(t)
+        index[1:-1:2] = reduce(bitwise_or, test)
+        
+        #print pnew.shape, index.shape
+        psnew = [ps_i[index] for ps_i in psnew]
+        znew = znew[index]
+        inew = inew[index]
+    #print inew
+    inew = append(inew, inew[-1])
+    return inew, znew
+
+def create_compressed_profile(ps, inew):
+    psret = [array([ps_i[inew[i]:inew[i+1]+1].mean() for i in range(len(inew)-1)]) for ps_i in ps]
+    return psret
+
 def create_profile(d, sigma, dens, prof_funcs, dz = 0.01, 
                    mult = 3, buffer = 0, delta = 20):
     zlay = r_[0, cumsum(d)]
@@ -144,8 +184,14 @@ def create_profile(d, sigma, dens, prof_funcs, dz = 0.01,
 
     return z, pdens, pdens_indiv
 
-def create_profile_cm(d, sigma_c, sigma_m, dens_c, dens_m, prof_funcs, dz = 0.01, 
-                   mult = 3, buffer = 0, delta = 20):
+def create_profile_cm(d, sigma_c, sigma_m, prof_funcs, 
+                      prof_funcs_mag, dmag_dens_l, dmag_dens_u, mag_dens,
+                      dz = 0.01, mult = 3, buffer = 0, delta = 20):
+    '''Create a scattering length profile for magnetic x-ray scattering for the charge and
+    magnetic part of the scattering lengths. sigma is roughnesses.
+    Note that prof_funcs relate to layer profiles and prof_funcs_mag relates to 
+    magnetic interface profiles.
+    '''
     zlay = r_[0, cumsum(d)]
     s_max_bot = max(sigma_c[0], sigma_m[0])
     s_max_up = max(sigma_c[-1], sigma_m[-1])
@@ -156,23 +202,29 @@ def create_profile_cm(d, sigma_c, sigma_m, dens_c, dens_m, prof_funcs, dz = 0.01
     d = r_[delta+s_max_bot*mult + buffer, d, s_max_up*mult+delta + buffer]
     sigma_c = r_[0, sigma_c, 0] + 1e-20
     sigma_m = r_[0, sigma_m, 0] + 1e-20
+    prof_funcs_mag = [prof_funcs_mag[0]] + prof_funcs_mag + [prof_funcs_mag[-1]]
     zlay = cumsum(d)
     z0 = delta + buffer + s_max_bot*mult
     zlay = r_[0, zlay] - z0
     ps = array([r_[prof(z, zp, di, s_c_low, s_c_up), 
-                   prof(z, zp, di, s_m_low, s_m_up)]
-                for prof, zp, di, s_c_low, s_c_up, s_m_low, s_m_up 
+                   #prof(z, zp, di, s_m_low, s_m_up)]
+                   prof_m_l(z - zp, s_m_low)*dm_l + prof_m_u(z - zp - di, s_m_up)*dm_u + m - dm_l]
+                for prof, zp, di, s_c_low, s_c_up, s_m_low, s_m_up,
+                prof_m_l, prof_m_u, dm_l, dm_u, m
                    in zip(prof_funcs, zlay, d, sigma_c[:-1], sigma_c[1:], 
-                          sigma_m[:-1], sigma_m[1:])])
+                          sigma_m[:-1], sigma_m[1:],
+                          prof_funcs_mag[:-1], prof_funcs_mag[1:],
+                          dmag_dens_l, dmag_dens_u, mag_dens
+                          )])
     ptot = ps.sum(0)
+    #print ps.shape, ptot.shape
     pdens_indiv = (ps[:, :len(z)])/ptot[:len(z)]
-    pdens_indiv_c = pdens_indiv*dens_c[:,newaxis]
-    pdens_indiv_m = ps[:, len(z):]*dens_m[:,newaxis]
-    pdens_c = pdens_indiv_c.sum(0)
-    pdens_m = (pdens_indiv_m*pdens_indiv).sum(0)
+    pdens_indiv_c = pdens_indiv#*dens_c[:,newaxis]
+    pdens_indiv_m = ps[:, len(z):]#*dens_m[:,newaxis]
+    #pdens_c = pdens_indiv_c.sum(0)
+    #pdens_m = (pdens_indiv_m*pdens_indiv).sum(0)
 
-    return (z, pdens_c, pdens_m, 
-            pdens_indiv_c, pdens_indiv_m)
+    return (z, pdens_indiv_c, pdens_indiv_m)
 
 if __name__ == '__main__':
     #sigma0 = 5.

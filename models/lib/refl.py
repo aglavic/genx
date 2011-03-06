@@ -228,7 +228,10 @@ def MakeClasses(InstrumentParameters = {'Wavelength':1.54,'Coordinates':1},\
                 if k != 'Stacks' and k!='Ambient' and k!='Substrate':
                     temp='%s = %s, ' %(k,self.__getattribute__(k).__repr__())
                     Add=Add+temp
-            Add=Add[:-2]+'\n'
+            if len(self.__dict__.keys()) > 3:
+                Add=Add[:-2]+'\n'
+            else:
+                Add = Add[:-1] + '\n'
             temp=[repr(x) for x in self.Stacks]
             temp.reverse()
             return Add+'Ambient:\n\t'+repr(self.Ambient)+'\n'+''.join(temp)+'Substrate:\n\t'+repr(self.Substrate)

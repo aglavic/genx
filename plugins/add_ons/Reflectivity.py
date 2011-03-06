@@ -174,7 +174,7 @@ class SampleHandler:
         sample_code = 'sample = model.Sample(Stacks = ['
         stack_strings = stack_code.split('\n')
         rest_sample_rep = '], '
-        sample_string_pars = self.sample.__repr__().split(':')[1].lstrip().split('\n')[0]
+        sample_string_pars = self.sample.__repr__().split(':')[1].split('\n')[0].lstrip()
         if len(sample_string_pars) != 0:
             sample_string_pars += ', '
         rest_sample_rep += sample_string_pars + 'Ambient = Amb, Substrate = Sub)\n'
@@ -690,7 +690,7 @@ class SamplePanel(wx.Panel):
         sel=self.sampleh.getItem(self.listbox.GetSelection())
         eval_func = self.plugin.GetModel().eval_in_model
         sl=None
-        if isinstance(sel,self.model.Layer): # Check if the selceted item is a Layer
+        if isinstance(sel,self.model.Layer): # Check if the selected item is a Layer
             items=[]
             validators=[]
             for item in self.model.LayerParameters.keys():
@@ -1238,6 +1238,7 @@ class SamplePlotPanel(wx.Panel):
         self.plot.ax.lines = []
         i = 0
         for key in self.plot_dict:
+            
             if key != 'z': 
                 self.plot.ax.plot(self.plot_dict['z'], self.plot_dict[key],\
                     colors[i%len(colors)])
