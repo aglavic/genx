@@ -1,0 +1,269 @@
+2009-05-16:
+    Fixed feature request #10 alphabetiacal sorting of the parameter
+    selection pop-up. And at the same time task #11 was fixed and a new
+    hirarchy was implemented.
+    Fixed defect #2 the fitting now checks whether the fom have change
+    appreciably. A config item in solver, 'allowed fom discrepancy'
+    has been added, default 1e-20 that sets the limit.
+
+2009-05-15: 
+    Fixed feature request #4 If the show parameter should be toggeled
+    or if just the selected should be shown.
+    Fixed a small unoticed bug in the save over question for save as
+    showed only the current filename and not the file that would be written
+    over.
+    Fixed feature request #9. The SLD profile can now be exported.
+    Fixed bug #3. The set_extra_data function will raise an KeyError
+    if the name of the extra data x,y or e.
+    
+2009-05-12:
+    Made some final changes to the fom_duncs.py builtin documentation.
+    Created a config variable called "save all evals" so that saving all
+    evals into a file is supressed. Helps with filesizes.
+    Has also implemented this in the Optimizer Settings dilaog box togheter
+    with the buffer size for logging. Feature request ID: 2787480.
+2009-05-10:
+    Fixed problem with icons in the refelctivity plugin (compability issues)
+    Made changes in event_handlers to cope with odler version installed
+    on my kubuntu machine.
+    Fixed bug ID: 2737390, the pars plot now updates when a model is loaded.
+    Fixed bug ID: 2748261 in interdiff.py. Should still refactor them but not
+    now.
+    Fixed bug ID: ID: 2737406. Errorbars are completely removed when a
+    new fit is started.
+    Added so that diffev works with the standardlibrary package multiprocessing
+    as well as the odler processing. Parallel should work out of
+    the box for Python > 2.6
+
+2009-03-30:
+    Fixed long standing issue with the speed display in when using
+    parallel processing.
+    Added help on the FOM functions.
+
+2009-03-29:
+    Fixed yet another bug in plotpanel relating to the new version of
+    matplotlib.
+    Fixed a bug in the search replace:
+    no scrolling when searching the scriptbug, ID: 2720666
+    Fixed bug in the refelctivity plugin:
+    Bug in adding a layer with substrate marked, ID: 2633020 
+    Fixed bug in the refelctivity plugin:
+    ID: 2720662, Plugin does not check if the names are valid
+    Fixed bug with no limit on the number of logged fom evaluations
+    ID: 2681825, Memory error during fitting
+    This was fixed by adding a new class CircBuff in the diffev module.
+    It has a maximum length of the buffer before it starts to overwrite
+    the oldest value (FIFO). A new parameter in genx.conf "max log elements"
+    has been introduced.
+    Added the possiblity to change the names of the Layer and stacks in the
+    reflectivity plugin.
+    ID:2720837, change the Layer/Stack name
+    
+    
+2009-03-10:
+    Changed plotpanel. Problems under newer versions of matplotlib
+
+2009-02-12:
+    Chaged utils a bit so that it can safely be imported with a *
+
+===============================================================================
+2009-01-14: GenX 2b5.1
+2008-12-11:
+    Found a bug in the tof measurements for neutrons sigma and d had needed
+    some truncation in order to get them working. Fixed.
+    
+2008-12-10:
+    Fixed a bug that occured in my bugfix in the Reflectivty plugin from 
+    2008-11-21, spotted by Gunnar. 
+    Fixed bug in the optimizer saving routines, appeared only on windows and 
+    mac...
+
+2008-11-30:
+    Changes to the Reflectivty plugin. It now tries to load an existing model
+    when the plugin is loaded.
+    The loaded plugins is also saved as the model is saved and are tried to
+    be loded when the model loaded again. Also it is possible to define 
+    default plugins in genx.conf.
+    Found a bug in reflectivity plugin:
+    The parameter section got many: "p = UserVars()" upon saving. Fixed
+
+2008-11-28:
+    Fixed the Key error given when shutting GenX down. Due to that the pool
+    of workers where living in a thread. When removed from that thread the
+    error disappeared.
+    Added alot of error checking for loading and saving files. Should be almost
+    idiot proof now.
+
+2008-11-27:
+    Added Ibkg to the interdiff model (not implemented previously)
+    Added revival of the FOM vs generations plot after loading of data.
+    Fixed bugs in the insertion of the layers.
+
+2008-11-26:
+    Added documentation to the plugins.
+    Added documentation to the data loaders.
+    Fixed export scritp+export table bug. When asked to overwrite the file
+    the program asks about the gx file.
+    Implemented autosaving every X generation. If wanted by the user, default
+     off.
+    Also added also atosave, errobar level, parallel processeing alternatives
+    to the optimizer settings dialog box.
+    
+2008-11-23:
+    Added procssing as an package in the about box. 
+    Added code so that the fit state also is saved to the model. 
+
+2008-11-22: 
+    Solved the problem with the convolute fast. All three methods
+    give very similair results. However it is dependent on step size
+    integration range etc.
+    Added the possiblity to work with g/cm^3 as the density. Implemented
+    a new scattering database for x-rays and neutrons fw, bw that makes
+    this possible. Not tested yet.
+    Added help frames for data loaders and plugins as well. The documentation
+    still to be written.
+
+2008-11-21:
+    Fixed bug in exporting data sets to a dat file. Now it is a 
+    data set 3 digits wide with zeros!. Also if an extension is added
+    it will not overwrite it. Also added an header with the time that the
+    data was exported - can be handy.
+    Fixed the normalization problem that Gunnar found for reflectivity 
+    measurements. Fixed it up and did a nice normalization of the 
+    weight function in /lib/instrument.py. However Convolute fast with
+    varying resolution does not work.
+
+2008-11-20:
+    Implemented parallel processing for the model calculation
+    with the help of the processing package. Tested and seems to work
+    under Linux. However I only see a about 50% speed increase could it 
+    be that I have some over head?
+
+2008-11-08:
+    Found and corrected a bug in reflectivity, the tabbing of the data
+    sets was not compatible with the editor.
+
+2008-11-07: 
+    Added errorbar level to the configuration file. It is now possible
+    to change the default value.
+    Fixed the reset problem of parameters when scanning them.
+    Added a point for the current paraemtervalue in the fomscan plot.
+    Also added a horizontal line for increase of the fom that determines 
+    the errorbars.
+
+2008-11-03: 
+    Added and sucessfully tested a new plugin UserFuncs to GenX.
+    This allow the user to run custom functions defined in the script.
+    Fixed a bug that the program wont close when a saved model is in 
+    active...
+    Fixed the bug with the boolean flag when importing a table with fit
+    parameters into GenX
+===============================================================================
+2008-11-03: GenX2.0b4 released
+2008-11-02:
+    Tested and corrected bugs for the commands on the extra data. This is
+    now fully implemented and working.
+    Fixed plotting of FOM and Pars. Autoscale flag had no effect on the
+    updating. Fixed and tested.
+    Added a question if the model is not saved when exiting the program.
+    Added also scaling to linear autoscaling 5%. Just makes linear plots look
+    a bit nicer.
+    Implemented a new parameter in the model interdiff.py, taylor_n so that 
+    the number of terms in the taylor expansion can be controlled.
+
+2008-10-30:
+    Implemented additional commands for extra data. Have only tested that the
+    the function remains with original data. Full testing remains to be done.
+    Also fixed an error handling bug in data_loader/default.py and sls_sxrd.py
+    
+2008-10-28:
+    Added question for save as if an existing file is overwritten.
+    This was also done for export script and export table.
+    Have previously fixed some serious bugs in the structurefactor part.
+    And also found and corrected bugs in the table export/import function.
+
+2008-09-14:
+    Fixed bug in the printing and copying of the plots. Could only print
+    or copy the first plot.
+    Implemented scatttering lengths plots in the reflectivity plugin.
+    
+2008-09-13:
+    Made modification so the user can see wheter or not any changes has been
+    made since the last saving of the model. This is displayed by a little
+    star after teh filename
+
+2008-09-12:
+    Fixed a bug reported by Gunnar needed resolution to have footprint
+    correction.
+    Added background as a paraemter to interdiff and spec_nx
+    Fixed a bug found by Gunnar in the reflectivty module: The module did
+    not handle layers correctly (order changed in the stacks)
+    Fixed a new bug found by me: The new implementation of proxy objects did
+    not work with the custom dialog module used in the reflectivity module.
+
+2008-09-09:
+    Implemented some more help on the modules with my help scheme, 
+    html docstrings. 
+    IMplemented the either or algorithm in DiffEv both with random
+    base vector as well as the best vector as base. Tested and works
+    
+2008-09-08:
+    Fixed the scattering factor database acess to automagically update
+    the values when changing the database references.
+    
+2008-09-07:
+    Added colourized html text to the Refelctvity plugin.
+    Added tooltips to reflectivity plugin and data panel.
+    Added a frame to display doc strings html formatted from the
+    different modules in the models directory.
+===============================================================================
+2008-09-05: GenX2.0b2 released
+2008-09-05:
+    Hopefully fixed problem with negative numbers and errorbars in
+    the plotpanel module. 
+    Made everything that is in the script saved. (before only the simulated
+    part was saved)
+    
+2008-09-04:
+    Added bc as a database in models.utils. The coherent neutron scattering 
+    lengths as given in Neutron News. 
+    Made some small changes to plotpanel to resolves 0 problems when plotting.
+    Updated the homepage with the first tutorial.
+
+2008-09-03:
+    Implemented Quit callback.
+    Fixed link for the homepage in the About box. One slash was missing
+    Added the R-factor as one of the possible FOM's
+     that is R1 and R2
+    Fixed a bug under windows, the lineending gave an error
+    upon compiling. No the compile function splits all the lines and
+    adds a proper lineending to them.
+    Found a  bug in the loading of plugin - A new plugin could not be loaded
+    since I had overwritten that variable name with the previous plugins name,
+     fixed.
+    Added a show status text function to the datalist and data loader plugin
+    Tested extra_data in the DataSet class. 
+    Added spec_nx to the models. Tested at looks as it works!
+    
+2008-09-01:
+    Problem with that all does not exist in the standard library for 
+    python versions < 2.5. Removed all all statements.
+    Bugfix, the data table (view folder) was not completely cleared due to
+    misuse of DeleteRows method.
+
+2008-08-31:
+    Fixed problem with that the grid resetted, moved to the beginning of the
+    grid, during update when fitting.
+    Removed some print statements to silence the program.
+    Added a red background to the parameter that are out of bounds.
+    Added the possiblity to change the mutation scheme method.
+    Added the possiblity to do unconstrained fitting.
+    Fixed a couple of bugs in Reflectivity (empty print statements)
+    which caused the plugin to fail loading.
+    Found a bug in Reflectivity, could not load more than one stack - 
+    otherwise the order got screwed up. Fixed it. 
+    Made so that the Reflectivity module actually loads the expressions
+    rather than the values in the sample. This makes it possible to
+    store expressions.
+===============================================================================
+2008-08-29: GenX2.0b1 released
