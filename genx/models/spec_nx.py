@@ -150,8 +150,8 @@ InstrumentParameters={'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',\
 #            2 or 'square beam': Correction for square profile => Beaw given in full width mm
 # samlen= Samplelength in mm.
 
-LayerParameters={'sigma':0.0, 'dens':1.0, 'd':0.0, 'f':0.0+0.0j,\
-     'b':0.0+0.0j, 'magn':0.0, 'magn_ang':0.0}
+LayerParameters={'sigma':0.0, 'dens':1.0, 'd':0.0, 'f':0.0+1.0j*1e-20,\
+     'b':0.0+1.0j*1e-20, 'magn':0.0, 'magn_ang':0.0}
 StackParameters={'Layers':[], 'Repetitions':1}
 SampleParameters={'Stacks':[], 'Ambient':None, 'Substrate':None}
 

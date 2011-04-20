@@ -39,23 +39,6 @@ class MainFrame(wx.Frame):
         # begin wxGlade: MainFrame.__init__
         kwds["style"] = wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|wx.MAXIMIZE|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
-        self.ver_splitter = wx.SplitterWindow(self, -1, style=wx.SP_3D|wx.SP_BORDER)
-        self.main_panel = wx.Panel(self.ver_splitter, -1)
-        self.hor_splitter = wx.SplitterWindow(self.main_panel, -1, style=wx.SP_3D|wx.SP_BORDER)
-        self.input_panel = wx.Panel(self.hor_splitter, -1)
-        self.input_notebook = wx.Notebook(self.input_panel, -1, style=wx.NB_BOTTOM)
-        self.input_notebook_script = wx.Panel(self.input_notebook, -1)
-        self.input_notebook_grid = wx.Panel(self.input_notebook, -1)
-        self.plot_panel = wx.Panel(self.hor_splitter, -1)
-        self.plot_notebook = wx.Notebook(self.plot_panel, -1, style=wx.NB_BOTTOM)
-        self.plot_notebook_foms = wx.Panel(self.plot_notebook, -1)
-        self.plot_notebook_Pars = wx.Panel(self.plot_notebook, -1)
-        self.plot_notebook_fom = wx.Panel(self.plot_notebook, -1)
-        self.plot_notebook_data = wx.Panel(self.plot_notebook, -1)
-        self.data_panel = wx.Panel(self.ver_splitter, -1)
-        self.data_notebook = wx.Notebook(self.data_panel, -1, style=wx.NB_BOTTOM)
-        self.data_notebook_pane_2 = wx.Panel(self.data_notebook, -1)
-        self.data_notebook_data = wx.Panel(self.data_notebook, -1)
         
         # Menu Bar
         self.main_frame_menubar = wx.MenuBar()
@@ -182,8 +165,10 @@ class MainFrame(wx.Frame):
         self.mb_data_loaders_help = wx.MenuItem(mb_help, wx.NewId(), "Data loaders Help...", "Show help for the data loaders", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_data_loaders_help)
         wxglade_tmp_menu.AppendMenu(wx.NewId(), "Help", mb_help, "")
-        self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Show Manual...", "Show the manual", wx.ITEM_NORMAL)
+        self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Open Manual...", "Show the manual", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_showman)
+        self.mb_open_homepage = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Open Homepage...", "Open the homepage", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.AppendItem(self.mb_open_homepage)
         self.mb_misc_about = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "About...", "Shows information about GenX", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_about)
         self.main_frame_menubar.Append(wxglade_tmp_menu, "Misc")
@@ -204,16 +189,33 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.AddLabelTool(1008, "tb_calc_error_bars", (img.getcalc_error_barBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
         self.main_frame_toolbar.AddLabelTool(10009, "tb_zoom", (img.getzoomBitmap()), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
         # Tool Bar end
+        self.ver_splitter = wx.SplitterWindow(self, -1, style=wx.SP_3D|wx.SP_BORDER)
+        self.data_panel = wx.Panel(self.ver_splitter, -1)
+        self.data_notebook = wx.Notebook(self.data_panel, -1, style=wx.NB_BOTTOM)
+        self.data_notebook_data = wx.Panel(self.data_notebook, -1)
         self.data_list = datalist.DataListControl(self.data_notebook_data, -1, self.config, status_text)
+        self.data_notebook_pane_2 = wx.Panel(self.data_notebook, -1)
         self.label_2 = wx.StaticText(self.data_notebook_pane_2, -1, "  Data set: ")
         self.data_grid_choice = wx.Choice(self.data_notebook_pane_2, -1, choices=["test2", "test1"])
         self.static_line_1 = wx.StaticLine(self.data_notebook_pane_2, -1)
         self.data_grid = wx.grid.Grid(self.data_notebook_pane_2, -1, size=(1, 1))
+        self.main_panel = wx.Panel(self.ver_splitter, -1)
+        self.hor_splitter = wx.SplitterWindow(self.main_panel, -1, style=wx.SP_3D|wx.SP_BORDER)
+        self.plot_panel = wx.Panel(self.hor_splitter, -1)
+        self.plot_notebook = wx.Notebook(self.plot_panel, -1, style=wx.NB_BOTTOM)
+        self.plot_notebook_data = wx.Panel(self.plot_notebook, -1)
         self.plot_data = plotpanel.DataPlotPanel(self.plot_notebook_data, config = self.config, config_name = 'data plot', )
+        self.plot_notebook_fom = wx.Panel(self.plot_notebook, -1)
         self.plot_fom = plotpanel.ErrorPlotPanel(self.plot_notebook_fom, config = self.config, config_name = 'fom plot', )
+        self.plot_notebook_Pars = wx.Panel(self.plot_notebook, -1)
         self.plot_pars = plotpanel.ParsPlotPanel(self.plot_notebook_Pars, config = self.config, config_name = 'pars plot', )
+        self.plot_notebook_foms = wx.Panel(self.plot_notebook, -1)
         self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook_foms, config = self.config, config_name = 'fom scan plot', )
+        self.input_panel = wx.Panel(self.hor_splitter, -1)
+        self.input_notebook = wx.Notebook(self.input_panel, -1, style=wx.NB_BOTTOM)
+        self.input_notebook_grid = wx.Panel(self.input_notebook, -1)
         self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook_grid, self, )
+        self.input_notebook_script = wx.Panel(self.input_notebook, -1)
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, -1)
 
         self.__set_properties()
@@ -266,6 +268,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, self.mb_plugins_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_data_loaders_help, self.mb_data_loaders_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, self.mb_misc_showman)
+        self.Bind(wx.EVT_MENU, self.eh_mb_misc_openhomepage, self.mb_open_homepage)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, self.mb_misc_about)
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=10001)
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=10002)
@@ -750,10 +753,14 @@ class MainFrame(wx.Frame):
     def eh_mb_fom_help(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.fom_help(self, event)
 
-    def eh_mb_view_use_toggle_show(self, event):
+    def eh_mb_view_use_toggle_show(self, event):# wxGlade: MainFrame.<event_handler>
         new_val = self.mb_use_toggle_show.IsChecked()
         self.data_list.list_ctrl.SetShowToggle(new_val)
 
+    def eh_mb_misc_openhomepage(self, event): # wxGlade: MainFrame.<event_handler>
+        #print "Event handler `eh_mb_misc_openhomepage' not implemented"
+        #event.Skip()
+        event_handlers.show_homepage(self, event)
 
 # end of class MainFrame
 

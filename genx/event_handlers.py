@@ -12,9 +12,14 @@ __version__ = version.version #'2.0b trunk'
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
 
+import webbrowser
+
 import model as modellib
 import solvergui, help
 import filehandling as io
+
+manual_url = 'http://sourceforge.net/apps/trac/genx'
+homepage_url = 'http://genx.sf.net'
 
 def get_pages(frame):
     pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
@@ -966,7 +971,15 @@ def show_manual(frame, event):
     
     Callback to show the manual
     '''
-    ShowNotificationDialog(frame, 'There is no manual yet!')
+    #ShowNotificationDialog(frame, 'There is no manual yet!')
+    webbrowser.open_new(manual_url)
+    
+def show_homepage(frame, event):
+    '''show_homepage(frame, event) --> None
+    
+    Callback to show the homepage
+    '''
+    webbrowser.open_new(homepage_url)
 
 def show_about_box(frame, event):
     '''show_about_box(frame, event) --> None
