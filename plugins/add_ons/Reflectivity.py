@@ -537,7 +537,7 @@ class SamplePanel(wx.Panel):
         validators = []
         items = []
         try:
-            print self.model.sample_string_choices
+            #print self.model.sample_string_choices
             string_choices = self.model.sample_string_choices
         except Exception, e:
             string_choices = {}

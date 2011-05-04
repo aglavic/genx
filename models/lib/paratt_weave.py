@@ -22,34 +22,32 @@ def Refl(theta,lamda,n,d,sigma):
     r=1.01J
     rp=1.01J
     p=1.01J
-    test=array([0])
     # Calculates the wavevector in each layer
     code='''
     int points=Ntheta[0];
     int interfaces=Nsigma[0];
     int j=0;
-    double costheta2=0;
-    for(int i=0;i<points;i++){
-        costheta2=pow(cos(theta[i]*torad),2.0);
-        Qj=2.0*k*pow(pow(n[0],2.0)-costheta2,0.5);
-        Qj1=2.0*k*pow(pow(n[1],2.0)-costheta2,0.5);
-        rp=(Qj-Qj1)/(Qj1+Qj)*exp(-Qj1*Qj/2.0*pow(sigma[0],2.0));
-        r=rp;
-        for(j=1;j<interfaces;j++){
-            Qj=Qj1;
-            Qj1=2.0*k*pow(pow(n[j+1],2.0)-costheta2,0.5);
-            rp=(Qj-Qj1)/(Qj1+Qj)*exp(-Qj1*Qj/2.0*pow(sigma[j],2));//Check this should be a sqrt?
-            p=exp(Imag*d[j-1]*Qj);
-            r=(rp+r*p)/(1.0+rp*r*p);
-            
-            test[0]=j;
+    double costheta2;
+    for(int i = 0; i < points; i++){
+        costheta2 = cos(theta[i]*torad);
+        costheta2 *= costheta2;
+        Qj = 2.0*k*sqrt(n[0]*n[0] - costheta2);
+        Qj1 = 2.0*k*sqrt(n[1]*n[1] - costheta2);
+        rp=(Qj - Qj1)/(Qj1 + Qj)*exp(-Qj1*Qj/2.0*sigma[0]*sigma[0]);
+        r = rp;
+        for(j = 1; j < interfaces; j++){
+            Qj = Qj1;
+            Qj1 = 2.0*k*sqrt(n[j+1]*n[j+1] - costheta2);
+            rp = (Qj-Qj1)/(Qj1+Qj)*exp(-Qj1*Qj/2.0*sigma[j]*sigma[j]);
+            p = exp(Imag*d[j-1]*Qj);
+            r = (rp+r*p)/(1.0 + rp*r*p);
         }
         
         R[i]=r*conj(r);
     }
 
     '''
-    weave.inline(code,['theta','n','d','sigma','k','torad','Imag','R','Qj','Qj1','r','rp','p','test'],compiler='gcc')
+    weave.inline(code,['theta','n','d','sigma','k','torad','Imag','R','Qj','Qj1','r','rp','p'],compiler='gcc')
 
     return real(R)
 
@@ -153,9 +151,13 @@ if __name__=='__main__':
     sigma = array([0] + [0,0,0,0,0,0]*rep + [0])
     print n.shape
     t1=time.clock()
-    c1=paratt.Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma)
+    #c1=paratt.Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma)
+    c1=paratt.Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma*0)
+    #c1=paratt.Refl(theta, 1.54, n, d,sigma)
     t2=time.clock()
-    c2 = Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma) 
+    #c2 = Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma) 
+    c2 = Refl_nvary2_nosigma(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d) 
+    #c2 = Refl(theta, 1.54, n, d, sigma)
     t3=time.clock()
     print t2-t1,t3-t2
     pl.plot(theta,log10(c1),'x',theta,log10(c2))

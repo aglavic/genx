@@ -102,6 +102,7 @@ Note: The documentation is not updated from the interdiff model!
 import lib.xrmr
 import lib.edm_slicing as edm
 import lib.paratt as Paratt
+#import lib.paratt_weave as Paratt
 
 from numpy import *
 from scipy.special import erf
@@ -154,7 +155,8 @@ LayerParameters = {'dens':1.0, 'd':0.0, 'f': (0.0 + 1e-20J),
                    'fm1':(0.0 + 1e-20J), 'fm2':(0.0 + 1e-20J), 
                    'phi_m': 0.0, 'theta_m': 0.0, 'mag_dens': 1.0,
                    'sigma_c': 0.0, 'sigma_m': 0.0, 'mag':1.0,
-                   'dmag_l': 1.0, 'dmag_u': 1.0,
+                   'dmag_l': 1.0, 'dmag_u': 1.0, 'dd_m':0.0,
+                   'b': 1e-20J
                    #'dtheta_l': 0.0, 'dtheta_u':0.0, 'dphi_l':0.0, 'dphi_u':0.0,
                    }
 layer_groups = [[('Scatt. len.', ('b', 'f', 'fr', 'fm1', 'fm2')), 
@@ -199,12 +201,16 @@ def Specular(TwoThetaQz, sample, instrument):
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     
     R = reflectivity_xmag(sample, instrument, theta)
-    #FootprintCorrections
-    foocor = footprint_correction(instrument, theta)
-    
-    R = correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
-   
-    return R*instrument.getI0() + instrument.getIbkg()
+    pol = instrument.getPol()
+    if pol != 3 and pol != instrument_string_choices['pol'][3]:
+        #FootprintCorrections
+        foocor = footprint_correction(instrument, theta)
+        R = correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
+        return R*instrument.getI0() + instrument.getIbkg()
+    else:
+        foocor = footprint_correction(instrument, theta)*0 + 1.0
+        R = correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
+        return R
 
 def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
    raise NotImplementedError('Off specular calculations are not implemented for magnetic x-ray reflectivity')
@@ -213,6 +219,7 @@ def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
 def SLD_calculations(z, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
     '''
+    lamda = inst.getWavelength()
     d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy = compose_sld(sample, inst, array([0.0,]))
     new_size = len(d)*2
     sl_cp = zeros(new_size, dtype = complex128)
@@ -230,9 +237,21 @@ def SLD_calculations(z, sample, inst):
     z[1::2] = cumsum(r_[d])
     #print d, z
     #print z.shape, sl_c.shape
-    return {'real sld_c': sl_cp.real, 'imag sld_c': sl_cp.imag,
-            'real sld_m1': sl_m1p.real, 'imag sld_m1': sl_m1p.imag,
-            'real sld_m2': sl_m2p.real, 'imag sld_m2': sl_m2p.imag,
+    def interleave(a):
+        new_a = zeros(len(a)*2, dtype = complex128)
+        new_a[::2] = a
+        new_a[1::2] = a
+        return new_a
+    chi = [[interleave(c) for c in ch] for ch in chi]
+        
+    #return {'real sld_c': sl_cp.real, 'imag sld_c': sl_cp.imag,
+    #        'real sld_m1': sl_m1p.real, 'imag sld_m1': sl_m1p.imag,
+    #        'real sld_m2': sl_m2p.real, 'imag sld_m2': sl_m2p.imag,
+    #        'z':z}
+    re = 2.8179402894e-5
+    c = 1/(lamda**2*re/pi)
+    return {'sl_xx':chi[0][0].real*c, 'sl_xy':chi[0][1].real*c, 'sl_xz':chi[0][2].real*c,
+            'sl_yy':chi[1][1].real*c,'sl_yz':chi[1][2].real*c,'sl_zz':chi[2][2].real*c,
             'z':z}
 
 def compose_sld(sample, instrument, theta):
@@ -243,6 +262,7 @@ def compose_sld(sample, instrument, theta):
     mag = array(parameters['mag'], dtype = float64)
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
+    dd_m = array(parameters['dd_m'], dtype = float64)
     #print [type(f) for f in parameters['f']]
     f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
     fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
@@ -268,7 +288,7 @@ def compose_sld(sample, instrument, theta):
         reply= edm.create_profile_cm(d[1:-1], sigma_c[:-1].real, sigma_m[:-1].real, 
                                      [edm.erf_profile]*len(sl_c),
                                      [edm.erf_interf]*len(sigma_c[:]),
-                                     dmag_l, dmag_u, mag,
+                                     dmag_l, dmag_u, mag, dd_m,
                                      dz = dz, mult = sample.getSld_mult(), 
                                      buffer = sample.getSld_buffer(), 
                                      delta = sample.getSld_delta())
@@ -279,7 +299,7 @@ def compose_sld(sample, instrument, theta):
         sl_m1 = sl_m1_lay.sum(0)
         sl_m2_lay = comp_prof*mag_prof*sl_m2[:, newaxis]
         sl_m2 = sl_m2_lay.sum(0)
-        print comp_prof.shape, sl_m1_lay.shape, sl_c_lay.shape
+        #print comp_prof.shape, sl_m1_lay.shape, sl_c_lay.shape
         M = rollaxis(array((ones(comp_prof.shape)*M[:,0][:, newaxis], 
                ones(comp_prof.shape)*M[:,1][:, newaxis], 
                ones(comp_prof.shape)*M[:,2][:, newaxis])),0, 3)
@@ -303,7 +323,7 @@ def compose_sld(sample, instrument, theta):
         #print M
         #print sl_m2
         #print sigma_c, sigma_m, A, B, d
-        print 'Uncompressed:', z.shape
+        #print 'Uncompressed:', z.shape
         if sample.getCompress() == sample_string_choices['compress'][0]:
             #Compressing the profile..
             #z, pdens_c, pdens_m = edm.compress_profile2(z, sl_c, sl_m1, sample.getDsld_max())
@@ -330,13 +350,14 @@ def compose_sld(sample, instrument, theta):
             non_mag = ((abs(chi_xy) < mag_limit)
                        *(abs(chi_xz) < mag_limit)
                        *(abs(chi_yz) < mag_limit))
+            non_mag[-1] = True
             mpy = (abs(chi_yz) < mpy_limit)*(abs(chi_xy) < mpy_limit)*bitwise_not(non_mag)
             chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
         d = r_[z[1:] - z[:-1],1]
-        print 'Compressed: ', z.shape, sl_c.shape
-        print 'WARNING: M is ignored!'
+        #print 'Compressed: ', z.shape, sl_c.shape
+        #print 'WARNING: M is ignored!'
     else:
-        print 'test'
+        #print 'test'
         re = 2.8179402894e-5
         A = -lamda**2*re/pi*sl_c  
         B = lamda**2*re/pi*sl_m1
@@ -374,7 +395,7 @@ def reflectivity_xmag(sample, instrument, theta):
         if (Buffer.parameters != parameters or Buffer.coords != instrument.getCoords()
             or any(not_equal(Buffer.g_0,g_0)) or Buffer.wavelength != lamda):
             #W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
-            print 'Calc W'
+            #print 'Calc W'
             W = lib.xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
             Buffer.W = W
             Buffer.parameters = parameters.copy()
@@ -382,7 +403,7 @@ def reflectivity_xmag(sample, instrument, theta):
             Buffer.g_0 = g_0.copy()
             Buffer.wavelength = lamda
         else:
-            print 'Reusing W'
+            #print 'Reusing W'
             W = Buffer.W
         trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
         Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
@@ -420,7 +441,7 @@ def reflectivity_xmag(sample, instrument, theta):
             #n = 1 - re*lamda**2/2/pi*sld*1e-4
             chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             n = 1 + chi_temp/2.0
-            print n.shape, theta.shape, d.shape
+            #print n.shape, theta.shape, d.shape
             R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
         elif pol == 1 or pol == instrument_string_choices['pol'][1]:
             # circ -
@@ -433,10 +454,24 @@ def reflectivity_xmag(sample, instrument, theta):
             R = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
         elif pol == 2 or pol == instrument_string_choices['pol'][2]:
             # tot
-            raise ValueError('Variable pol has an unvalid value')
+            chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
+            n = 1 + chi_temp/2.0
+            Rm = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
+            chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
+            n = 1 + chi_temp/2.0
+            Rp = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
+            R = (Rp + Rm)/2.0
+            #raise ValueError('Variable pol has an unvalid value')
         elif pol == 3 or pol == instrument_string_choices['pol'][3]:
             # ass
-            raise ValueError('Variable pol has an unvalid value')
+            chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
+            n = 1 + chi_temp/2.0
+            Rm = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
+            chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
+            n = 1 + chi_temp/2.0
+            Rp = Paratt.Refl_nvary2(theta, lamda, n, d, zeros(d.shape))
+            R = (Rp - Rm)/(Rp + Rm)
+            #raise ValueError('Variable pol has an unvalid value')
         else:
             raise ValueError('Variable pol has an unvalid value')
     else:
