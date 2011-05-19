@@ -534,35 +534,49 @@ class SamplePanel(wx.Panel):
         self.Update()
         
     def EditSampleParameters(self, evt):
-        validators = []
+        validators = {}
+        vals = {}
+        pars = []
         items = []
         try:
             #print self.model.sample_string_choices
             string_choices = self.model.sample_string_choices
         except Exception, e:
             string_choices = {}
-        for item in self.model.SampleParameters.keys():
+        for item in self.model.SampleParameters:
             if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
                 if string_choices.has_key(item):
-                    validators.append(string_choices[item])
+                    validators[item] = string_choices[item]
                 else:
-                    validators.append(FloatObjectValidator())
+                    validators[item] = FloatObjectValidator()
                 val = self.sampleh.sample.__getattribute__(item)
+                vals[item] = val
+                pars.append(item)
                 items.append((item, val))
         #print items, validators
-        
-        dlg = ValidateDialog(self, items, validators,\
-            title = 'Sample Editor')
+        try:
+            groups = self.model.SampleGroups
+        except Exception:
+            groups = False
+        try:
+            units = self.model.SampleUnits
+        except Exception:
+            units = False
+            
+        #dlg = ValidateDialog(self,items,validators,title='Layer Editor')
+        dlg = ValidateDialog(self, pars, vals, validators,
+                             title = 'Sample Editor', groups = groups,
+                             units = units)
         
         if dlg.ShowModal()==wx.ID_OK:
             #print 'Pressed OK'
             vals=dlg.GetValues()
             #print vals
-            for index in range(len(vals)):
-                if string_choices.has_key(items[index][0]):
-                    self.sampleh.sample.__setattr__(items[index][0],vals[index])
+            for par in pars:
+                if string_choices.has_key(par):
+                    self.sampleh.sample.__setattr__(par, vals[par])
                 else:
-                    self.sampleh.sample.__setattr__(items[index][0],float(vals[index]))
+                    self.sampleh.sample.__setattr__(par, float(vals[par]))
             self.Update()
         else:
             #print 'Pressed Cancel'
@@ -577,24 +591,41 @@ class SamplePanel(wx.Panel):
         self.instrument = instrument
     
     def EditInstrument(self, evt):
-        validators = []
+        #validators = []
+        validators = {}
+        vals = {}
         items = []
+        pars = []
         for item in self.model.InstrumentParameters:
             if self.model.instrument_string_choices.has_key(item):
-                validators.append(self.model.instrument_string_choices[item])
+                #validators.append(self.model.instrument_string_choices[item])
+                validators[item] = self.model.instrument_string_choices[item]
             else:
-                validators.append(FloatObjectValidator())
+                #validators.append(FloatObjectValidator())
+                validators[item] = FloatObjectValidator()
             val = self.instrument.__getattribute__(item)
+            vals[item] = val
+            pars.append(item)
             items.append((item, val))
             
-        dlg = ValidateDialog(self, items, validators,\
-            title = 'Instrument Editor')
+        try:
+            groups = self.model.InstrumentGroups
+        except Exception:
+            groups = False
+        try:
+            units = self.model.InstrumentUnits
+        except Exception:
+            units = False
+        
+        dlg = ValidateDialog(self, pars, vals, validators,
+                             title = 'Instrument Editor', groups = groups,
+                             units = units)
         if dlg.ShowModal()==wx.ID_OK:
             #print 'Pressed OK'
-            vals=dlg.GetValues()
+            vals = dlg.GetValues()
             #print vals
-            for index in range(len(vals)):
-                self.instrument.__setattr__(items[index][0],vals[index])
+            for par in self.model.InstrumentParameters:
+                self.instrument.__setattr__(par, vals[par])
             self.Update()
         else:
             #print 'Pressed Cancel'
@@ -620,16 +651,23 @@ class SamplePanel(wx.Panel):
     def InsertStack(self,evt):
         # Create Dialog box
         items = [('Name', 'name')]
-        validators = [NoMatchValidTextObjectValidator(self.sampleh.names)]
-        dlg = ValidateDialog(self, items, validators, title='Give Stack Name')
+        #validators = [NoMatchValidTextObjectValidator(self.sampleh.names)]
+        validators = {}
+        vals = {}
+        validators['Name'] = NoMatchValidTextObjectValidator(self.sampleh.names)
+        pars = ['Name']
+        vals['Name'] = 'name'
+        #dlg = ValidateDialog(self, items, validators, title='Give Stack Name')
+        dlg = ValidateDialog(self, pars, vals, validators,\
+            title = 'Give Stack Name')
         
         # Show the dialog
         if dlg.ShowModal()==wx.ID_OK:
-                vals=dlg.GetValues()
+                vals = dlg.GetValues()
         dlg.Destroy()
         # if not a value is selected operate on first
         pos = max(self.listbox.GetSelection(),0)
-        sl = self.sampleh.insertItem(pos, 'Stack',  vals[0])
+        sl = self.sampleh.insertItem(pos, 'Stack',  vals['Name'])
         if sl:
             self.Update()
         else:
@@ -638,9 +676,11 @@ class SamplePanel(wx.Panel):
             
     def InsertLay(self,evt):
         # Create Dialog box
-        items = [('Name', 'name')]
-        validators = [NoMatchValidTextObjectValidator(self.sampleh.names)]
-        dlg = ValidateDialog(self,items,validators,title='Give Layer Name')
+        #items = [('Name', 'name')]
+        #validators = [NoMatchValidTextObjectValidator(self.sampleh.names)]
+        dlg = ValidateDialog(self, ['Name'], {'Name': 'name'},
+                             {'Name': NoMatchValidTextObjectValidator(self.sampleh.names)}, 
+                             title='Give Layer Name')
         # Show the dialog
         if dlg.ShowModal()==wx.ID_OK:
                 vals=dlg.GetValues()
@@ -648,7 +688,7 @@ class SamplePanel(wx.Panel):
         # if not a value is selected operate on first
         pos = max(self.listbox.GetSelection(),0)
         #Create the Layer
-        sl = self.sampleh.insertItem(pos, 'Layer', vals[0])
+        sl = self.sampleh.insertItem(pos, 'Layer', vals['Name'])
         if sl:
             self.Update()
         else:
@@ -671,13 +711,13 @@ class SamplePanel(wx.Panel):
         else:
             unallowed_names = self.sampleh.names[:pos] +\
                                 self.sampleh.names[max(0,pos - 1):]
-            items = [('Name', self.sampleh.names[pos])]
-            validators = [NoMatchValidTextObjectValidator(unallowed_names)]
-            dlg = ValidateDialog(self,items,validators,title='Give New Name')
+            dlg = ValidateDialog(self,['Name'], {'Name':self.sampleh.names[pos]},
+                                 {'Name':NoMatchValidTextObjectValidator(unallowed_names)},
+                                 title='Give New Name')
             
             if dlg.ShowModal()==wx.ID_OK:
                     vals=dlg.GetValues()
-                    result = self.sampleh.changeName(pos, vals[0])
+                    result = self.sampleh.changeName(pos, vals['Name'])
                     if result:
                         self.Update()
                     else:
@@ -690,50 +730,84 @@ class SamplePanel(wx.Panel):
         sel=self.sampleh.getItem(self.listbox.GetSelection())
         eval_func = self.plugin.GetModel().eval_in_model
         sl=None
-        if isinstance(sel,self.model.Layer): # Check if the selected item is a Layer
-            items=[]
-            validators=[]
+        items=[]
+        validators = {}
+        vals = {}
+        pars = []
+        if isinstance(sel,self.model.Layer): 
+            # The selected item is a Layer
             for item in self.model.LayerParameters.keys():
                 value=sel.__getattribute__(item)
                 #if item!='n' and item!='fb':
                 if type(self.model.LayerParameters[item]) != type(1+1.0J):
-                    validators.append(FloatObjectValidator(eval_func))
+                    #validators.append(FloatObjectValidator(eval_func))
+                    validators[item] = FloatObjectValidator(eval_func)
                 else:
                     #print 'n exists'
                     #validators.append(MatchTextObjectValidator(self.refindexlist))
-                    validators.append(ComplexObjectValidator(eval_func))
-                items.append((item,value))
+                    #validators.append(ComplexObjectValidator(eval_func))
+                    validators[item] = ComplexObjectValidator(eval_func)
+                items.append((item, value))
+                pars.append(item)
+                vals[item] = value
+            try:
+                groups = self.model.LayerGroups
+            except Exception:
+                groups = False
+            try:
+                units = self.model.LayerUnits
+            except Exception:
+                units = False
             
-            dlg = ValidateDialog(self,items,validators,title='Layer Editor')
+            #dlg = ValidateDialog(self,items,validators,title='Layer Editor')
+            dlg = ValidateDialog(self, pars, vals, validators,
+                                 title = 'Layer Editor', groups = groups,
+                                 units = units)
+            
             if dlg.ShowModal()==wx.ID_OK:
                 #print 'Pressed OK'
                 vals=dlg.GetValues()
-                for index in range(len(vals)):
-                    sel.__setattr__(items[index][0],vals[index])
+                for par in self.model.LayerParameters.keys():
+                    sel.__setattr__(par, vals[par])
                 sl=self.sampleh.getStringList()
             else:
                 pass
                 #print 'Pressed Cancel'
             dlg.Destroy()
 
-        else: # The selected item is a Stack
-            items=[]
-            validators=[]
+        else: 
+            # The selected item is a Stack
             for item in self.model.StackParameters.keys():
                 if item!='Layers':
                     value=sel.__getattribute__(item)
                     if isinstance(value,float):
-                        validators.append(FloatObjectValidator(eval_func))
+                        #validators.append(FloatObjectValidator(eval_func))
+                        validators[item] = FloatObjectValidator(eval_func)
                     else:
-                        validators.append(TextObjectValidator())
+                        #validators.append(TextObjectValidator())
+                        validators[item] = TextObjectValidator()
                     items.append((item,value))
+                    pars.append(item)
+                    vals[item] = value
             
-            dlg = ValidateDialog(self,items,validators,title='Stack Editor')
+            try:
+                groups = self.model.StackGroups
+            except Exception:
+                groups = False
+            try:
+                units = self.model.StackUnits
+            except Exception:
+                units = False
+            
+            #dlg = ValidateDialog(self,items,validators,title='Layer Editor')
+            dlg = ValidateDialog(self, pars, vals, validators,
+                                 title = 'Stack Editor', groups = groups,
+                                 units = units)
             if dlg.ShowModal()==wx.ID_OK:
                 #print 'Pressed OK'
                 vals=dlg.GetValues()
-                for index in range(len(vals)):
-                    sel.__setattr__(items[index][0],vals[index])
+                for par in pars:
+                    sel.__setattr__(par, vals[par])
                 sl=self.sampleh.getStringList()
             else:
                 #print 'Pressed Cancel'
