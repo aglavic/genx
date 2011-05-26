@@ -1388,7 +1388,14 @@ class Plugin(framework.Template):
                                          "Export the SLD to a ASCII file", 
                                          wx.ITEM_NORMAL)
         menu.AppendItem(self.mb_export_sld)
-        self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
+        self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(), 
+                                         "Autoupdate SLD", 
+                                         "Toggles autoupdating the SLD during fitting", 
+                                         wx.ITEM_CHECK)
+        menu.AppendItem(self.mb_autoupdate_sld)
+        self.mb_autoupdate_sld.Check(False)
+        #self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
+        
         self.StatusMessage('Reflectivity plugin loaded')
         
     def UpdateScript(self, event):
@@ -1490,6 +1497,15 @@ class Plugin(framework.Template):
         '''
         # Calculate and update the sld plot
         self.sld_plot.Plot()
+        
+    def OnFittingUpdate(self, event):
+        '''OnSimulate(self, event) --> None
+        
+        Updates stuff after simulation
+        '''
+        # Calculate and update the sld plot
+        if self.mb_autoupdate_sld.IsChecked():
+            self.sld_plot.Plot()
         
     def CreateNewModel(self, modelname = 'models.interdiff'):
         '''Init the script in the model to yield the 

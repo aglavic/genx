@@ -289,6 +289,7 @@ def compose_sld(sample, instrument, theta):
     parameters = sample.resolveLayerParameters()
     dens = array(parameters['dens'], dtype = float64)
     resdens = array(parameters['resdens'], dtype = float64)
+    resmag = array(parameters['resmag'], dtype = float64)
     mag = array(parameters['mag'], dtype = float64)
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
