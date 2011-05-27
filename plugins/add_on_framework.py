@@ -347,9 +347,9 @@ class PluginController:
              + '\nPython traceback below:\n\n' + tbtext)
         else:
             self.RegisterPlugin(plugin)
-        if event:
-            # Do not forget - pass the event on
-            event.Skip()
+        #if event:
+        #    # Do not forget - pass the event on
+        #    event.Skip()
             
     def UnLoadPlugin(self, event):
         '''UnLoadPlugin(self, event) --> None
@@ -372,9 +372,9 @@ class PluginController:
             self.unload_menu.DeleteItem(menuitem)
             # Update the available plugins
             self.update_plugins()
-        if event:
-            # Do not forget - pass the event on
-            event.Skip()
+        #if event:
+        #    # Do not forget - pass the event on
+        #    event.Skip()
             
     def OnNewModel(self, event):
         '''OnNewModel(self, event) --> None
@@ -383,9 +383,9 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnNewModel(event)
-        if event:
-            # Do not forget - pass the event on
-            event.Skip()
+        #if event:
+        #    # Do not forget - pass the event on
+        #    event.Skip()
             
     def OnDataChanged(self, event):
         '''OnNewModel(self, event) --> None
@@ -394,9 +394,9 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnDataChanged(event)
-        if event:
-            # Do not forget - pass the event on
-            event.Skip()
+        #if event:
+        #    # Do not forget - pass the event on
+        #    event.Skip()
             
     def OnOpenModel(self, event):
         '''OnOpenModel(self, event) --> None
@@ -406,9 +406,9 @@ class PluginController:
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
         self.LoadDefaultPlugins()
-        if event:
-            # Do not forget - pass the event on
-            event.Skip()
+        #if event:
+        #    # Do not forget - pass the event on
+        #    event.Skip()
             
     def OnSimulate(self, event):
         '''OnOpenModel(self, event) --> None
@@ -417,9 +417,9 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnSimulate(event)
-        if event:
-            # Do not forget - pass the event on
-            event.Skip()
+        #if event:
+        #    # Do not forget - pass the event on
+        #    event.Skip()
     
     def OnFittingUpdate(self, event):
         '''OnOpenModel(self, event) --> None
@@ -428,9 +428,9 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnFittingUpdate(event)
-        if event:
-            # Do not forget - pass the event on
-            event.Skip()
+        #if event:
+        #    # Do not forget - pass the event on
+        #    event.Skip()
         
     
 #==============================================================================

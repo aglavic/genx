@@ -1394,6 +1394,7 @@ class Plugin(framework.Template):
                                          wx.ITEM_CHECK)
         menu.AppendItem(self.mb_autoupdate_sld)
         self.mb_autoupdate_sld.Check(False)
+        self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         #self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
         
         self.StatusMessage('Reflectivity plugin loaded')

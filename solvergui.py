@@ -245,8 +245,12 @@ class SolverController:
         # Hard code the events for the plugins so that they can be run syncrously.
         # This is important since the Refelctevity model, for example, relies on the
         # current state of the model.
-        self.parent.plugin_control.OnFittingUpdate(evt)
-        
+        try:
+            self.parent.plugin_control.OnFittingUpdate(evt)
+            #pass
+        except Exception, e:
+            print 'Error in plot output:\n' + repr(e)
+            
     def ParameterOutput(self, solver):
         '''ParameterOutput(self, solver) --> none
         
