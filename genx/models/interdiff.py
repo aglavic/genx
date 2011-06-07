@@ -216,7 +216,7 @@ def Specular(TwoThetaQz, sample, instrument):
 
 def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     lamda = instrument.getWavelength()
-    if instrument.getCoordinates() == 1: # Sample Coords is theta-2theta
+    if instrument.getCoords() == 1: # Sample Coords is theta-2theta
         alphaR1 = ThetaQx
         betaR1 = TwoThetaQz - ThetaQx
         qx = 2*pi/lamda*(cos(alphaR1*pi/180) - cos(betaR1*pi/180))
@@ -229,6 +229,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     #print qz
     parameters = sample.resolveLayerParameters()
     def toarray(a, code):
+        a = list(a)
         a.reverse()
         return array(a, dtype = code)
     dens = array(parameters['dens'], dtype = complex64)
