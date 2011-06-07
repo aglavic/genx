@@ -257,7 +257,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     if __offspec__:
         (I, alpha, omega) = lib.offspec2_weave.DWBA_Interdiff(qx, qz, lamda, n, z,\
             sigmar, sigmai, eta, h, eta_z, d,\
-                taylor_n = parameters['taylor_n'])
+                taylor_n = instrument.getTaylor_n())
     else:
         I=ones(len(qx*qz))
     return real(I)*instrument.getI0() + instrument.getIbkg()
