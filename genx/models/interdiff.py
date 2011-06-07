@@ -105,13 +105,13 @@ diffuse interfaces.
 
 import lib.paratt as Paratt
 
-__offspec__ = 1
+__offspec__ = True
 try:
     import lib.offspec2_weave
-except StandardError,S:
+except Exception,S:
     print 'Failed to import: offspec2_weave, No off-specular simulations possible'
     print S
-    __offspec__ = 0
+    __offspec__ = False
     
 
 from numpy import *
@@ -255,7 +255,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     eta_z = sample.getEta_z()
     #print eta_z
     if __offspec__:
-        (I, alpha, omega) = offspec2_weave.DWBA_Interdiff(qx, qz, lamda, n, z,\
+        (I, alpha, omega) = lib.offspec2_weave.DWBA_Interdiff(qx, qz, lamda, n, z,\
             sigmar, sigmai, eta, h, eta_z, d,\
                 taylor_n = parameters['taylor_n'])
     else:
