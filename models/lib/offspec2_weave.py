@@ -1,5 +1,6 @@
 
 from scipy import *
+from scipy import integrate
 import scipy.weave as weave
 import time
 from elfield import *
@@ -41,9 +42,9 @@ def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0],\
     #eta_z=complex(eta_z)
     sigma=array(sigma,dtype=complex)
     sigmaid=array(sigmaid,dtype=complex)
-    print 'Setup Complete'
+    #print 'Setup Complete'
     # Calculating electrical fields
-    print 'Calculating electrical fields...'
+    #print 'Calculating electrical fields...'
     omega=arctan(qx/qz) # Not the real omega given by Fewster
     omegap=arcsin(sqrt(qx**2+qz**2)/2/k)
     #print 2*omegap*180/pi
@@ -62,8 +63,8 @@ def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0],\
     
     (T,R,kz)=AmpElfield_q(k,r_[kxi,kxf],lamda,tn,td)
     t2=time.clock()
-    print 'AmpElfield_q'
-    print t2-t1
+    #print 'AmpElfield_q'
+    #print t2-t1
     
     lenq=len(qx)
 
@@ -73,22 +74,22 @@ def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0],\
     Tf=T[:,lenq:]
     ki=kz[:,:lenq]
     kf=kz[:,lenq:]
-    print 'Done'
+    #print 'Done'
     G=array([Ti*Tf,Ti*Rf,Ri*Tf,Ri*Rf])
     q=array([ki+kf,ki-kf,-ki+kf,-ki-kf])
-    print q.shape
-    print G.shape
+    #print q.shape
+    #print G.shape
     # Setting up for the Fourier integral as given by Pape et.al.
-    print 'Prepearing the Fourier integral'
+    #print 'Prepearing the Fourier integral'
     maxn = taylor_n
-    print 'n= ', maxn
+    #print 'n= ', maxn
     # New dqmin tested 20051201
     dqmin=min(abs(qx[:-1]-qx[1:]))*eta/(maxn**(1.0/2.0/h))
     #dqmin=(qx[1]-qx[0])*eta/(maxn**(1.0/2.0/h))    
-    print 'dqmin = ',dqmin
+    #print 'dqmin = ',dqmin
     if abs(dqmin) < 1e-12:
         dqmin=1e-3
-        print 'Hej'
+        #print 'Hej'
     #print 'Test'
     # New q_min tested 20051201
     q_min=arange(min(abs(qx))*eta/(maxn**(1.0/2.0/h))-dqmin,max(abs(qx))*eta+2*dqmin,dqmin,dtype=float)
@@ -101,13 +102,13 @@ def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0],\
     t1=time.clock()
     table=make_F(q_min,h)
     t2=time.clock()
-    print 'make_F '
-    print t2-t1
+    #print 'make_F '
+    #print t2-t1
     table=array(table,dtype=complex)
     #print table
     G=array(G,dtype=complex)
     q=array(q,dtype=complex)
-    print 'Done'
+    #print 'Done'
     I=zeros(qx.shape)*(0.0+0.0J)
     I=array(I,dtype=complex)
     Im=1J
@@ -152,8 +153,8 @@ def DWBA_Interdiff(qx,qz,lamda,n,z,sigma,sigmaid,eta,h,eta_z,d=[0],\
     weave.inline(code,['qx','G','q','eta','h','sigma','sigmaid','sqn','z','I','Im','table','q_min','fn','s','eta_z'],compiler='gcc')
     #print s
     t2=time.clock()
-    print 'code'
-    print t2-t1
+    #print 'code'
+    #print t2-t1
     s=I
     return (s,omega+omegap,omegap-omega)
 
@@ -164,9 +165,9 @@ def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     qx=array(qx,dtype=float64)
     sqn=n**2
     sqn=array(sqn,dtype=complex)
-    print 'Setup Complete'
+    #print 'Setup Complete'
     # Calculating electrical fields
-    print 'Calculating electrical fields...'
+    #print 'Calculating electrical fields...'
     omega=arctan(qx/qz) # Not the real omega given by Fewster
     omegap=arcsin(sqrt(qx**2+qz**2)/2/k)
     #print 2*omegap*180/pi
@@ -185,8 +186,8 @@ def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     #(T,R,kz)=AmpElfield2(r_[kxi,-kxf],k,n,z)
     (T,R,kz)=AmpElfield_q(k,r_[kxi,kxf],lamda,tn,td)
     t2=time.clock()
-    print 'AmpElfield_q'
-    print t2-t1
+    #print 'AmpElfield_q'
+    #print t2-t1
     #print R
     #print T
     #print kz
@@ -205,15 +206,15 @@ def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     Tf=T[:,lenq:]
     ki=kz[:,:lenq]
     kf=kz[:,lenq:]
-    print 'Done'
+    #print 'Done'
     G=array([Ti*Tf,Ti*Rf,Ri*Tf,Ri*Rf])
     q=array([ki+kf,ki-kf,-ki+kf,-ki-kf])
     print q.shape
     print G.shape
     # Setting up for the Fourier integral as given by Pape et.al.
-    print 'Prepearing the Fourier integral'
+    #print 'Prepearing the Fourier integral'
     maxn = taylor_n
-    print 'n= ', maxn
+    #print 'n= ', maxn
     dqmin=(qx[1]-qx[0])*eta/(maxn**(1.0/2.0/h))    
     print dqmin
     #if abs(dqmin) < 1e-12:
@@ -226,12 +227,12 @@ def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     t1=time.clock()
     table=make_F(q_min,h)
     t2=time.clock()
-    print 'make_F '
-    print t2-t1
+    #print 'make_F '
+    #print t2-t1
     table=array(table,dtype=complex)
     G=array(G,dtype=complex)
     q=array(q,dtype=complex)
-    print 'Done'
+    #print 'Done'
     I=zeros(qx.shape)*(0.0+0.0J)
     I=array(I,dtype=complex)
     Im=1J
@@ -274,8 +275,8 @@ def DWBA(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     #eta,h,eta_z,qn,qnp,sigma_n,sigma_np
     weave.inline(code,['qx','G','q','eta','h','sigma','sqn','z','I','Im','table','q_min','fn','s','eta_z'],compiler='gcc')
     t2=time.clock()
-    print 'code'
-    print t2-t1
+    #print 'code'
+    #print t2-t1
     s=I
     return (s,omega+omegap,omegap-omega)
 
@@ -284,9 +285,9 @@ def Born(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     qx=array(qx,dtype=float64)
     sqn=n**2
     sqn=array(sqn,dtype=complex)
-    print 'Setup Complete'
+    #print 'Setup Complete'
     # Calculating electrical fields
-    print 'Calculating electrical fields...'
+    #print 'Calculating electrical fields...'
     omega=arctan(qx/qz) # Not the real omega given by Fewster
     omegap=arcsin(sqrt(qx**2+qz**2)/2/k)
     #print 2*omegap*180/pi
@@ -331,7 +332,7 @@ def Born(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     #print q.shape
     #print G.shape
     # Setting up for the Fourier integral as given by Pape et.al.
-    print 'Prepearing the Fourier integral'
+    #print 'Prepearing the Fourier integral'
     maxn=taylor_n
     dqmin=(qx[1]-qx[0])*eta/(maxn**(1.0/2.0/h))
     q_min=arange(qx[0]*eta/(maxn**(1.0/2.0/h)),qx[-1]*eta+2*dqmin,dqmin,dtype=float64)
@@ -339,8 +340,8 @@ def Born(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     t1=time.clock()
     table=make_F(q_min,h)
     t2=time.clock()
-    print 'make_F '
-    print t2-t1
+    #print 'make_F '
+    #print t2-t1
     table=array(table,dtype=complex)
     #G=array(G,typecode=complex)
     #q=array(q,typecode=complex)
@@ -377,8 +378,8 @@ def Born(qx,qz,lamda,n,z,sigma,eta,h,eta_z,d=[0], taylor_n = 1):
     #eta,h,eta_z,qn,qnp,sigma_n,sigma_np
     weave.inline(code,['qx','qz','eta','h','sigma','sqn','z','I','Im','table','q_min','fn','s','eta_z'],compiler='gcc')
     t2=time.clock()
-    print 'code'
-    print t2-t1
+    #print 'code'
+    #print t2-t1
     s=I
     return (s,omega+omegap,omegap-omega)
     

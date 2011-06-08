@@ -105,13 +105,13 @@ diffuse interfaces.
 
 import lib.paratt as Paratt
 
-__offspec__ = 1
+__offspec__ = True
 try:
     import lib.offspec2_weave
-except StandardError,S:
+except Exception,S:
     print 'Failed to import: offspec2_weave, No off-specular simulations possible'
     print S
-    __offspec__ = 0
+    __offspec__ = False
     
 
 from numpy import *
@@ -216,7 +216,8 @@ def Specular(TwoThetaQz, sample, instrument):
 
 def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     lamda = instrument.getWavelength()
-    if instrument.getCoordinates() == 1: # Sample Coords is theta-2theta
+    if instrument.getCoords() == 1 or\
+        instrument.getCoords() == instrument_string_choices['coords'][1]:
         alphaR1 = ThetaQx
         betaR1 = TwoThetaQz - ThetaQx
         qx = 2*pi/lamda*(cos(alphaR1*pi/180) - cos(betaR1*pi/180))
@@ -229,6 +230,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     #print qz
     parameters = sample.resolveLayerParameters()
     def toarray(a, code):
+        a = list(a)
         a.reverse()
         return array(a, dtype = code)
     dens = array(parameters['dens'], dtype = complex64)
@@ -254,9 +256,9 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     eta_z = sample.getEta_z()
     #print eta_z
     if __offspec__:
-        (I, alpha, omega) = offspec2_weave.DWBA_Interdiff(qx, qz, lamda, n, z,\
+        (I, alpha, omega) = lib.offspec2_weave.DWBA_Interdiff(qx, qz, lamda, n, z,\
             sigmar, sigmai, eta, h, eta_z, d,\
-                taylor_n = parameters['taylor_n'])
+                taylor_n = instrument.getTaylor_n())
     else:
         I=ones(len(qx*qz))
     return real(I)*instrument.getI0() + instrument.getIbkg()

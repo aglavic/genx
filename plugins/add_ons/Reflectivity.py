@@ -52,6 +52,7 @@ is to the right. This is updated when the simulation button is pressed.
 
 import plugins.add_on_framework as framework
 from plotpanel import PlotPanel
+import model as modellib
 import  wx
 
 import numpy as np

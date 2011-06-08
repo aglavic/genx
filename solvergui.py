@@ -10,7 +10,7 @@ import  wx.lib.newevent
 from wx.lib.masked import NumCtrl
 
 import diffev, fom_funcs
-import io
+import filehandling as io
 import numpy as np
 
 #==============================================================================

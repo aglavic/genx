@@ -15,7 +15,8 @@ import wx, os
 import wx.lib.colourselect as  csel
 
 
-import data, io
+import data
+import filehandling as io
 import images as img
 import plugins.data_loader_framework as dlf
 #==============================================================================
