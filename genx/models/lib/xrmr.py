@@ -20,24 +20,56 @@ def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-
     mpy_limit - magnet parallel to y limit the angle to the y-axis where the sample is assumed
     to be parallel to the y-direction
     '''
+    chi, non_mag, mpy = create_chi(g_0, lamda, chi0, A, B, C, M, d, 
+                                   mag_limit = 1e-8, mpy_limit = 1e-9)
+    return do_calc(g_0, lamda, chi, d, non_mag, mpy)
+    
+def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-9):
     A = A.astype(np.complex128)
     B = B.astype(np.complex128)
     C = C.astype(np.complex128)
     #C = B*0.0
-    trans = np.ones(g_0.shape, dtype = np.complex128)
-    m_x = M[:, 0]; m_y = M[:, 1]; m_z = M[:, 2]
-    chi_xx = trans*(chi0 + A + C*m_x*m_x)[:, np.newaxis]
-    chi_yy = trans*(chi0 + A + C*m_y*m_y)[:, np.newaxis]
-    chi_zz = trans*(chi0 + A + C*m_z*m_z)[:, np.newaxis]
-    chi_xy = trans*(-1.0J*B*m_z + C*m_x*m_y)[:, np.newaxis]
-    chi_yx = -trans*(-1.0J*B*m_z + C*m_x*m_y)[:, np.newaxis]
-    chi_xz = trans*(1.0J*B*m_y + C*m_x*m_z)[:, np.newaxis]
-    chi_zx = -trans*(1.0J*B*m_y + C*m_x*m_z)[:, np.newaxis]
-    chi_yz = trans*(-1.0J*B*m_x + C*m_y*m_z)[:, np.newaxis]
-    chi_zy = -trans*(-1.0J*B*m_x + C*m_y*m_z)[:, np.newaxis]
+    
+    m_x = M[..., 0]; m_y = M[..., 1]; m_z = M[..., 2]
+    chi_xx = (chi0 + A + C*m_x*m_x)
+    chi_yy = (chi0 + A + C*m_y*m_y)
+    chi_zz = (chi0 + A + C*m_z*m_z)
+    chi_xy = (-1.0J*B*m_z + C*m_x*m_y)
+    chi_yx = -(-1.0J*B*m_z + C*m_x*m_y)
+    chi_xz = (1.0J*B*m_y + C*m_x*m_z)
+    chi_zx = -(1.0J*B*m_y + C*m_x*m_z)
+    chi_yz = (-1.0J*B*m_x + C*m_y*m_z)
+    chi_zy = -(-1.0J*B*m_x + C*m_y*m_z)
+    chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
+    
+    #Take into account non-magnetic materials:
+    non_mag = np.bitwise_and(np.abs(B) < mag_limit, np.abs(C) < mag_limit)
+     # Ignore the ambient (vacuum)
+    non_mag[0] = False
+    
+    # Take into account the matrix singularity arising when M||Y
+    mpy = np.bitwise_and(np.abs(m_y - 1.0) < mpy_limit, np.bitwise_not(non_mag))
+    
+    
+    return chi, non_mag, mpy
 
+def do_calc(g_0, lamda, chi, d, non_mag, mpy):
+    
+    chi_xx, chi_xy, chi_xz = chi[0]
+    chi_yx, chi_yy, chi_yz = chi[1]
+    chi_zx, chi_zy, chi_zz = chi[2] 
+    trans = np.ones(g_0.shape, dtype = np.complex128)
+    chi_xx = trans*chi_xx[::-1, np.newaxis]; chi_xy = trans*chi_xy[::-1, np.newaxis]
+    chi_xz = trans*chi_xz[::-1, np.newaxis]; chi_yx = trans*chi_yx[::-1, np.newaxis]
+    chi_yy = trans*chi_yy[::-1, np.newaxis]; chi_yz = trans*chi_yz[::-1, np.newaxis]
+    chi_zx = trans*chi_zx[::-1, np.newaxis]; chi_zy = trans*chi_zy[::-1, np.newaxis]
+    chi_zz = trans*chi_zz[::-1, np.newaxis]
+    d = d[::-1]
+    non_mag = non_mag[::-1]
+    mpy = mpy[::-1]
+    
     # Setting up g0 to be the last index
-    g_0 = g_0*np.ones(chi0.shape, dtype = np.complex128)[:, np.newaxis]
+    g_0 = g_0*np.ones(chi_xx.shape[0], dtype = np.complex128)[:, np.newaxis]
     n_x = np.sqrt(1.0 - g_0**2)
     
     q1 = 1 + chi_zz
@@ -91,7 +123,7 @@ def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-
     P_z = (chi_zy*(1.0 - u**2 + chi_xx) - 
            chi_xy*(chi_zx + u*n_x))/D
     #print 'P_x: ', P_x.shape, 'P_z: ', P_z.shape, 'D: ', D.shape
-    S = np.zeros((4, 4, chi0.shape[0], g_0.shape[1]), dtype = np.complex128)
+    S = np.zeros((4, 4, chi_xx.shape[0], g_0.shape[1]), dtype = np.complex128)
     #print 'S: ', S.shape, 'P: ', P_x
     # The ambient layer
     S[0,0,0] = 1.0; S[0,2,0] = 1.0; S[1,1,0] = 1.0; S[1,3,0] = 1.0
@@ -104,14 +136,11 @@ def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-
     S[2, :, 1:] = u[:, 1:]
     S[3, :, 1:] = w
     
-    #Take into account non-magnetic materials:
-    non_mag = np.bitwise_and(np.abs(B) < mag_limit, np.abs(C) < mag_limit)
-     # Ignore the ambient (vacuum)
-    non_mag[0] = False
+    
     #if np.any(non_mag):
     #    print 'We have non-magnetic layers'
     #print non_mag
-    chi = (trans*(chi0 + A)[:, np.newaxis])[non_mag]
+    chi = chi_xx[non_mag]#(trans*(chi0 + A)[:, np.newaxis])[non_mag]
     nm_u1 = np.sqrt(g_0[non_mag]**2 + chi)
     nm_u2 = -nm_u1
     sqr_eps = np.sqrt(1 + chi)
@@ -125,7 +154,6 @@ def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-
     S[3,2,non_mag] = 0.0; S[3,3,non_mag] = nm_u2/sqr_eps
 
     # Take into account the matrix singularity arising when M||Y
-    mpy = np.bitwise_and(np.abs(m_y - 1.0) < mpy_limit, np.bitwise_not(non_mag))
     if  np.any(mpy):
         #print 'M||Y calcs activated'
         delta = chi_xz[mpy]**2*(1 + chi_xx[mpy])
@@ -153,8 +181,8 @@ def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-
     d = d[:, np.newaxis]*np.ones(g_0.shape[1], dtype = np.complex128)
     #print 'u: ', u.shape, ' g_0: ', g_0.shape, ' d: ',d.shape
     kappa = 2*np.pi/lamda
-    Fp = np.zeros((2, 2, chi0.shape[0], g_0.shape[1]), dtype = np.complex128)
-    Fm = np.zeros((2, 2, chi0.shape[0], g_0.shape[1]), dtype = np.complex128)
+    Fp = np.zeros((2, 2, chi_xx.shape[0], g_0.shape[1]), dtype = np.complex128)
+    Fm = np.zeros((2, 2, chi_xx.shape[0], g_0.shape[1]), dtype = np.complex128)
     Fp[0,0] = np.exp(-1.0J*u[0]*kappa*d); Fp[1,1] = np.exp(-1.0J*u[1]*kappa*d)
     Fm[0,0] = np.exp(-1.0J*u[2]*kappa*d); Fm[1,1] =  np.exp(-1.0J*u[3]*kappa*d)
     #print Fp.shape, Fm.shape

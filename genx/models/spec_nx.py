@@ -20,7 +20,11 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     <dt><code><b>magn</b></code></dt>
     <dd>The magnetic moment per formula unit (same formula unit as b and dens refer to)</dd>
     <dt><code><b>sigma</b></code></dt>
-    <dd>The root mean square roughness of the top interface of the layer in Angstroms.</dd>		
+    <dd>The root mean square roughness of the top interface of the layer in Angstroms.</dd>	
+    <dt><code><b>xs_ai</b></code></dt>
+    <dd>The sum of the absorption cross section and the incoherent scattering cross section
+        in barns for neutrons</dd>    
+    	
     </dl>
 <h3>Stack</h3>
 <code> Stack(Layers = [], Repetitions = 1)</code>
@@ -125,6 +129,16 @@ InstrumentParameters={'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',\
     'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,\
      'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu',\
     'Ibkg': 0.0}
+InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg']),
+                    ('Resolution', ['restype', 'res', 'respoints', 'resintrange']),
+                    ('Neutron', ['probe', 'pol', 'incangle']),
+                    ('Footprint', ['footype', 'beamw', 'samplelen',]),
+                    ]
+InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',\
+     'I0': 'arb.', 'res': '[coord]',\
+    'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',\
+     'footype': '', 'samplelen':'mm', 'incangle':'deg.', 'pol': '',\
+    'Ibkg': 'arb.'}
 # Coordinates=1 or 'tth' => twothetainput
 # Coordinates=0 or 'q'=> Q input
 # probe: Type of simulation
@@ -150,8 +164,12 @@ InstrumentParameters={'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',\
 #            2 or 'square beam': Correction for square profile => Beaw given in full width mm
 # samlen= Samplelength in mm.
 
-LayerParameters={'sigma':0.0, 'dens':1.0, 'd':0.0, 'f':0.0+1.0j*1e-20,\
-     'b':0.0+1.0j*1e-20, 'magn':0.0, 'magn_ang':0.0}
+LayerParameters={'sigma':0.0, 'dens':1.0, 'd':0.0, 'f':(1.0+1.0j)*1e-20,
+     'b': 0.0 + 1.0J, 'xs_ai': 0.0, 'magn':0.0, 'magn_ang':0.0}
+LayerUnits = {'sigma': 'AA', 'dens': 'at./AA', 'd': 'AA', 'f':'el./at.',
+     'b': 'fm/at.', 'xs_ai': 'barn/at.', 'magn': 'mu_B/at.', 'magn_ang': 'deg.'}
+LayerGroups = [('Standard',['f','dens','d','sigma']),
+               ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang'])]
 StackParameters={'Layers':[], 'Repetitions':1}
 SampleParameters={'Stacks':[], 'Ambient':None, 'Substrate':None}
 
@@ -191,7 +209,8 @@ def Specular(TwoThetaQz,sample,instrument):
     if type ==  instrument_string_choices['probe'][0] or type==0:
         fb = array(parameters['f'], dtype = complex64)
     else: 
-        fb = array(parameters['b'], dtype = complex64)*1e-5
+        fb = array(parameters['b'], dtype = complex64).real*1e-5
+        abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
     
     dens = array(parameters['dens'], dtype = complex64)
     d = array(parameters['d'], dtype = float64)
@@ -200,8 +219,14 @@ def Specular(TwoThetaQz,sample,instrument):
     magn_ang = array(parameters['magn_ang'], dtype = float64)*pi/180.0 
     
     sigma = array(parameters['sigma'], dtype = float64)
-    sld = dens*fb*instrument.getWavelength()**2/2/pi
-
+    
+    
+    if type == instrument_string_choices['probe'][0] or type == 0:
+        sld = dens*fb*instrument.getWavelength()**2/2/pi
+    else:
+        wl = instrument.getWavelength()
+        sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) - 
+                               1.0J*abs_xs*wl/4/pi)
     # Ordinary Paratt X-rays
     if type == instrument_string_choices['probe'][0] or type == 0:
         R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
@@ -250,15 +275,19 @@ def Specular(TwoThetaQz,sample,instrument):
         
     # tof
     elif type == instrument_string_choices['probe'][4] or type == 4:
-        sld = dens[:,newaxis]*fb[:,newaxis]*\
-                (4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
+        wl = 4*pi*sin(instrument.getIncangle()*pi/180)/Q
+        sld = dens[:,newaxis]*(wl**2/2/pi*sqrt(fb[:,newaxis]**2 - 
+                                               (abs_xs[:,newaxis]/2.0/wl)**2) - 
+                               1.0J*abs_xs[:,newaxis]*wl/4/pi)
         R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
             (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
                 1.0-sld,d,sigma)
     # tof spin polarized
     elif type == instrument_string_choices['probe'][5] or type == 5:
-        sld = dens[:,newaxis]*fb[:,newaxis]*\
-            (4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
+        wl = 4*pi*sin(instrument.getIncangle()*pi/180)/Q
+        sld = dens[:,newaxis]*(wl**2/2/pi*sqrt(fb[:,newaxis]**2 - 
+                                               (abs_xs[:,newaxis]/2.0/wl)**2) - 
+                               1.0J*abs_xs[:,newaxis]*wl/4/pi)
         msld = 2.645e-5*magn[:,newaxis]*dens[:,newaxis]\
                 *(4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
         # polarization uu or ++

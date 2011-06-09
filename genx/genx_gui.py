@@ -332,6 +332,8 @@ class MainFrame(wx.Frame):
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.eh_external_fom_value)
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_data.OnSolverPlotEvent)
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_fom.OnSolverPlotEvent)
+        #self.Bind(solvergui.EVT_UPDATE_PLOT, self.plugin_control.OnFittingUpdate)
+        
         
         self.Bind(solvergui.EVT_SOLVER_UPDATE_TEXT, \
                             self.eh_ex_status_text)
