@@ -242,7 +242,15 @@ class SolverController:
                 fom_log = solver.get_fom_log(), update_fit = solver.new_best,\
                 desc = 'Fitting update')
         wx.PostEvent(self.parent, evt)
-        
+        # Hard code the events for the plugins so that they can be run syncrously.
+        # This is important since the Refelctevity model, for example, relies on the
+        # current state of the model.
+        try:
+            self.parent.plugin_control.OnFittingUpdate(evt)
+            #pass
+        except Exception, e:
+            print 'Error in plot output:\n' + repr(e)
+            
     def ParameterOutput(self, solver):
         '''ParameterOutput(self, solver) --> none
         

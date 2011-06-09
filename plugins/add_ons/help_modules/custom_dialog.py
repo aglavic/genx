@@ -1,4 +1,4 @@
-import wx
+import wx, math
 
 import string
 
@@ -371,14 +371,120 @@ class ComplexObjectValidator(wx.PyValidator):
 #----------------------------------------------------------------------
 
 class ValidateDialog(wx.Dialog):
-    def __init__(self, parent, pars, validators, title="Validated Dialog"):
+    def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
+                 units = False, groups = False, cols = 2):
+        ''' Pars should contain a list of names 
+        for the different parameters one wish to set. 
+        If use_subboxes is True pars should consist of a list of lists which
+        in turn consist of the (name, value) tuples where the first item
+        in the list should be a string describing the group. This will be layed out 
+        with subboxes. Note validators and values should be dictonaries of values!
+        '''
         wx.Dialog.__init__(self, parent, -1, title)
         self.pars = pars
         self.validators = validators
+        self.cols = cols
+        self.vals = vals
+        self.units = units
+        self.groups = groups
+        self.tc = {}
         self.SetAutoLayout(True)
-        VSPACE = 10
+        
+        
+        if self.groups:
+            self.grid_layout()
+        else:
+            #self.simple_layout()
+            self.main_sizer = self.layout_group(self.pars)
+        
+        buttons = wx.StdDialogButtonSizer() #wx.BoxSizer(wx.HORIZONTAL)
+        b = wx.Button(self, wx.ID_OK, "OK")
+        b.SetDefault()
+        buttons.AddButton(b)
+        buttons.AddButton(wx.Button(self, wx.ID_CANCEL, "Cancel"))
+        buttons.Realize()
 
+        border = wx.BoxSizer(wx.VERTICAL)
+        border.Add(self.main_sizer, 1, wx.GROW|wx.ALL, 5)
+        
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        border.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        
+        border.Add(buttons, flag = wx.ALIGN_RIGHT|wx.ALL, border = 5)
+        self.SetSizer(border)
+        border.Fit(self)
+        self.Layout()
+        
+    def grid_layout(self):
+        '''Do an more advanced layout with subboxes
+        '''
+        rows = math.ceil(len(self.pars)/(self.cols*1.0))
+        self.main_sizer = wx.FlexGridSizer(rows = rows, cols = self.cols, 
+                                           vgap = 10, hgap = 10)
+        for group in self.groups:
+            if type(group[0]) != str:
+                raise TypeError('First item in a group has to be a string')
+            # Make the box for putting in the columns
+            col_box = wx.StaticBox(self, -1, group[0])
+            col_box_sizer = wx.StaticBoxSizer(col_box, wx.VERTICAL )
+            col_box_sizer.Add(self.layout_group(group[1]), 
+                              flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 
+                              border = 5)
+            self.main_sizer.Add(col_box_sizer, flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
+            
+            
+            
+            
+    def layout_group(self, pars):
+        if self.units:
+            layout_cols = 3
+        else:
+            layout_cols = 2
+        sizer = wx.FlexGridSizer(len(pars) + 1, layout_cols,
+                                  vgap = 10, hgap = 5)
+        for par in pars:
+            label = wx.StaticText(self, -1, par + ': ')
+            validator = self.validators[par]
+            val = self.vals[par]
+            if type(validator) == type([]):
+                # There should be a list of choices
+                self.tc[par] = wx.Choice(self, -1,
+                                    choices = validator)
+                # Since we work with strings we have to find the right
+                # strings positons to initilize the choice box.
+                pos = 0
+                if type(val) == type(''):
+                    pos = validator.index(val)
+                elif type(par) == type(1):
+                    pos = par
+                self.tc[par].SetSelection(pos)
+            # Otherwise it should be a validator ...
+            else:
+                self.tc[par] = wx.TextCtrl(self, -1, str(val),
+                                           validator = validator,
+                                           style = wx.TE_RIGHT)
+            sizer.Add(label, \
+                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+            sizer.Add(self.tc[par], 
+                    flag = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 5)
+            # If we include units as well:
+            if self.units:
+                unit_label = wx.StaticText(self, -1, ' ' + self.units[par])
+                sizer.Add(unit_label, \
+                          flag = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, 
+                          border = 5)
+        return sizer
+            
+            
+            
+
+    def simple_layout(self):
+        '''Implements the ordinary "simple" layout of the boxes
+        '''
+        pars = self.pars
+        validators = self.validators
         gbs=wx.GridBagSizer(len(pars)+1, 2)
+        VSPACE = 10
         
         self.tc=[]
         for index in range(len(pars)):
@@ -408,35 +514,25 @@ class ValidateDialog(wx.Dialog):
                     validator = validators[index]))
             gbs.Add(self.tc[index], (index, 1),\
                     flag = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 5)
+            
+        self.main_sizer = gbs
 
 
-        buttons = wx.StdDialogButtonSizer() #wx.BoxSizer(wx.HORIZONTAL)
-        b = wx.Button(self, wx.ID_OK, "OK")
-        b.SetDefault()
-        buttons.AddButton(b)
-        buttons.AddButton(wx.Button(self, wx.ID_CANCEL, "Cancel"))
-        buttons.Realize()
-
-        border = wx.BoxSizer(wx.VERTICAL)
-        border.Add(gbs, 1, wx.GROW|wx.ALL, 25)
-        border.Add(buttons)
-        self.SetSizer(border)
-        border.Fit(self)
-        self.Layout()
+        
 
     def GetValues(self):
         #print dir(self.tc[0])
         #print self.tc[0].GetValue()
-        p=[]
-        for index in range(len(self.pars)):
-            if type(self.validators[index]) == type([]):
+        p = {}
+        for par in self.validators.keys():
+            if type(self.validators[par]) == type([]):
                 # have to pad teh text to make it a string inside a string...
                 #text = '\'' 
-                text = self.validators[index][self.tc[index].GetSelection()]
+                text = self.validators[par][self.tc[par].GetSelection()]
                 #text += '\''
-                p.append(text)
+                p[par] = text
             else:
-                p.append(self.tc[index].GetValue())
+                p[par] = self.tc[par].GetValue()
         return p
 
 class ZoomFrame(wx.MiniFrame):
