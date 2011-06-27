@@ -293,6 +293,7 @@ class Model:
             val = outp.getvalue()
             outp.close()
             raise FomError(str(val))
+        self.data.set_fom_data(fom_raw)
     
     def create_fit_func(self, str):
         '''create_fit_func(self, str) --> function
