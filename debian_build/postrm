@@ -1,0 +1,11 @@
+#!/bin/sh
+if [ -x /usr/bin/update-mime-database ]; then
+  update-mime-database /usr/share/mime
+  echo "        Removing icons ..."
+  xdg-icon-resource uninstall --context mimetypes --size 16 application-genx
+  xdg-icon-resource uninstall --context mimetypes --size 22 application-genx
+  xdg-icon-resource uninstall --context mimetypes --size 32 application-genx
+  xdg-icon-resource uninstall --context mimetypes --size 48 application-genx
+  xdg-icon-resource uninstall --context mimetypes --size 64 application-genx
+  xdg-icon-resource uninstall --context mimetypes --size 128 application-genx
+fi
