@@ -972,6 +972,7 @@ class DataPlotPanel(PlotPanel):
         marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
          for data_set in data if data_set.show]
         # Force an update of the plot
+        self.autoscale_error_ax()
         self.flush_plot()
         #self.canvas.draw()
         #print 'Data plotted'

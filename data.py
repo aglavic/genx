@@ -89,6 +89,12 @@ class DataSet:
             self.sim_linetype = '-'
             self.sim_linethickness = 2
             
+    def copy(self):
+        ''' Make a copy of the current Data Set'''
+        cpy = DataSet()
+        cpy.safe_copy(self)
+        return cpy
+            
     def safe_copy(self, new_set):
         '''safe_copy(self, new_set) --> None
         
@@ -473,6 +479,8 @@ class DataSet:
         '''Set show true - show data set in plots
         '''
         self.show = bool(val)
+        
+        
 #END: Class DataSet
 #==============================================================================
 #BEGIN: Class DataList
