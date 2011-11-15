@@ -117,7 +117,7 @@ __rho0_dict__['o2m'] = __rho0_dict__['o2-.']
 f0 = sl.ScatteringLength(__f0_dict__)
 # Dispersive part at Q = 0
 __lookup_fp__ = sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_cxro/')
-fp = sl.FormFactor(1.54, __lookup_fp__)
+fp = sl.FormFactor(15.4, __lookup_fp__)
 # The total angle dependent form factor
 __lookup_f__ = sl.create_f_lookup(__lookup_fp__, __f0_dict__)
 f = sl.FormFactor(1.54, __lookup_f__)
@@ -139,13 +139,21 @@ bw = sl.ScatteringLength(__bw_dict__)
 __lookup_fw__ = sl.create_fw_lookup(__lookup_fp__, __w_dict__)
 fw = sl.FormFactor(1.54, __lookup_fw__)
 
+__f_chantler_dict__ = sl.read_dabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')
+__lookup_fpc__ = sl.load_fdabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')
+fpc = sl.FormFactor(15.4, __lookup_fpc__)
 
 if __name__=='__main__':
-    MyVars=UserVars()
-    MyVars.newVar('a',3)
-    print 'f0.fe(0)', f0.fe(0)
-    fp.set_wavelength(1.54)
-    print 'fp.fe', fp.fe
-    f.set_wavelength(1.54)
-    print 'f.fe(0)', f.fe(0)
-    print 'f.fe2p(0)', f.fe2p(0)
+    #MyVars=UserVars()
+    #MyVars.newVar('a',3)
+    #print 'f0.fe(0)', f0.fe(0)
+    #fp.set_wavelength(1.54)
+    #print 'fp.fe', fp.fe
+    #f.set_wavelength(1.54)
+    #print 'f.fe(0)', f.fe(0)
+    #print 'f.fe2p(0)', f.fe2p(0)
+    fe = np.array(__f_chantler_dict__['fe'])
+    print fe.reshape(len(fe)/7, 7)
+    #print bc.fe
+    print fpc.Sn
+    print fp.Sn

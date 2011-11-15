@@ -47,13 +47,14 @@ class DiffEv:
         
         # Mutation schemes implemented
         self.mutation_schemes = [self.best_1_bin, self.rand_1_bin,\
-            self.best_either_or, self.rand_either_or]
+            self.best_either_or, self.rand_either_or, self.jade_best]
             
         self.model = model.Model()
         
         self.km = 0.7 # Mutation constant
         self.kr = 0.7 # Cross over constant
         self.pf = 0.5 # probablility for mutation
+        self.c = 0.07
         
         # Flag to choose beween the two alternatives below
         self.use_pop_mult = False
@@ -266,6 +267,11 @@ class DiffEv:
         
         self.fom_vec = zeros(self.n_dim)
         self.best_fom = 1e20
+        
+        # Storage area for JADE archives
+        self.km_vec = ones(self.n_dim)*self.km
+        self.kr_vec = ones(self.n_dim)*self.kr
+        
 
         # Logging varaibles
         self.fom_log = array([[0,1]])[0:0]
@@ -365,6 +371,9 @@ class DiffEv:
         #self.fom_vec = self.trial_fom[:]
         # Old leftovers before going parallel
         self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
+        [self.par_evals.append(vec, axis = 0)\
+                    for vec in self.pop_vec]
+        [self.fom_evals.append(vec) for vec in self.fom_vec]
         #print self.fom_vec
         best_index = argmin(self.fom_vec)
         #print self.fom_vec
@@ -395,9 +404,11 @@ class DiffEv:
             
             t_start = time.time()
             
+            self.init_new_generation(gen)
+            
             # Create the vectors who will be compared to the 
             # population vectors
-            self.trial_vec = [self.create_trial(vec) for vec in self.pop_vec]
+            [self.create_trial(index) for index in range(self.n_pop)]
             self.eval_fom()
             # Calculate the fom of the trial vectors and update the population
             [self.update_pop(index) for index in range(self.n_pop)]
@@ -543,8 +554,11 @@ class DiffEv:
             return (error_bar_low, error_bar_high)
         else:
             raise ErrorBarsError()
-        
-        
+    
+    def init_new_generation(self, gen):
+        ''' Function that is called every time a new generation starts'''
+        pass
+    
     def update_pop(self, index):
         '''
         Function to update population vector index. calcs the figure of merit
@@ -560,14 +574,83 @@ class DiffEv:
                 self.new_best = True
                 self.best_vec = self.trial_vec[index].copy()
                 self.best_fom = fom
-
+                
+    def jade_update_pop(self, index):
+        ''' A modified update pop to handle the JADE variation of Differential evoluion'''
+        fom = self.trial_fom[index]
+        if fom < self.fom_vec[index]:
+            self.pop_vec[index] = self.trial_vec[index].copy()
+            self.fom_vec[index] = fom
+            self.updated_kr.append(self.kr_vec[index])
+            self.updated_km.append(self.km_vec[index])
+            if fom < self.best_fom:
+                self.new_best = True
+                self.best_vec = self.trial_vec[index].copy()
+                self.best_fom = fom
     
-    def best_1_bin(self, vec):
+    def jade_init_new_generation(self, gen):
+        ''' A modified generation update for jade'''
+        #print 'inits generation: ', gen, self.n_pop
+        if gen > 1:
+            updated_kms = array(self.updated_km)
+            updated_krs = array(self.updated_kr)
+            if len(updated_kms) != 0:
+                self.km = (1.0 - self.c)*self.km + self.c*sum(updated_kms**2)/sum(updated_kms)
+                self.kr = (1.0 - self.c)*self.kr + self.c*mean(updated_krs)
+        self.km_vec = abs(self.km + random.standard_cauchy(self.n_pop)*0.1)
+        self.kr_vec = self.kr + random.normal(size = self.n_pop)*0.1
+        #print self.km_vec, self.kr_vec
+        print 'km: ', self.km, ', kr: ', self.kr
+        #self.km_vec = (self.km_vec >= 1)*1 + (self.km_vec < 1)*self.km_vec
+        self.km_vec = where(self.km_vec > 0, self.km_vec, 0)
+        self.km_vec = where(self.km_vec < 1, self.km_vec, 1)
+        self.kr_vec = where(self.kr_vec > 0, self.kr_vec, 0)
+        self.kr_vec = where(self.kr_vec < 1, self.kr_vec, 1)
+        
+        self.updated_kr = []
+        self.updated_km = []
+        
+        
+    def jade_best(self, index):
+        vec = self.pop_vec[index]
+        # Create mutation vector
+        # Select two random vectors for the mutation
+        index1 = int(random.rand(1)*self.n_pop)
+        index2 = int(random.rand(1)*len(self.par_evals))
+        # Make sure it is not the same vector 
+        #while index2 == index1:
+        #    index2 = int(random.rand(1)*self.n_pop)
+            
+        # Calculate the mutation vector according to the best/1 scheme
+        #print len(self.km_vec), index, len(self.par_evals),  index2
+        mut_vec = vec + self.km_vec[index]*(self.best_vec - vec) + self.km_vec[index]*(self.pop_vec[index1]\
+         - self.par_evals[index2])
+        
+        # Binomial test to detemine which parameters to change
+        # given by the recombination constant kr
+        recombine = random.rand(self.n_dim) < self.kr_vec[index]
+        # Make sure at least one parameter is changed
+        recombine[int(random.rand(1)*self.n_dim)]=1
+        # Make the recombination
+        trial = where(recombine, mut_vec, vec)
+        
+        # Implementation of constrained optimization
+        if self.use_boundaries:
+            # Check so that the parameters lie indside the bounds
+            ok = bitwise_and(self.par_max > trial, self.par_min < trial)
+            # If not inside make a random re-initilazation of that parameter
+            trial = where(ok, trial, random.rand(self.n_dim)*\
+            (self.par_max - self.par_min) + self.par_min)
+        self.trial_vec[index] = trial
+        #return trial
+    
+    def best_1_bin(self, index):
         '''best_1_bin(self, vec) --> trial [1D array]
         
         The default create_trial function for this class. 
         uses the best1bin method to create a new vector from the population.
         '''
+        vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
         index1 = int(random.rand(1)*self.n_pop)
@@ -596,14 +679,16 @@ class DiffEv:
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
         
-        return trial
+        self.trial_vec[index] = trial
+        #return trial
     
-    def best_either_or(self, vec):
+    def best_either_or(self, index):
         '''best_either_or(self, vec) --> trial [1D array]
         
         The either/or scheme for creating a trial. Using the best vector
         as base vector.
         '''
+        vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
         index1 = int(random.rand(1)*self.n_pop)
@@ -628,15 +713,16 @@ class DiffEv:
             # If not inside make a random re-initilazation of that parameter
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
+        self.trial_vec[index] = trial
+        #return trial
         
-        return trial
-        
-    def rand_1_bin(self, vec):
+    def rand_1_bin(self, index):
         '''best_1_bin(self, vec) --> trial [1D array]
         
         The default create_trial function for this class. 
         uses the best1bin method to create a new vector from the population.
         '''
+        vec = self.pop_vec[index]
         # Create mutation vector
         # Select three random vectors for the mutation
         index1 = int(random.rand(1)*self.n_pop)
@@ -667,14 +753,15 @@ class DiffEv:
             # If not inside make a random re-initilazation of that parameter
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
-        
-        return trial
+        self.trial_vec[index] = trial
+        #return trial
     
-    def rand_either_or(self, vec):
+    def rand_either_or(self, index):
         '''rand_either_or(self, vec) --> trial [1D array]
         
         random base vector either/or trial scheme
         '''
+        vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
         index1 = int(random.rand(1)*self.n_pop)
@@ -705,8 +792,8 @@ class DiffEv:
             # If not inside make a random re-initilazation of that parameter
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
-        
-        return trial
+        self.trial_vec = trial
+        #return trial
     
     
     # Different function for acessing and setting parameters that 
@@ -808,6 +895,9 @@ class DiffEv:
         # Find the postion of val
         pos = names.index(val)
         self.create_trial = self.mutation_schemes[pos]
+        if val == 'jade_best':
+            self.update_pop = self.jade_update_pop
+            self.init_new_generation = self.jade_init_new_generation
         
     def set_pop_mult(self, val):
         '''set_pop_mult(self, val) --> None
@@ -1038,6 +1128,12 @@ class CircBuffer:
                         ' and arrays.')
                         
                         
+    def __len__(self):
+        if self.filled:
+            return len(self.buffer)
+        else:
+            return (self.pos > 0)*self.pos
+        
     def __getitem__(self, key):
         return self.array().__getitem__(key)
     

@@ -13,6 +13,14 @@ def dot2(A, B):
     D[1, 1] = A[1, 0]*B[0, 1] + A[1, 1]*B[1, 1]
     return D
 
+def dot2_Adiag(A, B):
+    D = np.zeros(A.shape, dtype = np.complex128)
+    D[0, 0] = A[0, 0]*B[0, 0] 
+    D[0, 1] = A[0, 0]*B[0, 1]
+    D[1, 0] = A[1, 1]*B[1, 0]
+    D[1, 1] = A[1, 1]*B[1, 1]
+    return D
+
 def inv2(A):
     D = np.zeros(A.shape, dtype = np.complex128)
     det = det2(A);

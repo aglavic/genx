@@ -236,7 +236,7 @@ class Model:
         fom_raw = self.fom_func(simulated_data, self.data)
         # Sum up a unique fom for each data set in use
         fom_indiv = [np.sum(np.abs(fom_set)) for fom_set in fom_raw]
-        fom = np.sum(fom_indiv)
+        fom = np.sum([f for f, d in zip(fom_indiv, self.data) if d.use])
         
         return fom_raw, fom_indiv, fom
             
@@ -293,6 +293,7 @@ class Model:
             val = outp.getvalue()
             outp.close()
             raise FomError(str(val))
+        print len(fom_raw)
         self.data.set_fom_data(fom_raw)
     
     def create_fit_func(self, str):

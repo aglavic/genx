@@ -477,16 +477,19 @@ def start_fit(frame, event):
     Event handler to start fitting
     '''
     if frame.model.compiled:
-        try:
-            frame.solver_control.StartFit()
-        except modellib.GenericError, e:
-            ShowModelErrorDialog(frame, str(e))
-            frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-        except Exception, e:
-            ShowErrorDialog(frame, str(e))
-            frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-        else:
-            frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
+        #try:
+        #    frame.solver_control.StartFit()
+        #except modellib.GenericError, e:
+        #    raise e
+        #    ShowModelErrorDialog(frame, str(e))
+        #    frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
+        #except Exception, e:
+        #    raise e
+        #    ShowErrorDialog(frame, str(e))
+        #    frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+        #else:
+        #    frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
+        frame.solver_control.StartFit()
     else:
         ShowNotificationDialog(frame, 'The script is not compiled, do a'\
         ' simulation before you start fitting.')

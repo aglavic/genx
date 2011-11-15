@@ -445,6 +445,42 @@ def load_bdabax(filename):
             
     return b_c
 
+def load_fdabax(filename):
+    ''' loads a dabax file with the scattering length tables returns a lookup 
+    function so that the wavelength can be changed. '''
+    table = read_dabax(filename)
+    def lookup_func(name, wavelength):
+        ''' Looks up the total form factor at Q = 0
+        f = f1 + 1.0J*f2 of element name. 
+        '''
+        el = np.array(table[name])
+        el = el.reshape(len(el)/7, 7)
+        e = el[:,0]
+        f1 = el[:,1] 
+        f2 = el[:,2]
+        energy = 1239.842/wavelength*10/1e3 #keV
+        if energy >= e[-2] or energy <= e[1]:
+            raise ValueError('The energy/wavelength is outside the databse'\
+                + 'range, the energy should be inside [%f,%f] '%(e[1],e[-2]))
+        pos1 = np.argmin(abs(e - energy))
+        # Is the energy point to the right or left of the current point
+        # If it is ontop it doesn't matter since the interpolation will be exact at
+        # the endpoints
+        if (e[pos1] - energy) > 0: 
+            pos2 = pos1 - 1
+        else:
+            pos2 = pos1 + 1
+        # A quick linear interpolation:
+        f1_e = (energy - e[pos1])*(f1[pos2] - f1[pos1])/(e[pos2] - e[pos1])\
+                + f1[pos1]
+        f2_e = (energy - e[pos1])*(f2[pos2] - f2[pos1])/(e[pos2] - e[pos1])\
+                + f2[pos1]
+        
+        return f1_e - 1.0J*f2_e
+    
+    return lookup_func
+    
+
 def read_dabax(filename):
     '''read_dabax_dict(filename) --> temp_dict [dict]
     
@@ -474,8 +510,12 @@ def read_dabax(filename):
         # The row contains data
         if label == 'Data':
             # To get all values in the table
-            temp_dict[real_label.lower()] = map(lambda x:\
-                tofloat(x.split('(')[0]), ret.split())
+            if not temp_dict.has_key(real_label.lower()):
+                temp_dict[real_label.lower()] = map(lambda x:\
+                                                    tofloat(x.split('(')[0]), ret.split())
+            else:
+                temp_dict[real_label.lower()] += map(lambda x:\
+                                                    tofloat(x.split('(')[0]), ret.split())
                 
     return temp_dict
 
