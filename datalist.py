@@ -1186,8 +1186,11 @@ class CalcDialog(wx.Dialog):
 
         command_names = commands.keys()
         command_names.sort()
-        index_offset = len(command_names_standard) - 1
-        for name, index in zip(command_names, range(len(command_names))):
+        #index_offset = len(command_names_standard) - 1
+        #for name, index in zip(command_names, range(len(command_names))):
+        index_offset = len(command_names_standard)
+        index = 0
+        for name in command_names:
             if not (name in command_names_standard):
                 label = wx.StaticText(self, -1, '%s = '%name)
                 gbs.Add(label,(index + index_offset, 0),\
@@ -1196,6 +1199,7 @@ class CalcDialog(wx.Dialog):
                         commands[name], size=(300, -1))
                 gbs.Add(self.command_ctrl[name], (index + index_offset, 1),\
                             flag = wx.EXPAND)
+                index += 1
         
         # Add the Dilaog buttons
         button_sizer = wx.StdDialogButtonSizer()
