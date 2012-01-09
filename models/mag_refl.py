@@ -1,21 +1,67 @@
-''' <h1> Library for specular magnetic x-ray reflectivity</h1>
-The magnetic reflectivity is calculated according to: S.A. Stephanov and S.K Shina PRB 61 15304.
-Note: The documentation is not updated from the interdiff model!
+''' <h1> Library for specular magnetic x-ray and neutron reflectivity</h1>
+The magnetic reflectivity is calculated according to: S.A. Stephanov and S.K Shina PRB 61 15304. for 
+the full anisotropic model. It also one simpler model where the media is considered to be isotropic but 
+with different refractive indices for left and right circular light.
+The model also has the possibility to calculate the neutron reflectivity from the same sample structure. 
+
+Note! This model should be considered as a gamma version. It is still under heavy development and 
+the api can change significantly from version to version. Should only be used by expert users. 
 <h2>Classes</h2>
 <h3>Layer</h3>
-<code> Layer(b = 0.0, d = 0.0, f = 0.0+0.0J, dens = 1.0, magn_ang = 0.0, magn = 0.0, sigma = 0.0)</code>
+<code> Layer(fr = 1e-20j, b = 1e-20j, dd_u = 0.0, d = 0.0, f = 1e-20j, dens = 1.0, resmag = 1.0, 
+            theta_m = 0.0, fm2 = 1e-20j, xs_ai = 0.0, 
+            sigma_mu = 0.0, fm1 = 1e-20j, dmag_u = 0.0,
+             mag = 0.0, sigma_ml = 0.0, sigma_c = 0.0,
+              resdens = 1.0, phi_m = 0.0, dd_l = 0.0, dmag_l = 0.0)</code>
     <dl>
     <dt><code><b>d</b></code></dt>
     <dd>The thickness of the layer in AA (Angstroms = 1e-10m)</dd>
-    <dt><code><b>f</b></code></dt>
-    <dd>The x-ray scattering length per formula unit in electrons. To be strict it is the
-    number of Thompson scattering lengths for each formula unit.</dd>
     <dt><code><b>dens</b></code></dt>
     <dd>The density of formula units in units per Angstroms. Note the units!</dd>
-    <dt><code><b>sigmai</b></code></dt>
-    <dd>The root mean square <em>interdiffusion</em> of the top interface of the layer in Angstroms.</dd>        
-    <dt><code><b>sigmar</b></code></dt>
-    <dd>The root mean square <em>roughness</em> of the top interface of the layer in Angstroms.</dd>
+    <dt><code><b>sigma</b></code></dt>
+    <dd>The root mean square roughness of the top interface for the layer in Angstroms.</dd>        
+    <dt><code><b>f</b></code></dt>
+    <dd>The non-resonant x-ray scattering length per formula unit in electrons. To be strict it is the
+    number of Thompson scattering lengths for each formula unit.</dd>
+    <dt><code><b>fr</b></code></dt>
+    <dd>The resonant x-ray scattering length of the resonant species in electrons. This is multiplied by
+    <code>resdens*dens</code> to form the resonant scattering length. The total non-magnetic scattering length is
+    <code>(f + fr*resdens)*dens</code>.</dd>
+    <dt><code><b>fm1</b></code></dt>
+    <dd>The resonant magnetic part of the scattering length - refers to the magnetic circular dichroic part.
+    Same units as <code>f</code></dd>
+    <dt><code><b>fm2</b></code></dt>
+    <dd>The resonant magnetic part of the scattering length - refers to the magnetic linear dichroic part.</dd>
+    <dt><code><b>b</b></code></dt>
+    <dd>The neutron scattering length in fm.</dd>
+    <dt><code><b>xs_ai</b></code></dt>
+    <dd>The sum of the absorption cross section and the incoherent scattering cross section
+        in barns per formula unit for the neutrons</dd>
+    <dt><code><b>mag</b></code></dt>
+    <dd>The magnetic moment per formula unit. The magnetic density is <code>mag*dens</code>.</dd>
+    <dt><code><b>phi_m</b></code></dt>
+    <dd>The in-plane angle of the magnetic moment of the layer relative the projected incident beam for 
+    x-rays and relative the polarization axis for neutrons.</dd>
+    <dt><code><b>theta_m</b></code></dt>
+    <dd>The out-of-plane angle of the magnetic moment. <code>theta_m = 0</code> corresponds to an in-plane 
+    magnetic moment and <code>theta_m</code> corresponds to an out-of-plane magnetic moment.</dd>
+    <dt><code><b>dmag_u</b></code></dt>
+    <dd>The relative increase of the magnetic moment in the interface layer. Total magnetic moment is
+    <code>mag*(1 + dmag_u)</code>.</dd>
+    <dt><code><b>dmag_l</b></code></dt>
+    <dd>As <code>dmag_u</code> but for the lower interface layer.</dd>
+    <dt><code><b>dd_u</b></code></dt>
+    <dd>The width of the upper interface layer in Angstroms.</dd>
+    <dt><code><b>sigma_mu</b></code></dt>
+    <dd>The roughness of the upper magnetic interface.</dd>
+    <dt><code><b>sigma_ml</b></code></dt>
+    <dd>The roughness of the lower magnetic interface.</dd>
+    <dt><code><b>dd_l</b></code></dt>
+    <dd>The width of the lower interface in Angstroms.</dd>
+    <dt><code><b>resmag</b></code></dt>
+    <dd>The relative amount of magnetic resonant atoms  the total resonant magnetic atoms. The total magnetic scattering
+    length is calculated 
+    as (for the circulair dichroic term) <code>fm1*resmag*mag*resdens*dens</code></dd>
     </dl>
 <h3>Stack</h3>
 <code> Stack(Layers = [], Repetitions = 1)</code>
@@ -24,11 +70,14 @@ Note: The documentation is not updated from the interdiff model!
     <dd>A <code>list</code> consiting of <code>Layer</code>s in the stack
     the first item is the layer closest to the bottom</dd>
     <dt><code><b>Repetitions</b></code></dt>
-    <dd>The number of repsetions of the stack</dd>
+    <dd>The number of repetitions of the stack</dd>
     </dl>
 <h3>Sample</h3>
-<code> Sample(Stacks = [], Ambient = Layer(), Substrate = Layer(), eta_z = 10.0,
-    eta_x = 10.0, h = 1.0)</code>
+<code> Sample(Stacks = [], dsld_max = 0.1, dsld_offdiag_max = 0.1, 
+            compress = 'yes', slicing = 'no', dsld_n_max = 0.01, 
+            dabs_n_max = 0.01, sld_buffer = 20.0, sld_delta = 5.0, 
+            dmag_max = 0.01, sld_mult = 4.0, slice_depth = 1.0, 
+            Ambient = Amb, Substrate = Sub)</code>
     <dl>
     <dt><code><b>Stacks</b></code></dt>
     <dd>A <code>list</code> consiting of <code>Stack</code>s in the stacks
@@ -39,22 +88,38 @@ Note: The documentation is not updated from the interdiff model!
     <dt><code><b>Substrate</b></code></dt>
     <dd>A <code>Layer</code> describing the substrate (enviroment below the sample).
      Only the scattering lengths, density and  roughness of the layer is used.</dd>
-    <dt><code><b>eta_z</b></code></dt>
-    <dd>The out-of plane (vertical) correlation length of the roughness
-    in the sample. Given in AA. </dd>
-    <dt><code><b>eta_x</b></code></dt>
-    <dd>The in-plane global correlation length (it is assumed equal for all layers).
-    Given in AA.</dd>
-    <dt><code><b>h</b></code></dt>
-    <dd>The jaggedness parameter, should be between 0 and 1.0. This describes
-    how jagged the interfaces are. This is also a global parameter for all
-    interfaces.</dd>
+    dt><code><b>dsld_max</b></code></dt>
+    <dd>The maximum allowed step in the scattering length density for x-rays (diagonal terms)</dd>
+    <dt><code><b>dsld_offdiag_max</b></code></dt>
+    <dd>The maximum allowed step in the scattering length density for the offdiagonal terms of the 
+    scattering length (magnetic part)</dd>
+    <dt><code><b>compress</b></code></dt>
+    <dd>A flag that signals if the sliced composition profile should be compressed.</dd>
+    <dt><code><b>slicing</b></code></dt>
+    <dd>A flag that signals if the composition profile should be sliced up.</dd>
+    <dt><code><b>dsld_n_max</b></code></dt>
+    <dd>The maximum allowed step (in compression) for the neutron scattering length.</dd>
+    <dt><code><b>dabs_n_max</b></code></dt>
+    <dd>The maximum allowed step (in compression) for the neutron absorption (in units of barn/AA^3)</dd>
+    <dt><code><b>sld_buffer</b></code></dt>
+    <dd>A buffer for the slicing calculations (to assure convergence in the sld profile. </dd>
+    <dt><code><b>sld_delta</b></code></dt>
+    <dd>An extra buffer - needed at all?</dd>
+    <dt><code><b>dmag_max</b></code></dt>
+    <dd>The maximum allowed step (in compression) for the magnetization. Primarily intended to limit the 
+    steps in the magnetic profile for neutrons.</dd>
+    <dt><code><b>sld_mult</b></code></dt>
+    <dd>A multiplication factor for a buffer that takes the roughness into account.</dd>
+    <dt><code><b>slice_depth</b></code></dt>
+    <dd>The depth of the slices in the calculation of the sliced scattering length density profile.</dd>
     </dl>
     
 <h3>Instrument</h3>
-<code>Instrument(wavelength = 1.54, coords = 'tth',
-     I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2,
-     beamw = 0.01, footype = 'no corr', samplelen = 10.0, taylor_n = 1)</code>
+<code>model.Instrument(res = 0.001,theory = 'neutron spin-pol',
+                        footype = 'no corr',beamw = 0.01,
+                        wavelength = 4.4,respoints = 5,xpol = 'circ+',Ibkg = 0.0,
+                        I0 = 1.0,samplelen = 10.0,npol = '++',restype = 'no conv',
+                        coords = 'tth',resintrange = 2)</code>
     <dl>
     <dt><code><b>wavelength</b></code></dt>
     <dd>The wavalelngth of the radiation givenin AA (Angstroms)</dd>
@@ -93,10 +158,15 @@ Note: The documentation is not updated from the interdiff model!
     the standard deviation. For 'square beam' it is the full width of the beam.</dd>
     <dt><code><b>samplelen</b></code></dt>
     <dd>The length of the sample given in mm</dd>
-    <dt><code><b>taylor_n</b></code></dt>
-    <dd>The number terms taken into account in the taylor expansion of 
-    the fourier integral of the correlation function. More terms more accurate
-    calculation but also much slower.</dd>
+    <dt><code><b>theory</b></code></dt>
+    <dd>Defines which theory (code) that should calcualte the reflectivity. Should be one of: 
+    'x-ray anis.', 'x-ray simpl. anis.', 'neutron spin-pol' or 'neutron spin-flip'.
+    </dd>
+    <dt><code><b>xpol</b></code></dt>
+    <dd>The polarization state of the x-ray beam. Should be one of: 'circ+','circ-','tot', 'ass', 'sigma' or 'pi'</dd>
+    <dt><code><b>npol</b></code></dt>
+    <dd>The neutron polarization state. Should be '++','uu', '--', 'dd' alt. '+-','ud' for spin flip.</dd>
+    
 '''
 
 import lib.xrmr
