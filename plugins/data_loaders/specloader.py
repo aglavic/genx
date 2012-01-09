@@ -3,6 +3,7 @@ import wx.wizard
 import  wx.lib.filebrowsebutton as filebrowse
 import help_modules.spec as spec
 #import ...data as data
+import numpy as np
 
 from plugins.data_loader_framework import Template
 from plugins.utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
@@ -88,19 +89,36 @@ class Plugin(Template):
 
         return choices
 
-    def update_data_cols(self, cols):
+    def update_data_cols(self, cols, autom = False):
         ''' Update the choices for the different values'''
         print cols
         self.x_val = cols[0]
         self.det_val = cols[1]
         self.mon_val = cols[2]
         self.error_val = cols[3]
-        self.dataset.set_extra_data('det', self.scan.values[self.det_val])
+        xval = self.scan.values[self.x_val]
+        yvals = [self.scan.values[self.det_val], ]
         if self.mon_val != 'None':
-            self.dataset.set_extra_data('mon', self.scan.values[self.mon_val])
-        self.dataset.x_raw = self.scan.values[self.x_val]
+            yvals.append(self.scan.values[self.mon_val])
         if self.error_val != 'None' and self.error_val != '':
-            self.dataset.error_raw = self.scan.values[self.error_val]
+            yvals.append(self.scan.values[self.error_val])
+        if autom:
+            xval, yvals = automerge(xval, yvals)
+        #self.dataset.set_extra_data('det', self.scan.values[self.det_val])
+        self.dataset.set_extra_data('det', yvals[0])
+        if self.mon_val != 'None':
+            #self.dataset.set_extra_data('mon', self.scan.values[self.mon_val])
+            self.dataset.set_extra_data('mon', yvals[1])
+            
+            if self.error_val != 'None' and self.error_val != '':
+                self.dataset.error_raw = yvals[2]
+        elif self.error_val != 'None' and self.error_val != '':
+            self.dataset.error_raw = yvals[1]
+            
+        #self.dataset.x_raw = self.scan.values[self.x_val]
+        self.dataset.x_raw = xval
+        #if self.error_val != 'None' and self.error_val != '':
+        #    self.dataset.error_raw = self.scan.values[self.error_val]
 
     def get_dataset_names(self):
         return [d.name for d in self.datalist]
@@ -252,6 +270,12 @@ class SelectCountersPage(wx.wizard.WizardPageSimple):
         self.errorChoice = wx.Choice(self, -1, (-1, -1), choices = [])
         self.choiceSizer.Add(self.errorChoice, 0, wx.EXPAND|wx.ALL, 5)
         self.sizer.Add(self.choiceSizer, 0, wx.ALIGN_CENTRE|wx.ALL)
+        self.automergeCheckBox = wx.CheckBox(self, -1, "Auto merge data")
+        self.automergeSizer = wx.FlexGridSizer(rows = 1, cols = 1, 
+                                           vgap = 10, hgap = 10)
+        self.automergeSizer.Add(self.automergeCheckBox, 0, wx.EXPAND|wx.ALL, 5)
+        self.sizer.Add(self.automergeSizer, 0, wx.ALIGN_CENTRE|wx.ALL )
+        
         self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGED, self.OnWizPageChanged)
         self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
 
@@ -264,7 +288,8 @@ class SelectCountersPage(wx.wizard.WizardPageSimple):
 
     def OnWizPageChanging(self, evt):
         if evt.GetDirection():
-            self.plugin.update_data_cols(self.get_selected())
+            self.plugin.update_data_cols(self.get_selected(), 
+                                         self.automergeCheckBox.IsChecked())
 
 
     def update_counters(self, mot_count):
@@ -455,6 +480,34 @@ def ShowWarningDialog(frame, message):
     dlg.ShowModal()
     dlg.Destroy()
 
+
+def automerge(xval, yvals, rel_cond = 100.0):
+    ''' Merges the values according to rel_cond where the 
+    the merging criterion is the distance between the two first datapoints divided by
+    rel_cond.  
+    
+    xval - an arraray of x values
+    y-vals a tuple of yvals
+    rel_cond as above
+    '''
+    min_size = np.abs(xval[1] - xval[0])/rel_cond
+    xarg = xval.argsort()
+    xnew = np.array([xval[xarg[0]]])*1.0
+    ynew = []
+    for yval in yvals:
+        ynew.append(np.array([yval[xarg[0]]])*1.0)
+    inew = 0
+    for i in range(len(xarg))[1:]:
+        if np.abs(xnew[-1] - xval[xarg[i]]) <= min_size:
+            for j in range(len(ynew)):
+                ynew[j][-1] += yvals[j][xarg[i]]
+        else:
+            xnew = np.append(xnew, xval[xarg[i]])
+            for j in range(len(ynew)):
+                ynew[j] = np.append(ynew[j], yvals[j][xarg[i]])
+            inew += 1
+            
+    return xnew, ynew
 
 if __name__ == "__main__":
     app = wx.PySimpleApp()

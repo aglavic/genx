@@ -122,7 +122,7 @@ mpy_limit = 1e-8
 re = 2.8179402894e-5
 
 # Preamble to define the parameters needed for the models outlined below:
-ModelID='StephanovXRMR'
+ModelID='MAGrefl'
 # Automatic loading of parameters possible by including this list
 __pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
 # Used for making choices in the GUI
@@ -178,8 +178,8 @@ LayerParameters = {'dens':1.0, 'd':0.0, 'f': (0.0 + 1e-20J),
                    'phi_m': 0.0, 'theta_m': 0.0, 'resdens': 1.0,
                    'resmag': 1.0,
                    'sigma_c': 0.0, 'sigma_ml': 0.0, 'sigma_mu': 0.0,
-                   'mag':1.0,
-                   'dmag_l': 1.0, 'dmag_u': 1.0, 'dd_l':0.0,
+                   'mag':0.0,
+                   'dmag_l': 0.0, 'dmag_u': 0.0, 'dd_l':0.0,
                     'dd_u':0.0, 'b': 1e-20J, 'xs_ai': 0.0,
                    #'dtheta_l': 0.0, 'dtheta_u':0.0, 'dphi_l':0.0, 'dphi_u':0.0,
                    }
@@ -205,16 +205,15 @@ StackParameters = {'Layers':[], 'Repetitions':1}
 SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 
                     'compress':'yes', 'slicing':'no', 'slice_depth':1.0,
                     'sld_mult':4.0, 'sld_buffer': 20.0, 'sld_delta': 5.0,
-                    'dsld_max':0.1, 'dsld_offdiag_max':0.1, 'dsld_n_max': 0.1,
-                    'dsld_n_offdiag_max': 0.1,
-                    }
+                    'dsld_max':0.1, 'dsld_offdiag_max':0.1, 'dsld_n_max': 0.01,
+                    'dmag_max': 0.01, 'dabs_n_max': 0.01}
+                    
 SampleGroups = [['Slicing', [ 'slicing', 'slice_depth', 'sld_mult', 'sld_buffer', 
                              'sld_delta']],
                 ['Compression', ['compress', 'dsld_max', 'dsld_offdiag_max', 
-                                 'dsld_n_offdiag_max', 'dsld_n_max']],
+                                 'dmag_max', 'dsld_n_max', 'dabs_n_max']],
                 ]
                 
-
 sample_string_choices = {'compress':['yes', 'no'],
                           'slicing':['yes', 'no'],
                           }
@@ -265,39 +264,66 @@ def SLD_calculations(z, sample, inst):
     if use_slicing == 1 or use_slicing == sample_string_choices['slicing'][1]:
         return compose_sld_anal(z, sample, inst)
     lamda = inst.getWavelength()
-    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy = compose_sld(sample, inst, array([0.0,]))
-    new_size = len(d)*2
-    sl_cp = zeros(new_size, dtype = complex128)
-    sl_cp[::2] = sl_c
-    sl_cp[1::2] = sl_c
-    sl_m1p = zeros(new_size, dtype = complex128)
-    sl_m1p[::2] = sl_m1
-    sl_m1p[1::2] = sl_m1
-    sl_m2p = zeros(new_size, dtype = complex128)
-    sl_m2p[::2] = sl_m2
-    sl_m2p[1::2] = sl_m2
-    #print sl_m2p
-    z = zeros(len(d)*2)
-    z[::2] = cumsum(r_[0,d[:-1]])
-    z[1::2] = cumsum(r_[d])
-    #print d, z
-    #print z.shape, sl_c.shape
-    def interleave(a):
-        new_a = zeros(len(a)*2, dtype = complex128)
-        new_a[::2] = a
-        new_a[1::2] = a
-        return new_a
-    chi = [[interleave(c) for c in ch] for ch in chi]
+    theory = inst.getTheory()
+    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens = compose_sld(sample, inst, array([0.0,]))
+    if (theory == 0 or theory == instrument_string_choices['theory'][0]) : 
+        # Full theory return the suceptibility matrix
+        
+        new_size = len(d)*2
+        sl_cp = zeros(new_size, dtype = complex128)
+        sl_cp[::2] = sl_c
+        sl_cp[1::2] = sl_c
+        sl_m1p = zeros(new_size, dtype = complex128)
+        sl_m1p[::2] = sl_m1
+        sl_m1p[1::2] = sl_m1
+        sl_m2p = zeros(new_size, dtype = complex128)
+        sl_m2p[::2] = sl_m2
+        sl_m2p[1::2] = sl_m2
+        #print sl_m2p
+        z = zeros(len(d)*2)
+        z[::2] = cumsum(r_[0,d[:-1]])
+        z[1::2] = cumsum(r_[d])
+        #print d, z
+        #print z.shape, sl_c.shape
+        def interleave(a):
+            new_a = zeros(len(a)*2, dtype = complex128)
+            new_a[::2] = a
+            new_a[1::2] = a
+            return new_a
+        chi = [[interleave(c) for c in ch] for ch in chi]
         
     #return {'real sld_c': sl_cp.real, 'imag sld_c': sl_cp.imag,
     #        'real sld_m1': sl_m1p.real, 'imag sld_m1': sl_m1p.imag,
     #        'real sld_m2': sl_m2p.real, 'imag sld_m2': sl_m2p.imag,
     #        'z':z}
-    re = 2.8179402894e-5
-    c = 1/(lamda**2*re/pi)
-    return {'sl_xx':chi[0][0].real*c, 'sl_xy':chi[0][1].real*c, 'sl_xz':chi[0][2].real*c,
-            'sl_yy':chi[1][1].real*c,'sl_yz':chi[1][2].real*c,'sl_zz':chi[2][2].real*c,
+        re = 2.8179402894e-5
+        c = 1/(lamda**2*re/pi)
+        return {'sl_xx':chi[0][0].real*c, 'sl_xy':chi[0][1].real*c, 'sl_xz':chi[0][2].real*c,
+                'sl_yy':chi[1][1].real*c,'sl_yz':chi[1][2].real*c,'sl_zz':chi[2][2].real*c,
+                'z':z}
+    else:
+        z = zeros(len(d)*2)
+        z[::2] = cumsum(r_[0,d[:-1]])
+        z[1::2] = cumsum(r_[d])
+        
+        new_size = len(d)*2
+        def parray(ar):
+            tmp = zeros(new_size, dtype = complex128)
+            tmp[::2] = ar
+            tmp[1::2] = ar
+            return tmp
+        sl_cp = parray(sl_c)
+        sl_m1p = parray(sl_m1)
+        sl_np = parray(sl_n)
+        mag_densp = parray(mag_dens)
+        abs_np = parray(abs_n)
+        
+        #print sl_cp.shape, sl_np.shape, abs_np.shape, mag_densp.shape, z.shape
+        return {'real sld_c': sl_cp.real, 'imag sld_c': sl_cp.imag,
+            'real sld_m': sl_m1p.real, 'imag sld_m': sl_m1p.imag,
+            'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
             'z':z}
+        
     
 def compose_sld_anal(z, sample, instrument):
     '''Compose a analytical profile funciton'''
@@ -342,15 +368,26 @@ def compose_sld_anal(z, sample, instrument):
     #print sl_m1
     #print M
     #print sl_c.shape, sl_m1.shape
-    sigma_c = array(parameters['sigma_c'], dtype = float64)
-    sigma_l = array(parameters['sigma_ml'], dtype = float64)
-    sigma_u = array(parameters['sigma_mu'], dtype = float64)
+    sigma_c = array(parameters['sigma_c'], dtype = float64) + 1e-20
+    sigma_l = array(parameters['sigma_ml'], dtype = float64)+ 1e-20
+    sigma_u = array(parameters['sigma_mu'], dtype = float64)+ 1e-20
     sl_m1_l = (sl_m1*(1. + dmag_l))
     sl_m1_u = (sl_m1*(1. + dmag_u))
+    
+    b = (array(parameters['b'], dtype = complex128))
+    abs_xs = (array(parameters['xs_ai'], dtype = complex128))
+    wl = instrument.getWavelength()
+    #print b
+    #print b.shape, abs_xs.shape, theta.shape
+    sl_n = dens*b
+    mag_d = mag*dens
+    #print mag_d
+    mag_d_l = mag_d*(1. + dmag_l)
+    mag_d_u = mag_d*(1. + dmag_u)
                
     int_pos = cumsum(r_[0,d[1:-1]])
     if z == None:
-        z = arange(-sigma_c[0]*10, int_pos.max()+sigma_c.max()*10+100, 0.5)
+        z = arange(-sigma_c[0]*10 - 50, int_pos.max()+sigma_c.max()*10+50, 0.5)
         #print 'autoz'
     sld_c = sum(sld_interface(z[:,newaxis]-int_pos, 0.0J, sl_c[:-1] - sl_c[1:], 0.0J,
                   sigma_l[1:], sigma_c[:-1], sigma_u[:-1],
@@ -359,13 +396,22 @@ def compose_sld_anal(z, sample, instrument):
                               sl_m1_l[:-1]  - sl_m1_u[1:], sl_m1_u[1:] - sl_m1[1:],
                   sigma_l[1:], sigma_c[:-1], sigma_u[:-1],
                   dd_l[1:], dd_u[:-1]),1) - sl_m1[0]
+    sld_n = -(sum(sld_interface(z[:,newaxis]-int_pos, 0.0J, sl_n[:-1] - sl_n[1:], 0.0J,
+                              sigma_l[1:], sigma_c[:-1], sigma_u[:-1],
+                              dd_l[1:], dd_u[:-1]),1) - sl_n[0])
+    mag_dens = -(sum(sld_interface(z[:,newaxis]-int_pos, mag_d[:-1] - mag_d_l[:-1], 
+                              mag_d_l[:-1]  - mag_d_u[1:], mag_d_u[1:] - mag_d[1:],
+                  sigma_l[1:], sigma_c[:-1], sigma_u[:-1],
+                  dd_l[1:], dd_u[:-1]),1) - mag_d[0])
+    
     #print z.shape, sld_c.shape
     #print sld_m
     #print 'he'
+    #print mag_dens
+    #print sld_n.shape, mag_dens.shape, z.shape, sld_c.real.shape
     return {'z':z, 'sld_c_real': sld_c.real, 'sld_c_imag': sld_c.imag,
-            'sld_m_real': sld_m.real, 'sld_m_imag': sld_m.imag,}
-    
-    
+            'sld_m_real': sld_m.real, 'sld_m_imag': sld_m.imag,
+            'sld_n': sld_n, 'mag_dens': mag_dens}
     
 
 def compose_sld(sample, instrument, theta):
@@ -406,11 +452,14 @@ def compose_sld(sample, instrument, theta):
     
     #Neutrons
     wl = instrument.getWavelength()
-    abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
-    b = array(parameters['b'], dtype = complex64).real*1e-5
-    sl_n = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
-                               1.0J*abs_xs*wl/4/pi)
-    sl_nm = 2.645e-5*mag*dens*instrument.getWavelength()**2/2/pi
+    abs_xs = array(parameters['xs_ai'], dtype = complex64)#*(1e-4)**2
+    b = array(parameters['b'], dtype = complex64).real#*1e-5
+    #sl_n = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
+    #                           1.0J*abs_xs*wl/4/pi)
+    sl_n = dens*b
+    abs_n = dens*abs_xs
+    #mag_dens = mag*dens
+    #sl_nm = 2.645e-5*mag*dens*instrument.getWavelength()**2/2/pi
     
     #print A, B
     #print type(sample.getSld_buffer())
@@ -435,8 +484,11 @@ def compose_sld(sample, instrument, theta):
         # Neutrons
         sl_n_lay = comp_prof*sl_n[:, newaxis]
         sl_n = sl_n_lay.sum(0)
-        sl_nm_lay = 2.645e-5*comp_prof*mag_prof*dens[:, newaxis]*wl**2/2/pi  
-        sl_nm = sl_nm_lay.sum(0)     
+        abs_n_lay = comp_prof*abs_n[:,newaxis]
+        abs_n = abs_n_lay.sum(0)
+        mag_dens_lay = comp_prof*mag_prof*dens[:, newaxis]
+        mag_dens = mag_dens_lay.sum(0)     
+        
         #print comp_prof.shape, sl_m1_lay.shape, sl_c_lay.shape
         M = rollaxis(array((ones(comp_prof.shape)*M[:,0][:, newaxis], 
                ones(comp_prof.shape)*M[:,1][:, newaxis], 
@@ -468,20 +520,26 @@ def compose_sld(sample, instrument, theta):
             dsld_max = sample.getDsld_max()
             dchi_max = dsld_max*lamda**2*re/pi
             dsld_offdiag_max = sample.getDsld_offdiag_max()
+            dsld_n_max = sample.getDsld_n_max()
+            dabs_n_max = sample.getDabs_n_max()
+            dmag_max = sample.getDmag_max() 
             dchi_od_max = dsld_offdiag_max*lamda**2*re/pi
             #z, pdens = edm.compress_profile_n(z, (sl_c, sl_m1, sl_m2), 
             #                                  (dsld_max, dsld_max, dsld_max))
             #sl_c, sl_m1, sl_m2 = pdens
             
             #print chi[0].shape
-            index, z = edm.compress_profile_index_n(z, chi, 
+            #print sl_n.shape, mag_dens.shape, abs_n.shape, chi[0].shape
+            index, z = edm.compress_profile_index_n(z, chi + (sl_n, mag_dens, abs_n), 
                                                 (dchi_max, dchi_od_max, dchi_od_max,
                                                  dchi_od_max, dchi_max, dchi_od_max,
-                                                 dchi_od_max, dchi_od_max, dchi_max))
+                                                 dchi_od_max, dchi_od_max, dchi_max,
+                                                 dsld_n_max, dmag_max, dabs_n_max
+                                                 ))
             reply = edm.create_compressed_profile((sl_c, sl_m1, sl_m2) + 
-                                                  chi, 
+                                                  chi + (sl_n, mag_dens, abs_n), 
                                                   index)
-            sl_c, sl_m1, sl_m2, chi_xx, chi_xy, chi_xz, chi_yx, chi_yy, chi_yz, chi_zx, chi_zy, chi_zz = reply
+            sl_c, sl_m1, sl_m2, chi_xx, chi_xy, chi_xz, chi_yx, chi_yy, chi_yz, chi_zx, chi_zy, chi_zz, sl_n, mag_dens, abs_n = reply
             non_mag = ((abs(chi_xy) < mag_limit)
                        *(abs(chi_xz) < mag_limit)
                        *(abs(chi_yz) < mag_limit))
@@ -519,7 +577,7 @@ def compose_sld(sample, instrument, theta):
         #print A, B
         #M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
         #print 'Sl_m2: ', sl_m2, 'END'
-    return d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy
+    return d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens
 
 def extract_anal_iso_pars(sample, instrument, theta, pol = '+'):
     re = 2.8179402894e-5
@@ -556,14 +614,37 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+'):
     sigma_c = array(parameters['sigma_c'], dtype = float64)
     sigma_l = array(parameters['sigma_ml'], dtype = float64)
     sigma_u = array(parameters['sigma_mu'], dtype = float64)
-    if pol == '+':
-        n = 1 - lamda**2*re/pi*(sl_c - sl_m1)/2.0
-        n_l = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_l)[:,newaxis])/2.0
-        n_u = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_u)[:,newaxis])/2.0
-    elif pol == '-':
-        n = 1 - lamda**2*re/pi*(sl_c + sl_m1)/2.0
-        n_l = 1 - lamda**2*re/pi*(sl_c + sl_m1*(1. + dmag_l)[:,newaxis])/2.0
-        n_u = 1 - lamda**2*re/pi*(sl_c + sl_m1*(1. + dmag_u)[:,newaxis])/2.0
+    
+    theory = instrument.getTheory()
+    
+    if (theory == 0 or theory == instrument_string_choices['theory'][0] or
+        theory == 1 or theory == instrument_string_choices['theory'][1]):
+        if pol == '+':
+            n = 1 - lamda**2*re/pi*(sl_c - sl_m1)/2.0
+            n_l = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_l)[:,newaxis])/2.0
+            n_u = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_u)[:,newaxis])/2.0
+        elif pol == '-':
+            n = 1 - lamda**2*re/pi*(sl_c + sl_m1)/2.0
+            n_l = 1 - lamda**2*re/pi*(sl_c + sl_m1*(1. + dmag_l)[:,newaxis])/2.0
+            n_u = 1 - lamda**2*re/pi*(sl_c + sl_m1*(1. + dmag_u)[:,newaxis])/2.0
+    elif (theory == 2 or theory == instrument_string_choices['theory'][2] or
+          theory == 3 or theory == instrument_string_choices['theory'][3]):
+        b = (array(parameters['b'], dtype = complex128)*1e-5)[:, newaxis]*ones(theta.shape)
+        abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(theta.shape)
+        wl = instrument.getWavelength()
+        #print b
+        #print b.shape, abs_xs.shape, theta.shape
+        sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
+                               1.0J*abs_xs*wl/4/pi)
+        msld = (2.645e-5*mag*dens*wl**2/2/pi)[:,newaxis]*ones(theta.shape)
+        if pol in ['++', 'uu']:
+            n = 1.0 - sld - msld
+            n_l = 1.0 - sld - msld*(1.0 + dmag_l)[:, newaxis]
+            n_u = 1.0 - sld - msld*(1.0 + dmag_u)[:, newaxis]
+        if pol in ['--', 'dd']:
+            n = 1.0 - sld + msld
+            n_l = 1.0 - sld + msld*(1.0 + dmag_l)[:, newaxis]
+            n_u = 1.0 - sld + msld*(1.0 + dmag_u)[:, newaxis]
     else:
         raise ValueError('An unexpected value of pol was given. Value: %s'%(pol,)) 
     #print n.shape, d.shape
@@ -645,17 +726,33 @@ def analytical_reflectivity(sample, instrument, theta):
             #raise ValueError('Variable pol has an unvalid value')
         else:
             raise ValueError('Variable pol has an unvalid value')
+
+    elif theory == 2 or theory == instrument_string_choices['theory'][2]:
+        # neutron spin-pol calcs
+        Q = 4*pi/lamda*sin(theta*pi/180)
+        pars = extract_anal_iso_pars(sample, instrument, theta, instrument.getNpol())
+        n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
+        R = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+        #raise NotImplementedError('Neutron calcs not implemented')
+    elif theory == 3 or theory == instrument_string_choices['theory'][3]:
+        # neutron spin-flip calcs
+        raise NotImplementedError('Neutron calcs not implemented')
     return R
 
 def slicing_reflectivity(sample, instrument, theta):
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
     
-    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy = compose_sld(sample, instrument, theta)
+    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens = compose_sld(sample, instrument, theta)
     #re = 2.8179402894e-5
     #A = -lamda**2*re/pi*sl_c
     #B = lamda**2*re/pi*sl_m1
     #C = lamda**2*re/pi*sl_m2
+    sl_n = sl_n*1e-5
+    abs_n = abs_n*1e-8
+    sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
+                               1.0J*abs_n*lamda/4/pi)
+    sl_nm = 2.645e-5*mag_dens*lamda**2/2/pi
     g_0 = sin(theta*pi/180.0)
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
@@ -737,7 +834,15 @@ def slicing_reflectivity(sample, instrument, theta):
             raise ValueError('Variable pol has an unvalid value')
     # Neutron spin pol calculations normal mode
     elif theory == 2 or theory == instrument_string_choices['theory'][2]:
-        pass
+        pol = instrument.getNpol()
+        if pol in ['++', 'uu']:
+            n = 1.0 - sl_n - sl_nm
+            R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), 
+                                   n[:, newaxis]*ones(theta.shape), d, zeros(d.shape))
+        if pol in ['--', 'dd']:
+            n = 1.0 - sl_n + sl_nm
+            R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), 
+                                   n[:,newaxis]*ones(theta.shape), d, zeros(d.shape))
     # Neutron calcs spin-flip 
     elif theory == 3 or theory == instrument_string_choices['theory'][3]:
         raise NotImplementedError('Spin flip calculations not implemented yet')
