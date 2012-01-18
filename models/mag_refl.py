@@ -3,6 +3,8 @@ The magnetic reflectivity is calculated according to: S.A. Stephanov and S.K Shi
 the full anisotropic model. It also one simpler model where the media is considered to be isotropic but 
 with different refractive indices for left and right circular light.
 The model also has the possibility to calculate the neutron reflectivity from the same sample structure. 
+This model includes a interface layer for each <code>Layer</code>. This means that the model is suitable for 
+refining data that looks for interfacial changes of the magnetic moment. 
 
 Note! This model should be considered as a gamma version. It is still under heavy development and 
 the api can change significantly from version to version. Should only be used by expert users. 
@@ -61,7 +63,7 @@ the api can change significantly from version to version. Should only be used by
     <dt><code><b>resmag</b></code></dt>
     <dd>The relative amount of magnetic resonant atoms  the total resonant magnetic atoms. The total magnetic scattering
     length is calculated 
-    as (for the circulair dichroic term) <code>fm1*resmag*mag*resdens*dens</code></dd>
+    as (for the circular dichroic term) <code>fm1*resmag*mag*resdens*dens</code></dd>
     </dl>
 <h3>Stack</h3>
 <code> Stack(Layers = [], Repetitions = 1)</code>
@@ -205,7 +207,8 @@ instrument_string_choices = {'coords': ['q','tth'],
                              'xpol':['circ+','circ-','tot', 'ass', 'sigma', 'pi'],
                              'npol':['++', '--', '+-'],
                              'theory': ['x-ray anis.', 'x-ray simpl. anis.', 
-                                        'neutron spin-pol', 'neutron spin-flip'],
+                                        'neutron spin-pol', 'neutron spin-flip',
+                                        'neutron spin-pol tof'],
                              #'compress':['yes', 'no'],
                              #'slicing':['yes', 'no'],
      }
@@ -214,7 +217,8 @@ instrument_string_choices = {'coords': ['q','tth'],
     
 InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
     'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',\
-    'samplelen':10.0, 'Ibkg': 0.0, 'xpol':'circ+', 'npol': '++', 'theory':'x-ray anis.',}
+    'samplelen':10.0, 'Ibkg': 0.0, 'xpol':'circ+', 'npol': '++', 'theory':'x-ray anis.',
+    'incang':0.2, }
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
 #Res stddev of resolution
@@ -231,7 +235,7 @@ InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
 # Samlen= Samplelength in mm.
 #
 #
-InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg']),
+InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'incang']),
                     ('Resolution', ['restype', 'res', 'respoints', 'resintrange']),
                     ('Misc.', ['theory', 'xpol', 'npol',]),
                     ('Footprint', ['footype', 'beamw', 'samplelen',]),
@@ -240,7 +244,7 @@ InstrumentUnits={'wavelength':'AA','coords':'','I0':'arb.','res':'[coord]',
                  'restype':'','respoints':'pts.','resintrange': '[coord]',
                  'beamw':'mm','footype': '',\
                  'samplelen':'mm', 'Ibkg': 'arb.', 'xpol':'', 
-                 'theory':'','npol': '',}
+                 'theory':'','npol': '','incang':'deg'}
 
 LayerParameters = {'dens':1.0, 'd':0.0, 'f': (0.0 + 1e-20J), 
                    'fr':(0.0 + 1e-20J),
@@ -311,9 +315,11 @@ def Specular(TwoThetaQz, sample, instrument):
         instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     
-    R = reflectivity_xmag(sample, instrument, theta)
+    R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz)
     pol = instrument.getXpol()
-    if pol != 3 and pol != instrument_string_choices['xpol'][3]:
+    theory = instrument.getTheory()
+    if not ((pol == 3 or pol == instrument_string_choices['xpol'][3]) and 
+        (theory < 2 or theory in instrument_string_choices['theory'][:2])):
         #FootprintCorrections
         foocor = footprint_correction(instrument, theta)
         R = correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
@@ -649,7 +655,8 @@ def compose_sld(sample, instrument, theta):
         #print 'Sl_m2: ', sl_m2, 'END'
     return d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens
 
-def extract_anal_iso_pars(sample, instrument, theta, pol = '+'):
+def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
+    ''' Note Q is only used for Neutron TOF'''
     re = 2.8179402894e-5
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
@@ -715,6 +722,23 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+'):
             n = 1.0 - sld + msld
             n_l = 1.0 - sld + msld*(1.0 + dmag_l)[:, newaxis]
             n_u = 1.0 - sld + msld*(1.0 + dmag_u)[:, newaxis]
+    elif (theory == 4 or theory == instrument_string_choices['theory'][4]):
+        wl = 4*pi*sin(instrument.getIncang()*pi/180)
+        b = (array(parameters['b'], dtype = complex128)*1e-5)[:, newaxis]*ones(wl.shape)
+        abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(wl.shape)
+        #print b
+        #print b.shape, abs_xs.shape, theta.shape
+        sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
+                               1.0J*abs_xs*wl/4/pi)
+        msld = (2.645e-5*(mag*dens)[:,newaxis]*wl**2/2/pi)
+        if pol in ['++', 'uu']:
+            n = 1.0 - sld - msld
+            n_l = 1.0 - sld - msld*(1.0 + dmag_l)[:, newaxis]
+            n_u = 1.0 - sld - msld*(1.0 + dmag_u)[:, newaxis]
+        if pol in ['--', 'dd']:
+            n = 1.0 - sld + msld
+            n_l = 1.0 - sld + msld*(1.0 + dmag_l)[:, newaxis]
+            n_u = 1.0 - sld + msld*(1.0 + dmag_u)[:, newaxis]
     else:
         raise ValueError('An unexpected value of pol was given. Value: %s'%(pol,)) 
     #print n.shape, d.shape
@@ -724,17 +748,17 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+'):
     d = d*(d >= 0)
     return n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l
 
-def reflectivity_xmag(sample, instrument, theta):
+def reflectivity_xmag(sample, instrument, theta, TwoThetaQz):
     use_slicing = sample.getSlicing()
     if use_slicing == 0 or use_slicing == sample_string_choices['slicing'][0]:
-        R = slicing_reflectivity(sample, instrument, theta)
+        R = slicing_reflectivity(sample, instrument, theta, TwoThetaQz)
     elif use_slicing == 1 or use_slicing == sample_string_choices['slicing'][1]:
-        R = analytical_reflectivity(sample, instrument, theta)
+        R = analytical_reflectivity(sample, instrument, theta, TwoThetaQz)
     else:
         raise ValueError('Unkown input to the slicing parameter')
     return R
     
-def analytical_reflectivity(sample, instrument, theta):
+def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
     lamda = instrument.getWavelength()
     theory = instrument.getTheory()
     if theory == 0 or theory == instrument_string_choices['theory'][0]:
@@ -807,9 +831,14 @@ def analytical_reflectivity(sample, instrument, theta):
     elif theory == 3 or theory == instrument_string_choices['theory'][3]:
         # neutron spin-flip calcs
         raise NotImplementedError('Neutron calcs not implemented')
+    elif theory == 4 or theory == instrument_string_choices['theory'][4]:
+        # neutron spin-flip calcs
+        raise NotImplementedError('TOF Neutron calcs not implemented')
+    else:
+        raise ValueError('The given theory mode deos not exist')
     return R
 
-def slicing_reflectivity(sample, instrument, theta):
+def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
     
@@ -818,11 +847,7 @@ def slicing_reflectivity(sample, instrument, theta):
     #A = -lamda**2*re/pi*sl_c
     #B = lamda**2*re/pi*sl_m1
     #C = lamda**2*re/pi*sl_m2
-    sl_n = sl_n*1e-5
-    abs_n = abs_n*1e-8
-    sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
-                               1.0J*abs_n*lamda/4/pi)
-    sl_nm = 2.645e-5*mag_dens*lamda**2/2/pi
+    
     g_0 = sin(theta*pi/180.0)
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
@@ -904,6 +929,11 @@ def slicing_reflectivity(sample, instrument, theta):
             raise ValueError('Variable pol has an unvalid value')
     # Neutron spin pol calculations normal mode
     elif theory == 2 or theory == instrument_string_choices['theory'][2]:
+        sl_n = sl_n*1e-5
+        abs_n = abs_n*1e-8
+        sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
+                               1.0J*abs_n*lamda/4/pi)
+        sl_nm = 2.645e-5*mag_dens*lamda**2/2/pi
         pol = instrument.getNpol()
         if pol in ['++', 'uu']:
             n = 1.0 - sl_n - sl_nm
@@ -916,8 +946,29 @@ def slicing_reflectivity(sample, instrument, theta):
     # Neutron calcs spin-flip 
     elif theory == 3 or theory == instrument_string_choices['theory'][3]:
         raise NotImplementedError('Spin flip calculations not implemented yet')
+    
+    elif theory == 4 or theory == instrument_string_choices['theory'][4]:
+        # neutron TOF calculations
+        incang = instrument.getIncang()
+        lamda = 4*pi*sin(incang*pi/180)/TwoThetaQz
+        sl_n = sl_n[:,newaxis]*1e-5
+        abs_n = abs_n[:,newaxis]*1e-8
+        sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
+                               1.0J*abs_n*lamda/4/pi)
+        sl_nm = 2.645e-5*mag_dens[:,newaxis]*lamda**2/2/pi
+        pol = instrument.getNpol()
+        
+        if pol in ['++', 'uu']:
+            n = 1.0 - sl_n - sl_nm
+            R = Paratt.Refl_nvary2(incang*ones(lamda.shape), lamda, 
+                                   n, d, zeros(d.shape))
+        if pol in ['--', 'dd']:
+            n = 1.0 - sl_n + sl_nm
+            R = Paratt.Refl_nvary2(incang*ones(lamda.shape), lamda, 
+                                   n, d, zeros(d.shape))
+        #raise NotImplementedError('TOF Neutron calcs not implemented')
     else:
-        raise ValueError('Variable theory has an unvalid value')
+        raise ValueError('The given theory mode deos not exist')
     return R
 
 def footprint_correction(instrument, theta):
