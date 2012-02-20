@@ -852,9 +852,15 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
     # Full theory
+    if Buffer.g_0 != None:
+        g0_ok = Buffer.g_0.shape == g_0.shape
+        if g0_ok:
+            g0_ok = any(not_equal(Buffer.g_0,g_0))
+    else:
+        g0_ok = False
     if  theory == 0 or theory == instrument_string_choices['theory'][0]:
         if (Buffer.parameters != parameters or Buffer.coords != instrument.getCoords()
-            or any(not_equal(Buffer.g_0,g_0)) or Buffer.wavelength != lamda):
+            or not g0_ok or Buffer.wavelength != lamda):
             #W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
             #print 'Calc W'
             W = lib.xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
