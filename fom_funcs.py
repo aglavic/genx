@@ -188,65 +188,72 @@ def diff(simulations, data):
     ''' Average absolute difference
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return 1.0/(N-1)*np.sum([np.sum(np.abs(dataset.y - sim))\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    #return 1.0/(N-1)*np.sum([np.sum(np.abs(dataset.y - sim))\
+    #    for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/(N-1)*(dataset.y - sim)
+        for (dataset, sim) in zip(data,simulations)]
+
 
 def log(simulations, data):
     ''' Average absolute logartihmic difference
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return 1.0/(N-1)*np.sum([np.sum(np.abs(np.log10(dataset.y)-np.log10(sim)))\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/(N-1)*(np.log10(dataset.y)-np.log10(sim))
+        for (dataset, sim) in zip(data,simulations)]
 
 def sqrt(simulations, data):
     ''' Average absolute difference of the square root
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return 1.0/(N-1)*np.sum([np.sum(np.abs(np.sqrt(dataset.y) - np.sqrt(sim)))\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/(N-1)*(np.sqrt(dataset.y) - np.sqrt(sim))
+        for (dataset, sim) in zip(data,simulations)]
 
 def R1(simulations, data):
     ''' Crystallographic R-factor (R1)
     '''
-    denom = np.sum([np.sum(np.sqrt(dataset.y)) for dataset in data\
+    denom = np.sum([np.sum(np.sqrt(np.abs(dataset.y))) for dataset in data\
         if dataset.use])
-    return 1.0/denom*np.sum([np.sum(np.abs(np.sqrt(dataset.y) - np.sqrt(sim)))\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/denom*(np.sqrt(np.abs(dataset.y)) - np.sqrt(np.abs(sim)))\
+        for (dataset, sim) in zip(data,simulations)]
 
 def logR1(simulations, data):
     ''' logarithmic crystallographic R-factor (R1)
     '''
     denom = np.sum([np.sum(np.log10(np.sqrt(dataset.y))) for dataset in data\
         if dataset.use])
-    return 1.0/denom*np.sum([np.sum(np.abs(np.log10(np.sqrt(dataset.y)) - \
-                                        np.log10(np.sqrt(sim))))\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/denom*(np.log10(np.sqrt(dataset.y)) - \
+                                        np.log10(np.sqrt(sim)))\
+        for (dataset, sim) in zip(data,simulations)]
 
 def R2(simulations, data):
     ''' Crystallographic R2 factor
     '''
     denom = np.sum([np.sum(dataset.y**2) for dataset in data\
         if dataset.use])
-    return 1.0/denom*np.sum([np.sum((dataset.y - sim)**2)\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/denom*(dataset.y - sim)**2\
+        for (dataset, sim) in zip(data,simulations)]
 
 def logR2(simulations, data):
     ''' logarithmic crystallographic R2 factor
     '''
     denom = np.sum([np.sum(np.log10(dataset.y)**2) for dataset in data\
         if dataset.use])
-    return 1.0/denom*np.sum([np.sum((np.log10(dataset.y) - np.log10(sim))**2)\
-        for (dataset, sim) in zip(data,simulations)\
-        if dataset.use])
+    return [1.0/denom*(np.log10(dataset.y) - np.log10(sim))**2\
+        for (dataset, sim) in zip(data,simulations)]
 
 def sintth4(simulations, data):
     ''' Sin(tth)^4 scaling of the average absolute difference for reflectivity.
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return 1.0/(N-1)*np.sum([np.sum(np.sin(dataset.x*np.pi/360.0)**4*
-        np.abs(dataset.y - sim))\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/(N-1)*np.sin(dataset.x*np.pi/360.0)**4*
+        (dataset.y - sim)
+        for (dataset, sim) in zip(data,simulations)]
 
+def Norm(simulations, data):
+    '''  dataset normalized 1/3 scaling of the error
+    '''
+    return [1.0/np.sum(np.abs(dataset.y))*(np.sign(dataset.y)*np.abs(dataset.y) - np.sign(sim)*np.abs(sim))\
+        for (dataset, sim) in zip(data,simulations)]
 
 #=======================
 # weighted FOM functions
@@ -255,40 +262,40 @@ def chi2bars(simulations, data):
     ''' Weighted chi squared
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return 1.0/(N-1)*np.sum([np.sum((dataset.y - sim)**2/dataset.error**2)\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/(N-1)*(dataset.y - sim)**2/dataset.error**2
+        for (dataset, sim) in zip(data,simulations)]
 
 def chibars(simulations, data):
     ''' Weighted chi squared but without the squaring
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return 1.0/(N-1)*np.sum([np.sum(np.abs((dataset.y - sim)/dataset.error))\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/(N-1)*((dataset.y - sim)/dataset.error)
+        for (dataset, sim) in zip(data,simulations)]
 
 def logbars(simulations, data):
     ''' Weighted average absolute difference of the logarithm of the data
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return 1.0/(N-1)*np.sum([np.sum(np.abs((np.log10(dataset.y) - np.log10(sim))
-        /dataset.error*np.log(10)*dataset.y))\
-        for (dataset, sim) in zip(data,simulations)if dataset.use])
+    return [1.0/(N-1)*((np.log10(dataset.y) - np.log10(sim))
+        /dataset.error*np.log(10)*dataset.y)
+        for (dataset, sim) in zip(data,simulations)]
 
 def R1bars(simulations, data):
     ''' Weighted crystallographic R-factor (R1)
     '''
-    denom = np.sum([np.sum(np.sqrt(1/dataset.error)*np.sqrt(dataset.y)) \
+    denom = np.sum([np.sum(np.sqrt(1/dataset.error)*np.sqrt(dataset.y))
                     for dataset in data if dataset.use])
-    return 1.0/denom*np.sum([np.sum(np.sqrt(1/dataset.error)*\
-           np.abs(np.sqrt(dataset.y) - np.sqrt(sim)))\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/denom*np.sqrt(1/dataset.error)*
+           (np.sqrt(dataset.y) - np.sqrt(sim))
+        for (dataset, sim) in zip(data,simulations)]
 
 def R2bars(simulations, data):
     ''' Weighted crystallographic R2 factor
     '''
-    denom = np.sum([(1/dataset.error)*np.sum(dataset.y**2) \
+    denom = np.sum([(1/dataset.error)*np.sum(dataset.y**2)
                     for dataset in data if dataset.use])
-    return 1.0/denom*np.sum([np.sum((1/dataset.error) * (dataset.y - sim)**2)\
-        for (dataset, sim) in zip(data,simulations) if dataset.use])
+    return [1.0/denom*(1/dataset.error) * (dataset.y - sim)**2
+        for (dataset, sim) in zip(data,simulations)]
 
 
 # END FOM function definition

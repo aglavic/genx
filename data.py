@@ -20,6 +20,7 @@ class DataSet:
         self.x = array([])
         self.y = array([])
         self.y_sim = array([])
+        self.y_fom = array([])
         self.error = array([])
         # The raw data
         self.x_raw = array([])
@@ -87,6 +88,12 @@ class DataSet:
             self.sim_symbolsize = 1
             self.sim_linetype = '-'
             self.sim_linethickness = 2
+            
+    def copy(self):
+        ''' Make a copy of the current Data Set'''
+        cpy = DataSet()
+        cpy.safe_copy(self)
+        return cpy
             
     def safe_copy(self, new_set):
         '''safe_copy(self, new_set) --> None
@@ -398,6 +405,9 @@ class DataSet:
     def set_simulated_data(self, simulated_data):
         self.y_sim = simulated_data
         
+    def set_fom_data(self, fom_data):
+        self.y_fom = fom_data
+        
     def get_sim_plot_items(self):
         '''get_sim_plot_items(self) --> dict
         Returns a dictonary of color [tuple], symbol [string], 
@@ -469,6 +479,8 @@ class DataSet:
         '''Set show true - show data set in plots
         '''
         self.show = bool(val)
+        
+        
 #END: Class DataSet
 #==============================================================================
 #BEGIN: Class DataList
@@ -577,6 +589,16 @@ class DataList:
         flag use in the data.
         '''
         [self.items[i].set_simulated_data(sim_data[i]) for i in\
+            range(self.get_len())]
+        
+    def set_fom_data(self, fom_data):
+        '''
+        set_fom_data(self, fom_data) --> None
+        
+        Sets the point by point fom data in the data. Note this will depend on the
+        flag use in the data.
+        '''
+        [self.items[i].set_fom_data(fom_data[i]) for i in\
             range(self.get_len())]
         
     def get_len(self):

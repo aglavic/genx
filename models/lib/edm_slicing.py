@@ -227,6 +227,53 @@ def create_profile_cm(d, sigma_c, sigma_m, prof_funcs,
 
     return (z, pdens_indiv_c, pdens_indiv_m)
 
+def create_profile_cm2(d, sigma_c, sigma_ml, sigma_mu, prof_funcs, 
+                      prof_funcs_mag, dmag_dens_l, dmag_dens_u, mag_dens, dd_l, dd_u,
+                      dz = 0.01, mult = 3, buffer = 0, delta = 20):
+    '''Create a scattering length profile for magnetic x-ray scattering for the charge and
+    magnetic part of the scattering lengths. sigma is roughnesses.
+    Note that prof_funcs relate to layer profiles and prof_funcs_mag relates to 
+    magnetic interface profiles.
+    '''
+    zlay = r_[0, cumsum(d)]
+    s_max_bot = max(sigma_c[0], sigma_ml[0])
+    s_max_up = max(sigma_c[-1], sigma_mu[-1])
+    z = arange(-s_max_bot*mult - buffer, zlay[-1]+s_max_up*mult + buffer + dz, dz)
+    ptot = z*0
+    pdens = z*0
+    ps = []
+    d = r_[delta+s_max_bot*mult + buffer, d, s_max_up*mult+delta + buffer]
+    sigma_c = r_[0, sigma_c, 0] + 1e-20
+    sigma_mu = r_[sigma_mu, 0] + 1e-20
+    sigma_ml = r_[0,sigma_ml] + 1e-20
+    
+    dd_l = r_[dd_l, 0] + 1e-20
+    dd_u = r_[dd_u, 0] + 1e-20
+    
+    prof_funcs_mag = [prof_funcs_mag[0]] + prof_funcs_mag + [prof_funcs_mag[-1]]
+    zlay = cumsum(d)
+    z0 = delta + buffer + s_max_bot*mult
+    zlay = r_[0, zlay] - z0
+    ps = array([r_[prof(z, zp, di, s_c_low, s_c_up), 
+                   #prof(z, zp, di, s_m_low, s_m_up)]
+                   prof_m_l(-(z - zp - dd_low), s_m_low)*dm_l*m + prof_m_u((z - zp - di + dd_up), s_m_up)*dm_u*m + m]
+                for prof, zp, di, s_c_low, s_c_up, s_m_low, s_m_up,
+                prof_m_l, prof_m_u, dm_l, dm_u, m, dd_low, dd_up
+                   in zip(prof_funcs, zlay, d, sigma_c[:-1], sigma_c[1:], 
+                          sigma_ml, sigma_mu,
+                          prof_funcs_mag[:-1], prof_funcs_mag[1:],
+                          dmag_dens_l, dmag_dens_u, mag_dens, dd_l, dd_u
+                          )])
+    ptot = ps.sum(0)
+    #print ps.shape, ptot.shape
+    pdens_indiv = (ps[:, :len(z)])/ptot[:len(z)]
+    pdens_indiv_c = pdens_indiv#*dens_c[:,newaxis]
+    pdens_indiv_m = ps[:, len(z):]#*dens_m[:,newaxis]
+    #pdens_c = pdens_indiv_c.sum(0)
+    #pdens_m = (pdens_indiv_m*pdens_indiv).sum(0)
+
+    return (z, pdens_indiv_c, pdens_indiv_m)
+
 if __name__ == '__main__':
     from pylab import *
     from mpl_toolkits.axes_grid import Grid
@@ -242,12 +289,12 @@ if __name__ == '__main__':
     #p = make_profile(z, z0, d, sigma0, sigma1)
     #plot(z,p)
     sigma_c = array([4,4, 2])*1.0#sigma_c = array([2,8,2])*1.0
-    sigma_m = array([10,10,10])*1.0#sigma_m = array([2,5,4])*1.0
+    sigma_m = array([1,1,1])*1.0#sigma_m = array([2,5,4])*1.0
     dmag_l = array([0.0,0.0,0.0])
     dmag_u = array([0.0, 0.0, 0.0])
     mag_dens = array([0.0, 2.25, 0.0])
     #ddm = array([10.0, -10.0, 0.0])
-    ddm = array([0.0, 0.0, 0.0])
+    ddm = array([10.0, -10.0, 10.0])
     d = array([0.0, 50, 0.0])*1.0#d = array([5, 60])*1.0
     dens_c = array([-1.79e-3 + 0.0029J, -4e-23])#dens_c = array([5,50,25,0])
     dens_m = array([1.4458e-3 - 0.00144J, 2.12e-23])#dens_m = array([0,6,10,0])
@@ -263,7 +310,7 @@ if __name__ == '__main__':
                                         buffer = 20, delta = 5.)
     def plot_fig(filename, fig_title = ''):
         fig = figure(1)
-        grid = Grid(fig, 111, nrows_ncols=(3,1), axes_pad = 0.1)
+        grid = Grid(fig, 111, nrows_ncols=(3,1), axes_pad = 0.15)
         #subplot(311)
         grid[0].set_title(fig_title)    
         grid[0].plot(z, c_den[0], lw = 2.0, c = 'b')
@@ -285,19 +332,20 @@ if __name__ == '__main__':
         #grid[1].annotate('Fe.dd_m = %.1f'%ddm[1], xy=(d[1]+ddm[1], mag_dens[1]), xycoords = 'data',
         #                 xytext = (50, 0), textcoords = 'offset points', 
         #                 arrowprops=dict(arrowstyle="<-", connectionstyle = 'arc3'))
-        at = AnchoredText("Sub.dd_m = %.1f"%(ddm[0]),
+        at = AnchoredText("dd_ml = %.1f"%(ddm[0]),
                   prop=dict(size=10), frameon=True,
                   loc=6,
                   )
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         grid[1].add_artist(at)
-        at = AnchoredText("Fe.dd_m = %.1f"%(ddm[1]),
+        at = AnchoredText("dd_mu = %.1f"%(ddm[1]),
                   prop=dict(size=10), frameon=True,
                   loc=7,
                   )
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         grid[1].add_artist(at)
         grid[1].set_ylabel('Mag. mom.\n per res. atom.')
+        grid[1].set_ylim(0, 3.1)
         #subplot(313)
         grid[2].plot(z, m_den[1]*c_den[1], 'r', z, 2.25*c_den[1], 'b', lw = 2.0)
         grid[2].axvline(0, linestyle = '--', c = 'k')
@@ -319,8 +367,8 @@ if __name__ == '__main__':
                                         ddm, dz = 1.0, mult = 4.0, 
                                         buffer = 20, delta = 5.)
     plot_fig('Enhanced_Fe_sigma', 'Bulk Fe with enhanced interfaces')
-    dmag_l = array([0.0,-0.75,0.0])
-    dmag_u = array([0.0, -0.75, 0.0])
+    dmag_l = array([0.0,-1.,0.0])
+    dmag_u = array([0.0, -1., 0.0])
     z, c_den, m_den = create_profile_cm(d[1:-1], sigma_c[:-1], sigma_m[:-1],  
                                         prof_funcs, mag_prof_funcs, 
                                         dmag_l,dmag_u, mag_dens,
