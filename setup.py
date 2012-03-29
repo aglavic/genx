@@ -74,6 +74,20 @@ if "py2exe" in sys.argv:
                              }, 
                            }
               }
+elif"py2app" in sys.argv:
+  import py2app
+  import matplotlib  
+  __data_files__+=matplotlib.get_py2exe_datafiles()
+  
+  __options__ = dict(
+         setup_requires=['py2app'],
+         app=["genx_gui.py"],
+         # Cross-platform applications generally expect sys.argv to
+         # be used for opening files.
+         options=dict(py2app=dict(argv_emulation = True, 
+                                  packages = ['matplotlib', 'numpy'])),
+     )  
+
 else:
   __options__={#"setup_requires":[], 
                 }
