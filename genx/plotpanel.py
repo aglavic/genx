@@ -12,6 +12,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg, RendererAgg
 from matplotlib.transforms import Bbox#, Point, Value
 from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector
+from matplotlib.pyplot import setp
 
 from numpy import *
 import wx
@@ -409,6 +410,8 @@ class PlotPanel(wx.Panel):
                 pass
             p = Point()
             p.x, p.y = self.cur_pos
+            size = self.canvas.GetClientSize()
+            p.y = abs(size.height - p.y)
             if mat_ver > zoom_ver:
                 in_axes = self.ax.in_axes(p)
             else:
@@ -836,24 +839,60 @@ class DataPlotPanel(PlotPanel):
     '''
     def __init__(self, parent, id = -1, color = None, dpi = None
     , style = wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
+        self.main_ax_rect = (0.125, 0.3, 0.8, 0.6)
+        self.sub_ax_rect = (0.125, 0.1,0.8,0.18)
         PlotPanel.__init__(self, parent, id, color, dpi, style, **kwargs)
         self.update=self.singleplot
         self.update(None)
         self.update = self.plot_data
         self.SetAutoScale(True)
-        self.ax = self.figure.add_subplot(111)
+        
+        
+        
+        self.create_axes()
+        
+    def create_axes(self):
+        self.ax = self.figure.add_axes(self.main_ax_rect)#self.figure.add_subplot(111)
+        #self.ax.xaxis.set_visible(False)
+        setp( self.ax.get_xticklabels(), visible=False)
+        self.error_ax = self.figure.add_axes(self.sub_ax_rect, sharex = self.ax)
         self.ax.set_autoscale_on(False)
+        self.error_ax.set_autoscale_on(True)
+        
+    def autoscale_error_ax(self):
+        ymin = min([array(line.get_ydata()).min()\
+                     for line in self.error_ax.lines if len(line.get_ydata()) > 0])
+        ymax = max([array(line.get_ydata()).max()\
+                   for line in self.error_ax.lines if len(line.get_ydata()) > 0])
+        tmp = [array(line.get_xdata()).min()\
+                    for line in self.error_ax.lines if len(line.get_ydata()) > 0]
+        if len(tmp) > 0:
+            xmin = min(tmp)
+        else:
+            xmin = 0
+        tmp = [array(line.get_xdata()).max()\
+                    for line in self.ax.lines if len(line.get_ydata()) > 0]
+        if len(tmp) > 0:
+            xmax = max(tmp)
+        else:
+            xmax = 1
+        # Set the limits
+        #print 'Autoscaling to: ', ymin, ymax
+        self.error_ax.set_xlim(xmin, xmax)
+        self.error_ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
+        #self.ax.set_yscale(self.scale)
         
     def singleplot(self, data):
         if not self.ax:
-                self.ax = self.figure.add_subplot(111)
+                #self.ax = self.figure.add_subplot(111)
+                self.create_axes()
         #theta = arange(0.1,10,0.001)
         #self.ax.plot(theta,1/sin(theta*pi/180)**4,'-')
     
     def plot_data(self, data):
         
         if not self.ax:
-                self.ax = self.figure.add_subplot(111)
+                self.create_axes()
         
         # This will be somewhat inefficent since everything is updated
         # at once would be better to update the things that has changed...
@@ -903,7 +942,8 @@ class DataPlotPanel(PlotPanel):
     def plot_data_fit(self, data):
         
         if not self.ax:
-                self.ax = self.figure.add_subplot(111)
+                #self.ax = self.figure.add_subplot(111)
+                self.create_axes()
         
         # This will be somewhat inefficent since everything is updated
         # at once would be better to update the things that has changed...
@@ -911,6 +951,8 @@ class DataPlotPanel(PlotPanel):
         #self.ax.cla()
         self.ax.lines = []
         self.ax.collections = []
+        self.error_ax.lines = []
+        self.error_ax.collections = []
         #self.ax.set_title('FOM: None')
         # plot the data
         #[self.ax.semilogy(data_set.x, data_set.y, '.'\
@@ -924,7 +966,13 @@ class DataPlotPanel(PlotPanel):
         lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
         marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
          for data_set in data if data_set.show]
+        # Plot the point by point error:
+        [self.error_ax.plot(data_set.x, data_set.y_fom, c = data_set.sim_color, \
+        lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
+        marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
+         for data_set in data if data_set.show]
         # Force an update of the plot
+        self.autoscale_error_ax()
         self.flush_plot()
         #self.canvas.draw()
         #print 'Data plotted'
@@ -932,7 +980,8 @@ class DataPlotPanel(PlotPanel):
     def plot_data_sim(self, data):
         
         if not self.ax:
-                self.ax = self.figure.add_subplot(111)
+                #self.ax = self.figure.add_subplot(111)
+                self.create_axes()
         
         # This will be somewhat inefficent since everything is updated
         # at once would be better to update the things that has changed...
@@ -940,6 +989,8 @@ class DataPlotPanel(PlotPanel):
         #self.ax.cla()
         self.ax.lines = []
         self.ax.collections = []
+        self.error_ax.lines = []
+        self.error_ax.collections = []
         #self.ax.set_title('FOM: None')
         # plot the data
         #[self.ax.semilogy(data_set.x, data_set.y, '.'\
@@ -980,6 +1031,11 @@ class DataPlotPanel(PlotPanel):
             lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
             marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
             for data_set in data if data_set.show and data_set.use]
+        [self.error_ax.plot(data_set.x, data_set.y_fom, c = data_set.sim_color, \
+        lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
+        marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
+         for data_set in data if data_set.show]
+        self.autoscale_error_ax()
         self.AutoScale()
         # Force an update of the plot
         self.flush_plot()

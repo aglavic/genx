@@ -7,13 +7,10 @@ Last changed: 2008 06 24
 '''
 
 # Standard libraries
-import shelve
-import os
-import new
-import zipfile
+import shelve, os, new, zipfile
 import cPickle as pickle
-import pdb
-import StringIO, traceback
+import pdb, StringIO, traceback
+import numpy as np
 # GenX libraries
 import data
 import parameters, fom_funcs
@@ -227,6 +224,21 @@ class Model:
         result = eval(codestring, self.script_module.__dict__)
         #print 'Sucessfully evaluted: ', codestring
         return result
+    
+    def calc_fom(self, simulated_data):
+        '''calc_fom(self, fomlist) -> fom_raw (list of arrays), 
+                                      fom_indiv(list of floats), 
+                                      fom(float)
+        
+        Sums up the evaluation of the fom values calculated for each
+         data point to form the overall fom function for all data sets.
+        '''
+        fom_raw = self.fom_func(simulated_data, self.data)
+        # Sum up a unique fom for each data set in use
+        fom_indiv = [np.sum(np.abs(fom_set)) for fom_set in fom_raw]
+        fom = np.sum([f for f, d in zip(fom_indiv, self.data) if d.use])
+        
+        return fom_raw, fom_indiv, fom
             
     def evaluate_fit_func(self):
         ''' evaluate_fit_func(self) --> fom (float)
@@ -236,7 +248,8 @@ class Model:
         and such.
         '''
         simulated_data = self.script_module.Sim(self.data)
-        fom = self.fom_func(simulated_data, self.data)
+        #fom = self.fom_func(simulated_data, self.data)
+        fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
         return fom
     
     def evaluate_sim_func(self):
@@ -271,13 +284,17 @@ class Model:
         self.data.set_simulated_data(simulated_data)
         
         try:
-            self.fom = self.fom_func(simulated_data, self.data)
+            #self.fom = self.fom_func(simulated_data, self.data)
+            fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
+            self.fom = fom
         except Exception, e:
             outp = StringIO.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
             raise FomError(str(val))
+        #print len(fom_raw)
+        self.data.set_fom_data(fom_raw)
     
     def create_fit_func(self, str):
         '''create_fit_func(self, str) --> function

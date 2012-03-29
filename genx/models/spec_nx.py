@@ -254,8 +254,9 @@ def Specular(TwoThetaQz,sample,instrument):
             msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
             np = 1.0-sld-msld
             nm = 1.0-sld+msld
-            wl = instrument.getWavelength()
-            (Ruu,Rdd,Rud,Rdu) = MatrixNeutron.Refl(Q, wl, np, nm, d, magn_ang)
+            Vp = (2*pi/instrument.getWavelength())**2*(1-np**2)
+            Vm = (2*pi/instrument.getWavelength())**2*(1-nm**2)
+            (Ruu,Rdd,Rud,Rdu) = MatrixNeutron.Refl(Q,Vp,Vm,d,magn_ang, sigma)
             Buffer.Ruu = Ruu; Buffer.Rdd = Rdd; Buffer.Rud = Rud
             Buffer.parameters = parameters.copy()
         else:

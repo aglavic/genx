@@ -7,7 +7,7 @@ Last changed: 2008 11 23
 from numpy import *
 import thread
 import time
-
+import random as random_mod
 import sys, os, pickle
 
 
@@ -30,6 +30,8 @@ except:
 
 import model
 
+from lib.Simplex import Simplex
+
 # Add current path to the system paths
 # just in case some user make a directory change
 sys.path.append(os.getcwd())
@@ -47,14 +49,19 @@ class DiffEv:
         
         # Mutation schemes implemented
         self.mutation_schemes = [self.best_1_bin, self.rand_1_bin,\
-            self.best_either_or, self.rand_either_or]
+            self.best_either_or, self.rand_either_or, self.jade_best, self.simplex_best_1_bin]
             
         self.model = model.Model()
         
         self.km = 0.7 # Mutation constant
         self.kr = 0.7 # Cross over constant
         self.pf = 0.5 # probablility for mutation
-        
+        self.c = 0.07
+        self.simplex_interval = 5 #Interval of running the simplex opt
+        self.simplex_step = 0.05 #first step as a fraction of pop size
+        self.simplex_n = 0.0 # Number of individuals that will be optimized by simplex
+        self.simplex_rel_epsilon = 1000 # The relative epsilon - convergence critera
+        self.simplex_max_iter = 100 # THe maximum number of simplex runs
         # Flag to choose beween the two alternatives below
         self.use_pop_mult = False
         self.pop_mult = 3 # Set the pop_size to pop_mult * # free parameters
@@ -97,6 +104,8 @@ class DiffEv:
         
         # Definition for the create_trial function
         self.create_trial = self.best_1_bin
+        self.update_pop = self.standard_update_pop
+        self.init_new_generation = self.standard_init_new_generation
         
         # Control flags:
         self.running = False # true if optimization is running
@@ -194,6 +203,8 @@ class DiffEv:
             cpy.par_evals.buffer = cpy.par_evals.buffer[0:0]
             cpy.fom_evals.buffer = cpy.fom_evals.buffer[0:0]
         cpy.create_trial = None
+        cpy.update_pop = None
+        cpy.init_new_generation = None
         cpy.plot_output = None
         cpy.text_output = None
         cpy.parameter_output = None
@@ -266,6 +277,11 @@ class DiffEv:
         
         self.fom_vec = zeros(self.n_dim)
         self.best_fom = 1e20
+        
+        # Storage area for JADE archives
+        self.km_vec = ones(self.n_dim)*self.km
+        self.kr_vec = ones(self.n_dim)*self.kr
+        
 
         # Logging varaibles
         self.fom_log = array([[0,1]])[0:0]
@@ -273,6 +289,8 @@ class DiffEv:
                                     buffer = array([self.par_min])[0:0])
         #self.fom_evals = array([])
         self.fom_evals = CircBuffer(self.max_log)
+        # Number of FOM evaluations
+        self.n_fom = 0
         #self.par_evals.reset(array([self.par_min])[0:0])
         #self.fom_evals.reset()
         
@@ -309,7 +327,7 @@ class DiffEv:
             thread.start_new_thread(self.optimize, ())
             # For debugging
             #self.optimize()
-            #self.text_output('Starting the fit...')
+            self.text_output('Starting the fit...')
             #self.running = True
             return True
         else:
@@ -360,11 +378,15 @@ class DiffEv:
         self.text_output('Calculating start FOM ...')
         self.running = True
         self.error = False
+        self.n_fom = 0
         #print self.pop_vec
         #eval_fom()
         #self.fom_vec = self.trial_fom[:]
         # Old leftovers before going parallel
         self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
+        [self.par_evals.append(vec, axis = 0)\
+                    for vec in self.pop_vec]
+        [self.fom_evals.append(vec) for vec in self.fom_vec]
         #print self.fom_vec
         best_index = argmin(self.fom_vec)
         #print self.fom_vec
@@ -395,9 +417,11 @@ class DiffEv:
             
             t_start = time.time()
             
+            self.init_new_generation(gen)
+            
             # Create the vectors who will be compared to the 
             # population vectors
-            self.trial_vec = [self.create_trial(vec) for vec in self.pop_vec]
+            [self.create_trial(index) for index in range(self.n_pop)]
             self.eval_fom()
             # Calculate the fom of the trial vectors and update the population
             [self.update_pop(index) for index in range(self.n_pop)]
@@ -449,7 +473,7 @@ class DiffEv:
                 self.autosave()
 
         if not self.error:
-            self.text_output('Stopped at Generation: %d ...'%gen)
+            self.text_output('Stopped at Generation: %d after %d fom evaluations...'%(gen, self.n_fom))
         
         # Lets clean up and delete our pool of workers
         if self.use_parallel_processing:
@@ -468,10 +492,11 @@ class DiffEv:
         Function to calcuate the figure of merit for parameter vector 
         vec.
         '''
+        
         # Set the parameter values
         map(lambda func, value:func(value), self.par_funcs, vec)
         fom = self.model.evaluate_fit_func()
-        
+        self.n_fom += 1
         return fom 
     
     def calc_trial_fom(self):
@@ -543,12 +568,20 @@ class DiffEv:
             return (error_bar_low, error_bar_high)
         else:
             raise ErrorBarsError()
-        
-        
-    def update_pop(self, index):
+    
+    def init_new_generation(self, gen):
+        ''' Function that is called every time a new generation starts'''
+        pass
+    
+    def standard_init_new_generation(self, gen):
+        ''' Function that is called every time a new generation starts'''
+        pass
+    
+    
+    def standard_update_pop(self, index):
         '''
         Function to update population vector index. calcs the figure of merit
-        and compares it to the current population vector and also cehecks
+        and compares it to the current population vector and also checks
         if it is better than the current best.
         '''
         #fom = self.calc_fom(self.trial_vec[index])
@@ -560,14 +593,176 @@ class DiffEv:
                 self.new_best = True
                 self.best_vec = self.trial_vec[index].copy()
                 self.best_fom = fom
-
+                
+    def simplex_old_init_new_generation(self, gen):         
+        '''It will run the simplex method every simplex_interval
+             generation with a fracitonal step given by simple_step 
+             on the best indivual as well a random fraction of simplex_n individuals.
+        '''
+        print 'Inits new generation'
+        if gen%self.simplex_interval == 0:
+            spread = array(self.trial_vec).max(0) - array(self.trial_vec).min(0)
+            simp = Simplex(self.calc_fom, self.best_vec, spread*self.simplex_step)
+            print 'Starting simplex run for best vec'
+            new_vec, err, iter = simp.minimize(epsilon = self.best_fom/self.simplex_rel_epsilon, maxiters = self.simplex_max_iter)
+            print 'FOM improvement: ', self.best_fom - err
+            
+            if self.use_boundaries:
+                # Check so that the parameters lie indside the bounds
+                ok = bitwise_and(self.par_max > new_vec, self.par_min < new_vec)
+                # If not inside make a random re-initilazation of that parameter
+                new_vec = where(ok, new_vec, random.rand(self.n_dim)*\
+                              (self.par_max - self.par_min) + self.par_min)
+                
+            new_fom = self.calc_fom(new_vec)
+            if new_fom < self.best_fom:
+                self.best_fom = new_fom
+                self.best_vec = new_vec
+                self.pop_vec[0] = new_vec
+                self.fom_vec[0] = self.best_fom
+                self.new_best = True
+            
+            # Apply the simplex to a simplex_n memebers (0-1)
+            for index1 in random_mod.sample(xrange(len(self.pop_vec)), 
+                                   int(len(self.pop_vec)*self.simplex_n)):
+                print 'Starting simplex run for member: ', index1
+                mem = self.pop_vec[index1]
+                mem_fom = self.fom_vec[index1]
+                simp = Simplex(self.calc_fom, mem, spread*self.simplex_step)
+                new_vec, err, iter = simp.minimize(epsilon = self.best_fom/self.simplex_rel_epsilon, maxiters = self.simplex_max_iter)
+                if self.use_boundaries:
+                    # Check so that the parameters lie indside the bounds
+                    ok = bitwise_and(self.par_max > new_vec, self.par_min < new_vec)
+                    # If not inside make a random re-initilazation of that parameter
+                    new_vec = where(ok, new_vec, random.rand(self.n_dim)*\
+                                    (self.par_max - self.par_min) + self.par_min)
+                
+                new_fom = self.calc_fom(new_vec)
+                if new_fom < mem_fom:
+                    self.pop_vec[index1] = new_vec
+                    self.fom_vec[index1] = new_fom
+                    if new_fom < self.best_fom:
+                        self.best_fom = new_fom
+                        self.best_vec = new_vec
+                        self.new_best = True
+                        
+    def simplex_init_new_generation(self, gen):         
+        '''It will run the simplex method every simplex_interval
+             generation with a fracitonal step given by simple_step 
+             on the simplex_n*n_pop best individuals.
+        '''
+        print 'Inits new generation'
+        if gen%self.simplex_interval == 0:
+            spread = array(self.trial_vec).max(0) - array(self.trial_vec).min(0)
+            
+            indices = argsort(self.fom_vec)
+            n_ind = int(self.n_pop*self.simplex_n)
+            if n_ind == 0:
+                n_ind = 1
+            # Apply the simplex to a simplex_n memebers (0-1)
+            for index1 in indices[:n_ind]:
+                self.text_output('Starting simplex run for member: %d'%index1)
+                mem = self.pop_vec[index1].copy()
+                mem_fom = self.fom_vec[index1]
+                simp = Simplex(self.calc_fom, mem, spread*self.simplex_step)
+                new_vec, err, iter = simp.minimize(epsilon = self.best_fom/self.simplex_rel_epsilon, maxiters = self.simplex_max_iter)
+                if self.use_boundaries:
+                    # Check so that the parameters lie indside the bounds
+                    ok = bitwise_and(self.par_max > new_vec, self.par_min < new_vec)
+                    # If not inside make a random re-initilazation of that parameter
+                    new_vec = where(ok, new_vec, random.rand(self.n_dim)*\
+                                    (self.par_max - self.par_min) + self.par_min)
+                
+                new_fom = self.calc_fom(new_vec)
+                if new_fom < mem_fom:
+                    self.pop_vec[index1] = new_vec.copy()
+                    self.fom_vec[index1] = new_fom
+                    if new_fom < self.best_fom:
+                        self.best_fom = new_fom
+                        self.best_vec = new_vec.copy()
+                        self.new_best = True
+            
+    def simplex_best_1_bin(self, index):
+        return self.best_1_bin(index)
+            
+            
+    def jade_update_pop(self, index):
+        ''' A modified update pop to handle the JADE variation of Differential evoluion'''
+        fom = self.trial_fom[index]
+        if fom < self.fom_vec[index]:
+            self.pop_vec[index] = self.trial_vec[index].copy()
+            self.fom_vec[index] = fom
+            self.updated_kr.append(self.kr_vec[index])
+            self.updated_km.append(self.km_vec[index])
+            if fom < self.best_fom:
+                self.new_best = True
+                self.best_vec = self.trial_vec[index].copy()
+                self.best_fom = fom
     
-    def best_1_bin(self, vec):
+    
+    def jade_init_new_generation(self, gen):
+        ''' A modified generation update for jade'''
+        #print 'inits generation: ', gen, self.n_pop
+        if gen > 1:
+            updated_kms = array(self.updated_km)
+            updated_krs = array(self.updated_kr)
+            if len(updated_kms) != 0:
+                self.km = (1.0 - self.c)*self.km + self.c*sum(updated_kms**2)/sum(updated_kms)
+                self.kr = (1.0 - self.c)*self.kr + self.c*mean(updated_krs)
+        self.km_vec = abs(self.km + random.standard_cauchy(self.n_pop)*0.1)
+        self.kr_vec = self.kr + random.normal(size = self.n_pop)*0.1
+        #print self.km_vec, self.kr_vec
+        print 'km: ', self.km, ', kr: ', self.kr
+        #self.km_vec = (self.km_vec >= 1)*1 + (self.km_vec < 1)*self.km_vec
+        self.km_vec = where(self.km_vec > 0, self.km_vec, 0)
+        self.km_vec = where(self.km_vec < 1, self.km_vec, 1)
+        self.kr_vec = where(self.kr_vec > 0, self.kr_vec, 0)
+        self.kr_vec = where(self.kr_vec < 1, self.kr_vec, 1)
+        
+        self.updated_kr = []
+        self.updated_km = []
+        
+        
+    def jade_best(self, index):
+        vec = self.pop_vec[index]
+        # Create mutation vector
+        # Select two random vectors for the mutation
+        index1 = int(random.rand(1)*self.n_pop)
+        index2 = int(random.rand(1)*len(self.par_evals))
+        # Make sure it is not the same vector 
+        #while index2 == index1:
+        #    index2 = int(random.rand(1)*self.n_pop)
+            
+        # Calculate the mutation vector according to the best/1 scheme
+        #print len(self.km_vec), index, len(self.par_evals),  index2
+        mut_vec = vec + self.km_vec[index]*(self.best_vec - vec) + self.km_vec[index]*(self.pop_vec[index1]\
+         - self.par_evals[index2])
+        
+        # Binomial test to detemine which parameters to change
+        # given by the recombination constant kr
+        recombine = random.rand(self.n_dim) < self.kr_vec[index]
+        # Make sure at least one parameter is changed
+        recombine[int(random.rand(1)*self.n_dim)]=1
+        # Make the recombination
+        trial = where(recombine, mut_vec, vec)
+        
+        # Implementation of constrained optimization
+        if self.use_boundaries:
+            # Check so that the parameters lie indside the bounds
+            ok = bitwise_and(self.par_max > trial, self.par_min < trial)
+            # If not inside make a random re-initilazation of that parameter
+            trial = where(ok, trial, random.rand(self.n_dim)*\
+            (self.par_max - self.par_min) + self.par_min)
+        self.trial_vec[index] = trial
+        #return trial
+    
+    def best_1_bin(self, index):
         '''best_1_bin(self, vec) --> trial [1D array]
         
         The default create_trial function for this class. 
         uses the best1bin method to create a new vector from the population.
         '''
+        vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
         index1 = int(random.rand(1)*self.n_pop)
@@ -596,14 +791,17 @@ class DiffEv:
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
         
-        return trial
+        self.trial_vec[index] = trial
+        #return trial
+        
     
-    def best_either_or(self, vec):
+    def best_either_or(self, index):
         '''best_either_or(self, vec) --> trial [1D array]
         
         The either/or scheme for creating a trial. Using the best vector
         as base vector.
         '''
+        vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
         index1 = int(random.rand(1)*self.n_pop)
@@ -628,15 +826,16 @@ class DiffEv:
             # If not inside make a random re-initilazation of that parameter
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
+        self.trial_vec[index] = trial
+        #return trial
         
-        return trial
-        
-    def rand_1_bin(self, vec):
+    def rand_1_bin(self, index):
         '''best_1_bin(self, vec) --> trial [1D array]
         
         The default create_trial function for this class. 
         uses the best1bin method to create a new vector from the population.
         '''
+        vec = self.pop_vec[index]
         # Create mutation vector
         # Select three random vectors for the mutation
         index1 = int(random.rand(1)*self.n_pop)
@@ -667,14 +866,15 @@ class DiffEv:
             # If not inside make a random re-initilazation of that parameter
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
-        
-        return trial
+        self.trial_vec[index] = trial
+        #return trial
     
-    def rand_either_or(self, vec):
+    def rand_either_or(self, index):
         '''rand_either_or(self, vec) --> trial [1D array]
         
         random base vector either/or trial scheme
         '''
+        vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
         index1 = int(random.rand(1)*self.n_pop)
@@ -705,8 +905,8 @@ class DiffEv:
             # If not inside make a random re-initilazation of that parameter
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
-        
-        return trial
+        self.trial_vec = trial
+        #return trial
     
     
     # Different function for acessing and setting parameters that 
@@ -806,8 +1006,18 @@ class DiffEv:
         # Get the names of the available functions
         names = [f.__name__ for f in self.mutation_schemes]
         # Find the postion of val
+            
         pos = names.index(val)
         self.create_trial = self.mutation_schemes[pos]
+        if val == 'jade_best':
+            self.update_pop = self.jade_update_pop
+            self.init_new_generation = self.jade_init_new_generation
+        elif val == 'simplex_best_1_bin':
+            self.init_new_generation = self.simplex_init_new_generation
+            self.update_pop = self.standard_update_pop
+        else:
+            self.init_new_generation = self.standard_init_new_generation
+            self.update_pop = self.standard_update_pop
         
     def set_pop_mult(self, val):
         '''set_pop_mult(self, val) --> None
@@ -1038,6 +1248,12 @@ class CircBuffer:
                         ' and arrays.')
                         
                         
+    def __len__(self):
+        if self.filled:
+            return len(self.buffer)
+        else:
+            return (self.pos > 0)*self.pos
+        
     def __getitem__(self, key):
         return self.array().__getitem__(key)
     
