@@ -20,7 +20,7 @@ __MODULE_DIR__ = head
 
 class Template:
     ''' A template class for handling plugins. Note that using the 
-    New* mehtods will automatically remove them when removing the plugin.
+    New* methods will automatically remove them when removing the plugin.
     Otherwise the programmer, if he/she makes more advanced changes in the gui,
     have to take care of the deletion of objects.
     '''
@@ -237,7 +237,7 @@ class PluginController:
     def __init__(self, parent, menu, config):
         '''__init__(self, parent, menu) --> None
         
-        Insertes menuitems for controlling plugins in menu. 
+        Insert menu items for controlling plugins in menu. 
         Parent is the main window.
         '''
         self.plugin_handler = PluginHandler(parent, __MODULE_DIR__ \
@@ -249,7 +249,7 @@ class PluginController:
         self.load_menu = wx.Menu()
         menu.InsertMenu(0, -1,'Load', self.load_menu, 'Load a plugin')
         self.unload_menu = wx.Menu()
-        menu.InsertMenu(1, -1,'Unload', self.unload_menu, 'Load a plugin')
+        menu.InsertMenu(1, -1,'Unload', self.unload_menu, 'Unload a plugin')
         
         menu.Append(-1, 'Update module list')
         
@@ -301,18 +301,20 @@ class PluginController:
         Tries to load the default plugins from the config object
         if they are not already loaded.
         '''
-        plugin_str = self.config.get('plugins', 'loaded plugins')
+        plugin_str = self.config.get('plugin', 'loaded plugin')
         # Check so we have any plugins to load else bail out
         if plugin_str == '':
             return
         existing_plugins = self.plugin_handler.get_possible_plugins()
         
         for plugin in plugin_str.split(';'):
-            # Check so the plugin is not loaded and that is exist 
+	  
+            # Check so the plugin is not loaded and exists 
             if not self.plugin_handler.is_loaded(plugin):
                 if plugin in existing_plugins:
                     try:
                         self.plugin_handler.load_plugin(plugin)
+                        self.RegisterPlugin(plugin)
                     except:
                         outp = StringIO.StringIO()
                         traceback.print_exc(200, outp)
@@ -325,8 +327,8 @@ class PluginController:
                     ShowInfoDialog(self.parent, 'Could not find plugin "%s"'\
                         '. Either there is an error in the config file'\
                         ' or the plugin is not installed.'%(plugin))
-        self.update_config()
-        
+        self.update_plugins()
+       
     # Callbacks
     def LoadPlugin(self, event):
         '''OnLoadPlugin(self, event) --> None
@@ -347,9 +349,6 @@ class PluginController:
              + '\nPython traceback below:\n\n' + tbtext)
         else:
             self.RegisterPlugin(plugin)
-        #if event:
-        #    # Do not forget - pass the event on
-        #    event.Skip()
             
     def UnLoadPlugin(self, event):
         '''UnLoadPlugin(self, event) --> None
@@ -372,9 +371,6 @@ class PluginController:
             self.unload_menu.DeleteItem(menuitem)
             # Update the available plugins
             self.update_plugins()
-        #if event:
-        #    # Do not forget - pass the event on
-        #    event.Skip()
             
     def OnNewModel(self, event):
         '''OnNewModel(self, event) --> None
@@ -383,9 +379,6 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnNewModel(event)
-        #if event:
-        #    # Do not forget - pass the event on
-        #    event.Skip()
             
     def OnDataChanged(self, event):
         '''OnNewModel(self, event) --> None
@@ -394,9 +387,6 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnDataChanged(event)
-        #if event:
-        #    # Do not forget - pass the event on
-        #    event.Skip()
             
     def OnOpenModel(self, event):
         '''OnOpenModel(self, event) --> None
@@ -406,9 +396,6 @@ class PluginController:
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
         self.LoadDefaultPlugins()
-        #if event:
-        #    # Do not forget - pass the event on
-        #    event.Skip()
             
     def OnSimulate(self, event):
         '''OnOpenModel(self, event) --> None
@@ -417,10 +404,7 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnSimulate(event)
-        #if event:
-        #    # Do not forget - pass the event on
-        #    event.Skip()
-    
+            
     def OnFittingUpdate(self, event):
         '''OnOpenModel(self, event) --> None
         
@@ -428,11 +412,7 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnFittingUpdate(event)
-        #if event:
-        #    # Do not forget - pass the event on
-        #    event.Skip()
         
-    
 #==============================================================================
 # Utility Dialog functions..
 def ShowInfoDialog(frame, message):

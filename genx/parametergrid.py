@@ -221,12 +221,12 @@ class ParameterGrid(gridlib.Grid):
         gridlib.Grid.__init__(self, parent, -1)
         self.parent = frame
         self.prt = printout.PrintTable(parent)
+
         
-        
-        self.prt.left_margin = 0.5
-        self.prt.right_margin = 0.5
-        self.prt.text_font_size = 8
-        self.prt.cell_left_margin = 0
+#        self.prt.left_margin = 0.5
+#        self.prt.right_margin = 0.5
+#        self.prt.text_font_size = 8
+#        self.prt.cell_left_margin = 0
         
         self.project_func = None
         self.scan_func = None
@@ -281,18 +281,56 @@ class ParameterGrid(gridlib.Grid):
         '''
         data = []
         for row in self.GetParameters().get_data():
-            data.append([' '+row[0],' %.5g'%row[1],\
-                ' %d'%row[2],' %.5g'%row[3],' %.5g'%row[4],' '+row[5]])
-        self.prt.data=data
+            #data.append([' %.30s'%row[0],' %.5f'%row[1],\
+               #' %d'%row[2],' %.5g'%row[3],' %.5g'%row[4],' '+row[5]])
+            data.append([row[0],'%.5f'%row[1],\
+                         '%d'%row[2],'%.5f'%row[3],'%.5f'%row[4], row[5]])
+        self.prt.data = data
         self.prt.label = self.GetParameters().get_col_headers()
+        self.prt.SetPaperId(wx.PAPER_A4)
+        self.prt.SetLandscape()
+        self.prt.page_width = 11.69
+        self.prt.page_height = 8.26
+        self.prt.cell_right_margin = 0
+        self.prt.cell_left_margin = 0.05
+        self.prt.text_font = {"Name":'Arial',"Size":14,"Colour":[0, 0, 0], "Attr":[0,0,0]}
+        self.prt.label_font = {"Name":'Arial',"Size":24,"Colour":[0,0,0], "Attr":[0,0,0]}
+        self.prt.set_column = [ 3, 1.8, 0.5, 1.5, 1.5, 1.5]
+        self.prt.vertical_offset = 0
+        self.prt.horizontal_offset = 0
+        #self.prt.SetRowSpacing(0,0)
+        self.prt.SetCellText(4, 2, wx.NamedColour('RED'))
+        self.prt.SetHeader("Fittting parameters",align=wx.ALIGN_CENTRE, colour = wx.NamedColour('RED'), size=14)
+        self.prt.SetFooter("Print Date/Time: ", type = "Date & Time", align=wx.ALIGN_CENTRE, indent = 1, colour = wx.NamedColour('RED'), size=14)
         
     def Print(self):
         '''Print(self) --> None
         
         Prints the values to the printer
         '''
+        pd = wx.PrintData()
+        pd.SetPrinterName('')
+        pd.SetOrientation(wx.LANDSCAPE) 
+        pd.SetPaperId(wx.PAPER_A4)
+        pd.SetQuality(wx.PRINT_QUALITY_DRAFT)
+        pd.SetColour(True)
+        pd.SetNoCopies(1)
+        pd.SetCollate(True)
+        
+        pdd = wx.PrintDialogData()
+        pdd.SetPrintData(pd)
+        pdd.SetMinPage(1)
+        pdd.SetMaxPage(1)
+        pdd.SetFromPage(1)
+        pdd.SetToPage(2)
+        pdd.SetPrintToFile(True)
+	
+        printer = wx.Printer(pdd)
         self._update_printer()
         self.prt.Print()
+# 	prtout = printout.SetPrintout(self.prt)
+ 
+#	printer.Print(self.parent, prtout, True)
         
     def PrintPreview(self):
         '''PrintPreview(self) --> None

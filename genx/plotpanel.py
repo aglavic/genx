@@ -7,7 +7,9 @@ import matplotlib
 matplotlib.interactive(False)
 # Use WXAgg backend Wx to slow
 matplotlib.use('Agg')
+from matplotlib.backends.backend_wx import FigureCanvasWx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+
 from matplotlib.backends.backend_agg import FigureCanvasAgg, RendererAgg
 from matplotlib.transforms import Bbox#, Point, Value
 from matplotlib.figure import Figure
@@ -17,6 +19,7 @@ from matplotlib.pyplot import setp
 from numpy import *
 import wx
 import wx.lib.newevent
+from wx import Printout, PrintData, PAPER_A4, LANDSCAPE, PrintDialogData
 
 import filehandling as io
 
@@ -80,7 +83,11 @@ class PlotPanel(wx.Panel):
 
         # Init printout stuff
         self.fig_printer = FigurePrinter(self)
-        
+
+        # Create the drawing bitmap
+        self.bitmap =wx.EmptyBitmap(1, 1)
+#        DEBUG_MSG("__init__() - bitmap w:%d h:%d" % (w,h), 2, self)
+        self._isDrawn = False
     
     def SetColor(self, rgbtuple=None):
         ''' Set the figure and canvas color to be the same '''
@@ -321,6 +328,7 @@ class PlotPanel(wx.Panel):
             return self.ax.get_yscale()
         else:
             return None
+
         
     def CopyToClipboard(self, event = None):
         '''CopyToClipboard(self, event) --> None
@@ -377,6 +385,8 @@ class PlotPanel(wx.Panel):
             pass
         p = Point()
         p.x, p.y = self.start_pos
+        size = self.canvas.GetClientSize()
+        p.y = (size.height - p.y)
         if self.zoom and self.ax:
             if mat_ver > zoom_ver:
                 in_axes = self.ax.in_axes(p)
@@ -386,6 +396,8 @@ class PlotPanel(wx.Panel):
                 self.zooming = True
                 self.cur_rect = None
                 self.canvas.CaptureMouse()
+            else:
+                self.zooming = False
         elif self.ax:
             size = self.canvas.GetClientSize()
             if mat_ver > zoom_ver:
@@ -411,15 +423,16 @@ class PlotPanel(wx.Panel):
             p = Point()
             p.x, p.y = self.cur_pos
             size = self.canvas.GetClientSize()
-            p.y = abs(size.height - p.y)
+            p.y = (size.height - p.y)
             if mat_ver > zoom_ver:
                 in_axes = self.ax.in_axes(p)
             else:
                 in_axes = self.ax.in_axes(*self.start_pos)
             if in_axes:
-                new_rect = (self.start_pos[0], self.start_pos[1],\
-                        self.cur_pos[0] - self.start_pos[0],\
-                        self.cur_pos[1] - self.start_pos[1])
+                new_rect = (min(self.start_pos[0], self.cur_pos[0]),
+                            min(self.start_pos[1], self.cur_pos[1]),
+                        abs(self.cur_pos[0] - self.start_pos[0]),
+                        abs(self.cur_pos[1] - self.start_pos[1]))
                 self._DrawAndErase(new_rect, self.cur_rect)
                 self.cur_rect = new_rect
         #event.Skip()
@@ -563,7 +576,11 @@ class FigurePrinter:
             self.pData = wx.PrintData()
         else:
             self.pData = printData
-
+            
+        self.pData.SetPaperId(PAPER_A4)
+        self.pData.SetOrientation(LANDSCAPE)
+        self.pData.SetNoCopies(1)
+ 
     def destroy(self):
         """
         Sets this object's C{view} attribute to C{None}.
@@ -623,10 +640,14 @@ class FigurePrinter:
         for the print job.
         """
         pdData = wx.PrintDialogData()
+        pdData.SetFromPage(1)
+        pdData.SetToPage(1)
+        pdData.SetPrintToFile(True)
         pdData.SetPrintData(self.pData)
         printer = wx.Printer(pdData)
         fpo = FigurePrintout(figure, title)
         fpo.SetPPIPrinter(300, 300)
+        self.pData = pdData.GetPrintData()
         if printer.Print(self.view, fpo, True):
             self.pData = pdData.GetPrintData()
         self.copyPrintData()
@@ -842,14 +863,14 @@ class DataPlotPanel(PlotPanel):
         self.main_ax_rect = (0.125, 0.3, 0.8, 0.6)
         self.sub_ax_rect = (0.125, 0.1,0.8,0.18)
         PlotPanel.__init__(self, parent, id, color, dpi, style, **kwargs)
+        self.create_axes()
         self.update=self.singleplot
         self.update(None)
         self.update = self.plot_data
         self.SetAutoScale(True)
+        #self.ax = self.figure.add_subplot(111)
+        #self.ax.set_autoscale_on(False)
         
-        
-        
-        self.create_axes()
         
     def create_axes(self):
         self.ax = self.figure.add_axes(self.main_ax_rect)#self.figure.add_subplot(111)
@@ -892,6 +913,7 @@ class DataPlotPanel(PlotPanel):
     def plot_data(self, data):
         
         if not self.ax:
+                #self.ax = self.figure.add_subplot(111)
                 self.create_axes()
         
         # This will be somewhat inefficent since everything is updated
