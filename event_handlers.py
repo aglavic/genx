@@ -11,12 +11,12 @@ __version__ = version.version #'2.0b trunk'
 
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
-
 import webbrowser
 
 import model as modellib
 import solvergui, help
 import filehandling as io
+
 
 manual_url = 'http://sourceforge.net/apps/trac/genx'
 homepage_url = 'http://genx.sf.net'
@@ -56,7 +56,7 @@ def new(frame, event):
     '''
     if not frame.model.saved:
         ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
-                                 'your model will not be saved.', 
+                                 ' your model will not be saved.', 
                                  'Model not saved')
         if not ans:
            return
@@ -79,7 +79,7 @@ def open(frame, event):
     # Check so the model is saved before quitting
     if not frame.model.saved:
         ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
-                                 'your model will not be saved.', 
+                                 ' your model will not be saved.', 
                                  'Model not saved')
         if not ans:
            return
@@ -197,6 +197,10 @@ def save_as(frame, event):
     if dlg.ShowModal() == wx.ID_OK:
         frame.model.set_script(frame.script_editor.GetText())
         fname = dlg.GetPath()
+        base, ext = os.path.splitext(fname)
+        if ext == '':
+            ext = '.gx'
+	    fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
@@ -256,6 +260,10 @@ def export_script(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
+        base, ext = os.path.splitext(fname)
+        if ext == '':
+            ext = '.py'
+	    fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
@@ -264,7 +272,8 @@ def export_script(frame, event):
             , 'Overwrite?')
         if result:
             try:
-                frame.model.export_script(dlg.GetPath())
+                #frame.model.export_script(dlg.GetPath())
+                frame.model.export_script(fname)
             except modellib.IOError, e:
                 ShowModelErrorDialog(frame, str(e))
                 frame.main_frame_statusbar.SetStatusText(\
@@ -292,6 +301,10 @@ def export_table(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
+        base, ext = os.path.splitext(fname)
+        if ext == '':
+            ext = '.tab'
+	    fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
@@ -300,7 +313,8 @@ def export_table(frame, event):
             , 'Overwrite?')
         if result:
             try:
-                frame.model.export_table(dlg.GetPath())
+                #frame.model.export_table(dlg.GetPath())
+                frame.model.export_table(fname)
             except modellib.IOError, e:
                 ShowModelErrorDialog(frame, str(e))
                 frame.main_frame_statusbar.SetStatusText(\
@@ -328,7 +342,8 @@ def import_script(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
-            frame.model.import_script(dlg.GetPath())
+            #frame.model.import_script(dlg.GetPath())
+            frame.model.import_script(fname)
         except modellib.IOError, e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(\
@@ -477,19 +492,16 @@ def start_fit(frame, event):
     Event handler to start fitting
     '''
     if frame.model.compiled:
-        #try:
-        #    frame.solver_control.StartFit()
-        #except modellib.GenericError, e:
-        #    raise e
-        #    ShowModelErrorDialog(frame, str(e))
-        #    frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-        #except Exception, e:
-        #    raise e
-        #    ShowErrorDialog(frame, str(e))
-        #    frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-        #else:
-        #    frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
-        frame.solver_control.StartFit()
+        try:
+            frame.solver_control.StartFit()
+        except modellib.GenericError, e:
+            ShowModelErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
+        except Exception, e:
+            ShowErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+        else:
+            frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
     else:
         ShowNotificationDialog(frame, 'The script is not compiled, do a'\
         ' simulation before you start fitting.')
@@ -631,7 +643,7 @@ def quit(frame, event):
     # Check so the model is saved before quitting
     if not frame.model.saved:
         ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
-                                 'your model will not be saved.', 
+                                 ' your model will not be saved.', 
                                  'Model not saved')
         if ans:
             frame.Destroy()
@@ -772,7 +784,8 @@ def print_parameter_grid(frame, event):
     Prints the table of parameters that have been fitted.
     '''
     frame.paramter_grid.Print()
-    
+    #genxprint.TablePanel(frame)
+   
 def print_preview_parameter_grid(frame, event):
     ''' print_parameter_grid(frame, event) --> None
     

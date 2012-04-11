@@ -33,3 +33,4 @@ class Plugin(framework.Template):
                 'data': self.GetModel().get_data()})
         sizer.Add(self.shell,1, wx.EXPAND)
         inputpanel.Layout()
+        self.StatusMessage('Shell plugin loaded')
