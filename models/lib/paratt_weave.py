@@ -51,6 +51,48 @@ def Refl(theta,lamda,n,d,sigma):
 
     return real(R)
 
+def ReflQ(Q,lamda,n,d,sigma):
+    # Length of k-vector in vaccum
+    Q0=4*math.pi/lamda
+    Q=array(Q,dtype=float64)
+    n = n.astype(complex128)
+    d = d[1:-1].astype(float64)
+    sigma = sigma[:-1].astype(float64)
+    n2amb = n[-1]**2
+    torad=math.pi/180.0
+    Imag=1.0J
+    R=array(zeros(Q.shape),dtype=complex128)
+    Qj=1.01J
+    Qj1=1.01J
+    r=1.01J
+    rp=1.01J
+    p=1.01J
+    # Calculates the wavevector in each layer
+    code='''
+    int points=NQ[0];
+    int interfaces=Nsigma[0];
+    int j=0;
+    for(int i = 0; i < points; i++){
+        Qj = sqrt((n[0]*n[0] - n2amb)*Q0*Q0 + n2amb*Q[i]*Q[i]);
+        Qj1 = sqrt((n[1]*n[1] - n2amb)*Q0*Q0 + n2amb*Q[i]*Q[i]);
+        rp=(Qj - Qj1)/(Qj1 + Qj)*exp(-Qj1*Qj/2.0*sigma[0]*sigma[0]);
+        r = rp;
+        for(j = 1; j < interfaces; j++){
+            Qj = Qj1;
+            Qj1 = sqrt((n[j+1]*n[j+1] - n2amb)*Q0*Q0 + n2amb*Q[i]*Q[i]);
+            rp = (Qj-Qj1)/(Qj1+Qj)*exp(-Qj1*Qj/2.0*sigma[j]*sigma[j]);
+            p = exp(Imag*d[j-1]*Qj);
+            r = (rp+r*p)/(1.0 + rp*r*p);
+        }
+        
+        R[i]=r*conj(r);
+    }
+
+    '''
+    weave.inline(code,['Q','n','d','sigma','Q0','torad','Imag','R','Qj','Qj1','r','rp','p', 'n2amb'],compiler='gcc')
+
+    return real(R)
+
 def Refl_nvary2(theta,lamda,n,d,sigma):
     # Length of k-vector in vaccum
     #print n.shape, theta.shape, d.shape

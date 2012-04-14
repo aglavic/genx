@@ -32,10 +32,12 @@ class MainFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         
         self.config = io.Config()
-        if _path != '':
-            self.config.load_default(_path + '/genx.conf')
-        else:
-            self.config.load_default('./genx.conf')
+        #print _path
+        #if _path != '':
+        #    self.config.load_default(_path + '/genx.conf')
+        #else:
+        #    self.config.load_default('./genx.conf')
+        self.config.load_default('./genx.conf')
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__

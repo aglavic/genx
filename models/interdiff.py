@@ -103,8 +103,13 @@ diffuse interfaces.
     calculation but also much slower.</dd>
 '''
 
-import lib.paratt as Paratt
-
+#import lib.paratt as Paratt
+try:
+    import lib.paratt_weave as Paratt
+except StandardError,S:
+    print 'Not using inline c code for reflectivity calcs - can not import module'
+    print S
+    import lib.paratt as Paratt
 __offspec__ = True
 try:
     import lib.offspec2_weave

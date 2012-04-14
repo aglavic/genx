@@ -1019,8 +1019,9 @@ class PlotSettingsDialog(wx.Dialog):
         sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
-        
+        sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)
+        sizer.Add((-1, 4), 0, wx.EXPAND)
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.Layout()
@@ -1129,14 +1130,20 @@ class CalcDialog(wx.Dialog):
         self.data_list = data_names
         self.data_commands = data_commands
         
+        # Create a nice static box
+        box_choice = wx.StaticBox(self, -1, "Import from: ")
+        box_choice_sizer = wx.StaticBoxSizer(box_choice, wx.HORIZONTAL)
+        
         # Layout for some of the controlboxes 
         choice_gbs = wx.GridBagSizer(1, 4)
-        col_labels = ['  Predefined: ', '  Data set: ']
+        box_choice_sizer.Add(choice_gbs, flag = wx.ALIGN_CENTER, border = 5)
+        col_labels = ['  Predefined: ', ' Data set: ']
             
         for item, index in zip(col_labels, range(len(col_labels))):
             label = wx.StaticText(self, -1, item)
             choice_gbs.Add(label,(0, 2*index),\
                 flag = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+        
         
         # Make the choice boxes we want to have:
         
@@ -1150,9 +1157,9 @@ class CalcDialog(wx.Dialog):
             self.predef_commands = [{'x':'x*2','y':'y/1000.0','e':'e/1000'},\
                 {'x':'x','y':'y','e':'e'}]
                 
-        self.predef_choice = wx.Choice(self, -1, choices = self.predef_list)
+        self.predef_choice = wx.Choice(self, 1, choices = self.predef_list)
         
-        self.data_choice = wx.Choice(self, -1, choices = self.data_list)
+        self.data_choice = wx.Choice(self, 1, choices = self.data_list)
         # Add them to the sizer
         choice_gbs.Add(self.predef_choice, (0,1))
         choice_gbs.Add(self.data_choice, (0,3))
@@ -1160,10 +1167,8 @@ class CalcDialog(wx.Dialog):
         self.Bind(wx.EVT_CHOICE, self.OnPredefChoice, self.predef_choice)
         self.Bind(wx.EVT_CHOICE, self.OnDataChoice, self.data_choice)
         
-        # Create a nice static box
-        box_choice = wx.StaticBox(self, -1, "Import from: ")
-        box_choice_sizer = wx.StaticBoxSizer(box_choice, wx.VERTICAL)
-        box_choice_sizer.Add(choice_gbs, flag = wx.ALIGN_CENTER, border = 5)
+        
+        
         
         
         # Layout for the command controls
@@ -1216,13 +1221,16 @@ class CalcDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnClickExecute, apply_button)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add((-1, 10), 0, wx.EXPAND)
         sizer.Add(box_choice_sizer, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL, 20)
         sizer.Add(gbs, 1, wx.GROW|wx.ALL|wx.EXPAND, 20)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 20)
         
+        sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(button_sizer,0,\
                 flag = wx.ALIGN_RIGHT, border = 20)
+        sizer.Add((-1, 4), 0, wx.EXPAND)
         self.SetSizer(sizer)
         
         sizer.Fit(self)

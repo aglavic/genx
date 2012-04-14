@@ -1004,11 +1004,11 @@ def show_about_box(frame, event):
     '''
     import numpy, scipy, matplotlib, platform
     try:
-        import weave
+        import scipy.weave as weave
     except:
         weave_version = 'Not installed'
     else:
-        weave_version = weave.version.version
+        weave_version = weave.__version__
     try:
         import processing
     except:

@@ -108,6 +108,12 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
 from numpy import *
 
 import lib.paratt as Paratt
+try:
+    import lib.paratt_weave as Paratt
+except StandardError,S:
+    print 'Not using inline c code for reflectivity calcs - can not import module'
+    print S
+    import lib.paratt as Paratt
 import lib.neutron_refl as MatrixNeutron
 from lib.instrument import *
 # Preamble to define the parameters needed for the models outlined below:
