@@ -301,8 +301,9 @@ class PluginController:
         Tries to load the default plugins from the config object
         if they are not already loaded.
         '''
-        plugin_str = self.config.get('plugin', 'loaded plugin')
+        plugin_str = self.config.get('plugins', 'loaded plugins')
         # Check so we have any plugins to load else bail out
+        print 'Plugin string:', plugin_str
         if plugin_str == '':
             return
         existing_plugins = self.plugin_handler.get_possible_plugins()
