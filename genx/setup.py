@@ -19,7 +19,7 @@ from glob import glob
 import subprocess
 import version
 
-__name__='genx'
+__name__='GenX'
 __author__ = "Artur Glavic"
 __copyright__ = "Copyright 2008-2011"
 __license__ = "GPL v3"
@@ -81,11 +81,17 @@ elif"py2app" in sys.argv:
   
   __options__ = dict(
          setup_requires=['py2app'],
-         app=["genx_gui.py"],
+         app=["genx.py"],
          # Cross-platform applications generally expect sys.argv to
          # be used for opening files.
          options=dict(py2app=dict(argv_emulation = True, 
-                                  packages = ['matplotlib', 'numpy'])),
+                                  packages = ['matplotlib', 'numpy', 'plugins', 'models','wx',],
+                                  resources = ['genx.conf',],
+                                  excludes = ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject'],
+                                  iconfile = 'mac_build/genx.icns',
+                                  plist = 'mac_build/Info.plist',
+                                  ),
+                    )
      )  
 
 else:
