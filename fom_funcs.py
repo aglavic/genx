@@ -10,7 +10,8 @@ simulation is denoted as <var>S</var>. A single element of these arrays
 is indicated by a subscript <var>i</var>. In the same manner, the
 independent variable (denoted as <var>x</var> in the data strucure) is called
 <var>X</var>. The error array is denoted <var>E</var>. Finally the total number
-of data points is given by <var>N</var>.<br>
+of data points is given by <var>N</var> and <var>p</p> is the number of free parameters
+in the fit.<br>
 
 
 <h3>Unweighted FOM functions</h3>
@@ -19,7 +20,7 @@ of data points is given by <var>N</var>.<br>
 <h4>diff</h4>
 Average of the absolute difference between simulation and data.<br>
 <br><huge>
-    FOM<sub>diff</sub> = 1/(N-1) &times; &#8721;<sub><var>i</var></sub>
+    FOM<sub>diff</sub> =  1/(N-p) &times; &#8721;<sub><var>i</var></sub>
     &#124;<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>&#124;
 </huge><br>
 
@@ -27,7 +28,7 @@ Average of the absolute difference between simulation and data.<br>
 <h4>log</h4>
 Average of the absolute difference between the logarithms (base 10) of the data and the simulation.<br>
 <br><huge>
-    FOM<sub>log</sub> = 1/(N-1) &times; &#8721;<sub><var>i</var></sub>
+    FOM<sub>log</sub> = 1/(N-p) &times;&#8721;<sub><var>i</var></sub>
     &#124;log<sub>10</sub>(<var>Y<sub>i</sub></var>) -
     log<sub>10</sub>(<var>S<sub>i</sub></var>)&#124;
 </huge><br>
@@ -36,7 +37,7 @@ Average of the absolute difference between the logarithms (base 10) of the data 
 <h4>sqrt</h4>
 Average of the absolute difference between the square roots of the data and the simulation:<br>
 <br><huge>
-    FOM<sub>sqrt</sub> = 1/(N-1) &times; &#8721;<sub><var>i</var></sub>
+    FOM<sub>sqrt</sub> =  1/(N-p) &times; &#8721;<sub><var>i</var></sub>
     &#124;sqrt(<var>Y<sub>i</sub></var>) - sqrt(<var>S<sub>i</sub></var>)
     &#124;
 </huge><br>
@@ -96,7 +97,7 @@ The logarithmic R2 factor is a modification of the crystallographic R2 factor, c
 <h4>sintth4</h4>
 Gives the average of the absolute differences scaled with a sin(2&theta;)<sup>4</sup> term (2&theta; = tth). For reflectivity data, this will divide away the Fresnel reflectivity. <br>
 <br><huge>
-    FOM<sub>sintth4</sub> = 1/(N-1) &times;
+    FOM<sub>sintth4</sub> = 1/(N-p) &times;
     &#8721;<sub><var>i</var></sub>
     &#124;<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>&#124; &times;
     sin(<var>tth</var>)<sup>4</sup>
@@ -108,7 +109,7 @@ Gives the average of the absolute differences scaled with a sin(2&theta;)<sup>4<
 <h4>chi2bars</h4>
 Chi squared (&chi;<sup>2</sup>) FOM including error bars<br>
 <br><huge>
-    FOM<sub>chi2bars</sub> = 1/(N-1) &#8721;<sub><var>i</var></sub>
+    FOM<sub>chi2bars</sub> = 1/(N-p) &times; &#8721;<sub><var>i</var></sub>
     ((<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>) /
     <var>E<sub>i</sub></var>)<sup>2</sup>
 </huge><br>
@@ -117,7 +118,7 @@ Chi squared (&chi;<sup>2</sup>) FOM including error bars<br>
 <h4>chibars</h4>
 Chi squared but without the squaring! Includes error bars:<br>
 <br><huge>
-    FOM<sub>chibars</sub> = 1/(N-1) &times; &#8721;<sub><var>i</var></sub>
+    FOM<sub>chibars</sub> = 1/(N-p) &times; &#8721;<sub><var>i</var></sub>
     &#124;(<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>) /
     <var>E<sub>i</sub></var>&#124;
 </huge><br>
@@ -126,7 +127,7 @@ Chi squared but without the squaring! Includes error bars:<br>
 <h4>logbars</h4>
 Absolute logarithmic (base 10) difference, taking errors into account:<br>
 <br><huge>
-    FOM<sub>logbars</sub> = 1/(N-1) &times; &#8721;<sub><var>i</var></sub>
+    FOM<sub>logbars</sub> = 1/(N-p) &times; &#8721;<sub><var>i</var></sub>
     &#124;log<sub>10</sub>(<var>Y<sub>i</sub></var>) -
     log<sub>10</sub>(<var>S<sub>i</sub></var>)&#124; /
     <var>E<sub>i</sub></var>*ln(10)*<var>Y<sub>i</sub></var>
@@ -190,23 +191,25 @@ def diff(simulations, data):
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
     #return 1.0/(N-1)*np.sum([np.sum(np.abs(dataset.y - sim))\
     #    for (dataset, sim) in zip(data,simulations) if dataset.use])
-    return [1.0/(N-1)*(dataset.y - sim)
+    return [(dataset.y - sim)
         for (dataset, sim) in zip(data,simulations)]
-
+diff.__div_dof__ = True
 
 def log(simulations, data):
     ''' Average absolute logartihmic difference
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return [1.0/(N-1)*(np.log10(dataset.y)-np.log10(sim))
+    return [(np.log10(dataset.y)-np.log10(sim))
         for (dataset, sim) in zip(data,simulations)]
+log.__div_dof__ = True
 
 def sqrt(simulations, data):
     ''' Average absolute difference of the square root
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return [1.0/(N-1)*(np.sqrt(dataset.y) - np.sqrt(sim))
+    return [(np.sqrt(dataset.y) - np.sqrt(sim))
         for (dataset, sim) in zip(data,simulations)]
+sqrt.__div_dof__ = True
 
 def R1(simulations, data):
     ''' Crystallographic R-factor (R1)
@@ -245,15 +248,17 @@ def sintth4(simulations, data):
     ''' Sin(tth)^4 scaling of the average absolute difference for reflectivity.
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return [1.0/(N-1)*np.sin(dataset.x*np.pi/360.0)**4*
+    return [np.sin(dataset.x*np.pi/360.0)**4*
         (dataset.y - sim)
         for (dataset, sim) in zip(data,simulations)]
+sintth4.__div_dof__ = True
 
 def Norm(simulations, data):
     '''  dataset normalized 1/3 scaling of the error
     '''
     return [1.0/np.sum(np.abs(dataset.y))*(np.sign(dataset.y)*np.abs(dataset.y) - np.sign(sim)*np.abs(sim))\
         for (dataset, sim) in zip(data,simulations)]
+Norm.__div_dof__ = True
 
 #=======================
 # weighted FOM functions
@@ -262,23 +267,26 @@ def chi2bars(simulations, data):
     ''' Weighted chi squared
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return [1.0/(N-1)*(dataset.y - sim)**2/dataset.error**2
+    return [(dataset.y - sim)**2/dataset.error**2
         for (dataset, sim) in zip(data,simulations)]
+chi2bars.__div_dof__ = True
 
 def chibars(simulations, data):
     ''' Weighted chi squared but without the squaring
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return [1.0/(N-1)*((dataset.y - sim)/dataset.error)
+    return [((dataset.y - sim)/dataset.error)
         for (dataset, sim) in zip(data,simulations)]
+chibars.__div_dof__ = True
 
 def logbars(simulations, data):
     ''' Weighted average absolute difference of the logarithm of the data
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return [1.0/(N-1)*((np.log10(dataset.y) - np.log10(sim))
+    return [((np.log10(dataset.y) - np.log10(sim))
         /dataset.error*np.log(10)*dataset.y)
         for (dataset, sim) in zip(data,simulations)]
+logbars.__div_dof__ = True
 
 def R1bars(simulations, data):
     ''' Weighted crystallographic R-factor (R1)

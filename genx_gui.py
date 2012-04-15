@@ -394,7 +394,7 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.SetToolBitmapSize((32,32))
         
         self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
-            '        FOM: ', size = (200, -1))
+            '        FOM:                    ', size = (400, -1))
         font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.NORMAL, wx.NORMAL)
         self.main_frame_fom_text.SetFont(font)
         self.main_frame_fom_text.SetLabel('        FOM: None')

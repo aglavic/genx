@@ -238,6 +238,19 @@ class Model:
         fom_indiv = [np.sum(np.abs(fom_set)) for fom_set in fom_raw]
         fom = np.sum([f for f, d in zip(fom_indiv, self.data) if d.use])
         
+        # Lets extract the number of datapoints as well:
+        N = np.sum([len(fom_set) for fom_set, d in zip(fom_raw, self.data) if d.use])
+        # And the number of fit parameters
+        p = self.parameters.get_len_fit_pars()
+        #self.fom_dof = fom/((N-p)*1.0)
+        try:
+            use_dif = self.fom_func.__div_dof__
+        except StandardError:
+            use_dif = False
+        if use_dif:
+            fom = fom/((N-p)*1.0)
+        
+            
         return fom_raw, fom_indiv, fom
             
     def evaluate_fit_func(self):
