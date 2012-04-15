@@ -303,7 +303,7 @@ class PluginController:
         '''
         plugin_str = self.config.get('plugins', 'loaded plugins')
         # Check so we have any plugins to load else bail out
-        print 'Plugin string:', plugin_str
+        #print 'Plugin string:', plugin_str
         if plugin_str == '':
             return
         existing_plugins = self.plugin_handler.get_possible_plugins()

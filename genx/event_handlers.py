@@ -664,10 +664,11 @@ def fom_value(frame, event):
     Callback to update the fom_value displayed by the gui
     '''
     fom_value = event.model.fom
+    fom_name =  event.model.fom_func.__name__
     if fom_value:
-        frame.main_frame_fom_text.SetLabel('        FOM: %.4e'%fom_value)
+        frame.main_frame_fom_text.SetLabel('        FOM %s: %.4e'%(fom_name,fom_value))
     else:
-        frame.main_frame_fom_text.SetLabel('        FOM: None')
+        frame.main_frame_fom_text.SetLabel('        FOM %s: None'%(fom_name))
 def point_pick(frame, event):
     '''point_pick(frame, event) --> None
     Callback for the picking of a data point in a plotting window.

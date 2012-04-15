@@ -31,6 +31,9 @@ class Parameters:
     
     def get_len_cols(self):
         return len(self.data[0])
+    
+    def get_len_fit_pars(self):
+        return sum([row[2] for row in self.data])
         
     def get_col_headers(self):
         return self.data_labels[:]
