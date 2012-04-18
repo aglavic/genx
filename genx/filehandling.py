@@ -47,6 +47,18 @@ class Config:
             print e
             raise IOError('Could not load default config file', filename)
     
+    def write_default(self, filename):
+        '''write_default(self, filename) --> None
+        
+        Writes the current defualt configuration to filename
+        '''
+        try:
+            cfile = open(filename, 'wb')
+            self.default_config.write(cfile)
+        except Exception, e:
+            print e
+            raise IOError('Could not write default config file', filename)
+    
     def load_model(self, str):
         '''load_model(self, str) --> None
         
@@ -117,6 +129,7 @@ class Config:
         if not self.model_config.has_section(section):
             self.model_config.add_section(section)
         self.model_config.set(section, option, str(value))
+        #print 'Model set: ', section, ' ', option, ' ', value
         
     def default_set(self, section, option, value):
         '''model_set(self, section, option, value) --> None
@@ -126,6 +139,8 @@ class Config:
         if not self.default_config.has_section(section):
             self.default_config.add_section(section)
         self.default_config.set(section, option, str(value))
+        #print 'Default set: ', section, ' ', option, ' ', value
+        
     
     def set(self, section, option, value):
         '''set(self, section, option, value) --> None

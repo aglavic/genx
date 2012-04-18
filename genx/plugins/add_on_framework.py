@@ -253,7 +253,8 @@ class PluginController:
         
         menu.Append(-1, 'Update module list')
         
-        self.update_plugins()
+        self.LoadDefaultPlugins()
+        #self.update_plugins()
         
         
         
@@ -302,6 +303,7 @@ class PluginController:
         if they are not already loaded.
         '''
         plugin_str = self.config.get('plugins', 'loaded plugins')
+        #print' plugins:', plugin_str
         # Check so we have any plugins to load else bail out
         #print 'Plugin string:', plugin_str
         if plugin_str == '':
