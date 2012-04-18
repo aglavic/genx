@@ -11,7 +11,7 @@ import wx
 import wx.grid, wx.py, wx.stc
 import wx.lib.plot as wxplot
 
-import os, sys
+import os, sys, shutil
 
 import data, model
 import filehandling as io
@@ -31,18 +31,25 @@ print _path
 class MainFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         
-        self.config = io.Config()
+        
         #print _path
         #if _path != '':
         #    self.config.load_default(_path + '/genx.conf')
         #else:
         #    self.config.load_default('./genx.conf')
-        self.config.load_default('./genx.conf')
+        
+        
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__
         kwds["style"] = wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|wx.MAXIMIZE|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
+        
+        self.config = io.Config()
+        self.config.load_default('./genx.conf')
+        self.startup_dialog()
+        
+        
         self.ver_splitter = wx.SplitterWindow(self, -1, style=wx.SP_3D|wx.SP_BORDER)
         self.main_panel = wx.Panel(self.ver_splitter, -1)
         self.hor_splitter = wx.SplitterWindow(self.main_panel, -1, style=wx.SP_3D|wx.SP_BORDER)
@@ -174,6 +181,8 @@ class MainFrame(wx.Frame):
         self.mb_set.AppendItem(self.mb_set_import)
         self.mb_set_dataplot = wx.MenuItem(self.mb_set, wx.NewId(), "Plot Markers\tShift+Ctrl+P", "Set the symbols and lines of data and simulations", wx.ITEM_NORMAL)
         self.mb_set.AppendItem(self.mb_set_dataplot)
+        self.mb_set_startup_profile = wx.MenuItem(self.mb_set, wx.NewId(), "Startup Profile", "Set the startup profile", wx.ITEM_NORMAL)
+        self.mb_set.AppendItem(self.mb_set_startup_profile)
         self.main_frame_menubar.Append(self.mb_set, "Settings")
         wxglade_tmp_menu = wx.Menu()
         mb_help = wx.Menu()
@@ -267,6 +276,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_set_dal, self.mb_set_dataloader)
         self.Bind(wx.EVT_MENU, self.eh_data_import, self.mb_set_import)
         self.Bind(wx.EVT_MENU, self.eh_data_plots, self.mb_set_dataplot)
+        self.Bind(wx.EVT_MENU, self.eh_show_startup_dialog, self.mb_set_startup_profile)
         self.Bind(wx.EVT_MENU, self.eh_mb_models_help, self.mb_models_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_fom_help, self.mb_fom_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, self.mb_plugins_help)
@@ -387,7 +397,8 @@ class MainFrame(wx.Frame):
         # Initiializations..
         # To force an update of the menubar...
         self.plot_data.SetZoom(False)
-        event_handlers.new(self, None)
+        #event_handlers.new(self, None)
+        self.model.saved = True
         #### End Manual config
         
     def __set_properties(self):
@@ -501,9 +512,9 @@ class MainFrame(wx.Frame):
             the calls to Show
         '''
         wx.Frame.Show(self)
-        if os.name == 'mac' or os.name == '':
+        if os.name == 'mac' or os.name == 'posix' or os.name == '':
             self.Maximize()
-            self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
+            self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/4.)
             self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*5.5/10.)
         else:
             size = wx.DisplaySize()
@@ -516,9 +527,23 @@ class MainFrame(wx.Frame):
         ## Begin Manual Config
         #Gravity sets how much the upper/left window is resized default 0
         self.hor_splitter.SetSashGravity(0.75)
-        self.plugin_control.LoadDefaultPlugins()
+        #self.plugin_control.LoadDefaultPlugins()
         #self.Maximize()
         ## End Manual Config
+        
+    def startup_dialog(self, force_show = False):
+        show_profiles = self.config.get_boolean('startup', 'show profiles')
+        if show_profiles  or force_show:
+            startup_dialog = StartUpConfigDialog(self, './profiles/', show_cb = show_profiles)
+            startup_dialog.ShowModal()
+            config_file = startup_dialog.GetConfigFile()
+            shutil.copyfile('./profiles/' + config_file, './genx.conf')
+            
+            self.config.load_default('./genx.conf')
+            self.config.default_set('startup', 'show profiles', 
+                                    startup_dialog.GetShowAtStartup())
+            self.config.write_default('./genx.conf')
+            #print self.config.get('plugins','loaded plugins')
 
             
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
@@ -765,6 +790,9 @@ class MainFrame(wx.Frame):
         #print "Event handler `eh_mb_misc_openhomepage' not implemented"
         #event.Skip()
         event_handlers.show_homepage(self, event)
+        
+    def eh_show_startup_dialog(self, event):
+        self.startup_dialog(force_show = True)
 
 # end of class MainFrame
 
@@ -772,12 +800,89 @@ class MainFrame(wx.Frame):
 class MyApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
+        
         main_frame = MainFrame(None, -1, "")
         self.SetTopWindow(main_frame)
         main_frame.Show()
         return 1
 
 # end of class MyApp
+
+class StartUpConfigDialog(wx.Dialog):
+    def __init__(self, parent, config_folder, show_cb = True):
+        wx.Dialog.__init__(self, parent, -1, 'Change Startup Configuration')
+        
+        self.config_folder = config_folder
+        self.selected_config = 'Default.conf'
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add((-1, 10), 0, wx.EXPAND)
+        
+        sizer.Add(wx.StaticText(self, label='Choose the profile you want GenX to use:   '),
+                  0, wx.ALIGN_LEFT, 5)
+        self.profiles = self.get_possible_configs()
+        self.config_list = wx.ListBox(self, size = (-1, 200), choices = self.profiles, style = wx.LB_SINGLE)
+        self.config_list.SetSelection(self.profiles.index('Default'))
+        sizer.Add(self.config_list, 1, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 5)
+        
+        startup_cb = wx.CheckBox(self, -1, "Show at startup", style=wx.ALIGN_LEFT)
+        startup_cb.SetValue(show_cb)
+        self.startup_cb = startup_cb
+        sizer.Add((-1, 4), 0, wx.EXPAND)
+        sizer.Add(startup_cb, 0, wx.EXPAND, 5)
+        
+        # Add the Dilaog buttons
+        button_sizer = wx.StdDialogButtonSizer()
+        okay_button = wx.Button(self, wx.ID_OK)
+        okay_button.SetDefault()
+        button_sizer.AddButton(okay_button) 
+        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+        button_sizer.Realize()
+        # Add some eventhandlers
+        self.Bind(wx.EVT_BUTTON, self.OnClickOkay, okay_button)
+
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 20)
+        
+        sizer.Add((-1, 4), 0, wx.EXPAND)
+        sizer.Add(button_sizer,0,\
+                flag = wx.ALIGN_RIGHT, border = 20)
+        sizer.Add((-1, 4), 0, wx.EXPAND)
+        
+        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer.Add((10,-1), 0, wx.EXPAND)
+        main_sizer.Add(sizer, 1, wx.EXPAND)
+        main_sizer.Add((10,-1), 0, wx.EXPAND)
+        self.SetSizer(main_sizer)
+        
+        sizer.Fit(self)
+        self.Layout()
+        self.CentreOnScreen()
+        
+        
+    def OnClickOkay(self, event):
+        self.selected_config = self.profiles[self.config_list.GetSelection()]
+        self.show_at_startup = self.startup_cb.GetValue()
+        event.Skip()
+        
+    def GetConfigFile(self):
+        return self.selected_config + '.conf'
+    
+    def GetShowAtStartup(self):
+        return self.show_at_startup
+    
+    def get_possible_configs(self):
+        '''get_possible_configs(self) --> list of strings
+        
+        search the plugin directory. 
+        Checks the list for python scripts and returns a list of 
+        module names that are loadable .
+        '''
+        # Locate all python files in this files directory
+        # but excluding this file and not loaded.
+        plugins = [s[:-5] for s in os.listdir(self.config_folder) if '.conf' == s[-5:] 
+                        and s[:2] != '__']
+        return plugins
 
 if __name__ == "__main__":
     app = MyApp(0)
