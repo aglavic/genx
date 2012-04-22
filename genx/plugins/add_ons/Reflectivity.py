@@ -65,7 +65,7 @@ import sys, os, re, time, StringIO, traceback
 from help_modules.custom_dialog import *
 import help_modules.reflectivity_images as images
 
-_avail_models = ['interdiff', 'spec_nx', 'xmag', 'mag_refl']
+_avail_models = ['spec_nx', 'interdiff', 'xmag', 'mag_refl']
 
 class SampleHandler:
     def __init__(self,sample,names):
@@ -1509,7 +1509,7 @@ class Plugin(framework.Template):
         if self.mb_autoupdate_sld.IsChecked():
             self.sld_plot.Plot()
         
-    def CreateNewModel(self, modelname = 'models.interdiff'):
+    def CreateNewModel(self, modelname = 'models.spec_nx'):
         '''Init the script in the model to yield the 
         correct script for initilization
         '''
