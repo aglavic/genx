@@ -40,6 +40,7 @@ class Plugin(Template):
     
         wizard.FitToPage(page1)
         #print dir(wizard)
+        #print 'data: ', self.datalist[0].x
         if wizard.RunWizard(page1):
             return True
         else:

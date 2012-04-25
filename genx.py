@@ -17,8 +17,9 @@ if __name__ == "__main__":
       freeze_support()
     except ImportError:
       pass
-    app = genx_gui.MyApp(0)
+    
     if len(sys.argv)==2 and sys.argv[1].endswith('.gx'):
+      app = genx_gui.MyApp(False, 0)
       # Create the window
       app.Yield()
       frame=app.TopWindow
@@ -84,4 +85,5 @@ if __name__ == "__main__":
     elif len(sys.argv)>2:
       print "Usage: genx {model.gx}"
     else:
+      app = genx_gui.MyApp(True, 0) 
       app.MainLoop()

@@ -7,7 +7,9 @@ def _addMethod(fldName, clsName, verb, methodMaker, dict):
     """Make a get or set method and add it to dict."""
     compiledName = _getCompiledName(fldName, clsName)
     methodName = _getMethodName(fldName, verb)
-    dict[methodName] = methodMaker(compiledName)
+    met = methodMaker(compiledName)
+    met.__name__ = methodName
+    dict[methodName] = met
     
 def _getCompiledName(fldName, clsName):
     """Return mangled fldName if necessary, else no change."""
@@ -27,8 +29,9 @@ def _makeGetter(compiledName):
     return lambda self: self.__getattribute__(compiledName)
 
 def _makeSetter(compiledName):
-    """Return a method that sets compiledName's value."""    
-    return lambda self, value: setattr(self, compiledName, value)
+    """Return a method that sets compiledName's value."""
+    met = lambda self, value: setattr(self, compiledName, value)
+    return met
 
 def _makeGetterReal(compiledName):
     """Return a method that gets compiledName's value."""

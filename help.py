@@ -7,6 +7,49 @@ in the models directory.
 
 import wx, os
 import  wx.html as  html
+import event_handlers as eh
+
+class ExampleHandler:
+    '''A class to handle the examples bundled with GenX
+    '''
+    def __init__(self, parent, example_menu, path):
+        ''' Inits the Handler,
+        
+        parent is the main window
+        path is the path to the example folder
+        example_menu is the menu item that should contain the examples
+        '''
+        self.parent = parent
+        self.path = path
+        self.menu = example_menu
+        
+        self.update_menu()
+        
+    def update_menu(self):
+        ''' Updates the list of examples'''
+        # Remove all items present in the submenu
+        items = self.menu.GetMenuItems()
+        [self.menu.DeleteItem(item) for item in items]
+        
+        examples = self.get_examples()
+        examples.sort()
+        
+        # Add new menu items
+        for ex in examples:
+            menu = self.menu.Append(-1, ex)
+            self.parent.Bind(wx.EVT_MENU, self.LoadExample, menu)
+        
+    def get_examples(self):
+        examples = [s[:-3] for s in os.listdir(self.path) if '.gx' == s[-3:]]
+        return examples
+    
+    def LoadExample(self, event):
+        menuitem = self.menu.FindItemById(event.GetId())
+        example = menuitem.GetText()
+        path = self.path + example + '.gx'
+        print path
+        #print path
+        eh.open_model(self.parent, path)
 
 class PluginHelpDialog(wx.Frame):
     def __init__(self, parent, module):

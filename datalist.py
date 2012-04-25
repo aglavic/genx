@@ -555,6 +555,7 @@ class VirtualDataList(wx.ListCtrl):
                 new_data = True)
         self.toggleshow = self.config.get_boolean('data handling', 
                                                   'toggle show')
+        self.data_loader_cont.load_default()
         #print "new data from model loaded"
         
     def OnBeginEdit(self,evt):

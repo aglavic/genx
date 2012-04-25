@@ -17,6 +17,8 @@ __FILENAME__ = tail.split('.')[0]
 # This assumes that plugin is under the current dir may need 
 # changing
 __MODULE_DIR__ = head
+if __MODULE_DIR__ != '/':
+    __MODULE_DIR__ += '/'
 
 class Template:
     ''' A template class for handling plugins. Note that using the 
@@ -270,6 +272,7 @@ class PluginController:
         # Get the new list of plugin modules
         modlist = self.plugin_handler.get_plugins()
         modlist.sort()
+        
         # Add new menu items
         for mod in modlist:
             menu = self.load_menu.Append(-1, mod)
@@ -307,6 +310,7 @@ class PluginController:
         # Check so we have any plugins to load else bail out
         #print 'Plugin string:', plugin_str
         if plugin_str == '':
+            self.update_plugins()
             return
         existing_plugins = self.plugin_handler.get_possible_plugins()
         

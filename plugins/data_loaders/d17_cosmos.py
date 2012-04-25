@@ -1,16 +1,17 @@
-''' <h1>Default data loader</h1>
-
+''' <h1>sls sxrd data loader</h1>
 Loads the data from whitespace seperated column formatted ascii data files.
-The module allows the specification of which columns that correspond to the
-x, y and y_error columns in the data file. 
-If y_error is not used the it can safely be set to the same column as y. <p>
+It is intended for surface x-ray diffraction data where the data sets consists
+of rod scans along the l-direction (perpendicular to the surface). The plugin
+sorts each rod with equal h and k values into one data sets. The l-direction 
+is also sorted. <p>
+The default columns are the following:<br>
+First column h values; Second column k values; Third values l values;
+Fourth column Intensites;
+Fifth column The standard deviation of the intensities.
+ The other settings are just as in the default data loader.<p>
 
-Which columns that are imported are determined from the dialog box in 
-import settings. Note that these settings apply to the marked data set(s).
-Other possible tunings are the definitions of delimiter, None means any 
-white space characthre (default). Skip rows is how many rows are skipped before 
-the file is started to be read. Comment is the first chrachter of a commented 
-line.
+The h,k values is stored as extra data in data.extra_data dictonary as
+h and k. 
 '''
 
 import numpy as np
@@ -23,9 +24,10 @@ from plugins.utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
 class Plugin(Template):
     def __init__(self, parent):
         Template.__init__(self, parent)
-        self.x_col = 0
-        self.y_col = 1
-        self.e_col = 1
+        self.q_col = 0
+        self.I_col = 1
+        self.eI_col = 2
+        self.res_col = 3
         self.comment = '#'
         self.skip_rows = 0
         self.delimiter = None
@@ -47,27 +49,30 @@ class Plugin(Template):
             if len(load_array.shape) < 2:
                 load_array = np.array([load_array])
             # Check so we have enough columns
-            if load_array.shape[1]-1 < max(self.x_col, self.y_col, self.e_col):
+            if load_array.shape[1]-1 < max(self.q_col, self.res_col, \
+                    self.I_col, self.eI_col):
                 ShowWarningDialog(self.parent, 'The data file does not contain'\
-                        + 'enough number of columns. It has ' + str(load_array[1])\
+                        + 'enough number of columns. It has ' + str(load_array.shape[1])\
                         + ' columns. Rember that the column index start at zero!')
                 # Okay now we have showed a dialog lets bail out ...
                 return
             # The data is set by the default Template.__init__ function, neat hu
-            # Know the loaded data goes into *_raw so that they are not
+            # Note that the loaded data goes into *_raw so that they are not
             # changed by the transforms
-            self.data = self.parent.data_cont.get_data()
-            self.data[data_item_number].x_raw = load_array[:, self.x_col]
-            self.data[data_item_number].y_raw = load_array[:, self.y_col]
-            self.data[data_item_number].error_raw = load_array[:, self.e_col]
+            
+            print load_array
+            self.data[data_item_number].x_raw = load_array[:,self.q_col]
+            self.data[data_item_number].y_raw = load_array[:,self.I_col]
+            self.data[data_item_number].error_raw = load_array[:,self.eI_col]
+            self.data[data_item_number].set_extra_data('res', load_array[:,self.res_col], 'res')
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
             self.data[data_item_number].run_command()
-            
-            self.UpdateDataList()
+            print self.data[data_item_number].x
             
             # Send an update that new data has been loaded
             self.SendUpdateDataEvent()
+            
         
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None
@@ -75,19 +80,24 @@ class Plugin(Template):
         This function should - if necessary implement a dialog box
         that allows the user set import settings for example.
         '''
-        col_values = {'y': self.y_col,'x': self.x_col,'y error': self.e_col}
+        col_values = {'I': self.I_col,'q': self.q_col,'Resolution': self.res_col,\
+                        'l': self.l_col, 'I error': self.eI_col}
         misc_values = {'Comment': str(self.comment), 'Skip rows': self.skip_rows,\
                 'Delimiter': str(self.delimiter)}
         dlg = SettingsDialog(self.parent, col_values, misc_values)
         if dlg.ShowModal() == wx.ID_OK:
             col_values = dlg.GetColumnValues()
             misc_values = dlg.GetMiscValues()
-            self.y_col = col_values['y']
-            self.x_col = col_values['x']
-            self.e_col = col_values['y error']
+            self.q_col = col_values['q']
+            self.res_col = col_values['Resolution']
+            self.I_col = col_values['I']
+            self.eI_col = col_values['I error']
             self.comment = misc_values['Comment']
             self.skip_rows = misc_values['Skip rows']
             self.delimiter = misc_values['Delimiter']
+            self.SetStatusText('Changed import settings')
+        else:
+            self.SetStatusText('No change to import settings')
         dlg.Destroy()
         
         
