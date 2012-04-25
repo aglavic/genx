@@ -90,52 +90,53 @@ def open(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
-        try:
-            io.load_gx(path, frame.model,\
-                                frame.solver_control.optimizer,\
-                                frame.config)
-        except modellib.IOError, e:
-            ShowModelErrorDialog(frame, e.__str__())
-        except Exception, e:
-            outp = StringIO.StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(frame, 'Could not open the file. Python Error:'\
-                        '\n%s'%(val,))
-            return
-        try:
-            [p.ReadConfig() for p in get_pages(frame)]
-        except Exception, e:
-            outp = StringIO.StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(frame, 'Could not read the config for the'
-                    ' plots. Python Error:\n%s'%(val,))
-        # Letting the plugin do their stuff...
-        try:
-            frame.plugin_control.OnOpenModel(None)
-        except Exception, e:
-            outp = StringIO.StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(frame, 'Problems when plugins processed model.'\
-                        ' Python Error:\n%s'%(val,))
-        frame.main_frame_statusbar.SetStatusText('Model loaded from file',\
-                                                1)
-        # Post an event to update everything else
-        _post_new_model_event(frame, frame.model)
-        # Needs to put it to saved since all the widgets will have 
-        # been updated
-        frame.model.saved = True
-        set_title(frame)
+        open_model(frame, path)
         
     dlg.Destroy()
     
-    
-    
+def open_model(frame, path):
+    try:
+        io.load_gx(path, frame.model,\
+                                frame.solver_control.optimizer,\
+                                frame.config)
+    except modellib.IOError, e:
+        ShowModelErrorDialog(frame, e.__str__())
+    except Exception, e:
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        ShowErrorDialog(frame, 'Could not open the file. Python Error:'\
+                    '\n%s'%(val,))
+        return
+    try:
+        [p.ReadConfig() for p in get_pages(frame)]
+    except Exception, e:
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        print val
+        ShowErrorDialog(frame, 'Could not read the config for the'
+                ' plots. Python Error:\n%s'%(val,))
+    # Letting the plugin do their stuff...
+    try:
+        frame.plugin_control.OnOpenModel(None)
+    except Exception, e:
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        ShowErrorDialog(frame, 'Problems when plugins processed model.'\
+                    ' Python Error:\n%s'%(val,))
+    frame.main_frame_statusbar.SetStatusText('Model loaded from file',\
+                                                1)
+    # Post an event to update everything else
+    _post_new_model_event(frame, frame.model)
+    # Needs to put it to saved since all the widgets will have 
+    # been updated
+    frame.model.saved = True
+    set_title(frame)
     
 def on_new_model(frame, event):
     '''
@@ -471,7 +472,12 @@ def simulate(frame, event):
     try:
         pardict = frame.model.get_possible_parameters()
     except Exception, e:
-        ShowErrorDialog(frame, str(e),\
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        #ShowErrorDialog(frame, val)
+        ShowErrorDialog(frame, val,\
             'simulate - model.get_possible_parameters')
         frame.main_frame_statusbar.SetStatusText('Fatal Error', 0)
         return

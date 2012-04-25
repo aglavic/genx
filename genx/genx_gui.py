@@ -13,7 +13,7 @@ import wx.lib.plot as wxplot
 
 import os, sys, shutil
 
-import data, model
+import data, model, help
 import filehandling as io
 import plotpanel, solvergui, parametergrid, datalist
 import event_handlers
@@ -26,18 +26,23 @@ import plugins.add_on_framework as add_on
 sys.path.append(os.getcwd())
 _path = os.getcwd()
 _path, _file = os.path.split(__file__)
+if _path[-4:] == '.zip':
+    _path, ending = os.path.split(_path)
 print _path
+if _path != '':
+    _path += '/'
 #raise Exception(_path)
 class MainFrame(wx.Frame):
-    def __init__(self, *args, **kwds):
+    def __init__(self, show_startup, *args, **kwds):
         
+        self.config = io.Config()
         
         #print _path
         #if _path != '':
         #    self.config.load_default(_path + '/genx.conf')
         #else:
         #    self.config.load_default('./genx.conf')
-        
+        self.config.load_default(_path + 'genx.conf')
         
         status_text = lambda event:event_handlers.status_text(self, event)
         
@@ -45,9 +50,9 @@ class MainFrame(wx.Frame):
         kwds["style"] = wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|wx.MAXIMIZE|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
         
-        self.config = io.Config()
-        self.config.load_default('./genx.conf')
-        self.startup_dialog()
+        #self.config.load_default('./genx.conf')
+        if show_startup:
+            self.startup_dialog(_path)
         
         
         self.ver_splitter = wx.SplitterWindow(self, -1, style=wx.SP_3D|wx.SP_BORDER)
@@ -186,22 +191,24 @@ class MainFrame(wx.Frame):
         self.main_frame_menubar.Append(self.mb_set, "Settings")
         wxglade_tmp_menu = wx.Menu()
         mb_help = wx.Menu()
-        self.mb_models_help = wx.MenuItem(mb_help, wx.NewId(), "Models Help...", "Show help for the models", wx.ITEM_NORMAL)
+        self.mb_models_help = wx.MenuItem(mb_help, wx.NewId(), "Models...", "Show help for the models", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_models_help)
-        self.mb_fom_help = wx.MenuItem(mb_help, wx.NewId(), "FOM Help", "Show help about the fom", wx.ITEM_NORMAL)
+        self.mb_fom_help = wx.MenuItem(mb_help, wx.NewId(), "FOM...", "Show help about the fom", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_fom_help)
-        self.mb_plugins_help = wx.MenuItem(mb_help, wx.NewId(), "Plugins Help...", "Show help for the plugins", wx.ITEM_NORMAL)
+        self.mb_plugins_help = wx.MenuItem(mb_help, wx.NewId(), "Plugins...", "Show help for the plugins", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_plugins_help)
-        self.mb_data_loaders_help = wx.MenuItem(mb_help, wx.NewId(), "Data loaders Help...", "Show help for the data loaders", wx.ITEM_NORMAL)
+        self.mb_data_loaders_help = wx.MenuItem(mb_help, wx.NewId(), "Data loaders...", "Show help for the data loaders", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_data_loaders_help)
-        wxglade_tmp_menu.AppendMenu(wx.NewId(), "Help", mb_help, "")
+        wxglade_tmp_menu.AppendMenu(wx.NewId(), "Built-in Help", mb_help, "")
+        self.mb_examples = wx.Menu()
+        wxglade_tmp_menu.AppendMenu(wx.NewId(), "Examples", self.mb_examples, "")
         self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Show Manual...", "Show the manual", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_showman)
         self.mb_open_homepage = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Open Homepage...", "Open the homepage", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_open_homepage)
         self.mb_misc_about = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "About...", "Show information about GenX", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_about)
-        self.main_frame_menubar.Append(wxglade_tmp_menu, "Misc")
+        self.main_frame_menubar.Append(wxglade_tmp_menu, "Help ")
         self.SetMenuBar(self.main_frame_menubar)
         # Menu Bar end
         self.main_frame_statusbar = self.CreateStatusBar(3, 0)
@@ -230,7 +237,8 @@ class MainFrame(wx.Frame):
         self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook_foms, config = self.config, config_name = 'fom scan plot', )
         self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook_grid, self, )
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, -1)
-
+        self.example_handler = help.ExampleHandler(self, self.mb_examples, _path + 'examples/')
+        
         self.__set_properties()
         self.__do_layout()
 
@@ -397,7 +405,7 @@ class MainFrame(wx.Frame):
         # Initiializations..
         # To force an update of the menubar...
         self.plot_data.SetZoom(False)
-        #event_handlers.new(self, None)
+
         self.model.saved = True
         #### End Manual config
         
@@ -530,19 +538,21 @@ class MainFrame(wx.Frame):
         #self.plugin_control.LoadDefaultPlugins()
         #self.Maximize()
         ## End Manual Config
+        event_handlers.new(self, None)
         
-    def startup_dialog(self, force_show = False):
+    def startup_dialog(self, profile_path, force_show = False):
         show_profiles = self.config.get_boolean('startup', 'show profiles')
         if show_profiles  or force_show:
-            startup_dialog = StartUpConfigDialog(self, './profiles/', show_cb = show_profiles)
+            startup_dialog = StartUpConfigDialog(self, profile_path + 'profiles/', show_cb = show_profiles)
             startup_dialog.ShowModal()
             config_file = startup_dialog.GetConfigFile()
-            shutil.copyfile('./profiles/' + config_file, './genx.conf')
-            
-            self.config.load_default('./genx.conf')
-            self.config.default_set('startup', 'show profiles', 
-                                    startup_dialog.GetShowAtStartup())
-            self.config.write_default('./genx.conf')
+            if config_file:
+                shutil.copyfile(profile_path + 'profiles/' + config_file, profile_path + 'genx.conf')
+                #print profile_path + 'genx.conf'
+                self.config.load_default(profile_path + 'genx.conf')
+                self.config.default_set('startup', 'show profiles', 
+                                         startup_dialog.GetShowAtStartup())
+                self.config.write_default(profile_path + 'genx.conf')
             #print self.config.get('plugins','loaded plugins')
 
             
@@ -792,16 +802,19 @@ class MainFrame(wx.Frame):
         event_handlers.show_homepage(self, event)
         
     def eh_show_startup_dialog(self, event):
-        self.startup_dialog(force_show = True)
+        self.startup_dialog(_path, force_show = True)
 
 # end of class MainFrame
 
 
 class MyApp(wx.App):
+    def __init__(self, show_startup, *args, **kwargs):
+        self.show_startup = show_startup
+        wx.App.__init__(self, *args, **kwargs)
     def OnInit(self):
         wx.InitAllImageHandlers()
         
-        main_frame = MainFrame(None, -1, "")
+        main_frame = MainFrame(self.show_startup, None, -1, "")
         self.SetTopWindow(main_frame)
         main_frame.Show()
         return 1
@@ -813,12 +826,12 @@ class StartUpConfigDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, -1, 'Change Startup Configuration')
         
         self.config_folder = config_folder
-        self.selected_config = 'Default.conf'
+        self.selected_config = None
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((-1, 10), 0, wx.EXPAND)
         
-        sizer.Add(wx.StaticText(self, label='Choose the profile you want GenX to use:   '),
+        sizer.Add(wx.StaticText(self, label='Choose the profile you want GenX to use:            '),
                   0, wx.ALIGN_LEFT, 5)
         self.profiles = self.get_possible_configs()
         self.config_list = wx.ListBox(self, size = (-1, 200), choices = self.profiles, style = wx.LB_SINGLE)
@@ -830,6 +843,11 @@ class StartUpConfigDialog(wx.Dialog):
         self.startup_cb = startup_cb
         sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(startup_cb, 0, wx.EXPAND, 5)
+        sizer.Add((-1, 4), 0, wx.EXPAND)
+        sizer.Add(wx.StaticText(self, label='These settings can be changed at the menu:\n Options/Startup Profile'),
+                  0, wx.ALIGN_LEFT, 5)
+        
+        
         
         # Add the Dilaog buttons
         button_sizer = wx.StdDialogButtonSizer()
@@ -866,7 +884,10 @@ class StartUpConfigDialog(wx.Dialog):
         event.Skip()
         
     def GetConfigFile(self):
-        return self.selected_config + '.conf'
+        if self.selected_config:
+            return self.selected_config + '.conf'
+        else:
+            return None
     
     def GetShowAtStartup(self):
         return self.show_at_startup
@@ -885,5 +906,5 @@ class StartUpConfigDialog(wx.Dialog):
         return plugins
 
 if __name__ == "__main__":
-    app = MyApp(0)
+    app = MyApp(True, 0)
     app.MainLoop()
