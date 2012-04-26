@@ -1,17 +1,16 @@
-''' <h1>sls sxrd data loader</h1>
-Loads the data from whitespace seperated column formatted ascii data files.
-It is intended for surface x-ray diffraction data where the data sets consists
-of rod scans along the l-direction (perpendicular to the surface). The plugin
-sorts each rod with equal h and k values into one data sets. The l-direction 
-is also sorted. <p>
+''' <h1>D17 cosmos data loader</h1>
+Loads .out files from the cosmos program that is used to process time of flight 
+data from the D17 iunstrument at the ILL. 
+ <p>
 The default columns are the following:<br>
-First column h values; Second column k values; Third values l values;
-Fourth column Intensites;
-Fifth column The standard deviation of the intensities.
+First column q values; Second column Intensitiy values; 
+Third values The unceratinty in the Intensities;
+Fourth column q-resolution;
+The data loader skips the first 36 lines of the file which is assumed to be the header.
  The other settings are just as in the default data loader.<p>
 
-The h,k values is stored as extra data in data.extra_data dictonary as
-h and k. 
+The resolution is stored as the member variable res. Can be accessed, for data set 0, 
+data[0].x
 '''
 
 import numpy as np
@@ -29,7 +28,7 @@ class Plugin(Template):
         self.eI_col = 2
         self.res_col = 3
         self.comment = '#'
-        self.skip_rows = 0
+        self.skip_rows = 36
         self.delimiter = None
     
     def LoadData(self, data_item_number, filename):
@@ -65,6 +64,7 @@ class Plugin(Template):
             self.data[data_item_number].y_raw = load_array[:,self.I_col]
             self.data[data_item_number].error_raw = load_array[:,self.eI_col]
             self.data[data_item_number].set_extra_data('res', load_array[:,self.res_col], 'res')
+            self.data[data_item_number].res = load_array[:,self.res_col]*1.0
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
             self.data[data_item_number].run_command()
@@ -81,7 +81,7 @@ class Plugin(Template):
         that allows the user set import settings for example.
         '''
         col_values = {'I': self.I_col,'q': self.q_col,'Resolution': self.res_col,\
-                        'l': self.l_col, 'I error': self.eI_col}
+                       'I error': self.eI_col}
         misc_values = {'Comment': str(self.comment), 'Skip rows': self.skip_rows,\
                 'Delimiter': str(self.delimiter)}
         dlg = SettingsDialog(self.parent, col_values, misc_values)
