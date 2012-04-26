@@ -171,7 +171,7 @@ InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',\
 # samlen= Samplelength in mm.
 
 LayerParameters={'sigma':0.0, 'dens':1.0, 'd':0.0, 'f':(1.0+1.0j)*1e-20,
-     'b': 0.0 + 1.0J, 'xs_ai': 0.0, 'magn':0.0, 'magn_ang':0.0}
+     'b': 0.0, 'xs_ai': 0.0, 'magn':0.0, 'magn_ang':0.0}
 LayerUnits = {'sigma': 'AA', 'dens': 'at./AA', 'd': 'AA', 'f':'el./at.',
      'b': 'fm/at.', 'xs_ai': 'barn/at.', 'magn': 'mu_B/at.', 'magn_ang': 'deg.'}
 LayerGroups = [('Standard',['f','dens','d','sigma']),
