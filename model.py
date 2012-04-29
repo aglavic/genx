@@ -103,6 +103,9 @@ class Model:
         self.filename = os.path.abspath(filename)
         self.compiled = False
         self.saved = True
+        self.script_module = new.module('genx_script_module')
+        self.script_module.__dict__['data'] = self.data
+        self.compiled = False
         
     def save(self,filename):
         '''

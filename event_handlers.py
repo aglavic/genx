@@ -95,6 +95,9 @@ def open(frame, event):
     dlg.Destroy()
     
 def open_model(frame, path):
+    frame.model.new_model()
+    # Update all components so all the traces are gone.
+    _post_new_model_event(frame, frame.model)
     try:
         io.load_gx(path, frame.model,\
                                 frame.solver_control.optimizer,\
