@@ -24,11 +24,11 @@ if __name__ == "__main__":
       app.Yield()
       frame=app.TopWindow
       # load a model on start
-      import genx.filehandling as io
+      import filehandling as io
       import StringIO, traceback
-      from genx.event_handlers import ShowModelErrorDialog, ShowErrorDialog, get_pages, \
+      from event_handlers import ShowModelErrorDialog, ShowErrorDialog, get_pages, \
                                       _post_new_model_event, set_title
-      import genx.model as modellib
+      import model as modellib
       path = os.path.abspath(sys.argv[1])
       try:
           io.load_gx(path, frame.model,\
@@ -85,5 +85,5 @@ if __name__ == "__main__":
     elif len(sys.argv)>2:
       print "Usage: genx {model.gx}"
     else:
-      app = genx_gui.MyApp(True, 0)
+      app = genx_gui.MyApp(True, 0) 
       app.MainLoop()

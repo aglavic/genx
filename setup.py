@@ -19,7 +19,7 @@ from glob import glob
 import subprocess
 import version
 
-__name__='genx'
+__name__='GenX'
 __author__ = "Artur Glavic"
 __copyright__ = "Copyright 2008-2011"
 __license__ = "GPL v3"
@@ -46,9 +46,9 @@ __package_dir__={'genx': '.'}
 __packages__=['genx', 
     'genx.plugins', 'genx.plugins.add_ons',  'genx.plugins.add_ons.help_modules', 
                 'genx.plugins.data_loaders', 'genx.plugins.data_loaders.help_modules', 
-                'genx.models', 'genx.models.lib']
+                'genx.models', 'genx.models.lib', 'genx.lib']
 __package_data__={
-                  'genx': ['genx.conf', 'examples/*.*', 'LICENSE.txt', 'changelog.txt'], 
+                  'genx': ['genx.conf', 'examples/*.*', 'LICENSE.txt', 'changelog.txt', 'profiles/*.*'], 
                   'genx.models': ['databases/*.*', 'databases/f1f2_cxro/*.*'], 
                   }
 __data_files__=[]
@@ -81,11 +81,18 @@ elif"py2app" in sys.argv:
   
   __options__ = dict(
          setup_requires=['py2app'],
-         app=["genx_gui.py"],
+         app=["genx.py"],
          # Cross-platform applications generally expect sys.argv to
          # be used for opening files.
          options=dict(py2app=dict(argv_emulation = True, 
-                                  packages = ['matplotlib', 'numpy'])),
+                                  packages = ['matplotlib', 'numpy', 'plugins', 'models','wx',],
+                                  includes = ['genx_gui'], 
+                                  #resources = ['genx.conf','profiles'],
+                                  excludes = ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject'],
+                                  iconfile = 'mac_build/genx.icns',
+                                  plist = 'mac_build/Info.plist',
+                                  ),
+                    )
      )  
 
 else:
@@ -238,8 +245,8 @@ if ('--install-scripts' in sys.argv) and ('--prefix' in sys.argv):
   script=open(os.path.join(sys.argv[sys.argv.index('--install-scripts')+1], 'plot.py'), 'w')
   script.write(text)
   script.close()
-  
-# py2exe specific stuff to make it work:
+
+
 if "py2exe" in sys.argv:
   def xcopy_to_folder(from_folder, to_folder):
     dest=os.path.join('dist', to_folder)
@@ -258,7 +265,8 @@ if "py2exe" in sys.argv:
       print "\t%i Files" % files
     except:
       print "\tSkipped because of errors!" % src
-  print "\n*** Copying source and datafiles ***"
+  print "\n*** Copying source and datafiles ***"  
+# py2exe specific stuff to make it work:
   for src, dest in [
                     ('plugins', 'plugins'), 
                     ('models', 'models'), 
@@ -266,3 +274,31 @@ if "py2exe" in sys.argv:
     xcopy_to_folder(src, dest)
   os.popen('xcopy genx.conf dist')
 
+if 'py2app' in sys.argv:
+  def xcopy_to_folder(from_folder, to_folder):
+    dest=os.path.join('dist', to_folder)
+    if getattr(from_folder, '__iter__', False):
+      src=os.path.join(*from_folder)
+    else:
+      src=from_folder
+    print "Copy %s to %s..." % (src, dest)
+    try:
+      os.mkdir(os.path.join('dist', to_folder))
+    except OSError:
+      print "\tDirectory %s already exists." % dest
+    try:
+      handle=os.popen('cp -R %s %s' % (src, dest))
+      files=len(handle.read().splitlines())
+      print "\t%i Files" % files
+    except:
+      print "\tSkipped because of errors!" % src
+  print "\n*** Copying source and datafiles ***"  
+# py2exe specific stuff to make it work:
+  base = 'genx.app/Contents/Resources/lib/python2.7'
+  for src, dest in [
+                    ('profiles', ''),
+                    ('examples', ''),
+                    ]:
+    xcopy_to_folder(src, base + dest)
+  os.popen('cp genx.conf ' + 'dist/' + base)
+  

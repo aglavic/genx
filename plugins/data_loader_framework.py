@@ -15,6 +15,9 @@ __FILENAME__ = tail.split('.')[0]
 # This assumes that plugin is under the current dir may need 
 # changing
 __MODULE_DIR__ = head
+if __MODULE_DIR__ != '/':
+    __MODULE_DIR__ += '/'
+
 
 class Template:
     def __init__(self, parent):
@@ -130,6 +133,16 @@ class PluginController:
                             , 'data_loaders')
         self.parent = parent
         self.plugin_handler.load_plugin('default')
+        
+    def load_default(self):
+        try:
+            plugin_name = self.parent.config.get('data handling', 'data loader')
+            self.LoadPlugin(plugin_name)
+        except Exception, S:
+            print 'Could not locate the data loader parameter or the data loader. Error:'
+            print S.__str__()
+            print 'Proceeding with laoding the default data loader.'
+            self.LoadPlugin('default')
         
     def LoadPlugin(self, plugin):
         '''LoadPlugin(self, plugin) --> None

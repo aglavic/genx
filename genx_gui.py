@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+  #!/usr/bin/env python
 '''
 $Rev::                                  $:  Revision of last commit
 $Author::                               $:  Author of last commit
@@ -11,9 +11,9 @@ import wx
 import wx.grid, wx.py, wx.stc
 import wx.lib.plot as wxplot
 
-import os, sys
+import os, sys, shutil
 
-import data, model
+import data, model, help
 import filehandling as io
 import plotpanel, solvergui, parametergrid, datalist
 import event_handlers
@@ -26,36 +26,67 @@ import plugins.add_on_framework as add_on
 sys.path.append(os.getcwd())
 _path = os.getcwd()
 _path, _file = os.path.split(__file__)
+if _path[-4:] == '.zip':
+    _path, ending = os.path.split(_path)
 print _path
+if _path != '':
+    _path += '/'
 #raise Exception(_path)
 class MainFrame(wx.Frame):
-    def __init__(self, *args, **kwds):
+    def __init__(self, show_startup, *args, **kwds):
         
         self.config = io.Config()
-        if _path != '':
-            self.config.load_default(_path + '/genx.conf')
-        else:
-            self.config.load_default('./genx.conf')
+        
+        #print _path
+        #if _path != '':
+        #    self.config.load_default(_path + '/genx.conf')
+        #else:
+        #    self.config.load_default('./genx.conf')
+        self.config.load_default(_path + 'genx.conf')
+        
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__
         kwds["style"] = wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|wx.MAXIMIZE|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
         
+        #self.config.load_default('./genx.conf')
+        if show_startup:
+            self.startup_dialog(_path)
+        
+        
+        self.ver_splitter = wx.SplitterWindow(self, -1, style=wx.SP_3D|wx.SP_BORDER)
+        self.main_panel = wx.Panel(self.ver_splitter, -1)
+        self.hor_splitter = wx.SplitterWindow(self.main_panel, -1, style=wx.SP_3D|wx.SP_BORDER)
+        self.input_panel = wx.Panel(self.hor_splitter, -1)
+        self.input_notebook = wx.Notebook(self.input_panel, -1, style=wx.NB_BOTTOM)
+        self.input_notebook_script = wx.Panel(self.input_notebook, -1)
+        self.input_notebook_grid = wx.Panel(self.input_notebook, -1)
+        self.plot_panel = wx.Panel(self.hor_splitter, -1)
+        self.plot_notebook = wx.Notebook(self.plot_panel, -1, style=wx.NB_BOTTOM)
+        self.plot_notebook_foms = wx.Panel(self.plot_notebook, -1)
+        self.plot_notebook_Pars = wx.Panel(self.plot_notebook, -1)
+        self.plot_notebook_fom = wx.Panel(self.plot_notebook, -1)
+        self.plot_notebook_data = wx.Panel(self.plot_notebook, -1)
+        self.data_panel = wx.Panel(self.ver_splitter, -1)
+        self.data_notebook = wx.Notebook(self.data_panel, -1, style=wx.NB_BOTTOM)
+        self.data_notebook_pane_2 = wx.Panel(self.data_notebook, -1)
+        self.data_notebook_data = wx.Panel(self.data_notebook, -1)
+        
         # Menu Bar
         self.main_frame_menubar = wx.MenuBar()
         self.mb_file = wx.Menu()
-        self.mb_new = wx.MenuItem(self.mb_file, wx.NewId(), "New...\tCtrl+N", "Creates a new model", wx.ITEM_NORMAL)
+        self.mb_new = wx.MenuItem(self.mb_file, wx.NewId(), "New...\tCtrl+N", "Create a new model", wx.ITEM_NORMAL)
         self.mb_file.AppendItem(self.mb_new)
-        self.mb_open = wx.MenuItem(self.mb_file, wx.NewId(), "Open...\tCtrl+O", "Opens an existing model", wx.ITEM_NORMAL)
+        self.mb_open = wx.MenuItem(self.mb_file, wx.NewId(), "Open...\tCtrl+O", "Open an existing model", wx.ITEM_NORMAL)
         self.mb_file.AppendItem(self.mb_open)
-        self.mb_save = wx.MenuItem(self.mb_file, wx.NewId(), "Save...\tCtrl+S", "Saves the current model", wx.ITEM_NORMAL)
+        self.mb_save = wx.MenuItem(self.mb_file, wx.NewId(), "Save...\tCtrl+S", "Save the current model", wx.ITEM_NORMAL)
         self.mb_file.AppendItem(self.mb_save)
-        self.mb_saveas = wx.MenuItem(self.mb_file, wx.NewId(), "Save As...", "Saves the active model with a new name", wx.ITEM_NORMAL)
+        self.mb_saveas = wx.MenuItem(self.mb_file, wx.NewId(), "Save As...", "Save the active model with a new name", wx.ITEM_NORMAL)
         self.mb_file.AppendItem(self.mb_saveas)
         self.mb_file.AppendSeparator()
         mb_import = wx.Menu()
-        self.mb_import_data = wx.MenuItem(mb_import, wx.NewId(), "Import Data...\tAlt+D", "Import data to the active data set", wx.ITEM_NORMAL)
+        self.mb_import_data = wx.MenuItem(mb_import, wx.NewId(), "Import Data...\tCtrl+D", "Import data to the active data set", wx.ITEM_NORMAL)
         mb_import.AppendItem(self.mb_import_data)
         self.mb_import_table = wx.MenuItem(mb_import, wx.NewId(), "Import Table...", "Import a table from an ASCII file", wx.ITEM_NORMAL)
         mb_import.AppendItem(self.mb_import_table)
@@ -67,16 +98,16 @@ class MainFrame(wx.Frame):
         mb_export.AppendItem(self.mb_export_data)
         self.mb_export_table = wx.MenuItem(mb_export, wx.NewId(), "Export Table...", "Export table to an ASCII file", wx.ITEM_NORMAL)
         mb_export.AppendItem(self.mb_export_table)
-        self.mb_export_script = wx.MenuItem(mb_export, wx.NewId(), "Export Script...", "Export the script to a python file", wx.ITEM_NORMAL)
+        self.mb_export_script = wx.MenuItem(mb_export, wx.NewId(), "Export Script...", "Export the script to a Python file", wx.ITEM_NORMAL)
         mb_export.AppendItem(self.mb_export_script)
         self.mb_file.AppendMenu(wx.NewId(), "Export", mb_export, "")
         self.mb_file.AppendSeparator()
         mb_print = wx.Menu()
         self.mb_print_plot = wx.MenuItem(mb_print, wx.NewId(), "Print Plot...\tCtrl+P", "Print the current plot", wx.ITEM_NORMAL)
         mb_print.AppendItem(self.mb_print_plot)
-        self.mb_print_grid = wx.MenuItem(mb_print, wx.NewId(), "Print Grid...", "Prints the grid", wx.ITEM_NORMAL)
+        self.mb_print_grid = wx.MenuItem(mb_print, wx.NewId(), "Print Grid...", "Print the grid", wx.ITEM_NORMAL)
         mb_print.AppendItem(self.mb_print_grid)
-        self.mb_print_script = wx.MenuItem(mb_print, wx.NewId(), "Print Script...", "Prints the model script", wx.ITEM_NORMAL)
+        self.mb_print_script = wx.MenuItem(mb_print, wx.NewId(), "Print Script...", "Print the model script", wx.ITEM_NORMAL)
         mb_print.AppendItem(self.mb_print_script)
         self.mb_file.AppendMenu(wx.NewId(), "Print", mb_print, "")
         self.mb_file.AppendSeparator()
@@ -84,7 +115,7 @@ class MainFrame(wx.Frame):
         self.mb_file.AppendItem(self.mb_quit)
         self.main_frame_menubar.Append(self.mb_file, "File")
         self.mb_edit = wx.Menu()
-        self.mb_copy_graph = wx.MenuItem(self.mb_edit, wx.NewId(), "Copy Graph", "Copy the current graph to the clipboard as a bitmap", wx.ITEM_NORMAL)
+        self.mb_copy_graph = wx.MenuItem(self.mb_edit, wx.NewId(), "Copy Graph\tCtrl+C", "Copy the current graph to the clipboard as a bitmap", wx.ITEM_NORMAL)
         self.mb_edit.AppendItem(self.mb_copy_graph)
         self.mb_copy_sim = wx.MenuItem(self.mb_edit, wx.NewId(), "Copy Simulation", "Copy the current simulation and data as ASCII text", wx.ITEM_NORMAL)
         self.mb_edit.AppendItem(self.mb_copy_sim)
@@ -93,23 +124,23 @@ class MainFrame(wx.Frame):
         self.mb_findreplace = wx.MenuItem(self.mb_edit, wx.NewId(), "&Find/Replace...\tCtrl+F", "Find and replace in the script", wx.ITEM_NORMAL)
         self.mb_edit.AppendItem(self.mb_findreplace)
         self.mb_edit_sub = wx.Menu()
-        self.mb_new_data_set = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&New data set\tAlt+N", "Appends a new data set", wx.ITEM_NORMAL)
+        self.mb_new_data_set = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&New data set\tAlt+N", "Append a new data set", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_new_data_set)
-        self.mb_data_delete = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Delete\tAlt+D", "Deletes the selected data sets", wx.ITEM_NORMAL)
+        self.mb_data_delete = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Delete\tAlt+D", "Delete the selected data set", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_data_delete)
         self.mb_data_move_down = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Lower item\tAlt+L", "Move selected item down", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_data_move_down)
-        self.mb_data_move_up = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Raise item\tAlt+R", "Moves selected data sets up", wx.ITEM_NORMAL)
+        self.mb_data_move_up = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Raise item\tAlt+R", "Move selected data sets up", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_data_move_up)
         self.mb_edit_sub.AppendSeparator()
-        self.mb_toggle_show = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "Toggle &Show\tAlt+S", "Toggle show on and off for the selected data set", wx.ITEM_NORMAL)
+        self.mb_toggle_show = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "Toggle &Show\tAlt+S", "Toggle show on and off for the selected data sets", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_toggle_show)
         self.mb_toggle_use = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "Toggle &Use\tAlt+U", "Toggle use on and off for the selected data sets", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_toggle_use)
         self.mb_toggle_error = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "Toggle &Error\tAlt+E", "Turn the use of error on and off", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_toggle_error)
         self.mb_edit_sub.AppendSeparator()
-        self.mb_toggle_calc = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Calculations\tAlt+C", "OPens dialog box to define dataset calculations", wx.ITEM_NORMAL)
+        self.mb_toggle_calc = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Calculations\tAlt+C", "Open dialog box to define dataset calculations", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_toggle_calc)
         self.mb_edit.AppendMenu(wx.NewId(), "Data", self.mb_edit_sub, "")
         self.main_frame_menubar.Append(self.mb_edit, "Edit")
@@ -119,14 +150,14 @@ class MainFrame(wx.Frame):
         self.mb_view_zoomall = wx.MenuItem(self.mb_view, wx.NewId(), "Zoom All\tCtrl+A", "Zoom to fit all data points", wx.ITEM_NORMAL)
         self.mb_view.AppendItem(self.mb_view_zoomall)
         mb_view_yscale = wx.Menu()
-        self.mb_view_yscale_log = wx.MenuItem(mb_view_yscale, wx.NewId(), "log", "Set yscale logarithmic", wx.ITEM_RADIO)
+        self.mb_view_yscale_log = wx.MenuItem(mb_view_yscale, wx.NewId(), "log", "Set y-scale logarithmic", wx.ITEM_RADIO)
         mb_view_yscale.AppendItem(self.mb_view_yscale_log)
         self.mb_view_yscale_lin = wx.MenuItem(mb_view_yscale, wx.NewId(), "lin", "Set y-scale linear", wx.ITEM_RADIO)
         mb_view_yscale.AppendItem(self.mb_view_yscale_lin)
         self.mb_view.AppendMenu(wx.NewId(), "y scale", mb_view_yscale, "")
-        self.mb_view_autoscale = wx.MenuItem(self.mb_view, wx.NewId(), "Autoscale", "Sets autoscale on when plotting", wx.ITEM_CHECK)
+        self.mb_view_autoscale = wx.MenuItem(self.mb_view, wx.NewId(), "Autoscale", "Set autoscale on when plotting", wx.ITEM_CHECK)
         self.mb_view.AppendItem(self.mb_view_autoscale)
-        self.mb_use_toggle_show = wx.MenuItem(self.mb_view, wx.NewId(), "Use Toggle Show", "Set if the plotted data shold be toggled or selcted by the mouse", wx.ITEM_CHECK)
+        self.mb_use_toggle_show = wx.MenuItem(self.mb_view, wx.NewId(), "Use Toggle Show", "Set if the plotted data should be toggled or selected by the mouse", wx.ITEM_CHECK)
         self.mb_view.AppendItem(self.mb_use_toggle_show)
         self.main_frame_menubar.Append(self.mb_view, "View")
         self.mb_fit = wx.Menu()
@@ -138,7 +169,7 @@ class MainFrame(wx.Frame):
         self.mb_fit.AppendItem(self.mb_fit_start)
         self.mb_fit_stop = wx.MenuItem(self.mb_fit, wx.NewId(), "&Halt Fit\tCtrl+H", "Stop fitting", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_stop)
-        self.mb_fit_resume = wx.MenuItem(self.mb_fit, wx.NewId(), "&Resume Fit\tCtrl+R", "Resumes fitting without reinitilazation of the optimizer", wx.ITEM_NORMAL)
+        self.mb_fit_resume = wx.MenuItem(self.mb_fit, wx.NewId(), "&Resume Fit\tCtrl+R", "Resume fitting without reinitialization of the optimizer", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_resume)
         self.mb_fit_analyze = wx.MenuItem(self.mb_fit, wx.NewId(), "Analyze fit", "Analyze the fit", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_analyze)
@@ -155,25 +186,29 @@ class MainFrame(wx.Frame):
         self.mb_set.AppendItem(self.mb_set_import)
         self.mb_set_dataplot = wx.MenuItem(self.mb_set, wx.NewId(), "Plot Markers\tShift+Ctrl+P", "Set the symbols and lines of data and simulations", wx.ITEM_NORMAL)
         self.mb_set.AppendItem(self.mb_set_dataplot)
+        self.mb_set_startup_profile = wx.MenuItem(self.mb_set, wx.NewId(), "Startup Profile", "Set the startup profile", wx.ITEM_NORMAL)
+        self.mb_set.AppendItem(self.mb_set_startup_profile)
         self.main_frame_menubar.Append(self.mb_set, "Settings")
         wxglade_tmp_menu = wx.Menu()
         mb_help = wx.Menu()
-        self.mb_models_help = wx.MenuItem(mb_help, wx.NewId(), "Models Help...", "Show help for the models", wx.ITEM_NORMAL)
+        self.mb_models_help = wx.MenuItem(mb_help, wx.NewId(), "Models...", "Show help for the models", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_models_help)
-        self.mb_fom_help = wx.MenuItem(mb_help, wx.NewId(), "FOM Help", "Show help about the fom", wx.ITEM_NORMAL)
+        self.mb_fom_help = wx.MenuItem(mb_help, wx.NewId(), "FOM...", "Show help about the fom", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_fom_help)
-        self.mb_plugins_help = wx.MenuItem(mb_help, wx.NewId(), "Plugins Helps...", "Show help for the plugins", wx.ITEM_NORMAL)
+        self.mb_plugins_help = wx.MenuItem(mb_help, wx.NewId(), "Plugins...", "Show help for the plugins", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_plugins_help)
-        self.mb_data_loaders_help = wx.MenuItem(mb_help, wx.NewId(), "Data loaders Help...", "Show help for the data loaders", wx.ITEM_NORMAL)
+        self.mb_data_loaders_help = wx.MenuItem(mb_help, wx.NewId(), "Data loaders...", "Show help for the data loaders", wx.ITEM_NORMAL)
         mb_help.AppendItem(self.mb_data_loaders_help)
-        wxglade_tmp_menu.AppendMenu(wx.NewId(), "Help", mb_help, "")
-        self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Open Manual...", "Show the manual", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.AppendMenu(wx.NewId(), "Built-in Help", mb_help, "")
+        self.mb_examples = wx.Menu()
+        wxglade_tmp_menu.AppendMenu(wx.NewId(), "Examples", self.mb_examples, "")
+        self.mb_misc_showman = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Show Manual...", "Show the manual", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_showman)
         self.mb_open_homepage = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "Open Homepage...", "Open the homepage", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_open_homepage)
-        self.mb_misc_about = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "About...", "Shows information about GenX", wx.ITEM_NORMAL)
+        self.mb_misc_about = wx.MenuItem(wxglade_tmp_menu, wx.NewId(), "About...", "Show information about GenX", wx.ITEM_NORMAL)
         wxglade_tmp_menu.AppendItem(self.mb_misc_about)
-        self.main_frame_menubar.Append(wxglade_tmp_menu, "Misc")
+        self.main_frame_menubar.Append(wxglade_tmp_menu, "Help ")
         self.SetMenuBar(self.main_frame_menubar)
         # Menu Bar end
         self.main_frame_statusbar = self.CreateStatusBar(3, 0)
@@ -189,37 +224,21 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.AddLabelTool(10006, "tb_stop_fit", (img.getstop_fitBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "Stop fit | Ctrl+H", "Stop fitting | Ctrl+H")
         self.main_frame_toolbar.AddLabelTool(10007, "tb_restart_fit", (img.getrestart_fitBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "Restart fit | Ctrl+R", "Restart the fit | Ctrl+R")
         self.main_frame_toolbar.AddLabelTool(1008, "tb_calc_error_bars", (img.getcalc_error_barBitmap()), wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
-        self.main_frame_toolbar.AddLabelTool(10009, "tb_zoom", (img.getzoomBitmap()), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
+        self.main_frame_toolbar.AddLabelTool(10009, "tb_zoom", (img.getzoomBitmap()), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn the zoom on/off  | Ctrl+Z")
         # Tool Bar end
-        self.ver_splitter = wx.SplitterWindow(self, -1, style=wx.SP_3D|wx.SP_BORDER)
-        self.data_panel = wx.Panel(self.ver_splitter, -1)
-        self.data_notebook = wx.Notebook(self.data_panel, -1, style=wx.NB_BOTTOM)
-        self.data_notebook_data = wx.Panel(self.data_notebook, -1)
         self.data_list = datalist.DataListControl(self.data_notebook_data, -1, self.config, status_text)
-        self.data_notebook_pane_2 = wx.Panel(self.data_notebook, -1)
         self.label_2 = wx.StaticText(self.data_notebook_pane_2, -1, "  Data set: ")
         self.data_grid_choice = wx.Choice(self.data_notebook_pane_2, -1, choices=["test2", "test1"])
         self.static_line_1 = wx.StaticLine(self.data_notebook_pane_2, -1)
         self.data_grid = wx.grid.Grid(self.data_notebook_pane_2, -1, size=(1, 1))
-        self.main_panel = wx.Panel(self.ver_splitter, -1)
-        self.hor_splitter = wx.SplitterWindow(self.main_panel, -1, style=wx.SP_3D|wx.SP_BORDER)
-        self.plot_panel = wx.Panel(self.hor_splitter, -1)
-        self.plot_notebook = wx.Notebook(self.plot_panel, -1, style=wx.NB_BOTTOM)
-        self.plot_notebook_data = wx.Panel(self.plot_notebook, -1)
         self.plot_data = plotpanel.DataPlotPanel(self.plot_notebook_data, config = self.config, config_name = 'data plot', )
-        self.plot_notebook_fom = wx.Panel(self.plot_notebook, -1)
         self.plot_fom = plotpanel.ErrorPlotPanel(self.plot_notebook_fom, config = self.config, config_name = 'fom plot', )
-        self.plot_notebook_Pars = wx.Panel(self.plot_notebook, -1)
         self.plot_pars = plotpanel.ParsPlotPanel(self.plot_notebook_Pars, config = self.config, config_name = 'pars plot', )
-        self.plot_notebook_foms = wx.Panel(self.plot_notebook, -1)
         self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook_foms, config = self.config, config_name = 'fom scan plot', )
-        self.input_panel = wx.Panel(self.hor_splitter, -1)
-        self.input_notebook = wx.Notebook(self.input_panel, -1, style=wx.NB_BOTTOM)
-        self.input_notebook_grid = wx.Panel(self.input_notebook, -1)
         self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook_grid, self, )
-        self.input_notebook_script = wx.Panel(self.input_notebook, -1)
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, -1)
-
+        self.example_handler = help.ExampleHandler(self, self.mb_examples, _path + 'examples/')
+        
         self.__set_properties()
         self.__do_layout()
 
@@ -265,6 +284,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_set_dal, self.mb_set_dataloader)
         self.Bind(wx.EVT_MENU, self.eh_data_import, self.mb_set_import)
         self.Bind(wx.EVT_MENU, self.eh_data_plots, self.mb_set_dataplot)
+        self.Bind(wx.EVT_MENU, self.eh_show_startup_dialog, self.mb_set_startup_profile)
         self.Bind(wx.EVT_MENU, self.eh_mb_models_help, self.mb_models_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_fom_help, self.mb_fom_help)
         self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, self.mb_plugins_help)
@@ -334,8 +354,6 @@ class MainFrame(wx.Frame):
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.eh_external_fom_value)
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_data.OnSolverPlotEvent)
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_fom.OnSolverPlotEvent)
-        #self.Bind(solvergui.EVT_UPDATE_PLOT, self.plugin_control.OnFittingUpdate)
-        
         
         self.Bind(solvergui.EVT_SOLVER_UPDATE_TEXT, \
                             self.eh_ex_status_text)
@@ -387,14 +405,15 @@ class MainFrame(wx.Frame):
         # Initiializations..
         # To force an update of the menubar...
         self.plot_data.SetZoom(False)
-        event_handlers.new(self, None)
+
+        self.model.saved = True
         #### End Manual config
         
     def __set_properties(self):
         self.main_frame_toolbar.SetToolBitmapSize((32,32))
         
         self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
-            '        FOM: ', size = (200, -1))
+            '        FOM:                    ', size = (400, -1))
         font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.NORMAL, wx.NORMAL)
         self.main_frame_fom_text.SetFont(font)
         self.main_frame_fom_text.SetLabel('        FOM: None')
@@ -501,9 +520,9 @@ class MainFrame(wx.Frame):
             the calls to Show
         '''
         wx.Frame.Show(self)
-        if os.name == 'mac' or os.name == '':
+        if os.name == 'mac' or os.name == 'posix' or os.name == '':
             self.Maximize()
-            self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
+            self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/4.)
             self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*5.5/10.)
         else:
             size = wx.DisplaySize()
@@ -516,9 +535,25 @@ class MainFrame(wx.Frame):
         ## Begin Manual Config
         #Gravity sets how much the upper/left window is resized default 0
         self.hor_splitter.SetSashGravity(0.75)
-        self.plugin_control.LoadDefaultPlugins()
+        #self.plugin_control.LoadDefaultPlugins()
         #self.Maximize()
         ## End Manual Config
+        event_handlers.new(self, None)
+        
+    def startup_dialog(self, profile_path, force_show = False):
+        show_profiles = self.config.get_boolean('startup', 'show profiles')
+        if show_profiles  or force_show:
+            startup_dialog = StartUpConfigDialog(self, profile_path + 'profiles/', show_cb = show_profiles)
+            startup_dialog.ShowModal()
+            config_file = startup_dialog.GetConfigFile()
+            if config_file:
+                shutil.copyfile(profile_path + 'profiles/' + config_file, profile_path + 'genx.conf')
+                #print profile_path + 'genx.conf'
+                self.config.load_default(profile_path + 'genx.conf')
+                self.config.default_set('startup', 'show profiles', 
+                                         startup_dialog.GetShowAtStartup())
+                self.config.write_default(profile_path + 'genx.conf')
+            #print self.config.get('plugins','loaded plugins')
 
             
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
@@ -757,28 +792,119 @@ class MainFrame(wx.Frame):
     def eh_mb_fom_help(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.fom_help(self, event)
 
-    def eh_mb_view_use_toggle_show(self, event):# wxGlade: MainFrame.<event_handler>
+    def eh_mb_view_use_toggle_show(self, event):
         new_val = self.mb_use_toggle_show.IsChecked()
         self.data_list.list_ctrl.SetShowToggle(new_val)
-
+    
     def eh_mb_misc_openhomepage(self, event): # wxGlade: MainFrame.<event_handler>
         #print "Event handler `eh_mb_misc_openhomepage' not implemented"
         #event.Skip()
         event_handlers.show_homepage(self, event)
+        
+    def eh_show_startup_dialog(self, event):
+        self.startup_dialog(_path, force_show = True)
 
 # end of class MainFrame
 
 
 class MyApp(wx.App):
+    def __init__(self, show_startup, *args, **kwargs):
+        self.show_startup = show_startup
+        wx.App.__init__(self, *args, **kwargs)
     def OnInit(self):
         wx.InitAllImageHandlers()
-        main_frame = MainFrame(None, -1, "")
+        
+        main_frame = MainFrame(self.show_startup, None, -1, "")
         self.SetTopWindow(main_frame)
         main_frame.Show()
         return 1
 
 # end of class MyApp
 
+class StartUpConfigDialog(wx.Dialog):
+    def __init__(self, parent, config_folder, show_cb = True):
+        wx.Dialog.__init__(self, parent, -1, 'Change Startup Configuration')
+        
+        self.config_folder = config_folder
+        self.selected_config = None
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add((-1, 10), 0, wx.EXPAND)
+        
+        sizer.Add(wx.StaticText(self, label='Choose the profile you want GenX to use:            '),
+                  0, wx.ALIGN_LEFT, 5)
+        self.profiles = self.get_possible_configs()
+        self.config_list = wx.ListBox(self, size = (-1, 200), choices = self.profiles, style = wx.LB_SINGLE)
+        self.config_list.SetSelection(self.profiles.index('Default'))
+        sizer.Add(self.config_list, 1, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 5)
+        
+        startup_cb = wx.CheckBox(self, -1, "Show at startup", style=wx.ALIGN_LEFT)
+        startup_cb.SetValue(show_cb)
+        self.startup_cb = startup_cb
+        sizer.Add((-1, 4), 0, wx.EXPAND)
+        sizer.Add(startup_cb, 0, wx.EXPAND, 5)
+        sizer.Add((-1, 4), 0, wx.EXPAND)
+        sizer.Add(wx.StaticText(self, label='These settings can be changed at the menu:\n Options/Startup Profile'),
+                  0, wx.ALIGN_LEFT, 5)
+        
+        
+        
+        # Add the Dilaog buttons
+        button_sizer = wx.StdDialogButtonSizer()
+        okay_button = wx.Button(self, wx.ID_OK)
+        okay_button.SetDefault()
+        button_sizer.AddButton(okay_button) 
+        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+        button_sizer.Realize()
+        # Add some eventhandlers
+        self.Bind(wx.EVT_BUTTON, self.OnClickOkay, okay_button)
+
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 20)
+        
+        sizer.Add((-1, 4), 0, wx.EXPAND)
+        sizer.Add(button_sizer,0,\
+                flag = wx.ALIGN_RIGHT, border = 20)
+        sizer.Add((-1, 4), 0, wx.EXPAND)
+        
+        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer.Add((10,-1), 0, wx.EXPAND)
+        main_sizer.Add(sizer, 1, wx.EXPAND)
+        main_sizer.Add((10,-1), 0, wx.EXPAND)
+        self.SetSizer(main_sizer)
+        
+        sizer.Fit(self)
+        self.Layout()
+        self.CentreOnScreen()
+        
+        
+    def OnClickOkay(self, event):
+        self.selected_config = self.profiles[self.config_list.GetSelection()]
+        self.show_at_startup = self.startup_cb.GetValue()
+        event.Skip()
+        
+    def GetConfigFile(self):
+        if self.selected_config:
+            return self.selected_config + '.conf'
+        else:
+            return None
+    
+    def GetShowAtStartup(self):
+        return self.show_at_startup
+    
+    def get_possible_configs(self):
+        '''get_possible_configs(self) --> list of strings
+        
+        search the plugin directory. 
+        Checks the list for python scripts and returns a list of 
+        module names that are loadable .
+        '''
+        # Locate all python files in this files directory
+        # but excluding this file and not loaded.
+        plugins = [s[:-5] for s in os.listdir(self.config_folder) if '.conf' == s[-5:] 
+                        and s[:2] != '__']
+        return plugins
+
 if __name__ == "__main__":
-    app = MyApp(0)
+    app = MyApp(True, 0)
     app.MainLoop()

@@ -11,12 +11,12 @@ __version__ = version.version #'2.0b trunk'
 
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
-
 import webbrowser
 
 import model as modellib
 import solvergui, help
 import filehandling as io
+
 
 manual_url = 'http://sourceforge.net/apps/trac/genx'
 homepage_url = 'http://genx.sf.net'
@@ -56,7 +56,7 @@ def new(frame, event):
     '''
     if not frame.model.saved:
         ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
-                                 'your model will not be saved.', 
+                                 ' your model will not be saved.', 
                                  'Model not saved')
         if not ans:
            return
@@ -79,7 +79,7 @@ def open(frame, event):
     # Check so the model is saved before quitting
     if not frame.model.saved:
         ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
-                                 'your model will not be saved.', 
+                                 ' your model will not be saved.', 
                                  'Model not saved')
         if not ans:
            return
@@ -90,52 +90,56 @@ def open(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
-        try:
-            io.load_gx(path, frame.model,\
-                                frame.solver_control.optimizer,\
-                                frame.config)
-        except modellib.IOError, e:
-            ShowModelErrorDialog(frame, e.__str__())
-        except Exception, e:
-            outp = StringIO.StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(frame, 'Could not open the file. Python Error:'\
-                        '\n%s'%(val,))
-            return
-        try:
-            [p.ReadConfig() for p in get_pages(frame)]
-        except Exception, e:
-            outp = StringIO.StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(frame, 'Could not read the config for the'
-                    ' plots. Python Error:\n%s'%(val,))
-        # Letting the plugin do their stuff...
-        try:
-            frame.plugin_control.OnOpenModel(None)
-        except Exception, e:
-            outp = StringIO.StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(frame, 'Problems when plugins processed model.'\
-                        ' Python Error:\n%s'%(val,))
-        frame.main_frame_statusbar.SetStatusText('Model loaded from file',\
-                                                1)
-        # Post an event to update everything else
-        _post_new_model_event(frame, frame.model)
-        # Needs to put it to saved since all the widgets will have 
-        # been updated
-        frame.model.saved = True
-        set_title(frame)
+        open_model(frame, path)
         
     dlg.Destroy()
     
-    
-    
+def open_model(frame, path):
+    frame.model.new_model()
+    # Update all components so all the traces are gone.
+    _post_new_model_event(frame, frame.model)
+    try:
+        io.load_gx(path, frame.model,\
+                                frame.solver_control.optimizer,\
+                                frame.config)
+    except modellib.IOError, e:
+        ShowModelErrorDialog(frame, e.__str__())
+    except Exception, e:
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        ShowErrorDialog(frame, 'Could not open the file. Python Error:'\
+                    '\n%s'%(val,))
+        return
+    try:
+        [p.ReadConfig() for p in get_pages(frame)]
+    except Exception, e:
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        print val
+        ShowErrorDialog(frame, 'Could not read the config for the'
+                ' plots. Python Error:\n%s'%(val,))
+    # Letting the plugin do their stuff...
+    try:
+        frame.plugin_control.OnOpenModel(None)
+    except Exception, e:
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        ShowErrorDialog(frame, 'Problems when plugins processed model.'\
+                    ' Python Error:\n%s'%(val,))
+    frame.main_frame_statusbar.SetStatusText('Model loaded from file',\
+                                                1)
+    # Post an event to update everything else
+    _post_new_model_event(frame, frame.model)
+    # Needs to put it to saved since all the widgets will have 
+    # been updated
+    frame.model.saved = True
+    set_title(frame)
     
 def on_new_model(frame, event):
     '''
@@ -197,6 +201,10 @@ def save_as(frame, event):
     if dlg.ShowModal() == wx.ID_OK:
         frame.model.set_script(frame.script_editor.GetText())
         fname = dlg.GetPath()
+        base, ext = os.path.splitext(fname)
+        if ext == '':
+            ext = '.gx'
+	    fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
@@ -256,6 +264,10 @@ def export_script(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
+        base, ext = os.path.splitext(fname)
+        if ext == '':
+            ext = '.py'
+	    fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
@@ -264,7 +276,8 @@ def export_script(frame, event):
             , 'Overwrite?')
         if result:
             try:
-                frame.model.export_script(dlg.GetPath())
+                #frame.model.export_script(dlg.GetPath())
+                frame.model.export_script(fname)
             except modellib.IOError, e:
                 ShowModelErrorDialog(frame, str(e))
                 frame.main_frame_statusbar.SetStatusText(\
@@ -292,6 +305,10 @@ def export_table(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
+        base, ext = os.path.splitext(fname)
+        if ext == '':
+            ext = '.tab'
+	    fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
@@ -300,7 +317,8 @@ def export_table(frame, event):
             , 'Overwrite?')
         if result:
             try:
-                frame.model.export_table(dlg.GetPath())
+                #frame.model.export_table(dlg.GetPath())
+                frame.model.export_table(fname)
             except modellib.IOError, e:
                 ShowModelErrorDialog(frame, str(e))
                 frame.main_frame_statusbar.SetStatusText(\
@@ -328,7 +346,8 @@ def import_script(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
-            frame.model.import_script(dlg.GetPath())
+            #frame.model.import_script(dlg.GetPath())
+            frame.model.import_script(fname)
         except modellib.IOError, e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(\
@@ -456,7 +475,12 @@ def simulate(frame, event):
     try:
         pardict = frame.model.get_possible_parameters()
     except Exception, e:
-        ShowErrorDialog(frame, str(e),\
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        #ShowErrorDialog(frame, val)
+        ShowErrorDialog(frame, val,\
             'simulate - model.get_possible_parameters')
         frame.main_frame_statusbar.SetStatusText('Fatal Error', 0)
         return
@@ -477,19 +501,16 @@ def start_fit(frame, event):
     Event handler to start fitting
     '''
     if frame.model.compiled:
-        #try:
-        #    frame.solver_control.StartFit()
-        #except modellib.GenericError, e:
-        #    raise e
-        #    ShowModelErrorDialog(frame, str(e))
-        #    frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-        #except Exception, e:
-        #    raise e
-        #    ShowErrorDialog(frame, str(e))
-        #    frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-        #else:
-        #    frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
-        frame.solver_control.StartFit()
+        try:
+            frame.solver_control.StartFit()
+        except modellib.GenericError, e:
+            ShowModelErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
+        except Exception, e:
+            ShowErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+        else:
+            frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
     else:
         ShowNotificationDialog(frame, 'The script is not compiled, do a'\
         ' simulation before you start fitting.')
@@ -631,7 +652,7 @@ def quit(frame, event):
     # Check so the model is saved before quitting
     if not frame.model.saved:
         ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
-                                 'your model will not be saved.', 
+                                 ' your model will not be saved.', 
                                  'Model not saved')
         if ans:
             frame.Destroy()
@@ -652,10 +673,11 @@ def fom_value(frame, event):
     Callback to update the fom_value displayed by the gui
     '''
     fom_value = event.model.fom
+    fom_name =  event.model.fom_func.__name__
     if fom_value:
-        frame.main_frame_fom_text.SetLabel('        FOM: %.4e'%fom_value)
+        frame.main_frame_fom_text.SetLabel('        FOM %s: %.4e'%(fom_name,fom_value))
     else:
-        frame.main_frame_fom_text.SetLabel('        FOM: None')
+        frame.main_frame_fom_text.SetLabel('        FOM %s: None'%(fom_name))
 def point_pick(frame, event):
     '''point_pick(frame, event) --> None
     Callback for the picking of a data point in a plotting window.
@@ -772,7 +794,8 @@ def print_parameter_grid(frame, event):
     Prints the table of parameters that have been fitted.
     '''
     frame.paramter_grid.Print()
-    
+    #genxprint.TablePanel(frame)
+   
 def print_preview_parameter_grid(frame, event):
     ''' print_parameter_grid(frame, event) --> None
     
@@ -991,11 +1014,11 @@ def show_about_box(frame, event):
     '''
     import numpy, scipy, matplotlib, platform
     try:
-        import weave
+        import scipy.weave as weave
     except:
         weave_version = 'Not installed'
     else:
-        weave_version = weave.version.version
+        weave_version = weave.__version__
     try:
         import processing
     except:

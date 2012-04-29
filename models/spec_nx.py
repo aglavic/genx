@@ -108,6 +108,12 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
 from numpy import *
 
 import lib.paratt as Paratt
+try:
+    import lib.paratt_weave as Paratt
+except StandardError,S:
+    print 'Not using inline c code for reflectivity calcs - can not import module'
+    print S
+    import lib.paratt as Paratt
 import lib.neutron_refl as MatrixNeutron
 from lib.instrument import *
 # Preamble to define the parameters needed for the models outlined below:
@@ -128,8 +134,8 @@ InstrumentParameters={'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',\
      'I0':1.0, 'res':0.001,\
     'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,\
      'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu',\
-    'Ibkg': 0.0}
-InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg']),
+    'Ibkg': 0.0, 'tthoff':0.0}
+InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']),
                     ('Resolution', ['restype', 'res', 'respoints', 'resintrange']),
                     ('Neutron', ['probe', 'pol', 'incangle']),
                     ('Footprint', ['footype', 'beamw', 'samplelen',]),
@@ -138,7 +144,7 @@ InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',\
      'I0': 'arb.', 'res': '[coord]',\
     'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',\
      'footype': '', 'samplelen':'mm', 'incangle':'deg.', 'pol': '',\
-    'Ibkg': 'arb.'}
+    'Ibkg': 'arb.', 'tthoff':'deg.'}
 # Coordinates=1 or 'tth' => twothetainput
 # Coordinates=0 or 'q'=> Q input
 # probe: Type of simulation
@@ -165,7 +171,7 @@ InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',\
 # samlen= Samplelength in mm.
 
 LayerParameters={'sigma':0.0, 'dens':1.0, 'd':0.0, 'f':(1.0+1.0j)*1e-20,
-     'b': 0.0 + 1.0J, 'xs_ai': 0.0, 'magn':0.0, 'magn_ang':0.0}
+     'b': 0.0, 'xs_ai': 0.0, 'magn':0.0, 'magn_ang':0.0}
 LayerUnits = {'sigma': 'AA', 'dens': 'at./AA', 'd': 'AA', 'f':'el./at.',
      'b': 'fm/at.', 'xs_ai': 'barn/at.', 'magn': 'mu_B/at.', 'magn_ang': 'deg.'}
 LayerGroups = [('Standard',['f','dens','d','sigma']),
@@ -192,11 +198,11 @@ def Specular(TwoThetaQz,sample,instrument):
     # TTH values given as x
     if instrument.getCoords() == instrument_string_choices['coords'][1]\
      or instrument.getCoords() == 1:
-        Q = 4*pi/instrument.getWavelength()*sin(TwoThetaQz*pi/360.0)
+        Q = 4*pi/instrument.getWavelength()*sin((TwoThetaQz + instrument.getTthoff())*pi/360.0)
     # Q vector given....
     elif instrument.getCoords() == instrument_string_choices['coords'][0]\
      or instrument.getCoords() == 0:
-        Q = TwoThetaQz
+        Q = 4*pi/instrument.getWavelength()*sin(arcsin(TwoThetaQz*instrument.getWavelength()/4/pi)+instrument.getTthoff()*pi/360.)
     else:
         raise ValueError('The value for coordinates, coords, is WRONG!'
                         'should be q(0) or tth(1).')
