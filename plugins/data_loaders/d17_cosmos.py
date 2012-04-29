@@ -28,7 +28,7 @@ class Plugin(Template):
         self.eI_col = 2
         self.res_col = 3
         self.comment = '#'
-        self.skip_rows = 36
+        self.skip_rows = 42
         self.delimiter = None
     
     def LoadData(self, data_item_number, filename):
