@@ -233,7 +233,7 @@ def R2(simulations, data):
     '''
     denom = np.sum([np.sum(dataset.y**2) for dataset in data\
         if dataset.use])
-    return [1.0/denom*(dataset.y - sim)**2\
+    return [1.0/denom*np.sign(dataset.y - sim)*(dataset.y - sim)**2\
         for (dataset, sim) in zip(data,simulations)]
 
 def logR2(simulations, data):
@@ -241,7 +241,7 @@ def logR2(simulations, data):
     '''
     denom = np.sum([np.sum(np.log10(dataset.y)**2) for dataset in data\
         if dataset.use])
-    return [1.0/denom*(np.log10(dataset.y) - np.log10(sim))**2\
+    return [1.0/denom*np.sign(np.log10(dataset.y) - np.log10(sim))*(np.log10(dataset.y) - np.log10(sim))**2\
         for (dataset, sim) in zip(data,simulations)]
 
 def sintth4(simulations, data):
@@ -267,7 +267,7 @@ def chi2bars(simulations, data):
     ''' Weighted chi squared
     '''
     N = np.sum([len(dataset.y)*dataset.use for dataset in data])
-    return [(dataset.y - sim)**2/dataset.error**2
+    return [np.sign(dataset.y - sim)*(dataset.y - sim)**2/dataset.error**2
         for (dataset, sim) in zip(data,simulations)]
 chi2bars.__div_dof__ = True
 
@@ -302,7 +302,7 @@ def R2bars(simulations, data):
     '''
     denom = np.sum([(1/dataset.error)*np.sum(dataset.y**2)
                     for dataset in data if dataset.use])
-    return [1.0/denom*(1/dataset.error) * (dataset.y - sim)**2
+    return [1.0/denom*(1/dataset.error) * np.sign(dataset.y - sim)*(dataset.y - sim)**2
         for (dataset, sim) in zip(data,simulations)]
 
 

@@ -297,6 +297,7 @@ if 'py2app' in sys.argv:
   base = 'genx.app/Contents/Resources/lib/python2.7'
   for src, dest in [
                     ('profiles', ''),
+                    ('examples', ''),
                     ]:
     xcopy_to_folder(src, base + dest)
   os.popen('cp genx.conf ' + 'dist/' + base)
