@@ -58,7 +58,7 @@ class DataController:
            
     def set_name(self,pos,name):
         self.data.set_name(pos,name)
-        print self.data.items[pos].name
+        #print self.data.items[pos].name
         
     def move_up(self, pos):
         self.data.move_up(pos)
@@ -84,7 +84,7 @@ class DataController:
     def load(self, pos, path):
         self.data[pos].loadfile(path)
         
-        print self.data[pos].x
+        #print self.data[pos].x
         
     def get_items_plotsettings(self, pos):
         ''' get_items_plotsettings(self, pos) --> (sim_list, data_list)
@@ -559,8 +559,8 @@ class VirtualDataList(wx.ListCtrl):
         #print "new data from model loaded"
         
     def OnBeginEdit(self,evt):
-        print (evt.GetIndex(),evt.GetColumn())
-        print evt.GetText()        
+        #print (evt.GetIndex(),evt.GetColumn())
+        #print evt.GetText()        
         evt.Skip()
         
     def OnEndEdit(self, evt):
