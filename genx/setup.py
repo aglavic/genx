@@ -61,8 +61,8 @@ if "py2exe" in sys.argv:
                 #"setup_requires": ['py2exe'], 
                 #"console": [ "__init__.py"], # set the executable for py2exe
                 "windows": [ {
-                            "script": "scripts/genx",
-                            "icon_resources": [(1, "windows_build/genx.ico")]
+                            "script": "genx.py",
+                            "icon_resources": [(1, "windows_build/genx.ico"), (2, "windows_build/genx_file.ico")]
                             } ], # executable for py2exe is windows application            
                 "options": {  "py2exe": {
                               "includes": "numpy, matplotlib, StringIO, traceback, thread, multiprocessing",
@@ -270,6 +270,8 @@ if "py2exe" in sys.argv:
   for src, dest in [
                     ('plugins', 'plugins'), 
                     ('models', 'models'), 
+                    ('profiles', 'profiles'),
+                    ('examples', 'examples'),
                     ]:
     xcopy_to_folder(src, dest)
   os.popen('xcopy genx.conf dist')
