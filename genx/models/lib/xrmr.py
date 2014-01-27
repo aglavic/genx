@@ -36,11 +36,11 @@ def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e
     chi_yy = (chi0 + A + C*m_y*m_y)
     chi_zz = (chi0 + A + C*m_z*m_z)
     chi_xy = (-1.0J*B*m_z + C*m_x*m_y)
-    chi_yx = -(-1.0J*B*m_z + C*m_x*m_y)
+    chi_yx = (1.0J*B*m_z + C*m_x*m_y)
     chi_xz = (1.0J*B*m_y + C*m_x*m_z)
-    chi_zx = -(1.0J*B*m_y + C*m_x*m_z)
+    chi_zx = (-1.0J*B*m_y + C*m_x*m_z)
     chi_yz = (-1.0J*B*m_x + C*m_y*m_z)
-    chi_zy = -(-1.0J*B*m_x + C*m_y*m_z)
+    chi_zy = (1.0J*B*m_x + C*m_y*m_z)
     chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
     
     #Take into account non-magnetic materials:
