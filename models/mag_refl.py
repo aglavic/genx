@@ -190,6 +190,7 @@ from lib.instrument import *
 
 mag_limit = 1e-8
 mpy_limit = 1e-8
+theta_limit = 1e-8
 
 re = 2.8179402894e-5
 
@@ -314,6 +315,8 @@ def Specular(TwoThetaQz, sample, instrument):
     elif instrument.getCoords() == 0 or\
         instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
+    if any(theta < theta_limit):
+        raise ValueError('The incident angle has to be above %.1e'%theta_limit)
     
     R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz)
     pol = instrument.getXpol()
@@ -417,7 +420,7 @@ def compose_sld_anal(z, sample, instrument):
     dens = array(parameters['dens'], dtype = float64)
     resdens = array(parameters['resdens'], dtype = float64)
     resmag = array(parameters['resmag'], dtype = float64)
-    mag = array(parameters['mag'], dtype = float64)
+    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
     dd_l = array(parameters['dd_l'], dtype = float64)
@@ -497,7 +500,7 @@ def compose_sld(sample, instrument, theta):
     dens = array(parameters['dens'], dtype = float64)
     resdens = array(parameters['resdens'], dtype = float64)
     resmag = array(parameters['resmag'], dtype = float64)
-    mag = array(parameters['mag'], dtype = float64)
+    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
     dd_u = array(parameters['dd_u'], dtype = float64)
@@ -663,7 +666,7 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
     dens = array(parameters['dens'], dtype = float64)
     resdens = array(parameters['resdens'], dtype = float64)
     resmag = array(parameters['resmag'], dtype = float64)
-    mag = array(parameters['mag'], dtype = float64)
+    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
     dd_l = array(parameters['dd_l'], dtype = float64)
