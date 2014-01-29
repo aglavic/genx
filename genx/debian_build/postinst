@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ -x /usr/bin/update-mime-database ]; then
+  update-mime-database /usr/share/mime
+  echo "        Installing icons ..."
+  xdg-icon-resource install --context mimetypes --size 16 /tmp/genx_icons/genx_16x16.png application-genx
+  xdg-icon-resource install --context mimetypes --size 22 /tmp/genx_icons/genx_22x22.png application-genx
+  xdg-icon-resource install --context mimetypes --size 32 /tmp/genx_icons/genx_32x32.png application-genx
+  xdg-icon-resource install --context mimetypes --size 48 /tmp/genx_icons/genx_48x48.png application-genx
+  xdg-icon-resource install --context mimetypes --size 64 /tmp/genx_icons/genx_64x64.png application-genx
+  xdg-icon-resource install --context mimetypes --size 128 /tmp/genx_icons/genx_128x128.png application-genx
+  echo "        ... clean up."
+  rm -r /tmp/genx_icons
+fi

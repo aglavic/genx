@@ -1,0 +1,12 @@
+Source: genx
+Section: scientific
+Priority: extra
+Maintainer: Artur Glavic <a.glavic@fz-juelich.de>
+Standards-Version: 3.8.1
+Homepage: http://genx.sourceforge.net/
+
+Package: genx
+Architecture: all
+Depends: python (>= 2.4), python-numpy (>= 1.0), python-scipy, python-matplotlib
+Description: X-ray and Neutron reflectivity simulation and fitting using differential evolution
+

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Name=GenX
+Name[de]=GenX
+Comment=GenX x-ray and neutron reflectivity fitting
+Comment[de]=GenX röntgen und neutronen reflektometrie fitting
+GenericName=GenX
+Terminal=false
+Icon=/usr/share/pixmaps/genx.xpm
+Type=Application
+Exec=/usr/local/bin/genx %f
+Categories=WX;Science;
+X-KDE-StartupNotify=true
+MimeType=application/genx;
