@@ -190,6 +190,7 @@ from lib.instrument import *
 
 mag_limit = 1e-8
 mpy_limit = 1e-8
+theta_limit = 1e-8
 
 re = 2.8179402894e-5
 
@@ -314,6 +315,8 @@ def Specular(TwoThetaQz, sample, instrument):
     elif instrument.getCoords() == 0 or\
         instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
+    if any(theta < theta_limit):
+        raise ValueError('The incident angle has to be above %.1e'%theta_limit)
     
     R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz)
     pol = instrument.getXpol()
@@ -417,7 +420,7 @@ def compose_sld_anal(z, sample, instrument):
     dens = array(parameters['dens'], dtype = float64)
     resdens = array(parameters['resdens'], dtype = float64)
     resmag = array(parameters['resmag'], dtype = float64)
-    mag = array(parameters['mag'], dtype = float64)
+    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
     dd_l = array(parameters['dd_l'], dtype = float64)
@@ -497,7 +500,7 @@ def compose_sld(sample, instrument, theta):
     dens = array(parameters['dens'], dtype = float64)
     resdens = array(parameters['resdens'], dtype = float64)
     resmag = array(parameters['resmag'], dtype = float64)
-    mag = array(parameters['mag'], dtype = float64)
+    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
     dd_u = array(parameters['dd_u'], dtype = float64)
@@ -663,7 +666,7 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
     dens = array(parameters['dens'], dtype = float64)
     resdens = array(parameters['resdens'], dtype = float64)
     resmag = array(parameters['resmag'], dtype = float64)
-    mag = array(parameters['mag'], dtype = float64)
+    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
     dd_l = array(parameters['dd_l'], dtype = float64)
@@ -815,7 +818,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
             #chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             #n = 1 + chi_temp/2.0
             #Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
-            Rm = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+            Rp = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
             R = (Rp - Rm)/(Rp + Rm)
             #raise ValueError('Variable pol has an unvalid value')
         else:
@@ -873,15 +876,16 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             #print 'Reusing W'
             W = Buffer.W
         trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
-        Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
+        #Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
+        Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, conj(lib.xrmr.inv2(trans))))
         #Different polarization channels:
         pol = instrument.getXpol()
         if pol == 0 or pol == instrument_string_choices['xpol'][0]:
             # circ +
-            R = abs(Wc[0,0])**2 + abs(Wc[0,1])**2
+            R = abs(Wc[0,0])**2 + abs(Wc[1,0])**2
         elif pol == 1 or pol == instrument_string_choices['xpol'][1]:
             # circ -
-            R = abs(Wc[1,1])**2 + abs(Wc[1,0])**2
+            R = abs(Wc[1,1])**2 + abs(Wc[0,1])**2
         elif pol == 2 or pol == instrument_string_choices['xpol'][2]:
             # tot
             R = (abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)/2
@@ -890,10 +894,10 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             R = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)
         elif pol == 4 or pol == instrument_string_choices['xpol'][4]:
             # sigma
-            R = abs(W[0,0])**2 + abs(W[0,1])**2
+            R = abs(W[0,0])**2 + abs(W[1,0])**2
         elif pol == 5 or pol == instrument_string_choices['xpol'][5]:
             # pi
-            R = abs(W[1,0])**2 + abs(W[1,1])**2
+            R = abs(W[0,1])**2 + abs(W[1,1])**2
         else:
             raise ValueError('Variable pol has an unvalid value')
     # Simplified theory

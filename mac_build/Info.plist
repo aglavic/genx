@@ -22,7 +22,7 @@
 				<string>gx</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>genx.icns</string>
+			<string>genx_file.icns</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -34,7 +34,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>genx</string>
+	<string>GenX</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

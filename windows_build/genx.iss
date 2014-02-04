@@ -5,18 +5,18 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{9E6E6D80-C5A0-4866-8B32-C2DA433B3DA4}
+AppId={{03439AE4-FE61-49AC-8D3F-1351147CE8FC}
 AppName=GenX
-AppVerName=GenX 2.0b
-AppPublisher=Artur Glavic
+AppVerName=GenX 2.1.0
+AppPublisher=Matts Björck
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
 AppUpdatesURL=https://sourceforge.net/projects/genx
 DefaultDirName={pf}\GenX
-DefaultGroupName=GenX
+DefaultGroupName=GenX      
 AllowNoIcons=true
-OutputDir=C:\Documents and Settings\Admin1\My Documents\
-OutputBaseFilename=gens_setup
+OutputDir=Z:\trunk\genx\windows_build
+OutputBaseFilename=install_genx
 Compression=lzma
 SolidCompression=true
 ChangesAssociations=true
@@ -32,13 +32,13 @@ Source: genx\dist\genx.exe; DestDir: {app}; Flags: ignoreversion
 Source: genx\dist\*.*; DestDir: {app}; Flags: ignoreversion recursesubdirs
 
 [Icons]
-Name: {group}\Genx GUI; Filename: {app}\genx.exe; IconFilename: {app}\genx.exe; IconIndex: 0
-Name: {group}\{cm:UninstallProgram,Genx GUI}; Filename: {uninstallexe}
+Name: {group}\GenX; Filename: {app}\genx.exe; IconFilename: {app}\genx.exe; IconIndex: 0
+Name: {group}\{cm:UninstallProgram,GenX}; Filename: {uninstallexe}
 
 [Registry]
 Root: HKCU; Subkey: Software\Classes\.gx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
 Root: HKCU; Subkey: Software\Classes\GenX; ValueType: string; ValueName: ; ValueData: GenX model; Tasks: associate; Flags: uninsdeletekey createvalueifdoesntexist
-Root: HKCU; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,0; Tasks: associate; Flags: createvalueifdoesntexist
+Root: HKCU; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,2; Tasks: associate; Flags: createvalueifdoesntexist
 Root: HKCU; Subkey: Software\Classes\GenX\shell\open\command; ValueType: string; ValueName: ; ValueData: """{app}\genx.exe"" ""%1"""; Tasks: associate; Flags: createvalueifdoesntexist
 
 [Run]
