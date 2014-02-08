@@ -468,13 +468,13 @@ def compose_sld_anal(z, sample, instrument):
     if z == None:
         z = arange(-sigma_c[0]*10 - 50, int_pos.max()+sigma_c.max()*10+50, 0.5)
         #print 'autoz'
-    sld_c = sum(sld_interface(z[:,newaxis]-int_pos, 0.0J, sl_c[:-1] - sl_c[1:], 0.0J,
+    sld_c = -(sum(sld_interface(z[:,newaxis]-int_pos, 0.0J, sl_c[:-1] - sl_c[1:], 0.0J,
                   sigma_l[1:], sigma_c[:-1], sigma_u[:-1],
-                  dd_l[1:], dd_u[:-1]),1) - sl_c[0]
-    sld_m = sum(sld_interface(z[:,newaxis]-int_pos, sl_m1[:-1] - sl_m1_l[:-1], 
+                  dd_l[1:], dd_u[:-1]),1) - sl_c[0])
+    sld_m = -(sum(sld_interface(z[:,newaxis]-int_pos, sl_m1[:-1] - sl_m1_l[:-1], 
                               sl_m1_l[:-1]  - sl_m1_u[1:], sl_m1_u[1:] - sl_m1[1:],
                   sigma_l[1:], sigma_c[:-1], sigma_u[:-1],
-                  dd_l[1:], dd_u[:-1]),1) - sl_m1[0]
+                  dd_l[1:], dd_u[:-1]),1) - sl_m1[0])
     sld_n = -(sum(sld_interface(z[:,newaxis]-int_pos, 0.0J, sl_n[:-1] - sl_n[1:], 0.0J,
                               sigma_l[1:], sigma_c[:-1], sigma_u[:-1],
                               dd_l[1:], dd_u[:-1]),1) - sl_n[0])
@@ -700,13 +700,13 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
     if (theory == 0 or theory == instrument_string_choices['theory'][0] or
         theory == 1 or theory == instrument_string_choices['theory'][1]):
         if pol == '+':
-            n = 1 - lamda**2*re/pi*(sl_c - sl_m1)/2.0
-            n_l = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_l)[:,newaxis])/2.0
-            n_u = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_u)[:,newaxis])/2.0
-        elif pol == '-':
             n = 1 - lamda**2*re/pi*(sl_c + sl_m1)/2.0
             n_l = 1 - lamda**2*re/pi*(sl_c + sl_m1*(1. + dmag_l)[:,newaxis])/2.0
             n_u = 1 - lamda**2*re/pi*(sl_c + sl_m1*(1. + dmag_u)[:,newaxis])/2.0
+        elif pol == '-':
+            n = 1 - lamda**2*re/pi*(sl_c - sl_m1)/2.0
+            n_l = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_l)[:,newaxis])/2.0
+            n_u = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_u)[:,newaxis])/2.0
     elif (theory == 2 or theory == instrument_string_choices['theory'][2] or
           theory == 3 or theory == instrument_string_choices['theory'][3]):
         b = (array(parameters['b'], dtype = complex128)*1e-5)[:, newaxis]*ones(theta.shape)
@@ -903,25 +903,29 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
     # Simplified theory
     elif theory == 1 or theory == instrument_string_choices['theory'][1]:
         pol = instrument.getXpol()
-        re = 2.82e-13*1e2/1e-10
+        re = 2.8179402894e-5
         if pol == 0 or pol == instrument_string_choices['xpol'][0]:
             # circ +
             chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             n = 1 + chi_temp/2.0
+            n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             #print n.shape, theta.shape, d.shape
             R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
         elif pol == 1 or pol == instrument_string_choices['xpol'][1]:
             # circ -
             chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             n = 1 + chi_temp/2.0
+            n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
         elif pol == 2 or pol == instrument_string_choices['xpol'][2]:
             # tot
             chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             n = 1 + chi_temp/2.0
+            n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
             chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             n = 1 + chi_temp/2.0
+            n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
             R = (Rp + Rm)/2.0
             #raise ValueError('Variable pol has an unvalid value')
@@ -929,9 +933,11 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             # ass
             chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             n = 1 + chi_temp/2.0
+            n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
             chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             n = 1 + chi_temp/2.0
+            n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
             R = (Rp - Rm)/(Rp + Rm)
             #raise ValueError('Variable pol has an unvalid value')
