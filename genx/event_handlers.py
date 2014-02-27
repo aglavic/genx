@@ -17,8 +17,7 @@ import model as modellib
 import solvergui, help
 import filehandling as io
 
-
-manual_url = 'http://sourceforge.net/apps/trac/genx'
+manual_url = 'http://sourceforge.net/p/genx/wiki/'
 homepage_url = 'http://genx.sf.net'
 
 def get_pages(frame):
@@ -1031,8 +1030,8 @@ def show_about_box(frame, event):
     info.Version = __version__
     info.Copyright = "(C) 2008 Matts Bjorck"
     info.Description = wordwrap(
-        "GenX is a multipurpose refinement program using the differential"
-        "evolution algorithm. It is developed  mainly for refining x-ray reflectivity"
+        "GenX is a multipurpose refinement program using the differential "
+        "evolution algorithm. It is developed  mainly for refining x-ray reflectivity "
         "and neutron reflectivity data."
         
         "\n\nThe versions of the mandatory libraries are:\n"
@@ -1041,14 +1040,25 @@ def show_about_box(frame, event):
         "weave: %s, processing: %s"%(platform.python_version(), wx.__version__,\
             numpy.version.version, scipy.version.version,\
              matplotlib.__version__, weave_version, processing_version),
-        350, wx.ClientDC(frame))
+        500, wx.ClientDC(frame))
     info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")
     # No developers yet
     #info.Developers = []
-    head, tail = os.path.split(__file__)
-    license_text = file(head + '/LICENSE.txt','r').read()
-    info.License = license_text#wordwrap(license_text, 500, wx.ClientDC(self))
-
+    #head, tail = os.path.split(__file__)
+    #license_text = file(head + '/LICENSE.txt','r').read()
+    #license_text = file(_path + 'LICENSE.txt','r').read()
+    #info.License = license_text#wordwrap(license_text, 500, wx.ClientDC(self))
+    info.Licence = wordwrap('This program is free software: you can redistribute it and/or modify '
+                            'it under the terms of the GNU General Public License as published by '
+                            'the Free Software Foundation, either version 3 of the License, or '
+                            '(at your option) any later version. '
+                            '\n\nThis program is distributed in the hope that it will be useful, '
+                            'but WITHOUT ANY WARRANTY; without even the implied warranty of '
+                            'MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the '
+                            'GNU General Public License for more details. '
+                            '\n\nYou should have received a copy of the GNU General Public License '
+                            'along with this program.  If not, see <http://www.gnu.org/licenses/>. '
+                            , 400, wx.ClientDC(frame))
     
     wx.AboutBox(info)
         
