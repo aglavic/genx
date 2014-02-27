@@ -346,8 +346,8 @@ def import_script(frame, event):
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
-            #frame.model.import_script(dlg.GetPath())
-            frame.model.import_script(fname)
+            frame.model.import_script(dlg.GetPath())
+            #frame.model.import_script(fname)
         except modellib.IOError, e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(\
