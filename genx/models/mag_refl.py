@@ -906,37 +906,25 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
         re = 2.8179402894e-5
         if pol == 0 or pol == instrument_string_choices['xpol'][0]:
             # circ +
-            chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            n = 1 + chi_temp/2.0
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             #print n.shape, theta.shape, d.shape
             R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
         elif pol == 1 or pol == instrument_string_choices['xpol'][1]:
             # circ -
-            chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            n = 1 + chi_temp/2.0
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
         elif pol == 2 or pol == instrument_string_choices['xpol'][2]:
             # tot
-            chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            n = 1 + chi_temp/2.0
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
-            chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            n = 1 + chi_temp/2.0
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
             R = (Rp + Rm)/2.0
             #raise ValueError('Variable pol has an unvalid value')
         elif pol == 3 or pol == instrument_string_choices['xpol'][3]:
             # ass
-            chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            n = 1 + chi_temp/2.0
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
-            chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            n = 1 + chi_temp/2.0
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
             R = (Rp - Rm)/(Rp + Rm)
