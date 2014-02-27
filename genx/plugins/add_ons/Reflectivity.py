@@ -1314,14 +1314,19 @@ class SamplePlotPanel(wx.Panel):
         i = 0
         for key in self.plot_dict:
             
-            if key != 'z': 
+            if key != 'z' and key != 'SLD unit': 
                 self.plot.ax.plot(self.plot_dict['z'], self.plot_dict[key],\
                     colors[i%len(colors)])
                 i += 1
         keys = self.plot_dict.keys()
         keys.pop(keys.index('z'))
+        keys.pop(keys.index('SLD unit'))
         #self.plot.ax.legend(tuple(keys), bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
         self.plot.ax.legend(tuple(keys))
+        if self.plot_dict.has_key('SLD unit'):
+            self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(
+                                            self.plot_dict['SLD unit']))
+        self.plot.ax.xaxis.label.set_text('$\mathrm{\mathsf{ z\,[\AA]}}$')
         self.plot.flush_plot()
         self.plot.AutoScale()
     

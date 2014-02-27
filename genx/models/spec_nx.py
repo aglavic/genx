@@ -361,11 +361,13 @@ def SLD_calculations(z, sample, inst):
     type = inst.getProbe()
     magnetic = False
     mag_sld = 0
+    sld_unit = 'r_{e}/\AA^{3}'
     if type == instrument_string_choices['probe'][0] or type == 0:
         sld = dens*f
     elif type == instrument_string_choices['probe'][1] or type == 1 or\
         type == instrument_string_choices['probe'][4] or type == 4:
         sld = dens*b
+        sld_unit = 'fm/\AA^{3}'
     else:
         magnetic = True
         sld = dens*b
@@ -384,7 +386,8 @@ def SLD_calculations(z, sample, inst):
     if not magnetic:
         rho = sum((sld[:-1] - sld[1:])*(0.5 -\
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
-        dic = {'real sld': real(rho), 'imag sld': imag(rho), 'z':z}
+        dic = {'real sld': real(rho), 'imag sld': imag(rho), 'z':z, 
+               'SLD unit': sld_unit}
     else:
         sld_p = sld + mag_sld
         sld_m = sld - mag_sld
@@ -393,7 +396,8 @@ def SLD_calculations(z, sample, inst):
         rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -\
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
         dic = {'real sld +': real(rho_p), 'imag sld +': imag(rho_p),\
-                'real sld -': real(rho_m), 'imag sld -': imag(rho_m), 'z':z}
+                'real sld -': real(rho_m), 'imag sld -': imag(rho_m), 'z':z,
+                'SLD unit': sld_unit}
     return dic
 
 SimulationFunctions={'Specular':Specular, \

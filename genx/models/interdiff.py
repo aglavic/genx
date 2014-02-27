@@ -288,7 +288,8 @@ def SLD_calculations(z, sample, inst):
     if z == None:
         z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     rho = sum(d_sld*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
-    return {'real sld': real(rho), 'imag sld': imag(rho), 'z':z}
+    return {'real sld': real(rho), 'imag sld': imag(rho), 'z':z, 
+            'SLD unit': 'r_{e}/\AA^{3}'}
     
 
 SimulationFunctions = {'Specular':Specular,\
