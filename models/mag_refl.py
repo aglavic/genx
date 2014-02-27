@@ -379,7 +379,7 @@ def SLD_calculations(z, sample, inst):
         c = 1/(lamda**2*re/pi)
         return {'sl_xx':chi[0][0].real*c, 'sl_xy':chi[0][1].real*c, 'sl_xz':chi[0][2].real*c,
                 'sl_yy':chi[1][1].real*c,'sl_yz':chi[1][2].real*c,'sl_zz':chi[2][2].real*c,
-                'z':z}
+                'z':z, 'SLD unit': 'r_e/\AA^{3}'}
     else:
         z = zeros(len(d)*2)
         z[::2] = cumsum(r_[0,d[:-1]])
@@ -401,7 +401,7 @@ def SLD_calculations(z, sample, inst):
         return {'real sld_c': sl_cp.real, 'imag sld_c': sl_cp.imag,
             'real sld_m': sl_m1p.real, 'imag sld_m': sl_m1p.imag,
             'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
-            'z':z}
+            'z':z, 'SLD unit': 'r_{e}/\AA^{3},\,fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
         
     
 def compose_sld_anal(z, sample, instrument):
