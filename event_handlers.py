@@ -357,6 +357,15 @@ def import_script(frame, event):
                                 'import script - model.import_script')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
             return
+        try:
+            frame.plugin_control.OnOpenModel(None)
+        except Exception, e:
+            outp = StringIO.StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            ShowErrorDialog(frame, 'Problems when plugins processed model.'\
+                    ' Python Error:\n%s'%(val,))
         else:
             frame.main_frame_statusbar.SetStatusText(\
                                                 'Script imported from file', 1)
