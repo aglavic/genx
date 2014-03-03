@@ -556,7 +556,8 @@ class PlotPanel(wx.Panel):
 
 #==============================================================================
 # Print out class borrowed from wxmpl
-wx.PostScriptDC_SetResolution(300)
+if callable(getattr(wx, 'PostScriptDC_SetResolution', None)): 
+    wx.PostScriptDC_SetResolution(300)
 
 class FigurePrinter:
     """
