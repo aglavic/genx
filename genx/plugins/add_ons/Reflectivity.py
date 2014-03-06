@@ -1526,6 +1526,7 @@ class Plugin(framework.Template):
         '''Init the script in the model to yield the 
         correct script for initilization
         '''
+        script += 'from numpy import *'
         script = 'import %s as model\n'%modelname
         script += 'from models.utils import UserVars, fp, fw, bc, bw\n\n'
         
