@@ -1309,7 +1309,15 @@ class SamplePlotPanel(wx.Panel):
         '''
         colors = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
         model = self.plugin.GetModel().script_module
-        self.plot_dict = model.sample.SimSLD(None, model.inst)
+        #self.plot_dict = model.sample.SimSLD(None, model.inst)
+        try:
+            I, self.plot_dicts = model.Sim(self.plugin.GetModel().data, return_SLD = True)
+            self.plot_dict = self.plot_dicts[0]
+        except TypeError:
+            print 'Old Reflectivity file'
+            self.plot_dict = model.sample.SimSLD(None, model.inst)
+            
+        
         self.plot.ax.lines = []
         i = 0
         for key in self.plot_dict:
@@ -1336,7 +1344,7 @@ class SamplePlotPanel(wx.Panel):
         print save_array.shape
         header = 'z\t' 
         for key in self.plot_dict:
-            if key != 'z':
+            if key != 'z' and key != 'SLD unit':
                 print self.plot_dict[key].shape
                 save_array = np.r_[save_array, [self.plot_dict[key]]]
                 header += key + '\t'
@@ -1528,14 +1536,18 @@ class Plugin(framework.Template):
         script += '# BEGIN Parameters DO NOT CHANGE\n'
         script += 'cp = UserVars()\n'
         script += '# END Parameters\n\n'
-        script += 'def Sim(data):\n'
+        script += 'def Sim(data, return_SLD = False):\n'
         script += '    I = []\n'
+        script += '    SLD = []\n'
         for i in range(len(self.GetModel().get_data())):
             script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%i
             script += '    I.append(sample.SimSpecular(data[%i].x, inst))\n'%i
+            script += '    if return_SLD: SLD.append(sample.SimSLD(None, inst))\n'
             script += '    # END Dataset %i\n'%i
-            
+        script += '    if return_SLD: return I, SLD\n'
         script += '    return I\n'
+        
+        self.sim_returns_sld = True
         
         self.SetModelScript(script)
         self.CompileScript()
@@ -1585,6 +1597,8 @@ class Plugin(framework.Template):
         for (i,exps) in enumerate(self.simulation_widget.GetExpressionList()):
             exp = [ex + '\n' for ex in exps]
             exp.append('I.append(sample.SimSpecular(data[%i].x, inst))\n'%i)
+            if self.sim_returns_sld:
+                exp.append('if return_SLD: SLD.append(sample.SimSLD(None, inst))\n')
             code = ''.join(exp)
             script = self.insert_code_segment(script, 'Dataset %i'%i, code)
         
@@ -1732,6 +1746,12 @@ class Plugin(framework.Template):
         self.StatusMessage('Trying to interpret the script...')
         # Get the current script and split the lines into list items
         script_lines = self.GetModel().get_script().splitlines(True)
+        # Try to find out if the script works with multiple SLDs
+        for line in script_lines:
+            if line.find('Sim') != -1 and line.find('return_SLD') != -1:
+                self.sim_returns_sld = True
+            else:
+                self.sim_returns_sld = False
         script = ''
         # Locate the Sample definition
         line_index = 0
