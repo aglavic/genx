@@ -1296,6 +1296,8 @@ class SamplePlotPanel(wx.Panel):
         
         self.plot.update(None)
         self.plot.ax = self.plot.figure.add_subplot(111)
+        box = self.plot.ax.get_position()
+        self.plot.ax.set_position([box.x0, box.y0, box.width * 0.95, box.height])
         self.plot.ax.set_autoscale_on(True)
         self.plot.update = self.Plot
         self.SetSizer(sizer)
@@ -1310,33 +1312,46 @@ class SamplePlotPanel(wx.Panel):
         colors = ['b', 'r', 'g', 'c', 'm', 'y', 'k']
         model = self.plugin.GetModel().script_module
         #self.plot_dict = model.sample.SimSLD(None, model.inst)
-        try:
-            I, self.plot_dicts = model.Sim(self.plugin.GetModel().data, return_SLD = True)
-            self.plot_dict = self.plot_dicts[0]
-        except TypeError:
-            print 'Old Reflectivity file'
-            self.plot_dict = model.sample.SimSLD(None, model.inst)
-            
+        self.plot_dicts = []
+        
+        if self.plugin.sim_returns_sld and model._sim:
+            self.plot_dicts = model.SLD
+            #self.plot_dict = self.plot_dicts[0]
+        else:
+            if (not self.plugin.sim_returns_sld) and self.plugin.GetModel().compiled:
+                plot_dict = model.sample.SimSLD(None, model.inst)
+                self.plot_dicts = [plot_dict]
         
         self.plot.ax.lines = []
+        self.plot.ax.clear()
         i = 0
-        for key in self.plot_dict:
-            
-            if key != 'z' and key != 'SLD unit': 
-                self.plot.ax.plot(self.plot_dict['z'], self.plot_dict[key],\
-                    colors[i%len(colors)])
-                i += 1
-        keys = self.plot_dict.keys()
-        keys.pop(keys.index('z'))
-        keys.pop(keys.index('SLD unit'))
-        #self.plot.ax.legend(tuple(keys), bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
-        self.plot.ax.legend(tuple(keys))
-        if self.plot_dict.has_key('SLD unit'):
-            self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(
-                                            self.plot_dict['SLD unit']))
-        self.plot.ax.xaxis.label.set_text('$\mathrm{\mathsf{ z\,[\AA]}}$')
-        self.plot.flush_plot()
-        self.plot.AutoScale()
+        data = self.plugin.GetModel().get_data()
+        sld_units = []
+        for sim in range(len(self.plot_dicts)):
+            if data[sim].show:
+                for key in self.plot_dicts[sim]:
+                    is_imag = key[:2] == 'Im' or key[:4] == 'imag'
+                    if (is_imag and self.plugin.show_imag_sld) or not is_imag:
+                        if key != 'z' and key != 'SLD unit': 
+                            label = data[sim].name + '\n' + key
+                            self.plot.ax.plot(self.plot_dicts[sim]['z'], self.plot_dicts[sim][key],\
+                                          colors[i%len(colors)], label = label)
+                            i += 1
+                            if self.plot_dicts[sim].has_key('SLD unit'):
+                                if not self.plot_dicts[sim]['SLD unit'] in sld_units:
+                                    sld_units.append(self.plot_dicts[sim]['SLD unit'])
+                    
+        if i > 0:
+            self.plot.ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), 
+                                prop = {'size': 10}, ncol = 1)
+        
+            sld_unit = ', '.join(sld_units)
+            self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
+            #if self.plot_dict.has_key('SLD unit'):
+            #    self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
+            self.plot.ax.xaxis.label.set_text('$\mathrm{\mathsf{ z\,[\AA]}}$')
+            self.plot.flush_plot()
+            self.plot.AutoScale()
     
     def SavePlotData(self, filename):
         ''' Save the data that is plotted to file with filename.'''
@@ -1402,14 +1417,23 @@ class Plugin(framework.Template):
                                          "Export the SLD to a ASCII file", 
                                          wx.ITEM_NORMAL)
         menu.AppendItem(self.mb_export_sld)
+        self.mb_show_imag_sld = wx.MenuItem(menu, wx.NewId(), 
+                                         "Show Im SLD", 
+                                         "Toggles showing the imaginary part of the SLD", 
+                                         wx.ITEM_CHECK)
+        menu.AppendItem(self.mb_show_imag_sld)
+        self.mb_show_imag_sld.Check(False)
+        self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
         self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(), 
                                          "Autoupdate SLD", 
                                          "Toggles autoupdating the SLD during fitting", 
                                          wx.ITEM_CHECK)
         menu.AppendItem(self.mb_autoupdate_sld)
         self.mb_autoupdate_sld.Check(False)
+        #self.mb_autoupdate_sld.SetCheckable(True)
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
-        #self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
+        self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
+        self.parent.Bind(wx.EVT_MENU, self.OnShowImagSLD, self.mb_show_imag_sld)
         
         self.StatusMessage('Reflectivity plugin loaded')
         
@@ -1417,6 +1441,15 @@ class Plugin(framework.Template):
         #print 'Updating the script'
         #print dir(event)
         self.WriteModel()
+        
+    def OnAutoUpdateSLD(self, evt):
+        #self.mb_autoupdate_sld.Check(not self.mb_autoupdate_sld.IsChecked())
+        #print self.mb_autoupdate_sld.IsChecked()
+        pass
+    
+    def OnShowImagSLD(self, evt):
+        self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
+        self.sld_plot.Plot()
     
     def OnExportSLD(self, evt):
         dlg = wx.FileDialog(self.parent, message="Export SLD to ...", 
@@ -1496,6 +1529,11 @@ class Plugin(framework.Template):
             if self.GetModel().script != '':
                 self.simulation_widget.Update()
                 self.WriteModel()
+                if event.name_change:
+                    self.sld_plot.Plot()
+        else:
+            if event.data_changed:
+                self.sld_plot.Plot()
         
     def OnOpenModel(self, event):
         '''OnOpenModel(self, event) --> None
@@ -1537,15 +1575,15 @@ class Plugin(framework.Template):
         script += '# BEGIN Parameters DO NOT CHANGE\n'
         script += 'cp = UserVars()\n'
         script += '# END Parameters\n\n'
-        script += 'def Sim(data, return_SLD = False):\n'
+        script += 'SLD = []\n'
+        script += 'def Sim(data):\n'
         script += '    I = []\n'
-        script += '    SLD = []\n'
+        script += '    SLD[:] = []\n'
         for i in range(len(self.GetModel().get_data())):
             script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%i
             script += '    I.append(sample.SimSpecular(data[%i].x, inst))\n'%i
-            script += '    if return_SLD: SLD.append(sample.SimSLD(None, inst))\n'
+            script += '    if _sim: SLD.append(sample.SimSLD(None, inst))\n'
             script += '    # END Dataset %i\n'%i
-        script += '    if return_SLD: return I, SLD\n'
         script += '    return I\n'
         
         self.sim_returns_sld = True
@@ -1599,7 +1637,7 @@ class Plugin(framework.Template):
             exp = [ex + '\n' for ex in exps]
             exp.append('I.append(sample.SimSpecular(data[%i].x, inst))\n'%i)
             if self.sim_returns_sld:
-                exp.append('if return_SLD: SLD.append(sample.SimSLD(None, inst))\n')
+                exp.append('if _sim: SLD.append(sample.SimSLD(None, inst))\n')
             code = ''.join(exp)
             script = self.insert_code_segment(script, 'Dataset %i'%i, code)
         
@@ -1749,8 +1787,9 @@ class Plugin(framework.Template):
         script_lines = self.GetModel().get_script().splitlines(True)
         # Try to find out if the script works with multiple SLDs
         for line in script_lines:
-            if line.find('Sim') != -1 and line.find('return_SLD') != -1:
+            if line.find('SLD[:]') != -1:
                 self.sim_returns_sld = True
+                break
             else:
                 self.sim_returns_sld = False
         script = ''
@@ -1828,8 +1867,11 @@ class Plugin(framework.Template):
                 code = self.find_code_segment(script, 'Dataset %i'%i)
                 sim_exp.append([])
                 data_names.append(data[i].name)
-                for line in code.splitlines()[:-1]:
-                    sim_exp[-1].append(line.strip())
+                #for line in code.splitlines()[:-1]:
+                #    sim_exp[-1].append(line.strip())
+                for line in code.splitlines():
+                    if line.find('I.append') == -1 and line.find('SLD.append') == -1:
+                        sim_exp[-1].append(line.strip()) 
         except LookupError:
             self.ShowErrorDialog('Could not locate all data sets in the'
             ' script. There should be %i datasets'%len(data))

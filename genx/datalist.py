@@ -385,7 +385,8 @@ class VirtualDataList(wx.ListCtrl):
         self.data_cont.get_data())
         evt.SetDataChanged(data_changed)
         evt.SetNewData(new_data)
-        evt.SetNameChange()
+        if name_change:
+            evt.SetNameChange()
         evt.SetDescription(desc)
         if moved:
             evt.SetDataMoved(position, direction_up)

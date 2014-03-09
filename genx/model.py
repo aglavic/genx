@@ -105,6 +105,7 @@ class Model:
         self.saved = True
         self.script_module = new.module('genx_script_module')
         self.script_module.__dict__['data'] = self.data
+        self.script_module.__dict__['_sim'] = False
         self.compiled = False
         
     def save(self,filename):
@@ -197,6 +198,9 @@ class Model:
         #self.script_module.__dict__ = {}
         # Bind data for preprocessing with the script
         self.script_module.__dict__['data'] = self.data
+        # Flag to indicate to the Sim funtion if a simulation is conducted (True)
+        # or a fit is running (False). 
+        self.script_module.__dict__['_sim'] = False
         self.compiled = False
     
     def compile_script(self):
@@ -263,6 +267,7 @@ class Model:
         for fitting. Use evaluate_sim_func(self) for updating of plots
         and such.
         '''
+        self.script_module._sim = False
         simulated_data = self.script_module.Sim(self.data)
         #fom = self.fom_func(simulated_data, self.data)
         fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
@@ -275,6 +280,7 @@ class Model:
         as well as the fom of the model. Use this one for calculating data to
         update plots, simulations and such.
         '''
+        self.script_module._sim = True
         try:
             simulated_data = self.script_module.Sim(self.data)
         except Exception, e:
@@ -414,7 +420,7 @@ class Model:
                 (sfuncs_tmp, vals_tmp) = self.parameters.get_sim_pars()
                 raise ParameterError(sfuncs_tmp[i], i, str(e), 1)
             i += 1
-            
+        
         self.evaluate_sim_func()
         
     def new_model(self):
