@@ -244,6 +244,7 @@ class PlotPanel(wx.Panel):
         A log safe way to autoscale the plots - the ordinary axis tight 
         does not work for negative log data. This works!
         '''
+        
         if not (self.autoscale or force):
             return
         # If nothing is plotted no autoscale use defaults...
@@ -287,10 +288,16 @@ class PlotPanel(wx.Panel):
             xmax = 1
         # Set the limits
         #print 'Autoscaling to: ', ymin, ymax
-        self.ax.set_xlim(xmin, xmax)
-        self.ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
-        #self.ax.set_yscale(self.scale)
-        self.flush_plot()
+        try:
+            if xmin != xmax:
+                self.ax.set_xlim(xmin, xmax)
+            if ymin != ymax:
+                self.ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
+            #self.ax.set_yscale(self.scale)
+            self.flush_plot()
+        except UserWarning:
+            pass
+        
         
     def SetYScale(self, scalestring):
         ''' SetYScale(self, scalestring) --> None
@@ -306,13 +313,18 @@ class PlotPanel(wx.Panel):
                     self.ax.set_yscale('log')
                 except OverflowError:
                     self.AutoScale(force = True)
+                except UserWarning:
+                    pass
             elif scalestring == 'linear' or scalestring == 'lin':
                 self.scale = 'linear'
                 self.ax.set_yscale('linear')
                 self.AutoScale(force = True)
             else:
                 raise ValueError('Not allowed scaling')
-            self.flush_plot()
+            try:
+                self.flush_plot()
+            except UserWarning:
+                pass
             evt = state_changed(zoomstate = self.GetZoom(),\
                         yscale = self.GetYScale(), autoscale = self.autoscale)
             wx.PostEvent(self.callback_window, evt)
