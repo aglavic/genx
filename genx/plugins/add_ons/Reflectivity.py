@@ -1355,22 +1355,35 @@ class SamplePlotPanel(wx.Panel):
     
     def SavePlotData(self, filename):
         ''' Save the data that is plotted to file with filename.'''
-        save_array = np.array([self.plot_dict['z']])
-        print save_array.shape
-        header = 'z\t' 
-        for key in self.plot_dict:
-            if key != 'z' and key != 'SLD unit':
-                print self.plot_dict[key].shape
-                save_array = np.r_[save_array, [self.plot_dict[key]]]
-                header += key + '\t'
-        print save_array.shape
-        f = open(filename, 'w')
-        f.write("# File exported from GenX's Reflectivity plugin\n")
-        f.write("# File created: %s\n"%time.ctime())
-        f.write("# Headers: \n")
-        f.write('#' + header + '\n')
-        np.savetxt(f, save_array.transpose())
-        f.close()
+        # Check so that there are a simulation to save
+        try:
+            self.plot_dicts
+        except:
+            self.plugin.ShowWarningDialog('No SLD data to save.'
+                                          ' Simulate the model first and then save.')
+            return
+        base, ext = os.path.splitext(filename)
+        if ext == '':
+            ext = '.dat'
+        data = self.plugin.GetModel().get_data()
+        for sim in range(len(self.plot_dicts)):
+            new_filename = (base + '%03d'%sim + ext)
+            save_array = np.array([self.plot_dicts[sim]['z']])
+            print save_array.shape
+            header = 'z\t' 
+            for key in self.plot_dicts[sim]:
+                if key != 'z' and key != 'SLD unit':
+                    save_array = np.r_[save_array, [self.plot_dicts[sim][key]]]
+                    header += key + '\t'
+            print save_array.shape
+            f = open(new_filename, 'w')
+            f.write("# File exported from GenX's Reflectivity plugin\n")
+            f.write("# File created: %s\n"%time.ctime())
+            f.write("# Simulated SLD for data set: %s\n"%data[sim].name)
+            f.write("# Headers: \n")
+            f.write('#' + header + '\n')
+            np.savetxt(f, save_array.transpose())
+            f.close()
         
         
         
