@@ -1354,7 +1354,7 @@ class SamplePlotPanel(wx.Panel):
             self.plot.AutoScale()
     
     def SavePlotData(self, filename):
-        ''' Save the data that is plotted to file with filename.'''
+        ''' Save all the SLD profiles to file with filename.'''
         # Check so that there are a simulation to save
         try:
             self.plot_dicts
