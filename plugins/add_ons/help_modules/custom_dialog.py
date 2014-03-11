@@ -373,12 +373,18 @@ class ComplexObjectValidator(wx.PyValidator):
 class ValidateDialog(wx.Dialog):
     def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
                  units = False, groups = False, cols = 2):
-        ''' Pars should contain a list of names 
-        for the different parameters one wish to set. 
-        If use_subboxes is True pars should consist of a list of lists which
+        ''' A dialog that validates the input when OK are pressed. The validation is done
+        through the validators given as input.
+        
+        Pars should contain a list of names.
+        Vals should be a dictionary of names and values for the different parameters one wish to set. 
+        Groups should either be false or a consist of a list of lists which
         in turn consist of the (name, value) tuples where the first item
         in the list should be a string describing the group. This will be layed out 
-        with subboxes. Note validators and values should be dictonaries of values!
+        with subboxes. An example: 
+        groups = [['Standard', ('f', 25), ('sigma', 7)], ['Neutron', ('b', 3.0)]]
+        
+        Note validators, values and units should be dictonaries of values!
         '''
         wx.Dialog.__init__(self, parent, -1, title)
         self.pars = pars
@@ -390,13 +396,16 @@ class ValidateDialog(wx.Dialog):
         self.tc = {}
         self.SetAutoLayout(True)
         
-        
         if self.groups:
-            self.grid_layout()
+            self.main_sizer, self.tc = self.grid_layout(self, self.vals)
         else:
-            #self.simple_layout()
-            self.main_sizer = self.layout_group(self.pars)
+            self.main_sizer, self.tc = self.layout_group(self, self.pars, self.vals)
         
+        self.main_layout()
+        self.Layout()
+        
+        
+    def main_layout(self):
         buttons = wx.StdDialogButtonSizer() #wx.BoxSizer(wx.HORIZONTAL)
         b = wx.Button(self, wx.ID_OK, "OK")
         b.SetDefault()
@@ -413,42 +422,47 @@ class ValidateDialog(wx.Dialog):
         border.Add(buttons, flag = wx.ALIGN_RIGHT|wx.ALL, border = 5)
         self.SetSizer(border)
         border.Fit(self)
-        self.Layout()
+        self.border_sizer = border
         
-    def grid_layout(self):
+              
+    def grid_layout(self, parent, vals):
         '''Do an more advanced layout with subboxes
         '''
         rows = math.ceil(len(self.pars)/(self.cols*1.0))
-        self.main_sizer = wx.FlexGridSizer(rows = rows, cols = self.cols, 
+        sizer = wx.FlexGridSizer(rows = rows, cols = self.cols, 
                                            vgap = 10, hgap = 10)
+        tc = {}
         for group in self.groups:
             if type(group[0]) != str:
                 raise TypeError('First item in a group has to be a string')
             # Make the box for putting in the columns
             col_box = wx.StaticBox(self, -1, group[0])
             col_box_sizer = wx.StaticBoxSizer(col_box, wx.VERTICAL )
-            col_box_sizer.Add(self.layout_group(group[1]), 
+            group, group_tc = self.layout_group(parent, group[1], vals)
+            col_box_sizer.Add(group, 
                               flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 
                               border = 5)
-            self.main_sizer.Add(col_box_sizer, flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
+            for item in group_tc:
+                tc[item] = group_tc[item]
+            sizer.Add(col_box_sizer, flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
+        return sizer, tc
+                      
             
-            
-            
-            
-    def layout_group(self, pars):
+    def layout_group(self, parent, pars, vals):
         if self.units:
             layout_cols = 3
         else:
             layout_cols = 2
         sizer = wx.FlexGridSizer(len(pars) + 1, layout_cols,
                                   vgap = 10, hgap = 5)
+        tc = {}
         for par in pars:
-            label = wx.StaticText(self, -1, par + ': ')
-            validator = self.validators[par]
-            val = self.vals[par]
+            label = wx.StaticText(parent, -1, par + ': ')
+            validator = self.validators[par].Clone()
+            val = vals[par]
             if type(validator) == type([]):
                 # There should be a list of choices
-                self.tc[par] = wx.Choice(self, -1,
+                tc[par] = wx.Choice(parent, -1,
                                     choices = validator)
                 # Since we work with strings we have to find the right
                 # strings positons to initilize the choice box.
@@ -457,68 +471,24 @@ class ValidateDialog(wx.Dialog):
                     pos = validator.index(val)
                 elif type(par) == type(1):
                     pos = par
-                self.tc[par].SetSelection(pos)
+                tc[par].SetSelection(pos)
             # Otherwise it should be a validator ...
             else:
-                self.tc[par] = wx.TextCtrl(self, -1, str(val),
+                tc[par] = wx.TextCtrl(parent, -1, str(val),
                                            validator = validator,
                                            style = wx.TE_RIGHT)
             sizer.Add(label, \
                 flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
-            sizer.Add(self.tc[par], 
+            sizer.Add(tc[par], 
                     flag = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 5)
             # If we include units as well:
             if self.units:
-                unit_label = wx.StaticText(self, -1, ' ' + self.units[par])
+                unit_label = wx.StaticText(parent, -1, ' ' + self.units[par])
                 sizer.Add(unit_label, \
                           flag = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, 
                           border = 5)
-        return sizer
-            
-            
-            
-
-    def simple_layout(self):
-        '''Implements the ordinary "simple" layout of the boxes
-        '''
-        pars = self.pars
-        validators = self.validators
-        gbs=wx.GridBagSizer(len(pars)+1, 2)
-        VSPACE = 10
-        
-        self.tc=[]
-        for index in range(len(pars)):
-            label = wx.StaticText(self, -1, pars[index][0]+': ')
-            gbs.Add(label,(index,0), \
-                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
-            # If the current validator is a string, we should give the
-            # user only choices...
-            if type(validators[index]) == type([]):
-                self.tc.append(wx.Choice(self, -1,\
-                                    choices = validators[index]))
-                # Since we want to work with strings we have to find the right
-                # strings positons
-                #print validators[index], pars[index]
-                pos = 0
-                if type(pars[index][1]) == type(''):
-                    for i in range(len(validators[index])):
-                        if validators[index][i] == pars[index][1]:
-                            pos = i
-                            break
-                elif type(pars[index][1]) == type(1):
-                    pos = pars[index][1]
-                self.tc[-1].SetSelection(pos)
-            # Otherwise it should be a validator ...
-            else:
-                self.tc.append(wx.TextCtrl(self, -1, str(pars[index][1]),\
-                    validator = validators[index]))
-            gbs.Add(self.tc[index], (index, 1),\
-                    flag = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 5)
-            
-        self.main_sizer = gbs
-
-
-        
+        return sizer, tc          
+  
 
     def GetValues(self):
         #print dir(self.tc[0])
@@ -534,6 +504,99 @@ class ValidateDialog(wx.Dialog):
             else:
                 p[par] = self.tc[par].GetValue()
         return p
+    
+class ValidateNotebookDialog(ValidateDialog):
+    def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
+                 units = False, groups = False, cols = 2, fixed_pages = []):
+        ''' A dialog that validates the input when OK are pressed. The validation is done
+        through the validators given as input.
+        
+        Pars should contain a list of names.
+        Vals should be a dictionary of names and values for the different parameters one wish to set. 
+        Groups should either be false or a consist of a list of lists which
+        in turn consist of the (name, value) tuples where the first item
+        in the list should be a string describing the group. This will be layed out 
+        with subboxes. An example: 
+        groups = [['Standard', ('f', 25), ('sigma', 7)], ['Neutron', ('b', 3.0)]]
+        
+        Note validators, values and units should be dictonaries of values!
+        '''
+        wx.Dialog.__init__(self, parent, -1, title)
+        self.pars = pars
+        self.validators = validators
+        self.cols = cols
+        self.vals = vals
+        self.units = units
+        self.groups = groups
+        self.fixed_pages = fixed_pages
+        self.text_controls = {}
+        self.SetAutoLayout(True)
+        
+        self.layout_notebook()
+        
+        self.main_layout()
+        self.Layout()
+        
+    def layout_notebook(self):
+        '''Do the notebook layout in the dialog
+        '''
+        self.main_sizer = wx.Notebook(self, -1, style=wx.NB_TOP)
+        for item in self.vals:
+            self.AddPage(item, self.vals[item])
+            
+            
+    def AddPage(self, name, vals):
+        '''Adds a page to the notebook 
+        '''
+        panel = wx.Panel(self.main_sizer, -1)
+        self.main_sizer.AddPage(panel, name)
+        if self.groups:
+            sizer, page_text_controls = self.grid_layout(panel, vals)
+        else:
+            sizer, page_text_controls = self.layout_group(panel, self.pars, vals)
+        self.text_controls[name] = page_text_controls
+        panel.SetSizerAndFit(sizer)
+        panel.Layout()
+        # Make sure that the data is added if we add a new page after init has
+        # been executed
+        if not name in self.vals:
+            self.vals[name] = vals.copy()
+            
+    def RemovePage(self, name):
+        '''Remove a page from the notebook
+        '''
+        sucess = False
+        index = -1
+        if name in self.fixed_pages:
+            return sucess
+        for i in range(self.main_sizer.GetPageCount()):
+            if self.main_sizer.GetPageText(i) == name:
+                sucess = True
+                index = i
+        if sucess:
+            self.main_sizer.DeletePage(index)
+            self.vals.pop(name)
+        return sucess
+    
+    def GetValues(self):
+        '''Extracts values from the text controls and returns is as a 
+        two level nested dictionary.
+        '''
+        p = {}
+        for page in self.vals:
+            p[page] = {}
+            for par in self.validators.keys():
+                if type(self.validators[par]) == type([]):
+                    # have to pad teh text to make it a string inside a string...
+                    #text = '\'' 
+                    text = self.validators[par][self.text_controls[page][par].GetSelection()]
+                    #text += '\''
+                    p[page][par] = text
+                else:
+                    p[page][par] = self.text_controls[page][par].GetValue()
+        return p
+            
+            
 
 class ZoomFrame(wx.MiniFrame):
     def __init__(self, parent):
@@ -590,10 +653,26 @@ if __name__=='__main__':
         def OnInit(self):
             #wx.InitAllImageHandlers()
             frame = ZoomFrame(None)
-            frame.Show(True)
-            self.SetTopWindow(frame)
+            #frame.Show(True)
+            #self.SetTopWindow(frame)
+            pars = ['test1', 'test2']
+            vals = {'inst':{'test1':3, 'test2':5.0J},'x-ray':{'test1':3, 'test2':5.0+9J}}
+            vals_old = {'test1':3, 'test2':7.0J}
+            validators = {'test1':FloatObjectValidator(), 'test2':ComplexObjectValidator()}
+            units = {'test1':'barn', 'test2':'m/s'}
+            dlg = ValidateNotebookDialog(frame, pars, vals, validators,
+                             title = 'Instrument Editor', units = units,
+                             fixed_pages = ['inst'])
+            dlg.AddPage('test', vals_old)
+            dlg.RemovePage('inst')
+            #dlg = ValidateDialog(frame, pars, vals_old, validators,
+            #                 title = 'Instrument Editor', units = units)
+            if dlg.ShowModal() == wx.ID_OK:
+                #print 'Pressed OK'
+                vals = dlg.GetValues()
+                print vals
             return True
 
 
     app = MyApp(0)
-    app.MainLoop()
+    #app.MainLoop()
