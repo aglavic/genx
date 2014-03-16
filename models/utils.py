@@ -117,7 +117,10 @@ __rho0_dict__['o2m'] = __rho0_dict__['o2-.']
 f0 = sl.ScatteringLength(__f0_dict__)
 # Dispersive part at Q = 0
 __lookup_fp__ = sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_cxro/')
-fp = sl.FormFactor(15.4, __lookup_fp__)
+def create_fp(wavelength):
+    return sl.FormFactor(wavelength, __lookup_fp__)
+
+fp = create_fp(1.54)
 # The total angle dependent form factor
 __lookup_f__ = sl.create_f_lookup(__lookup_fp__, __f0_dict__)
 f = sl.FormFactor(1.54, __lookup_f__)
@@ -137,7 +140,10 @@ __bw_dict__ = sl.create_scatt_weight(__bc_dict__, __w_dict__)
 bw = sl.ScatteringLength(__bw_dict__)
 #print 'Making fw scattering lengths'
 __lookup_fw__ = sl.create_fw_lookup(__lookup_fp__, __w_dict__)
-fw = sl.FormFactor(1.54, __lookup_fw__)
+def create_fw(wavelength):
+    return sl.FormFactor(wavelength, __lookup_fw__)
+
+fw = create_fw(1.54)
 
 __f_chantler_dict__ = sl.read_dabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')
 __lookup_fpc__ = sl.load_fdabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')

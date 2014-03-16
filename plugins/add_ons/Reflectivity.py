@@ -584,18 +584,21 @@ class SamplePanel(wx.Panel):
             pass
         dlg.Destroy()
     
-    def SetInstrument(self, instrument):
+    def SetInstrument(self, instruments):
         '''SetInstrument(self, instrument) --> None
         
-        Sets the intrument
+        Sets the instruments should be a dictionary of instruments with the key being the
+        name of the instrument
         '''
-        self.instrument = instrument
+        self.instruments = instruments
     
     def EditInstrument(self, evt):
         #validators = []
         validators = {}
         vals = {}
-        items = []
+        for inst_name in self.instruments:
+            vals[inst_name] = {}
+            
         pars = []
         for item in self.model.InstrumentParameters:
             if self.model.instrument_string_choices.has_key(item):
@@ -604,10 +607,11 @@ class SamplePanel(wx.Panel):
             else:
                 #validators.append(FloatObjectValidator())
                 validators[item] = FloatObjectValidator()
-            val = self.instrument.__getattribute__(item)
-            vals[item] = val
+            for inst_name in self.instruments:
+                val = self.instruments[inst_name].__getattribute__(item)
+                vals[inst_name][item] = val
             pars.append(item)
-            items.append((item, val))
+            
             
         try:
             groups = self.model.InstrumentGroups
@@ -618,15 +622,23 @@ class SamplePanel(wx.Panel):
         except Exception:
             units = False
         
-        dlg = ValidateDialog(self, pars, vals, validators,
+        dlg = ValidateNotebookDialog(self, pars, vals, validators,
                              title = 'Instrument Editor', groups = groups,
-                             units = units)
+                             units = units, fixed_pages = ['inst'])
         if dlg.ShowModal()==wx.ID_OK:
-            #print 'Pressed OK'
             vals = dlg.GetValues()
-            #print vals
+            # Check if an instrument has to be deleted
+            self.instruments = {}
             for par in self.model.InstrumentParameters:
-                self.instrument.__setattr__(par, vals[par])
+                for inst_name in vals:
+                    if not inst_name in self.instruments:
+                        # A new instrument must be created:
+                        self.instruments[inst_name] = self.model.Instrument()
+                    # Set all the value of the parameter
+                    self.instruments[inst_name].__setattr__(par, 
+                                                            vals[inst_name][par])
+            
+                        # A new instrument 
             self.Update()
         else:
             #print 'Pressed Cancel'
@@ -1615,7 +1627,7 @@ class Plugin(framework.Template):
         self.sampleh.model = self.model
         self.sample_widget.sampleh = self.sampleh
         self.sample_widget.model = self.model
-        self.sample_widget.SetInstrument(instrument)
+        self.sample_widget.SetInstrument({'inst':instrument})
         
         names = [data_set.name for data_set in self.GetModel().get_data()]
         self.simulation_widget.SetDataList(names)
@@ -1629,23 +1641,32 @@ class Plugin(framework.Template):
     def WriteModel(self):
         script = self.GetModel().get_script()
         
-        code = 'inst = model.' + self.sample_widget.instrument.__repr__() + '\n'
-        code += ('fp.set_wavelength(inst.wavelength)\n'
-                 '#Compability issues for pre-fw created gx files\n'
-                 'try:\n\t fw\nexcept:\n\tpass\nelse:\n'
-                '\tfw.set_wavelength(inst.wavelength)\n')
+        # Instrument script creation
+        code = 'from models.utils import create_fp, create_fw\n'
+        instruments = self.sample_widget.instruments
+        print instruments
+        for inst_name in instruments:
+            code += ('%s = model.'%inst_name + 
+                     instruments[inst_name].__repr__() + '\n')
+            code += '%s_fp = create_fp(%s.wavelength);'%(inst_name, inst_name)
+            code += ' %s_fw = create_fw(%s.wavelength)\n\n'%(inst_name, inst_name)
+        code += ('fp.set_wavelength(inst.wavelength); '
+                 + 'fw.set_wavelength(inst.wavelength)\n')
         script = self.insert_code_segment(script, 'Instrument', code)
         
+        # Sample script creation
         layer_code, stack_code, sample_code = self.sampleh.getCode()
         code = layer_code + '\n' + stack_code + '\n' + sample_code
         script = self.insert_code_segment(script, 'Sample', code)
         
+        # User Vars (Parameters) script creation
         code = 'cp = UserVars()\n'
         code += ''.join([line + '\n' for line in\
             self.simulation_widget.GetParameterList()])
         #print self.simulation_widget.GetParameterList()
         script = self.insert_code_segment(script, 'Parameters', code)
         
+        # Expressions evaluted during simulations (parameter couplings) script creation
         for (i,exps) in enumerate(self.simulation_widget.GetExpressionList()):
             exp = [ex + '\n' for ex in exps]
             exp.append('I.append(sample.SimSpecular(data[%i].x, inst))\n'%i)
@@ -1796,6 +1817,28 @@ class Plugin(framework.Template):
         self.StatusMessage('Script compiled!')
         
         self.StatusMessage('Trying to interpret the script...')
+        
+        script = self.GetModel().script
+        code = self.find_code_segment(script, 'Instrument')
+        re_layer = re.compile('([A-Za-z]\w*)\s*=\s*model\.Instrument\s*\((.*)\)\n')
+        instrument_strings = re_layer.findall(code)
+        instrument_names = [t[0] for t in instrument_strings]
+        
+        if len(instrument_names) == 0:
+            self.ShowErrorDialog('Could not find any Instruments in the' +\
+                ' model script. Check the script.')
+            self.StatusMessage('ERROR No Instruments in script')
+            return
+        
+        if not 'inst' in instrument_names:
+            self.ShowErrorDialog('Could not find the default' +
+                                 ' Instrument, inst, in the' +
+                                 ' model script. Check the script.')
+            self.StatusMessage('ERROR No Instrument called inst in script')
+            return
+        
+        
+        
         # Get the current script and split the lines into list items
         script_lines = self.GetModel().get_script().splitlines(True)
         # Try to find out if the script works with multiple SLDs
@@ -1901,7 +1944,10 @@ class Plugin(framework.Template):
         self.sampleh.model = self.model
         self.sample_widget.sampleh = self.sampleh
         self.sample_widget.model = self.model
-        self.sample_widget.SetInstrument(self.GetModel().script_module.inst)
+        instruments = {}
+        for name in instrument_names:
+            instruments[name] = self.GetModel().script_module.__getattribute__(name) 
+        self.sample_widget.SetInstrument(instruments)
         
         self.simulation_widget.SetDataList(data_names)
         self.simulation_widget.SetExpressionList(sim_exp)

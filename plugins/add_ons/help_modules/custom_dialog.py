@@ -1,6 +1,8 @@
-import wx, math
+import wx, math, os
 
 import string
+
+import reflectivity_images as images
 
 class TextObjectValidator(wx.PyValidator):
     """ This validator is used to ensure that the user has entered something
@@ -403,26 +405,28 @@ class ValidateDialog(wx.Dialog):
         
         self.main_layout()
         self.Layout()
-        
-        
+          
     def main_layout(self):
-        buttons = wx.StdDialogButtonSizer() #wx.BoxSizer(wx.HORIZONTAL)
-        b = wx.Button(self, wx.ID_OK, "OK")
-        b.SetDefault()
-        buttons.AddButton(b)
-        buttons.AddButton(wx.Button(self, wx.ID_CANCEL, "Cancel"))
-        buttons.Realize()
-
         border = wx.BoxSizer(wx.VERTICAL)
         border.Add(self.main_sizer, 1, wx.GROW|wx.ALL, 5)
         
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
         border.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
         
+        buttons = self.create_buttons()
         border.Add(buttons, flag = wx.ALIGN_RIGHT|wx.ALL, border = 5)
         self.SetSizer(border)
         border.Fit(self)
         self.border_sizer = border
+        
+    def create_buttons(self):
+        buttons = wx.StdDialogButtonSizer() #wx.BoxSizer(wx.HORIZONTAL)
+        b = wx.Button(self, wx.ID_OK, "OK")
+        b.SetDefault()
+        buttons.AddButton(b)
+        buttons.AddButton(wx.Button(self, wx.ID_CANCEL, "Cancel"))
+        buttons.Realize()
+        return buttons
         
               
     def grid_layout(self, parent, vals):
@@ -436,7 +440,7 @@ class ValidateDialog(wx.Dialog):
             if type(group[0]) != str:
                 raise TypeError('First item in a group has to be a string')
             # Make the box for putting in the columns
-            col_box = wx.StaticBox(self, -1, group[0])
+            col_box = wx.StaticBox(parent, -1, group[0])
             col_box_sizer = wx.StaticBoxSizer(col_box, wx.VERTICAL )
             group, group_tc = self.layout_group(parent, group[1], vals)
             col_box_sizer.Add(group, 
@@ -458,10 +462,11 @@ class ValidateDialog(wx.Dialog):
         tc = {}
         for par in pars:
             label = wx.StaticText(parent, -1, par + ': ')
-            validator = self.validators[par].Clone()
+            validator = self.validators[par]#.Clone()
             val = vals[par]
             if type(validator) == type([]):
                 # There should be a list of choices
+                validator = validator[:]
                 tc[par] = wx.Choice(parent, -1,
                                     choices = validator)
                 # Since we work with strings we have to find the right
@@ -474,6 +479,7 @@ class ValidateDialog(wx.Dialog):
                 tc[par].SetSelection(pos)
             # Otherwise it should be a validator ...
             else:
+                validator = validator.Clone()
                 tc[par] = wx.TextCtrl(parent, -1, str(val),
                                            validator = validator,
                                            style = wx.TE_RIGHT)
@@ -512,7 +518,8 @@ class ValidateNotebookDialog(ValidateDialog):
         through the validators given as input.
         
         Pars should contain a list of names.
-        Vals should be a dictionary of names and values for the different parameters one wish to set. 
+        Vals should be a dictionary of dictionaries of names and values for the different parameters one wish to set. 
+        The upper dictionary level should contain the object names.
         Groups should either be false or a consist of a list of lists which
         in turn consist of the (name, value) tuples where the first item
         in the list should be a string describing the group. This will be layed out 
@@ -533,9 +540,52 @@ class ValidateNotebookDialog(ValidateDialog):
         self.SetAutoLayout(True)
         
         self.layout_notebook()
+        self.do_toolbar()
         
         self.main_layout()
         self.Layout()
+        
+    def main_layout(self):
+        border = wx.BoxSizer(wx.VERTICAL)
+        border.Add((-1,5))
+        border.Add(self.toolbar)
+        #border.Add((-1,2))
+        
+        border.Add(self.main_sizer, 1, wx.GROW|wx.ALL, 5)
+        
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        border.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        
+        buttons = self.create_buttons()
+        border.Add(buttons, flag = wx.ALIGN_RIGHT|wx.ALL, border = 5)
+        self.SetSizer(border)
+        border.Fit(self)
+        self.border_sizer = border
+        
+    def do_toolbar(self):
+        if os.name == 'nt':
+            size = (24, 24)
+        else:
+            size = (-1, -1)
+        space = (5, -1)
+        button_names = ['Insert', 'Delete', 'Rename']
+        button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
+            images.getchange_nameBitmap()]
+        callbacks = [self.eh_insert, self.eh_delete, self.eh_rename]
+        tooltips = ['Insert', 'Delete', 'Rename']
+        
+        boxbuttons = wx.BoxSizer(wx.HORIZONTAL)
+        boxbuttons.Add((5,-1))
+        for i in range(len(button_names)):
+            #button = wx.Button(self,-1, button_names[i])
+            button = wx.BitmapButton(self, -1, button_images[i],\
+                    style=wx.NO_BORDER, size = size)
+            boxbuttons.Add(button, 1, wx.EXPAND,5)
+            boxbuttons.Add(space)
+            button.SetToolTipString(tooltips[i])
+            self.Bind(wx.EVT_BUTTON, callbacks[i], button)
+        self.toolbar = boxbuttons
+            
         
     def layout_notebook(self):
         '''Do the notebook layout in the dialog
@@ -543,13 +593,57 @@ class ValidateNotebookDialog(ValidateDialog):
         self.main_sizer = wx.Notebook(self, -1, style=wx.NB_TOP)
         for item in self.vals:
             self.AddPage(item, self.vals[item])
+    
+    def eh_insert(self, evt):
+        '''Eventhandler that creates a new panel
+        '''
+        pos = self.main_sizer.GetSelection()
+        current_name = self.main_sizer.GetPageText(pos)
+        index = 1
+        while '%s_%d'%(current_name, index) in self.vals.keys():
+            index += 1
+        new_name = '%s_%d'%(current_name, index)
             
+        self.AddPage(new_name, self.vals[current_name], select = True)
+    
+    def eh_delete(self, evt):
+        '''Eventhandler that deletes the current page and its data
+        '''
+        pos = self.main_sizer.GetSelection()
+        current_name = self.main_sizer.GetPageText(pos)
+        self.RemovePage(current_name)
+    
+    def eh_rename(self, evt):
+        '''Eventhandler that renames the current tab
+        '''
+        pos = self.main_sizer.GetSelection()
+        current_name = self.main_sizer.GetPageText(pos)
+        if current_name in self.fixed_pages:
+            wx.MessageBox('It is forbidden to change the'\
+                'name of %s.'%current_name)
+        else:
+            unallowed_names = []
+            for name in self.vals:
+                if name != current_name:
+                    unallowed_names.append(name)
+            dlg = ValidateDialog(self,['Name'], {'Name':current_name},
+                                 {'Name':NoMatchValidTextObjectValidator(unallowed_names)},
+                                 title='Give New Name')
             
-    def AddPage(self, name, vals):
+            if dlg.ShowModal()==wx.ID_OK:
+                    vals=dlg.GetValues()
+                    self.vals[vals['Name']] = self.vals.pop(current_name)
+                    self.text_controls[vals['Name']] = self.text_controls.pop(current_name)
+                    self.main_sizer.SetPageText(pos, vals['Name'])
+            dlg.Destroy()
+            
+    def AddPage(self, name, vals, select = False):
         '''Adds a page to the notebook 
+        
+        the flag select activates a page change to the current page
         '''
         panel = wx.Panel(self.main_sizer, -1)
-        self.main_sizer.AddPage(panel, name)
+        self.main_sizer.AddPage(panel, name, select = select)
         if self.groups:
             sizer, page_text_controls = self.grid_layout(panel, vals)
         else:
@@ -557,6 +651,7 @@ class ValidateNotebookDialog(ValidateDialog):
         self.text_controls[name] = page_text_controls
         panel.SetSizerAndFit(sizer)
         panel.Layout()
+        self.Fit()
         # Make sure that the data is added if we add a new page after init has
         # been executed
         if not name in self.vals:
