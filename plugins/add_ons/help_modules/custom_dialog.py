@@ -536,6 +536,7 @@ class ValidateNotebookDialog(ValidateDialog):
         self.units = units
         self.groups = groups
         self.fixed_pages = fixed_pages
+        self.changes = []
         self.text_controls = {}
         self.SetAutoLayout(True)
         
@@ -605,6 +606,7 @@ class ValidateNotebookDialog(ValidateDialog):
         new_name = '%s_%d'%(current_name, index)
             
         self.AddPage(new_name, self.vals[current_name], select = True)
+        self.changes.append(('', new_name))
     
     def eh_delete(self, evt):
         '''Eventhandler that deletes the current page and its data
@@ -612,6 +614,7 @@ class ValidateNotebookDialog(ValidateDialog):
         pos = self.main_sizer.GetSelection()
         current_name = self.main_sizer.GetPageText(pos)
         self.RemovePage(current_name)
+        self.changes.append((current_name, ''))
     
     def eh_rename(self, evt):
         '''Eventhandler that renames the current tab
@@ -635,6 +638,7 @@ class ValidateNotebookDialog(ValidateDialog):
                     self.vals[vals['Name']] = self.vals.pop(current_name)
                     self.text_controls[vals['Name']] = self.text_controls.pop(current_name)
                     self.main_sizer.SetPageText(pos, vals['Name'])
+                    self.changes.append((current_name, vals['Name']))
             dlg.Destroy()
             
     def AddPage(self, name, vals, select = False):
@@ -690,8 +694,13 @@ class ValidateNotebookDialog(ValidateDialog):
                 else:
                     p[page][par] = self.text_controls[page][par].GetValue()
         return p
-            
-            
+    
+    def GetChanges(self):
+        '''GetChanges(self) --> changes
+        Returns the changes as a list consisting of tuples (old_name, new_name).
+        if the page has been deleted new_name is an empty string.
+        ''' 
+        return self.changes
 
 class ZoomFrame(wx.MiniFrame):
     def __init__(self, parent):
