@@ -188,6 +188,12 @@ class Buffer:
     parameters = None
 
 def Specular(TwoThetaQz,sample,instrument):
+    ''' Simulate the specular signal from sample when proped with instrument
+    
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    '''
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
 
@@ -347,12 +353,23 @@ def Specular(TwoThetaQz,sample,instrument):
     return R*instrument.getI0() + instrument.getIbkg()
     
 
-def OffSpecularMingInterdiff(TwoThetaQz,ThetaQx,sample,instrument):
+def OffSpecular(TwoThetaQz,ThetaQx,sample,instrument):
+    ''' Function that simulates the off-specular signal (not implemented)
+    
+    # BEGIN Parameters
+    TwoThetaQz 1.0
+    ThetaQx data.x
+    # END Parameters
+    '''
     raise NotImplementedError('Not implemented use model interdiff insteads')
     return TwoThetaQz,ThetaQx
 
 def SLD_calculations(z, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
+    
+    # BEGIN Parameters
+    z data.x
+    # END Parameters
     '''
     parameters = sample.resolveLayerParameters()
     dens = array(parameters['dens'], dtype = complex64)
@@ -402,7 +419,7 @@ def SLD_calculations(z, sample, inst):
     return dic
 
 SimulationFunctions={'Specular':Specular, \
-                     'OffSpecular':OffSpecularMingInterdiff, \
+                     'OffSpecular':OffSpecular, \
                      'SLD': SLD_calculations\
                     }
 

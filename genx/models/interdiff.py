@@ -158,6 +158,12 @@ SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 'h':1.0,\
     'eta_z':10.0, 'eta_x':10.0}
 
 def Specular(TwoThetaQz, sample, instrument):
+    ''' Simulate the specular signal from sample when proped with instrument
+    
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    '''
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
 
@@ -220,6 +226,13 @@ def Specular(TwoThetaQz, sample, instrument):
     return R + instrument.getIbkg()
 
 def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
+    ''' Function that simulates the off-specular signal (not implemented)
+    
+    # BEGIN Parameters
+    TwoThetaQz 1.0
+    ThetaQx data.x
+    # END Parameters
+    '''
     lamda = instrument.getWavelength()
     if instrument.getCoords() == 1 or\
         instrument.getCoords() == instrument_string_choices['coords'][1]:
@@ -270,6 +283,10 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
 
 def SLD_calculations(z, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
+    
+    # BEGIN Parameters
+    z data.x
+    # END Parameters
     '''
     parameters = sample.resolveLayerParameters()
     dens = array(parameters['dens'], dtype = complex64)

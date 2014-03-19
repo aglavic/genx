@@ -302,6 +302,12 @@ class Buffer:
     wavelength = None
 
 def Specular(TwoThetaQz, sample, instrument):
+    ''' Simulate the specular signal from sample when proped with instrument
+    
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    '''
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
     weight = None
@@ -333,11 +339,22 @@ def Specular(TwoThetaQz, sample, instrument):
         return R
 
 def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
-   raise NotImplementedError('Off specular calculations are not implemented for magnetic x-ray reflectivity')
+    ''' Function that simulates the off-specular signal (not implemented)
+    
+    # BEGIN Parameters
+    TwoThetaQz 1.0
+    ThetaQx data.x
+    # END Parameters
+    '''
+    raise NotImplementedError('Off specular calculations are not implemented for magnetic x-ray reflectivity')
 
 
 def SLD_calculations(z, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
+    
+    # BEGIN Parameters
+    z data.x
+    # END Parameters
     '''
     use_slicing = sample.getSlicing()
     if use_slicing == 1 or use_slicing == sample_string_choices['slicing'][1]:
