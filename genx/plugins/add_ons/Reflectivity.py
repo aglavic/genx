@@ -78,8 +78,6 @@ class SampleHandler:
         Function to generate a lsit of strings that gives
         a visual representation of the sample.
         '''
-        #print 'getStringList sample:'
-        #print self.sample
         slist=[self.sample.Substrate.__repr__()]
         poslist=[(None,None)]
         i=0;j=0
@@ -189,7 +187,6 @@ class SampleHandler:
         else:
             sample_code += rest_sample_rep
             
-        #print layer_code,stack_code,sample_code
         return layer_code,stack_code, sample_code
 
     def getItem(self,pos):
@@ -219,7 +216,6 @@ class SampleHandler:
             self.sample.Stacks.pop(self.poslist[pos][0])
             p = self.poslist[pos][0]
             pt = pos
-            #print self.poslist
             while self.poslist[pt][0] == p:
                 pt += 1
             pt -=1
@@ -241,11 +237,9 @@ class SampleHandler:
         added=False
         last=False
         if pos==0:
-            #print 'Hej'
             spos=(self.poslist[1][0],self.poslist[1][1])#+1
             #spos=(None,None)
         if pos==len(self.poslist)-1:
-            #print 'daa'
             spos=self.poslist[-2]
             last=True
         stackp=False
@@ -272,22 +266,17 @@ class SampleHandler:
                 
             if type=='Layer' and len(self.poslist)>2:
                 layer=self.model.Layer()
-                #print spos[0]
                 if last:
                     self.names.insert(pos, name)
                 else:
-                    #print 'spos : ', spos
                     if spos[1] >= 0:
                         self.names.insert(pos+1,name)
                     else:
                         self.names.insert(pos+len(self.sample.Stacks[spos[0]].Layers)+1,name)
-                #print 'spos ', spos
-                #print 'poslist ', self.poslist
                 if last:
                     self.sample.Stacks[spos[0]].Layers.insert(0,layer)
                 else:
                     if self.poslist[pos][1] == None:
-                        #print spos
                         self.sample.Stacks[spos[0]].Layers.append(layer)
                     else:
                         self.sample.Stacks[spos[0]].Layers.insert(spos[1], layer)
@@ -301,7 +290,6 @@ class SampleHandler:
                 self.names.insert(pos+1,name)
             if type=='Layer' and len(self.poslist)>2:
                 layer=self.model.Layer()
-                #print spos[0]
                 self.sample.Stacks[spos[0]].Layers.append(layer)
                 added=True
                 self.names.insert(pos+2,name)
@@ -340,7 +328,6 @@ class SampleHandler:
                 temps=[]
                 for index in range(len(temp.Layers)+1):
                     temps.append(self.names.pop(pos))
-                #print temps
                 for index in range(len(temp.Layers)+1):
                     self.names.insert(pos-len(self.sample.Stacks[self.poslist[pos][0]].Layers)-1,temps[-index-1])
                 self.sample.Stacks.insert(self.poslist[pos][0]+1,temp)
@@ -350,7 +337,6 @@ class SampleHandler:
                     temp=self.sample.Stacks[self.poslist[pos][0]].Layers.pop(self.poslist[pos][1])
                     temps=self.names.pop(pos)
                     if self.poslist[pos-1][1]==None: # Next item a Stack i.e. jump up
-                        #print self.sample.Stacks[self.poslist[pos-2][0]]
                         self.sample.Stacks[self.poslist[pos-2][0]].Layers.insert(0,temp)
                         self.names.insert(pos-1,temps)
                     else: #Moving inside a stack
@@ -376,8 +362,6 @@ class SampleHandler:
                     temps=[]
                     for index in range(len(temp.Layers)+1):
                         temps.append(self.names.pop(pos))
-                    #print temps
-                    #print pos
                     for index in range(len(temp.Layers)+1):
                         self.names.insert(pos+len(self.sample.Stacks[self.poslist[pos][0]-1].Layers)+1,temps[-index-1])
                     self.sample.Stacks.insert(self.poslist[pos][0]-1,temp)
@@ -387,11 +371,9 @@ class SampleHandler:
                     
             else: #i.e. it is a layer we move
                 if pos < len(self.poslist)-2:
-                    #print 'Moving a layer'
                     temp=self.sample.Stacks[self.poslist[pos][0]].Layers.pop(self.poslist[pos][1])
                     temps=self.names.pop(pos)
                     if self.poslist[pos+1][1]==None: # Next item a Stack i.e. jump down
-                        #print self.sample.Stacks[self.poslist[pos+1][0]]
                         self.sample.Stacks[self.poslist[pos+1][0]].Layers.insert(len(self.sample.Stacks[self.poslist[pos+1][0]].Layers),temp)
                         self.names.insert(pos+1,temps)
                     else: #Moving inside a stack
@@ -522,14 +504,13 @@ class SamplePanel(wx.Panel):
         '''
         self.update_callback = func
         
-    def Update(self):
+    def Update(self, update_script = True):
         sl = self.sampleh.getStringList(html_encoding = True)
         self.listbox.SetItemList(sl)
-        self.update_callback(None)
+        if update_script:
+            self.update_callback(None)
                 
     def SetSample(self, sample, names):
-        #print 'SetSample sample:'
-        #print sample, '\n'
         self.sampleh.sample = sample
         self.sampleh.names = names
         self.Update()
@@ -540,7 +521,6 @@ class SamplePanel(wx.Panel):
         pars = []
         items = []
         try:
-            #print self.model.sample_string_choices
             string_choices = self.model.sample_string_choices
         except Exception, e:
             string_choices = {}
@@ -554,7 +534,6 @@ class SamplePanel(wx.Panel):
                 vals[item] = val
                 pars.append(item)
                 items.append((item, val))
-        #print items, validators
         try:
             groups = self.model.SampleGroups
         except Exception:
@@ -564,15 +543,12 @@ class SamplePanel(wx.Panel):
         except Exception:
             units = False
             
-        #dlg = ValidateDialog(self,items,validators,title='Layer Editor')
         dlg = ValidateDialog(self, pars, vals, validators,
                              title = 'Sample Editor', groups = groups,
                              units = units)
         
         if dlg.ShowModal()==wx.ID_OK:
-            #print 'Pressed OK'
             vals=dlg.GetValues()
-            #print vals
             for par in pars:
                 if string_choices.has_key(par):
                     self.sampleh.sample.__setattr__(par, vals[par])
@@ -580,7 +556,6 @@ class SamplePanel(wx.Panel):
                     self.sampleh.sample.__setattr__(par, float(vals[par]))
             self.Update()
         else:
-            #print 'Pressed Cancel'
             pass
         dlg.Destroy()
     
@@ -637,25 +612,25 @@ class SamplePanel(wx.Panel):
                     # Set all the value of the parameter
                     self.instruments[inst_name].__setattr__(par, 
                                                             vals[inst_name][par])
-            
-                        # A new instrument 
+            for change in dlg.GetChanges():
+                if change[0] != '' and change[1] != '':
+                    self.plugin.InstrumentNameChange(change[0], change[1])
+                elif change[1] == '':
+                    self.plugin.InstrumentNameChange(change[0], 'inst')
+                     
             self.Update()
         else:
-            #print 'Pressed Cancel'
             pass
         dlg.Destroy()
         
         
     def MoveUp(self,evt):
-        #print dir(self.listbox)
         sl=self.sampleh.moveUp(self.listbox.GetSelection())
         if sl:
             self.Update()
             self.listbox.SetSelection(self.listbox.GetSelection()-1)
 
     def MoveDown(self,evt):
-        #print dir(self.listbox)
-        #print self.listbox.GetSelection()
         sl=self.sampleh.moveDown(self.listbox.GetSelection())
         if sl:
             self.Update()
@@ -664,15 +639,13 @@ class SamplePanel(wx.Panel):
     def InsertStack(self,evt):
         # Create Dialog box
         items = [('Name', 'name')]
-        #validators = [NoMatchValidTextObjectValidator(self.sampleh.names)]
         validators = {}
         vals = {}
         validators['Name'] = NoMatchValidTextObjectValidator(self.sampleh.names)
         pars = ['Name']
         vals['Name'] = 'name'
-        #dlg = ValidateDialog(self, items, validators, title='Give Stack Name')
-        dlg = ValidateDialog(self, pars, vals, validators,\
-            title = 'Give Stack Name')
+        dlg = ValidateDialog(self, pars, vals, validators,
+                             title = 'Give Stack Name')
         
         # Show the dialog
         if dlg.ShowModal()==wx.ID_OK:
@@ -753,12 +726,8 @@ class SamplePanel(wx.Panel):
                 value=sel.__getattribute__(item)
                 #if item!='n' and item!='fb':
                 if type(self.model.LayerParameters[item]) != type(1+1.0J):
-                    #validators.append(FloatObjectValidator(eval_func))
                     validators[item] = FloatObjectValidator(eval_func)
                 else:
-                    #print 'n exists'
-                    #validators.append(MatchTextObjectValidator(self.refindexlist))
-                    #validators.append(ComplexObjectValidator(eval_func))
                     validators[item] = ComplexObjectValidator(eval_func)
                 items.append((item, value))
                 pars.append(item)
@@ -771,21 +740,18 @@ class SamplePanel(wx.Panel):
                 units = self.model.LayerUnits
             except Exception:
                 units = False
-            
-            #dlg = ValidateDialog(self,items,validators,title='Layer Editor')
+
             dlg = ValidateDialog(self, pars, vals, validators,
                                  title = 'Layer Editor', groups = groups,
                                  units = units)
             
             if dlg.ShowModal()==wx.ID_OK:
-                #print 'Pressed OK'
                 vals=dlg.GetValues()
                 for par in self.model.LayerParameters.keys():
                     sel.__setattr__(par, vals[par])
                 sl=self.sampleh.getStringList()
             else:
                 pass
-                #print 'Pressed Cancel'
             dlg.Destroy()
 
         else: 
@@ -794,10 +760,8 @@ class SamplePanel(wx.Panel):
                 if item!='Layers':
                     value=sel.__getattribute__(item)
                     if isinstance(value,float):
-                        #validators.append(FloatObjectValidator(eval_func))
                         validators[item] = FloatObjectValidator(eval_func)
                     else:
-                        #validators.append(TextObjectValidator())
                         validators[item] = TextObjectValidator()
                     items.append((item,value))
                     pars.append(item)
@@ -812,18 +776,15 @@ class SamplePanel(wx.Panel):
             except Exception:
                 units = False
             
-            #dlg = ValidateDialog(self,items,validators,title='Layer Editor')
             dlg = ValidateDialog(self, pars, vals, validators,
                                  title = 'Stack Editor', groups = groups,
                                  units = units)
             if dlg.ShowModal()==wx.ID_OK:
-                #print 'Pressed OK'
                 vals=dlg.GetValues()
                 for par in pars:
                     sel.__setattr__(par, vals[par])
                 sl=self.sampleh.getStringList()
             else:
-                #print 'Pressed Cancel'
                 pass
             dlg.Destroy()
         if sl:
@@ -923,6 +884,45 @@ class DataParameterPanel(wx.Panel):
         '''
         return self.expressionlist
     
+    def SetSimArgs(self, sim_funcs, insts, args):
+        '''SetSimArgs(self, sim_func, inst, args) --> None
+        
+        Sets the current simulation function for each data set 
+        their instruments and arguments
+        sim_func: A list of simulation names
+        inst: A list of instrument names
+        args: A list of argument list for the sim_func's each argument should be a string.
+        ''' 
+        if len(sim_funcs) != len(self.datalist):
+            raise ValueError('The list of sim_funcs has to have the' +\
+                ' same length as the data list')
+        if len(insts) != len(self.datalist):
+            raise ValueError('The list of insts has to have the' +\
+                ' same length as the data list')
+        if len(args) != len(self.datalist):
+            raise ValueError('The list of args has to have the' +\
+                ' same length as the data list')
+        self.sim_funcs = sim_funcs[:]
+        self.insts = insts[:]
+        self.args = args[:]
+        
+    def GetSimArgs(self):
+        '''GetSimArgs(self) --> (sim_funcs, insts, args)
+        
+        See SetSimArgs for a description of the parameters
+        '''
+        return self.sim_funcs, self.insts, self.args
+    
+    def InstrumentNameChange(self, old_name, new_name):
+        '''OnInstrumentNameChange --> None
+        
+        Exchanges old_name to new name in the simulations.'''
+        
+        for i in range(len(self.insts)):
+            if self.insts[i] == old_name:
+                self.insts[i] = new_name
+        self.update_listbox()
+                 
     def SetUpdateScriptFunc(self, func):
         '''SetUpdateScriptFunc(self, func) --> None
         
@@ -931,20 +931,32 @@ class DataParameterPanel(wx.Panel):
         '''
         self.script_update_func = func
     
-    def Update(self):
+    def Update(self, update_script = True):
         '''Update(self) --> None
         
-        Update the listbox.
+        Update the listbox and runs the callback script_update_func
+        '''
+        self.update_listbox()
+        
+        if self.script_update_func and update_script:
+            self.script_update_func(None)
+            
+    def update_listbox(self):
+        '''update_listbox(self) --> None
+     
+         updates the listbox.
         '''
         list_strings = []
         for i in range(len(self.datalist)):
-            list_strings.append('%s\'s commands:'%self.datalist[i])
+            str_arg = ', '.join(self.args[i])
+            list_strings.append('<code><b>%s</b>: %s(%s, %s)</code>'
+                                ' \n'%(self.datalist[i],
+                                                self.sim_funcs[i], 
+                                                str_arg, self.insts[i]))
             for item in self.expressionlist[i]:
                 list_strings.append(self.command_indent + '%s</pre>'%item)
         
         self.listbox.SetItemList(list_strings)
-        if self.script_update_func:
-            self.script_update_func(None)
         
     def get_expression_position(self):
         '''get_expression_position(self) --> (dataitem, expression)
@@ -960,20 +972,18 @@ class DataParameterPanel(wx.Panel):
         dataindex = -1
         itemindex = -1
         listindex = -1
-        #print self.datalist
-        #print self.expressionlist
         for i in range(len(self.datalist)):
             dataindex += 1
             listindex +=1
-            #print 'test'
+            itemindex = -1
             if listindex >= index:
                 return (dataindex, itemindex)
-            itemindex = -1
             for item in self.expressionlist[i]:
-                itemindex += 1
                 listindex += 1
+                itemindex += 1
                 if listindex >= index:
                     return (dataindex, itemindex)
+                
         # If all other things fail...
         return (-1, -1)
             
@@ -982,16 +992,29 @@ class DataParameterPanel(wx.Panel):
     def Edit(self, event):
         '''Edit(self, event) --> None
         
-        Edits an entry.
+        Edits an entry in the list
         '''
         data_pos, exp_pos = self.get_expression_position()
         if exp_pos != -1 and data_pos != -1:
+            # Editing the expressions for variables
             list_item = self.expressionlist[data_pos][exp_pos]
             dlg = ParameterExpressionDialog(self, self.plugin.GetModel(),\
                 list_item)
             if dlg.ShowModal() == wx.ID_OK:
                 exp = dlg.GetExpression()
                 self.expressionlist[data_pos][exp_pos] = exp
+                self.Update()
+        if exp_pos == -1 and data_pos != -1:
+            # Editing the simulation function and its arguments
+            dlg = SimulationExpressionDialog(self, self.plugin.GetModel(),
+                                              self.plugin.sample_widget.instruments,
+                                              self.sim_funcs[data_pos], 
+                                              self.args[data_pos], 
+                                              self.insts[data_pos], data_pos)
+            if dlg.ShowModal() == wx.ID_OK:
+                self.args[data_pos] = dlg.GetExpressions()
+                self.insts[data_pos] = dlg.GetInstrument()
+                self.sim_funcs[data_pos] =  dlg.GetSim()
                 self.Update()
         
     def Insert(self, event):
@@ -1000,7 +1023,6 @@ class DataParameterPanel(wx.Panel):
         Inserts a new operations
         '''
         data_pos, exp_pos = self.get_expression_position()
-        #print data_pos, exp_pos
         if data_pos != -1:
             dlg = ParameterExpressionDialog(self, self.plugin.GetModel())
             if dlg.ShowModal() == wx.ID_OK:
@@ -1053,7 +1075,7 @@ class DataParameterPanel(wx.Panel):
         
         Updated the data list
         '''
-        self.Update()
+        self.Update(update_script = False)
         
 class EditCustomParameters(wx.Dialog):
     def __init__(self, parent, model, lines):
@@ -1162,12 +1184,193 @@ class EditCustomParameters(wx.Dialog):
         Returns the list user variables.
         '''
         return self.lines
+
+class SimulationExpressionDialog(wx.Dialog):
+    '''A dialog to edit the Simulation expression
+    '''
+    
+    def __init__(self, parent, model, instruments,  sim_func, arguments, inst_name,
+                 data_index):
+        '''Creates a SimualtionExpressionDialog. 
+        
+        model - a Model object.
+        instruments - a dictionary of possible instruments
+        arguments - the arguments to the simulation function, a list of strings.
+        sim_func - a string of the simulation function name.
+        inst_name - the name of the current instrument.
+        data_index - an integer for the current data index.
+        '''
+        
+        self.model = model
+        self.instruments = instruments
+        self.available_sim_funcs = self.model.eval_in_model('model.SimulationFunctions.keys()')
+        
+         
+        # Do the layout of the dialog
+        wx.Dialog.__init__(self, parent, -1, 'Simulation editor')
+        self.SetAutoLayout(True)
+        
+        # Find out the maximum number of arguments to the available sim_funcs
+        max_val = -1
+        self.sim_args = {}
+        self.sim_defaults = {}
+        for func in self.available_sim_funcs:
+            doc = self.model.eval_in_model('model.SimulationFunctions'
+                                           '["%s"].__doc__'%func)
+            doc_lines = find_code_segment(doc, 'Parameters').splitlines()
+            max_val = max(len(doc_lines), max_val)
+            args = []
+            defaults = []
+            for line in doc_lines:
+                items = line.lstrip().rstrip().split(' ')
+                args.append(items[0])
+                defaults.append(items[1].replace('data', 'data[%d]'%data_index))
+            self.sim_args[func] = args
+            self.sim_defaults[func] = defaults
+        
+        expressions = {'Instrument': inst_name}
+        for arg_name, arg in zip(self.sim_args[sim_func], arguments):
+            expressions[arg_name] = arg
+            
+                
+        if max_val < 0:
+            raise ValueError('Wrongly formatted function docs for the simulation functions')    
+        
+        gbs = wx.GridBagSizer(2, max_val)
+        
+        # Creating the column labels
+        col_labels = ['Simulation', 'Instrument']
+        [col_labels.append(arg) for arg in expressions if not arg in col_labels]
+        self.labels = []
+        self.arg_controls = []
+        for index in range(2 + max_val):
+            label = wx.StaticText(self, -1, '')
+            gbs.Add(label,(0, index),flag=wx.ALIGN_LEFT,border=5)
+            self.labels.append(label)
+            # If the expression is not an instrument or simulation function
+            if index > 1:
+                exp_ctrl = wx.TextCtrl(self, -1, size=(100, -1))               
+                gbs.Add(exp_ctrl, (1,index),
+                        flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+                self.arg_controls.append(exp_ctrl)
+            
+        for item, label in zip(col_labels[:2], self.labels[:2]):
+            label.SetLabel(item)
+        # Creating the text boxes for the arguments
+        # Setting the text in the column labels and text controls
+        for item, label, arg_ctrl in zip(col_labels[2:], 
+                                         self.labels[2:], 
+                                         self.arg_controls):
+            label.SetLabel(item)
+            arg_ctrl.SetValue(expressions[item])
+            arg_ctrl.SetEditable(True)
+            
+        for i in range(len(col_labels) - 2, len(self.arg_controls)):
+            self.arg_controls[i].SetEditable(False)
+            #self.arg_controls[i].Show(False)
+            #self.arg_controls[i].SetValue('NA')
+            
+        # Creating the controls
+        # Simulation choice control
+        self.sim_choice = wx.Choice(self, -1, 
+                                    choices = self.available_sim_funcs)
+        self.Bind(wx.EVT_CHOICE, self.on_sim_change, self.sim_choice)
+        self.sim_choice.SetSelection(self.available_sim_funcs.index(sim_func))
+        gbs.Add(self.sim_choice, (1,0),\
+            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+       
+        # Instrument choice control
+        self.inst_choice = wx.Choice(self, -1, 
+                                    choices = self.instruments.keys())
+        #self.Bind(wx.EVT_CHOICE, self.on_inst_change, self.inst_choice)
+        self.inst_choice.SetSelection(self.instruments.keys().index(expressions['Instrument']))
+        gbs.Add(self.inst_choice, (1,1),\
+            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        
+            
+        button_sizer = wx.StdDialogButtonSizer()
+        okay_button = wx.Button(self, wx.ID_OK)
+        okay_button.SetDefault()
+        button_sizer.AddButton(okay_button)
+        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+       
+        button_sizer.Realize()
+        self.Bind(wx.EVT_BUTTON, self.on_ok_button, okay_button)
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
+        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        sizer.Add((-1,5))
+        
+        sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)
+        sizer.Add((-1,5))
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.Layout()
+        
+    def on_sim_change(self, evt):
+        '''Callback for changing the choice widget for the different simulations.
+        '''
+        new_sim = self.sim_choice.GetStringSelection()
+        # Update the column labels
+        new_labels = []
+        for label, arg_name in zip(self.labels[2:], self.sim_args[new_sim]):
+            new_labels.append(label.GetLabel() != arg_name)
+            label.SetLabel(arg_name)
+        # Clear the remaining column labels
+        for label in self.labels[len(self.sim_args[new_sim]) + 2:]:
+            label.SetLabel('')
+                
+        # Update the text controls - if needed
+        for i in range(len(self.sim_args[new_sim])):
+            #if new_labels[i]:
+            if True:
+                self.arg_controls[i].SetValue(self.sim_defaults[new_sim][i])
+            self.arg_controls[i].SetEditable(True)
+            #self.arg_controls[i].Show(True)
+        # Hide and clear the remaining text controls
+        for ctrl in self.arg_controls[len(self.sim_args[new_sim]):]:
+            ctrl.SetEditable(False)
+            ctrl.SetValue('')
+            
+            #ctrl.Show(False)
+    
+    def on_ok_button(self, event):
+        '''Callback for pressing the ok button in the dialog'''
+        expressions = self.GetExpressions()
+        
+        for exp in expressions:
+            try:
+                self.model.eval_in_model(exp)
+            except Exception, e:
+                result = ('Could not evaluate expression:\n%s.\n'%exp +
+                ' The python error is: \n' + e.__repr__())
+                dlg = wx.MessageDialog(self, result, 'Error in expression',
+                               wx.OK | wx.ICON_WARNING)
+                dlg.ShowModal()
+                dlg.Destroy()
+            else:
+                event.Skip()
+    
+    def GetExpressions(self):
+        ''' Returns the current expressions in the dialog box '''
+        return [ctrl.GetValue() for ctrl in self.arg_controls 
+                if ctrl.IsEditable()]
+        
+    def GetInstrument(self):
+        ''' Returns the selected instrument, a string'''
+        return self.inst_choice.GetStringSelection()
+    
+    def GetSim(self):
+        ''' Returns the selected simulation, a string'''
+        return self.sim_choice.GetStringSelection()
     
 class ParameterExpressionDialog(wx.Dialog):
     ''' A dialog for setting parameters for fitting
     '''
     def __init__(self, parent, model, expression = None):
-        wx.Dialog.__init__(self, parent, -1, 'Parameter expression editor')
+        wx.Dialog.__init__(self, parent, -1, 'Parameter editor')
         self.SetAutoLayout(True)
         self.model = model
         
@@ -1181,14 +1384,14 @@ class ParameterExpressionDialog(wx.Dialog):
             
         # Get the objects that should be in the choiceboxes
         par_dict = model.get_possible_parameters()
-	objlist = []
-	funclist = []
-	for cl in par_dict:
-	    obj_dict = par_dict[cl]
-	    for obj in obj_dict:
-		objlist.append(obj)
-		funclist.append(obj_dict[obj])
-        #print model.compiled
+        objlist = []
+        funclist = []
+        for cl in par_dict:
+            obj_dict = par_dict[cl]
+            for obj in obj_dict:
+                objlist.append(obj)
+                funclist.append(obj_dict[obj])
+
         self.objlist = objlist
         self.funclist = funclist
         self.obj_choice = wx.Choice(self, -1, choices = objlist)
@@ -1205,7 +1408,6 @@ class ParameterExpressionDialog(wx.Dialog):
             
         exp_right = ''
         if expression:
-            #print expression
             p = expression.find('(')
             exp_left = expression[:p]
             obj = exp_left.split('.')[0]
@@ -1246,8 +1448,10 @@ class ParameterExpressionDialog(wx.Dialog):
         sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        sizer.Add((-1,5))
         
         sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)
+        sizer.Add((-1,5))
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.Layout()
@@ -1264,8 +1468,6 @@ class ParameterExpressionDialog(wx.Dialog):
         '''OnApply(self, event) --> None
         '''
         evalstring = self.GetExpression()
-        #print 'Trying to evaluate evalstring'
-        #print evalstring
         try:
             self.model.eval_in_model(evalstring)
         except Exception, e:
@@ -1381,13 +1583,11 @@ class SamplePlotPanel(wx.Panel):
         for sim in range(len(self.plot_dicts)):
             new_filename = (base + '%03d'%sim + ext)
             save_array = np.array([self.plot_dicts[sim]['z']])
-            print save_array.shape
             header = 'z\t' 
             for key in self.plot_dicts[sim]:
                 if key != 'z' and key != 'SLD unit':
                     save_array = np.r_[save_array, [self.plot_dicts[sim][key]]]
                     header += key + '\t'
-            print save_array.shape
             f = open(new_filename, 'w')
             f.write("# File exported from GenX's Reflectivity plugin\n")
             f.write("# File created: %s\n"%time.ctime())
@@ -1463,13 +1663,10 @@ class Plugin(framework.Template):
         self.StatusMessage('Reflectivity plugin loaded')
         
     def UpdateScript(self, event):
-        #print 'Updating the script'
-        #print dir(event)
         self.WriteModel()
         
     def OnAutoUpdateSLD(self, evt):
         #self.mb_autoupdate_sld.Check(not self.mb_autoupdate_sld.IsChecked())
-        #print self.mb_autoupdate_sld.IsChecked()
         pass
     
     def OnShowImagSLD(self, evt):
@@ -1508,7 +1705,6 @@ class Plugin(framework.Template):
     def OnNewModel(self, event):
         ''' Create a new model
         '''
-        #print 'New model'
         dlg = wx.SingleChoiceDialog(self.parent, 'Choose a model type to use',\
                 'Models', _avail_models, 
                 wx.CHOICEDLG_STYLE
@@ -1584,6 +1780,13 @@ class Plugin(framework.Template):
         # Calculate and update the sld plot
         if self.mb_autoupdate_sld.IsChecked():
             self.sld_plot.Plot()
+            
+    def InstrumentNameChange(self, old_name, new_name):
+        '''OnInstrumentNameChange --> None
+        
+        Exchanges old_name to new name in the simulaitons.
+        '''
+        self.simulation_widget.InstrumentNameChange(old_name, new_name)
         
     def CreateNewModel(self, modelname = 'models.spec_nx'):
         '''Init the script in the model to yield the 
@@ -1604,7 +1807,8 @@ class Plugin(framework.Template):
         script += 'def Sim(data):\n'
         script += '    I = []\n'
         script += '    SLD[:] = []\n'
-        for i in range(len(self.GetModel().get_data())):
+        nb_data_sets = len(self.GetModel().get_data())
+        for i in range(nb_data_sets):
             script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%i
             script += '    I.append(sample.SimSpecular(data[%i].x, inst))\n'%i
             script += '    if _sim: SLD.append(sample.SimSLD(None, inst))\n'
@@ -1633,9 +1837,12 @@ class Plugin(framework.Template):
         self.simulation_widget.SetDataList(names)
         # An empty list to the expression widget...
         self.simulation_widget.SetExpressionList([[] for item in names])
-        self.simulation_widget.Update()
+        self.simulation_widget.SetSimArgs(['Specular']*nb_data_sets,
+                                          ['inst']*nb_data_sets, 
+                                          [['data[%d].x'%i] for i in range(nb_data_sets)])
+        self.simulation_widget.Update(update_script = True)
         
-        self.sample_widget.Update()
+        self.sample_widget.Update(update_script = True)
         #self.WriteModel()
     
     def WriteModel(self):
@@ -1644,7 +1851,6 @@ class Plugin(framework.Template):
         # Instrument script creation
         code = 'from models.utils import create_fp, create_fw\n'
         instruments = self.sample_widget.instruments
-        print instruments
         for inst_name in instruments:
             code += ('%s = model.'%inst_name + 
                      instruments[inst_name].__repr__() + '\n')
@@ -1663,15 +1869,19 @@ class Plugin(framework.Template):
         code = 'cp = UserVars()\n'
         code += ''.join([line + '\n' for line in\
             self.simulation_widget.GetParameterList()])
-        #print self.simulation_widget.GetParameterList()
         script = self.insert_code_segment(script, 'Parameters', code)
         
         # Expressions evaluted during simulations (parameter couplings) script creation
+        sim_funcs, insts, args = self.simulation_widget.GetSimArgs()
         for (i,exps) in enumerate(self.simulation_widget.GetExpressionList()):
             exp = [ex + '\n' for ex in exps]
-            exp.append('I.append(sample.SimSpecular(data[%i].x, inst))\n'%i)
+            str_arg = ', '.join(args[i])
+            exp.append('I.append(sample.'
+                       'Sim%s(%s, %s))\n'%(sim_funcs[i], str_arg, 
+                                           insts[i]))
             if self.sim_returns_sld:
-                exp.append('if _sim: SLD.append(sample.SimSLD(None, inst))\n')
+                exp.append('if _sim: SLD.append(sample.'
+                           'SimSLD(None, %s))\n'%insts[i])
             code = ''.join(exp)
             script = self.insert_code_segment(script, 'Dataset %i'%i, code)
         
@@ -1733,27 +1943,8 @@ class Plugin(framework.Template):
         Finds a segment of code between BEGIN descriptor and END descriptor
         returns a LookupError if the segement can not be found
         '''
-        found = 0
-        script_lines = code.splitlines(True)
-        line_index = 0
-        for line in script_lines[line_index:]:
-            line_index += 1
-            if line.find('# BEGIN %s'%descriptor) != -1:
-                found += 1
-                break
-            
-        text = ''
-        for line in script_lines[line_index:]:
-            line_index += 1
-            if line.find('# END %s'%descriptor) != -1:
-                found += 1
-                break
-            text += line
         
-        if found != 2:
-            raise LookupError('Code segement: %s could not be found'%descriptor)
-        
-        return text
+        return find_code_segment(code, descriptor)
     
     def insert_code_segment(self, code, descriptor, insert_code):
         '''insert_code_segment(self, code, descriptor, insert_code) --> None
@@ -1780,8 +1971,7 @@ class Plugin(framework.Template):
         #    if char == ' '])
         tablevel = len(script_lines[stop_index+1])\
                     - len(script_lines[stop_index+1].lstrip())
-        #print insert_code
-        #print tablevel
+
         # Make the new code tabbed
         tabbed_code = [' '*tablevel + line for line in\
             insert_code.splitlines(True)]
@@ -1798,8 +1988,6 @@ class Plugin(framework.Template):
         and sample defined inside BEGIN Sample section.
         '''
         self.StatusMessage('Compiling the script...')
-        #print 'Reflectivity'
-        #print self.parent.model.script
         try:
             self.CompileScript()
         except modellib.GenericError, e:
@@ -1879,9 +2067,7 @@ class Plugin(framework.Template):
         layers = re_layer.findall(sample_text)
         layer_names = [t[0] for t in layers]
         stacks = re_stack.findall(sample_text)
-        #print stacks
-        #print layers
-        #print layer_names
+
         if len(layer_names) == 0:
             self.ShowErrorDialog('Could not find any Layers in the' +\
                 ' model script. Check the script.')
@@ -1902,22 +2088,21 @@ class Plugin(framework.Template):
             first_name = stack[1].split(',')[0].strip()
             # check so stack is non-empty
             if first_name != '':
-                #print first_name
                 # Find all items above the first name in the stack
                 while(layer_names[0] != first_name):
                     all_names.append(layer_names.pop(0))
-                    #print 'all names ',all_names[-1]
                 all_names.append(layer_names.pop(0))
         all_names += layer_names
-            
-        #print all_names
         
         # Load the simulation parameters
         script = self.GetModel().script
-        #print script
         sim_exp = []
         data_names = []
         data = self.GetModel().get_data()
+        # Lists holding the simulation function arguments
+        sim_funcs = []
+        sim_args = []
+        insts = []
         try:
             for i in range(len(data)):
                 code = self.find_code_segment(script, 'Dataset %i'%i)
@@ -1927,7 +2112,14 @@ class Plugin(framework.Template):
                 #    sim_exp[-1].append(line.strip())
                 for line in code.splitlines():
                     if line.find('I.append') == -1 and line.find('SLD.append') == -1:
+                        # The current line is a command for a parameter
                         sim_exp[-1].append(line.strip()) 
+                    elif line.find('I.append') > -1:
+                        # The current line is a simulations
+                        (tmp, sim_func, args) = line.split('(',2)
+                        sim_funcs.append(sim_func[10:])
+                        sim_args.append([arg.strip() for arg in args.split(',')[:-1]])
+                        insts.append(args.split(',')[-1][:-2].strip())
         except LookupError:
             self.ShowErrorDialog('Could not locate all data sets in the'
             ' script. There should be %i datasets'%len(data))
@@ -1952,9 +2144,40 @@ class Plugin(framework.Template):
         self.simulation_widget.SetDataList(data_names)
         self.simulation_widget.SetExpressionList(sim_exp)
         self.simulation_widget.SetParameterList(uservars_lines)
-        self.sample_widget.Update()
-        self.simulation_widget.Update()
+        
+        self.simulation_widget.SetSimArgs(sim_funcs, insts, sim_args)
+        
+        self.sample_widget.Update(update_script = False)
+        self.simulation_widget.Update(update_script = False)
         self.StatusMessage('New sample loaded to plugin!')
+        
+def find_code_segment(code, descriptor):
+        '''find_code_segment(code, descriptor) --> string
+        
+        Finds a segment of code between BEGIN descriptor and END descriptor
+        returns a LookupError if the segement can not be found
+        '''
+        found = 0
+        script_lines = code.splitlines(True)
+        line_index = 0
+        for line in script_lines[line_index:]:
+            line_index += 1
+            if line.find('# BEGIN %s'%descriptor) != -1:
+                found += 1
+                break
+            
+        text = ''
+        for line in script_lines[line_index:]:
+            line_index += 1
+            if line.find('# END %s'%descriptor) != -1:
+                found += 1
+                break
+            text += line
+        
+        if found != 2:
+            raise LookupError('Code segement: %s could not be found'%descriptor)
+        
+        return text
         
 if __name__ == '__main__':
     import models.interdiff as Model
