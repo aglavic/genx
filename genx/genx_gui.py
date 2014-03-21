@@ -41,7 +41,7 @@ class MainFrame(wx.Frame):
         #    self.config.load_default(_path + '/genx.conf')
         #else:
         #    self.config.load_default('./genx.conf')
-        self.config.load_default(_path + 'genx.conf')
+        self.config.load_default(_path + 'app_data/genx.conf')
         
         status_text = lambda event:event_handlers.status_text(self, event)
         
@@ -546,12 +546,12 @@ class MainFrame(wx.Frame):
             startup_dialog.ShowModal()
             config_file = startup_dialog.GetConfigFile()
             if config_file:
-                shutil.copyfile(profile_path + 'profiles/' + config_file, profile_path + 'genx.conf')
+                shutil.copyfile(profile_path + 'profiles/' + config_file, profile_path + 'app_data/genx.conf')
                 #print profile_path + 'genx.conf'
-                self.config.load_default(profile_path + 'genx.conf')
+                self.config.load_default(profile_path + 'app_data/genx.conf')
                 self.config.default_set('startup', 'show profiles', 
                                          startup_dialog.GetShowAtStartup())
-                self.config.write_default(profile_path + 'genx.conf')
+                self.config.write_default(profile_path + 'app_data/genx.conf')
             #print self.config.get('plugins','loaded plugins')
 
             
