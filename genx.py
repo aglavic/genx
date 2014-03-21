@@ -11,6 +11,13 @@ except ImportError:
   import genx_gui
 
 if __name__ == "__main__":
+    # Check if the application has been frozen
+    if hasattr(sys,"frozen"):
+        # Redirect all the output to log files
+        log_file_path = genx_gui._path + 'app_data/'
+        sys.stdout = open(log_file_path + 'genx.log', 'w')
+        sys.stderr = open(log_file_path + 'genx.log', 'w')
+    
     # py2exe multiprocessing support
     try:
       from multiprocessing import freeze_support
