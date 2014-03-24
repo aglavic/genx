@@ -584,19 +584,19 @@ class Slab:
         item = np.argwhere(self.id == id)[0][0]
         if item < len(self.x) - 1:
             ar = getattr(self, 'id')
-            setattr(self, 'id', r_[ar[:item], at[item+1:]])
+            setattr(self, 'id', r_[ar[:item], ar[item+1:]])
             ar = getattr(self, 'el')
-            setattr(self, 'el', r_[ar[:item], at[item+1:]])
+            setattr(self, 'el', r_[ar[:item], ar[item+1:]])
             ar = getattr(self, 'x')
-            setattr(self, 'x', r_[ar[:item], at[item+1:]])
+            setattr(self, 'x', r_[ar[:item], ar[item+1:]])
             ar = getattr(self, 'y')
-            setattr(self, 'y', r_[ar[:item], at[item+1:]])
+            setattr(self, 'y', r_[ar[:item], ar[item+1:]])
             ar = getattr(self, 'z')
-            setattr(self, 'z', r_[ar[:item], at[item+1:]])
+            setattr(self, 'z', r_[ar[:item], ar[item+1:]])
             
             for par in self.par_names:
                 ar = getattr(self, par)
-                setattr(self, par, r_[ar[:item], at[item+1:]])
+                setattr(self, par, r_[ar[:item], ar[item+1:]])
                 delattr(self, 'set' + id + par)
                 delattr(self, 'get' + id + par)
         else:
