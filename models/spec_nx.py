@@ -404,7 +404,7 @@ def SLD_calculations(z, sample, inst):
     if not magnetic:
         rho = sum((sld[:-1] - sld[1:])*(0.5 -\
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
-        dic = {'Re sld': real(rho), 'Im sld': imag(rho), 'z':z, 
+        dic = {'Re': real(rho), 'Im': imag(rho), 'z':z, 
                'SLD unit': sld_unit}
     else:
         sld_p = sld + mag_sld
@@ -413,8 +413,11 @@ def SLD_calculations(z, sample, inst):
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld_p[-1]
         rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -\
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
-        dic = {'Re sld +': real(rho_p), 'Im sld +': imag(rho_p),\
-                'Re sld -': real(rho_m), 'Im sld -': imag(rho_m), 'z':z,
+        #dic = {'Re sld +': real(rho_p), 'Im sld +': imag(rho_p),\
+        #        'Re sld -': real(rho_m), 'Im sld -': imag(rho_m), 'z':z,
+        #        'SLD unit': sld_unit}
+        dic = {'Re non-mag': real(rho_p), 'Im non-mag': imag(rho_p),\
+                'mag': real(rho_p - rho_m)/2, 'z':z,
                 'SLD unit': sld_unit}
     return dic
 
