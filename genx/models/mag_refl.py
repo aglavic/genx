@@ -362,7 +362,7 @@ def SLD_calculations(z, sample, inst):
     lamda = inst.getWavelength()
     theory = inst.getTheory()
     d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens = compose_sld(sample, inst, array([0.0,]))
-    if (theory == 0 or theory == instrument_string_choices['theory'][0]) : 
+    if (theory == 0 or theory == instrument_string_choices['theory'][0]): 
         # Full theory return the suceptibility matrix
         
         new_size = len(d)*2
@@ -394,8 +394,10 @@ def SLD_calculations(z, sample, inst):
     #        'z':z}
         re = 2.8179402894e-5
         c = 1/(lamda**2*re/pi)
-        return {'sl_xx':chi[0][0].real*c, 'sl_xy':chi[0][1].real*c, 'sl_xz':chi[0][2].real*c,
-                'sl_yy':chi[1][1].real*c,'sl_yz':chi[1][2].real*c,'sl_zz':chi[2][2].real*c,
+        return {'Re sl_xx':chi[0][0].real*c, 'Re sl_xy':chi[0][1].real*c, 'Re sl_xz':chi[0][2].real*c,
+                'Re sl_yy':chi[1][1].real*c,'Re sl_yz':chi[1][2].real*c,'Re sl_zz':chi[2][2].real*c,
+                'Im sl_xx':chi[0][0].imag*c, 'Im sl_xy':chi[0][1].imag*c, 'Im sl_xz':chi[0][2].imag*c,
+                'Im sl_yy':chi[1][1].imag*c,'Im sl_yz':chi[1][2].imag*c,'Im sl_zz':chi[2][2].imag*c,
                 'z':z, 'SLD unit': 'r_e/\AA^{3}'}
     else:
         z = zeros(len(d)*2)
@@ -413,12 +415,21 @@ def SLD_calculations(z, sample, inst):
         sl_np = parray(sl_n)
         mag_densp = parray(mag_dens)
         abs_np = parray(abs_n)
-        
-        #print sl_cp.shape, sl_np.shape, abs_np.shape, mag_densp.shape, z.shape
-        return {'real sld_c': sl_cp.real, 'imag sld_c': sl_cp.imag,
-            'real sld_m': sl_m1p.real, 'imag sld_m': sl_m1p.imag,
-            'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
-            'z':z, 'SLD unit': 'r_{e}/\AA^{3},\,fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
+        if (theory == 1 or theory == instrument_string_choices['theory'][1]):
+            # Simplified anisotropic
+            #print sl_cp.shape, sl_np.shape, abs_np.shape, mag_densp.shape, z.shape
+            return {'Re sld_c': sl_cp.real, 'Im sld_c': sl_cp.imag,
+                    'Re sld_m': sl_m1p.real, 'Im sld_m': sl_m1p.imag,
+                    'mag_dens': mag_densp,
+                    'z':z, 'SLD unit': 'r_{e}/\AA^{3},\,\mu_{B}/\AA^{3}'}
+        elif (theory == 2 or theory == instrument_string_choices['theory'][2]):
+            # Neutron spin pol
+            return {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
+                    'z':z, 'SLD unit': 'fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
+        elif (theory == 3 or theory == instrument_string_choices['theory'][3]):
+            # Neutron spin pol with spin flip
+            return {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
+                    'z':z, 'SLD unit': 'fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
         
     
 def compose_sld_anal(z, sample, instrument):
@@ -505,9 +516,32 @@ def compose_sld_anal(z, sample, instrument):
     #print 'he'
     #print mag_dens
     #print sld_n.shape, mag_dens.shape, z.shape, sld_c.real.shape
-    return {'z':z, 'sld_c_real': sld_c.real, 'sld_c_imag': sld_c.imag,
-            'sld_m_real': sld_m.real, 'sld_m_imag': sld_m.imag,
+    return {'z':z, 'Re sld_c': sld_c.real, 'Im sld_c': sld_c.imag,
+            'Re sld_m': sld_m.real, 'Im sld_m': sld_m.imag,
             'sld_n': sld_n, 'mag_dens': mag_dens}
+    
+    if (theory == 0 or theory == instrument_string_choices['theory'][0]):
+        # Full polarization calc
+        #print sl_cp.shape, sl_np.shape, abs_np.shape, mag_densp.shape, z.shape
+        return {'Re sld_c': sl_c.real, 'Im sld_c': sl_c.imag,
+                'Re sld_m': sl_m.real, 'Im sld_m': sl_m.imag,
+                'mag_dens': mag_dens,
+                'z':z, 'SLD unit': 'r_{e}/\AA^{3},\,\mu_{B}/\AA^{3}'}
+    elif (theory == 1 or theory == instrument_string_choices['theory'][1]):
+        # Simplified anisotropic
+        #print sl_cp.shape, sl_np.shape, abs_np.shape, mag_densp.shape, z.shape
+        return {'Re sld_c': sl_c.real, 'Im sld_c': sl_c.imag,
+                'Re sld_m': sl_m.real, 'Im sld_m': sl_m.imag,
+                'mag_dens': mag_dens,
+                'z':z, 'SLD unit': 'r_{e}/\AA^{3},\,\mu_{B}/\AA^{3}'}
+    elif (theory == 2 or theory == instrument_string_choices['theory'][2]):
+        # Neutron spin pol
+        return {'sld_n': sl_n, 'mag_dens': mag_dens,
+                'z':z, 'SLD unit': 'fm/\AA^{3}, \mu_{B}/\AA^{3}'}
+    elif (theory == 3 or theory == instrument_string_choices['theory'][3]):
+        # Neutron spin pol with spin flip
+        return {'sld_n': sl_n, 'mag_dens': mag_dens,
+                'z':z, 'SLD unit': 'fm/\AA^{3}, \mu_{B}/\AA^{3}'}
     
 
 def compose_sld(sample, instrument, theta):
