@@ -119,10 +119,16 @@ def do_calc(g_0, lamda, chi, d, non_mag, mpy):
     #print 'u: ', u.shape
     D = ((chi_xz + u*n_x)*(chi_zx + u*n_x) - 
          (1.0 - u**2 + chi_xx)*(g_0**2 + chi_zz))
-    P_x = (chi_xy*(g_0**2 + chi_zz) - 
-           chi_zy*(chi_xz + u*n_x))/D
-    P_z = (chi_zy*(1.0 - u**2 + chi_xx) - 
-           chi_xy*(chi_zx + u*n_x))/D
+    # These expressions can throw a runtime warning if D has an incorrect value
+    # The different special cases are handled later by non-magnetic flags as well
+    # as m//y flag.
+    old_error_vals = np.seterr(invalid='ignore')
+    P_x = (chi_xy*(g_0**2 + chi_zz) -
+            chi_zy*(chi_xz + u*n_x))/D
+    P_z = (chi_zy*(1.0 - u**2 + chi_xx) -
+            chi_xy*(chi_zx + u*n_x))/D
+    old_error_vals = np.seterr(invalid=old_error_vals['invalid'])
+
     #print 'P_x: ', P_x.shape, 'P_z: ', P_z.shape, 'D: ', D.shape
     S = np.zeros((4, 4, chi_xx.shape[0], g_0.shape[1]), dtype = np.complex128)
     #print 'S: ', S.shape, 'P: ', P_x
