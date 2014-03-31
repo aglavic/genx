@@ -9,7 +9,6 @@ $Date::                                 $:  Date of last commit
 
 import wx
 import wx.grid, wx.py, wx.stc
-import wx.lib.plot as wxplot
 
 import os, sys, shutil
 
@@ -32,10 +31,10 @@ if _path != '':
     _path += '/'
 #raise Exception(_path)
 class MainFrame(wx.Frame):
-    def __init__(self, show_startup, *args, **kwds):
+    def __init__(self, parent, show_startup, *args, **kwds):
         
         self.config = io.Config()
-        
+        self.parent = parent
         #print _path
         #if _path != '':
         #    self.config.load_default(_path + '/genx.conf')
@@ -810,10 +809,11 @@ class MyApp(wx.App):
     def __init__(self, show_startup, *args, **kwargs):
         self.show_startup = show_startup
         wx.App.__init__(self, *args, **kwargs)
+
     def OnInit(self):
-        wx.InitAllImageHandlers()
+        #wx.InitAllImageHandlers()
         
-        main_frame = MainFrame(self.show_startup, None, -1, "")
+        main_frame = MainFrame(self, self.show_startup, None, -1, "")
         self.SetTopWindow(main_frame)
         main_frame.Show()
         return 1
