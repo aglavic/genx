@@ -663,9 +663,11 @@ def quit(frame, event):
                                  ' your model will not be saved.', 
                                  'Model not saved')
         if ans:
-            frame.Destroy()
+            #frame.Destroy()
+            frame.parent.ExitMainLoop()
     else:
-        frame.Destroy()
+        #frame.Destroy()
+        frame.parent.ExitMainLoop()
 
     
 def status_text(frame, event):

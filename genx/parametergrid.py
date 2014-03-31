@@ -548,6 +548,9 @@ class ParameterGrid(gridlib.Grid):
         reasonable values.
         '''
         width=(self.GetSize().GetWidth()-self.GetColSize(2)-self.GetRowLabelSize())/5-1
+        # To avoid warnings relating to a width < 0. This can occur during startup
+        if width <= 0:
+            width = 1
         self.SetColSize(0,width)
         self.SetColSize(1,width)
         self.SetColSize(3,width)
