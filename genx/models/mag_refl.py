@@ -681,7 +681,7 @@ def compose_sld(sample, instrument, theta):
             non_mag = ((abs(chi_xy) < mag_limit)
                        *(abs(chi_xz) < mag_limit)
                        *(abs(chi_yz) < mag_limit))
-            non_mag[-1] = True
+            non_mag[0] = True
             mpy = (abs(chi_yz) < mpy_limit)*(abs(chi_xy) < mpy_limit)*bitwise_not(non_mag)
             chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
         d = r_[z[1:] - z[:-1],1]
@@ -816,7 +816,98 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
     lamda = instrument.getWavelength()
     theory = instrument.getTheory()
     if theory == 0 or theory == instrument_string_choices['theory'][0]:
-        raise NotImplementedError('Full calculations only implemented for slicing so far')
+        re = 2.8179402894e-5
+        lamda = instrument.getWavelength()
+        parameters = sample.resolveLayerParameters()
+        dens = array(parameters['dens'], dtype = float64)
+        resdens = array(parameters['resdens'], dtype = float64)
+        resmag = array(parameters['resmag'], dtype = float64)
+        mag = abs(array(parameters['mag'], dtype = float64))
+        dmag_l = array(parameters['dmag_l'], dtype = float64)
+        dmag_u = array(parameters['dmag_u'], dtype = float64)
+        dd_u = array(parameters['dd_u'], dtype = float64)
+        dd_l = array(parameters['dd_l'], dtype = float64)
+
+        #print [type(f) for f in parameters['f']]
+        f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
+        fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
+        fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
+        fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
+
+        d = array(parameters['d'], dtype = float64)
+        sl_c = dens*(f + resdens*fr)
+        sl_m1 = dens*resdens*resmag*mag*fm1
+        sl_m2 = dens*resdens*resmag*mag*fm2 #TODO: Check if this needs to mag**2
+
+        A = -lamda**2*re/pi*sl_c
+        B = lamda**2*re/pi*sl_m1
+        C = lamda**2*re/pi*sl_m2
+
+        phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
+        theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
+        M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
+
+
+        sigma = array(parameters['sigma_c'], dtype = float64) + 1e-9
+        sigma_u = array(parameters['sigma_mu'], dtype = float64) + 1e-9
+        sigma_l = array(parameters['sigma_ml'], dtype = float64) + 1e-9
+
+        g_0 = sin(theta*pi/180.0)
+
+        theory = instrument.getTheory()
+        # Full theory
+        if Buffer.g_0 != None:
+            g0_ok = Buffer.g_0.shape == g_0.shape
+            if g0_ok:
+                g0_ok = any(not_equal(Buffer.g_0,g_0))
+        else:
+            g0_ok = False
+        if  theory == 0 or theory == instrument_string_choices['theory'][0]:
+            if True or (Buffer.parameters != parameters or Buffer.coords != instrument.getCoords()
+                or not g0_ok or Buffer.wavelength != lamda):
+                print 'calc_refl_int_lay'
+                W = lib.xrmr.calc_refl_int_lay(g_0, lamda, A*0, A[::-1], B[::-1], C[::-1], M[::-1,...]
+                                               , d[::-1], sigma[::-1], sigma_l[::-1], sigma_u[::-1]
+                                               , dd_l[::-1], dd_u[::-1], dmag_l[::-1], dmag_u[::-1])
+                #print M[::-1,...]
+                #W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], A[::-1]*0, B[::-1], C[::-1], M[::-1,...], d[::-1])
+                #print M[...,::-1]
+                #-4.98092068e-05 +8.67213869e-06j  -3.30099195e-05 +2.24578946e-05j
+
+                Buffer.W = W
+                Buffer.parameters = parameters.copy()
+                Buffer.coords = instrument.getCoords()
+                Buffer.g_0 = g_0.copy()
+                Buffer.wavelength = lamda
+            else:
+                #print 'Reusing W'
+                W = Buffer.W
+            trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
+            #Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
+            Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, conj(lib.xrmr.inv2(trans))))
+            #Different polarization channels:
+            pol = instrument.getXpol()
+            if pol == 0 or pol == instrument_string_choices['xpol'][0]:
+                # circ +
+                R = abs(Wc[0,0])**2 + abs(Wc[1,0])**2
+            elif pol == 1 or pol == instrument_string_choices['xpol'][1]:
+                # circ -
+                R = abs(Wc[1,1])**2 + abs(Wc[0,1])**2
+            elif pol == 2 or pol == instrument_string_choices['xpol'][2]:
+                # tot
+                R = (abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)/2
+            elif pol == 3 or pol == instrument_string_choices['xpol'][3]:
+                # ass
+                R = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(abs(W[0,0])**2 + abs(W[1,0])**2 + abs(W[0,1])**2 + abs(W[1,1])**2)
+            elif pol == 4 or pol == instrument_string_choices['xpol'][4]:
+                # sigma
+                R = abs(W[0,0])**2 + abs(W[1,0])**2
+            elif pol == 5 or pol == instrument_string_choices['xpol'][5]:
+                # pi
+                R = abs(W[0,1])**2 + abs(W[1,1])**2
+            else:
+                raise ValueError('Variable pol has an unvalid value')
+
     elif theory == 1 or theory == instrument_string_choices['theory'][1]:
         pol = instrument.getXpol()
         re = 2.82e-13*1e2/1e-10
@@ -897,11 +988,11 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
     parameters = sample.resolveLayerParameters()
     
     d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens = compose_sld(sample, instrument, theta)
-    #re = 2.8179402894e-5
-    #A = -lamda**2*re/pi*sl_c
-    #B = lamda**2*re/pi*sl_m1
-    #C = lamda**2*re/pi*sl_m2
-    
+    re = 2.8179402894e-5
+    A = -lamda**2*re/pi*sl_c
+    B = lamda**2*re/pi*sl_m1
+    C = lamda**2*re/pi*sl_m2
+    #print A.shape, B.shape, C.shape, M.shape
     g_0 = sin(theta*pi/180.0)
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
@@ -917,6 +1008,12 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             or not g0_ok or Buffer.wavelength != lamda):
             #W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
             #print 'Calc W'
+            # Test
+            chi = tuple([tuple([item[::-1] for item in row]) for row in chi])
+            d = d[::-1]
+            non_mag = non_mag[::-1]
+            mpy = mpy[::-1]
+            # End Test
             W = lib.xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
             Buffer.W = W
             Buffer.parameters = parameters.copy()
