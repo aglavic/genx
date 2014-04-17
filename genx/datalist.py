@@ -235,6 +235,9 @@ class DataListEvent(wx.PyCommandEvent):
         
     def SetNewData(self, new_data = True):
         self.new_data = new_data
+
+    def SetNewModel(self, new_model = True):
+        self.new_model = new_model
         
     def SetDescription(self, desc):
         '''
@@ -376,7 +379,7 @@ class VirtualDataList(wx.ListCtrl):
         
     def _UpdateData(self, desc, data_changed = True, new_data = False,\
             position = None, moved = False, direction_up = True,\
-             deleted = False, name_change = False):
+             deleted = False, name_change = False, new_model = False):
         '''
         Internal funciton to send an event to update data
         '''
@@ -385,6 +388,7 @@ class VirtualDataList(wx.ListCtrl):
         self.data_cont.get_data())
         evt.SetDataChanged(data_changed)
         evt.SetNewData(new_data)
+        evt.SetNewModel(new_model)
         if name_change:
             evt.SetNameChange()
         evt.SetDescription(desc)
@@ -465,7 +469,7 @@ class VirtualDataList(wx.ListCtrl):
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
             self._UpdateData('Item moved', data_changed = False, moved = True,\
-                direction_up = True, position = index)
+                direction_up = True, position = indices)
             
         else:
             dlg = wx.MessageDialog(self, \
@@ -492,7 +496,7 @@ class VirtualDataList(wx.ListCtrl):
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
             self._UpdateData('Item moved', data_changed = False, moved = True,\
-                direction_up = False, position = index)
+                direction_up = False, position = indices)
             
         else:
             dlg = wx.MessageDialog(self, \
@@ -553,7 +557,7 @@ class VirtualDataList(wx.ListCtrl):
         self._UpdateImageList()
         self.SetItemCount(self.data_cont.get_count())
         self._UpdateData('Data from model loaded', data_changed = True,\
-                new_data = True)
+                new_data = True, new_model = True)
         self.toggleshow = self.config.get_boolean('data handling', 
                                                   'toggle show')
         self.data_loader_cont.load_default()
