@@ -673,7 +673,7 @@ def compose_sld(sample, instrument, theta):
             non_mag = ((abs(chi_xy) < mag_limit)
                        *(abs(chi_xz) < mag_limit)
                        *(abs(chi_yz) < mag_limit))
-            mpy = (abs(chi_yz) < mpy_limit)*(abs(chi_xy) < mpy_limit)*bitwise_not(non_mag)
+            mpy = (abs(chi_yz)/abs(chi_xx) < mpy_limit)*(abs(chi_xy)/abs(chi_xx) < mpy_limit)*bitwise_not(non_mag)
             #print mpy
             chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
         else:
@@ -682,7 +682,7 @@ def compose_sld(sample, instrument, theta):
                        *(abs(chi_xz) < mag_limit)
                        *(abs(chi_yz) < mag_limit))
             non_mag[0] = True
-            mpy = (abs(chi_yz) < mpy_limit)*(abs(chi_xy) < mpy_limit)*bitwise_not(non_mag)
+            mpy = (abs(chi_yz)/abs(chi_xx) < mpy_limit)*(abs(chi_xy)/abs(chi_xx) < mpy_limit)*bitwise_not(non_mag)
             chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
         d = r_[z[1:] - z[:-1],1]
         #print 'Compressed: ', z.shape, sl_c.shape

@@ -52,7 +52,6 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
 
     Note that the first layer should be the ambient and the last the substrate!
     '''
-
     chi_b, non_mag_b, mpy_b = create_chi(g_0, lamda, chi0, A, B, C, M, d,
                                    mag_limit = mag_limit, mpy_limit = mpy_limit)
     #TODO: Check the scaling between magnetic moment and C (should is be scale**2?)
@@ -70,8 +69,8 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
     g_0 = g_0 * np.ones(chi_b[0][0].shape[0], dtype=np.complex128)[:, np.newaxis]
 
     u_b, S_b = calc_u_S(chi_b, g_0, mpy_b, non_mag_b)
-    u_l, S_l = calc_u_S(chi_b, g_0, mpy_b, non_mag_b)
-    u_u, S_u = calc_u_S(chi_b, g_0, mpy_b, non_mag_b)
+    u_l, S_l = calc_u_S(chi_l, g_0, mpy_l, non_mag_l)
+    u_u, S_u = calc_u_S(chi_u, g_0, mpy_u, non_mag_u)
 
     print u_b[0,0,-1]
     print u_b[1,0,-1]
@@ -228,8 +227,8 @@ def calc_u_S(chi, g_0, mpy, non_mag):
     S[1, :, 1:] = v
     S[2, :, 1:] = u[:, 1:]
     S[3, :, 1:] = w
-    #if np.any(non_mag):
-    #    print 'We have non-magnetic layers'
+    if np.any(non_mag):
+        print 'We have non-magnetic layers'
     #print non_mag
     # Removing to test if roughness calcs are affected
     chi = chi_xx[non_mag]  #(trans*(chi0 + A)[:, np.newaxis])[non_mag]
@@ -259,7 +258,7 @@ def calc_u_S(chi, g_0, mpy, non_mag):
 
     # Take into account the matrix singularity arising when M||Y
     if np.any(mpy):
-        #print 'M||Y calcs activated'
+        print 'M||Y calcs activated'
         delta = chi_xz[mpy] ** 2 * (1 + chi_xx[mpy])
         nx = n_x[mpy]
         mpy_u1 = np.sqrt(g_0[mpy] ** 2 + chi_yy[mpy])
@@ -273,7 +272,7 @@ def calc_u_S(chi, g_0, mpy, non_mag):
         S[1, 0, mpy] = 0.0
         S[1, 1, mpy] = -(mpy_u2 * chi_xz[mpy] + nx * (1 + chi_xx[mpy])) / (nx ** 2 - delta)
         S[1, 2, mpy] = 0.0
-        S[1, 3, mpy] = -(mpy_u3 * chi_xz[mpy] + nx * (1 + chi_xx[mpy])) / (nx ** 2 - delta)
+        S[1, 3, mpy] = -(mpy_u4 * chi_xz[mpy] + nx * (1 + chi_xx[mpy])) / (nx ** 2 - delta)
         S[2, 0, mpy] = mpy_u1;
         S[2, 1, mpy] = 0.0
         S[2, 2, mpy] = mpy_u3;
@@ -281,11 +280,11 @@ def calc_u_S(chi, g_0, mpy, non_mag):
         S[3, 0, mpy] = 0.0
         S[3, 1, mpy] = -(mpy_u2 * nx + chi_xz[mpy]) / (nx ** 2 - delta)
         S[3, 2, mpy] = 0.0
-        S[3, 3, mpy] = -(mpy_u2 * nx + chi_xz[mpy]) / (nx ** 2 - delta)
-        u[0, non_mag] = mpy_u1
-        u[1, non_mag] = mpy_u2
-        u[2, non_mag] = mpy_u3
-        u[3, non_mag] = mpy_u4
+        S[3, 3, mpy] = -(mpy_u4 * nx + chi_xz[mpy]) / (nx ** 2 - delta)
+        u[0, mpy] = mpy_u1
+        u[1, mpy] = mpy_u2
+        u[2, mpy] = mpy_u3
+        u[3, mpy] = mpy_u4
 
     return u, S
 
