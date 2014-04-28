@@ -2154,7 +2154,8 @@ class Plugin(framework.Template):
                 #for line in code.splitlines()[:-1]:
                 #    sim_exp[-1].append(line.strip())
                 for line in code.splitlines():
-                    if line.find('I.append') == -1 and line.find('SLD.append') == -1:
+                    if (line.find('I.append') == -1 and line.find('SLD.append') == -1
+                        and line.find('d = data') == -1):
                         # The current line is a command for a parameter
                         sim_exp[-1].append(line.strip()) 
                     elif line.find('I.append') > -1:
