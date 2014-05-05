@@ -1,6 +1,7 @@
 
 from scipy import *
 from scipy import integrate
+from scipy.misc import factorial
 import scipy.weave as weave
 import time
 from elfield import *
