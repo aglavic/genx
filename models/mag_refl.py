@@ -183,7 +183,7 @@ except StandardError,S:
 #import lib.paratt as Paratt
 
 import lib.ables as ables
-
+import lib.neutron_refl as neutron_refl
 from numpy import *
 from scipy.special import erf
 from lib.instrument import *
@@ -293,13 +293,23 @@ sample_string_choices = {'compress':['yes', 'no'],
                           'slicing':['yes', 'no'],
                           }
 
-# A buffer to save previous calculations for spin-flip calculations
-class Buffer:
+# A buffer to save previous calculations for XRMR calculations
+class XBuffer:
     W = None
     parameters = None
     g_0 = None
     coords = None
     wavelength = None
+
+# A buffer to save previous calculations for spin-flip calculations
+class NBuffer:
+    Ruu = 0
+    Rdd = 0
+    Rdu = 0
+    Rud = 0
+    parameters = None
+    TwoThetaQz = None
+
 
 def Specular(TwoThetaQz, sample, instrument):
     ''' Simulate the specular signal from sample when proped with instrument
@@ -760,7 +770,7 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
             n_u = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_u)[:,newaxis])/2.0
     elif (theory == 2 or theory == instrument_string_choices['theory'][2] or
           theory == 3 or theory == instrument_string_choices['theory'][3]):
-        b = (array(parameters['b'], dtype = complex128)*1e-5)[:, newaxis]*ones(theta.shape)
+        b = (array(parameters['b'], dtype = complex128).real*1e-5)[:, newaxis]*ones(theta.shape)
         abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(theta.shape)
         wl = instrument.getWavelength()
         #print b
@@ -815,26 +825,35 @@ def reflectivity_xmag(sample, instrument, theta, TwoThetaQz):
 def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
     lamda = instrument.getWavelength()
     theory = instrument.getTheory()
+    re = 2.8179402894e-5
+    lamda = instrument.getWavelength()
+    parameters = sample.resolveLayerParameters()
+    dens = array(parameters['dens'], dtype = float64)
+    resdens = array(parameters['resdens'], dtype = float64)
+    resmag = array(parameters['resmag'], dtype = float64)
+    mag = abs(array(parameters['mag'], dtype = float64))
+    dmag_l = array(parameters['dmag_l'], dtype = float64)
+    dmag_u = array(parameters['dmag_u'], dtype = float64)
+    dd_u = array(parameters['dd_u'], dtype = float64)
+    dd_l = array(parameters['dd_l'], dtype = float64)
+
+    #print [type(f) for f in parameters['f']]
+    f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
+    fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
+    fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
+    fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
+
+    phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
+    theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
+
+    sigma = array(parameters['sigma_c'], dtype = float64) + 1e-9
+    sigma_u = array(parameters['sigma_mu'], dtype = float64) + 1e-9
+    sigma_l = array(parameters['sigma_ml'], dtype = float64) + 1e-9
+
+    d = array(parameters['d'], dtype = float64)
+
     if theory == 0 or theory == instrument_string_choices['theory'][0]:
-        re = 2.8179402894e-5
-        lamda = instrument.getWavelength()
-        parameters = sample.resolveLayerParameters()
-        dens = array(parameters['dens'], dtype = float64)
-        resdens = array(parameters['resdens'], dtype = float64)
-        resmag = array(parameters['resmag'], dtype = float64)
-        mag = abs(array(parameters['mag'], dtype = float64))
-        dmag_l = array(parameters['dmag_l'], dtype = float64)
-        dmag_u = array(parameters['dmag_u'], dtype = float64)
-        dd_u = array(parameters['dd_u'], dtype = float64)
-        dd_l = array(parameters['dd_l'], dtype = float64)
 
-        #print [type(f) for f in parameters['f']]
-        f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
-        fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
-        fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
-        fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
-
-        d = array(parameters['d'], dtype = float64)
         sl_c = dens*(f + resdens*fr)
         sl_m1 = dens*resdens*resmag*mag*fm1
         sl_m2 = dens*resdens*resmag*mag*fm2 #TODO: Check if this needs to mag**2
@@ -843,28 +862,23 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
         B = lamda**2*re/pi*sl_m1
         C = lamda**2*re/pi*sl_m2
 
-        phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
-        theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
+
         M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
-
-
-        sigma = array(parameters['sigma_c'], dtype = float64) + 1e-9
-        sigma_u = array(parameters['sigma_mu'], dtype = float64) + 1e-9
-        sigma_l = array(parameters['sigma_ml'], dtype = float64) + 1e-9
+        #print 'M: ',M
 
         g_0 = sin(theta*pi/180.0)
 
         theory = instrument.getTheory()
         # Full theory
-        if Buffer.g_0 != None:
-            g0_ok = Buffer.g_0.shape == g_0.shape
+        if XBuffer.g_0 != None:
+            g0_ok = XBuffer.g_0.shape == g_0.shape
             if g0_ok:
-                g0_ok = any(not_equal(Buffer.g_0,g_0))
+                g0_ok = any(not_equal(XBuffer.g_0,g_0))
         else:
             g0_ok = False
         if  theory == 0 or theory == instrument_string_choices['theory'][0]:
-            if True or (Buffer.parameters != parameters or Buffer.coords != instrument.getCoords()
-                or not g0_ok or Buffer.wavelength != lamda):
+            if True or (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
+                or not g0_ok or XBuffer.wavelength != lamda):
                 print 'calc_refl_int_lay'
                 W = lib.xrmr.calc_refl_int_lay(g_0, lamda, A*0, A[::-1], B[::-1], C[::-1], M[::-1,...]
                                                , d[::-1], sigma[::-1], sigma_l[::-1], sigma_u[::-1]
@@ -874,14 +888,14 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
                 #print M[...,::-1]
                 #-4.98092068e-05 +8.67213869e-06j  -3.30099195e-05 +2.24578946e-05j
 
-                Buffer.W = W
-                Buffer.parameters = parameters.copy()
-                Buffer.coords = instrument.getCoords()
-                Buffer.g_0 = g_0.copy()
-                Buffer.wavelength = lamda
+                XBuffer.W = W
+                XBuffer.parameters = parameters.copy()
+                XBuffer.coords = instrument.getCoords()
+                XBuffer.g_0 = g_0.copy()
+                XBuffer.wavelength = lamda
             else:
                 #print 'Reusing W'
-                W = Buffer.W
+                W = XBuffer.W
             trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
             #Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
             Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, conj(lib.xrmr.inv2(trans))))
@@ -921,7 +935,8 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
             #print n.shape, theta.shape, d.shape
             #print 'Ord'
             #R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
-            R = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+            R = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
+                                dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
         elif pol == 1 or pol == instrument_string_choices['xpol'][1]:
             # circ -
             pars = extract_anal_iso_pars(sample, instrument, theta, '-')
@@ -929,7 +944,8 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
             #chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             #n = 1 + chi_temp/2.0
             #R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
-            R = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+            R = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
+                                dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
         elif pol == 2 or pol == instrument_string_choices['xpol'][2]:
             # tot
             pars = extract_anal_iso_pars(sample, instrument, theta, '-')
@@ -937,13 +953,15 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
             #chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             #n = 1 + chi_temp/2.0
             #Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
-            Rm = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+            Rm = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
+                                dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
             pars = extract_anal_iso_pars(sample, instrument, theta, '+')
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
             #chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             #n = 1 + chi_temp/2.0
             #Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
-            Rp = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+            Rp = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
+                                dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
             R = (Rp + Rm)/2.0
             #raise ValueError('Variable pol has an unvalid value')
         elif pol == 3 or pol == instrument_string_choices['xpol'][3]:
@@ -954,13 +972,15 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
             #chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             #n = 1 + chi_temp/2.0
             #Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
-            Rm = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+            Rm = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
+                                dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
             pars = extract_anal_iso_pars(sample, instrument, theta, '+')
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
             #chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
             #n = 1 + chi_temp/2.0
             #Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
-            Rp = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+            Rp = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
+                                dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
             R = (Rp - Rm)/(Rp + Rm)
             #raise ValueError('Variable pol has an unvalid value')
         else:
@@ -971,11 +991,45 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
         Q = 4*pi/lamda*sin(theta*pi/180)
         pars = extract_anal_iso_pars(sample, instrument, theta, instrument.getNpol())
         n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
-        R = ables.ReflQ_mag(Q, lamda, n.T, d, sigma_c, n_u.T, dd_u, sigma_u, n_l.T, dd_l, sigma_l)
+        R = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1], dd_u[::-1],
+                            sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
         #raise NotImplementedError('Neutron calcs not implemented')
     elif theory == 3 or theory == instrument_string_choices['theory'][3]:
         # neutron spin-flip calcs
-        raise NotImplementedError('Neutron calcs not implemented')
+        # Check if we have calcluated the same sample previous:
+        Q = 4*pi/lamda*sin(theta*pi/180)
+        if NBuffer.parameters != parameters or not all(equal(NBuffer.TwoThetaQz, Q)):
+            print 'Reloading buffer'
+            wl = instrument.getWavelength()
+            b = array(parameters['b'], dtype = complex64).real*1e-5
+            abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
+            # Bulk of the layers
+            V0 = 2*2*pi*dens*(sqrt(b**2 - (abs_xs/2.0/wl)**2) -
+                               1.0J*abs_xs/2.0/wl)
+            Vmag = 2*2*pi*2.645e-5*mag*dens
+
+            (Ruu,Rdd,Rud,Rdu) = neutron_refl.Refl_int_lay(Q, V0[::-1], Vmag[::-1], d[::-1], phi[::-1], sigma[::-1],
+                                                        dmag_u[::-1], dd_u[::-1], phi[::-1], sigma_u[::-1],
+                                                        dmag_l[::-1], dd_l[::-1], phi[::-1], sigma_l[::-1])
+            NBuffer.Ruu = Ruu; NBuffer.Rdd = Rdd; NBuffer.Rud = Rud
+            NBuffer.parameters = parameters.copy()
+            NBuffer.TwoThetaQz = Q.copy()
+        else:
+            pass
+
+        pol = instrument.getNpol()
+        if pol == instrument_string_choices['npol'][0] or pol == 0:
+            R = NBuffer.Ruu
+        # Polarization dd or --
+        elif pol == instrument_string_choices['npol'][1] or pol == 1:
+            R = NBuffer.Rdd
+        # Polarization ud or +-
+        elif pol == instrument_string_choices['npol'][2] or pol == 2:
+            R = NBuffer.Rud
+        else:
+            raise ValueError('The value of the polarization is WRONG.'
+                ' It should be ++(0), --(1) or +-(2)')
+        #raise NotImplementedError('Neutron calcs not implemented')
     elif theory == 4 or theory == instrument_string_choices['theory'][4]:
         # neutron spin-flip calcs
         raise NotImplementedError('TOF Neutron calcs not implemented')
@@ -997,15 +1051,15 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
     #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
     # Full theory
-    if Buffer.g_0 != None:
-        g0_ok = Buffer.g_0.shape == g_0.shape
+    if XBuffer.g_0 != None:
+        g0_ok = XBuffer.g_0.shape == g_0.shape
         if g0_ok:
-            g0_ok = any(not_equal(Buffer.g_0,g_0))
+            g0_ok = any(not_equal(XBuffer.g_0,g_0))
     else:
         g0_ok = False
     if  theory == 0 or theory == instrument_string_choices['theory'][0]:
-        if (Buffer.parameters != parameters or Buffer.coords != instrument.getCoords()
-            or not g0_ok or Buffer.wavelength != lamda):
+        if (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
+            or not g0_ok or XBuffer.wavelength != lamda):
             #W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
             #print 'Calc W'
             # Test
@@ -1015,14 +1069,14 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             mpy = mpy[::-1]
             # End Test
             W = lib.xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
-            Buffer.W = W
-            Buffer.parameters = parameters.copy()
-            Buffer.coords = instrument.getCoords()
-            Buffer.g_0 = g_0.copy()
-            Buffer.wavelength = lamda
+            XBuffer.W = W
+            XBuffer.parameters = parameters.copy()
+            XBuffer.coords = instrument.getCoords()
+            XBuffer.g_0 = g_0.copy()
+            XBuffer.wavelength = lamda
         else:
             #print 'Reusing W'
-            W = Buffer.W
+            W = XBuffer.W
         trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
         #Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
         Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, conj(lib.xrmr.inv2(trans))))

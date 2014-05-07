@@ -330,7 +330,7 @@ class SolverController:
             ShowErrorDialog(self.parent, solver.error)
             return 
 
-        message = 'Do you want to keep the parameter values from' +\
+        message = 'Do you want to keep the parameter values from ' +\
                 'the fit?'
         dlg = wx.MessageDialog(self.parent, message,'Keep the fit?', 
             wx.YES_NO|wx.ICON_QUESTION)

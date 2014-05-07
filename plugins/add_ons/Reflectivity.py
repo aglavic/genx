@@ -1213,7 +1213,7 @@ class SimulationExpressionDialog(wx.Dialog):
         self.model = model
         self.instruments = instruments
         self.available_sim_funcs = self.model.eval_in_model('model.SimulationFunctions.keys()')
-        
+        self.data_index = data_index
          
         # Do the layout of the dialog
         wx.Dialog.__init__(self, parent, -1, 'Simulation editor')
@@ -1233,7 +1233,7 @@ class SimulationExpressionDialog(wx.Dialog):
             for line in doc_lines:
                 items = line.lstrip().rstrip().split(' ')
                 args.append(items[0])
-                defaults.append(items[1].replace('data', 'data[%d]'%data_index))
+                defaults.append(items[1].replace('data', 'd'))
             self.sim_args[func] = args
             self.sim_defaults[func] = defaults
         
@@ -1348,7 +1348,8 @@ class SimulationExpressionDialog(wx.Dialog):
     def on_ok_button(self, event):
         '''Callback for pressing the ok button in the dialog'''
         expressions = self.GetExpressions()
-        
+        # Hack to get it working with d = data[0]
+        exec 'd = data[%d]'%self.data_index in self.model.script_module.__dict__
         for exp in expressions:
             try:
                 self.model.eval_in_model(exp)
