@@ -152,7 +152,7 @@ InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
 # Samlen= Samplelength in mm.
 
 LayerParameters = {'sigmai':0.0, 'sigmar':0.0, 'dens':1.0, 'd':0.0,\
-    'f':0.0+1.0j}
+    'f':0.0+0.0j}
 StackParameters = {'Layers':[], 'Repetitions':1}
 SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 'h':1.0,\
     'eta_z':10.0, 'eta_x':10.0}

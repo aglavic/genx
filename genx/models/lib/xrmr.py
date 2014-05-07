@@ -17,7 +17,7 @@ from int_lay_xmean import calc_xrmr_Xmean
 
 # mpy_limit = 1e-9 corresponds to an angle of 89.998 deg.
 def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-9):
-    ''' Calculate teh reflectivity according to the 
+    ''' Calculate the reflectivity according to the
     recursion matrix formalism as given by
     S.A. Stephanov and S.K Shina PRB 61 15304
     Note that this formalism has the first item in the parameters
@@ -61,7 +61,6 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
     scale = (1. + dmag_u)
     chi_u, non_mag_u, mpy_u = create_chi(g_0, lamda, chi0, A, B*scale, C*scale, M, dd_u,
                                    mag_limit = mag_limit, mpy_limit = mpy_limit)
-    print d.shape, A.shape, B.shape
 
     d = (d - dd_l - dd_u)
 
@@ -72,10 +71,6 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
     u_l, S_l = calc_u_S(chi_l, g_0, mpy_l, non_mag_l)
     u_u, S_u = calc_u_S(chi_u, g_0, mpy_u, non_mag_u)
 
-    print u_b[0,0,-1]
-    print u_b[1,0,-1]
-    print u_b[2,0,-1]
-    print u_b[3,0,-1]
     X_lu = dot4(inv4(S_l[:,:,:-1,:]),S_u[:,:,1:,:])
     X_l = dot4(inv4(S_b[:,:,:-1,:]),S_l[:,:,:-1,:])
     X_u = dot4(inv4(S_u[:,:,1:,:]),S_b[:,:,1:,:])
@@ -88,8 +83,6 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
     sigma_l = sigma_l[:, np.newaxis] * np.ones(g_0.shape[1], dtype=np.complex128)
     sigma_u = sigma_u[:, np.newaxis] * np.ones(g_0.shape[1], dtype=np.complex128)
 
-    print sigma
-
     Xmean = calc_xrmr_Xmean(lamda, X_l, X_lu, X_u, u_b, u_l, u_u, dd_u, dd_l, sigma, sigma_l, sigma_u)
 
     W_tot = recursion_matrix(Xmean, chi_b, d, g_0, lamda, u_b)
@@ -100,9 +93,9 @@ def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e
     A = A.astype(np.complex128)
     B = B.astype(np.complex128)
     C = C.astype(np.complex128)
-    #C = B*0.0
-    
+
     m_x = M[..., 0]; m_y = M[..., 1]; m_z = M[..., 2]
+    #print 'my: ', m_y, m_x, m_z
     chi_xx = (chi0 + A + C*m_x*m_x)
     chi_yy = (chi0 + A + C*m_y*m_y)
     chi_zz = (chi0 + A + C*m_z*m_z)
@@ -113,7 +106,7 @@ def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e
     chi_yz = (-1.0J*B*m_x + C*m_y*m_z)
     chi_zy = (1.0J*B*m_x + C*m_y*m_z)
     chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
-    
+
     #Take into account non-magnetic materials:
     non_mag = np.bitwise_and(np.abs(B) < mag_limit, np.abs(C) < mag_limit)
      # Ignore the ambient (vacuum)
@@ -121,8 +114,7 @@ def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e
     
     # Take into account the matrix singularity arising when M||Y
     mpy = np.bitwise_and(np.abs(m_y - 1.0) < mpy_limit, np.bitwise_not(non_mag))
-    
-    
+
     return chi, non_mag, mpy
 
 
@@ -142,9 +134,6 @@ def calc_u_S(chi, g_0, mpy, non_mag):
     chi_zx = trans * chi_zx[:, np.newaxis];
     chi_zy = trans * chi_zy[:, np.newaxis]
     chi_zz = trans * chi_zz[:, np.newaxis]
-
-    #non_mag = non_mag
-    #mpy = mpy
 
     n_x = np.sqrt(1.0 - g_0 ** 2)
     q1 = 1 + chi_zz
@@ -168,31 +157,24 @@ def calc_u_S(chi, g_0, mpy, non_mag):
     # End simplifaction
     # Proper solution to a 4'th degree polynomial
     u1, u2, u3, u4 = roots4thdegree(q1, q2, q3, q4, q5)
-    #print 'u more exact'
-    #ind = 0
     #print u1[:,ind];print u2[:,ind];print u3[:,ind];print u4[:,ind]
     # Special case M||X for finding errors in the code:
     #u1 = -np.sqrt(g_0**2 + trans*(chi0 + A - B)[:, np.newaxis])
     #u2 = np.sqrt(g_0**2 + trans*(chi0 + A + B)[:, np.newaxis])
     #u3 = -np.sqrt(g_0**2 + trans*(chi0 + A + B)[:, np.newaxis])
     #u4 = np.sqrt(g_0**2 + trans*(chi0 + A - B)[:, np.newaxis])
-    #print 'u simplified'
-    #print u1[:,ind];print u2[:,ind];print u3[:,ind];print u4[:,ind]
     # End special case
     # I am lazy and simply sort the roots in ascending order to get the
     # right direction of the light later
-    #u_temp = np.sort((u1, u2, u3, u4), 0)
     u_temp = np.array((u1, u2, u3, u4))
-    #print u_temp
     pos = np.argsort(u_temp.imag, axis=0)
-    u_temp = np.choose(pos, u_temp)  #u_temp[pos]
+    u_temp = np.choose(pos, u_temp)
     u = np.zeros(u_temp.shape, dtype=np.complex128)
     u[0] = u_temp[3]
     u[1] = u_temp[2]
     u[2] = u_temp[1]
     u[3] = u_temp[0]
 
-    print 'u: ', u.shape
     D = ((chi_xz + u * n_x) * (chi_zx + u * n_x) -
          (1.0 - u ** 2 + chi_xx) * (g_0 ** 2 + chi_zz))
     # These expressions can throw a runtime warning if D has an incorrect value
@@ -203,10 +185,9 @@ def calc_u_S(chi, g_0, mpy, non_mag):
            chi_zy * (chi_xz + u * n_x)) / D
     P_z = (chi_zy * (1.0 - u ** 2 + chi_xx) -
            chi_xy * (chi_zx + u * n_x)) / D
-    old_error_vals = np.seterr(invalid=old_error_vals['invalid'])
-    #print 'P_x: ', P_x.shape, 'P_z: ', P_z.shape, 'D: ', D.shape
+    np.seterr(invalid=old_error_vals['invalid'])
+
     S = np.zeros((4, 4, chi_xx.shape[0], g_0.shape[1]), dtype=np.complex128)
-    #print 'S: ', S.shape, 'P: ', P_x
     # The ambient layer
     S[0, 0, 0] = 1.0;
     S[0, 2, 0] = 1.0;
@@ -227,11 +208,10 @@ def calc_u_S(chi, g_0, mpy, non_mag):
     S[1, :, 1:] = v
     S[2, :, 1:] = u[:, 1:]
     S[3, :, 1:] = w
-    if np.any(non_mag):
-        print 'We have non-magnetic layers'
-    #print non_mag
+
+    # Handle the layers that are non-magnetic
     # Removing to test if roughness calcs are affected
-    chi = chi_xx[non_mag]  #(trans*(chi0 + A)[:, np.newaxis])[non_mag]
+    chi = chi_xx[non_mag]
     nm_u1 = np.sqrt(g_0[non_mag] ** 2 + chi)
     nm_u2 = -nm_u1
     sqr_eps = np.sqrt(1 + chi)
@@ -258,7 +238,7 @@ def calc_u_S(chi, g_0, mpy, non_mag):
 
     # Take into account the matrix singularity arising when M||Y
     if np.any(mpy):
-        print 'M||Y calcs activated'
+        #print 'M||Y calcs activated'
         delta = chi_xz[mpy] ** 2 * (1 + chi_xx[mpy])
         nx = n_x[mpy]
         mpy_u1 = np.sqrt(g_0[mpy] ** 2 + chi_yy[mpy])
@@ -291,7 +271,6 @@ def calc_u_S(chi, g_0, mpy, non_mag):
 
 def recursion_matrix(X, chi, d, g_0, lamda, u):
 
-    print 'u: ', u.shape, ' g_0: ', g_0.shape, ' d: ',d.shape
     kappa = 2 * np.pi / lamda
     Fp = np.zeros((2, 2, chi[0][0].shape[0], g_0.shape[1]), dtype=np.complex128)
     Fm = np.zeros((2, 2, chi[0][0].shape[0], g_0.shape[1]), dtype=np.complex128)
@@ -299,30 +278,17 @@ def recursion_matrix(X, chi, d, g_0, lamda, u):
     Fp[1, 1] = np.exp(-1.0J * u[1] * kappa * d)
     Fm[0, 0] = np.exp(-1.0J * u[2] * kappa * d);
     Fm[1, 1] = np.exp(-1.0J * u[3] * kappa * d)
-    #Fp[0, 0, 1:-1] = np.exp(-1.0J * u[0][1:-1] * kappa * d[1:-1]);
-    #Fp[1, 1, 1:-1] = np.exp(-1.0J * u[1][1:-1] * kappa * d[1:-1])
-    #Fm[0, 0, 1:-1] = np.exp(-1.0J * u[2][1:-1] * kappa * d[1:-1]);
-    #Fm[1, 1, 1:-1] = np.exp(-1.0J * u[3][1:-1] * kappa * d[1:-1])
-    #Fp[0,0,[0,-1]] = Fp[1,1,[0,-1]] = Fm[0,0,[0,-1]] = Fm[1,1,[0,-1]] = 1.0
-    print Fp.shape, Fm.shape
-    #Fp = np.array([[np.exp(-1.0J*u[0]*g_0*d), 0], [0, np.exp(-1.0J*u[1]*g_0*d)]])
-    #Fm = np.array([[np.exp(-1.0J*u[2]*g_0*d), 0], [0, np.exp(-1.0J*u[3]*g_0*d)]])
     Fp = Fp[:, :, 1:]
     Fm = Fm[:, :, 1:]
-    print 'Fp: ', Fp.shape
-    print 'X: ', X.shape
+
     Xtt = X[:2, :2]
     Xtr = X[:2, 2:]
     Xrt = X[2:, :2]
     Xrr = X[2:, 2:]
-    #print Xrr.shape, Xtr.shape, Fm.shape
     Mtt = dot2(inv2(Fp), inv2(Xtt))
-    #print det2(Xtt), det2(Xtr), det2(Xtr), det2(Xrr)
     Mtr = -dot2(Mtt, dot2(Xtr, Fm))
     Mrt = dot2(Xrt, inv2(Xtt))
-    #print 'Mrt: ', Mrt.shape
     Mrr = dot2(Xrr - dot2(Mrt, Xtr), Fm)
-    #return Mrt
     def reduce_func(W, i):
         return calc_W(W[0], W[1], W[2], W[3], Mtt[:, :, i, :], Mtr[:, :, i, :], Mrt[:, :, i, :], Mrr[:, :, i, :])
 
@@ -334,36 +300,30 @@ def recursion_matrix(X, chi, d, g_0, lamda, u):
     W0rr[1, 1] = 1.0
     W0rt = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128)
     W0tr = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128)
-    #W0tt = Mtt[:,:,0]
-    #W0tr = Mtr[:,:,0]
-    #W0rt = Mrt[:,:,0]
-    #W0rr = Mtt[:,:,0]
 
     W = reduce(reduce_func, range(Mtt.shape[2]), (W0tt, W0tr, W0rt, W0rr))
     return W
 
 
 def do_calc(g_0, lamda, chi, d, non_mag, mpy):
-    #d = d[::-1]
     # Setting up g0 to be the last index
     g_0 = g_0 * np.ones(chi[0][0].shape[0], dtype=np.complex128)[:, np.newaxis]
     u, S = calc_u_S(chi, g_0, mpy, non_mag)
-    print 'd: ', d
-    print 'chi: ', chi[0][0]
     X = dot4(inv4(S[:,:,:-1,:]),S[:,:,1:,:])
-    #print chi[0][0][0],chi[0][0][-1]
     d = d[:, np.newaxis] * np.ones(g_0.shape[1], dtype=np.complex128)
     W_tot = recursion_matrix(X, chi, d, g_0, lamda, u)
     return W_tot[2]
 
 def calc_W(Wtt, Wtr, Wrt, Wrr, Mtt, Mtr, Mrt, Mrr):
-    ''' Calculate teh Wn+1 matrices for recursion formalism'''
+    ''' Calculate the Wn+1 matrices for recursion formalism'''
+
     ident = np.zeros(Wtt.shape, dtype = np.complex128)
-    ident[0,0] = 1.0; ident[1,1] = 1.0;
+    ident[0,0] = 1.0
+    ident[1,1] = 1.0
+
     A = dot2(Mtt, inv2(ident - dot2(Wtr, Mrt)))
-    #print  ( - dot2(Mrt, Wtr))[:,:,0]
     B = dot2(Wrr, inv2(ident - dot2(Mrt, Wtr)))
-    #print 'B:', B[:,:,0]
+
     Wtt_next = dot2(A, Wtt)
     Wtr_next = Mtr + dot2(dot2(A, Wtr), Mrr)
     Wrt_next = Wrt + dot2(dot2(B, Mrt), Wtt)
@@ -382,7 +342,6 @@ def calc_nonres(g_0, lamda, chi0, d):
     u2 = -u1
     
     S = np.zeros((4, 4, chi0.shape[0], g_0.shape[1]), dtype = np.complex128)
-    #print 'S: ', S.shape
     S[0,0,0] = 1; S[0,2,0] = 1; S[1,1,0] = 1; S[1,3,0] = 1
     S[2,0,0] = g_0[0]; S[2,2,0] = -g_0[0]; S[3,1,0] = g_0[0]; S[3,3,0] = -g_0[0]
     #S_v = np.array([[1, 0, 1, 0], [0, 1, 0, 1], 
