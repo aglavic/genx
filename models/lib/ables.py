@@ -69,7 +69,7 @@ def ReflQ_mag(Q, lamda, n, d, sigma, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l):
        The last layer is the substrate and the first layer is the ambient
     '''
     #pdb.set_trace()
-    k_vac = 2*np.pi/lamda
+    k_vac = 2*np.pi/(lamda*np.ones(Q.shape))[:,np.newaxis]
     kz = Q[:, np.newaxis]/2.0
     n_amb2 = (n[:,0]*n[:,0])[:,np.newaxis]
     #print n_amb2.shape
