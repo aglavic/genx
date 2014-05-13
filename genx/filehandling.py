@@ -38,7 +38,7 @@ class Config:
     def load_default(self, filename):
         '''load_default(self, filename) --> None
         
-        Loads the dfault config from file filename. Raises a IOError if the 
+        Loads the default config from file filename. Raises a IOError if the
         can not be found.
         '''
         try:

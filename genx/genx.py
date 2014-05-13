@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-import sys, os
+import sys, os, appdirs
 try:
   import genx_gui
 except ImportError:
@@ -14,9 +14,14 @@ if __name__ == "__main__":
     # Check if the application has been frozen
     if hasattr(sys,"frozen"):
         # Redirect all the output to log files
-        log_file_path = genx_gui._path + 'app_data/'
-        sys.stdout = open(log_file_path + 'genx.log', 'w')
-        sys.stderr = open(log_file_path + 'genx.log', 'w')
+        log_file_path = appdirs.user_log_dir('GenX', 'MattsBjorck')
+        # Create dir if not found
+        if not os.path.exists(log_file_path):
+            os.makedirs(log_file_path)
+        print log_file_path
+        #log_file_path = genx_gui._path + 'app_data/'
+        sys.stdout = open(log_file_path + '/genx.log', 'w')
+        sys.stderr = open(log_file_path + '/genx.log', 'w')
     
     # py2exe multiprocessing support
     try:
