@@ -10,7 +10,7 @@ $Date::                                 $:  Date of last commit
 import wx
 import wx.grid, wx.py, wx.stc
 
-import os, sys, shutil
+import os, sys, shutil, appdirs
 
 import data, model, help
 import filehandling as io
@@ -29,18 +29,24 @@ if _path[-4:] == '.zip':
     _path, ending = os.path.split(_path)
 if _path != '':
     _path += '/'
+
+# Get the configuration path, create if it not exists
+config_path = appdirs.user_data_dir('GenX', 'MattsBjorck') + '/'
+print config_path
+if not os.path.exists(config_path):
+    os.makedirs(config_path)
+    shutil.copytree(_path + 'profiles', config_path + 'profiles')
+    print config_path + 'genx.conf'
+    shutil.copyfile(config_path + 'profiles/Default.conf', config_path + 'genx.conf')
+
 #raise Exception(_path)
 class MainFrame(wx.Frame):
     def __init__(self, parent, show_startup, *args, **kwds):
         
         self.config = io.Config()
         self.parent = parent
-        #print _path
-        #if _path != '':
-        #    self.config.load_default(_path + '/genx.conf')
-        #else:
-        #    self.config.load_default('./genx.conf')
-        self.config.load_default(_path + 'app_data/genx.conf')
+
+        self.config.load_default(config_path + 'genx.conf')
         
         status_text = lambda event:event_handlers.status_text(self, event)
         
@@ -49,8 +55,7 @@ class MainFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds)
         
         #self.config.load_default('./genx.conf')
-        if show_startup:
-            self.startup_dialog(_path)
+
         
         
         self.ver_splitter = wx.SplitterWindow(self, -1, style=wx.SP_3D|wx.SP_BORDER)
@@ -406,6 +411,8 @@ class MainFrame(wx.Frame):
 
         self.model.saved = True
         #### End Manual config
+
+
         
     def __set_properties(self):
         self.main_frame_toolbar.SetToolBitmapSize((32,32))
@@ -540,17 +547,17 @@ class MainFrame(wx.Frame):
         
     def startup_dialog(self, profile_path, force_show = False):
         show_profiles = self.config.get_boolean('startup', 'show profiles')
-        if show_profiles  or force_show:
+        if show_profiles or force_show:
             startup_dialog = StartUpConfigDialog(self, profile_path + 'profiles/', show_cb = show_profiles)
             startup_dialog.ShowModal()
             config_file = startup_dialog.GetConfigFile()
             if config_file:
-                shutil.copyfile(profile_path + 'profiles/' + config_file, profile_path + 'app_data/genx.conf')
+                shutil.copyfile(profile_path + 'profiles/' + config_file, profile_path + 'genx.conf')
                 #print profile_path + 'genx.conf'
-                self.config.load_default(profile_path + 'app_data/genx.conf')
+                self.config.load_default(profile_path + 'genx.conf')
                 self.config.default_set('startup', 'show profiles', 
                                          startup_dialog.GetShowAtStartup())
-                self.config.write_default(profile_path + 'app_data/genx.conf')
+                self.config.write_default(profile_path + 'genx.conf')
             #print self.config.get('plugins','loaded plugins')
 
             
@@ -816,6 +823,9 @@ class MyApp(wx.App):
         main_frame = MainFrame(self, self.show_startup, None, -1, "")
         self.SetTopWindow(main_frame)
         main_frame.Show()
+        if self.show_startup:
+            main_frame.startup_dialog(config_path)
+
         return 1
 
 # end of class MyApp
