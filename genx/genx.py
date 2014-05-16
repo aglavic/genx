@@ -12,7 +12,7 @@ except ImportError:
 
 if __name__ == "__main__":
     # Check if the application has been frozen
-    if hasattr(sys,"frozen"):
+    if hasattr(sys,"frozen") and True:
         # Redirect all the output to log files
         log_file_path = appdirs.user_log_dir('GenX', 'MattsBjorck')
         # Create dir if not found
