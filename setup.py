@@ -65,12 +65,14 @@ if "py2exe" in sys.argv:
                             "icon_resources": [(1, "windows_build/genx.ico"), (2, "windows_build/genx_file.ico")]
                             } ], # executable for py2exe is windows application            
                 "options": {  "py2exe": {
-                              "includes": "numpy, matplotlib, StringIO, traceback, thread, multiprocessing",
+                              "includes": ["numpy", "matplotlib", "StringIO", "traceback", "thread", "multiprocessing", "ConfigParser",
+                                           'scipy', 'scipy.weave'],
                               "optimize": 1, # Keep docstring (e.g. Shell usage)
                               "skip_archive": True, # setting not to move compiled code into library.zip file
-                              'packages':'plugins, models, wx, matplotlib',
+                              'packages': ['plugins', 'models', 'wx', 'matplotlib', 'ConfigParser', 'scipy', 'scipy.weave'],
                               "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll'], 
-                              'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject'], 
+                              'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',
+                                           ],
                              }, 
                            }
               }
@@ -295,12 +297,15 @@ if 'py2app' in sys.argv:
     except:
       print "\tSkipped because of errors!" % src
   print "\n*** Copying source and datafiles ***"  
-# py2exe specific stuff to make it work:
-  base = 'genx.app/Contents/Resources/lib/python2.7'
+  # py2app specific stuff to make it work:
+  base = 'GenX.app/Contents/Resources/lib/python2.7'
   for src, dest in [
                     ('profiles', ''),
                     ('examples', ''),
                     ]:
     xcopy_to_folder(src, base + dest)
   os.popen('cp genx.conf ' + 'dist/' + base)
+  os.popen('cp mac_build/genx_file.icns ' + 'dist/GenX.app/Contents/Resources')
+
+  #
   

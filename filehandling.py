@@ -7,8 +7,10 @@ $Rev::                                  $:  Revision of last commit
 $Author::                               $:  Author of last commit
 $Date::                                 $:  Date of last commit
 '''
-
-import ConfigParser as CP
+try:
+    import ConfigParser as CP
+except ImportError:
+    import configparser as CP
 import StringIO
 
 # Functions to save the gx files

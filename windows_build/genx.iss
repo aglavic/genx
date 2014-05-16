@@ -8,7 +8,7 @@
 AppId={{03439AE4-FE61-49AC-8D3F-1351147CE8FC}
 AppName=GenX
 AppVerName=GenX 2.1.0
-AppPublisher=Matts Björck
+AppPublisher=Matts Bjï¿½rck
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
 AppUpdatesURL=https://sourceforge.net/projects/genx
@@ -38,7 +38,7 @@ Name: {group}\{cm:UninstallProgram,GenX}; Filename: {uninstallexe}
 [Registry]
 Root: HKCU; Subkey: Software\Classes\.gx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
 Root: HKCU; Subkey: Software\Classes\GenX; ValueType: string; ValueName: ; ValueData: GenX model; Tasks: associate; Flags: uninsdeletekey createvalueifdoesntexist
-Root: HKCU; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,2; Tasks: associate; Flags: createvalueifdoesntexist
+Root: HKCU; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,1; Tasks: associate; Flags: createvalueifdoesntexist
 Root: HKCU; Subkey: Software\Classes\GenX\shell\open\command; ValueType: string; ValueName: ; ValueData: """{app}\genx.exe"" ""%1"""; Tasks: associate; Flags: createvalueifdoesntexist
 
 [Run]
