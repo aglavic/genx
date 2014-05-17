@@ -114,12 +114,26 @@ import numpy as np
 from utils import f, rho
 import time
 
+sxrd_ext_built = False
+debug = False
 try:
-    from scipy import weave
+    import lib.sxrd_ext
+    sxrd_ext_built = True
     _turbo_sim = True
-except:
-    print 'Info: Could not import weave, turbo off'
-    _turb_sim = False
+except ImportError:
+    sxrd_ext_built = False
+    _turbo_sim = False
+
+# Try to complie the extensions - if necessary
+if not sxrd_ext_built or debug:
+    try:
+        import lib.build_ext
+        lib.build_ext.sxrd()
+        import lib.sxrd_ext
+        _turbo_sim = True
+    except:
+        print 'Could not build sxrd c extension'
+        _turbo_sim = False
 
 __pars__ = ['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
 
@@ -233,65 +247,16 @@ class Sample:
 
     def turbo_calc_fs(self, h, k, l):
         '''Calculate the structure factors with weave (inline c code)
-        Produces faster simulations of large strucutres.
+        Produces faster simulations of large structures.
         '''
         h = h.astype(np.float64)
         k = k.astype(np.float64)
         l = l.astype(np.float64)
-        #t1 = time.time()
         dinv = self.unit_cell.abs_hkl(h, k, l)
-        #t2 = time.time()
-        #print 'dinv: %f'%(t2-t1)
         x, y, z, u, oc, el = self._surf_pars()
-        #x = np.array(x); y = np.array(y); z= np.array(z)
         f = self._get_f(el, dinv)
-        #print f.shape
         Pt = np.array([np.c_[so.P, so.t] for so in self.surface_sym])
-        # Setup other stuff needed ...
-        im = np.array([1.0J], dtype = np.complex128)
-        fs = np.zeros(h.shape, dtype = np.complex128)
-        tmp = np.array([0.0J], dtype = np.complex128)
-        # Inline c-code goes here..
-        code = '''
-        double pi = 3.14159265358979311599796346854418516159057617187500;
-        int ij = 0;
-        int offset = 0;
-        //printf("Atoms: %d, Points: %d, Symmetries: %d\\n", Noc[0], Nh[0], NPt[0]);
-        // Loop over all data points
-        for(int i = 0; i < Nh[0]; i++){
-           // Loop over all atoms
-           //printf("l = %f\\n", l[i]);
-           for(int j = 0; j < Noc[0]; j++){
-              ij = i  + j*Nh[0];
-              //printf("   x = %f, y = %f, z = %f, u = %f, oc = %f \\n", x[j], y[j], z[j], u[j], oc[j]);
-              // Loop over symmetry operations
-              tmp[0] = 0.0*tmp[0];
-              for(int m = 0; m < NPt[0]; m++){
-                 offset = m*6;
-                 tmp[0] += exp(2.0*pi*im[0]*(h[i]*(
-                          Pt[0 + offset]*x[j] + Pt[1 + offset]*y[j] +
-                              Pt[2 + offset])+
-                          k[i]*(Pt[3+offset]*x[j] + Pt[4+offset]*y[j]+
-                              Pt[5 + offset]) +
-                          l[i]*z[j]));
-                  if(i == 0 && j == 0 && false){
-                     printf("P = [%d, %d] [%d, %d]",
-                     Pt[0 + offset], Pt[1 + offset],
-                     Pt[3 + offset], Pt[4 + offset]);
-                     printf(", t = [%d, %d]\\n", Pt[2 + offset], Pt[5+offset]);
-                
-                  } // End if statement
-              } // End symmetry loop index m
-              fs[i] += oc[j]*f[ij]*exp(-2.0*pow(pi*dinv[i],2.0)*u[j])*tmp[0];
-           } // End atom loop index j
-        } // End data point (h,k,l) loop
-        '''
-        #t1 = time.time()
-        weave.inline(code, ['x', 'y', 'z', 'h', 'k', 'l', 'u', 'oc', 'f',
-                            'Pt', 'im', 'fs', 'dinv', 'tmp'],
-                     compiler = 'gcc')
-        #t2 = time.time()
-        #print t2-t1
+        fs = lib.sxrd_ext.surface_lattice_sum(x, y, z, h, k, l, u, oc, f, Pt, dinv)
         return fs
 
         
@@ -1037,8 +1002,8 @@ class Instrument:
 class SymTrans:
     def __init__(self, P = [[1,0],[0,1]], t = [0,0]):
         # TODO: Check size of arrays!
-        self.P = np.array(P)
-        self.t = np.array(t)
+        self.P = np.array(P, dtype = np.float64)
+        self.t = np.array(t, dtype = np.float64)
 
     def trans_x(self, x, y):
         '''transformed x coord
