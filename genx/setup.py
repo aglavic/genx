@@ -305,6 +305,7 @@ if 'py2app' in sys.argv:
                     ]:
     xcopy_to_folder(src, base + dest)
   os.popen('cp genx.conf ' + 'dist/' + base)
+  # Copy the icon file for gx files to the right folder
   os.popen('cp mac_build/genx_file.icns ' + 'dist/GenX.app/Contents/Resources')
 
   #
