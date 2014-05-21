@@ -305,9 +305,9 @@ def MakeClasses(InstrumentParameters = {'Wavelength':1.54,'Coordinates':1},\
         def SimOffSpecular(self,TwoThetaQz,ThetaQx,instrument):
             return SimulationFunctions['OffSpecular'](TwoThetaQz,ThetaQx,self,instrument)
 
-        def SimSLD(self, z, instrument):
+        def SimSLD(self, z, item, instrument):
             if SimulationFunctions.has_key('SLD'):
-                return SimulationFunctions['SLD'](z, self, instrument)
+                return SimulationFunctions['SLD'](z, item, self, instrument)
             else:
                 return {}
 

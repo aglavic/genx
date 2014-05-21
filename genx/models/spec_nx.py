@@ -364,11 +364,14 @@ def OffSpecular(TwoThetaQz,ThetaQx,sample,instrument):
     raise NotImplementedError('Not implemented use model interdiff insteads')
     return TwoThetaQz,ThetaQx
 
-def SLD_calculations(z, sample, inst):
+def SLD_calculations(z, item, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
+    if item is None or "all" the function returns a dictonary of values.
+    Otherwise it returns the item as identified by its string.
     
     # BEGIN Parameters
     z data.x
+    item 'Re'
     # END Parameters
     '''
     parameters = sample.resolveLayerParameters()
@@ -419,7 +422,13 @@ def SLD_calculations(z, sample, inst):
         dic = {'Re non-mag': real(rho_p), 'Im non-mag': imag(rho_p),\
                 'mag': real(rho_p - rho_m)/2, 'z':z,
                 'SLD unit': sld_unit}
-    return dic
+    if item == None or item == 'all':
+        return dic
+    else:
+        try:
+            return dic[item]
+        except:
+            raise ValueError('The chosen item, %s, does not exist'%item)
 
 SimulationFunctions={'Specular':Specular, \
                      'OffSpecular':OffSpecular, \

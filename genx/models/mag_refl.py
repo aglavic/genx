@@ -359,11 +359,14 @@ def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
     raise NotImplementedError('Off specular calculations are not implemented for magnetic x-ray reflectivity')
 
 
-def SLD_calculations(z, sample, inst):
+def SLD_calculations(z, item, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
+    if item is None or "all" the function returns a dictonary of values.
+    Otherwise it returns the item as identified by its string.
     
     # BEGIN Parameters
     z data.x
+    item "Re sld_c"
     # END Parameters
     '''
     use_slicing = sample.getSlicing()
@@ -376,6 +379,8 @@ def SLD_calculations(z, sample, inst):
     z[::2] = cumsum(r_[0,d[:-1]])
     z[1::2] = cumsum(r_[d])
     z += z0
+
+    dic = {'z':z}
 
     if (theory == 0 or theory == instrument_string_choices['theory'][0]): 
         # Full theory return the suceptibility matrix
@@ -410,7 +415,7 @@ def SLD_calculations(z, sample, inst):
     #        'z':z}
         re = 2.8179402894e-5
         c = 1/(lamda**2*re/pi)
-        return {'Re sl_xx':chi[0][0].real*c, 'Re sl_xy':chi[0][1].real*c, 'Re sl_xz':chi[0][2].real*c,
+        dic = {'Re sl_xx':chi[0][0].real*c, 'Re sl_xy':chi[0][1].real*c, 'Re sl_xz':chi[0][2].real*c,
                 'Re sl_yy':chi[1][1].real*c,'Re sl_yz':chi[1][2].real*c,'Re sl_zz':chi[2][2].real*c,
                 'Im sl_xx':chi[0][0].imag*c, 'Im sl_xy':chi[0][1].imag*c, 'Im sl_xz':chi[0][2].imag*c,
                 'Im sl_yy':chi[1][1].imag*c,'Im sl_yz':chi[1][2].imag*c,'Im sl_zz':chi[2][2].imag*c,
@@ -431,23 +436,29 @@ def SLD_calculations(z, sample, inst):
         if (theory == 1 or theory == instrument_string_choices['theory'][1]):
             # Simplified anisotropic
             #print sl_cp.shape, sl_np.shape, abs_np.shape, mag_densp.shape, z.shape
-            return {'Re sld_c': sl_cp.real, 'Im sld_c': sl_cp.imag,
+            dic = {'Re sld_c': sl_cp.real, 'Im sld_c': sl_cp.imag,
                     'Re sld_m': sl_m1p.real, 'Im sld_m': sl_m1p.imag,
                     'mag_dens': mag_densp,
                     'z':z, 'SLD unit': 'r_{e}/\AA^{3},\,\mu_{B}/\AA^{3}'}
         elif (theory == 2 or theory == instrument_string_choices['theory'][2]):
             # Neutron spin pol
-            return {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
+            dic =  {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
                     'z':z, 'SLD unit': 'fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
         elif (theory == 3 or theory == instrument_string_choices['theory'][3]):
             # Neutron spin pol with spin flip
-            return {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
+            dic = {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
                     'z':z, 'SLD unit': 'fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
         elif (theory == 4 or theory == instrument_string_choices['theory'][4]):
             # Neutron spin pol
-            return {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
+            dic = {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
                     'z':z, 'SLD unit': 'fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
-    return {'z':z}
+    if item == None or item == 'all':
+        return dic
+    else:
+        try:
+            return dic[item]
+        except:
+            raise ValueError('The chosen item, %s, does not exist'%item)
         
     
 def compose_sld_anal(z, sample, instrument):

@@ -807,7 +807,7 @@ class MainFrame(wx.Frame):
         event_handlers.show_homepage(self, event)
         
     def eh_show_startup_dialog(self, event):
-        self.startup_dialog(_path, force_show = True)
+        self.startup_dialog(config_path, force_show = True)
 
 # end of class MainFrame
 

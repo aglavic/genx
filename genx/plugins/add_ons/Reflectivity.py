@@ -1543,7 +1543,7 @@ class SamplePlotPanel(wx.Panel):
             #self.plot_dict = self.plot_dicts[0]
         else:
             if (not self.plugin.sim_returns_sld) and self.plugin.GetModel().compiled:
-                plot_dict = model.sample.SimSLD(None, model.inst)
+                plot_dict = model.sample.SimSLD(None, None, model.inst)
                 self.plot_dicts = [plot_dict]
         
         self.plot.ax.lines = []
@@ -1849,7 +1849,7 @@ class Plugin(framework.Template):
             script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%i
             script += '    d = data[%i]\n'%i
             script += '    I.append(sample.SimSpecular(d.x, inst))\n'
-            script += '    if _sim: SLD.append(sample.SimSLD(None, inst))\n'
+            script += '    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n'
             script += '    # END Dataset %i\n'%i
         script += '    return I\n'
         
@@ -1921,7 +1921,7 @@ class Plugin(framework.Template):
                                            insts[i]))
             if self.sim_returns_sld:
                 exp.append('if _sim: SLD.append(sample.'
-                           'SimSLD(None, %s))\n'%insts[i])
+                           'SimSLD(None, None, %s))\n'%insts[i])
             code = ''.join(exp)
             script = self.insert_code_segment(script, 'Dataset %i'%i, code)
         
@@ -1951,7 +1951,7 @@ class Plugin(framework.Template):
         script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%number
         script += '    d = data[%i]\n'%number
         script += '    I.append(sample.SimSpecular(d.x, inst))\n'
-        script += '    if _sim: SLD.append(sample.SimSLD(None, inst))\n'
+        script += '    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n'
         script += '    # END Dataset %i\n'%number
         script += ''.join(script_lines[line_index-1:])
         self.SetModelScript(script)

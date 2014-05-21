@@ -20,11 +20,11 @@ import subprocess
 import version
 
 __name__='GenX'
-__author__ = "Artur Glavic"
+__author__ = "Matts Bjorck"
 __copyright__ = "Copyright 2008-2011"
 __license__ = "GPL v3"
 __version__ = version.version.split()[0]
-__email__ = "a.glavic@fz-juelich.de"
+__email__ = "matts.bjorck@gmail.com"
 __author_email__ = __email__
 __url__ = "http://genx.sourceforge.net/"
 __description__='''X-ray and Neutron reflectivity simulation and fitting.'''
@@ -40,7 +40,7 @@ def rec_glob(path):
       output.append(name)
   return output
 
-__scripts__=['scripts/genx']
+__scripts__=['genx.py']
 __py_modules__=[]
 __package_dir__={'genx': '.'}
 __packages__=['genx', 
@@ -101,7 +101,7 @@ else:
   __options__={#"setup_requires":[], 
                 }
 
-__requires__=['numpy', 'matplotlib']
+__requires__=['numpy', 'matplotlib', 'scipy', 'appdirs', 'wx']
 from distutils.core import setup, Extension
 
 # extensions modules written in C
