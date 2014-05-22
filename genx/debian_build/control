@@ -7,6 +7,6 @@ Homepage: http://genx.sourceforge.net/
 
 Package: genx
 Architecture: all
-Depends: python (>= 2.4), python-numpy (>= 1.0), python-scipy, python-matplotlib
+Depends: python (>= 2.4), python-numpy (>= 1.0), python-scipy, python-matplotlib, python-appdirs
 Description: X-ray and Neutron reflectivity simulation and fitting using differential evolution
 
