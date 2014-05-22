@@ -1574,7 +1574,7 @@ class SamplePlotPanel(wx.Panel):
             #if self.plot_dict.has_key('SLD unit'):
             #    self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
             self.plot.ax.xaxis.label.set_text('$\mathrm{\mathsf{ z\,[\AA]}}$')
-            self.plot.flush_plot()
+            wx.CallAfter(self.plot.flush_plot)
             self.plot.AutoScale()
     
     def SavePlotData(self, filename):
