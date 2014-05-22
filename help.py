@@ -45,10 +45,8 @@ class ExampleHandler:
     
     def LoadExample(self, event):
         menuitem = self.menu.FindItemById(event.GetId())
-        example = menuitem.GetText()
+        example = menuitem.GetLabel()
         path = self.path + example + '.gx'
-        print path
-        #print path
         eh.open_model(self.parent, path)
 
 class PluginHelpDialog(wx.Frame):
