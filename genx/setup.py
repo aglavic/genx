@@ -134,6 +134,7 @@ setup(name=__name__,
 # The .deb only works on similar systems so we use python2.6 and python2.7 folders
 # as these are the versions used in the latest ubuntu releases
 if ('bdist' in sys.argv):
+  # These commands requires dpkg-dev alien
   print "Moving distribution files..."
   from glob import glob
   os.chdir('dist')
@@ -143,77 +144,83 @@ if ('bdist' in sys.argv):
   subprocess.Popen(['fakeroot', 'alien', '-k', '-g', __name__+'-'+__version__+'.rpm'], shell=False, 
                    stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
   # creating menu entries
-  os.mkdir(__name__+'-'+__version__+'/usr/share/')
-  os.mkdir(__name__+'-'+__version__+'.orig/usr/share/')
-  os.mkdir(__name__+'-'+__version__+'/usr/share/applications/')
-  os.mkdir(__name__+'-'+__version__+'.orig/usr/share/applications/')
-  subprocess.Popen(['cp']+ glob('../debian_build/*.desktop')+[__name__+'-'+__version__+'/usr/share/applications/'], 
+  os.makedirs(__name__+'-'+__version__+'/usr/share/')
+  os.makedirs(__name__+'-'+__version__+'.orig/usr/share/')
+  os.makedirs(__name__+'-'+__version__+'/usr/share/applications/')
+  os.makedirs(__name__+'-'+__version__+'.orig/usr/share/applications/')
+  subprocess.Popen(['cp']+ glob('../debian/*.desktop')+[__name__+'-'+__version__+'/usr/share/applications/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['cp']+glob('../debian_build/*.desktop')+[__name__+'-'+__version__+'.orig/usr/share/applications/'], 
+  subprocess.Popen(['cp']+glob('../debian/*.desktop')+[__name__+'-'+__version__+'.orig/usr/share/applications/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
   # Icons
   #   menu
-  os.mkdir(__name__+'-'+__version__+'/usr/share/pixmaps')
-  os.mkdir(__name__+'-'+__version__+'.orig/usr/share/pixmaps')
-  subprocess.Popen(['cp']+ glob('../debian_build/*.xpm')+[__name__+'-'+__version__+'/usr/share/pixmaps/'], 
+  os.makedirs(__name__+'-'+__version__+'/usr/share/pixmaps')
+  os.makedirs(__name__+'-'+__version__+'.orig/usr/share/pixmaps')
+  subprocess.Popen(['cp']+ glob('../debian/*.xpm')+[__name__+'-'+__version__+'/usr/share/pixmaps/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['cp']+glob('../debian_build/*.xpm')+[__name__+'-'+__version__+'.orig/usr/share/pixmaps/'], 
+  subprocess.Popen(['cp']+glob('../debian/*.xpm')+[__name__+'-'+__version__+'.orig/usr/share/pixmaps/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
   #   mime
-  os.mkdir(__name__+'-'+__version__+'/tmp')
-  os.mkdir(__name__+'-'+__version__+'.orig/tmp')
-  os.mkdir(__name__+'-'+__version__+'/tmp/genx_icons')
-  os.mkdir(__name__+'-'+__version__+'.orig/tmp/genx_icons')
-  for icon in glob('../debian_build/genx_*.png'):
+  os.makedirs(__name__+'-'+__version__+'/tmp')
+  os.makedirs(__name__+'-'+__version__+'.orig/tmp')
+  os.makedirs(__name__+'-'+__version__+'/tmp/genx_icons')
+  os.makedirs(__name__+'-'+__version__+'.orig/tmp/genx_icons')
+  for icon in glob('../debian/genx_*.png'):
     subprocess.Popen(['cp', icon, __name__+'-'+__version__+'/tmp/genx_icons/'], 
                      shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
     subprocess.Popen(['cp', icon, __name__+'-'+__version__+'.orig/tmp/genx_icons/'], 
                      shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
+
   # creating mime types
-  os.mkdir(__name__+'-'+__version__+'/usr/share/mime/')
-  os.mkdir(__name__+'-'+__version__+'/usr/share/mime/packages/')
-  os.mkdir(__name__+'-'+__version__+'.orig/usr/share/mime/')
-  os.mkdir(__name__+'-'+__version__+'.orig/usr/share/mime/packages/')
-  subprocess.Popen(['cp']+ glob('../debian_build/*.xml')+[__name__+'-'+__version__+'/usr/share/mime/packages/'], 
+  os.makedirs(__name__+'-'+__version__+'/usr/share/mime/')
+  os.makedirs(__name__+'-'+__version__+'/usr/share/mime/packages/')
+  os.makedirs(__name__+'-'+__version__+'.orig/usr/share/mime/')
+  os.makedirs(__name__+'-'+__version__+'.orig/usr/share/mime/packages/')
+  subprocess.Popen(['cp']+ glob('../debian/*.xml')+[__name__+'-'+__version__+'/usr/share/mime/packages/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['cp']+glob('../debian_build/*.xml')+[__name__+'-'+__version__+'.orig/usr/share/mime/packages/'], 
+  subprocess.Popen(['cp']+glob('../debian/*.xml')+[__name__+'-'+__version__+'.orig/usr/share/mime/packages/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
   os.chdir(__name__+'-'+__version__)
   # debian control file
+  #os.makedirs('debian')
   deb_con=open('debian/control', 'w')
-  deb_con.write(open('../../debian_build/control', 'r').read())
+  deb_con.write(open('../../debian/control', 'r').read())
   deb_con.close()
   # post install and remove scripts (e.g. adding mime types)
   deb_tmp=open('debian/postinst', 'w')
-  deb_tmp.write(open('../../debian_build/postinst', 'r').read())
+  deb_tmp.write(open('../../debian/postinst', 'r').read())
   deb_tmp.close()
   deb_tmp=open('debian/postrm', 'w')
-  deb_tmp.write(open('../../debian_build/postrm', 'r').read())
+  deb_tmp.write(open('../../debian/postrm', 'r').read())
   deb_tmp.close()
+  #deb_tmp=open('debian/changelog', 'w')
+  #deb_tmp.write(open('../../debian/changelog', 'r').read())
+  #deb_tmp.close()
+
   # python 2.7
   print "Packaging for debian (python2.7)..."
   subprocess.Popen(['dpkg-buildpackage', '-i.*', '-I', '-rfakeroot', '-us', '-uc'], shell=False, 
                    stderr=subprocess.STDOUT, stdout=open('../last_package.log', 'w')
                    ).communicate()
   os.chdir('..')
-  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_natty.deb')
+  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_trusty.deb')
   # python 2.6
-  subprocess.Popen(['cp']+ glob('../debian_build/*.desktop')+[__name__+'-'+__version__+'/usr/share/applications/'], 
-                   shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['cp']+glob('../debian_build/*.desktop')+[__name__+'-'+__version__+'.orig/usr/share/applications/'], 
-                   shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['mv', __name__+'-'+__version__+'/usr/local/lib/python2.7', 
-                    __name__+'-'+__version__+'/usr/local/lib/python2.6'], 
-                   shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['mv', __name__+'-'+__version__+'.orig/usr/local/lib/python2.7', 
-                    __name__+'-'+__version__+'.orig/usr/local/lib/python2.6'], 
-                   shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  os.chdir(__name__+'-'+__version__)
-  print "Packaging for debian (python2.6)..."
-  subprocess.Popen(['dpkg-buildpackage', '-i.*', '-I', '-rfakeroot', '-us', '-uc'], shell=False, 
-                   stderr=subprocess.STDOUT, stdout=open('../last_package_2.log', 'w')).communicate()
-  os.chdir('..')
-  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_maverick.deb')
+  #subprocess.Popen(['cp']+ glob('../debian/*.desktop')+[__name__+'-'+__version__+'/usr/share/applications/'],
+  #                 shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
+  #subprocess.Popen(['cp']+glob('../debian/*.desktop')+[__name__+'-'+__version__+'.orig/usr/share/applications/'],
+  #                 shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
+  #subprocess.Popen(['mv', __name__+'-'+__version__+'/usr/local/lib/python2.7',
+  #                  __name__+'-'+__version__+'/usr/local/lib/python2.6'],
+  #                 shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
+  #subprocess.Popen(['mv', __name__+'-'+__version__+'.orig/usr/local/lib/python2.7',
+  #                  __name__+'-'+__version__+'.orig/usr/local/lib/python2.6'],
+  #                 shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
+  #os.chdir(__name__+'-'+__version__)
+  #print "Packaging for debian (python2.6)..."
+  #subprocess.Popen(['dpkg-buildpackage', '-i.*', '-I', '-rfakeroot', '-us', '-uc'], shell=False,
+  #                 stderr=subprocess.STDOUT, stdout=open('../last_package_2.log', 'w')).communicate()
+  #os.chdir('..')
+  #os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_maverick.deb')
   print "Removing debian folder..."
   os.popen('rm '+__name__+'-'+__version__+' -r')
   os.popen('rm '+(__name__+'_'+__version__).lower()+'-1*')
