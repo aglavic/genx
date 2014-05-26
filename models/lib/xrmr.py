@@ -54,12 +54,11 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
     '''
     chi_b, non_mag_b, mpy_b = create_chi(g_0, lamda, chi0, A, B, C, M, d,
                                    mag_limit = mag_limit, mpy_limit = mpy_limit)
-    #TODO: Check the scaling between magnetic moment and C (should is be scale**2?)
     scale = (1. + dmag_l)
-    chi_l, non_mag_l, mpy_l = create_chi(g_0, lamda, chi0, A, B*scale, C*scale, M, dd_l,
+    chi_l, non_mag_l, mpy_l = create_chi(g_0, lamda, chi0, A, B*scale, C*scale**2, M, dd_l,
                                    mag_limit = mag_limit, mpy_limit = mpy_limit)
     scale = (1. + dmag_u)
-    chi_u, non_mag_u, mpy_u = create_chi(g_0, lamda, chi0, A, B*scale, C*scale, M, dd_u,
+    chi_u, non_mag_u, mpy_u = create_chi(g_0, lamda, chi0, A, B*scale, C*scale**2, M, dd_u,
                                    mag_limit = mag_limit, mpy_limit = mpy_limit)
 
     d = (d - dd_l - dd_u)

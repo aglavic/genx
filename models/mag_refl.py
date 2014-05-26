@@ -260,7 +260,7 @@ LayerParameters = {'dens':1.0, 'd':0.0, 'f': (0.0 + 1e-20J),
                    }
 LayerUnits = {'dens':'at./AA^3', 'd':'AA', 'f': 'el.', 
                    'fr':'el.',
-                   'fm1':'el./mu_B', 'fm2':'el./mu_B', 
+                   'fm1':'el./mu_B', 'fm2':'el./mu_B^2',
                    'phi_m': 'deg.', 'theta_m': 'deg.', 'resdens': 'rel.',
                    'resmag': 'rel.',
                    'sigma_c': 'AA', 'sigma_ml': 'AA', 'sigma_mu': 'AA',
@@ -500,14 +500,14 @@ def compose_sld_anal(z, sample, instrument):
     theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
     sl_c = (dens*(f + resdens*fr))
     sl_m1 = dens*resdens*resmag*mag*fm1
-    sl_m2 = dens*resdens*resmag*mag*fm2
+    sl_m2 = dens*resdens*resmag*mag**2*fm2
     sigma_c = array(parameters['sigma_c'], dtype = float64) + 1e-20
     sigma_l = array(parameters['sigma_ml'], dtype = float64)+ 1e-20
     sigma_u = array(parameters['sigma_mu'], dtype = float64)+ 1e-20
     sl_m1_l = sl_m1*(1. + dmag_l)
     sl_m1_u = sl_m1*(1. + dmag_u)
-    sl_m2_l = sl_m2*(1. + dmag_l)
-    sl_m2_u = sl_m2*(1. + dmag_u)
+    sl_m2_l = sl_m2*(1. + dmag_l)**2
+    sl_m2_u = sl_m2*(1. + dmag_u)**2
 
     b = (array(parameters['b'], dtype = complex128))
     abs_xs = (array(parameters['xs_ai'], dtype = complex128))
@@ -552,8 +552,8 @@ def compose_sld_anal(z, sample, instrument):
 
         M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
         chi = lib.xrmr.create_chi(None, None, A*0, A, B, C, M, None)[0]
-        chi_l = lib.xrmr.create_chi(None, None, A*0, A, B*(1 + dmag_l), C*(1 + dmag_l), M, None)[0]
-        chi_u = lib.xrmr.create_chi(None, None, A*0, A, B*(1 + dmag_u), C*(1 + dmag_u), M, None)[0]
+        chi_l = lib.xrmr.create_chi(None, None, A*0, A, B*(1 + dmag_l), C*(1 + dmag_l)**2, M, None)[0]
+        chi_u = lib.xrmr.create_chi(None, None, A*0, A, B*(1 + dmag_u), C*(1 + dmag_u)**2, M, None)[0]
 
         chi_xx, chi_xy, chi_xz = chi[0]; chi_yx, chi_yy, chi_yz = chi[1]; chi_zx, chi_zy, chi_zz = chi[2]
         chi_l_xx, chi_l_xy, chi_l_xz = chi_l[0]; chi_l_yx, chi_l_yy, chi_l_yz = chi_l[1]; chi_l_zx, chi_l_zy, chi_l_zz = chi_l[2]
@@ -661,7 +661,7 @@ def compose_sld(sample, instrument, theta):
         sl_c = sl_c_lay.sum(0)
         sl_m1_lay = comp_prof*mag_prof*sl_m1[:, newaxis]
         sl_m1 = sl_m1_lay.sum(0)
-        sl_m2_lay = comp_prof*mag_prof*sl_m2[:, newaxis]
+        sl_m2_lay = comp_prof*mag_prof**2*sl_m2[:, newaxis]
         sl_m2 = sl_m2_lay.sum(0)
         
         # Neutrons
@@ -904,7 +904,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
 
         sl_c = dens*(f + resdens*fr)
         sl_m1 = dens*resdens*resmag*mag*fm1
-        sl_m2 = dens*resdens*resmag*mag*fm2 #TODO: Check if this needs to mag**2
+        sl_m2 = dens*resdens*resmag*mag**2*fm2
 
         A = -lamda**2*re/pi*sl_c
         B = lamda**2*re/pi*sl_m1
@@ -927,7 +927,6 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
         if  theory == 0 or theory == instrument_string_choices['theory'][0]:
             if True or (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
                 or not g0_ok or XBuffer.wavelength != lamda):
-                print 'calc_refl_int_lay'
                 W = lib.xrmr.calc_refl_int_lay(g_0, lamda, A*0, A[::-1], B[::-1], C[::-1], M[::-1,...]
                                                , d[::-1], sigma[::-1], sigma_l[::-1], sigma_u[::-1]
                                                , dd_l[::-1], dd_u[::-1], dmag_l[::-1], dmag_u[::-1])

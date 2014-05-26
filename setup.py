@@ -285,6 +285,7 @@ if "py2exe" in sys.argv:
     xcopy_to_folder(src, dest)
   os.popen('xcopy genx.conf dist')
 
+
 if 'py2app' in sys.argv:
   def xcopy_to_folder(from_folder, to_folder):
     dest=os.path.join('dist', to_folder)
