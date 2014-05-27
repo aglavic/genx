@@ -8,20 +8,23 @@
 AppId={{03439AE4-FE61-49AC-8D3F-1351147CE8FC}
 AppName=GenX
 AppVerName=GenX 2.1.0
-AppPublisher=Matts Bj�rck
+AppPublisher=Matts Bjorck
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
 AppUpdatesURL=https://sourceforge.net/projects/genx
 DefaultDirName={pf}\GenX
 DefaultGroupName=GenX      
 AllowNoIcons=true
-OutputDir=Z:\trunk\genx\windows_build
+OutputDir=Z:\Documents\GenX\sf-code\trunk\genx\windows_build
 OutputBaseFilename=install_genx
 Compression=lzma
 SolidCompression=true
 ChangesAssociations=true
 PrivilegesRequired=none
 UsePreviousTasks=yes
+WizardImageFile=genx\windows_build\install_wizard_bkg.bmp
+WizardSmallImageFile=genx\windows_build\install_wizard_small.bmp
+InfoBeforeFile=genx\README.txt
 
 
 [Languages]
