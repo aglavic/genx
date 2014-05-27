@@ -22,6 +22,9 @@ class Plugin(Template):
     def LoadDataFile(self, selected_items):
         ''' Called when GenX wants to load data'''
         
+        if len(selected_items) == 0:
+            ShowWarningDialog(self.parent, 'Please select a data set before trying to load a spec file.')
+            return False
         old_data = self.datalist[selected_items[0]].copy()
         self.dataset = self.datalist[selected_items[0]]
         wizard = wx.wizard.Wizard(self.parent, -1, "Load Spec File",
@@ -56,6 +59,7 @@ class Plugin(Template):
             names = ['%s '%(name,) + sc[name] for name in names]
         except Exception, e:
             print "Could not create full names, error: ", e.__str__()
+            ShowErrorDialog(self.parent, "Could not create full names, error:\n %s"%e.__str__())
             names = ['%s '%name for name in names]
         self.specfile_name = filename
         self.scan_names = names
@@ -72,6 +76,7 @@ class Plugin(Template):
             print "Could not load the desired scans"
             print "Error: ", e.__str__()
             print "scanlist: ", scanlist
+            ShowErrorDialog(self.parent, "Could not load the desired scans, error:\n%s "%e.__str__())
         #for key in self.scan.values:
         #    try:
         #        self.dataset.set_extra_data(key, self.scan.values[key])
@@ -86,6 +91,7 @@ class Plugin(Template):
             choices = self.scan.cols
         except Exception, e:
             print "Could not load the scan cols error: ", e.__str__()
+            ShowErrorDialog(self.parent, "Could not load the scan cols, error:\n%s "%e.__str__())
             choices = []
 
         return choices

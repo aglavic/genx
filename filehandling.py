@@ -7,8 +7,10 @@ $Rev::                                  $:  Revision of last commit
 $Author::                               $:  Author of last commit
 $Date::                                 $:  Date of last commit
 '''
-
-import ConfigParser as CP
+try:
+    import ConfigParser as CP
+except ImportError:
+    import configparser as CP
 import StringIO
 
 # Functions to save the gx files
@@ -38,7 +40,7 @@ class Config:
     def load_default(self, filename):
         '''load_default(self, filename) --> None
         
-        Loads the dfault config from file filename. Raises a IOError if the 
+        Loads the default config from file filename. Raises a IOError if the
         can not be found.
         '''
         try:

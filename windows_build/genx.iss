@@ -8,20 +8,23 @@
 AppId={{03439AE4-FE61-49AC-8D3F-1351147CE8FC}
 AppName=GenX
 AppVerName=GenX 2.1.0
-AppPublisher=Matts Björck
+AppPublisher=Matts Bjorck
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
 AppUpdatesURL=https://sourceforge.net/projects/genx
 DefaultDirName={pf}\GenX
 DefaultGroupName=GenX      
 AllowNoIcons=true
-OutputDir=Z:\trunk\genx\windows_build
+OutputDir=Z:\Documents\GenX\sf-code\trunk\genx\windows_build
 OutputBaseFilename=install_genx
 Compression=lzma
 SolidCompression=true
 ChangesAssociations=true
 PrivilegesRequired=none
 UsePreviousTasks=yes
+WizardImageFile=genx\windows_build\install_wizard_bkg.bmp
+WizardSmallImageFile=genx\windows_build\install_wizard_small.bmp
+InfoBeforeFile=genx\README.txt
 
 
 [Languages]
@@ -38,7 +41,7 @@ Name: {group}\{cm:UninstallProgram,GenX}; Filename: {uninstallexe}
 [Registry]
 Root: HKCU; Subkey: Software\Classes\.gx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
 Root: HKCU; Subkey: Software\Classes\GenX; ValueType: string; ValueName: ; ValueData: GenX model; Tasks: associate; Flags: uninsdeletekey createvalueifdoesntexist
-Root: HKCU; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,2; Tasks: associate; Flags: createvalueifdoesntexist
+Root: HKCU; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,1; Tasks: associate; Flags: createvalueifdoesntexist
 Root: HKCU; Subkey: Software\Classes\GenX\shell\open\command; ValueType: string; ValueName: ; ValueData: """{app}\genx.exe"" ""%1"""; Tasks: associate; Flags: createvalueifdoesntexist
 
 [Run]

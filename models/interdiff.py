@@ -152,7 +152,7 @@ InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
 # Samlen= Samplelength in mm.
 
 LayerParameters = {'sigmai':0.0, 'sigmar':0.0, 'dens':1.0, 'd':0.0,\
-    'f':0.0+1.0j}
+    'f':0.0+0.0j}
 StackParameters = {'Layers':[], 'Repetitions':1}
 SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 'h':1.0,\
     'eta_z':10.0, 'eta_x':10.0}
@@ -281,11 +281,12 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
         I=ones(len(qx*qz))
     return real(I)*instrument.getI0() + instrument.getIbkg()
 
-def SLD_calculations(z, sample, inst):
+def SLD_calculations(z, item, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
     
     # BEGIN Parameters
     z data.x
+    item "Re"
     # END Parameters
     '''
     parameters = sample.resolveLayerParameters()
@@ -305,8 +306,15 @@ def SLD_calculations(z, sample, inst):
     if z == None:
         z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     rho = sum(d_sld*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
-    return {'Re': real(rho), 'Im': imag(rho), 'z':z, 
+    dic = {'Re': real(rho), 'Im': imag(rho), 'z':z,
             'SLD unit': 'r_{e}/\AA^{3}'}
+    if item == None or item == 'all':
+        return dic
+    else:
+        try:
+            return dic[item]
+        except:
+            raise ValueError('The chosen item, %s, does not exist'%item)
     
 
 SimulationFunctions = {'Specular':Specular,\

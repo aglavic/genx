@@ -4,6 +4,7 @@ Last changed 2011-06-11
 '''
 from numpy import *
 import math_utils as mu
+import int_lay_xmean
 
 def make_D(q_p,q_m):
     return mat([[1,1,0,0],[q_p,-q_p,0,0],[0,0,1,1],[0,0,q_m,-q_m]])
@@ -80,36 +81,42 @@ def ReflOld(Q,Vp,Vm,d,M_ang):
 
 ctype = complex128
 
+
+def ass_X_2int(k_mj, k_mj1, k_pj, k_pj1, theta_diff):
+    costd = cos(theta_diff / 2.0)
+    sintd = sin(theta_diff / 2.0)
+    X = zeros((4, 4) + k_pj.shape, dtype=ctype)
+    X[0, 0] = costd * (k_pj1 + k_pj) / 2 / k_pj
+    X[0, 1] = -costd * (k_pj1 - k_pj) / 2 / k_pj
+    X[0, 2] = sintd * (k_pj + k_mj1) / 2 / k_pj
+    X[0, 3] = sintd * (k_pj - k_mj1) / 2 / k_pj
+    #X[0] = X[0]/2/k_pj
+    X[1, 0] = X[0, 1]  #-(costd*(k_pj1 - k_pj))/(2*k_pj)
+    X[1, 1] = X[0, 0]  #(costd*(k_pj1 + k_pj))/(2*k_pj)
+    X[1, 2] = X[0, 3]  #(sintd*(k_pj - k_mj1))/(2*k_pj)
+    X[1, 3] = X[0, 2]  #(sintd*(k_pj + k_mj1))/(2*k_pj)
+    X[2, 0] = -(sintd * (k_pj1 + k_mj)) / (2 * k_mj)
+    X[2, 1] = (sintd * (k_pj1 - k_mj)) / (2 * k_mj)
+    X[2, 2] = (costd * (k_mj1 + k_mj)) / (2 * k_mj)
+    X[2, 3] = -(costd * (k_mj1 - k_mj)) / (2 * k_mj)
+    X[3, 0] = X[2, 1]  #(sintd*(k_pj1 - k_mj))/(2*k_mj)
+    X[3, 1] = X[2, 0]  #-(sintd*(k_pj1 + k_mj))/(2*k_mj)
+    X[3, 2] = X[2, 3]  #-(costd*(k_mj1 - k_mj))/(2*k_mj)
+    X[3, 3] = X[2, 2]  #(costd*(k_mj1 + k_mj))/(2*k_mj)
+    return X
+
+
 def ass_X(k_p, k_m, theta_diff):
     ''' Make the interface transmission matrix for neutron reflection from 
     a interface.
     '''
+    # First is the substrate and last is the ambient (j=0)
+    # The order is then [N .. j+1, j, ....0]
     k_pj1 = k_p[:, :-1]
     k_pj = k_p[:, 1:]
     k_mj1 = k_m[:, :-1]
     k_mj = k_m[:, 1:]
-    costd = cos(theta_diff/2.0)
-    sintd = sin(theta_diff/2.0)
-    X = zeros((4,4) + k_pj.shape, dtype = ctype)
-    X[0,0] = costd*(k_pj1 + k_pj)/2/k_pj
-    X[0,1] = -costd*(k_pj1 - k_pj)/2/k_pj
-    X[0,2] = sintd*(k_pj + k_mj1)/2/k_pj
-    X[0,3] = sintd*(k_pj - k_mj1)/2/k_pj
-    #X[0] = X[0]/2/k_pj
-    X[1,0] = X[0,1]#-(costd*(k_pj1 - k_pj))/(2*k_pj)
-    X[1,1] = X[0,0]#(costd*(k_pj1 + k_pj))/(2*k_pj)
-    X[1,2] = X[0,3]#(sintd*(k_pj - k_mj1))/(2*k_pj)
-    X[1,3] = X[0,2]#(sintd*(k_pj + k_mj1))/(2*k_pj)
-    X[2,0] = -(sintd*(k_pj1 + k_mj))/(2*k_mj)
-    X[2,1] = (sintd*(k_pj1 - k_mj))/(2*k_mj)
-    X[2,2] = (costd*(k_mj1 + k_mj))/(2*k_mj)
-    X[2,3] = -(costd*(k_mj1 - k_mj))/(2*k_mj)
-    X[3,0] = X[2,1]#(sintd*(k_pj1 - k_mj))/(2*k_mj)
-    X[3,1] = X[2,0]#-(sintd*(k_pj1 + k_mj))/(2*k_mj)
-    X[3,2] = X[2,3]#-(costd*(k_mj1 - k_mj))/(2*k_mj)
-    X[3,3] = X[2,2]#(costd*(k_mj1 + k_mj))/(2*k_mj)
-    
-    return X
+    return ass_X_2int(k_mj, k_mj1, k_pj, k_pj1, theta_diff)
 
 def gauss(q, sigma2):
     '''Fourier transform of the interface roughness weight function
@@ -156,7 +163,7 @@ def ass_P(k_p, k_m, d):
 def Refl(Q, Vp, Vm, d, M_ang, sigma = None):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell 
-        and J.A.C. Blnd Phys rev. B. vol 46 3391 (1992)
+        and J.A.C. Bland Phys rev. B. vol 46 3391 (1992)
         The algorithm assumes that the first element in the arrays represents
         the substrate and the last the ambient layer.
         Input parameters:   Q : Scattering vector in reciprocal 
@@ -197,7 +204,68 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None):
     Rdd = (M[3,2]*M[0,0]-M[3,0]*M[0,2])/denom
     
     return abs(Ruu)**2,abs(Rdd)**2,abs(Rud)**2,abs(Rdu)**2
-    
+
+def Refl_int_lay(Q, V0, Vmag, d, M_ang, sigma, dmag_u, dd_u, M_ang_u, sigma_u,
+                 dmag_l, dd_l, M_ang_l, sigma_l):
+    '''A quicker implementation than the ordinary slow implementaion in Refl
+    Calculates spin-polarized reflectivity according to S.J. Blundell
+        and J.A.C. Bland Phys rev. B. vol 46 3391 (1992)
+        The algorithm assumes that the last element in the arrays represents
+        the substrate and the first the ambient layer.
+        Input parameters:   Q : Scattering vector in reciprocal
+                                angstroms Q=4*pi/lambda *sin(theta)
+                            Vp: Neutron potential for spin up
+                            Vm: Neutron potential for spin down
+                            d: layer thickness
+                            M_ang: Angle of the magnetic
+                                    moment(radians!) M_ang=0 =>M//nuetron spin
+                            sigma: The roughness of the upper interface.
+                            The subscript l and u denotes the lower and upper interface
+                            , respectively.
+        Returns:            (Ruu,Rdd,Rud,Rdu)
+                            (up-up,down-down,up-down,down-up)
+    '''
+    Vp = V0 + Vmag
+    Vm = V0 - Vmag
+    Vp_u = V0 + Vmag*(1. + dmag_u)
+    Vm_u = V0 - Vmag*(1. + dmag_u)
+    Vp_l = V0 + Vmag*(1. + dmag_l)
+    Vm_l = V0 - Vmag*(1. + dmag_l)
+    # Assume last element=substrate and first=ambient!
+    k_amb = Q[:, newaxis]/2.0
+    # Wavevectors in the layers
+    kp = sqrt(k_amb**2 - Vp).astype(complex128)
+    km = sqrt(k_amb**2 - Vm).astype(complex128)
+    kp_u = sqrt(k_amb**2 - Vp_u).astype(complex128)
+    km_u = sqrt(k_amb**2 - Vm_u).astype(complex128)
+    kp_l = sqrt(k_amb**2 - Vp_l).astype(complex128)
+    km_l = sqrt(k_amb**2 - Vm_l).astype(complex128)
+    #Angular difference between the magnetization
+    theta_diff = M_ang[:-1] - M_ang[1:]
+    theta_diff_lu = M_ang_l[:-1] - M_ang_u[1:]
+    theta_diff_l = M_ang[:-1] - M_ang_l[:-1]
+    theta_diff_u = M_ang_u[1:] - M_ang[1:]
+
+    X_lu = ass_X_2int(km_l[:,:-1], km_u[:,1:], kp_l[:,:-1], kp_u[:,1:], theta_diff_lu)
+    X_l = ass_X_2int(km[:,:-1], km_l[:,:-1], kp[:,:-1], kp_l[:,:-1], theta_diff_l)
+    X_u = ass_X_2int(km_u[:,1:], km[:,1:], kp_u[:,1:], kp[:,1:], theta_diff_u)
+
+    X = int_lay_xmean.calc_neu_Xmean(X_l, X_lu, X_u, km, kp, km_l, kp_l, km_u, kp_u, dd_u, dd_l, sigma, sigma_l, sigma_u)
+
+    # Assemble the layer propagation matrices
+    P = ass_P(kp, km, d - dd_u - dd_l)
+    # Multiply the propagation matrices with the interface matrix
+    PX = mu.dot4_Adiag(P[...,1:-1], X[...,1:])
+    # Multiply up the sample matrix
+    M = mu.dot4(X[...,0], reduce(mu.dot4, rollaxis(PX, 3)))
+    #print M.shape
+    denom = M[0,0]*M[2,2]-M[0,2]*M[2,0]
+    Ruu = (M[1,0]*M[2,2]-M[1,2]*M[2,0])/denom
+    Rud = (M[3,0]*M[2,2]-M[3,2]*M[2,0])/denom
+    Rdu = (M[1,2]*M[0,0]-M[1,0]*M[0,2])/denom
+    Rdd = (M[3,2]*M[0,0]-M[3,0]*M[0,2])/denom
+
+    return abs(Ruu)**2,abs(Rdd)**2,abs(Rud)**2,abs(Rdu)**2
 
 if __name__=='__main__':
     Q=arange(0.01,0.2,0.0005)

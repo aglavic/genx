@@ -912,6 +912,15 @@ class DataParameterPanel(wx.Panel):
         See SetSimArgs for a description of the parameters
         '''
         return self.sim_funcs, self.insts, self.args
+
+    def AppendSim(self, sim_func, inst, args):
+        '''AppendSim(self, sim_func, inst, args) --> None
+
+        Appends a simultion to the Panel lists
+        '''
+        self.sim_funcs.append(sim_func)
+        self.insts.append(inst)
+        self.args.append(args)
     
     def InstrumentNameChange(self, old_name, new_name):
         '''OnInstrumentNameChange --> None
@@ -1204,7 +1213,7 @@ class SimulationExpressionDialog(wx.Dialog):
         self.model = model
         self.instruments = instruments
         self.available_sim_funcs = self.model.eval_in_model('model.SimulationFunctions.keys()')
-        
+        self.data_index = data_index
          
         # Do the layout of the dialog
         wx.Dialog.__init__(self, parent, -1, 'Simulation editor')
@@ -1224,7 +1233,7 @@ class SimulationExpressionDialog(wx.Dialog):
             for line in doc_lines:
                 items = line.lstrip().rstrip().split(' ')
                 args.append(items[0])
-                defaults.append(items[1].replace('data', 'data[%d]'%data_index))
+                defaults.append(items[1].replace('data', 'd'))
             self.sim_args[func] = args
             self.sim_defaults[func] = defaults
         
@@ -1339,7 +1348,8 @@ class SimulationExpressionDialog(wx.Dialog):
     def on_ok_button(self, event):
         '''Callback for pressing the ok button in the dialog'''
         expressions = self.GetExpressions()
-        
+        # Hack to get it working with d = data[0]
+        exec 'd = data[%d]'%self.data_index in self.model.script_module.__dict__
         for exp in expressions:
             try:
                 self.model.eval_in_model(exp)
@@ -1533,7 +1543,7 @@ class SamplePlotPanel(wx.Panel):
             #self.plot_dict = self.plot_dicts[0]
         else:
             if (not self.plugin.sim_returns_sld) and self.plugin.GetModel().compiled:
-                plot_dict = model.sample.SimSLD(None, model.inst)
+                plot_dict = model.sample.SimSLD(None, None, model.inst)
                 self.plot_dicts = [plot_dict]
         
         self.plot.ax.lines = []
@@ -1564,7 +1574,7 @@ class SamplePlotPanel(wx.Panel):
             #if self.plot_dict.has_key('SLD unit'):
             #    self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
             self.plot.ax.xaxis.label.set_text('$\mathrm{\mathsf{ z\,[\AA]}}$')
-            self.plot.flush_plot()
+            wx.CallAfter(self.plot.flush_plot)
             self.plot.AutoScale()
     
     def SavePlotData(self, filename):
@@ -1717,41 +1727,68 @@ class Plugin(framework.Template):
     def OnDataChanged(self, event):
         ''' Take into account changes in data..
         '''
+        if event.new_model:
+            return
+
         if event.data_moved or event.deleted or event.new_data\
             or event.name_change:
             names = [data_set.name for data_set in self.GetModel().get_data()]
             self.simulation_widget.SetDataList(names)
-            
+
             expl = self.simulation_widget.GetExpressionList()
+
+            if len(names)-len(expl) == 1:
+                # Data set has been added:
+                expl.append([])
+                self.insert_new_data_segment(len(expl)-1)
+
+            sims, insts, args = self.simulation_widget.GetSimArgs()
+
             if event.deleted:
                 pos = range(len(expl))
                 [self.remove_data_segment(pos[-index-1]) for index in\
                     range(len(event.position))]
                 [expl.pop(index) for index in event.position]
-            if event.data_moved:
+                [sims.pop(index) for index in event.position]
+                [insts.pop(index) for index in event.position]
+                [args.pop(index) for index in event.position]
+            elif event.data_moved:
                 if event.up:
                     # Moving up
                     for pos in event.position:
-                        tmp = self.items.pop(pos)
+                        tmp = expl.pop(pos)
                         expl.insert(pos-1, tmp)
+                        tmp = sims.pop(pos)
+                        sims.insert(pos-1, tmp)
+                        tmp = insts.pop(pos)
+                        insts.insert(pos-1, tmp)
+                        tmp = args.pop(pos)
+                        args.insert(pos-1, tmp)
                 else:
                     #Moving down...
                     for pos in event.position:
-                        tmp = self.items.pop(pos)
+                        tmp = expl.pop(pos)
                         expl.insert(pos+1, tmp)
+                        tmp = sims.pop(pos)
+                        sims.insert(pos+1, tmp)
+                        tmp = insts.pop(pos)
+                        insts.insert(pos+1, tmp)
+                        tmp = args.pop(pos)
+                        args.insert(pos+1, tmp)
                         
-            if len(names)-len(expl) == 1:
-                # Data set has been added:
-                expl.append([])
-                self.insert_new_data_segment(len(expl)-1)
-            
+
+            self.simulation_widget.SetSimArgs(sims, insts, args)
             self.simulation_widget.SetExpressionList(expl)
+            
+
             # Check so we have not clicked on new model button
             if self.GetModel().script != '':
-                self.simulation_widget.Update()
                 self.WriteModel()
+                self.simulation_widget.Update()
                 if event.name_change:
                     self.sld_plot.Plot()
+            else:
+                self.simulation_widget.Update(update_script=False)
         else:
             if event.data_changed:
                 self.sld_plot.Plot()
@@ -1810,8 +1847,9 @@ class Plugin(framework.Template):
         nb_data_sets = len(self.GetModel().get_data())
         for i in range(nb_data_sets):
             script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%i
-            script += '    I.append(sample.SimSpecular(data[%i].x, inst))\n'%i
-            script += '    if _sim: SLD.append(sample.SimSLD(None, inst))\n'
+            script += '    d = data[%i]\n'%i
+            script += '    I.append(sample.SimSpecular(d.x, inst))\n'
+            script += '    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n'
             script += '    # END Dataset %i\n'%i
         script += '    return I\n'
         
@@ -1835,11 +1873,12 @@ class Plugin(framework.Template):
         
         names = [data_set.name for data_set in self.GetModel().get_data()]
         self.simulation_widget.SetDataList(names)
+        self.simulation_widget.SetParameterList([])
         # An empty list to the expression widget...
         self.simulation_widget.SetExpressionList([[] for item in names])
         self.simulation_widget.SetSimArgs(['Specular']*nb_data_sets,
                                           ['inst']*nb_data_sets, 
-                                          [['data[%d].x'%i] for i in range(nb_data_sets)])
+                                          [['d.x'] for i in range(nb_data_sets)])
         self.simulation_widget.Update(update_script = True)
         
         self.sample_widget.Update(update_script = True)
@@ -1875,13 +1914,14 @@ class Plugin(framework.Template):
         sim_funcs, insts, args = self.simulation_widget.GetSimArgs()
         for (i,exps) in enumerate(self.simulation_widget.GetExpressionList()):
             exp = [ex + '\n' for ex in exps]
+            exp.append('d = data[%i]\n'%i)
             str_arg = ', '.join(args[i])
             exp.append('I.append(sample.'
                        'Sim%s(%s, %s))\n'%(sim_funcs[i], str_arg, 
                                            insts[i]))
             if self.sim_returns_sld:
                 exp.append('if _sim: SLD.append(sample.'
-                           'SimSLD(None, %s))\n'%insts[i])
+                           'SimSLD(None, None, %s))\n'%insts[i])
             code = ''.join(exp)
             script = self.insert_code_segment(script, 'Dataset %i'%i, code)
         
@@ -1903,11 +1943,15 @@ class Plugin(framework.Template):
                 break
             
         if found < 1:
-            raise LookupError('Could not fing return I in the script')
+            raise LookupError('Could not find "return I" in the script')
+
+        self.simulation_widget.AppendSim('Specular', 'inst', ['d.x'])
         
         script = ''.join(script_lines[:line_index-1])
         script += '    # BEGIN Dataset %i DO NOT CHANGE\n'%number
-        script += '    I.append(sample.SimSpecular(data[%i].x, inst))\n'%number
+        script += '    d = data[%i]\n'%number
+        script += '    I.append(sample.SimSpecular(d.x, inst))\n'
+        script += '    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n'
         script += '    # END Dataset %i\n'%number
         script += ''.join(script_lines[line_index-1:])
         self.SetModelScript(script)
@@ -2111,7 +2155,8 @@ class Plugin(framework.Template):
                 #for line in code.splitlines()[:-1]:
                 #    sim_exp[-1].append(line.strip())
                 for line in code.splitlines():
-                    if line.find('I.append') == -1 and line.find('SLD.append') == -1:
+                    if (line.find('I.append') == -1 and line.find('SLD.append') == -1
+                        and line.find('d = data') == -1):
                         # The current line is a command for a parameter
                         sim_exp[-1].append(line.strip()) 
                     elif line.find('I.append') > -1:

@@ -22,7 +22,7 @@ def GaussIntensity(alpha,s1,s2,sigma_x):
 
 # Diffuse correction: Area corr
 def GaussDiffCorrection(alpha,s1,s2,sigma_x):
-    return GaussArea(alpha,s1,s2,sigma_x)#*GaussIntensity(alpha,s1,s2,sigma_x)
+    return GaussArea(alpha,s1,s2,sigma_x)*GaussIntensity(alpha,s1,s2,sigma_x)
 
 # Specular foorprintcorrections square beamprofile
 def SquareIntensity(alpha,slen,beamwidth):
