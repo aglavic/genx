@@ -1,0 +1,14 @@
+{
+  "title": "Install GenX",
+  "app": "GenX.app",
+  "background": "GenXBkg.png",
+  "icon": "genx.icns",
+  "icons": {
+    "size": 80,
+    "app": [192, 344],
+    "alias": [448, 344]
+  },
+  "extra": [
+    ["../README.txt", 434, 128]
+  ]
+}
