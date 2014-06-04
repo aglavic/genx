@@ -116,11 +116,17 @@ __f0_dict__['o2m'] = __f0_dict__['o2-.']
 __rho0_dict__['o2m'] = __rho0_dict__['o2-.']
 f0 = sl.ScatteringLength(__f0_dict__)
 # Dispersive part at Q = 0
-__lookup_fp__ = sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_cxro/')
+__lookup_fp__ = sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_nist/')
+__lookup_fp_old__ = sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_cxro/')
+
 def create_fp(wavelength):
     return sl.FormFactor(wavelength, __lookup_fp__)
 
+def create_fp_old(wavelength):
+    return sl.FormFactor(wavelength, __lookup_fp_old__)
+
 fp = create_fp(1.54)
+fp_old = create_fp_old(1.54)
 # The total angle dependent form factor
 __lookup_f__ = sl.create_f_lookup(__lookup_fp__, __f0_dict__)
 f = sl.FormFactor(1.54, __lookup_f__)
