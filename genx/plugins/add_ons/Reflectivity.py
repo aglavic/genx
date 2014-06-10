@@ -488,7 +488,7 @@ class SamplePanel(wx.Panel):
         #    if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
         #        boxhorpar.Add(wx.StaticText(self,-1,item+': '),0)
         #        self.tc.append(wx.TextCtrl(self, -1,\
-        #         str(self.sampleh.sample.__getattribute__(item)),\
+        #         getattr(str(self.sampleh.sample, item)),\
         #         validator = FloatObjectValidator()))
         #        boxhorpar.Add(self.tc[-1],0)
         #boxver.Add(boxhorpar,0)
@@ -530,7 +530,7 @@ class SamplePanel(wx.Panel):
                     validators[item] = string_choices[item]
                 else:
                     validators[item] = FloatObjectValidator()
-                val = self.sampleh.sample.__getattribute__(item)
+                val = getattr(self.sampleh.sample, item)
                 vals[item] = val
                 pars.append(item)
                 items.append((item, val))
@@ -551,9 +551,9 @@ class SamplePanel(wx.Panel):
             vals=dlg.GetValues()
             for par in pars:
                 if string_choices.has_key(par):
-                    self.sampleh.sample.__setattr__(par, vals[par])
+                    setattr(self.sampleh.sample, par, vals[par])
                 else:
-                    self.sampleh.sample.__setattr__(par, float(vals[par]))
+                    setattr(self.sampleh.sample, par, float(vals[par]))
             self.Update()
         else:
             pass
@@ -583,7 +583,7 @@ class SamplePanel(wx.Panel):
                 #validators.append(FloatObjectValidator())
                 validators[item] = FloatObjectValidator()
             for inst_name in self.instruments:
-                val = self.instruments[inst_name].__getattribute__(item)
+                val = getattr(self.instruments[inst_name], item)
                 vals[inst_name][item] = val
             pars.append(item)
             
@@ -610,7 +610,7 @@ class SamplePanel(wx.Panel):
                         # A new instrument must be created:
                         self.instruments[inst_name] = self.model.Instrument()
                     # Set all the value of the parameter
-                    self.instruments[inst_name].__setattr__(par, 
+                    setattr(self.instruments[inst_name], par,
                                                             vals[inst_name][par])
             for change in dlg.GetChanges():
                 if change[0] != '' and change[1] != '':
@@ -723,7 +723,7 @@ class SamplePanel(wx.Panel):
         if isinstance(sel,self.model.Layer): 
             # The selected item is a Layer
             for item in self.model.LayerParameters.keys():
-                value=sel.__getattribute__(item)
+                value = getattr(sel, item)
                 #if item!='n' and item!='fb':
                 if type(self.model.LayerParameters[item]) != type(1+1.0J):
                     validators[item] = FloatObjectValidator(eval_func)
@@ -748,7 +748,7 @@ class SamplePanel(wx.Panel):
             if dlg.ShowModal()==wx.ID_OK:
                 vals=dlg.GetValues()
                 for par in self.model.LayerParameters.keys():
-                    sel.__setattr__(par, vals[par])
+                    setattr(sel, par, vals[par])
                 sl=self.sampleh.getStringList()
             else:
                 pass
@@ -758,7 +758,7 @@ class SamplePanel(wx.Panel):
             # The selected item is a Stack
             for item in self.model.StackParameters.keys():
                 if item!='Layers':
-                    value=sel.__getattribute__(item)
+                    value=getattr(sel, item)
                     if isinstance(value,float):
                         validators[item] = FloatObjectValidator(eval_func)
                     else:
@@ -782,7 +782,7 @@ class SamplePanel(wx.Panel):
             if dlg.ShowModal()==wx.ID_OK:
                 vals=dlg.GetValues()
                 for par in pars:
-                    sel.__setattr__(par, vals[par])
+                    setattr(sel, par, vals[par])
                 sl=self.sampleh.getStringList()
             else:
                 pass
@@ -2183,7 +2183,7 @@ class Plugin(framework.Template):
         self.sample_widget.model = self.model
         instruments = {}
         for name in instrument_names:
-            instruments[name] = self.GetModel().script_module.__getattribute__(name) 
+            instruments[name] = getattr(self.GetModel().script_module, name)
         self.sample_widget.SetInstrument(instruments)
         
         self.simulation_widget.SetDataList(data_names)
