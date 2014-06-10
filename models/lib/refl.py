@@ -1,314 +1,309 @@
-import shelve
+import shelve, copy
 import numpy as np
 
-# Helper functions for meta class
 
-def _addMethod(fldName, clsName, verb, methodMaker, dict):
-    """Make a get or set method and add it to dict."""
-    compiledName = _getCompiledName(fldName, clsName)
-    methodName = _getMethodName(fldName, verb)
-    met = methodMaker(compiledName)
-    met.__name__ = methodName
-    dict[methodName] = met
-    
-def _getCompiledName(fldName, clsName):
-    """Return mangled fldName if necessary, else no change."""
-    # If fldName starts with 2 underscores and does *not* end with 2 underscores...
-    if fldName[:2] == '__' and fldName[-2:] != '__':
-        return "_%s%s" % (clsName, fldName)
-    else:
-        return fldName
+class ReflBase:
+    # _parameters is a dict of parameter names with their defualt values
+    _parameters = {}
 
-def _getMethodName(fldName, verb):
-    """'_salary', 'get'  => 'getSalary'"""
-    s = fldName.lstrip('_') # Remove leading underscores
-    return verb + s.capitalize()
+    def __init__(self, **kargs):
+        # Setup all the parameters in the class
+        for par in self._parameters:
+            setattr(self, par, self._parameters[par])
+            iscomplex = type(self._parameters[par]) is complex
+            # Making the set function
+            self._make_set_func(par, iscomplex)
+            # Creating the get function
+            self._make_get_func(par, iscomplex)
 
-def _makeGetter(compiledName):
-    """Return a method that gets compiledName's value."""
-    return lambda self: self.__getattribute__(compiledName)
-
-def _makeSetter(compiledName):
-    """Return a method that sets compiledName's value."""
-    met = lambda self, value: setattr(self, compiledName, value)
-    return met
-
-def _makeGetterReal(compiledName):
-    """Return a method that gets compiledName's value."""
-    return lambda self: self.__getattribute__(compiledName[:-4]).real
-
-def _makeGetterImag(compiledName):
-    """Return a method that gets compiledName's value."""
-    return lambda self: self.__getattribute__(compiledName[:-4]).imag
-
-def _makeSetterReal(compiledName):
-    """Return a method that sets compiledName's value."""    
-    return lambda self, value: setattr(self, compiledName[:-4], value +
-                                       1.0J*self.__getattribute__(compiledName[:-4]).imag)
-
-def _makeSetterImag(compiledName):
-    """Return a method that sets compiledName's value."""    
-    return lambda self, value: setattr(self, compiledName[:-4], 
-                                       self.__getattribute__(compiledName[:-4]).real + 
-                                       1.0J*value)
-
-# Start Metaclass
-class Meta(type):
-    """Adds accessor methods to a class."""
-    def __new__(cls, clsName, bases, dict):
-        for fldName in dict['__dict__'].keys():
-            #print fldName, dict['__dict__'][fldName]
-            if np.iscomplex(dict['__dict__'][fldName]):
-                _addMethod(fldName + 'Real', clsName, 'get', _makeGetterReal, dict)
-                _addMethod(fldName + 'Real', clsName, 'set', _makeSetterReal, dict)
-                _addMethod(fldName + 'Imag', clsName, 'get', _makeGetterImag, dict)
-                _addMethod(fldName + 'Imag', clsName, 'set', _makeSetterImag, dict)
-                _addMethod(fldName, clsName, 'get', _makeGetter, dict)
-                _addMethod(fldName, clsName, 'set', _makeSetter, dict)
-
+        # Set all parameters given as keyword arguments
+        for k in kargs:
+            if not k in self._parameters and not k in dir(self):
+                raise ValueError('%s is not an parameter in %s' %
+                                 (k, self.__class__))
             else:
-                _addMethod(fldName, clsName, 'get', _makeGetter, dict)
-                _addMethod(fldName, clsName, 'set', _makeSetter, dict)
+                setattr(self, k, kargs[k])
 
-        def __init__(self, **kw):
-            """ Simplistic __init__: first set all attributes to default
-                values, then override those explicitly passed in kw.
-            """
-            for k in self.__dict__: setattr(self, k, self.__dict__[k])
-            for k in kw: setattr(self, k, kw[k])
-        
-        dict['__init__']=__init__
-        return type.__new__(cls, clsName, bases, dict)
-# End Metaclass
+    def _make_get_func(self, par, iscomplex = False):
+        ''' Creates a get function for parameter par and binds it to the object
+        '''
+
+        def get_func():
+            return getattr(self, par)
+
+        get_func.__name__ = 'get' + par.capitalize()
+        setattr(self, get_func.__name__, get_func)
+
+        if iscomplex:
+            def get_real_func():
+                return getattr(self, par).real
+
+            get_real_func.__name__ = get_func.__name__ + 'real'
+            setattr(self, get_real_func.__name__, get_real_func)
+
+            def get_imag_func():
+                return getattr(self, par).imag
+
+            get_imag_func.__name__ = get_func.__name__ + 'imag'
+            setattr(self, get_imag_func.__name__, get_imag_func)
+
+    def _make_set_func(self, par, iscomplex = False):
+        ''' Creates a set function for parameter par and binds it to the object
+            '''
+
+        def set_func(val):
+            setattr(self, par, val)
+
+        set_func.__name__ = 'set' + par.capitalize()
+        setattr(self, set_func.__name__, set_func)
+
+        if iscomplex:
+            def set_real_func(val):
+                setattr(self, par, val + getattr(self, par).imag*1J)
+
+            set_real_func.__name__ = set_func.__name__ + 'real'
+            setattr(self, set_real_func.__name__, set_real_func)
+
+            def set_imag_func(val):
+                setattr(self, par, val*1J + getattr(self, par).real)
+
+            set_imag_func.__name__ = set_func.__name__ + 'imag'
+            setattr(self, set_imag_func.__name__, set_imag_func)
 
 
-# Class intrument-a class to accomodate the instrumental parameters
-_Reciprocal=0
-_Angles_=1
+    def get_parameters(self):
+        ''' Returns all the parameters of the current object '''
+
+        return self.parameters
+
+
+class InstrumentBase(ReflBase):
+    _parameters = {}
+
+    def __repr__(self):
+        s = 'Instrument('
+
+        for k in self._parameters:
+            # if the type is a string...
+            if type(getattr(self, k)) == type(''):
+                stemp = "%s = '%s'," % (k, str(getattr(self, k)))
+            else:
+                stemp = '%s = %s,' % (k, str(getattr(self, k)))
+            s = s + stemp
+        return s[:-1] + ')'
+
+
+class LayerBase(ReflBase):
+    _parameters = {}
+
+    def __repr__(self):
+        s = 'Layer('
+        for k in self._parameters:
+            s += '%s = %s, ' % (k, str(getattr(self, k)))
+        return s[:-2] + ')'
+
+
+class StackBase(ReflBase):
+    _parameters = {'Repetitions': 1}
+    Layers = []
+    Repetitions = 1
+
+    def __init__(self, **kargs):
+        ReflBase.__init__(self, **kargs)
+        if 'Layers' in kargs:
+            self.Layers = kargs['Layers']
+            kargs.pop('Layers')
+        else:
+            self.Layers = []
+
+
+    def __repr__(self):
+        s = 'Stack: '
+        for k in self._parameters:
+            s += '%s = %s, ' % (k, str(getattr(self, k)))
+        s = s[:-2] + '\n'
+        it = len(self.Layers)
+        for lay in range(it - 1, -1, -1):
+            s += '\t' + repr(self.Layers[lay]) + '\n'
+        return s
+
+    def resolveLayerParameter(self, parameter):
+        par = [getattr(lay, parameter)
+               for lay in self.Layers] * self.Repetitions
+        return par
+
+
+# Class Sample
+
+class SampleBase(ReflBase):
+    _parameters = {}
+    Ambient = None
+    Substrate = None
+    Stacks = []
+
+    def __init__(self, **kargs):
+        ReflBase.__init__(self, **kargs)
+        special_objects = ['Ambient', 'Substrate', 'Stacks']
+        for p in special_objects:
+            if p in kargs:
+                setattr(self, p, kargs[p])
+            else:
+                raise ValueError('%s has to be defined to create a Sample object' % p)
+        # Create a new dictonary for the new arguments
+        nkargs = {}
+        for p in kargs:
+            if not p in special_objects:
+                nkargs[p] = kargs[p]
+
+
+    def __repr__(self):
+        Add = 'Sample: '
+        for k in self._parameters:
+            Add += '%s = %s, ' % (k, getattr(self, k).__repr__())
+        if len(self._parameters) > 0:
+            Add = Add[:-2] + '\n'
+        else:
+            Add = Add[:-1] + '\n'
+        temp = [repr(x) for x in self.Stacks]
+        temp.reverse()
+        return (Add + 'Ambient:\n\t' + repr(self.Ambient) + '\n' + ''.join(temp)
+                + 'Substrate:\n\t' + repr(self.Substrate))
+
+    def resolveLayerParameters(self):
+        par = self.Substrate._parameters.copy()
+        for k in par:
+            par[k] = [getattr(self.Substrate, k)]
+        for k in self.Substrate._parameters:
+            for stack in self.Stacks:
+                par[k] = par[k] + stack.resolveLayerParameter(k)
+            par[k] = par[k] + [getattr(self.Ambient, k)]
+        return par
+
+
+# Factory needs to:
+#            add members and their names in the _parameter list
+#            Add set and get methods for each parameter
+class ModelFactory:
+    ''' Class that creates new classes to implement certain parameters 
+        dynamically.
+    '''
+
+    class Layer(LayerBase): _parameters = LayerBase._parameters.copy()
+
+    class Stack(StackBase): _parameters = StackBase._parameters.copy()
+
+    class Sample(SampleBase): _parameters = SampleBase._parameters.copy()
+
+    class Instrument(InstrumentBase): _parameters = InstrumentBase._parameters.copy()
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def _add_parameter(cls, par_name, def_val):
+        cls._parameters.update({par_name: def_val})
+
+    @staticmethod
+    def _add_sim_method(cls, name, func):
+        def method(self, *args):
+            nargs = args[:-1] + (self, ) + (args[-1], )
+            return func(*nargs)
+
+        method.__name__ = 'Sim' + name
+        setattr(cls, method.__name__, method)
+
+    def set_layer_parameters(self, parameters):
+        '''Adds extra parameters (dict with name: value entries) to the
+            Layer class'''
+        [self._add_parameter(self.Layer, k, parameters[k]) for k in parameters]
+
+    def set_stack_parameters(self, parameters):
+        '''Adds extra parameters (dict with name: value entries) to the
+            Stack class'''
+        # The if not is a hook to so that everything works with the old implementation
+        [self._add_parameter(self.Stack, k, parameters[k]) for k in parameters
+         if not k in ['Layers', 'Repetitions']]
+
+    def set_sample_parameters(self, parameters):
+        '''Adds extra parameters (dict with name: value entries) to the
+            Sample class'''
+        # The if not is a hook to so that everything works with the old implementation
+        [self._add_parameter(self.Sample, k, parameters[k]) for k in parameters
+            if not k in ['Ambient', 'Substrate', 'Stacks']]
+
+    def set_simulation_functions(self, functions):
+        ''' Adds the simulation functions to the sample class
+        '''
+        [self._add_sim_method(self.Sample, k, functions[k]) for k in functions]
+
+    def set_instrument_parameters(self, parameters):
+        '''Adds extra parameters (dict with name: value entries) to the
+            Instrument class'''
+        [self._add_parameter(self.Instrument, k, parameters[k]) for k in parameters]
+
+    def get_layer_class(self):
+        return self.Layer
+
+    def get_stack_class(self):
+        return self.Stack
+
+    def get_sample_class(self):
+        return self.Sample
+
+    def get_instrument_class(self):
+        return self.Instrument
 
 
 # Function! to create classes with the model given by the input parameters
-def MakeClasses(InstrumentParameters = {'Wavelength':1.54,'Coordinates':1},\
-        LayerParameters = {'d':0.0, 'sigma':0.0, 'n':0.0+0.0j},\
-        StackParameters = {'Layers':[], 'Repetitions':1}, \
-        SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None}, \
-        SimulationFunctions = {'Specular':0,'OffSpecular':0},\
-        ModelID = 'Standard'):
-    
-    class Instrument:
-        __dict__=InstrumentParameters
-        __metaclass__=Meta
+def MakeClasses(InstrumentParameters={'Wavelength': 1.54, 'Coordinates': 1}, \
+                LayerParameters={'d': 0.0, 'sigma': 0.0, 'n': 0.0 + 0.0j}, \
+                StackParameters={}, \
+                SampleParameters={}, \
+                SimulationFunctions={'Specular': lambda x: x, 'OffSpecular': lambda x: x}, \
+                ModelID='Standard'):
+    factory = ModelFactory()
+    factory.set_layer_parameters(LayerParameters)
+    factory.set_stack_parameters(StackParameters)
+    factory.set_sample_parameters(SampleParameters)
+    factory.set_simulation_functions(SimulationFunctions)
+    factory.set_instrument_parameters(InstrumentParameters)
+    Layer = factory.get_layer_class()
+    Stack = factory.get_stack_class()
+    Sample = factory.get_sample_class()
+    Instrument = factory.get_instrument_class()
+    return (Instrument, Layer, Stack, Sample)
 
-        def __repr__(self):
-            s='Instrument('
-        
-            for k in self.__dict__.keys():
-                # if the type is a string...
-                if type(self.__getattribute__(k)) == type(''):
-                    stemp = "%s = '%s'," % (k, str(self.__getattribute__(k)))
-                else:
-                    stemp='%s = %s,' % (k, str(self.__getattribute__(k)))
-                s=s+stemp
-            return s[:-1]+')'
 
-        def _todict(self):
-            dic={}
-            for key in self.__dict__.keys():
-                dic[key] = self.__getattribute__(key)
-            return dic
-        def _fromdict(self,dic):
-            error=0
-            for key in dic.keys():
-                if self.__dict__.has_key(key):
-                    self.__setattr__(key,dic[key])
-                else:
-                    error=1
-            if error:
-                print 'Wrong format (Model parameters) for Instrument'
-        def save(self,file):
-            dbase=shelve.open(file)
-            dbase['ModelID'] = ModelID
-            dbase['Sample'] = self._todict()
-            dbase.close()
+if __name__ == '__main__':
+    InstrumentParameters = {'probe': 'x-ray', 'wavelength': 1.54, 'coords': 'tth',
+                            'I0': 1.0, 'res': 0.001,
+                            'restype': 'no conv', 'respoints': 5, 'resintrange': 2, 'beamw': 0.01,
+                            'footype': 'no corr', 'samplelen': 10.0, 'incangle': 0.0, 'pol': 'uu',
+                            'Ibkg': 0.0, 'tthoff': 0.0}
 
-        def load(self,file):
-            dbase=shelve.open(file)
-            if ModelID==dbase['ModelID']:
-                self._fromdict(dbase['Sample'])
-            else:
-                print 'ERROR: File ModelID doesnt match the one for the Model used'
-                print 'File ModelID: ', dbase['ModelID'],', Loaded ModelID: ', ModelID
-            dbase.close()
-        
+    LayerParameters = {'sigma': 0.0, 'dens': 1.0, 'd': 0.0, 'f': (1.0 + 1.0j) * 1e-20,
+                       'b': 0.0 + 0.0J, 'xs_ai': 0.0, 'magn': 0.0, 'magn_ang': 0.0}
+    StackParameters = {'Layers': [], 'Repetitions': 1}
+    SampleParameters = {'Stacks': [], 'Ambient': None, 'Substrate': None}
 
-    # Class Layer
-    
-    class Layer:
-        __dict__= LayerParameters
-        __metaclass__ = Meta
+    (Instrument, Layer, Stack, Sample) = MakeClasses(InstrumentParameters, \
+                                                          LayerParameters, StackParameters, SampleParameters,
+                                                            {'Specualr':lambda x:x}, \
+                                                          'test')
+    inst = Instrument(footype = 'gauss beam',probe = 'x-ray',beamw = 0.04,resintrange = 2,pol = 'uu',wavelength = 1.54,respoints = 5,Ibkg = 0.0,I0 = 2,samplelen = 10.0,restype = 'fast conv',coords = 'tth',res = 0.001,incangle = 0.0)
 
-        def __repr__(self):
-            s='Layer('
-        
-            for k in self.__dict__.keys():
-                stemp='%s = %s, ' % (k, str(self.__getattribute__(k)))
-                s=s+stemp
-            return s[:-2]+')'
-        def _todict(self):
-            dic={}
-            for key in self.__dict__.keys():
-                dic[key] = self.__getattribute__(key) + 0.0
-            return dic
-        
-        def _fromdict(self,dic):
-            error=0
-            for key in dic.keys():
-                if self.__dict__.has_key(key):
-                    self.__setattr__(key,dic[key])
-                else:
-                    error=1
-            if error:
-                print 'Wrong format (Model parameters) for Layer'
+    # BEGIN Sample DO NOT CHANGE
+    Amb = Layer(b = 0, d = 0.0, f = (1e-20+1e-20j), dens = 1.0, magn_ang = 0.0, sigma = 0.0, xs_ai = 0.0, magn = 0.0)
+    topPt = Layer(b = 0, d = 11.0, f = 58, dens = 4/3.92**3, magn_ang = 0.0, sigma = 3.0, xs_ai = 0.0, magn = 0.0)
+    TopFe = Layer(b = 0, d = 11.0, f = 26, dens = 2/2.866**3, magn_ang = 0.0, sigma = 2.0, xs_ai = 0.0, magn = 0.0)
+    Pt = Layer(b = 0, d = 11.0, f = 58, dens = 4/3.92**3, magn_ang = 0.0, sigma = 2.0, xs_ai = 0.0, magn = 0.0)
+    Fe = Layer(b = 0, d = 11, f = 26, dens = 2/2.866**3, magn_ang = 0.0, sigma = 2.0, xs_ai = 0.0, magn = 0.0)
+    bufPt = Layer(b = 0, d = 45, f = 58, dens = 4/3.92**3, magn_ang = 0.0, sigma = 2, xs_ai = 0.0, magn = 0.0)
+    bufFe = Layer(b = 0, d = 2, f = 26, dens = 2/2.866**3, magn_ang = 0.0, sigma = 2, xs_ai = 0.0, magn = 0.0)
+    Sub = Layer(b = 0, d = 0.0, f = 12 + 16, dens = 2/4.2**3, magn_ang = 0.0, sigma = 4.0, xs_ai = 0.0, magn = 0.0)
 
-        
-    # Class Repeat
-    class Stack:
-        __dict__= StackParameters
-        __metaclass__ = Meta
+    top = Stack(Layers=[TopFe , topPt], Repetitions = 1)
+    ML = Stack(Layers=[Fe , Pt], Repetitions = 19)
+    buffer = Stack(Layers=[bufFe , bufPt], Repetitions = 1)
 
-        def __repr__(self):
-            s='Stack: '
-            for k in self.__dict__.keys():
-                if k != 'Layers':
-                    stemp='%s = %s, ' %(k,str(self.__getattribute__(k)))
-                    s=s+stemp
-            s=s[:-2]+'\n'
-            it=len(self.Layers)
-            for lay in range(it-1,-1,-1):
-                s=s+'\t'+repr(self.Layers[lay])+'\n'
-            return s
-        def resolveLayerParameter(self,parameter):
-            par=[lay.__getattribute__(parameter)+0.0 for lay in self.Layers]*self.Repetitions
-            return par
-
-        def _todict(self):
-            dic={}
-            for key in self.__dict__.keys():
-                if key != 'Layers':
-                    dic[key]=self.__getattribute__(key)
-            dic['Layers']=[]
-            for lay in self.Layers:
-                dic['Layers'].append(lay._todict())
-            return dic
-
-        def _fromdict(self,dic):
-            error=False
-            for key in dic.keys():
-                if self.__dict__.has_key(key):
-                    if key != 'Layers':
-                        self.__setattr__(key,dic[key])
-                else:
-                    error=True
-            
-            self.Layers=[]
-            for lay in dic['Layers']:
-                layer=Layer()
-                layer._fromdict(lay)
-                self.Layers.append(layer)
-            
-            if error:
-                print 'Wrong format (Model parameters) for Stack'
-
-    # Class Sample
-            
-    class Sample:
-        __dict__ = SampleParameters
-        __metaclass__ = Meta
-
-        def __repr__(self):
-            Add='Sample: '
-            for k in self.__dict__.keys():
-                if k != 'Stacks' and k!='Ambient' and k!='Substrate':
-                    temp='%s = %s, ' %(k,self.__getattribute__(k).__repr__())
-                    Add=Add+temp
-            if len(self.__dict__.keys()) > 3:
-                Add=Add[:-2]+'\n'
-            else:
-                Add = Add[:-1] + '\n'
-            temp=[repr(x) for x in self.Stacks]
-            temp.reverse()
-            return Add+'Ambient:\n\t'+repr(self.Ambient)+'\n'+''.join(temp)+'Substrate:\n\t'+repr(self.Substrate)
-
-        def resolveLayerParameters(self):
-            par=self.Substrate.__dict__.copy()
-            for k in par.keys():
-                par[k]=[self.Substrate.__getattribute__(k)+0.0]
-            for k in Layer().__dict__.keys():
-                for stack in self.Stacks:
-                    par[k] = par[k] + stack.resolveLayerParameter(k)
-                par[k ]= par[k] + [self.Ambient.__getattribute__(k)+0.0]
-            return par
-
-        def _todict(self):
-            dic={}
-            for key in self.__dict__.keys():
-                if key != 'Stacks' and key!='Ambient' and key!='Substrate':
-                    dic[key]=self.__getattribute__(key)
-
-            dic['Stacks']=[stack._todict() for stack in self.Stacks]
-            dic['Ambient']=self.Ambient._todict()
-            dic['Substrate']=self.Substrate._todict()
-            return dic
-
-        def _fromdict(self,dic):
-            error=False
-            for key in dic.keys():
-                if self.__dict__.has_key(key):
-                    if key != 'Stacks' and key!='Ambient' and key!='Substrate':
-                        self.__setattr__(key,dic[key])
-                else:
-                    error=True
-            if error:
-                print 'Wrong format (Model parameters) for Stack'                
-
-            self.Stacks=[]
-            for sta in dic['Stacks']:
-                stack=Stack()
-                stack._fromdict(sta)
-                self.Stacks.append(stack)
-            #self.__setattr__('Stacks',[Stack()._fromdict(stack) for stack in dic['Stacks']])
-            amb=Layer()
-            amb._fromdict(dic['Ambient'])
-            self.__setattr__('Ambient',amb)
-            sub=Layer()
-            sub._fromdict(dic['Substrate'])
-            self.__setattr__('Substrate',sub)
-
-        def save(self,file):
-            dbase=shelve.open(file)
-            dbase['ModelID'] = ModelID
-            dbase['Sample'] = self._todict()
-            dbase.close()
-
-        def load(self,file):
-            dbase=shelve.open(file)
-            if ModelID==dbase['ModelID']:
-                self._fromdict(dbase['Sample'])
-            else:
-                print 'ERROR: File ModelID doesnt match the one for the Model used'
-                print 'File ModelID: ', dbase['ModelID'],', Loaded ModelID: ', ModelID
-            dbase.close()
-        
-        def SimSpecular(self,TwoThetaQz,instrument):
-            return SimulationFunctions['Specular'](TwoThetaQz,self,instrument)
-
-        def SimOffSpecular(self,TwoThetaQz,ThetaQx,instrument):
-            return SimulationFunctions['OffSpecular'](TwoThetaQz,ThetaQx,self,instrument)
-
-        def SimSLD(self, z, item, instrument):
-            if SimulationFunctions.has_key('SLD'):
-                return SimulationFunctions['SLD'](z, item, self, instrument)
-            else:
-                return {}
-
-    return (Instrument,Layer,Stack,Sample)
+    sample = Sample(Stacks = [buffer ,ML ,top], Ambient = Amb, Substrate = Sub)
