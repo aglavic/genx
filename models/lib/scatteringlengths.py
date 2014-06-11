@@ -7,6 +7,9 @@ Last changed: 2009-03-19
 
 import numpy as np
 import re, string
+# Imports needed for the dispersive table implementation
+from scipy import interpolate
+import refl
 
 #==============================================================================
 class Func(object):
@@ -342,6 +345,24 @@ def create_fp_lookup(path):
         
         return f1_e - 1.0J*f2_e
     return lookup_func
+
+def create_fpdisp_lookup(path):
+    '''create_f_lookup(filename) --> lookup_func(name)
+
+    Creates a lookup function to lookup element names and returns a function
+    that yields a function of dispersive scattering factors f(E) at Q = 0. NOTE energy is in eV
+    '''
+    def create_dispersion_func(name):
+        e, f1, f2 = np.loadtxt(path + '%s.nff'%name.lower(), skiprows = 1,\
+                unpack = True)
+        f1interp = interpolate.interp1d(e, f1, kind = 'linear')
+        f2interp = interpolate.interp1d(e, f2, kind = 'linear')
+
+        def f(energy):
+            return f1interp(energy) - 1.0J*f2interp(energy)
+
+        return refl.ReflFunction(f, (1000,), {}, id = 'f(E)')
+    return create_dispersion_func
 
 def create_f_lookup(lookup_fp, f0):
     '''create_f_lookup(lookup_fp, f0) --> lookup_func(name, wavelength)

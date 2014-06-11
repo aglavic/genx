@@ -1,9 +1,158 @@
-import shelve, copy
 import numpy as np
 
 
+class ReflFunction:
+    def __init__(self, function, validation_args, validation_kwargs, id=None):
+        """ Creates the Refl Function given function. The arguments validation_args and
+        validation_kwargs will be used to the validate the returned type of the function by passing
+        them to function. The variable id should be a unique string to identify the type ReflFunction.
+        """
+        self.__func__ = function
+        self.validation_args = validation_args
+        self.validation_kwargs = validation_kwargs
+        self.id = id
+
+    def __call__(self, *args, **kwargs):
+        return self.__func__(*args, **kwargs)
+
+    def validate(self):
+        ''' Function to test that the function returns the anticipated type
+        '''
+        return self.__call__(*self.validation_args, **self.validation_kwargs)
+
+    def _check_obj(self, other):
+        """ Checks the object other so that it fulfills the demands for arithmetic operations.
+        """
+        supported_types = [int, float, long, complex]
+        if is_reflfunction(other):
+            if self.id != other.id:
+                raise TypeError("Two ReflFunction objects must have identical id's to conduct arithmetic operations")
+        elif not type(other) in supported_types:
+            raise TypeError("%s is not supported for arithmetic operations "% (repr(type(other))) +
+                            "of a ReflFunction. It has to int, float, long or complex" )
+
+    def __mul__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs)*other(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs)*other
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __rmul__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return other(*args, **kwargs)*self(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return other*self(*args, **kwargs)
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __add__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs) + other(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs) + other
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __radd__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return other(*args, **kwargs) + self(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return other + self(*args, **kwargs)
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __sub__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs) - other(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs) - other
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __rsub__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return other(*args, **kwargs) - self(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return other - self(*args, **kwargs)
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __div__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs)/other(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs)/other
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __rdiv__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return other(*args, **kwargs)/self(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return other/self(*args, **kwargs)
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __neg__(self):
+        def new_func(*args, **kwargs):
+            return -self(*args, **kwargs)
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __pos__(self):
+        def new_func(*args, **kwargs):
+            return self(*args, **kwargs)
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __pow__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs)**other(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return self(*args, **kwargs)**other
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+    def __rpow__(self, other):
+        self._check_obj(other)
+        if is_reflfunction(other):
+            def new_func(*args, **kwargs):
+                return other(*args, **kwargs)**self(*args, **kwargs)
+        else:
+            def new_func(*args, **kwargs):
+                return other**self(*args, **kwargs)
+        return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
+
+
+
+
+def is_reflfunction(obj):
+    ''' Convenience function to determine whether obj belongs to the ReflFunction class.
+    Return boolean.
+    '''
+    return obj.__class__.__name__ == 'ReflFunction'
+
+
 class ReflBase:
-    # _parameters is a dict of parameter names with their defualt values
+    # _parameters is a dict of parameter names with their default values
     _parameters = {}
 
     def __init__(self, **kargs):
@@ -24,7 +173,7 @@ class ReflBase:
             else:
                 setattr(self, k, kargs[k])
 
-    def _make_get_func(self, par, iscomplex = False):
+    def _make_get_func(self, par, iscomplex=False):
         ''' Creates a get function for parameter par and binds it to the object
         '''
 
@@ -47,7 +196,7 @@ class ReflBase:
             get_imag_func.__name__ = get_func.__name__ + 'imag'
             setattr(self, get_imag_func.__name__, get_imag_func)
 
-    def _make_set_func(self, par, iscomplex = False):
+    def _make_set_func(self, par, iscomplex=False):
         ''' Creates a set function for parameter par and binds it to the object
             '''
 
@@ -59,13 +208,13 @@ class ReflBase:
 
         if iscomplex:
             def set_real_func(val):
-                setattr(self, par, val + getattr(self, par).imag*1J)
+                setattr(self, par, val + getattr(self, par).imag * 1J)
 
             set_real_func.__name__ = set_func.__name__ + 'real'
             setattr(self, set_real_func.__name__, set_real_func)
 
             def set_imag_func(val):
-                setattr(self, par, val*1J + getattr(self, par).real)
+                setattr(self, par, val * 1J + getattr(self, par).real)
 
             set_imag_func.__name__ = set_func.__name__ + 'imag'
             setattr(self, set_imag_func.__name__, set_imag_func)
@@ -229,7 +378,7 @@ class ModelFactory:
             Sample class'''
         # The if not is a hook to so that everything works with the old implementation
         [self._add_parameter(self.Sample, k, parameters[k]) for k in parameters
-            if not k in ['Ambient', 'Substrate', 'Stacks']]
+         if not k in ['Ambient', 'Substrate', 'Stacks']]
 
     def set_simulation_functions(self, functions):
         ''' Adds the simulation functions to the sample class
@@ -287,23 +436,45 @@ if __name__ == '__main__':
     SampleParameters = {'Stacks': [], 'Ambient': None, 'Substrate': None}
 
     (Instrument, Layer, Stack, Sample) = MakeClasses(InstrumentParameters, \
-                                                          LayerParameters, StackParameters, SampleParameters,
-                                                            {'Specualr':lambda x:x}, \
-                                                          'test')
-    inst = Instrument(footype = 'gauss beam',probe = 'x-ray',beamw = 0.04,resintrange = 2,pol = 'uu',wavelength = 1.54,respoints = 5,Ibkg = 0.0,I0 = 2,samplelen = 10.0,restype = 'fast conv',coords = 'tth',res = 0.001,incangle = 0.0)
+                                                     LayerParameters, StackParameters, SampleParameters,
+                                                     {'Specualr': lambda x: x}, \
+                                                     'test')
+    inst = Instrument(footype='gauss beam', probe='x-ray', beamw=0.04, resintrange=2, pol='uu', wavelength=1.54,
+                      respoints=5, Ibkg=0.0, I0=2, samplelen=10.0, restype='fast conv', coords='tth', res=0.001,
+                      incangle=0.0)
 
     # BEGIN Sample DO NOT CHANGE
-    Amb = Layer(b = 0, d = 0.0, f = (1e-20+1e-20j), dens = 1.0, magn_ang = 0.0, sigma = 0.0, xs_ai = 0.0, magn = 0.0)
-    topPt = Layer(b = 0, d = 11.0, f = 58, dens = 4/3.92**3, magn_ang = 0.0, sigma = 3.0, xs_ai = 0.0, magn = 0.0)
-    TopFe = Layer(b = 0, d = 11.0, f = 26, dens = 2/2.866**3, magn_ang = 0.0, sigma = 2.0, xs_ai = 0.0, magn = 0.0)
-    Pt = Layer(b = 0, d = 11.0, f = 58, dens = 4/3.92**3, magn_ang = 0.0, sigma = 2.0, xs_ai = 0.0, magn = 0.0)
-    Fe = Layer(b = 0, d = 11, f = 26, dens = 2/2.866**3, magn_ang = 0.0, sigma = 2.0, xs_ai = 0.0, magn = 0.0)
-    bufPt = Layer(b = 0, d = 45, f = 58, dens = 4/3.92**3, magn_ang = 0.0, sigma = 2, xs_ai = 0.0, magn = 0.0)
-    bufFe = Layer(b = 0, d = 2, f = 26, dens = 2/2.866**3, magn_ang = 0.0, sigma = 2, xs_ai = 0.0, magn = 0.0)
-    Sub = Layer(b = 0, d = 0.0, f = 12 + 16, dens = 2/4.2**3, magn_ang = 0.0, sigma = 4.0, xs_ai = 0.0, magn = 0.0)
+    Amb = Layer(b=0, d=0.0, f=(1e-20 + 1e-20j), dens=1.0, magn_ang=0.0, sigma=0.0, xs_ai=0.0, magn=0.0)
+    topPt = Layer(b=0, d=11.0, f=58, dens=4 / 3.92 ** 3, magn_ang=0.0, sigma=3.0, xs_ai=0.0, magn=0.0)
+    TopFe = Layer(b=0, d=11.0, f=26, dens=2 / 2.866 ** 3, magn_ang=0.0, sigma=2.0, xs_ai=0.0, magn=0.0)
+    Pt = Layer(b=0, d=11.0, f=58, dens=4 / 3.92 ** 3, magn_ang=0.0, sigma=2.0, xs_ai=0.0, magn=0.0)
+    Fe = Layer(b=0, d=11, f=26, dens=2 / 2.866 ** 3, magn_ang=0.0, sigma=2.0, xs_ai=0.0, magn=0.0)
+    bufPt = Layer(b=0, d=45, f=58, dens=4 / 3.92 ** 3, magn_ang=0.0, sigma=2, xs_ai=0.0, magn=0.0)
+    bufFe = Layer(b=0, d=2, f=26, dens=2 / 2.866 ** 3, magn_ang=0.0, sigma=2, xs_ai=0.0, magn=0.0)
+    Sub = Layer(b=0, d=0.0, f=12 + 16, dens=2 / 4.2 ** 3, magn_ang=0.0, sigma=4.0, xs_ai=0.0, magn=0.0)
 
-    top = Stack(Layers=[TopFe , topPt], Repetitions = 1)
-    ML = Stack(Layers=[Fe , Pt], Repetitions = 19)
-    buffer = Stack(Layers=[bufFe , bufPt], Repetitions = 1)
+    top = Stack(Layers=[TopFe, topPt], Repetitions=1)
+    ML = Stack(Layers=[Fe, Pt], Repetitions=19)
+    buffer = Stack(Layers=[bufFe, bufPt], Repetitions=1)
 
-    sample = Sample(Stacks = [buffer ,ML ,top], Ambient = Amb, Substrate = Sub)
+    sample = Sample(Stacks=[buffer, ML, top], Ambient=Amb, Substrate=Sub)
+
+    # Test case for ReflFunction class
+    from scipy import interpolate
+
+    def create_dispersion_func(name='Fe'):
+        path = '../databases/f1f2_nist/'
+        e, f1, f2 = np.loadtxt(path + '%s.nff' % name.lower(), skiprows=1, \
+                               unpack=True)
+        f1interp = interpolate.interp1d(e, f1, kind='linear')
+        f2interp = interpolate.interp1d(e, f2, kind='linear')
+
+        def f(energy):
+            return f1interp(energy) - 1.0J * f2interp(energy)
+
+        return f
+
+
+    fFe = ReflFunction(create_dispersion_func('Fe'), (1000,), {}, id = 'f(E)')
+    fCo = ReflFunction(create_dispersion_func('Co'), (1000,), {}, id = 'f(E)')
+    print fFe.validate()

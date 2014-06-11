@@ -155,6 +155,10 @@ __f_chantler_dict__ = sl.read_dabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat
 __lookup_fpc__ = sl.load_fdabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')
 fpc = sl.FormFactor(15.4, __lookup_fpc__)
 
+__lookup_fdisp__ = sl.create_fpdisp_lookup(__MODULE_DIR__+'/databases/f1f2_nist/')
+fd = sl.Database()
+object.__setattr__(fd, 'lookup_value', __lookup_fdisp__)
+
 if __name__=='__main__':
     #MyVars=UserVars()
     #MyVars.newVar('a',3)
@@ -164,8 +168,9 @@ if __name__=='__main__':
     #f.set_wavelength(1.54)
     #print 'f.fe(0)', f.fe(0)
     #print 'f.fe2p(0)', f.fe2p(0)
-    fe = np.array(__f_chantler_dict__['fe'])
-    print fe.reshape(len(fe)/7, 7)
-    #print bc.fe
-    print fpc.Sn
-    print fp.Sn
+    #fe = np.array(__f_chantler_dict__['fe'])
+    #print fe.reshape(len(fe)/7, 7)
+    ##print bc.fe
+    #print fpc.Sn
+    #print fp.Sn
+    print fd.Fe(100.0)
