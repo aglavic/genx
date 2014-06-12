@@ -106,8 +106,6 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     'uu','dd' or 'ud', or the respective number 0-2 also works.</dd>
 '''
 from numpy import *
-
-import lib.paratt as Paratt
 try:
     import lib.paratt_weave as Paratt
 except StandardError,S:
@@ -116,6 +114,7 @@ except StandardError,S:
     import lib.paratt as Paratt
 import lib.neutron_refl as MatrixNeutron
 from lib.instrument import *
+import lib.refl as refl
 # Preamble to define the parameters needed for the models outlined below:
 
 ModelID='SpecNX'
@@ -179,6 +178,9 @@ LayerGroups = [('Standard',['f','dens','d','sigma']),
 StackParameters={'Layers':[], 'Repetitions':1}
 SampleParameters={'Stacks':[], 'Ambient':None, 'Substrate':None}
 
+AA_to_eV = 12398.5
+''' Conversion from Angstrom to eV E = AA_to_eV/lamda.'''
+
 # A buffer to save previous calculations for spin-flip calculations
 class Buffer:
     Ruu = 0
@@ -187,8 +189,70 @@ class Buffer:
     Rud = 0
     parameters = None
 
+
+def footprintcorr(Q, instrument):
+    foocor = 1.0
+    footype = instrument.getFootype()
+    beamw = instrument.getBeamw()
+    samlen = instrument.getSamplelen()
+    theta = arcsin(Q * instrument.getWavelength() / 4.0 / pi) * 180 / pi
+    if footype == 1 or footype == instrument_string_choices['footype'][1]:
+        foocor = GaussIntensity(theta, samlen / 2.0, samlen / 2.0, beamw)
+    elif footype == 2 or footype == instrument_string_choices['footype'][2]:
+        foocor = SquareIntensity(theta, samlen, beamw)
+    elif footype == 0 or footype == instrument_string_choices['footype'][0]:
+        pass
+    else:
+        raise ValueError('The choice of footprint correction, footype,'
+                         'is WRONG')
+
+    return foocor
+
+
+def resolutioncorr(R, TwoThetaQz, foocor, instrument, weight):
+    ''' Do the convolution of the reflectivity to account for resolution effects.'''
+    restype = instrument.getRestype()
+    if restype == instrument_string_choices['restype'][1] or restype == 1:
+        R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.getRes(), \
+                          range=instrument.getResintrange())
+    elif restype == instrument_string_choices['restype'][2] or restype == 2:
+        R = ConvoluteResolutionVector(TwoThetaQz, R[:] * foocor, weight)
+    elif restype == instrument_string_choices['restype'][3] or restype == 3:
+        R = ConvoluteFastVar(TwoThetaQz, R[:] * foocor, instrument.getRes(), \
+                             range=instrument.getResintrange())
+    elif restype == instrument_string_choices['restype'][0] or restype == 0:
+        R = R[:] * foocor
+    else:
+        raise ValueError('The choice of resolution type, restype,'
+                         'is WRONG')
+    return R
+
+
+def resolution_init(TwoThetaQz, instrument):
+    ''' Inits the dependet variable with regards to coordinates and resolution.'''
+    restype = instrument.getRestype()
+    weight = 0
+    if restype == 2 or restype == instrument_string_choices['restype'][2]:
+        (TwoThetaQz, weight) = ResolutionVector(TwoThetaQz[:], \
+                                                instrument.getRes(), instrument.getRespoints(), \
+                                                range=instrument.getResintrange())
+    # TTH values given as x
+    if instrument.getCoords() == instrument_string_choices['coords'][1] \
+            or instrument.getCoords() == 1:
+        Q = 4 * pi / instrument.getWavelength() * sin((TwoThetaQz + instrument.getTthoff()) * pi / 360.0)
+    # Q vector given....
+    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
+            or instrument.getCoords() == 0:
+        Q = 4 * pi / instrument.getWavelength() * sin(
+            arcsin(TwoThetaQz * instrument.getWavelength() / 4 / pi) + instrument.getTthoff() * pi / 360.)
+    else:
+        raise ValueError('The value for coordinates, coords, is WRONG!'
+                         'should be q(0) or tth(1).')
+    return Q, TwoThetaQz, weight
+
+
 def Specular(TwoThetaQz,sample,instrument):
-    ''' Simulate the specular signal from sample when proped with instrument
+    ''' Simulate the specular signal from sample when probed with instrument
     
     # BEGIN Parameters
     TwoThetaQz data.x
@@ -196,30 +260,16 @@ def Specular(TwoThetaQz,sample,instrument):
     '''
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
-
-    if restype == 2 or restype == instrument_string_choices['restype'][2]:
-        (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:], \
-              instrument.getRes(), instrument.getRespoints(),\
-               range = instrument.getResintrange())
-    # TTH values given as x
-    if instrument.getCoords() == instrument_string_choices['coords'][1]\
-     or instrument.getCoords() == 1:
-        Q = 4*pi/instrument.getWavelength()*sin((TwoThetaQz + instrument.getTthoff())*pi/360.0)
-    # Q vector given....
-    elif instrument.getCoords() == instrument_string_choices['coords'][0]\
-     or instrument.getCoords() == 0:
-        Q = 4*pi/instrument.getWavelength()*sin(arcsin(TwoThetaQz*instrument.getWavelength()/4/pi)+instrument.getTthoff()*pi/360.)
-    else:
-        raise ValueError('The value for coordinates, coords, is WRONG!'
-                        'should be q(0) or tth(1).')
+    Q, TwoThetaQz, weight = resolution_init(TwoThetaQz, instrument)
             
     type = instrument.getProbe()
     pol = instrument.getPol()
-    
-    lamda = instrument.getWavelength()
+
     parameters = sample.resolveLayerParameters()
     if type ==  instrument_string_choices['probe'][0] or type==0:
-        fb = array(parameters['f'], dtype = complex64)
+        #fb = array(parameters['f'], dtype = complex64)
+        e = AA_to_eV/instrument.getWavelength()
+        fb = refl.cast_to_array(parameters['f'], e)
     else: 
         fb = array(parameters['b'], dtype = complex64).real*1e-5
         abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
@@ -319,39 +369,77 @@ def Specular(TwoThetaQz,sample,instrument):
     else:
         raise ValueError('The choice of probe is WRONG')
     #FootprintCorrections
-    
-    foocor = 1.0
-    footype = instrument.getFootype()
-    beamw = instrument.getBeamw()
-    samlen = instrument.getSamplelen()
-    theta = arcsin(Q*instrument.getWavelength()/4.0/pi)*180/pi
-    if footype == 1 or footype == instrument_string_choices['footype'][1]:
-        foocor = GaussIntensity(theta, samlen/2.0, samlen/2.0, beamw)
-    elif footype == 2 or footype == instrument_string_choices['footype'][2]:
-        foocor=SquareIntensity(theta, samlen, beamw)
-    elif footype == 0 or footype == instrument_string_choices['footype'][0]:
-        pass
-    else:
-        raise ValueError('The choice of footprint correction, footype,'
-            'is WRONG')
-        
+
+    foocor = footprintcorr(Q, instrument)
     #Resolution corrections
-    if restype == instrument_string_choices['restype'][1] or restype == 1:
-        R = ConvoluteFast(TwoThetaQz,R[:]*foocor,instrument.getRes(),\
-             range=instrument.getResintrange())
-    elif restype == instrument_string_choices['restype'][2] or restype == 2:
-        R = ConvoluteResolutionVector(TwoThetaQz,R[:]*foocor,weight)
-    elif restype == instrument_string_choices['restype'][3] or restype == 3:
-        R = ConvoluteFastVar(TwoThetaQz,R[:]*foocor,instrument.getRes(),\
-            range = instrument.getResintrange())
-    elif restype == instrument_string_choices['restype'][0] or restype == 0:
-        R = R[:]*foocor
-    else:
-        raise ValueError('The choice of resolution type, restype,'
-            'is WRONG')
+    R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
     
     return R*instrument.getI0() + instrument.getIbkg()
     
+def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
+    ''' Simulate the specular signal from sample when probed with instrument. Energy should be in eV.
+
+    # BEGIN Parameters
+    Energy data.x
+    TwoThetaQz 3.0
+    # END Parameters
+    '''
+    # preamble to get it working with my class interface
+    restype = instrument.getRestype()
+    #TODO: Fix so that resolution can be included.
+    if restype != 0 and restype != instrument_string_choices['restype'][0]:
+        raise ValueError('Only no resolution is allowed for energy scans.')
+
+    wl = AA_to_eV/Energy
+
+    # TTH values given as x
+    if instrument.getCoords() == instrument_string_choices['coords'][1] \
+            or instrument.getCoords() == 1:
+        theta = TwoThetaQz/2.0
+    # Q vector given....
+    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
+            or instrument.getCoords() == 0:
+        theta = arcsin(TwoThetaQz * wl / 4 / pi)*180.0/pi
+
+    else:
+        raise ValueError('The value for coordinates, coords, is WRONG!'
+                         'should be q(0) or tth(1).')
+    Q = 4 * pi / wl * sin((2*theta + instrument.getTthoff()) * pi / 360.0)
+
+    type = instrument.getProbe()
+
+    parameters = sample.resolveLayerParameters()
+    if type ==  instrument_string_choices['probe'][0] or type==0:
+        fb = refl.cast_to_array(parameters['f'], Energy)
+    else:
+        fb = array(parameters['b'], dtype = complex64).real*1e-5
+        abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
+
+    dens = array(parameters['dens'], dtype = complex64)
+    d = array(parameters['d'], dtype = float64)
+    sigma = array(parameters['sigma'], dtype = float64)
+
+
+    if type == instrument_string_choices['probe'][0] or type == 0:
+        sld = dens[:, newaxis]*fb*wl**2/2/pi
+    else:
+        wl = instrument.getWavelength()
+        sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
+                               1.0J*abs_xs*wl/4/pi)
+    # Ordinary Paratt X-rays
+    if type == instrument_string_choices['probe'][0] or type == 0:
+        #R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
+        R = Paratt.Refl_nvary2(theta, wl, 1.0 - 2.82e-5*sld, d, sigma)
+    else:
+        raise ValueError('The choice of probe is WRONG')
+    #TODO: Fix corrections
+    #FootprintCorrections
+    #foocor = footprintcorr(Q, instrument)
+    #Resolution corrections
+    #R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
+
+    return R*instrument.getI0() + instrument.getIbkg()
+
 
 def OffSpecular(TwoThetaQz,ThetaQx,sample,instrument):
     ''' Function that simulates the off-specular signal (not implemented)
@@ -376,7 +464,9 @@ def SLD_calculations(z, item, sample, inst):
     '''
     parameters = sample.resolveLayerParameters()
     dens = array(parameters['dens'], dtype = complex64)
-    f = array(parameters['f'], dtype = complex64)
+    #f = array(parameters['f'], dtype = complex64)
+    e = AA_to_eV/inst.getWavelength()
+    f = refl.cast_to_array(parameters['f'], e)
     b = array(parameters['b'], dtype = complex64)
     type = inst.getProbe()
     magnetic = False
@@ -430,13 +520,14 @@ def SLD_calculations(z, item, sample, inst):
         except:
             raise ValueError('The chosen item, %s, does not exist'%item)
 
-SimulationFunctions={'Specular':Specular, \
-                     'OffSpecular':OffSpecular, \
-                     'SLD': SLD_calculations\
+SimulationFunctions={'Specular':Specular,
+                     'OffSpecular':OffSpecular,
+                     'SLD': SLD_calculations,
+                     'EnergySpecular': EnergySpecular,
                     }
 
-import lib.refl as Refl
-(Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,\
+
+(Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters,\
     LayerParameters, StackParameters, SampleParameters, SimulationFunctions,\
     ModelID)
 

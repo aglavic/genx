@@ -4,6 +4,12 @@ import string
 
 import reflectivity_images as images
 
+def is_reflfunction(obj):
+    ''' Convenience function to determine whether obj belongs to the ReflFunction class.
+    Return boolean.
+    '''
+    return obj.__class__.__name__ == 'ReflFunction'
+
 class TextObjectValidator(wx.PyValidator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
@@ -272,8 +278,10 @@ class FloatObjectValidator(wx.PyValidator):
         text = textCtrl.GetValue()
         self.value=None
         try:
-           self.value=float(self.eval_func(text))
-        
+            val = self.eval_func(text)
+            if is_reflfunction(val):
+                val = val.validate()
+            self.value=float(val)
         except StandardError,S:
             wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
             textCtrl.SetBackgroundColour("pink")
@@ -328,11 +336,13 @@ class ComplexObjectValidator(wx.PyValidator):
         text = textCtrl.GetValue()
         self.value=None
         try:
-           # Have to do it differentily to work with proxys
-           # self.value=complex(self.eval_func(text))
-           val = self.eval_func(text)
-           self.value = complex(val.real, val.imag)
-        except AttributeError,S:
+            # Have to do it differentily to work with proxys
+            # self.value=complex(self.eval_func(text))
+            val = self.eval_func(text)
+            if is_reflfunction(val):
+                val = val.validate()
+            self.value = complex(val.real, val.imag)
+        except AttributeError, S:
             try:
                self.value = complex(val)
             except StandardError,S:
