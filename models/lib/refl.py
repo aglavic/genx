@@ -1,3 +1,17 @@
+''' Module to provide the Layer - Stack - Sample classes to build a sample for reflectivity modelling.
+
+Classes:
+ReflFunction - A function class that can be used as a parameter in the other classes.
+is_reflfunction - Funtion that checks if an object belongs to the class ReflFunction
+ReflBase - Base class for all the physical classes.
+LayerBase - Base Layer class.
+StackBase - Base Stack class.
+SampleBase - Base Sample class.
+InstrumentBase - Base Instrument class.
+ModelFactory - A factory class that creates specific instances of the Base classes for a certain set of parameters.
+MakeClasses - Function that creates the classes (backward comparability).
+'''
+
 import numpy as np
 
 
@@ -142,6 +156,39 @@ class ReflFunction:
         return ReflFunction(new_func, self.validation_args, self.validation_kwargs, self.id)
 
 
+def cast_to_array(list_of_obj, *args, **kwargs):
+    ''' Casts an list_of_obj, can be a number or an ReflFunction, into an list of evaluated values'''
+    id = ''
+    shape = False
+    ret_list = []
+    for obj in list_of_obj:
+        if is_reflfunction(obj):
+            if id == '':
+                id = obj.id
+                ret_list.append(obj(*args, **kwargs))
+                # Check if we have got an array
+                if not np.isscalar(ret_list[-1]):
+                    shape = ret_list[-1].shape
+            elif id == obj.id:
+                ret_list.append(obj(*args, **kwargs))
+            else:
+                TypeError("Two ReflFunction objects must have identical id's in order to merge them into an array")
+        else:
+            # We assume that this is an object that can be transformed into an array later on.
+            ret_list.append(obj)
+    # if we have an array make sure that all the objects have the same shape
+    if shape:
+        base_array = np.ones(shape)
+        nret_list = []
+        for item in ret_list:
+            if np.isscalar(item):
+                nret_list.append(item*base_array)
+            else:
+                nret_list.append(item)
+        ret_list = nret_list
+
+    return np.array(ret_list)
+
 
 
 def is_reflfunction(obj):
@@ -149,6 +196,8 @@ def is_reflfunction(obj):
     Return boolean.
     '''
     return obj.__class__.__name__ == 'ReflFunction'
+
+
 
 
 class ReflBase:
@@ -478,3 +527,8 @@ if __name__ == '__main__':
     fFe = ReflFunction(create_dispersion_func('Fe'), (1000,), {}, id = 'f(E)')
     fCo = ReflFunction(create_dispersion_func('Co'), (1000,), {}, id = 'f(E)')
     print fFe.validate()
+    print 'Cast to array tests:'
+    ltest = [fFe, 3.0, 3.0]
+    print 'Test single value: ', cast_to_array(ltest, 1000)
+    print 'Test array: ', cast_to_array(ltest, np.arange(1000, 1010))
+    print 'Cast to array finished.'
