@@ -792,7 +792,8 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
     sl_c = (dens*(f + resdens*fr))[:, newaxis]*ones(theta.shape)
     # This is wrong!!! I should have a cos theta dep.
     #sl_m1 = (dens*resdens*resmag*fm1)[:, newaxis]*cos(theta - theta_m[:,newaxis])*cos(phi[:,newaxis])
-    sl_m1 = (dens*resdens*resmag*mag*fm1)[:, newaxis]*cos(theta)
+
+    sl_m1 = (dens*resdens*resmag*mag*fm1)[:, newaxis]*cos(theta)*(cos(theta_m)*cos(phi))[:, newaxis]
     #print M
     #print sl_c.shape, sl_m1.shape
     sigma_c = array(parameters['sigma_c'], dtype = float64)
@@ -820,7 +821,7 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
         #print b.shape, abs_xs.shape, theta.shape
         sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
                                1.0J*abs_xs*wl/4/pi)
-        msld = (2.645e-5*mag*dens*wl**2/2/pi)[:,newaxis]*ones(theta.shape)
+        msld = (2.645e-5*mag*dens*wl**2/2/pi)[:,newaxis]*ones(theta.shape)*(cos(theta_m)*cos(phi))[:, newaxis]
         if pol in ['++', 'uu']:
             n = 1.0 - sld - msld
             n_l = 1.0 - sld - msld*(1.0 + dmag_l)[:, newaxis]
@@ -831,15 +832,15 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
             n_u = 1.0 - sld + msld*(1.0 + dmag_u)[:, newaxis]
     elif (theory == 4 or theory == instrument_string_choices['theory'][4]):
         wl = 4*pi*sin(instrument.getIncang()*pi/180)/Q
-        print 'wl: ', wl
+        #print 'wl: ', wl
         b = (array(parameters['b'], dtype = complex128).real*1e-5)[:, newaxis]*ones(wl.shape)
         abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(wl.shape)
-        print b
+        #print b
         #print b.shape, abs_xs.shape, theta.shape
         sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
                                1.0J*abs_xs*wl/4/pi)
-        print 'sld: ',sld
-        msld = (2.645e-5*(mag*dens)[:,newaxis]*wl**2/2/pi)
+        #print 'sld: ',sld
+        msld = (2.645e-5*(mag*dens)[:,newaxis]*wl**2/2/pi)*(cos(theta_m)*cos(phi))[:, newaxis]
 
         if pol in ['++', 'uu']:
             n = 1.0 - sld - msld
