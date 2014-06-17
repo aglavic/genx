@@ -36,6 +36,14 @@ def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-
     mpy_limit - magnet parallel to y limit the angle to the y-axis where the sample is assumed
     to be parallel to the y-direction
 
+    Sizes of input arrays:
+    g_0: # data points
+    lamda: Either a scalar or a array with size # data points
+    d: An array of size # layers
+    A, B, C, chi0: either all arrays with size # layers or 2 D arrays of size (# layers, # data points)
+    M: either an array of size (3, # layers) or (3, # layers, # data points)
+    The if the case of more dimensions is used for one array it has to applied to all the other arrays.
+
     Note that the first layer should be the ambient and the last the substrate!
     '''
     chi, non_mag, mpy = create_chi(g_0, lamda, chi0, A, B, C, M, d, 
@@ -93,7 +101,7 @@ def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e
     B = B.astype(np.complex128)
     C = C.astype(np.complex128)
 
-    m_x = M[..., 0]; m_y = M[..., 1]; m_z = M[..., 2]
+    m_x = M[:, 0]; m_y = M[:, 1]; m_z = M[:, 2]
     #print 'my: ', m_y, m_x, m_z
     chi_xx = (chi0 + A + C*m_x*m_x)
     chi_yy = (chi0 + A + C*m_y*m_y)
@@ -123,16 +131,18 @@ def calc_u_S(chi, g_0, mpy, non_mag):
     chi_xx, chi_xy, chi_xz = chi[0]
     chi_yx, chi_yy, chi_yz = chi[1]
     chi_zx, chi_zy, chi_zz = chi[2]
-    trans = np.ones(g_0.shape, dtype=np.complex128)
-    chi_xx = trans * chi_xx[:, np.newaxis];
-    chi_xy = trans * chi_xy[:, np.newaxis]
-    chi_xz = trans * chi_xz[:, np.newaxis];
-    chi_yx = trans * chi_yx[:, np.newaxis]
-    chi_yy = trans * chi_yy[:, np.newaxis];
-    chi_yz = trans * chi_yz[:, np.newaxis]
-    chi_zx = trans * chi_zx[:, np.newaxis];
-    chi_zy = trans * chi_zy[:, np.newaxis]
-    chi_zz = trans * chi_zz[:, np.newaxis]
+    # Check if the chi_xx has the correct format already or not
+    if len(chi_xx.shape) < 2:
+        trans = np.ones(g_0.shape, dtype=np.complex128)
+        chi_xx = trans * chi_xx[:, np.newaxis];
+        chi_xy = trans * chi_xy[:, np.newaxis]
+        chi_xz = trans * chi_xz[:, np.newaxis];
+        chi_yx = trans * chi_yx[:, np.newaxis]
+        chi_yy = trans * chi_yy[:, np.newaxis];
+        chi_yz = trans * chi_yz[:, np.newaxis]
+        chi_zx = trans * chi_zx[:, np.newaxis];
+        chi_zy = trans * chi_zy[:, np.newaxis]
+        chi_zz = trans * chi_zz[:, np.newaxis]
 
     n_x = np.sqrt(1.0 - g_0 ** 2)
     q1 = 1 + chi_zz
@@ -269,7 +279,7 @@ def calc_u_S(chi, g_0, mpy, non_mag):
 
 
 def recursion_matrix(X, chi, d, g_0, lamda, u):
-
+    ''' Use the recursion matrix algorithm to form the W matrix for a multilayer '''
     kappa = 2 * np.pi / lamda
     Fp = np.zeros((2, 2, chi[0][0].shape[0], g_0.shape[1]), dtype=np.complex128)
     Fm = np.zeros((2, 2, chi[0][0].shape[0], g_0.shape[1]), dtype=np.complex128)
@@ -305,6 +315,7 @@ def recursion_matrix(X, chi, d, g_0, lamda, u):
 
 
 def do_calc(g_0, lamda, chi, d, non_mag, mpy):
+    ''' Do the calculation to form the mulatilayer reflectivity matrix, W'''
     # Setting up g0 to be the last index
     g_0 = g_0 * np.ones(chi[0][0].shape[0], dtype=np.complex128)[:, np.newaxis]
     u, S = calc_u_S(chi, g_0, mpy, non_mag)
@@ -375,6 +386,10 @@ def calc_nonres(g_0, lamda, chi0, d):
     
 
 if __name__ == '__main__':
+    #alpha = np.arange(0.01, 10.0, 0.01)
+    alpha = np.arange(0.25, 30.0, 0.25)
+    g_0 = np.sin(alpha*np.pi/180.0)
+
     F10 = 16.0 + 10.0J
     F11 = 12.0 + 6.0J
     F1m1 = 20.0 + 14.0J
@@ -383,19 +398,20 @@ if __name__ == '__main__':
     n_a_co = 2./2.86**3
     n_a_pt = 4./3.92**3
     l = 15.77
+    l_array = l*np.ones(g_0.shape)
     #l = 1.07
     re = 2.8179402894e-5
     chi0_co = -l**2*re/np.pi*n_a_co*fco 
     chi0_pt = -l**2*re/np.pi*n_a_pt*fpt
     
     #Single layer BEGIN
-    A = np.array([0, l**2*re/np.pi*n_a_co*(F11 + F1m1), 0], dtype = np.complex128)
-    B = np.array([0, l**2*re/np.pi*n_a_co*(F11 - F1m1), 0.0], dtype = np.complex128)
-    C = np.array([0, l**2*re/np.pi*n_a_co*(2*F10 - F11 - F1m1), 0], dtype = np.complex128)
+    A = np.array([0, l**2*re/np.pi*n_a_co*(F11 + F1m1), 0], dtype = np.complex128)[:,np.newaxis]*np.ones(g_0.shape)
+    B = np.array([0, l**2*re/np.pi*n_a_co*(F11 - F1m1), 0.0], dtype = np.complex128)[:,np.newaxis]*np.ones(g_0.shape)
+    C = np.array([0, l**2*re/np.pi*n_a_co*(2*F10 - F11 - F1m1), 0], dtype = np.complex128)[:,np.newaxis]*np.ones(g_0.shape)
     
-    chi0 = np.array([0.0, chi0_co, chi0_pt])
+    chi0 = np.array([0.0, chi0_co, chi0_pt])[:,np.newaxis]*np.ones(g_0.shape)
     d = np.array([1.0, 100.0, 10.0])
-    M = np.array([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+    M = np.array([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]])[:,:,np.newaxis]*np.ones(g_0.shape)
     # SINGLE LAYER END
 
     #Single interface BEGIN
@@ -420,10 +436,8 @@ if __name__ == '__main__':
     ##M = np.array([[1.0, 0.0, 0.0]]  + [[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]*N + [[1.0, 0.0, 0.0]])
     
     
-    #alpha = np.arange(0.01, 10.0, 0.01)
-    alpha = np.arange(0.25, 30.0, 0.25)
-    g_0 = np.sin(alpha*np.pi/180.0)
-    W = calc_refl(g_0, l, chi0, A, B, C, M, d)
+
+    W = calc_refl(g_0, l_array, chi0, A, B, C, M, d)
     #W = calc_nonres(g_0, l, chi0, d)
     Ias = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(np.abs(W[0,0])**2 + np.abs(W[1,0])**2 + np.abs(W[0,1])**2 + np.abs(W[1,1])**2)
     Itot = (np.abs(W[0,0])**2 + np.abs(W[1,0])**2 + np.abs(W[0,1])**2 + np.abs(W[1,1])**2)/2
