@@ -189,6 +189,18 @@ def cast_to_array(list_of_obj, *args, **kwargs):
 
     return np.array(ret_list)
 
+def harm_sizes(ar, shape, dtype = np.float64):
+    '''Utility function to add an additional axis if needed to fulfill the size in shape'''
+    ar = np.array(ar, dtype = dtype)
+    if shape is None:
+        return ar
+    elif len(ar.shape) < len(shape):
+        return np.array(ar[..., np.newaxis]*np.ones(shape), dtype = dtype)
+    elif ar.shape == shape:
+        return ar
+    else:
+        raise TypeError('The size of the array, %s, can not be changed to shape %s'%(ar.shape, shape))
+
 
 
 def is_reflfunction(obj):

@@ -1,8 +1,8 @@
 '''Library to calculate the reflectivity with the formalism presented in
 S.A. Stephanov and S.K Shina PRB 61 15304.
 
-All the matrices in this module has the following index order:
-index Meaning
+All the matrices/arrays in this module has the following index order:
+index: Meaning
 1: matrix row
 2: matrix column
 3: Layer index
@@ -63,9 +63,13 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
     chi_b, non_mag_b, mpy_b = create_chi(g_0, lamda, chi0, A, B, C, M, d,
                                    mag_limit = mag_limit, mpy_limit = mpy_limit)
     scale = (1. + dmag_l)
+    if len(B.shape) == 2:
+        scale = scale[:, np.newaxis]*np.ones(g_0.shape)
     chi_l, non_mag_l, mpy_l = create_chi(g_0, lamda, chi0, A, B*scale, C*scale**2, M, dd_l,
                                    mag_limit = mag_limit, mpy_limit = mpy_limit)
     scale = (1. + dmag_u)
+    if len(B.shape) == 2:
+        scale = scale[:, np.newaxis]*np.ones(g_0.shape)
     chi_u, non_mag_u, mpy_u = create_chi(g_0, lamda, chi0, A, B*scale, C*scale**2, M, dd_u,
                                    mag_limit = mag_limit, mpy_limit = mpy_limit)
 
@@ -438,6 +442,8 @@ if __name__ == '__main__':
     
 
     W = calc_refl(g_0, l_array, chi0, A, B, C, M, d)
+    W = calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0,
+                      d*0, d*0)
     #W = calc_nonres(g_0, l, chi0, d)
     Ias = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(np.abs(W[0,0])**2 + np.abs(W[1,0])**2 + np.abs(W[0,1])**2 + np.abs(W[1,1])**2)
     Itot = (np.abs(W[0,0])**2 + np.abs(W[1,0])**2 + np.abs(W[0,1])**2 + np.abs(W[1,1])**2)/2

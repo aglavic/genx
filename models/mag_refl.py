@@ -171,6 +171,7 @@ the api can change significantly from version to version. Should only be used by
     
 '''
 
+from lib import refl
 import lib.xrmr
 import lib.edm_slicing as edm
 try:
@@ -310,6 +311,24 @@ class NBuffer:
     parameters = None
     TwoThetaQz = None
 
+AA_to_eV = 12398.5
+''' Conversion from Angstrom to eV E = AA_to_eV/lamda.'''
+
+
+def correct_reflectivity(R, TwoThetaQz, instrument, theta, weight):
+    pol = instrument.getXpol()
+    theory = instrument.getTheory()
+    if not ((pol == 3 or pol == instrument_string_choices['xpol'][3]) and
+                (theory < 2 or theory in instrument_string_choices['theory'][:2])):
+        #FootprintCorrections
+        foocor = footprint_correction(instrument, theta)
+        R = convolute_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
+        R = R * instrument.getI0() + instrument.getIbkg()
+    else:
+        foocor = footprint_correction(instrument, theta) * 0 + 1.0
+        R = convolute_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
+    return R
+
 
 def Specular(TwoThetaQz, sample, instrument):
     ''' Simulate the specular signal from sample when proped with instrument
@@ -320,6 +339,7 @@ def Specular(TwoThetaQz, sample, instrument):
     '''
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
+    xray_energy = AA_to_eV/instrument.getWavelength()
     weight = None
     if restype == 2 or restype == instrument_string_choices['restype'][2]:
             (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:], \
@@ -334,19 +354,52 @@ def Specular(TwoThetaQz, sample, instrument):
     if any(theta < theta_limit):
         raise ValueError('The incident angle has to be above %.1e'%theta_limit)
     
-    R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz)
-    pol = instrument.getXpol()
-    theory = instrument.getTheory()
-    if not ((pol == 3 or pol == instrument_string_choices['xpol'][3]) and 
-        (theory < 2 or theory in instrument_string_choices['theory'][:2])):
-        #FootprintCorrections
-        foocor = footprint_correction(instrument, theta)
-        R = correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
-        return R*instrument.getI0() + instrument.getIbkg()
+    R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz, xray_energy)
+
+    R = correct_reflectivity(R, TwoThetaQz, instrument, theta, weight)
+
+    return R
+
+def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
+    """ Simulate the specular signal from sample when probed with instrument. Energy should be in eV.
+
+    # BEGIN Parameters
+    Energy data.x
+    TwoThetaQz 3.0
+    # END Parameters
+    """
+
+    restype = instrument.getRestype()
+    #TODO: Fix so that resolution can be included.
+    if restype != 0 and restype != instrument_string_choices['restype'][0]:
+        raise ValueError('Only no resolution is allowed for energy scans.')
+
+    wl = AA_to_eV/Energy
+    if isscalar(TwoThetaQz):
+        TwoThetaQz = TwoThetaQz*ones(Energy.shape)
+    # TTH values given as x
+    if instrument.getCoords() == instrument_string_choices['coords'][1] \
+            or instrument.getCoords() == 1:
+        theta = TwoThetaQz/2.0
+    # Q vector given....
+    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
+            or instrument.getCoords() == 0:
+        theta = arcsin(TwoThetaQz * wl / 4 / pi)*180.0/pi
+
     else:
-        foocor = footprint_correction(instrument, theta)*0 + 1.0
-        R = correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
-        return R
+        raise ValueError('The value for coordinates, coords, is WRONG!'
+                         'should be q(0) or tth(1).')
+
+    if any(theta < theta_limit):
+        raise ValueError('The incident angle has to be above %.1e'%theta_limit)
+
+    R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz, Energy)
+
+    # TODO: Fix Corrections
+    #R = correct_reflectivity(R, TwoThetaQz, instrument, theta, weight)
+
+    return R
+
 
 def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
     ''' Function that simulates the off-specular signal (not implemented)
@@ -374,7 +427,9 @@ def SLD_calculations(z, item, sample, inst):
         return compose_sld_anal(z, sample, inst)
     lamda = inst.getWavelength()
     theory = inst.getTheory()
-    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens, z0 = compose_sld(sample, inst, array([0.0,]))
+    xray_energy = AA_to_eV/inst.getWavelength()
+    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens, z0 = compose_sld(sample, inst, array([0.0,]),
+                                                                                         xray_energy)
     z = zeros(len(d)*2)
     z[::2] = cumsum(r_[0,d[:-1]])
     z[1::2] = cumsum(r_[d])
@@ -489,10 +544,16 @@ def compose_sld_anal(z, sample, instrument):
     dd_l = array(parameters['dd_l'], dtype = float64)
     dd_u = array(parameters['dd_u'], dtype = float64)
     #print [type(f) for f in parameters['f']]
-    f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
-    fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
-    fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
-    fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
+    xray_energy  = AA_to_eV/instrument.getWavelength()
+    f = refl.cast_to_array(parameters['f'], xray_energy)
+    fr = refl.cast_to_array(parameters['fr'], xray_energy)
+    fm1 = refl.cast_to_array(parameters['fm1'], xray_energy)
+    fm2 = refl.cast_to_array(parameters['fm2'], xray_energy)
+
+    #f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
+    #fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
+    #fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
+    #fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
     
     d = array(parameters['d'], dtype = float64)
     
@@ -570,13 +631,8 @@ def compose_sld_anal(z, sample, instrument):
                 'Im sl_xx':c_xx.imag*c, 'Im sl_xy':c_xy.imag*c, 'Im sl_xz':c_xz.imag*c,
                 'Im sl_yy':c_yy.imag*c,'Im sl_yz':c_yz.imag*c,'Im sl_zz':c_zz.imag*c,
                 'z':z, 'SLD unit': 'r_e/\AA^{3}'}
-        #return {'Re sld_c': sld_c.real, 'Im sld_c': sld_c.imag,
-        #        'Re sld_m': sld_m.real, 'Im sld_m': sld_m.imag,
-        #        'mag_dens': mag_dens,
-        #        'z':z, 'SLD unit': 'r_{e}/\AA^{3},\,\mu_{B}/\AA^{3}'}
     elif (theory == 1 or theory == instrument_string_choices['theory'][1]):
         # Simplified anisotropic
-        #print sl_cp.shape, sl_np.shape, abs_np.shape, mag_densp.shape, z.shape
         return {'Re sld_c': sld_c.real, 'Im sld_c': sld_c.imag,
                 'Re sld_m': sld_m.real, 'Im sld_m': sld_m.imag,
                 'mag_dens': mag_dens,
@@ -597,71 +653,75 @@ def compose_sld_anal(z, sample, instrument):
         raise ValueError('Wrong value of theory given. Value: %s'%theory)
     
 
-def compose_sld(sample, instrument, theta):
+def compose_sld(sample, instrument, theta, xray_energy):
     re = 2.8179402894e-5
-    lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = float64)
-    resdens = array(parameters['resdens'], dtype = float64)
-    resmag = array(parameters['resmag'], dtype = float64)
-    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
     dd_u = array(parameters['dd_u'], dtype = float64)
     dd_l = array(parameters['dd_l'], dtype = float64)
-    
-    #print [type(f) for f in parameters['f']]
-    f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
-    fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
-    fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
-    fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
-    
     d = array(parameters['d'], dtype = float64)
+    mag = abs(array(parameters['mag'], dtype = float64))
+
+    if isscalar(xray_energy):
+        shape = None
+    else:
+        shape = (d.shape[0], xray_energy.shape[0])
+    lamda = AA_to_eV/xray_energy
+    dens = refl.harm_sizes(parameters['dens'], shape, dtype = float64)
+    resdens = refl.harm_sizes(parameters['resdens'], shape, dtype = float64)
+    resmag = refl.harm_sizes(parameters['resmag'], shape, dtype = float64)
+
+
+    f = refl.harm_sizes(refl.cast_to_array(parameters['f'], xray_energy), shape, dtype = complex128)
+    fr = refl.harm_sizes(refl.cast_to_array(parameters['fr'], xray_energy), shape, dtype = complex128)
+    fm1 = refl.harm_sizes(refl.cast_to_array(parameters['fm1'], xray_energy), shape, dtype = complex128)
+    fm2 = refl.harm_sizes(refl.cast_to_array(parameters['fm2'], xray_energy), shape, dtype = complex128)
+
     sl_c = dens*(f + resdens*fr) 
     sl_m1 = dens*resdens*resmag*fm1
     sl_m2 = dens*resdens*resmag*fm2 #mag is multiplied in later
-    
-    #g_0 = sin(theta*pi/180.0)
+
     phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
+
+
     M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
-    #print M
+
     sigma_c = array(parameters['sigma_c'], dtype = float64)
     sigma_mu = sqrt(array(parameters['sigma_mu'], dtype = float64)[:-1]**2 + sigma_c[:-1]**2)
     sigma_ml = sqrt(array(parameters['sigma_ml'], dtype = float64)[1:]**2 + sigma_c[:-1]**2)
-    #print sigma_c
-    #print sigma_ml
-    #print sigma_mu
-    
+
     #Neutrons
     wl = instrument.getWavelength()
     abs_xs = array(parameters['xs_ai'], dtype = complex64)#*(1e-4)**2
     b = array(parameters['b'], dtype = complex64).real#*1e-5
-    #sl_n = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
-    #                           1.0J*abs_xs*wl/4/pi)
-    sl_n = dens*b
-    abs_n = dens*abs_xs
-    #mag_dens = mag*dens
-    #sl_nm = 2.645e-5*mag*dens*instrument.getWavelength()**2/2/pi
-    
-    #print A, B
-    #print type(sample.getSld_buffer())
+    dens_n = array(parameters['dens'], dtype = float64)
+    sl_n = dens_n*b
+    abs_n = dens_n*abs_xs
+
     if sample.getSlicing() == sample_string_choices['slicing'][0]:
         dz = sample.getSlice_depth()
         reply= edm.create_profile_cm2(d[1:-1], sigma_c[:-1].real, 
                                       sigma_ml.real, sigma_mu.real, 
-                                     [edm.erf_profile]*len(sl_c),
-                                     [edm.erf_interf]*len(sigma_c[:]),
+                                     [edm.erf_profile]*len(d),
+                                     [edm.erf_interf]*len(d),
                                      dmag_l, dmag_u, mag, dd_l, dd_u,
                                      dz = dz, mult = sample.getSld_mult(), 
                                      buffer = sample.getSld_buffer(), 
                                      delta = sample.getSld_delta())
         z, comp_prof, mag_prof = reply
-        sl_c_lay = comp_prof*sl_c[:, newaxis]
+        if not shape is None:
+            new_shape = (shape[0], comp_prof.shape[1],  shape[1])
+        else:
+            new_shape = None
+        comp_prof_x = refl.harm_sizes(comp_prof, new_shape, dtype = float64)
+        mag_prof_x = refl.harm_sizes(mag_prof, new_shape, dtype = float64)
+        sl_c_lay = comp_prof_x*sl_c[:, newaxis]
         sl_c = sl_c_lay.sum(0)
-        sl_m1_lay = comp_prof*mag_prof*sl_m1[:, newaxis]
+        sl_m1_lay = comp_prof_x*mag_prof_x*sl_m1[:, newaxis]
         sl_m1 = sl_m1_lay.sum(0)
-        sl_m2_lay = comp_prof*mag_prof**2*sl_m2[:, newaxis]
+        sl_m2_lay = comp_prof_x*mag_prof_x**2*sl_m2[:, newaxis]
         sl_m2 = sl_m2_lay.sum(0)
         
         # Neutrons
@@ -669,50 +729,37 @@ def compose_sld(sample, instrument, theta):
         sl_n = sl_n_lay.sum(0)
         abs_n_lay = comp_prof*abs_n[:,newaxis]
         abs_n = abs_n_lay.sum(0)
-        mag_dens_lay = comp_prof*mag_prof*dens[:, newaxis]
+        mag_dens_lay = comp_prof*mag_prof*dens_n[:, newaxis]
         mag_dens = mag_dens_lay.sum(0)     
-        
-        #print comp_prof.shape, sl_m1_lay.shape, sl_c_lay.shape
-        M = rollaxis(array((ones(comp_prof.shape)*M[:,0][:, newaxis], 
-               ones(comp_prof.shape)*M[:,1][:, newaxis], 
-               ones(comp_prof.shape)*M[:,2][:, newaxis])),0, 3)
-        
-        #print 'M', M
-        #print M[...,1].shape
-        
+        if not shape is None:
+            M = rollaxis(array((ones(comp_prof_x.shape)*M[:,0][:, newaxis, newaxis],
+               ones(comp_prof_x.shape)*M[:,1][:, newaxis, newaxis],
+               ones(comp_prof_x.shape)*M[:,2][:, newaxis, newaxis])),0, 2)
+        else:
+            M = rollaxis(array((ones(comp_prof_x.shape)*M[:,0][:, newaxis],
+               ones(comp_prof_x.shape)*M[:,1][:, newaxis],
+               ones(comp_prof_x.shape)*M[:,2][:, newaxis])),0, 2)
+
+
         A = -lamda**2*re/pi*sl_c_lay
         B = lamda**2*re/pi*sl_m1_lay
         C = lamda**2*re/pi*sl_m2_lay
         g_0 = sin(theta*pi/180.0)
-        #M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
         chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
                                        B, C, M, d)
         chi = tuple([c.sum(0) for c in chi[0] + chi[1] + chi[2]])
-        #print chi[0]
-        #M = c_[(M[:,0][:,newaxis]*sl_m1_tmp).sum(0)/sl_m1,
-        #       (M[:,1][:,newaxis]*sl_m1_tmp).sum(0)/sl_m1,
-        #       (M[:,2][:,newaxis]*sl_m1_tmp).sum(0)/sl_m1
-        #       ].real
-        #print M
-        #print sl_m2
-        #print sigma_c, sigma_m, A, B, d
-        #print 'Uncompressed:', z.shape
+
         if sample.getCompress() == sample_string_choices['compress'][0]:
             #Compressing the profile..
-            #z, pdens_c, pdens_m = edm.compress_profile2(z, sl_c, sl_m1, sample.getDsld_max())
+            lamda_max = lamda if isscalar(lamda) else lamda.max()
             dsld_max = sample.getDsld_max()
-            dchi_max = dsld_max*lamda**2*re/pi
+            dchi_max = dsld_max*lamda_max**2*re/pi
             dsld_offdiag_max = sample.getDsld_offdiag_max()
             dsld_n_max = sample.getDsld_n_max()
             dabs_n_max = sample.getDabs_n_max()
             dmag_max = sample.getDmag_max() 
-            dchi_od_max = dsld_offdiag_max*lamda**2*re/pi
-            #z, pdens = edm.compress_profile_n(z, (sl_c, sl_m1, sl_m2), 
-            #                                  (dsld_max, dsld_max, dsld_max))
-            #sl_c, sl_m1, sl_m2 = pdens
-            
-            #print chi[0].shape
-            #print sl_n.shape, mag_dens.shape, abs_n.shape, chi[0].shape
+            dchi_od_max = dsld_offdiag_max*lamda_max**2*re/pi
+
             index, z = edm.compress_profile_index_n(z, chi + (sl_n, mag_dens, abs_n), 
                                                 (dchi_max, dchi_od_max, dchi_od_max,
                                                  dchi_od_max, dchi_max, dchi_od_max,
@@ -738,64 +785,49 @@ def compose_sld(sample, instrument, theta):
             mpy = (abs(chi_yz)/abs(chi_xx) < mpy_limit)*(abs(chi_xy)/abs(chi_xx) < mpy_limit)*bitwise_not(non_mag)
             chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
         d = r_[z[1:] - z[:-1],1]
-        #print 'Compressed: ', z.shape, sl_c.shape
-        #print 'WARNING: M is ignored!'
     else:
-        #print 'test'
         re = 2.8179402894e-5
         A = -lamda**2*re/pi*sl_c  
         B = lamda**2*re/pi*sl_m1
         C = lamda**2*re/pi*sl_m2
         g_0 = sin(theta*pi/180.0)
-        #M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
         chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
                                                     B, C, M, d)
-        #chi = ((chi_xx, chi_xy, chi_xz),(chi_yx, chi_yy, chi_yz),(chi_zx, chi_zy, chi_zz))
-        #sl_c = pdens_c
-        #sl_m1 = pdens_m
-        #sl_m2 = sl_m1*0
-        
-        
-        #print d.shape, A.shape
-        #print A, B
-        #M = c_[ones(sl_c.shape), zeros(sl_c.shape), zeros(sl_c.shape)]
-        #print 'Sl_m2: ', sl_m2, 'END'
     return d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens, z[0]
 
-def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
-    ''' Note Q is only used for Neutron TOF'''
+def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=None):
+    ''' Note Q is only used for Neutron TOF
+    :param lamda:
+    '''
     re = 2.8179402894e-5
-    lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = float64)
-    resdens = array(parameters['resdens'], dtype = float64)
-    resmag = array(parameters['resmag'], dtype = float64)
-    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
-    dd_l = array(parameters['dd_l'], dtype = float64)
     dd_u = array(parameters['dd_u'], dtype = float64)
-    #print [type(f) for f in parameters['f']]
-    f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
-    fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
-    fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
-    fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
-    
+    dd_l = array(parameters['dd_l'], dtype = float64)
     d = array(parameters['d'], dtype = float64)
-    
-    #sl_m2 = dens*resdens*resmag*fm2 #mag is multiplied in later
-    
-    #g_0 = sin(theta*pi/180.0)
+    mag = abs(array(parameters['mag'], dtype = float64))
+
+    shape = (d.shape[0], theta.shape[0])
+    lamda = AA_to_eV/xray_energy
+    dens = refl.harm_sizes(parameters['dens'], shape, dtype = float64)
+    resdens = refl.harm_sizes(parameters['resdens'], shape, dtype = float64)
+    resmag = refl.harm_sizes(parameters['resmag'], shape, dtype = float64)
+
+    f = refl.harm_sizes(refl.cast_to_array(parameters['f'], xray_energy), shape, dtype = complex128)
+    fr = refl.harm_sizes(refl.cast_to_array(parameters['fr'], xray_energy), shape, dtype = complex128)
+    fm1 = refl.harm_sizes(refl.cast_to_array(parameters['fm1'], xray_energy), shape, dtype = complex128)
+    fm2 = refl.harm_sizes(refl.cast_to_array(parameters['fm2'], xray_energy), shape, dtype = complex128)
+
+    d = array(parameters['d'], dtype = float64)
+
     theta = theta*pi/180.0
     phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
-    sl_c = (dens*(f + resdens*fr))[:, newaxis]*ones(theta.shape)
-    # This is wrong!!! I should have a cos theta dep.
-    #sl_m1 = (dens*resdens*resmag*fm1)[:, newaxis]*cos(theta - theta_m[:,newaxis])*cos(phi[:,newaxis])
+    sl_c = (dens*(f + resdens*fr))
+    m_x = refl.harm_sizes((cos(theta_m)*cos(phi)), shape)
+    sl_m1 = (dens*resdens*resmag*refl.harm_sizes(mag, shape)*fm1)*cos(theta)*m_x
 
-    sl_m1 = (dens*resdens*resmag*mag*fm1)[:, newaxis]*cos(theta)*(cos(theta_m)*cos(phi))[:, newaxis]
-    #print M
-    #print sl_c.shape, sl_m1.shape
     sigma_c = array(parameters['sigma_c'], dtype = float64)
     sigma_l = array(parameters['sigma_ml'], dtype = float64)
     sigma_u = array(parameters['sigma_mu'], dtype = float64)
@@ -817,8 +849,6 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
         b = (array(parameters['b'], dtype = complex128).real*1e-5)[:, newaxis]*ones(theta.shape)
         abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(theta.shape)
         wl = instrument.getWavelength()
-        #print b
-        #print b.shape, abs_xs.shape, theta.shape
         sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
                                1.0J*abs_xs*wl/4/pi)
         msld = (2.645e-5*mag*dens*wl**2/2/pi)[:,newaxis]*ones(theta.shape)*(cos(theta_m)*cos(phi))[:, newaxis]
@@ -832,14 +862,10 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
             n_u = 1.0 - sld + msld*(1.0 + dmag_u)[:, newaxis]
     elif (theory == 4 or theory == instrument_string_choices['theory'][4]):
         wl = 4*pi*sin(instrument.getIncang()*pi/180)/Q
-        #print 'wl: ', wl
         b = (array(parameters['b'], dtype = complex128).real*1e-5)[:, newaxis]*ones(wl.shape)
         abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(wl.shape)
-        #print b
-        #print b.shape, abs_xs.shape, theta.shape
         sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
                                1.0J*abs_xs*wl/4/pi)
-        #print 'sld: ',sld
         msld = (2.645e-5*(mag*dens)[:,newaxis]*wl**2/2/pi)*(cos(theta_m)*cos(phi))[:, newaxis]
 
         if pol in ['++', 'uu']:
@@ -854,52 +880,56 @@ def extract_anal_iso_pars(sample, instrument, theta, pol = '+', Q = None):
             raise ValueError('An unexpected value of pol was given. Value: %s'%(pol,))
     else:
         raise ValueError('An unexpected value of theory was given. Value: %s'%(theory,))
-    #print n.shape, d.shape
-    #print 'test'
-    #print all(n_u == n), all(n_l == n) 
     d = d - dd_u - dd_l
     d = d*(d >= 0)
     return n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l
 
-def reflectivity_xmag(sample, instrument, theta, TwoThetaQz):
+def reflectivity_xmag(sample, instrument, theta, TwoThetaQz, xray_energy):
     use_slicing = sample.getSlicing()
     if use_slicing == 0 or use_slicing == sample_string_choices['slicing'][0]:
-        R = slicing_reflectivity(sample, instrument, theta, TwoThetaQz)
+        R = slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy)
     elif use_slicing == 1 or use_slicing == sample_string_choices['slicing'][1]:
-        R = analytical_reflectivity(sample, instrument, theta, TwoThetaQz)
+        R = analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy)
     else:
         raise ValueError('Unkown input to the slicing parameter')
     return R
     
-def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
-    lamda = instrument.getWavelength()
+def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
+    #lamda = instrument.getWavelength()
     theory = instrument.getTheory()
     re = 2.8179402894e-5
-    lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = float64)
-    resdens = array(parameters['resdens'], dtype = float64)
-    resmag = array(parameters['resmag'], dtype = float64)
-    mag = abs(array(parameters['mag'], dtype = float64))
     dmag_l = array(parameters['dmag_l'], dtype = float64)
     dmag_u = array(parameters['dmag_u'], dtype = float64)
     dd_u = array(parameters['dd_u'], dtype = float64)
     dd_l = array(parameters['dd_l'], dtype = float64)
-
-    #print [type(f) for f in parameters['f']]
-    f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
-    fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
-    fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
-    fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
-
-    phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
-    theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
 
     sigma = array(parameters['sigma_c'], dtype = float64) + 1e-9
     sigma_u = array(parameters['sigma_mu'], dtype = float64) + 1e-9
     sigma_l = array(parameters['sigma_ml'], dtype = float64) + 1e-9
 
     d = array(parameters['d'], dtype = float64)
+    #lamda = instrument.getWavelength()
+    if isscalar(xray_energy):
+        shape = None
+    else:
+        shape = (d.shape[0], xray_energy.shape[0])
+    lamda = AA_to_eV/xray_energy
+    dens = refl.harm_sizes(parameters['dens'], shape, dtype = float64)
+    resdens = refl.harm_sizes(parameters['resdens'], shape, dtype = float64)
+    resmag = refl.harm_sizes(parameters['resmag'], shape, dtype = float64)
+    mag = abs(refl.harm_sizes(parameters['mag'], shape, dtype = float64))
+
+
+    f = refl.harm_sizes(refl.cast_to_array(parameters['f'], xray_energy), shape, dtype = complex128)
+    fr = refl.harm_sizes(refl.cast_to_array(parameters['fr'], xray_energy), shape, dtype = complex128)
+    fm1 = refl.harm_sizes(refl.cast_to_array(parameters['fm1'], xray_energy), shape, dtype = complex128)
+    fm2 = refl.harm_sizes(refl.cast_to_array(parameters['fm2'], xray_energy), shape, dtype = complex128)
+
+    phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
+    theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
+
+
 
     if theory == 0 or theory == instrument_string_choices['theory'][0]:
 
@@ -911,9 +941,11 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
         B = lamda**2*re/pi*sl_m1
         C = lamda**2*re/pi*sl_m2
 
-
-        M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
-        #print 'M: ',M
+        if not shape is None:
+            M_shape = (shape[0], 3,  shape[1])
+        else:
+            M_shape = None
+        M = refl.harm_sizes(c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)], M_shape)
 
         g_0 = sin(theta*pi/180.0)
 
@@ -928,6 +960,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
         if  theory == 0 or theory == instrument_string_choices['theory'][0]:
             if True or (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
                 or not g0_ok or XBuffer.wavelength != lamda):
+                #print g_0.shape, lamda.shape, A.shape, B.shape, C.shape, M.shape,
                 W = lib.xrmr.calc_refl_int_lay(g_0, lamda, A*0, A[::-1], B[::-1], C[::-1], M[::-1,...]
                                                , d[::-1], sigma[::-1], sigma_l[::-1], sigma_u[::-1]
                                                , dd_l[::-1], dd_u[::-1], dmag_l[::-1], dmag_u[::-1])
@@ -976,79 +1009,57 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
         Q = 4*pi/lamda*sin(theta*pi/180)
         if pol == 0 or pol == instrument_string_choices['xpol'][0]:
             # circ +
-            pars = extract_anal_iso_pars(sample, instrument, theta, '+')
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, '+')
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
-            #chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            #n = 1 + chi_temp/2.0
-            #print n.shape, theta.shape, d.shape
-            #print 'Ord'
-            #R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
             R = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
                                 dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
         elif pol == 1 or pol == instrument_string_choices['xpol'][1]:
             # circ -
-            pars = extract_anal_iso_pars(sample, instrument, theta, '-')
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, '-')
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
-            #chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            #n = 1 + chi_temp/2.0
-            #R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
             R = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
                                 dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
         elif pol == 2 or pol == instrument_string_choices['xpol'][2]:
             # tot
-            pars = extract_anal_iso_pars(sample, instrument, theta, '-')
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, '-')
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
-            #chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            #n = 1 + chi_temp/2.0
-            #Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
             Rm = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
                                 dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
-            pars = extract_anal_iso_pars(sample, instrument, theta, '+')
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, '+')
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
-            #chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            #n = 1 + chi_temp/2.0
-            #Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
             Rp = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
                                 dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
             R = (Rp + Rm)/2.0
-            #raise ValueError('Variable pol has an unvalid value')
         elif pol == 3 or pol == instrument_string_choices['xpol'][3]:
             # ass
-            pars = extract_anal_iso_pars(sample, instrument, theta, '-')
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, '-')
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
-            
-            #chi_temp = chi[0][0][:,newaxis] + 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            #n = 1 + chi_temp/2.0
-            #Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
             Rm = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
                                 dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
-            pars = extract_anal_iso_pars(sample, instrument, theta, '+')
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, '+')
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
-            #chi_temp = chi[0][0][:,newaxis] - 1.0J*chi[2][1][:,newaxis]*cos(theta*pi/180)
-            #n = 1 + chi_temp/2.0
-            #Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), pars[0], pars[1], zeros(pars[1].shape))
             Rp = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1],
                                 dd_u[::-1], sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
             R = (Rp - Rm)/(Rp + Rm)
-            #raise ValueError('Variable pol has an unvalid value')
         else:
             raise ValueError('Variable pol has an unvalid value')
 
     elif theory == 2 or theory == instrument_string_choices['theory'][2]:
         # neutron spin-pol calcs
-        Q = 4*pi/lamda*sin(theta*pi/180)
-        pars = extract_anal_iso_pars(sample, instrument, theta, instrument.getNpol())
+        wl = instrument.getWavelength()
+        Q = 4*pi/wl*sin(theta*pi/180)
+        pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, instrument.getNpol())
         n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
         R = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1], dd_u[::-1],
                             sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
         #raise NotImplementedError('Neutron calcs not implemented')
     elif theory == 3 or theory == instrument_string_choices['theory'][3]:
         # neutron spin-flip calcs
-        Q = 4*pi/lamda*sin(theta*pi/180)
+        wl = instrument.getWavelength()
+        Q = 4*pi/wl*sin(theta*pi/180)
         # Check if we have calcluated the same sample previous:
         if NBuffer.parameters != parameters or not all(equal(NBuffer.TwoThetaQz, Q)):
             #print 'Reloading buffer'
-            wl = instrument.getWavelength()
             b = array(parameters['b'], dtype = complex64).real*1e-5
             abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
             # Bulk of the layers
@@ -1084,7 +1095,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
              raise ValueError('Neutron TOF calculation only supports q as coordinate (x - axis)!')
         Q = TwoThetaQz
         wl = 4*pi*sin(instrument.getIncang()*pi/180)/Q
-        pars = extract_anal_iso_pars(sample, instrument, theta, instrument.getNpol(), Q = TwoThetaQz)
+        pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, instrument.getNpol(), Q=TwoThetaQz)
         n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
         R = ables.ReflQ_mag(TwoThetaQz, wl, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1], dd_u[::-1],
                             sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
@@ -1092,18 +1103,14 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz):
         raise ValueError('The given theory mode does not exist')
     return R
 
-def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
-    lamda = instrument.getWavelength()
+def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
+    lamda = AA_to_eV/xray_energy
     parameters = sample.resolveLayerParameters()
     
-    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens, z0 = compose_sld(sample, instrument, theta)
+    d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens, z0 = compose_sld(sample, instrument, theta,
+                                                                                         xray_energy)
     re = 2.8179402894e-5
-    A = -lamda**2*re/pi*sl_c
-    B = lamda**2*re/pi*sl_m1
-    C = lamda**2*re/pi*sl_m2
-    #print A.shape, B.shape, C.shape, M.shape
     g_0 = sin(theta*pi/180.0)
-    #print A[::-1], B[::-1], d[::-1], M[::-1], lamda, g_0
     theory = instrument.getTheory()
     # Full theory
     if XBuffer.g_0 != None:
@@ -1115,14 +1122,10 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
     if  theory == 0 or theory == instrument_string_choices['theory'][0]:
         if (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
             or not g0_ok or XBuffer.wavelength != lamda):
-            #W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], 0.0*A[::-1], B[::-1], C[::-1], M[::-1], d[::-1])
-            #print 'Calc W'
-            # Test
             chi = tuple([tuple([item[::-1] for item in row]) for row in chi])
             d = d[::-1]
             non_mag = non_mag[::-1]
             mpy = mpy[::-1]
-            # End Test
             W = lib.xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
             XBuffer.W = W
             XBuffer.parameters = parameters.copy()
@@ -1130,10 +1133,9 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             XBuffer.g_0 = g_0.copy()
             XBuffer.wavelength = lamda
         else:
-            #print 'Reusing W'
+            #Reusing W
             W = XBuffer.W
         trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
-        #Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
         Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, conj(lib.xrmr.inv2(trans))))
         #Different polarization channels:
         pol = instrument.getXpol()
@@ -1164,7 +1166,6 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
         if pol == 0 or pol == instrument_string_choices['xpol'][0]:
             # circ +
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
-            #print n.shape, theta.shape, d.shape
             R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
         elif pol == 1 or pol == instrument_string_choices['xpol'][1]:
             # circ -
@@ -1177,7 +1178,6 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
             R = (Rp + Rm)/2.0
-            #raise ValueError('Variable pol has an unvalid value')
         elif pol == 3 or pol == instrument_string_choices['xpol'][3]:
             # ass
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
@@ -1185,11 +1185,11 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
             R = (Rp - Rm)/(Rp + Rm)
-            #raise ValueError('Variable pol has an unvalid value')
         else:
             raise ValueError('Variable pol has an unvalid value')
     # Neutron spin pol calculations normal mode
     elif theory == 2 or theory == instrument_string_choices['theory'][2]:
+        lamda = instrument.getWavelength()
         sl_n = sl_n.real*1e-5
         abs_n = abs_n*1e-8
         sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
@@ -1247,7 +1247,7 @@ def footprint_correction(instrument, theta):
         raise ValueError('Variable footype has an unvalid value')
     return foocor
     
-def correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight):
+def convolute_reflectivity(R, instrument, foocor, TwoThetaQz, weight):
     restype = instrument.getRestype()
     if restype == 0 or restype == instrument_string_choices['restype'][0]:
         R = R[:]*foocor
@@ -1264,14 +1264,11 @@ def correct_reflectivity(R, instrument, foocor, TwoThetaQz, weight):
     return R
     
 
-SimulationFunctions = {'Specular':Specular,\
-                        'OffSpecular':OffSpecular,\
-                        'SLD': SLD_calculations}
+SimulationFunctions = {'Specular':Specular, 'OffSpecular':OffSpecular, 'EnergySpecular': EnergySpecular,
+                        'SLD': SLD_calculations,}
 
-import lib.refl as Refl
-(Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,\
-        LayerParameters,StackParameters,\
-         SampleParameters, SimulationFunctions, ModelID)
+(Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters, LayerParameters, StackParameters,
+                                                      SampleParameters, SimulationFunctions, ModelID)
 
 
 if __name__=='__main__':
