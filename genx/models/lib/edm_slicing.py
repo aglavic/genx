@@ -135,8 +135,10 @@ def compress_profile_index_n(z, ps, delta_maxs):
         #print i
         i += 1
         index = array([True]*len(psnew[0]))
-        test = [abs(ps_i[:-2:2] - ps_i[2::2]) > delta_maxs_i 
+        #index = ones(array(psnew))
+        test = [any(abs(ps_i[:-2:2] - ps_i[2::2]) > delta_maxs_i)
                                             for ps_i, delta_maxs_i in zip(psnew, delta_maxs)]
+
         #print len(test), len(index)
         #for t in test:
         #    print len(t)
@@ -151,7 +153,7 @@ def compress_profile_index_n(z, ps, delta_maxs):
     return inew, znew
 
 def create_compressed_profile(ps, inew):
-    psret = [array([ps_i[inew[i]:inew[i+1]+1].mean() for i in range(len(inew)-1)]) for ps_i in ps]
+    psret = [array([ps_i[inew[i]:inew[i+1]+1].mean(0) for i in range(len(inew)-1)]) for ps_i in ps]
     return psret
 
 def create_profile(d, sigma, dens, prof_funcs, dz = 0.01, 
