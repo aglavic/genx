@@ -361,7 +361,7 @@ def create_fpdisp_lookup(path):
         def f(energy):
             return f1interp(energy) - 1.0J*f2interp(energy)
 
-        return refl.ReflFunction(f, (1000,), {}, id = 'f(E)')
+        return refl.ReflFunction(f, (np.mean(e),), {}, id = 'f(E)')
     return create_dispersion_func
 
 def create_f_lookup(lookup_fp, f0):
