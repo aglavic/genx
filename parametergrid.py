@@ -3,14 +3,17 @@ Library for the GUI components of the Parameter grid which is used to
 define which parameters to fit. The library parameters contains the class
 definition of the parameters. 
 Programmer: Matts Bjorck
-Last Changed: 2008 09 03
+Last Changed: 2014 07 17
 '''
 
+import os
 import  wx
 import  wx.grid as gridlib
 import wx.lib.printout as printout
 from numpy import *
+
 import parameters
+import images as img
 
 #=============================================================================
 #class ParameterDataTable
@@ -88,7 +91,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
              self.GetView().ForceRefresh()
         self.parent._grid_changed()
 
-    def DeleteRows(self,rows):
+    def DeleteRows(self, rows):
         delete_count = self.pars.delete_rows(rows)
         
         msg = gridlib.GridTableMessage(self,\
@@ -101,7 +104,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         self.parent._grid_changed()
         #print self.data
         
-    def InsertRow(self,row):
+    def InsertRow(self, row):
         self.pars.insert_row(row)
         
         msg = gridlib.GridTableMessage(self,\
@@ -113,6 +116,39 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
         return True
+
+    def MoveRowUp(self, row):
+        """ Move row up one row.
+
+        :param row: Integer row number to move up
+        :return: Boolean
+        """
+
+        success = self.pars.move_row_up(row)
+
+        msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        self.parent._grid_changed()
+        return success
+
+    def MoveRowDown(self, row):
+        """ Move row down one row.
+
+        :param row: Integer row number to move down
+        :return: Boolean
+        """
+
+        success = self.pars.move_row_down(row)
+
+        msg = gridlib.GridTableMessage(self,\
+                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        self.parent._grid_changed()
+        return success
+
     
     def AppendRows(self, num_rows = 1):
         #print num_rows
@@ -213,25 +249,34 @@ class ParameterDataTable(gridlib.PyGridTableBase):
 #Class ParameterDataTable ends here
 ###############################################################################
 
-class ParameterGrid(gridlib.Grid):
+class ParameterGrid(wx.Panel):
     '''
     The GUI component itself. This is the thing to use in a GUI.
     '''
     def __init__(self, parent, frame):
-        gridlib.Grid.__init__(self, parent, -1)
+        wx.Panel.__init__(self, parent, style=wx.NO_BORDER)
+        #self.SetForegroundColour('BLUE')
+        # The two main widgets
+        self.toolbar = wx.ToolBar(self,  style=wx.TB_FLAT|wx.TB_VERTICAL)
+        self.grid = gridlib.Grid(self, -1, style=wx.NO_BORDER)
+        self.grid._grid_changed = self._grid_changed
+        #self.grid.SetForegroundColour('BLUE')
+
+        self.do_toolbar()
+
+        self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(self.sizer_hor)
+        self.sizer_hor.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=0)
+        #self.sizer_hor.Add((2,-1))
+        self.sizer_hor.Add(self.grid, proportion=1, flag=wx.EXPAND, border=0)
+
         self.parent = frame
         self.prt = printout.PrintTable(parent)
-
-        
-#        self.prt.left_margin = 0.5
-#        self.prt.right_margin = 0.5
-#        self.prt.text_font_size = 8
-#        self.prt.cell_left_margin = 0
         
         self.project_func = None
         self.scan_func = None
         
-        self.table = ParameterDataTable(self)
+        self.table = ParameterDataTable(self.grid)
         
         self.variable_span = 0.25
         #The functions has to begin with the following letters:
@@ -240,30 +285,142 @@ class ParameterGrid(gridlib.Grid):
         # The second parameter means that the grid is to take ownership of the
         # table and will destroy it when done.  Otherwise you would need to keep
         # a reference to it and call it's Destroy method later.
-        self.SetTable(self.table, True)
+        self.grid.SetTable(self.table, True)
+        self.grid.SetSelectionMode(gridlib.Grid.SelectRows)
 
-        self.SetRowLabelSize(50)
-        self.SetMargins(0,0)
+        self.grid.SetRowLabelSize(50)
+        self.grid.SetMargins(0, 0)
         # This is the my original column True means set as min...
         #self.AutoSizeColumns(True)
         # The new
-        self.AutoSizeColumn(0, False)
-        self.AutoSizeColumn(1, False)
-        self.AutoSizeColumn(2, True)
-        self.AutoSizeColumn(3, False)
-        self.AutoSizeColumn(4, False)
-        self.AutoSizeColumn(5, False)
+        self.grid.AutoSizeColumn(0, False)
+        self.grid.AutoSizeColumn(1, False)
+        self.grid.AutoSizeColumn(2, True)
+        self.grid.AutoSizeColumn(3, False)
+        self.grid.AutoSizeColumn(4, False)
+        self.grid.AutoSizeColumn(5, False)
 
-        #Test cases for the parameter choosing function of the grid
-        #self.objlist=['t','e']
-        #self.funclist=[['e','w'],['x','y']]
         self.par_dict = {}
 
-        self.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
-        self.Bind(gridlib.EVT_GRID_CMD_CELL_LEFT_CLICK, self.OnLeftClick)
-        self.Bind(gridlib.EVT_GRID_CMD_CELL_RIGHT_CLICK, self.OnRightClick)
-        self.Bind(gridlib.EVT_GRID_LABEL_RIGHT_CLICK,self.OnLabelRightClick)
-        self.Bind(wx.EVT_SIZE,self.OnResize)
+        self.grid.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
+        self.grid.Bind(gridlib.EVT_GRID_CMD_CELL_LEFT_CLICK, self.OnLeftClick)
+        self.grid.Bind(gridlib.EVT_GRID_CMD_CELL_RIGHT_CLICK, self.OnRightClick)
+        self.grid.Bind(gridlib.EVT_GRID_LABEL_RIGHT_CLICK,self.OnLabelRightClick)
+        self.grid.Bind(wx.EVT_SIZE,self.OnResize)
+        self.grid.Bind(gridlib.EVT_GRID_SELECT_CELL, self.OnSelectCell)
+
+
+        self.toolbar.Realize()
+
+
+    def do_toolbar(self):
+        if os.name == 'nt':
+            size = (24, 24)
+        else:
+            size = (-1, -1)
+        #self.toolbar.SetToolBitmapSize((21,21))
+        #self.toolbar.SetToolSeparation(5)
+        self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
+        self.toolbar.SetBackgroundColour('BLUE')
+        #self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE))
+
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Add a new row', bitmap=img.getaddBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_add_row, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Delete row', bitmap=img.getdeleteBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_delete_row, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Move row up', bitmap=img.getmove_upBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_move_row_up, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Move row down', bitmap=img.getmove_downBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
+
+
+
+        #self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1, img.getaddBitmap(),
+        #                                         size=size, style=wx.NO_BORDER)
+        #self.bitmap_button_add.SetToolTipString('Add a new row')
+
+        #self.bitmap_button_delete = wx.BitmapButton(self.tool_panel, -1, img.getdeleteBitmap(),
+        #                                            size=size, style=wx.NO_BORDER)
+        #self.bitmap_button_delete.SetToolTipString('Delete a row')
+        #self.bitmap_button_move_up = wx.BitmapButton(self.tool_panel, -1, img.getmove_upBitmap(),
+        #                                             size=size, style=wx.NO_BORDER)
+        #self.bitmap_button_move_up.SetToolTipString('Move up')
+        #self.bitmap_button_move_down = wx.BitmapButton(self.tool_panel, -1, img.getmove_downBitmap(),
+        #                                               size = size, style=wx.NO_BORDER)
+        #self.bitmap_button_move_down.SetToolTipString('Move down')
+
+        #space = (-1, 4)
+        #self.tb_sizer=wx.BoxSizer(wx.VERTICAL)
+        #self.tb_sizer.Add(space)
+        #self.tb_sizer.Add(self.bitmap_button_add, proportion=0, border=4)
+        #self.tb_sizer.Add(space)
+        #self.tb_sizer.Add(self.bitmap_button_delete, proportion=0, border=4)
+        #self.tb_sizer.Add(space)
+        #self.tb_sizer.Add(self.bitmap_button_move_up, proportion=0, border=4)
+        #self.tb_sizer.Add(space)
+        #self.tb_sizer.Add(self.bitmap_button_move_down, proportion=0, border=4)
+        #self.tb_sizer.Add(space)
+        #self.tool_panel.SetSizer(self.tb_sizer)
+
+        #self.Bind(wx.EVT_BUTTON, self.eh_add_row, self.bitmap_button_add)
+        #self.Bind(wx.EVT_BUTTON, self.eh_delete_row, self.bitmap_button_delete)
+        #self.Bind(wx.EVT_BUTTON, self.eh_move_row_up, self.bitmap_button_move_up)
+        #self.Bind(wx.EVT_BUTTON, self.eh_move_row_down, self.bitmap_button_move_down)
+
+
+    def eh_add_row(self, event):
+        """ Event handler for adding a row
+
+        :param event:
+        :return:
+        """
+        row = self.grid.GetGridCursorRow()
+        self.table.InsertRow(row)
+
+    def eh_delete_row(self, event):
+        """Event handler for deleteing a row
+
+        :param event:
+        :return:
+        """
+        row = self.grid.GetGridCursorRow()
+        self.table.DeleteRows([row,])
+
+    def eh_move_row_up(self, event):
+        """ Event handler for moving a row up.
+
+        :param event:
+        :return:
+        """
+        print self.grid.GetSelectedCells()
+        print self.grid.GetSelectedRows()
+        row = self.grid.GetGridCursorRow()
+        if self.table.MoveRowUp(row):
+            self.grid.SetGridCursor(row - 1, self.grid.GetGridCursorCol())
+
+    def eh_move_row_down(self, event):
+        """ Event handler for moving a row down.
+
+        :param event:
+        :return:
+        """
+        row = self.grid.GetGridCursorRow()
+        if self.table.MoveRowDown(row):
+            self.grid.SetGridCursor(row + 1, self.grid.GetGridCursorCol())
+
+    def OnSelectCell(self, evt):
+         self.grid.SelectRow(evt.GetRow())
+         evt.Skip()
+
+
     
     def _grid_changed(self):
         '''_grid_changed(self) --> None
@@ -324,13 +481,12 @@ class ParameterGrid(gridlib.Grid):
         pdd.SetFromPage(1)
         pdd.SetToPage(2)
         pdd.SetPrintToFile(True)
-	
-        printer = wx.Printer(pdd)
+
+        #printer = wx.Printer(pdd)
         self._update_printer()
         self.prt.Print()
-# 	prtout = printout.SetPrintout(self.prt)
- 
-#	printer.Print(self.parent, prtout, True)
+        #prtout = printout.SetPrintout(self.prt)
+        #printer.Print(self.parent, prtout, True)
         
     def PrintPreview(self):
         '''PrintPreview(self) --> None
@@ -374,33 +530,44 @@ class ParameterGrid(gridlib.Grid):
         
         evt.Skip()
         
-        
 
-    # Start editing the cells on double click not just a second click...
     def OnLeftDClick(self, evt):
-        if self.CanEnableCellControl() and evt.GetCol()!=2:
-            self.EnableCellEditControl()
+        """ Event handler that starts editing the cells on a double click and not
+        just a second click as is default.
 
-    # This is to make the checkboxes to react on a single click intstead
-    # of a double click as it is by standard.
-    def OnLeftClick(self,evt):      
-        col,row=evt.GetCol(),evt.GetRow()
-        if col==2 and row>-1:
-            self.table.SetValue(row,col,not self.table.GetValue(row,col))
+        :param evt: The Event passed to the event handler
+        :return: Nothing
+        """
+        if self.grid.CanEnableCellControl() and evt.GetCol() != 2:
+            self.grid.EnableCellEditControl()
+        #self.grid.SelectRow(evt.GetRow())
+
+    #
+    def OnLeftClick(self,evt):
+        """Callback to make the checkboxes to react on a single click instead
+        of a double click as it is by standard.
+
+        :param evt: A Event from a Grid
+        :return: Nothing
+        """
+        col, row = evt.GetCol(), evt.GetRow()
+        #self.grid.SelectRow(row)
+        if col == 2 and row > -1:
+            self.table.SetValue(row, col, not self.table.GetValue(row, col))
         else:
             evt.Skip()
+
     
     
     def OnLabelRightClick(self,evt):
-        '''
-        Callback fucntion that opens a popupmenu for appending or
+        """ Callback function that opens a popupmenu for appending or
         deleting rows in the grid.
-        '''
+        """
         #check so a row is selected
-        col,row=evt.GetCol(),evt.GetRow()
-        if col==-1:
-            if not self.GetSelectedRows():
-                self.SelectRow(row)
+        col, row = evt.GetCol(), evt.GetRow()
+        if col == -1:
+            if not self.grid.GetSelectedRows():
+                self.grid.SelectRow(row)
             #making the menus
             insertID = wx.NewId()
             deleteID = wx.NewId()
@@ -419,7 +586,7 @@ class ParameterGrid(gridlib.Grid):
                 self.table.InsertRow(row)
 
             def delete(event, self=self, row=row):
-                rows = self.GetSelectedRows()
+                rows = self.grid.GetSelectedRows()
                 self.table.DeleteRows(rows)
                 
             def projectfom(event, self = self, row = row):
@@ -431,13 +598,13 @@ class ParameterGrid(gridlib.Grid):
                     self.scan_func(row)
             
             
-            self.Bind(wx.EVT_MENU, insert, id = insertID)
-            self.Bind(wx.EVT_MENU, delete, id = deleteID)
+            self.Bind(wx.EVT_MENU, insert, id=insertID)
+            self.Bind(wx.EVT_MENU, delete, id=deleteID)
             # Item is checked for fitting
             if self.table.GetValue(row, 2):
-                self.Bind(wx.EVT_MENU, projectfom, id = projectID)
+                self.Bind(wx.EVT_MENU, projectfom, id=projectID)
             if self.table.GetValue(row, 0) != '':
-                self.Bind(wx.EVT_MENU, scanfom, id = scanID)
+                self.Bind(wx.EVT_MENU, scanfom, id=scanID)
             self.PopupMenu(menu)
             menu.Destroy()   
     
@@ -449,9 +616,8 @@ class ParameterGrid(gridlib.Grid):
         self.project_func = projectfunc
         self.scan_func = scanfunc
     
-    def OnRightClick(self,evt):
-        '''
-        Callback function that creates a popupmenu when a row in the 
+    def OnRightClick(self, evt):
+        ''' Callback function that creates a popupmenu when a row in the
         first column is clicked. The menu contains all parameters that are 
         selectable and fitable. 
         '''
@@ -460,10 +626,10 @@ class ParameterGrid(gridlib.Grid):
         row=evt.GetRow()
         #print row,col
         if col==0:
-            self.CurSelection=(row,col)
-            self.SetGridCursor(row,col)
-            pos=evt.GetPosition()
-            self.pmenu=wx.Menu()
+            self.CurSelection = (row, col)
+            self.grid.SetGridCursor(row, col)
+            pos = evt.GetPosition()
+            self.pmenu = wx.Menu()
             par_dict = self.par_dict
             classes = par_dict.keys()
             classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
@@ -489,22 +655,25 @@ class ParameterGrid(gridlib.Grid):
             
     
     def OnPopUpItemSelected(self,event):
-        '''
-        When a item from the OnRightClick is selcted this fucntion takes care
+        """ Callback for the popmenu to select parameter to fit.
+        When a item from the OnRightClick is selected this function takes care
         of setting:
         1. the parametername
         2. The current value of the parameter in Value
         3. The min and max values
-        '''
+
+        :param event: event from the menu
+        :return: Nothing
+        """
         item = self.pmenu.FindItemById(event.GetId())
         # GetText seems to screw up underscores a bit replacing the with a 
         # double one - this fixes it
-        text = item.GetText().replace('__','_')
+        text = item.GetText().replace('__', '_')
         #print text, self.objlist, self.funclist
-        self.SetCellValue(self.CurSelection[0],self.CurSelection[1],text)
+        self.grid.SetCellValue(self.CurSelection[0], self.CurSelection[1],text)
         # Try to find out if the values also has an get function so that
         # we can init the value to the default!
-        lis=text.split('.'+self.set_func)
+        lis=text.split('.' + self.set_func)
         if len(lis)==2:
             try:
                 value = self.evalf(lis[0]+'.'+self.get_func+lis[1])().real
@@ -547,15 +716,15 @@ class ParameterGrid(gridlib.Grid):
         Function automatically set the cells width in the Grid to 
         reasonable values.
         '''
-        width=(self.GetSize().GetWidth()-self.GetColSize(2)-self.GetRowLabelSize())/5-1
+        width=(self.grid.GetSize().GetWidth()-self.grid.GetColSize(2)-self.grid.GetRowLabelSize())/5-1
         # To avoid warnings relating to a width < 0. This can occur during startup
         if width <= 0:
             width = 1
-        self.SetColSize(0,width)
-        self.SetColSize(1,width)
-        self.SetColSize(3,width)
-        self.SetColSize(4,width)
-        self.SetColSize(5,width)
+        self.grid.SetColSize(0,width)
+        self.grid.SetColSize(1,width)
+        self.grid.SetColSize(3,width)
+        self.grid.SetColSize(4,width)
+        self.grid.SetColSize(5,width)
         
     def GetParameters(self):
         '''

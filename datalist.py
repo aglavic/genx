@@ -767,7 +767,7 @@ class DataListControl(wx.Panel):
     The Control window for the whole Data list including a small toolbar
     '''
     def __init__(self, parent, id=-1, config = None, status_text = None):
-        wx.Panel.__init__(self,parent)
+        wx.Panel.__init__(self, parent)
         # The two major windows:
         self.tool_panel=wx.Panel(self)
         mydata=data.DataList()
