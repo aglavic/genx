@@ -58,7 +58,35 @@ class Parameters:
     def insert_row(self, row):
         ''' Insert a new row at row(int). '''
         self.data.insert(row, self.init_data[:])
-        
+
+    def move_row_up(self, row):
+        """ Move row up.
+
+        :param row: Move row up one row.
+        :return: Boolean True if the row was moved, otherwise False.
+        """
+
+        if row != 0 and row < self.get_len_rows():
+            self.data.insert(row - 1, self.data.pop(row))
+            return True
+        else:
+            return False
+
+    def move_row_down(self, row):
+        """ Move row up.
+
+        :param row: Move row down one row.
+        :return: Boolean True if the row was moved, otherwise False.
+        """
+
+        if row < self.get_len_rows() - 1:
+            self.data.insert(row + 1, self.data.pop(row))
+            return True
+        else:
+            return False
+
+
+
     def append(self):
         self.data.append(self.init_data[:])
         

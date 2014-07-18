@@ -4,8 +4,6 @@
 Overview of the  user interface
 *******************************
 
-Note: This is under construction, no screen shots yet due to lack of a real computer...
-
 Main window
 ===========
 The main window in GenX is the main work area. It consists of three notebooks separated by resizeable

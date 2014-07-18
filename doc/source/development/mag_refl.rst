@@ -47,7 +47,9 @@ b
 xs_ai
      The absorption cross section for neutrons.
 fr
-     The resonant part of the scattering length (corrections to f close to an absorption edge). Note that this constant is scaled with magdens before added to f. Note that ftot=f+magdens*fr. This is the opposite as to the definition by Stephanov and Shina, thus fr = -(F11+F1-1)
+     The resonant part of the scattering length (corrections to f close to an absorption edge).
+     Note that this constant is scaled with magdens before added to f. Note that ftot=f+resdens*fr.
+     This is the opposite as to the definition by Stephanov and Shina, thus fr = -(F11+F1-1)
 fm1
      The XMCD scattering term. Responsible for circular dichroism. fm1=F11-F1-1.
 fm2

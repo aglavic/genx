@@ -135,7 +135,7 @@ What happens if I fit the scattering length?
 --------------------------------------------
 As GenX only can fit real numbers the complex part of the scattering len    gth will be ignored.
 Thus the absorption is put to zero. If you want to fit both parameters you have to make a custom variable
-for at least the complex part. Note that in newer versions &gt;=2.0b6.2 the real and imaginary part of the
+for at least the complex part. Note that in newer versions > 2.0b6.2 the real and imaginary part of the
 scattering lengths can be fitted separately.
 
 Could you explain how the density is defined/works with an example?
@@ -151,18 +151,29 @@ unit cell of Fe ``2*fp.Fe`` Then the density becomes: ``1/2.866**3``
 Example 2: SrTiO3. You define the scattering length as ``fp.Sr + fp.Ti + fp.O*3`` Then the density becomes
 (1 formula unit = 1 unitcell of SrTiO:sub:`3`, a = 3.9045): ``1/3.9045**3``
 
-How do I transform from g/cm:sup:`3` to formula unit/Å:sup:`3` ?
-----------------------------------------------------------------
-I have the density of my material in g/cm3 or kg/m3, how do I use it in GenX? There are two ways:
+How do I transform from g/cm\ :sup:`3` to formula unit/Å\ :sup:`3` ?
+--------------------------------------------------------------------
+I have the density of my material in g/cm\ :sup:`3` or kg/m\ :sup:`3`, how do I use it in GenX? There are two ways:
 The first involves only to work with compositions in weight percent and use the fw scattering factors which are
-scattering lengths per weight and use densities in g/cm3. The other is recalculate the density in g/cm:sup:`3`
-to formula units per Å:sup:`3`. This goes as follows:
+scattering lengths per weight and use densities in g/cm\ :sup:`3`. The other is recalculate the density in g/cm\ :sup:`3`
+to formula units per Å\ :sup:`3`. This goes as follows:
 
-The relative atomic mass, u, is defined as :math:`1 u = 1.66054\*10-27 kg`. :math:`1 A = 10^-10 m`. This means that
-:math:`\rho \mathrm{[kg/m^3]} = 1.66054 \times 10^3 \times (rho \mathrm{[u/A^3]})`. Thus,
-the density (scatterers per unit volume (density in GenX)) becomes:
-:math:`dens = (rho \mathrm{[kg/m^3]})/(1.66054 \times 10^3 \times uscatt)`,
-where :math:`uscatt = \sum_i ui \times xi` and the scattering length is written as :math:`f = \sum_i f_i \times x_i`.
+The relative atomic mass, u, is defined as :math:`1 u = 1.66054\times 10-27\, \mathrm{kg}`. :math:`1 A = 10^-10 m`.
+This means that
+
+.. math:: \rho \mathrm{[kg/m^3]} = 1.66054 \times 10^3 \times (\rho \mathrm{[u/A^3]}).
+
+Thus, the density (scatterers per unit volume (density in GenX)) becomes:
+
+.. math:: \mathrm{dens} = (\rho \mathrm{[kg/m^3]})/(1.66054 \times 10^3 \times uscatt),
+
+where
+
+.. math:: uscatt = \sum_i u_i \times x_i
+
+and the scattering length is written as
+
+.. math:: f = \sum_i f_i \times x_i.
 
 Let us use SrTiO3 as example, it has a density :math:`\rho = 5.12 g/cm^3`. The scattering length is
 defined as: ``f = 1*fp.Sr + 1*fp.Ti + 3*fp.O``. The weight of one "formula unit" becomes
