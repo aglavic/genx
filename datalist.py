@@ -27,13 +27,13 @@ class DataController:
     '''
 
     def __init__(self,data_list):
-        self.data=data_list
+        self.data = data_list
     
     def get_data(self):
         return self.data
     
     def get_column_headers(self):
-        return ['Name','Show','Use','Errors']
+        return ['Name', 'Show', 'Use', 'Errors']
         
     def get_count(self):
         return self.data.get_len()
@@ -53,12 +53,12 @@ class DataController:
             
         else:
             return ''
+
     def set_data(self, data):
         self.data = data
            
-    def set_name(self,pos,name):
-        self.data.set_name(pos,name)
-        #print self.data.items[pos].name
+    def set_name(self, pos, name):
+        self.data.set_name(pos, name)
         
     def move_up(self, pos):
         self.data.move_up(pos)
@@ -77,14 +77,12 @@ class DataController:
         for data_set in self.data:
             dc = data_set.data_color
             sc = data_set.sim_color
-            colors.append(((int(dc[0]*255), int(dc[1]*255), int(dc[2]*255)),\
-                (int(sc[0]*255), int(sc[1]*255), int(sc[2]*255))))
+            colors.append(((int(dc[0]*255), int(dc[1]*255), int(dc[2]*255)),
+                           (int(sc[0]*255), int(sc[1]*255), int(sc[2]*255))))
         return colors
         
     def load(self, pos, path):
         self.data[pos].loadfile(path)
-        
-        #print self.data[pos].x
         
     def get_items_plotsettings(self, pos):
         ''' get_items_plotsettings(self, pos) --> (sim_list, data_list)
@@ -114,7 +112,7 @@ class DataController:
         Function that runs the command [dict] for items in position pos. The 
         string contains information if something went wrong. Should be impossible.
         '''
-        result =  ''
+        result = ''
         for i in pos:
             try:
                 self.data[i].set_commands(command)
@@ -160,10 +158,8 @@ class DataController:
         sim_list and data_list has to have the right elements. See data.py
         '''
         lpos = range(len(sim_list))
-        [self.data[i].set_sim_plot_items(sim_list[j]) for\
-                    i,j in zip(pos, lpos)]
-        [self.data[i].set_data_plot_items(data_list[j]) for\
-                     i,j in zip(pos, lpos)]
+        [self.data[i].set_sim_plot_items(sim_list[j]) for i, j in zip(pos, lpos)]
+        [self.data[i].set_data_plot_items(data_list[j]) for i, j in zip(pos, lpos)]
     
     def show_data(self, positions):
         '''Show only data at the indices given in position
@@ -203,7 +199,7 @@ class DataListEvent(wx.PyCommandEvent):
     Event class for the data list - in order to deal with 
     updating of the plots and such.
     '''
-    def __init__(self,evt_type, id, data):
+    def __init__(self, evt_type, id, data):
         wx.PyCommandEvent.__init__(self, evt_type, id)
         self.data = data
         self.data_changed = True
@@ -224,7 +220,7 @@ class DataListEvent(wx.PyCommandEvent):
     def SetDataChanged(self, data_changed):
         self.data_changed = data_changed
         
-    def SetDataMoved(self, position, up = True):
+    def SetDataMoved(self, position, up=True):
         self.data_moved = True
         self.position = position
         self.up = up
@@ -233,10 +229,10 @@ class DataListEvent(wx.PyCommandEvent):
         self.deleted = True
         self.position = position
         
-    def SetNewData(self, new_data = True):
+    def SetNewData(self, new_data=True):
         self.new_data = new_data
 
-    def SetNewModel(self, new_model = True):
+    def SetNewModel(self, new_model=True):
         self.new_model = new_model
         
     def SetDescription(self, desc):
@@ -264,8 +260,7 @@ class VirtualDataList(wx.ListCtrl):
     '''
     The listcontrol for the data
     '''
-    def __init__(self, parent, data_controller, config = None,\
-            status_text = None):
+    def __init__(self, parent, data_controller, config=None, status_text=None):
         wx.ListCtrl.__init__(self,parent,-1,\
         style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_EDIT_LABELS)
         self.data_cont = data_controller
@@ -724,23 +719,20 @@ class VirtualDataList(wx.ListCtrl):
         dlg.Destroy()
         
     def OnImportSettings(self, evt):
-        '''OnImportSettings(self, evt) --> None
-        Callback to start the dialog box for the iport settings.
-        '''
+        """Callback to start the dialog box for the import settings.
+        """
         self.data_loader.SettingsDialog()
         
     def OnListRightClick(self, evt):
-        '''OnListRightClick(self, evt) --> None
-        Callback for rightclicking on one row. Creates an popupmenu.
-        '''
-        #print 'On Right Click', (evt.GetIndex(),evt.GetColumn())
-        menu = wx.Menu()
+        """Callback for right clicking on one row. Creates an popup menu.
+        """
         check_showID = wx.NewId()
         check_fitID = wx.NewId()
         check_errorID = wx.NewId()
         calcID = wx.NewId()
         import_settingsID = wx.NewId()
         plot_settingsID = wx.NewId()
+
         # Create the menu
         menu = wx.Menu()
         menu.Append(check_showID, "Toggle show")
@@ -750,12 +742,12 @@ class VirtualDataList(wx.ListCtrl):
         menu.Append(import_settingsID, "Import settings")
         menu.Append(plot_settingsID, "Plot settings")
         
-        self.Bind(wx.EVT_MENU, self.OnShowData, id = check_showID)
-        self.Bind(wx.EVT_MENU, self.OnUseData, id = check_fitID)
-        self.Bind(wx.EVT_MENU, self.OnUseError, id = check_errorID)
-        self.Bind(wx.EVT_MENU, self.OnImportSettings, id = import_settingsID)
-        self.Bind(wx.EVT_MENU, self.OnCalcEdit, id = calcID)
-        self.Bind(wx.EVT_MENU, self.OnPlotSettings, id = plot_settingsID)
+        self.Bind(wx.EVT_MENU, self.OnShowData, id=check_showID)
+        self.Bind(wx.EVT_MENU, self.OnUseData, id=check_fitID)
+        self.Bind(wx.EVT_MENU, self.OnUseError, id=check_errorID)
+        self.Bind(wx.EVT_MENU, self.OnImportSettings, id=import_settingsID)
+        self.Bind(wx.EVT_MENU, self.OnCalcEdit, id=calcID)
+        self.Bind(wx.EVT_MENU, self.OnPlotSettings, id=plot_settingsID)
         
         self.PopupMenu(menu)
         menu.Destroy()  
@@ -766,86 +758,53 @@ class DataListControl(wx.Panel):
     '''
     The Control window for the whole Data list including a small toolbar
     '''
-    def __init__(self, parent, id=-1, config = None, status_text = None):
+    def __init__(self, parent, id=-1, config=None, status_text=None):
         wx.Panel.__init__(self, parent)
         # The two major windows:
-        self.tool_panel=wx.Panel(self)
-        mydata=data.DataList()
-        self.data_cont=DataController(mydata)
-        self.list_ctrl=VirtualDataList(self, self.data_cont, config = config,\
-            status_text = status_text)
+        self.toolbar = wx.ToolBar(self,  style=wx.TB_FLAT|wx.TB_HORIZONTAL)
+        mydata = data.DataList()
+        self.data_cont = DataController(mydata)
+        self.list_ctrl = VirtualDataList(self, self.data_cont, config=config, status_text=status_text)
         
-        self.sizer_vert=wx.BoxSizer(wx.VERTICAL)
-        self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer_vert = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer_vert)
         
         self.do_toolbar()
-        self.sizer_vert.Add(self.tool_panel, proportion = 0, flag = wx.EXPAND
-        , border = 5)
-        self.sizer_vert.Add((-1,2))
-        self.sizer_vert.Add(self.list_ctrl, proportion = 1, flag = wx.EXPAND
-        , border = 5)
-        
-        self.tool_panel.SetSizer(self.sizer_hor)
-        
-        
-        #self.sizer_vert.Fit(self)
+        self.sizer_vert.Add(self.toolbar, proportion=0, flag = wx.EXPAND, border=0)
+        self.sizer_vert.Add(self.list_ctrl, proportion=1, flag=wx.EXPAND, border=0)
+
+        self.toolbar.Realize()
         
     def do_toolbar(self):
-        if os.name == 'nt':
-            size = (24, 24)
-        else:
-            size = (-1, -1)
-        self.bitmap_button_open = wx.BitmapButton(self.tool_panel, -1
-        , img.getopen_smallBitmap(), size = size, style = wx.NO_BORDER)
-        self.bitmap_button_open.SetToolTipString('Import a data set')
-        self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1
-        , img.getaddBitmap(), size = size, style = wx.NO_BORDER)
-        self.bitmap_button_add.SetToolTipString('Add a new data set')
-        self.bitmap_button_delete = wx.BitmapButton(self.tool_panel, -1
-        , img.getdeleteBitmap(), size = size, style = wx.NO_BORDER)
-        self.bitmap_button_delete.SetToolTipString('Delete a data set')
-        self.bitmap_button_move_up = wx.BitmapButton(self.tool_panel, -1
-        , img.getmove_upBitmap(), size = size, style = wx.NO_BORDER)
-        self.bitmap_button_move_up.SetToolTipString('Move up')
-        self.bitmap_button_move_down = wx.BitmapButton(self.tool_panel, -1
-        , img.getmove_downBitmap(), size = size, style = wx.NO_BORDER)
-        self.bitmap_button_move_down.SetToolTipString('Move down')
-        self.bitmap_button_plotting = wx.BitmapButton(self.tool_panel, -1
-        , img.getplottingBitmap(), size = size, style = wx.NO_BORDER)
-        self.bitmap_button_open.SetToolTipString('Plot settings')
-        self.bitmap_button_calc = wx.BitmapButton(self.tool_panel, -1
-        , img.getcalcBitmap(), size = size, style = wx.NO_BORDER)
-        self.bitmap_button_open.SetToolTipString('Data Calculations')
-        
-        space = (2, -1)
-        self.sizer_hor.Add(self.bitmap_button_open, proportion = 0,
-                           border = 2)
-        self.sizer_hor.Add(space)
-        self.sizer_hor.Add(self.bitmap_button_add,proportion = 0, border = 2)
-        self.sizer_hor.Add(space)
-        self.sizer_hor.Add(self.bitmap_button_delete,proportion = 0, border = 2)
-        self.sizer_hor.Add(space)
-        self.sizer_hor.Add(self.bitmap_button_move_up,proportion = 0, border = 2)
-        self.sizer_hor.Add(space)
-        self.sizer_hor.Add(self.bitmap_button_move_down,proportion = 0, border = 2)
-        self.sizer_hor.Add(space)
-        self.sizer_hor.Add(self.bitmap_button_plotting,proportion = 0, border = 2)
-        self.sizer_hor.Add(space)
-        self.sizer_hor.Add(self.bitmap_button_calc,proportion = 0, border = 2)
-        
-        
-        self.Bind(wx.EVT_BUTTON, self.eh_tb_open, self.bitmap_button_open)
-        self.Bind(wx.EVT_BUTTON, self.eh_tb_add, self.bitmap_button_add)
-        self.Bind(wx.EVT_BUTTON, self.eh_tb_delete, self.bitmap_button_delete)
-        self.Bind(wx.EVT_BUTTON, self.eh_tb_move_up
-        , self.bitmap_button_move_up)
-        self.Bind(wx.EVT_BUTTON, self.eh_tb_move_down
-        , self.bitmap_button_move_down)
-        self.Bind(wx.EVT_BUTTON, self.eh_tb_plotting
-        , self.bitmap_button_plotting)
-        self.Bind(wx.EVT_BUTTON, self.eh_tb_calc, self.bitmap_button_calc)
-        
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Import data set', bitmap=img.open_small.getBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Add data set', bitmap=img.add.getBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_tb_add, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Delete data set', bitmap=img.delete.getBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_tb_delete, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Move up', bitmap=img.move_up.getBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_tb_move_up, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Move_down', bitmap=img.move_down.getBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_tb_move_down, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Plot settings', bitmap=img.plotting.getBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_tb_plotting, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Import data set', bitmap=img.calc.getBitmap())
+        self.Bind(wx.EVT_TOOL, self.eh_tb_calc, id=newid)
+
     # Callbacks
     def eh_tb_open(self, event):
         #print "eh_tb_open not implemented yet"
@@ -876,10 +835,8 @@ class DataListControl(wx.Panel):
 
     
     def eh_tb_plotting(self, event):
-        '''eh_tb_plotting(self, event) --> None
-        Callback for the creation of a plotting settings dialog box
-        '''
-        #print "eh_tb_plotting not implemented yet"
+        """Callback for the creation of a plotting settings dialog box
+        """
         self.list_ctrl.OnPlotSettings(event)
     
     def eh_tb_calc(self, event):

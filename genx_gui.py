@@ -51,7 +51,7 @@ class MainFrame(wx.Frame):
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__
-        kwds["style"] = wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|wx.MAXIMIZE|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER|wx.NO_BORDER
+        kwds["style"] = wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|wx.MAXIMIZE|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
         
         #self.config.load_default('./genx.conf')
@@ -527,19 +527,11 @@ class MainFrame(wx.Frame):
         ''' Overiding the default method since any resizing has to come AFTER
             the calls to Show
         '''
+        self.Maximize()
+        size = self.GetSizeTuple()
+        self.ver_splitter.SetSashPosition(size[0]*1./4.)
+        self.hor_splitter.SetSashPosition(size[1]*5.0/10.)
         wx.Frame.Show(self)
-        if os.name == 'mac' or os.name == 'posix' or os.name == '':
-            self.Maximize()
-            self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/4.)
-            self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*5.5/10.)
-        else:
-            size = wx.DisplaySize()
-            #print size
-            self.SetSize((size[0]*3./4., size[1]*3./4.))
-            #print self.GetSize()
-            self.ver_splitter.SetSashPosition(self.GetSizeTuple()[0]/3.)
-            self.hor_splitter.SetSashPosition(self.GetSizeTuple()[1]*6.0/10.)
-            self.Centre()
         ## Begin Manual Config
         #Gravity sets how much the upper/left window is resized default 0
         self.hor_splitter.SetSashGravity(0.75)
@@ -547,7 +539,7 @@ class MainFrame(wx.Frame):
         #self.Maximize()
         ## End Manual Config
         event_handlers.new(self, None)
-        
+
     def startup_dialog(self, profile_path, force_show = False):
         show_profiles = self.config.get_boolean('startup', 'show profiles')
         if show_profiles or force_show:
