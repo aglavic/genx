@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
@@ -13,13 +14,13 @@
    height="16px"
    id="svg3153"
    sodipodi:version="0.32"
-   inkscape:version="0.45.1"
-   sodipodi:docbase="/home/matts/GenX2/MyIcons"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="move_down.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/matts/GenX2/MyIcons/move_up.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-filename="/Users/GenX/Documents/GenX/sf-code/trunk/icons/main_gui/move_down.png"
+   inkscape:export-xdpi="112.5"
+   inkscape:export-ydpi="112.5"
+   version="1.1">
   <defs
      id="defs3155">
     <linearGradient
@@ -70,7 +71,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.197802"
-     inkscape:cx="8"
+     inkscape:cx="7.2116337"
      inkscape:cy="7.9556263"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -82,7 +83,8 @@
      inkscape:window-y="49"
      inkscape:object-nodes="false"
      inkscape:object-points="false"
-     inkscape:object-paths="true" />
+     inkscape:object-paths="true"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata3158">
     <rdf:RDF>
@@ -91,6 +93,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -99,10 +102,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <path
-       style="fill:url(#linearGradient3283);fill-opacity:1;stroke:#000000;stroke-width:0.81979662;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter3243)"
-       d="M 19.178665,6.5729001 L 19.080267,11.340704 L 6.2869907,11.494902 L 6.1858194,19.264285 L 19.017767,19.184454 L 19.187961,23.827257 L 27.421958,15.497356 L 19.178665,6.5729001 z "
+       style="fill:url(#linearGradient3283);fill-opacity:1;stroke:#000000;stroke-width:0.81979662;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;filter:url(#filter3243)"
+       d="m 19.178665,6.5729001 -0.0984,4.7678039 -12.7932763,0.154198 -0.1011713,7.769383 12.8319476,-0.07983 0.170194,4.642803 8.233997,-8.329901 -8.243293,-8.9244559 z"
        id="path3199"
        sodipodi:nodetypes="cccccccc"
-       transform="matrix(0,0.6708981,0.6708981,0,-2.197704,-3.273697)" />
+       transform="matrix(0,0.61572162,0.61572162,0,-1.3590173,-2.3465163)"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>

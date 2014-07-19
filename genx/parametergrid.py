@@ -254,8 +254,7 @@ class ParameterGrid(wx.Panel):
     The GUI component itself. This is the thing to use in a GUI.
     '''
     def __init__(self, parent, frame):
-        wx.Panel.__init__(self, parent, style=wx.NO_BORDER)
-        #self.SetForegroundColour('BLUE')
+        wx.Panel.__init__(self, parent)
         # The two main widgets
         self.toolbar = wx.ToolBar(self,  style=wx.TB_FLAT|wx.TB_VERTICAL)
         self.grid = gridlib.Grid(self, -1, style=wx.NO_BORDER)
@@ -267,7 +266,6 @@ class ParameterGrid(wx.Panel):
         self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(self.sizer_hor)
         self.sizer_hor.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=0)
-        #self.sizer_hor.Add((2,-1))
         self.sizer_hor.Add(self.grid, proportion=1, flag=wx.EXPAND, border=0)
 
         self.parent = frame
@@ -314,16 +312,15 @@ class ParameterGrid(wx.Panel):
 
 
     def do_toolbar(self):
-        if os.name == 'nt':
-            size = (24, 24)
-        else:
-            size = (-1, -1)
+        #if os.name == 'nt':
+        #    size = (24, 24)
+        #else:
+        #    size = (-1, -1)
         #self.toolbar.SetToolBitmapSize((21,21))
         #self.toolbar.SetToolSeparation(5)
-        self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
-        self.toolbar.SetBackgroundColour('BLUE')
-        #self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE))
-
+        #self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
+        #self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
+        #self.toolbar.SetBackgroundColour('BLUE')
 
         newid = wx.NewId()
         self.toolbar.AddLabelTool(newid, label='Add a new row', bitmap=img.getaddBitmap())
@@ -341,39 +338,9 @@ class ParameterGrid(wx.Panel):
         self.toolbar.AddLabelTool(newid, label='Move row down', bitmap=img.getmove_downBitmap())
         self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
 
-
-
-        #self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1, img.getaddBitmap(),
-        #                                         size=size, style=wx.NO_BORDER)
-        #self.bitmap_button_add.SetToolTipString('Add a new row')
-
-        #self.bitmap_button_delete = wx.BitmapButton(self.tool_panel, -1, img.getdeleteBitmap(),
-        #                                            size=size, style=wx.NO_BORDER)
-        #self.bitmap_button_delete.SetToolTipString('Delete a row')
-        #self.bitmap_button_move_up = wx.BitmapButton(self.tool_panel, -1, img.getmove_upBitmap(),
-        #                                             size=size, style=wx.NO_BORDER)
-        #self.bitmap_button_move_up.SetToolTipString('Move up')
-        #self.bitmap_button_move_down = wx.BitmapButton(self.tool_panel, -1, img.getmove_downBitmap(),
-        #                                               size = size, style=wx.NO_BORDER)
-        #self.bitmap_button_move_down.SetToolTipString('Move down')
-
-        #space = (-1, 4)
-        #self.tb_sizer=wx.BoxSizer(wx.VERTICAL)
-        #self.tb_sizer.Add(space)
-        #self.tb_sizer.Add(self.bitmap_button_add, proportion=0, border=4)
-        #self.tb_sizer.Add(space)
-        #self.tb_sizer.Add(self.bitmap_button_delete, proportion=0, border=4)
-        #self.tb_sizer.Add(space)
-        #self.tb_sizer.Add(self.bitmap_button_move_up, proportion=0, border=4)
-        #self.tb_sizer.Add(space)
-        #self.tb_sizer.Add(self.bitmap_button_move_down, proportion=0, border=4)
-        #self.tb_sizer.Add(space)
-        #self.tool_panel.SetSizer(self.tb_sizer)
-
-        #self.Bind(wx.EVT_BUTTON, self.eh_add_row, self.bitmap_button_add)
-        #self.Bind(wx.EVT_BUTTON, self.eh_delete_row, self.bitmap_button_delete)
-        #self.Bind(wx.EVT_BUTTON, self.eh_move_row_up, self.bitmap_button_move_up)
-        #self.Bind(wx.EVT_BUTTON, self.eh_move_row_down, self.bitmap_button_move_down)
+        #newid = wx.NewId()
+        #self.toolbar.AddLabelTool(newid, label='FOM plots', bitmap=img.getFOMBitmap())
+        #self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
 
 
     def eh_add_row(self, event):
@@ -400,8 +367,8 @@ class ParameterGrid(wx.Panel):
         :param event:
         :return:
         """
-        print self.grid.GetSelectedCells()
-        print self.grid.GetSelectedRows()
+        #print self.grid.GetSelectedCells()
+        #print self.grid.GetSelectedRows()
         row = self.grid.GetGridCursorRow()
         if self.table.MoveRowUp(row):
             self.grid.SetGridCursor(row - 1, self.grid.GetGridCursorCol())

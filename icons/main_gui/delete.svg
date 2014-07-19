@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
@@ -13,14 +14,14 @@
    height="16px"
    id="svg3260"
    sodipodi:version="0.32"
-   inkscape:version="0.45"
-   sodipodi:docbase="/home/matts/GenX2/MyIcons"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="delete.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/matts/GenX2/MyIcons/delete.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90"
-   sodipodi:modified="true">
+   inkscape:export-filename="/Users/GenX/Documents/GenX/sf-code/trunk/icons/main_gui/delete.png"
+   inkscape:export-xdpi="112.5"
+   inkscape:export-ydpi="112.5"
+   sodipodi:modified="true"
+   version="1.1">
   <defs
      id="defs3262">
     <linearGradient
@@ -74,7 +75,7 @@
        x2="11.267227"
        y2="1.4550433"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.1,0,0,1.1,-0.6898611,-0.4390624)" />
+       gradientTransform="matrix(1.058824,0,0,1.058824,-0.36457627,-0.12316562)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -84,7 +85,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.197802"
-     inkscape:cx="8"
+     inkscape:cx="2.3462871"
      inkscape:cy="8.2022837"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -93,7 +94,8 @@
      inkscape:window-width="910"
      inkscape:window-height="626"
      inkscape:window-x="90"
-     inkscape:window-y="49" />
+     inkscape:window-y="49"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata3265">
     <rdf:RDF>
@@ -102,6 +104,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -110,8 +113,9 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <path
-       style="fill:url(#linearGradient3315);fill-opacity:1;stroke:#000000;stroke-width:0.55000001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 1.4007043,3.6004705 C 0.87041849,4.1307563 0.87041849,4.9661139 1.4007043,5.4963997 L 3.9043043,7.9999996 L 1.4007043,10.503599 C 0.87041849,11.033887 0.87041849,11.869243 1.4007043,12.39953 L 3.5883161,14.587142 C 4.118603,15.117428 4.9782662,15.141735 5.5085531,14.611449 L 8.0121528,12.107849 L 10.491446,14.587142 C 11.021732,15.117428 11.881396,15.141735 12.411683,14.611449 L 14.599295,12.423837 C 15.129581,11.89355 15.129582,11.00958 14.599295,10.479293 L 12.120002,7.9999996 L 14.599295,5.5207064 C 15.129581,4.9904206 15.129581,4.1064496 14.599295,3.5761638 L 12.411683,1.388552 C 11.881396,0.85826502 11.021733,0.88257172 10.491446,1.4128587 L 8.0121528,3.892152 L 5.5085531,1.388552 C 4.9782662,0.85826502 4.118603,0.88257172 3.5883161,1.4128587 L 1.4007043,3.6004705 z "
-       id="rect3286" />
+       style="fill:url(#linearGradient3315);fill-opacity:1;stroke:#000000;stroke-width:0.52941203;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 1.6477336,3.7651566 c -0.5104358,0.5104358 -0.5104358,1.3145237 0,1.8249595 L 4.0576171,7.9999995 1.6477336,10.409882 c -0.5104358,0.510438 -0.5104358,1.314525 0,1.824961 l 2.1057236,2.105724 c 0.5104368,0.510436 1.3379205,0.533833 1.8483573,0.0234 l 2.4098832,-2.409886 2.3864863,2.386486 c 0.510436,0.510436 1.337921,0.533833 1.848358,0.0234 l 2.105724,-2.105723 c 0.510436,-0.510437 0.510437,-1.361318 0,-1.871755 L 11.965779,7.9999995 14.352266,5.6135129 c 0.510436,-0.5104357 0.510436,-1.3613173 0,-1.8717531 L 12.246542,1.6360362 c -0.510437,-0.5104369 -1.337921,-0.48704 -1.848358,0.023397 L 8.0116977,4.0459197 5.6018145,1.6360362 C 5.0913777,1.1255993 4.263894,1.1489962 3.7534572,1.6594331 L 1.6477336,3.7651566 z"
+       id="rect3286"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>

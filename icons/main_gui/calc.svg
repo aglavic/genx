@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
@@ -12,13 +13,13 @@
    height="16px"
    id="svg2160"
    sodipodi:version="0.32"
-   inkscape:version="0.45.1"
-   sodipodi:docbase="/home/matts/GenX2/MyIcons"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="calc.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/matts/GenX2/MyIcons/calc.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-filename="/Users/GenX/Documents/GenX/sf-code/trunk/icons/main_gui/calc.png"
+   inkscape:export-xdpi="112.5"
+   inkscape:export-ydpi="112.5"
+   version="1.1">
   <defs
      id="defs2162">
     <linearGradient
@@ -41,7 +42,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.197802"
-     inkscape:cx="15.026393"
+     inkscape:cx="9.3726801"
      inkscape:cy="9.6622502"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -52,7 +53,8 @@
      inkscape:window-x="39"
      inkscape:window-y="70"
      inkscape:object-paths="false"
-     inkscape:guide-bbox="false" />
+     inkscape:guide-bbox="false"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata2165">
     <rdf:RDF>
@@ -61,6 +63,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -73,13 +76,13 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <rect
-       style="fill:#d3d7cf;stroke:#000000;stroke-opacity:1"
+       style="fill:#d3d7cf;stroke:#000000;stroke-width:0.93333334;stroke-opacity:1"
        id="rect2187"
-       width="11"
-       height="14"
-       x="2.5"
-       y="0.95495051"
-       ry="0.90810579" />
+       width="10.266666"
+       height="13.066667"
+       x="2.8666668"
+       y="1.4666667"
+       ry="0.84756541" />
     <rect
        style="fill:#204a87;stroke:#000000;stroke-opacity:1;stroke-width:0.75;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3161"
