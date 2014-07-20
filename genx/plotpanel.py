@@ -1203,12 +1203,10 @@ class ParsPlotPanel(PlotPanel):
             width = 0.8
             x = arange(len(best))
             self.ax.set_autoscale_on(False)
-            self.ax.bar(x - width/2.0, pop_max - pop_min, bottom = pop_min,\
-                        color = 'b', width = width)
+            self.ax.bar(x - width/2.0, pop_max - pop_min, bottom=pop_min, color='b', width= width)
             self.ax.plot(x, best, 'ro')
             if self.GetAutoScale():
-                self.ax.axis([x.min() - width, x.max() +    width,\
-                            0., 1.])
+                self.ax.axis([x.min() - width, x.max() + width, 0., 1.])
         
         self.flush_plot()
         self.canvas.draw()
@@ -1232,7 +1230,7 @@ class FomScanPlotPanel(PlotPanel):
         PlotPanel.__init__(self, parent, id, color, dpi, style, **kwargs)
         self.update(None)
         self.ax = self.figure.add_subplot(111)
-        self.ax.set_autoscale_on(True)
+        self.ax.set_autoscale_on(False)
         self.update = self.Plot
         
         self.type = 'project'
@@ -1244,7 +1242,11 @@ class FomScanPlotPanel(PlotPanel):
         '''
         if type.lower() == 'project':
             self.type = 'project'
+            self.SetAutoScale(False)
+            #self.ax.set_autoscale_on(False)
         elif type.lower() == 'scan':
+            self.SetAutoScale(True)
+            #self.ax.set_autoscale_on(True)
             self.type = 'scan'
         
     def Plot(self, data):
@@ -1255,12 +1257,22 @@ class FomScanPlotPanel(PlotPanel):
         x, y, bestx, besty, e_scale = data[0], data[1], data[2], data[3],\
                                         data[4]
         if self.type.lower() == 'project':
+            self.ax.set_autoscale_on(False)
             self.ax.plot(x, y, 'ob')
+            self.ax.plot([bestx], [besty], 'or')
+            self.ax.hlines(besty*e_scale, x.min(), x.max(), 'r')
+            self.ax.axis([x.min(), x.max(), min(y.min(), besty)*0.95,
+                          (besty*e_scale - min(y.min(), besty))*2.0 + min(y.min(), besty)])
         elif self.type.lower() == 'scan':
             self.ax.plot(x, y, 'b')
-        self.ax.plot([bestx], [besty], 'or')
-        self.ax.hlines(besty*e_scale, x.min(), x.max(), 'r')
-        
+            self.ax.plot([bestx], [besty], 'or')
+            self.ax.hlines(besty*e_scale, x.min(), x.max(), 'r')
+            if self.GetAutoScale():
+                self.ax.set_autoscale_on(False)
+                self.ax.axis([x.min(), x.max(), min(y.min(), besty)*0.95, y.max()*1.05])
+
+
+
         self.flush_plot()
         self.canvas.draw()
 
