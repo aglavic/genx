@@ -593,6 +593,7 @@ def scan_parameter(frame, row):
             frame.plot_fomscan.SetPlottype('scan')
             frame.plot_fomscan.Plot((x, y, bestx, besty,\
                         frame.solver_control.fom_error_bars_level))
+            frame.plot_notebook.SetSelection(3)
         except Exception, e:
             outp = StringIO.StringIO()
             traceback.print_exc(200, outp)
@@ -611,19 +612,26 @@ def project_fom_parameter(frame, row):
     Plots the project fom given by the row row [int]
     '''
     if not frame.solver_control.IsFitted():
-        ShowNotificationDialog(frame, 'Please conduct a fit before' +\
-        ' scanning a parameter. The script needs to be compiled and foms have'\
+        ShowNotificationDialog(frame, 'Please conduct a fit before' +
+        ' scanning a parameter. The script needs to be compiled and foms have'
          + ' to be collected.')
         return
+
     frame.main_frame_statusbar.SetStatusText('Trying to project fom', 1)
     try:
         x, y = frame.solver_control.ProjectEvals(row)
+        if len(x) == 0 or len(y) == 0:
+            ShowNotificationDialog(frame, 'Please conduct a fit before' +
+                                   ' scanning a parameter. The script needs to be compiled and foms have'
+                                   + ' to be collected.')
+            return
         fs, pars = frame.model.get_sim_pars()
         bestx = pars[row]
         besty = frame.model.fom
         frame.plot_fomscan.SetPlottype('project')
         frame.plot_fomscan.Plot((x, y, bestx, besty,\
                         frame.solver_control.fom_error_bars_level))
+        frame.plot_notebook.SetSelection(3)
     except Exception, e:
         outp = StringIO.StringIO()
         traceback.print_exc(200, outp)

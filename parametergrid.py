@@ -323,25 +323,30 @@ class ParameterGrid(wx.Panel):
         #self.toolbar.SetBackgroundColour('BLUE')
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Add a new row', bitmap=img.getaddBitmap())
+        self.toolbar.AddLabelTool(newid, label='Add a new row', bitmap=img.getaddBitmap(), shortHelp='Insert new row')
         self.Bind(wx.EVT_TOOL, self.eh_add_row, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Delete row', bitmap=img.getdeleteBitmap())
+        self.toolbar.AddLabelTool(newid, label='Delete row', bitmap=img.getdeleteBitmap(), shortHelp='Delete row')
         self.Bind(wx.EVT_TOOL, self.eh_delete_row, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Move row up', bitmap=img.getmove_upBitmap())
+        self.toolbar.AddLabelTool(newid, label='Move row up', bitmap=img.getmove_upBitmap(), shortHelp='Move row up')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_up, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Move row down', bitmap=img.getmove_downBitmap())
+        self.toolbar.AddLabelTool(newid, label='Move row down', bitmap=img.getmove_downBitmap(),
+                                  shortHelp='Move row down')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
 
-        #newid = wx.NewId()
-        #self.toolbar.AddLabelTool(newid, label='FOM plots', bitmap=img.getFOMBitmap())
-        #self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Project FOM evals', bitmap=img.par_proj.getBitmap(),
+                                  shortHelp='Project FOM on parameter axis')
+        self.Bind(wx.EVT_TOOL, self.eh_project_fom, id=newid)
 
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Scan parameter', bitmap=img.par_scan.getBitmap(), shortHelp='Scan FOM')
+        self.Bind(wx.EVT_TOOL, self.eh_scan_fom, id=newid)
 
     def eh_add_row(self, event):
         """ Event handler for adding a row
@@ -382,6 +387,26 @@ class ParameterGrid(wx.Panel):
         row = self.grid.GetGridCursorRow()
         if self.table.MoveRowDown(row):
             self.grid.SetGridCursor(row + 1, self.grid.GetGridCursorCol())
+
+    def eh_project_fom(self, event):
+        """ Event handler for toolbar project fom
+        :param event:
+        :return:
+        """
+        row = self.grid.GetGridCursorRow()
+        if self.project_func:
+            self.project_func(row)
+
+    def eh_scan_fom(self, event):
+        """ Event handler for scanning fom on selected parameter
+
+        :param event:
+        :return:
+        """
+        row = self.grid.GetGridCursorRow()
+        if self.scan_func:
+            self.scan_func(row)
+
 
     def OnSelectCell(self, evt):
          self.grid.SelectRow(evt.GetRow())
