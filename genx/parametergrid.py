@@ -142,12 +142,25 @@ class ParameterDataTable(gridlib.PyGridTableBase):
 
         success = self.pars.move_row_down(row)
 
-        msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
         return success
+
+    def SortRows(self):
+        """ Sort the rows in the table
+
+        :return: Boolean to indicate success
+        """
+        success = self.pars.sort_rows()
+
+        msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        self.parent._grid_changed()
+        return success
+
 
     
     def AppendRows(self, num_rows = 1):
@@ -340,6 +353,11 @@ class ParameterGrid(wx.Panel):
         self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
 
         newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Sort parameters', bitmap=img.sort.getBitmap(),
+                                  shortHelp='Sort the rows by class, object and name')
+        self.Bind(wx.EVT_TOOL, self.eh_sort, id=newid)
+
+        newid = wx.NewId()
         self.toolbar.AddLabelTool(newid, label='Project FOM evals', bitmap=img.par_proj.getBitmap(),
                                   shortHelp='Project FOM on parameter axis')
         self.Bind(wx.EVT_TOOL, self.eh_project_fom, id=newid)
@@ -406,6 +424,14 @@ class ParameterGrid(wx.Panel):
         row = self.grid.GetGridCursorRow()
         if self.scan_func:
             self.scan_func(row)
+
+    def eh_sort(self, event):
+        """Event handler for the sorting
+
+        :param event:
+        :return:
+        """
+        self.table.SortRows()
 
 
     def OnSelectCell(self, evt):

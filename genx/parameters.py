@@ -6,17 +6,18 @@ Last changed: 2008 02 21
 '''
 
 import numpy as np
+import string
 
 #==============================================================================
 class Parameters:
     '''
     Class for storing the fitting parameters in GenX
     '''
-    def __init__(self):
+    def __init__(self, model=None):
         self.data_labels = ['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
         self.init_data = ['', 0.0, False, 0.0, 0.0, 'None']
         self.data = [self.init_data[:]]
-        
+        self.model = model
         
     def set_value(self, row, col, value):
         ''' Set a value in the parameter grid '''
@@ -84,6 +85,29 @@ class Parameters:
             return True
         else:
             return False
+
+    def _sort_key_func(self, item):
+        class_name = ''
+        pname = item[0]
+        obj_name = item[0]
+        if self.model is not None:
+            if item[0].count('.') > 0 and self.model.compiled:
+                pieces = item[0].split('.')
+                obj_name = pieces[0]
+                pname = pieces[1]
+                obj = self.model.eval_in_model(obj_name)
+                class_name = obj.__class__.__name__
+        print string.lower(class_name), string.lower(pname), string.lower(obj_name)
+
+        return string.lower(class_name), string.lower(pname), string.lower(obj_name)
+
+    def sort_rows(self):
+        """ Sort the rows in the table
+
+        :return:
+        """
+        self.data.sort(key=self._sort_key_func)
+        return True
 
 
 

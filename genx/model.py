@@ -30,7 +30,7 @@ class Model:
         self.config = config
         self.data = data.DataList()
         self.script = ''
-        self.parameters = parameters.Parameters()
+        self.parameters = parameters.Parameters(model=self)
         
         #self.fom_func = default_fom_func   
         self.fom_func = fom_funcs.log # The function that evaluates the fom
@@ -432,7 +432,7 @@ class Model:
         '''
         self.data = data.DataList()
         self.script = ''
-        self.parameters = parameters.Parameters()
+        self.parameters = parameters.Parameters(self)
         
         #self.fom_func = default_fom_func
         self.fom_func = fom_funcs.log
