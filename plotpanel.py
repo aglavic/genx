@@ -1271,8 +1271,6 @@ class FomScanPlotPanel(PlotPanel):
                 self.ax.set_autoscale_on(False)
                 self.ax.axis([x.min(), x.max(), min(y.min(), besty)*0.95, y.max()*1.05])
 
-
-
         self.flush_plot()
         self.canvas.draw()
 
