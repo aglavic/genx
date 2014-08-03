@@ -66,11 +66,12 @@ from help_modules.custom_dialog import *
 import help_modules.reflectivity_images as images
 
 _avail_models = ['spec_nx', 'interdiff', 'xmag', 'mag_refl']
+_set_func_prefix = 'set'
 
 class SampleHandler:
-    def __init__(self,sample,names):
-        self.sample=sample
-        self.names=names
+    def __init__(self, sample, names):
+        self.sample = sample
+        self.names = names
         self.getStringList()
         
     def getStringList(self, html_encoding = False):
@@ -94,7 +95,7 @@ class SampleHandler:
         for item in range(len(slist)):
             if slist[item][0]=='L' and item != 0 and item != len(slist) - 1:
                 if html_encoding:
-                    slist[item]='<code>&nbsp;&nbsp;&nbsp;<b>'+self.names[-item-1]+'</b> = '+slist[item] + '</code>'
+                    slist[item]='<code>&nbsp;&nbsp;&nbsp;<b>'+self.names[-item-1]+'</b> = ' + slist[item] + '</code>'
                     #slist[item] = self.htmlize(self.names[-item-1] + ' = model.' + slist[item])
                 else:
                     slist[item] = self.names[-item-1] + ' = model.' + slist[item]
@@ -102,7 +103,7 @@ class SampleHandler:
                 if item == 0 or item == len(slist) - 1:
                     # This is then the ambient or substrates
                     if html_encoding:
-                        slist[item]='<code><b>' + self.names[-item-1]+'</b> = '+slist[item] + '</code>'
+                        slist[item]='<code><b>' + self.names[-item-1] + '</b> = ' + slist[item] + '</code>'
                         #slist[item] = self.htmlize(self.names[-item-1] + ' = model.' + slist[item])
                     else:
                         slist[item] = self.names[-item-1] + ' = model.' + slist[item]
@@ -189,7 +190,7 @@ class SampleHandler:
             
         return layer_code,stack_code, sample_code
 
-    def getItem(self,pos):
+    def getItem(self, pos):
         '''
         Returns the item (Stack or Layer) at position pos
         '''
@@ -198,7 +199,7 @@ class SampleHandler:
         if pos==len(self.poslist)-1:
             return self.sample.Substrate
         stack=self.sample.Stacks[self.poslist[pos][0]]
-        if self.poslist[pos][1]==None:
+        if self.poslist[pos][1] == None:
             return stack
         return stack.Layers[self.poslist[pos][1]]
 
@@ -306,6 +307,13 @@ class SampleHandler:
 
     def checkName(self, name):
         return self.names.__contains__(name)
+
+    def getName(self, pos):
+        """ Returns the name for the object at pos
+        :param pos: list position for the name
+        :return: the name (string)
+        """
+        return self.names[pos]
     
     def changeName(self, pos, name):
         if name in self.names and name != self.names[pos]:
@@ -516,10 +524,18 @@ class SamplePanel(wx.Panel):
         self.Update()
         
     def EditSampleParameters(self, evt):
+        """ Event handler that creates a dialog box to edit the sample parameters.
+
+        :param evt:
+        :return: Nothing
+        """
+        grid_parameters = self.plugin.GetModel().get_parameters()
+
         validators = {}
         vals = {}
         pars = []
         items = []
+        editable = {}
         try:
             string_choices = self.model.sample_string_choices
         except Exception, e:
@@ -534,6 +550,14 @@ class SamplePanel(wx.Panel):
                 vals[item] = val
                 pars.append(item)
                 items.append((item, val))
+                # Check if the parameter is in the grid and in that case set it as uneditable
+                func_name = 'sample' + '.' + _set_func_prefix + item.capitalize()
+                grid_value = grid_parameters.get_value_by_name(func_name)
+                if grid_value is not None:
+                    editable[item] = False
+                    vals[item] = grid_value
+                else:
+                    editable[item] = True
         try:
             groups = self.model.SampleGroups
         except Exception:
@@ -544,8 +568,8 @@ class SamplePanel(wx.Panel):
             units = False
             
         dlg = ValidateDialog(self, pars, vals, validators,
-                             title = 'Sample Editor', groups = groups,
-                             units = units)
+                             title='Sample Editor', groups=groups,
+                             units=units, editable_pars=editable)
         
         if dlg.ShowModal()==wx.ID_OK:
             vals=dlg.GetValues()
@@ -568,11 +592,18 @@ class SamplePanel(wx.Panel):
         self.instruments = instruments
     
     def EditInstrument(self, evt):
-        #validators = []
+        """Event handler that creates an dialog box to edit the instruments.
+
+        :param evt:
+        :return: Nothing
+        """
         validators = {}
         vals = {}
+        editable = {}
+        grid_parameters = self.plugin.GetModel().get_parameters()
         for inst_name in self.instruments:
             vals[inst_name] = {}
+            editable[inst_name] = {}
             
         pars = []
         for item in self.model.InstrumentParameters:
@@ -585,6 +616,14 @@ class SamplePanel(wx.Panel):
             for inst_name in self.instruments:
                 val = getattr(self.instruments[inst_name], item)
                 vals[inst_name][item] = val
+                # Check if the parameter is in the grid and in that case set it as uneditable
+                func_name = inst_name + '.' + _set_func_prefix + item.capitalize()
+                grid_value = grid_parameters.get_value_by_name(func_name)
+                if grid_value is not None:
+                    editable[inst_name][item] = False
+                    vals[inst_name][item] = grid_value
+                else:
+                    editable[inst_name][item] = True
             pars.append(item)
             
             
@@ -596,10 +635,10 @@ class SamplePanel(wx.Panel):
             units = self.model.InstrumentUnits
         except Exception:
             units = False
-        
+        print editable
         dlg = ValidateNotebookDialog(self, pars, vals, validators,
-                             title = 'Instrument Editor', groups = groups,
-                             units = units, fixed_pages = ['inst'])
+                             title='Instrument Editor', groups=groups,
+                             units=units, fixed_pages=['inst'], editable_pars=editable)
         if dlg.ShowModal()==wx.ID_OK:
             vals = dlg.GetValues()
             # Check if an instrument has to be deleted
@@ -713,14 +752,17 @@ class SamplePanel(wx.Panel):
         
 
     def lbDoubleClick(self,evt):
-        sel=self.sampleh.getItem(self.listbox.GetSelection())
+        sel = self.sampleh.getItem(self.listbox.GetSelection())
+        obj_name = self.sampleh.getName(self.listbox.GetSelection())
         eval_func = self.plugin.GetModel().eval_in_model
         sl=None
         items=[]
         validators = {}
         vals = {}
         pars = []
-        if isinstance(sel,self.model.Layer): 
+        editable = {}
+        grid_parameters = self.plugin.GetModel().get_parameters()
+        if isinstance(sel, self.model.Layer):
             # The selected item is a Layer
             for item in self.model.LayerParameters.keys():
                 value = getattr(sel, item)
@@ -732,6 +774,15 @@ class SamplePanel(wx.Panel):
                 items.append((item, value))
                 pars.append(item)
                 vals[item] = value
+                # Check if the parameter is in the grid and in that case set it as uneditable
+                func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
+                grid_value = grid_parameters.get_value_by_name(func_name)
+                if grid_value is not None:
+                    editable[item] = False
+                    vals[item] = grid_value
+                else:
+                    editable[item] = True
+
             try:
                 groups = self.model.LayerGroups
             except Exception:
@@ -742,13 +793,14 @@ class SamplePanel(wx.Panel):
                 units = False
 
             dlg = ValidateDialog(self, pars, vals, validators,
-                                 title = 'Layer Editor', groups = groups,
-                                 units = units)
+                                 title='Layer Editor', groups=groups,
+                                 units=units, editable_pars=editable)
             
             if dlg.ShowModal()==wx.ID_OK:
                 vals=dlg.GetValues()
                 for par in self.model.LayerParameters.keys():
-                    setattr(sel, par, vals[par])
+                    if editable[par]:
+                        setattr(sel, par, vals[par])
                 sl=self.sampleh.getStringList()
             else:
                 pass
@@ -766,6 +818,15 @@ class SamplePanel(wx.Panel):
                     items.append((item,value))
                     pars.append(item)
                     vals[item] = value
+
+                    # Check if the parameter is in the grid and in that case set it as uneditable
+                    func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
+                    grid_value = grid_parameters.get_value_by_name(func_name)
+                    if grid_value is not None:
+                        editable[item] = False
+                        vals[item] = grid_value
+                    else:
+                        editable[item] = True
             
             try:
                 groups = self.model.StackGroups
@@ -778,11 +839,12 @@ class SamplePanel(wx.Panel):
             
             dlg = ValidateDialog(self, pars, vals, validators,
                                  title = 'Stack Editor', groups = groups,
-                                 units = units)
+                                 units = units, editable_pars=editable)
             if dlg.ShowModal()==wx.ID_OK:
                 vals=dlg.GetValues()
                 for par in pars:
-                    setattr(sel, par, vals[par])
+                    if editable[par]:
+                        setattr(sel, par, vals[par])
                 sl=self.sampleh.getStringList()
             else:
                 pass

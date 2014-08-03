@@ -384,38 +384,43 @@ class ComplexObjectValidator(wx.PyValidator):
 
 class ValidateDialog(wx.Dialog):
     def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
-                 units = False, groups = False, cols = 2):
+                 units=False, groups=False, cols=2, editable_pars={}):
         ''' A dialog that validates the input when OK are pressed. The validation is done
         through the validators given as input.
         
         Pars should contain a list of names.
         Vals should be a dictionary of names and values for the different parameters one wish to set. 
-        Groups should either be false or a consist of a list of lists which
+        editable_pars should be a dictonary indicating if the parameter should be editable, a missing value
+        is interpreted that the parameter is editable.
+        Groups should either be false or consist of a list of lists which
         in turn consist of the (name, value) tuples where the first item
         in the list should be a string describing the group. This will be layed out 
         with subboxes. An example: 
         groups = [['Standard', ('f', 25), ('sigma', 7)], ['Neutron', ('b', 3.0)]]
-        
-        Note validators, values and units should be dictonaries of values!
+
+
+        Note validators, values, units and editable pars should be dictionaries of values!
         '''
         wx.Dialog.__init__(self, parent, -1, title)
         self.pars = pars
+        self.editable_pars = editable_pars
         self.validators = validators
         self.cols = cols
         self.vals = vals
         self.units = units
         self.groups = groups
         self.tc = {}
+        self.not_editable_bkg_color = wx.GREEN
         self.SetAutoLayout(True)
         
         if self.groups:
-            self.main_sizer, self.tc = self.grid_layout(self, self.vals)
+            self.main_sizer, self.tc = self.grid_layout(self, self.vals, self.editable_pars)
         else:
-            self.main_sizer, self.tc = self.layout_group(self, self.pars, self.vals)
+            self.main_sizer, self.tc = self.layout_group(self, self.pars, self.vals, self.editable_pars)
         
         self.main_layout()
         self.Layout()
-          
+
     def main_layout(self):
         border = wx.BoxSizer(wx.VERTICAL)
         border.Add(self.main_sizer, 1, wx.GROW|wx.ALL, 5)
@@ -439,7 +444,7 @@ class ValidateDialog(wx.Dialog):
         return buttons
         
               
-    def grid_layout(self, parent, vals):
+    def grid_layout(self, parent, vals, editable_pars):
         '''Do an more advanced layout with subboxes
         '''
         rows = math.ceil(len(self.pars)/(self.cols*1.0))
@@ -452,7 +457,7 @@ class ValidateDialog(wx.Dialog):
             # Make the box for putting in the columns
             col_box = wx.StaticBox(parent, -1, group[0])
             col_box_sizer = wx.StaticBoxSizer(col_box, wx.VERTICAL )
-            group, group_tc = self.layout_group(parent, group[1], vals)
+            group, group_tc = self.layout_group(parent, group[1], vals, editable_pars)
             col_box_sizer.Add(group, 
                               flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 
                               border = 5)
@@ -462,7 +467,7 @@ class ValidateDialog(wx.Dialog):
         return sizer, tc
                       
             
-    def layout_group(self, parent, pars, vals):
+    def layout_group(self, parent, pars, vals, editable_pars):
         if self.units:
             layout_cols = 3
         else:
@@ -491,18 +496,27 @@ class ValidateDialog(wx.Dialog):
             else:
                 validator = validator.Clone()
                 tc[par] = wx.TextCtrl(parent, -1, str(val),
-                                           validator = validator,
-                                           style = wx.TE_RIGHT)
-            sizer.Add(label, \
-                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+                                           validator=validator,
+                                           style=wx.TE_RIGHT|wx.TE_RICH)
+
+            # Create a non-editable box if needed
+            if par in editable_pars and not isinstance(validator, list):
+                tc[par].SetEditable(editable_pars[par])
+                if not editable_pars[par]:
+                    tc[par].SetBackgroundColour(self.not_editable_bkg_color)
+
+
+            sizer.Add(label,
+                flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
             sizer.Add(tc[par], 
-                    flag = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 5)
+                    flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border=5)
+
             # If we include units as well:
             if self.units:
                 unit_label = wx.StaticText(parent, -1, ' ' + self.units[par])
-                sizer.Add(unit_label, \
-                          flag = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, 
-                          border = 5)
+                sizer.Add(unit_label,
+                          flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL,
+                          border=5)
         return sizer, tc          
   
 
@@ -523,12 +537,14 @@ class ValidateDialog(wx.Dialog):
     
 class ValidateNotebookDialog(ValidateDialog):
     def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
-                 units = False, groups = False, cols = 2, fixed_pages = []):
+                 units=False, groups=False, cols=2, fixed_pages=[],
+                 editable_pars={}):
         ''' A dialog that validates the input when OK are pressed. The validation is done
         through the validators given as input.
         
         Pars should contain a list of names.
-        Vals should be a dictionary of dictionaries of names and values for the different parameters one wish to set. 
+        Vals should be a dictionary of dictionaries of names and values for the different parameters one wish to set.
+        editable_pars should be a dictionary of the same form as vals.
         The upper dictionary level should contain the object names.
         Groups should either be false or a consist of a list of lists which
         in turn consist of the (name, value) tuples where the first item
@@ -549,6 +565,8 @@ class ValidateNotebookDialog(ValidateDialog):
         self.changes = []
         self.text_controls = {}
         self.SetAutoLayout(True)
+        self.editable_pars = editable_pars
+        self.not_editable_bkg_color = wx.GREEN
         
         self.layout_notebook()
         self.do_toolbar()
@@ -603,7 +621,12 @@ class ValidateNotebookDialog(ValidateDialog):
         '''
         self.main_sizer = wx.Notebook(self, -1, style=wx.NB_TOP)
         for item in self.vals:
-            self.AddPage(item, self.vals[item])
+            print item
+            editable_pars = {}
+            if item in self.editable_pars:
+                editable_pars = self.editable_pars[item]
+                print editable_pars
+            self.AddPage(item, self.vals[item], editable_pars)
     
     def eh_insert(self, evt):
         '''Eventhandler that creates a new panel
@@ -615,7 +638,7 @@ class ValidateNotebookDialog(ValidateDialog):
             index += 1
         new_name = '%s_%d'%(current_name, index)
             
-        self.AddPage(new_name, self.vals[current_name], select = True)
+        self.AddPage(new_name, self.vals[current_name], {}, select = True)
         self.changes.append(('', new_name))
     
     def eh_delete(self, evt):
@@ -651,7 +674,7 @@ class ValidateNotebookDialog(ValidateDialog):
                     self.changes.append((current_name, vals['Name']))
             dlg.Destroy()
             
-    def AddPage(self, name, vals, select = False):
+    def AddPage(self, name, vals, editable_pars, select = False):
         '''Adds a page to the notebook 
         
         the flag select activates a page change to the current page
@@ -659,9 +682,9 @@ class ValidateNotebookDialog(ValidateDialog):
         panel = wx.Panel(self.main_sizer, -1)
         self.main_sizer.AddPage(panel, name, select = select)
         if self.groups:
-            sizer, page_text_controls = self.grid_layout(panel, vals)
+            sizer, page_text_controls = self.grid_layout(panel, vals, editable_pars)
         else:
-            sizer, page_text_controls = self.layout_group(panel, self.pars, vals)
+            sizer, page_text_controls = self.layout_group(panel, self.pars, vals, editable_pars)
         self.text_controls[name] = page_text_controls
         panel.SetSizerAndFit(sizer)
         panel.Layout()
