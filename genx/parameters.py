@@ -2,7 +2,6 @@
 Definition for the class Parameters. Used for storing the fitting parameters
 in GenX.
 Programmer: Matts Bjorck
-Last changed: 2008 02 21
 '''
 
 import numpy as np
@@ -10,9 +9,9 @@ import string
 
 #==============================================================================
 class Parameters:
-    '''
+    """
     Class for storing the fitting parameters in GenX
-    '''
+    """
     def __init__(self, model=None):
         self.data_labels = ['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
         self.init_data = ['', 0.0, False, 0.0, 0.0, 'None']
@@ -20,12 +19,25 @@ class Parameters:
         self.model = model
         
     def set_value(self, row, col, value):
-        ''' Set a value in the parameter grid '''
+        """ Set a value in the parameter grid """
         self.data[row][col] = value
     
     def get_value(self, row, col):
-        ''' Get the value in the grid '''
+        """ Get the value in the grid """
         return self.data[row][col]
+
+    def get_value_by_name(self, name):
+        """Get the value for parameter name. Returns None if name can not be found.
+
+        :param name:
+        :return: Value or None
+        """
+        par_names = [row[0] for row in self.data]
+        if name in par_names:
+            value = self.data[par_names.index(name)][1]
+        else:
+            value = None
+        return value
         
     def get_len_rows(self):
         return len(self.data)
@@ -104,7 +116,7 @@ class Parameters:
     def sort_rows(self):
         """ Sort the rows in the table
 
-        :return:
+        :return: Boolean to indicate success (True)
         """
         self.data.sort(key=self._sort_key_func)
         return True

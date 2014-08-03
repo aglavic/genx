@@ -556,11 +556,20 @@ class ParameterGrid(wx.Panel):
         :param evt: The Event passed to the event handler
         :return: Nothing
         """
-        if self.grid.CanEnableCellControl() and evt.GetCol() != 2:
-            self.grid.EnableCellEditControl()
-        #self.grid.SelectRow(evt.GetRow())
+        #if self.grid.CanEnableCellControl() and evt.GetCol() != 2:
+        #    self.grid.EnableCellEditControl()
+        ##self.grid.SelectRow(evt.GetRow())
+        col, row = evt.GetCol(), evt.GetRow()
+        if col == 0 and row > -1:
+            self.grid.SetGridCursor(row, col)
+            pos = evt.GetPosition()
+            self.show_parameter_menu(pos)
+        else:
+            #if self.grid.CanEnableCellControl() and evt.GetCol() != 2:
+            #    self.grid.EnableCellEditControl()
+            evt.Skip()
 
-    #
+
     def OnLeftClick(self,evt):
         """Callback to make the checkboxes to react on a single click instead
         of a double click as it is by standard.
@@ -572,11 +581,56 @@ class ParameterGrid(wx.Panel):
         #self.grid.SelectRow(row)
         if col == 2 and row > -1:
             self.table.SetValue(row, col, not self.table.GetValue(row, col))
+        elif col == 0 and row > -1:
+            if self.grid.GetGridCursorRow() == row:
+                self.CurSelection = (row, col)
+                self.grid.SetGridCursor(row, col)
+                pos = evt.GetPosition()
+                self.show_parameter_menu(pos)
+            else:
+                evt.Skip()
         else:
             evt.Skip()
 
-    
-    
+    def show_label_menu(self, row):
+        insertID = wx.NewId()
+        deleteID = wx.NewId()
+        projectID = wx.NewId()
+        scanID = wx.NewId()
+        menu = wx.Menu()
+        menu.Append(insertID, "Insert Row")
+        menu.Append(deleteID, "Delete Row(s)")
+        # Item is checked for fitting
+        if self.table.GetValue(row, 2):
+            menu.Append(projectID, "Project FOM")
+        if self.table.GetValue(row, 0) != '':
+            menu.Append(scanID, "Scan FOM")
+
+        def insert(event, self=self, row=row):
+            self.table.InsertRow(row)
+
+        def delete(event, self=self, row=row):
+            rows = self.grid.GetSelectedRows()
+            self.table.DeleteRows(rows)
+
+        def projectfom(event, self=self, row=row):
+            if self.project_func:
+                self.project_func(row)
+
+        def scanfom(event, self=self, row=row):
+            if self.scan_func:
+                self.scan_func(row)
+
+        self.Bind(wx.EVT_MENU, insert, id=insertID)
+        self.Bind(wx.EVT_MENU, delete, id=deleteID)
+        # Item is checked for fitting
+        if self.table.GetValue(row, 2):
+            self.Bind(wx.EVT_MENU, projectfom, id=projectID)
+        if self.table.GetValue(row, 0) != '':
+            self.Bind(wx.EVT_MENU, scanfom, id=scanID)
+        self.PopupMenu(menu)
+        menu.Destroy()
+
     def OnLabelRightClick(self,evt):
         """ Callback function that opens a popupmenu for appending or
         deleting rows in the grid.
@@ -587,44 +641,7 @@ class ParameterGrid(wx.Panel):
             if not self.grid.GetSelectedRows():
                 self.grid.SelectRow(row)
             #making the menus
-            insertID = wx.NewId()
-            deleteID = wx.NewId()
-            projectID = wx.NewId()
-            scanID = wx.NewId()
-            menu = wx.Menu()
-            menu.Append(insertID, "Insert Row")
-            menu.Append(deleteID, "Delete Row(s)")
-            # Item is checked for fitting
-            if self.table.GetValue(row, 2):
-                menu.Append(projectID, "Project FOM")
-            if self.table.GetValue(row, 0) != '':
-                menu.Append(scanID, "Scan FOM")
-            
-            def insert(event, self=self, row=row):
-                self.table.InsertRow(row)
-
-            def delete(event, self=self, row=row):
-                rows = self.grid.GetSelectedRows()
-                self.table.DeleteRows(rows)
-                
-            def projectfom(event, self = self, row = row):
-                if self.project_func:
-                    self.project_func(row)
-                
-            def scanfom(event, self = self, row = row):
-                if self.scan_func:
-                    self.scan_func(row)
-            
-            
-            self.Bind(wx.EVT_MENU, insert, id=insertID)
-            self.Bind(wx.EVT_MENU, delete, id=deleteID)
-            # Item is checked for fitting
-            if self.table.GetValue(row, 2):
-                self.Bind(wx.EVT_MENU, projectfom, id=projectID)
-            if self.table.GetValue(row, 0) != '':
-                self.Bind(wx.EVT_MENU, scanfom, id=scanID)
-            self.PopupMenu(menu)
-            menu.Destroy()   
+            self.show_label_menu(row)
     
     def SetFOMFunctions(self, projectfunc, scanfunc):
         '''SetFOMFunctions(self, projectfunc, scanfunc) --> None
@@ -633,7 +650,41 @@ class ParameterGrid(wx.Panel):
         '''
         self.project_func = projectfunc
         self.scan_func = scanfunc
-    
+
+    def show_parameter_menu(self, pos):
+        self.pmenu = wx.Menu()
+        par_dict = self.par_dict
+        classes = par_dict.keys()
+        classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
+        for cl in classes:
+            # Create a submenu for each class
+            clmenu = wx.Menu()
+            obj_dict = par_dict[cl]
+            objs = obj_dict.keys()
+            objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+            # Create a submenu for each object
+            for obj in objs:
+                obj_menu = wx.Menu()
+                funcs = obj_dict[obj]
+                funcs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                # Create an item for each method
+                for func in funcs:
+                    item = obj_menu.Append(-1, obj + '.' + func)
+                    self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
+                clmenu.AppendMenu(-1, obj, obj_menu)
+            self.pmenu.AppendMenu(-1, cl, clmenu)
+        # Check if there are no available classes
+        if len(classes) == 0:
+            # Add an item to compile the model
+            item = self.pmenu.Append(-1, 'Simulate to see parameters')
+            self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
+        # Add an item for edit the cell manually
+        item = self.pmenu.Append(-1, 'Manual Edit')
+        self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
+
+        self.PopupMenu(self.pmenu, pos)
+        self.pmenu.Destroy()
+
     def OnRightClick(self, evt):
         ''' Callback function that creates a popupmenu when a row in the
         first column is clicked. The menu contains all parameters that are 
@@ -647,32 +698,9 @@ class ParameterGrid(wx.Panel):
             self.CurSelection = (row, col)
             self.grid.SetGridCursor(row, col)
             pos = evt.GetPosition()
-            self.pmenu = wx.Menu()
-            par_dict = self.par_dict
-            classes = par_dict.keys()
-            classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
-            for cl in classes:
-                # Create a submenu for each class
-                clmenu = wx.Menu()
-                obj_dict = par_dict[cl]
-                objs = obj_dict.keys()
-                objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
-                # Create a submenu for each object
-                for obj in objs:
-                    obj_menu = wx.Menu()
-                    funcs = obj_dict[obj]
-                    funcs.sort(lambda x, y: cmp(x.lower(), y.lower()))
-                    # Create an item for each method
-                    for func in funcs:
-                        item = obj_menu.Append( -1, obj + '.' + func)
-                        self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
-                    clmenu.AppendMenu(-1, obj, obj_menu)
-                self.pmenu.AppendMenu(-1, cl, clmenu)
-            self.PopupMenu(self.pmenu, evt.GetPosition())
-            self.pmenu.Destroy()
+            self.show_parameter_menu(pos)
             
-    
-    def OnPopUpItemSelected(self,event):
+    def OnPopUpItemSelected(self, event):
         """ Callback for the popmenu to select parameter to fit.
         When a item from the OnRightClick is selected this function takes care
         of setting:
@@ -684,32 +712,37 @@ class ParameterGrid(wx.Panel):
         :return: Nothing
         """
         item = self.pmenu.FindItemById(event.GetId())
+        # Check if the item should be edit manually
+        if item.GetText() == 'Simulate to see parameters':
+            self.parent.eh_tb_simulate(event)
+            return
+        if item.GetText() == 'Manual Edit':
+            if self.grid.CanEnableCellControl():
+                self.grid.EnableCellEditControl()
+            return
         # GetText seems to screw up underscores a bit replacing the with a 
         # double one - this fixes it
         text = item.GetText().replace('__', '_')
-        #print text, self.objlist, self.funclist
-        self.grid.SetCellValue(self.CurSelection[0], self.CurSelection[1],text)
+        self.grid.SetCellValue(self.CurSelection[0], self.CurSelection[1], text)
         # Try to find out if the values also has an get function so that
         # we can init the value to the default!
-        lis=text.split('.' + self.set_func)
-        if len(lis)==2:
+        lis = text.split('.' + self.set_func)
+        if len(lis) == 2:
             try:
-                value = self.evalf(lis[0]+'.'+self.get_func+lis[1])().real
-                #print value
-                self.table.SetValue(self.CurSelection[0],1,value)
+                value = self.evalf(lis[0] + '.' + self.get_func + lis[1])().real
+                self.table.SetValue(self.CurSelection[0], 1, value)
                 # Takes care so that also negative numbers give the
                 # correct values in the min and max cells
                 minval = value*(1 - self.variable_span)
                 maxval = value*(1 + self.variable_span)
-                self.table.SetValue(self.CurSelection[0],3, 
+                self.table.SetValue(self.CurSelection[0], 3,
                                     min(minval, maxval))
-                self.table.SetValue(self.CurSelection[0],4,
+                self.table.SetValue(self.CurSelection[0], 4,
                                     max(minval, maxval))
-            except StandardError,S:
+            except StandardError, S:
                 print "Not possible to init the variable automatically"
                 #print S
-                                
-            
+
     def OnResize(self, evt):
         self.SetColWidths()
     
