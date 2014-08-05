@@ -76,7 +76,7 @@ class SampleHandler:
         
     def getStringList(self, html_encoding = False):
         '''
-        Function to generate a lsit of strings that gives
+        Function to generate a list of strings that gives
         a visual representation of the sample.
         '''
         slist=[self.sample.Substrate.__repr__()]
@@ -413,6 +413,7 @@ class SamplePanel(wx.Panel):
         wx.Panel.__init__(self, parent)
         self.refindexlist = refindexlist
         self.plugin = plugin
+        self.variable_span = 0.25
         
         boxver = wx.BoxSizer(wx.HORIZONTAL)
         boxhor = wx.BoxSizer(wx.VERTICAL)
@@ -513,7 +514,7 @@ class SamplePanel(wx.Panel):
         self.update_callback = func
         
     def Update(self, update_script = True):
-        sl = self.sampleh.getStringList(html_encoding = True)
+        sl = self.sampleh.getStringList(html_encoding=True)
         self.listbox.SetItemList(sl)
         if update_script:
             self.update_callback(None)
@@ -529,6 +530,8 @@ class SamplePanel(wx.Panel):
         :param evt:
         :return: Nothing
         """
+        obj_name = 'sample'
+        eval_func = self.plugin.GetModel().eval_in_model
         grid_parameters = self.plugin.GetModel().get_parameters()
 
         validators = {}
@@ -551,13 +554,11 @@ class SamplePanel(wx.Panel):
                 pars.append(item)
                 items.append((item, val))
                 # Check if the parameter is in the grid and in that case set it as uneditable
-                func_name = 'sample' + '.' + _set_func_prefix + item.capitalize()
+                func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
                 grid_value = grid_parameters.get_value_by_name(func_name)
+                editable[item] = grid_parameters.get_fit_state_by_name(func_name)
                 if grid_value is not None:
-                    editable[item] = False
                     vals[item] = grid_value
-                else:
-                    editable[item] = True
         try:
             groups = self.model.SampleGroups
         except Exception:
@@ -567,17 +568,30 @@ class SamplePanel(wx.Panel):
         except Exception:
             units = False
             
-        dlg = ValidateDialog(self, pars, vals, validators,
-                             title='Sample Editor', groups=groups,
-                             units=units, editable_pars=editable)
+        dlg = ValidateFitDialog(self, pars, vals, validators,
+                                 title='Sample Editor', groups=groups,
+                                 units=units, editable_pars=editable)
         
         if dlg.ShowModal()==wx.ID_OK:
             vals=dlg.GetValues()
+            states = dlg.GetStates()
             for par in pars:
-                if string_choices.has_key(par):
+                if not states[par]:
                     setattr(self.sampleh.sample, par, vals[par])
-                else:
-                    setattr(self.sampleh.sample, par, float(vals[par]))
+                if editable[par] != states[par]:
+                    value = eval_func(vals[par])
+                    minval = value*(1 - self.variable_span)
+                    maxval = value*(1 + self.variable_span)
+                    func_name = obj_name + '.' + _set_func_prefix + par.capitalize()
+                    grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
+                    # Tell the grid to reload the parameters
+                    self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+            #for par in pars:
+
+                #if string_choices.has_key(par):
+                #    setattr(self.sampleh.sample, par, vals[par])
+                #else:
+                #    setattr(self.sampleh.sample, par, float(vals[par]))
             self.Update()
         else:
             pass
@@ -597,6 +611,7 @@ class SamplePanel(wx.Panel):
         :param evt:
         :return: Nothing
         """
+        eval_func = self.plugin.GetModel().eval_in_model
         validators = {}
         vals = {}
         editable = {}
@@ -619,11 +634,9 @@ class SamplePanel(wx.Panel):
                 # Check if the parameter is in the grid and in that case set it as uneditable
                 func_name = inst_name + '.' + _set_func_prefix + item.capitalize()
                 grid_value = grid_parameters.get_value_by_name(func_name)
+                editable[inst_name][item] = grid_parameters.get_fit_state_by_name(func_name)
                 if grid_value is not None:
-                    editable[inst_name][item] = False
                     vals[inst_name][item] = grid_value
-                else:
-                    editable[inst_name][item] = True
             pars.append(item)
             
             
@@ -635,22 +648,42 @@ class SamplePanel(wx.Panel):
             units = self.model.InstrumentUnits
         except Exception:
             units = False
-        print editable
-        dlg = ValidateNotebookDialog(self, pars, vals, validators,
+        dlg = ValidateFitNotebookDialog(self, pars, vals, validators,
                              title='Instrument Editor', groups=groups,
                              units=units, fixed_pages=['inst'], editable_pars=editable)
         if dlg.ShowModal()==wx.ID_OK:
+            old_vals = vals
             vals = dlg.GetValues()
-            # Check if an instrument has to be deleted
+            states = dlg.GetStates()
             self.instruments = {}
             for par in self.model.InstrumentParameters:
                 for inst_name in vals:
-                    if not inst_name in self.instruments:
+                    if inst_name not in self.instruments:
                         # A new instrument must be created:
                         self.instruments[inst_name] = self.model.Instrument()
-                    # Set all the value of the parameter
-                    setattr(self.instruments[inst_name], par,
-                                                            vals[inst_name][par])
+                    if not states[inst_name][par]:
+                        setattr(self.instruments[inst_name], par, vals[inst_name][par])
+                    else:
+                        setattr(self.instruments[inst_name], par, old_vals[inst_name][par])
+                    if editable[inst_name][par] != states[inst_name][par]:
+                        value = eval_func(vals[inst_name][par])
+                        minval = value*(1 - self.variable_span)
+                        maxval = value*(1 + self.variable_span)
+                        func_name = inst_name + '.' + _set_func_prefix + par.capitalize()
+                        grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval, maxval)
+            # Tell the grid to reload the parameters
+            self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+
+            # Check if an instrument has to be deleted
+            #self.instruments = {}
+            #for par in self.model.InstrumentParameters:
+            #    for inst_name in vals:
+            #        if not inst_name in self.instruments:
+            #            # A new instrument must be created:
+            #            self.instruments[inst_name] = self.model.Instrument()
+            #        # Set all the value of the parameter
+            #        setattr(self.instruments[inst_name], par,
+            #                                                vals[inst_name][par])
             for change in dlg.GetChanges():
                 if change[0] != '' and change[1] != '':
                     self.plugin.InstrumentNameChange(change[0], change[1])
@@ -777,11 +810,9 @@ class SamplePanel(wx.Panel):
                 # Check if the parameter is in the grid and in that case set it as uneditable
                 func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
                 grid_value = grid_parameters.get_value_by_name(func_name)
+                editable[item] = grid_parameters.get_fit_state_by_name(func_name)
                 if grid_value is not None:
-                    editable[item] = False
                     vals[item] = grid_value
-                else:
-                    editable[item] = True
 
             try:
                 groups = self.model.LayerGroups
@@ -792,18 +823,25 @@ class SamplePanel(wx.Panel):
             except Exception:
                 units = False
 
-            dlg = ValidateDialog(self, pars, vals, validators,
+            dlg = ValidateFitDialog(self, pars, vals, validators,
                                  title='Layer Editor', groups=groups,
                                  units=units, editable_pars=editable)
             
             if dlg.ShowModal()==wx.ID_OK:
                 vals=dlg.GetValues()
+                states = dlg.GetStates()
                 for par in self.model.LayerParameters.keys():
-                    if editable[par]:
+                    if not states[par]:
                         setattr(sel, par, vals[par])
-                sl=self.sampleh.getStringList()
-            else:
-                pass
+                    if editable[par] != states[par]:
+                        value = eval_func(vals[par])
+                        minval = value*(1 - self.variable_span)
+                        maxval = value*(1 + self.variable_span)
+                        func_name = obj_name + '.' + _set_func_prefix + par.capitalize()
+                        grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
+                        # Does not seem to be necessary
+                        self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+                sl = self.sampleh.getStringList()
             dlg.Destroy()
 
         else: 
@@ -822,11 +860,9 @@ class SamplePanel(wx.Panel):
                     # Check if the parameter is in the grid and in that case set it as uneditable
                     func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
                     grid_value = grid_parameters.get_value_by_name(func_name)
+                    editable[item] = grid_parameters.get_fit_state_by_name(func_name)
                     if grid_value is not None:
-                        editable[item] = False
                         vals[item] = grid_value
-                    else:
-                        editable[item] = True
             
             try:
                 groups = self.model.StackGroups
@@ -837,18 +873,27 @@ class SamplePanel(wx.Panel):
             except Exception:
                 units = False
             
-            dlg = ValidateDialog(self, pars, vals, validators,
-                                 title = 'Stack Editor', groups = groups,
-                                 units = units, editable_pars=editable)
+            dlg = ValidateFitDialog(self, pars, vals, validators,
+                                 title='Layer Editor', groups=groups,
+                                 units=units, editable_pars=editable)
             if dlg.ShowModal()==wx.ID_OK:
                 vals=dlg.GetValues()
+                states = dlg.GetStates()
                 for par in pars:
-                    if editable[par]:
+                    if not states[par]:
                         setattr(sel, par, vals[par])
-                sl=self.sampleh.getStringList()
-            else:
-                pass
+                    if editable[par] != states[par]:
+                        value = eval_func(vals[par])
+                        minval = value*(1 - self.variable_span)
+                        maxval = value*(1 + self.variable_span)
+                        func_name = obj_name + '.' + _set_func_prefix + par.capitalize()
+                        grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
+                        # Does not seem to be necessary
+                        self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+                sl = self.sampleh.getStringList()
+
             dlg.Destroy()
+
         if sl:
             self.Update()
             

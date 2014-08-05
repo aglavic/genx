@@ -26,6 +26,16 @@ class Parameters:
         """ Get the value in the grid """
         return self.data[row][col]
 
+    def name_in_grid(self, name):
+        """ Checks if name is a parameter in the grid
+
+        :param name: string representation of a parameter
+        :return:
+        """
+        par_names = [row[0] for row in self.data]
+        return name in par_names
+
+
     def get_value_by_name(self, name):
         """Get the value for parameter name. Returns None if name can not be found.
 
@@ -38,7 +48,52 @@ class Parameters:
         else:
             value = None
         return value
-        
+
+    def get_fit_state_by_name(self, name):
+        """Get the fitting state for parameter name. Returns None if name can not be found.
+
+        :param name:
+        :return: int 0 - not found, 1 - fitted, 2 - defined but constant
+        """
+        par_names = [row[0] for row in self.data]
+        state = 0
+        if name in par_names:
+            if self.data[par_names.index(name)][2]:
+                state = 1
+            else:
+                state = 2
+        return state
+
+    def set_fit_state_by_name(self, name, value, state, min_val, max_val):
+        """ Set the fit state by name accoring to the following states
+        0 -- remove from grid.
+        1 -- add if not exist, set parameter to be fitted (True)
+        2 -- add if not exist, set parameter to not be fitted (False)
+
+        :param name: parameter name
+        :param state: state, see above.
+        :return:
+        """
+        par_names = [row[0] for row in self.data]
+        if state == 0 and name in par_names:
+            self.delete_rows([par_names.index(name),])
+        elif state == 1 or state == 2:
+            if state == 1:
+                fit = True
+            else:
+                fit = False
+            if name in par_names:
+                self.data[par_names.index(name)][2] = fit
+            else:
+                self.append()
+                self.data[-1][0] = name
+                self.data[-1][1] = value
+                self.data[-1][2] = fit
+                self.data[-1][3] = min_val
+                self.data[-1][4] = max_val
+                self.data[-1][5] = '-'
+
+
     def get_len_rows(self):
         return len(self.data)
     
