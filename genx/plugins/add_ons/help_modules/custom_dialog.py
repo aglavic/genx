@@ -1,4 +1,8 @@
-import wx, math, os
+import wx
+import wx.combo
+import math
+import os
+
 
 import string
 
@@ -382,7 +386,8 @@ class ComplexObjectValidator(wx.PyValidator):
 
 #----------------------------------------------------------------------
 
-class ValidateDialog(wx.Dialog):
+
+class ValidateBaseDialog(wx.Dialog):
     def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
                  units=False, groups=False, cols=2, editable_pars={}):
         ''' A dialog that validates the input when OK are pressed. The validation is done
@@ -442,8 +447,7 @@ class ValidateDialog(wx.Dialog):
         buttons.AddButton(wx.Button(self, wx.ID_CANCEL, "Cancel"))
         buttons.Realize()
         return buttons
-        
-              
+
     def grid_layout(self, parent, vals, editable_pars):
         '''Do an more advanced layout with subboxes
         '''
@@ -465,8 +469,8 @@ class ValidateDialog(wx.Dialog):
                 tc[item] = group_tc[item]
             sizer.Add(col_box_sizer, flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
         return sizer, tc
-                      
-            
+
+
     def layout_group(self, parent, pars, vals, editable_pars):
         if self.units:
             layout_cols = 3
@@ -479,31 +483,11 @@ class ValidateDialog(wx.Dialog):
             label = wx.StaticText(parent, -1, par + ': ')
             validator = self.validators[par]#.Clone()
             val = vals[par]
-            if type(validator) == type([]):
-                # There should be a list of choices
-                validator = validator[:]
-                tc[par] = wx.Choice(parent, -1,
-                                    choices = validator)
-                # Since we work with strings we have to find the right
-                # strings positons to initilize the choice box.
-                pos = 0
-                if type(val) == type(''):
-                    pos = validator.index(val)
-                elif type(par) == type(1):
-                    pos = par
-                tc[par].SetSelection(pos)
-            # Otherwise it should be a validator ...
-            else:
-                validator = validator.Clone()
-                tc[par] = wx.TextCtrl(parent, -1, str(val),
-                                           validator=validator,
-                                           style=wx.TE_RIGHT|wx.TE_RICH)
+            editable = False
+            if par in editable_pars:
+                editable = editable_pars[par]
 
-            # Create a non-editable box if needed
-            if par in editable_pars and not isinstance(validator, list):
-                tc[par].SetEditable(editable_pars[par])
-                if not editable_pars[par]:
-                    tc[par].SetBackgroundColour(self.not_editable_bkg_color)
+            tc[par] = self.crete_edit_ctrl(editable, par, parent, val, validator)
 
 
             sizer.Add(label,
@@ -534,8 +518,49 @@ class ValidateDialog(wx.Dialog):
             else:
                 p[par] = self.tc[par].GetValue()
         return p
-    
-class ValidateNotebookDialog(ValidateDialog):
+
+class NormalEditMixin:
+    """
+    Normal mixin for the Validate Dialog
+    """
+    def crete_edit_ctrl(self, editable, par, parent, val, validator):
+        """
+        Creates the edit control for a parameter
+        :param editable: flag to indicate if the parameter is editable
+        :param par: parameter name
+        :param parent: parent of the control
+        :param val: value of the parameter
+        :param validator: validator of the control
+        :return: a wx control object (subclass of wx.Control)?
+        """
+        if type(validator) == type([]):
+            # There should be a list of choices
+            validator = validator[:]
+            ctrl = wx.Choice(parent, -1,
+                             choices=validator)
+            # Since we work with strings we have to find the right
+            # strings positons to initilize the choice box.
+            pos = 0
+            if type(val) == type(''):
+                pos = validator.index(val)
+            elif type(par) == type(1):
+                pos = par
+            ctrl.SetSelection(pos)
+        # Otherwise it should be a validator ...
+        else:
+            validator = validator.Clone()
+            ctrl = wx.TextCtrl(parent, -1, str(val),
+                               validator=validator,
+                               style=wx.TE_RIGHT | wx.TE_RICH)
+
+            # Create a non-editable box if needed
+            ctrl.SetEditable(editable)
+            if not editable:
+                ctrl.SetBackgroundColour(self.not_editable_bkg_color)
+        return ctrl
+
+
+class ValidateBaseNotebookDialog(ValidateBaseDialog):
     def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
                  units=False, groups=False, cols=2, fixed_pages=[],
                  editable_pars={}):
@@ -621,11 +646,9 @@ class ValidateNotebookDialog(ValidateDialog):
         '''
         self.main_sizer = wx.Notebook(self, -1, style=wx.NB_TOP)
         for item in self.vals:
-            print item
             editable_pars = {}
             if item in self.editable_pars:
                 editable_pars = self.editable_pars[item]
-                print editable_pars
             self.AddPage(item, self.vals[item], editable_pars)
     
     def eh_insert(self, evt):
@@ -735,18 +758,214 @@ class ValidateNotebookDialog(ValidateDialog):
         ''' 
         return self.changes
 
+
+class FitEditMixIn:
+    """
+    Mixin for the Validate Dialogs to enable the definition of fitable parameters.
+    """
+    def __init__(self):
+        pass
+
+    def crete_edit_ctrl(self, state, par, parent, val, validator):
+        """
+        Creates the edit control for a parameter
+        :param state: flag to indicate if the parameter is editable integer that takes the values
+            0 - editable
+            1 - fitted in the grid
+            2 - constant but defined in the grid
+        :param par: parameter name
+        :param parent: parent of the control
+        :param val: value of the parameter
+        :param validator: validator of the control
+        :return: a wx control object (subclass of wx.Control)?
+        """
+        if type(validator) == type([]):
+            # There should be a list of choices
+            validator = validator[:]
+            ctrl = wx.Choice(parent, -1,
+                             choices=validator)
+            # Since we work with strings we have to find the right
+            # strings positons to initilize the choice box.
+            pos = 0
+            if type(val) == type(''):
+                pos = validator.index(val)
+            elif type(par) == type(1):
+                pos = par
+            ctrl.SetSelection(pos)
+        # Otherwise it should be a validator ...
+        else:
+            validator = validator.Clone()
+            ctrl = FitSelectorCombo(state, parent, -1, str(val),
+                               validator=validator,
+                               style= wx.TE_RICH|wx.TE_RIGHT)
+        return ctrl
+
+    def GetStates(self):
+        """ Returns the states of the parameters in the dialog
+
+        :return: a dictionary with keys representing parameters and values representing state.
+        """
+        #print dir(self.tc[0])
+        #print self.tc[0].GetValue()
+        p = {}
+        for par in self.validators.keys():
+            if isinstance(self.validators[par], list):
+                p[par] = 0
+            else:
+                p[par] = self.tc[par].state
+        return p
+
+class ValidateDialog(ValidateBaseDialog, NormalEditMixin):
+    """
+    The normal Validate Dialog definition
+    """
+
+class ValidateFitDialog(ValidateBaseDialog, FitEditMixIn):
+    """
+    A sub-class of ValidateDialog that uses a custom ComboCtrl to allow a parameter to be
+    set for fitting.
+    """
+
+class ValidateNotebookDialog(ValidateBaseNotebookDialog, NormalEditMixin):
+    """
+    The normal Validate Notebook Dialog.
+    """
+
+class ValidateFitNotebookDialog(ValidateBaseNotebookDialog, FitEditMixIn):
+    """
+    A sub-class of ValidateNotebookDialog that uses a custom ComboCtrl to allow a parameter to be
+    set for fitting.
+    """
+    def GetStates(self):
+        '''Extracts values from the text controls and returns is as a
+        two level nested dictionary.
+        '''
+        p = {}
+        for page in self.vals:
+            p[page] = {}
+            for par in self.validators.keys():
+                if isinstance(self.validators[par], list):
+                    p[page][par] = 0
+                else:
+                    p[page][par] = self.text_controls[page][par].state
+        return p
+
+
+class FitSelectorCombo(wx.combo.ComboCtrl):
+    """Class that defines a Combobox that allows the user to set if the parameter should be handled by the grid
+    , fitted or constants from the beginning.
+    """
+
+    def update_text_state(self):
+        self.SetEditable(not self.state)
+        font = self.GetFont()
+
+        if self.state == 0:
+            self.SetForegroundColour(wx.BLACK)
+            font.SetWeight(wx.FONTWEIGHT_NORMAL)
+        elif self.state == 1:
+            self.SetForegroundColour(self.fit_bkg_color)
+            font.SetWeight(wx.FONTWEIGHT_BOLD)
+        elif self.state == 2:
+            self.SetForegroundColour(self.const_fit_bkg_color)
+            font.SetWeight(wx.FONTWEIGHT_BOLD)
+        self.SetFont(font)
+
+        self.Refresh()
+
+    def create_button_bitmap(self):
+        # make a custom bitmap showing "F"
+        bw, bh = 14, 16
+        bmp = wx.EmptyBitmap(bw, bh)
+        dc = wx.MemoryDC(bmp)
+        # clear to a specific background colour
+        bgcolor = wx.Colour(255, 254, 255)
+        dc.SetBackground(wx.Brush(bgcolor))
+        dc.Clear()
+        # draw the label onto the bitmap
+        label = "F"
+        font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+        font.SetWeight(wx.FONTWEIGHT_BOLD)
+        dc.SetFont(font)
+        tw, th = dc.GetTextExtent(label)
+        dc.DrawText(label, (bw - tw) / 2, (bh - th) / 2)
+        del dc
+        # now apply a mask using the bgcolor
+        bmp.SetMaskColour(bgcolor)
+        # and tell the ComboCtrl to use it
+        self.SetButtonBitmaps(bmp, True)
+
+    def __init__(self, state, *args, **kw):
+        """
+
+        :param state: an int signalling the state 0 - parameter defined in dialog,
+            1 - parameter fitted, 2 - parameter constant in grid.
+        :param args:
+        :param kw:
+        :return:
+        """
+        wx.combo.ComboCtrl.__init__(self, *args, **kw)
+
+        self.state = state
+        # Orange
+        # Green wx.Colour(138, 226, 52), ORANGE wx.Colour(245, 121, 0)
+        self.fit_bkg_color = wx.Colour(245, 121, 0)
+        # Tango Sky blue wx.Colour(52, 101, 164), wx.Colour(114, 159, 207)
+        self.const_fit_bkg_color = wx.Colour(114, 159, 207)
+
+        self.create_button_bitmap()
+        self.update_text_state()
+
+        # Set the id's for the Menu
+        self.id_define_par = wx.NewId()
+        self.id_fit_par = wx.NewId()
+        self.id_const_fit_par = wx.NewId()
+
+        menu = wx.Menu()
+        menu.AppendRadioItem(self.id_define_par, 'Define parameter here',
+                             'Unlock the parameter for editing and remove it from the grid.')
+        menu.AppendRadioItem(self.id_fit_par, 'Fit parameter',
+                             'Define the parameter in the grid and use fit it.')
+        menu.AppendRadioItem(self.id_const_fit_par, 'Constant fit parameter',
+                             'Define the parameter in the fri')
+        if not self.state:
+            menu.Check(self.id_define_par, True)
+        elif self.state == 1:
+            menu.Check(self.id_fit_par, True)
+        elif self.state == 2:
+            menu.Check(self.id_const_fit_par, True)
+
+        self.menu = menu
+
+    # Overridden from ComboCtrl, called when the combo button is clicked
+    def OnButtonClick(self):
+        # Create a popup menu when pressing the button.
+        self.PopupMenu(self.menu)
+        if self.menu.IsChecked(self.id_define_par):
+            self.state = 0
+        elif self.menu.IsChecked(self.id_fit_par):
+            self.state = 1
+        elif self.menu.IsChecked(self.id_const_fit_par):
+            self.state = 2
+        self.update_text_state()
+
+    # Overridden from ComboCtrl to avoid assert since there is no ComboPopup
+    def DoSetPopupControl(self, popup):
+        pass
+
+
 class ZoomFrame(wx.MiniFrame):
     def __init__(self, parent):
         wx.MiniFrame.__init__(self, parent, -1, "X-Y Scales")
-        
+
         #self.SetAutoLayout(True)
 
         VSPACE = 10
 
-        self.panel=wx.Panel(self,-1,style = wx.TAB_TRAVERSAL
-                     | wx.CLIP_CHILDREN
-                     | wx.FULL_REPAINT_ON_RESIZE
-                     )
+        self.panel = wx.Panel(self,-1,style = wx.TAB_TRAVERSAL
+                             | wx.CLIP_CHILDREN
+                             | wx.FULL_REPAINT_ON_RESIZE
+                             )
 
         gbs=wx.GridBagSizer(3, 3)
         label = wx.StaticText(self.panel, -1, 'Min')
@@ -775,10 +994,10 @@ class ZoomFrame(wx.MiniFrame):
         buttons.Add((0,0),2,wx.EXPAND)
         buttons.Add(b,1,flag=wx.ALIGN_RIGHT)
         border = wx.BoxSizer(wx.VERTICAL)
-        
+
         border.Add(gbs, 0, wx.GROW|wx.ALL, 2)
         border.Add(buttons)
-        
+
         self.panel.SetSizerAndFit(border)
         self.SetClientSize(self.panel.GetSize())
         #self.Layout()
