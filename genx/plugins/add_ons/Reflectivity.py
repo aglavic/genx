@@ -53,14 +53,10 @@ is to the right. This is updated when the simulation button is pressed.
 import plugins.add_on_framework as framework
 from plotpanel import PlotPanel
 import model as modellib
-import  wx
+import wx
 
 import numpy as np
 import sys, os, re, time, StringIO, traceback
-
-
-# Make Modules a search path for python..
-#sys.path.insert(1,os.getcwd()+'/Models')
 
 from help_modules.custom_dialog import *
 import help_modules.reflectivity_images as images
@@ -68,13 +64,18 @@ import help_modules.reflectivity_images as images
 _avail_models = ['spec_nx', 'interdiff', 'xmag', 'mag_refl']
 _set_func_prefix = 'set'
 
+
+def default_html_decorator(name, str):
+        return str
+
+
 class SampleHandler:
     def __init__(self, sample, names):
         self.sample = sample
         self.names = names
         self.getStringList()
-        
-    def getStringList(self, html_encoding = False):
+
+    def getStringList(self, html_encoding = False, html_decorator=default_html_decorator):
         '''
         Function to generate a list of strings that gives
         a visual representation of the sample.
@@ -93,31 +94,33 @@ class SampleHandler:
             i+=1
         slist.append(self.sample.Ambient.__repr__())
         for item in range(len(slist)):
-            if slist[item][0]=='L' and item != 0 and item != len(slist) - 1:
+            name = self.names[-item-1]
+            par_str = slist[item]
+            if slist[item][0] == 'L' and item != 0 and item != len(slist) - 1:
                 if html_encoding:
-                    slist[item]='<code>&nbsp;&nbsp;&nbsp;<b>'+self.names[-item-1]+'</b> = ' + slist[item] + '</code>'
-                    #slist[item] = self.htmlize(self.names[-item-1] + ' = model.' + slist[item])
+                    slist[item] = ('<code>&nbsp;&nbsp;&nbsp;<b>' + name + '</b> = '
+                                   + html_decorator(name, par_str) + '</code>')
                 else:
                     slist[item] = self.names[-item-1] + ' = model.' + slist[item]
             else:
                 if item == 0 or item == len(slist) - 1:
                     # This is then the ambient or substrates
                     if html_encoding:
-                        slist[item]='<code><b>' + self.names[-item-1] + '</b> = ' + slist[item] + '</code>'
-                        #slist[item] = self.htmlize(self.names[-item-1] + ' = model.' + slist[item])
+                        slist[item] = ('<code><b>' + name + '</b> = '
+                                       + html_decorator(name, par_str) + '</code>')
                     else:
                         slist[item] = self.names[-item-1] + ' = model.' + slist[item]
                 else:
                     # This is a stack!
                     if html_encoding:
-                        slist[item]='<font color = "BLUE"><code><b>' + self.names[-item-1]+'</b> = '+slist[item] + '</code></font>'
-                        #slist[item] = self.htmlize(self.names[-item-1] + ' = model.' + slist[item])
+                        slist[item] = ('<font color = "BLUE"><code><b>' + name +'</b> = '
+                                       + html_decorator(name, par_str) + '</code></font>')
                     else:
                         slist[item] = self.names[-item-1] + ' = model.' + slist[item]
-        poslist.append((None,None))
+        poslist.append((None, None))
         slist.reverse()
         poslist.reverse()
-        self.poslist=poslist
+        self.poslist = poslist
         return slist
     
     def htmlize(self, code): 
@@ -414,6 +417,12 @@ class SamplePanel(wx.Panel):
         self.refindexlist = refindexlist
         self.plugin = plugin
         self.variable_span = 0.25
+
+        # Colours indicating different states
+        # Green wx.Colour(138, 226, 52), ORANGE wx.Colour(245, 121, 0)
+        self.fit_colour = (245, 121, 0)
+        # Tango Sky blue wx.Colour(52, 101, 164), wx.Colour(114, 159, 207)
+        self.const_fit_colour = (114, 159, 207)
         
         boxver = wx.BoxSizer(wx.HORIZONTAL)
         boxhor = wx.BoxSizer(wx.VERTICAL)
@@ -512,9 +521,55 @@ class SamplePanel(wx.Panel):
         The call is on the form func(event)
         '''
         self.update_callback = func
+
+    def create_html_decorator(self):
+        """
+        creates a html decorator function
+        :return:
+        """
+        grid_parameters = self.plugin.GetModel().get_parameters()
+        dic_lookup = {}
+        for par in grid_parameters.get_names():
+            l = par.split('.')
+            if len(l) == 2:
+                name = l[0]
+                par_name = l[1][3:].lower()
+                dic_lookup[(name, par_name)] = (grid_parameters.get_value_by_name(par),
+                                                grid_parameters.get_fit_state_by_name(par)
+                                                )
+        fit_color_str = "rgb(%d,%d,%d)"%self.fit_colour
+        const_fit_color_str = "rgb(%d,%d,%d)"%self.const_fit_colour
+        def decorator(name, str):
+            """ Decorator to indicate the parameters that are fitted"""
+            try:
+                start_index = str.index('(') + 1
+            except ValueError:
+                start_index = 0
+            ret_str = str[:start_index]
+            for par_str in str[start_index:].split(','):
+                par_name = par_str.split('=')[0].strip()
+                if (name, par_name) in dic_lookup:
+                    val, state = dic_lookup[(name, par_name)]
+                    if state == 1:
+                        par_str = ' <font color=%s><b>%s=%.2e</b></font>,'%(fit_color_str, par_name, val)
+                    elif state == 2:
+                        par_str = ' <font color=%s><b>%s=%.2e</b></font>,'%(const_fit_color_str, par_name, val)
+                else:
+                    par_str += ','
+                ret_str += par_str
+            # Remove trailing ,
+            if ret_str[-1] == ',':
+                ret_str = ret_str[:-1]
+            if str[-1] == ')' and ret_str[-1] != ')':
+                ret_str += ')'
+            return ret_str
+        return decorator
+
+
         
     def Update(self, update_script = True):
-        sl = self.sampleh.getStringList(html_encoding=True)
+        deco = self.create_html_decorator()
+        sl = self.sampleh.getStringList(html_encoding=True, html_decorator=deco)
         self.listbox.SetItemList(sl)
         if update_script:
             self.update_callback(None)
@@ -586,15 +641,9 @@ class SamplePanel(wx.Panel):
                     grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
                     # Tell the grid to reload the parameters
                     self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
-            #for par in pars:
 
-                #if string_choices.has_key(par):
-                #    setattr(self.sampleh.sample, par, vals[par])
-                #else:
-                #    setattr(self.sampleh.sample, par, float(vals[par]))
             self.Update()
-        else:
-            pass
+
         dlg.Destroy()
     
     def SetInstrument(self, instruments):
@@ -674,16 +723,6 @@ class SamplePanel(wx.Panel):
             # Tell the grid to reload the parameters
             self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
 
-            # Check if an instrument has to be deleted
-            #self.instruments = {}
-            #for par in self.model.InstrumentParameters:
-            #    for inst_name in vals:
-            #        if not inst_name in self.instruments:
-            #            # A new instrument must be created:
-            #            self.instruments[inst_name] = self.model.Instrument()
-            #        # Set all the value of the parameter
-            #        setattr(self.instruments[inst_name], par,
-            #                                                vals[inst_name][par])
             for change in dlg.GetChanges():
                 if change[0] != '' and change[1] != '':
                     self.plugin.InstrumentNameChange(change[0], change[1])
@@ -1919,11 +1958,20 @@ class Plugin(framework.Template):
     def OnFittingUpdate(self, event):
         '''OnSimulate(self, event) --> None
         
-        Updates stuff after simulation
+        Updates stuff during fitting
         '''
         # Calculate and update the sld plot
         if self.mb_autoupdate_sld.IsChecked():
             self.sld_plot.Plot()
+        #self.sample_widget.Update(update_script=False)
+
+    def OnGridChange(self, event):
+        """ Updates the simualtion panel when the grid changes
+
+        :param event:
+        :return:
+        """
+        self.sample_widget.Update(update_script=False)
             
     def InstrumentNameChange(self, old_name, new_name):
         '''OnInstrumentNameChange --> None

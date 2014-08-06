@@ -555,7 +555,7 @@ class MainFrame(wx.Frame):
                 self.config.write_default(profile_path + 'genx.conf')
             #print self.config.get('plugins','loaded plugins')
 
-            
+
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.new(self, event)
 

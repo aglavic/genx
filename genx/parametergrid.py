@@ -254,9 +254,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
             msg = gridlib.GridTableMessage(self,\
                 gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
             self.GetView().ProcessTableMessage(msg)
-        if permanent_change:
-            self.parent._grid_changed()
-        
+        self.parent._grid_changed(permanent_change=permanent_change)
 
 
 #Class ParameterDataTable ends here
@@ -440,13 +438,14 @@ class ParameterGrid(wx.Panel):
 
 
     
-    def _grid_changed(self):
+    def _grid_changed(self, permanent_change = True):
         '''_grid_changed(self) --> None
         
         internal function to yield a EVT_PARAMETER_GRID_CHANGE
         '''
         #print 'Posting'
         evt = grid_change()
+        evt.permanent_change = permanent_change
         wx.PostEvent(self.parent, evt)
     
     def _update_printer(self):

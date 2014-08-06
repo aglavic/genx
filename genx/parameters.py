@@ -35,6 +35,15 @@ class Parameters:
         par_names = [row[0] for row in self.data]
         return name in par_names
 
+    def get_names(self):
+        """ Returns the parameter names
+
+        :return:
+        """
+        par_names = [row[0] for row in self.data]
+
+        return par_names
+
 
     def get_value_by_name(self, name):
         """Get the value for parameter name. Returns None if name can not be found.
