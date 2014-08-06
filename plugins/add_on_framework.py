@@ -203,6 +203,14 @@ class Template:
         To be overridden
         '''
         pass
+
+    def OnGridChange(self, event):
+        """Responds to a change in the grid.
+
+        :param event:
+        :return:
+        """
+        pass
         
     def Remove(self):
         '''Remove(self) --> None
@@ -419,6 +427,15 @@ class PluginController:
         '''
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnFittingUpdate(event)
+
+    def OnGridChanged(self, event):
+        """ Runs plugin code to respond to a changed grid.
+
+        :param event:
+        :return:
+        """
+        for name in self.plugin_handler.loaded_plugins:
+            self.plugin_handler.loaded_plugins[name].OnGridChange(event)
         
 #==============================================================================
 # Utility Dialog functions..

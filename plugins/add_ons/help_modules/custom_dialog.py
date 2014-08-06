@@ -907,7 +907,6 @@ class FitSelectorCombo(wx.combo.ComboCtrl):
         wx.combo.ComboCtrl.__init__(self, *args, **kw)
 
         self.state = state
-        # Orange
         # Green wx.Colour(138, 226, 52), ORANGE wx.Colour(245, 121, 0)
         self.fit_bkg_color = wx.Colour(245, 121, 0)
         # Tango Sky blue wx.Colour(52, 101, 164), wx.Colour(114, 159, 207)

@@ -43,9 +43,13 @@ def models_changed(frame, event):
     callback when something has changed in the model so that the 
     user can be made aware that the model needs saving.
     '''
-    frame.model.saved = False
+    try:
+        frame.model.saved = not event.permanent_change
+    except AttributeError:
+        frame.model.saved = False
+    else:
+        frame.plugin_control.OnGridChanged(None)
     set_title(frame)
-
 
 def new(frame, event):
     '''
