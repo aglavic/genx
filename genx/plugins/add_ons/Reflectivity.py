@@ -983,7 +983,14 @@ class DataParameterPanel(wx.Panel):
         boxver.Add(self.listbox, 1, wx.EXPAND)
         
         self.SetSizer(boxver)
-        
+
+    def onsimulate(self):
+        """ Function to simulate the model.
+
+        :return:
+        """
+        self.plugin.parent.eh_tb_simulate(event)
+
     def SetDataList(self, datalist):
         '''SetDataList(self, datalist) --> None
         
@@ -1154,7 +1161,7 @@ class DataParameterPanel(wx.Panel):
             # Editing the expressions for variables
             list_item = self.expressionlist[data_pos][exp_pos]
             dlg = ParameterExpressionDialog(self, self.plugin.GetModel(),\
-                list_item)
+                list_item, sim_func=self.onsimulate)
             if dlg.ShowModal() == wx.ID_OK:
                 exp = dlg.GetExpression()
                 self.expressionlist[data_pos][exp_pos] = exp
@@ -1169,7 +1176,7 @@ class DataParameterPanel(wx.Panel):
             if dlg.ShowModal() == wx.ID_OK:
                 self.args[data_pos] = dlg.GetExpressions()
                 self.insts[data_pos] = dlg.GetInstrument()
-                self.sim_funcs[data_pos] =  dlg.GetSim()
+                self.sim_funcs[data_pos] = dlg.GetSim()
                 self.Update()
         
     def Insert(self, event):
@@ -1179,7 +1186,7 @@ class DataParameterPanel(wx.Panel):
         '''
         data_pos, exp_pos = self.get_expression_position()
         if data_pos != -1:
-            dlg = ParameterExpressionDialog(self, self.plugin.GetModel())
+            dlg = ParameterExpressionDialog(self, self.plugin.GetModel(), sim_func=self.onsimulate)
             if dlg.ShowModal() == wx.ID_OK:
                 exp = dlg.GetExpression()
                 if exp_pos == -1:
@@ -1525,10 +1532,11 @@ class SimulationExpressionDialog(wx.Dialog):
 class ParameterExpressionDialog(wx.Dialog):
     ''' A dialog for setting parameters for fitting
     '''
-    def __init__(self, parent, model, expression = None):
+    def __init__(self, parent, model, expression=None, sim_func=None):
         wx.Dialog.__init__(self, parent, -1, 'Parameter editor')
         self.SetAutoLayout(True)
         self.model = model
+        self.sim_func = sim_func
         
         gbs = wx.GridBagSizer(2, 3)
         
@@ -1580,13 +1588,15 @@ class ParameterExpressionDialog(wx.Dialog):
                 else:
                     raise ValueError('The function %s for object %s does not exist'%(func, obj))
             else:
-                raise Valueerror('The object %s does not exist'%obj)
+                raise ValueError('The object %s does not exist'%obj)
     
-        self.expression_ctrl = wx.TextCtrl(self, -1, exp_right,\
-                                size=(300, -1))
-                                
+        #self.expression_ctrl = wx.TextCtrl(self, -1, exp_right,\
+        #                       size=(300, -1))
+
+        self.expression_ctrl = ParameterExpressionCombo(par_dict, sim_func, self, -1, exp_right,
+                                                        size=(300, -1))
         gbs.Add(self.expression_ctrl, (1,2),\
-            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+            flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
         
         button_sizer = wx.StdDialogButtonSizer()
         okay_button = wx.Button(self, wx.ID_OK)

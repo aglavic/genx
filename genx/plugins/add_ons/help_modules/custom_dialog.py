@@ -953,6 +953,109 @@ class FitSelectorCombo(wx.combo.ComboCtrl):
         pass
 
 
+class ParameterExpressionCombo(wx.combo.ComboCtrl):
+    """Class that defines a Combobox for editing an expression and inserting parameters from the model in that
+    expression by choosing them from a popupmenu.
+    """
+
+    def create_button_bitmap(self):
+        # make a custom bitmap showing "F"
+        bw, bh = 14, 16
+        bmp = wx.EmptyBitmap(bw, bh)
+        dc = wx.MemoryDC(bmp)
+        # clear to a specific background colour
+        bgcolor = wx.Colour(255, 254, 255)
+        dc.SetBackground(wx.Brush(bgcolor))
+        dc.Clear()
+        # draw the label onto the bitmap
+        label = "P"
+        font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+        font.SetWeight(wx.FONTWEIGHT_BOLD)
+        dc.SetFont(font)
+        tw, th = dc.GetTextExtent(label)
+        dc.DrawText(label, (bw - tw) / 2, (bh - th) / 2)
+        del dc
+        # now apply a mask using the bgcolor
+        bmp.SetMaskColour(bgcolor)
+        # and tell the ComboCtrl to use it
+        self.SetButtonBitmaps(bmp, True)
+
+    def __init__(self, par_dict, sim_func, *args, **kw):
+        """
+
+        :param state: an int signalling the state 0 - parameter defined in dialog,
+            1 - parameter fitted, 2 - parameter constant in grid.
+        :param args:
+        :param kw:
+        :return:
+        """
+        wx.combo.ComboCtrl.__init__(self, *args, **kw)
+
+        self.create_button_bitmap()
+
+        # Set the id's for the Menu
+        self.id_simulate = wx.NewId()
+
+        self.par_dict = par_dict
+        self.sim_func = sim_func
+
+
+    # Overridden from ComboCtrl, called when the combo button is clicked
+    def OnButtonClick(self):
+        menu = wx.Menu()
+        par_dict = self.par_dict
+        classes = par_dict.keys()
+        classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
+        for cl in classes:
+            # Create a submenu for each class
+            clmenu = wx.Menu()
+            obj_dict = par_dict[cl]
+            objs = obj_dict.keys()
+            objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+            # Create a submenu for each object
+            for obj in objs:
+                obj_menu = wx.Menu()
+                funcs = obj_dict[obj]
+                funcs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                # Create an item for each method
+                for func in funcs:
+                    item = obj_menu.Append(wx.NewId(), obj + '.' + func.replace('set', 'get'))
+                    self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
+                clmenu.AppendMenu(-1, obj, obj_menu)
+            menu.AppendMenu(-1, cl, clmenu)
+        # Check if there are no available classes
+        # TODO: Test implementation if necessary?
+        #if len(classes) == 0:
+        #    # Add an item to compile the model
+        #    item = menu.Append(self.id_simulate, 'Simulate to see parameters')
+        #    self.Bind(wx.EVT_MENU, self.OnSimulate, item)
+        # Create a popup menu when pressing the button.
+        self.menu = menu
+        self.PopupMenu(self.menu)
+        menu.Destroy()
+
+    def OnSimulate(self, event):
+        """ Event handler for selection of the simulate option in the popup.
+        :param event:
+        :return:
+        """
+        if not self.sim_func is None:
+            self.sim_func()
+
+    def OnPopUpItemSelected(self, event):
+        """ Event handler for selcting a parameters get function.
+
+        :param event:
+        :return:
+        """
+        item = self.menu.FindItemById(event.GetId())
+        self.WriteText(item.GetText() + '()')
+
+
+    # Overridden from ComboCtrl to avoid assert since there is no ComboPopup
+    def DoSetPopupControl(self, popup):
+        pass
+
 class ZoomFrame(wx.MiniFrame):
     def __init__(self, parent):
         wx.MiniFrame.__init__(self, parent, -1, "X-Y Scales")
