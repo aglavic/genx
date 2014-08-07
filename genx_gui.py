@@ -555,7 +555,6 @@ class MainFrame(wx.Frame):
                 self.config.write_default(profile_path + 'genx.conf')
             #print self.config.get('plugins','loaded plugins')
 
-
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.new(self, event)
 
@@ -571,11 +570,9 @@ class MainFrame(wx.Frame):
 
     def eh_mb_print_plot(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.print_plot(self, event)
-        
 
     def eh_mb_print_grid(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.print_parameter_grid(self, event)
-        
 
     def eh_mb_print_script(self, event): # wxGlade: MainFrame.<event_handler>
         print "Event handler `eh_mb_print_script' not implemented"
