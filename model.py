@@ -121,19 +121,20 @@ class Model:
         try:
             savefile.writestr('data', pickle.dumps(self.data))
         except StandardError, e:
-            raise IOError(str(e), filename)
+            raise IOError('Error writing data: ' + str(e), filename)
         try:
             savefile.writestr('script', pickle.dumps(self.script))
         except StandardError,e:
-            raise IOError(str(e), filename)
+            raise IOError('Error writing script: ' + str(e), filename)
+        self.parameters.model = None
         try:
             savefile.writestr('parameters', pickle.dumps(self.parameters))
-        except StandardError:
-           raise IOError(str(e), filename)
+        except StandardError, e:
+           raise IOError('Error writing parameters: ' + str(e), filename)
         try:
             savefile.writestr('fomfunction', pickle.dumps(self.fom_func))
-        except StandardError:
-           raise IOError(str(e), filename)
+        except StandardError, e:
+           raise IOError('Error writing fom_func:  ' + str(e), filename)
         
         savefile.close()
         

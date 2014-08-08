@@ -76,7 +76,7 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     reflectivity</dd>
     <dt><code><b>res</b></code></dt>
     <dd>The resolution of the instrument given in the coordinates of
-     <code>coords</code>. This assumes a gaussian reloution function and
+     <code>coords</code>. This assumes a gaussian resolution function and
     <code>res</code> is the standard deviation of that gaussian.</dd>
     <dt><code><b>restype</b></code></dt>
     <dd>Describes the rype of the resolution calculated. One of the alterantives:
@@ -88,8 +88,8 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     <dd>The number of points to include in the resolution calculation. This is only
     used for 'full conv and vaying res.' and 'fast conv + varying res'</dd>
     <dt><code><b>resintrange</b></code></dt>
-    <dd>Number of standard deviatons to integrate the resolution fucntion times
-    the relfectivty over</dd>
+    <dd>Number of standard deviatons to integrate the resolution function times
+    the reflectivity over</dd>
     <dt><code><b>footype</b></code></dt>
     <dd>Which type of footprint correction is to be applied to the simulation.
     One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, 
@@ -103,7 +103,7 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     <dd>The incident angle of the neutrons, only valid in tof mode</dd>
     <dt><code><b>pol</b></code></dt>
     <dd>The measured polarization of the instrument. Valid options are:
-    'uu','dd' or 'ud', or the respective number 0-2 also works.</dd>
+    'uu','dd', 'ud', or 'ass' the respective number 0-3 also works.</dd>
 '''
 from numpy import *
 try:
@@ -122,28 +122,28 @@ ModelID='SpecNX'
 #    'Res':0.001, 'Restype':0, 'Respoints':5, 'Resintrange':2, 'Beaw':0.01,\
 #    'Footype':0.0, 'Samlen':10.0, 'Incangle':0.0}
 __pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
-instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',\
-    'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q','tth'],\
-    'restype': ['no conv', 'fast conv',\
-     'full conv and varying res.', 'fast conv + varying res.'],\
-    'footype': ['no corr', 'gauss beam', 'square beam'],\
-    'pol': ['uu','dd','ud']}
-    
-InstrumentParameters={'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',\
-     'I0':1.0, 'res':0.001,\
-    'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,\
-     'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu',\
-    'Ibkg': 0.0, 'tthoff':0.0}
+
+instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',
+    'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q', 'tth'],
+    'restype': ['no conv', 'fast conv',
+     'full conv and varying res.', 'fast conv + varying res.'],
+    'footype': ['no corr', 'gauss beam', 'square beam'],
+    'pol': ['uu', 'dd', 'ud', 'ass']}
+InstrumentParameters = {'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',
+                        'I0':1.0, 'res':0.001,
+                        'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,
+                        'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu',
+                        'Ibkg': 0.0, 'tthoff':0.0}
 InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']),
                     ('Resolution', ['restype', 'res', 'respoints', 'resintrange']),
                     ('Neutron', ['probe', 'pol', 'incangle']),
                     ('Footprint', ['footype', 'beamw', 'samplelen',]),
                     ]
-InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',\
-     'I0': 'arb.', 'res': '[coord]',\
-    'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',\
-     'footype': '', 'samplelen':'mm', 'incangle':'deg.', 'pol': '',\
-    'Ibkg': 'arb.', 'tthoff':'deg.'}
+InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',
+                   'I0': 'arb.', 'res': '[coord]',
+                   'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',\
+                   'footype': '', 'samplelen':'mm', 'incangle':'deg.', 'pol': '',\
+                   'Ibkg': 'arb.', 'tthoff':'deg.'}
 # Coordinates=1 or 'tth' => twothetainput
 # Coordinates=0 or 'q'=> Q input
 # probe: Type of simulation
@@ -252,12 +252,12 @@ def resolution_init(TwoThetaQz, instrument):
 
 
 def Specular(TwoThetaQz,sample,instrument):
-    ''' Simulate the specular signal from sample when probed with instrument
-    
+    """ Simulate the specular signal from sample when probed with instrument
+
     # BEGIN Parameters
     TwoThetaQz data.x
     # END Parameters
-    '''
+    """
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
     Q, TwoThetaQz, weight = resolution_init(TwoThetaQz, instrument)
@@ -306,6 +306,11 @@ def Specular(TwoThetaQz,sample,instrument):
         elif pol == instrument_string_choices['pol'][1] or pol == 1:
             R = Paratt.ReflQ(Q,instrument.getWavelength(),\
                  1.0-sld+msld,d,sigma)
+        elif pol == instrument_string_choices['pol'][3] or pol == 3:
+            Rp = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld-msld, d, sigma)
+            Rm = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld+msld, d, sigma)
+            R = (Rp - Rm)/(Rp + Rm)
+
         else:
             raise ValueError('The value of the polarization is WRONG.'
                 ' It should be uu(0) or dd(1)')
@@ -332,6 +337,9 @@ def Specular(TwoThetaQz,sample,instrument):
         # Polarization ud or +-
         elif pol == instrument_string_choices['pol'][2] or pol == 2:
             R = Buffer.Rud
+        # Calculating the asymmetry ass
+        elif pol == instrument_string_choices['pol'][3] or pol == 3:
+            R = (Buffer.Ruu - Buffer.Rdd)/(Buffer.Ruu + Buffer.Rdd + 2*Buffer.Rud)
         else:
             raise ValueError('The value of the polarization is WRONG.'
                 ' It should be uu(0), dd(1) or ud(2)')
@@ -363,9 +371,19 @@ def Specular(TwoThetaQz,sample,instrument):
             R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
              (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
               1.0-sld+msld,d,sigma)
+        # Calculating the asymmetry
+        elif pol == instrument_string_choices['pol'][3] or pol == 3:
+            Rd = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),
+                                    (4*pi*sin(instrument.getIncangle()*pi/180)/Q),
+                                    1.0-sld+msld,d,sigma)
+            Ru = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),
+                                    (4*pi*sin(instrument.getIncangle()*pi/180)/Q),
+                                    1.0-sld-msld,d,sigma)
+            R = (Ru - Rd)/(Ru + Rd)
+
         else:
             raise ValueError('The value of the polarization is WRONG.'
-                ' It should be uu(0) or dd(1)')
+                ' It should be uu(0) or dd(1) or ass')
     else:
         raise ValueError('The choice of probe is WRONG')
     #FootprintCorrections
