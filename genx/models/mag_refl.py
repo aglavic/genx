@@ -207,7 +207,7 @@ instrument_string_choices = {'coords': ['q','tth'],
                              'footype': ['no corr', 'gauss beam', 
                                          'square beam'],
                              'xpol':['circ+','circ-','tot', 'ass', 'sigma', 'pi'],
-                             'npol':['++', '--', '+-'],
+                             'npol':['++', '--', '+-', 'ass'],
                              'theory': ['x-ray anis.', 'x-ray simpl. anis.', 
                                         'neutron spin-pol', 'neutron spin-flip',
                                         'neutron spin-pol tof'],
@@ -849,9 +849,10 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
         b = (array(parameters['b'], dtype = complex128).real*1e-5)[:, newaxis]*ones(theta.shape)
         abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(theta.shape)
         wl = instrument.getWavelength()
-        sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
+        sld = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) -
                                1.0J*abs_xs*wl/4/pi)
-        msld = (2.645e-5*mag*dens*wl**2/2/pi)[:,newaxis]*ones(theta.shape)*(cos(theta_m)*cos(phi))[:, newaxis]
+        print mag.shape, dens.shape, theta_m.shape, phi.shape, theta.shape
+        msld = (2.645e-5*mag*wl**2/2/pi*cos(theta_m)*cos(phi))[:,newaxis]*dens*ones(theta.shape)
         if pol in ['++', 'uu']:
             n = 1.0 - sld - msld
             n_l = 1.0 - sld - msld*(1.0 + dmag_l)[:, newaxis]
@@ -951,24 +952,19 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
 
         theory = instrument.getTheory()
         # Full theory
-        if XBuffer.g_0 != None:
+        if XBuffer.g_0 is not None:
             g0_ok = XBuffer.g_0.shape == g_0.shape
             if g0_ok:
                 g0_ok = any(not_equal(XBuffer.g_0,g_0))
         else:
             g0_ok = False
-        if  theory == 0 or theory == instrument_string_choices['theory'][0]:
+        if theory == 0 or theory == instrument_string_choices['theory'][0]:
             if True or (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
                 or not g0_ok or XBuffer.wavelength != lamda):
                 #print g_0.shape, lamda.shape, A.shape, B.shape, C.shape, M.shape,
                 W = lib.xrmr.calc_refl_int_lay(g_0, lamda, A*0, A[::-1], B[::-1], C[::-1], M[::-1,...]
                                                , d[::-1], sigma[::-1], sigma_l[::-1], sigma_u[::-1]
                                                , dd_l[::-1], dd_u[::-1], dmag_l[::-1], dmag_u[::-1])
-                #print M[::-1,...]
-                #W = lib.xrmr.calc_refl(g_0, lamda, A[::-1], A[::-1]*0, B[::-1], C[::-1], M[::-1,...], d[::-1])
-                #print M[...,::-1]
-                #-4.98092068e-05 +8.67213869e-06j  -3.30099195e-05 +2.24578946e-05j
-
                 XBuffer.W = W
                 XBuffer.parameters = parameters.copy()
                 XBuffer.coords = instrument.getCoords()
@@ -1048,11 +1044,23 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
         # neutron spin-pol calcs
         wl = instrument.getWavelength()
         Q = 4*pi/wl*sin(theta*pi/180)
-        pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, instrument.getNpol())
-        n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
-        R = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1], dd_u[::-1],
-                            sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
-        #raise NotImplementedError('Neutron calcs not implemented')
+        pol = instrument.getNpol()
+        if pol == instrument_string_choices['npol'][3] or pol == 3:
+            # Calculating the asymmetry
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, '++')
+            n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
+            Rp = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1], dd_u[::-1],
+                                 sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, '--')
+            n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
+            Rm = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1], dd_u[::-1],
+                                 sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
+            R = (Rp - Rm)/(Rp + Rm)
+        else:
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, instrument.getNpol())
+            n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
+            R = ables.ReflQ_mag(Q, lamda, n.T[:,::-1], d[::-1], sigma_c[::-1], n_u.T[:,::-1], dd_u[::-1],
+                                sigma_u[::-1], n_l.T[:,::-1], dd_l[::-1], sigma_l[::-1])
     elif theory == 3 or theory == instrument_string_choices['theory'][3]:
         # neutron spin-flip calcs
         wl = instrument.getWavelength()
@@ -1085,6 +1093,9 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
         # Polarization ud or +-
         elif pol == instrument_string_choices['npol'][2] or pol == 2:
             R = NBuffer.Rud
+        # Polarisation is ass (asymmetry)
+        elif pol == instrument_string_choices['npol'][3] or pol == 3:
+            R = (NBuffer.Ruu - NBuffer.Rdd)/(NBuffer.Ruu + NBuffer.Rdd + 2*NBuffer.Rud)
         else:
             raise ValueError('The value of the polarization is WRONG.'
                 ' It should be ++(0), --(1) or +-(2)')
@@ -1200,11 +1211,20 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
             n = 1.0 - sl_n - sl_nm
             R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), 
                                    n[:, newaxis]*ones(theta.shape), d, zeros(d.shape))
-        if pol in ['--', 'dd']:
+        elif pol in ['--', 'dd']:
             n = 1.0 - sl_n + sl_nm
             R = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), 
                                    n[:,newaxis]*ones(theta.shape), d, zeros(d.shape))
-    # Neutron calcs spin-flip 
+        elif pol == 'ass':
+            n = 1.0 - sl_n + sl_nm
+            Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape),
+                                    n[:,newaxis]*ones(theta.shape), d, zeros(d.shape))
+            n = 1.0 - sl_n - sl_nm
+            Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape),
+                                    n[:, newaxis]*ones(theta.shape), d, zeros(d.shape))
+            R = (Rp - Rm)/(Rp + Rm)
+
+    # Neutron calculations spin-flip
     elif theory == 3 or theory == instrument_string_choices['theory'][3]:
         raise NotImplementedError('Spin flip calculations not implemented yet')
     
@@ -1223,11 +1243,18 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
             n = 1.0 - sl_n - sl_nm
             R = Paratt.Refl_nvary2(incang*ones(lamda.shape), lamda, 
                                    n, d, zeros(d.shape))
-        if pol in ['--', 'dd']:
+        elif pol in ['--', 'dd']:
             n = 1.0 - sl_n + sl_nm
             R = Paratt.Refl_nvary2(incang*ones(lamda.shape), lamda, 
                                    n, d, zeros(d.shape))
-        #raise NotImplementedError('TOF Neutron calcs not implemented')
+        elif pol == 'ass':
+            n = 1.0 - sl_n + sl_nm
+            Rm = Paratt.Refl_nvary2(incang*ones(lamda.shape), lamda,
+                                    n, d, zeros(d.shape))
+            n = 1.0 - sl_n - sl_nm
+            Rp = Paratt.Refl_nvary2(incang*ones(lamda.shape), lamda,
+                                    n, d, zeros(d.shape))
+            R = (Rp - Rm)/(Rp + Rm)
     else:
         raise ValueError('The given theory mode deos not exist')
     return R
