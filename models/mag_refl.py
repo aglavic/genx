@@ -851,7 +851,7 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
         wl = instrument.getWavelength()
         sld = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) -
                                1.0J*abs_xs*wl/4/pi)
-        print mag.shape, dens.shape, theta_m.shape, phi.shape, theta.shape
+        #print mag.shape, dens.shape, theta_m.shape, phi.shape, theta.shape
         msld = (2.645e-5*mag*wl**2/2/pi*cos(theta_m)*cos(phi))[:,newaxis]*dens*ones(theta.shape)
         if pol in ['++', 'uu']:
             n = 1.0 - sld - msld

@@ -57,12 +57,12 @@ def compress_profile_old(z, p, delta_max):
     i = 0
     index = array([False])
     while any(bitwise_not(index)):
-        print i
+        #print i
         i += 1
         index = abs(pnew[:-1] - pnew[1:]) > delta_max
         index[::2] = True
         index = r_[index, True]
-        print pnew.shape, index.shape
+        #print pnew.shape, index.shape
         pnew = pnew[index]
         znew = znew[index]
 
@@ -166,10 +166,10 @@ def create_profile(d, sigma, dens, prof_funcs, dz = 0.01,
     d = r_[delta+sigma[0]*mult + buffer, d, sigma[-1]*mult+delta + buffer]
     sigma = r_[0, sigma, 0]
     zlay = cumsum(d)
-    print zlay
+    #print zlay
     z0 = buffer + sigma[1]*mult
     zlay = r_[0, zlay] - z0
-    print zlay
+    #print zlay
     #for i in range(len(d)):
     #    print z0
     #    p = make_profile(z, z0, d[i], sigma[i], sigma[i+1])
