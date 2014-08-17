@@ -296,9 +296,9 @@ class InstrumentBase(ReflBase):
         for k in self._parameters:
             # if the type is a string...
             if type(getattr(self, k)) == type(''):
-                stemp = "%s='%s'," % (k, str(getattr(self, k)))
+                stemp = "%s='%s', " % (k, str(getattr(self, k)))
             else:
-                stemp = '%s=%s,' % (k, str(getattr(self, k)))
+                stemp = '%s=%s, ' % (k, str(getattr(self, k)))
             s = s + stemp
         return s[:-1] + ')'
 
@@ -369,7 +369,11 @@ class SampleBase(ReflBase):
     def __repr__(self):
         Add = 'Sample: '
         for k in self._parameters:
-            Add += '%s=%s, ' % (k, getattr(self, k).__repr__())
+            if type(getattr(self, k)) == type(''):
+                Add += "%s='%s', " % (k, str(getattr(self, k)))
+            else:
+                Add += '%s=%s, ' % (k, str(getattr(self, k)))
+            #Add += '%s=%s, ' % (k, getattr(self, k).__repr__())
         if len(self._parameters) > 0:
             Add = Add[:-2] + '\n'
         else:
