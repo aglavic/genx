@@ -173,7 +173,6 @@ class Parameters:
                 pname = pieces[1]
                 obj = self.model.eval_in_model(obj_name)
                 class_name = obj.__class__.__name__
-        print string.lower(class_name), string.lower(pname), string.lower(obj_name)
 
         return string.lower(class_name), string.lower(pname), string.lower(obj_name)
 

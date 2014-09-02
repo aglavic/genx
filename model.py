@@ -452,7 +452,7 @@ class Model:
         model_copy = Model(self.config)
         model_copy.data = self.data
         model_copy.script = self.script
-        model_copy.parameters = self.parameters
+        model_copy.parameters = self.parameters.copy()
         model_copy.fom_func = self.fom_func
         # The most important stuff - a module is not pickable
         model_copy.script_module = None
