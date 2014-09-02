@@ -1695,15 +1695,16 @@ class SamplePlotPanel(wx.Panel):
         model = self.plugin.GetModel().script_module
         #self.plot_dict = model.sample.SimSLD(None, model.inst)
         self.plot_dicts = []
-        
+
+
         if self.plugin.sim_returns_sld and model._sim:
             self.plot_dicts = model.SLD
             #self.plot_dict = self.plot_dicts[0]
         else:
-            if (not self.plugin.sim_returns_sld) and self.plugin.GetModel().compiled:
+            if self.plugin.GetModel().compiled:
                 plot_dict = model.sample.SimSLD(None, None, model.inst)
                 self.plot_dicts = [plot_dict]
-        
+
         self.plot.ax.lines = []
         self.plot.ax.clear()
         i = 0

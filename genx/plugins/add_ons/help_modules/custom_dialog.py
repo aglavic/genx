@@ -858,6 +858,7 @@ class FitSelectorCombo(wx.combo.ComboCtrl):
 
     def update_text_state(self):
         self.SetEditable(not self.state)
+        #self.GetTextCtrl().Enable(not self.state)
         font = self.GetFont()
 
         if self.state == 0:
