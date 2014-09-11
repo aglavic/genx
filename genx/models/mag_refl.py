@@ -165,7 +165,8 @@ the api can change significantly from version to version. Should only be used by
     'x-ray anis.', 'x-ray simpl. anis.', 'neutron spin-pol' or 'neutron spin-flip'.
     </dd>
     <dt><code><b>xpol</b></code></dt>
-    <dd>The polarization state of the x-ray beam. Should be one of: 'circ+','circ-','tot', 'ass', 'sigma' or 'pi'</dd>
+    <dd>The polarization state of the x-ray beam. Should be one of: 'circ+','circ-','tot', 'ass', 'sigma', 'pi',
+     'sigma-sigma', 'sigma-pi', 'pi-pi' or 'pi-sigma'</dd>
     <dt><code><b>npol</b></code></dt>
     <dd>The neutron polarization state. Should be '++','uu', '--', 'dd' alt. '+-','ud' for spin flip.</dd>
     
@@ -206,7 +207,8 @@ instrument_string_choices = {'coords': ['q','tth'],
                                          'fast conv + varying res.'],
                              'footype': ['no corr', 'gauss beam', 
                                          'square beam'],
-                             'xpol':['circ+','circ-','tot', 'ass', 'sigma', 'pi'],
+                             'xpol':['circ+','circ-','tot', 'ass', 'sigma', 'pi',
+                                     'sigma-sigma', 'sigma-pi', 'pi-pi', 'pi-sigma'],
                              'npol':['++', '--', '+-', 'ass'],
                              'theory': ['x-ray anis.', 'x-ray simpl. anis.', 
                                         'neutron spin-pol', 'neutron spin-flip',
@@ -220,7 +222,7 @@ instrument_string_choices = {'coords': ['q','tth'],
 InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
     'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',\
     'samplelen':10.0, 'Ibkg': 0.0, 'xpol':'circ+', 'npol': '++', 'theory':'x-ray anis.',
-    'incang':0.2, }
+    'incang':0.2}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
 #Res stddev of resolution
@@ -1002,6 +1004,18 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
             elif pol == 5 or pol == instrument_string_choices['xpol'][5]:
                 # pi
                 R = abs(W[0,1])**2 + abs(W[1,1])**2
+            elif pol == 6 or pol == instrument_string_choices['xpol'][6]:
+                # sigma-sigma
+                R = abs(W[0,0])**2
+            elif pol == 7 or pol == instrument_string_choices['xpol'][7]:
+                # sigma-pi
+                R = abs(W[1,0])**2
+            elif pol == 8 or pol == instrument_string_choices['xpol'][8]:
+                # pi-pi
+                R = abs(W[1,1])**2
+            elif pol == 9 or pol == instrument_string_choices['xpol'][9]:
+                # pi-sigma
+                R = abs(W[0,1])**2
             else:
                 raise ValueError('Variable pol has an unvalid value')
 
@@ -1175,6 +1189,18 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
         elif pol == 5 or pol == instrument_string_choices['xpol'][5]:
             # pi
             R = abs(W[0,1])**2 + abs(W[1,1])**2
+        elif pol == 6 or pol == instrument_string_choices['xpol'][6]:
+            # sigma-sigma
+            R = abs(W[0,0])**2
+        elif pol == 7 or pol == instrument_string_choices['xpol'][7]:
+            # sigma-pi
+            R = abs(W[1,0])**2
+        elif pol == 8 or pol == instrument_string_choices['xpol'][8]:
+            # pi-pi
+            R = abs(W[1,1])**2
+        elif pol == 9 or pol == instrument_string_choices['xpol'][9]:
+            # pi-sigma
+            R = abs(W[0,1])**2
         else:
             raise ValueError('Variable pol has an unvalid value')
     # Simplified theory
