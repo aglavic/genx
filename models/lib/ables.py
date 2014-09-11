@@ -1,6 +1,6 @@
 import numpy as np
 import math_utils as mu
-#import isotropic_matrix as im
+import isotropic_matrix as im
 import int_lay_xmean
 import pdb
 
@@ -49,9 +49,9 @@ def ReflQ(Q, lamda, n, d, sigma):
     k_j = np.sqrt((n*n - n_amb2)*k_vac*k_vac + n_amb2*kz*kz)
     
     #print d.shape, n.shape, k_j.dtype
-    #X = ass_X(k_j)
-    X = im.ass_X_interfacelayer4(k_j, k_j, k_j, k_j*0+5, k_j*0+5, sigma, sigma*0, sigma*0)
-    P = ass_P(k_j, d-10)
+    X = ass_X(k_j)
+    #X = im.ass_X_interfacelayer4(k_j, k_j, k_j, k_j*0, k_j*0, sigma, sigma*0, sigma*0)
+    P = ass_P(k_j, d)
     
     PX = mu.dot2_Adiag(P[...,1:-1], X[...,:-1])
     #print P.dtype, X.dtype, PX.dtype
@@ -77,9 +77,9 @@ def ReflQ_mag(Q, lamda, n, d, sigma, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l):
     k = np.sqrt((n*n - n_amb2)*k_vac*k_vac + n_amb2*kz*kz)
     k_l = np.sqrt((n_l*n_l - n_amb2)*k_vac*k_vac + n_amb2*kz*kz)
     k_u = np.sqrt((n_u*n_u - n_amb2)*k_vac*k_vac + n_amb2*kz*kz)
-    print 'k: ', k.shape, k_l.shape, k_u.shape
-    print 'sigma_l', sigma_l.shape
-    print 'dd_u ', dd_u.shape
+    #print 'k: ', k.shape, k_l.shape, k_u.shape
+    #print 'sigma_l', sigma_l.shape
+    #print 'dd_u ', dd_u.shape
     #print np.all(n_u == n), np.all(n_l == n)
     #print np.all(k_ju == k_j), np.all(k_jl == k_j)
     
@@ -111,7 +111,7 @@ def ReflQ_ref(Q,lamda,n,d,sigma):
     # Calculates the wavevector in each layer
     Qj=sqrt((n[:,newaxis]**2 - n[-1]**2)*Q0**2 + n[-1]**2*Q**2)
     # Fresnel reflectivity for the interfaces
-    rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
+    rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])#*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     #print rp.shape #For debugging
     #print d.shape
     #print Qj[1:-1].shape
@@ -133,28 +133,30 @@ def ReflQ_ref(Q,lamda,n,d,sigma):
 
 if __name__ == '__main__':
     from pylab import *
+    atype = np.complex128
+    atype = np.complex64
     theta = arange(0,5,0.01)+1e-13
     lamda = 1.54
     Q = 4*np.pi/lamda*np.sin(theta*np.pi/180)
-    n_rep = 10
+    n_rep = 100
     n = array([1-7.57e-6+1.73e-7j,] + 
               [1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j]*n_rep +
-              [1.0,], dtype = np.complex128)
+              [1.0,], dtype=atype)
     d = array([2,] +
               [80,20]*n_rep +
-              [2,], dtype = np.complex128)
+              [2,], dtype=atype)
     n2 = array([1-7.57e-6+1.73e-7j,] + 
               [1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j]*n_rep +
-              [1.0,], dtype = np.complex128)
+              [1.0,], dtype=atype)
     d2 = array([2,] +
               [80,0]*n_rep +
-              [2,], dtype = np.complex128)
+              [2,], dtype=atype)
     n3 = array([1-7.57e-6+1.73e-7j,] + 
               [1-7.57e-6+1.73e-7j,1-7.57e-6+1.73e-7j]*n_rep +
-              [1.0,], dtype = np.complex128)
+              [1.0,], dtype=atype)
     d3 = array([2,] +
               [40,40]*n_rep +
-              [2,], dtype = np.complex128)
+              [2,], dtype=atype)
     
     sigma = array([0,] +
                   [0, 0]*n_rep +

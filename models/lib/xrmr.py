@@ -16,7 +16,7 @@ from int_lay_xmean import calc_xrmr_Xmean
 
 
 # mpy_limit = 1e-9 corresponds to an angle of 89.998 deg.
-def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-9):
+def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-8):
     ''' Calculate the reflectivity according to the
     recursion matrix formalism as given by
     S.A. Stephanov and S.K Shina PRB 61 15304
@@ -53,7 +53,7 @@ def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-
 
 def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, dd_l, dd_u,
                       dmag_l, dmag_u,
-                      mag_limit = 1e-8, mpy_limit = 1e-9):
+                      mag_limit = 1e-8, mpy_limit = 1e-8):
     '''Calculate the reflectivity according to the recursion matrix formalism as calc_refl.
     This function incorporates a interface layer for the magnetism of thicknesses dd_l and dd_u.
     the interfaces has rouhnesses sigma_l, sigma_u and sigma
@@ -100,7 +100,7 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
     return W_tot[2]
 
     
-def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-9):
+def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-8):
     A = A.astype(np.complex128)
     B = B.astype(np.complex128)
     C = C.astype(np.complex128)

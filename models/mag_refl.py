@@ -682,6 +682,11 @@ def compose_sld(sample, instrument, theta, xray_energy):
     sl_m1 = dens*resdens*resmag*fm1
     sl_m2 = dens*resdens*resmag*fm2 #mag is multiplied in later
 
+    theory = instrument.getTheory()
+    if theory == 1 or theory == instrument_string_choices['theory'][1]:
+        # If simplified theory set sl_m2 to zero to be able to back calculate B
+        sl_m2 *= 0
+
     phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
 
@@ -745,6 +750,7 @@ def compose_sld(sample, instrument, theta, xray_energy):
         B = lamda**2*re/pi*sl_m1_lay
         C = lamda**2*re/pi*sl_m2_lay
         g_0 = sin(theta*pi/180.0)
+
         chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
                                        B, C, M, d)
         chi = tuple([c.sum(0) for c in chi[0] + chi[1] + chi[2]])
@@ -819,7 +825,7 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
     fm1 = refl.harm_sizes(refl.cast_to_array(parameters['fm1'], xray_energy), shape, dtype = complex128)
     fm2 = refl.harm_sizes(refl.cast_to_array(parameters['fm2'], xray_energy), shape, dtype = complex128)
 
-    d = array(parameters['d'], dtype = float64)
+    d = array(parameters['d'], dtype=float64)
 
     theta = theta*pi/180.0
     phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
@@ -1114,6 +1120,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
         raise ValueError('The given theory mode does not exist')
     return R
 
+
 def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
     lamda = AA_to_eV/xray_energy
     parameters = sample.resolveLayerParameters()
@@ -1130,7 +1137,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
             g0_ok = any(not_equal(XBuffer.g_0,g_0))
     else:
         g0_ok = False
-    if  theory == 0 or theory == instrument_string_choices['theory'][0]:
+    if theory == 0 or theory == instrument_string_choices['theory'][0]:
         if (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
             or not g0_ok or XBuffer.wavelength != lamda):
             chi = tuple([tuple([item[::-1] for item in row]) for row in chi])
@@ -1174,6 +1181,9 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
     elif theory == 1 or theory == instrument_string_choices['theory'][1]:
         pol = instrument.getXpol()
         re = 2.8179402894e-5
+        c = 1/(lamda**2*re/pi)
+        sl_c = -chi[0][0]*c
+        sl_m1 = -1.0J*chi[2][1]*c
         if pol == 0 or pol == instrument_string_choices['xpol'][0]:
             # circ +
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
