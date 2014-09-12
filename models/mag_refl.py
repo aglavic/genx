@@ -542,17 +542,15 @@ def compose_sld_anal(z, sample, instrument):
     re = 2.8179402894e-5
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = float64)
-    resdens = array(parameters['resdens'], dtype = float64)
-    resmag = array(parameters['resmag'], dtype = float64)
+    dens = array(parameters['dens'], dtype=float64)
+    resdens = array(parameters['resdens'], dtype=float64)
+    resmag = array(parameters['resmag'], dtype=float64)
     mag = array(parameters['mag'], dtype=float64)
-    # Create an offset of phi to handle negative mag values
-    phi_offset = where(mag < 0, pi, 0)
-    mag = abs(mag)
-    dmag_l = array(parameters['dmag_l'], dtype = float64)
-    dmag_u = array(parameters['dmag_u'], dtype = float64)
-    dd_l = array(parameters['dd_l'], dtype = float64)
-    dd_u = array(parameters['dd_u'], dtype = float64)
+
+    dmag_l = array(parameters['dmag_l'], dtype=float64)
+    dmag_u = array(parameters['dmag_u'], dtype=float64)
+    dd_l = array(parameters['dd_l'], dtype=float64)
+    dd_u = array(parameters['dd_u'], dtype=float64)
     #print [type(f) for f in parameters['f']]
     xray_energy  = AA_to_eV/instrument.getWavelength()
     f = refl.cast_to_array(parameters['f'], xray_energy)
@@ -560,15 +558,14 @@ def compose_sld_anal(z, sample, instrument):
     fm1 = refl.cast_to_array(parameters['fm1'], xray_energy)
     fm2 = refl.cast_to_array(parameters['fm2'], xray_energy)
 
-    #f = array(parameters['f'], dtype = complex128) + (1-1J)*1e-20
-    #fr = array(parameters['fr'], dtype = complex128) + (1-1J)*1e-20
-    #fm1 = array(parameters['fm1'], dtype = complex128) + (1-1J)*1e-20
-    #fm2 = array(parameters['fm2'], dtype = complex128) + (1-1J)*1e-20
+    d = array(parameters['d'], dtype=float64)
     
-    d = array(parameters['d'], dtype = float64)
-    
-    phi = array(parameters['phi_m'], dtype = float64)*pi/180.0 + phi_offset
-    theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
+    phi = array(parameters['phi_m'], dtype=float64)*pi/180.0
+    theta_m = array(parameters['theta_m'], dtype=float64)*pi/180.0
+    # Create an offset of phi to handle negative mag values and negate theta_m
+    phi = phi + where(mag < 0, pi, 0)
+    theta_m = where(mag < 0, -theta_m, theta_m)
+    mag = abs(mag)
     m_x = cos(theta_m)*cos(phi)
     sl_c = (dens*(f + resdens*fr))
     sl_m1 = dens*resdens*resmag*mag*fm1
@@ -662,9 +659,6 @@ def compose_sld(sample, instrument, theta, xray_energy):
     dd_l = array(parameters['dd_l'], dtype=float64)
     d = array(parameters['d'], dtype=float64)
     mag = array(parameters['mag'], dtype=float64)
-    # Create an offset of phi to handle negative mag values
-    phi_offset = where(mag < 0, pi, 0)
-    mag = abs(mag)
 
     if isscalar(xray_energy):
         shape = None
@@ -690,9 +684,12 @@ def compose_sld(sample, instrument, theta, xray_energy):
         # If simplified theory set sl_m2 to zero to be able to back calculate B
         sl_m2 *= 0
 
-    phi = array(parameters['phi_m'], dtype=float64)*pi/180.0 + phi_offset
+    phi = array(parameters['phi_m'], dtype=float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype=float64)*pi/180.0
-
+    # Create an offset of phi to handle negative mag values and negate theta_m
+    phi = phi + where(mag < 0, pi, 0)
+    theta_m = where(mag < 0, -theta_m, theta_m)
+    mag = abs(mag)
 
     M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
 
@@ -816,9 +813,6 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
     dd_l = array(parameters['dd_l'], dtype = float64)
     d = array(parameters['d'], dtype = float64)
     mag = array(parameters['mag'], dtype=float64)
-    # Create an offset of phi to handle negative mag values
-    phi_offset = where(mag < 0, pi, 0)
-    mag = abs(mag)
 
     shape = (d.shape[0], theta.shape[0])
     lamda = AA_to_eV/xray_energy
@@ -834,8 +828,12 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
     d = array(parameters['d'], dtype=float64)
 
     theta = theta*pi/180.0
-    phi = array(parameters['phi_m'], dtype = float64)*pi/180.0 + phi_offset
+    phi = array(parameters['phi_m'], dtype = float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype = float64)*pi/180.0
+    # Create an offset of phi to handle negative mag values and negate theta_m
+    phi = phi + where(mag < 0, pi, 0)
+    theta_m = where(mag < 0, -theta_m, theta_m)
+    mag = abs(mag)
     sl_c = (dens*(f + resdens*fr))
     m_x = refl.harm_sizes((cos(theta_m)*cos(phi)), shape)
     sl_m1 = (dens*resdens*resmag*refl.harm_sizes(mag, shape)*fm1)*cos(theta)*m_x
@@ -936,9 +934,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
     resdens = refl.harm_sizes(parameters['resdens'], shape, dtype=float64)
     resmag = refl.harm_sizes(parameters['resmag'], shape, dtype=float64)
     mag = array(parameters['mag'], dtype=float64)
-    # Create an offset of phi to handle negative mag values
-    phi_offset = where(mag < 0, pi, 0)
-    mag = refl.harm_sizes(abs(mag), shape, dtype=float64)
+
 
 
     f = refl.harm_sizes(refl.cast_to_array(parameters['f'], xray_energy), shape, dtype=complex128)
@@ -946,8 +942,12 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
     fm1 = refl.harm_sizes(refl.cast_to_array(parameters['fm1'], xray_energy), shape, dtype=complex128)
     fm2 = refl.harm_sizes(refl.cast_to_array(parameters['fm2'], xray_energy), shape, dtype=complex128)
 
-    phi = array(parameters['phi_m'], dtype=float64)*pi/180.0 + phi_offset
+    phi = array(parameters['phi_m'], dtype=float64)*pi/180.0
     theta_m = array(parameters['theta_m'], dtype=float64)*pi/180.0
+    # Create an offset of phi to handle negative mag values and negate theta_m
+    phi = phi + where(mag < 0, pi, 0)
+    theta_m = where(mag < 0, -theta_m, theta_m)
+    mag = refl.harm_sizes(abs(mag), shape, dtype=float64)
 
 
 
