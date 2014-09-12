@@ -548,12 +548,32 @@ class SamplePanel(wx.Panel):
             ret_str = str[:start_index]
             for par_str in str[start_index:].split(','):
                 par_name = par_str.split('=')[0].strip()
+                # par_name normal paramter (real number)
                 if (name, par_name) in dic_lookup:
                     val, state = dic_lookup[(name, par_name)]
                     if state == 1:
                         par_str = ' <font color=%s><b>%s=%.2e</b></font>,'%(fit_color_str, par_name, val)
                     elif state == 2:
                         par_str = ' <font color=%s><b>%s=%.2e</b></font>,'%(const_fit_color_str, par_name, val)
+                # par_name is a complex parameter...
+                elif (name, par_name + 'real') in dic_lookup or (name, par_name + 'imag') in dic_lookup:
+                    if (name, par_name + 'real') in dic_lookup:
+                        val, state = dic_lookup[(name, par_name + 'real')]
+                        if state == 1:
+                            par_str = ' <font color=%s><b>%s=(%.2e,</b></font>'%(fit_color_str, par_name, val)
+                        elif state == 2:
+                            par_str = ' <font color=%s><b>%s=(%.2e,</b></font>'%(const_fit_color_str, par_name, val)
+                    else:
+                        par_str = ' <b>%s=??+</b>'%(par_name)
+                    if (name, par_name + 'imag') in dic_lookup:
+                        val, state = dic_lookup[(name, par_name + 'imag')]
+                        if state == 1:
+                            par_str += ' <font color=%s><b>%.2e)</b></font>,'%(fit_color_str, val)
+                        elif state == 2:
+                            par_str += ' <font color=%s><b>%.2e)</b></font>,'%(const_fit_color_str, val)
+                    else:
+                        par_str += ' <b>??)</b>,'
+
                 else:
                     par_str += ','
                 ret_str += par_str
