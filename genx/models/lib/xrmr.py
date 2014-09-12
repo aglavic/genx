@@ -16,7 +16,7 @@ from int_lay_xmean import calc_xrmr_Xmean
 
 
 # mpy_limit = 1e-9 corresponds to an angle of 89.998 deg.
-def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-8):
+def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-9):
     ''' Calculate the reflectivity according to the
     recursion matrix formalism as given by
     S.A. Stephanov and S.K Shina PRB 61 15304
@@ -100,7 +100,7 @@ def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, 
     return W_tot[2]
 
     
-def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-8):
+def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-9):
     A = A.astype(np.complex128)
     B = B.astype(np.complex128)
     C = C.astype(np.complex128)
@@ -124,7 +124,7 @@ def create_chi(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e
     non_mag[0] = False
     
     # Take into account the matrix singularity arising when M||Y
-    mpy = np.bitwise_and(np.abs(m_y - 1.0) < mpy_limit, np.bitwise_not(non_mag))
+    mpy = np.bitwise_and(1.0 - np.abs(m_y) < mpy_limit, np.bitwise_not(non_mag))
 
     return chi, non_mag, mpy
 
