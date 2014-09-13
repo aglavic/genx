@@ -860,20 +860,39 @@ class SamplePanel(wx.Panel):
             # The selected item is a Layer
             for item in self.model.LayerParameters.keys():
                 value = getattr(sel, item)
+                vals[item] = value
                 #if item!='n' and item!='fb':
                 if type(self.model.LayerParameters[item]) != type(1+1.0J):
+                    # Handle real parameters
                     validators[item] = FloatObjectValidator(eval_func)
+                    func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
+                    grid_value = grid_parameters.get_value_by_name(func_name)
+                    if grid_value is not None:
+                        vals[item] = grid_value
+                    editable[item] = grid_parameters.get_fit_state_by_name(func_name)
+
                 else:
+                    # Handle complex parameters
                     validators[item] = ComplexObjectValidator(eval_func)
+                    func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
+                    grid_value_real = grid_parameters.get_value_by_name(func_name + 'real')
+                    grid_value_imag = grid_parameters.get_value_by_name(func_name + 'imag')
+                    if grid_value_real is not None:
+                        v = eval_func(vals[item]) if type(vals[item]) is str else vals[item]
+                        vals[item] = grid_value_real + v.imag*1.0J
+                    if grid_value_imag is not None:
+                        v = eval_func(vals[item]) if type(vals[item]) is str else vals[item]
+                        vals[item] = v.real + grid_value_imag*1.0J
+                    editable[item] = max(grid_parameters.get_fit_state_by_name(func_name + 'real'),
+                                         grid_parameters.get_fit_state_by_name(func_name + 'imag'))
+
                 items.append((item, value))
                 pars.append(item)
-                vals[item] = value
+
                 # Check if the parameter is in the grid and in that case set it as uneditable
-                func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
-                grid_value = grid_parameters.get_value_by_name(func_name)
-                editable[item] = grid_parameters.get_fit_state_by_name(func_name)
-                if grid_value is not None:
-                    vals[item] = grid_value
+                #func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
+                #grid_value = grid_parameters.get_value_by_name(func_name)
+                #editable[item] = grid_parameters.get_fit_state_by_name(func_name)
 
             try:
                 groups = self.model.LayerGroups
@@ -885,11 +904,11 @@ class SamplePanel(wx.Panel):
                 units = False
 
             dlg = ValidateFitDialog(self, pars, vals, validators,
-                                 title='Layer Editor', groups=groups,
-                                 units=units, editable_pars=editable)
+                                    title='Layer Editor', groups=groups,
+                                    units=units, editable_pars=editable)
             
             if dlg.ShowModal()==wx.ID_OK:
-                vals=dlg.GetValues()
+                vals = dlg.GetValues()
                 states = dlg.GetStates()
                 for par in self.model.LayerParameters.keys():
                     if not states[par]:
@@ -898,8 +917,15 @@ class SamplePanel(wx.Panel):
                         value = eval_func(vals[par])
                         minval = value*(1 - self.variable_span)
                         maxval = value*(1 + self.variable_span)
-                        func_name = obj_name + '.' + _set_func_prefix + par.capitalize()
-                        grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
+                        if type(self.model.LayerParameters[par]) is complex:
+                            func_name = obj_name + '.' + _set_func_prefix + par.capitalize() + 'real'
+                            grid_parameters.set_fit_state_by_name(func_name, value.real, states[par], minval, maxval)
+                            func_name = obj_name + '.' + _set_func_prefix + par.capitalize() + 'imag'
+                            grid_parameters.set_fit_state_by_name(func_name, value.imag, states[par], minval, maxval)
+                        else:
+                            func_name = obj_name + '.' + _set_func_prefix + par.capitalize()
+                            grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
+
                         # Does not seem to be necessary
                         self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
                 sl = self.sampleh.getStringList()
@@ -935,10 +961,10 @@ class SamplePanel(wx.Panel):
                 units = False
             
             dlg = ValidateFitDialog(self, pars, vals, validators,
-                                 title='Layer Editor', groups=groups,
-                                 units=units, editable_pars=editable)
+                                    title='Layer Editor', groups=groups,
+                                    units=units, editable_pars=editable)
             if dlg.ShowModal()==wx.ID_OK:
-                vals=dlg.GetValues()
+                vals = dlg.GetValues()
                 states = dlg.GetStates()
                 for par in pars:
                     if not states[par]:

@@ -53,7 +53,7 @@ def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-
 
 def calc_refl_int_lay(g_0, lamda, chi0, A, B, C, M, d, sigma, sigma_l, sigma_u, dd_l, dd_u,
                       dmag_l, dmag_u,
-                      mag_limit = 1e-8, mpy_limit = 1e-8):
+                      mag_limit = 1e-8, mpy_limit = 1e-9):
     '''Calculate the reflectivity according to the recursion matrix formalism as calc_refl.
     This function incorporates a interface layer for the magnetism of thicknesses dd_l and dd_u.
     the interfaces has rouhnesses sigma_l, sigma_u and sigma
