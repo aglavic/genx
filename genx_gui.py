@@ -241,6 +241,8 @@ class MainFrame(wx.Frame):
         self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook, self, )
         #self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, -1)
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook, -1)
+        # Wrap the lines on whitespaces
+        self.script_editor.SetWrapMode(1)
         self.example_handler = help.ExampleHandler(self, self.mb_examples, _path + 'examples/')
         
         self.__set_properties()

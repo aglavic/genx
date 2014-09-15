@@ -17,7 +17,7 @@ _cpu_count = 1
 try:
     import multiprocessing as processing
     __parallel_loaded__ = True
-    _cpu_count = processing.cpu_count
+    _cpu_count = processing.cpu_count()
 except:
     try:
         import processing
@@ -522,11 +522,10 @@ class DiffEv:
         setup for parallel proccesing. Creates a pool of workers with
         as many cpus there is available
         '''
-        self.pool = processing.Pool(processes = self.processes,\
-                        initializer = parallel_init,\
-                        initargs = (self.model.pickable_copy(), ))
-        self.text_output("Starting a pool with %i workers ..."%\
-                            (self.processes, ))
+        self.pool = processing.Pool(processes=self.processes,
+                                    initializer=parallel_init,
+                                    initargs=(self.model.pickable_copy(), ))
+        self.text_output("Starting a pool with %i workers ..."%(self.processes, ))
         time.sleep(1.0)
         #print "Starting a pool with ", self.processes, " workers ..."
         
