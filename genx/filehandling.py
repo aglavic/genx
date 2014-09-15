@@ -28,8 +28,149 @@ def load_gx(fname, model, optimizer, config):
     config.load_model(model.load_addition('config'))   
     optimizer.pickle_load(model.load_addition('optimizer'))
 
+# Functions to handle optimiser configs
+#==============================================================================
 
 
+def load_opt_config(optimizer, config):
+    """Load the config (Config class) values to the optimiser class (DiffEv class)."""
+    class Container:
+        error_bars_level = 1.05
+        save_all_evals = False
+
+        def set_error_bars_level(self, val):
+            self.error_bars_level = val
+
+        def set_save_all_evals(self, val):
+            self.save_all_evals = val
+
+    c = Container()
+
+    # Define all the options we want to set
+    options_float = ['km', 'kr', 'pop mult', 'pop size',\
+                     'max generations', 'max generation mult',\
+                     'sleep time','max log elements',
+                     'errorbar level',
+                     'autosave interval', 'parallel processes',
+                     'parallel chunksize', 'allowed fom discrepancy']
+    setfunctions_float = [optimizer.set_km, optimizer.set_kr,
+                          optimizer.set_pop_mult,
+                          optimizer.set_pop_size,
+                          optimizer.set_max_generations,
+                          optimizer.set_max_generation_mult,
+                          optimizer.set_sleep_time,
+                          optimizer.set_max_log,
+                          c.set_error_bars_level,
+                          optimizer.set_autosave_interval,
+                          optimizer.set_processes,
+                          optimizer.set_chunksize,
+                          optimizer.set_fom_allowed_dis,
+                          ]
+
+    options_bool = ['use pop mult', 'use max generations',
+                    'use start guess', 'use boundaries',
+                    'use parallel processing', 'use autosave',
+                    'save all evals'
+                    ]
+    setfunctions_bool = [optimizer.set_use_pop_mult,
+                         optimizer.set_use_max_generations,
+                         optimizer.set_use_start_guess,
+                         optimizer.set_use_boundaries,
+                         optimizer.set_use_parallel_processing,
+                         optimizer.set_use_autosave,
+                         c.set_save_all_evals,
+                        ]
+
+    # Make sure that the config is set
+    if config:
+        # Start witht the float values
+        for index in range(len(options_float)):
+            try:
+                val = config.get_float('solver', options_float[index])
+            except OptionError, e:
+                print 'Could not locate option solver.' + options_float[index]
+            else:
+                setfunctions_float[index](val)
+
+        # Then the bool flags
+        for index in range(len(options_bool)):
+            try:
+                val = config.get_boolean('solver', options_bool[index])
+            except OptionError, e:
+                print 'Could not read option solver.' + options_bool[index]
+            else:
+                setfunctions_bool[index](val)
+        try:
+            val = config.get('solver', 'create trial')
+        except io.OptionError, e:
+            print 'Could not read option solver.create trial'
+        else:
+            try:
+                optimizer.set_create_trial(val)
+            except LookupError:
+                print 'The mutation scheme %s does not exist'%val
+
+    return c.error_bars_level, c.save_all_evals
+
+
+def save_opt_config(optimizer, config, fom_error_bars_level=1.05, save_all_evals=False):
+    """ Write the config values from optimizer (DiffEv class) to config (Config class) """
+
+    # Define all the options we want to set
+    options_float = ['km', 'kr', 'pop mult', 'pop size',\
+                     'max generations', 'max generation mult',\
+                     'sleep time', 'max log elements','errorbar level',\
+                     'autosave interval',\
+                     'parallel processes', 'parallel chunksize',
+                     'allowed fom discrepancy']
+    set_float = [optimizer.km, optimizer.kr,
+                 optimizer.pop_mult,\
+                 optimizer.pop_size,\
+                 optimizer.max_generations,\
+                 optimizer.max_generation_mult,\
+                 optimizer.sleep_time,\
+                 optimizer.max_log, \
+                 fom_error_bars_level,\
+                 optimizer.autosave_interval,\
+                 optimizer.processes,\
+                 optimizer.chunksize,\
+                 optimizer.fom_allowed_dis
+                 ]
+
+    options_bool = ['use pop mult', 'use max generations',
+                    'use start guess', 'use boundaries',
+                    'use parallel processing', 'use autosave',
+                    'save all evals',
+                    ]
+    set_bool = [optimizer.use_pop_mult,
+                optimizer.use_max_generations,
+                optimizer.use_start_guess,
+                optimizer.use_boundaries,
+                optimizer.use_parallel_processing,
+                optimizer.use_autosave,
+                save_all_evals,
+                ]
+
+    # Make sure that the config is set
+    if config:
+        # Start witht the float values
+        for index in range(len(options_float)):
+            try:
+                config.set('solver', options_float[index], set_float[index])
+            except io.OptionError, e:
+                print 'Could not locate save solver.' + options_float[index]
+
+        # Then the bool flags
+        for index in range(len(options_bool)):
+            try:
+                config.set('solver', options_bool[index], set_bool[index])
+            except OptionError, e:
+                print 'Could not write option solver.' + options_bool[index]
+
+        try:
+            config.set('solver', 'create trial', optimizer.get_create_trial())
+        except OptionError, e:
+            print 'Could not write option solver.create trial'
 
 #==============================================================================
 class Config:

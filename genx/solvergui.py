@@ -56,137 +56,16 @@ class SolverController:
         Reads the parameter that should be read from the config file.
         And set the parameters in both the optimizer and this class.
         '''
-        # Define all the options we want to set
-        options_float = ['km', 'kr', 'pop mult', 'pop size',\
-                         'max generations', 'max generation mult',\
-                         'sleep time','max log elements','errorbar level', 
-                         'autosave interval', 'parallel processes', 
-                         'parallel chunksize', 'allowed fom discrepancy']
-        setfunctions_float = [self.optimizer.set_km, self.optimizer.set_kr,
-                              self.optimizer.set_pop_mult,
-                              self.optimizer.set_pop_size,
-                              self.optimizer.set_max_generations,
-                              self.optimizer.set_max_generation_mult,
-                              self.optimizer.set_sleep_time,
-                              self.optimizer.set_max_log,
-                              self.set_error_bars_level,
-                              self.optimizer.set_autosave_interval,
-                              self.optimizer.set_processes,
-                              self.optimizer.set_chunksize,
-                              self.optimizer.set_fom_allowed_dis,
-                              ]
-
-        options_bool = ['use pop mult', 'use max generations',
-                        'use start guess', 'use boundaries',
-                         'use parallel processing', 'use autosave', 
-                         'save all evals']
-        setfunctions_bool = [ self.optimizer.set_use_pop_mult,
-                              self.optimizer.set_use_max_generations,
-                              self.optimizer.set_use_start_guess, 
-                              self.optimizer.set_use_boundaries,
-                              self.optimizer.set_use_parallel_processing,
-                              self.optimizer.set_use_autosave,
-                              self.set_save_all_evals,
-                              ]
-        
-        # Make sure that the config is set
-        if self.config:
-            # Start witht the float values
-            for index in range(len(options_float)):
-                try:
-                    val = self.config.get_float('solver', options_float[index])
-                except io.OptionError, e:
-                    print 'Could not locate option solver.' +\
-                            options_float[index]
-                else:
-                    setfunctions_float[index](val)
-            
-            # Then the bool flags
-            for index in range(len(options_bool)):
-                try:
-                    val = self.config.get_boolean('solver',\
-                            options_bool[index])
-                except io.OptionError, e:
-                    print 'Could not read option solver.' +\
-                            options_bool[index]
-                else:
-                    setfunctions_bool[index](val)
-            try:
-                val = self.config.get('solver', 'create trial')
-            except io.OptionError, e:
-                print 'Could not read option solver.create trial'
-            else:
-                try:
-                    self.optimizer.set_create_trial(val)
-                except LookupError:
-                    print 'The mutation scheme %s does not exist'%val
+        error_bars_level, save_all_evals = io.load_opt_config(self.optimizer, self.config)
+        self.set_error_bars_level(error_bars_level)
+        self.set_save_all_evals(save_all_evals)
 
     def WriteConfig(self):
         ''' WriteConfig(self) --> None
         
         Writes the current configuration of the solver to file.
         '''
-        
-        # Define all the options we want to set
-        options_float = ['km', 'kr', 'pop mult', 'pop size',\
-                         'max generations', 'max generation mult',\
-                         'sleep time', 'max log elements','errorbar level',\
-                         'autosave interval',\
-                        'parallel processes', 'parallel chunksize', 
-                         'allowed fom discrepancy']
-        set_float = [self.optimizer.km, self.optimizer.kr,
-                          self.optimizer.pop_mult,\
-                          self.optimizer.pop_size,\
-                         self.optimizer.max_generations,\
-                         self.optimizer.max_generation_mult,\
-                         self.optimizer.sleep_time,\
-                        self.optimizer.max_log, \
-                        self.fom_error_bars_level,\
-                         self.optimizer.autosave_interval,\
-                        self.optimizer.processes,\
-                        self.optimizer.chunksize,\
-                      self.optimizer.fom_allowed_dis
-                     ]
-
-        options_bool = ['use pop mult', 'use max generations',
-                        'use start guess', 'use boundaries', 
-                        'use parallel processing', 'use autosave',
-                        'save all evals',
-                        ]
-        set_bool = [ self.optimizer.use_pop_mult,
-                     self.optimizer.use_max_generations,
-                     self.optimizer.use_start_guess,
-                     self.optimizer.use_boundaries,
-                     self.optimizer.use_parallel_processing,
-                     self.optimizer.use_autosave,
-                     self.save_all_evals,
-                     ]
-        
-        # Make sure that the config is set
-        if self.config:
-            # Start witht the float values
-            for index in range(len(options_float)):
-                try:
-                    val = self.config.set('solver', options_float[index],\
-                            set_float[index])
-                except io.OptionError, e:
-                    print 'Could not locate save solver.' +\
-                            options_float[index]
-            
-            # Then the bool flags
-            for index in range(len(options_bool)):
-                try:
-                    val = self.config.set('solver',\
-                            options_bool[index], set_bool[index])
-                except io.OptionError, e:
-                    print 'Could not write option solver.' +\
-                            options_bool[index]
-        
-            try:
-                self.config.set('solver', 'create trial',\
-                    self.optimizer.get_create_trial())
-            except io.OptionError, e:
-                print 'Could not write option solver.create trial'
+        io.save_opt_config(self.optimizer, self.config, self.fom_error_bars_level, self.save_all_evals)
                 
     def ParametersDialog(self, frame):
         '''ParametersDialog(self, frame) --> None
