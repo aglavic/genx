@@ -119,7 +119,7 @@ def save_opt_config(optimizer, config, fom_error_bars_level=1.05, save_all_evals
     # Define all the options we want to set
     options_float = ['km', 'kr', 'pop mult', 'pop size',\
                      'max generations', 'max generation mult',\
-                     'sleep time', 'max log elements','errorbar level',\
+                     'sleep time', 'max log elements', 'errorbar level',\
                      'autosave interval',\
                      'parallel processes', 'parallel chunksize',
                      'allowed fom discrepancy']

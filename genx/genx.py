@@ -85,6 +85,19 @@ def start_interactive(args):
       app = genx_gui.MyApp(True, 0)
       app.MainLoop()
 
+
+def calc_errorbars(config, mod, opt):
+    error_values = []
+    fom_error_bars_level = config.get_float('solver', 'errorbar level')
+    n_elements = len(opt.start_guess)
+    for index in range(n_elements):
+        # calculate the error
+        # TODO: Check the error bar buisness again and how to treat Chi2
+        (error_low, error_high) = opt.calc_error_bar(index, fom_error_bars_level)
+        error_values.append('(%.3e, %.3e,)' % (error_low, error_high))
+    mod.parameters.set_error_pars(error_values)
+
+
 def start_fitting(args):
     """ Function to start fitting from the command line.
 
@@ -113,13 +126,15 @@ def start_fitting(args):
     io.load_gx(args.infile, mod, opt, config)
     io.load_opt_config(opt, config)
     # has to be used in order to save everything....
-    #config.set('solver', 'save all evals', True)
+    if args.esave:
+        config.set('solver', 'save all evals', True)
     # Simulate, this will also compile the model script
     print 'Simulating model...'
     mod.simulate()
 
     # Sets up the fitting ...
     print 'Setting up the optimizer...'
+    set_optimiser_pars(opt, args)
     opt.reset()
     opt.init_fitting(mod)
     opt.init_fom_eval()
@@ -140,10 +155,42 @@ def start_fitting(args):
     mod.parameters.set_value_pars(opt.best_vec)
 
     if args.outfile:
+        if args.error:
+            print 'Calculating errorbars'
+            calc_errorbars(config, mod, opt)
         print 'Saving the fit to %s'%args.outfile
         io.save_gx(args.outfile, mod, opt, config)
 
     print 'Fitting successfully completed'
+
+
+def set_optimiser_pars(optimiser, args):
+    """ Sets the optimiser parameters from args
+    """
+    if args.pr:
+        optimiser.set_processes(args.proc)
+        optimiser.use_parallel_processing(True)
+
+    if args.cs:
+        optimiser.set_chunksize(args.csize)
+
+    if args.mgen:
+        optimiser.set_max_generations(args.mgen)
+        optimiser.set_use_max_generations(True)
+
+    if args.pops:
+        optimiser.set_pop_size(args.pops)
+        optimiser.set_use_pop_mult(False)
+
+    if args.asi:
+        optimiser.set_autosave_interval(args.asi)
+        optimiser.use_autosave(True)
+
+    if args.km >= 0:
+        optimiser.set_km(args.km)
+
+    if args.kr >= 0:
+        optimiser.set_kr(args.kr)
 
 if __name__ == "__main__":
     # Check if the application has been frozen
@@ -169,6 +216,18 @@ if __name__ == "__main__":
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument('-r', '--run', action='store_true', help='run GenX fit (no gui)')
     run_group.add_argument('--mpi', action='store_true', help='run GenX fit with mpi (no gui)')
+    opt_group = parser.add_argument_group('optimization arguments')
+    opt_group.add_argument('--pr', type=int, default=0, help='Number of processes used in parallel fitting.')
+    opt_group.add_argument('--cs', type=int, default=0, help='Chunk size used for parallel processing.')
+    opt_group.add_argument('--mgen', type=int, default=0, help='Maximum number of generations that is used in a fit')
+    opt_group.add_argument('--pops', type=int, default=0, help='Population size - number of individuals.')
+    opt_group.add_argument('--asi', type=int, default=0, help='Auto save interval (generations).')
+    opt_group.add_argument('--km', type=float, default=-1, help='Mutation constant (float 0 < km < 1)')
+    opt_group.add_argument('--kr', type=float, default=-1, help='Cross over constant (float 0 < kr < 1)')
+    opt_group.add_argument('-s', '--esave', action='store_true', help='Force save evals to gx file.')
+    opt_group.add_argument('-e', '--error', action='store_true', help='Calculate error bars before saving to file.')
+
+
     parser.add_argument('infile', nargs='?', default='', help='The .gx file to load')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx file to save into')
 
