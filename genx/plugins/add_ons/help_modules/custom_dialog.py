@@ -483,7 +483,7 @@ class ValidateBaseDialog(wx.Dialog):
             label = wx.StaticText(parent, -1, par + ': ')
             validator = self.validators[par]#.Clone()
             val = vals[par]
-            editable = False
+            editable = True
             if par in editable_pars:
                 editable = editable_pars[par]
 
