@@ -527,7 +527,8 @@ def SLD_calculations(z, item, sample, inst):
         #dic = {'Re sld +': real(rho_p), 'Im sld +': imag(rho_p),\
         #        'Re sld -': real(rho_m), 'Im sld -': imag(rho_m), 'z':z,
         #        'SLD unit': sld_unit}
-        dic = {'Re non-mag': real(rho_p), 'Im non-mag': imag(rho_p),\
+        rho_nucl = (rho_p + rho_m)/2.
+        dic = {'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),\
                 'mag': real(rho_p - rho_m)/2, 'z':z,
                 'SLD unit': sld_unit}
     if item == None or item == 'all':
