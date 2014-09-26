@@ -98,7 +98,7 @@ def calc_errorbars(config, mod, opt):
     mod.parameters.set_error_pars(error_values)
 
 
-def start_fitting(args):
+def start_fitting(args, rank=0):
     """ Function to start fitting from the command line.
 
     :param args:
@@ -114,65 +114,79 @@ def start_fitting(args):
     config.load_default(os.path.split(os.path.abspath(__file__))[0] + 'genx.conf')
     opt = diffev.DiffEv()
 
-    def autosave():
-        #print 'Updating the parameters'
-        mod.parameters.set_value_pars(opt.best_vec)
-        if args.outfile:
-            io.save_gx(args.outfile, mod, opt, config)
+    if rank == 0:
+        def autosave():
+            #print 'Updating the parameters'
+            mod.parameters.set_value_pars(opt.best_vec)
+            if args.outfile:
+                io.save_gx(args.outfile, mod, opt, config)
 
-    opt.set_autosave_func(autosave)
+        opt.set_autosave_func(autosave)
 
-    print 'Loading model %s...'%args.infile
+    if rank == 0:
+        print 'Loading model %s...'%args.infile
     io.load_gx(args.infile, mod, opt, config)
     io.load_opt_config(opt, config)
     # has to be used in order to save everything....
     if args.esave:
         config.set('solver', 'save all evals', True)
     # Simulate, this will also compile the model script
-    print 'Simulating model...'
+    if rank == 0:
+        print 'Simulating model...'
     mod.simulate()
 
     # Sets up the fitting ...
-    print 'Setting up the optimizer...'
+    if rank == 0:
+        print 'Setting up the optimizer...'
     set_optimiser_pars(opt, args)
     opt.reset()
     opt.init_fitting(mod)
     opt.init_fom_eval()
+    opt.set_sleep_time(0.0)
 
-    if args.outfile:
+    if args.outfile and rank == 0:
         print 'Saving the initial model to %s'%args.outfile
         io.save_gx(args.outfile, mod, opt, config)
 
     # To start the fitting
-    print 'Fitting starting...'
-    t1 = time.time()
+    if rank == 0:
+        print 'Fitting starting...'
+        t1 = time.time()
+    #print opt.use_mpi, opt.use_parallel_processing
     opt.optimize()
-    t2 = time.time()
-    print 'Fitting finished!'
-    print 'Time to fit: ', (t2-t1)/60., ' min'
+    if rank == 0:
+        t2 = time.time()
+        print 'Fitting finished!'
+        print 'Time to fit: ', (t2-t1)/60., ' min'
 
-    print 'Updating the parameters'
-    mod.parameters.set_value_pars(opt.best_vec)
+    if rank == 0:
+        print 'Updating the parameters'
+        mod.parameters.set_value_pars(opt.best_vec)
 
-    if args.outfile:
+    if args.outfile and rank == 0:
         if args.error:
             print 'Calculating errorbars'
             calc_errorbars(config, mod, opt)
         print 'Saving the fit to %s'%args.outfile
+        opt.set_use_mpi(False)
         io.save_gx(args.outfile, mod, opt, config)
 
-    print 'Fitting successfully completed'
+    if rank == 0:
+        print 'Fitting successfully completed'
 
 
 def set_optimiser_pars(optimiser, args):
     """ Sets the optimiser parameters from args
     """
     if args.pr:
-        optimiser.set_processes(args.proc)
-        optimiser.use_parallel_processing(True)
+        optimiser.set_processes(args.pr)
+        optimiser.set_use_parallel_processing(True)
+
+    if args.mpi:
+        optimiser.set_use_mpi(True)
 
     if args.cs:
-        optimiser.set_chunksize(args.csize)
+        optimiser.set_chunksize(args.cs)
 
     if args.mgen:
         optimiser.set_max_generations(args.mgen)
@@ -184,13 +198,17 @@ def set_optimiser_pars(optimiser, args):
 
     if args.asi:
         optimiser.set_autosave_interval(args.asi)
-        optimiser.use_autosave(True)
+        optimiser.set_use_autosave(True)
 
     if args.km >= 0:
         optimiser.set_km(args.km)
+    else:
+        print "km not set has to be bigger than 0"
 
     if args.kr >= 0:
         optimiser.set_kr(args.kr)
+    else:
+        print "kr not set has to be bigger than 0"
 
 if __name__ == "__main__":
     # Check if the application has been frozen
@@ -207,15 +225,27 @@ if __name__ == "__main__":
     
     # py2exe multiprocessing support
     try:
-      from multiprocessing import freeze_support
-      freeze_support()
+        from multiprocessing import freeze_support
+        freeze_support()
     except ImportError:
-      pass
+        pass
+
+    # Attempt to load mpi:
+    __mpi__ = False
+    try:
+        from mpi4py import MPI
+    except ImportError:
+        pass
+    else:
+        __mpi__ = True
+        rank = MPI.COMM_WORLD.Get_rank()
+
 
     parser = argparse.ArgumentParser(prog='genx')
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument('-r', '--run', action='store_true', help='run GenX fit (no gui)')
-    run_group.add_argument('--mpi', action='store_true', help='run GenX fit with mpi (no gui)')
+    if __mpi__:
+        run_group.add_argument('--mpi', action='store_true', help='run GenX fit with mpi (no gui)')
     opt_group = parser.add_argument_group('optimization arguments')
     opt_group.add_argument('--pr', type=int, default=0, help='Number of processes used in parallel fitting.')
     opt_group.add_argument('--cs', type=int, default=0, help='Chunk size used for parallel processing.')
@@ -232,9 +262,13 @@ if __name__ == "__main__":
     parser.add_argument('outfile', nargs='?', default='', help='The .gx file to save into')
 
     args = parser.parse_args()
+    if not __mpi__:
+        args.mpi = False
 
     if args.run:
         start_fitting(args)
+    elif args.mpi:
+        start_fitting(args, rank)
     elif not args.run and not args.mpi:
         start_interactive(args)
 

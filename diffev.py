@@ -11,6 +11,7 @@ import random as random_mod
 import sys, os, pickle
 
 
+__mpi_loaded__ = False
 __parallel_loaded__ = False
 _cpu_count = 1
 
@@ -26,9 +27,19 @@ except:
     except:
         #print 'processing not installed no parallel processing possible'
         pass
-    
 
-import model
+
+try:
+    from mpi4py import MPI as mpi
+except ImportError:
+    rank = 0
+else:
+    __mpi_loaded__ = True
+    comm = mpi.COMM_WORLD
+    size = comm.Get_size()
+    rank = comm.Get_rank()
+
+import model as mmodel
 
 from lib.Simplex import Simplex
 
@@ -46,13 +57,13 @@ class DiffEv:
     function.
     '''
     def __init__(self):
-        
+
         # Mutation schemes implemented
         self.mutation_schemes = [self.best_1_bin, self.rand_1_bin,\
             self.best_either_or, self.rand_either_or, self.jade_best, self.simplex_best_1_bin]
-            
-        self.model = model.Model()
-        
+
+        self.model = mmodel.Model()
+
         self.km = 0.7 # Mutation constant
         self.kr = 0.7 # Cross over constant
         self.pf = 0.5 # probablility for mutation
@@ -66,17 +77,17 @@ class DiffEv:
         self.use_pop_mult = False
         self.pop_mult = 3 # Set the pop_size to pop_mult * # free parameters
         self.pop_size = 10 # Set the pop_size only
-        
+
         # Flag to choose between the two alternatives below
-        self.use_max_generations = False 
+        self.use_max_generations = False
         self.max_generations = 500 # Use a fixed # of iterations
         self.max_generation_mult = 6 # A mult const for max number of iter
-        
+
         # Flag to choose whether or not to use a starting guess
         self.use_start_guess = True
         # Flag to choose wheter or not to use the boundaries
         self.use_boundaries = True
-        
+
         # Sleeping time for every generation
         self.sleep_time = 0.2
         # Allowed disagreement between the two different fom
@@ -88,41 +99,46 @@ class DiffEv:
             self.processes = _cpu_count
         else:
             self.processes = 0
+
         self.chunksize = 1
+
+        # Flag for using mpi
+        self.use_mpi = False
+
         # Flag for using autosave
         self.use_autosave = True
         # autosave interval in generations        
         self.autosave_interval = 10
-        
+
         # Functions that are user definable
         self.plot_output = default_plot_output
         self.text_output = default_text_output
         self.parameter_output = default_parameter_output
         self.autosave = defualt_autosave
         self.fitting_ended = default_fitting_ended
-        
-        
+
+
         # Definition for the create_trial function
         self.create_trial = self.best_1_bin
         self.update_pop = self.standard_update_pop
         self.init_new_generation = self.standard_init_new_generation
-        
+
         # Control flags:
         self.running = False # true if optimization is running
         self.stop = False # true if the optimization should stop
         self.setup_ok = False # True if the optimization have been setup
         self.error = False # True/string if an error ahs occured
-        
+
         # Logging variables
         # Maximum number of logged elements
         self.max_log = 100000
         self.fom_log = array([[0,0]])[0:0]
         #self.par_evals = array([[]])[0:0]
-        
+
         self.par_evals = CircBuffer(self.max_log, buffer = array([[]])[0:0])
         #self.fom_evals = array([])
         self.fom_evals = CircBuffer(self.max_log)
-    
+
     def safe_copy(self, object):
         '''safe_copy(self, object) --> None
         
@@ -132,22 +148,22 @@ class DiffEv:
         self.km = object.km # Mutation constant
         self.kr = object.kr # Cross over constant
         self.pf = object.pf # probablility for mutation
-        
+
         # Flag to choose beween the two alternatives below
         self.use_pop_mult = object.use_pop_mult
         self.pop_mult = object.pop_mult
-        self.pop_size = object.pop_size 
-        
+        self.pop_size = object.pop_size
+
         # Flag to choose between the two alternatives below
-        self.use_max_generations = object.use_max_generations  
+        self.use_max_generations = object.use_max_generations
         self.max_generations = object.max_generations
         self.max_generation_mult = object.max_generation_mult
-        
+
         # Flag to choose whether or not to use a starting guess
         self.use_start_guess = object.use_start_guess
         # Flag to choose wheter or not to use the boundaries
         self.use_boundaries = object.use_boundaries
-        
+
         # Sleeping time for every generation
         self.sleep_time = object.sleep_time
         # Flag if we should use parallel processing 
@@ -155,30 +171,39 @@ class DiffEv:
             self.use_parallel_processing = object.use_parallel_processing
         else:
             self.use_parallel_processing = False
-        
+
+        # Flag if we should use mpi
+        if __mpi_loaded__:
+            try:
+                self.use_mpi = object.use_mpi
+            except AttributeError:
+                self.use_mpi = False
+        else:
+            self.use_mpi = False
+
         # Definition for the create_trial function
         #self.create_trial = object.create_trial
-        
+
         # True if the optimization have been setup
-        self.setup_ok = object.setup_ok 
-        
+        self.setup_ok = object.setup_ok
+
         # Logging variables
         self.fom_log = object.fom_log[:]
         self.par_evals.copy_from(object.par_evals)
         self.fom_evals.copy_from(object.fom_evals)
-        
+
         if self.setup_ok:
             self.n_pop = object.n_pop
             self.max_gen = object.max_gen
-        
+
             # Starting values setup
             self.pop_vec = object.pop_vec
-            
+
             self.start_guess = object.start_guess
-            
+
             self.trial_vec = object.trial_vec
             self.best_vec = object.best_vec
-            
+
             self.fom_vec = object.fom_vec
             self.best_fom = object.best_fom
             # Not all implementaions has these copied within their files
@@ -189,7 +214,7 @@ class DiffEv:
                 self.par_max = object.par_max
             except:
                 pass
-            
+
     def pickle_string(self, clear_evals = False):
         '''Pickle the object.
 
@@ -212,17 +237,17 @@ class DiffEv:
         cpy.fitting_ended = None
         cpy.model = None
         cpy.mutation_schemes = None
-        
+
         return pickle.dumps(cpy)
-    
+
     def pickle_load(self, pickled_string):
         '''load_pickles(self, pickled_string) --> None
         
         Loads the pickled string into the this object. See pickle_string.
         '''
         self.safe_copy(pickle.loads(pickled_string))
-        
-        
+
+
     def reset(self):
         ''' reset(self) --> None
         
@@ -230,7 +255,7 @@ class DiffEv:
         be restarted.
         '''
         self.setup_ok = False
-    
+
     def connect_model(self, model):
         '''connect_model(self, model) --> None
         
@@ -239,7 +264,7 @@ class DiffEv:
         '''
         # Retrive parameters from the model
         (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars()
-        
+
         # Control parameter setup
         self.par_min = array(par_min)
         self.par_max = array(par_max)
@@ -248,7 +273,7 @@ class DiffEv:
         self.n_dim = len(par_funcs)
         if not self.setup_ok:
             self.start_guess = start_guess
-    
+
     def init_fitting(self, model):
         '''
         Function to run before a new fit is started with start_fit.
@@ -264,24 +289,24 @@ class DiffEv:
             self.max_gen = int(self.max_generations)
         else:
             self.max_gen = int(self.max_generation_mult*self.n_dim*self.n_pop)
-        
+
         # Starting values setup
         self.pop_vec = [self.par_min + random.rand(self.n_dim)*(self.par_max -\
          self.par_min) for i in range(self.n_pop)]
-        
+
         if self.use_start_guess:
             self.pop_vec[0] = array(self.start_guess)
-            
+
         self.trial_vec = [zeros(self.n_dim) for i in range(self.n_pop)]
         self.best_vec = self.pop_vec[0]
-        
+
         self.fom_vec = zeros(self.n_dim)
         self.best_fom = 1e20
-        
+
         # Storage area for JADE archives
         self.km_vec = ones(self.n_dim)*self.km
         self.kr_vec = ones(self.n_dim)*self.kr
-        
+
 
         # Logging varaibles
         self.fom_log = array([[0,1]])[0:0]
@@ -293,12 +318,13 @@ class DiffEv:
         self.n_fom = 0
         #self.par_evals.reset(array([self.par_min])[0:0])
         #self.fom_evals.reset()
-        
-        self.text_output('DE initilized')
-        
+
+        if rank == 0:
+            self.text_output('DE initilized')
+
         # Remeber that everything has been setup ok
         self.setup_ok = True
-        
+
     def init_fom_eval(self):
         '''init_fom_eval(self) --> None
         
@@ -309,9 +335,12 @@ class DiffEv:
             self.text_output('Setting up a pool of workers ...')
             self.setup_parallel()
             self.eval_fom = self.calc_trial_fom_parallel
+        elif self.use_mpi and __mpi_loaded__:
+            self.setup_parallel_mpi()
+            self.eval_fom = self.calc_trial_fom_parallel_mpi
         else:
             self.eval_fom = self.calc_trial_fom
-        
+
     def start_fit(self, model):
         '''
         Starts fitting in a seperate thred.
@@ -333,7 +362,7 @@ class DiffEv:
         else:
             self.text_output('Fit is already running, stop and then start')
             return False
-        
+
     def stop_fit(self):
         '''
         Stops the fit if it has been started in a seperate theres 
@@ -345,7 +374,7 @@ class DiffEv:
             self.text_output('Trying to stop the fit...')
         else:
             self.text_output('The fit is not running')
-        
+
     def resume_fit(self, model):
         '''
         Resumes the fitting if has been stopped with stop_fit.
@@ -367,14 +396,26 @@ class DiffEv:
         else:
             self.text_output('Fit is already running, stop and then start')
             return False
-        
+
+
     def optimize(self):
+        """Method that does the optimization.
+
+        Note that this method does not run in a separate thread.
+        For threading use start_fit, stop_fit and resume_fit instead.
+        """
+        if self.use_mpi:
+            self.optimize_mpi()
+        else:
+            self.optimize_standard()
+
+    def optimize_standard(self):
         '''
         Method implementing the main loop of the differential evolution
         algorithm. Note that this method does not run in a separate thread.
         For threading use start_fit, stop_fit and resume_fit instead.
         '''
-            
+
         self.text_output('Calculating start FOM ...')
         self.running = True
         self.error = False
@@ -401,42 +442,42 @@ class DiffEv:
         # Flag to keep track if there has been any improvemnts
         # in the fit - used for updates
         self.new_best = True
-        
+
         self.text_output('Going into optimization ...')
-        
+
         # Update the plot data for any gui or other output
         self.plot_output(self)
         self.parameter_output(self)
-        
+
         # Just making gen live in this scope as well...
-        gen = self.fom_log[-1,0] 
+        gen = self.fom_log[-1,0]
         for gen in range(int(self.fom_log[-1,0]) + 1, self.max_gen\
                                 + int(self.fom_log[-1,0]) + 1):
             if self.stop:
                 break
-            
+
             t_start = time.time()
-            
+
             self.init_new_generation(gen)
-            
+
             # Create the vectors who will be compared to the 
             # population vectors
             [self.create_trial(index) for index in range(self.n_pop)]
             self.eval_fom()
             # Calculate the fom of the trial vectors and update the population
             [self.update_pop(index) for index in range(self.n_pop)]
-            
+
             # Add the evaluation to the logging
             #self.par_evals = append(self.par_evals, self.trial_vec, axis = 0)
             [self.par_evals.append(vec, axis = 0)\
                     for vec in self.trial_vec]
             #self.fom_evals = append(self.fom_evals, self.trial_fom)
             [self.fom_evals.append(vec) for vec in self.trial_fom]
-            
+
             # Add the best value to the fom log
             self.fom_log = r_[self.fom_log,\
                                 [[len(self.fom_log),self.best_fom]]]
-            
+
             # Let the model calculate the simulation of the best.
             sim_fom = self.calc_sim(self.best_vec)
 
@@ -450,14 +491,14 @@ class DiffEv:
                               'model for circular assignments.'
                               %self.fom_allowed_dis)
                 break
-            
+
             # Update the plot data for any gui or other output
             self.plot_output(self)
             self.parameter_output(self)
-            
+
             # Let the optimization sleep for a while
             time.sleep(self.sleep_time)
-            
+
             # Time measurent to track the speed
             t = time.time() - t_start
             if t > 0:
@@ -466,45 +507,180 @@ class DiffEv:
                 speed = 999999
             self.text_output('FOM: %.3f Generation: %d Speed: %.1f'%\
                                 (self.best_fom, gen, speed))
-            
+
             self.new_best = False
             # Do an autosave if activated and the interval is coorect
             if gen%self.autosave_interval == 0 and self.use_autosave:
                 self.autosave()
 
         if not self.error:
-            self.text_output('Stopped at Generation: %d after %d fom evaluations...'%(gen, self.n_fom))
-        
+            self.text_output('Stopped at Generation: %d after %d fom evaluations...'%(gen, gen*self.n_pop))
+
         # Lets clean up and delete our pool of workers
         if self.use_parallel_processing:
             self.dismount_parallel()
         self.eval_fom = None
-        
+
         # Now the optimization has stopped
         self.running = False
-        
+
         # Run application specific clean-up actions
         self.fitting_ended(self)
-        
-            
+
+    def optimize_mpi(self):
+        '''
+        Method implementing the main loop of the differential evolution
+        algorithm using mpi. This should only be used from the command line.
+        The gui can not handle to use mpi.
+        '''
+
+        if rank == 0:
+            self.text_output('Calculating start FOM ...')
+        self.running = True
+        self.error = False
+        self.n_fom = 0
+        # Old leftovers before going parallel
+        self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
+        [self.par_evals.append(vec, axis = 0)\
+                    for vec in self.pop_vec]
+        [self.fom_evals.append(vec) for vec in self.fom_vec]
+        #print self.fom_vec
+        best_index = argmin(self.fom_vec)
+        #print self.fom_vec
+        #print best_index
+        self.best_vec = copy(self.pop_vec[best_index])
+        #print self.best_vec
+        self.best_fom = self.fom_vec[best_index]
+        #print self.best_fom
+        if len(self.fom_log) == 0:
+            self.fom_log = r_[self.fom_log,\
+                                [[len(self.fom_log),self.best_fom]]]
+        # Flag to keep track if there has been any improvemnts
+        # in the fit - used for updates
+        self.new_best = True
+
+        if rank == 0:
+            self.text_output('Going into optimization ...')
+
+        # Update the plot data for any gui or other output
+        self.plot_output(self)
+        self.parameter_output(self)
+
+        # Just making gen live in this scope as well...
+        gen = self.fom_log[-1,0]
+        for gen in range(int(self.fom_log[-1,0]) + 1, self.max_gen\
+                                + int(self.fom_log[-1, 0]) + 1):
+            if self.stop:
+                break
+            if rank==0:
+                t_start = time.time()
+
+            self.init_new_generation(gen)
+
+            # Create the vectors who will be compared to the
+            # population vectors
+            if rank==0:
+                [self.create_trial(index) for index in range(self.n_pop)]
+                tmp_trial_vec = self.trial_vec
+            else:
+                tmp_trial_vec = 0
+            tmp_trial_vec = comm.bcast(tmp_trial_vec, root=0)
+            self.trial_vec = tmp_trial_vec
+            self.eval_fom()
+            tmp_fom = self.trial_fom
+            comm.Barrier()
+
+            #collect foms and reshape them and set the completed tmp_fom to trial_fom
+            tmp_fom = comm.gather(tmp_fom, root=0)
+            if rank == 0:
+                tmp_fom_list = []
+                for i in list(tmp_fom):
+                    tmp_fom_list = tmp_fom_list + i
+                tmp_fom = tmp_fom_list
+
+            tmp_fom=comm.bcast(tmp_fom, root=0)
+            self.trial_fom = array(tmp_fom).reshape(self.n_pop,)
+
+            [self.update_pop(index) for index in range(self.n_pop)]
+
+            # Calculate the fom of the trial vectors and update the population
+            if rank == 0:
+                # Add the evaluation to the logging
+                [self.par_evals.append(vec, axis=0) for vec in self.trial_vec]
+                [self.fom_evals.append(vec) for vec in self.trial_fom]
+
+                # Add the best value to the fom log
+                self.fom_log = r_[self.fom_log, [[len(self.fom_log),self.best_fom]]]
+
+                # Let the model calculate the simulation of the best.
+                sim_fom = self.calc_sim(self.best_vec)
+
+                # Sanity of the model does the simualtions fom agree with
+                # the best fom
+                if abs(sim_fom - self.best_fom) > self.fom_allowed_dis and rank == 0:
+                    self.text_output('Disagrement between two different fom'
+                                     ' evaluations')
+                    self.error = ('The disagreement between two subsequent '
+                                  'evaluations is larger than %s. Check the '
+                                  'model for circular assignments.'
+                                  % self.fom_allowed_dis)
+                    break
+
+                # Update the plot data for any gui or other output
+                self.plot_output(self)
+                self.parameter_output(self)
+
+                # Let the optimization sleep for a while
+                time.sleep(self.sleep_time)
+
+                # Time measurent to track the speed
+                t = time.time() - t_start
+                if t > 0:
+                    speed = self.n_pop/t
+                else:
+                    speed = 999999
+                if rank==0:
+                    self.text_output('FOM: %.3f Generation: %d Speed: %.1f'%
+                                     (self.best_fom, gen, speed))
+
+                self.new_best = False
+                # Do an autosave if activated and the interval is coorect
+                if gen%self.autosave_interval == 0 and self.use_autosave:
+                    self.autosave()
+
+        if rank==0:
+            if not self.error:
+                self.text_output('Stopped at Generation: %d after %d fom evaluations...'%(gen, gen*self.n_pop))
+
+        # Lets clean up and delete our pool of workers
+
+        self.eval_fom = None
+
+        # Now the optimization has stopped
+        self.running = False
+
+        # Run application specific clean-up actions
+        self.fitting_ended(self)
+
+
     def calc_fom(self, vec):
         '''
         Function to calcuate the figure of merit for parameter vector 
         vec.
         '''
-        
+
         # Set the parameter values
         map(lambda func, value:func(value), self.par_funcs, vec)
         fom = self.model.evaluate_fit_func()
         self.n_fom += 1
-        return fom 
-    
+        return fom
+
     def calc_trial_fom(self):
         '''
         Function to calculate the fom values for the trial vectors
         '''
         self.trial_fom = [self.calc_fom(vec) for vec in self.trial_vec]
-    
+
     def calc_sim(self, vec):
         ''' calc_sim(self, vec) --> None
         Function that will evaluate the the data points for
@@ -512,10 +688,10 @@ class DiffEv:
         '''
         # Set the paraemter values
         map(lambda func, value:func(value), self.par_funcs, vec)
-        
+
         self.model.evaluate_sim_func()
         return self.model.fom
-        
+
     def setup_parallel(self):
         '''setup_parallel(self) --> None
         
@@ -528,24 +704,53 @@ class DiffEv:
         self.text_output("Starting a pool with %i workers ..."%(self.processes, ))
         time.sleep(1.0)
         #print "Starting a pool with ", self.processes, " workers ..."
-        
+
+    def setup_parallel_mpi(self):
+        """Inits the number or process used for mpi.
+        """
+
+        if rank==0:
+            self.text_output("Inits mpi with %i processes ..." % (size, ))
+        parallel_init(self.model.pickable_copy())
+        time.sleep(0.1)
+
+
     def dismount_parallel(self):
         ''' dismount_parallel(self) --> None
         Used to close the pool and all its processes
         '''
         self.pool.close()
         self.pool.join()
-        
+
         #del self.pool
-    
+
     def calc_trial_fom_parallel(self):
         '''calc_trial_fom_parallel(self) --> None
         
         Function to calculate the fom in parallel using the pool
         '''
-        self.trial_fom = self.pool.map(parallel_calc_fom, self.trial_vec,\
-                        chunksize = self.chunksize)
-    
+        self.trial_fom = self.pool.map(parallel_calc_fom, self.trial_vec, chunksize=self.chunksize)
+
+    def calc_trial_fom_parallel_mpi(self):
+        """ Function to calculate the fom in parallel using mpi
+        """
+        step_len = int(len(self.trial_vec)/size)
+        remainder = int(len(self.trial_vec) % size)
+        left, right = 0, 0
+
+        if rank <= remainder - 1:
+            left = rank*(step_len + 1)
+            right = (rank + 1)*(step_len + 1) - 1
+        elif rank > remainder-1:
+            left = remainder*(step_len+1) + (rank - remainder)*step_len
+            right = remainder*(step_len+1) + (rank - remainder+1)*step_len-1
+        fom_temp=[]
+
+        for i in range(left, right+1):
+            fom_temp.append(parallel_calc_fom(self.trial_vec[i]))
+
+        self.trial_fom = fom_temp
+
     def calc_error_bar(self, index, fom_level):
         '''calc_error_bar(self, parameter) --> (error_bar_low, error_bar_high)
         
@@ -557,7 +762,7 @@ class DiffEv:
         #print self.par_evals.shape, self.par_evals
         #print self.fom_evals.shape, self.fom_evals
         if self.setup_ok: #and len(self.par_evals) != 0:
-            par_values = self.par_evals[:,index]        
+            par_values = self.par_evals[:,index]
             #print (self.fom_evals < fom_level).sum()
             values_under_level = compress(self.fom_evals[:] <\
                                     fom_level*self.best_fom, par_values)
@@ -567,16 +772,16 @@ class DiffEv:
             return (error_bar_low, error_bar_high)
         else:
             raise ErrorBarsError()
-    
+
     def init_new_generation(self, gen):
         ''' Function that is called every time a new generation starts'''
         pass
-    
+
     def standard_init_new_generation(self, gen):
         ''' Function that is called every time a new generation starts'''
         pass
-    
-    
+
+
     def standard_update_pop(self, index):
         '''
         Function to update population vector index. calcs the figure of merit
@@ -592,8 +797,8 @@ class DiffEv:
                 self.new_best = True
                 self.best_vec = self.trial_vec[index].copy()
                 self.best_fom = fom
-                
-    def simplex_old_init_new_generation(self, gen):         
+
+    def simplex_old_init_new_generation(self, gen):
         '''It will run the simplex method every simplex_interval
              generation with a fracitonal step given by simple_step 
              on the best indivual as well a random fraction of simplex_n individuals.
@@ -605,14 +810,14 @@ class DiffEv:
             print 'Starting simplex run for best vec'
             new_vec, err, iter = simp.minimize(epsilon = self.best_fom/self.simplex_rel_epsilon, maxiters = self.simplex_max_iter)
             print 'FOM improvement: ', self.best_fom - err
-            
+
             if self.use_boundaries:
                 # Check so that the parameters lie indside the bounds
                 ok = bitwise_and(self.par_max > new_vec, self.par_min < new_vec)
                 # If not inside make a random re-initilazation of that parameter
                 new_vec = where(ok, new_vec, random.rand(self.n_dim)*\
                               (self.par_max - self.par_min) + self.par_min)
-                
+
             new_fom = self.calc_fom(new_vec)
             if new_fom < self.best_fom:
                 self.best_fom = new_fom
@@ -620,9 +825,9 @@ class DiffEv:
                 self.pop_vec[0] = new_vec
                 self.fom_vec[0] = self.best_fom
                 self.new_best = True
-            
+
             # Apply the simplex to a simplex_n memebers (0-1)
-            for index1 in random_mod.sample(xrange(len(self.pop_vec)), 
+            for index1 in random_mod.sample(xrange(len(self.pop_vec)),
                                    int(len(self.pop_vec)*self.simplex_n)):
                 print 'Starting simplex run for member: ', index1
                 mem = self.pop_vec[index1]
@@ -635,7 +840,7 @@ class DiffEv:
                     # If not inside make a random re-initilazation of that parameter
                     new_vec = where(ok, new_vec, random.rand(self.n_dim)*\
                                     (self.par_max - self.par_min) + self.par_min)
-                
+
                 new_fom = self.calc_fom(new_vec)
                 if new_fom < mem_fom:
                     self.pop_vec[index1] = new_vec
@@ -644,8 +849,8 @@ class DiffEv:
                         self.best_fom = new_fom
                         self.best_vec = new_vec
                         self.new_best = True
-                        
-    def simplex_init_new_generation(self, gen):         
+
+    def simplex_init_new_generation(self, gen):
         '''It will run the simplex method every simplex_interval
              generation with a fracitonal step given by simple_step 
              on the simplex_n*n_pop best individuals.
@@ -653,7 +858,7 @@ class DiffEv:
         print 'Inits new generation'
         if gen%self.simplex_interval == 0:
             spread = array(self.trial_vec).max(0) - array(self.trial_vec).min(0)
-            
+
             indices = argsort(self.fom_vec)
             n_ind = int(self.n_pop*self.simplex_n)
             if n_ind == 0:
@@ -671,7 +876,7 @@ class DiffEv:
                     # If not inside make a random re-initilazation of that parameter
                     new_vec = where(ok, new_vec, random.rand(self.n_dim)*\
                                     (self.par_max - self.par_min) + self.par_min)
-                
+
                 new_fom = self.calc_fom(new_vec)
                 if new_fom < mem_fom:
                     self.pop_vec[index1] = new_vec.copy()
@@ -680,11 +885,11 @@ class DiffEv:
                         self.best_fom = new_fom
                         self.best_vec = new_vec.copy()
                         self.new_best = True
-            
+
     def simplex_best_1_bin(self, index):
         return self.best_1_bin(index)
-            
-            
+
+
     def jade_update_pop(self, index):
         ''' A modified update pop to handle the JADE variation of Differential evoluion'''
         fom = self.trial_fom[index]
@@ -697,8 +902,8 @@ class DiffEv:
                 self.new_best = True
                 self.best_vec = self.trial_vec[index].copy()
                 self.best_fom = fom
-    
-    
+
+
     def jade_init_new_generation(self, gen):
         ''' A modified generation update for jade'''
         #print 'inits generation: ', gen, self.n_pop
@@ -717,11 +922,11 @@ class DiffEv:
         self.km_vec = where(self.km_vec < 1, self.km_vec, 1)
         self.kr_vec = where(self.kr_vec > 0, self.kr_vec, 0)
         self.kr_vec = where(self.kr_vec < 1, self.kr_vec, 1)
-        
+
         self.updated_kr = []
         self.updated_km = []
-        
-        
+
+
     def jade_best(self, index):
         vec = self.pop_vec[index]
         # Create mutation vector
@@ -731,12 +936,12 @@ class DiffEv:
         # Make sure it is not the same vector 
         #while index2 == index1:
         #    index2 = int(random.rand(1)*self.n_pop)
-            
+
         # Calculate the mutation vector according to the best/1 scheme
         #print len(self.km_vec), index, len(self.par_evals),  index2
         mut_vec = vec + self.km_vec[index]*(self.best_vec - vec) + self.km_vec[index]*(self.pop_vec[index1]\
          - self.par_evals[index2])
-        
+
         # Binomial test to detemine which parameters to change
         # given by the recombination constant kr
         recombine = random.rand(self.n_dim) < self.kr_vec[index]
@@ -744,7 +949,7 @@ class DiffEv:
         recombine[int(random.rand(1)*self.n_dim)]=1
         # Make the recombination
         trial = where(recombine, mut_vec, vec)
-        
+
         # Implementation of constrained optimization
         if self.use_boundaries:
             # Check so that the parameters lie indside the bounds
@@ -754,7 +959,7 @@ class DiffEv:
             (self.par_max - self.par_min) + self.par_min)
         self.trial_vec[index] = trial
         #return trial
-    
+
     def best_1_bin(self, index):
         '''best_1_bin(self, vec) --> trial [1D array]
         
@@ -769,11 +974,11 @@ class DiffEv:
         # Make sure it is not the same vector 
         while index2 == index1:
             index2 = int(random.rand(1)*self.n_pop)
-            
+
         # Calculate the mutation vector according to the best/1 scheme
         mut_vec = self.best_vec + self.km*(self.pop_vec[index1]\
          - self.pop_vec[index2])
-        
+
         # Binomial test to detemine which parameters to change
         # given by the recombination constant kr
         recombine = random.rand(self.n_dim)<self.kr
@@ -781,7 +986,7 @@ class DiffEv:
         recombine[int(random.rand(1)*self.n_dim)]=1
         # Make the recombination
         trial = where(recombine, mut_vec, vec)
-        
+
         # Implementation of constrained optimization
         if self.use_boundaries:
             # Check so that the parameters lie indside the bounds
@@ -789,11 +994,11 @@ class DiffEv:
             # If not inside make a random re-initilazation of that parameter
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
-        
+
         self.trial_vec[index] = trial
         #return trial
-        
-    
+
+
     def best_either_or(self, index):
         '''best_either_or(self, vec) --> trial [1D array]
         
@@ -808,7 +1013,7 @@ class DiffEv:
         # Make sure it is not the same vector 
         while index2 == index1:
             index2 = int(random.rand(1)*self.n_pop)
-        
+
         if random.rand(1) < self.pf:
             # Calculate the mutation vector according to the best/1 scheme
             trial = self.best_vec + self.km*(self.pop_vec[index1]\
@@ -817,7 +1022,7 @@ class DiffEv:
             # Trying something else out more like normal recombination
             trial = vec + self.kr*(self.pop_vec[index1]\
             + self.pop_vec[index2] - 2*vec)
-        
+
         # Implementation of constrained optimization
         if self.use_boundaries:
             # Check so that the parameters lie indside the bounds
@@ -827,7 +1032,7 @@ class DiffEv:
             (self.par_max - self.par_min) + self.par_min)
         self.trial_vec[index] = trial
         #return trial
-        
+
     def rand_1_bin(self, index):
         '''best_1_bin(self, vec) --> trial [1D array]
         
@@ -845,11 +1050,11 @@ class DiffEv:
         index3 = int(random.rand(1)*self.n_pop)
         while index3 == index1 or index3 == index2:
             index3 = int(random.rand(1)*self.n_pop)
-            
+
         # Calculate the mutation vector according to the rand/1 scheme
         mut_vec = self.pop_vec[index3] + self.km*(self.pop_vec[index1]\
          - self.pop_vec[index2])
-        
+
         # Binomial test to detemine which parameters to change
         # given by the recombination constant kr
         recombine = random.rand(self.n_dim)<self.kr
@@ -857,7 +1062,7 @@ class DiffEv:
         recombine[int(random.rand(1)*self.n_dim)]=1
         # Make the recombination
         trial = where(recombine, mut_vec, vec)
-        
+
         # Implementation of constrained optimization
         if self.use_boundaries:
             # Check so that the parameters lie indside the bounds
@@ -867,7 +1072,7 @@ class DiffEv:
             (self.par_max - self.par_min) + self.par_min)
         self.trial_vec[index] = trial
         #return trial
-    
+
     def rand_either_or(self, index):
         '''rand_either_or(self, vec) --> trial [1D array]
         
@@ -884,7 +1089,7 @@ class DiffEv:
         index0 = int(random.rand(1)*self.n_pop)
         while index0 == index1 or index0 == index2:
             index0 = int(random.rand(1)*self.n_pop)
-        
+
         if random.rand(1) < self.pf:
             # Calculate the mutation vector according to the best/1 scheme
             trial = self.pop_vec[index0] + self.km*(self.pop_vec[index1]\
@@ -896,7 +1101,7 @@ class DiffEv:
             + self.pop_vec[index2] - 2*self.pop_vec[index0])
             #trial = vec + self.kr*(self.pop_vec[index1]\
             #        + self.pop_vec[index2] - 2*vec)
-        
+
         # Implementation of constrained optimization
         if self.use_boundaries:
             # Check so that the parameters lie indside the bounds
@@ -906,11 +1111,11 @@ class DiffEv:
             (self.par_max - self.par_min) + self.par_min)
         self.trial_vec = trial
         #return trial
-    
-    
+
+
     # Different function for acessing and setting parameters that 
     # the user should have control over.
-        
+
     def set_text_output_func(self, func):
         '''set_text_output_func(self, func) --> None
         
@@ -919,7 +1124,7 @@ class DiffEv:
         The default function is a simple print statement.
         '''
         self.text_output = func
-            
+
     def set_plot_output_func(self, func):
        '''set_plot_output_func(self, func) --> None
     
@@ -928,8 +1133,8 @@ class DiffEv:
        The default function is no output whatsoever
        '''
        self.plot_output = func
-         
-    
+
+
     def set_parameter_output_func(self, func):
        '''set_parameters_output_func(self, func) --> None
     
@@ -938,8 +1143,8 @@ class DiffEv:
        The default function is no output whatsoever
        '''
        self.parameter_output = func
-         
-    
+
+
     def set_fitting_ended_func(self, func):
        '''set_fitting_ended_func(self, func) --> None
     
@@ -958,20 +1163,20 @@ class DiffEv:
         self.autosave = func
 
     # Some get functions
-   
+
     def get_model(self):
         '''get_model(self) --> model
         Getter that returns the model in use in solver.
         '''
         return self.model
-    
+
     def get_fom_log(self):
         '''get_fom_log(self) -->  fom [array]
         Returns the fom as a fcn of iteration in an array. 
         Last element last fom value
         '''
         return array(self.fom_log)
-    
+
     def get_create_trial(self, index = False):
         '''get_create_trial(self, index = False) --> string or int
         
@@ -985,17 +1190,17 @@ class DiffEv:
         else:
             # return the name
             return self.mutation_schemes[pos].__name__
-    
+
     def set_km(self, val):
         '''set_km(self, val) --> None
         '''
         self.km = val
-    
+
     def set_kr(self, val):
         '''set_kr(self, val) --> None
         '''
         self.kr = val
-        
+
     def set_create_trial(self, val):
         '''set_create_trial(self, val) --> None
         
@@ -1005,7 +1210,7 @@ class DiffEv:
         # Get the names of the available functions
         names = [f.__name__ for f in self.mutation_schemes]
         # Find the postion of val
-            
+
         pos = names.index(val)
         self.create_trial = self.mutation_schemes[pos]
         if val == 'jade_best':
@@ -1017,80 +1222,89 @@ class DiffEv:
         else:
             self.init_new_generation = self.standard_init_new_generation
             self.update_pop = self.standard_update_pop
-        
+
     def set_pop_mult(self, val):
         '''set_pop_mult(self, val) --> None
         '''
         self.pop_mult = val
-    
+
     def set_pop_size(self, val):
         '''set_pop_size(self, val) --> None
         '''
         self.pop_size = int(val)
-        
+
     def set_max_generations(self, val):
         '''set_max_generations(self, val) --> None
         '''
         self.max_generations = int(val)
-        
+
     def set_max_generation_mult(self, val):
         '''set_max_generation_mult(self, val) --> None
         '''
         self.max_generation_mult = val
-        
+
     def set_sleep_time(self, val):
         '''set_sleep_time(self, val) --> None
         '''
         self.sleep_time = val
-        
+
     def set_max_log(self, val):
         '''Sets the maximum number of logged elements
         '''
         self.max_log = val
-        
+
     def set_use_pop_mult(self, val):
         '''set_use_pop_mult(self, val) --> None
         '''
         self.use_pop_mult = val
-        
+
     def set_use_max_generations(self, val):
         '''set_use_max_generations(self, val) --> None
         '''
         self.use_max_generations = val
-        
+
     def set_use_start_guess(self, val):
         '''set_use_start_guess(self, val) --> None
         '''
         self.use_start_guess = val
-    
+
     def set_use_boundaries(self, val):
         '''set_use_boundaries(self, val) --> None
         '''
         self.use_boundaries = val
-        
+
     def set_use_autosave(self, val):
         '''set_use_autosave(self, val) --> None
         '''
         self.use_autosave = val
-        
+
     def set_autosave_interval(self, val):
         '''set_autosave_interval(self, val) --> None
         '''
         self.autosave_interval = int(val)
-        
+
     def set_use_parallel_processing(self, val):
         '''set_use_parallel_processing(self, val) --> None
         '''
         if __parallel_loaded__:
             self.use_parallel_processing = val
+            self.use_mpi = False if val else self.use_mpi
         else:
             self.use_parallel_processing = False
-    
+
+    def set_use_mpi(self, val):
+        """Sets if mpi should use for parallel optimization"""
+        if __mpi_loaded__:
+            self.use_mpi = val
+            self.use_parallel_processing = False if val else self.use_parallel_processing
+        else:
+            self.use_mpi = False
+
     def set_processes(self, val):
         '''set_processes(self, val) --> None
         '''
         self.processes = int(val)
-        
+
     def set_chunksize(self, val):
         '''set_chunksize(self, val) --> None
         '''
@@ -1100,8 +1314,8 @@ class DiffEv:
         '''set_chunksize(self, val) --> None
         '''
         self.fom_allowed_dis = float(val)
-        
-    
+
+
 #==============================================================================
 # Functions that is needed for parallel processing!
 def parallel_init(model_copy):
@@ -1117,7 +1331,7 @@ def parallel_init(model_copy):
     model.simulate()
     (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars()
     #print 'Sucess!'
-    
+
 def parallel_calc_fom(vec):
     '''parallel_calc_fom(vec) --> fom (float)
     
@@ -1131,10 +1345,10 @@ def parallel_calc_fom(vec):
     #print 'Trying to evaluate'
     # evaluate the model and calculate the fom
     fom = model.evaluate_fit_func()
-        
-    return fom 
-    
-    
+
+    return fom
+
+
 #==============================================================================
 def default_text_output(text):
     print text
@@ -1142,13 +1356,13 @@ def default_text_output(text):
 
 def default_plot_output(solver):
     pass
-    
+
 def default_parameter_output(solver):
     pass
-    
+
 def default_fitting_ended(solver):
     pass
-    
+
 def defualt_autosave():
     pass
 
@@ -1159,7 +1373,7 @@ def _calc_fom(model, vec, par_funcs):
         '''
         # Set the paraemter values
         map(lambda func, value:func(value), par_funcs, vec)
-        
+
         return model.evaluate_fit_func()
 
 #==============================================================================
@@ -1185,7 +1399,7 @@ class CircBuffer:
             else:
                self.buffer = zeros((self.maxlen,) + buffer.shape[1:])
 
-        
+
     def reset(self, buffer = None):
         '''Resets the buffer to the initial state
         '''
@@ -1203,7 +1417,7 @@ class CircBuffer:
                 self.buffer = zeros((self.maxlen,) + buffer.shape[1:])
 
 
-        
+
     def append(self, item, axis = None):
         '''Appends an element to the last position of the buffer
         '''
@@ -1215,7 +1429,7 @@ class CircBuffer:
         else:
             self.buffer = append(self.buffer, item, axis = axis)
         self.pos = new_pos
-        
+
     def array(self):
         '''returns an ordered array instead of the circular
         working version
@@ -1224,7 +1438,7 @@ class CircBuffer:
             return r_[self.buffer[self.pos+1:], self.buffer[:self.pos+1]]
         else:
             return r_[self.buffer[:self.pos+1]]
-        
+
     def copy_from(self, object):
         '''Add copy support
         '''
@@ -1245,18 +1459,18 @@ class CircBuffer:
         else:
             raise TypeError('CircBuffer support only copying from CircBuffer'\
                         ' and arrays.')
-                        
-                        
+
+
     def __len__(self):
         if self.filled:
             return len(self.buffer)
         else:
             return (self.pos > 0)*self.pos
-        
+
     def __getitem__(self, key):
         return self.array().__getitem__(key)
-    
-    
+
+
 
 # END: class CircBuffer
 #==============================================================================
@@ -1272,7 +1486,7 @@ class ErrorBarError(GenericError):
     def __init__(self):
         ''' __init__(self) --> None'''
         #self.error_message = error_message
-    
+
     def __str__(self):
         text = 'Could not evaluate the error bars. A fit has to be made' +\
                 'before they can be calculated'
