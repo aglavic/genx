@@ -1703,34 +1703,46 @@ class SamplePlotPanel(wx.Panel):
         model = self.plugin.GetModel().script_module
         #self.plot_dict = model.sample.SimSLD(None, model.inst)
         self.plot_dicts = []
-
-
-        if self.plugin.sim_returns_sld and model._sim:
-            self.plot_dicts = model.SLD
-            #self.plot_dict = self.plot_dicts[0]
-        else:
-            if self.plugin.GetModel().compiled:
-                plot_dict = model.sample.SimSLD(None, None, model.inst)
-                self.plot_dicts = [plot_dict]
-
         self.plot.ax.lines = []
         self.plot.ax.clear()
         i = 0
         data = self.plugin.GetModel().get_data()
         sld_units = []
-        for sim in range(len(self.plot_dicts)):
-            if data[sim].show:
-                for key in self.plot_dicts[sim]:
+
+        if self.plugin.sim_returns_sld and model._sim:
+            # New style sim function with one sld for each simulation
+            self.plot_dicts = model.SLD
+            for sim in range(len(self.plot_dicts)):
+                if data[sim].show:
+                    for key in self.plot_dicts[sim]:
+                        is_imag = key[:2] == 'Im' or key[:4] == 'imag'
+                        if (is_imag and self.plugin.show_imag_sld) or not is_imag:
+                            if key != 'z' and key != 'SLD unit':
+                                label = data[sim].name + '\n' + key
+                                self.plot.ax.plot(self.plot_dicts[sim]['z'], self.plot_dicts[sim][key],\
+                                                  colors[i%len(colors)], label = label)
+
+                                if self.plot_dicts[sim].has_key('SLD unit'):
+                                    if not self.plot_dicts[sim]['SLD unit'] in sld_units:
+                                        sld_units.append(self.plot_dicts[sim]['SLD unit'])
+                                i += 1
+        else:
+            # Old style plotting just one sld
+            if self.plugin.GetModel().compiled:
+                plot_dict = model.sample.SimSLD(None, None, model.inst)
+                self.plot_dicts = [plot_dict]
+                for key in self.plot_dicts[0]:
                     is_imag = key[:2] == 'Im' or key[:4] == 'imag'
                     if (is_imag and self.plugin.show_imag_sld) or not is_imag:
-                        if key != 'z' and key != 'SLD unit': 
-                            label = data[sim].name + '\n' + key
-                            self.plot.ax.plot(self.plot_dicts[sim]['z'], self.plot_dicts[sim][key],\
-                                          colors[i%len(colors)], label = label)
+                        if key != 'z' and key != 'SLD unit':
+                            label = key
+                            self.plot.ax.plot(self.plot_dicts[0]['z'], self.plot_dicts[0][key],\
+                                              colors[i%len(colors)], label = label)
+
+                            if self.plot_dicts[0].has_key('SLD unit'):
+                                if not self.plot_dicts[0]['SLD unit'] in sld_units:
+                                    sld_units.append(self.plot_dicts[0]['SLD unit'])
                             i += 1
-                            if self.plot_dicts[sim].has_key('SLD unit'):
-                                if not self.plot_dicts[sim]['SLD unit'] in sld_units:
-                                    sld_units.append(self.plot_dicts[sim]['SLD unit'])
                     
         if i > 0:
             self.plot.ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), 
