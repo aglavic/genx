@@ -497,6 +497,7 @@ class DiffEv:
             self.parameter_output(self)
 
             # Let the optimization sleep for a while
+            # TODO: Check if this is needed
             time.sleep(self.sleep_time)
 
             # Time measurent to track the speed
@@ -579,7 +580,7 @@ class DiffEv:
 
             # Create the vectors who will be compared to the
             # population vectors
-            if rank==0:
+            if rank == 0:
                 [self.create_trial(index) for index in range(self.n_pop)]
                 tmp_trial_vec = self.trial_vec
             else:
@@ -598,7 +599,7 @@ class DiffEv:
                     tmp_fom_list = tmp_fom_list + i
                 tmp_fom = tmp_fom_list
 
-            tmp_fom=comm.bcast(tmp_fom, root=0)
+            tmp_fom = comm.bcast(tmp_fom, root=0)
             self.trial_fom = array(tmp_fom).reshape(self.n_pop,)
 
             [self.update_pop(index) for index in range(self.n_pop)]
@@ -631,7 +632,7 @@ class DiffEv:
                 self.parameter_output(self)
 
                 # Let the optimization sleep for a while
-                time.sleep(self.sleep_time)
+                #time.sleep(self.sleep_time)
 
                 # Time measurent to track the speed
                 t = time.time() - t_start
@@ -645,7 +646,7 @@ class DiffEv:
 
                 self.new_best = False
                 # Do an autosave if activated and the interval is coorect
-                if gen%self.autosave_interval == 0 and self.use_autosave:
+                if gen % self.autosave_interval == 0 and self.use_autosave:
                     self.autosave()
 
         if rank==0:

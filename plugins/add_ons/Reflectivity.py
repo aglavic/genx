@@ -412,7 +412,7 @@ class MyHtmlListBox(wx.HtmlListBox):
    
 
 class SamplePanel(wx.Panel):
-    def __init__(self, parent, plugin, refindexlist = []):
+    def __init__(self, parent, plugin, refindexlist=[]):
         wx.Panel.__init__(self, parent)
         self.refindexlist = refindexlist
         self.plugin = plugin
@@ -426,94 +426,64 @@ class SamplePanel(wx.Panel):
         
         boxver = wx.BoxSizer(wx.HORIZONTAL)
         boxhor = wx.BoxSizer(wx.VERTICAL)
-        boxbuttons=wx.BoxSizer(wx.HORIZONTAL)
-        boxhor.Add((-1,2))
-        boxhor.Add(boxbuttons, 0)
-        boxhor.Add((-1,2))
-        self.listbox = MyHtmlListBox(self, -1, style =  wx.BORDER_SUNKEN)
+        self.toolbar = wx.ToolBar(self, style=wx.TB_FLAT|wx.TB_HORIZONTAL)
+        boxhor.Add((-1, 2))
+        self.do_toolbar()
+        boxhor.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=1)
+        boxhor.Add((-1, 2))
+        self.listbox = MyHtmlListBox(self, -1, style=wx.BORDER_SUNKEN)
         #self.listbox.SetItemList(self.sampleh.getStringList())
-        self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick , self.listbox)
+        self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick, self.listbox)
         boxhor.Add(self.listbox, 1, wx.EXPAND)
 
-        if os.name == 'nt':
-            size = (24, 24)
-        else:
-            size = (-1, -1)
-        space = (2, -1)
-        #InsertLayButton = wx.Button(self,-1, "Insert Layer")
-        InsertLayButton =  wx.BitmapButton(self, -1
-        , images.getinsert_layerBitmap(), size = size, style=wx.NO_BORDER)
-        boxbuttons.Add(InsertLayButton,0)
-        boxbuttons.Add(space)
-        InsertLayButton.SetToolTipString('Insert a new layer')
-        self.Bind(wx.EVT_BUTTON, self.InsertLay, InsertLayButton)
-        #InsertStackButton=wx.Button(self,-1, "Insert Stack")
-        InsertStackButton = wx.BitmapButton(self, -1
-        , images.getinsert_stackBitmap(), size = size, style=wx.NO_BORDER)
-        boxbuttons.Add(InsertStackButton, 0)
-        boxbuttons.Add(space)
-        InsertStackButton.SetToolTipString('Insert a new stack')
-        self.Bind(wx.EVT_BUTTON, self.InsertStack, InsertStackButton)
-        #DeleteButton=wx.Button(self,-1, "Delete")
-        DeleteButton = wx.BitmapButton(self, -1
-        , images.getdeleteBitmap(), size = size, style=wx.NO_BORDER)
-        boxbuttons.Add(DeleteButton, 0)
-        boxbuttons.Add(space)
-        DeleteButton.SetToolTipString('Delete')
-        self.Bind(wx.EVT_BUTTON, self.DeleteSample, DeleteButton)
-        CNameButton = wx.BitmapButton(self, -1
-        , images.getchange_nameBitmap(), size = size, style=wx.NO_BORDER)
-        boxbuttons.Add(CNameButton, 0)
-        boxbuttons.Add(space)
-        DeleteButton.SetToolTipString('Change Name')
-        self.Bind(wx.EVT_BUTTON, self.ChangeName, CNameButton)
-        #MUpButton=wx.Button(self,-1, "MoveUp")
-        MUpButton = wx.BitmapButton(self, -1
-        , images.getmove_upBitmap(), size = size, style=wx.NO_BORDER)
-        boxbuttons.Add(MUpButton, 0)
-        boxbuttons.Add(space)
-        MUpButton.SetToolTipString('Move item up')
-        self.Bind(wx.EVT_BUTTON, self.MoveUp, MUpButton)
-        #MDownButton=wx.Button(self,-1, "MoveDown")
-        MDownButton = wx.BitmapButton(self, -1
-        , images.getmove_downBitmap(), size = size, style=wx.NO_BORDER)
-        boxbuttons.Add(MDownButton, 0)
-        boxbuttons.Add(space)
-        MDownButton.SetToolTipString('Move item down')
-        self.Bind(wx.EVT_BUTTON, self.MoveDown, MDownButton)
-        #SampleButton = wx.Button(self,-1, "Sample")
-        SampleButton = wx.BitmapButton(self, -1
-        , images.getsampleBitmap(), size = size, style=wx.NO_BORDER)
-        boxbuttons.Add(SampleButton, 0)
-        boxbuttons.Add(space)
-        SampleButton.SetToolTipString('Edit sample parameters')
-        self.Bind(wx.EVT_BUTTON, self.EditSampleParameters, SampleButton)
-        #InstrumentButton = wx.Button(self,-1, "Instrument")
-        InstrumentButton = wx.BitmapButton(self, -1
-        , images.getinstrumentBitmap(), size = size, style=wx.NO_BORDER)
-        boxbuttons.Add(InstrumentButton, 0)
-        boxbuttons.Add(space)
-        InstrumentButton.SetToolTipString('Edit instrument')
-        self.Bind(wx.EVT_BUTTON, self.EditInstrument, InstrumentButton)
-        
-        #boxhor.Add(boxbuttons)
-        boxver.Add(boxhor, 1 ,  wx.EXPAND)
-        
-        boxhorpar=wx.BoxSizer(wx.HORIZONTAL)
+        boxver.Add(boxhor, 1,  wx.EXPAND)
 
-        #self.tc=[]
-        #for item in self.model.SampleParameters.keys():
-        #    if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
-        #        boxhorpar.Add(wx.StaticText(self,-1,item+': '),0)
-        #        self.tc.append(wx.TextCtrl(self, -1,\
-        #         getattr(str(self.sampleh.sample, item)),\
-        #         validator = FloatObjectValidator()))
-        #        boxhorpar.Add(self.tc[-1],0)
-        #boxver.Add(boxhorpar,0)
         self.SetSizer(boxver)
-        
+        self.toolbar.Realize()
         self.update_callback = lambda event:''
-        
+
+    def do_toolbar(self):
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, 'Insert Layer', bitmap=images.insert_layer.getBitmap(),
+                                  shortHelp='Insert a Layer')
+        self.Bind(wx.EVT_TOOL, self.InsertLay, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, 'Insert Stack', bitmap=images.insert_stack.getBitmap(),
+                                  shortHelp='Insert a Stack')
+        self.Bind(wx.EVT_TOOL, self.InsertStack, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, 'Delete', bitmap=images.delete.getBitmap(), shortHelp='Delete item')
+        self.Bind(wx.EVT_TOOL, self.DeleteSample, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, 'Rename', bitmap=images.change_name.getBitmap(),
+                                  shortHelp='Rename')
+        self.Bind(wx.EVT_TOOL, self.ChangeName, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, 'Move up', bitmap=images.move_up.getBitmap(),
+                                  shortHelp='Move item up')
+        self.Bind(wx.EVT_TOOL, self.MoveUp, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, 'Move down', bitmap=images.move_down.getBitmap(),
+                                  shortHelp='Move item down')
+        self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, 'Edit Sample', bitmap=images.sample.getBitmap(),
+                                  shortHelp='Edit Sample parameters')
+        self.Bind(wx.EVT_TOOL, self.EditSampleParameters, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, 'Edit Instrument', bitmap=images.instrument.getBitmap(),
+                                  shortHelp='Edit Instruments')
+        self.Bind(wx.EVT_TOOL, self.EditInstrument, id=newid)
+
+
     def SetUpdateCallback(self, func):
         ''' SetUpdateCallback(self, func) --> None
         
@@ -996,41 +966,33 @@ class DataParameterPanel(wx.Panel):
         self.command_indent = '<pre>   '
         self.script_update_func = None
         self.parameterlist = []
+
+        self.toolbar = wx.ToolBar(self, style=wx.TB_FLAT|wx.TB_HORIZONTAL)
+        self.do_toolbar()
+        boxver.Add((-1, 2))
+        boxver.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=1)
+        boxver.Add((-1, 2))
         
-        # BEGIN BUTTON SECTION
-        boxbuttons = wx.BoxSizer(wx.HORIZONTAL)
-        #button_names = ['Insert', 'Delete', 'Move up', 'Move down',\
-        #    'Edit Parameters']
-        #callbacks = [self.Insert, self.Delete, self.MoveUp, self.MoveDown,\
-        #    self.EditPars]
-        if os.name == 'nt':
-            size = (24, 24)
-        else:
-            size = (-1, -1)
-        space = (2, -1)
+        self.listbox = MyHtmlListBox(self, -1, style=wx.BORDER_SUNKEN)
+        self.Bind(wx.EVT_LISTBOX_DCLICK, self.Edit, self.listbox)
+        boxver.Add(self.listbox, 1, wx.EXPAND)
+        
+        self.SetSizer(boxver)
+        self.toolbar.Realize()
+
+    def do_toolbar(self):
+
         button_names = ['Insert', 'Delete', 'User Variables']
         button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
             images.getcustom_parameterBitmap()]
         callbacks = [self.Insert, self.Delete, self.EditPars]
         tooltips = ['Insert a command', 'Delete command', 'Edit user variables']
+
         for i in range(len(button_names)):
-            #button = wx.Button(self,-1, button_names[i])
-            button = wx.BitmapButton(self, -1, button_images[i],\
-                    style=wx.NO_BORDER, size = size)
-            boxbuttons.Add(button, 1, wx.EXPAND)
-            boxbuttons.Add(space)
-            button.SetToolTipString(tooltips[i])
-            self.Bind(wx.EVT_BUTTON, callbacks[i], button)
-        # END BUTTON SECTION
-        boxver.Add((-1,2))
-        boxver.Add(boxbuttons)
-        boxver.Add((-1,2))
-        
-        self.listbox = MyHtmlListBox(self, -1, style =  wx.BORDER_SUNKEN)
-        self.Bind(wx.EVT_LISTBOX_DCLICK, self.Edit , self.listbox)
-        boxver.Add(self.listbox, 1, wx.EXPAND)
-        
-        self.SetSizer(boxver)
+            newid = wx.NewId()
+            self.toolbar.AddLabelTool(newid, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
+            self.Bind(wx.EVT_TOOL, callbacks[i], id=newid)
+
 
     def onsimulate(self):
         """ Function to simulate the model.
