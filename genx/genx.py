@@ -3,7 +3,7 @@
 
 import sys, os, appdirs, argparse
 
-
+import version
 
 def start_interactive(args):
     ''' Start genx in interactive mode (with the gui)
@@ -241,7 +241,9 @@ if __name__ == "__main__":
         rank = MPI.COMM_WORLD.Get_rank()
 
 
-    parser = argparse.ArgumentParser(prog='genx')
+    parser = argparse.ArgumentParser(description="GenX %s, fits data to a model."% version.version,
+                                     epilog="For support, manuals and bug reporting see http://genx.sf.net"
+                                    )
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument('-r', '--run', action='store_true', help='run GenX fit (no gui)')
     if __mpi__:

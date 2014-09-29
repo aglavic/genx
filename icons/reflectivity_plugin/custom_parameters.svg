@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -13,14 +14,14 @@
    height="16px"
    id="svg3260"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
-   sodipodi:docbase="/home/matts/GenX2/MyIcons"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="custom_parameters.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="svn/genx/trunk/genx/Images/reflectivity_plugin/insert_stack.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90"
-   sodipodi:modified="true">
+   inkscape:export-filename="/Users/GenX/Documents/GenX/sf-code/trunk/icons/reflectivity_plugin/custom_parameter.png"
+   inkscape:export-xdpi="112.5"
+   inkscape:export-ydpi="112.5"
+   sodipodi:modified="true"
+   version="1.1">
   <defs
      id="defs3262">
     <marker
@@ -201,7 +202,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="22.197802"
      inkscape:cx="3.1683166"
-     inkscape:cy="9.8641041"
+     inkscape:cy="9.0081635"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
@@ -209,7 +210,8 @@
      inkscape:window-width="1155"
      inkscape:window-height="706"
      inkscape:window-x="30"
-     inkscape:window-y="64" />
+     inkscape:window-y="64"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata3265">
     <rdf:RDF>
@@ -218,6 +220,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
