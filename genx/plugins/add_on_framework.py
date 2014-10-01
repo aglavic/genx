@@ -407,11 +407,22 @@ class PluginController:
         '''OnOpenModel(self, event) --> None
         
         Runs plugin code when the user tries to open a model 
-        '''        
-        for name in self.plugin_handler.loaded_plugins:
-            self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
+        '''
+        loaded_plugins = self.plugin_handler.loaded_plugins.keys()
+        items = self.unload_menu.GetMenuItems()
+        print loaded_plugins
+        for item in items:
+            # Remove the item from the list
+            self.unload_menu.DeleteItem(item)
+
+        for name in loaded_plugins:
+            #self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
+            self.plugin_handler.unload_plugin(name)
+
         self.LoadDefaultPlugins()
-            
+        # Update the available plugins
+        self.update_plugins()
+
     def OnSimulate(self, event):
         '''OnOpenModel(self, event) --> None
         
