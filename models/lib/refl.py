@@ -402,16 +402,20 @@ class ModelFactory:
         dynamically.
     '''
 
-    class Layer(LayerBase): _parameters = LayerBase._parameters.copy()
 
-    class Stack(StackBase): _parameters = StackBase._parameters.copy()
-
-    class Sample(SampleBase): _parameters = SampleBase._parameters.copy()
-
-    class Instrument(InstrumentBase): _parameters = InstrumentBase._parameters.copy()
 
     def __init__(self):
-        pass
+        class Layer(LayerBase): _parameters = LayerBase._parameters.copy()
+        self.Layer = Layer
+
+        class Stack(StackBase): _parameters = StackBase._parameters.copy()
+        self.Stack = Stack
+
+        class Sample(SampleBase): _parameters = SampleBase._parameters.copy()
+        self.Sample = Sample
+
+        class Instrument(InstrumentBase): _parameters = InstrumentBase._parameters.copy()
+        self.Instrument = Instrument
 
     @staticmethod
     def _add_parameter(cls, par_name, def_val):
