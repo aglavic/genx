@@ -118,7 +118,11 @@ def start_fitting(args, rank=0):
         def autosave():
             #print 'Updating the parameters'
             mod.parameters.set_value_pars(opt.best_vec)
+            if args.error:
+                print "Calculating error bars"
+                calc_errorbars(config, mod, opt)
             if args.outfile:
+                print "Saving to %s"%args.outfile
                 io.save_gx(args.outfile, mod, opt, config)
 
         opt.set_autosave_func(autosave)
@@ -202,13 +206,13 @@ def set_optimiser_pars(optimiser, args):
 
     if args.km >= 0:
         optimiser.set_km(args.km)
-    else:
-        print "km not set has to be bigger than 0"
+    #else:
+    #    print "km not set has to be bigger than 0"
 
     if args.kr >= 0:
         optimiser.set_kr(args.kr)
-    else:
-        print "kr not set has to be bigger than 0"
+    #else:
+    #    print "kr not set has to be bigger than 0"
 
 if __name__ == "__main__":
     # Check if the application has been frozen
