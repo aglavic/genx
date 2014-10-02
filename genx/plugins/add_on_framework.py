@@ -410,7 +410,6 @@ class PluginController:
         '''
         loaded_plugins = self.plugin_handler.loaded_plugins.keys()
         items = self.unload_menu.GetMenuItems()
-        print loaded_plugins
         for item in items:
             # Remove the item from the list
             self.unload_menu.DeleteItem(item)

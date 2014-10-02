@@ -111,8 +111,7 @@ in <code>dimes.py</code> is <code>sqrt(2)*pi*[]</code>
 '''
 
 import numpy as np
-from utils import f, rho
-import time
+import utils
 
 sxrd_ext_built = False
 debug = False
@@ -913,12 +912,17 @@ class Instrument:
     '''
     geometries = ['alpha_in fixed', 'alpha_in eq alpha_out',
                   'alpha_out fixed']
-    def __init__(self, wavel, alpha, geom = 'alpha_in fixed',
-                  flib = f, rholib = rho):
+    def __init__(self, wavel, alpha, geom = 'alpha_in fixed', flib=None, rholib=None):
         '''Inits the instrument with default parameters
         '''
-        self.flib = f
-        self.rholib = rho
+        if flib is None:
+            self.flib = utils.sl.FormFactor(wavel, utils.__lookup_f__)
+        else:
+            self.flib = flib
+        if rholib is None:
+            self.rholib = utils.sl.FormFactor(wavel, utils.__lookup_rho__)
+        else:
+            self.rholib = rholib
         self.set_wavel(wavel)
         self.set_geometry(geom)
         self.alpha = alpha
@@ -1069,8 +1073,7 @@ def _get_f(inst, el, dinv):
     '''from the elements extract an array with atomic structure factors
     '''
     fdict = {}
-    f = np.transpose(np.array([_fatom_eval(inst, fdict, elem, dinv/2.0)
-                             for elem in el], dtype = np.complex128))
+    f = np.transpose(np.array([_fatom_eval(inst, fdict, elem, dinv/2.0) for elem in el], dtype=np.complex128))
 
     return f
 
