@@ -6,7 +6,8 @@ Last changed: 2008 08 22
 '''
 
 from numpy import *
-import os, time
+import os
+import time
 
 #==============================================================================
 #BEGIN: Class DataSet
@@ -14,7 +15,17 @@ import os, time
 class DataSet:
     ''' Class to store each dataset to fit. To fit several items instead the.
         Contains x,y,error values and xraw,yraw,errorraw for the data.
-    ''' 
+    '''
+    # Parameters used for saving the object state
+    export_parameters = {'x':array, 'y':array, 'y_sim':array, 'y_fom':array, 'error':array, 'x_raw':array,
+                         'y_raw':array, 'error_raw':array, 'extra_data':array,
+                         'extra_data_raw':array, 'extra_commands':str, 'x_command':str, 'y_command':str,
+                         'error_command':str, 'show':bool, 'name':str, 'use':bool, 'use_error':bool, 'cols':tuple,
+                         'data_color':tuple, 'sim_color':tuple, 'data_symbol':str,
+                         'data_symbolsize':int, 'data_linetype':str, 'data_linethickness':int, 'sim_symbol':str,
+                         'sim_linetype':str, 'sim_linethickness':int,
+                         }
+
     def __init__(self, name = '', copy_from = None):
         #Processed data
         self.x = array([])
@@ -88,6 +99,43 @@ class DataSet:
             self.sim_symbolsize = 1
             self.sim_linetype = '-'
             self.sim_linethickness = 2
+
+    def write_h5group(self, group):
+        """ Write the parameters to a hdf group
+
+        :param group: h5py Group to write to
+        :return:
+        """
+        for par in self.export_parameters:
+            obj = getattr(self, par)
+            if type(obj) is dict:
+                sub_group = group.create_group(par)
+                for key in obj:
+                    sub_group[key] = obj[key]
+            else:
+                group[par] = obj
+
+    def read_h5group(self, group):
+        """ Read parameters from a hdf group
+
+        :param group: h5py Group to read from
+        :return:
+        """
+        for par in self.export_parameters:
+            obj = getattr(self, par)
+            if type(obj) is dict:
+                sub_group = group[par]
+                for key in obj:
+                    if self.export_parameters[par] is array:
+                        obj[key] = sub_group[par].value
+                    else:
+                        obj[key] = self.export_parameters[par](sub_group[par].value)
+            else:
+                if self.export_parameters[par] is array:
+                    setattr(self, par, group[par].value)
+                else:
+                    setattr(self, par, self.export_parameters[par](group[par].value))
+
             
     def copy(self):
         ''' Make a copy of the current Data Set'''
@@ -489,8 +537,33 @@ class DataList:
     
     def __init__(self):
         ''' init function - creates a list with one DataSet'''
-        self.items=[DataSet(name='Data 0')]
-        self._counter=1
+        self.items = [DataSet(name='Data 0')]
+        self._counter = 1
+
+    def write_h5group(self, group):
+        """ Write parameters to a hdf group
+
+        :param group: h5py Group to write to
+        :return:
+        """
+        data_group = group.create_group('datasets')
+        for index, data in enumerate(self.items):
+            data.write_h5group(data_group.create_group('%d'%index))
+        group['_counter'] = self._counter
+
+    def read_h5group(self, group):
+        """ Read parameters from a hdf group
+
+        :param group: h5py Group to read from
+        :return:
+        """
+        data_group = group['datasets']
+        self.items = []
+        for index in range(len(data_group)):
+            self.items.append(DataSet())
+            self.items[-1].read_h5group(data_group['%d'%index])
+        self._counter = int(group['_counter'].value)
+
         
     def __getitem__(self,key):
         '''__getitem__(self,key) --> DataSet
@@ -534,12 +607,12 @@ class DataList:
         if name=='':
             self.items.append(DataSet('Data %d'%self._counter,\
                         copy_from=self.items[-1]))
-            self._counter+=1
+            self._counter += 1
         else:
             self.items.append(DataSet(name,copy_from=self.items[-1]))
         #print "An empty dataset is appended at postition %i."%(len(self.items)-1)
 
-    def delete_item(self,pos):
+    def delete_item(self, pos):
         '''delete_item(self,pos) --> None        
         
         Deletes the item at position pos. Only deletes if the pos is an 
@@ -742,3 +815,24 @@ class IOError(GenericError):
         text = 'Input/Output error for file:\n' + self.file +\
                 '\n\n Python error:\n ' + self.error_message
         return text
+
+if __name__ == '__main__':
+    import h5py
+    d = DataList()
+    d[0].x = arange(0, 10)
+    f = h5py.File('myfile.hdf5', 'w')
+    dic = f.create_group('data')
+    d.write_h5group(dic)
+    f.close()
+
+    d = DataList()
+    print 'x ', d[0].x
+    f = h5py.File('myfile.hdf5', 'r')
+    dic = f['data']
+    d.read_h5group(dic)
+    print 'x ', d[0].x
+    f.close()
+    print 'x ', d[0].x
+    print type(d[0].data_color), d[0].data_color
+    print d[0].extra_data
+    print type(d[0].data_symbolsize)

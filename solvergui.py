@@ -6,7 +6,7 @@ Programmer Matts Bjorck
 Last Changed 2009 05 12
 '''
 import wx, StringIO, traceback
-import  wx.lib.newevent
+import wx.lib.newevent
 from wx.lib.masked import NumCtrl
 
 import diffev, fom_funcs

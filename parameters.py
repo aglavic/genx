@@ -12,12 +12,42 @@ class Parameters:
     """
     Class for storing the fitting parameters in GenX
     """
+    # Parameters used for saving the object state
+    export_parameters = {'data_labels': list, 'init_data': list, 'data': list}
+
     def __init__(self, model=None):
         self.data_labels = ['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
         self.init_data = ['', 0.0, False, 0.0, 0.0, 'None']
         self.data = [self.init_data[:]]
         self.model = model
-        
+        self.string_dtype = "S100"
+
+    def write_h5group(self, group):
+        """ Export the members in the object to a h5py group.
+        :param group: h5py Group to export to
+        :return:
+        """
+        group['data_labels'] = self.data_labels
+        print np.array([r[0] for r in self.data], dtype='S50')
+        group['data col 0'] = np.array([r[0] for r in self.data], dtype=self.string_dtype)
+        group['data col 1'] = [r[1] for r in self.data]
+        group['data col 2'] = [r[2] for r in self.data]
+        group['data col 3'] = [r[3] for r in self.data]
+        group['data col 4'] = [r[4] for r in self.data]
+        group['data col 5'] = np.array([r[5] for r in self.data], dtype=self.string_dtype)
+
+    def read_h5group(self, group):
+        """ Import data to the object from a h5py group
+
+        :param group: h5py Group to import from
+        :return:
+        """
+        self.data_labels = list(group['data_labels'].value)
+        self.data = [[c0, c1, c2, c3, c4, c5] for (c0, c1, c2, c3, c4, c5) in
+                     zip(group['data col 0'].value, group['data col 1'].value, group['data col 2'].value,
+                         group['data col 3'].value,
+                         group['data col 4'].value, group['data col 5'].value)]
+
     def set_value(self, row, col, value):
         """ Set a value in the parameter grid """
         self.data[row][col] = value
@@ -347,3 +377,16 @@ class Parameters:
         new_pars.data = self.data[:]
         
         return new_pars
+
+if __name__ == '__main__':
+    p = Parameters()
+    p.append()
+    import h5py
+    f = h5py.File('test.hdf', 'w')
+    g = f.create_group('parameters')
+    p.write_h5group(g)
+    f.close()
+    p2 = Parameters()
+    f = h5py.File('test.hdf', 'r')
+    p2.read_h5group(f['parameters'])
+    print p2.data

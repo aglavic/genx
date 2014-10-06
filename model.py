@@ -10,10 +10,12 @@ Last changed: 2008 06 24
 import shelve, os, new, zipfile
 import cPickle as pickle
 import pdb, StringIO, traceback
+
 import numpy as np
 # GenX libraries
 import data
-import parameters, fom_funcs
+import parameters
+import fom_funcs
 
 #==============================================================================
 #BEGIN: Class Model
@@ -140,6 +142,40 @@ class Model:
         
         self.filename = os.path.abspath(filename)
         self.saved = True
+
+    def write_h5group(self, group, **kwargs):
+        """ Write the current parameters into a hdf5 group
+
+        :param group: h5py Group to write into
+        :param kwargs: Additional object parameters to be written (stored_name=object), these objects has to incorporate
+            a write_h5group.
+        :return:
+        """
+        self.data.write_h5group(group.create_group('data'))
+        group['script'] = self.script
+        self.parameters.write_h5group(group.create_group('parameters'))
+        group['fomfunction'] = self.fom_func.__name__
+
+        for kw in kwargs:
+            kwargs[kw].write_h5group(group.create_group(kw))
+
+    def read_h5group(self, group, **kwargs):
+        """ Read the parameters from a hdf5 group
+
+        :param group: hdf5 Group to read the parameters from
+        :param kwargs: Additional object parameters to be read (stored_name=object), these objects has to incorporate
+            a read_h5group.
+        :return:
+        """
+        self.data.read_h5group(group['data'])
+        self.script = str(group['script'].value)
+        self.parameters.read_h5group(group['parameters'])
+        fom_func_name = str(group['fomfunction'])
+        if fom_func_name in fom_funcs.func_names:
+            self.set_fom_func(eval('fom_funcs.' + fom_func_name))
+
+        for kw in kwargs:
+            kwargs[kw].read_h5group(group[kw])
         
     def save_addition(self, name, text):
         '''save_addition(self, name, text) --> None
