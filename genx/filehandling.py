@@ -13,6 +13,8 @@ except ImportError:
     import configparser as CP
 import StringIO
 
+import h5py
+
 # Functions to save the gx files
 #==============================================================================
 def save_gx(fname, model, optimizer, config):
@@ -22,6 +24,41 @@ def save_gx(fname, model, optimizer, config):
             optimizer.pickle_string(clear_evals = 
                                     not config.get_boolean('solver', 
                                                            'save all evals')))
+
+def save_hgx(fname, model, optimizer, config, group='current'):
+    """ Saves the current objects to a hdf gx file (hgx).
+
+    :param fname: filename
+    :param model: model object
+    :param optimizer: optimizer object
+    :param config: config object
+    :param group: name of the group, default current
+    :return:
+    """
+    f = h5py.File(fname, 'w')
+    g = f.create_group(group)
+    model.write_h5group(g)
+    optimizer.write_h5group(g.create_group('optimizer'), clear_evals=not config.get_boolean('solver', 'save all evals'))
+    g['config'] = config.model_dump()
+    f.close()
+
+def load_hgx(fname, model, optimizer, config, group='current'):
+    """ Loads the current objects to a hdf gx file (hgx).
+
+    :param fname: filename
+    :param model: model object
+    :param optimizer: optimizer object
+    :param config: config object
+    :param group: name of the group, default current
+    :return:
+    """
+    f = h5py.File(fname, 'r')
+    g = f[group]
+    model.read_h5group(g)
+    optimizer.read_h5group(g['optimizer'])
+    config.load_model(str(g['config'].value))
+    f.close()
+
 # Not yet used ...
 def load_gx(fname, model, optimizer, config):
     model.load(fname)

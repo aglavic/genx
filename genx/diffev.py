@@ -56,11 +56,21 @@ class DiffEv:
     It also contains thread support which is activated by the start_fit 
     function.
     '''
+
+    export_parameters = {'km': float, 'kr': float, 'pf': float, 'use_pop_mult': bool, 'pop_mult': int, 'pop_size':int,
+                         'use_max_generations': bool, 'max_generations': int, 'max_generation_mult': int,
+                         'use_start_guess': bool, 'use_boundaries': bool, 'sleep_time': float,
+                         'use_parallel_processing': bool, 'use_mpi': bool, 'fom_log': array,
+                         }
+
+    def create_mutation_table(self):
+        # Mutation schemes implemented
+        self.mutation_schemes = [self.best_1_bin, self.rand_1_bin, \
+                                 self.best_either_or, self.rand_either_or, self.jade_best, self.simplex_best_1_bin]
+
     def __init__(self):
 
-        # Mutation schemes implemented
-        self.mutation_schemes = [self.best_1_bin, self.rand_1_bin,\
-            self.best_either_or, self.rand_either_or, self.jade_best, self.simplex_best_1_bin]
+        self.create_mutation_table()
 
         self.model = mmodel.Model()
 
@@ -139,6 +149,40 @@ class DiffEv:
         #self.fom_evals = array([])
         self.fom_evals = CircBuffer(self.max_log)
 
+    def write_h5group(self, group, clear_evals=False):
+        """ Write parameters into hdf5 group
+
+        :param group: h5py Group to write into
+        :return:
+        """
+        for par in self.export_parameters:
+            obj = getattr(self, par)
+            group[par] = obj
+
+        if clear_evals:
+            group['par_evals'] = self.par_evals.array()[0:0]
+            group['fom_evals'] = self.fom_evals.array()[0:0]
+        else:
+            group['par_evals'] = self.par_evals.array()
+            group['fom_evals'] = self.fom_evals.array()
+
+    def read_h5group(self, group):
+        """ Read parameters from a hdf5 group
+
+        :param group: h5py Group to read from
+        :return:
+        """
+        self.setup_ok = False
+        for par in self.export_parameters:
+            obj = getattr(self, par)
+            if self.export_parameters[par] is array:
+                setattr(self, par, group[par].value)
+            else:
+                setattr(self, par, self.export_parameters[par](group[par].value))
+
+        self.par_evals.copy_from(group['par_evals'].value)
+        self.fom_evals.copy_from(group['fom_evals'].value)
+
     def safe_copy(self, object):
         '''safe_copy(self, object) --> None
         
@@ -182,7 +226,7 @@ class DiffEv:
             self.use_mpi = False
 
         # Definition for the create_trial function
-        #self.create_trial = object.create_trial
+        #self.set_create_trial(object.get_create_trial())
 
         # True if the optimization have been setup
         self.setup_ok = object.setup_ok
@@ -245,7 +289,9 @@ class DiffEv:
         
         Loads the pickled string into the this object. See pickle_string.
         '''
-        self.safe_copy(pickle.loads(pickled_string))
+        obj = pickle.loads(pickled_string)
+        obj.create_mutation_table()
+        self.safe_copy(obj)
 
 
     def reset(self):
@@ -1445,6 +1491,8 @@ class CircBuffer:
         '''
         if type(object) == type(array([])):
             self.buffer = object[-self.maxlen:]
+            self.pos =  len(self.buffer) - 1
+            self.filled = self.pos >= (self.maxlen - 1)
         elif object.__class__ == self.__class__:
             # Check if the buffer has been removed.
             if len(object.buffer) == 0:
@@ -1492,3 +1540,24 @@ class ErrorBarError(GenericError):
         text = 'Could not evaluate the error bars. A fit has to be made' +\
                 'before they can be calculated'
         return text
+
+if __name__ == '__main__':
+    import h5py
+    d = DiffEv()
+    print arange(10)
+    d.fom_evals.copy_from(arange(10))
+    print d.fom_evals.buffer, d.fom_evals.pos, d.fom_evals.filled
+    d.km = 10
+    print d.fom_evals.array()
+    f = h5py.File('myfile.hdf5', 'w')
+    dic = f.create_group('optimizer')
+    d.write_h5group(dic)
+    f.close()
+
+    d = DiffEv()
+    f = h5py.File('myfile.hdf5', 'r')
+    dic = f['optimizer']
+    d.read_h5group(dic)
+    print d.km
+    print d.fom_evals.array(),  d.fom_evals.pos, d.fom_evals.filled
+    f.close()
