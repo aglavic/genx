@@ -270,7 +270,7 @@ class SolverController:
         model  = self.parent.model
         row = model.parameters.get_pos_from_row(parameter)
         if self.optimizer.start_guess != None and not self.optimizer.running:
-            return self.optimizer.par_evals[:,row],\
+            return self.optimizer.par_evals[:, row],\
                 self.optimizer.fom_evals[:]
         else:
             raise ErrorBarError()
@@ -365,7 +365,7 @@ class SolverController:
         
         Returns true if a fit has been started otherwise False
         '''
-        return self.optimizer.start_guess != None
+        return len(self.optimizer.start_guess) > 0
     
         
     def set_error_bars_level(self, value):

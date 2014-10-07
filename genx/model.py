@@ -159,6 +159,8 @@ class Model:
         for kw in kwargs:
             kwargs[kw].write_h5group(group.create_group(kw))
 
+
+
     def read_h5group(self, group, **kwargs):
         """ Read the parameters from a hdf5 group
 
@@ -176,6 +178,14 @@ class Model:
 
         for kw in kwargs:
             kwargs[kw].read_h5group(group[kw])
+
+
+        self.compiled = False
+        self.saved = True
+        self.script_module = new.module('genx_script_module')
+        self.script_module.__dict__['data'] = self.data
+        self.script_module.__dict__['_sim'] = False
+        self.compiled = False
         
     def save_addition(self, name, text):
         '''save_addition(self, name, text) --> None

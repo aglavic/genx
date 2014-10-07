@@ -60,7 +60,7 @@ class DiffEv:
     export_parameters = {'km': float, 'kr': float, 'pf': float, 'use_pop_mult': bool, 'pop_mult': int, 'pop_size':int,
                          'use_max_generations': bool, 'max_generations': int, 'max_generation_mult': int,
                          'use_start_guess': bool, 'use_boundaries': bool, 'sleep_time': float,
-                         'use_parallel_processing': bool, 'use_mpi': bool, 'fom_log': array,
+                         'use_parallel_processing': bool, 'use_mpi': bool, 'fom_log': array, 'start_guess':array
                          }
 
     def create_mutation_table(self):
@@ -148,6 +148,8 @@ class DiffEv:
         self.par_evals = CircBuffer(self.max_log, buffer = array([[]])[0:0])
         #self.fom_evals = array([])
         self.fom_evals = CircBuffer(self.max_log)
+
+        self.start_guess = array([])
 
     def write_h5group(self, group, clear_evals=False):
         """ Write parameters into hdf5 group
