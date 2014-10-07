@@ -12,11 +12,45 @@ try:
 except ImportError:
     import configparser as CP
 import StringIO
+import os
 
 import h5py
 
 # Functions to save the gx files
 #==============================================================================
+
+
+def save_file(fname, model, optimizer, config):
+    """Saves objects model, optimiser and config into file fnmame
+
+    :param fname: string, ending with .gx or .hgx
+    :param model:
+    :param optimizer:
+    :param config:
+    :return:
+    """
+    if fname.endswith('.gx'):
+        save_gx(fname, model, optimizer, config)
+    elif fname.endswith('.hgx'):
+        save_hgx(fname, model, optimizer, config)
+    else:
+        raise IOError('Wrong file ending, should be .gx or .hgx')
+
+    model.filename = os.path.abspath(fname)
+    model.saved = True
+
+def load_file(fname, model, optimizer, config):
+    """Loads parameters from fname into model, optimizer and config"""
+    if fname.endswith('.gx'):
+        load_gx(fname, model, optimizer, config)
+    elif fname.endswith('.hgx'):
+        load_hgx(fname, model, optimizer, config)
+    else:
+        raise IOError('Wrong file ending, should be .gx or .hgx')
+
+    model.filename = os.path.abspath(fname)
+
+
 def save_gx(fname, model, optimizer, config):
     model.save(fname)
     model.save_addition('config', config.model_dump())
@@ -24,6 +58,7 @@ def save_gx(fname, model, optimizer, config):
             optimizer.pickle_string(clear_evals = 
                                     not config.get_boolean('solver', 
                                                            'save all evals')))
+
 
 def save_hgx(fname, model, optimizer, config, group='current'):
     """ Saves the current objects to a hdf gx file (hgx).

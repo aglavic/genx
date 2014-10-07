@@ -12,6 +12,7 @@ __version__ = version.version #'2.0b trunk'
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
 import webbrowser
+import numpy as np
 
 import model as modellib
 import solvergui, help
@@ -88,7 +89,7 @@ def open(frame, event):
            return
      
     dlg = wx.FileDialog(frame, message="Open", defaultFile="",\
-                        wildcard="GenX File (*.gx)|*.gx",\
+                        wildcard="GenX File (*.gx)|*.gx|HDF5 GenX File (*.hgx)|*.hgx",\
                          style=wx.OPEN | wx.CHANGE_DIR 
                        )
     if dlg.ShowModal() == wx.ID_OK:
@@ -102,9 +103,7 @@ def open_model(frame, path):
     # Update all components so all the traces are gone.
     _post_new_model_event(frame, frame.model)
     try:
-        io.load_gx(path, frame.model,\
-                                frame.solver_control.optimizer,\
-                                frame.config)
+        io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
     except modellib.IOError, e:
         ShowModelErrorDialog(frame, e.__str__())
     except Exception, e:
@@ -112,8 +111,7 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        ShowErrorDialog(frame, 'Could not open the file. Python Error:'\
-                    '\n%s'%(val,))
+        ShowErrorDialog(frame, 'Could not open the file. Python Error:\n%s' % (val,))
         return
     try:
         [p.ReadConfig() for p in get_pages(frame)]
@@ -123,8 +121,7 @@ def open_model(frame, path):
         val = outp.getvalue()
         outp.close()
         print val
-        ShowErrorDialog(frame, 'Could not read the config for the'
-                ' plots. Python Error:\n%s'%(val,))
+        ShowErrorDialog(frame, 'Could not read the config for the plots. Python Error:\n%s' % (val,))
     # Letting the plugin do their stuff...
     try:
         frame.plugin_control.OnOpenModel(None)
@@ -170,14 +167,13 @@ def save(frame, event):
     frame.model.set_script(frame.script_editor.GetText())
     fname = frame.model.get_filename()
     # If model hasn't been saved
-    if  fname == '':
+    if fname == '':
         # Proceed with calling save as
         save_as(frame, event)
     else:
         # If it has been saved just save it
         try:
-            io.save_gx(fname, frame.model, frame.solver_control.optimizer,\
-                        frame.config)
+            io.save_file(fname, frame.model, frame.solver_control.optimizer, frame.config)
         except modellib.IOError, e:
             ShowModelErrorDialog(frame, e.__str__())
         except Exception, e:
@@ -185,8 +181,7 @@ def save(frame, event):
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
-            ShowErrorDialog(frame, 'Could not save the file. Python Error:'\
-                        '\n%s'%(val,))
+            ShowErrorDialog(frame, 'Could not save the file. Python Error: \n%s' % (val,))
         set_title(frame)
         
     frame.main_frame_statusbar.SetStatusText('Model saved to file', 1)
@@ -197,26 +192,25 @@ def save_as(frame, event):
     
     Event handler for save as ...
     '''
-    dlg = wx.FileDialog(frame, message="Save As", defaultFile="",\
-                        wildcard="GenX File (*.gx)|*.gx",\
-                         style=wx.SAVE | wx.CHANGE_DIR 
-                       )
+    dlg = wx.FileDialog(frame, message="Save As", defaultFile="",
+                        wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",
+                        style=wx.SAVE | wx.CHANGE_DIR
+                        )
     if dlg.ShowModal() == wx.ID_OK:
         frame.model.set_script(frame.script_editor.GetText())
         fname = dlg.GetPath()
         base, ext = os.path.splitext(fname)
         if ext == '':
-            ext = '.gx'
-	    fname = base + ext
+            ext = '.hgx'
+        fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
-            result = ShowQuestionDialog(frame, \
-            'The file %s already exists. Do you wish to overwrite it?'%filename\
-            , 'Overwrite?')
+            result = ShowQuestionDialog(frame, 'The file %s already exists. Do you wish to overwrite it?' % filename,
+                                        'Overwrite?')
         if result:
             try:
-                io.save_gx(fname, frame.model, frame.solver_control.optimizer,\
+                io.save_file(fname, frame.model, frame.solver_control.optimizer,\
                         frame.config)
             except modellib.IOError, e:
                 ShowModelErrorDialog(frame, e.__str__())
@@ -225,8 +219,7 @@ def save_as(frame, event):
                 traceback.print_exc(200, outp)
                 val = outp.getvalue()
                 outp.close()
-                ShowErrorDialog(frame, 'Could not save the file. Python Error:'\
-                            '\n%s'%(val,))
+                ShowErrorDialog(frame, 'Could not save the file. Python Error:\n%s'%(val,))
             set_title(frame)
         
     dlg.Destroy()
@@ -626,8 +619,11 @@ def project_fom_parameter(frame, row):
         x, y = frame.solver_control.ProjectEvals(row)
         if len(x) == 0 or len(y) == 0:
             ShowNotificationDialog(frame, 'Please conduct a fit before' +
-                                   ' scanning a parameter. The script needs to be compiled and foms have'
+                                   ' projecting a parameter. The script needs to be compiled and foms have'
                                    + ' to be collected.')
+            return
+        elif frame.model.fom is None or np.isnan(frame.model.fom):
+            ShowNotificationDialog(frame, 'The model must be simulated (FOM is not a valid number)')
             return
         fs, pars = frame.model.get_sim_pars()
         bestx = pars[row]

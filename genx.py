@@ -18,7 +18,7 @@ def start_interactive(args):
         genx_path = os.path.split(os.path.abspath(genx.__file__))[0]
         sys.path.insert(0, genx_path)
         import genx_gui
-    if args.infile.endswith('.gx'):
+    if args.infile.endswith('.gx') or args.infile.endswith('.hgx'):
         app = genx_gui.MyApp(False, 0)
         # Create the window
         app.Yield()
@@ -31,9 +31,7 @@ def start_interactive(args):
         import model as modellib
         path = os.path.abspath(sys.argv[1])
         try:
-            io.load_gx(path, frame.model,\
-                              frame.solver_control.optimizer,\
-                              frame.config)
+            io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
         except modellib.IOError, e:
             ShowModelErrorDialog(frame, e.__str__())
         except Exception, e:
@@ -82,8 +80,10 @@ def start_interactive(args):
         frame.paramter_grid.SetParameters(frame.model.parameters)
         app.MainLoop()
     elif args.infile == '':
-      app = genx_gui.MyApp(True, 0)
-      app.MainLoop()
+        app = genx_gui.MyApp(True, 0)
+        app.MainLoop()
+    else:
+        print 'Wrong file ending on infile, should be .gx or .hgx. Exiting.'
 
 
 def calc_errorbars(config, mod, opt):
@@ -123,13 +123,13 @@ def start_fitting(args, rank=0):
                 calc_errorbars(config, mod, opt)
             if args.outfile:
                 print "Saving to %s"%args.outfile
-                io.save_gx(args.outfile, mod, opt, config)
+                io.save_file(args.outfile, mod, opt, config)
 
         opt.set_autosave_func(autosave)
 
     if rank == 0:
         print 'Loading model %s...'%args.infile
-    io.load_gx(args.infile, mod, opt, config)
+    io.load_file(args.infile, mod, opt, config)
     io.load_opt_config(opt, config)
     # has to be used in order to save everything....
     if args.esave:
@@ -150,7 +150,7 @@ def start_fitting(args, rank=0):
 
     if args.outfile and rank == 0:
         print 'Saving the initial model to %s'%args.outfile
-        io.save_gx(args.outfile, mod, opt, config)
+        io.save_file(args.outfile, mod, opt, config)
 
     # To start the fitting
     if rank == 0:
@@ -173,7 +173,7 @@ def start_fitting(args, rank=0):
             calc_errorbars(config, mod, opt)
         print 'Saving the fit to %s'%args.outfile
         opt.set_use_mpi(False)
-        io.save_gx(args.outfile, mod, opt, config)
+        io.save_file(args.outfile, mod, opt, config)
 
     if rank == 0:
         print 'Fitting successfully completed'
@@ -264,8 +264,8 @@ if __name__ == "__main__":
     opt_group.add_argument('-e', '--error', action='store_true', help='Calculate error bars before saving to file.')
 
 
-    parser.add_argument('infile', nargs='?', default='', help='The .gx file to load')
-    parser.add_argument('outfile', nargs='?', default='', help='The .gx file to save into')
+    parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load')
+    parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
 
     args = parser.parse_args()
     if not __mpi__:
