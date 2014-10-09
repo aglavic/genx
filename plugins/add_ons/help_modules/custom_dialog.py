@@ -260,19 +260,20 @@ class FloatObjectValidator(wx.PyValidator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
     """
-    def __init__(self, eval_func = eval):
+    def __init__(self, eval_func = eval, alt_types = []):
         """ Standard constructor.
         """
         wx.PyValidator.__init__(self)
         self.value=None
         self.eval_func = eval_func
+        self.alt_types = alt_types
 
     def Clone(self):
         """ Standard cloner.
 
             Note that every validator must implement the Clone() method.
         """
-        return FloatObjectValidator(self.eval_func)
+        return FloatObjectValidator(self.eval_func, self.alt_types)
 
 
     def Validate(self, win):
@@ -285,7 +286,6 @@ class FloatObjectValidator(wx.PyValidator):
             val = self.eval_func(text)
             if is_reflfunction(val):
                 val = val.validate()
-            self.value=float(val)
         except StandardError,S:
             wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
             textCtrl.SetBackgroundColour("pink")
@@ -293,9 +293,18 @@ class FloatObjectValidator(wx.PyValidator):
             textCtrl.Refresh()
             return False
         else:
-            #print 'OK'
-            textCtrl.SetBackgroundColour(
-                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            try:
+                self.value=float(val)
+            except StandardError, S:
+                #print type(val), self.alt_types
+                if not any([isinstance(val, typ) for typ in self.alt_types]):
+                    wx.MessageBox("Wrong type of parameter\nERROR:\n%s"%S.__str__(), "Error")
+                    textCtrl.SetBackgroundColour("pink")
+                    textCtrl.SetFocus()
+                    textCtrl.Refresh()
+                    return False
+
+            textCtrl.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
             textCtrl.Refresh()
             return True
 
@@ -319,18 +328,19 @@ class ComplexObjectValidator(wx.PyValidator):
     """ This validator is used to ensure that the user has entered something
        into the text object editor dialog's text field.
     """
-    def __init__(self, eval_func = eval):
+    def __init__(self, eval_func = eval, alt_types = []):
         """ Standard constructor.
         """
         wx.PyValidator.__init__(self)
         self.value=None
         self.eval_func = eval_func
+        self.alt_types = alt_types
      
     def Clone(self):
         """ Standard cloner.
             Note that every validator must implement the Clone() method.
         """
-        return ComplexObjectValidator(self.eval_func)
+        return ComplexObjectValidator(self.eval_func, self.alt_types)
 
 
     def Validate(self, win):
@@ -350,17 +360,27 @@ class ComplexObjectValidator(wx.PyValidator):
             try:
                self.value = complex(val)
             except StandardError,S:
-                wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
+                if not any([isinstance(val, typ) for typ in self.alt_types]):
+                    wx.MessageBox("Can't evaluate the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
+                    textCtrl.SetBackgroundColour("pink")
+                    textCtrl.SetFocus()
+                    textCtrl.Refresh()
+                    return False
+                else:
+                    textCtrl.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                    textCtrl.Refresh()
+                    return True
+        except StandardError, S:
+            if not any([isinstance(val, typ) for typ in self.alt_types]):
+                wx.MessageBox("Can't evaluate the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
                 textCtrl.SetBackgroundColour("pink")
                 textCtrl.SetFocus()
                 textCtrl.Refresh()
                 return False
-        except StandardError, S:
-            wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
-            textCtrl.SetBackgroundColour("pink")
-            textCtrl.SetFocus()
-            textCtrl.Refresh()
-            return False
+            else:
+                textCtrl.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                textCtrl.Refresh()
+                return True
         else:
             #print 'OK'
             textCtrl.SetBackgroundColour(
@@ -469,7 +489,6 @@ class ValidateBaseDialog(wx.Dialog):
                 tc[item] = group_tc[item]
             sizer.Add(col_box_sizer, flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
         return sizer, tc
-
 
     def layout_group(self, parent, pars, vals, editable_pars):
         if self.units:
