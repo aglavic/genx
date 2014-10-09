@@ -834,7 +834,7 @@ class SamplePanel(wx.Panel):
                 #if item!='n' and item!='fb':
                 if type(self.model.LayerParameters[item]) != type(1+1.0J):
                     # Handle real parameters
-                    validators[item] = FloatObjectValidator(eval_func)
+                    validators[item] = FloatObjectValidator(eval_func, alt_types=[self.model.Layer])
                     func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
                     grid_value = grid_parameters.get_value_by_name(func_name)
                     if grid_value is not None:
@@ -843,7 +843,7 @@ class SamplePanel(wx.Panel):
 
                 else:
                     # Handle complex parameters
-                    validators[item] = ComplexObjectValidator(eval_func)
+                    validators[item] = ComplexObjectValidator(eval_func, alt_types=[self.model.Layer])
                     func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
                     grid_value_real = grid_parameters.get_value_by_name(func_name + 'real')
                     grid_value_imag = grid_parameters.get_value_by_name(func_name + 'imag')
@@ -907,7 +907,7 @@ class SamplePanel(wx.Panel):
                 if item!='Layers':
                     value=getattr(sel, item)
                     if isinstance(value,float):
-                        validators[item] = FloatObjectValidator(eval_func)
+                        validators[item] = FloatObjectValidator(eval_func, alt_types=[self.model.Stack])
                     else:
                         validators[item] = TextObjectValidator()
                     items.append((item,value))

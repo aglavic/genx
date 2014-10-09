@@ -209,6 +209,24 @@ def is_reflfunction(obj):
     '''
     return obj.__class__.__name__ == 'ReflFunction'
 
+def resolve_par(obj, par_name, max_recur=100):
+    """ Resolves a layer parameter and takes into account a coupling to another object.
+    If obj.par_name is of type obj the relation will be recursive, obj.par_name.par_name.
+    A maximum of 100 levels are conducted before an error is thrown.
+
+    :param obj: An object
+    :param par_name: A name of a member
+    :param max_recur: Maximum number of recursions.
+    :return: a value
+    """
+    val = getattr(obj, par_name)
+    i = 0
+    while type(val) is type(obj) and i < max_recur:
+        val = getattr(val, par_name)
+        i += 1
+
+    return val
+
 
 
 
@@ -338,7 +356,7 @@ class StackBase(ReflBase):
         return s
 
     def resolveLayerParameter(self, parameter):
-        par = [getattr(lay, parameter)
+        par = [resolve_par(lay, parameter)
                for lay in self.Layers] * self.Repetitions
         return par
 
@@ -386,11 +404,11 @@ class SampleBase(ReflBase):
     def resolveLayerParameters(self):
         par = self.Substrate._parameters.copy()
         for k in par:
-            par[k] = [getattr(self.Substrate, k)]
+            par[k] = [resolve_par(self.Substrate, k)]
         for k in self.Substrate._parameters:
             for stack in self.Stacks:
                 par[k] = par[k] + stack.resolveLayerParameter(k)
-            par[k] = par[k] + [getattr(self.Ambient, k)]
+            par[k] = par[k] + [resolve_par(self.Ambient, k)]
         return par
 
 

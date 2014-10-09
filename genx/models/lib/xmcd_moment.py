@@ -164,7 +164,7 @@ References:
        magnetic circular dichroism analysis for 3d transition metals. Applied Physics A: Materials Science & Processing,
        78(6), 855–865. doi:10.1007/s00339-003-2442-8
 
-.. [Dörfler06] Dörfler, Fabian (2006). Contributions to the theory of x-ray magnetic dichroism. Max-Planck-Institut für
+.. [Dörfler06] Dörfler, Fabian (2006). Contributions to the theory of x-ray magnetic dichroism. Max-Planck-Institut fur
        Metallforschung Stuttgart and Universität Stuttgart. PhD thesis.
 
        Dörfler, F., & Fähnle, M. (2006). Theoretical justification of ground-state moment analysis of magnetic
@@ -175,12 +175,26 @@ References:
 
 """
 
+import os
+
 import numpy as np
 from scipy import special
-
-from refl import ReflFunction
+from scipy import integrate
 
 import refl
+
+_head, _tail = os.path.split(__file__)
+# Look only after the file name and not the ending since
+# the file ending can be pyc if compiled...
+__FILENAME__ = _tail.split('.')[0]
+# This assumes that plugin is under the current dir may need
+# changing
+__MODULE_DIR__ = _head
+if __MODULE_DIR__ == '':
+    __MODULE_DIR__ = '.'
+
+__F_DB_DIR__ = os.path.join(__MODULE_DIR__, '../databases/f1f2_nist/')
+
 
 def voigt(x, x_0, gamma, sigma):
     """ The complex Voigt function (a convolution of a Lorentzian and a Gaussian function).
@@ -348,11 +362,12 @@ def test_h():
     """ Compare the calculations with previously tabulated values.
 
     Validate the calculation of the u values by comparing the h values calculated by this module
-    with the ones calculated from [Gold04]_
+    with the ones calculated from the (Gold, 2004)
 
-    .. [Gold04] Gold, S., Bayer, a., & Goering, E. (2004). Ground-State-Moment-Analysis: A quantitative tool for X-ray
-       magnetic circular dichroism analysis for 3d transition metals. Applied Physics A: Materials Science & Processing,
-       78(6), 855–865. doi:10.1007/s00339-003-2442-8
+    References:
+        Gold, S., Bayer, a., & Goering, E. (2004). Ground-State-Moment-Analysis: A quantitative tool for X-ray
+        magnetic circular dichroism analysis for 3d transition metals. Applied Physics A: Materials Science & Processing,
+        78(6), 855–865. doi:10.1007/s00339-003-2442-8
     """
     xyz_table = [(0, 0, 0), (1, 1, 0), (1, 0, 1), (0, 1, 1), (2, 1, 1), (2, 0, 2)]
 
@@ -438,37 +453,122 @@ def calc_de(hs, j, l, s):
     return hs*(j*(j + 1.) + s*(s + 1) - l*(l + 1.))/(2*j*(j + 1.))
 
 class Spectrum2p(refl.ReflBase):
-    """ Class to model the lineshape of a 2p level including dichroism
+    """ Class to model the lineshape of a 2p level including dichroism.
+
+    Parameters:
+            hs(float): The exchange field (eV).
+            soc(float):  The spin orbit coupling (eV).
+            gsm(list of tuples 3xint):  The ground state moments used in the spectra, a list of 3 int tuples.
+            norm_denom(list of floats):  The normalisation denominators for the ground
+                                         state moments (same order as gsm).
+            valid_e(float): Energy (eV) where a validation (type check) of the function is made when the scattering
+                            lengths are inserted in a validator (used in the Reflectivity plugin).
+
+
+    This class contains spectra-wide parameters for the model. It also contains the
+    scattering lengths that can be used in a reflectivity model. The scattering lengths functions are
+
+    * ``fres`` - The resonant (unpolarised) part of the scattering length.
+    * ``fm1`` - The dicroic part of the scattering length. The imaginary part correspond to the XMCD signal.
+    * ``fm2`` - The linear dichroic signal. The imaginary part correspond to the XMLD signal.
+
+    The wXYZs from the SpectrumComponent class is scaled according to the following formula
+
+    .. math::
+        w^{xyxz}_\mathrm{eff} = w^{xyz}_\mathrm{SpectrumComponent} w^{xyz}_\mathrm{Spectrum2p}/\mathrm{norm\_denom}.
+
+
+    The subscripts on the right hand side denote which class the w parameter belongs to. The use for these normalisation
+    could be to define normalisation factors (norm_denom) from reference spectra with known values of number of holes,
+    spin magnetic moment and orbital magnetic moment. While keeping the spectral shape constant, constant
+    :math:`w^{xyz}_\mathrm{SpectrumComponent}` the overall spectra can be scaled to change the different values with the
+    parameters :math:`w^{xyz}_\mathrm{Spectrum2p}`.
+
+    Fitting Parameters
+        * hs(float) - The exchange field that causes the levels to split (eV).
+        * soc(float) - The spin orbit coupling (distance between L_2 and L_3 edge (eV).
+        * wXYZ(float) - The different global ground state moments (X, Y and Z are integers.
+
+    Member functions for simulation
+       * ``add_component`` - Add an component (ground state moment set) to the spectra.
+       * ``calc_spectra`` - Calculates a spectra (``fm1``, ``fres`` and ``fm2`` can be used as well).
+
     """
     _parameters = {'hs': 0., 'soc': 0.}
 
     def __init__(self, hs=0., soc=0., gsm=((0, 0, 0), (1, 1, 0), (1, 0, 1), (0, 1, 1), (2, 1, 1), (2, 0, 2)),
-                 valid_e=700.):
+                 norm_denom=(1., 1., 1, 1., 1., 1.), valid_e=700.):
+        """
+        Parameters:
+            hs(float): The exchange field (eV).
+            soc(float):  The spin orbit coupling (eV).
+            gsm(list of tuples 3xint):  The ground state moments used in the spectra, a list of 3 int tuples.
+            norm_denom(list of floats):  The normalisation denominators for the ground
+                                         state moments (same order as gsm).
+            valid_e(float): Energy (eV) where a validation (type check) of the function is made when the scattering
+                            lengths are inserted in a validator (used in the Reflectivity plugin).
+
+        """
+
         self.gsm = gsm
+        self.norm_denom = np.array(norm_denom, dtype=np.float64)
+        self.w_glob = np.ones_like(self.norm_denom)
+
         for par in self._parameters:
             self._make_set_func(par)
             self._make_get_func(par)
         self.hs = hs
         self.soc = soc
 
+        for i in range(len(self.gsm)):
+            self._make_w_set_func(i)
+            self._make_w_get_func(i)
+
         self.h_l3 = [create_h_table(3, gsm, 0), create_h_table(3, gsm, 1), create_h_table(3, gsm, 2)]
         self.h_l2 = [create_h_table(1, gsm, 0), create_h_table(1, gsm, 1), create_h_table(1, gsm, 2)]
 
         self.components = []
+        self.bkg = None
 
         self.j_l3, self.l_l3, self.s_l3 = 3./2., 1., 1./2.
         self.j_l2, self.l_l2, self.s_l2 = 1./2., 1., -1./2.
         self.m_l3 = np.arange(-self.j_l3, self.j_l3 + 1./2., 1.0)
         self.m_l2 = np.arange(-self.j_l2, self.j_l2 + 1./2., 1.0)
 
-        self.fres = ReflFunction(self.calc_fres, (valid_e, ), (), id='f(E)')
-        self.fm1 = ReflFunction(self.calc_fm1, (valid_e, ), (), id='f(E)')
-        self.fm2 = ReflFunction(self.calc_fm2, (valid_e, ), (), id='f(E)')
+        self.fres = refl.ReflFunction(self.calc_fres, (valid_e, ), (), id='f(E)')
+        self.fm1 = refl.ReflFunction(self.calc_fm1, (valid_e, ), (), id='f(E)')
+        self.fm2 = refl.ReflFunction(self.calc_fm2, (valid_e, ), (), id='f(E)')
+
+    def _make_w_set_func(self, w_index):
+        """ Creates a set function for a ground state moment and binds it to the object
+            """
+        xyz = self.gsm[w_index]
+        par_name = 'w%d%d%d'%xyz
+        def set_func(val):
+            self.w_glob[w_index] = val
+
+        set_func.__name__ = 'set' + par_name.capitalize()
+        setattr(self, set_func.__name__, set_func)
+
+    def _make_w_get_func(self, w_index):
+        """ Creates a get function for parameter par and binds it to the object
+        """
+        xyz = self.gsm[w_index]
+        par_name = 'w%d%d%d'%xyz
+        def get_func():
+            return self.w_glob[w_index]
+
+        get_func.__name__ = 'get' + par_name.capitalize()
+        setattr(self, get_func.__name__, get_func)
 
     def add_component(self, **kwargs):
         comp = SpectrumComponent(self, self.gsm, **kwargs)
         self.components.append(comp)
         return comp
+
+    def add_background(self, *args, **kwargs):
+        self.bkg = Background2p(self, *args, **kwargs)
+        return self.bkg
 
     def calc_spectra_comp(self, energy, comp, a):
         """ Calculates the spectra from one component
@@ -487,8 +587,10 @@ class Spectrum2p(refl.ReflBase):
         peak_l3 = voigt(energy, comp.el3 + e_jm_l3[:, np.newaxis, np.newaxis], comp.gamma, comp.sigma)
         peak_l2 = voigt(energy, comp.el3 + e_jm_l2[:, np.newaxis, np.newaxis] + self.soc, comp.gamma, comp.sigma)
 
-        spectra = ((self.h_l3[a][:, :, np.newaxis]*comp.w[np.newaxis, :, np.newaxis]*peak_l3).sum(0).sum(0) +
-                   (self.h_l2[a][:, :, np.newaxis]*comp.w[np.newaxis, :, np.newaxis]*peak_l2).sum(0).sum(0))
+        eff_w = self.w_glob*comp.w/self.norm_denom
+
+        spectra = ((self.h_l3[a][:, :, np.newaxis]*eff_w[np.newaxis, :, np.newaxis]*peak_l3).sum(0).sum(0) +
+                   (self.h_l2[a][:, :, np.newaxis]*eff_w[np.newaxis, :, np.newaxis]*peak_l2).sum(0).sum(0))
 
         return spectra
 
@@ -514,12 +616,15 @@ class Spectrum2p(refl.ReflBase):
         if len(spectra) == 1:
             spectra = spectra[0]
 
-        # TODO: Check if this is correct!
         return spectra.conj()
 
     def calc_fres(self, energy):
         """ Calculate the isotropic resonant scattering length. """
-        return self.calc_spectra(energy, 0)
+        res = self.calc_spectra(energy, 0)
+        if self.bkg is not None:
+            res += self.bkg.calc_f(energy)
+
+        return res
 
     def calc_fm1(self, energy):
         """ Calculate the circular dirchroic compenet. """
@@ -581,6 +686,232 @@ class SpectrumComponent(refl.ReflBase):
         setattr(self, get_func.__name__, get_func)
 
 
+class Background2p(refl.ReflBase):
+    """ A class to model the 2p background spectra, the non-resonant part, with a smoothed step function.
+
+
+    Parameters:
+        el3 (float): Energy position of the L3 edge.
+        sigma (float): The width of the error function (std in eV).
+        pre_edge (float): The width of the pre edge region (eV).
+        post_edge (float): The width of the post edge region (eV).
+        de (float): The sampling spacing for the recalcualted table (eV).
+        kk_emax (float): The maximum energy values taken from the tables in eV. The value should be well
+                         above the K edge.
+        element (string): The element to which the background applies. Used to find theoretical f values (from the nist
+                          database), position of the L2/L3 edge and Z (number of electrons).
+        parent (Spectra2p): The parent spectra to which the Background applies.
+
+
+     The background, B, is modelled with two error function according to
+
+    .. math::
+        B = a_0 + a_1 e + (a_2 + a_3 e) \Phi(e, e_l3) + (a_4 + a_5 e) \Phi(e, e_l2),
+
+    where
+
+    .. math::
+        \Phi(e, e_0) = \frac{1}{2}\left( 1 + \mathrm{erf}\left( \frac{e - e_0}{\sqrt(2) \sigma \right)\right).
+
+    This function is used to up-sample the theoretical, tabulates, f2 values for the spectral region (the L2/L3 within
+    the pre and post edge values) to a point spacing of de. This data then replaces the data in the tabulated f2 values
+    and a Kramer-Kronig (KK) transform is conducted to get the f1 values. Note that the tabulated values in the class
+    contains a moved L2/L3 edge since this removes the necessity of conducting a full KK transform when a new background
+    is calculated. The KK transform fulfill the superposition principle. The KK transform conducted when the complex
+    are calculated, which is the difference between the tabulated and the current, over the spectral region only.
+
+    Note that this implementation does incorporates exchange split levels.
+
+    The parameters relating to KK transform are:
+        * sigma_tab (float): The width of the error function applied to the table (std in eV), defualt value 1 eV.
+        * edge_offset_tab (float): The offset of the stored tabulated data to the read data (eV), defualt value 40 eV.
+
+    Fitting parameters
+        * el3
+        * sigma
+    """
+    _parameters = {'el3': 710., 'sigma': 0.5, 'pre_edge': 100., 'post_edge': 100., 'de': 0.2,
+                   'kk_emax': 15000}
+    _elements = {'ti': {'Z': 22, 'El3': 455.5, 'El2': 461.5}, 'v': {'Z': 23, 'El3': 512.9, 'El2': 520.5},
+                 'cr': {'Z': 24, 'El3': 574.5, 'El2': 583.7}, 'mn': {'Z': 25, 'El3': 640.3, 'El2': 651.4},
+                 'fe': {'Z': 26, 'El3': 708.1, 'El2': 721.1}, 'co': {'Z': 27, 'El3': 778.6, 'El2': 793.6},
+                 'ni': {'Z': 28, 'El3': 854.7, 'El2': 871.9}, 'cu': {'Z': 29, 'El3': 931.1, 'El2': 951.0},
+                 }
+
+    def __init__(self, parent, element, **kwargs):
+
+        self.parent = parent
+
+        # Create set and get functions for all parameters.
+        for par in self._parameters:
+            setattr(self, par, self._parameters[par])
+            self._make_set_func(par)
+            self._make_get_func(par)
+
+        # Set all parameters given as keyword arguments
+        for k in kwargs:
+            try:
+                func = getattr(self, 'set' + k.capitalize())
+            except AttributeError:
+                raise AttributeError('%s is not an parameter in %s' %
+                                     (k, self.__class__))
+            else:
+                func(kwargs[k])
+
+        # Default numerical values for the step function width and its offset.
+        self.sigma_tab = 0.5
+        self.edge_offset_tab = 20.0
+
+        # Setting element specific details
+        if element.lower() not in self._elements:
+            raise NotImplementedError('Element %s has not a background that is implemented'%element)
+        el_db = self._elements[element.lower()]
+        self.Z = el_db['Z']
+        self.element = element.lower()
+
+        self.load_nff_file(os.path.join(__F_DB_DIR__, '%s.nff'%element.lower()), el_db['El3'], el_db['El2'])
+
+    def fit_table_data(self, e_tab, f2_tab, pre_slice, between_slice, post_slice):
+        """ Fits the L2 and L3 steps in tabular data to parametrise the spectra in the fitting range.
+
+
+        Parameters:
+            e_tab (array of floats): The scattering length tables energy values in eV.
+            f2_tab (array of floats): The f2 values of the scattering length tables.
+            pre_slice (slice): A slice object that contain the pre edge data.
+            between_slice (slice): A slice object that indexes the region between the L2 and L3 edge.
+            post_slice (slice): A slice object that indexes the region post edge region.
+
+        Returns:
+           f (function): A function of the form f(e, e_l3, e_l2, sigma).
+        """
+        e, f2 = e_tab, f2_tab
+
+        pre_edge = pre_slice
+        post_edge = post_slice
+        between = between_slice
+
+
+        p_pre = np.polyfit(e[pre_edge], f2[pre_edge], 1)
+        a1, a0 = p_pre
+        p_between = np.polyfit(e[between], (f2[between] - np.polyval(p_pre, e[between])), 1)
+        a3, a2 = p_between
+        p_post = np.polyfit(e[post_edge],
+                            (f2[post_edge] - np.polyval(p_between, e[post_edge]) -
+                            np.polyval(p_pre, e[post_edge])), 1)
+        a5, a4 = p_post
+
+        self.a0, self.a1, self.a2, self.a3, self.a4, self.a5 = a0, a1, a2, a3, a4, a5
+
+        def fit_table_bkg(e, e_l3, e_l2, sigma):
+            return a0 + a1*e + (a2 + a3*e)*step_func(e, e_l3, sigma) + (a4 + a5*e)*step_func(e, e_l2, sigma)
+
+        return fit_table_bkg
+
+    def create_bkg_f1(self, e_l3, e_l2, e_tab, f2_tab):
+        """ Create the background f1 data to be used in later calculations.
+
+        The method will fit the tabulated f2 value to analytical function and replace the step in the table with
+        a error function (with a width (std) given by the parameter ``sigma_tab``)
+        whose steps are offset ``edge_offset_tab`` eV. This function is then regridded with a step size of ``de``
+        on a range of ``e_l3 + pre_edge``and ``e_l2 - pre_edge``. These values are then merged into the original
+        f2 values in the ``f2_tab``array. This array is Kramer-Kronig transformed to yield the corresponding f1 values.
+        The values are stored as ``f1_tab`` and ``f2_tab``.
+
+        Parameters:
+            e_l3 (float): Position of the L3 edge in eV.
+            e_l2 (float): Position of the L2 edge in eV.
+            e_tab (array of floats): The scattering length tables energy values in eV.
+            f2_tab (array of floats): The f2 values of the scattering length tables.
+
+        Returns:
+            Nothing.
+        """
+
+        pre_edge = create_interval(e_tab, e_l3 - self.pre_edge, e_l3)
+        post_edge = create_interval(e_tab, e_l2, e_l2 + self.post_edge)
+
+        between = create_interval(e_tab, e_l3, e_l2)
+        spectra = create_interval(e_tab, e_l3 - self.pre_edge, e_l2 + self.post_edge)
+
+        e_fine = np.arange(e_tab[spectra].min(), e_tab[spectra].max(), self.de)
+
+        self.table_bkg_func = self.fit_table_data(e_tab, f2_tab, pre_edge, between, post_edge)
+
+        # We offset our calculated step values so that we don't get sharp peaks in our integrand which
+        # can cause strange behaviours.
+        f2_fine = self.table_bkg_func(e_fine, e_l3 + self.edge_offset_tab, e_l2 + self.edge_offset_tab, self.sigma_tab)
+
+        # Create arrays for doint the KK integral
+        e_new = np.r_[e_tab[:pre_edge.start], e_fine, e_tab[post_edge.stop:]]
+        f2_new = np.r_[f2_tab[:pre_edge.start], f2_fine, f2_tab[post_edge.stop:]]
+
+        # Grid the data so it becomes suitable for kk transforms.
+        e_int = np.arange(e_tab.min(), self.kk_emax, self.de)
+        f2_int = np.interp(e_int, e_new, f2_new)
+        ekk, f1kk = kk_int(e_int, f2_int, self.Z, e_l3 - self.pre_edge, e_l2 + self.post_edge)
+        self.e_tab = ekk
+        # Remove the constant (which will be added later when the KK transform is applied to the calculated bkg)
+        self.f1_tab = f1kk - (self.Z - (self.Z/82.5)**2.37)
+        self.f2_tab = self.table_bkg_func(self.e_tab, e_l3 + self.edge_offset_tab, e_l2 + self.edge_offset_tab,
+                                          self.sigma_tab)
+
+    def load_nff_file(self, file_path, e_l3_tab, e_l2_tab):
+        """ Load an nff (scattering length table) file.
+
+        Parameters:
+            file_path (string): Path to file.
+            e_l3_tab (float): Position of the L3 edge in the table (eV).
+            e_l2_tab (float): Position of the L2 edge in the table (eV).
+
+        Returns:
+            Nothing.
+        """
+        a = np.loadtxt(file_path, skiprows=1)
+        e, f1, f2 = a[:,0], a[:,1], a[:,2]
+        self.create_bkg_f1(e_l3_tab, e_l2_tab, e, f2)
+
+    def calc_f(self, energy):
+        """ Calculates the complex background scattering length for energy.
+
+        Parameters:
+            energy (array of floats): Energy points where to evaluate f
+
+        Returns:
+            f (array of complex): Scattering length.
+        """
+        f2 = self.calc_abs(energy)
+        f2kk = self.calc_abs(self.e_tab) - self.f2_tab
+        ekk, f1kk = kk_int(self.e_tab, f2kk, self.Z)
+        f1kk += self.f1_tab
+        f1 = np.interp(energy, self.e_tab, f1kk)
+        return f1 + 1.0J*f2
+
+    def calc_abs(self, energy):
+        """ Calculates the absorption background function for the given energies.
+
+        Parameters:
+            energy (array of floats): Energy points in eV.
+
+        Returns:
+           Abs (array of floats): Absorption, the complex part of the scattering length.
+        """
+        #TODO And the exchange splitting as well....
+        #e_jm_l3 = self.parent.m_l3*calc_de(self.parent.hs, self.parent.j_l3, self.parent.l_l3, self.parent.s_l3)
+        #e_jm_l2 = self.parent.m_l2*calc_de(self.parent.hs, self.parent.j_l2, self.parent.l_l2, self.parent.s_l2)
+
+        #step_l3 = step_func(e, e_l3 + e_jm_l3[np.newaxis, :], sigma).mean(axis=1)
+        #step_l2 = step_func(e, e_l2 + e_jm_l2[np.newaxis, :], sigma).mean(axis=1)
+
+        # Hmm then we need to know the relative weights to excite them up to a continuum as well...
+
+        #bkg = a0 + a1*e + (a2 + a3*e)*step_l3 + (a4 + a5*e)*step_l2
+
+        bkg = self.table_bkg_func(energy, self.el3, self.el3 + self.parent.soc, self.sigma)
+
+        return bkg
+
+
 class ModelGoering:
     """ A fit model to simulate one xmcd spectral moment of a p_3/2, p_1/2 absorption edge."""
 
@@ -632,7 +963,7 @@ class ModelGoering:
         self.hs = hs
         self.e_L3 = e_L3
 
-        self.fm1 = ReflFunction(self.calc_fm1, (valid_e, ), (), id='f(E)')
+        self.fm1 = refl.ReflFunction(self.calc_fm1, (valid_e, ), (), id='f(E)')
 
     def set_w000(self, val):
         self.w[0] = val
@@ -695,8 +1026,6 @@ class ModelGoering:
         if len(spectra) == 1:
             spectra = spectra[0]
 
-        # TODO: Need to check the sign?
-        # Accoroding to XOP's handbook f = f1 - 1.0J*f2
         spectra = spectra.real - 1.0J*spectra.imag
 
         return spectra
@@ -704,8 +1033,112 @@ class ModelGoering:
     def get_fm1(self):
         return self.fm1
 
+
+
+
+def create_interval(x, x_min, x_max):
+    """ Creates a closed slice [x_min, x_max] where x_min < x[slice] < x_max.
+
+        x:
+        x_min:
+        x_max:
+    Returns:
+        slice object
+    """
+    upper = np.argmin(np.abs(x - x_max))
+    if x[upper - 1] >= x_max:
+        upper -= 1
+    lower = np.argmin(np.abs(x - x_min))
+    if x[lower] <= x_min:
+        lower += 1
+
+    return slice(lower, upper)
+
+
+def step_func(x, x0, sigma):
+    """ Defines the step funciton (erf) of the L2/L3 edges
+
+        x (array of floats):
+        x0 (float):
+        sigma (float):
+
+    Returns:
+        step_func (array of floats):
+    """
+    return 0.5*special.erf((x - x0)/np.sqrt(2)/sigma) + 0.5
+
+
+def bkg_func(e, e_l3, e_l2, sigma, a0, a1, a2, a3, a4, a5):
+    return a0 + a1*e + (a2 + a3*e)*step_func(e, e_l3, sigma) + (a4 + a5*e)*step_func(e, e_l2, sigma)
+
+def kk_int(e, f2, Z=0, e_min=None, e_max=None):
+    """ Do the Kramer Kronig transform from f2 to f1
+
+    If the parameters e_min or e_max is given the evaluation range is reduced so that the final size of
+    f1kk is reduced. The Kramer-Kronig transformation is conducted as suggested by the Newville in the DIFFKK manual.
+    The integrand is defined as in the XOP data booklet.
+
+    Parameters:
+        e (array of floats): Energy values of the values found in f2 (eV).
+        f2 (array of floats): The imaginary part of the scattering length (electrons)
+        Z (int): The number of electrons of the element, (electrons).
+        e_min (float): The minimum value of the returned real part of f.
+        e_max (float): The maximum value of the returned real part of f.
+
+    Returns:
+        array of floats: The energy values for the calculated f1 (eV).
+        array of floats: The real part of the scattering length, f1, (electrons).
+
+    References:
+        Newville, M. and Olmsted Cross J. DIFFKK Manual. Downloaded from http://cars9.uchicago.edu/dafs/diffkk/diffkk.pdf
+        20140902.
+
+        X-ray data booklet, CXRO, Lawrence Berkley National Laboratory, Downloaded from http://xdb.lbl.gov 20140902.
+
+    """
+    ekk = e
+    if e_min is not None:
+        min_val = np.argmin(np.abs(e_min - ekk))
+        if min_val%2 == 1:
+            min_val += 1
+        ekk = ekk[min_val:]
+    if e_max is not None:
+        ekk = ekk[:np.argmin(np.abs(e_max - ekk))]
+
+    f1kk = np.empty_like(ekk)
+    f1kk[1::2] = integrate.trapz(e[::2]*f2[::2]/(ekk[1::2][:, np.newaxis]**2 - e[::2]**2), e[::2])
+    f1kk[::2] = integrate.trapz(e[1::2]*f2[1::2]/(ekk[::2][:, np.newaxis]**2 - e[1::2]**2), e[1::2])
+
+    fkk = Z - (Z/82.5)**2.37 + f1kk*2/np.pi + 1/np.pi*f2[-1]*e[-1]**2/ekk**2*np.log(np.abs(e.max()**2/(e.max()**2 + ekk**2)))
+
+    return ekk, fkk
+
+
+def kk_int_old(e_new, e, f2, Z, offset=1e-1, offset_outer=1, e_step=0.1):
+    """Original Kramer-Kronig transform - a slower implementation of kk_int"""
+    def create_int_func(e, f2, epoint):
+        def integ(e_val):
+            #print e.shape, f2.shape, e_val.shape
+            f2p = np.interp(e_val, e, f2)
+            return e_val*f2p/(epoint**2 - e_val**2 )
+        return integ
+
+    ekk = e_new
+
+    f1kk_tmp = [integrate.trapz(create_int_func(e, f2, ep)(np.arange(0, ep - offset_outer+e_step, e_step)),
+                np.arange(0, ep-offset_outer + e_step, e_step)) +
+                integrate.quad(create_int_func(e, f2, ep),  ep - offset_outer, ep - offset)[0] +
+                integrate.quad(create_int_func(e, f2, ep), ep + offset,  ep + offset_outer)[0] +
+                integrate.trapz(create_int_func(e, f2, ep)(np.arange(ep + offset_outer, e.max() + e_step, e_step)),
+                np.arange(ep+offset_outer, e.max() + e_step, e_step))
+                for ep in ekk]
+    f1kk = Z - (Z/82.5)**2.37 + np.array(f1kk_tmp)*2/np.pi + 1/np.pi*f2[-1]*e[-1]**2/ekk**2*np.log(np.abs(e.max()**2/(e.max()**2 + ekk**2)))
+    return f1kk
+
+
 if __name__ == '__main__':
     import pylab as pl
+
     mod = ModelGoering(e_L3=709., soc = 13.0, hs=0.8,
                        w000=0.0, w110=-1.0, w101=-0.07, w011=-1.0,
                        sigma=0.5, gamma=0.4)
@@ -714,7 +1147,32 @@ if __name__ == '__main__':
     cmp1 = mod2.add_component(el3=709.,
                               w000=0.0, w110=-1.0, w101=-0.07, w011=-1.0,
                               sigma=0.5, gamma=0.4)
-    print mod2.calc_spectra(710, 1)
-    pl.plot(e, mod.xmcd(e), 'x')
-    pl.plot(e, -mod2.calc_spectra(e, 1).imag)
+
+
+    a = np.loadtxt('../databases/f1f2_nist/fe.nff', skiprows=1)
+    e, f1, f2 = a[:,0], a[:,1], a[:,2]
+
+    bkg = Background2p(mod2, 'fe')
+    el_tab = bkg._elements[bkg.element]
+    bkg.setEl3(el_tab['El3'])
+    mod2.setSoc(el_tab['El2'] - el_tab['El3'])
+    e_test = np.arange(400, 1100, 0.5)
+    f2_mod = bkg.calc_abs(e_test)
+    f_mod = bkg.calc_f(e_test)
+
+    pl.subplot(211)
+    pl.plot(e_test, f_mod.imag)
+    pl.plot(e, f2, '.')
+    pl.xlim(e_test.min(), e_test.max())
+    pl.subplot(212)
+    pl.plot(e_test, f_mod.real)
+    pl.plot(e, f1, '.')
+    pl.xlim(e_test.min(), e_test.max())
+
+    fm1 = mod2.calc_fm1(e_test)
+    ekk, fm1kk_real = kk_int(e_test, fm1.imag)
+    pl.figure()
+    pl.plot(e_test, fm1kk_real)
+    pl.plot(e_test, fm1.real, '.')
+
     pl.show()
