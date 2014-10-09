@@ -125,11 +125,11 @@ class DataSet:
             obj = getattr(self, par)
             if type(obj) is dict:
                 sub_group = group[par]
-                for key in obj:
+                for key in sub_group:
                     if self.export_parameters[par] is array:
-                        obj[key] = sub_group[par].value
+                        obj[key] = sub_group[key].value
                     else:
-                        obj[key] = self.export_parameters[par](sub_group[par].value)
+                        obj[key] = self.export_parameters[par](sub_group[key].value)
             else:
                 if self.export_parameters[par] is array:
                     setattr(self, par, group[par].value)
