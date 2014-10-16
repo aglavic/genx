@@ -71,7 +71,8 @@ if "py2exe" in sys.argv:
                                            "h5py._errors"],
                               "optimize": 1, # Keep docstring (e.g. Shell usage)
                               "skip_archive": True, # setting not to move compiled code into library.zip file
-                              'packages': ['plugins', 'models', 'wx', 'matplotlib', 'ConfigParser', 'scipy', 'scipy.weave'],
+                              'packages': ['plugins', 'models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
+                                           'scipy.weave', "h5py"],
                               "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll'], 
                               'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',"IPython", "Tkinter",
                                            "tcl"
