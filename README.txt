@@ -1,6 +1,4 @@
-This package contain GenX 2.2 a program to refine x-ray and neutron reflectivity as well 
-as surface x-ray diffraction using differential evolution. It can also serve as a general
- fitting program.
+This package contain GenX 2.3.1 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -21,7 +19,7 @@ Changes
  * Refurbished the table of fitting parameters with new functionality and a new toolbar.
  * The reflectivity plugin has been improved:
    - Which parameter to fit can be set in the sample definition dialogs.
-   - The Sample tab shows the current value of the fitted parameters and also inidcates which are fitted.
+   - The Sample tab shows the current value of the fitted parameters and also indicates which are fitted.
  * Command line fitting has been added. Possible to run fit without the GUI.
  * A new file format based on hdf5 has been implemented (more platform independent).
  * MPI support has been added, thanks to Canrong Qiu (University of Alaska).
