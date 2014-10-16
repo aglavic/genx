@@ -14,3 +14,4 @@ Contents:
    development/write_fom
    development/packaging
    development/mag_refl
+   development/moment_analysis

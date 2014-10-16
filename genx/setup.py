@@ -65,13 +65,16 @@ if "py2exe" in sys.argv:
                             "icon_resources": [(1, "windows_build/genx.ico"), (2, "windows_build/genx_file.ico")]
                             } ], # executable for py2exe is windows application            
                 "options": {  "py2exe": {
-                              "includes": ["numpy", "matplotlib", "StringIO", "traceback", "thread", "multiprocessing", "ConfigParser",
-                                           'scipy', 'scipy.weave'],
+                              "includes": ["numpy", "matplotlib", "StringIO", "traceback", "thread", "multiprocessing",
+                                           "ConfigParser",
+                                           'scipy', 'scipy.weave', "h5py.defs", "h5py.utils", "h5py._proxy",
+                                           "h5py._errors"],
                               "optimize": 1, # Keep docstring (e.g. Shell usage)
                               "skip_archive": True, # setting not to move compiled code into library.zip file
                               'packages': ['plugins', 'models', 'wx', 'matplotlib', 'ConfigParser', 'scipy', 'scipy.weave'],
                               "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll'], 
-                              'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',
+                              'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',"IPython", "Tkinter",
+                                           "tcl"
                                            ],
                              }, 
                            }

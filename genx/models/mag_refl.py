@@ -799,6 +799,7 @@ def compose_sld(sample, instrument, theta, xray_energy):
         g_0 = sin(theta*pi/180.0)
         chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
                                                     B, C, M, d)
+
     return d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens, z[0]
 
 def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=None):
@@ -1166,16 +1167,28 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
     g_0 = sin(theta*pi/180.0)
     theory = instrument.getTheory()
     # Full theory
-    if XBuffer.g_0 != None:
+    if not XBuffer.g_0 is None:
         g0_ok = XBuffer.g_0.shape == g_0.shape
         if g0_ok:
-            g0_ok = any(not_equal(XBuffer.g_0,g_0))
+            g0_ok = allclose(XBuffer.g_0, g_0)
     else:
         g0_ok = False
+
+    buffer_wl = array(XBuffer.wavelength)
+    current_wl = array(lamda)
+    if not XBuffer.wavelength is None:
+        wl_ok = buffer_wl.shape == current_wl.shape
+        if wl_ok:
+            wl_ok = allclose(buffer_wl, lamda)
+    else:
+        wl_ok = False
+
     if theory == 0 or theory == instrument_string_choices['theory'][0]:
-        if (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
-            or not g0_ok or XBuffer.wavelength != lamda):
+        if (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords() or
+                not g0_ok or not wl_ok):
+            #print 'Calculating W'
             chi = tuple([tuple([item[::-1] for item in row]) for row in chi])
+            #print chi[0][0].shape
             d = d[::-1]
             non_mag = non_mag[::-1]
             mpy = mpy[::-1]
@@ -1186,7 +1199,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
             XBuffer.g_0 = g_0.copy()
             XBuffer.wavelength = lamda
         else:
-            #Reusing W
+            #print "Reusing W"
             W = XBuffer.W
         trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
         Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, conj(lib.xrmr.inv2(trans))))

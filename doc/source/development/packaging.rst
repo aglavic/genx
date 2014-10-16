@@ -4,8 +4,9 @@
 How to package GenX
 *******************
 
-1. Tag a release into the tags folder.
-2. Change the content in the ``__version__.py`` file
+#. Update README.txt
+#. Tag a release into the tags folder.
+#. Change the content in the ``__version__.py`` file
 
 OS-X
 ====
@@ -18,7 +19,14 @@ OS-X
 
 Win 7/Win 8
 ===========
-
+#. copy the tagged version to desktop
+#. Go to vX.Y.Z/models/lib; del *.so; del *.cpp; del *.pyc
+#. python build_ext.py
+#. Go to vX.Y.Z
+#. python -m compileall .
+#. python setup.py py2exe
+#. Open vX.Y.Z/windows_build/genx.iss with Inno Script Studio change AppVerName
+#. In Inno Script Studio press Ctrl+F9 to compile script.
 ?
 
 Binary dist

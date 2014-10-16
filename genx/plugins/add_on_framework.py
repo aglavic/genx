@@ -222,12 +222,15 @@ class Template:
         
         # remove all pages from the notebooks
         for i in self.plot_pages:
-            self.parent.plot_notebook.DeletePage(i)
+            if i < self.parent.plot_notebook.GetPageCount():
+                self.parent.plot_notebook.DeletePage(i)
         for i in self.input_pages:
-            self.parent.input_notebook.DeletePage(i)
+            if i < self.parent.input_notebook.GetPageCount():
+                self.parent.input_notebook.DeletePage(i)
             #print 'deleted page', i
         for i in self.data_pages:
-            self.parent.data_notebook.DeletePage(i)
+            if i < self.parent.data_notebook.GetPageCount():
+                self.parent.data_notebook.DeletePage(i)
         
         self.menus.reverse()
         # Remove the menus

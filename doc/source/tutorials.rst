@@ -23,6 +23,7 @@ Reflectivity tutorials
 
    /tutorials/xrr_fitting
    /tutorials/neutron_sim
+   /tutorials/neutron_fit
    /tutorials/slicing
 
 Surface x-ray diffraction

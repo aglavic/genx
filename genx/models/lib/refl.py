@@ -221,7 +221,7 @@ def resolve_par(obj, par_name, max_recur=100):
     """
     val = getattr(obj, par_name)
     i = 0
-    while type(val) is type(obj) and i < max_recur:
+    while type(val) is type(obj) and i < max_recur and not is_reflfunction(val):
         val = getattr(val, par_name)
         i += 1
 
