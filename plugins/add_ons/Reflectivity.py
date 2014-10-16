@@ -626,8 +626,8 @@ class SamplePanel(wx.Panel):
                     setattr(self.sampleh.sample, par, vals[par])
                 if editable[par] != states[par]:
                     value = eval_func(vals[par])
-                    minval = value*(1 - self.variable_span)
-                    maxval = value*(1 + self.variable_span)
+                    minval = min(value*(1 - self.variable_span), value*(1 + self.variable_span))
+                    maxval = max(value*(1 - self.variable_span), value*(1 + self.variable_span))
                     func_name = obj_name + '.' + _set_func_prefix + par.capitalize()
                     grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
                     # Tell the grid to reload the parameters
@@ -708,8 +708,8 @@ class SamplePanel(wx.Panel):
                         setattr(self.instruments[inst_name], par, old_vals[inst_name][par])
                     if editable[inst_name][par] != states[inst_name][par]:
                         value = eval_func(vals[inst_name][par])
-                        minval = value*(1 - self.variable_span)
-                        maxval = value*(1 + self.variable_span)
+                        minval = min(value*(1 - self.variable_span), value*(1 + self.variable_span))
+                        maxval = max(value*(1 - self.variable_span), value*(1 + self.variable_span))
                         func_name = inst_name + '.' + _set_func_prefix + par.capitalize()
                         grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval, maxval)
             # Tell the grid to reload the parameters
@@ -885,14 +885,23 @@ class SamplePanel(wx.Panel):
                         setattr(sel, par, vals[par])
                     if editable[par] != states[par]:
                         value = eval_func(vals[par])
-                        minval = value*(1 - self.variable_span)
-                        maxval = value*(1 + self.variable_span)
+
                         if type(self.model.LayerParameters[par]) is complex:
+                            #print type(value)
                             func_name = obj_name + '.' + _set_func_prefix + par.capitalize() + 'real'
-                            grid_parameters.set_fit_state_by_name(func_name, value.real, states[par], minval, maxval)
+                            val = value.real
+                            minval = min(val*(1 - self.variable_span), val*(1 + self.variable_span))
+                            maxval = max(val*(1 - self.variable_span), val*(1 + self.variable_span))
+                            grid_parameters.set_fit_state_by_name(func_name, val, states[par], minval, maxval)
+                            val = value.imag
+                            minval = min(val*(1 - self.variable_span), val*(1 + self.variable_span))
+                            maxval = max(val*(1 - self.variable_span), val*(1 + self.variable_span))
                             func_name = obj_name + '.' + _set_func_prefix + par.capitalize() + 'imag'
-                            grid_parameters.set_fit_state_by_name(func_name, value.imag, states[par], minval, maxval)
+                            grid_parameters.set_fit_state_by_name(func_name, val, states[par], minval, maxval)
                         else:
+                            val = value
+                            minval = min(val*(1 - self.variable_span), val*(1 + self.variable_span))
+                            maxval = max(val*(1 - self.variable_span), val*(1 + self.variable_span))
                             func_name = obj_name + '.' + _set_func_prefix + par.capitalize()
                             grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
 
@@ -941,8 +950,8 @@ class SamplePanel(wx.Panel):
                         setattr(sel, par, vals[par])
                     if editable[par] != states[par]:
                         value = eval_func(vals[par])
-                        minval = value*(1 - self.variable_span)
-                        maxval = value*(1 + self.variable_span)
+                        minval = min(value*(1 - self.variable_span), value*(1 + self.variable_span))
+                        maxval = max(value*(1 - self.variable_span), value*(1 + self.variable_span))
                         func_name = obj_name + '.' + _set_func_prefix + par.capitalize()
                         grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
                         # Does not seem to be necessary
