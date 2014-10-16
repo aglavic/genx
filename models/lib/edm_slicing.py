@@ -5,6 +5,8 @@ magnetic moment profiles (element specific).
 from pylab import *
 from numpy import *
 
+import numpy as np
+
 from scipy.special import erf
 
 def erf_profile(z, z0, d, sigma0, sigma1):
@@ -117,6 +119,7 @@ def compress_profile2(z, p1, p2, delta_max):
     p2ret = array([p2[inew[i]:inew[i+1]+1].mean() for i in range(len(inew)-1)])
     return znew, p1ret, p2ret
 
+
 def compress_profile_n(z, ps, delta_maxs):
     ''' Compresses multiple profiles, each profile: ps[i], 
     by merging the neighbouring layers that
@@ -124,7 +127,16 @@ def compress_profile_n(z, ps, delta_maxs):
     inew, znew = compress_profile_index_n(z, ps, delta_maxs)
     psnew = create_compressed_profile(ps, inew)
     return znew, psnew
-    
+
+
+def compare_layers(ps, delta_max):
+    """Compare consecutive layers and see if ps is smaller than delta_max"""
+    if len(ps.shape) > 1:
+        return (abs(ps[:-2:2] - ps[2::2]) > delta_max).any(axis=1)
+    else:
+        return abs(ps[:-2:2] - ps[2::2]) > delta_max
+
+
 def compress_profile_index_n(z, ps, delta_maxs):
     znew = z.copy()
     inew = arange(len(ps[0]))
@@ -132,31 +144,24 @@ def compress_profile_index_n(z, ps, delta_maxs):
     i = 0
     index = array([False])
     while any(bitwise_not(index)):
-        #print i
         i += 1
         index = array([True]*len(psnew[0]))
-        #index = ones(array(psnew))
-        test = [any(abs(ps_i[:-2:2] - ps_i[2::2]) > delta_maxs_i)
-                                            for ps_i, delta_maxs_i in zip(psnew, delta_maxs)]
-
-        #print len(test), len(index)
-        #for t in test:
-        #    print len(t)
-        index[1:-1:2] = reduce(bitwise_or, test)
+        test = array([compare_layers(ps_i, delta_maxs_i) for ps_i, delta_maxs_i in zip(psnew, delta_maxs)])
+        index[1:-1:2] = test.any(axis=0)
         
-        #print pnew.shape, index.shape
         psnew = [ps_i[index] for ps_i in psnew]
         znew = znew[index]
         inew = inew[index]
-    #print inew
     inew = append(inew, inew[-1])
     return inew, znew
+
 
 def create_compressed_profile(ps, inew):
     psret = [array([ps_i[inew[i]:inew[i+1]+1].mean(0) for i in range(len(inew)-1)]) for ps_i in ps]
     return psret
 
-def create_profile(d, sigma, dens, prof_funcs, dz = 0.01, 
+
+def create_profile(d, sigma, dens, prof_funcs, dz = 0.01,
                    mult = 3, buffer = 0, delta = 20):
     zlay = r_[0, cumsum(d)]
     z = arange(-sigma[0]*mult - buffer, zlay[-1]+sigma[-1]*mult + buffer, dz)
@@ -186,7 +191,8 @@ def create_profile(d, sigma, dens, prof_funcs, dz = 0.01,
 
     return z, pdens, pdens_indiv
 
-def create_profile_cm(d, sigma_c, sigma_m, prof_funcs, 
+
+def create_profile_cm(d, sigma_c, sigma_m, prof_funcs,
                       prof_funcs_mag, dmag_dens_l, dmag_dens_u, mag_dens, dd_m,
                       dz = 0.01, mult = 3, buffer = 0, delta = 20):
     '''Create a scattering length profile for magnetic x-ray scattering for the charge and
@@ -229,7 +235,8 @@ def create_profile_cm(d, sigma_c, sigma_m, prof_funcs,
 
     return (z, pdens_indiv_c, pdens_indiv_m)
 
-def create_profile_cm2(d, sigma_c, sigma_ml, sigma_mu, prof_funcs, 
+
+def create_profile_cm2(d, sigma_c, sigma_ml, sigma_mu, prof_funcs,
                       prof_funcs_mag, dmag_dens_l, dmag_dens_u, mag_dens, dd_l, dd_u,
                       dz = 0.01, mult = 3, buffer = 0, delta = 20):
     '''Create a scattering length profile for magnetic x-ray scattering for the charge and

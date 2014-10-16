@@ -15,18 +15,22 @@ M. Björck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
 Changes
 =======
- * The model mag_refl has been fully implemented and ca be considered to in beta state.
-   The model has also been evaluated against Sergey Stephanov’s x-ray server.
- * The Reflectivity plugin has been extended with:
-    - SLD profiles for each simulated data set
-    - Possible to define multiple instrument instances in the GUI
-    - Possible to choose from different simulation functions (Specular, OffSpecular 
-      and SLD).
-    - Storage of configuration files is done in the correct system folder 
-      (thanks to the module appdirs).
-    - Bundled versions (no need to have python installed) with installers for OS-X and 
-      Windows.
- * Numerous reported bugs fixed. (See http://sourceforge.net/p/genx/code/commit_browser 
+ * Changed the x-ray scattering length data tables to use the ffast nist, which
+   is more accurate at low energies, database:
+   http://www.nist.gov/pml/data/ffast/index.cfm
+ * Refurbished the table of fitting parameters with new functionality and a new toolbar.
+ * The reflectivity plugin has been improved:
+   - Which parameter to fit can be set in the sample definition dialogs.
+   - The Sample tab shows the current value of the fitted parameters and also inidcates which are fitted.
+ * Command line fitting has been added. Possible to run fit without the GUI.
+ * A new file format based on hdf5 has been implemented (more platform independent).
+ * MPI support has been added, thanks to Canrong Qiu (University of Alaska).
+ * The model mag_refl can now:
+   - Simulate energy scans.
+   - Simulate "normal" x-ray reflectivity.
+   - Simulate scans with polarisation analysis.
+   - Use negative values of mag.
+ * spec_nx and mag_refl can now simulate the asymmetry signal in neutron reflectivity.
+ * Refactoring of the Reflectivity base models.
+ * Numerous reported bugs fixed. (See http://sourceforge.net/p/genx/code/commit_browser
    for detailed changes).
-
-

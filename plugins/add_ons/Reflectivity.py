@@ -619,7 +619,7 @@ class SamplePanel(wx.Panel):
         
         if dlg.ShowModal()==wx.ID_OK:
             vals=dlg.GetValues()
-            print vals
+            #print vals
             states = dlg.GetStates()
             for par in pars:
                 if not states[par]:
@@ -694,7 +694,7 @@ class SamplePanel(wx.Panel):
         if dlg.ShowModal()==wx.ID_OK:
             old_vals = vals
             vals = dlg.GetValues()
-            print vals
+            #print vals
             states = dlg.GetStates()
             self.instruments = {}
             for par in self.model.InstrumentParameters:
@@ -810,7 +810,7 @@ class SamplePanel(wx.Panel):
                     if result:
                         self.Update()
                     else:
-                        print 'Unexpected problems...'
+                        print 'Unexpected problems when changing name...'
             dlg.Destroy()
         
         

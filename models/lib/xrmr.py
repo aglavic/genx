@@ -138,13 +138,13 @@ def calc_u_S(chi, g_0, mpy, non_mag):
     # Check if the chi_xx has the correct format already or not
     if len(chi_xx.shape) < 2:
         trans = np.ones(g_0.shape, dtype=np.complex128)
-        chi_xx = trans * chi_xx[:, np.newaxis];
+        chi_xx = trans * chi_xx[:, np.newaxis]
         chi_xy = trans * chi_xy[:, np.newaxis]
-        chi_xz = trans * chi_xz[:, np.newaxis];
+        chi_xz = trans * chi_xz[:, np.newaxis]
         chi_yx = trans * chi_yx[:, np.newaxis]
-        chi_yy = trans * chi_yy[:, np.newaxis];
+        chi_yy = trans * chi_yy[:, np.newaxis]
         chi_yz = trans * chi_yz[:, np.newaxis]
-        chi_zx = trans * chi_zx[:, np.newaxis];
+        chi_zx = trans * chi_zx[:, np.newaxis]
         chi_zy = trans * chi_zy[:, np.newaxis]
         chi_zz = trans * chi_zz[:, np.newaxis]
 
@@ -202,13 +202,13 @@ def calc_u_S(chi, g_0, mpy, non_mag):
 
     S = np.zeros((4, 4, chi_xx.shape[0], g_0.shape[1]), dtype=np.complex128)
     # The ambient layer
-    S[0, 0, 0] = 1.0;
-    S[0, 2, 0] = 1.0;
-    S[1, 1, 0] = 1.0;
+    S[0, 0, 0] = 1.0
+    S[0, 2, 0] = 1.0
+    S[1, 1, 0] = 1.0
     S[1, 3, 0] = 1.0
-    S[2, 0, 0] = g_0[0];
-    S[2, 2, 0] = -g_0[0];
-    S[3, 1, 0] = g_0[0];
+    S[2, 0, 0] = g_0[0]
+    S[2, 2, 0] = -g_0[0]
+    S[3, 1, 0] = g_0[0]
     S[3, 3, 0] = -g_0[0]
     u[0, 0] = g_0[0]
     u[1, 0] = g_0[0]
@@ -228,21 +228,21 @@ def calc_u_S(chi, g_0, mpy, non_mag):
     nm_u1 = np.sqrt(g_0[non_mag] ** 2 + chi)
     nm_u2 = -nm_u1
     sqr_eps = np.sqrt(1 + chi)
-    S[0, 0, non_mag] = 1.0;
+    S[0, 0, non_mag] = 1.0
     S[0, 1, non_mag] = 0.0
-    S[0, 2, non_mag] = 1.0;
+    S[0, 2, non_mag] = 1.0
     S[0, 3, non_mag] = 0.0
-    S[1, 0, non_mag] = 0.0;
+    S[1, 0, non_mag] = 0.0
     S[1, 1, non_mag] = sqr_eps
-    S[1, 2, non_mag] = 0.0;
+    S[1, 2, non_mag] = 0.0
     S[1, 3, non_mag] = sqr_eps
-    S[2, 0, non_mag] = nm_u1;
+    S[2, 0, non_mag] = nm_u1
     S[2, 1, non_mag] = 0.0
-    S[2, 2, non_mag] = nm_u2;
+    S[2, 2, non_mag] = nm_u2
     S[2, 3, non_mag] = 0.0
-    S[3, 0, non_mag] = 0.0;
+    S[3, 0, non_mag] = 0.0
     S[3, 1, non_mag] = nm_u1 / sqr_eps
-    S[3, 2, non_mag] = 0.0;
+    S[3, 2, non_mag] = 0.0
     S[3, 3, non_mag] = nm_u2 / sqr_eps
     u[0, non_mag] = nm_u1
     u[1, non_mag] = nm_u1
@@ -258,17 +258,17 @@ def calc_u_S(chi, g_0, mpy, non_mag):
         mpy_u3 = -mpy_u1
         mpy_u2 = np.sqrt(g_0[mpy] ** 2 + chi_zz[mpy])
         mpy_u4 = -mpy_u2
-        S[0, 0, mpy] = 1.0;
+        S[0, 0, mpy] = 1.0
         S[0, 1, mpy] = 0.0
-        S[0, 2, mpy] = 1.0;
+        S[0, 2, mpy] = 1.0
         S[0, 3, mpy] = 0.0
         S[1, 0, mpy] = 0.0
         S[1, 1, mpy] = -(mpy_u2 * chi_xz[mpy] + nx * (1 + chi_xx[mpy])) / (nx ** 2 - delta)
         S[1, 2, mpy] = 0.0
         S[1, 3, mpy] = -(mpy_u4 * chi_xz[mpy] + nx * (1 + chi_xx[mpy])) / (nx ** 2 - delta)
-        S[2, 0, mpy] = mpy_u1;
+        S[2, 0, mpy] = mpy_u1
         S[2, 1, mpy] = 0.0
-        S[2, 2, mpy] = mpy_u3;
+        S[2, 2, mpy] = mpy_u3
         S[2, 3, mpy] = 0.0
         S[3, 0, mpy] = 0.0
         S[3, 1, mpy] = -(mpy_u2 * nx + chi_xz[mpy]) / (nx ** 2 - delta)
@@ -287,9 +287,9 @@ def recursion_matrix(X, chi, d, g_0, lamda, u):
     kappa = 2 * np.pi / lamda
     Fp = np.zeros((2, 2, chi[0][0].shape[0], g_0.shape[1]), dtype=np.complex128)
     Fm = np.zeros((2, 2, chi[0][0].shape[0], g_0.shape[1]), dtype=np.complex128)
-    Fp[0, 0] = np.exp(-1.0J * u[0] * kappa * d);
+    Fp[0, 0] = np.exp(-1.0J * u[0] * kappa * d)
     Fp[1, 1] = np.exp(-1.0J * u[1] * kappa * d)
-    Fm[0, 0] = np.exp(-1.0J * u[2] * kappa * d);
+    Fm[0, 0] = np.exp(-1.0J * u[2] * kappa * d)
     Fm[1, 1] = np.exp(-1.0J * u[3] * kappa * d)
     Fp = Fp[:, :, 1:]
     Fm = Fm[:, :, 1:]
@@ -305,11 +305,11 @@ def recursion_matrix(X, chi, d, g_0, lamda, u):
     def reduce_func(W, i):
         return calc_W(W[0], W[1], W[2], W[3], Mtt[:, :, i, :], Mtr[:, :, i, :], Mrt[:, :, i, :], Mrr[:, :, i, :])
 
-    W0tt = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128);
-    W0tt[0, 0] = 1.0;
+    W0tt = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128)
+    W0tt[0, 0] = 1.0
     W0tt[1, 1] = 1.0
-    W0rr = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128);
-    W0rr[0, 0] = 1.0;
+    W0rr = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128)
+    W0rr[0, 0] = 1.0
     W0rr[1, 1] = 1.0
     W0rt = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128)
     W0tr = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128)
@@ -390,8 +390,9 @@ def calc_nonres(g_0, lamda, chi0, d):
     
 
 if __name__ == '__main__':
+    import time
     #alpha = np.arange(0.01, 10.0, 0.01)
-    alpha = np.arange(0.25, 30.0, 0.25)
+    alpha = np.arange(0.25, 30.0, 0.025)
     g_0 = np.sin(alpha*np.pi/180.0)
 
     F10 = 16.0 + 10.0J
@@ -407,15 +408,16 @@ if __name__ == '__main__':
     re = 2.8179402894e-5
     chi0_co = -l**2*re/np.pi*n_a_co*fco 
     chi0_pt = -l**2*re/np.pi*n_a_pt*fpt
-    
+
+    N = 1000
     #Single layer BEGIN
-    A = np.array([0, l**2*re/np.pi*n_a_co*(F11 + F1m1), 0], dtype = np.complex128)[:,np.newaxis]*np.ones(g_0.shape)
-    B = np.array([0, l**2*re/np.pi*n_a_co*(F11 - F1m1), 0.0], dtype = np.complex128)[:,np.newaxis]*np.ones(g_0.shape)
-    C = np.array([0, l**2*re/np.pi*n_a_co*(2*F10 - F11 - F1m1), 0], dtype = np.complex128)[:,np.newaxis]*np.ones(g_0.shape)
+    A = np.array([0, ] + [l**2*re/np.pi*n_a_co*(F11 + F1m1), ]*N + [0, ], dtype = np.complex128)#[:, np.newaxis]*np.ones(g_0.shape)
+    B = np.array([0, ] + [l**2*re/np.pi*n_a_co*(F11 - F1m1), ]*N + [0.0], dtype = np.complex128)#[:, np.newaxis]*np.ones(g_0.shape)
+    C = np.array([0, ] + [l**2*re/np.pi*n_a_co*(2*F10 - F11 - F1m1), ]*N + [0], dtype = np.complex128)#[:, np.newaxis]*np.ones(g_0.shape)
     
-    chi0 = np.array([0.0, chi0_co, chi0_pt])[:,np.newaxis]*np.ones(g_0.shape)
-    d = np.array([1.0, 100.0, 10.0])
-    M = np.array([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]])[:,:,np.newaxis]*np.ones(g_0.shape)
+    chi0 = np.array([0.0, ] + [chi0_co, ]*N + [chi0_pt,])#[:,np.newaxis]*np.ones(g_0.shape)
+    d = np.array([1.0, ] + [100.0, ]*N + [10.0])
+    M = np.array([[1.0, 0.0, 0.0]] + [[1.0, 0.0, 0.0]]*N + [[1.0, 0.0, 0.0]])#[:,:,np.newaxis]*np.ones(g_0.shape)
     # SINGLE LAYER END
 
     #Single interface BEGIN
@@ -440,10 +442,15 @@ if __name__ == '__main__':
     ##M = np.array([[1.0, 0.0, 0.0]]  + [[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]*N + [[1.0, 0.0, 0.0]])
     
     
-
+    t1 = time.time()
     W = calc_refl(g_0, l_array, chi0, A, B, C, M, d)
+    t2 = time.time()
     W = calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0,
                       d*0, d*0)
+    t3 = time.time()
+    print "No roughness, simulation time: ", t2-t1, "s"
+    print "Roughness factors, simulation time ", t3-t2, "s"
+
     #W = calc_nonres(g_0, l, chi0, d)
     Ias = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(np.abs(W[0,0])**2 + np.abs(W[1,0])**2 + np.abs(W[0,1])**2 + np.abs(W[1,1])**2)
     Itot = (np.abs(W[0,0])**2 + np.abs(W[1,0])**2 + np.abs(W[0,1])**2 + np.abs(W[1,1])**2)/2
