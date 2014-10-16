@@ -1118,6 +1118,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz):
             #print 'Calc W'
             # Test
             chi = tuple([tuple([item[::-1] for item in row]) for row in chi])
+            print chi[0][0].shape
             d = d[::-1]
             non_mag = non_mag[::-1]
             mpy = mpy[::-1]
