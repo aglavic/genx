@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{03439AE4-FE61-49AC-8D3F-1351147CE8FC}
 AppName=GenX
-AppVerName=GenX 2.X.X TRUNK
+AppVerName=GenX 2.3.2
 AppPublisher=Matts Bjorck
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
