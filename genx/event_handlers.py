@@ -89,7 +89,7 @@ def open(frame, event):
            return
      
     dlg = wx.FileDialog(frame, message="Open", defaultFile="",\
-                        wildcard="GenX File (*.gx)|*.gx|HDF5 GenX File (*.hgx)|*.hgx",\
+                        wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",\
                          style=wx.OPEN | wx.CHANGE_DIR 
                        )
     if dlg.ShowModal() == wx.ID_OK:
