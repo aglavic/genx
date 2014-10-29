@@ -215,18 +215,7 @@ def set_optimiser_pars(optimiser, args):
     #    print "kr not set has to be bigger than 0"
 
 if __name__ == "__main__":
-    # Check if the application has been frozen
-    if hasattr(sys,"frozen") and True:
-        # Redirect all the output to log files
-        log_file_path = appdirs.user_log_dir('GenX', 'MattsBjorck')
-        # Create dir if not found
-        if not os.path.exists(log_file_path):
-            os.makedirs(log_file_path)
-        print log_file_path
-        #log_file_path = genx_gui._path + 'app_data/'
-        sys.stdout = open(log_file_path + '/genx.log', 'w')
-        sys.stderr = open(log_file_path + '/genx.log', 'w')
-    
+
     # py2exe multiprocessing support
     try:
         from multiprocessing import freeze_support
@@ -276,6 +265,17 @@ if __name__ == "__main__":
     elif args.mpi:
         start_fitting(args, rank)
     elif not args.run and not args.mpi:
+        # Check if the application has been frozen
+        if hasattr(sys, "frozen") and True:
+            # Redirect all the output to log files
+            log_file_path = appdirs.user_log_dir('GenX', 'MattsBjorck')
+            # Create dir if not found
+            if not os.path.exists(log_file_path):
+                os.makedirs(log_file_path)
+            print log_file_path
+            #log_file_path = genx_gui._path + 'app_data/'
+            sys.stdout = open(log_file_path + '/genx.log', 'w')
+            sys.stderr = open(log_file_path + '/genx.log', 'w')
         start_interactive(args)
 
 

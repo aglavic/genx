@@ -34,10 +34,14 @@ if _path != '':
 config_path = appdirs.user_data_dir('GenX', 'MattsBjorck') + '/'
 print config_path
 if not os.path.exists(config_path):
+    print 'Creating path: ', config_path
     os.makedirs(config_path)
+if not os.path.exists(config_path + 'profiles'):
+    print 'Creating path: ', config_path + 'profiles'
     shutil.copytree(_path + 'profiles', config_path + 'profiles')
-    print config_path + 'genx.conf'
-    shutil.copyfile(config_path + 'profiles/Default.conf', config_path + 'genx.conf')
+if not os.path.exists(config_path + 'genx.conf'):
+    print 'Creating genx.conf at ', config_path, 'by copying config from ', _path + 'profiles/Default.conf'
+    shutil.copyfile(_path + 'profiles/Default.conf', config_path + 'genx.conf')
 
 #raise Exception(_path)
 class MainFrame(wx.Frame):
