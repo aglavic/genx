@@ -75,7 +75,7 @@ if "py2exe" in sys.argv:
                                            'scipy.weave', "h5py"],
                               "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll'], 
                               'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',"IPython", "Tkinter",
-                                           "tcl"
+                                           "tcl", "mpi4py"
                                            ],
                              }, 
                            }
@@ -91,10 +91,10 @@ elif"py2app" in sys.argv:
          # Cross-platform applications generally expect sys.argv to
          # be used for opening files.
          options=dict(py2app=dict(argv_emulation = True, 
-                                  packages = ['matplotlib', 'numpy', 'plugins', 'models','wx',],
+                                  packages = ['matplotlib', 'numpy', 'plugins', 'models', 'wx', 'h5py'],
                                   includes = ['genx_gui'], 
                                   #resources = ['genx.conf','profiles'],
-                                  excludes = ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject'],
+                                  excludes = ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', "mpi4py"],
                                   iconfile = 'mac_build/genx.icns',
                                   plist = 'mac_build/Info.plist',
                                   ),
