@@ -27,7 +27,7 @@ __version__ = version.version.split()[0]
 __email__ = "matts.bjorck@gmail.com"
 __author_email__ = __email__
 __url__ = "http://genx.sourceforge.net/"
-__description__='''X-ray and Neutron reflectivity simulation and fitting.'''
+__description__='''X-ray and Neutron reflectivity fitting software.'''
 
 def rec_glob(path):
   # recursive list of files
