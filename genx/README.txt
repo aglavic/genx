@@ -11,8 +11,13 @@ References
 If you use the program please give reference to the following publication:
 M. Björck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
-Changes
-=======
+Changes 2.3.4
+=============
+ * Fixed bug that GenX does not start after installation on Windows machine.
+ * Fixed bug so that command line execution works better on frozen versions.
+
+Changes 2.3.0
+=============
  * Changed the x-ray scattering length data tables to use the ffast nist, which
    is more accurate at low energies, database:
    http://www.nist.gov/pml/data/ffast/index.cfm
