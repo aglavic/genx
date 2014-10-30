@@ -59,7 +59,7 @@ if "py2exe" in sys.argv:
   __data_files__+=matplotlib.get_py2exe_datafiles()
   __options__={ 
                 #"setup_requires": ['py2exe'], 
-                #"console": [ "__init__.py"], # set the executable for py2exe
+                #"console": [ "genx.py"], # set the executable for py2exe
                 "windows": [ {
                             "script": "genx.py",
                             "icon_resources": [(1, "windows_build/genx.ico"), (2, "windows_build/genx_file.ico")]

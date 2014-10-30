@@ -111,7 +111,9 @@ class DataSet:
             if type(obj) is dict:
                 sub_group = group.create_group(par)
                 for key in obj:
-                    sub_group[key] = obj[key]
+                    item = obj[key]
+                    if type(item) in [float, int, str, ndarray, array]:
+                        sub_group[key] = item
             else:
                 group[par] = obj
 
