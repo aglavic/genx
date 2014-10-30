@@ -260,7 +260,12 @@ if __name__ == "__main__":
     if args.infile != '':
         args.infile = os.path.abspath(args.infile)
     args.outfile = os.path.abspath(args.outfile)
-    os.chdir(os.path.abspath(os.path.split(model.__file__)[0]))
+    path = os.path.split(model.__file__)[0]
+    if os.path.abspath(path).endswith('.zip'):
+        os.chdir(os.path.split(path)[0])
+    else:
+        os.chdir(path)
+
     if not __mpi__:
         args.mpi = False
 
