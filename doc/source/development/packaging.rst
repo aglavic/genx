@@ -27,3 +27,9 @@ Win 7/Win 8
 #. python setup.py py2exe
 #. Open vX.Y.Z/windows_build/genx.iss with Inno Script Studio change AppVerName
 #. In Inno Script Studio press Ctrl+F9 to compile script.
+
+Testing
+=======
+#. Remove AppData/MattsBjorck on Win7 & Win8
+#. Install GenX on the machines
+#. Run the examples

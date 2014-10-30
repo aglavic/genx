@@ -11,10 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Björck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
-Changes 2.3.4
+Changes 2.3.5
 =============
  * Fixed bug that GenX does not start after installation on Windows machine.
  * Fixed bug so that command line execution works better on frozen versions.
+ * Fixed bugs regarding the c extensions in the frozen version.
 
 Changes 2.3.0
 =============
