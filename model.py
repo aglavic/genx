@@ -172,9 +172,11 @@ class Model:
         self.data.read_h5group(group['data'])
         self.script = str(group['script'].value)
         self.parameters.read_h5group(group['parameters'])
-        fom_func_name = str(group['fomfunction'])
+        fom_func_name = str(group['fomfunction'].value)
         if fom_func_name in fom_funcs.func_names:
             self.set_fom_func(eval('fom_funcs.' + fom_func_name))
+        else:
+            print "Can not find fom function name %s"%fom_func_name.value
 
         for kw in kwargs:
             kwargs[kw].read_h5group(group[kw])
