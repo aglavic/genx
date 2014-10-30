@@ -3,7 +3,7 @@
 
 import sys, os, appdirs, argparse
 
-import version
+import version, model
 
 def start_interactive(args):
     ''' Start genx in interactive mode (with the gui)
@@ -29,7 +29,7 @@ def start_interactive(args):
         from event_handlers import ShowModelErrorDialog, ShowErrorDialog, get_pages, \
                                       _post_new_model_event, set_title
         import model as modellib
-        path = os.path.abspath(sys.argv[1])
+        path = os.path.abspath(args.infile)
         try:
             io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
         except modellib.IOError, e:
@@ -215,18 +215,7 @@ def set_optimiser_pars(optimiser, args):
     #    print "kr not set has to be bigger than 0"
 
 if __name__ == "__main__":
-    # Check if the application has been frozen
-    if hasattr(sys,"frozen") and True:
-        # Redirect all the output to log files
-        log_file_path = appdirs.user_log_dir('GenX', 'MattsBjorck')
-        # Create dir if not found
-        if not os.path.exists(log_file_path):
-            os.makedirs(log_file_path)
-        print log_file_path
-        #log_file_path = genx_gui._path + 'app_data/'
-        sys.stdout = open(log_file_path + '/genx.log', 'w')
-        sys.stderr = open(log_file_path + '/genx.log', 'w')
-    
+
     # py2exe multiprocessing support
     try:
         from multiprocessing import freeze_support
@@ -268,6 +257,10 @@ if __name__ == "__main__":
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
 
     args = parser.parse_args()
+    if args.infile != '':
+        args.infile = os.path.abspath(args.infile)
+    args.outfile = os.path.abspath(args.outfile)
+    os.chdir(os.path.abspath(os.path.split(model.__file__)[0]))
     if not __mpi__:
         args.mpi = False
 
@@ -276,6 +269,17 @@ if __name__ == "__main__":
     elif args.mpi:
         start_fitting(args, rank)
     elif not args.run and not args.mpi:
+        # Check if the application has been frozen
+        if hasattr(sys, "frozen") and True:
+            # Redirect all the output to log files
+            log_file_path = appdirs.user_log_dir('GenX', 'MattsBjorck')
+            # Create dir if not found
+            if not os.path.exists(log_file_path):
+                os.makedirs(log_file_path)
+            #print log_file_path
+            #log_file_path = genx_gui._path + 'app_data/'
+            sys.stdout = open(log_file_path + '/genx.log', 'w')
+            sys.stderr = open(log_file_path + '/genx.log', 'w')
         start_interactive(args)
 
 

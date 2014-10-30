@@ -27,7 +27,7 @@ __version__ = version.version.split()[0]
 __email__ = "matts.bjorck@gmail.com"
 __author_email__ = __email__
 __url__ = "http://genx.sourceforge.net/"
-__description__='''X-ray and Neutron reflectivity simulation and fitting.'''
+__description__='''X-ray and Neutron reflectivity fitting software.'''
 
 def rec_glob(path):
   # recursive list of files
@@ -59,7 +59,7 @@ if "py2exe" in sys.argv:
   __data_files__+=matplotlib.get_py2exe_datafiles()
   __options__={ 
                 #"setup_requires": ['py2exe'], 
-                #"console": [ "__init__.py"], # set the executable for py2exe
+                #"console": [ "genx.py"], # set the executable for py2exe
                 "windows": [ {
                             "script": "genx.py",
                             "icon_resources": [(1, "windows_build/genx.ico"), (2, "windows_build/genx_file.ico")]
@@ -71,10 +71,11 @@ if "py2exe" in sys.argv:
                                            "h5py._errors"],
                               "optimize": 1, # Keep docstring (e.g. Shell usage)
                               "skip_archive": True, # setting not to move compiled code into library.zip file
-                              'packages': ['plugins', 'models', 'wx', 'matplotlib', 'ConfigParser', 'scipy', 'scipy.weave'],
+                              'packages': ['plugins', 'models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
+                                           'scipy.weave', "h5py"],
                               "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll'], 
                               'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',"IPython", "Tkinter",
-                                           "tcl"
+                                           "tcl", "mpi4py"
                                            ],
                              }, 
                            }
@@ -90,10 +91,10 @@ elif"py2app" in sys.argv:
          # Cross-platform applications generally expect sys.argv to
          # be used for opening files.
          options=dict(py2app=dict(argv_emulation = True, 
-                                  packages = ['matplotlib', 'numpy', 'plugins', 'models','wx',],
+                                  packages = ['matplotlib', 'numpy', 'plugins', 'models', 'wx', 'h5py'],
                                   includes = ['genx_gui'], 
                                   #resources = ['genx.conf','profiles'],
-                                  excludes = ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject'],
+                                  excludes = ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', "mpi4py"],
                                   iconfile = 'mac_build/genx.icns',
                                   plist = 'mac_build/Info.plist',
                                   ),

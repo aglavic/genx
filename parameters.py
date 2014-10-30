@@ -42,8 +42,8 @@ class Parameters:
         :param group: h5py Group to import from
         :return:
         """
-        self.data_labels = list(group['data_labels'].value)
-        self.data = [[c0, c1, c2, c3, c4, c5] for (c0, c1, c2, c3, c4, c5) in
+        self.data_labels = [str(item) for item in list(group['data_labels'].value)]
+        self.data = [[str(c0), float(c1), bool(c2), float(c3), float(c4), str(c5)] for (c0, c1, c2, c3, c4, c5) in
                      zip(group['data col 0'].value, group['data col 1'].value, group['data col 2'].value,
                          group['data col 3'].value,
                          group['data col 4'].value, group['data col 5'].value)]

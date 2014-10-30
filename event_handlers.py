@@ -89,8 +89,8 @@ def open(frame, event):
            return
      
     dlg = wx.FileDialog(frame, message="Open", defaultFile="",\
-                        wildcard="GenX File (*.gx)|*.gx|HDF5 GenX File (*.hgx)|*.hgx",\
-                         style=wx.OPEN | wx.CHANGE_DIR 
+                        wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",\
+                         style=wx.OPEN #| wx.CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
@@ -194,7 +194,7 @@ def save_as(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Save As", defaultFile="",
                         wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",
-                        style=wx.SAVE | wx.CHANGE_DIR
+                        style=wx.SAVE #| wx.CHANGE_DIR
                         )
     if dlg.ShowModal() == wx.ID_OK:
         frame.model.set_script(frame.script_editor.GetText())
