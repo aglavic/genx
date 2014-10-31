@@ -34,6 +34,10 @@ The needed dependencies are:
 * appdirs version > 1.2
 * h5py
 
+The non-mandotary packages are
+
+* mpi4py (with an MPI installation)
+
 On a Linux system these packages can usually be installed through the package manager. On a windows system the
 python (x,y) distribution contains all packages except appdirs which can be installed from the python package index.
 On OS-X all the package has to be installed separately.

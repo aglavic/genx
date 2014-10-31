@@ -4,8 +4,8 @@
 Tutorials
 *********
 
-Introduction to GenX
-====================
+Introduction
+============
 .. toctree::
    :maxdepth: 2
 
@@ -16,8 +16,8 @@ Introduction to GenX
    /tutorials/writing_model
 
 
-Reflectivity tutorials
-======================
+Reflectivity
+============
 .. toctree::
    :maxdepth: 2
 
@@ -33,3 +33,10 @@ Surface x-ray diffraction
 
    /tutorials/sxrd
    /tutorials/beta_rough
+
+Other tutorials
+===============
+.. toctree::
+   :maxdepth: 2
+
+   /tutorials/mpi
