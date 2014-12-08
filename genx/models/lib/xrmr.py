@@ -409,7 +409,7 @@ if __name__ == '__main__':
     chi0_co = -l**2*re/np.pi*n_a_co*fco 
     chi0_pt = -l**2*re/np.pi*n_a_pt*fpt
 
-    N = 1000
+    N = 100
     #Single layer BEGIN
     A = np.array([0, ] + [l**2*re/np.pi*n_a_co*(F11 + F1m1), ]*N + [0, ], dtype = np.complex128)#[:, np.newaxis]*np.ones(g_0.shape)
     B = np.array([0, ] + [l**2*re/np.pi*n_a_co*(F11 - F1m1), ]*N + [0.0], dtype = np.complex128)#[:, np.newaxis]*np.ones(g_0.shape)
@@ -445,8 +445,7 @@ if __name__ == '__main__':
     t1 = time.time()
     W = calc_refl(g_0, l_array, chi0, A, B, C, M, d)
     t2 = time.time()
-    W = calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0,
-                      d*0, d*0)
+    W = calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0, d*0, d*0)
     t3 = time.time()
     print "No roughness, simulation time: ", t2-t1, "s"
     print "Roughness factors, simulation time ", t3-t2, "s"
@@ -475,4 +474,14 @@ if __name__ == '__main__':
     ylabel('Asymmetry')
     xlabel('Incident angle [deg]')
     #print Ias
-    show()
+    #show()
+
+    # try to do some profiling
+    import pstats, cProfile
+    calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0, d*0, d*0)
+    #cProfile.runctx("calc_refl(g_0, l_array, chi0, A, B, C, M, d)", globals(), locals(), "Profile.prof")
+    #cProfile.runctx("calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0, d*0, d*0)",
+    #                globals(), locals(), "Profile.prof")
+
+    s = pstats.Stats("Profile.prof")
+    s.strip_dirs().sort_stats("time").print_stats()

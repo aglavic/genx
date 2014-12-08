@@ -678,8 +678,11 @@ class SamplePanel(wx.Panel):
                 if grid_value is not None:
                     vals[inst_name][item] = grid_value
             pars.append(item)
-            
-            
+
+        old_insts = []
+        for inst_name in self.instruments:
+            old_insts.append(inst_name)
+
         try:
             groups = self.model.InstrumentGroups
         except Exception:
@@ -697,21 +700,41 @@ class SamplePanel(wx.Panel):
             #print vals
             states = dlg.GetStates()
             self.instruments = {}
-            for par in self.model.InstrumentParameters:
-                for inst_name in vals:
-                    if inst_name not in self.instruments:
-                        # A new instrument must be created:
-                        self.instruments[inst_name] = self.model.Instrument()
+            for inst_name in vals:
+                new_instrument = False
+                if inst_name not in self.instruments:
+                    # A new instrument must be created:
+                    self.instruments[inst_name] = self.model.Instrument()
+                    new_instrument = True
+                for par in self.model.InstrumentParameters:
                     if not states[inst_name][par]:
                         setattr(self.instruments[inst_name], par, vals[inst_name][par])
                     else:
                         setattr(self.instruments[inst_name], par, old_vals[inst_name][par])
-                    if editable[inst_name][par] != states[inst_name][par]:
+                    if new_instrument and states[inst_name][par] > 0:
                         value = eval_func(vals[inst_name][par])
                         minval = min(value*(1 - self.variable_span), value*(1 + self.variable_span))
                         maxval = max(value*(1 - self.variable_span), value*(1 + self.variable_span))
                         func_name = inst_name + '.' + _set_func_prefix + par.capitalize()
                         grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval, maxval)
+                    elif not new_instrument:
+                        if editable[inst_name][par] != states[inst_name][par]:
+                            value = eval_func(vals[inst_name][par])
+                            minval = min(value*(1 - self.variable_span), value*(1 + self.variable_span))
+                            maxval = max(value*(1 - self.variable_span), value*(1 + self.variable_span))
+                            func_name = inst_name + '.' + _set_func_prefix + par.capitalize()
+                            grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval, maxval)
+
+            print old_insts, vals.keys()
+            # Loop to remove instrument from grid if not returned from Dialog
+            for inst_name in old_insts:
+                if inst_name not in vals.keys():
+                    for par in self.model.InstrumentParameters:
+                        if editable[inst_name][par] > 0:
+                            func_name = inst_name + '.' + _set_func_prefix + par.capitalize()
+                            grid_parameters.set_fit_state_by_name(func_name, 0, 0, 0, 0)
+
+
             # Tell the grid to reload the parameters
             self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
 

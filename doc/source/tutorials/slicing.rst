@@ -128,7 +128,7 @@ The entire script should look something like this:
     def Sim(data):
         # Lets do the Slicing
         layers = [model.Layer(dens = 1, f = rho_x, b = rho_n, d = stepsize) for rho_x, rho_n in profile(z)]
-        ProfStack.setLayers(layers)
+        ProfStack.Layers = layers
         I = []
         # BEGIN Dataset 0 DO NOT CHANGE
         inst.setProbe('x-ray')

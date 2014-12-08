@@ -630,7 +630,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         border.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
         
         buttons = self.create_buttons()
-        border.Add(buttons, flag = wx.ALIGN_RIGHT|wx.ALL, border = 5)
+        border.Add(buttons, flag=wx.ALIGN_RIGHT|wx.ALL, border=5)
         self.SetSizer(border)
         border.Fit(self)
         self.border_sizer = border
@@ -664,7 +664,9 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         '''Do the notebook layout in the dialog
         '''
         self.main_sizer = wx.Notebook(self, -1, style=wx.NB_TOP)
-        for item in self.vals:
+        names = self.vals.keys()
+        names.sort()
+        for item in names:
             editable_pars = {}
             if item in self.editable_pars:
                 editable_pars = self.editable_pars[item]
@@ -675,12 +677,18 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         '''
         pos = self.main_sizer.GetSelection()
         current_name = self.main_sizer.GetPageText(pos)
+        if len(self.fixed_pages) > 0:
+            current_name = self.fixed_pages[0]
         index = 1
         while '%s_%d'%(current_name, index) in self.vals.keys():
             index += 1
         new_name = '%s_%d'%(current_name, index)
-            
-        self.AddPage(new_name, self.vals[current_name], {}, select = True)
+
+        state = {}
+        for key in self.vals[current_name]:
+            state[key] = 0
+
+        self.AddPage(new_name, self.vals[current_name], state, select=True)
         self.changes.append(('', new_name))
     
     def eh_delete(self, evt):
@@ -735,6 +743,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         # been executed
         if not name in self.vals:
             self.vals[name] = vals.copy()
+            self.editable_pars[name] = editable_pars.copy()
             
     def RemovePage(self, name):
         '''Remove a page from the notebook
