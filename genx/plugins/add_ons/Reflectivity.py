@@ -725,7 +725,6 @@ class SamplePanel(wx.Panel):
                             func_name = inst_name + '.' + _set_func_prefix + par.capitalize()
                             grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval, maxval)
 
-            print old_insts, vals.keys()
             # Loop to remove instrument from grid if not returned from Dialog
             for inst_name in old_insts:
                 if inst_name not in vals.keys():

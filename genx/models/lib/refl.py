@@ -357,7 +357,7 @@ class StackBase(ReflBase):
 
     def resolveLayerParameter(self, parameter):
         par = [resolve_par(lay, parameter)
-               for lay in self.Layers] * self.Repetitions
+               for lay in self.Layers] * int(self.Repetitions)
         return par
 
 
