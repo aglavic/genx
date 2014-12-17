@@ -181,6 +181,10 @@ SampleParameters={'Stacks':[], 'Ambient':None, 'Substrate':None}
 AA_to_eV = 12398.5
 ''' Conversion from Angstrom to eV E = AA_to_eV/lamda.'''
 
+
+q_limit = 1e-10
+''' Minimum allowed q-value '''
+
 # A buffer to save previous calculations for spin-flip calculations
 class Buffer:
     Ruu = 0
@@ -259,10 +263,13 @@ def Specular(TwoThetaQz,sample,instrument):
     TwoThetaQz data.x
     # END Parameters
     """
+
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
     Q, TwoThetaQz, weight = resolution_init(TwoThetaQz, instrument)
-            
+    if any(Q < q_limit):
+        raise ValueError('The q vector has to be above %.1e'%q_limit)
+
     type = instrument.getProbe()
     pol = instrument.getPol()
 
