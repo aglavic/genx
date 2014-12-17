@@ -188,6 +188,7 @@ class Buffer:
     Rdu = 0
     Rud = 0
     parameters = None
+    TwoThetaQz = None
 
 
 def footprintcorr(Q, instrument):
@@ -317,7 +318,11 @@ def Specular(TwoThetaQz,sample,instrument):
     # Spin flip
     elif type == instrument_string_choices['probe'][3] or type == 3:
         # Check if we have calcluated the same sample previous:
-        if Buffer.parameters != parameters:
+        if Buffer.TwoThetaQz is not None:
+            Q_ok = Buffer.TwoThetaQz.shape == Q.shape
+            if Q_ok:
+                Q_ok = any(not_equal(Buffer.TwoThetaQz, Q))
+        if Buffer.parameters != parameters or not Q_ok:
             msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
             np = 1.0-sld-msld
             nm = 1.0-sld+msld
@@ -326,6 +331,7 @@ def Specular(TwoThetaQz,sample,instrument):
             (Ruu,Rdd,Rud,Rdu) = MatrixNeutron.Refl(Q,Vp,Vm,d,magn_ang, sigma)
             Buffer.Ruu = Ruu; Buffer.Rdd = Rdd; Buffer.Rud = Rud
             Buffer.parameters = parameters.copy()
+            Buffer.TwoThetaQz = Q.copy()
         else:
             pass
         # Polarization uu or ++
