@@ -1098,7 +1098,11 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
         wl = instrument.getWavelength()
         Q = 4*pi/wl*sin(theta*pi/180)
         # Check if we have calcluated the same sample previous:
-        if NBuffer.parameters != parameters or not all(equal(NBuffer.TwoThetaQz, Q)):
+        if NBuffer.TwoThetaQz is not None:
+            Q_ok = NBuffer.TwoThetaQz.shape == Q.shape
+            if Q_ok:
+                Q_ok = any(not_equal(NBuffer.TwoThetaQz, Q))
+        if NBuffer.parameters != parameters or not Q_ok:
             #print 'Reloading buffer'
             b = array(parameters['b'], dtype = complex64).real*1e-5
             abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
