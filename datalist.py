@@ -1127,9 +1127,9 @@ class CalcDialog(wx.Dialog):
             self.predef_commands = [{'x':'x*2','y':'y/1000.0','e':'e/1000'},\
                 {'x':'x','y':'y','e':'e'}]
                 
-        self.predef_choice = wx.Choice(self, 1, choices = self.predef_list)
+        self.predef_choice = wx.Choice(self, choices=self.predef_list)
         
-        self.data_choice = wx.Choice(self, 1, choices = self.data_list)
+        self.data_choice = wx.Choice(self, choices=self.data_list)
         # Add them to the sizer
         choice_gbs.Add(self.predef_choice, (0,1))
         choice_gbs.Add(self.data_choice, (0,3))
