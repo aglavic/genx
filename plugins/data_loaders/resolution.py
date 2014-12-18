@@ -1,16 +1,16 @@
-''' <h1>D17 cosmos data loader</h1>
-Loads .out files from the cosmos program that is used to process time of flight 
-data from the D17 iunstrument at the ILL. 
+''' <h1>Data loader that includes the resoultion</h1>
+Loads files in a four column format where the fourth column contains the resolution of the experiment.
+Note that all reflectivity modules uses the standard deviation as a the resolution. Some instruments might
+use the FWHM instead.
  <p>
 The default columns are the following:<br>
 First column q values; Second column Intensitiy values; 
 Third values The unceratinty in the Intensities;
-Fourth column q-resolution;
-The data loader skips the first 36 lines of the file which is assumed to be the header.
- The other settings are just as in the default data loader.<p>
+Fourth column resolution;
+The other settings are just as in the default data loader.<p>
 
-The resolution is stored as the member variable res. Can be accessed, for data set 0, 
-data[0].x
+The resolution is stored as the member variable res. For data set 0 it can accesed as
+data[0].res
 '''
 
 import numpy as np
@@ -28,7 +28,7 @@ class Plugin(Template):
         self.eI_col = 2
         self.res_col = 3
         self.comment = '#'
-        self.skip_rows = 42
+        self.skip_rows = 0
         self.delimiter = None
     
     def LoadData(self, data_item_number, filename):
