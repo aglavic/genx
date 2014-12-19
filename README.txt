@@ -11,6 +11,17 @@ References
 If you use the program please give reference to the following publication:
 M. Björck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 2.3.6
+=============
+ * Fixed bug regarding the definition of instruments (not working) in the Reflectivity plugin.
+ * Fixed bug that caused an error when trying to fit the number of repetitions.
+ * Fixed bug regardgin q=0 simualtions - the models now throws an error for q = 0.
+ * Fixed bug in the buffering of spin flip calculations (caused an error when trying to simulate data sets with differing number of x-values).
+ * Fixed not working choice boxes in the Calculation dialog.
+ * Added an data loader for four column data which also includes the resolution.
+ * Included so that 'du' works in spec_nx for calculating spin flip and the same thing in mag_refl.
+
+
 Changes 2.3.5
 =============
  * Fixed bug that GenX does not start after installation on Windows machine.
