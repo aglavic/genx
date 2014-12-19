@@ -103,7 +103,7 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     <dd>The incident angle of the neutrons, only valid in tof mode</dd>
     <dt><code><b>pol</b></code></dt>
     <dd>The measured polarization of the instrument. Valid options are:
-    'uu','dd', 'ud', or 'ass' the respective number 0-3 also works.</dd>
+    'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.</dd>
 '''
 from numpy import *
 try:
@@ -128,7 +128,7 @@ instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',
     'restype': ['no conv', 'fast conv',
      'full conv and varying res.', 'fast conv + varying res.'],
     'footype': ['no corr', 'gauss beam', 'square beam'],
-    'pol': ['uu', 'dd', 'ud', 'ass']}
+    'pol': ['uu', 'dd', 'ud', 'ass', 'du']}
 InstrumentParameters = {'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',
                         'I0':1.0, 'res':0.001,
                         'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,
@@ -348,7 +348,8 @@ def Specular(TwoThetaQz,sample,instrument):
         elif pol == instrument_string_choices['pol'][1] or pol == 1:
             R = Buffer.Rdd
         # Polarization ud or +-
-        elif pol == instrument_string_choices['pol'][2] or pol == 2:
+        elif (pol == instrument_string_choices['pol'][2] or pol == 2 or
+              pol == instrument_string_choices['pol'][4] or pol == 4):
             R = Buffer.Rud
         # Calculating the asymmetry ass
         elif pol == instrument_string_choices['pol'][3] or pol == 3:

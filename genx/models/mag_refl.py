@@ -168,7 +168,7 @@ the api can change significantly from version to version. Should only be used by
     <dd>The polarization state of the x-ray beam. Should be one of: 'circ+','circ-','tot', 'ass', 'sigma', 'pi',
      'sigma-sigma', 'sigma-pi', 'pi-pi' or 'pi-sigma'</dd>
     <dt><code><b>npol</b></code></dt>
-    <dd>The neutron polarization state. Should be '++','uu', '--', 'dd' alt. '+-','ud' for spin flip.</dd>
+    <dd>The neutron polarization state. Should be '++', '--' or  '+-','-+' for spin flip.</dd>
     
 '''
 
@@ -209,7 +209,7 @@ instrument_string_choices = {'coords': ['q','tth'],
                                          'square beam'],
                              'xpol':['circ+','circ-','tot', 'ass', 'sigma', 'pi',
                                      'sigma-sigma', 'sigma-pi', 'pi-pi', 'pi-sigma'],
-                             'npol':['++', '--', '+-', 'ass'],
+                             'npol':['++', '--', '+-', 'ass', '-+'],
                              'theory': ['x-ray anis.', 'x-ray simpl. anis.',
                                         'neutron spin-pol', 'neutron spin-flip',
                                         'neutron spin-pol tof', 'x-ray iso.'],
@@ -1127,7 +1127,8 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
         elif pol == instrument_string_choices['npol'][1] or pol == 1:
             R = NBuffer.Rdd
         # Polarization ud or +-
-        elif pol == instrument_string_choices['npol'][2] or pol == 2:
+        elif (pol == instrument_string_choices['npol'][2] or pol == 2 or
+              pol == instrument_string_choices['npol'][4] or pol == 4):
             R = NBuffer.Rud
         # Polarisation is ass (asymmetry)
         elif pol == instrument_string_choices['npol'][3] or pol == 3:

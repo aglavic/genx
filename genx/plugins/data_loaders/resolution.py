@@ -5,11 +5,11 @@ use the FWHM instead.
  <p>
 The default columns are the following:<br>
 First column q values; Second column Intensitiy values; 
-Third values The unceratinty in the Intensities;
+Third values The uncertainty in the Intensities;
 Fourth column resolution;
 The other settings are just as in the default data loader.<p>
 
-The resolution is stored as the member variable res. For data set 0 it can accesed as
+The resolution is stored as the member variable res. For data set 0 it can accessed as
 data[0].res
 '''
 
