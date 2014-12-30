@@ -167,6 +167,12 @@ class MainFrame(wx.Frame):
         self.mb_use_toggle_show = wx.MenuItem(self.mb_view, wx.NewId(), "Use Toggle Show", "Set if the plotted data should be toggled or selected by the mouse", wx.ITEM_CHECK)
         self.mb_view.AppendItem(self.mb_use_toggle_show)
         self.main_frame_menubar.Append(self.mb_view, "View")
+        mb_view_grid = wx.Menu()
+        self.mb_view_grid_slider = wx.MenuItem(mb_view_grid, wx.NewId(), "Value as slider",
+                                          "View and control the value as a slider",
+                                          wx.ITEM_CHECK)
+        mb_view_grid.AppendItem(self.mb_view_grid_slider)
+        self.mb_view.AppendMenu(wx.NewId(), "Grid", mb_view_grid, "")
         self.mb_fit = wx.Menu()
         self.mb_fit_simulate = wx.MenuItem(self.mb_fit, wx.NewId(), "&Simulate\tF9", "Compile the script and run the Sim function", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_simulate)
@@ -180,6 +186,10 @@ class MainFrame(wx.Frame):
         self.mb_fit.AppendItem(self.mb_fit_resume)
         self.mb_fit_analyze = wx.MenuItem(self.mb_fit, wx.NewId(), "Analyze fit", "Analyze the fit", wx.ITEM_NORMAL)
         self.mb_fit.AppendItem(self.mb_fit_analyze)
+        self.mb_fit_autosim = wx.MenuItem(self.mb_view, wx.NewId(), "Automatic simulation",
+                                          "Simulate automatically when a parameter in the grid has changed",
+                                          wx.ITEM_CHECK)
+        self.mb_fit.AppendItem(self.mb_fit_autosim)
         self.main_frame_menubar.Append(self.mb_fit, "Fit")
         self.mb_set = wx.Menu()
         mb_set_plugins = wx.Menu()
@@ -284,6 +294,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_linear, self.mb_view_yscale_lin)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_autoscale, self.mb_view_autoscale)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_use_toggle_show, self.mb_use_toggle_show)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_grid_slider, self.mb_view_grid_slider)
         self.Bind(wx.EVT_MENU, self.eh_tb_simulate, self.mb_fit_simulate)
         self.Bind(wx.EVT_MENU, self.eh_mb_fit_evaluate, self.mb_fit_evaluate)
         self.Bind(wx.EVT_MENU, self.eh_mb_fit_start, self.mb_fit_start)
@@ -389,6 +400,11 @@ class MainFrame(wx.Frame):
             self.script_editor)
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_model_changed,\
                     self.data_list.list_ctrl)
+
+        # Event for when a value of a parameter in the parameter grid has been updated
+        self.Bind(parametergrid.EVT_PARAMETER_VALUE_CHANGE,\
+            self.eh_external_parameter_value_changed)
+
 
         # Stuff for the find and replace functionallity
         self.findreplace_data = wx.FindReplaceData()
@@ -613,6 +629,10 @@ class MainFrame(wx.Frame):
         event_handlers.on_zoom_check(self, event)
         event.Skip()
 
+    def eh_mb_view_grid_slider(self, event):
+        event_handlers.on_grid_slider_check(self, event)
+        event.Skip()
+
     def eh_mb_fit_start(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.start_fit(self, event)
 
@@ -806,6 +826,9 @@ class MainFrame(wx.Frame):
         
     def eh_show_startup_dialog(self, event):
         self.startup_dialog(config_path, force_show = True)
+
+    def eh_external_parameter_value_changed(self, event):
+        event_handlers.parameter_value_changed(self, event)
 
 # end of class MainFrame
 

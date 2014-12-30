@@ -7,7 +7,7 @@ $Author::                               $:  Author of last commit
 $Date::                                 $:  Date of last commit
 '''
 import version
-__version__ = version.version #'2.0b trunk'
+__version__ = version.version
 
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
@@ -263,7 +263,7 @@ def export_script(frame, event):
         base, ext = os.path.splitext(fname)
         if ext == '':
             ext = '.py'
-	    fname = base + ext
+        fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
@@ -414,7 +414,17 @@ def import_table(frame, event):
     # Post event to tell that the model has cahnged
     _post_new_model_event(frame, frame.model)
     frame.main_frame_statusbar.SetStatusText('Table imported from file', 1)
-    
+
+def parameter_value_changed(frame, event):
+    """ Event handler for when a value of a parameter in the grid has been updated.
+
+    :param frame:
+    :param event:
+    :return:
+    """
+    if frame.mb_fit_autosim.IsChecked():
+        simulate(frame, event)
+
 def evaluate(frame, event):
     '''evaluate(frame, event) --> None
     
@@ -740,7 +750,16 @@ def set_yscale(frame, type):
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].SetYScale(type)
-        
+
+def on_grid_slider_check(frame, event):
+    """Change the state of the grid value input, either as slider or as a number.
+    :param frame:
+    :param event:
+    :return:
+    """
+    frame.paramter_grid.SetValueEditorSlider(frame.mb_view_grid_slider.IsChecked())
+    frame.paramter_grid.Refresh()
+
 def on_autoscale(frame, event):
     '''on_autoscale(frame, event) --> None
     
