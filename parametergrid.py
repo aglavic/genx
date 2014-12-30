@@ -7,13 +7,14 @@ Last Changed: 2014 07 17
 '''
 
 import os
-import  wx
-import  wx.grid as gridlib
+import wx
+import wx.grid as gridlib
 import wx.lib.printout as printout
 from numpy import *
 
 import parameters
 import images as img
+import lib.controls as ctrls
 
 #=============================================================================
 #class ParameterDataTable
@@ -37,6 +38,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
                           gridlib.GRID_VALUE_STRING,
                           ]
 
+
     # required methods for the wxPyGridTableBase interface
     
     def GetNumberRows(self):
@@ -59,10 +61,6 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         except IndexError:
             return True
 
-    # Get/Set values in the table.  The Python version of these
-    # methods can handle any data-type, (as long as the Editor and
-    # Renderer understands the type too,) not just strings as in the
-    # C++ version.
     def GetValue(self, row, col):
         try:
             return self.pars.get_value(row, col)
@@ -88,7 +86,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
             self.pars.set_value(row, col, value)
         # For updating the column labels according to the number of fitted parameters
         if col == 2 or col == 3 or col == 4:
-             self.GetView().ForceRefresh()
+            self.GetView().ForceRefresh()
         self.parent._grid_changed()
 
     def DeleteRows(self, rows):
@@ -177,20 +175,25 @@ class ParameterDataTable(gridlib.PyGridTableBase):
         self.parent._grid_changed()
         return True
     
-    def GetAttr(self, row, col, kind):
-        '''Called by the grid to find the attributes of the cell,
-        bkg color, text colour, font and so on.
-        '''
-        attr = gridlib.GridCellAttr()
-        if col == 1 and row < self.pars.get_len_rows():
-            val = self.pars.get_value(row,1)
-            max_val = self.pars.get_value(row,4)
-            min_val = self.pars.get_value(row,3)
-            if  val > max_val or val < min_val:
-                attr.SetBackgroundColour(wx.Colour(204, 0, 0))
-                attr.SetTextColour(wx.Colour(255, 255, 255))
-                
-        return attr
+    #def GetAttr(self, row, col, kind):
+    #    '''Called by the grid to find the attributes of the cell,
+    #    bkg color, text colour, font and so on.
+    #    '''
+    #    attr = super(ParameterDataTable, self).GetAttr(row, col, kind)
+
+    #    if col == 1 and row < self.pars.get_len_rows():
+    #        if attr is None:
+    #            attr = gridlib.GridCellAttr()
+    #        attr = attr.Clone()
+    #        val = self.pars.get_value(row,1)
+    #        max_val = self.pars.get_value(row,4)
+    #        min_val = self.pars.get_value(row,3)
+    #        if val > max_val or val < min_val:
+    #            attr.SetBackgroundColour(wx.Colour(204, 0, 0))
+    #            attr.SetTextColour(wx.Colour(255, 255, 255))
+
+
+    #    return attr
         
     def GetColLabelValue(self, col):
         '''Called when the grid needs to display labels
@@ -256,10 +259,258 @@ class ParameterDataTable(gridlib.PyGridTableBase):
             self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed(permanent_change=permanent_change)
 
+    def ChangeValueInteractively(self, row, value):
+        """ Callback for a change of the value. Used to interactively set the value and notify other parts
+        of GenX by posting a EVT_PARAMETER_VALUE_CHANGE event.
+
+        """
+        self.SetValue(row, 1, value)
+        self.parent.PostValueChangedEvent()
+
 
 #Class ParameterDataTable ends here
-###############################################################################
+#------------------------------------------------------------------------------
+class SliderCellEditor(gridlib.PyGridCellEditor):
 
+    def __init__(self, value=0.0, min_value=0.0, max_value=100.0):
+        gridlib.PyGridCellEditor.__init__(self)
+        self.value = value
+        self.startValue = value
+        self.min_value = min_value
+        self.max_value = max_value
+
+    def Create(self, parent, id, evtHandler):
+        self._tc = ctrls.SliderControl(parent, id, value=self.value, max_value=self.max_value,
+                                       min_value=self.min_value, font=parent.GetFont())
+        self.SetControl(self._tc)
+
+        if evtHandler:
+            self._tc.PushEventHandler(evtHandler)
+
+    def GetValue(self):
+        return self._tc.GetValue()
+
+
+    def SetSize(self, rect):
+        """
+        Called to position/size the edit control within the cell rectangle.
+        """
+        self._tc.SetDimensions(rect.x, rect.y, rect.width, rect.height)
+
+
+    def Show(self, show, attr):
+        """
+        Show or hide the edit control.
+        """
+        super(SliderCellEditor, self).Show(show, attr)
+
+    def BeginEdit(self, row, col, grid):
+        """
+        Fetch the value from the table and prepare the edit control
+        to begin editing.  Set the focus to the edit control.
+        """
+        self.startValue = grid.GetTable().GetValue(row, col)
+        self.max_value = grid.GetTable().GetValue(row, col + 3)
+        self.min_value = grid.GetTable().GetValue(row, col + 2)
+        if self.startValue != '':
+            self.startValue = float(self.startValue)
+        else:
+            self.startValue = 0.0
+            grid.GetTable().SetValue(row, col, self.startValue)
+
+        if self.max_value != '':
+            self.max_value = float(self.max_value)
+        else:
+            self.max_value = 0.0
+            grid.GetTable().SetValue(row, col, self.max_value)
+        if self.min_value != '':
+            self.min_value = float(self.min_value)
+        else:
+            self.min_value = 0.0
+            grid.GetTable().SetValue(row, col, self.min_value)
+
+        self._tc.SetValue(float(self.startValue))
+        self._tc.SetMaxValue(self.max_value)
+        self._tc.SetMinValue(self.min_value)
+        self._tc.SetFocus()
+        self._tc.SetScrollCallback(lambda val: grid.GetTable().ChangeValueInteractively(row, val))
+
+    def EndEdit(self, row, col, grid, oldVal):
+        """
+        End editing the cell.  This function must check if the current
+        value of the editing control is valid and different from the
+        original value (available as oldval in its string form.)  If
+        it has not changed then simply return None, otherwise return
+        the value in its string form.
+        """
+        val = self._tc.GetValue()
+        self._tc.SetScrollCallback(None)
+        if val != oldVal:
+            return val
+        else:
+            return None
+
+
+    def ApplyEdit(self, row, col, grid):
+        """
+        This function  saves the value of the control into the
+        grid or grid table.
+        """
+        val = self._tc.GetValue()
+        grid.GetTable().SetValue(row, col, val) # update the table
+
+        self.startValue = float(val)
+        self._tc.SetValue(self.startValue)
+
+
+    def Reset(self):
+        """
+        Reset the value in the control back to its starting value.
+        """
+        self._tc.SetValue(self.startValue)
+
+    def PaintBackground(self, rect, attr):
+        """
+        Draws the part of the cell not occupied by the edit control.  The
+        base  class version just fills it with background colour from the
+        attribute.  In this class the edit control fills the whole cell so
+        don't do anything at all in order to reduce flicker.
+        """
+        pass
+
+
+    def IsAcceptedKey(self, evt):
+        """
+        Return True to allow the given key to start editing: the base class
+        version only checks that the event has no modifiers.  F2 is special
+        and will always start the editor.
+        """
+        ## We can ask the base class to do it
+        #return super(MyCellEditor, self).IsAcceptedKey(evt)
+
+        # or do it ourselves
+        return (not (evt.ControlDown() or evt.AltDown()) and
+                evt.GetKeyCode() != wx.WXK_SHIFT)
+
+    def StartingKey(self, evt):
+        """
+        If the editor is enabled by pressing keys on the grid, this will be
+        called to let the editor do something about that first key if desired.
+        """
+        evt.Skip()
+
+
+    def StartingClick(self):
+        """
+        If the editor is enabled by clicking on the cell, this method will be
+        called to allow the editor to simulate the click on the control if
+        needed.
+        """
+        pass
+
+
+    def Destroy(self):
+        """final cleanup"""
+        super(SliderCellEditor, self).Destroy()
+
+
+    def Clone(self):
+        """
+        Create a new object which is the copy of this one
+        """
+        return SliderCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value)
+
+#---------------------------------------------------------------------------
+class SliderCellRenderer(gridlib.PyGridCellRenderer):
+    """ Renderer for the Slider Editor. Yields the same representation as the Editor.
+    """
+    def __init__(self, value=0, max_value=100.0, min_value=100):
+        gridlib.PyGridCellRenderer.__init__(self)
+        self.slider_drawer = ctrls.SliderDrawer(value, max=max_value, min=min_value)
+
+    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+        if grid.GetCellValue(row,col) != '':
+            val = float(grid.GetCellValue(row,col))
+            min_val = float(grid.GetCellValue(row,col+2))
+            max_val = float(grid.GetCellValue(row,col+3))
+            val = max(min(val, max_val), min_val)
+            grid.GetTable().SetValue(row, col, (val))
+            self.slider_drawer.SetValue(val)
+            self.slider_drawer.SetMaxValue(max_val)
+            self.slider_drawer.SetMinValue(min_val)
+            self.slider_drawer.SetTextHeight(attr.GetFont().GetPixelSize().GetHeight())
+            if isSelected:
+                self.slider_drawer.SetBackgroundColour(grid.GetSelectionBackground())
+            else:
+                self.slider_drawer.SetBackgroundColour(attr.GetBackgroundColour())
+            self.slider_drawer.Draw(dc, rect.width, rect.height, rect.x, rect.y)
+        else:
+            dc.SetBackgroundMode(wx.SOLID)
+            if isSelected:
+                dc.SetBrush(wx.Brush(grid.GetSelectionBackground(), wx.SOLID))
+            else:
+                dc.SetBrush(wx.Brush(attr.GetBackgroundColour(), wx.SOLID))
+            dc.SetPen(wx.TRANSPARENT_PEN)
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+
+    def Clone(self):
+        return SliderCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
+                                  min=self.slider_drawer.min_value)
+
+class ValueLimitCellRenderer(gridlib.PyGridCellRenderer):
+    """ Renderer for the Parameter Values. Colours the Cell if the value is out of bounds.
+    """
+    def __init__(self, value=0, max_value=100.0, min_value=100):
+        gridlib.PyGridCellRenderer.__init__(self)
+
+    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+        if grid.GetCellValue(row,col) != '':
+            val = float(grid.GetCellValue(row,col))
+            min_val = float(grid.GetCellValue(row,col+2))
+            max_val = float(grid.GetCellValue(row,col+3))
+            if val > max_val or val < min_val:
+                bkg_colour = wx.Colour(204, 0, 0)
+                txt_colour = wx.Colour(255, 255, 255)
+            else:
+                if not isSelected:
+                    bkg_colour = attr.GetBackgroundColour()
+                else:
+                    bkg_colour = grid.GetSelectionBackground()
+                txt_colour = wx.Colour(0, 0, 0)
+
+            dc.SetBackgroundMode(wx.SOLID)
+            dc.SetBrush(wx.Brush(bkg_colour, wx.SOLID))
+            dc.SetPen(wx.TRANSPARENT_PEN)
+            dc.SetClippingRect(rect)
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+
+            text = '%5.5g'%val
+
+            dc.SetTextForeground(txt_colour)
+            dc.SetTextBackground(bkg_colour)
+            dc.SetFont(attr.GetFont())
+            width, height = dc.GetTextExtent(text)
+            dc.DrawText(text, rect.x+rect.width - width - 1, rect.y + 1)
+
+            dc.DestroyClippingRegion()
+        else:
+            dc.SetBackgroundMode(wx.SOLID)
+            if isSelected:
+                dc.SetBrush(wx.Brush(grid.GetSelectionBackground(), wx.SOLID))
+            else:
+                dc.SetBrush(wx.Brush(attr.GetBackgroundColour(), wx.SOLID))
+            dc.SetPen(wx.TRANSPARENT_PEN)
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+
+
+    def Clone(self):
+        return SliderCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
+                                  min=self.slider_drawer.min_value)
+
+
+
+
+#------------------------------------------------------------------------------
 class ParameterGrid(wx.Panel):
     '''
     The GUI component itself. This is the thing to use in a GUI.
@@ -270,6 +521,7 @@ class ParameterGrid(wx.Panel):
         self.toolbar = wx.ToolBar(self,  style=wx.TB_FLAT|wx.TB_VERTICAL)
         self.grid = gridlib.Grid(self, -1, style=wx.NO_BORDER)
         self.grid._grid_changed = self._grid_changed
+        self.grid.PostValueChangedEvent = self.PostValueChangedEvent
         #self.grid.SetForegroundColour('BLUE')
 
         self.do_toolbar()
@@ -296,6 +548,7 @@ class ParameterGrid(wx.Panel):
         # a reference to it and call it's Destroy method later.
         self.grid.SetTable(self.table, True)
         self.grid.SetSelectionMode(gridlib.Grid.SelectRows)
+        #self.grid.SetSelectionBackground()
 
         self.grid.SetRowLabelSize(50)
         self.grid.SetMargins(0, 0)
@@ -318,9 +571,35 @@ class ParameterGrid(wx.Panel):
         self.grid.Bind(wx.EVT_SIZE,self.OnResize)
         self.grid.Bind(gridlib.EVT_GRID_SELECT_CELL, self.OnSelectCell)
 
-
         self.toolbar.Realize()
+        self.SetValueEditorSlider(slider=False)
 
+    def SetValueEditorSlider(self, slider=True):
+        """ Set the Editor and Renderer as slider instead of text.
+
+        :param slider: Flag determining if the Editor (and Renderer) should be a slider.
+        :return:
+        """
+        row = self.grid.GetGridCursorRow()
+        col = self.grid.GetGridCursorCol()
+        # This will deselect the cell that currently is under editing.
+        # If the editor is active the program will crash when changing the cell editor.
+        self.grid.SetGridCursor(-1, -1)
+        attr = gridlib.GridCellAttr()
+        if slider:
+            attr.SetEditor(SliderCellEditor())
+            attr.SetRenderer(SliderCellRenderer())
+        else:
+            attr.SetRenderer(ValueLimitCellRenderer())
+        self.grid.SetColAttr(1, attr)
+        # Set back the cursor to the original pos
+        self.grid.SetGridCursor(row, col)
+
+
+
+    def PostValueChangedEvent(self):
+        evt = value_change()
+        wx.PostEvent(self.parent, evt)
 
     def do_toolbar(self):
         #if os.name == 'nt':
@@ -435,7 +714,6 @@ class ParameterGrid(wx.Panel):
     def OnSelectCell(self, evt):
          self.grid.SelectRow(evt.GetRow())
          evt.Skip()
-
 
     
     def _grid_changed(self, permanent_change = True):
@@ -588,6 +866,10 @@ class ParameterGrid(wx.Panel):
                 self.show_parameter_menu(pos)
             else:
                 evt.Skip()
+        elif col == 1 and row > -1:
+            self.grid.SetGridCursor(evt.GetRow(), evt.GetCol())
+            self.grid.EnableCellEditControl()
+            evt.Skip()
         else:
             evt.Skip()
 
@@ -786,4 +1068,9 @@ class ParameterGrid(wx.Panel):
 # Custom events needed for updating and message parsing between the different
 # modules.
 
+# Event for when the grid has new values
 (grid_change, EVT_PARAMETER_GRID_CHANGE) = wx.lib.newevent.NewEvent()
+# Event for then the value of a parameter has changed. Should be used to do
+# simulations interactively.
+(value_change, EVT_PARAMETER_VALUE_CHANGE) = wx.lib.newevent.NewEvent()
+
