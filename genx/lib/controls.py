@@ -1,4 +1,5 @@
 import wx
+from standard_colours import colours
 
 class SliderDrawer:
     """" Class that holds the values and makes the drawing and calcualtions of the slider."""
@@ -8,9 +9,10 @@ class SliderDrawer:
         self.min_value = min
         self.max_value = max
         self.snap_levels = 20
-        self.border_thickness = 2
+        self.border_thickness = 1
         self.SetTextHeight(text_height)
         self.background_colour = wx.WHITE
+        self.slider_colour = colours.get_colour('aluminum')#wx.Colour(0xcc, 0, 0)
 
     def SetValue(self, value):
         self.value = value
@@ -49,9 +51,8 @@ class SliderDrawer:
                          y + height/2.0 - 1, width - 2*(self.radius+self.border_thickness),
                          2.0)
 
-        slider_colour = wx.Colour(255, 0, 0)
         dc.SetBackgroundMode(wx.SOLID)
-        dc.SetBrush(wx.Brush(slider_colour, wx.SOLID))
+        dc.SetBrush(wx.Brush(self.slider_colour, wx.SOLID))
         dc.SetPen(wx.Pen(wx.BLACK, width=1, style=wx.PENSTYLE_SOLID))
         xc, yc = self._calc_circle_center(width, height)
         dc.DrawCircle(x + xc,
@@ -151,7 +152,10 @@ class SliderControl(wx.Control):
     def OnPaint(self, event):
         dc = wx.PaintDC(self)
         w, h = self.GetSize()
-        self.slider_drawer.Draw(dc, w, h, show_border=self.border_frame)
+        if wx.Platform == "__WXMSW__":
+            self.slider_drawer.Draw(dc, w-1, h-1, x=-1, y =-1, show_border=self.border_frame)
+        else:
+            self.slider_drawer.Draw(dc, w-1, h-1, x=1, y=1, show_border=self.border_frame)
 
     def OnSize(self, event):
         self.Refresh()
