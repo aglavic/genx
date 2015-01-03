@@ -61,7 +61,7 @@ import sys, os, re, time, StringIO, traceback
 from help_modules.custom_dialog import *
 import help_modules.reflectivity_images as images
 
-_avail_models = ['spec_nx', 'interdiff', 'xmag', 'mag_refl']
+_avail_models = ['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx']
 _set_func_prefix = 'set'
 
 

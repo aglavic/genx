@@ -10,15 +10,18 @@ import os
 import wx
 import wx.grid as gridlib
 import wx.lib.printout as printout
+import wx.lib.agw.floatspin as fs
+
 from numpy import *
 
 import parameters
 import images as img
 import lib.controls as ctrls
 
+
+
 #=============================================================================
 #class ParameterDataTable
-
 class ParameterDataTable(gridlib.PyGridTableBase):
     '''
     Class for the datatable which is used by the grid. 
@@ -37,7 +40,6 @@ class ParameterDataTable(gridlib.PyGridTableBase):
                           gridlib.GRID_VALUE_FLOAT,
                           gridlib.GRID_VALUE_STRING,
                           ]
-
 
     # required methods for the wxPyGridTableBase interface
     
@@ -281,7 +283,7 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
 
     def Create(self, parent, id, evtHandler):
         self._tc = ctrls.SliderControl(parent, id, value=self.value, max_value=self.max_value,
-                                       min_value=self.min_value, font=parent.GetFont())
+                                           min_value=self.min_value, font=parent.GetFont())
         self.SetControl(self._tc)
 
         if evtHandler:
@@ -295,20 +297,15 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
         """
         Called to position/size the edit control within the cell rectangle.
         """
-        self._tc.SetDimensions(rect.x, rect.y, rect.width, rect.height)
-
-
-    def Show(self, show, attr):
-        """
-        Show or hide the edit control.
-        """
-        super(SliderCellEditor, self).Show(show, attr)
+        self._tc.SetDimensions(rect.x-1, rect.y-1, rect.width+2, rect.height+2,
+                               wx.SIZE_ALLOW_MINUS_ONE)
 
     def BeginEdit(self, row, col, grid):
         """
         Fetch the value from the table and prepare the edit control
         to begin editing.  Set the focus to the edit control.
         """
+
         self.startValue = grid.GetTable().GetValue(row, col)
         self.max_value = grid.GetTable().GetValue(row, col + 3)
         self.min_value = grid.GetTable().GetValue(row, col + 2)
@@ -332,8 +329,8 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
         self._tc.SetValue(float(self.startValue))
         self._tc.SetMaxValue(self.max_value)
         self._tc.SetMinValue(self.min_value)
-        self._tc.SetFocus()
         self._tc.SetScrollCallback(lambda val: grid.GetTable().ChangeValueInteractively(row, val))
+        self._tc.SetFocus()
 
     def EndEdit(self, row, col, grid, oldVal):
         """
@@ -368,51 +365,6 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
         Reset the value in the control back to its starting value.
         """
         self._tc.SetValue(self.startValue)
-
-    def PaintBackground(self, rect, attr):
-        """
-        Draws the part of the cell not occupied by the edit control.  The
-        base  class version just fills it with background colour from the
-        attribute.  In this class the edit control fills the whole cell so
-        don't do anything at all in order to reduce flicker.
-        """
-        pass
-
-
-    def IsAcceptedKey(self, evt):
-        """
-        Return True to allow the given key to start editing: the base class
-        version only checks that the event has no modifiers.  F2 is special
-        and will always start the editor.
-        """
-        ## We can ask the base class to do it
-        #return super(MyCellEditor, self).IsAcceptedKey(evt)
-
-        # or do it ourselves
-        return (not (evt.ControlDown() or evt.AltDown()) and
-                evt.GetKeyCode() != wx.WXK_SHIFT)
-
-    def StartingKey(self, evt):
-        """
-        If the editor is enabled by pressing keys on the grid, this will be
-        called to let the editor do something about that first key if desired.
-        """
-        evt.Skip()
-
-
-    def StartingClick(self):
-        """
-        If the editor is enabled by clicking on the cell, this method will be
-        called to allow the editor to simulate the click on the control if
-        needed.
-        """
-        pass
-
-
-    def Destroy(self):
-        """final cleanup"""
-        super(SliderCellEditor, self).Destroy()
-
 
     def Clone(self):
         """
@@ -584,7 +536,7 @@ class ParameterGrid(wx.Panel):
         col = self.grid.GetGridCursorCol()
         # This will deselect the cell that currently is under editing.
         # If the editor is active the program will crash when changing the cell editor.
-        self.grid.SetGridCursor(-1, -1)
+        self.grid.EnableCellEditControl(False)
         attr = gridlib.GridCellAttr()
         if slider:
             attr.SetEditor(SliderCellEditor())
@@ -593,8 +545,7 @@ class ParameterGrid(wx.Panel):
             attr.SetRenderer(ValueLimitCellRenderer())
         self.grid.SetColAttr(1, attr)
         # Set back the cursor to the original pos
-        self.grid.SetGridCursor(row, col)
-
+        #self.grid.SetGridCursor(row, col)
 
 
     def PostValueChangedEvent(self):
@@ -667,8 +618,6 @@ class ParameterGrid(wx.Panel):
         :param event:
         :return:
         """
-        #print self.grid.GetSelectedCells()
-        #print self.grid.GetSelectedRows()
         row = self.grid.GetGridCursorRow()
         if self.table.MoveRowUp(row):
             self.grid.SetGridCursor(row - 1, self.grid.GetGridCursorCol())
@@ -858,6 +807,7 @@ class ParameterGrid(wx.Panel):
         #self.grid.SelectRow(row)
         if col == 2 and row > -1:
             self.table.SetValue(row, col, not self.table.GetValue(row, col))
+
         elif col == 0 and row > -1:
             if self.grid.GetGridCursorRow() == row:
                 self.CurSelection = (row, col)
@@ -867,7 +817,7 @@ class ParameterGrid(wx.Panel):
             else:
                 evt.Skip()
         elif col == 1 and row > -1:
-            self.grid.SetGridCursor(evt.GetRow(), evt.GetCol())
+            self.grid.SetGridCursor(row, col)
             self.grid.EnableCellEditControl()
             evt.Skip()
         else:
