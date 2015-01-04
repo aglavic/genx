@@ -281,6 +281,7 @@ class Config:
         read.
         '''
         buffer = StringIO.StringIO(str)
+        self.model_config = CP.ConfigParser()
         try:
             self.model_config.readfp(buffer)
         except Exception, e:

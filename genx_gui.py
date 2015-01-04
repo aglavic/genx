@@ -162,6 +162,12 @@ class MainFrame(wx.Frame):
         self.mb_view_yscale_lin = wx.MenuItem(mb_view_yscale, wx.NewId(), "lin", "Set y-scale linear", wx.ITEM_RADIO)
         mb_view_yscale.AppendItem(self.mb_view_yscale_lin)
         self.mb_view.AppendMenu(wx.NewId(), "y scale", mb_view_yscale, "")
+        mb_view_xscale = wx.Menu()
+        self.mb_view_xscale_log = wx.MenuItem(mb_view_xscale, wx.NewId(), "log", "Set x-scale logarithmic", wx.ITEM_RADIO)
+        mb_view_xscale.AppendItem(self.mb_view_xscale_log)
+        self.mb_view_xscale_lin = wx.MenuItem(mb_view_xscale, wx.NewId(), "lin", "Set x-scale linear", wx.ITEM_RADIO)
+        mb_view_xscale.AppendItem(self.mb_view_xscale_lin)
+        self.mb_view.AppendMenu(wx.NewId(), "x scale", mb_view_xscale, "")
         self.mb_view_autoscale = wx.MenuItem(self.mb_view, wx.NewId(), "Autoscale", "Set autoscale on when plotting", wx.ITEM_CHECK)
         self.mb_view.AppendItem(self.mb_view_autoscale)
         self.mb_use_toggle_show = wx.MenuItem(self.mb_view, wx.NewId(), "Use Toggle Show", "Set if the plotted data should be toggled or selected by the mouse", wx.ITEM_CHECK)
@@ -292,6 +298,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_view_zoomall, self.mb_view_zoomall)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_log, self.mb_view_yscale_log)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_linear, self.mb_view_yscale_lin)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_log, self.mb_view_xscale_log)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_linear, self.mb_view_xscale_lin)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_autoscale, self.mb_view_autoscale)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_use_toggle_show, self.mb_use_toggle_show)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_grid_slider, self.mb_view_grid_slider)
@@ -724,6 +732,14 @@ class MainFrame(wx.Frame):
 
     def eh_mb_view_yscale_linear(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.set_yscale(self, 'linear')
+        event.Skip()
+
+    def eh_mb_view_xscale_log(self, event): # wxGlade: MainFrame.<event_handler>
+        event_handlers.set_xscale(self, 'log')
+        event.Skip()
+
+    def eh_mb_view_xscale_linear(self, event): # wxGlade: MainFrame.<event_handler>
+        event_handlers.set_xscale(self, 'linear')
         event.Skip()
 
     def eh_mb_view_autoscale(self, event): # wxGlade: MainFrame.<event_handler>

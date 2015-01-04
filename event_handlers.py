@@ -751,6 +751,17 @@ def set_yscale(frame, type):
     if sel < len(pages):
         pages[sel].SetYScale(type)
 
+def set_xscale(frame, type):
+    '''set_xscale(frame, type) --> None
+
+    Set the x-scale of the current plot. type should be linear or log, strings.
+    '''
+    sel = frame.plot_notebook.GetSelection()
+    pages = get_pages(frame)
+    if sel < len(pages):
+        pages[sel].SetXScale(type)
+
+
 def on_grid_slider_check(frame, event):
     """Change the state of the grid value input, either as slider or as a number.
     :param frame:
@@ -777,12 +788,16 @@ def plot_settings_changed(frame, event):
     Callback for the settings change event for the current plot
      - change the toggle for the zoom icon and change the menu items.
     '''
-    frame.main_frame_toolbar.ToggleTool(10009,event.zoomstate)
+    frame.main_frame_toolbar.ToggleTool(10009, event.zoomstate)
     frame.mb_view_zoom.Check(event.zoomstate)
     if event.yscale == 'log':
         frame.mb_view_yscale_log.Check(True)
     elif event.yscale == 'linear':
         frame.mb_view_yscale_lin.Check(True)
+    if event.xscale == 'log':
+        frame.mb_view_xscale_log.Check(True)
+    elif event.xscale == 'linear':
+        frame.mb_view_xscale_lin.Check(True)
     frame.mb_view_autoscale.Check(event.autoscale)
     
 def plot_page_changed(frame, event):
@@ -803,6 +818,11 @@ def plot_page_changed(frame, event):
         if yscale == 'log':
             frame.mb_view_yscale_log.Check(True)
         elif yscale == 'linear':
+            frame.mb_view_yscale_lin.Check(True)
+        xscale = pages[sel].GetXScale()
+        if xscale == 'log':
+            frame.mb_view_yscale_log.Check(True)
+        elif xscale == 'linear':
             frame.mb_view_yscale_lin.Check(True)
 
 def print_plot(frame, event):
