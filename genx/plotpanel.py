@@ -45,7 +45,7 @@ class PlotPanel(wx.Panel):
     '''
     def __init__(self, parent, id = -1, color = None, dpi = None
             , style = wx.NO_FULL_REPAINT_ON_RESIZE|wx.EXPAND|wx.ALL
-            , config = None, config_name = '', **kwargs):
+            , config = None, config_name='', **kwargs):
         
         wx.Panel.__init__(self,parent, id = id, style = style, **kwargs)
         
@@ -151,25 +151,42 @@ class PlotPanel(wx.Panel):
         except io.OptionError, e:
             string_sucess = False
             print 'Could not locate option %s.%s'\
-            %(self.config_name, 'scale')
+            %(self.config_name, 'y scale')
         else:
             self.SetYScale(scale)
-        
+
+        try:
+            scale = self.config.get(self.config_name, 'x scale')
+            string_sucess = True
+        except io.OptionError, e:
+            string_sucess = False
+            print 'Could not locate option %s.%s'\
+            %(self.config_name, 'x scale')
+            self.SetXScale('lin')
+        else:
+            #print 'Found option x scale: ', scale
+            self.SetXScale(scale)
+
         # This is done due to that the zoom and autoscale has to read 
         # before any commands are issued in order not to overwrite 
         # the config
         [bool_func[i](vals[i]) for i in range(len(vals)) if vals[i]]
         
             
-    def WriteConfig(self):
+    def WriteConfig(self, zoom=None, autoscale=None, yscale=None, xscale=None):
         '''WriteConfig(self) --> None
         
         Writes the current settings to the config file
         '''
         if self.config:
-            self.config.set(self.config_name, 'zoom', self.GetZoom())
-            self.config.set(self.config_name, 'autoscale', self.GetAutoScale())
-            self.config.set(self.config_name, 'y scale', self.GetYScale())
+            if zoom is not None:
+                self.config.set(self.config_name, 'zoom', zoom)
+            if autoscale is not None:
+                self.config.set(self.config_name, 'autoscale', autoscale)
+            if yscale is not None:
+                self.config.set(self.config_name, 'y scale', yscale)
+            if xscale is not None:
+                self.config.set(self.config_name, 'x scale', xscale)
     
     def SetZoom(self, active = False):
         '''
@@ -186,8 +203,8 @@ class PlotPanel(wx.Panel):
             cursor = wx.StockCursor(wx.CURSOR_MAGNIFIER)
             self.canvas.SetCursor(cursor)
             if self.callback_window:
-                evt = state_changed(zoomstate = True,\
-                        yscale = self.GetYScale(), autoscale = self.autoscale)
+                evt = state_changed(zoomstate=True, yscale=self.GetYScale(), autoscale=self.autoscale,
+                                    xscale=self.GetXScale())
                 wx.PostEvent(self.callback_window, evt)
             if self.ax:
                 #self.ax.set_autoscale_on(False)
@@ -200,13 +217,13 @@ class PlotPanel(wx.Panel):
             cursor = wx.StockCursor(wx.CURSOR_CROSS)
             self.canvas.SetCursor(cursor)
             if self.callback_window:
-                evt = state_changed(zoomstate = False,\
-                    yscale = self.GetYScale(), autoscale = self.autoscale)
+                evt = state_changed(zoomstate=False, yscale=self.GetYScale(), autoscale=self.autoscale,
+                                    xscale=self.GetXScale())
                 wx.PostEvent(self.callback_window, evt)
             if self.ax:
                 #self.ax.set_autoscale_on(self.autoscale)
                 self.SetAutoScale(self.old_scale_state)
-        self.WriteConfig()
+        self.WriteConfig(zoom=self.zoom)
         
     def GetZoom(self):
         '''GetZoom(self) --> state [bool]
@@ -224,9 +241,10 @@ class PlotPanel(wx.Panel):
         '''
         #self.ax.set_autoscale_on(state)
         self.autoscale = state
-        self.WriteConfig()
+        self.WriteConfig(autoscale=self.autoscale)
         evt = state_changed(zoomstate = self.GetZoom(),\
-                        yscale = self.GetYScale(), autoscale = self.autoscale)
+                        yscale = self.GetYScale(), autoscale = self.autoscale,
+                        xscale=self.GetXScale())
         wx.PostEvent(self.callback_window, evt)
         
             
@@ -325,10 +343,45 @@ class PlotPanel(wx.Panel):
                 self.flush_plot()
             except UserWarning:
                 pass
+            self.WriteConfig(yscale=self.scale)
             evt = state_changed(zoomstate = self.GetZoom(),\
-                        yscale = self.GetYScale(), autoscale = self.autoscale)
+                        yscale = self.GetYScale(), autoscale = self.autoscale,
+                        xscale=self.GetXScale())
             wx.PostEvent(self.callback_window, evt)
-            self.WriteConfig()
+
+
+    def SetXScale(self, scalestring):
+        ''' SetXScale(self, scalestring) --> None
+
+        Sets the x-scale of the main plotting axes. Currently accepts
+        'log' or 'lin'.
+        '''
+        if self.ax:
+            if scalestring == 'log':
+                self.x_scale = 'log'
+                self.AutoScale(force = True)
+                try:
+                    self.ax.set_xscale('log')
+                except OverflowError:
+                    self.AutoScale(force = True)
+                except UserWarning:
+                    pass
+            elif scalestring == 'linear' or scalestring == 'lin':
+                self.x_scale = 'linear'
+                self.ax.set_xscale('linear')
+                self.AutoScale(force = True)
+            else:
+                raise ValueError('Not allowed scaling')
+            try:
+                self.flush_plot()
+            except UserWarning:
+                pass
+            self.WriteConfig(xscale=self.x_scale)
+            evt = state_changed(zoomstate=self.GetZoom(),
+                        yscale=self.GetYScale(), autoscale=self.autoscale,
+                        xscale=self.GetXScale())
+            wx.PostEvent(self.callback_window, evt)
+
             
     def GetYScale(self):
         '''GetYScale(self) --> String
@@ -340,6 +393,18 @@ class PlotPanel(wx.Panel):
             return self.ax.get_yscale()
         else:
             return None
+
+    def GetXScale(self):
+        '''GetXScale(self) --> String
+
+        Returns the current x-scale in use. Currently the string
+        'log' or 'linear'. If the axes does not exist it returns None.
+        '''
+        if self.ax:
+            return self.ax.get_xscale()
+        else:
+            return None
+
 
         
     def CopyToClipboard(self, event = None):
@@ -503,7 +568,7 @@ class PlotPanel(wx.Panel):
         menu.Check(zoomID, self.GetZoom())
         def OnZoom(event):
             self.SetZoom(not self.GetZoom())
-        self.Bind(wx.EVT_MENU, OnZoom, id = zoomID) 
+        self.Bind(wx.EVT_MENU, OnZoom, id=zoomID)
         
         zoomallID = wx.NewId()
         menu.Append(zoomallID, 'Zoom All')
@@ -513,13 +578,13 @@ class PlotPanel(wx.Panel):
             self.AutoScale()
             self.SetAutoScale(tmp)
             #self.flush_plot()
-        self.Bind(wx.EVT_MENU, zoomall, id = zoomallID)
+        self.Bind(wx.EVT_MENU, zoomall, id=zoomallID)
         
         copyID = wx.NewId()
         menu.Append(copyID, "Copy")
         def copy(event):
             self.CopyToClipboard()
-        self.Bind(wx.EVT_MENU, copy, id = copyID)
+        self.Bind(wx.EVT_MENU, copy, id=copyID)
         
         yscalemenu = wx.Menu()
         logID = wx.NewId()
@@ -542,19 +607,47 @@ class PlotPanel(wx.Panel):
                 self.SetYScale('lin')
                 self.AutoScale()
                 self.flush_plot()
-        self.Bind(wx.EVT_MENU, yscale_log, id = logID)
-        self.Bind(wx.EVT_MENU, yscale_lin, id = linID)
+        self.Bind(wx.EVT_MENU, yscale_log, id=logID)
+        self.Bind(wx.EVT_MENU, yscale_lin, id=linID)
+
+        xscalemenu = wx.Menu()
+        logID = wx.NewId()
+        linID = wx.NewId()
+        xscalemenu.AppendRadioItem(logID, "log")
+        xscalemenu.AppendRadioItem(linID, "linear")
+        menu.AppendMenu(-1, "x-scale", xscalemenu)
+        if self.GetXScale() == 'log':
+            xscalemenu.Check(logID, True)
+        else:
+            xscalemenu.Check(linID, True)
+
+        def xscale_log(event):
+            if self.ax:
+                self.SetXScale('log')
+                self.AutoScale()
+                self.flush_plot()
+
+        def xscale_lin(event):
+            if self.ax:
+                self.SetXScale('lin')
+                self.AutoScale()
+                self.flush_plot()
+        self.Bind(wx.EVT_MENU, xscale_log, id=logID)
+        self.Bind(wx.EVT_MENU, xscale_lin, id=linID)
+
+
         
         autoscaleID = wx.NewId()
         menu.AppendCheckItem(autoscaleID, "Autoscale")
         menu.Check(autoscaleID, self.GetAutoScale())
         def OnAutoScale(event):
             self.SetAutoScale(not self.GetAutoScale())
-        self.Bind(wx.EVT_MENU, OnAutoScale, id = autoscaleID) 
+        self.Bind(wx.EVT_MENU, OnAutoScale, id=autoscaleID)
         
         # Time to show the menu
         self.PopupMenu(menu)
-        
+
+        self.Unbind(wx.EVT_MENU)
         menu.Destroy()
         
     def flush_plot(self):
@@ -883,13 +976,49 @@ class DataPlotPanel(PlotPanel):
         self.SetAutoScale(True)
         #self.ax = self.figure.add_subplot(111)
         #self.ax.set_autoscale_on(False)
-        
+
+    def SetXScale(self, scalestring):
+        ''' SetXScale(self, scalestring) --> None
+
+        Sets the x-scale of the main plotting axes. Currently accepts
+        'log' or 'lin'.
+        '''
+        if self.ax:
+            if scalestring == 'log':
+                self.x_scale = 'log'
+                self.AutoScale(force=True)
+                try:
+                    self.ax.set_xscale('log')
+                    self.error_ax.set_xscale('log')
+                except OverflowError:
+                    self.AutoScale(force=True)
+                except UserWarning:
+                    pass
+            elif scalestring == 'linear' or scalestring == 'lin':
+                self.x_scale = 'linear'
+                self.ax.set_xscale('linear')
+                self.error_ax.set_xscale('linear')
+                self.AutoScale(force=True)
+            else:
+                raise ValueError('Not allowed scaling')
+
+            try:
+                self.flush_plot()
+            except UserWarning:
+                pass
+
+            self.WriteConfig(xscale=self.x_scale)
+            evt = state_changed(zoomstate=self.GetZoom(),
+                        yscale=self.GetYScale(), autoscale=self.autoscale,
+                        xscale=self.GetXScale())
+            wx.PostEvent(self.callback_window, evt)
+
         
     def create_axes(self):
         self.ax = self.figure.add_axes(self.main_ax_rect)#self.figure.add_subplot(111)
         #self.ax.xaxis.set_visible(False)
-        setp( self.ax.get_xticklabels(), visible=False)
-        self.error_ax = self.figure.add_axes(self.sub_ax_rect, sharex = self.ax)
+        setp(self.ax.get_xticklabels(), visible=False)
+        self.error_ax = self.figure.add_axes(self.sub_ax_rect, sharex=self.ax)
         self.ax.set_autoscale_on(False)
         self.error_ax.set_autoscale_on(True)
         
