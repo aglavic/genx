@@ -17,7 +17,7 @@ from numpy import *
 import parameters
 import images as img
 import lib.controls as ctrls
-
+import filehandling
 
 
 #=============================================================================
@@ -165,10 +165,10 @@ class ParameterDataTable(gridlib.PyGridTableBase):
     
     def AppendRows(self, num_rows = 1):
         #print num_rows
-        [self.pars.append() for i in range(rows)]
+        [self.pars.append() for i in range(num_rows)]
         
         msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, rows)
+                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, num_rows)
         self.GetView().ProcessTableMessage(msg)
         msg = gridlib.GridTableMessage(self,\
                 gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
@@ -329,8 +329,10 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
         self._tc.SetValue(float(self.startValue))
         self._tc.SetMaxValue(self.max_value)
         self._tc.SetMinValue(self.min_value)
+        self._tc.bind_handlers()
         self._tc.SetScrollCallback(lambda val: grid.GetTable().ChangeValueInteractively(row, val))
         self._tc.SetFocus()
+        #print "begin edit finished"
 
     def EndEdit(self, row, col, grid, oldVal):
         """
@@ -340,6 +342,8 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
         it has not changed then simply return None, otherwise return
         the value in its string form.
         """
+        #print "EndEdit"
+        self._tc.unbind_handlers()
         val = self._tc.GetValue()
         self._tc.SetScrollCallback(None)
         if val != oldVal:
@@ -371,6 +375,11 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
         Create a new object which is the copy of this one
         """
         return SliderCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value)
+
+    def Destroy(self):
+        """final cleanup"""
+        self._tc.Destroy()
+        super(MyCellEditor, self).Destroy()
 
 #---------------------------------------------------------------------------
 class SliderCellRenderer(gridlib.PyGridCellRenderer):
@@ -436,7 +445,7 @@ class ValueLimitCellRenderer(gridlib.PyGridCellRenderer):
             dc.SetClippingRect(rect)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
-            text = '%5.5g'%val
+            text = '%.7g'%val
 
             dc.SetTextForeground(txt_colour)
             dc.SetTextBackground(bkg_colour)
@@ -467,8 +476,12 @@ class ParameterGrid(wx.Panel):
     '''
     The GUI component itself. This is the thing to use in a GUI.
     '''
-    def __init__(self, parent, frame):
+    def __init__(self, parent, frame, config=None):
         wx.Panel.__init__(self, parent)
+
+        self.config = config
+        self.config_name = 'parameter grid'
+
         # The two main widgets
         self.toolbar = wx.ToolBar(self,  style=wx.TB_FLAT|wx.TB_VERTICAL)
         self.grid = gridlib.Grid(self, -1, style=wx.NO_BORDER)
@@ -520,11 +533,37 @@ class ParameterGrid(wx.Panel):
         self.grid.Bind(gridlib.EVT_GRID_CMD_CELL_LEFT_CLICK, self.OnLeftClick)
         self.grid.Bind(gridlib.EVT_GRID_CMD_CELL_RIGHT_CLICK, self.OnRightClick)
         self.grid.Bind(gridlib.EVT_GRID_LABEL_RIGHT_CLICK,self.OnLabelRightClick)
-        self.grid.Bind(wx.EVT_SIZE,self.OnResize)
+        self.grid.Bind(wx.EVT_SIZE, self.OnResize)
         self.grid.Bind(gridlib.EVT_GRID_SELECT_CELL, self.OnSelectCell)
 
         self.toolbar.Realize()
+        self.show_slider = False
         self.SetValueEditorSlider(slider=False)
+
+    def PrepareNewModel(self):
+        """ Hack to prepare the grid for a new model.
+        :return:
+        """
+        # This hack is needed to deselect any current cell. Have not found a better way to solve it.
+        # If not called the program can cause an segmentation fault and crash.
+        self.grid.SetGridCursor(0, 3)
+        self.grid.SetGridCursor(0, 4)
+
+    def ReadConfig(self):
+        """ Reads the variables stored in the config file."""
+        try:
+            val = self.config.get_boolean(self.config_name, 'value slider')
+        except filehandling.OptionError:
+            print 'Could not locate option %s.%s'%(self.config_name, 'y scale')
+            self.SetValueEditorSlider(False)
+        else:
+            self.SetValueEditorSlider(val)
+
+    def WriteConfig(self, show_slider=None):
+        """Writes the varaibles to be stored to the config"""
+        if show_slider is not None:
+            self.config.set(self.config_name, 'value slider', show_slider)
+
 
     def SetValueEditorSlider(self, slider=True):
         """ Set the Editor and Renderer as slider instead of text.
@@ -532,10 +571,15 @@ class ParameterGrid(wx.Panel):
         :param slider: Flag determining if the Editor (and Renderer) should be a slider.
         :return:
         """
+        #print "SetValueEditorSlider"
         row = self.grid.GetGridCursorRow()
         col = self.grid.GetGridCursorCol()
-        # This will deselect the cell that currently is under editing.
+        #print row, col
+        #print self.grid.GetSelectedCells()
+        # This will disable the editor in the cell that currently is under editing.
         # If the editor is active the program will crash when changing the cell editor.
+        self.grid.SetGridCursor(0, 3)
+        self.grid.SetGridCursor(0, 4)
         self.grid.EnableCellEditControl(False)
         attr = gridlib.GridCellAttr()
         if slider:
@@ -544,9 +588,13 @@ class ParameterGrid(wx.Panel):
         else:
             attr.SetRenderer(ValueLimitCellRenderer())
         self.grid.SetColAttr(1, attr)
-        # Set back the cursor to the original pos
-        #self.grid.SetGridCursor(row, col)
+        self.grid.SetGridCursor(row, col)
+        self.show_slider = slider
+        self.WriteConfig(show_slider=slider)
 
+    def GetValueEditorSlider(self):
+        """Returns True if the slider editor is active"""
+        return self.show_slider
 
     def PostValueChangedEvent(self):
         evt = value_change()
@@ -750,7 +798,7 @@ class ParameterGrid(wx.Panel):
         # Set the parameters in the table 
         # this also updates the grid. 
         self.table.SetParameters(evt.GetModel().get_parameters(),\
-                permanent_change = False)
+                permanent_change=False)
         # Let the event proceed to other fucntions that have signed up.
         evt.Skip()
     

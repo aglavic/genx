@@ -113,7 +113,7 @@ class SliderControl(wx.Control):
     def __init__(self, parent, id, value=0.0, min_value=0.0, max_value=100.0, font=None, border_frame=True):
         wx.Control.__init__(self, parent, id)
 
-        self.parent = parent
+        #self.parent = parent
         self.border_frame = border_frame
         if font is not None:
             th = font.GetPixelSize().GetHeight()
@@ -126,9 +126,21 @@ class SliderControl(wx.Control):
 
         self.scroll_callback = None
 
+    def bind_handlers(self):
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_MOUSE_EVENTS, self.OnMouse)
+
+    def unbind_handlers(self):
+        self.Unbind(wx.EVT_PAINT)
+        self.Unbind(wx.EVT_SIZE)
+        self.Unbind(wx.EVT_MOUSE_EVENTS)
+
+
+    def Destroy(self):
+        self.unbind_handlers()
+        super(SliderControl, self).Destroy()
+
 
     def SetValue(self, value):
         self.slider_drawer.SetValue(float(value))

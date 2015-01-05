@@ -98,8 +98,11 @@ def open(frame, event):
         
     dlg.Destroy()
     
+
 def open_model(frame, path):
+
     frame.model.new_model()
+    frame.paramter_grid.PrepareNewModel()
     # Update all components so all the traces are gone.
     _post_new_model_event(frame, frame.model)
     try:
@@ -111,6 +114,7 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
+        print 'Error in loading the file ', path, '. Pyton tractback:\n ',val
         ShowErrorDialog(frame, 'Could not open the file. Python Error:\n%s' % (val,))
         return
     try:
@@ -120,8 +124,20 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print val
+        print 'Error in loading config for the plots. Pyton tractback:\n ',val
         ShowErrorDialog(frame, 'Could not read the config for the plots. Python Error:\n%s' % (val,))
+    try:
+        frame.paramter_grid.ReadConfig()
+    except Exception, e:
+        outp = StringIO.StringIO()
+        traceback.print_exc(200, outp)
+        val = outp.getvalue()
+        outp.close()
+        print 'Error in loading config for parameter grid. Pyton tractback:\n ', val
+        ShowErrorDialog(frame, 'Could not read the config for the parameter grid. Python Error:\n%s' % (val,))
+    else:
+        # Update the Menu choice
+        frame.mb_view_grid_slider.Check(frame.paramter_grid.GetValueEditorSlider())
     # Letting the plugin do their stuff...
     try:
         frame.plugin_control.OnOpenModel(None)
@@ -155,8 +171,21 @@ def on_new_model(frame, event):
     # Lets update the mb_use_toggle_show Menu item
     frame.mb_use_toggle_show.Check(frame.config.get_boolean('data handling', 
                                                               'toggle show'))
+    try:
+        val = frame.config.get_boolean('parameter grid', 'auto sim')
+    except io.OptionError:
+        print 'Could not locate option parameters.auto sim'
+    else:
+       frame.mb_fit_autosim.Check(val)
+
     # Let other event handlers recieve the event as well
     event.Skip()
+
+def update_for_save(frame):
+    """Updates the various objects for a save"""
+    frame.model.set_script(frame.script_editor.GetText())
+    # Save the current state of autosim to the config
+    frame.config.set('parameter grid', 'auto sim', frame.mb_fit_autosim.IsChecked())
 
 def save(frame, event):
     '''
@@ -164,7 +193,7 @@ def save(frame, event):
     
     Event handler for saving a model file ...
     '''
-    frame.model.set_script(frame.script_editor.GetText())
+    update_for_save(frame)
     fname = frame.model.get_filename()
     # If model hasn't been saved
     if fname == '':
@@ -197,7 +226,7 @@ def save_as(frame, event):
                         style=wx.SAVE #| wx.CHANGE_DIR
                         )
     if dlg.ShowModal() == wx.ID_OK:
-        frame.model.set_script(frame.script_editor.GetText())
+        update_for_save(frame)
         fname = dlg.GetPath()
         base, ext = os.path.splitext(fname)
         if ext == '':
