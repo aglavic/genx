@@ -258,7 +258,7 @@ class MainFrame(wx.Frame):
         self.plot_fom = plotpanel.ErrorPlotPanel(self.plot_notebook, config = self.config, config_name = 'fom plot', )
         self.plot_pars = plotpanel.ParsPlotPanel(self.plot_notebook, config = self.config, config_name = 'pars plot', )
         self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook, config = self.config, config_name = 'fom scan plot', )
-        self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook, self, )
+        self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook, self, self.config)
         #self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, -1)
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook, -1)
         # Wrap the lines on whitespaces
