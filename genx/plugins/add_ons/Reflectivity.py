@@ -2010,7 +2010,7 @@ class Plugin(framework.Template):
         '''
         
         self.ReadModel()
-        
+
     def OnSimulate(self, event):
         '''OnSimulate(self, event) --> None
         
@@ -2288,8 +2288,6 @@ class Plugin(framework.Template):
             self.StatusMessage('ERROR No Instrument called inst in script')
             return
         
-        
-        
         # Get the current script and split the lines into list items
         script_lines = self.GetModel().get_script().splitlines(True)
         # Try to find out if the script works with multiple SLDs
@@ -2413,7 +2411,11 @@ class Plugin(framework.Template):
         
         self.sample_widget.Update(update_script = False)
         self.simulation_widget.Update(update_script = False)
+        # The code have a tendency to screw up the model slightly when compiling it - the sample will be connected to
+        # to the module therefore reset the compiled flag so that the model has to be recompiled before fitting.
+        self.GetModel().compiled = False
         self.StatusMessage('New sample loaded to plugin!')
+
         
 def find_code_segment(code, descriptor):
         '''find_code_segment(code, descriptor) --> string

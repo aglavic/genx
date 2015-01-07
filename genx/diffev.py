@@ -145,7 +145,7 @@ class DiffEv:
         self.fom_log = array([[0,0]])[0:0]
         #self.par_evals = array([[]])[0:0]
 
-        self.par_evals = CircBuffer(self.max_log, buffer = array([[]])[0:0])
+        self.par_evals = CircBuffer(self.max_log, buffer=array([[]])[0:0])
         #self.fom_evals = array([])
         self.fom_evals = CircBuffer(self.max_log)
 
@@ -813,8 +813,7 @@ class DiffEv:
         if self.setup_ok: #and len(self.par_evals) != 0:
             par_values = self.par_evals[:,index]
             #print (self.fom_evals < fom_level).sum()
-            values_under_level = compress(self.fom_evals[:] <\
-                                    fom_level*self.best_fom, par_values)
+            values_under_level = compress(self.fom_evals[:] < fom_level*self.best_fom, par_values)
             #print values_under_level
             error_bar_low = values_under_level.min() - self.best_vec[index]
             error_bar_high = values_under_level.max() - self.best_vec[index]
