@@ -229,30 +229,30 @@ class SolverController:
             wx.PostEvent(self.parent, evt)
             
     def CalcErrorBars(self):
-        '''CalcErrorBars(self) -- None
-        
-        Method that calculates the errorbars for the fit that has been
-        done. Note that the fit has to been conducted before this is runned.
         '''
+        Method that calculates the errorbars for the fit that has been
+        done. Note that the fit has to been conducted before this is run.
+        '''
+        if len(self.optimizer.fom_evals) == 0:
+            raise ErrorBarError('Can not find any stored evaluations of the model in the optimizer.\n'
+                                 'Run a fit before calculating the errorbars.')
         if self.optimizer.start_guess != None and not self.optimizer.running:
             n_elements = len(self.optimizer.start_guess)
             #print 'Number of elemets to calc errobars for ', n_elements
             error_values = []
-            dlg = wx.ProgressDialog("Calculating", \
-                               "Error bars are calculated ...", \
-                               maximum = n_elements, parent=self.parent, \
-                               style = wx.PD_AUTO_HIDE)
+            dlg = wx.ProgressDialog("Calculating", "Error bars are calculated ...",
+                               maximum=n_elements, parent=self.parent,
+                               style=wx.PD_AUTO_HIDE)
             for index in range(n_elements):
                 # calculate the error
                 # TODO: Check the error bar buisness again and how to treat 
                 # Chi2 
                 try:
-                    (error_low, error_high) = self.optimizer.calc_error_bar(\
-                                            index, self.fom_error_bars_level)
+                    (error_low, error_high) = self.optimizer.calc_error_bar(index, self.fom_error_bars_level)
                 except diffev.ErrorBarError, e:
                     ShowWarningDialog(self.parent, str(e))
                     break
-                error_str = '(%.3e, %.3e,)'%(error_low, error_high)
+                error_str = '(%.3e, %.3e)'%(error_low, error_high)
                 error_values.append(error_str)
                 dlg.Update(index+1)
                 
@@ -794,14 +794,18 @@ class GenericError(Exception):
     pass
 
 class ErrorBarError(GenericError):
-    '''Error class for the fom evaluation'''
-    def __init__(self):
-        ''' __init__(self) --> None'''
-        #self.error_message = error_message
+    def __init__(self, error_message=None):
+        """Error class for the fom evaluation
+
+        :param error_message: Error message that explains the error, string.
+        :return:
+        """
+        if error_message is None:
+            self.error_message = 'Could not evaluate the error bars. A fit has to be run before they can be calculated'
+        else:
+            self.error_message = error_message
     
     def __str__(self):
-        text = 'Could not evaluate the error bars. A fit has to be run ' +\
-                'before they can be calculated'
-        return text
+        return self.error_message
                 
     
