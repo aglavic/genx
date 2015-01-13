@@ -1443,7 +1443,7 @@ class SimulationExpressionDialog(wx.Dialog):
         
         # Creating the column labels
         col_labels = ['Simulation', 'Instrument']
-        [col_labels.append(arg) for arg in expressions if not arg in col_labels]
+        [col_labels.append(arg) for arg in self.sim_args[sim_func] if not arg in col_labels]
         self.labels = []
         self.arg_controls = []
         for index in range(2 + max_val):
@@ -1454,7 +1454,7 @@ class SimulationExpressionDialog(wx.Dialog):
             if index > 1:
                 exp_ctrl = wx.TextCtrl(self, -1, size=(100, -1))               
                 gbs.Add(exp_ctrl, (1,index),
-                        flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+                        flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
                 self.arg_controls.append(exp_ctrl)
             
         for item, label in zip(col_labels[:2], self.labels[:2]):
@@ -1484,7 +1484,7 @@ class SimulationExpressionDialog(wx.Dialog):
        
         # Instrument choice control
         self.inst_choice = wx.Choice(self, -1, 
-                                    choices = self.instruments.keys())
+                                    choices=self.instruments.keys())
         #self.Bind(wx.EVT_CHOICE, self.on_inst_change, self.inst_choice)
         self.inst_choice.SetSelection(self.instruments.keys().index(expressions['Instrument']))
         gbs.Add(self.inst_choice, (1,1),\
