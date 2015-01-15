@@ -1,5 +1,8 @@
+import string
+
 import wx
 from standard_colours import colours
+
 
 class SliderDrawer:
     """" Class that holds the values and makes the drawing and calcualtions of the slider."""
@@ -197,5 +200,213 @@ class SliderControl(wx.Control):
             if self.scroll_callback is not None:
                     self.scroll_callback(self.slider_drawer.GetValue())
         event.Skip()
+
+class NumberValidator(wx.PyValidator):
+    """Validaator to handle numerical values, accepts also 'e' as exponent value as input"""
+    def __init__(self):
+        wx.PyValidator.__init__(self)
+        self.Bind(wx.EVT_CHAR, self.OnChar)
+
+    def Clone(self):
+        return NumberValidator()
+
+    def Validate(self, win):
+        tc = self.GetWindow()
+        val = tc.GetValue()
+
+        try:
+            val = float(val)
+        except:
+            return False
+        else:
+            return True
+
+    def OnChar(self, event):
+        key = event.GetKeyCode()
+        tc = self.GetWindow()
+        val = tc.GetValue()
+        pos = tc.GetInsertionPoint()
+
+        if chr(key) in string.digits:
+            if len(val) == 0:
+                event.Skip()
+                return
+            if pos == 0 and val[0] == '-':
+                if not wx.Validator_IsSilent():
+                        wx.Bell()
+                return
+            event.Skip()
+            return
+
+        if chr(key) == '.' and '.' not in val:
+            if 'e' in val:
+                # Check so that the . ends up correctly relative e
+                if pos > val.index('e'):
+                    if not wx.Validator_IsSilent():
+                        wx.Bell()
+                    return
+            if len(val) == 0:
+                event.Skip()
+                return
+            if pos == 0 and val[0] == '-':
+                if not wx.Validator_IsSilent():
+                        wx.Bell()
+                return
+
+            event.Skip()
+            return
+
+        if chr(key) == 'e' and 'e' not in val:
+            if '.' in val:
+                # Check so that the e ends up correctly relative .
+                if pos <= val.index('.'):
+                    if not wx.Validator_IsSilent():
+                        wx.Bell()
+                    return
+            if len(val) == 0:
+                event.Skip()
+                return
+            if pos == 0 and val[0] == '-':
+                if not wx.Validator_IsSilent():
+                        wx.Bell()
+                return
+            event.Skip()
+            return
+
+        if chr(key) == '-' and '-' not in val and pos == 0:
+            event.Skip()
+            return
+
+        if key in [wx.WXK_TAB, wx.WXK_RETURN, wx.WXK_DOWN, wx.WXK_UP]:
+            event.Skip()
+            return
+
+        if not wx.Validator_IsSilent():
+            wx.Bell()
+
+        # Does not allow the event to propagate (kills it)
+        return
+
+class SpinCtrl(wx.Control):
+    def __init__(self, parent, id=wx.NewId(), pos=wx.DefaultPosition, size=wx.DefaultSize, value=0.0,
+                 min_value=None, max_value=None, steps=20, digits=6, name="SpinCtrl"):
+        self.value = value
+        self.min_value = min_value
+        self.max_value = max_value
+        self.steps = steps
+        self.digits = digits
+        wx.Control.__init__(self, parent, id, pos, size,
+                              wx.NO_BORDER | wx.NO_FULL_REPAINT_ON_RESIZE | wx.CLIP_CHILDREN | wx.TAB_TRAVERSAL,
+                              wx.DefaultValidator, name)
+        self.SetLabel(name)
+        self.parent = parent
+        self._text = wx.TextCtrl(self, wx.NewId(), pos=pos, size=wx.Size(size.GetWidth()-16, size.GetHeight()),
+                                 style=wx.TE_RIGHT | wx.TE_PROCESS_ENTER| wx.TE_PROCESS_TAB, value="%.*g" % (self.digits, self.value),
+                                 validator=NumberValidator(),
+                                 name=name+"_TextCtrl")
+        self._spin = wx.SpinButton(self, wx.NewId(), pos=pos, size=wx.Size(16, size.GetHeight()),
+                                   style=wx.SP_ARROW_KEYS | wx.SP_VERTICAL, name=name+"_SpinButton")
+        self._sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._sizer.Add(self._text, 1)
+        self._sizer.Add(self._spin)
+        self.SetSizer(self._sizer)
+        self._sizer.Layout()
+
+        self._spin.Bind(wx.EVT_SPIN_UP,    self.eh_spin_up,
+                        id=self._spin.GetId())
+        self._spin.Bind(wx.EVT_SPIN_DOWN,  self.eh_spin_down,
+                        id=self._spin.GetId())
+        self._text.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
+        self._text.Bind(wx.EVT_CHAR, self.OnChar)
+
+    def step(self, dir_up=True):
+        """Steps the value up/down on increment
+
+        :param dir_up: stepping direction
+        :return:
+        """
+        inc = (self.max_value - self.min_value)/self.steps
+        val = self.value
+        if dir_up:
+            val += inc
+        else:
+            val -= inc
+
+        # Check so that the bounds are kept
+        val = max(val, self.min_value)
+        val = min(val, self.max_value)
+
+        self.SetValue(val)
+
+
+    def eh_spin_up(self, event):
+        self.step(dir_up=True)
+        event.Skip()
+
+    def eh_spin_down(self, event):
+        self.step(dir_up=False)
+        event.Skip()
+
+    def OnTextEnter(self, event):
+        wx.Control.SetFocus(self)
+        wx.Control.SetFocus(self)
+        new_event = wx.KeyEvent( wx.wxEVT_KEY_DOWN )
+        new_event.SetEventObject(self)
+        new_event.SetId(self.GetId())
+        new_event.m_keyCode = wx.WXK_RETURN
+        wx.PostEvent(self.parent, new_event)
+
+    def OnChar(self, event):
+        print event.GetKeyCode()
+        if event.GetKeyCode() == wx.WXK_TAB:
+            wx.Control.SetFocus(self)
+            new_event = wx.KeyEvent( wx.wxEVT_KEY_DOWN )
+            new_event.SetEventObject(self)
+            new_event.SetId(self.GetId())
+            new_event.m_keyCode = wx.WXK_TAB
+            wx.PostEvent(self.parent, new_event)
+        elif event.GetKeyCode() == wx.WXK_UP:
+            self.step(dir_up=True)
+        elif event.GetKeyCode() == wx.WXK_DOWN:
+            self.step(dir_up=False)
+        else:
+            event.Skip()
+
+    def SetValue(self, value):
+        self.value = float(value)
+        self._text.SetValue("%.*g" % (self.digits, self.value))
+
+    def GetValue(self):
+        self.value = float(self._text.GetValue())
+        return self.value
+
+    def SetRange(self, min_value, max_value):
+        """ Sets the range of the control
+
+        :param min_value:
+        :param max_value:
+        :return:
+        """
+        if max_value < min_value:
+            raise ValueError('Minimum value to SpinCtrl is larger than maximum allowed value')
+        self.min_value = float(min_value)
+        self.max_value = float(max_value)
+
+    def SetInsertionPointEnd(self):
+        self._text.SetInsertionPointEnd()
+
+    def SetFocus(self):
+        #wx.Control.SetFocus(self)
+        self._text.SetFocus()
+        self._text.SetSelection(-1, -1)
+        pass
+
+
+    def DoGetBestSize(self):
+        print "DoGetBestSize"
+        size = self._text.GetBestSize()
+        size.width += self._spin.GetBestSize().width
+        return size
+
 
 
