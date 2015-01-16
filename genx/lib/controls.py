@@ -357,7 +357,7 @@ class SpinCtrl(wx.Control):
         wx.PostEvent(self.parent, new_event)
 
     def OnChar(self, event):
-        print event.GetKeyCode()
+        #print event.GetKeyCode()
         if event.GetKeyCode() == wx.WXK_TAB:
             wx.Control.SetFocus(self)
             new_event = wx.KeyEvent( wx.wxEVT_KEY_DOWN )
