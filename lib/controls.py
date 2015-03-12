@@ -15,6 +15,7 @@ class SliderDrawer:
         self.border_thickness = 1
         self.SetTextHeight(text_height)
         self.background_colour = wx.WHITE
+        self.show_guide = True
         self.slider_colour = colours.get_colour('aluminum')#wx.Colour(0xcc, 0, 0)
 
     def SetValue(self, value):
@@ -38,6 +39,11 @@ class SliderDrawer:
     def SetBackgroundColour(self, value):
         self.background_colour = value
 
+    def ShowGuide(self, show=True):
+        """ Sets flag to show the guide or not
+        """
+        self.show_guide = show
+
     def Draw(self, dc, width, height, x=0, y=0, isSelected=False, show_border=False):
         dc.SetBackgroundMode(wx.SOLID)
         dc.SetBrush(wx.Brush(self.background_colour, wx.SOLID))
@@ -49,7 +55,11 @@ class SliderDrawer:
         dc.DrawRectangle(x, y, width, height)
 
         dc.SetPen(wx.TRANSPARENT_PEN)
-        dc.SetBrush(wx.Brush("GREY", wx.SOLID))
+        if self.show_guide:
+            dc.SetBrush(wx.Brush("GREY", wx.SOLID))
+        else:
+            dc.SetBrush(wx.Brush(self.background_colour, wx.SOLID))
+
         dc.DrawRectangle(x + self.radius + self.border_thickness,
                          y + height/2.0 - 1, width - 2*(self.radius+self.border_thickness),
                          2.0)
@@ -295,6 +305,7 @@ class SpinCtrl(wx.Control):
         self.max_value = max_value
         self.steps = steps
         self.digits = digits
+        self.value_change_func = None
         wx.Control.__init__(self, parent, id, pos, size,
                               wx.NO_BORDER | wx.NO_FULL_REPAINT_ON_RESIZE | wx.CLIP_CHILDREN | wx.TAB_TRAVERSAL,
                               wx.DefaultValidator, name)
@@ -341,10 +352,14 @@ class SpinCtrl(wx.Control):
 
     def eh_spin_up(self, event):
         self.step(dir_up=True)
+        if self.value_change_func is not None:
+            self.value_change_func(self.GetValue())
         event.Skip()
 
     def eh_spin_down(self, event):
         self.step(dir_up=False)
+        if self.value_change_func is not None:
+            self.value_change_func(self.GetValue())
         event.Skip()
 
     def OnTextEnter(self, event):
@@ -379,6 +394,13 @@ class SpinCtrl(wx.Control):
     def GetValue(self):
         self.value = float(self._text.GetValue())
         return self.value
+
+    def SetValueChangeCallback(self, func):
+        """ Sets a callback function to execute when the value has changed
+        :param func:
+        :return:
+        """
+        self.value_change_func = func
 
     def SetRange(self, min_value, max_value):
         """ Sets the range of the control

@@ -302,6 +302,14 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
         self._tc.SetDimensions(rect.x-1, rect.y-1, rect.width+2, rect.height+2,
                                wx.SIZE_ALLOW_MINUS_ONE)
 
+    def StartingClick(self):
+        """
+        Make a correct action if editor activated by mouse click
+        """
+        #print "Staring click"
+        pass
+
+
     def BeginEdit(self, row, col, grid):
         """
         Fetch the value from the table and prepare the edit control
@@ -390,6 +398,7 @@ class SliderCellRenderer(gridlib.PyGridCellRenderer):
     def __init__(self, value=0, max_value=100.0, min_value=100):
         gridlib.PyGridCellRenderer.__init__(self)
         self.slider_drawer = ctrls.SliderDrawer(value, max=max_value, min=min_value)
+        self.slider_drawer.ShowGuide(False)
 
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
         if grid.GetCellValue(row,col) != '':
@@ -482,7 +491,7 @@ class ValueLimitCellEditor(gridlib.PyGridCellEditor):
         self._tc.SetValue(self.startValue)
         self._tc.SetRange(self.min_value, self.max_value)
         #self._tc.SetIncrement((self.max_value - self.min_value)/self.ticks)
-        # self._tc.SetScrollCallback(lambda val: grid.GetTable().ChangeValueInteractively(row, val))
+        self._tc.SetValueChangeCallback(lambda val: grid.GetTable().ChangeValueInteractively(row, val))
         self._tc.SetFocus()
 
 
@@ -495,11 +504,12 @@ class ValueLimitCellEditor(gridlib.PyGridCellEditor):
         the value in its string form.
         """
         val = float(self._tc.GetValue())
-        val = max(self.min_value, val)
-        val = min(self.max_value, val)
+        #val = max(self.min_value, val)
+        #val = min(self.max_value, val)
         #self._tc.SetValue('%.5g'%(val))
         #self._tc.SetValue(val)
-        #self._tc.SetScrollCallback(None)
+        self._tc.value_change_func(val)
+        self._tc.SetValueChangeCallback(None)
         return float(val)
 
 
@@ -670,6 +680,7 @@ class ParameterGrid(wx.Panel):
 
         self.par_dict = {}
 
+        self.grid.GetGridWindow().Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.grid.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
         self.grid.Bind(gridlib.EVT_GRID_CMD_CELL_LEFT_CLICK, self.OnLeftClick)
         self.grid.Bind(gridlib.EVT_GRID_CMD_CELL_RIGHT_CLICK, self.OnRightClick)
@@ -1007,11 +1018,31 @@ class ParameterGrid(wx.Panel):
             else:
                 evt.Skip()
         elif col == 1 and row > -1:
-            #self.grid.SetGridCursor(row, col)
-            #self.grid.EnableCellEditControl()
+            if self.show_slider:
+                self.grid.SetGridCursor(row, col)
+                self.grid.EnableCellEditControl()
             evt.Skip()
+            #return
         else:
             evt.Skip()
+
+    def OnLeftDown(self, event):
+        """ Callback for left down - handling slider activation
+
+        :param evt:
+        :return:
+        """
+        #print "Left Down"
+        x, y = self.grid.CalcUnscrolledPosition(event.GetX(), event.GetY())
+        row, col = self.grid.XYToCell(x, y)
+        if col == 1 and row > -1:
+            #print "Activating editor"
+            #self.grid.SetGridCursor(row, col)
+            #wx.CallAfter(self.grid.EnableCellEditControl)#self.grid.EnableCellEditControl()
+            #self.grid.ShowCellEditControl()
+            event.Skip()
+        else:
+            event.Skip()
 
     def show_label_menu(self, row):
         insertID = wx.NewId()
