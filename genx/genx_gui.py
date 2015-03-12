@@ -51,7 +51,8 @@ class MainFrame(wx.Frame):
         self.parent = parent
 
         self.config.load_default(config_path + 'genx.conf')
-        
+        self.flag_simulating = False
+        self.simulation_queue_counter = 0
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__

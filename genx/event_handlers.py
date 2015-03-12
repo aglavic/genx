@@ -9,6 +9,7 @@ $Date::                                 $:  Date of last commit
 import version
 __version__ = version.version
 
+import thread, time
 import wx, os, StringIO, traceback
 from wx.lib.wordwrap import wordwrap
 import webbrowser
@@ -451,14 +452,29 @@ def parameter_value_changed(frame, event):
     :param event:
     :return:
     """
-    if frame.mb_fit_autosim.IsChecked():
-        simulate(frame, event)
+    frame.simulation_queue_counter += 1
+    if frame.mb_fit_autosim.IsChecked() and not frame.flag_simulating:
+        thread.start_new_thread(simulation_loop, (frame,))
+
+def simulation_loop(frame):
+    """ Simulation loop for threading to increase the speed of the interactive simulations
+    :param frame:
+    :return:
+    """
+    frame.flag_simulating = True
+    while frame.simulation_queue_counter > 0:
+        do_simulation(frame)
+        time.sleep(0.1)
+        frame.simulation_queue_counter = min(1, frame.simulation_queue_counter - 1)
+    frame.flag_simulating = False
+
 
 def evaluate(frame, event):
     '''evaluate(frame, event) --> None
     
     Envent handler for only evaluating the Sim function - no recompiling
     '''
+    frame.flag_simulating = True
     frame.main_frame_statusbar.SetStatusText('Simulating...', 1)
     # Compile is not necessary when using simualate...
     #frame.model.compile_script()
@@ -467,7 +483,6 @@ def evaluate(frame, event):
     except modellib.GenericError, e:
         ShowModelErrorDialog(frame, str(e))
         frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
-        return
     except Exception, e:
         outp = StringIO.StringIO()
         traceback.print_exc(200, outp)
@@ -475,11 +490,11 @@ def evaluate(frame, event):
         outp.close()
         ShowErrorDialog(frame, val)
         frame.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
-        return
     else:
         _post_sim_plot_event(frame, frame.model, 'Simulation')
         frame.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
         frame.plugin_control.OnSimulate(None)
+    frame.flag_simulating = False
         
     
 def simulate(frame, event):
@@ -488,8 +503,16 @@ def simulate(frame, event):
     
     Event handler for simulation.
     '''
+    frame.flag_simulating = True
+    do_simulation(frame)
+    set_possible_parameters_in_grid(frame)
+    frame.flag_simulating = False
+
+
+def do_simulation(frame):
     # Just a debugging output...
     # print frame.script_editor.GetText()
+
     frame.main_frame_statusbar.SetStatusText('Simulating...', 1)
     frame.model.set_script(frame.script_editor.GetText())
     # Compile is not necessary when using simualate...
@@ -499,7 +522,6 @@ def simulate(frame, event):
     except modellib.GenericError, e:
         ShowModelErrorDialog(frame, str(e))
         frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
-        return
     except Exception, e:
         outp = StringIO.StringIO()
         traceback.print_exc(200, outp)
@@ -507,13 +529,12 @@ def simulate(frame, event):
         outp.close()
         ShowErrorDialog(frame, val)
         frame.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
-        return
     else:
         _post_sim_plot_event(frame, frame.model, 'Simulation')
         frame.plugin_control.OnSimulate(None)
         frame.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
     
-    
+def set_possible_parameters_in_grid(frame):
     # Now we should find the parameters that we can use to
     # in the grid
     try:
