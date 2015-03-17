@@ -86,12 +86,11 @@ class SolverController:
                         ' = self.parent.model.fom_func'
             exec exectext in locals(), globals()
         
-        dlg = SettingsDialog(frame, self.optimizer, self,fom_func_name)
+        dlg = SettingsDialog(frame, self.optimizer, self, fom_func_name)
         
         def applyfunc(object):
             self.WriteConfig()
-            self.parent.model.set_fom_func(\
-                    eval('fom_funcs.'+object.get_fom_string()))
+            self.parent.model.set_fom_func(eval('fom_funcs.'+object.get_fom_string()))
             
         dlg.set_apply_change_func(applyfunc)
         
@@ -211,7 +210,7 @@ class SolverController:
 
         message = 'Do you want to keep the parameter values from ' +\
                 'the fit?'
-        dlg = wx.MessageDialog(self.parent, message,'Keep the fit?', 
+        dlg = wx.MessageDialog(self.parent, message, 'Keep the fit?',
             wx.YES_NO|wx.ICON_QUESTION)
         if dlg.ShowModal() == wx.ID_YES:
             evt = update_parameters(values = solver.best_vec.copy(),\
@@ -463,7 +462,19 @@ class SettingsDialog(wx.Dialog):
         fom_sizer.Add(self.fom_choice,0,\
             wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 10)
         fom_box_sizer.Add(fom_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        
+
+        cb_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        fom_box_sizer.Add(cb_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        # Check box for ignoring nans
+        self.fom_ignore_nan_control = wx.CheckBox(self, -1, "Ignore Nan")
+        cb_sizer.Add(self.fom_ignore_nan_control, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.fom_ignore_nan_control.SetValue(self.solvergui.parent.model.fom_ignore_nan)
+        # Check box for ignoring infs
+        self.fom_ignore_inf_control = wx.CheckBox(self, -1, "Ignore +/-Inf")
+        cb_sizer.Add(self.fom_ignore_inf_control, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.fom_ignore_inf_control.SetValue(self.solvergui.parent.model.fom_ignore_inf)
+        self.fom_ignore_inf_control.SetValue(self.solvergui.parent.model.fom_ignore_inf)
+
         # Errorbar level 
         errorbar_sizer = wx.BoxSizer(wx.HORIZONTAL)
         errorbar_text = wx.StaticText(self, -1, 'Error bar level ')
@@ -736,6 +747,8 @@ class SettingsDialog(wx.Dialog):
         self.solver.use_parallel_processing = self.use_parallel_control.GetValue()
         self.solver.processes = self.processes_sc.GetValue()
         self.solver.chunksize = self.chunk_size_sc.GetValue()
+        self.solvergui.parent.model.set_fom_ignore_inf(self.fom_ignore_inf_control.GetValue())
+        self.solvergui.parent.model.set_fom_ignore_nan(self.fom_ignore_nan_control.GetValue())
         self.solvergui.fom_error_bars_level = self.errorbar_control.GetValue()
         self.solver.use_autosave = self.use_autosave_control.GetValue()
         self.solver.autosave_interval = self.autosave_sc.GetValue()
