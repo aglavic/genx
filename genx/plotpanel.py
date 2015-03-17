@@ -1055,8 +1055,8 @@ class DataPlotPanel(PlotPanel):
     def plot_data(self, data):
         
         if not self.ax:
-                #self.ax = self.figure.add_subplot(111)
-                self.create_axes()
+            #self.ax = self.figure.add_subplot(111)
+            self.create_axes()
         
         # This will be somewhat inefficent since everything is updated
         # at once would be better to update the things that has changed...
@@ -1131,7 +1131,7 @@ class DataPlotPanel(PlotPanel):
         marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
          for data_set in data if data_set.show]
         # Plot the point by point error:
-        [self.error_ax.plot(data_set.x, data_set.y_fom, c = data_set.sim_color, \
+        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), c = data_set.sim_color, \
         lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
         marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
          for data_set in data if data_set.show]
@@ -1160,6 +1160,7 @@ class DataPlotPanel(PlotPanel):
         #[self.ax.semilogy(data_set.x, data_set.y, '.'\
         # ,data_set.x, data_set.y_sim) for data_set in data]
         # Plot the data sets and take care if it is log scaled data
+
         if self.scale == 'linear':
             [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
                 lw = data_set.data_linethickness, ls = data_set.data_linetype, \
@@ -1195,10 +1196,10 @@ class DataPlotPanel(PlotPanel):
             lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
             marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
             for data_set in data if data_set.show and data_set.use]
-        [self.error_ax.plot(data_set.x, data_set.y_fom, c = data_set.sim_color, \
-        lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
-        marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
-         for data_set in data if data_set.show]
+        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), c=data_set.sim_color,
+         lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
+         ms=data_set.sim_symbolsize) for data_set in data if data_set.show
+        ]
         self.autoscale_error_ax()
         self.AutoScale()
         # Force an update of the plot

@@ -37,6 +37,11 @@ class Model:
         #self.fom_func = default_fom_func   
         self.fom_func = fom_funcs.log # The function that evaluates the fom
         self.fom = None # The value of the fom function
+
+        self.fom_mask_func = None
+        self.fom_ignore_nan = False
+        self.fom_ignore_inf = False
+        self.create_fom_mask_func()
         
         # Registred classes that is looked for in the model
         self.registred_classes = []
@@ -70,6 +75,22 @@ class Model:
             print 'Could not find config for parameters, set func'
         else:
             self.set_func = val
+
+        try:
+            val = self.config.get_boolean('solver', 'ignore fom nan')
+        except:
+            print 'Could not find config for solver, ignore fom nan'
+        else:
+            self.fom_ignore_nan = val
+
+        try:
+            val = self.config.get_boolean('solver', 'ignore fom inf')
+        except:
+            print 'Could not find config for solver, ignore fom inf'
+        else:
+            self.fom_ignore_inf = val
+
+        self.create_fom_mask_func()
             
     
     def load(self,filename):
@@ -155,11 +176,11 @@ class Model:
         group['script'] = self.script
         self.parameters.write_h5group(group.create_group('parameters'))
         group['fomfunction'] = self.fom_func.__name__
+        group['fom_ignore_nan'] = self.fom_ignore_nan
+        group['fom_ignore_inf'] = self.fom_ignore_inf
 
         for kw in kwargs:
             kwargs[kw].write_h5group(group.create_group(kw))
-
-
 
     def read_h5group(self, group, **kwargs):
         """ Read the parameters from a hdf5 group
@@ -177,6 +198,17 @@ class Model:
             self.set_fom_func(eval('fom_funcs.' + fom_func_name))
         else:
             print "Can not find fom function name %s"%fom_func_name.value
+
+        try:
+            print bool(group['fom_ignore_nan'].value)
+            self.fom_ignore_nan = bool(group['fom_ignore_nan'].value)
+        except StandardError, e:
+            print "Could not load parameter fom_ignore_nan from file"
+        try:
+            self.fom_ignore_inf = bool(group['fom_ignore_inf'].value)
+        except StandardError, e:
+            print "Could not load parameter fom_ignore_inf from file"
+        self.create_fom_mask_func()
 
         for kw in kwargs:
             kwargs[kw].read_h5group(group[kw])
@@ -280,6 +312,41 @@ class Model:
         result = eval(codestring, self.script_module.__dict__)
         #print 'Sucessfully evaluted: ', codestring
         return result
+
+    def set_fom_ignore_inf(self, flag):
+        """ Sets if the fom calculation should ignore infs
+
+        :param flag: boolean
+        :return:
+        """
+        self.fom_ignore_inf = bool(flag)
+        self.create_fom_mask_func()
+
+    def set_fom_ignore_nan(self, flag):
+        """ Sets if fom calculations should ignore nan's
+
+        :param flag: boolean flag
+        :return:
+        """
+        self.fom_ignore_nan = bool(flag)
+        self.create_fom_mask_func()
+
+    def create_fom_mask_func(self):
+        """ Create a mask func for fom to take care of unallowed values.
+
+        :param fom: an array
+        :return: an masked array
+        """
+        if self.fom_ignore_nan and self.fom_ignore_inf:
+            fom_mask = lambda a: np.where(np.isfinite(a), a, np.zeros_like(a))
+        elif self.fom_ignore_nan:
+            fom_mask = lambda a: np.where(np.isnan(a), a, np.zeros_like(a))
+        elif self.fom_ignore_inf:
+            fom_mask = lambda a: np.where(np.isinf(a), a, np.zeros_like(a))
+        else:
+            fom_mask = lambda a: a*1.0
+
+        self.fom_mask_func = fom_mask
     
     def calc_fom(self, simulated_data):
         '''calc_fom(self, fomlist) -> fom_raw (list of arrays), 
@@ -291,11 +358,11 @@ class Model:
         '''
         fom_raw = self.fom_func(simulated_data, self.data)
         # Sum up a unique fom for each data set in use
-        fom_indiv = [np.sum(np.abs(fom_set)) for fom_set in fom_raw]
+        fom_indiv = [np.sum(np.abs(self.fom_mask_func(fom_set))) for fom_set in fom_raw]
         fom = np.sum([f for f, d in zip(fom_indiv, self.data) if d.use])
         
         # Lets extract the number of datapoints as well:
-        N = np.sum([len(fom_set) for fom_set, d in zip(fom_raw, self.data) if d.use])
+        N = np.sum([len(self.fom_mask_func(fom_set)) for fom_set, d in zip(fom_raw, self.data) if d.use])
         # And the number of fit parameters
         p = self.parameters.get_len_fit_pars()
         #self.fom_dof = fom/((N-p)*1.0)
