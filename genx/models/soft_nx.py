@@ -72,16 +72,20 @@ The model works with scattering lengths densities directly.
     <dt><code><b>res</b></code></dt>
     <dd>The resolution of the instrument given in the coordinates of
      <code>coords</code>. This assumes a gaussian resolution function and
-    <code>res</code> is the standard deviation of that gaussian.</dd>
+    <code>res</code> is the standard deviation of that gaussian.
+    If <code>restype</code> has (dx/x) in its name the gaussian standard deviation is given by res*x where x is
+    either in tth or q.</dd>
     <dt><code><b>restype</b></code></dt>
     <dd>Describes the rype of the resolution calculated. One of the alterantives:
-    'no conv', 'fast conv', 'full conv and varying res.' or 'fast conv + varying res.'.
+    'no conv', 'fast conv', 'full conv and varying res.', 'fast conv + varying res.',
+    'full conv and varying res. (dx/x)', 'fast conv + varying res. (dx/x)'.
     The respective numbers 0-3 also works. Note that fast convolution only alllows
     a single value into res wheras the other can also take an array with the
     same length as the x-data (varying resolution)</dd>
     <dt><code><b>respoints</b></code></dt>
     <dd>The number of points to include in the resolution calculation. This is only
-    used for 'full conv and vaying res.' and 'fast conv + varying res'</dd>
+    used for 'full conv and vaying res.', 'fast conv + varying res', 'full conv and varying res. (dx/x)' and
+    'fast conv + varying res. (dx/x)'.</dd>
     <dt><code><b>resintrange</b></code></dt>
     <dd>Number of standard deviatons to integrate the resolution function times
     the reflectivity over</dd>
@@ -213,12 +217,15 @@ def resolutioncorr(R, TwoThetaQz, foocor, instrument, weight):
     ''' Do the convolution of the reflectivity to account for resolution effects.'''
     restype = instrument.getRestype()
     if restype == instrument_string_choices['restype'][1] or restype == 1:
-        R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.getRes(),
+        R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.getRes(), \
                           range=instrument.getResintrange())
-    elif restype == instrument_string_choices['restype'][2] or restype == 2:
+    elif (restype == instrument_string_choices['restype'][2] or restype == 2 or
+          restype == instrument_string_choices['restype'][4] or restype == 4):
         R = ConvoluteResolutionVector(TwoThetaQz, R[:] * foocor, weight)
     elif restype == instrument_string_choices['restype'][3] or restype == 3:
-        R = ConvoluteFastVar(TwoThetaQz, R[:] * foocor, instrument.getRes(),
+        R = ConvoluteFastVar(TwoThetaQz, R[:] * foocor, instrument.getRes(), range=instrument.getResintrange())
+    elif restype == instrument_string_choices['restype'][5] or restype == 5:
+        R = ConvoluteFastVar(TwoThetaQz, R[:] * foocor, instrument.getRes()*TwoThetaQz,
                              range=instrument.getResintrange())
     elif restype == instrument_string_choices['restype'][0] or restype == 0:
         R = R[:] * foocor
@@ -229,23 +236,28 @@ def resolutioncorr(R, TwoThetaQz, foocor, instrument, weight):
 
 
 def resolution_init(TwoThetaQz, instrument):
-    """ Inits the dependet variable with regards to coordinates and resolution."""
+    ''' Inits the dependet variable with regards to coordinates and resolution.'''
     restype = instrument.getRestype()
     weight = 0
     if restype == 2 or restype == instrument_string_choices['restype'][2]:
         (TwoThetaQz, weight) = ResolutionVector(TwoThetaQz[:],
                                                 instrument.getRes(), instrument.getRespoints(),
                                                 range=instrument.getResintrange())
+    elif restype == 4 or restype == instrument_string_choices['restype'][4]:
+        (TwoThetaQz, weight) = ResolutionVector(TwoThetaQz[:],
+                                                instrument.getRes()*TwoThetaQz, instrument.getRespoints(),
+                                                range=instrument.getResintrange())
     # TTH values given as x
-    if instrument.getCoords() == instrument_string_choices['coords'][1] or instrument.getCoords() == 1:
+    if instrument.getCoords() == instrument_string_choices['coords'][1] \
+            or instrument.getCoords() == 1:
         Q = 4 * pi / instrument.getWavelength() * sin((TwoThetaQz + instrument.getTthoff()) * pi / 360.0)
     # Q vector given....
-    elif instrument.getCoords() == instrument_string_choices['coords'][0] or instrument.getCoords() == 0:
-        Q = 4 * pi / instrument.getWavelength() * sin(arcsin(TwoThetaQz * instrument.getWavelength() / 4 / pi) +
-                                                      instrument.getTthoff() * pi / 360.)
+    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
+            or instrument.getCoords() == 0:
+        Q = 4 * pi / instrument.getWavelength() * sin(
+            arcsin(TwoThetaQz * instrument.getWavelength() / 4 / pi) + instrument.getTthoff() * pi / 360.)
     else:
-        raise ValueError('The value for coordinates, coords, is WRONG!'
-                         'should be q(0) or tth(1).')
+        raise ValueError('The value for coordinates, coords, is WRONG! should be q(0) or tth(1).')
     return Q, TwoThetaQz, weight
 
 
