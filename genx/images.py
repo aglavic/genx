@@ -23,6 +23,32 @@ getaddImage = add.GetImage
 getaddBitmap = add.GetBitmap
 
 #----------------------------------------------------------------------
+add_simulation = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
+    "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
+    "AAOCSURBVDiNrZRbTFxVFIa/s8/MPoczEy4dLgIKIUrBkkKlhCaaSokxfdGE9EW0PCgvjS9G"
+    "Eu+JjYkxpk2MttRb1cZgaprwoCb6UJTSGlBp04iAkNSWQUIzhQ5kuMycc+Zytg84pNZC1biS"
+    "/2nn//Zae6214X8ObZMzUb411J23xWzUhBC60PGU8pYXE8Mzk9e7AHUrk28jWn6xub+tq77z"
+    "wX3bTEOaZNV/arThwxdOX4hGlk/+K6AR9NeVVgdNx7VRSq2rZmdZjpVrbCdya9+GQPBwkg43"
+    "AxOJBHY8WQS0AFFgFli6LdBLe7iui+3aeEqxsujQf+wXnGsrdDxa1F5VWfnY7FU7MTWTcMPT"
+    "q6tLK+mLl6fiz2SBIhDSO4Su1SEEAnDi6ZZkai3D2JzNwKEx3j14L7XV1QDWn75ANoF3jl+5"
+    "67lXxz/wAeSWie66Ntl5R41lSr+B9BtIaWAVguPYDB2fpufwdspLTS6MxDh45AoZBELT2BIU"
+    "HGgvx5C6XC/ZZ6kdRTsypk8m8UuBlDqG9OEkbRQKM52hvNQE4M2Pw+x7azeBYABDmqRtjc8/"
+    "GaHvxG8a4AkAtLV5dJNrb+bcpBtHbndjPr0vDTLw2RjhiQi66fFIVzNWad7PwPDfmpJKJVFK"
+    "4d3Q2SU3RcLOYOXodHVW8fT+Ss79EOW7L8fpOzRMRVM5mtA8ILMGVH+d+nQ6tQ7zlEdJq6Tj"
+    "2YucOHwf+Xl+TEOwt7WYva3FAJwZjPJjb7wOMHUA3RD1MkCDT+JPJSCVgGTcQxgZAMwCHS+k"
+    "8/6R3/l+aAEyECqQBKy1fKoqLGrutnxD5xfd7C5rZi5PaFLUZ7NUKdXywPO+XcESQSomCd1p"
+    "YUiTWFjx7RuRqVCBkSktMoo+PdaYX1Vh4XmKnQ+d7RdZv7PMSTvqvZiVP0c7C5ByFCNHk0z0"
+    "xFmMxNGMNCKg9U5NrW4dGl7Y9VFPeA5AKcBT2iarl70K9uwp5JUDtbzWPcHU1Tj50t9WfI+s"
+    "Mvyi4cn2ykKAb/quuUur6a9uDwS8jKK2Osipo80AzF13a4CakiIDgNHxZe/l138dm5m139sQ"
+    "mE54o7FpYZc1aTmXlmK0PH6Oh+8voWlbAYUhA9fNcHpg3v3i68j85KWV85fD8aeA9KYfbLBU"
+    "vC0DqhkNAWipBDm6o0cKLPlTKqMS89HkZDKZGQQW/kml/yn+AHcRls69ooN1AAAAAElFTkSu"
+    "QmCC")
+getadd_simulationData = add_simulation.GetData
+getadd_simulationImage = add_simulation.GetImage
+getadd_simulationBitmap = add_simulation.GetBitmap
+
+#----------------------------------------------------------------------
 calc = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"

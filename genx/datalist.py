@@ -12,7 +12,10 @@ $Date::                                 $:  Date of last commit
 '''
 
 import wx, os
-import wx.lib.colourselect as  csel
+import wx.lib.colourselect as csel
+import wx.wizard
+import wx.lib.scrolledpanel as scrolled
+import  wx.lib.intctrl as intctrl
 
 
 import data
@@ -445,8 +448,7 @@ class VirtualDataList(wx.ListCtrl):
         self._UpdateImageList()
         self.SetItemCount(self.data_cont.get_count())
         self._UpdateData('Item added', data_changed = True, new_data = True)
-        
-        
+
     def MoveItemUp(self):
         # Get selected items
         indices = self._GetSelectedItems()
@@ -533,7 +535,23 @@ class VirtualDataList(wx.ListCtrl):
         self.data_loader.SetData(self.data_cont.get_data())
         if self.data_loader.LoadDataFile(self._GetSelectedItems()):
             self._UpdateData('New data added', new_data = True)
-            
+
+    def CreateSimData(self):
+        """ Create Simulation data through a wizard
+
+        :return:
+        """
+        wiz = CreateSimDataWizard(self)
+        if wiz.run():
+            xstr, ystr, names = wiz.GetValues()
+            for name in names:
+                self.data_cont.add_item()
+                self.data_cont.set_name(-1, name)
+                self.data_cont.run_commands({'x': xstr, 'y': ystr, 'e': ystr}, [-1])
+            self._UpdateImageList()
+            self.SetItemCount(self.data_cont.get_count())
+            self._UpdateData('Item added', data_changed = True, new_data = True)
+
     def ChangeDataLoader(self):
         '''ChangeDataLoader(self, evt) --> None
         
@@ -776,6 +794,10 @@ class DataListControl(wx.Panel):
         self.toolbar.Realize()
         
     def do_toolbar(self):
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Add data set', bitmap=img.add.getBitmap(),
+                                  shortHelp='Insert empty data set')
+        self.Bind(wx.EVT_TOOL, self.eh_tb_add, id=newid)
 
         newid = wx.NewId()
         self.toolbar.AddLabelTool(newid, label='Import data set', bitmap=img.open_small.getBitmap(),
@@ -783,14 +805,9 @@ class DataListControl(wx.Panel):
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Add data set', bitmap=img.add.getBitmap(),
-                                  shortHelp='Insert empty data set')
-        self.Bind(wx.EVT_TOOL, self.eh_tb_add, id=newid)
-
-        newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Delete data set', bitmap=img.delete.getBitmap(),
-                                  shortHelp='Delete selected data set')
-        self.Bind(wx.EVT_TOOL, self.eh_tb_delete, id=newid)
+        self.toolbar.AddLabelTool(newid, label='Add simulation data set', bitmap=img.add_simulation.getBitmap(),
+                                  shortHelp='Insert a data set for simulation')
+        self.Bind(wx.EVT_TOOL, self.eh_tb_add_simulation, id=newid)
 
         newid = wx.NewId()
         self.toolbar.AddLabelTool(newid, label='Move up', bitmap=img.move_up.getBitmap(),
@@ -801,6 +818,12 @@ class DataListControl(wx.Panel):
         self.toolbar.AddLabelTool(newid, label='Move_down', bitmap=img.move_down.getBitmap(),
                                   shortHelp='Move selected data set(s) down')
         self.Bind(wx.EVT_TOOL, self.eh_tb_move_down, id=newid)
+
+        newid = wx.NewId()
+        self.toolbar.AddLabelTool(newid, label='Delete data set', bitmap=img.delete.getBitmap(),
+                                  shortHelp='Delete selected data set')
+        self.Bind(wx.EVT_TOOL, self.eh_tb_delete, id=newid)
+
 
         newid = wx.NewId()
         self.toolbar.AddLabelTool(newid, label='Plot settings', bitmap=img.plotting.getBitmap(),
@@ -822,8 +845,10 @@ class DataListControl(wx.Panel):
         #print "eh_tb_add not implemented yet"
         #pass
         self.list_ctrl.AddItem()
-        
-        
+
+    def eh_tb_add_simulation(self, event):
+        self.list_ctrl.CreateSimData()
+
     def eh_tb_delete(self, event):
         #print "eh_tb_delete not implemented yet"
         #pass
@@ -1281,6 +1306,168 @@ class CalcDialog(wx.Dialog):
 
 # END: CalcDialog
 #==============================================================================
+# BEGIN: Sim data Wizard
+
+class TitledPage(wx.wizard.WizardPageSimple):
+    def __init__(self, parent, title):
+        wx.wizard.WizardPageSimple.__init__(self, parent)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sizer)
+        titleText = wx.StaticText(self, -1, title)
+        titleText.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
+        self.sizer.Add(titleText, 0,
+                       wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sizer.Add(wx.StaticLine(self, -1), 0,
+                       wx.EXPAND|wx.ALL, 5)
+
+class CreateSimDataWizard(wx.wizard.Wizard):
+    def __init__(self, parent):
+        wx.wizard.Wizard.__init__(self, parent, -1, "Create Simulation Data Sets")
+        step_types = ['const', 'log']
+        self.pages = []
+        self.min_val = None
+        self.max_val = None
+
+        page1 = TitledPage(self, "X-values")
+        page2 = TitledPage(self, "Number of data sets")
+        page3 = TitledPage(self, "Data set names")
+
+        dataSizer = wx.FlexGridSizer(rows=5, cols=2,
+                                       vgap=10, hgap=10)
+
+
+        dataSizer.Add(wx.StaticText(page1, -1, "Start "), 0, wx.EXPAND|wx.ALL, 5)
+        minCtrl = wx.TextCtrl(page1, -1, value='0.0')
+        dataSizer.Add(minCtrl, 0, wx.EXPAND|wx.ALL, 5)
+        dataSizer.Add(wx.StaticText(page1, -1, "Stop "), 0, wx.EXPAND|wx.ALL, 5)
+        maxCtrl = wx.TextCtrl(page1, -1, value='1.0')
+        dataSizer.Add(maxCtrl, 0, wx.EXPAND|wx.ALL, 5)
+        dataSizer.Add(wx.StaticText(page1, -1, "Step type"), 0, wx.EXPAND|wx.ALL, 5)
+        stepChoice = wx.Choice(page1, -1, (-1, -1), choices=step_types)
+        dataSizer.Add(stepChoice, 0, wx.EXPAND|wx.ALL, 5)
+        dataSizer.Add(wx.StaticText(page1, -1, "Num steps"), 0, wx.EXPAND|wx.ALL, 5)
+        stepCtrl = intctrl.IntCtrl(page1, value=10)
+        dataSizer.Add(stepCtrl, 0, wx.EXPAND|wx.ALL, 5)
+        page1.sizer.Add(dataSizer)
+
+        dataSizer = wx.FlexGridSizer(rows=1, cols=2,
+                                       vgap=10, hgap=10)
+        dataSizer.Add(wx.StaticText(page2, -1, "Data sets "), 0, wx.EXPAND|wx.ALL, 5)
+        setsCtrl = intctrl.IntCtrl(page2, value=1)
+        dataSizer.Add(setsCtrl, 0, wx.EXPAND|wx.ALL, 5)
+        page2.sizer.Add(dataSizer)
+
+        page3.sizer.Add(wx.StaticText(page3, -1, "Change the name of the data sets"), 0, wx.EXPAND|wx.ALL, 5)
+        self.scrollPanel = scrolled.ScrolledPanel(page3, -1, size=(150, 200), style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER)
+        self.nameSizer = wx.FlexGridSizer(cols=1, vgap=4, hgap=4)
+        self.nameCtrls = []
+        page3.sizer.Add(self.scrollPanel, 0, wx.CENTER|wx.ALL, 5)
+
+        self.maxCtrl = maxCtrl
+        self.minCtrl = minCtrl
+        self.stepChoice = stepChoice
+        self.stepCtrl = stepCtrl
+        self.setsCtrl = setsCtrl
+
+        self.add_page(page1)
+        self.add_page(page2)
+        self.add_page(page3)
+
+        print len(self.pages)
+
+        self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGING, self.on_page_changing)
+
+    def on_page_changing(self, evt):
+        """ Event handler for changing page
+
+        :param evt:
+        :return:
+        """
+        if evt.GetDirection() and evt.GetPage() is self.pages[0]:
+            if not self.min_max_values_valid():
+                evt.Veto()
+                return
+        if evt.GetDirection() and evt.GetPage() is self.pages[1]:
+            for item in self.nameCtrls:
+                item.Destroy()
+            #self.nameSizer.Destroy()
+            #self.nameSizer = wx.FlexGridSizer(cols=1, vgap=4, hgap=4)
+            self.nameCtrls = []
+            # We are moving from page1 to page2 populate the scroll panel
+            for i in range(self.setsCtrl.GetValue()):
+                self.nameCtrls.append(wx.TextCtrl(self.scrollPanel, -1, 'Sim%d'%i))
+                self.nameSizer.Add(self.nameCtrls[-1], 0, wx.CENTRE|wx.ALL, 5)
+            self.scrollPanel.SetSizer(self.nameSizer)
+            #self.scrollPanel.SetAutoLayout(1)
+            self.scrollPanel.SetupScrolling()
+
+
+    def min_max_values_valid(self):
+        """ checks so that min and max values are vaild floats
+
+        :return:
+        """
+        try:
+            self.min_val = float(eval(self.minCtrl.GetValue()))
+        except Exception:
+            self.min_val = None
+            dlg = wx.MessageDialog(self, "The minimum value can not be evaluated to a numerical value", 'WARNING',
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
+        try:
+            self.max_val = float(eval(self.maxCtrl.GetValue()))
+        except Exception:
+            self.max_val = None
+            dlg = wx.MessageDialog(self, "The minimum value can not be evaluated to a numerical value", 'WARNING',
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
+
+        if self.min_val < 1e-20 and self.stepChoice.GetStringSelection() == 'log':
+            dlg = wx.MessageDialog(self, "The minimum value have to be larger than 1e-20 when using log step size",
+                                   'WARNING', wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
+
+        return True
+
+
+    def add_page(self, page):
+        '''Add a wizard page'''
+        if self.pages:
+            previous_page = self.pages[-1]
+            page.SetPrev(previous_page)
+            previous_page.SetNext(page)
+        self.pages.append(page)
+
+    def run(self):
+        return self.RunWizard(self.pages[0])
+
+    def GetValues(self):
+        """ Returns the values to be used for simulations.
+
+        :return: xstr, ystr, namestrs
+        """
+        if self.stepChoice.GetStringSelection() == 'log':
+            xstr = 'logspace(log10(%s), log10(%s), %d)'%(self.minCtrl.GetValue(), self.maxCtrl.GetValue(), self.stepCtrl.GetValue())
+        else:
+            xstr = 'linspace(%s, %s, %d)'%(self.minCtrl.GetValue(), self.maxCtrl.GetValue(), self.stepCtrl.GetValue())
+
+        ystr = 'zeros(%d)*nan'%self.stepCtrl.GetValue()
+
+        namestrs = []
+        for ctrl in self.nameCtrls:
+            namestrs.append(ctrl.GetValue())
+
+        return xstr, ystr, namestrs
+
+# END: Sim data Wizard
+#==============================================================================
+
 
 def ShowWarningDialog(frame, message, position = ''):
     dlg = wx.MessageDialog(frame, message + '\n' + 'Position: ' + position,
