@@ -134,6 +134,8 @@ class MainFrame(wx.Frame):
         self.mb_edit_sub = wx.Menu()
         self.mb_new_data_set = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&New data set\tAlt+N", "Append a new data set", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_new_data_set)
+        self.mb_new_simulation = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "New simulation\tAlt+N", "Append a new simulation data set", wx.ITEM_NORMAL)
+        self.mb_edit_sub.AppendItem(self.mb_new_simulation)
         self.mb_data_delete = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Delete\tAlt+D", "Delete the selected data set", wx.ITEM_NORMAL)
         self.mb_edit_sub.AppendItem(self.mb_data_delete)
         self.mb_data_move_down = wx.MenuItem(self.mb_edit_sub, wx.NewId(), "&Lower item\tAlt+L", "Move selected item down", wx.ITEM_NORMAL)
@@ -288,6 +290,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, self.mb_copy_table)
         self.Bind(wx.EVT_MENU, self.eh_mb_findreplace, self.mb_findreplace)
         self.Bind(wx.EVT_MENU, self.eh_data_new_set, self.mb_new_data_set)
+        self.Bind(wx.EVT_MENU, self.eh_data_new_simulation_set, self.mb_new_simulation)
         self.Bind(wx.EVT_MENU, self.eh_data_delete, self.mb_data_delete)
         self.Bind(wx.EVT_MENU, self.eh_data_move_down, self.mb_data_move_down)
         self.Bind(wx.EVT_MENU, self.eh_data_move_up, self.mb_data_move_up)
@@ -780,6 +783,9 @@ class MainFrame(wx.Frame):
 
     def eh_data_new_set(self, event): # wxGlade: MainFrame.<event_handler>
         self.data_list.eh_tb_add(event)
+
+    def eh_data_new_simulation_set(self, event):
+        self.data_list.eh_tb_add_simulation(event)
 
     def eh_data_delete(self, event): # wxGlade: MainFrame.<event_handler>
         self.data_list.eh_tb_delete(event)
