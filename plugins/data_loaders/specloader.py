@@ -153,8 +153,10 @@ class TitledPage(wx.wizard.WizardPageSimple):
         self.sizer.Add(wx.StaticLine(self, -1), 0,
                        wx.EXPAND|wx.ALL, 5)
 
+
 class LoadSpecScanPage(wx.wizard.WizardPageSimple):
-    def __init__(self, parent, plugin, default_filename = None):
+
+    def __init__(self, parent, plugin, default_filename=None):
 
         self.plugin = plugin
         
@@ -338,7 +340,7 @@ class CustomManipulationPage(wx.wizard.WizardPageSimple):
         self.sizer.Add(wx.StaticLine(self, -1), 0,
                        wx.EXPAND|wx.ALL, 5)
         help_text = ("By changing the expressions in the boxes below you can " +
-                     "manipulate your data with expressions written in Pyton.\n" +
+                     "manipulate your data with expressions written in Python.\n" +
                      "These transforms can be changed later from the data calculations" +
                      "dialog.")
         helpText = wx.StaticText(self, -1, help_text)
@@ -427,7 +429,9 @@ class CustomManipulationPage(wx.wizard.WizardPageSimple):
             else:
                 self.errorCtrl.ChangeValue(choices[3])
 
+
 class SetNamePage(wx.wizard.WizardPageSimple):
+
     def __init__(self, parent, plugin, data_sets = []):
         wx.wizard.WizardPageSimple.__init__(self, parent)
         self.plugin = plugin
