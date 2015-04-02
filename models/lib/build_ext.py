@@ -23,6 +23,7 @@ def paratt():
     double torad = 3.141592/180.0;
     double costheta2;
     std::complex<double> Qj, Qj1, r, rp, p, imag(0.0,1.0);
+    std::complex<double> n2amb = n[interfaces]*n[interfaces];
 
     PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
     double* r_array = (double*) ((PyArrayObject*) out_array)->data;
@@ -31,13 +32,13 @@ def paratt():
     for(int i = 0; i < points; i++){
         costheta2 = cos(theta[i]*torad);
         costheta2 *= costheta2;
-        Qj = 2.0*k*sqrt(n[0]*n[0] - costheta2);
-        Qj1 = 2.0*k*sqrt(n[1]*n[1] - costheta2);
+        Qj = 2.0*k*sqrt(n[0]*n[0] - n2amb*costheta2);
+        Qj1 = 2.0*k*sqrt(n[1]*n[1] - n2amb*costheta2);
         rp=(Qj - Qj1)/(Qj1 + Qj)*exp(-Qj1*Qj/2.0*sigma[0]*sigma[0]);
         r = rp;
         for(j = 1; j < interfaces; j++){
             Qj = Qj1;
-            Qj1 = 2.0*k*sqrt(n[j+1]*n[j+1] - costheta2);
+            Qj1 = 2.0*k*sqrt(n[j+1]*n[j+1] - n2amb*costheta2);
             rp = (Qj-Qj1)/(Qj1+Qj)*exp(-Qj1*Qj/2.0*sigma[j]*sigma[j]);
             p = exp(imag*d[j]*Qj);
             r = (rp+r*p)/(1.0 + rp*r*p);
@@ -117,6 +118,7 @@ def paratt():
     double pi = 3.141592;
     double torad = pi/180.0;
     std::complex<double> Qj, Qj1, r, rp, p, imag(0.0, 1.0);
+    std::complex<double> n2amb;
 
     PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
     double* r_array = (double*) ((PyArrayObject*) out_array)->data;
@@ -124,14 +126,16 @@ def paratt():
     for(int i = 0;i < points; i++){
         costheta2 = cos(theta[i]*torad);
         costheta2 *= costheta2;
+        n2amb = n[interfaces*points + i];
+        n2amb *= n2amb;
         k = 4*pi/lamda[i];
-        Qj = k*sqrt(n[0*points + i]*n[0*points + i]  - costheta2);
-        Qj1 = k*sqrt(n[1*points + i]*n[1*points + i] - costheta2);
+        Qj = k*sqrt(n[0*points + i]*n[0*points + i]  - n2amb*costheta2);
+        Qj1 = k*sqrt(n[1*points + i]*n[1*points + i] - n2amb*costheta2);
         rp = (Qj - Qj1)/(Qj1 + Qj)*exp(-Qj1*Qj/2.0*sigma[0]*sigma[0]);
         r = rp;
         for(j = 1; j < interfaces; j++){
             Qj = Qj1;
-            Qj1 = k*sqrt(n[(j+1)*points + i]*n[(j+1)*points + i] - costheta2);
+            Qj1 = k*sqrt(n[(j+1)*points + i]*n[(j+1)*points + i] - n2amb*costheta2);
             rp = (Qj - Qj1)/(Qj1 + Qj)*exp(-Qj1*Qj/2.0*sigma[j]*sigma[j]);
             p = exp(imag*d[j]*Qj);
             r = (rp+r*p)/(1.0+rp*r*p);
@@ -157,6 +161,7 @@ def paratt():
     double pi = 3.141592;
     double torad = pi/180.0;
     std::complex<double> Qj, Qj1, r, rp, p, imag(0.0, 1.0);
+    std::complex<double> n2amb;
 
     PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
     double* r_array = (double*) ((PyArrayObject*) out_array)->data;
@@ -164,14 +169,16 @@ def paratt():
     for(int i = 0;i < points; i++){
         costheta2 = cos(theta[i]*torad);
         costheta2 *= costheta2;
+        n2amb = n[interfaces*points + i];
+        n2amb *= n2amb;
         k = 4*pi/lamda[i];
-        Qj = k*sqrt(n[0*points + i]*n[0*points + i]  - costheta2);
-        Qj1 = k*sqrt(n[1*points + i]*n[1*points + i] - costheta2);
+        Qj = k*sqrt(n[0*points + i]*n[0*points + i]  - n2amb*costheta2);
+        Qj1 = k*sqrt(n[1*points + i]*n[1*points + i] - n2amb*costheta2);
         rp = (Qj - Qj1)/(Qj1 + Qj);
         r = rp;
         for(j = 1; j < interfaces; j++){
             Qj = Qj1;
-            Qj1 = k*sqrt(n[(j+1)*points + i]*n[(j+1)*points + i] - costheta2);
+            Qj1 = k*sqrt(n[(j+1)*points + i]*n[(j+1)*points + i] - n2amb*costheta2);
             rp = (Qj - Qj1)/(Qj1 + Qj);
             p = exp(imag*d[j]*Qj);
             r = (rp+r*p)/(1.0+rp*r*p);
