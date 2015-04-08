@@ -176,6 +176,7 @@ def on_new_model(frame, event):
         val = frame.config.get_boolean('parameter grid', 'auto sim')
     except io.OptionError:
         print 'Could not locate option parameters.auto sim'
+        frame.mb_fit_autosim.Check(True)
     else:
        frame.mb_fit_autosim.Check(val)
 
@@ -819,7 +820,10 @@ def on_grid_slider_check(frame, event):
     :return:
     """
     frame.paramter_grid.SetValueEditorSlider(frame.mb_view_grid_slider.IsChecked())
+    #print frame.paramter_grid.get_toggle_slider_tool_state()
+    frame.paramter_grid.toggle_slider_tool(frame.mb_view_grid_slider.IsChecked())
     frame.paramter_grid.Refresh()
+
 
 def on_autoscale(frame, event):
     '''on_autoscale(frame, event) --> None

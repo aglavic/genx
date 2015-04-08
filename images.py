@@ -538,6 +538,23 @@ getsimulateImage = simulate.GetImage
 getsimulateBitmap = simulate.GetBitmap
 
 #----------------------------------------------------------------------
+slider = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
+    "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
+    "AAGsSURBVDiN7ZM9SFthFIaf77v3ek00Jhg1TUEsqKB0KpYuVcShEC3FUetS6CBIXUUnGyql"
+    "S926OBQKXQp2EQdRDC5uBR1EFDpV2kBCjLnmz5ufex0k0GgSdXPw3b7znvc5cDgf3KuK3ID3"
+    "Jo2ihqf6IeiF0YfgEUAETqOwFYYZIHsboNYOG2/geQ9o/xtHYC3B7h8YApJVgV3Dwaac1Fvq"
+    "LDt5tvF+caqYf90BaqVpMbAXFXVdBBYmAFxOM72/HMwBqH19S9qx7/hbATEubWTeyuOvc9GR"
+    "jVfdRQuIHs0ROMgk4qrDQzqtFx+NfPqZU8y3MuY7mQQxAUgAM3HEM9OoCiup/yyJHT0sPRVg"
+    "TLP0OSmE9bhsB2Yaj1W8FtgISPO0vGjzRNqwWVZ0NvNX1a8FRoSk2OgrqwnBtmL8Dh14ul8k"
+    "ELQDKVVvKsT+7dQP5DOyFvCHw21le18aQlGzgAF89UaaP1Q8mwfw7hV8HLw46Cvag8x3+BKG"
+    "2cueUimQgl8RaD2Bzm5oKDUVgDWIr8JKGKYrZWv9FJzwtA3mXeAHZAqicfhsQKhW7l53TOc4"
+    "sH4pTMFvZQAAAABJRU5ErkJggg==")
+getsliderData = slider.GetData
+getsliderImage = slider.GetImage
+getsliderBitmap = slider.GetBitmap
+
+#----------------------------------------------------------------------
 sort = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
