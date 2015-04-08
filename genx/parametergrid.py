@@ -508,7 +508,7 @@ class ValueLimitCellEditor(gridlib.PyGridCellEditor):
         #val = min(self.max_value, val)
         #self._tc.SetValue('%.5g'%(val))
         #self._tc.SetValue(val)
-        self._tc.value_change_func(val)
+        #self._tc.value_change_func(val)
         self._tc.SetValueChangeCallback(None)
         return float(val)
 
@@ -787,6 +787,12 @@ class ParameterGrid(wx.Panel):
         self.Bind(wx.EVT_TOOL, self.eh_sort, id=newid)
 
         newid = wx.NewId()
+        self.slider_tool_id = newid
+        self.slider_tool = self.toolbar.AddCheckLabelTool(newid, label='Show sliders', bitmap=img.slider.getBitmap(),
+                                                          shortHelp='Show the parameter values as sliders')
+        self.Bind(wx.EVT_TOOL, self.eh_slider_toggle, id=newid)
+
+        newid = wx.NewId()
         self.toolbar.AddLabelTool(newid, label='Project FOM evals', bitmap=img.par_proj.getBitmap(),
                                   shortHelp='Project FOM on parameter axis')
         self.Bind(wx.EVT_TOOL, self.eh_project_fom, id=newid)
@@ -794,6 +800,7 @@ class ParameterGrid(wx.Panel):
         newid = wx.NewId()
         self.toolbar.AddLabelTool(newid, label='Scan parameter', bitmap=img.par_scan.getBitmap(), shortHelp='Scan FOM')
         self.Bind(wx.EVT_TOOL, self.eh_scan_fom, id=newid)
+
 
     def eh_add_row(self, event):
         """ Event handler for adding a row
@@ -832,6 +839,22 @@ class ParameterGrid(wx.Panel):
         row = self.grid.GetGridCursorRow()
         if self.table.MoveRowDown(row):
             self.grid.SetGridCursor(row + 1, self.grid.GetGridCursorCol())
+
+    def eh_slider_toggle(self, event):
+        """ Event handler for showing the sliders instead of values
+
+        :param event:
+        :return:
+        """
+        new_state = not self.GetValueEditorSlider()
+        self.SetValueEditorSlider(new_state)
+        self.parent.mb_view_grid_slider.Check(new_state)
+
+    def toggle_slider_tool(self, state):
+        self.toolbar.ToggleTool(self.slider_tool_id, state)
+
+    def get_toggle_slider_tool_state(self):
+        self.toolbar.GetToolState(self.slider_tool_id)
 
     def eh_project_fom(self, event):
         """ Event handler for toolbar project fom

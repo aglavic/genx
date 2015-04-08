@@ -317,6 +317,7 @@ class SpinCtrl(wx.Control):
                                  name=name+"_TextCtrl")
         self._spin = wx.SpinButton(self, wx.NewId(), pos=pos, size=wx.Size(16, size.GetHeight()),
                                    style=wx.SP_ARROW_KEYS | wx.SP_VERTICAL, name=name+"_SpinButton")
+        self._spin.SetRange(-32000, 32000)
         self._sizer = wx.BoxSizer(wx.HORIZONTAL)
         self._sizer.Add(self._text, 1)
         self._sizer.Add(self._spin)
@@ -336,7 +337,7 @@ class SpinCtrl(wx.Control):
         :param dir_up: stepping direction
         :return:
         """
-        inc = (self.max_value - self.min_value)/self.steps
+        inc = (self.max_value - self.min_value)*1.0/self.steps
         val = self.value
         if dir_up:
             val += inc
