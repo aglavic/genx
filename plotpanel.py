@@ -540,7 +540,7 @@ class PlotPanel(wx.Panel):
 
 #==============================================================================
 # Print out class borrowed from wxmpl
-wx.PostScriptDC_SetResolution(300)
+#wx.PostScriptDC_SetResolution(300)
 
 class FigurePrinter:
     """
