@@ -1011,9 +1011,13 @@ class ParameterGrid(wx.Panel):
         ##self.grid.SelectRow(evt.GetRow())
         col, row = evt.GetCol(), evt.GetRow()
         if col == 0 and row > -1:
-            self.grid.SetGridCursor(row, col)
-            pos = evt.GetPosition()
-            self.show_parameter_menu(pos)
+            if self.grid.GetGridCursorRow() == row:
+                self.CurSelection = (row, col)
+                self.grid.SetGridCursor(row, col)
+                pos = evt.GetPosition()
+                self.show_parameter_menu(pos)
+            else:
+                evt.Skip()
         else:
             #if self.grid.CanEnableCellControl() and evt.GetCol() != 2:
             #    self.grid.EnableCellEditControl()
@@ -1021,8 +1025,7 @@ class ParameterGrid(wx.Panel):
 
 
     def OnLeftClick(self,evt):
-        """Callback to make the checkboxes to react on a single click instead
-        of a double click as it is by standard.
+        """Callback to handle left clicks in the cells.
 
         :param evt: A Event from a Grid
         :return: Nothing
