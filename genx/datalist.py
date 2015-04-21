@@ -382,8 +382,7 @@ class VirtualDataList(wx.ListCtrl):
         Internal funciton to send an event to update data
         '''
         # Send an event that a new data set ahs been loaded
-        evt = DataListEvent(myEVT_DATA_LIST, self.GetId(),\
-        self.data_cont.get_data())
+        evt = DataListEvent(myEVT_DATA_LIST, self.GetId(), self.data_cont.get_data())
         evt.SetDataChanged(data_changed)
         evt.SetNewData(new_data)
         evt.SetNewModel(new_model)
@@ -447,7 +446,7 @@ class VirtualDataList(wx.ListCtrl):
         self.data_cont.add_item()
         self._UpdateImageList()
         self.SetItemCount(self.data_cont.get_count())
-        self._UpdateData('Item added', data_changed = True, new_data = True)
+        self._UpdateData('Item added', data_changed=True, new_data=True)
 
     def MoveItemUp(self):
         # Get selected items
@@ -548,9 +547,9 @@ class VirtualDataList(wx.ListCtrl):
                 self.data_cont.add_item()
                 self.data_cont.set_name(-1, name)
                 self.data_cont.run_commands({'x': xstr, 'y': ystr, 'e': ystr}, [-1])
-            self._UpdateImageList()
-            self.SetItemCount(self.data_cont.get_count())
-            self._UpdateData('Item added', data_changed = True, new_data = True)
+                self._UpdateImageList()
+                self.SetItemCount(self.data_cont.get_count())
+                self._UpdateData('Item added', data_changed=True, new_data=True)
 
     def ChangeDataLoader(self):
         '''ChangeDataLoader(self, evt) --> None
