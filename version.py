@@ -1,1 +1,1 @@
-version = '2.3.X Trunk'
+version = '2.4b2'

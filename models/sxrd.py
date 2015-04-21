@@ -258,8 +258,6 @@ class Sample:
         fs = lib.sxrd_ext.surface_lattice_sum(x, y, z, h, k, l, u, oc, f, Pt, dinv)
         return fs
 
-        
-
     def calc_fb(self, h, k, l):
         '''Calculate the structure factors from the bulk
         '''
@@ -287,6 +285,7 @@ class Sample:
         fb = f_u/denom*delta_funcs
                        
         return fb
+
     def calc_rhos(self, x, y, z, sb = 0.8):
         '''Calcualte the electron density of the unitcell
         '''

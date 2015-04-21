@@ -1068,7 +1068,7 @@ class DataPlotPanel(PlotPanel):
         # plot the data
         #[self.ax.semilogy(data_set.x,data_set.y) for data_set in data]
         if self.scale == 'linear':
-            [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
+            [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color, \
                 lw = data_set.data_linethickness, ls = data_set.data_linetype, \
                 marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
@@ -1076,13 +1076,13 @@ class DataPlotPanel(PlotPanel):
             [self.ax.errorbar(data_set.x, data_set.y,\
                 yerr = c_[data_set.error*(data_set.error > 0),\
                  data_set.error].transpose(),\
-                c = data_set.data_color, lw = data_set.data_linethickness,\
+                color=data_set.data_color, lw = data_set.data_linethickness,\
                 ls = data_set.data_linetype, marker = data_set.data_symbol,\
                 ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
         if self.scale == 'log':
             [self.ax.plot(data_set.x.compress(data_set.y > 0),\
-             data_set.y.compress(data_set.y > 0), c = data_set.data_color, \
+             data_set.y.compress(data_set.y > 0), color=data_set.data_color, \
                 lw = data_set.data_linethickness, ls = data_set.data_linetype, \
                 marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
@@ -1093,7 +1093,7 @@ class DataPlotPanel(PlotPanel):
                 yerr = c_[data_set.error*(data_set.error > 0),\
                 data_set.error].transpose().compress(data_set.y -\
                  data_set.error > 0),\
-                c = data_set.data_color, lw = data_set.data_linethickness,\
+                color=data_set.data_color, lw = data_set.data_linethickness,\
                 ls = data_set.data_linetype, marker = data_set.data_symbol,\
                 ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
@@ -1121,17 +1121,17 @@ class DataPlotPanel(PlotPanel):
         # plot the data
         #[self.ax.semilogy(data_set.x, data_set.y, '.'\
         # ,data_set.x, data_set.y_sim) for data_set in data]
-        [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
+        [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color, \
         lw = data_set.data_linethickness, ls = data_set.data_linetype, \
         marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
          for data_set in data if data_set.show]
         # The same thing for the simulation
-        [self.ax.plot(data_set.x, data_set.y_sim, c = data_set.sim_color, \
+        [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color, \
         lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
         marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
          for data_set in data if data_set.show]
         # Plot the point by point error:
-        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), c = data_set.sim_color, \
+        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color, \
         lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
         marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
          for data_set in data if data_set.show]
@@ -1162,7 +1162,7 @@ class DataPlotPanel(PlotPanel):
         # Plot the data sets and take care if it is log scaled data
 
         if self.scale == 'linear':
-            [self.ax.plot(data_set.x, data_set.y, c = data_set.data_color, \
+            [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color, \
                 lw = data_set.data_linethickness, ls = data_set.data_linetype, \
                 marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
@@ -1170,13 +1170,13 @@ class DataPlotPanel(PlotPanel):
             [self.ax.errorbar(data_set.x, data_set.y,\
                 yerr = c_[data_set.error*(data_set.error > 0),\
                  data_set.error].transpose(),\
-                c = data_set.data_color, lw = data_set.data_linethickness,\
+                color=data_set.data_color, lw = data_set.data_linethickness,\
                 ls = data_set.data_linetype, marker = data_set.data_symbol,\
                 ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
         if self.scale == 'log':
             [self.ax.plot(data_set.x.compress(data_set.y > 0),\
-             data_set.y.compress(data_set.y > 0), c = data_set.data_color, \
+             data_set.y.compress(data_set.y > 0), color=data_set.data_color, \
                 lw = data_set.data_linethickness, ls = data_set.data_linetype, \
                 marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
@@ -1187,16 +1187,16 @@ class DataPlotPanel(PlotPanel):
                 yerr = c_[data_set.error*(data_set.error > 0),\
                 data_set.error].transpose().compress(data_set.y -\
                  data_set.error > 0),\
-                c = data_set.data_color, lw = data_set.data_linethickness,\
+                color= data_set.data_color, lw = data_set.data_linethickness,\
                 ls = data_set.data_linetype, marker = data_set.data_symbol,\
                 ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
         # The same thing for the simulation
-        [self.ax.plot(data_set.x, data_set.y_sim, c = data_set.sim_color, \
+        [self.ax.plot(data_set.x, data_set.y_sim, color = data_set.sim_color, \
             lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
             marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
             for data_set in data if data_set.show and data_set.use]
-        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), c=data_set.sim_color,
+        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
          lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
          ms=data_set.sim_symbolsize) for data_set in data if data_set.show
         ]

@@ -1,4 +1,4 @@
-This package contain GenX 2.3.3 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contain GenX 2.4b2 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -9,7 +9,7 @@ If you need more support send an e-mail to Matts.Bjorck@gmail.com.
 References
 ==========
 If you use the program please give reference to the following publication:
-M. Björck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
+M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
 Changes 2.3.6
 =============
