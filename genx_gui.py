@@ -9,6 +9,8 @@ $Date::                                 $:  Date of last commit
 
 import wx
 import wx.grid, wx.py, wx.stc
+import StringIO
+import traceback
 
 import os, sys, shutil, appdirs
 
@@ -443,6 +445,19 @@ class MainFrame(wx.Frame):
         # Initiializations..
         # To force an update of the menubar...
         self.plot_data.SetZoom(False)
+
+        try:
+            for p in [self.plot_data, self.plot_fom,
+                      self.plot_pars, self.plot_fomscan]:
+                p.ReadConfig()
+        except Exception, e:
+            outp = StringIO.StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            print 'Error in loading config for the plots. Pyton tractback:\n ', val
+            event_handlers.ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
+
 
         self.model.saved = True
         #### End Manual config
