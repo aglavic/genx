@@ -849,6 +849,7 @@ class ParameterGrid(wx.Panel):
         new_state = not self.GetValueEditorSlider()
         self.SetValueEditorSlider(new_state)
         self.parent.mb_view_grid_slider.Check(new_state)
+        self.Refresh()
 
     def toggle_slider_tool(self, state):
         self.toolbar.ToggleTool(self.slider_tool_id, state)
