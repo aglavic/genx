@@ -11,6 +11,16 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 2.4.0
+=============
+ * Added sliders and spin controls to change the parameter values, updated dynamically.
+ * A new reflectivity aimed to soft matter called soft_nx.
+ * Added the possibility to have a logarithmic x scale.
+ * Data points causing nan and inf in the FOM can be ignored (see the Options dialog).
+ * A resolution type for constant dq/q have been added to spec_nx and soft_nx.
+ * Simulation data sets can be created through a wizard.
+ * Various bug fixes.
+
 Changes 2.3.6
 =============
  * Fixed bug regarding the definition of instruments (not working) in the Reflectivity plugin.
