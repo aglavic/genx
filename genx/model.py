@@ -274,6 +274,7 @@ class Model:
         ''' 
         Internal method for resetting the module before compilation
         '''
+        self.create_fom_mask_func()
         self.script_module = new.module('genx_script_module')
         #self.script_module = Temp()
         #self.script_module.__dict__ = {}
@@ -575,6 +576,8 @@ class Model:
         model_copy.compiled = self.compiled
         model_copy.fom = self.fom
         model_copy.saved = self.saved
+        # Needs to reset the fom_mask_func since this fails under windows.
+        model_copy.fom_mask_func = None
         
         return model_copy
     
