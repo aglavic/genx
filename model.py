@@ -114,7 +114,7 @@ class Model:
         try:
             new_parameters = pickle.loads(loadfile.read('parameters'))
             self.parameters.safe_copy(new_parameters)
-        except StandardError:
+        except StandardError, e:
             raise IOError('Could not locate the parameters section.', filename)
         try:
             self.fom_func = pickle.loads(loadfile.read('fomfunction'))

@@ -5,7 +5,7 @@ A Slab is the basic unit that builds up a sample and can
 be seen as a quasi-unitcell for the sxrd problem.
 Stricitly it is a 2D unitcell with a finite extension
 out-of-plane. The Sample is then built from these Slabs one slab for
-the bulk and a list of slabs for the surface strucutre.
+the bulk and a list of slabs for the surface structure.
 
 <p> The unitcell consists of parameters for  the unitcell and the
 instrument contains instrument variables. See below for a full list.
@@ -115,6 +115,7 @@ import utils
 
 sxrd_ext_built = False
 debug = False
+
 try:
     import lib.sxrd_ext
     sxrd_ext_built = True
@@ -138,7 +139,7 @@ __pars__ = ['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
 
 class Sample:
     def __init__(self, inst, bulk_slab, slabs, unit_cell,
-                 surface_sym = [], bulk_sym = []):
+                 surface_sym=[], bulk_sym=[]):
         self.set_bulk_slab(bulk_slab)
         self.set_slabs(slabs)
         self.set_surface_sym(surface_sym)
