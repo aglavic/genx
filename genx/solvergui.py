@@ -181,8 +181,7 @@ class SolverController:
         
         Function that conducts an autosave of the model.
         '''
-        io.save_gx(self.parent.model.get_filename(), self.parent.model, \
-                self.optimizer, self.config)
+        io.save_file(self.parent.model.get_filename(), self.parent.model, self.optimizer, self.config)
         #print 'AutoSaved!'
         
     def FittingEnded(self, solver):
