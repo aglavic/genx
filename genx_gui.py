@@ -58,7 +58,8 @@ class MainFrame(wx.Frame):
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__
-        kwds["style"] = wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|wx.MAXIMIZE|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
+        kwds["style"] = (wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX | wx.SYSTEM_MENU
+                         | wx.RESIZE_BORDER)
         wx.Frame.__init__(self, *args, **kwds)
         
         #self.config.load_default('./genx.conf')
@@ -568,7 +569,7 @@ class MainFrame(wx.Frame):
         #self.SetSizer(frame_sizer)
         #frame_sizer.Fit(self)
         self.Layout()
-        self.Centre()
+        #self.Centre()
         # end wxGlade
         
 
@@ -576,18 +577,21 @@ class MainFrame(wx.Frame):
         ''' Overiding the default method since any resizing has to come AFTER
             the calls to Show
         '''
-        self.Maximize()
-        size = self.GetSizeTuple()
-        self.ver_splitter.SetSashPosition(size[0]*1./4.)
-        self.hor_splitter.SetSashPosition(size[1]*5.0/10.)
+        display_size = wx.DisplaySize()
+        self.SetSize((display_size[0]*0.85, display_size[1]*0.9))
+        self.CenterOnScreen()
         wx.Frame.Show(self)
         ## Begin Manual Config
-        #Gravity sets how much the upper/left window is resized default 0
-        self.hor_splitter.SetSashGravity(0.75)
-        #self.plugin_control.LoadDefaultPlugins()
-        #self.Maximize()
-        ## End Manual Config
+
         event_handlers.new(self, None)
+        wx.CallAfter(self.LayoutSplitters)
+
+    def LayoutSplitters(self):
+         size = self.GetSizeTuple()
+         self.ver_splitter.SetSashPosition(size[0]*1./4.)
+         self.hor_splitter.SetSashPosition(size[1]*5.0/10.)
+         # Gravity sets how much the upper/left window is resized default 0
+         self.hor_splitter.SetSashGravity(0.75)
 
     def startup_dialog(self, profile_path, force_show = False):
         show_profiles = self.config.get_boolean('startup', 'show profiles')
