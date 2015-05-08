@@ -1224,6 +1224,7 @@ class ParameterGrid(wx.Panel):
 
     def OnResize(self, evt):
         self.SetColWidths()
+        evt.Skip()
     
     def SetParameterSelections(self, par_dict): #objlist,funclist):
         '''SetParameterSelections(self,objlist,funclist) --> None
