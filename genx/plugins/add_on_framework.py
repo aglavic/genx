@@ -47,9 +47,7 @@ class Template:
         '''
         panel = wx.Panel(self.parent.plot_notebook, -1)
         self.parent.plot_notebook.AddPage(panel, name)
-
-        index = self.parent.plot_notebook.GetPageCount()-1
-        self.plot_pages.append(index)
+        self.plot_pages.append(panel)
 
         return panel
         
@@ -62,9 +60,7 @@ class Template:
         '''
         panel = wx.Panel(self.parent.input_notebook, -1)
         self.parent.input_notebook.AddPage(panel, name)
-        
-        index = self.parent.input_notebook.GetPageCount()-1
-        self.input_pages.append(index)
+        self.input_pages.append(panel)
 
         return panel
         
@@ -77,9 +73,7 @@ class Template:
         '''
         panel = wx.Panel(self.parent.data_notebook, -1)
         self.parent.data_notebook.AddPage(panel, name)
-        
-        index = self.parent.data_notebook.GetPageCount()-1
-        self.data_pages.append(index)
+        self.data_pages.append(panel)
         
         return panel
         
@@ -91,8 +85,7 @@ class Template:
         '''
         menu = wx.Menu()
         self.parent.main_frame_menubar.Append(menu, name)
-        index = self.parent.main_frame_menubar.GetMenuCount()-1
-        self.menus.append(index)
+        self.menus.append(name)
         
         return menu
     
@@ -216,26 +209,27 @@ class Template:
         '''Remove(self) --> None
         Removes all components.
         '''
-        self.plot_pages.reverse()
-        self.input_pages.reverse()
-        self.data_pages.reverse()
+        pnb = self.parent.plot_notebook
+        inb = self.parent.input_notebook
+        dnb = self.parent.data_notebook
         
         # remove all pages from the notebooks
-        for i in self.plot_pages:
-            if i < self.parent.plot_notebook.GetPageCount():
-                self.parent.plot_notebook.DeletePage(i)
-        for i in self.input_pages:
-            if i < self.parent.input_notebook.GetPageCount():
-                self.parent.input_notebook.DeletePage(i)
-            #print 'deleted page', i
-        for i in self.data_pages:
-            if i < self.parent.data_notebook.GetPageCount():
-                self.parent.data_notebook.DeletePage(i)
-        
-        self.menus.reverse()
+        for panel in self.plot_pages:
+            pages = [pnb.GetPage(i) for i in range(pnb.GetPageCount())]
+            idx = pages.index(panel)
+            pnb.DeletePage(idx)
+        for panel in self.input_pages:
+            pages = [inb.GetPage(i) for i in range(inb.GetPageCount())]
+            idx = pages.index(panel)
+            inb.DeletePage(idx)
+        for panel in self.data_pages:
+            pages = [dnb.GetPage(i) for i in range(dnb.GetPageCount())]
+            idx = pages.index(panel)
+            dnb.DeletePage(idx)
         # Remove the menus
-        for i in self.menus:
-            self.parent.main_frame_menubar.Remove(i)
+        for name in self.menus:
+            idx = self.parent.main_frame_menubar.FindMenu(name)
+            self.parent.main_frame_menubar.Remove(idx)
     
 
 #END: Template
