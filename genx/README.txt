@@ -19,6 +19,8 @@ Changes 2.4.0
  * Data points causing nan and inf in the FOM can be ignored (see the Options dialog).
  * A resolution type for constant dq/q have been added to spec_nx and soft_nx.
  * Simulation data sets can be created through a wizard.
+ * Added data loader for SNS BL4A (programmer: Artur Glavic)
+ * Added plugin to more easily define layers (programmer: Artur Glavic)
  * Various bug fixes.
 
 Changes 2.3.6

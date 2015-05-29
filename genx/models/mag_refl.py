@@ -344,14 +344,11 @@ def Specular(TwoThetaQz, sample, instrument):
     xray_energy = AA_to_eV/instrument.getWavelength()
     weight = None
     if restype == 2 or restype == instrument_string_choices['restype'][2]:
-            (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:], \
-                instrument.getRes(), instrument.getRespoints(),\
-                 range=instrument.getResintrange())
-    if instrument.getCoords() == 1 or\
-        instrument.getCoords() == instrument_string_choices['coords'][1]:
+            (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:], instrument.getRes(), instrument.getRespoints(),
+                                                   range=instrument.getResintrange())
+    if instrument.getCoords() == 1 or instrument.getCoords() == instrument_string_choices['coords'][1]:
         theta = TwoThetaQz/2
-    elif instrument.getCoords() == 0 or\
-        instrument.getCoords() == instrument_string_choices['coords'][0]:
+    elif instrument.getCoords() == 0 or instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     if any(theta < theta_limit):
         raise ValueError('The incident angle has to be above %.1e'%theta_limit)
@@ -437,7 +434,7 @@ def SLD_calculations(z, item, sample, inst):
     z[1::2] = cumsum(r_[d])
     z += z0
 
-    dic = {'z':z}
+    dic = {'z': z}
 
     if (theory == 0 or theory == instrument_string_choices['theory'][0]): 
         # Full theory return the suceptibility matrix
@@ -528,7 +525,7 @@ def compose_sld_anal(z, sample, instrument):
     def sld_interface(z, drho_jm1_l, drho_j, drho_j_u,
                   sigma_jm1_l, sigma_j, sigma_j_u,
                   dd_jm1_l, dd_j_u):
-        ''' Calcualte the sld of one interface '''
+        ''' Calculate the sld of one interface '''
         sld = drho_j_u*(0.5 + 0.5*erf((z - dd_j_u)/sqrt(2*(sigma_j_u**2 + sigma_j**2))))
         sld += drho_jm1_l*(0.5 + 0.5*erf((z + dd_jm1_l)/sqrt(2*(sigma_jm1_l**2 + sigma_j**2))))
         sld += drho_j*(0.5 + 0.5*erf((z)/sqrt(2)/sigma_j))
@@ -578,10 +575,10 @@ def compose_sld_anal(z, sample, instrument):
     sl_m2_l = sl_m2*(1. + dmag_l)**2
     sl_m2_u = sl_m2*(1. + dmag_u)**2
 
-    b = (array(parameters['b'], dtype = complex128))
-    abs_xs = (array(parameters['xs_ai'], dtype = complex128))
+    b = (array(parameters['b'], dtype=complex128))*1e-5
+    abs_xs = (array(parameters['xs_ai'], dtype=complex128))*1e-4**2
     wl = instrument.getWavelength()
-    sl_n = dens*b
+    sl_n = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)/1e-5
     mag_d = mag*dens
     mag_d_l = mag_d*(1. + dmag_l)
     mag_d_u = mag_d*(1. + dmag_u)
@@ -700,7 +697,7 @@ def compose_sld(sample, instrument, theta, xray_energy):
     #Neutrons
     wl = instrument.getWavelength()
     abs_xs = array(parameters['xs_ai'], dtype = complex64)#*(1e-4)**2
-    b = array(parameters['b'], dtype = complex64).real#*1e-5
+    b = array(parameters['b'], dtype = complex64)#*1e-5
     dens_n = array(parameters['dens'], dtype = float64)
     sl_n = dens_n*b
     abs_n = dens_n*abs_xs
@@ -857,11 +854,10 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
             n_u = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_u)[:,newaxis])/2.0
     elif (theory == 2 or theory == instrument_string_choices['theory'][2] or
           theory == 3 or theory == instrument_string_choices['theory'][3]):
-        b = (array(parameters['b'], dtype = complex128).real*1e-5)[:, newaxis]*ones(theta.shape)
+        b = (array(parameters['b'], dtype = complex128)*1e-5)[:, newaxis]*ones(theta.shape)
         abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(theta.shape)
         wl = instrument.getWavelength()
-        sld = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) -
-                               1.0J*abs_xs*wl/4/pi)
+        sld = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)
         #print mag.shape, dens.shape, theta_m.shape, phi.shape, theta.shape
         msld = (2.645e-5*mag*wl**2/2/pi*cos(theta_m)*cos(phi))[:,newaxis]*dens*ones(theta.shape)
         if pol in ['++', 'uu']:
@@ -874,7 +870,7 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
             n_u = 1.0 - sld + msld*(1.0 + dmag_u)[:, newaxis]
     elif theory == 4 or theory == instrument_string_choices['theory'][4]:
         wl = 4*pi*sin(instrument.getIncang()*pi/180)/Q
-        b = (array(parameters['b'], dtype = complex128).real*1e-5)[:, newaxis]*ones(wl.shape)
+        b = (array(parameters['b'], dtype = complex128)*1e-5)[:, newaxis]*ones(wl.shape)
         abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(wl.shape)
         sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
                                1.0J*abs_xs*wl/4/pi)
@@ -1276,7 +1272,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
     # Neutron spin pol calculations normal mode
     elif theory == 2 or theory == instrument_string_choices['theory'][2]:
         lamda = instrument.getWavelength()
-        sl_n = sl_n.real*1e-5
+        sl_n = sl_n*1e-5
         abs_n = abs_n*1e-8
         sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
                                1.0J*abs_n*lamda/4/pi)
@@ -1307,7 +1303,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
         # neutron TOF calculations
         incang = instrument.getIncang()
         lamda = 4*pi*sin(incang*pi/180)/TwoThetaQz
-        sl_n = sl_n[:,newaxis].real*1e-5
+        sl_n = sl_n[:,newaxis]*1e-5
         abs_n = abs_n[:,newaxis]*1e-8
         sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
                                1.0J*abs_n*lamda/4/pi)
