@@ -267,7 +267,7 @@ def resolution_init(TwoThetaQz, instrument):
     return Q, TwoThetaQz, weight
 
 
-def Specular(TwoThetaQz,sample,instrument):
+def Specular(TwoThetaQz, sample, instrument):
     """ Simulate the specular signal from sample when probed with instrument
 
     # BEGIN Parameters
@@ -290,7 +290,7 @@ def Specular(TwoThetaQz,sample,instrument):
         e = AA_to_eV/instrument.getWavelength()
         fb = refl.cast_to_array(parameters['f'], e)
     else: 
-        fb = array(parameters['b'], dtype = complex64).real*1e-5
+        fb = array(parameters['b'], dtype = complex64)*1e-5
         abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
     
     dens = array(parameters['dens'], dtype = complex64)
@@ -455,7 +455,7 @@ def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
     if type ==  instrument_string_choices['probe'][0] or type==0:
         fb = refl.cast_to_array(parameters['f'], Energy)
     else:
-        fb = array(parameters['b'], dtype = complex64).real*1e-5
+        fb = array(parameters['b'], dtype = complex64)*1e-5
         abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
 
     dens = array(parameters['dens'], dtype = complex64)
@@ -467,8 +467,7 @@ def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
         sld = dens[:, newaxis]*fb*wl**2/2/pi
     else:
         wl = instrument.getWavelength()
-        sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
-                               1.0J*abs_xs*wl/4/pi)
+        sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)
     # Ordinary Paratt X-rays
     if type == instrument_string_choices['probe'][0] or type == 0:
         #R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
@@ -510,7 +509,9 @@ def SLD_calculations(z, item, sample, inst):
     #f = array(parameters['f'], dtype = complex64)
     e = AA_to_eV/inst.getWavelength()
     f = refl.cast_to_array(parameters['f'], e)
-    b = array(parameters['b'], dtype = complex64)
+    b = array(parameters['b'], dtype=complex64)*1e-5
+    abs_xs = array(parameters['xs_ai'], dtype=complex64)*(1e-4)**2
+    wl = inst.getWavelength()
     type = inst.getProbe()
     magnetic = False
     mag_sld = 0
@@ -519,11 +520,11 @@ def SLD_calculations(z, item, sample, inst):
         sld = dens*f
     elif type == instrument_string_choices['probe'][1] or type == 1 or\
         type == instrument_string_choices['probe'][4] or type == 4:
-        sld = dens*b
+        sld = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)/1e-5
         sld_unit = 'fm/\AA^{3}'
     else:
         magnetic = True
-        sld = dens*b
+        sld = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)/1e-5
         magn = array(parameters['magn'], dtype = float64)
         #Transform to radians
         magn_ang = array(parameters['magn_ang'], dtype = float64)*pi/180.0
