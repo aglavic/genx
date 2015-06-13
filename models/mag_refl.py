@@ -359,6 +359,27 @@ def Specular(TwoThetaQz, sample, instrument):
 
     return R
 
+def SpecularElectricField(TwoThetaQz, sample, instrument):
+    ''' Simulate the specular signal from sample when probed with instrument.
+    Returns the wave field (complex number) of the reflected wave.
+    No resolution is taken into account.
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    '''
+    xray_energy = AA_to_eV/instrument.getWavelength()
+    if instrument.getCoords() == 1 or instrument.getCoords() == instrument_string_choices['coords'][1]:
+        theta = TwoThetaQz/2
+    elif instrument.getCoords() == 0 or instrument.getCoords() == instrument_string_choices['coords'][0]:
+        theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
+    if any(theta < theta_limit):
+        raise ValueError('The incident angle has to be above %.1e'%theta_limit)
+
+    R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz, xray_energy, return_amplitude=False)
+
+    return R
+
 def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
     """ Simulate the specular signal from sample when probed with instrument. Energy should be in eV.
 
@@ -896,17 +917,18 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
     d *= (d >= 0)
     return n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l
 
-def reflectivity_xmag(sample, instrument, theta, TwoThetaQz, xray_energy):
+def reflectivity_xmag(sample, instrument, theta, TwoThetaQz, xray_energy, return_amplitude=True):
     use_slicing = sample.getSlicing()
     if use_slicing == 0 or use_slicing == sample_string_choices['slicing'][0]:
-        R = slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy)
+        R = slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, return_amplitude=return_amplitude)
     elif use_slicing == 1 or use_slicing == sample_string_choices['slicing'][1]:
-        R = analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy)
+        R = analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy,
+                                    return_amplitude=return_amplitude)
     else:
         raise ValueError('Unkown input to the slicing parameter')
     return R
     
-def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
+def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, return_amplitude=True):
     #lamda = instrument.getWavelength()
     theory = instrument.getTheory()
     re = 2.8179402894e-5
@@ -1026,6 +1048,9 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
                 R = abs(W[0,1])**2
             else:
                 raise ValueError('Variable pol has an unvalid value')
+            # Override if we should return the complex amplitude (in this case a 2x2 matrix)
+            if not return_amplitude:
+                R = W
 
     elif theory == 1 or theory == instrument_string_choices['theory'][1]:
         pol = instrument.getXpol()
@@ -1155,10 +1180,11 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
 
     else:
         raise ValueError('The given theory mode does not exist')
+
     return R
 
 
-def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
+def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, return_amplitude=True):
     lamda = AA_to_eV/xray_energy
     parameters = sample.resolveLayerParameters()
     
@@ -1238,6 +1264,8 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy):
             R = abs(W[0,1])**2
         else:
             raise ValueError('Variable pol has an unvalid value')
+        if not return_amplitude:
+            R = W
     # Simplified theory
     elif theory == 1 or theory == instrument_string_choices['theory'][1]:
         pol = instrument.getXpol()
@@ -1370,8 +1398,8 @@ def convolute_reflectivity(R, instrument, foocor, TwoThetaQz, weight):
     return R
     
 
-SimulationFunctions = {'Specular':Specular, 'OffSpecular':OffSpecular, 'EnergySpecular': EnergySpecular,
-                        'SLD': SLD_calculations,}
+SimulationFunctions = {'Specular': Specular, 'OffSpecular': OffSpecular, 'EnergySpecular': EnergySpecular,
+                        'SLD': SLD_calculations, 'SpecularElectricField': SpecularElectricField}
 
 (Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters, LayerParameters, StackParameters,
                                                       SampleParameters, SimulationFunctions, ModelID)
