@@ -125,7 +125,8 @@ __pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
 instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',
     'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q', 'tth'],
     'restype': ['no conv', 'fast conv',
-     'full conv and varying res.', 'fast conv + varying res.'],
+     'full conv and varying res.', 'fast conv + varying res.',
+     'full conv and varying res. (dx/x)', 'fast conv + varying res. (dx/x)'],
     'footype': ['no corr', 'gauss beam', 'square beam'],
     'pol': ['uu', 'dd', 'ud', 'ass', 'du']}
 InstrumentParameters = {'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',
