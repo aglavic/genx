@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 2.5.0 (Trunk)
+=====================
+ * Added an SXRD plugin
+
+
 Changes 2.4.0
 =============
  * Added sliders and spin controls to change the parameter values, updated dynamically.

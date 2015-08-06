@@ -17,8 +17,10 @@ The documentation is based on tutorials as well as more in depth description of 
 table of contents. It is recommended, for the beginner, to start with the tutorials.
 
 I hope I will get help from users to update and correct the manuals and tutorials I add here. If you find some errors or
-something that is missing please correct it! If you miss a page please contact me and we can discuss if and where
+something that is missing please let me know! If you miss a page please contact me and we can discuss if and where
 it should be added.
+
+Support is given through the mail list genx-support@lists.sourceforge.net or through e-mail to matts.bjorck@gmail.com.
 
 Contents
 ========

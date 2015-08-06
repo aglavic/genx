@@ -25,6 +25,11 @@ If you want this to have permanent effect you can edit your ``/etc/bashrc`` file
 in the home directory. If you do not have a ``.bashrc`` file in home you can copy your ``/etc/bashrc`` file to
 home and then edit it.
 
+Issue with editing the grid on Mac
+----------------------------------
+If you use a Swedish decimal comma then there are difficulties editing the grid. Swap to a decimal point instead in
+settings.
+
 Fitting
 =======
 
