@@ -150,6 +150,10 @@ class Template:
         
         self.parent.script_editor.SetText(script)
         self.parent.model.set_script(script)
+
+    def GetModelScript(self):
+        """Returns the model script"""
+        return self.parent.model.get_script()
         
     def CompileScript(self):
         '''CompileScript(self) --> None
