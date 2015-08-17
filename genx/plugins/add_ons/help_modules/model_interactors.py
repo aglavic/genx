@@ -67,13 +67,17 @@ class ModelScriptInteractor:
         Parameters:
             pos (int): The position to add the the data set
         """
-        pass
+        raise NotImplementedError('insert_dataset is not yet implemented in ModelScriptInteractor')
 
     def append_dataset(self):
         """ Append a new data set to the sim function
-        :return:
         """
+        # TODO: Make sure the data set inits proerely
         self.data_sections_interactors.append(DataSetSimulationInteractor())
+        default_name = self.get_sim_object_names()[-1]
+        sim_method = self.get_sim_methods_info(default_name)[0]
+        self.data_sections_interactors[-1].set_from_sim_method(default_name, sim_method)
+        self.data_sections_interactors[-1].instrument = self.instruments[0].name
 
     def get_sim_object_names(self):
         """Returns the names of the objects (interactors) that can simulate.
@@ -435,7 +439,7 @@ class ScriptInteractor:
 
     def create_new(self):
         """Create a new object"""
-        return self.__class__.__init__()
+        return self.__class__()
 
     def copy(self):
         """Creates a copy of the object"""
@@ -568,23 +572,41 @@ class DataSetSimulationInteractor(ScriptInteractor):
         self.instrument = ''
         self.arguments = []
         self.position = 0
+        self.name = None
+
+    def set_from_sim_method(self, name, sim_method):
+        """Sets the simulation method arguments from a SimMethodInfo object
+
+        Parameters:
+            name (string): Name of the object that has sim_method
+            sim_method (SimMethodInfo): Simulation method
+        """
+        self.obj_name = name
+        self.obj_method = sim_method.name
+        self.arguments = list(sim_method.def_args)
 
     def set_pos(self, pos):
         """Set the position of the data set"""
         self.position = pos
 
+    def set_name(self, val):
+        """Set the name of the data set"""
+        self.name = val
+
     def get_sim_string(self):
         """Get the simulation string for the dataset"""
         code = '%s.%s(' % (self.obj_name, self.obj_method)
-        for arg in self.arguments:
+        for arg in [self.instrument, ] + self.arguments:
             code += arg + ', '
         code = code[:-2] + ')'
         return code
 
     def get_name(self):
         """Returns the name of the data set"""
-        # TODO: Add coupling to the real name of the data set
-        return "%d" % self.position
+        if self.name:
+            return self.name
+        else:
+            return "%d" % self.position
 
     def get_code(self):
         """Returns the code (string) that defines the current interactor"""
@@ -633,7 +655,7 @@ class DataSetSimulationInteractor(ScriptInteractor):
         #print args
         self.instrument = args[0].strip()
         self.arguments = []
-        for arg in args:
+        for arg in args[1:]:
             self.arguments.append(arg.strip())
 
     def get_multiline(self):
@@ -659,6 +681,12 @@ class ObjectScriptInteractor(ScriptInteractor):
         self.values['name'] = ''
         self.units = self.class_impl.__units__
         self.validators = self.create_validators()
+
+        # Add the choice dictonary (parameter key and its choices a list of the element)
+        if hasattr(self.class_impl, '__choices__'):
+            self.choices = self.class_impl.__choices__
+        else:
+            self.choices = {}
 
         # Create members with the right name
         self.types = {}
@@ -689,6 +717,18 @@ class ObjectScriptInteractor(ScriptInteractor):
         """Returns whether or not the parameter is editable"""
         #TODO: Implement editable flag into the structure
         return True
+
+    def is_choice(self, parameter_name):
+        """Returns a bool to indicate if the parameter is a choice (multiple choices)"""
+        return parameter_name in self.choices
+
+    def get_choices(self, parameter_name):
+        """Returns a list of choices for the parameter name. If parameter_name is not a choice parameter returns None"""
+        if self.is_choice(parameter_name):
+            return self.choices[parameter_name]
+        else:
+            #raise ValueError('%s is not a choice'%parameter_name)
+            return None
 
     def create_new(self):
         """Creates a new, empty, object"""
@@ -818,6 +858,8 @@ class DomainInteractor(ObjectScriptInteractor):
         self.slabs = []
         self.bulk_slab = None
         self.unitcell = None
+        self.bulk_sym = ''
+        self.surface_sym = ''
 
     def parse_parameter_string(self, code):
         """ Parses the creation of a domain object. Overloaded from ModelScriptInteractor.
@@ -985,6 +1027,15 @@ class MyHtmlListBox(wx.HtmlListBox):
         return self.html_items[n]
 
 
+class InteractorChangedEvent(wx.PyCommandEvent):
+
+    def __init__(self, evt_type, id):
+        wx.PyCommandEvent.__init__(self, evt_type, id)
+
+myEVT_INTERACTOR_CHANGED = wx.NewEventType()
+EVT_INTERACTOR_CHANGED = wx.PyEventBinder(myEVT_INTERACTOR_CHANGED, 1)
+
+
 class SimulationListCtrl(wx.Panel):
     ''' Widget that defines parameters coupling and different parameters
     for different data sets.
@@ -1027,20 +1078,15 @@ class SimulationListCtrl(wx.Panel):
             self.toolbar.AddLabelTool(newid, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
             self.Bind(wx.EVT_TOOL, callbacks[i], id=newid)
 
-    def SetUpdateScriptFunc(self, func):
-        '''SetUpdateScriptFunc(self, func) --> None
-
-        Sets the function to be called when the script needs to be updated.
-        will only be called as func(event)
-        '''
-        self.script_update_func = func
 
     def Update(self, update_script=True):
         '''Update the listbox and runs the callback script_update_func'''
         self.update_listbox()
 
-        if self.script_update_func and update_script:
-            self.script_update_func(None)
+    def _send_change_event(self):
+        """"Sends a change event"""
+        evt = InteractorChangedEvent(myEVT_INTERACTOR_CHANGED, self.GetId())
+        self.GetEventHandler().ProcessEvent(evt)
 
     def update_listbox(self):
         '''Updates the listbox.'''
@@ -1094,38 +1140,38 @@ class SimulationListCtrl(wx.Panel):
                 exp = dlg.GetExpression()
                 self.ds_sim_list[data_pos].expression_list[exp_pos] = exp
                 self.Update()
+                self._send_change_event()
+
         if exp_pos == -1 and data_pos != -1:
             # Editing the simulation function and its arguments
-            dlg = SimulationExpressionDialog(self, self.plugin.GetModel(),
-                                              self.plugin.sample_widget.instruments,
-                                              self.sim_funcs[data_pos],
-                                              self.args[data_pos],
-                                              self.insts[data_pos], data_pos)
+            dlg = SimulationExpressionDialog(self, self.plugin.GetModel(), self.ds_sim_list[data_pos],
+                                             self.model_script_interactor)
             if dlg.ShowModal() == wx.ID_OK:
-                self.args[data_pos] = dlg.GetExpressions()
-                self.insts[data_pos] = dlg.GetInstrument()
-                self.sim_funcs[data_pos] = dlg.GetSim()
+                self.ds_sim_list[data_pos] = dlg.GetObject()
                 self.Update()
+                self._send_change_event()
 
     def Insert(self, event):
         ''' Inserts a new operations'''
         data_pos, exp_pos = self.get_expression_position()
         if data_pos != -1:
-            dlg = ParameterExpressionDialog(self, self.plugin.GetModel(), sim_func=self.onsimulate)
+            dlg = ParameterExpressionDialog(self, self.plugin.GetModel())
             if dlg.ShowModal() == wx.ID_OK:
                 exp = dlg.GetExpression()
                 if exp_pos == -1:
-                    self.expressionlist[data_pos].insert(0, exp)
+                    self.ds_sim_list[data_pos].expression_list.insert(0, exp)
                 else:
-                    self.expressionlist[data_pos].insert(exp_pos, exp)
+                    self.ds_sim_list[data_pos].expression_list.insert(exp_pos, exp)
                 self.Update()
+                self._send_change_event()
 
     def Delete(self, event):
         '''Deletes an operation'''
         data_pos, exp_pos = self.get_expression_position()
         if exp_pos != -1 and data_pos != -1:
-            self.expressionlist[data_pos].pop(exp_pos)
+            self.ds_sim_list[data_pos].expressionlist.pop(exp_pos)
             self.Update()
+            self._send_change_event()
 
     def MoveUp(self, event):
         '''Move an operation up'''
@@ -1142,6 +1188,7 @@ class SimulationListCtrl(wx.Panel):
         if dlg.ShowModal() == wx.ID_OK:
             self.parameterlist = dlg.GetLines()
             self.Update()
+            self._send_change_event()
         dlg.Destroy()
 
     def OnDataChanged(self, event):
@@ -1150,14 +1197,17 @@ class SimulationListCtrl(wx.Panel):
 
 class EditList(wx.Panel):
     def __init__(self, parent, object_list=None, default_name='object', edit_dialog=None,
-                 taken_names=None, id=-1):
+                 taken_names=None, id=-1, edit_dialog_name='object editor', undeletable_names=[]):
         """A List control that allows editing of objects
 
         Parameters:
             object_list (list): A list of object to edit.
             edit_dialog (wx.Dialog): A dialog that can edit an item in the list.
+            edit_dialog_name (string): Title of the edit dialog
             default_name (string): The default name (a number is appended) of the object.
             taken_names (list of strings): Names not allowed to be used for objects.
+            undeletable_names (list of strings): Names of objects that are not allowed to be deleted or has their
+                                                names changed.
 
         Returns:
             EditList
@@ -1166,6 +1216,8 @@ class EditList(wx.Panel):
             object_list = []
         self.object_list = object_list
         self.edit_dialog = edit_dialog
+        self.edit_dialog_name = edit_dialog_name
+        self.undeletable_names = undeletable_names
         self.parent = parent
         self.default_name = default_name
         if not taken_names:
@@ -1207,9 +1259,18 @@ class EditList(wx.Panel):
 
         return toolbar
 
+    def set_undeletable_names(self, names):
+        """Sets the undeletable_names"""
+        self.undeletable_names = names
+
     def set_taken_names(self, names):
         """ Sets the taken names"""
         self.taken_names = names
+
+    def _send_change_event(self):
+        """"Sends a change event"""
+        evt = InteractorChangedEvent(myEVT_INTERACTOR_CHANGED, self.GetId())
+        self.GetEventHandler().ProcessEvent(evt)
 
     def OnListBoxDClick(self, event):
         """Event handler for double click on item in listbox"""
@@ -1217,16 +1278,16 @@ class EditList(wx.Panel):
         ind = self.listbox.GetSelection()
         obj = self.object_list[ind]
         if self.edit_dialog is not None:
-            print obj.c
-            print type(obj.c)
-            dialog = self.edit_dialog(self, obj)
+            dialog = self.edit_dialog(self, obj, taken_names=self.taken_names, title=self.edit_dialog_name,
+                                      edit_name=obj.name not in self.undeletable_names)
             if dialog.ShowModal() == wx.ID_OK:
                 new_obj = dialog.GetObject()
-                print new_obj.get_code()
+                #print new_obj.get_code()
                 self.object_list[ind] = new_obj
                 self.listbox.SetItems([obj.get_name() for obj in self.object_list])
-                print new_obj.c
-                print type(new_obj.c)
+                #print new_obj.c
+                #print type(new_obj.c)
+                self._send_change_event()
             dialog.Destroy()
 
 
@@ -1249,16 +1310,22 @@ class EditList(wx.Panel):
             else:
                 self.object_list.insert(ind, new_obj)
                 self.listbox.Insert(self.object_list[ind].get_name(), ind)
+            self._send_change_event()
 
     def OnDelete(self, event):
         """Event handler for deleting an item"""
         if len(self.object_list) > 1:
             ind = self.listbox.GetSelection()
-            self.object_list.pop(ind)
-            self.listbox.Delete(ind)
+            if not self.object_list[ind].name in self.undeletable_names:
+                self.object_list.pop(ind)
+                self.listbox.Delete(ind)
+            else:
+                #TODO Add a dialog popup
+                pass
         else:
             #TODO Add a dialog popup
             pass
+        self._send_change_event()
 
     def OnMoveUp(self, event):
         """Event handler for moving an item up"""
@@ -1269,6 +1336,7 @@ class EditList(wx.Panel):
             self.object_list.insert(ind - 1, obj)
             self.listbox.Insert(obj.get_name(), ind - 1)
             self.listbox.SetSelection(ind - 1)
+            self._send_change_event()
 
     def OnMoveDown(self, event):
         """Event handler for moving an item down"""
@@ -1279,6 +1347,7 @@ class EditList(wx.Panel):
             self.object_list.insert(ind + 1, obj)
             self.listbox.Insert(obj.get_name(), ind + 1)
             self.listbox.SetSelection(ind + 1)
+            self._send_change_event()
 
 
 class DomainListCtrl(wx.ScrolledWindow):
@@ -1412,6 +1481,11 @@ class DomainListCtrl(wx.ScrolledWindow):
             if d.bulk_slab == slab_name:
                 d.bulk_slab = new_slab_name
 
+    def _send_change_event(self):
+        """"Sends a change event"""
+        evt = InteractorChangedEvent(myEVT_INTERACTOR_CHANGED, self.GetId())
+        self.GetEventHandler().ProcessEvent(evt)
+
     def OnEditItem(self):
         """Edit an item in the list"""
         if self.selected_item[0] > -1:
@@ -1434,16 +1508,18 @@ class DomainListCtrl(wx.ScrolledWindow):
                     if slab_name != new_slab.name:
                         # The name has changed - needs updating
                         self.replace_slab_name(slab_name, new_slab.name)
+                    self._send_change_event()
             else:
                 # We edit a domain
                 # TODO: fix the taken names issue in the plugin later.
                 taken_names = [d.name for d in self.domain_list if d.name != domain.name]
-                dialog = DomainDialog(self, domain, taken_names=taken_names)
+                unit_cells = [uc.name for uc in self.unitcell_list]
+                dialog = DomainDialog(self, domain, taken_names=taken_names, unit_cells=unit_cells)
                 if dialog.ShowModal() == wx.ID_OK:
                     new_domain = dialog.GetObject()
                     self.domain_list[self.selected_item[0]] = new_domain
+                    self._send_change_event()
             self.Refresh()
-
 
     def OnNew(self, event):
         """Create a new object, either a domain or a slab"""
@@ -1454,7 +1530,8 @@ class DomainListCtrl(wx.ScrolledWindow):
                 new_domain.name = 'domain'
                 new_domain = self.rename_domain(new_domain, '')
                 new_domain.bulk_slab = self.slab_list[-1].name
-                # TODO: Set default unitcell
+                if len(self.unitcell_list) > 0:
+                    new_domain.unitcell = self.unitcell_list[0].name
                 self.domain_list.insert(self.selected_item[0] + 1, new_domain)
             else:
                 # A surface slab has been selected
@@ -1464,6 +1541,7 @@ class DomainListCtrl(wx.ScrolledWindow):
                 self.slab_list.append(new_slab)
                 self.domain_list[self.selected_item[0]].slabs.insert(self.selected_item[1], new_slab.name)
                 self.selected_item = (self.selected_item[0], self.selected_item[1] + 1)
+            self._send_change_event()
             self.Refresh()
 
     def OnDelete(self, event):
@@ -1474,9 +1552,11 @@ class DomainListCtrl(wx.ScrolledWindow):
             if self.selected_item[1] > -1:
                 if self.selected_item[1] > 0:
                     domain.slabs.pop(self.selected_item[1] - 1)
+                    self._send_change_event()
             else:
                 if len(self.domain_list) > 1:
                     self.domain_list.pop(self.selected_item[0])
+                    self._send_change_event()
             self.Refresh()
 
     def OnInsert(self, event):
@@ -1494,6 +1574,7 @@ class DomainListCtrl(wx.ScrolledWindow):
                     domain.slabs.insert(self.selected_item[1] - 1, slab_name)
             else:
                 domain.slabs.append(slab_name)
+            self._send_change_event()
             self.Refresh()
 
     def OnCopy(self, event):
@@ -1567,6 +1648,7 @@ class DomainListCtrl(wx.ScrolledWindow):
                 else:
                     # We are pasting a slab onto a domain header...
                     domain.slabs.append(self.clipboard)
+            self._send_change_event()
             self.Refresh()
 
     def IdentifyEventItem(self, event):
@@ -1598,8 +1680,9 @@ class DomainListCtrl(wx.ScrolledWindow):
         col_height = 0
         max_slabs = 0
         for domain in self.domain_list:
-            for name in [domain.name, domain.unitcell, domain.bulk_slab] + domain.slabs:
-                size = self.GetTextExtent(name)
+            for name in [domain.name, domain.bulk_slab] + domain.slabs:
+                print name
+                size = self.GetTextExtent(str(name))
                 if size[0] > col_width:
                     col_width = size[0]
                 if size[1] > col_height:
@@ -1678,7 +1761,8 @@ class DomainListCtrl(wx.ScrolledWindow):
             x_pos += col_width
 
 class ObjectDialog(wx.Dialog):
-    def __init__(self, parent, object_interactor, id=-1, taken_names=None, title="Object editor", cols=2):
+    def __init__(self, parent, object_interactor, id=-1, taken_names=None, title="Object editor", cols=2,
+                 edit_name=True):
         """A dialog to define/edit an ObjectScriptInteractor object
 
         Parameters:
@@ -1694,6 +1778,7 @@ class ObjectDialog(wx.Dialog):
         self.not_editable_bkg_color = wx.GREEN
 
         self.object = object_interactor
+        self.edit_name = edit_name
         self.taken_names = taken_names
         if not self.taken_names:
             self.taken_names = []
@@ -1715,9 +1800,12 @@ class ObjectDialog(wx.Dialog):
             name_sizer = wx.FlexGridSizer(rows=1, cols=self.cols, vgap=self.vertical_buffer, hgap=self.border)
             label = wx.StaticText(self, -1, 'name' + ': ')
             name_sizer.Add(label, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=self.border)
+            if self.edit_name:
+                style = wx.TE_RIGHT | wx.TE_RICH
+            else:
+                style = wx.TE_RIGHT | wx.TE_RICH | wx.TE_READONLY
             name_ctrl = wx.TextCtrl(self, -1, str(self.object.name),
-                                    validator=cust_dia.NoMatchValidTextObjectValidator(self.taken_names),
-                                    style=wx.TE_RIGHT | wx.TE_RICH)
+                                    validator=cust_dia.NoMatchValidTextObjectValidator(self.taken_names), style=style)
             name_sizer.Add(name_ctrl, flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, border=self.border)
             self.main_sizer.Add(name_sizer, 0, wx.EXPAND)
 
@@ -1773,8 +1861,9 @@ class ObjectDialog(wx.Dialog):
             validator = object_interactor.validators[par]
             val = getattr(object_interactor, par)
             editable = object_interactor.is_editable(par)
+            choices = object_interactor.get_choices(par)
 
-            tc[par] = self.crete_edit_ctrl(parent, par, val, validator, editable)
+            tc[par] = self.crete_edit_ctrl(parent, par, val, validator, editable, choices)
 
             sizer.Add(label, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=self.border)
             sizer.Add(tc[par], flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, border=self.border)
@@ -1785,7 +1874,7 @@ class ObjectDialog(wx.Dialog):
 
         return sizer, tc
 
-    def crete_edit_ctrl(self, parent, par, val, validator, editable):
+    def crete_edit_ctrl(self, parent, par, val, validator, editable, choices=None):
         """ Creates the edit control for a parameter
 
         Parameters:
@@ -1794,20 +1883,21 @@ class ObjectDialog(wx.Dialog):
             parent: parent of the control
             val: value of the parameter
             validator: validator of the control
+            choices (list): A list of choices
 
         Returns:
             ctrl (wx.Control): a wx control object
         """
-        if isinstance(validator, list):
-            # There should be a list of choices
-            validator = validator[:]
-            ctrl = wx.Choice(parent, -1, choices=validator)
+        if choices:
+            ctrl = wx.Choice(parent, -1, choices=choices)
             # Set the position that matches cal
             pos = 0
-            if isinstance(val, str):
-                pos = validator.index(val)
+            print type(val)
+            if isinstance(val, str) or isinstance(val, unicode):
+                pos = choices.index(val)
             elif isinstance(val, int):
                 pos = par
+            print pos
             ctrl.SetSelection(pos)
         else:
             # The object is a validator
@@ -1825,7 +1915,7 @@ class ObjectDialog(wx.Dialog):
         parameters = ['name'] + self.object.parameters
         for par in parameters:
             if isinstance(self.ctrls[par], wx.Choice):
-                text = self.ctrls[par].GetSelection()
+                text = self.ctrls[par].GetString(self.ctrls[par].GetCurrentSelection())
             else:
                 text = self.ctrls[par].GetValue()
             setattr(new_object, par, text)
@@ -1893,14 +1983,20 @@ class DomainDialog(wx.Dialog):
         # add the unit cell and symmetries in the next column.
         row = 0
         col = 2
-        for par, choices in [('unit cell', self.unit_cells),
-                             ('bulk sym.', self.symmetries),
-                             ('surface sym.', self.symmetries)]:
+        for par, choices, val in [('unit cell', self.unit_cells, self.domain.unitcell),
+                                  ('bulk sym.', self.symmetries, self.domain.bulk_sym),
+                                  ('surface sym.', self.symmetries, self.domain.surface_sym)]:
             label = wx.StaticText(self, -1, par + ': ')
             self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
             ctrl = wx.Choice(self, -1, choices=choices)
+            pos = ctrl.FindString(val)
+            if pos == wx.NOT_FOUND:
+                pos = 0
+            ctrl.SetSelection(pos)
             self.parameter_sizer.Add(ctrl, (row, col + 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
             row += 1
+
+
 
         # Main Layout
         main_sizer.Add((-1, self.vertical_buffer), 0, wx.EXPAND)
@@ -2240,6 +2336,9 @@ class ParameterExpressionDialog(wx.Dialog):
         self.SetAutoLayout(True)
         self.model = model
 
+        #if not expression:
+        #   expression = ParameterExpressionInteractor()
+
         gbs = wx.GridBagSizer(2, 3)
 
         col_labels = ['Object', 'Parameter', 'Expression']
@@ -2271,7 +2370,7 @@ class ParameterExpressionDialog(wx.Dialog):
         gbs.Add(self.obj_choice, (1, 0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
         gbs.Add(self.func_choice, (1, 1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
 
-        if expression:
+        if expression is not None:
             obj_pos = [i for i in range(len(objlist)) if objlist[i] == expression.obj_name]
             if len(obj_pos) > 0:
                 self.obj_choice.SetSelection(obj_pos[0])
@@ -2285,6 +2384,12 @@ class ParameterExpressionDialog(wx.Dialog):
                                      (expression.obj_method, expression.obj_name))
             else:
                 raise ValueError('The object %s does not exist' % expression.obj_name)
+        else:
+            expression = ParameterExpressionInteractor()
+            expression.obj_name = objlist[0]
+            expression.obj_method = self.funclist[0][0]
+
+        self.expression = expression
 
         self.expression_ctrl = cust_dia.ParameterExpressionCombo(par_dict, sim_func, self, -1, expression.expression,
                                                                  size=(self.text_ctrl_width, -1))
@@ -2320,9 +2425,9 @@ class ParameterExpressionDialog(wx.Dialog):
 
     def OnApply(self, event):
         """Callback for apply"""
-        evalstring = self.GetExpression()
+        expression = self.GetExpression()
         try:
-            self.model.eval_in_model(evalstring)
+            self.model.eval_in_model(expression.expression)
         except Exception, e:
             result = 'Could not evaluate the expression. The python error is: \n' + e.__repr__()
             dlg = wx.MessageDialog(self, result, 'Error in expression', wx.OK | wx.ICON_WARNING)
@@ -2338,7 +2443,205 @@ class ParameterExpressionDialog(wx.Dialog):
         set_expression = self.expression_ctrl.GetValue()
         evalstring = '%s.%s(%s)' % (objstr, funcstr, set_expression)
 
-        return evalstring
+        expression = ParameterExpressionInteractor()
+        expression.obj_name = objstr
+        expression.obj_method = funcstr
+        expression.expression = set_expression
+
+        return expression
+
+class SimulationExpressionDialog(wx.Dialog):
+    '''A dialog to edit the Simulation expression
+    '''
+
+    def __init__(self, parent, model, data_set_sim_interactor, script_interactor):
+        '''Creates a SimualtionExpressionDialog.
+
+        Parameters:
+            model - a Model object.
+            data_set_sim_interactor: A Data Set Simualtion interactor
+            script_interactor: A script interactor
+        '''
+
+        self.model = model
+        self.interactor = data_set_sim_interactor
+        self.script_interactor = script_interactor
+
+        # Do the layout of the dialog
+        wx.Dialog.__init__(self, parent, -1, 'Simulation editor')
+        self.SetAutoLayout(True)
+
+        # Find out the maximum number of arguments to the available sim_funcs
+        max_val = -1
+        for name in self.script_interactor.get_sim_object_names():
+            for info in self.script_interactor.get_sim_methods_info(name):
+                len_args = len(info.args)
+                if len_args > max_val:
+                    max_val = len_args
+
+        if max_val < 0:
+            raise ValueError('Could not find simulation methods')
+
+        gbs = wx.GridBagSizer(2, max_val)
+
+        # Creating the column labels
+        col_labels = ['Object', 'Method', 'Instrument']
+        arg_names = None
+        for info in self.script_interactor.get_sim_methods_info(self.interactor.obj_name):
+            if info.name == self.interactor.obj_method:
+                arg_names = info.args
+                break
+        [col_labels.append(arg) for arg in arg_names if not arg in col_labels]
+        self.labels = []
+        self.arg_controls = []
+        for index in range(3 + max_val):
+            label = wx.StaticText(self, -1, '')
+            gbs.Add(label, (0, index), flag=wx.ALIGN_LEFT, border=5)
+            self.labels.append(label)
+            # If the expression is not an instrument or simulation function
+            if index > 2:
+                exp_ctrl = wx.TextCtrl(self, -1, size=(100, -1))
+                gbs.Add(exp_ctrl, (1, index), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
+                self.arg_controls.append(exp_ctrl)
+
+        for item, label in zip(col_labels[:3], self.labels[:3]):
+            label.SetLabel(item)
+        # Creating the text boxes for the arguments
+        # Setting the text in the column labels and text controls
+        for item, label, arg_ctrl, arg in zip(col_labels[3:], self.labels[3:], self.arg_controls,
+                                              self.interactor.arguments):
+            label.SetLabel(item)
+            arg_ctrl.SetValue(arg)
+            arg_ctrl.SetEditable(True)
+
+        for i in range(len(col_labels) - 3, len(self.interactor.arguments)):
+            self.arg_controls[i].SetEditable(False)
+            #self.arg_controls[i].Show(False)
+            #self.arg_controls[i].SetValue('NA')
+
+        # Creating the controls
+        # Object choice control
+        self.obj_choice = wx.Choice(self, -1, choices=self.script_interactor.get_sim_object_names())
+        self.Bind(wx.EVT_CHOICE, self.on_object_change, self.obj_choice)
+        self.obj_choice.SetSelection(self.script_interactor.get_sim_object_names().index(self.interactor.obj_name))
+        gbs.Add(self.obj_choice, (1, 0), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
+
+        # Method choice control
+        names = [info.name for info in self.script_interactor.get_sim_methods_info(self.interactor.obj_name)]
+        self.method_choice = wx.Choice(self, -1, choices=names)
+        self.Bind(wx.EVT_CHOICE, self.on_method_change, self.method_choice)
+        self.method_choice.SetSelection(names.index(self.interactor.obj_method))
+        gbs.Add(self.method_choice, (1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
+
+
+        # Instrument choice control
+        instruments = [inter.name for inter in self.script_interactor.instruments]
+        self.inst_choice = wx.Choice(self, -1, choices=instruments)
+        #self.Bind(wx.EVT_CHOICE, self.on_inst_change, self.inst_choice)
+        self.inst_choice.SetSelection(instruments.index(self.interactor.instrument))
+        gbs.Add(self.inst_choice, (1, 2), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
+
+
+        button_sizer = wx.StdDialogButtonSizer()
+        okay_button = wx.Button(self, wx.ID_OK)
+        okay_button.SetDefault()
+        button_sizer.AddButton(okay_button)
+        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+
+        button_sizer.Realize()
+        self.Bind(wx.EVT_BUTTON, self.on_ok_button, okay_button)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
+        line = wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP, 5)
+        sizer.Add((-1, 5))
+
+        sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT, 5)
+        sizer.Add((-1, 5))
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.Layout()
+
+    def on_object_change(self, evt):
+        '''Callback for changing the choice widget for the different object that can do a simulation.
+        '''
+        object_name = self.obj_choice.GetStringSelection()
+        method_names = [info.name for info in self.script_interactor.get_sim_methods_info(object_name)]
+        self.method_choice.SetItems(method_names)
+        self.method_choice.SetSelection(0)
+        self.on_method_change(evt)
+        # Update the column labels
+
+    def on_method_change(self, evt):
+        """Callback to update the controls after a change in method"""
+        method_name = self.method_choice.GetStringSelection()
+        object_name = self.obj_choice.GetStringSelection()
+        arg_names = []
+        def_args = []
+        for info in self.script_interactor.get_sim_methods_info(object_name):
+            if info.name == method_name:
+                arg_names = info.args
+                def_args = info.def_args
+                break
+
+        new_labels = []
+        for label, arg_name in zip(self.labels[3:], arg_names):
+            new_labels.append(label.GetLabel() != arg_name)
+            label.SetLabel(arg_name)
+        # Clear the remaining column labels
+        for label in self.labels[len(arg_names) + 3:]:
+            label.SetLabel('')
+
+        # Update the text controls - if needed
+        for i in range(len(arg_names)):
+            #if new_labels[i]:
+            if True:
+                self.arg_controls[i].SetValue(def_args[i])
+            self.arg_controls[i].SetEditable(True)
+            #self.arg_controls[i].Show(True)
+        # Hide and clear the remaining text controls
+        for ctrl in self.arg_controls[len(arg_names):]:
+            ctrl.SetEditable(False)
+            ctrl.SetValue('')
+
+            #ctrl.Show(False)
+
+    def on_ok_button(self, event):
+        '''Callback for pressing the ok button in the dialog'''
+        expressions = self.GetExpressions()
+        # Hack to get it working with d = data[0]
+        exec 'd = data[%d]'%self.interactor.position in self.model.script_module.__dict__
+        for exp in expressions:
+            try:
+                self.model.eval_in_model(exp)
+            except Exception, e:
+                result = ('Could not evaluate expression:\n%s.\n'%exp +
+                ' The python error is: \n' + e.__repr__())
+                dlg = wx.MessageDialog(self, result, 'Error in expression',
+                               wx.OK | wx.ICON_WARNING)
+                dlg.ShowModal()
+                dlg.Destroy()
+            else:
+                event.Skip()
+
+    def GetExpressions(self):
+        ''' Returns the current expressions in the dialog box '''
+        return [ctrl.GetValue() for ctrl in self.arg_controls
+                if ctrl.IsEditable()]
+
+    def GetObject(self):
+        """Returns the edited object"""
+        new_inter = self.interactor.create_new()
+        new_inter.name = self.interactor.name
+        new_inter.arguments = self.GetExpressions()
+        new_inter.expression_list = self.interactor.expression_list
+        new_inter.instrument = self.inst_choice.GetStringSelection()
+        new_inter.obj_method = self.method_choice.GetStringSelection()
+        new_inter.obj_name = self.obj_choice.GetStringSelection()
+        new_inter.position = self.interactor.position
+        return new_inter
+
 
 if __name__ == "__main__":
     import models.sxrd as model
