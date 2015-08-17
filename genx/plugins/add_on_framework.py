@@ -423,6 +423,10 @@ class PluginController:
         # Update the available plugins
         self.update_plugins()
 
+        loaded_plugins = self.plugin_handler.loaded_plugins.keys()
+        for name in loaded_plugins:
+            self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
+
     def OnSimulate(self, event):
         '''OnOpenModel(self, event) --> None
         

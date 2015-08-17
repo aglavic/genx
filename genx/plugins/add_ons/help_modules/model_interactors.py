@@ -217,9 +217,11 @@ class ModelScriptInteractor:
                 interactors.append(interactor_constructor())
                 interactors[-1].parse_code(chunk)
 
-            setattr(self, name.lower(), interactors)
+            #setattr(self, name.lower(), interactors)
+            replace_list_items(getattr(self, name.lower()), interactors)
 
-        self.data_sections_interactors = []
+        #Empty list
+        [self.data_sections_interactors.pop(0) for d in self.data_sections_interactors]
         missing_data_section = False
         i = 0
         while not missing_data_section:
@@ -2316,6 +2318,13 @@ def detemine_validator(val):
         return cust_dia.FloatObjectValidator()
     else:
         ValueError('Value can not be represented as an Validator')
+
+def replace_list_items(list_a, list_b):
+    """Replace all the items in list_a with items from list_b"""
+    # Remove all items:
+    [list_a.pop() for i in range(len(list_a))]
+    # Move items from b to a
+    [list_a.append(b) for b in list_b]
 
 
 class ParameterExpressionDialog(wx.Dialog):
