@@ -159,8 +159,8 @@ class Sample:
     __units__ = {'cohf': ''}
     __values__ = {'cohf': 0.0}
     __choices__ = {}
-    __sim_methods__ = [SimMethodInfo('calc_i', ('h', 'k', 'l'), ('d.h', 'd.k', 'd.x')),
-                       SimMethodInfo('calc_f', ('h', 'k', 'l'), ('d.h', 'd.k', 'd.x'))]
+    __sim_methods__ = [SimMethodInfo('calc_i', ('h', 'k', 'l'), ('0', '0', 'd.x')),
+                       SimMethodInfo('calc_f', ('h', 'k', 'l'), ('0', '0', 'd.x'))]
 
     def __init__(self, domains=[], cohf=0.0):
         self.domains = []
@@ -182,8 +182,8 @@ class Sample:
         ''' Calculates the absolute magntiude of the strucutre factor for the sample
         '''
         # Lets calculate the coherent part
-        f_coh = np.abs(np.sum(f_list, 1))
-        f_incoh = np.sqrt(np.sum(np.abs(f_list)**2, 1))
+        f_coh = np.abs(np.sum(f_list, 0))
+        f_incoh = np.sqrt(np.sum(np.abs(f_list)**2, 0))
         return self.cohf*f_coh + (1 - self.cohf)*f_incoh
 
     def calc_i(self, inst, h, k, l):
@@ -205,7 +205,7 @@ class Domain:
     __units__ = {'occ': ''}
     __values__ = {'occ': 1.0}
     __choices__ = {}
-    __sim_methods__ = [SimMethodInfo('calc_f', ('h', 'k', 'l'), ('d.h', 'd.k', 'd.x'))]
+    __sim_methods__ = [SimMethodInfo('calc_f', ('h', 'k', 'l'), ('0', '0', 'd.x'))]
 
     def __init__(self, bulk_slab, slabs, unit_cell, occ=1.0, surface_sym=[], bulk_sym=[]):
         self.set_bulk_slab(bulk_slab)
@@ -282,11 +282,18 @@ class Domain:
         if unit_cell == None:
             unit_cell = UnitCell(1.0, 1,.0, 1.0)
         self.unit_cell = unit_cell
+
+    def _to_array(self, val):
+        """Casts val to a suitable arraytype"""
+        if type(val) in [int, float]:
+            return np.array([val])
+        else:
+            return np.array(val)
         
     def calc_f(self, inst, h, k, l):
         '''Calculate the structure factors for the sample
         '''
-        fs = self.calc_fs(h, k, l)
+        fs = self.calc_fs(inst, h, k, l)
         fb = self.calc_fb(inst, h, k, l)
         ftot = fs + fb
         return ftot
@@ -295,14 +302,15 @@ class Domain:
         '''Calculate the structure factors for the sample with
         inline c code for the surface.
         '''
-        fs = self.turbo_calc_fs(h, k, l)
+        fs = self.turbo_calc_fs(inst, h, k, l)
         fb = self.calc_fb(inst, h, k, l)
         ftot = fs + fb
         return ftot
     
-    def calc_fs(self, h, k, l):
+    def calc_fs(self, inst, h, k, l):
         '''Calculate the structure factors from the surface
         '''
+        h, k, l = self._to_array(h), self._to_array(k), self._to_array(l)
         dinv = self.unit_cell.abs_hkl(h, k, l)
         x, y, z, u, oc, el = self._surf_pars()
         # Create all the atomic structure factors
@@ -319,6 +327,7 @@ class Domain:
         '''Calculate the structure factors with weave (inline c code)
         Produces faster simulations of large structures.
         '''
+        h, k, l = self._to_array(h), self._to_array(k), self._to_array(l)
         h = h.astype(np.float64)
         k = k.astype(np.float64)
         l = l.astype(np.float64)
@@ -332,6 +341,7 @@ class Domain:
     def calc_fb(self, inst, h, k, l):
         '''Calculate the structure factors from the bulk
         '''
+        h, k, l = self._to_array(h), self._to_array(k), self._to_array(l)
         dinv = self.unit_cell.abs_hkl(h, k, l)
         x, y, z, el, u, oc, c = self.bulk_slab._extract_values()
         oc = oc/float(len(self.bulk_sym))
@@ -537,8 +547,8 @@ class UnitCell:
                           *np.cos(self.beta)*np.cos(self.gamma)))
         return dinv
 
-class Slab:
 
+class Slab:
     __parameters__ = ['c', 'slab_oc']
     __groups__ = [['Misc', ('slab_oc', 1.), ('c', 1.0)]]
     __units__ = {'slab_oc': '', 'c': ''}
@@ -700,8 +710,6 @@ class Slab:
                 delattr(self, 'set' + id + par)
                 delattr(self, 'get' + id + par)
 
-            
-
     def find_atoms(self, expression):
         '''Find the atoms that satisfy the logical expression given in the
         string expression. Expression can also be a list or array of the
@@ -742,8 +750,7 @@ class Slab:
     def get_name(self):
         """Returns the name of the slab"""
         return self.name
-        
-    
+
     def set_c(self, c):
         '''Set the out-of-plane extension of the slab.
         Note that this is in the defined UC coords given in
@@ -969,9 +976,7 @@ class AtomGroup:
         s.setcomp(1.0)
         
         return s
-        
-        
-    
+
     def __xor__(self, other):
         '''Method to create set-get methods to use compositions
         in the atomic groups. Note that this does not affect
@@ -1039,13 +1044,13 @@ class Instrument:
     '''Class that keeps tracks of instrument settings.'''
     geometries = ['alpha_in fixed', 'alpha_in eq alpha_out',
                   'alpha_out fixed']
-    __parameters__ = ['wavel', 'alpha', 'geom']
-    __groups__ = [['Misc', ('wavel', 'alpha', 'geom')]]
-    __units__ = {'wavel': 'AA', 'alpha': 'deg', 'geom': ''}
-    __values__ = {'wavel': 1.0, 'alpha': 1.0, 'geom': 'alpha_in fixed'}
+    __parameters__ = ['inten', 'wavel', 'alpha', 'geom']
+    __groups__ = [['Misc', ('wavel', 'alpha', 'geom', 'inten')]]
+    __units__ = {'wavel': 'AA', 'alpha': 'deg', 'geom': '', 'inten': ''}
+    __values__ = {'wavel': 1.0, 'alpha': 1.0, 'geom': 'alpha_in fixed', 'inten': 1.0}
     __choices__ = {'geom': geometries}
 
-    def __init__(self, wavel=1.54, alpha=1.0, geom = 'alpha_in fixed', flib=None, rholib=None):
+    def __init__(self, inten=1.0, wavel=1.54, alpha=1.0, geom = 'alpha_in fixed', flib=None, rholib=None):
         '''Inits the instrument with default parameters'''
         if flib is None:
             self.flib = utils.sl.FormFactor(wavel, utils.__lookup_f__)
@@ -1058,7 +1063,7 @@ class Instrument:
         self.set_wavel(wavel)
         self.set_geometry(geom)
         self.alpha = alpha
-        self.inten = 1.0
+        self.inten = inten
 
     def set_inten(self, inten):
         """Set the incoming intensity"""
