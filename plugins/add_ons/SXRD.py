@@ -56,14 +56,18 @@ class Plugin(framework.Template):
         self.layout_simulation_edit()
         self.layout_misc_edit()
 
-        self.OnInteractorChanged(None)
+        if self.GetModelScript() == '':
+            print 'No code at startup'
+            self.SetModelScript(self.script_interactor.get_code())
+        else:
+            self.script_interactor.parse_code(self.GetModelScript())
+        #self.OnInteractorChanged(None)
         self.update_data_names()
         self.simulation_edit_widget.Update()
 
     def setup_script_interactor(self, model_name='sxrd'):
         """Setup the script interactor"""
         model = __import__('models.%s' % model_name, globals(), locals(), [model_name], -1)
-        print dir(model)
         script_interactor = mi.ModelScriptInteractor(preamble='import models.%s as model\n' % model_name)
 
         script_interactor.add_section('Instruments', mi.ObjectScriptInteractor, class_name='model.Instrument',
@@ -165,17 +169,23 @@ class Plugin(framework.Template):
         self.unitcell_edit_widget.set_undeletable_names([d.unitcell for d in self.script_interactor.domains])
         self.instrument_edit_widget.set_undeletable_names([ds.instrument for ds in
                                                            self.script_interactor.data_sections_interactors])
-        # TODO: att instruments as uneditable as well
 
     def OnNewModel(self, event):
         """Callback for creating a new model"""
+        print "On New Model"
         self.update_script()
         self.update_data_names()
         self.simulation_edit_widget.Update()
 
     def OnOpenModel(self, event):
         """Callback for opening a model"""
-        pass
+        print 'Model Opened'
+        self.script_interactor.parse_code(self.GetModelScript())
+        print self.GetModelScript()
+        print self.script_interactor.get_code()
+
+        self.update_data_names()
+        self.simulation_edit_widget.Update()
 
     def OnDataChanged(self, event):
         """Callback for changing of the data sets (dataset added or removed)"""
