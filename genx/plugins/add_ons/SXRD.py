@@ -5,6 +5,9 @@ This plugin auto generates the sample definition and simulations of a surface x-
 
 __author__ = 'Matts Bjorck'
 
+import StringIO
+import traceback
+
 import wx
 
 import plugins.add_on_framework as framework
@@ -38,6 +41,11 @@ code = """
         sample = model.Sample([domain1, domain2], cohf=0.0)
         # END Samples
 
+        # BEGIN Parameters
+        cp = UserVars()
+        cp.new_var('test', 0.0)
+        # END Parameters
+
         def Sim(data):
             I = []
             # BEGIN DataSet 0
@@ -57,18 +65,19 @@ class Plugin(framework.Template):
         self.layout_misc_edit()
 
         if self.GetModelScript() == '':
-            print 'No code at startup'
             self.SetModelScript(self.script_interactor.get_code())
         else:
             self.script_interactor.parse_code(self.GetModelScript())
-        #self.OnInteractorChanged(None)
+        self.OnInteractorChanged(None)
         self.update_data_names()
         self.simulation_edit_widget.Update()
+        self.update_taken_names()
 
     def setup_script_interactor(self, model_name='sxrd'):
         """Setup the script interactor"""
         model = __import__('models.%s' % model_name, globals(), locals(), [model_name], -1)
-        script_interactor = mi.ModelScriptInteractor(preamble='import models.%s as model\n' % model_name)
+        preamble = 'import models.%s as model\nfrom models.utils import UserVars\n' % model_name
+        script_interactor = mi.ModelScriptInteractor(preamble=preamble)
 
         script_interactor.add_section('Instruments', mi.ObjectScriptInteractor, class_name='model.Instrument',
                                       class_impl=model.Instrument)
@@ -120,17 +129,14 @@ class Plugin(framework.Template):
         panel = self.NewDataFolder('Misc')
         sizer = wx.BoxSizer(wx.VERTICAL)
         panel.SetSizer(sizer)
-        # TODO: Fix taken names
         self.unitcell_edit_widget = mi.EditList(panel, object_list=self.script_interactor.unitcells,
                                                 default_name='Unitcells',
-                                                edit_dialog=mi.ObjectDialog, edit_dialog_name='Unitcell Editor',
-                                                taken_names=[])
+                                                edit_dialog=mi.ObjectDialog, edit_dialog_name='Unitcell Editor')
         panel.Bind(mi.EVT_INTERACTOR_CHANGED, self.OnInteractorChanged, self.unitcell_edit_widget)
         sizer.Add(self.unitcell_edit_widget, 1, wx.EXPAND)
         self.instrument_edit_widget = mi.EditList(panel, object_list=self.script_interactor.instruments,
-                                                default_name='Instruments',
-                                                edit_dialog=mi.ObjectDialog, edit_dialog_name='Instrument Editor',
-                                                taken_names=[])
+                                                  default_name='Instruments',
+                                                  edit_dialog=mi.ObjectDialog, edit_dialog_name='Instrument Editor')
         panel.Bind(mi.EVT_INTERACTOR_CHANGED, self.OnInteractorChanged, self.instrument_edit_widget)
         sizer.Add(self.instrument_edit_widget, 1, wx.EXPAND)
         panel.Layout()
@@ -148,6 +154,12 @@ class Plugin(framework.Template):
             try:
                 self.SetModelScript(self.script_interactor.update_code(old_script))
             except Exception, e:
+                outp = StringIO.StringIO()
+                traceback.print_exc(200, outp)
+                tbtext = outp.getvalue()
+                outp.close()
+                print "Error updating the script: "
+                print tbtext
                 if self.ShowQuestionDialog('Could not update the script due to syntax issues. Python error: %s\n\n'
                                             'Do you wish to reset the model to the one defined in the user interface?'):
                     self.SetModelScript(self.script_interactor.get_code())
@@ -161,31 +173,39 @@ class Plugin(framework.Template):
         for interactor, data_set in zip(self.script_interactor.data_sections_interactors, data_set_list):
             interactor.set_name(data_set.name)
 
-
+    def update_taken_names(self):
+        """Collects the already defined names and sets the already taken names in the different controls"""
+        self.CompileScript()
+        names = dir(self.GetScriptModule())
+        self.instrument_edit_widget.set_taken_names(names[:])
+        self.unitcell_edit_widget.set_taken_names(names[:])
+        self.sample_edit_widget.set_taken_names(names[:])
 
     def OnInteractorChanged(self, event):
         """Callback when an Interactor has been changed by the GUI"""
         self.update_script()
+        self.set_constant_names()
+        self.update_taken_names()
+
+    def set_constant_names(self):
+        """Sets the name that needs to constant (used in other defs)"""
         self.unitcell_edit_widget.set_undeletable_names([d.unitcell for d in self.script_interactor.domains])
         self.instrument_edit_widget.set_undeletable_names([ds.instrument for ds in
                                                            self.script_interactor.data_sections_interactors])
 
     def OnNewModel(self, event):
         """Callback for creating a new model"""
-        print "On New Model"
         self.update_script()
         self.update_data_names()
         self.simulation_edit_widget.Update()
 
     def OnOpenModel(self, event):
         """Callback for opening a model"""
-        print 'Model Opened'
+        #print 'Model Opened'
         self.script_interactor.parse_code(self.GetModelScript())
-        print self.GetModelScript()
-        print self.script_interactor.get_code()
-
         self.update_data_names()
         self.simulation_edit_widget.Update()
+        self.set_constant_names()
 
     def OnDataChanged(self, event):
         """Callback for changing of the data sets (dataset added or removed)"""
