@@ -161,6 +161,10 @@ class Template:
         Compiles the model script
         '''
         self.parent.model.compile_script()
+
+    def GetScriptModule(self):
+        """Returns the script module"""
+        return self.parent.model.script_module
         
     def OnNewModel(self, event):
         '''OnNewModel(self) --> None

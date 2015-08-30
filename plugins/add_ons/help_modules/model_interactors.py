@@ -20,6 +20,7 @@ class ModelScriptInteractor:
     _sim_def_string = "def Sim(data):\n" + _tab_string + "I = []\n"
     _sim_end_string = _tab_string + "return I"
     _data_set_name = "DataSet"
+    _custom_parameter_name = "Parameters"
 
     def __init__(self, preamble=''):
         """ A class that parses and handles a model script.
@@ -35,6 +36,7 @@ class ModelScriptInteractor:
         self.code_sections = []
         self.interactor_lists = {}
         self.data_sections_interactors = []
+        self.custom_parameters_interactors = []
 
     def add_section(self, name, object_interactor, **kwargs):
         """ Add a code section to the model.
@@ -72,12 +74,24 @@ class ModelScriptInteractor:
     def append_dataset(self):
         """ Append a new data set to the sim function
         """
-        # TODO: Make sure the data set inits proerely
         self.data_sections_interactors.append(DataSetSimulationInteractor())
         default_name = self.get_sim_object_names()[-1]
         sim_method = self.get_sim_methods_info(default_name)[0]
         self.data_sections_interactors[-1].set_from_sim_method(default_name, sim_method)
         self.data_sections_interactors[-1].instrument = self.instruments[0].name
+
+    def append_custom_parameter(self, name, value):
+        """Append a new custom parameter to the model
+
+        Parameters:
+            name (string): Name of the custom parameter.
+            value (string): An expression of the value for the init of the parameter.
+        """
+        self.custom_parameters_interactors.append(CustomParameterInteractor(name, value))
+
+    def delete_custom_parameter(self, index):
+        """Delete custom parameter with index"""
+        self.custom_parameters_interactors.pop(index)
 
     def get_sim_object_names(self):
         """Returns the names of the objects (interactors) that can simulate.
@@ -142,7 +156,7 @@ class ModelScriptInteractor:
         try:
             end_index = code.index(self._end_string % name)
         except ValueError:
-            raise ValueError('ModelScriptInteractor Could not locate the beginning of the code section "%s"' % name)
+            raise ValueError('ModelScriptInteractor Could not locate the end of the code section "%s"' % name)
         return begin_index, end_index
 
     def find_new_data_set_insertion_index(self, code):
@@ -234,6 +248,17 @@ class ModelScriptInteractor:
                 self.data_sections_interactors[-1].parse_code(code_section)
                 i += 1
 
+        # Parse the custom parameters:
+        code_section = self.find_section(self._custom_parameter_name, code)
+        #print code_section
+        chunks = self.split_section(code_section, False)
+        interactors = []
+        # Skipt the first row this is the definition of the custom parameters object
+        for chunk in chunks[1:]:
+            interactors.append(CustomParameterInteractor())
+            interactors[-1].parse_code(chunk)
+        replace_list_items(self.custom_parameters_interactors, interactors)
+
 
     def get_section_code(self, name, tab_lvl=0, outer_comments=True, member_name=None):
         """ Get the code for section [name]
@@ -294,6 +319,23 @@ class ModelScriptInteractor:
 
         return code
 
+    def insert_section_code(self, code, name, new_section_code, tab_lvl):
+        """Update the code for the section name.
+
+        Parameters:
+            code (string): The script code
+            new_section_code (string): The new code for section.
+            name (string): name of the section.
+            tablvl (int): The tab level of the code.
+
+        Returns:
+            new_code (string): New updated code
+        """
+        begin_index, end_index = self.find_section_index(code, name)
+        new_code = (code[:begin_index] + new_section_code
+                    + code[(end_index - tab_lvl * len(self._tab_string)):])
+        return new_code
+
     def update_section(self, code, name, tab_lvl=0, member_name=None):
         """Update the code for the section name.
 
@@ -307,9 +349,21 @@ class ModelScriptInteractor:
         Returns:
             code (string): Code for the section
         """
-        begin_index, end_index = self.find_section_index(code, name)
-        new_code = (code[:begin_index] + self.get_section_code(name, tab_lvl, False, member_name=member_name)
-                    + code[(end_index - tab_lvl*len(self._tab_string)):])
+        new_section_code = self.get_section_code(name, tab_lvl, False, member_name=member_name)
+        new_code = self.insert_section_code(code, name, new_section_code, tab_lvl)
+
+        return new_code
+
+    def update_custom_parameter_section(self, code):
+        """Update the custom parameter section
+
+        Parameters:
+            code (string): The code to update
+        Returns:
+            new_code (string): The updated code
+        """
+        new_section_code = self.get_custom_parameter_code(outer_comments=False)
+        new_code = self.insert_section_code(code, self._custom_parameter_name, new_section_code, 0)
 
         return new_code
 
@@ -326,9 +380,8 @@ class ModelScriptInteractor:
         Returns:
             code (string): Code for the section
         """
-        begin_index, end_index = self.find_section_index(code, self.get_data_set_name(index))
-        new_code = (code[:begin_index] + self.get_data_set_code(index, tab_lvl, False)
-                    + code[(end_index - tab_lvl*len(self._tab_string)):])
+        new_code = self.insert_section_code(code, self.get_data_set_name(index),
+                                            self.get_data_set_code(index, tab_lvl, False), tab_lvl)
 
         return new_code
 
@@ -383,6 +436,23 @@ class ModelScriptInteractor:
 
         return code
 
+    def get_custom_parameter_code(self, outer_comments=True):
+        """Returns the code for the custom parameters"""
+        tab_lvl = 0
+        code = ''
+        if outer_comments:
+            code += tab_lvl*self._tab_string + self._begin_string % self._custom_parameter_name + '\n'
+
+        code += "cp = UserVars()\n"
+        for cust_par in self.custom_parameters_interactors:
+            code += cust_par.get_code()
+            code += '\n'
+
+        if outer_comments:
+            code += tab_lvl*self._tab_string + self._end_string % self._custom_parameter_name + '\n'
+
+        return code
+
     def get_code(self):
         """ Creates the code for the script based on the different interactors.
 
@@ -393,6 +463,10 @@ class ModelScriptInteractor:
         for name in self.code_sections:
             code += self.get_section_code(name)
             code += '\n'
+
+        # Create the custom parameter code
+        code += self.get_custom_parameter_code()
+        code += '\n'
 
         # Define the Simulation function
         code += self.get_sim_code()
@@ -411,6 +485,9 @@ class ModelScriptInteractor:
         new_code = code[:]
         for name in self.code_sections:
             new_code = self.update_section(new_code, name)
+
+        # Update the custom parameters
+        new_code = self.update_custom_parameter_section(new_code)
 
         data_sets_in_code = self.get_number_data_sets_in_code(code)
         # Update the data sets that are already there
@@ -563,6 +640,34 @@ class ParameterExpressionInteractor(ScriptInteractor):
         """Returns the code of the object"""
         return "%s.%s(%s)" % (self.obj_name, self.obj_method, self.expression)
 
+
+class CustomParameterInteractor(ScriptInteractor):
+    def __init__(self, name='', value=''):
+        self.obj_name = 'cp'
+        self.obj_method = 'new_var'
+        self.name = name
+        self.value = value
+
+    def parse_code(self, code):
+        """Parses code and sets the defined values in the object - note that values are represented as strings.
+
+        The code should be on the form:
+        [obj_name].new_var([name], [value])
+
+        Parameters:
+            code (string): A string that represent the code for the simulation.
+        """
+        code = code.strip()
+        ind = code.index(self.obj_name + '.')
+        code = code[ind + 1 + len(self.obj_name):]
+        ind = code.index('(')
+        expressions = code[ind + 1:-1].split(',')
+        self.name = expressions[0].strip().strip("'").strip('"')
+        self.value = expressions[1].strip()
+
+    def get_code(self):
+        """Returns the code of the object"""
+        return "%s.%s('%s', %s)" % (self.obj_name, self.obj_method, self.name, self.value)
 
 class DataSetSimulationInteractor(ScriptInteractor):
     def __init__(self):
@@ -1185,10 +1290,12 @@ class SimulationListCtrl(wx.Panel):
 
     def EditPars(self, event):
         '''Creates a new parameter'''
-        dlg = EditCustomParameters(self, self.plugin.GetModel(),\
-            self.parameterlist)
+        #TODO: Implement custom parameters
+        dlg = CustomParametersDialog(self, self.plugin.GetModel(),
+                                     self.model_script_interactor.custom_parameters_interactors)
         if dlg.ShowModal() == wx.ID_OK:
-            self.parameterlist = dlg.GetLines()
+            new_interactors = dlg.GetObjectList()
+            replace_list_items(self.model_script_interactor.custom_parameters_interactors, new_interactors)
             self.Update()
             self._send_change_event()
         dlg.Destroy()
@@ -1214,6 +1321,7 @@ class EditList(wx.Panel):
         Returns:
             EditList
         """
+        self.parent = parent
         if not object_list:
             object_list = []
         self.object_list = object_list
@@ -1267,6 +1375,11 @@ class EditList(wx.Panel):
 
     def set_taken_names(self, names):
         """ Sets the taken names"""
+        for obj in self.object_list:
+            try:
+                names.remove(obj.name)
+            except ValueError:
+                pass
         self.taken_names = names
 
     def _send_change_event(self):
@@ -1322,11 +1435,18 @@ class EditList(wx.Panel):
                 self.object_list.pop(ind)
                 self.listbox.Delete(ind)
             else:
-                #TODO Add a dialog popup
-                pass
+                dlg = wx.MessageDialog(self.parent, 'Object %s is not allowed to delete' %
+                                       self.object_list[ind].name, 'Information',
+                                       wx.OK | wx.ICON_INFORMATION
+                                       )
+                dlg.ShowModal()
+                dlg.Destroy()
         else:
-            #TODO Add a dialog popup
-            pass
+                dlg = wx.MessageDialog(self.parent, 'At least one item has to be left', 'Information',
+                                       wx.OK | wx.ICON_INFORMATION
+                                       )
+                dlg.ShowModal()
+                dlg.Destroy()
         self._send_change_event()
 
     def OnMoveUp(self, event):
@@ -1353,7 +1473,7 @@ class EditList(wx.Panel):
 
 
 class DomainListCtrl(wx.ScrolledWindow):
-    def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None):
+    def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None, taken_names=None):
         """ An editor to edit a sample with multiple domains.
 
         Parameters:
@@ -1363,6 +1483,7 @@ class DomainListCtrl(wx.ScrolledWindow):
             SampleEditor
         """
         wx.ScrolledWindow.__init__(self, parent, id)
+        self.parent = parent
 
         self.domain_list = domain_list
         if not self.domain_list:
@@ -1373,6 +1494,9 @@ class DomainListCtrl(wx.ScrolledWindow):
         self.unitcell_list = unitcell_list
         if not self.unitcell_list:
             self.unitcell_list = []
+        self.taken_names = taken_names
+        if not self.taken_names:
+            self.taken_names = []
 
         self.header_rects = []
         self.list_rects = []
@@ -1384,6 +1508,10 @@ class DomainListCtrl(wx.ScrolledWindow):
 
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_MOUSE_EVENTS, self.OnMouse)
+
+    def set_taken_names(self, taken_names):
+        """Set the taken names"""
+        self.taken_names = taken_names
 
     def OnMouse(self, event):
         if event.LeftDown():
@@ -1501,9 +1629,12 @@ class DomainListCtrl(wx.ScrolledWindow):
                     slab_name = domain.slabs[self.selected_item[1] - 1]
                 slab = self.find_slab_by_name(slab_name)
 
-                # TODO: fix the taken names issue in the plugin later.
-                taken_names = [s.name for s in self.slab_list if s.name != slab_name]
-                dialog = SlabDialog(self, slab, taken_names=taken_names)
+                tnames = self.taken_names[:]
+                try:
+                    tnames.remove(slab.name)
+                except ValueError:
+                    pass
+                dialog = SlabDialog(self, slab, taken_names=tnames)
                 if dialog.ShowModal() == wx.ID_OK:
                     new_slab = dialog.GetObject()
                     self.set_slab_by_name(slab_name, new_slab)
@@ -1513,10 +1644,13 @@ class DomainListCtrl(wx.ScrolledWindow):
                     self._send_change_event()
             else:
                 # We edit a domain
-                # TODO: fix the taken names issue in the plugin later.
-                taken_names = [d.name for d in self.domain_list if d.name != domain.name]
+                tnames = self.taken_names[:]
+                try:
+                    tnames.remove(domain.name)
+                except ValueError:
+                    pass
                 unit_cells = [uc.name for uc in self.unitcell_list]
-                dialog = DomainDialog(self, domain, taken_names=taken_names, unit_cells=unit_cells)
+                dialog = DomainDialog(self, domain, taken_names=tnames, unit_cells=unit_cells)
                 if dialog.ShowModal() == wx.ID_OK:
                     new_domain = dialog.GetObject()
                     self.domain_list[self.selected_item[0]] = new_domain
@@ -1548,12 +1682,29 @@ class DomainListCtrl(wx.ScrolledWindow):
 
     def OnDelete(self, event):
         """Delete an slab from the domain"""
-        #TODO: check if it is the last slab and in that case ask if it should be removed.
         if self.selected_item[0] > -1:
             domain = self.domain_list[self.selected_item[0]]
             if self.selected_item[1] > -1:
                 if self.selected_item[1] > 0:
-                    domain.slabs.pop(self.selected_item[1] - 1)
+                    name = domain.slabs.pop(self.selected_item[1] - 1)
+                    # Check if there are any slabs with name left
+                    name_exist = False
+                    for d in self.domain_list:
+                        if name in d.slabs:
+                            name_exist = True
+                            break
+                    if not name_exist:
+                        dlg = wx.MessageDialog(self.parent,
+                                               'The slab %s is no longer in use, do you want to delete it?' % name,
+                                               'Delete', wx.YES_NO | wx.ICON_QUESTION)
+                        if dlg.ShowModal() == wx.ID_YES:
+                            index = None
+                            for i, s in enumerate(self.slab_list):
+                                if s.name == name:
+                                    index = i
+                                    break
+                            self.slab_list.pop(index)
+                        dlg.Destroy()
                     self._send_change_event()
             else:
                 if len(self.domain_list) > 1:
@@ -2650,6 +2801,92 @@ class SimulationExpressionDialog(wx.Dialog):
         new_inter.obj_name = self.obj_choice.GetStringSelection()
         new_inter.position = self.interactor.position
         return new_inter
+
+class CustomParametersDialog(wx.Dialog):
+    def __init__(self, parent, model, custom_parameter_interactor):
+        wx.Dialog.__init__(self, parent, -1, 'Custom parameter editor')
+        self.SetAutoLayout(True)
+        self.model = model
+        self.interactors = custom_parameter_interactor[:]
+        #self.lines = lines
+        #self.var_name = 'cp'
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        name_ctrl_sizer = wx.GridBagSizer(2,3)
+
+        col_labels = ['Name', 'Value']
+
+        for item, index in zip(col_labels, range(len(col_labels))):
+            label = wx.StaticText(self, -1, item)
+            name_ctrl_sizer.Add(label, (0, index), flag=wx.ALIGN_LEFT, border=5)
+
+        self.name_ctrl = wx.TextCtrl(self, -1, size=(120, -1))
+        name_ctrl_sizer.Add(self.name_ctrl, (1,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
+        self.value_ctrl = wx.TextCtrl(self, -1, size = (120, -1))
+        name_ctrl_sizer.Add(self.value_ctrl, (1, 1), flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
+        self.add_button = wx.Button(self, -1, 'Add')
+        name_ctrl_sizer.Add(self.add_button, (1, 2), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
+        sizer.Add(name_ctrl_sizer)
+        self.Bind(wx.EVT_BUTTON, self.OnAdd, self.add_button)
+
+        line = wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP, 5)
+
+        self.listbox = MyHtmlListBox(self, -1, size=(-1, 150), style=wx.BORDER_SUNKEN)
+        self.listbox.SetItemList([inter.get_code() for inter in self.interactors])
+        sizer.Add(self.listbox, 1, wx.GROW|wx.ALL, 10)
+
+        self.delete_button = wx.Button(self, -1, 'Delete')
+        sizer.Add(self.delete_button, 0, wx.CENTRE, 0)
+        self.Bind(wx.EVT_BUTTON, self.OnDelete, self.delete_button)
+
+        button_sizer = wx.StdDialogButtonSizer()
+        okay_button = wx.Button(self, wx.ID_OK)
+        button_sizer.AddButton(okay_button)
+        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+        button_sizer.Realize()
+        self.Bind(wx.EVT_BUTTON, self.OnApply, okay_button)
+
+
+        line = wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT|wx.TOP, 5)
+
+        sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT, 5)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.Layout()
+
+    def OnApply(self, event):
+        '''Callback for ok button click or apply button'''
+        event.Skip()
+
+    def OnAdd(self, event):
+        '''Callback for adding an entry'''
+        new_inter = CustomParameterInteractor(name=self.name_ctrl.GetValue(), value=self.value_ctrl.GetValue())
+        try:
+            self.model.eval_in_model(new_inter.get_code())
+        except Exception, e:
+            result = 'Could not evaluate the expression. The python error is: \n' + e.__repr__()
+            dlg = wx.MessageDialog(self, result, 'Error in expression', wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        else:
+            self.interactors.append(new_inter)
+            self.listbox.SetItemList([inter.get_code() for inter in self.interactors])
+
+
+    def OnDelete(self, event):
+        '''Callback for deleting an entry'''
+        result = 'Do you want to delete the expression?\nRemember to check if parameter is used elsewhere!'
+        dlg = wx.MessageDialog(self, result, 'Delete expression?', wx.YES_NO | wx.NO_DEFAULT | wx.ICON_INFORMATION)
+        if dlg.ShowModal() == wx.ID_YES:
+            self.interactors.pop(self.listbox.GetSelection())
+            self.listbox.SetItemList([inter.get_code() for inter in self.interactors])
+        dlg.Destroy()
+
+    def GetObjectList(self):
+        '''Returns the custom parameters list.'''
+        return self.interactors
 
 
 if __name__ == "__main__":
