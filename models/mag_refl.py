@@ -1357,11 +1357,8 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             #                   1.0J*abs_xs/2.0/wl)
             V0 = 2*2*pi*(sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 1.0J*abs_n/2.0/lamda)
             mag = sqrt(mag_dens_x**2 + mag_dens_y**2)
-            print mag
             Vmag = 2*2*pi*2.645e-5*mag
             phi = where(mag_dens < mag_limit, zeros_like(mag), arccos(mag_dens_x/mag))
-            print phi
-            print mag_dens_x.shape, mag_dens.shape
 
             (Ruu,Rdd,Rud,Rdu) = neutron_refl.Refl(Q, V0[::1] + Vmag[::1], V0[::1] - Vmag[::1], d[::1], phi[::1])
             NBuffer.Ruu = Ruu; NBuffer.Rdd = Rdd; NBuffer.Rud = Rud
