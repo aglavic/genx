@@ -351,6 +351,7 @@ def Specular(TwoThetaQz, sample, instrument):
     elif instrument.getCoords() == 0 or instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     if any(theta < theta_limit):
+        print 'Theta min: ', theta.min()
         raise ValueError('The incident angle has to be above %.1e'%theta_limit)
     
     R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz, xray_energy)
@@ -449,8 +450,7 @@ def SLD_calculations(z, item, sample, inst):
     theory = inst.getTheory()
     xray_energy = AA_to_eV/inst.getWavelength()
     (d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy,
-     sl_n, abs_n, mag_dens, mag_dens_x, mag_dens_y, z0) = compose_sld(sample, inst, array([0.0,]),
-                                                                                         xray_energy)
+     sl_n, abs_n, mag_dens, mag_dens_x, mag_dens_y, z0) = compose_sld(sample, inst, array([0.0, ]), xray_energy)
     z = zeros(len(d)*2)
     z[::2] = cumsum(r_[0,d[:-1]])
     z[1::2] = cumsum(r_[d])
@@ -508,6 +508,9 @@ def SLD_calculations(z, item, sample, inst):
         sl_m1p = parray(sl_m1)
         sl_np = parray(sl_n)
         mag_densp = parray(mag_dens)
+        mag_dens_xp = parray(mag_dens_x)
+        mag_dens_yp = parray(mag_dens_y)
+
         abs_np = parray(abs_n)
         if theory == 1 or theory == instrument_string_choices['theory'][1]:
             # Simplified anisotropic
@@ -522,7 +525,8 @@ def SLD_calculations(z, item, sample, inst):
                    'z': z, 'SLD unit': 'fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
         elif theory == 3 or theory == instrument_string_choices['theory'][3]:
             # Neutron spin pol with spin flip
-            dic = {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp,
+            dic = {'sld_n': sl_np, 'abs_n': abs_np, 'mag_dens': mag_densp, 'mag_dens_x': mag_dens_xp,
+                   'mag_dens_y': mag_dens_yp,
                    'z': z, 'SLD unit': 'fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}'}
         elif theory == 4 or theory == instrument_string_choices['theory'][4]:
             # Neutron spin pol
@@ -540,8 +544,12 @@ def SLD_calculations(z, item, sample, inst):
             return dic[item]
         except:
             raise ValueError('The chosen item, %s, does not exist'%item)
-        
-    
+
+
+def neturon_sld(abs_xs, b, dens, wl):
+    return dens * (wl ** 2 / 2 / pi * b - 1.0J * abs_xs * wl / 4 / pi) / 1e-5 / (wl ** 2 / 2 / pi)
+
+
 def compose_sld_anal(z, sample, instrument):
     '''Compose a analytical profile funciton'''
     def sld_interface(z, drho_jm1_l, drho_j, drho_j_u,
@@ -600,7 +608,7 @@ def compose_sld_anal(z, sample, instrument):
     b = (array(parameters['b'], dtype=complex128))*1e-5
     abs_xs = (array(parameters['xs_ai'], dtype=complex128))*1e-4**2
     wl = instrument.getWavelength()
-    sl_n = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)/1e-5/(wl**2/2/pi)
+    sl_n = neturon_sld(abs_xs, b, dens, wl)
     mag_d = mag*dens
     mag_d_l = mag_d*(1. + dmag_l)
     mag_d_u = mag_d*(1. + dmag_u)
@@ -1150,7 +1158,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, 
             (Ruu,Rdd,Rud,Rdu) = neutron_refl.Refl_int_lay(Q, V0[::-1], Vmag[::-1], d[::-1], phi[::-1], sigma[::-1],
                                                         dmag_u[::-1], dd_u[::-1], phi[::-1], sigma_u[::-1],
                                                         dmag_l[::-1], dd_l[::-1], phi[::-1], sigma_l[::-1])
-            NBuffer.Ruu = Ruu; NBuffer.Rdd = Rdd; NBuffer.Rud = Rud
+            NBuffer.Ruu = Ruu.copy(); NBuffer.Rdd = Rdd.copy(); NBuffer.Rud = Rud.copy()
             NBuffer.parameters = parameters.copy()
             NBuffer.TwoThetaQz = Q.copy()
         else:
@@ -1317,8 +1325,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
         lamda = instrument.getWavelength()
         sl_n = sl_n*1e-5
         abs_n = abs_n*1e-8
-        sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
-                               1.0J*abs_n*lamda/4/pi)
+        sl_n = (lamda**2/2/pi*sl_n - 1.0J*abs_n*lamda/4/pi)
         sl_nm = 2.645e-5*mag_dens*lamda**2/2/pi
         pol = instrument.getNpol()
         if pol in ['++', 'uu']:
@@ -1350,18 +1357,20 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             Q_ok = NBuffer.TwoThetaQz.shape == Q.shape
             if Q_ok:
                 Q_ok = any(not_equal(NBuffer.TwoThetaQz, Q))
-        if NBuffer.parameters != parameters or not Q_ok:
-            #print 'Reloading buffer'
+        if NBuffer.parameters != parameters or not Q_ok or True:
+            print 'Reloading buffer'
             # Bulk of the layers
             #V0 = 2*2*pi*dens*(sqrt(b**2 - (abs_xs/2.0/wl)**2) -
             #                   1.0J*abs_xs/2.0/wl)
-            V0 = 2*2*pi*(sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 1.0J*abs_n/2.0/lamda)
+            V0 = 2*2*pi*(sl_n - 1.0J*abs_n/2.0/lamda)
             mag = sqrt(mag_dens_x**2 + mag_dens_y**2)
             Vmag = 2*2*pi*2.645e-5*mag
-            phi = where(mag_dens < mag_limit, zeros_like(mag), arccos(mag_dens_x/mag))
-
+            phi = where(mag < 1e-10, zeros_like(mag), arccos(mag_dens_x/mag))
+            print phi.max()
+            print mag.max(), mag_dens.max()
             (Ruu,Rdd,Rud,Rdu) = neutron_refl.Refl(Q, V0[::1] + Vmag[::1], V0[::1] - Vmag[::1], d[::1], phi[::1])
-            NBuffer.Ruu = Ruu; NBuffer.Rdd = Rdd; NBuffer.Rud = Rud
+            print Rud.max(), Rdu.max()
+            NBuffer.Ruu = Ruu.copy(); NBuffer.Rdd = Rdd.copy(); NBuffer.Rud = Rud.copy()
             NBuffer.parameters = parameters.copy()
             NBuffer.TwoThetaQz = Q.copy()
         else:
@@ -1391,8 +1400,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
         lamda = 4*pi*sin(incang*pi/180)/TwoThetaQz
         sl_n = sl_n[:,newaxis]*1e-5
         abs_n = abs_n[:,newaxis]*1e-8
-        sl_n = (lamda**2/2/pi*sqrt(sl_n**2 - (abs_n/2.0/lamda)**2) - 
-                               1.0J*abs_n*lamda/4/pi)
+        sl_n = (lamda**2/2/pi*sl_n - 1.0J*abs_n*lamda/4/pi)
         sl_nm = 2.645e-5*mag_dens[:,newaxis]*lamda**2/2/pi
         pol = instrument.getNpol()
         
