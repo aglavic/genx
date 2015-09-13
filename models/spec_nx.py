@@ -267,6 +267,10 @@ def resolution_init(TwoThetaQz, instrument):
     return Q, TwoThetaQz, weight
 
 
+def neutron_sld(abs_xs, dens, fb, wl):
+    return dens * (wl ** 2 / 2 / pi * fb - 1.0J * abs_xs * wl / 4 / pi)
+
+
 def Specular(TwoThetaQz, sample, instrument):
     """ Simulate the specular signal from sample when probed with instrument
 
@@ -306,8 +310,9 @@ def Specular(TwoThetaQz, sample, instrument):
         sld = dens*fb*instrument.getWavelength()**2/2/pi
     else:
         wl = instrument.getWavelength()
-        sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) - 
-                               1.0J*abs_xs*wl/4/pi)
+        #sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
+        #                       1.0J*abs_xs*wl/4/pi)
+        sld = neutron_sld(abs_xs, dens, fb, wl)
     # Ordinary Paratt X-rays
     if type == instrument_string_choices['probe'][0] or type == 0:
         R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
@@ -372,18 +377,14 @@ def Specular(TwoThetaQz, sample, instrument):
     # tof
     elif type == instrument_string_choices['probe'][4] or type == 4:
         wl = 4*pi*sin(instrument.getIncangle()*pi/180)/Q
-        sld = dens[:,newaxis]*(wl**2/2/pi*sqrt(fb[:,newaxis]**2 - 
-                                               (abs_xs[:,newaxis]/2.0/wl)**2) - 
-                               1.0J*abs_xs[:,newaxis]*wl/4/pi)
+        sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
         R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
             (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
                 1.0-sld,d,sigma)
     # tof spin polarized
     elif type == instrument_string_choices['probe'][5] or type == 5:
         wl = 4*pi*sin(instrument.getIncangle()*pi/180)/Q
-        sld = dens[:,newaxis]*(wl**2/2/pi*sqrt(fb[:,newaxis]**2 - 
-                                               (abs_xs[:,newaxis]/2.0/wl)**2) - 
-                               1.0J*abs_xs[:,newaxis]*wl/4/pi)
+        sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
         msld = 2.645e-5*magn[:,newaxis]*dens[:,newaxis]\
                 *(4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
         # polarization uu or ++
