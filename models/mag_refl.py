@@ -771,8 +771,6 @@ def compose_sld(sample, instrument, theta, xray_energy):
         mag_dens_x = (comp_prof*mag_prof*(dens_n*cos(theta_m)*cos(phi))[:, newaxis]).sum(0)
         mag_dens_y = (comp_prof*mag_prof*(dens_n*cos(theta_m)*sin(phi))[:, newaxis]).sum(0)
 
-
-
         if not shape is None:
             M = rollaxis(array((ones(comp_prof_x.shape)*M[:,0][:, newaxis, newaxis],
                ones(comp_prof_x.shape)*M[:,1][:, newaxis, newaxis],
@@ -1145,14 +1143,13 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, 
                 Q_ok = any(not_equal(NBuffer.TwoThetaQz, Q))
         if NBuffer.parameters != parameters or not Q_ok:
             #print 'Reloading buffer'
-            b = array(parameters['b'], dtype = complex64)*1e-5
-            abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
+            b = array(parameters['b'], dtype=complex64)*1e-5
+            abs_xs = array(parameters['xs_ai'], dtype=complex64)*(1e-4)**2
             # Bulk of the layers
             #sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
             #                   1.0J*abs_xs*wl/4/pi)
 
-            V0 = 2*2*pi*dens*(sqrt(b**2 - (abs_xs/2.0/wl)**2) -
-                               1.0J*abs_xs/2.0/wl)
+            V0 = 2*2*pi*dens*(b - 1.0J*abs_xs/2.0/wl)
             Vmag = 2*2*pi*2.645e-5*mag*dens
 
             (Ruu,Rdd,Rud,Rdu) = neutron_refl.Refl_int_lay(Q, V0[::-1], Vmag[::-1], d[::-1], phi[::-1], sigma[::-1],
@@ -1362,14 +1359,22 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             # Bulk of the layers
             #V0 = 2*2*pi*dens*(sqrt(b**2 - (abs_xs/2.0/wl)**2) -
             #                   1.0J*abs_xs/2.0/wl)
+            # These rows are added to always have an ambient in the structure
+            # large roughness messes up the spin-flip channel otherwise.
+            sl_n = append(sl_n, sample.Ambient.dens*sample.Ambient.b*1e-5)
+            abs_n = append(abs_n, sample.Ambient.dens*sample.Ambient.xs_ai*(1e-4)**2)
+            mag_dens = append(mag_dens, 0.0)
+            mag_dens_x = append(mag_dens_x, 0.0)
+            mag_dens_y = append(mag_dens_y, 0.0)
+            d = append(d, 0.0)
+
             V0 = 2*2*pi*(sl_n - 1.0J*abs_n/2.0/lamda)
             mag = sqrt(mag_dens_x**2 + mag_dens_y**2)
             Vmag = 2*2*pi*2.645e-5*mag
-            phi = where(mag < 1e-10, zeros_like(mag), arccos(mag_dens_x/mag))
-            print phi.max()
-            print mag.max(), mag_dens.max()
+            phi_tmp = arccos(mag_dens_x/mag)
+            phi = where(mag < 1e-20, zeros_like(mag), phi_tmp)
             (Ruu,Rdd,Rud,Rdu) = neutron_refl.Refl(Q, V0[::1] + Vmag[::1], V0[::1] - Vmag[::1], d[::1], phi[::1])
-            print Rud.max(), Rdu.max()
+
             NBuffer.Ruu = Ruu.copy(); NBuffer.Rdd = Rdd.copy(); NBuffer.Rud = Rud.copy()
             NBuffer.parameters = parameters.copy()
             NBuffer.TwoThetaQz = Q.copy()
