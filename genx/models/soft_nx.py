@@ -465,6 +465,8 @@ def SLD_calculations(z, item, sample, inst):
         #Transform to radians
         magn_ang = array(parameters['magn_ang'], dtype = float64)*pi/180.0
         mag_sld = sld_m
+        mag_sld_x = mag_sld*cos(magn_ang)
+        mag_sld_y = mag_sld*sin(magn_ang)
         sld_unit = '10^{-6}/\AA^{2}'
         
     d = array(parameters['d'], dtype = float64)
@@ -486,13 +488,17 @@ def SLD_calculations(z, item, sample, inst):
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld_p[-1]
         rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -\
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
+        rho_mag_x = sum((mag_sld_x[:-1] - mag_sld_x[1:])*
+                        (0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + mag_sld_x[-1]
+        rho_mag_y = sum((mag_sld_y[:-1] - mag_sld_y[1:])*
+                        (0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + mag_sld_y[-1]
         #dic = {'Re sld +': real(rho_p), 'Im sld +': imag(rho_p),\
         #        'Re sld -': real(rho_m), 'Im sld -': imag(rho_m), 'z':z,
         #        'SLD unit': sld_unit}
         rho_nucl = (rho_p + rho_m)/2.
-        dic = {'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),\
-                'mag': real(rho_p - rho_m)/2, 'z':z,
-                'SLD unit': sld_unit}
+        dic = {'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),
+                'mag': real(rho_p - rho_m)/2, 'mag_x': rho_mag_x, 'mag_y': rho_mag_y,
+                'z':z, 'SLD unit': sld_unit}
     if item == None or item == 'all':
         return dic
     else:

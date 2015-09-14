@@ -521,15 +521,17 @@ def SLD_calculations(z, item, sample, inst):
         sld = dens*f
     elif type == instrument_string_choices['probe'][1] or type == 1 or\
         type == instrument_string_choices['probe'][4] or type == 4:
-        sld = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)/1e-5
+        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-5
         sld_unit = 'fm/\AA^{3}'
     else:
         magnetic = True
-        sld = dens*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)/1e-5
-        magn = array(parameters['magn'], dtype = float64)
+        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-5
+        magn = array(parameters['magn'], dtype=float64)
         #Transform to radians
         magn_ang = array(parameters['magn_ang'], dtype = float64)*pi/180.0
         mag_sld = 2.645*magn*dens
+        mag_sld_x = mag_sld*cos(magn_ang)
+        mag_sld_y = mag_sld*sin(magn_ang)
         sld_unit = 'fm/\AA^{3}'
         
     d = array(parameters['d'], dtype = float64)
@@ -551,12 +553,16 @@ def SLD_calculations(z, item, sample, inst):
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld_p[-1]
         rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -\
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
+        rho_mag_x = sum((mag_sld_x[:-1] - mag_sld_x[1:])*
+                        (0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + mag_sld_x[-1]
+        rho_mag_y = sum((mag_sld_y[:-1] - mag_sld_y[1:])*
+                        (0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + mag_sld_y[-1]
         #dic = {'Re sld +': real(rho_p), 'Im sld +': imag(rho_p),\
         #        'Re sld -': real(rho_m), 'Im sld -': imag(rho_m), 'z':z,
         #        'SLD unit': sld_unit}
         rho_nucl = (rho_p + rho_m)/2.
         dic = {'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),\
-                'mag': real(rho_p - rho_m)/2, 'z':z,
+                'mag': real(rho_p - rho_m)/2, 'z':z, 'mag_x': rho_mag_x, 'mag_y': rho_mag_y,
                 'SLD unit': sld_unit}
     if item == None or item == 'all':
         return dic
