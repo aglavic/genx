@@ -1471,8 +1471,57 @@ class EditList(wx.Panel):
             self.listbox.SetSelection(ind + 1)
             self._send_change_event()
 
+class DomainListCtrl(wx.Panel):
+    def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None, taken_names=None):
+        wx.Panel.__init__(self, parent, id)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer.Add((-1, 2))
 
-class DomainListCtrl(wx.ScrolledWindow):
+        # DomainListCtrl
+        self.listbox = DomainWidget(self, id=-1, domain_list=domain_list, slab_list=slab_list,
+                                    unitcell_list=unitcell_list, taken_names=taken_names)
+        self.Bind(EVT_INTERACTOR_CHANGED, self._send_change_event, self.listbox)
+
+        # Toolbar
+        self.toolbar = self.do_toolbar()
+        main_sizer.Add(self.toolbar, proportion=0, flag=wx.EXPAND)
+        main_sizer.Add((-1, 2))
+
+
+        main_sizer.Add(self.listbox, 1, wx.EXPAND)
+
+        self.SetSizer(main_sizer)
+        self.toolbar.Realize()
+
+    def do_toolbar(self):
+        """Create and do the toolbar"""
+        toolbar = wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
+
+        button_names = ['Insert', 'Delete', 'Move Up', 'Move Down']
+        button_images = [icons.getaddBitmap(), icons.getdeleteBitmap(), icons.getmove_upBitmap(),
+                         icons.getmove_downBitmap()]
+        callbacks = [self.listbox.OnNew, self.listbox.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown]
+        tooltips = ['Insert item', 'Delete item', 'Move item up', 'Move item down']
+
+        for i in range(len(button_names)):
+            new_id = wx.NewId()
+            toolbar.AddLabelTool(new_id, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
+            self.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
+
+        return toolbar
+
+    def set_taken_names(self, taken_names):
+        self.listbox.set_taken_names(taken_names)
+
+    def _send_change_event(self, event):
+        """"Sends a change event"""
+        # Just Process a new event upwards.
+        evt = InteractorChangedEvent(myEVT_INTERACTOR_CHANGED, self.GetId())
+        self.GetEventHandler().ProcessEvent(evt)
+
+
+
+class DomainWidget(wx.ScrolledWindow):
     def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None, taken_names=None):
         """ An editor to edit a sample with multiple domains.
 
@@ -1669,6 +1718,13 @@ class DomainListCtrl(wx.ScrolledWindow):
                 if len(self.unitcell_list) > 0:
                     new_domain.unitcell = self.unitcell_list[0].name
                 self.domain_list.insert(self.selected_item[0] + 1, new_domain)
+            elif self.selected_item[1] == 0:
+                # The bulk slab has been selected
+                new_slab = self.slab_list[0].create_new()
+                new_slab.name = 'slab'
+                new_slab = self.rename_slab(new_slab, '')
+                self.slab_list.append(new_slab)
+                self.domain_list[self.selected_item[0]].bulk_slab = new_slab.name
             else:
                 # A surface slab has been selected
                 new_slab = self.slab_list[0].create_new()
@@ -1705,6 +1761,7 @@ class DomainListCtrl(wx.ScrolledWindow):
                                     break
                             self.slab_list.pop(index)
                         dlg.Destroy()
+                    self.selected_item = (self.selected_item[0], self.selected_item[1] - 1)
                     self._send_change_event()
             else:
                 if len(self.domain_list) > 1:
@@ -1713,7 +1770,7 @@ class DomainListCtrl(wx.ScrolledWindow):
             self.Refresh()
 
     def OnInsert(self, event):
-        """Handle an insert of an alb in the sample"""
+        """Handle an insert of an slab in the sample"""
         slab_name = event.GetEventObject().FindItemById(event.GetId()).GetLabel()
 
         if self.selected_item[0] > -1:
@@ -1759,6 +1816,28 @@ class DomainListCtrl(wx.ScrolledWindow):
                 domain = self.domain_list.pop(self.selected_item[0])
                 self.set_clipboard(domain, item_type='domain')
             self.Refresh()
+
+    def OnMoveUp(self, event):
+        """Called to move an slab upwards"""
+        if self.selected_item[0] > -1 and self.selected_item[1] > 0:
+            domain = self.domain_list[self.selected_item[0]]
+            if len(domain.slabs) > self.selected_item[1]:
+                #We don't move slabs...
+                slab = domain.slabs.pop(self.selected_item[1]-1)
+                domain.slabs.insert(self.selected_item[1], slab)
+                self.selected_item = (self.selected_item[0], self.selected_item[1] + 1)
+                self.Refresh()
+
+    def OnMoveDown(self, event):
+        """Called to move an slab down"""
+        if self.selected_item[0] > -1 and self.selected_item[1] > 0:
+            domain = self.domain_list[self.selected_item[0]]
+            if self.selected_item[1] > 1:
+                #We don't move slabs...
+                slab = domain.slabs.pop(self.selected_item[1] - 1)
+                domain.slabs.insert(self.selected_item[1] - 2, slab)
+                self.selected_item = (self.selected_item[0], self.selected_item[1] - 1)
+                self.Refresh()
 
     def rename_domain(self, domain, extension):
         domain_names = [d.name for d in self.domain_list]
