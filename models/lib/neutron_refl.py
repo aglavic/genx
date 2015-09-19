@@ -49,14 +49,14 @@ def ReflOld(Q,Vp,Vm,d,M_ang):
     #M_ang=M_ang[::-1]
     #d=d[::-1]
     #Angular difference between the magnetization
-    theta_diff=M_ang[1:]-M_ang[:-1] #Unsure but think this is correct
+    theta_diff=M_ang[1:] - M_ang[:-1] #Unsure but think this is correct
     #theta_diff=theta_diff[::-1]
     #print theta_diff
     def calc_mat(q_p,q_m,d,theta_diff):
         return make_D(q_p,q_m)*make_P(q_p,q_m,d)*make_D(q_p,q_m)**-1*make_R(theta_diff)
 
     #Calculate the transfer matrix - this implementation is probably REALLY slow...
-    M=[make_D(qi_p[-1],qi_m[-1])**-1*make_R(theta_diff[-1])*reduce(lambda x,y:y*x,[calc_mat(q_p,q_m,di,theta_diffi)
+    M=[make_D(qi_p[-1],qi_m[-1])**-1*make_R(theta_diff[-1])*reduce(lambda x,y:y*x,[calc_mat(q_p, q_m, di, theta_diffi)
            for q_p,q_m,di,theta_diffi in zip(qi_p[1:-1],qi_m[1:-1],d[1:-1],theta_diff[:-1])]
            ,make_D(qi_p[0],qi_m[0]))
            for qi_p,qi_m in zip(Qi_p,Qi_m)]
@@ -193,10 +193,13 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None):
     # Assemble the layer propagation matrices
     P = ass_P(k_p, k_m, d)
     # Multiply the propagation matrices with the interface matrix
-    PX = mu.dot4_Adiag(P[...,1:-1], X[...,:-1])
+    PX = mu.dot4_Adiag(P[..., 1:-1], X[..., :-1])
     # Multiply up the sample matrix
-    M = mu.dot4(X[...,-1], reduce(mu.dot4, rollaxis(PX, 3)[::-1]))
+    #print 'X: ', X[:,:, 0, -1]
+    M = mu.dot4(X[..., -1], reduce(mu.dot4, rollaxis(PX, 3)[::-1]))
     #print M.shape
+    #print 'M: ', M[:,:, 0]
+    #print 'denom: ',  M[0,0]*M[2,2]-M[0,2]*M[2,0]
     denom = M[0,0]*M[2,2]-M[0,2]*M[2,0]
     Ruu = (M[1,0]*M[2,2]-M[1,2]*M[2,0])/denom
     Rud = (M[3,0]*M[2,2]-M[3,2]*M[2,0])/denom

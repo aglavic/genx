@@ -73,7 +73,7 @@ class Plugin(framework.Template):
         self.simulation_edit_widget.Update()
         self.update_taken_names()
 
-    def setup_script_interactor(self, model_name='sxrd'):
+    def setup_script_interactor(self, model_name='sxrd2'):
         """Setup the script interactor"""
         model = __import__('models.%s' % model_name, globals(), locals(), [model_name], -1)
         preamble = 'import models.%s as model\nfrom models.utils import UserVars\n' % model_name
@@ -129,16 +129,24 @@ class Plugin(framework.Template):
         panel = self.NewDataFolder('Misc')
         sizer = wx.BoxSizer(wx.VERTICAL)
         panel.SetSizer(sizer)
+        # Make the box for putting in the columns
+        col_box = wx.StaticBox(panel, -1, "Unit Cells")
+        col_box_sizer = wx.StaticBoxSizer(col_box, wx.VERTICAL)
+        sizer.Add(col_box_sizer, 1, wx.EXPAND)
         self.unitcell_edit_widget = mi.EditList(panel, object_list=self.script_interactor.unitcells,
                                                 default_name='Unitcells',
                                                 edit_dialog=mi.ObjectDialog, edit_dialog_name='Unitcell Editor')
         panel.Bind(mi.EVT_INTERACTOR_CHANGED, self.OnInteractorChanged, self.unitcell_edit_widget)
-        sizer.Add(self.unitcell_edit_widget, 1, wx.EXPAND)
+        col_box_sizer.Add(self.unitcell_edit_widget, 1, wx.EXPAND)
+        # Make the box for putting in the columns
+        col_box = wx.StaticBox(panel, -1, "Instruments")
+        col_box_sizer = wx.StaticBoxSizer(col_box, wx.VERTICAL)
+        sizer.Add(col_box_sizer, 1, wx.EXPAND)
         self.instrument_edit_widget = mi.EditList(panel, object_list=self.script_interactor.instruments,
                                                   default_name='Instruments',
                                                   edit_dialog=mi.ObjectDialog, edit_dialog_name='Instrument Editor')
         panel.Bind(mi.EVT_INTERACTOR_CHANGED, self.OnInteractorChanged, self.instrument_edit_widget)
-        sizer.Add(self.instrument_edit_widget, 1, wx.EXPAND)
+        col_box_sizer.Add(self.instrument_edit_widget, 1, wx.EXPAND)
         panel.Layout()
 
     def create_main_window_menu(self):

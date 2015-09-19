@@ -237,57 +237,63 @@ class NumberValidator(wx.PyValidator):
         val = tc.GetValue()
         pos = tc.GetInsertionPoint()
 
-        if chr(key) in string.digits:
-            if len(val) == 0:
+        if event.GetUnicodeKey() != wx.WXK_NONE:
+            if key in [wx.WXK_RETURN, wx.WXK_TAB]:
                 event.Skip()
                 return
-            if pos == 0 and val[0] == '-':
-                if not wx.Validator_IsSilent():
-                        wx.Bell()
-                return
-            event.Skip()
-            return
 
-        if chr(key) == '.' and '.' not in val:
-            if 'e' in val:
-                # Check so that the . ends up correctly relative e
-                if pos > val.index('e'):
-                    if not wx.Validator_IsSilent():
-                        wx.Bell()
+            if chr(key) in string.digits:
+                if len(val) == 0:
+                    event.Skip()
                     return
-            if len(val) == 0:
-                event.Skip()
-                return
-            if pos == 0 and val[0] == '-':
-                if not wx.Validator_IsSilent():
-                        wx.Bell()
-                return
-
-            event.Skip()
-            return
-
-        if chr(key) == 'e' and 'e' not in val:
-            if '.' in val:
-                # Check so that the e ends up correctly relative .
-                if pos <= val.index('.'):
+                if pos == 0 and val[0] == '-':
                     if not wx.Validator_IsSilent():
-                        wx.Bell()
+                            wx.Bell()
                     return
-            if len(val) == 0:
                 event.Skip()
                 return
-            if pos == 0 and val[0] == '-':
-                if not wx.Validator_IsSilent():
-                        wx.Bell()
+
+            if chr(key) == '.' and '.' not in val:
+                if 'e' in val:
+                    # Check so that the . ends up correctly relative e
+                    if pos > val.index('e'):
+                        if not wx.Validator_IsSilent():
+                            wx.Bell()
+                        return
+                if len(val) == 0:
+                    event.Skip()
+                    return
+                if pos == 0 and val[0] == '-':
+                    if not wx.Validator_IsSilent():
+                            wx.Bell()
+                    return
+
+                event.Skip()
                 return
-            event.Skip()
-            return
 
-        if chr(key) == '-' and '-' not in val and pos == 0:
-            event.Skip()
-            return
+            if chr(key) == 'e' and 'e' not in val:
+                if '.' in val:
+                    # Check so that the e ends up correctly relative .
+                    if pos <= val.index('.'):
+                        if not wx.Validator_IsSilent():
+                            wx.Bell()
+                        return
+                if len(val) == 0:
+                    event.Skip()
+                    return
+                if pos == 0 and val[0] == '-':
+                    if not wx.Validator_IsSilent():
+                            wx.Bell()
+                    return
+                event.Skip()
+                return
 
-        if key in [wx.WXK_TAB, wx.WXK_RETURN, wx.WXK_DOWN, wx.WXK_UP]:
+            if chr(key) == '-' and '-' not in val and pos == 0:
+                event.Skip()
+                return
+
+        elif key in [wx.WXK_TAB, wx.WXK_RETURN, wx.WXK_DOWN, wx.WXK_UP, wx.WXK_LEFT, wx.WXK_RIGHT, wx.WXK_NUMPAD_LEFT,
+                     wx.WXK_NUMPAD_RIGHT]:
             event.Skip()
             return
 
@@ -366,7 +372,7 @@ class SpinCtrl(wx.Control):
     def OnTextEnter(self, event):
         wx.Control.SetFocus(self)
         wx.Control.SetFocus(self)
-        new_event = wx.KeyEvent( wx.wxEVT_KEY_DOWN )
+        new_event = wx.KeyEvent( wx.wxEVT_KEY_DOWN)
         new_event.SetEventObject(self)
         new_event.SetId(self.GetId())
         new_event.m_keyCode = wx.WXK_RETURN
@@ -426,7 +432,6 @@ class SpinCtrl(wx.Control):
 
 
     def DoGetBestSize(self):
-        print "DoGetBestSize"
         size = self._text.GetBestSize()
         size.width += self._spin.GetBestSize().width
         return size

@@ -5,7 +5,7 @@ A Slab is the basic unit that builds up a sample and can
 be seen as a quasi-unitcell for the sxrd problem.
 Stricitly it is a 2D unitcell with a finite extension
 out-of-plane. The Sample is then built from these Slabs one slab for
-the bulk and a list of slabs for the surface strucutre.
+the bulk and a list of slabs for the surface structure.
 
 <p> The unitcell consists of parameters for  the unitcell and the
 instrument contains instrument variables. See below for a full list.
@@ -115,6 +115,7 @@ import utils
 
 sxrd_ext_built = False
 debug = False
+
 try:
     import lib.sxrd_ext
     sxrd_ext_built = True
@@ -136,89 +137,15 @@ if not sxrd_ext_built or debug:
 
 __pars__ = ['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
 
-
-class SimMethodInfo:
-    def __init__(self, name, args, def_args):
-        """Container to hold the info about simulation methods
-
-        Note that the simulation methods should always have an instrument as the first argument.
-
-        Parameters:
-            name (string):  name of the method
-            args (tuple of strings):    a tuple of the names of the arguments of the simulation function.
-            def_arguments (tuple of strings): a tuple that holds the default values to be used.
-
-        """
-        self.name = name
-        self.args = args
-        self.def_args = def_args
-
 class Sample:
-    __parameters__ = ['cohf']
-    __groups__ = [['Misc', ('cohf', )]]
-    __units__ = {'cohf': ''}
-    __values__ = {'cohf': 0.0}
-    __choices__ = {}
-    __sim_methods__ = [SimMethodInfo('calc_i', ('h', 'k', 'l'), ('0', '0', 'd.x')),
-                       SimMethodInfo('calc_f', ('h', 'k', 'l'), ('0', '0', 'd.x'))]
-
-    def __init__(self, domains=[], cohf=0.0):
-        self.domains = []
-        self.set_domains(domains)
-        self.cohf = cohf
-
-    def set_domains(self, domains):
-        if not isinstance(domains, list):
-            raise TypeError("The domains in a sample has to be contained in a list")
-        if min([isinstance(domain, Domain) for domain in domains]) == 0:
-            raise TypeError("All members in the domain list has to be a member of class Domain")
-        self.domains = domains
-
-    def set_cohf(self, cohf):
-        '''Sets the coherent fraction'''
-        self.cohf = cohf
-
-    def _assemble_f_tot(self, f_list, h, k, l):
-        ''' Calculates the absolute magntiude of the strucutre factor for the sample
-        '''
-        # Lets calculate the coherent part
-        f_coh = np.abs(np.sum(f_list, 0))
-        f_incoh = np.sqrt(np.sum(np.abs(f_list)**2, 0))
-        return self.cohf*f_coh + (1 - self.cohf)*f_incoh
-
-    def calc_i(self, inst, h, k, l):
-        return self.calc_f(inst, h, k, l)**2
-
-    def calc_f(self, inst, h, k, l):
-        f_list = np.array([domain.calc_f(inst, h, k, l) for domain in self.domains])
-        return self._assemble_f_tot(f_list, h, k, l)
-
-    def turbo_calc_f(self, inst, h, k, l):
-        #TODO: Make an module wide check if the inline c version is available...
-        f_list = np.array([domain.turbo_calc_f(inst, h, k, l) for domain in self.domains])
-        return self._assemble_f_tot(f_list, h, k, l)
-
-
-class Domain:
-    __parameters__ = ['occ']
-    __groups__ = [['Misc', ('occ',)]]
-    __units__ = {'occ': ''}
-    __values__ = {'occ': 1.0}
-    __choices__ = {}
-    __sim_methods__ = [SimMethodInfo('calc_f', ('h', 'k', 'l'), ('0', '0', 'd.x'))]
-
-    def __init__(self, bulk_slab, slabs, unit_cell, occ=1.0, surface_sym=[], bulk_sym=[]):
+    def __init__(self, inst, bulk_slab, slabs, unit_cell,
+                 surface_sym=[], bulk_sym=[]):
         self.set_bulk_slab(bulk_slab)
         self.set_slabs(slabs)
         self.set_surface_sym(surface_sym)
         self.set_bulk_sym(bulk_sym)
+        self.inst = inst
         self.set_unit_cell(unit_cell)
-        self.occ = occ
-
-    def set_occ(self, occ):
-        ''' Set the occupancy of the domain
-        '''
-        self.occ = occ
 
     def set_bulk_slab(self, bulk_slab):
         '''Set the bulk unit cell to bulk_slab
@@ -282,98 +209,93 @@ class Domain:
         if unit_cell == None:
             unit_cell = UnitCell(1.0, 1,.0, 1.0)
         self.unit_cell = unit_cell
-
-    def _to_array(self, val):
-        """Casts val to a suitable arraytype"""
-        if type(val) in [int, float]:
-            return np.array([val])
-        else:
-            return np.array(val)
         
-    def calc_f(self, inst, h, k, l):
+    def calc_f(self, h, k, l):
         '''Calculate the structure factors for the sample
         '''
-        fs = self.calc_fs(inst, h, k, l)
-        fb = self.calc_fb(inst, h, k, l)
+        fs = self.calc_fs(h, k, l)
+        fb = self.calc_fb(h, k, l)
         ftot = fs + fb
-        return ftot
+        return ftot*self.inst.inten
 
-    def turbo_calc_f(self, inst, h, k, l):
+    def turbo_calc_f(self, h, k, l):
         '''Calculate the structure factors for the sample with
         inline c code for the surface.
         '''
-        fs = self.turbo_calc_fs(inst, h, k, l)
-        fb = self.calc_fb(inst, h, k, l)
+        fs = self.turbo_calc_fs(h, k, l)
+        fb = self.calc_fb(h, k, l)
         ftot = fs + fb
-        return ftot
+        return ftot*self.inst.inten
     
-    def calc_fs(self, inst, h, k, l):
+    def calc_fs(self, h, k, l):
         '''Calculate the structure factors from the surface
         '''
-        h, k, l = self._to_array(h), self._to_array(k), self._to_array(l)
         dinv = self.unit_cell.abs_hkl(h, k, l)
         x, y, z, u, oc, el = self._surf_pars()
+        #print x, y,z
         # Create all the atomic structure factors
-        f = self._get_f(inst, el, dinv)
-        fs = np.sum(oc*f*np.exp(-2*np.pi**2*u*dinv[:, np.newaxis]**2)*
-                    np.sum([np.exp(2.0*np.pi*1.0J*(h[:, np.newaxis]*sym_op.trans_x(x, y) +
-                                                   k[:, np.newaxis]*sym_op.trans_y(x, y) +
-                                                   l[:, np.newaxis]*z[np.newaxis, :]))
-                            for sym_op in self.surface_sym], 0)
-                    , 1)
+        f = self._get_f(el, dinv)
+        #print f.shape, h.shape, oc.shape, x.shape, y.shape, z.shape
+        fs = np.sum(oc*f*np.exp(-2*np.pi**2*u*dinv[:,np.newaxis]**2)\
+            *np.sum([np.exp(2.0*np.pi*1.0J*(
+                 h[:,np.newaxis]*sym_op.trans_x(x, y) +
+                 k[:,np.newaxis]*sym_op.trans_y(x, y) +
+                 l[:,np.newaxis]*z[np.newaxis, :]))
+              for sym_op in self.surface_sym], 0)
+                    ,1)
         return fs
 
     def turbo_calc_fs(self, h, k, l):
         '''Calculate the structure factors with weave (inline c code)
         Produces faster simulations of large structures.
         '''
-        h, k, l = self._to_array(h), self._to_array(k), self._to_array(l)
         h = h.astype(np.float64)
         k = k.astype(np.float64)
         l = l.astype(np.float64)
         dinv = self.unit_cell.abs_hkl(h, k, l)
         x, y, z, u, oc, el = self._surf_pars()
-        f = self._get_f(inst, el, dinv)
+        f = self._get_f(el, dinv)
         Pt = np.array([np.c_[so.P, so.t] for so in self.surface_sym])
         fs = lib.sxrd_ext.surface_lattice_sum(x, y, z, h, k, l, u, oc, f, Pt, dinv)
         return fs
 
-    def calc_fb(self, inst, h, k, l):
+    def calc_fb(self, h, k, l):
         '''Calculate the structure factors from the bulk
         '''
-        h, k, l = self._to_array(h), self._to_array(k), self._to_array(l)
         dinv = self.unit_cell.abs_hkl(h, k, l)
         x, y, z, el, u, oc, c = self.bulk_slab._extract_values()
         oc = oc/float(len(self.bulk_sym))
-        f = self._get_f(inst, el, dinv)
+        f = self._get_f(el, dinv)
         # Calculate the "shape factor" for the CTRs
-        eff_thick = self.unit_cell.c/np.sin(inst.alpha*np.pi/180.0)
-        alpha = 2.82e-5*inst.wavel*eff_thick/self.unit_cell.vol() * np.sum(f.imag, 1)
+        eff_thick = self.unit_cell.c/np.sin(self.inst.alpha*np.pi/180.0)
+        alpha = (2.82e-5*self.inst.wavel*eff_thick/self.unit_cell.vol()*
+                                              np.sum(f.imag,1))
         denom = np.exp(2.0*np.pi*1.0J*l)*np.exp(-alpha) - 1.0
         # Delta functions to remove finite size effect in hk plane
-        delta_funcs=(abs(h - np.round(h)) < 1e-12)*(abs(k - np.round(k)) < 1e-12)
+        delta_funcs=(abs(h - np.round(h)) < 1e-12)*(
+            abs(k - np.round(k)) < 1e-12)
         # Sum up the uc struct factors
-        f_u = np.sum(oc*f*np.exp(-2*np.pi**2*u*dinv[:, np.newaxis]**2) *
-                     np.sum([np.exp(2.0*np.pi*1.0J*(h[:, np.newaxis]*sym_op.trans_x(x, y) +
-                                                    k[:, np.newaxis]*sym_op.trans_y(x, y) +
-                                                    l[:, np.newaxis]*z[np.newaxis, :]))
-                             for sym_op in self.bulk_sym]
-                            , 0)
-                     , 1)
+        f_u = np.sum(oc*f*np.exp(-2*np.pi**2*u*dinv[:, np.newaxis]**2)*
+                     np.sum([np.exp(2.0*np.pi*1.0J*(
+                            h[:,np.newaxis]*sym_op.trans_x(x, y) +
+                            k[:,np.newaxis]*sym_op.trans_y(x, y) +
+                            l[:,np.newaxis]*z [np.newaxis, :]))
+                     for sym_op in self.bulk_sym], 0)
+                    ,1)
         # Putting it all togheter
         fb = f_u/denom*delta_funcs
                        
         return fb
 
-    def calc_rhos(self, inst, x, y, z, sb = 0.8):
+    def calc_rhos(self, x, y, z, sb = 0.8):
         '''Calcualte the electron density of the unitcell
         '''
         px, py, pz, u, oc, el = self._surf_pars()
-        rhos = self._get_rho(inst, el)
+        rhos = self._get_rho(el)
 
         rho = np.sum([np.sum([rho(self.unit_cell.dist(x, y, z,
-                                                      sym_op.trans_x(xat, yat) % 1.0,
-                                                      sym_op.trans_y(xat, yat) % 1.0,
+                                                      sym_op.trans_x(xat, yat)%1.0,
+                                                      sym_op.trans_y(xat, yat)%1.0,
                                                       zat),
                                   0.5*uat+0.5/sb**2, ocat)
                               for rho, xat, yat, zat, uat, ocat in
@@ -428,17 +350,17 @@ class Domain:
             
         return xout, yout, zout, uout, ocout, elout, idsout
 
-    def _get_f(self, inst, el, dinv):
+    def _get_f(self, el, dinv):
         '''from the elements extract an array with atomic structure factors
         '''
-        return _get_f(inst, el, dinv)
+        return _get_f(self.inst, el, dinv)
 
-    def _get_rho(self, inst, el):
+    def _get_rho(self, el):
         '''Returns the rho functions for all atoms in el
         '''
-        return _get_rho(inst, el)
+        return _get_rho(self.inst, el)
     
-    def _fatom_eval(self, inst, f, element, s):
+    def _fatom_eval(self, f, element, s):
         '''Smart (fast) evaluation of f_atom. Only evaluates f if not
         evaluated before.
 
@@ -453,13 +375,8 @@ class UnitCell:
     This also allows for simple crystalloraphic computing of different
     properties.
     '''
-    __parameters__ = ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
-    __groups__ = [['Axes', ('a', 'b', 'c')], ['Angles', ('alpha', 'beta', 'gamma')]]
-    __units__ = {'a': 'AA', 'b': 'AA', 'c': 'AA', 'alpha': 'deg', 'beta': 'deg', 'gamma': 'deg'}
-    __values__ = {'a': 5.0, 'b': 5.0, 'c': 5.0, 'alpha': 90.0, 'beta': 90.0, 'gamma': 90.0}
-    __choices__ = {}
-
-    def __init__(self, a=5.0, b=5.0, c=5.0, alpha=90, beta=90, gamma=90):
+    def __init__(self, a, b, c, alpha = 90,
+                 beta = 90, gamma = 90):
         self.set_a(a)
         self.set_b(b)
         self.set_c(c)
@@ -547,17 +464,10 @@ class UnitCell:
                           *np.cos(self.beta)*np.cos(self.gamma)))
         return dinv
 
-
 class Slab:
-    __parameters__ = ['c', 'slab_oc']
-    __groups__ = [['Misc', ('slab_oc', 1.), ('c', 1.0)]]
-    __units__ = {'slab_oc': '', 'c': ''}
-    __values__ = {'slab_oc': 1.0, 'c': 1.0}
-    __choices__ = {}
-
-    par_names = ['dx', 'dy', 'dz', 'u', 'oc', 'm']
-
-    def __init__(self, name='', c=1.0, slab_oc=1.0):
+    par_names = ['dx', 'dy', 'dz',
+                          'u', 'oc', 'm']
+    def __init__(self, name = '', c = 1.0, slab_oc = 1.0):
         try:
             self.c = float(c)
         except:
@@ -567,17 +477,17 @@ class Slab:
         except:
             raise ValueError("Parameter slab_oc has to be a valid floating point number")
         # Set the arrays to their default values
-        self.x = np.array([], dtype=np.float64)
-        self.y = np.array([], dtype=np.float64)
-        self.z = np.array([], dtype=np.float64)
-        self.dx = np.array([], dtype=np.float64)
-        self.dy = np.array([], dtype=np.float64)
-        self.dz = np.array([], dtype=np.float64)
-        self.u = np.array([], dtype=np.float64)
-        self.oc = np.array([], dtype=np.float64)
-        self.m = np.array([], dtype=np.float64)
-        self.id = np.array([], dtype=np.str)
-        self.el = np.array([], dtype=np.str)
+        self.x = np.array([], dtype = np.float64)
+        self.y = np.array([], dtype = np.float64)
+        self.z = np.array([], dtype = np.float64)
+        self.dx = np.array([], dtype = np.float64)
+        self.dy = np.array([], dtype = np.float64)
+        self.dz = np.array([], dtype = np.float64)
+        self.u = np.array([], dtype = np.float64)
+        self.oc = np.array([], dtype = np.float64)
+        self.m = np.array([], dtype = np.float64)
+        self.id = np.array([], dtype = np.str)
+        self.el = np.array([], dtype = np.str)
         
         # TODO: Type checking and defaults!
         #self.inst = inst
@@ -596,54 +506,15 @@ class Slab:
             cpy.dy[-1] = self.dy[i]
         return cpy
 
-    def get_atom_parameters(self, id):
-        """
-        A dictionary of all site parameters of id
-        """
-        if not id in self.id:
-            raise ValueError('Can not find atom with id %s -'
-                             'name does not exist')
-        item = np.argwhere(self.id == id)[0][0]
-
-        dic = {}
-        for par in ['el', 'x', 'y', 'z', 'u', 'oc', 'm']:
-            dic[par] = getattr(self, par)[item]
-
-        return dic
-
-    def get_ids(self):
-        """ Returns all ids in the Slab
-        """
-        return self.id
-
-    def generate_code_add_atom(self, id='',  el='Al', x='0.0', y='0.0', z='0.0', u='0.0', oc='1.0', m='1.0'):
-        """ Creates a the code to add_atom
-
-        Returns:
-            code (string): The code to create the defined atom.
-        """
-        return "%s.add_atom(id='%s', el='%s', x=%s, y=%s, z=%s, u=%s, oc=%s, m=%s)"%(self.name, id, el, x, y, z, u, oc, m)
-
-    def generate_code_init(self, name='', c='1.0', slab_oc='1.0'):
-        """ Creates the code to init a slab
-
-        Returns:
-           code (string): The code to create the slab
-        """
-        self.name = name
-        return "%s = model.Slab(name='%s', c=%s, slab_oc=%s)"%(name, name, c, slab_oc)
-
-
-    def add_atom(self, id='',  el='Al', x=0.0, y=0.0, z=0.0, u=0.0, oc=1.0, m=1.0):
+    def add_atom(self,id,  element, x, y, z, u = 0.0, oc = 1.0, m = 1.0):
         '''Add an atom to the slab.
 
         id - a unique id for this atom (string)
         element - the element of this atom has to be found
-        within the scattering length table.
-        x, y, z - position in the asymmetric unit cell (floats)
-        u - Debye-Waller parameter for the atom
+        within the scatteringlength table.
+        x, y, z - position in the assymetricv unit cell (floats)
+        u - debye-waller parameter for the atom
         oc - occupancy of the atomic site
-        m - multiplicity of the atom.
         '''
         if id in self.id:
             raise ValueError('The id %s is already defined in the'
@@ -659,7 +530,7 @@ class Slab:
         self.oc = np.append(self.oc, oc)
         self.m = np.append(self.m, m)
         self.id = np.append(self.id, id)
-        self.el = np.append(self.el, str(el))
+        self.el = np.append(self.el, str(element))
         item = len(self.id) - 1
         # Create the set and get functions dynamically
         for par in self.par_names:
@@ -710,6 +581,8 @@ class Slab:
                 delattr(self, 'set' + id + par)
                 delattr(self, 'get' + id + par)
 
+            
+
     def find_atoms(self, expression):
         '''Find the atoms that satisfy the logical expression given in the
         string expression. Expression can also be a list or array of the
@@ -746,11 +619,8 @@ class Slab:
         returns: AtomGroup
         '''
         return self.find_atoms([True]*len(self.id))
-
-    def get_name(self):
-        """Returns the name of the slab"""
-        return self.name
-
+        
+    
     def set_c(self, c):
         '''Set the out-of-plane extension of the slab.
         Note that this is in the defined UC coords given in
@@ -774,11 +644,6 @@ class Slab:
         '''Get the global occupancy of the slab
         '''
         return self.slab_oc
-
-    def get_len(self):
-        """ Get the total number of atoms (sites) in the slab
-        """
-        return len(self.id)
 
     def __getitem__(self, id):
         '''Locate id in slab with a dictonary style.
@@ -834,7 +699,7 @@ class Slab:
 
 class AtomGroup:
     par_names = ['dx', 'dy', 'dz', 'u', 'oc']
-    def __init__(self, slab=None, id=None):
+    def __init__(self, slab = None, id = None):
         self.ids = []
         self.slabs = []
         # Variable for composition ...
@@ -976,7 +841,9 @@ class AtomGroup:
         s.setcomp(1.0)
         
         return s
-
+        
+        
+    
     def __xor__(self, other):
         '''Method to create set-get methods to use compositions
         in the atomic groups. Note that this does not affect
@@ -1014,7 +881,8 @@ class AtomGroup:
         self.comp_coupl(other, exclusive = False)
 
     def __add__(self, other):
-        """Adds two Atomic groups together"""
+        '''Adds two Atomic groups togheter
+        '''
         if not type(other) == type(self):
             raise TyepError('Adding wrong type to an AtomGroup has to be an'
                             'AtomGroup')
@@ -1039,19 +907,14 @@ class AtomGroup:
         
         return out
 
-
 class Instrument:
-    '''Class that keeps tracks of instrument settings.'''
+    '''Class that keeps tracks of instrument settings.
+    '''
     geometries = ['alpha_in fixed', 'alpha_in eq alpha_out',
                   'alpha_out fixed']
-    __parameters__ = ['inten', 'wavel', 'alpha', 'geom']
-    __groups__ = [['Misc', ('wavel', 'alpha', 'geom', 'inten')]]
-    __units__ = {'wavel': 'AA', 'alpha': 'deg', 'geom': '', 'inten': ''}
-    __values__ = {'wavel': 1.0, 'alpha': 1.0, 'geom': 'alpha_in fixed', 'inten': 1.0}
-    __choices__ = {'geom': geometries}
-
-    def __init__(self, inten=1.0, wavel=1.54, alpha=1.0, geom = 'alpha_in fixed', flib=None, rholib=None):
-        '''Inits the instrument with default parameters'''
+    def __init__(self, wavel, alpha, geom = 'alpha_in fixed', flib=None, rholib=None):
+        '''Inits the instrument with default parameters
+        '''
         if flib is None:
             self.flib = utils.sl.FormFactor(wavel, utils.__lookup_f__)
         else:
@@ -1063,14 +926,16 @@ class Instrument:
         self.set_wavel(wavel)
         self.set_geometry(geom)
         self.alpha = alpha
-        self.inten = inten
+        self.inten = 1.0
 
     def set_inten(self, inten):
-        """Set the incoming intensity"""
+        '''Set the incomming intensity
+        '''
         self.inten = inten
 
     def get_inten(self):
-        """Retrieves the intensity"""
+        '''retrieves the intensity
+        '''
         return self.inten
         
     def set_wavel(self, wavel):
@@ -1097,8 +962,7 @@ class Instrument:
         except ValueError:
             raise ValueErrror('%s is not a valid float number needed for the'
                              'energy'%(wavel))
-
-    def get_energy(self):
+    def get_energy(self, energy):
         '''Returns the photon energy in keV
         '''
         return 12.39842/self.wavel
@@ -1114,7 +978,8 @@ class Instrument:
         self.alpha = alpha
 
     def get_alpha(self):
-        '''Gets the freexed angle. See set_alpha.'''
+        '''Gets the freexed angle. See set_alpha.
+        '''
         return self.alpha
 
     def set_geometry(self, geom):
@@ -1129,38 +994,36 @@ class Instrument:
                              'one of the following:\n%s'%(geom,
                                                           self.geomeries))
     def set_flib(self, flib):
-        '''Set the structure factor library'''
+        '''Set the structure factor library
+        '''
         self.flib = flib
 
     def set_rholib(self, rholib):
-        '''Set the rho library (electron density shape of the atoms)'''
+        '''Set the rho library (electron density shape of the atoms)
+        '''
         self.rholib = rholib
 
-
 class SymTrans:
-    def __init__(self, P=[[1, 0], [0, 1]], t=[0, 0]):
+    def __init__(self, P = [[1,0],[0,1]], t = [0,0]):
         # TODO: Check size of arrays!
-        self.P = np.array(P, dtype=np.float64)
-        self.t = np.array(t, dtype=np.float64)
+        self.P = np.array(P, dtype = np.float64)
+        self.t = np.array(t, dtype = np.float64)
 
     def trans_x(self, x, y):
-        '''transformed x coord'''
+        '''transformed x coord
+        '''
         #print self.P[0][0]*x + self.P[0][1]*y + self.t[0]
         return self.P[0][0]*x + self.P[0][1]*y + self.t[0]
 
     def trans_y(self, x, y):
-        '''transformed x coord'''
+        '''transformed x coord
+        '''
         #print self.P[1][0]*x + self.P[1][1]*y + self.t[1]
         return self.P[1][0]*x + self.P[1][1]*y + self.t[1]
 
     def apply_symmetry(self, x, y):
-        return np.dot(self.P, np.c_[x, y]) + self.t
+        return np.dot(P, c_[x, y]) + t
 
-
-class Sym(list):
-    """Class to hold a symmetry i.e. a list of SymTrans."""
-    def __init__(self, *args):
-        list.__init__(self, args)
 
 #==============================================================================
 # Utillity functions
@@ -1236,53 +1099,10 @@ def _fatom_eval(inst, f, element, s):
             #print element, fret[0]
     return fret
 #=============================================================================
-# Symmetries
-p1 = Sym(SymTrans([[1, 0], [0, 1]]))
-p2 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]))
-pm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, 1]]))
-pg = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, 1]], [0, 1./2]))
-cm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, 1]]),
-         SymTrans([[1, 0], [0, 1]], [1./2, 1./2]), SymTrans([[-1, 0], [0, 1]], [1./2, 1./2]))
-p2mm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[-1, 0], [0, 1]]),
-           SymTrans([[1, 0], [0, -1]]))
-p2mg = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[-1, 0], [0, 1]], [1./2, 0]),
-           SymTrans([[1, 0], [0, -1]], [1./2, 0]))
-p2gg = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[-1, 0], [0, 1]], [1./2, 1./2]),
-           SymTrans([[1, 0], [0, -1]], [1./2, 1./2]))
-c2mm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[-1, 0], [0, 1]]),
-           SymTrans([[1, 0], [0, -1]]),
-           SymTrans([[1, 0], [0, 1]], [1./2, 1./2]), SymTrans([[-1, 0], [0, -1]], [1./2, 1./2]),
-           SymTrans([[-1, 0], [0, 1]], [1./2, 1./2]), SymTrans([[1, 0], [0, -1]], [1./2, 1./2]))
-p4 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, -1], [1, 0]]),
-         SymTrans([[0, 1], [-1, 0]]))
-p4mm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, -1], [1, 0]]),
-           SymTrans([[0, 1], [-1, 0]]), SymTrans([[-1, 0], [0, 1]]), SymTrans([[1, 0], [0, -1]]),
-           SymTrans([[0, 1], [1, 0]]), SymTrans([[0, -1], [-1, 0]])
-           )
-p4gm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, -1], [1, 0]]),
-           SymTrans([[0, 1], [-1, 0]]),
-           SymTrans([[-1, 0], [0, 1]], [1./2, 1./2]), SymTrans([[1, 0], [0, -1]], [1./2, 1./2]),
-           SymTrans([[0, 1], [1, 0]], [1./2, 1./2]), SymTrans([[0, -1], [-1, 0]], [1./2, 1./2])
-           )
-p3 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]))
-p3m1 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]),
-           SymTrans([[0, -1], [-1, 0]]), SymTrans([[-1, 1], [0, 1]]), SymTrans([[1, 0], [1, -1]])
-           )
-p31m = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]),
-           SymTrans([[0, 1], [1, 0]]), SymTrans([[1, -1], [0, -1]]), SymTrans([[-1, 0], [-1, 1]])
-           )
-p6 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]),
-         SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, 1], [-1, 1]]), SymTrans([[1, -1], [1, 0]])
-         )
-p6mm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]),
-           SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, 1], [-1, 1]]), SymTrans([[1, -1], [1, 0]]),
-           SymTrans([[0, -1], [-1, 0]]), SymTrans([[-1, 1], [0, 1]]), SymTrans([[1, 0], [1, -1]]),
-           SymTrans([[0, 1], [1, 0]]), SymTrans([[1, -1], [0, -1]]), SymTrans([[-1, 0], [-1, 1]])
-           )
 
 if __name__ == '__main__':
-    inst = Instrument(wavel=0.77, alpha=0.2)
-    ss1 = Slab(c=1.00)
+    inst = Instrument(wavel = 0.77, alpha = 0.2)
+    ss1 = Slab(c = 1.00)
     ss1.add_atom('La', 'la', 0.0, 0.0, 0.0, 0.001, 1.0, 1)
     ss1.add_atom('Al', 'al', 0.5, 0.5, 0.5, 0.001, 1.0, 1)
     ss1.add_atom('O1', 'o', 0.5, 0.5, 0.0, 0.001, 1.0, 1)
@@ -1298,9 +1118,8 @@ if __name__ == '__main__':
     bulk.add_atom('O2', 'o', 0.0, 0.5, 0.5, 0.001, 1.0)
     bulk.add_atom('O3', 'o', 0.5, 0.5, 0.0, 0.001, 1.0)
 
-    domain = Domain(bulk, [ss1]*1, UnitCell(3.945, 3.945, 3.945, 90, 90, 90))
-    sample = Sample(inst, domains=[domain])
-
+    sample = Sample(inst, bulk, [ss1]*1,
+                    UnitCell(3.945, 3.945, 3.945, 90, 90, 90))
     l = np.arange(0.0, 5, 0.01)
     h = 0.0*np.ones(l.shape)
     k = 1.0*np.ones(l.shape)
@@ -1314,9 +1133,9 @@ if __name__ == '__main__':
 
     p4 = [SymTrans([[1, 0],[0, 1]]), SymTrans([[-1, 0],[0, -1]]),
            SymTrans([[0, -1],[1, 0]]), SymTrans([[0, 1],[-1, 0]])]
-    domain2 = Domain(bulk, [s_sym]*1, UnitCell(3.945, 3.945, 3.945, 90, 90, 90))
-    domain2.set_surface_sym(p4)
-    sample2 = Sample(inst, domains=[domain2])
+    sample2 = Sample(inst, bulk, [s_sym]*1,
+                    UnitCell(3.945, 3.945, 3.945, 90, 90, 90))
+    sample2.set_surface_sym(p4)
     #z = np.arange(-0.1, 3.5, 0.01)
     #x = 0*z + 0.5
     #y = 0*z + 0.5
@@ -1326,10 +1145,11 @@ if __name__ == '__main__':
     f2 = sample2.calc_f(h, k, l)
     import time
     t1 = time.time()
-    sf = sample2.calc_f(h, k, l)
+    sf = sample2.calc_fs(h, k, l)
     t2 = time.time()
     print 'Python: %f seconds'%(t2-t1)
     t3 = time.time()    
-    sft = sample2.turbo_calc_f(h, k, l)
+    sft = sample2.turbo_calc_fs(h, k, l)
     t4 = time.time()
     print 'Inline C: %f seconds'%(t4-t3)
+    
