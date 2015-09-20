@@ -12,6 +12,7 @@ import wx
 
 import plugins.add_on_framework as framework
 import help_modules.model_interactors as mi
+import help_modules.atom_viewer as atom_viewer
 
 code = """
         # BEGIN Instruments
@@ -63,6 +64,7 @@ class Plugin(framework.Template):
         self.layout_sample_edit()
         self.layout_simulation_edit()
         self.layout_misc_edit()
+        self.layout_domain_viewer()
 
         if self.GetModelScript() == '':
             self.SetModelScript(self.script_interactor.get_code())
@@ -111,6 +113,8 @@ class Plugin(framework.Template):
                                                     slab_list=self.script_interactor.slabs,
                                                     unitcell_list=self.script_interactor.unitcells)
         panel.Bind(mi.EVT_INTERACTOR_CHANGED, self.OnInteractorChanged, self.sample_edit_widget)
+        panel.Bind(mi.EVT_SELECTION_CHANGED, self.OnSelectionChanged, self.sample_edit_widget)
+
         sizer.Add(self.sample_edit_widget, 1, wx.EXPAND)
         panel.Layout()
 
@@ -148,6 +152,23 @@ class Plugin(framework.Template):
         panel.Bind(mi.EVT_INTERACTOR_CHANGED, self.OnInteractorChanged, self.instrument_edit_widget)
         col_box_sizer.Add(self.instrument_edit_widget, 1, wx.EXPAND)
         panel.Layout()
+
+    def layout_domain_viewer(self):
+        """Creates a 3D view of the sample."""
+        panel = self.NewPlotFolder('Sample view')
+        sample_view_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        panel.SetSizer(sample_view_sizer)
+        self.sample_view = atom_viewer.VTKview(panel)
+
+        sample_view_sizer.Add(self.sample_view,
+                              1, wx.EXPAND|wx.GROW|wx.ALL)
+        panel.Layout()
+
+        # Just to init the view properly
+        cur_page = self.parent.plot_notebook.Selection
+        self.parent.plot_notebook.SetSelection(self.parent.plot_notebook.GetPageCount() - 1)
+        self.parent.plot_notebook.SetSelection(cur_page)
+        self.sample_view.show()
 
     def create_main_window_menu(self):
         """Creates the window menu"""
@@ -194,6 +215,17 @@ class Plugin(framework.Template):
         self.update_script()
         self.set_constant_names()
         self.update_taken_names()
+
+    def OnSelectionChanged(self, evnet):
+        """Callback when the selection in the sample widget has changed"""
+        domain = self.sample_edit_widget.get_selected_domain_name()
+        try:
+             sample = self.GetModel().eval_in_model(domain)
+        except Exception:
+            pass
+            print "Could not load domain ", domain
+        else:
+             self.sample_view.build_sample(sample, use_opacity=False)
 
     def set_constant_names(self):
         """Sets the name that needs to constant (used in other defs)"""

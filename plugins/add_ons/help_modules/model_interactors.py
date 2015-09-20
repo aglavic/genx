@@ -1135,12 +1135,19 @@ class MyHtmlListBox(wx.HtmlListBox):
 
 
 class InteractorChangedEvent(wx.PyCommandEvent):
-
     def __init__(self, evt_type, id):
         wx.PyCommandEvent.__init__(self, evt_type, id)
 
 myEVT_INTERACTOR_CHANGED = wx.NewEventType()
 EVT_INTERACTOR_CHANGED = wx.PyEventBinder(myEVT_INTERACTOR_CHANGED, 1)
+
+
+class SelectionChangedEvent(wx.PyCommandEvent):
+    def __init__(self, evt_type, id):
+        wx.PyCommandEvent.__init__(self, evt_type, id)
+
+myEVT_SELECTION_CHANGED = wx.NewEventType()
+EVT_SELECTION_CHANGED = wx.PyEventBinder(myEVT_SELECTION_CHANGED, 1)
 
 
 class SimulationListCtrl(wx.Panel):
@@ -1481,6 +1488,7 @@ class DomainListCtrl(wx.Panel):
         self.listbox = DomainWidget(self, id=-1, domain_list=domain_list, slab_list=slab_list,
                                     unitcell_list=unitcell_list, taken_names=taken_names)
         self.Bind(EVT_INTERACTOR_CHANGED, self._send_change_event, self.listbox)
+        self.Bind(EVT_SELECTION_CHANGED, self._send_selection_change_event, self.listbox)
 
         # Toolbar
         self.toolbar = self.do_toolbar()
@@ -1510,6 +1518,22 @@ class DomainListCtrl(wx.Panel):
 
         return toolbar
 
+    def get_selected_domain_name(self):
+        """Returns the selected domain domain name None if nothing is selected"""
+        selection = self.listbox.selected_item
+        if selection[0] > -1:
+            return self.listbox.domain_list[selection[0]].name
+        else:
+            return None
+
+    def get_selected_slab_name(self):
+        """Returns the selected domain domain name None if nothing is selected"""
+        selection = self.listbox.selected_item
+        if selection[1] > -1 and selection[0] > -1:
+            return self.listbox.domain_list[selection[0]].slabs[selection[1]].name
+        else:
+            return None
+
     def set_taken_names(self, taken_names):
         self.listbox.set_taken_names(taken_names)
 
@@ -1519,6 +1543,10 @@ class DomainListCtrl(wx.Panel):
         evt = InteractorChangedEvent(myEVT_INTERACTOR_CHANGED, self.GetId())
         self.GetEventHandler().ProcessEvent(evt)
 
+    def _send_selection_change_event(self, event):
+        """Sends an selection change event"""
+        evt = SelectionChangedEvent(myEVT_SELECTION_CHANGED, self.GetId())
+        self.GetEventHandler().ProcessEvent(evt)
 
 
 class DomainWidget(wx.ScrolledWindow):
@@ -1663,6 +1691,11 @@ class DomainWidget(wx.ScrolledWindow):
     def _send_change_event(self):
         """"Sends a change event"""
         evt = InteractorChangedEvent(myEVT_INTERACTOR_CHANGED, self.GetId())
+        self.GetEventHandler().ProcessEvent(evt)
+
+    def _send_selection_change_event(self, event):
+        """Sends an selection change event"""
+        evt = SelectionChangedEvent(myEVT_SELECTION_CHANGED, self.GetId())
         self.GetEventHandler().ProcessEvent(evt)
 
     def OnEditItem(self):
@@ -1891,11 +1924,13 @@ class DomainWidget(wx.ScrolledWindow):
             if rect.Contains(event.GetPosition()):
                 self.selected_item = (i, -1)
                 self.Refresh()
+                self._send_selection_change_event(event)
                 return
         for i, rects in enumerate(self.list_rects):
             for j, rect in enumerate(rects):
                 if rect.Contains(event.GetPosition()):
                     self.selected_item = (i, len(rects) - 1 - j)
+                    self._send_selection_change_event(event)
                     self.Refresh()
 
     def OnPaint(self, event):
