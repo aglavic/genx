@@ -11,10 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
-Changes 2.5.0 (Trunk)
-=====================
- * Added an SXRD plugin
 
+Changes in 2.4.2
+================
+ * Minor bug fixes in the gui
+ * Fixed that the models ignored negative b's (spec_nx and mag_refl)
 
 Changes 2.4.0
 =============

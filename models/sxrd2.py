@@ -489,7 +489,7 @@ class UnitCell:
         '''Calculate the volume of the unit cell in AA**3
         '''
         vol = self.a*self.b*self.c*np.sqrt(1 - np.cos(self.alpha)**2 -
-                np.cos(self.beta)**2  - np.cos(self.gamma)**2 +
+                np.cos(self.beta)**2 - np.cos(self.gamma)**2 +
                 2*np.cos(self.alpha)*np.cos(self.beta)*np.cos(self.gamma))
         return vol
     
@@ -503,26 +503,32 @@ class UnitCell:
     def cart_coord_x(self, uc_x, uc_y, uc_z):
         '''Get the x-coord in the cart system
         '''
-        return uc_x*self.a
+        return uc_x*self.a + uc_y*self.b*np.cos(self.gamma) + uc_z*self.c*np.cos(self.beta)
 
     def cart_coord_y(self, uc_x, uc_y, uc_z):
         '''Get the y-coord in the cart system
         '''
-        return uc_y*self.b
+
+        return uc_y*self.b*np.sin(self.gamma) + (uc_z*self.c*(np.cos(self.alpha) -
+                                                              np.cos(self.beta)*np.cos(self.gamma))/np.sin(self.gamma))
 
     def cart_coord_z(self, uc_x, uc_y, uc_z):
         '''Get the y-coord in the cart system
         '''
-        return uc_z*self.c
+        v = np.sqrt(1 - np.cos(self.alpha)**2 - np.cos(self.beta)**2 - np.cos(self.gamma)**2 +
+                    2*np.cos(self.alpha)*np.cos(self.beta)*np.cos(self.gamma))
+        return uc_z*self.c*v/np.sin(self.gamma)
 
     def dist(self, x1, y1, z1, x2, y2, z2):
         '''Calculate the distance in AA between the points
         (x1, y1, z1) and (x2, y2, z2). The coords has to be unit cell
         coordinates.
         '''
-        #print 'Warning works only with orth cryst systems!'
-        return np.sqrt(((x1 - x2)*self.a)**2 + ((y1 - y2)*self.b)**2 +
-                       ((z1 - z2)*self.c)**2)
+        # Tranform to cartesian system
+        xc1, yc1, zc1 = self.cart_coords(x1, y1, z1)
+        xc2, yc2, zc2 = self.cart_coords(x2, y2, z2)
+
+        return np.sqrt((xc1 - xc2)**2 + (yc1 - yc2)**2 + (z1 - z2)**2)
 
     def abs_hkl(self, h, k, l):
         '''Returns the absolute value of (h,k,l) vector in units of
@@ -531,7 +537,7 @@ class UnitCell:
         This is equal to the inverse lattice spacing 1/d_hkl.
         '''
         dinv = np.sqrt(((h/self.a*np.sin(self.alpha))**2 +
-                         (k/self.b*np.sin(self.beta))**2  +
+                         (k/self.b*np.sin(self.beta))**2 +
                          (l/self.c*np.sin(self.gamma))**2 +
                         2*k*l/self.b/self.c*(np.cos(self.beta)*
                                              np.cos(self.gamma) -
@@ -586,7 +592,7 @@ class Slab:
     def copy(self):
         '''Returns a copy of the object.
         '''
-        cpy = Slab(c = self.c, slab_oc = self.slab_oc)
+        cpy = Slab(c=self.c, slab_oc=self.slab_oc)
         for i in range(len(self.id)):
             cpy.add_atom(str(self.id[i]), str(self.el[i]),
                          self.x[i], self.y[i],
