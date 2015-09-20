@@ -387,15 +387,13 @@ class Domain:
         '''
         # Extract the parameters we need
         # the star in zip(*... transform the list elements to arguments
-        xt, yt, zt, elt, ut, oct, ct = zip(*[slab._extract_values()
-                                  for slab in self.slabs])
+        xt, yt, zt, elt, ut, oct, ct = zip(*[slab._extract_values() for slab in self.slabs])
        
         x = np. r_[xt]
         y = np.r_[yt]
         # scale and shift the slabs with respect to each other
         cn = np.cumsum(np.r_[0, ct])[:-1]
-        z = np.concatenate([zs*c_s + c_cum
-                            for zs, c_cum, c_s in zip(zt, cn, ct)])
+        z = np.concatenate([zs*c_s + c_cum for zs, c_cum, c_s in zip(zt, cn, ct)])
         #el = reduce(lambda x,y:x+y, elt)
         el = np.r_[elt]
         u = np.r_[ut]
@@ -424,7 +422,7 @@ class Domain:
             uout = np.r_[uout, u]
             ocout = np.r_[ocout, oc]
             elout = np.r_[elout, el]
-        idsout.extend(ids)
+            idsout.extend(ids)
             
         return xout, yout, zout, uout, ocout, elout, idsout
 
@@ -831,8 +829,8 @@ class Slab:
         return get_par
             
     def _extract_values(self):
-        return  self.x + self.dx, self.y + self.dy, self.z + self.dz,\
-               self.el, self.u, self.oc*self.m*self.slab_oc, self.c
+        return (self.x + self.dx, self.y + self.dy, self.z + self.dz, self.el, self.u,
+                self.oc*self.m*self.slab_oc, self.c)
     
     def _extract_ids(self):
         'Extract the ids of the atoms'
