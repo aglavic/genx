@@ -719,7 +719,7 @@ class DiffEv:
         '''
 
         # Set the parameter values
-        map(lambda func, value:func(value), self.par_funcs, vec)
+        map(lambda func, value: func(value), self.par_funcs, vec)
         fom = self.model.evaluate_fit_func()
         self.n_fom += 1
         return fom
@@ -1157,7 +1157,7 @@ class DiffEv:
             # If not inside make a random re-initilazation of that parameter
             trial = where(ok, trial, random.rand(self.n_dim)*\
             (self.par_max - self.par_min) + self.par_min)
-        self.trial_vec = trial
+        self.trial_vec[index] = trial
         #return trial
 
 
