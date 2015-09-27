@@ -107,6 +107,7 @@ class SolverController:
         #self.parent.main_frame_statusbar.SetStatusText(text, 0)
         evt = update_text(text = text)
         wx.PostEvent(self.parent, evt)
+        #wx.CallAfter(wx.PostEvent, self.parent, evt)
         
     def PlotOutput(self, solver):
         ''' PlotOutput(self, solver) --> None
@@ -120,11 +121,13 @@ class SolverController:
                 fom_log = solver.get_fom_log(), update_fit = solver.new_best,\
                 desc = 'Fitting update')
         wx.PostEvent(self.parent, evt)
+        #wx.CallAfter(wx.PostEvent, self.parent, evt)
         # Hard code the events for the plugins so that they can be run syncrously.
         # This is important since the Refelctevity model, for example, relies on the
         # current state of the model.
         try:
             self.parent.plugin_control.OnFittingUpdate(evt)
+            #wx.CallAfter(self.parent.plugin_control.OnFittingUpdate, evt)
             #pass
         except Exception, e:
             print 'Error in plot output:\n' + repr(e)
@@ -146,6 +149,7 @@ class SolverController:
                 desc = 'Parameter Update', update_errors = False,\
                 permanent_change = False)
         wx.PostEvent(self.parent, evt)
+        #wx.CallAfter(wx.PostEvent, self.parent, evt)
         
     def ModelLoaded(self):
         '''ModelLoaded(self) --> None

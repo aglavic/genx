@@ -26,7 +26,7 @@ class DataSet:
                          'sim_linetype':str, 'sim_linethickness':int,
                          }
 
-    def __init__(self, name = '', copy_from = None):
+    def __init__(self, name='', copy_from=None):
         #Processed data
         self.x = array([])
         self.y = array([])
@@ -200,6 +200,20 @@ class DataSet:
         self.sim_symbolsize = new_set.sim_symbolsize
         self.sim_linetype = new_set.sim_linetype
         self.sim_linethickness = new_set.sim_linethickness
+
+    def __getattr__(self, attr):
+        """Overloading __getattr__ for using direct access to extra data"""
+        # This is protection for an infinite recursion bug in python 2.X!
+        # See: http://nedbatchelder.com/blog/201010/surprising_getattr_recursion.html
+        if attr in ["extra_data", "extra_data_raw"]:
+            raise AttributeError()
+        if attr in self.extra_data:
+            return self.extra_data[attr]
+        elif attr.rstrip('_raw') in self.extra_data_raw:
+            return self.extra_data_raw[attr.rstrip('_raw')]
+
+        raise AttributeError("%r object has no attribute %r" %
+                            (self.__class__, attr))
             
     def get_extra_data_names(self):
         '''get_extra_data_names(self) --> names [list]
@@ -232,7 +246,6 @@ class DataSet:
         '''
         if not self.extra_data.has_key(name):
             raise LookupError('Can not find extra data with name %s'%name)
-        
         return self.extra_data[name]
     
     def loadfile(self,filename, sep='\t', pos=0):
@@ -310,8 +323,8 @@ class DataSet:
         y = self.y_raw
         e = self.error_raw
         
-        for key in self.extra_data_raw:
-            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+        for key in self.extra_data:
+            exec('%s = self.%s_raw'%(key, key))
         
         self.x = eval(self.x_command)
         #print self.x
@@ -321,8 +334,8 @@ class DataSet:
         y = self.y_raw
         e = self.error_raw
         
-        for key in self.extra_data_raw:
-            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+        for key in self.extra_data:
+            exec('%s = self.%s_raw'%(key, key))
         
         self.y = eval(self.y_command)
         #print self.y
@@ -333,8 +346,8 @@ class DataSet:
         y = self.y_raw
         e = self.error_raw
         
-        for key in self.extra_data_raw:
-            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+        for key in self.extra_data:
+            exec('%s = self.%s_raw'%(key, key))
         
         self.error = eval(self.error_command)
         
@@ -344,11 +357,10 @@ class DataSet:
         e = self.error_raw
         
         for key in self.extra_data_raw:
-            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+            exec('%s = self.%s_raw' % (key, key))
         
         for key in self.extra_commands:
-            exec('self.extra_data["%s"] = eval(self.extra_commands["%s"])'\
-                    %(key, key))    
+            exec('self.extra_data[%s] = eval(self.extra_commands["%s"])' % (key, key))
         
         
     def run_command(self):
@@ -370,7 +382,7 @@ class DataSet:
         
         #Know we have to do this with the extra data
         for key in self.extra_data_raw:
-            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+            exec('%s = self.%s_raw'%(key, key))
             
         xt = self.x
         yt = self.y
@@ -378,7 +390,7 @@ class DataSet:
         
         #Know we have to do this with the extra data
         for key in self.extra_data_raw:
-            exec('%st = self.extra_data["%s"]'%(key, key))
+            exec('%st = self.%s'%(key, key))
         
         # Try to evaluate all the expressions
         if command_dict['x'] != '':

@@ -150,6 +150,10 @@ class Template:
         
         self.parent.script_editor.SetText(script)
         self.parent.model.set_script(script)
+
+    def GetModelScript(self):
+        """Returns the model script"""
+        return self.parent.model.get_script()
         
     def CompileScript(self):
         '''CompileScript(self) --> None
@@ -157,6 +161,10 @@ class Template:
         Compiles the model script
         '''
         self.parent.model.compile_script()
+
+    def GetScriptModule(self):
+        """Returns the script module"""
+        return self.parent.model.script_module
         
     def OnNewModel(self, event):
         '''OnNewModel(self) --> None
@@ -418,6 +426,10 @@ class PluginController:
         self.LoadDefaultPlugins()
         # Update the available plugins
         self.update_plugins()
+
+        loaded_plugins = self.plugin_handler.loaded_plugins.keys()
+        for name in loaded_plugins:
+            self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
 
     def OnSimulate(self, event):
         '''OnOpenModel(self, event) --> None
