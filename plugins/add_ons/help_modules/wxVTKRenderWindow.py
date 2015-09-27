@@ -110,6 +110,7 @@ if WX_USE_GLCANVAS:
 else:
     baseClass = wx.Window
 
+
 class wxVTKRenderWindow(baseClass):
     """
     A wxRenderWindow for wxPython.

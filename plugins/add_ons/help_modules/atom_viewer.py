@@ -17,10 +17,10 @@ class VTKview(wxVTKRenderWindow):
         self.ren = vtk.vtkRenderer()
         self.GetRenderWindow().AddRenderer(self.ren)
         self.ren.SetBackground(0, 0, 0)
-        self.sphereActor=vtk.vtkActor()
+        self.sphereActor = vtk.vtkActor()
 
         # Some defualts
-        self.radius = 0.2
+        self.radius = 1.0
         self.theta_res = 15
         self.phi_res = 15
         self.amb_col = (1., 1., 1.)
@@ -145,13 +145,13 @@ class VTKview(wxVTKRenderWindow):
         self.ren.AddActor2D(self.textActor)
         self.textActor.VisibilityOff()
 
-    def create_axes(self):
+    def create_axes(self, a=2.0, b=2.0, c=2.0):
         axesActor=vtk.vtkAxesActor()
         #axesActor.SetShaftTypeToCylinder()
-        axesActor.SetXAxisLabelText('a')
-        axesActor.SetYAxisLabelText('b')
-        axesActor.SetZAxisLabelText('c')
-        axesActor.SetTotalLength(1.0, 1.0, 1.0)
+        #axesActor.SetXAxisLabelText('x')
+        #axesActor.SetYAxisLabelText('y')
+        #axesActor.SetZAxisLabelText('z')
+        axesActor.SetTotalLength(a, b, c)
         self.ren.AddActor(axesActor)
 
     def _create_sphere(self, x, y, z, col, opacity = 1.0):
@@ -187,7 +187,7 @@ class VTKview(wxVTKRenderWindow):
         have the method _surf_pars that yields the x, y, z, u, oc, el
         '''
         self.clear_view()
-        x, y, z, u, oc, el, ids = sample.create_uc_output()
+        x, y, z, u, oc, el, ids = sample.create_uc_output(x_uc=2, y_uc=2)
         self.atom_x = x
         self.atom_y = y
         self.atom_z = z
@@ -197,8 +197,8 @@ class VTKview(wxVTKRenderWindow):
         else:
             [self.add_atom(x[i], y[i], z[i], 'None', el[i], 1.0) for i in range(len(x))]
         self.create_axes()
-        if self._CurrentRenderer:
-            self._CurrentRenderer.ResetCamera()
+
+        self.ren.ResetCamera()
         self.Render()
 
     def Show(self, *args):
@@ -208,32 +208,3 @@ class VTKview(wxVTKRenderWindow):
         #self.parent.Show(1)
         self.Reset()
         self.Render()
-
-
-# class Plugin(framework.Template):
-#     def __init__(self, parent):
-#         framework.Template.__init__(self, parent)
-#         sample_view_panel = self.NewPlotFolder('Sample view')
-#         sample_view_sizer = wx.BoxSizer(wx.HORIZONTAL)
-#         sample_view_panel.SetSizer(sample_view_sizer)
-#         self.sample_view = VTKview(sample_view_panel)
-#         #self.sample_view.add_atom(0, 0, 0, 'sr', 'sr')
-#
-#         sample_view_sizer.Add(self.sample_view,
-#                               1, wx.EXPAND|wx.GROW|wx.ALL)
-#         sample_view_panel.Layout()
-#
-#         cur_page = self.parent.plot_notebook.Selection
-#         self.parent.plot_notebook.SetSelection(self.parent.plot_notebook.GetPageCount() - 1)
-#         self.parent.plot_notebook.SetSelection(cur_page)
-#         self.sample_view.show()
-#
-#
-#     def OnSimulate(self, evt):
-#         try:
-#             sample = self.GetModel().script_module.sample
-#         except:
-#             pass
-#         else:
-#             self.sample_view.build_sample(sample, use_opacity=False)
-#
