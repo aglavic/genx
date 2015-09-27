@@ -358,8 +358,7 @@ class DiffEv:
 
         # Logging varaibles
         self.fom_log = array([[0,1]])[0:0]
-        self.par_evals = CircBuffer(self.max_log,
-                                    buffer = array([self.par_min])[0:0])
+        self.par_evals = CircBuffer(self.max_log, buffer=array([self.par_min])[0:0])
         #self.fom_evals = array([])
         self.fom_evals = CircBuffer(self.max_log)
         # Number of FOM evaluations
@@ -473,8 +472,7 @@ class DiffEv:
         #self.fom_vec = self.trial_fom[:]
         # Old leftovers before going parallel
         self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
-        [self.par_evals.append(vec, axis = 0)\
-                    for vec in self.pop_vec]
+        [self.par_evals.append(vec, axis = 0) for vec in self.pop_vec]
         [self.fom_evals.append(vec) for vec in self.fom_vec]
         #print self.fom_vec
         best_index = argmin(self.fom_vec)
@@ -499,8 +497,7 @@ class DiffEv:
 
         # Just making gen live in this scope as well...
         gen = self.fom_log[-1,0]
-        for gen in range(int(self.fom_log[-1,0]) + 1, self.max_gen\
-                                + int(self.fom_log[-1,0]) + 1):
+        for gen in range(int(self.fom_log[-1,0]) + 1, self.max_gen + int(self.fom_log[-1,0]) + 1):
             if self.stop:
                 break
 
@@ -517,14 +514,12 @@ class DiffEv:
 
             # Add the evaluation to the logging
             #self.par_evals = append(self.par_evals, self.trial_vec, axis = 0)
-            [self.par_evals.append(vec, axis = 0)\
-                    for vec in self.trial_vec]
+            [self.par_evals.append(vec, axis = 0) for vec in self.trial_vec]
             #self.fom_evals = append(self.fom_evals, self.trial_fom)
             [self.fom_evals.append(vec) for vec in self.trial_fom]
 
             # Add the best value to the fom log
-            self.fom_log = r_[self.fom_log,\
-                                [[len(self.fom_log),self.best_fom]]]
+            self.fom_log = r_[self.fom_log, [[len(self.fom_log),self.best_fom]]]
 
             # Let the model calculate the simulation of the best.
             sim_fom = self.calc_sim(self.best_vec)

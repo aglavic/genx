@@ -111,7 +111,9 @@ in <code>dimes.py</code> is <code>sqrt(2)*pi*[]</code>
 '''
 
 import numpy as np
+
 import utils
+from symmetries import SymTrans, Sym
 
 sxrd_ext_built = False
 debug = False
@@ -207,7 +209,7 @@ class Domain:
     __choices__ = {}
     __sim_methods__ = [SimMethodInfo('calc_f', ('h', 'k', 'l'), ('0', '0', 'd.x'))]
 
-    def __init__(self, bulk_slab, slabs, unit_cell, occ=1.0, surface_sym=[], bulk_sym=[]):
+    def __init__(self, bulk_slab, slabs, unit_cell, surface_sym=[], bulk_sym=[], occ=1.0):
         self.set_bulk_slab(bulk_slab)
         self.set_slabs(slabs)
         self.set_surface_sym(surface_sym)
@@ -245,8 +247,8 @@ class Domain:
         class SymTrans
         '''
         # Type checking
-        if type(sym_list) != type([]):
-            raise TypeError("The surface symmetries has to contained in a list")
+        if not isinstance(sym_list, list) and not isinstance(sym_list, Sym):
+            raise TypeError("The surface symmetries has to contained in a list or Sym")
 
         if sym_list == []:
             sym_list = [SymTrans()]
@@ -263,8 +265,8 @@ class Domain:
         class SymTrans
         '''
         # Type checking
-        if type(sym_list) != type([]):
-            raise TypeError("The surface symmetries has to contained in a list")
+        if not isinstance(sym_list, list) and not isinstance(sym_list, Sym):
+            raise TypeError("The surface symmetries has to contained in a list or Sym")
 
         if sym_list == []:
             sym_list = [SymTrans()]
@@ -402,12 +404,72 @@ class Domain:
         #print x,y,z, u
 
         return x, y, z, u, oc, el
+
+    def _bulk_pars(self):
+        """Extracts the necessary parameters for the bulk slab"""
+        x, y, z, el, u, oc, c = self.bulk_slab._extract_values()
+        # Account for overlapping atoms
+        oc = oc/float(len(self.surface_sym))
+
+        return x, y, z, u, oc, el
     
-    def create_uc_output(self):
-        ''' Create atomic positions and such for output '''
+    def create_uc_output(self, use_sym=True, x_uc=1, y_uc=1, fold_sym=True):
+        ''' Create atomic positions and such for output
+
+        Parameters:
+            use_sym (bool): Should the output apply the surface symmetry operations
+            x_uc (int): Number of unit cells in the x-direction to output
+            y_uc (int): Number of unit cells in the y-direction to output
+        '''
+        xb, yb, zb, ub, ocb, elb = self._bulk_pars()
+        zb -= 1
+        idsb = self.bulk_slab._extract_ids()
+
         x, y, z, u, oc, el = self._surf_pars()
         ids = []
         [ids.extend(slab._extract_ids()) for slab in self.slabs]
+        x_sym = np.array([])
+        y_sym = np.array([])
+        z_sym = np.array([])
+        u_sym = np.array([])
+        oc_sym = np.array([])
+        el_sym = el[0:0].copy()
+        ids_sym = []
+        xb_sym = np.array([])
+        yb_sym = np.array([])
+        zb_sym = np.array([])
+        ub_sym = np.array([])
+        ocb_sym = np.array([])
+        elb_sym = elb[0:0].copy()
+        idsb_sym = []
+
+        if use_sym:
+            for sym_op in self.surface_sym:
+                if fold_sym:
+                    x_sym = np.r_[x_sym, sym_op.trans_x(x, y) % 1.0]
+                    y_sym = np.r_[y_sym, sym_op.trans_y(x, y) % 1.0]
+                else:
+                    x_sym = np.r_[x_sym, sym_op.trans_x(x, y)]
+                    y_sym = np.r_[y_sym, sym_op.trans_y(x, y)]
+                z_sym = np.r_[z_sym, z]
+                u_sym = np.r_[u_sym, u]
+                oc_sym = np.r_[oc_sym, oc]
+                el_sym = np.r_[el_sym, el]
+                ids_sym.extend(ids)
+
+            for sym_op in self.bulk_sym:
+                if fold_sym:
+                    xb_sym = np.r_[xb_sym, sym_op.trans_x(xb, yb) % 1.0]
+                    yb_sym = np.r_[yb_sym, sym_op.trans_y(xb, yb) % 1.0]
+                else:
+                    xb_sym = np.r_[xb_sym, sym_op.trans_x(xb, yb)]
+                    yb_sym = np.r_[yb_sym, sym_op.trans_y(xb, yb)]
+                zb_sym = np.r_[zb_sym, zb]
+                ub_sym = np.r_[ub_sym, ub]
+                ocb_sym = np.r_[ocb_sym, ocb]
+                elb_sym = np.r_[elb_sym, elb]
+                idsb_sym.extend(idsb)
+
         xout = np.array([])
         yout = np.array([])
         zout = np.array([])
@@ -415,15 +477,19 @@ class Domain:
         ocout = np.array([])
         elout = el[0:0].copy()
         idsout = []
-        for sym_op in self.surface_sym:
-            xout = np.r_[xout, sym_op.trans_x(x, y)]
-            yout = np.r_[yout, sym_op.trans_y(x, y)]
-            zout = np.r_[zout, z]
-            uout = np.r_[uout, u]
-            ocout = np.r_[ocout, oc]
-            elout = np.r_[elout, el]
-            idsout.extend(ids)
-            
+        for i in range(x_uc):
+            for j in range(y_uc):
+                xout = np.r_[xout, x_sym + i, xb_sym + i]
+                yout = np.r_[yout, y_sym + j, yb_sym + j]
+                zout = np.r_[zout, z_sym, zb_sym]
+                uout = np.r_[uout, u_sym, ub_sym]
+                ocout = np.r_[ocout, oc_sym, ocb_sym]
+                elout = np.r_[elout, el_sym, elb_sym]
+                idsout.extend(ids_sym)
+                idsout.extend(idsb_sym)
+        # Create output in cartesian coordinates:
+        xout, yout, zout = self.unit_cell.cart_coords(xout, yout, zout)
+
         return xout, yout, zout, uout, ocout, elout, idsout
 
     def _get_f(self, inst, el, dinv):
@@ -495,8 +561,8 @@ class UnitCell:
         '''Transform the uc coors uc_x, uc_y, uc_z to cartesian
         coordinates expressed in AA
         '''
-        return (cart_coord_x(uc_x, uc_y, uc_z), cart_coord_y(uc_x, uc_y, uc_z),
-                cart_coord_z(uc_x, uc_y, uc_z))
+        return (self.cart_coord_x(uc_x, uc_y, uc_z), self.cart_coord_y(uc_x, uc_y, uc_z),
+                self.cart_coord_z(uc_x, uc_y, uc_z))
 
     def cart_coord_x(self, uc_x, uc_y, uc_z):
         '''Get the x-coord in the cart system
@@ -1140,32 +1206,6 @@ class Instrument:
         '''Set the rho library (electron density shape of the atoms)'''
         self.rholib = rholib
 
-
-class SymTrans:
-    def __init__(self, P=[[1, 0], [0, 1]], t=[0, 0]):
-        # TODO: Check size of arrays!
-        self.P = np.array(P, dtype=np.float64)
-        self.t = np.array(t, dtype=np.float64)
-
-    def trans_x(self, x, y):
-        '''transformed x coord'''
-        #print self.P[0][0]*x + self.P[0][1]*y + self.t[0]
-        return self.P[0][0]*x + self.P[0][1]*y + self.t[0]
-
-    def trans_y(self, x, y):
-        '''transformed x coord'''
-        #print self.P[1][0]*x + self.P[1][1]*y + self.t[1]
-        return self.P[1][0]*x + self.P[1][1]*y + self.t[1]
-
-    def apply_symmetry(self, x, y):
-        return np.dot(self.P, np.c_[x, y]) + self.t
-
-
-class Sym(list):
-    """Class to hold a symmetry i.e. a list of SymTrans."""
-    def __init__(self, *args):
-        list.__init__(self, args)
-
 #==============================================================================
 # Utillity functions
 def scale_sim(data, sim_list, scale_func = None):
@@ -1240,49 +1280,7 @@ def _fatom_eval(inst, f, element, s):
             #print element, fret[0]
     return fret
 #=============================================================================
-# Symmetries
-p1 = Sym(SymTrans([[1, 0], [0, 1]]))
-p2 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]))
-pm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, 1]]))
-pg = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, 1]], [0, 1./2]))
-cm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, 1]]),
-         SymTrans([[1, 0], [0, 1]], [1./2, 1./2]), SymTrans([[-1, 0], [0, 1]], [1./2, 1./2]))
-p2mm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[-1, 0], [0, 1]]),
-           SymTrans([[1, 0], [0, -1]]))
-p2mg = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[-1, 0], [0, 1]], [1./2, 0]),
-           SymTrans([[1, 0], [0, -1]], [1./2, 0]))
-p2gg = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[-1, 0], [0, 1]], [1./2, 1./2]),
-           SymTrans([[1, 0], [0, -1]], [1./2, 1./2]))
-c2mm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[-1, 0], [0, 1]]),
-           SymTrans([[1, 0], [0, -1]]),
-           SymTrans([[1, 0], [0, 1]], [1./2, 1./2]), SymTrans([[-1, 0], [0, -1]], [1./2, 1./2]),
-           SymTrans([[-1, 0], [0, 1]], [1./2, 1./2]), SymTrans([[1, 0], [0, -1]], [1./2, 1./2]))
-p4 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, -1], [1, 0]]),
-         SymTrans([[0, 1], [-1, 0]]))
-p4mm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, -1], [1, 0]]),
-           SymTrans([[0, 1], [-1, 0]]), SymTrans([[-1, 0], [0, 1]]), SymTrans([[1, 0], [0, -1]]),
-           SymTrans([[0, 1], [1, 0]]), SymTrans([[0, -1], [-1, 0]])
-           )
-p4gm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, -1], [1, 0]]),
-           SymTrans([[0, 1], [-1, 0]]),
-           SymTrans([[-1, 0], [0, 1]], [1./2, 1./2]), SymTrans([[1, 0], [0, -1]], [1./2, 1./2]),
-           SymTrans([[0, 1], [1, 0]], [1./2, 1./2]), SymTrans([[0, -1], [-1, 0]], [1./2, 1./2])
-           )
-p3 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]))
-p3m1 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]),
-           SymTrans([[0, -1], [-1, 0]]), SymTrans([[-1, 1], [0, 1]]), SymTrans([[1, 0], [1, -1]])
-           )
-p31m = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]),
-           SymTrans([[0, 1], [1, 0]]), SymTrans([[1, -1], [0, -1]]), SymTrans([[-1, 0], [-1, 1]])
-           )
-p6 = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]),
-         SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, 1], [-1, 1]]), SymTrans([[1, -1], [1, 0]])
-         )
-p6mm = Sym(SymTrans([[1, 0], [0, 1]]), SymTrans([[0, -1], [1, -1]]), SymTrans([[-1, 1], [-1, 0]]),
-           SymTrans([[-1, 0], [0, -1]]), SymTrans([[0, 1], [-1, 1]]), SymTrans([[1, -1], [1, 0]]),
-           SymTrans([[0, -1], [-1, 0]]), SymTrans([[-1, 1], [0, 1]]), SymTrans([[1, 0], [1, -1]]),
-           SymTrans([[0, 1], [1, 0]]), SymTrans([[1, -1], [0, -1]]), SymTrans([[-1, 0], [-1, 1]])
-           )
+
 
 if __name__ == '__main__':
     inst = Instrument(wavel=0.77, alpha=0.2)

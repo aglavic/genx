@@ -259,7 +259,6 @@ class ModelScriptInteractor:
             interactors[-1].parse_code(chunk)
         replace_list_items(self.custom_parameters_interactors, interactors)
 
-
     def get_section_code(self, name, tab_lvl=0, outer_comments=True, member_name=None):
         """ Get the code for section [name]
 
@@ -312,6 +311,7 @@ class ModelScriptInteractor:
         if outer_comments:
             code += tab_lvl*self._tab_string + self._begin_string % name + '\n'
         interactor = self.data_sections_interactors[index]
+        interactor.set_pos(index)
         for line in interactor.get_code().splitlines():
             code += tab_lvl*self._tab_string + line + '\n'
         if outer_comments:
@@ -870,20 +870,23 @@ class ObjectScriptInteractor(ScriptInteractor):
         """Get the name of the object"""
         return self.name
 
-    def get_parameter_code(self):
+    def get_parameter_code(self, extra_pars=[], extra_types={}):
         """ Create the code for the parameters in the form [parameter]=[value].
 
         Returns:
             code (string): A string of the code
         """
         code = ""
-        for p in self.parameters:
+        pars = self.parameters + extra_pars
+        types = self.types.copy()
+        types.update(extra_types)
+        for p in pars:
             if p is not 'name':
-                if self.types[p] is str:
+                if types[p] is str:
                     code += "%s='%s', " % (p, getattr(self, p))
                 else:
                     code += "%s=%s, " % (p, getattr(self, p))
-        if len(self.parameters) > 0:
+        if len(pars) > 0:
             code = code[:-2]
         return code
 
@@ -954,7 +957,7 @@ class SampleInteractor(ObjectScriptInteractor):
             Returns:
             code (string): Code representing the parameters, the things inside the parenthesis
         """
-        code = '%s, ' % ( self.get_list_code(self.domains))
+        code = '%s, ' % (self.get_list_code(self.domains))
         code += ObjectScriptInteractor.get_parameter_code(self)
         return code
 
@@ -1011,7 +1014,7 @@ class DomainInteractor(ObjectScriptInteractor):
             code (string): Code representing the parameters, the things inside the parenthisis
         """
         code = '%s, %s, %s, ' % (self.bulk_slab, self.get_list_code(self.slabs), self.unitcell)
-        code += ObjectScriptInteractor.get_parameter_code(self)
+        code += ObjectScriptInteractor.get_parameter_code(self, ['surface_sym', 'bulk_sym'], {'surface_sym': [], 'bulk_sym': []})
         return code
 
 
@@ -1297,7 +1300,6 @@ class SimulationListCtrl(wx.Panel):
 
     def EditPars(self, event):
         '''Creates a new parameter'''
-        #TODO: Implement custom parameters
         dlg = CustomParametersDialog(self, self.plugin.GetModel(),
                                      self.model_script_interactor.custom_parameters_interactors)
         if dlg.ShowModal() == wx.ID_OK:
@@ -1479,14 +1481,15 @@ class EditList(wx.Panel):
             self._send_change_event()
 
 class DomainListCtrl(wx.Panel):
-    def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None, taken_names=None):
+    def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None, taken_names=None,
+                 symmetries=None):
         wx.Panel.__init__(self, parent, id)
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.Add((-1, 2))
 
         # DomainListCtrl
         self.listbox = DomainWidget(self, id=-1, domain_list=domain_list, slab_list=slab_list,
-                                    unitcell_list=unitcell_list, taken_names=taken_names)
+                                    unitcell_list=unitcell_list, taken_names=taken_names, symmetries=symmetries)
         self.Bind(EVT_INTERACTOR_CHANGED, self._send_change_event, self.listbox)
         self.Bind(EVT_SELECTION_CHANGED, self._send_selection_change_event, self.listbox)
 
@@ -1537,6 +1540,9 @@ class DomainListCtrl(wx.Panel):
     def set_taken_names(self, taken_names):
         self.listbox.set_taken_names(taken_names)
 
+    def set_symmetries(self, symmetries):
+        self.listbox.set_symmetries(symmetries)
+
     def _send_change_event(self, event):
         """"Sends a change event"""
         # Just Process a new event upwards.
@@ -1550,11 +1556,18 @@ class DomainListCtrl(wx.Panel):
 
 
 class DomainWidget(wx.ScrolledWindow):
-    def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None, taken_names=None):
+    def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None, taken_names=None,
+                 symmetries=None):
         """ An editor to edit a sample with multiple domains.
 
         Parameters:
             parent (wx.Window): Parent window
+            id (int): id of the window
+            domain_list: A list of domain interactors
+            slab_list: A list of slab interactors
+            unitcell_list: A list of unit cell interactors
+            taken_name: A list of strings representing forbidden names
+            symmetries: A list of symmetry names available
 
         Returns:
             SampleEditor
@@ -1574,6 +1587,9 @@ class DomainWidget(wx.ScrolledWindow):
         self.taken_names = taken_names
         if not self.taken_names:
             self.taken_names = []
+        self.symmetries = symmetries
+        if not self.symmetries:
+            self.symmetries = []
 
         self.header_rects = []
         self.list_rects = []
@@ -1585,6 +1601,9 @@ class DomainWidget(wx.ScrolledWindow):
 
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_MOUSE_EVENTS, self.OnMouse)
+
+    def set_symmetries(self, symmetries):
+        self.symmetries = symmetries
 
     def set_taken_names(self, taken_names):
         """Set the taken names"""
@@ -1732,7 +1751,8 @@ class DomainWidget(wx.ScrolledWindow):
                 except ValueError:
                     pass
                 unit_cells = [uc.name for uc in self.unitcell_list]
-                dialog = DomainDialog(self, domain, taken_names=tnames, unit_cells=unit_cells)
+                dialog = DomainDialog(self, domain, taken_names=tnames, unit_cells=unit_cells,
+                                      symmetries=self.symmetries)
                 if dialog.ShowModal() == wx.ID_OK:
                     new_domain = dialog.GetObject()
                     self.domain_list[self.selected_item[0]] = new_domain
@@ -1859,6 +1879,7 @@ class DomainWidget(wx.ScrolledWindow):
                 slab = domain.slabs.pop(self.selected_item[1]-1)
                 domain.slabs.insert(self.selected_item[1], slab)
                 self.selected_item = (self.selected_item[0], self.selected_item[1] + 1)
+                self._send_change_event()
                 self.Refresh()
 
     def OnMoveDown(self, event):
@@ -1870,6 +1891,7 @@ class DomainWidget(wx.ScrolledWindow):
                 slab = domain.slabs.pop(self.selected_item[1] - 1)
                 domain.slabs.insert(self.selected_item[1] - 2, slab)
                 self.selected_item = (self.selected_item[0], self.selected_item[1] - 1)
+                self._send_change_event()
                 self.Refresh()
 
     def rename_domain(self, domain, extension):
@@ -2251,8 +2273,8 @@ class DomainDialog(wx.Dialog):
         row = 0
         col = 2
         for par, choices, val in [('unit cell', self.unit_cells, self.domain.unitcell),
-                                  ('bulk sym.', self.symmetries, self.domain.bulk_sym),
-                                  ('surface sym.', self.symmetries, self.domain.surface_sym)]:
+                                  ('surface sym.', self.symmetries, self.domain.surface_sym),
+                                  ('bulk sym.', self.symmetries, self.domain.bulk_sym)]:
             label = wx.StaticText(self, -1, par + ': ')
             self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
             ctrl = wx.Choice(self, -1, choices=choices)
@@ -2293,12 +2315,12 @@ class DomainDialog(wx.Dialog):
         for r, par in enumerate(names):
             ctrl = self.parameter_sizer.FindItemAtPosition((r, 1)).GetWindow()
             setattr(new_domain, par, str(ctrl.GetValue()))
-            print par, type(str(ctrl.GetValue()))
+            #print par, type(str(ctrl.GetValue()))
         names = ['unitcell', 'surface_sym', 'bulk_sym']
         for r, par in enumerate(names):
             ctrl = self.parameter_sizer.FindItemAtPosition((r, 3)).GetWindow()
             setattr(new_domain, par, str(ctrl.GetStringSelection()))
-            print par, str(ctrl.GetStringSelection())
+            #print par, str(ctrl.GetStringSelection())
         return new_domain
 
 class SlabDialog(wx.Dialog):

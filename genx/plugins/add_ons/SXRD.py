@@ -14,13 +14,14 @@ import plugins.add_on_framework as framework
 import help_modules.model_interactors as mi
 import help_modules.atom_viewer as atom_viewer
 
+
 code = """
         # BEGIN Instruments
         inst = model.Instrument(wavel=0.64, alpha=0.5, geom="alpha_in fixed")
         # END Instruments
 
         # BEGIN UnitCells
-        uc = model.UnitCell(a=6, b=6, c=6, alpha=45, beta=45, gamma=45)
+        uc = model.UnitCell(a=6, b=6, c=6, alpha=90, beta=90, gamma=90)
         # END UnitCells
 
         # BEGIN Slabs
@@ -34,8 +35,8 @@ code = """
         # END Slabs
 
         # BEGIN Domains
-        domain1 = model.Domain(slab, [slab, slab2], uc, occ=1.0)
-        domain2 = model.Domain(slab, [slab, slab, slab, slab2, slab2], uc, occ=1.0)
+        domain1 = model.Domain(slab, [slab, slab2], uc, occ=1.0, surface_sym=p1, bulk_sym=p1)
+        domain2 = model.Domain(slab, [slab, slab, slab, slab2, slab2], uc, occ=1.0, surface_sym=p1, bulk_sym=p1)
         # END Domains
 
         # BEGIN Samples
@@ -73,12 +74,12 @@ class Plugin(framework.Template):
         self.OnInteractorChanged(None)
         self.update_data_names()
         self.simulation_edit_widget.Update()
-        self.update_taken_names()
+        self.update_widgets()
 
     def setup_script_interactor(self, model_name='sxrd2'):
         """Setup the script interactor"""
         model = __import__('models.%s' % model_name, globals(), locals(), [model_name], -1)
-        preamble = 'import models.%s as model\nfrom models.utils import UserVars\n' % model_name
+        preamble = "import models.%s as model\nfrom models.utils import UserVars\nfrom models.symmetries import *\n" % model_name
         script_interactor = mi.ModelScriptInteractor(preamble=preamble)
 
         script_interactor.add_section('Instruments', mi.ObjectScriptInteractor, class_name='model.Instrument',
@@ -202,36 +203,47 @@ class Plugin(framework.Template):
         for interactor, data_set in zip(self.script_interactor.data_sections_interactors, data_set_list):
             interactor.set_name(data_set.name)
 
-    def update_taken_names(self):
-        """Collects the already defined names and sets the already taken names in the different controls"""
+    def update_widgets(self):
+        """Collects the already defined names and sets the already taken names in the different controls.
+        Updates the symmetries from the script.
+        """
         self.CompileScript()
         names = dir(self.GetScriptModule())
         self.instrument_edit_widget.set_taken_names(names[:])
         self.unitcell_edit_widget.set_taken_names(names[:])
         self.sample_edit_widget.set_taken_names(names[:])
 
-    def OnInteractorChanged(self, event):
-        """Callback when an Interactor has been changed by the GUI"""
-        self.update_script()
-        self.set_constant_names()
-        self.update_taken_names()
-
-    def OnSelectionChanged(self, evnet):
-        """Callback when the selection in the sample widget has changed"""
-        domain = self.sample_edit_widget.get_selected_domain_name()
-        try:
-             sample = self.GetModel().eval_in_model(domain)
-        except Exception:
-            pass
-            print "Could not load domain ", domain
-        else:
-             self.sample_view.build_sample(sample, use_opacity=False)
+        model = self.GetModel()
+        symmetries = [obj for obj in names if model.eval_in_model('isinstance(%s, Sym)' % obj)]
+        self.sample_edit_widget.set_symmetries(symmetries)
 
     def set_constant_names(self):
         """Sets the name that needs to constant (used in other defs)"""
         self.unitcell_edit_widget.set_undeletable_names([d.unitcell for d in self.script_interactor.domains])
         self.instrument_edit_widget.set_undeletable_names([ds.instrument for ds in
                                                            self.script_interactor.data_sections_interactors])
+
+    def update_domain_view(self):
+        domain = self.sample_edit_widget.get_selected_domain_name()
+        if domain:
+            try:
+                domain = self.GetModel().eval_in_model(domain)
+            except Exception:
+                print "Could not load domain ", domain
+            else:
+                self.sample_view.build_sample(domain, use_opacity=False)
+
+    def OnInteractorChanged(self, event):
+        """Callback when an Interactor has been changed by the GUI"""
+        self.update_script()
+        self.set_constant_names()
+        self.update_widgets()
+        self.update_domain_view()
+
+    def OnSelectionChanged(self, evnet):
+        """Callback when the selection in the sample widget has changed"""
+        self.update_domain_view()
+
 
     def OnNewModel(self, event):
         """Callback for creating a new model"""
@@ -274,6 +286,7 @@ class Plugin(framework.Template):
 
         self.update_data_names()
         self.simulation_edit_widget.Update()
+        self.update_script()
 
 
     def OnSimulate(self, event):

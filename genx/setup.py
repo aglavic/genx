@@ -75,7 +75,7 @@ if "py2exe" in sys.argv:
                                            'scipy.weave', "h5py"],
                               "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll'], 
                               'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',"IPython", "Tkinter",
-                                           "tcl", "mpi4py"
+                                           "tcl", "mpi4py", "PyQt4"
                                            ],
                              }, 
                            }
