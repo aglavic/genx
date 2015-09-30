@@ -1482,7 +1482,10 @@ class EditList(wx.Panel):
 
 class DomainListCtrl(wx.Panel):
     def __init__(self, parent, id=-1, domain_list=None, slab_list=None, unitcell_list=None, taken_names=None,
-                 symmetries=None):
+                 symmetries=None, sample_list=None):
+
+        self.sample_list = sample_list
+
         wx.Panel.__init__(self, parent, id)
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.Add((-1, 2))
@@ -1508,11 +1511,12 @@ class DomainListCtrl(wx.Panel):
         """Create and do the toolbar"""
         toolbar = wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
 
-        button_names = ['Insert', 'Delete', 'Move Up', 'Move Down']
+        button_names = ['Insert', 'Delete', 'Move Up', 'Move Down', 'SampleEditor']
         button_images = [icons.getaddBitmap(), icons.getdeleteBitmap(), icons.getmove_upBitmap(),
-                         icons.getmove_downBitmap()]
-        callbacks = [self.listbox.OnNew, self.listbox.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown]
-        tooltips = ['Insert item', 'Delete item', 'Move item up', 'Move item down']
+                         icons.getmove_downBitmap(), icons.getsampleBitmap()]
+        callbacks = [self.listbox.OnNew, self.listbox.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown,
+                     self.OnSampleEdit]
+        tooltips = ['Insert item', 'Delete item', 'Move item up', 'Move item down', 'Sample Editor']
 
         for i in range(len(button_names)):
             new_id = wx.NewId()
@@ -1520,6 +1524,17 @@ class DomainListCtrl(wx.Panel):
             self.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
 
         return toolbar
+
+    def OnSampleEdit(self, event):
+        """ On edit the sample parameters"""
+        if self.sample_list:
+            dialog = ObjectDialog(self, self.sample_list[0], title="Sample editor", edit_name=False)
+            if dialog.ShowModal() == wx.ID_OK:
+                new_obj = dialog.GetObject()
+                self.sample_list[0] = new_obj
+                self._send_change_event(None)
+            dialog.Destroy()
+
 
     def get_selected_domain_name(self):
         """Returns the selected domain domain name None if nothing is selected"""
@@ -2212,6 +2227,41 @@ class ObjectDialog(wx.Dialog):
 
 
 class DomainDialog(wx.Dialog):
+    def make_col1(self):
+        row = 0
+        col = 0
+        # add the name and the rest of the "normal" parameters in the first column
+        for par in self.init_parameters:
+            label = wx.StaticText(self, -1, par + ': ')
+            self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+            val = getattr(self.domain, par)
+            print par, val
+            if par != 'name':
+                ctrl = wx.TextCtrl(self, -1, str(val), validator=detemine_validator(val),
+                                   style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
+            else:
+                ctrl = wx.TextCtrl(self, -1, str(val),
+                                   validator=cust_dia.NoMatchValidTextObjectValidator(self.taken_names),
+                                   style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
+            self.parameter_sizer.Add(ctrl, (row, col + 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+            row += 1
+
+    def make_col2(self):
+        row = 0
+        col = 2
+        for par, choices, val in [('unit cell', self.unit_cells, self.domain.unitcell),
+                                  ('surface sym.', self.symmetries, self.domain.surface_sym),
+                                  ('bulk sym.', self.symmetries, self.domain.bulk_sym)]:
+            label = wx.StaticText(self, -1, par + ': ')
+            self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+            ctrl = wx.Choice(self, -1, choices=choices)
+            pos = ctrl.FindString(val)
+            if pos == wx.NOT_FOUND:
+                pos = 0
+            ctrl.SetSelection(pos)
+            self.parameter_sizer.Add(ctrl, (row, col + 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+            row += 1
+
     def __init__(self, parent, domain_interactor, id=-1, taken_names=None, symmetries=None, unit_cells=None):
         """A dialog to define a domain. This editor only edits the non-slab related parameters.
 
@@ -2251,43 +2301,8 @@ class DomainDialog(wx.Dialog):
 
         self.parameter_sizer = wx.GridBagSizer(self.border, self.border)
         main_sizer.Add(self.parameter_sizer, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, border=self.border)
-        row = 0
-        col = 0
-        # add the name and the rest of the "normal" parameters in the first column
-        for par in self.init_parameters:
-            label = wx.StaticText(self, -1, par + ': ')
-            self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
-            val = getattr(self.domain, par)
-            print par, val
-            if par != 'name':
-                ctrl = wx.TextCtrl(self, -1, str(val), validator=detemine_validator(val),
-                                   style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
-            else:
-                ctrl = wx.TextCtrl(self, -1, str(val),
-                                   validator=cust_dia.NoMatchValidTextObjectValidator(self.taken_names),
-                                   style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
-            self.parameter_sizer.Add(ctrl, (row, col + 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-            row += 1
-
-        # add the unit cell and symmetries in the next column.
-        row = 0
-        col = 2
-        for par, choices, val in [('unit cell', self.unit_cells, self.domain.unitcell),
-                                  ('surface sym.', self.symmetries, self.domain.surface_sym),
-                                  ('bulk sym.', self.symmetries, self.domain.bulk_sym)]:
-            label = wx.StaticText(self, -1, par + ': ')
-            self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
-            ctrl = wx.Choice(self, -1, choices=choices)
-            pos = ctrl.FindString(val)
-            if pos == wx.NOT_FOUND:
-                pos = 0
-            ctrl.SetSelection(pos)
-            self.parameter_sizer.Add(ctrl, (row, col + 1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-            row += 1
-
-
-
-        # Main Layout
+        self.make_col1()# add the unit cell and symmetries in the next column.
+        self.make_col2()# Main Layout
         main_sizer.Add((-1, self.vertical_buffer), 0, wx.EXPAND)
 
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)

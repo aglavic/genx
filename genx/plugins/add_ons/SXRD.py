@@ -112,7 +112,8 @@ class Plugin(framework.Template):
         panel.SetSizer(sizer)
         self.sample_edit_widget = mi.DomainListCtrl(panel, domain_list=self.script_interactor.domains,
                                                     slab_list=self.script_interactor.slabs,
-                                                    unitcell_list=self.script_interactor.unitcells)
+                                                    unitcell_list=self.script_interactor.unitcells,
+                                                    sample_list=self.script_interactor.samples)
         panel.Bind(mi.EVT_INTERACTOR_CHANGED, self.OnInteractorChanged, self.sample_edit_widget)
         panel.Bind(mi.EVT_SELECTION_CHANGED, self.OnSelectionChanged, self.sample_edit_widget)
 
