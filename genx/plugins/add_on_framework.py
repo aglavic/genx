@@ -255,23 +255,20 @@ class PluginController:
         Insert menu items for controlling plugins in menu. 
         Parent is the main window.
         '''
-        self.plugin_handler = PluginHandler(parent, __MODULE_DIR__ \
-                            , 'add_ons')
+        self.plugin_handler = PluginHandler(parent, __MODULE_DIR__, 'add_ons')
         self.parent = parent
         self.config = config
         
         # make the menus
         self.load_menu = wx.Menu()
-        menu.InsertMenu(0, -1,'Load', self.load_menu, 'Load a plugin')
+        menu.InsertMenu(0, -1, 'Load', self.load_menu, 'Load a plugin')
         self.unload_menu = wx.Menu()
-        menu.InsertMenu(1, -1,'Unload', self.unload_menu, 'Unload a plugin')
+        menu.InsertMenu(1, -1, 'Unload', self.unload_menu, 'Unload a plugin')
         
         menu.Append(-1, 'Update module list')
         
         self.LoadDefaultPlugins()
         #self.update_plugins()
-        
-        
         
     def update_plugins(self):
         '''update_modules(self) --> None
@@ -328,7 +325,6 @@ class PluginController:
         existing_plugins = self.plugin_handler.get_possible_plugins()
         
         for plugin in plugin_str.split(';'):
-	  
             # Check so the plugin is not loaded and exists 
             if not self.plugin_handler.is_loaded(plugin):
                 if plugin in existing_plugins:

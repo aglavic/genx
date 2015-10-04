@@ -3,6 +3,8 @@ import wx.combo
 import math
 import os
 
+from wx.lib.intctrl import IntCtrl
+
 
 import string
 
@@ -489,7 +491,7 @@ class ValidateBaseDialog(wx.Dialog):
         in turn consist of the (name, value) tuples where the first item
         in the list should be a string describing the group. This will be layed out 
         with subboxes. An example: 
-        groups = [['Standard', ('f', 25), ('sigma', 7)], ['Neutron', ('b', 3.0)]]
+        groups = [['Standard', [('f', 25), ('sigma', 7)]], ['Neutron', [('b', 3.0)]]]
 
 
         Note validators, values, units and editable pars should be dictionaries of values!
@@ -567,6 +569,7 @@ class ValidateBaseDialog(wx.Dialog):
                                   vgap = 10, hgap = 5)
         tc = {}
         for par in pars:
+            #print par, vals[par]
             label = wx.StaticText(parent, -1, par + ': ')
             validator = self.validators[par]#.Clone()
             val = vals[par]
@@ -623,8 +626,7 @@ class NormalEditMixin:
         if type(validator) == type([]):
             # There should be a list of choices
             validator = validator[:]
-            ctrl = wx.Choice(parent, -1,
-                             choices=validator)
+            ctrl = wx.Choice(parent, -1, choices=validator)
             # Since we work with strings we have to find the right
             # strings positons to initilize the choice box.
             pos = 0
@@ -633,6 +635,20 @@ class NormalEditMixin:
             elif type(par) == type(1):
                 pos = par
             ctrl.SetSelection(pos)
+        elif isinstance(validator, bool):
+            # Parameter is a boolean
+            ctrl = wx.CheckBox(self, -1)
+            ctrl.SetValue(val)
+            # Create a non-editable box if needed
+            #ctrl.SetEditable(editable)
+        elif isinstance(validator, int):
+            # Parameter is an integer
+            ctrl = IntCtrl(self, -1, val)
+            # Create a non-editable box if needed
+            ctrl.SetEditable(editable)
+            if not editable:
+                ctrl.SetBackgroundColour(self.not_editable_bkg_color)
+
         # Otherwise it should be a validator ...
         else:
             validator = validator.Clone()

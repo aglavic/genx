@@ -59,18 +59,21 @@ code = """
 
 class Plugin(framework.Template):
     def __init__(self, parent):
+        #print "__init__ SXRD Plugin"
         framework.Template.__init__(self, parent)
         self.setup_script_interactor()
+        if self.GetModelScript() == '':
+            self.SetModelScript(self.script_interactor.get_code())
+        else:
+            self.script_interactor.parse_code(self.GetModelScript())
 
         self.layout_sample_edit()
         self.layout_simulation_edit()
         self.layout_misc_edit()
         self.layout_domain_viewer()
+        self.create_main_window_menu()
 
-        if self.GetModelScript() == '':
-            self.SetModelScript(self.script_interactor.get_code())
-        else:
-            self.script_interactor.parse_code(self.GetModelScript())
+
         self.OnInteractorChanged(None)
         self.update_data_names()
         self.simulation_edit_widget.Update()
@@ -175,6 +178,10 @@ class Plugin(framework.Template):
     def create_main_window_menu(self):
         """Creates the window menu"""
         self.menu = self.NewMenu('SXRD')
+        menu_item = wx.MenuItem(self.menu, wx.NewId(), "Domain Viewer Settings...", "Edit Viewer settings",
+                                wx.ITEM_NORMAL)
+        self.menu.AppendItem(menu_item)
+        self.parent.Bind(wx.EVT_MENU, self.OnDomainViewerSettings, menu_item)
 
     def update_script(self):
         """Updates the script with new data"""
@@ -234,6 +241,11 @@ class Plugin(framework.Template):
             else:
                 self.sample_view.build_sample(domain, use_opacity=False)
 
+    def OnDomainViewerSettings(self, event):
+        """Callback for showing the Domain Viewer settings dialog"""
+        self.sample_view.ShowSettingDialog()
+        self.update_domain_view()
+
     def OnInteractorChanged(self, event):
         """Callback when an Interactor has been changed by the GUI"""
         self.update_script()
@@ -248,13 +260,15 @@ class Plugin(framework.Template):
 
     def OnNewModel(self, event):
         """Callback for creating a new model"""
+        #print "OnNewModel"
         self.update_script()
         self.update_data_names()
         self.simulation_edit_widget.Update()
 
     def OnOpenModel(self, event):
         """Callback for opening a model"""
-        #print 'Model Opened'
+        #print 'OnOpenModel'
+        #print self.GetModelScript()
         self.script_interactor.parse_code(self.GetModelScript())
         self.update_data_names()
         self.simulation_edit_widget.Update()
@@ -264,7 +278,7 @@ class Plugin(framework.Template):
         """Callback for changing of the data sets (dataset added or removed)"""
         # We have the following possible events:
         # event.new_model, event.data_moved, event.deleted, event.new_data, event.name_change
-
+        #print "OnDataChanged"
         if event.new_model:
             # If a new model is created bail out
             return
