@@ -9,6 +9,7 @@ import vtk.util.colors as vtkc
 
 from wxVTKRenderWindow import wxVTKRenderWindow
 import atom_colors as atom_colors
+import custom_dialog
 
 
 class VTKview(wxVTKRenderWindow):
@@ -18,6 +19,12 @@ class VTKview(wxVTKRenderWindow):
         self.GetRenderWindow().AddRenderer(self.ren)
         self.ren.SetBackground(0, 0, 0)
         self.sphereActor = vtk.vtkActor()
+
+        # Settings for creation of sample
+        self.x_uc = 1
+        self.y_uc = 1
+        self.use_sym = True
+        self.fold_sym = True
 
         # Some defualts
         self.radius = 1.0
@@ -52,18 +59,18 @@ class VTKview(wxVTKRenderWindow):
         #print dir(actor)
         #print dir(actor.GetProperty())
 
-        sphere=vtk.vtkSphereSource()
+        sphere = vtk.vtkSphereSource()
         sphere.SetRadius(self.radius*1.1)
         sphere.SetCenter(actor.GetCenter())
         sphere.SetThetaResolution(self.theta_res)
         sphere.SetPhiResolution(self.phi_res)
 
-        spheremapper=vtk.vtkPolyDataMapper()
+        spheremapper = vtk.vtkPolyDataMapper()
         spheremapper.SetInputConnection(sphere.GetOutputPort())
 
-        sphereActor=vtk.vtkActor()
+        sphereActor = vtk.vtkActor()
         sphereActor.SetMapper(spheremapper)
-        sphereActor.GetProperty().SetColor((0.0,0.0,0.0))
+        sphereActor.GetProperty().SetColor((0.0, 0.0, 0.0))
         sphereActor.GetProperty().SetOpacity(0.5)
 
         #sphereActor.GetProperty().SetRepresentationToWireframe()
@@ -187,7 +194,8 @@ class VTKview(wxVTKRenderWindow):
         have the method _surf_pars that yields the x, y, z, u, oc, el
         '''
         self.clear_view()
-        x, y, z, u, oc, el, ids = sample.create_uc_output(x_uc=2, y_uc=2)
+        x, y, z, u, oc, el, ids = sample.create_uc_output(x_uc=self.x_uc, y_uc=self.y_uc, use_sym=self.use_sym,
+                                                          fold_sym=self.fold_sym)
         self.atom_x = x
         self.atom_y = y
         self.atom_z = z
@@ -208,3 +216,25 @@ class VTKview(wxVTKRenderWindow):
         #self.parent.Show(1)
         self.Reset()
         self.Render()
+
+    def ShowSettingDialog(self):
+        """Shows a settings dialog to change the settings"""
+        parameters = ['Use symmetry', 'Fold symmetry op', 'a unit cell rep.', 'b unit cell rep.', 'Atom radius']
+        values = {'Use symmetry': self.use_sym, 'Fold symmetry op': self.fold_sym, 'a unit cell rep.': self.x_uc,
+                  'b unit cell rep.': self.y_uc, 'Atom radius': self.radius}
+        units = {'Use symmetry': '', 'Fold symmetry op': '', 'a unit cell rep.': 'uc',
+                 'b unit cell rep.': 'uc', 'Atom radius': 'AA'}
+        validators = {'Use symmetry': True, 'Fold symmetry op': True, 'a unit cell rep.': 1,
+                      'b unit cell rep.': 1, 'Atom radius': custom_dialog.FloatObjectValidator()}
+        groups = [['Unit cell', ('Use symmetry', 'Fold symmetry op', 'a unit cell rep.',
+                   'b unit cell rep.')], ['Rendering', ('Atom radius', )]]
+
+        dlg = custom_dialog.ValidateDialog(self, parameters, values, validators, units=units, groups=groups,
+                                           title="Domain Viewer Settings")
+        if dlg.ShowModal() == wx.ID_OK:
+            new_values = dlg.GetValues()
+            self.use_sym = bool(new_values['Use symmetry'])
+            self.fold_sym = bool(new_values['Fold symmetry op'])
+            self.x_uc = int(new_values['a unit cell rep.'])
+            self.y_uc = int(new_values['b unit cell rep.'])
+            self.radius = float(new_values['Atom radius'])

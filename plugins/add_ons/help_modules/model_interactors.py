@@ -503,7 +503,7 @@ class ModelScriptInteractor:
             for i in range(data_sets_in_code, len(self.data_sections_interactors)):
                 insertion_index = self.find_new_data_set_insertion_index(new_code)
                 self.data_sections_interactors[i].set_pos(i)
-                print "Insertion: ", self.get_data_set_code(i, tab_lvl=1)
+                #print "Insertion: ", self.get_data_set_code(i, tab_lvl=1)
                 new_code = (new_code[:insertion_index] + self.get_data_set_code(i, tab_lvl=1) +
                             new_code[insertion_index:])
         return new_code
@@ -1398,7 +1398,7 @@ class EditList(wx.Panel):
 
     def OnListBoxDClick(self, event):
         """Event handler for double click on item in listbox"""
-        print "OnDoubleClick"
+        #print "OnDoubleClick"
         ind = self.listbox.GetSelection()
         obj = self.object_list[ind]
         if self.edit_dialog is not None:
@@ -1514,7 +1514,7 @@ class DomainListCtrl(wx.Panel):
         button_names = ['Insert', 'Delete', 'Move Up', 'Move Down', 'SampleEditor']
         button_images = [icons.getaddBitmap(), icons.getdeleteBitmap(), icons.getmove_upBitmap(),
                          icons.getmove_downBitmap(), icons.getsampleBitmap()]
-        callbacks = [self.listbox.OnNew, self.listbox.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown,
+        callbacks = [self.listbox.OnNew, self.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown,
                      self.OnSampleEdit]
         tooltips = ['Insert item', 'Delete item', 'Move item up', 'Move item down', 'Sample Editor']
 
@@ -1525,6 +1525,13 @@ class DomainListCtrl(wx.Panel):
 
         return toolbar
 
+    def OnDelete(self, event):
+        """On deleting an item """
+        self.listbox.OnDelete(event)
+        domains = [domain.name for domain in self.listbox.domain_list]
+        self.sample_list[0].domains = domains
+        self._send_change_event(None)
+
     def OnSampleEdit(self, event):
         """ On edit the sample parameters"""
         if self.sample_list:
@@ -1534,7 +1541,6 @@ class DomainListCtrl(wx.Panel):
                 self.sample_list[0] = new_obj
                 self._send_change_event(None)
             dialog.Destroy()
-
 
     def get_selected_domain_name(self):
         """Returns the selected domain domain name None if nothing is selected"""
@@ -1641,6 +1647,7 @@ class DomainWidget(wx.ScrolledWindow):
             self.copy_id = wx.NewId()
             self.cut_id = wx.NewId()
             self.paste_id = wx.NewId()
+            self.paste_clone_id = wx.NewId()
             self.insert_id = wx.NewId()
             self.delete_id = wx.NewId()
             self.new_id = wx.NewId()
@@ -1648,6 +1655,7 @@ class DomainWidget(wx.ScrolledWindow):
             self.Bind(wx.EVT_MENU, self.OnCopy, id=self.copy_id)
             self.Bind(wx.EVT_MENU, self.OnCut, id=self.cut_id)
             self.Bind(wx.EVT_MENU, self.OnPaste, id=self.paste_id)
+            self.Bind(wx.EVT_MENU, self.OnPasteClone, id=self.paste_clone_id)
             self.Bind(wx.EVT_MENU, self.OnDelete, id=self.delete_id)
             self.Bind(wx.EVT_MENU, self.OnNew, id=self.new_id)
 
@@ -1671,6 +1679,7 @@ class DomainWidget(wx.ScrolledWindow):
             # You should not be allowed to cut a bulk slab
             menu.Append(self.cut_id, "Cut")
         menu.Append(self.paste_id, "Paste")
+        menu.Append(self.paste_clone_id, "Paste Clone")
         self.PopupMenu(menu)
         menu.Destroy()
 
@@ -1953,6 +1962,31 @@ class DomainWidget(wx.ScrolledWindow):
             self._send_change_event()
             self.Refresh()
 
+    def OnPasteClone(self, event):
+        """Pastes an item as an new item that is decoupled from the copied"""
+        if self.selected_item[0] > -1 and self.clipboard is not None:
+            domain = self.domain_list[self.selected_item[0]]
+            if self.is_clipboard_domain():
+                # We are pasting a domain
+                new_domain = self.rename_domain(self.clipboard, '_copy')
+                self.domain_list.insert(self.selected_item[0], new_domain)
+            else:
+                new_slab = self.find_slab_by_name(self.clipboard).copy()
+                new_slab = self.rename_slab(new_slab, '_clone')
+                self.slab_list.append(new_slab)
+                if self.selected_item[1] > -1:
+                    if self.selected_item[1] == 0:
+                        # The item is the bulk slab
+                        domain.bulk_slab = new_slab.name
+                    else:
+                        # The item is a surface slab
+                        domain.slabs.insert(self.selected_item[1] - 1, new_slab.name)
+                else:
+                    # We are pasting a slab onto a domain header...
+                    domain.slabs.append(new_slab.name)
+            self._send_change_event()
+            self.Refresh()
+
     def IdentifyEventItem(self, event):
         """ Identify the item in the domain that created where at the position
         """
@@ -1985,7 +2019,7 @@ class DomainWidget(wx.ScrolledWindow):
         max_slabs = 0
         for domain in self.domain_list:
             for name in [domain.name, domain.bulk_slab] + domain.slabs:
-                print name
+                #print name
                 size = self.GetTextExtent(str(name))
                 if size[0] > col_width:
                     col_width = size[0]
@@ -2159,7 +2193,7 @@ class ObjectDialog(wx.Dialog):
         sizer = wx.FlexGridSizer(len(parameters) + 1, layout_cols,
                                  vgap=self.vertical_buffer, hgap=self.border)
         tc = {}
-        print parameters
+        #print parameters
         for par in parameters:
             label = wx.StaticText(parent, -1, par + ': ')
             validator = object_interactor.validators[par]
@@ -2196,12 +2230,12 @@ class ObjectDialog(wx.Dialog):
             ctrl = wx.Choice(parent, -1, choices=choices)
             # Set the position that matches cal
             pos = 0
-            print type(val)
+            #print type(val)
             if isinstance(val, str) or isinstance(val, unicode):
                 pos = choices.index(val)
             elif isinstance(val, int):
                 pos = par
-            print pos
+            #print pos
             ctrl.SetSelection(pos)
         else:
             # The object is a validator
@@ -2235,7 +2269,7 @@ class DomainDialog(wx.Dialog):
             label = wx.StaticText(self, -1, par + ': ')
             self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
             val = getattr(self.domain, par)
-            print par, val
+            #print par, val
             if par != 'name':
                 ctrl = wx.TextCtrl(self, -1, str(val), validator=detemine_validator(val),
                                    style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
@@ -2386,7 +2420,7 @@ class SlabDialog(wx.Dialog):
             label = wx.StaticText(self, -1, par + ': ')
             self.slab_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
             val = getattr(self.slab, par)
-            print par, val
+            #print par, val
             if par != 'name':
                 ctrl = wx.TextCtrl(self, -1, str(val), validator=detemine_validator(val),
                                    style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
