@@ -543,7 +543,7 @@ class ValueLimitCellEditor(gridlib.PyGridCellEditor):
                     wx.WXK_NUMPAD8, wx.WXK_NUMPAD9
                     ]:
 
-            ch = ch = chr(ord('0') + key - wx.WXK_NUMPAD0)
+            ch = chr(ord('0') + key - wx.WXK_NUMPAD0)
 
         elif key < 256 and key >= 0 and chr(key) in string.printable:
             ch = chr(key)

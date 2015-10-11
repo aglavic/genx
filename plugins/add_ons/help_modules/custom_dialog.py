@@ -3,6 +3,8 @@ import wx.combo
 import math
 import os
 
+from wx.lib.intctrl import IntCtrl
+
 
 import string
 
@@ -256,6 +258,67 @@ class NoMatchValidTextObjectValidator(wx.PyValidator):
         """
         return True # Prevent wxDialog from complaining.
 
+
+class NoMatchTextCtrlValidator(wx.PyValidator):
+    """ This validator is used to ensure that the user has entered something
+        into the text object editor dialog's text field and that it does not match any other string in another textctrl.
+    """
+    def __init__(self, textctrls):
+        """ Standard constructor.
+        """
+        wx.PyValidator.__init__(self)
+        self.textctrls = textctrls[:]
+
+    def set_nomatch_ctrls(self, textctrls):
+        self.textctrls = textctrls[:]
+
+    def Clone(self):
+        """ Standard cloner.
+            Note that every validator must implement the Clone() method.
+        """
+        return NoMatchTextCtrlValidator(self.textctrls)
+
+    def Validate(self, win):
+        """ Validate the contents of the given text control.
+        """
+        textCtrl = self.GetWindow()
+        text = textCtrl.GetValue()
+        stringlist = [ctrl.GetValue() for ctrl in self.textctrls]
+        print text, stringlist
+        if len(text) == 0:
+            wx.MessageBox("A text object must contain some text!", "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        elif text in stringlist:
+            wx.MessageBox("Duplicates are not allowed!", "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        else:
+            textCtrl.SetBackgroundColour(
+                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            textCtrl.Refresh()
+            return True
+
+    def TransferToWindow(self):
+        """ Transfer data from validator to window.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
+
+
+    def TransferFromWindow(self):
+        """ Transfer data from window to validator.
+            The default implementation returns False, indicating that an error
+            occurred.  We simply return True, as we don't do any data transfer.
+        """
+        return True # Prevent wxDialog from complaining.
+
+
 class FloatObjectValidator(wx.PyValidator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
@@ -350,9 +413,16 @@ class ComplexObjectValidator(wx.PyValidator):
         text = textCtrl.GetValue()
         self.value=None
         try:
+            val = self.eval_func(text)
+        except Exception, S:
+            wx.MessageBox("Can't evaluate the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        try:
             # Have to do it differentily to work with proxys
             # self.value=complex(self.eval_func(text))
-            val = self.eval_func(text)
             if is_reflfunction(val):
                 val = val.validate()
             self.value = complex(val.real, val.imag)
@@ -421,7 +491,7 @@ class ValidateBaseDialog(wx.Dialog):
         in turn consist of the (name, value) tuples where the first item
         in the list should be a string describing the group. This will be layed out 
         with subboxes. An example: 
-        groups = [['Standard', ('f', 25), ('sigma', 7)], ['Neutron', ('b', 3.0)]]
+        groups = [['Standard', [('f', 25), ('sigma', 7)]], ['Neutron', [('b', 3.0)]]]
 
 
         Note validators, values, units and editable pars should be dictionaries of values!
@@ -499,6 +569,7 @@ class ValidateBaseDialog(wx.Dialog):
                                   vgap = 10, hgap = 5)
         tc = {}
         for par in pars:
+            #print par, vals[par]
             label = wx.StaticText(parent, -1, par + ': ')
             validator = self.validators[par]#.Clone()
             val = vals[par]
@@ -555,8 +626,7 @@ class NormalEditMixin:
         if type(validator) == type([]):
             # There should be a list of choices
             validator = validator[:]
-            ctrl = wx.Choice(parent, -1,
-                             choices=validator)
+            ctrl = wx.Choice(parent, -1, choices=validator)
             # Since we work with strings we have to find the right
             # strings positons to initilize the choice box.
             pos = 0
@@ -565,6 +635,20 @@ class NormalEditMixin:
             elif type(par) == type(1):
                 pos = par
             ctrl.SetSelection(pos)
+        elif isinstance(validator, bool):
+            # Parameter is a boolean
+            ctrl = wx.CheckBox(self, -1)
+            ctrl.SetValue(val)
+            # Create a non-editable box if needed
+            #ctrl.SetEditable(editable)
+        elif isinstance(validator, int):
+            # Parameter is an integer
+            ctrl = IntCtrl(self, -1, val)
+            # Create a non-editable box if needed
+            ctrl.SetEditable(editable)
+            if not editable:
+                ctrl.SetBackgroundColour(self.not_editable_bkg_color)
+
         # Otherwise it should be a validator ...
         else:
             validator = validator.Clone()

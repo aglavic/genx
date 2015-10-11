@@ -105,16 +105,19 @@ class Model:
             new_data = pickle.loads(loadfile.read('data'))
             self.data.safe_copy(new_data)
         except StandardError, e:
+            print 'Data section loading (gx file) error:\n ', e, '\n'
             raise IOError('Could not locate the data section.', filename)
         try:
             self.script = pickle.loads(loadfile.read('script'))
         except StandardError, e:
+            print 'Script section loading (gx file) error:\n ', e, '\n'
             raise IOError('Could not locate the script.', filename)
         
         try:
             new_parameters = pickle.loads(loadfile.read('parameters'))
             self.parameters.safe_copy(new_parameters)
         except StandardError, e:
+            print 'Script section loading (gx file) error:\n ', e, '\n'
             raise IOError('Could not locate the parameters section.', filename)
         try:
             self.fom_func = pickle.loads(loadfile.read('fomfunction'))

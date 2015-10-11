@@ -115,7 +115,7 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print 'Error in loading the file ', path, '. Pyton tractback:\n ',val
+        print 'Error in loading the file ', path, '. Pyton traceback:\n ',val
         ShowErrorDialog(frame, 'Could not open the file. Python Error:\n%s' % (val,))
         return
     try:
@@ -125,7 +125,7 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print 'Error in loading config for the plots. Pyton tractback:\n ',val
+        print 'Error in loading config for the plots. Pyton traceback:\n ',val
         ShowErrorDialog(frame, 'Could not read the config for the plots. Python Error:\n%s' % (val,))
     try:
         frame.paramter_grid.ReadConfig()
@@ -134,7 +134,7 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print 'Error in loading config for parameter grid. Pyton tractback:\n ', val
+        print 'Error in loading config for parameter grid. Pyton traceback:\n ', val
         ShowErrorDialog(frame, 'Could not read the config for the parameter grid. Python Error:\n%s' % (val,))
     else:
         # Update the Menu choice
