@@ -290,6 +290,7 @@ class SolverController:
         minval = model.parameters.get_data()[row][3]
         maxval = model.parameters.get_data()[row][4]
         parfunc = funcs[model.parameters.get_sim_pos_from_row(row)]
+        par_def_val = vals[model.parameters.get_sim_pos_from_row(row)]
         step = (maxval - minval)/points
         par_vals = np.arange(minval, maxval + step, step)
         fom_vals = np.array([])
@@ -320,7 +321,7 @@ class SolverController:
         else:
             dlg.Destroy()
         # resetting the scanned parameter
-        funcs[row](vals[row])
+        parfunc(par_def_val)
         return par_vals, fom_vals
         
     def ResetOptimizer(self):
