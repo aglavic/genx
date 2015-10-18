@@ -882,7 +882,8 @@ class MyApp(wx.App):
 
     def OnInit(self):
         #wx.InitAllImageHandlers()
-        
+        locale = wx.Locale(wx.LANGUAGE_ENGLISH)
+        self.locale = locale
         main_frame = MainFrame(self, self.show_startup, None, -1, "")
         self.SetTopWindow(main_frame)
         main_frame.Show()

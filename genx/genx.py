@@ -86,6 +86,7 @@ def start_interactive(args):
         print 'Wrong file ending on infile, should be .gx or .hgx. Exiting.'
 
 
+
 def calc_errorbars(config, mod, opt):
     error_values = []
     fom_error_bars_level = config.get_float('solver', 'errorbar level')
