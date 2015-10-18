@@ -9,6 +9,7 @@ import wx.lib.scrolledpanel as scrolledpanel
 
 import custom_dialog as cust_dia
 import reflectivity_images as icons
+import sxrd_images
 
 import models.utils as utils
 
@@ -968,8 +969,8 @@ class DomainInteractor(ObjectScriptInteractor):
         self.slabs = []
         self.bulk_slab = None
         self.unitcell = None
-        self.bulk_sym = ''
-        self.surface_sym = ''
+        self.bulk_sym = 'p1'
+        self.surface_sym = 'p1'
 
     def parse_parameter_string(self, code):
         """ Parses the creation of a domain object. Overloaded from ModelScriptInteractor.
@@ -1511,12 +1512,20 @@ class DomainListCtrl(wx.Panel):
         """Create and do the toolbar"""
         toolbar = wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
 
-        button_names = ['Insert', 'Delete', 'Move Up', 'Move Down', 'SampleEditor']
-        button_images = [icons.getaddBitmap(), icons.getdeleteBitmap(), icons.getmove_upBitmap(),
-                         icons.getmove_downBitmap(), icons.getsampleBitmap()]
-        callbacks = [self.listbox.OnNew, self.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown,
-                     self.OnSampleEdit]
-        tooltips = ['Insert item', 'Delete item', 'Move item up', 'Move item down', 'Sample Editor']
+        button_names = ['Insert Slab', 'Insert Domain', 'Delete', 'Move Up', 'Move Down',
+                        'Copy', 'Cut', 'Paste', 'Paste as New',
+                        'Domain Editor', 'Sample Editor']
+        button_images = [sxrd_images.insert_layer.getBitmap(), sxrd_images.insert_domain.getBitmap(),
+                         icons.getdeleteBitmap(), icons.getmove_upBitmap(),
+                         icons.getmove_downBitmap(),
+                         sxrd_images.copy.getBitmap(), sxrd_images.cut.getBitmap(), sxrd_images.paste.getBitmap(),
+                         sxrd_images.paste_new.getBitmap(),
+                         sxrd_images.getdomainBitmap(), sxrd_images.getsampleBitmap()]
+        callbacks = [self.OnNewSlab, self.OnNewDomain, self.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown,
+                     self.listbox.OnCopy, self.listbox.OnCut, self.listbox.OnPaste, self.listbox.OnPasteClone,
+                     self.OnDomainEdit, self.OnSampleEdit, ]
+        tooltips = ['Insert Slab', 'Insert Domain', 'Delete item', 'Move item up', 'Move item down', 'Copy', 'Cut', 'Paste',
+                    'Paste as New','Domain Editor', 'Sample Editor']
 
         for i in range(len(button_names)):
             new_id = wx.NewId()
@@ -1524,6 +1533,19 @@ class DomainListCtrl(wx.Panel):
             self.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
 
         return toolbar
+
+    def OnNewSlab(self, event):
+        """Add a new Slab
+        """
+        if self.listbox.selected_item[1] == -1:
+            self.listbox.selected_item = (self.listbox.selected_item[0], 0)
+        self.listbox.OnNew(event)
+
+    def OnNewDomain(self, event):
+        """ Add a new domain.
+        """
+        self.listbox.selected_item = (self.listbox.selected_item[0], -1)
+        self.listbox.OnNew(event)
 
     def OnDelete(self, event):
         """On deleting an item """
@@ -1541,6 +1563,12 @@ class DomainListCtrl(wx.Panel):
                 self.sample_list[0] = new_obj
                 self._send_change_event(None)
             dialog.Destroy()
+
+    def OnDomainEdit(self, event):
+        """On edit a domain by toolbar icon"""
+        # Make the domain the selected item
+        self.listbox.selected_item = (self.listbox.selected_item[0], -1)
+        self.listbox.OnEditItem()
 
     def get_selected_domain_name(self):
         """Returns the selected domain domain name None if nothing is selected"""
@@ -1679,7 +1707,7 @@ class DomainWidget(wx.ScrolledWindow):
             # You should not be allowed to cut a bulk slab
             menu.Append(self.cut_id, "Cut")
         menu.Append(self.paste_id, "Paste")
-        menu.Append(self.paste_clone_id, "Paste Clone")
+        menu.Append(self.paste_clone_id, "Paste As New")
         self.PopupMenu(menu)
         menu.Destroy()
 

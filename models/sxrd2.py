@@ -236,8 +236,9 @@ class Domain:
         '''
         if type(slabs) != type([]):
             raise TypeError("The surface slabs has to contained in a list")
-        if min([type(slab) == type(Slab()) for slab in slabs]) == 0:
-            raise TypeError("All members in the slabs list has to be a memeber of class Slab")
+        if len(slabs) > 0:
+            if min([type(slab) == type(Slab()) for slab in slabs]) == 0:
+                raise TypeError("All members in the slabs list has to be a memeber of class Slab")
         self.slabs = slabs
 
     def set_surface_sym(self, sym_list):

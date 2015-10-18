@@ -116,6 +116,16 @@ if 'install' not in sys.argv:
   if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
 
+#### Build the extesion modules needed
+print "*** Building weave extensions ***"
+os.chdir('models')
+os.chdir('lib')
+subprocess.Popen(['python']+ ['build_ext.py'], shell=False, stderr=subprocess.PIPE,
+                 stdout=subprocess.PIPE).communicate()
+os.chdir('..')
+os.chdir('..')
+print "*** Running setup ***"
+
 #### Run the setup command with the selected parameters ####
 setup(name=__name__,
       version=__version__,
