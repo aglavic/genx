@@ -164,9 +164,11 @@ class Plugin(framework.Template):
         sample_view_sizer = wx.BoxSizer(wx.HORIZONTAL)
         panel.SetSizer(sample_view_sizer)
         self.sample_view = atom_viewer.VTKview(panel)
+        toolbar = self.sample_view.do_toolbar(panel)
 
-        sample_view_sizer.Add(self.sample_view,
-                              1, wx.EXPAND|wx.GROW|wx.ALL)
+        sample_view_sizer.Add(toolbar, 0, wx.EXPAND)
+        sample_view_sizer.Add(self.sample_view, 1, wx.EXPAND|wx.GROW|wx.ALL)
+
         panel.Layout()
 
         # Just to init the view properly
@@ -174,6 +176,8 @@ class Plugin(framework.Template):
         self.parent.plot_notebook.SetSelection(self.parent.plot_notebook.GetPageCount() - 1)
         self.parent.plot_notebook.SetSelection(cur_page)
         self.sample_view.show()
+        panel.Layout()
+
 
     def create_main_window_menu(self):
         """Creates the window menu"""

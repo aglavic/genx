@@ -10,6 +10,7 @@ import vtk.util.colors as vtkc
 from wxVTKRenderWindow import wxVTKRenderWindow
 import atom_colors as atom_colors
 import custom_dialog
+import sxrd_images
 
 
 class VTKview(wxVTKRenderWindow):
@@ -41,6 +42,9 @@ class VTKview(wxVTKRenderWindow):
 
         self.search_radius = 0.1
 
+        self.toolbar = None
+        self.cursor_mode = 'orbit'
+
         self.textMapper = vtk.vtkTextMapper()
         tprop = self.textMapper.GetTextProperty()
         tprop.SetFontFamilyToArial()
@@ -53,6 +57,102 @@ class VTKview(wxVTKRenderWindow):
         self.textActor.SetMapper(self.textMapper)
 
         self.ren.AddActor(self.textActor)
+
+    def do_toolbar(self, parent):
+        """Create and return a toolbar that can be used to control the widget"""
+        toolbar = wx.ToolBar(parent, style=wx.TB_FLAT | wx.TB_VERTICAL)
+
+        button_names = ['View X', 'View Y', 'View Z', 'Isometric']
+        button_images = [sxrd_images.x, sxrd_images.y, sxrd_images.z, sxrd_images.isometric]
+        callbacks = [self.OnViewX, self.OnViewY, self.OnViewZ,self.OnViewIsometric]
+        tooltips = ['View along X', 'View along Y', 'View along Z', 'Isometric view']
+
+        for i in range(len(button_names)):
+            new_id = wx.NewId()
+            toolbar.AddLabelTool(new_id, label=button_names[i], bitmap=button_images[i].getBitmap(),
+                                 shortHelp=tooltips[i])
+            parent.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
+
+        button_names = ['Select', 'Orbit', 'Zoom', 'Pan']
+        button_images = [sxrd_images.selection, sxrd_images.orbit, sxrd_images.zoom_small, sxrd_images.pan]
+        callbacks = [self.OnChangeCursorState, self.OnChangeCursorState, self.OnChangeCursorState,
+                     self.OnChangeCursorState]
+        tooltips = ['Object selection', 'Orbit', 'Zoom', 'Pan']
+
+        self.cursor_ids = []
+        for i in range(len(button_names)):
+            new_id = wx.NewId()
+            self.cursor_ids.append(new_id)
+            print button_images[i].getBitmap()
+            toolbar.AddCheckLabelTool(new_id, button_names[i], button_images[i].getBitmap(),
+                                 shortHelp=tooltips[i])
+            parent.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
+
+        toolbar.ToggleTool(self.cursor_ids[1], True)
+        self.toolbar = toolbar
+
+        return toolbar
+
+    def OnViewX(self, event):
+        """Aligns the view with the x axis"""
+        if self._CurrentRenderer:
+            self._CurrentCamera.SetFocalPoint(0, 0, 0)
+            self._CurrentCamera.SetPosition(1.0, 0.0, 0.0)
+            self._CurrentCamera.SetViewUp(0.0, 0.0, 1.0)
+
+            #self._CurrentCamera.OrthogonalizeViewUp()
+            self._CurrentRenderer.ResetCamera()
+            self.Render()
+
+    def OnViewY(self, event):
+        """Aligns the view with the y axis"""
+        if self._CurrentRenderer:
+            self._CurrentCamera.SetFocalPoint(0, 0, 0)
+            self._CurrentCamera.SetPosition(0.0, 1.0, 0.0)
+            self._CurrentCamera.SetViewUp(0.0, 0.0, 1.0)
+            self._CurrentRenderer.ResetCamera()
+            self.Render()
+
+    def OnViewZ(self, event):
+        """Alings the view with the z axis"""
+        if self._CurrentRenderer:
+            self._CurrentCamera.SetFocalPoint(0, 0, 0)
+            self._CurrentCamera.SetPosition(0.0, 0.0, 1.0)
+            self._CurrentCamera.SetViewUp(0.0, 1.0, 0.0)
+            self._CurrentRenderer.ResetCamera()
+            self.Render()
+
+    def OnViewIsometric(self, event):
+        """Creates an isometric view"""
+        if self._CurrentRenderer:
+            self._CurrentCamera.SetFocalPoint(0, 0, 0)
+            self._CurrentCamera.SetPosition(1.0, 1.0, 1.0)
+            self._CurrentCamera.SetViewUp(0.0, 0.0, 1.0)
+            self._CurrentRenderer.ResetCamera()
+            self.Render()
+
+    def OnChangeCursorState(self, event):
+        """Callback when changing the cursor state between select, orbit, zoom and pan"""
+        print self.toolbar
+        if self.toolbar:
+            [self.toolbar.ToggleTool(cid, False) for cid in self.cursor_ids]
+            self.toolbar.ToggleTool(event.GetId(), True)
+            name = self.toolbar.FindById(event.GetId()).GetLabel()
+            if self.cursor_mode == 'select':
+                self.textActor.VisibilityOff()
+                self.sphereActor.VisibilityOff()
+                self.Render()
+            if name == 'Select':
+                self.cursor_mode = 'select'
+            elif name == 'Orbit':
+                self.cursor_mode = 'orbit'
+            elif name == 'Zoom':
+                self.cursor_mode = 'zoom'
+            elif name == 'Pan':
+                self.cursor_mode = 'pan'
+            else:
+                print 'VTKView.OnChangeCursorState: Button name ', name, 'is not a known button'
+            print name, self.cursor_mode
 
     def highlight(self, actor):
         #outline = vtk.vtkOutlineFilter()
@@ -82,8 +182,20 @@ class VTKview(wxVTKRenderWindow):
         self.sphereActor = sphereActor
         self.Render()
 
-    def OnRightDown(self, event):
-        ''' Overriding defualt Pick Actor '''
+    def OnLeftDown(self, event):
+        """Overriding the defualt on left down"""
+        if self.cursor_mode == 'zoom':
+            self._Mode = "Zoom"
+        elif self.cursor_mode == 'pan':
+            self._Mode = "Pan"
+        elif self.cursor_mode == 'orbit':
+            self._Mode = "Rotate"
+        elif self.cursor_mode == 'select':
+            self.OnSelectAtom(event)
+            event.Skip()
+
+    def OnSelectAtom(self, event):
+        """ Callback for  the selection of an atom"""
         if self._CurrentRenderer:
             x = event.GetX()
             y = event.GetY()
@@ -103,8 +215,6 @@ class VTKview(wxVTKRenderWindow):
             else:
                 selPt = picker.GetSelectionPoint()
                 pickPos = picker.GetPickPosition()
-                #print pickPos
-                #print actor.GetCenter()
 
                 x, y, z = actor.GetCenter()
                 self.textMapper.SetInput("%s" % reduce(lambda x, y : x + ',' + y, self.locate_ids(x, y, z)))
@@ -112,20 +222,26 @@ class VTKview(wxVTKRenderWindow):
                 self.textActor.VisibilityOn()
                 self.highlight(actor)
 
+    def OnRightDown(self, event):
+        ''' Overriding defualt Pick Actor '''
+        if not self._Mode:
+            if event.ControlDown():
+                self._Mode = "Rotate"
+            elif event.ShiftDown():
+                self._Mode = "Pan"
+            else:
+                self._Mode = "Zoom"
+
     def locate_ids(self, x, y, z):
         ''' Given the picked positions x,y,z locate the strings ids that
             are within a distance of self.search_radius.
             '''
-        #print len(self.atom_x)
-        #print len(self.atom_ids)
-        #print x
         within_dist = (((self.atom_x-x)**2 + (self.atom_y-y)**2 + (self.atom_z - z)**2)
                        < self.search_radius**2)
         ids = []
         for i, pick in enumerate(within_dist):
             if pick and not self.atom_ids[i] in ids:
                 ids.append(self.atom_ids[i])
-        #print 'IDs:', ids
         return ids
 
     def _get_col(self, element):
@@ -169,10 +285,10 @@ class VTKview(wxVTKRenderWindow):
         sphere.SetThetaResolution(self.theta_res)
         sphere.SetPhiResolution(self.phi_res)
 
-        spheremapper=vtk.vtkPolyDataMapper()
+        spheremapper = vtk.vtkPolyDataMapper()
         spheremapper.SetInputConnection(sphere.GetOutputPort())
 
-        sphereActor=vtk.vtkActor()
+        sphereActor = vtk.vtkActor()
         sphereActor.SetMapper(spheremapper)
         sphereActor.GetProperty().SetDiffuseColor(col)
         sphereActor.GetProperty().SetAmbientColor(self.amb_col)
@@ -213,7 +329,6 @@ class VTKview(wxVTKRenderWindow):
         self.Render()
 
     def show(self):
-        #self.parent.Show(1)
         self.Reset()
         self.Render()
 
