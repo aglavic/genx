@@ -288,9 +288,13 @@ class NumberValidator(wx.PyValidator):
                 event.Skip()
                 return
 
-            if chr(key) == '-' and '-' not in val and pos == 0:
-                event.Skip()
-                return
+            if chr(key) == '-':
+                if val[0] != '-' and pos == 0:
+                    event.Skip()
+                    return
+                elif val[pos - 1] == 'e' and '-' not in val[pos - 1:]:
+                    event.Skip()
+                    return
 
         elif key in [wx.WXK_TAB, wx.WXK_RETURN, wx.WXK_DOWN, wx.WXK_UP, wx.WXK_LEFT, wx.WXK_RIGHT, wx.WXK_NUMPAD_LEFT,
                      wx.WXK_NUMPAD_RIGHT]:
