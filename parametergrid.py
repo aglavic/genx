@@ -444,9 +444,6 @@ class ValueLimitCellEditor(gridlib.PyGridCellEditor):
     def Create(self, parent, id, evtHandler):
         #self._tc = wx.TextCtrl(parent, id, style=wx.ALIGN_RIGHT, validator=NumberValidator())
         self._tc = ctrls.SpinCtrl(parent, id, value=self.value)
-        #self._tc = fs.FloatSpin(parent, id, min_val=0, max_val=1,
-        #                             increment=0.01, value=0.1, agwStyle=fs.FS_LEFT)
-        #self._tc.SetDigits(self.digits)
         self.SetControl(self._tc)
 
         if evtHandler:
@@ -487,7 +484,7 @@ class ValueLimitCellEditor(gridlib.PyGridCellEditor):
             self.min_value = 0.0
             grid.GetTable().SetValue(row, col, self.min_value)
 
-        #self._tc.SetValue('%.5g'%(self.startValue))
+        #self._tc.SetValue('%.7g'%(self.startValue))
         self._tc.SetValue(self.startValue)
         self._tc.SetRange(self.min_value, self.max_value)
         #self._tc.SetIncrement((self.max_value - self.min_value)/self.ticks)
@@ -619,7 +616,170 @@ class ValueLimitCellRenderer(gridlib.PyGridCellRenderer):
         return SliderCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
                                   min=self.slider_drawer.min_value)
 
+class ValueCellEditor(gridlib.PyGridCellEditor):
+    """Editor for the parameter values with a spin control"""
+    def __init__(self, value=0.0, digits=5):
+        gridlib.PyGridCellEditor.__init__(self)
+        self.value = value
+        self.startValue = value
+        #self.min_value = min_value
+        #self.max_value = max_value
+        #self.ticks = float(ticks)
+        self.digits = digits
 
+    def Create(self, parent, id, evtHandler):
+        self._tc = wx.TextCtrl(parent, id, style=wx.ALIGN_RIGHT, validator=ctrls.NumberValidator())
+        #self._tc = ctrls.SpinCtrl(parent, id, value=self.value)
+        self.SetControl(self._tc)
+
+        if evtHandler:
+            self._tc.PushEventHandler(evtHandler)
+
+    def Show(self, show, attr):
+        super(ValueCellEditor, self).Show(show, attr)
+
+    def GetValue(self):
+        return float(self._tc.GetValue())
+
+    def SetSize(self, rect):
+        """Called to position/size the edit control within the cell rectangle."""
+        self._tc.SetDimensions(rect.x-1, rect.y-1, rect.width+2, rect.height+2,
+                               wx.SIZE_ALLOW_MINUS_ONE)
+
+    def BeginEdit(self, row, col, grid):
+        """ Fetch the value from the table and prepare the edit control to begin editing.  Set the focus to the
+        edit control.
+        """
+        self.startValue = grid.GetTable().GetValue(row, col)
+        if self.startValue != '':
+            self.startValue = float(self.startValue)
+        else:
+            self.startValue = 0.0
+            grid.GetTable().SetValue(row, col, self.startValue)
+
+        self._tc.SetValue('%.7g'%(self.startValue))
+        #self._tc.SetValue(self.startValue)
+        #self._tc.SetValueChangeCallback(lambda val: grid.GetTable().ChangeValueInteractively(row, val))
+        self._tc.SetFocus()
+
+
+    def EndEdit(self, row, col, grid, oldVal):
+        """
+        End editing the cell.  This function must check if the current
+        value of the editing control is valid and different from the
+        original value (available as oldval in its string form.)  If
+        it has not changed then simply return None, otherwise return
+        the value in its string form.
+        """
+        val = float(self._tc.GetValue())
+        #val = max(self.min_value, val)
+        #val = min(self.max_value, val)
+        #self._tc.SetValue('%.5g'%(val))
+        #self._tc.SetValue(val)
+        #self._tc.value_change_func(val)
+        #self._tc.SetValueChangeCallback(None)
+        return float(val)
+
+
+    def ApplyEdit(self, row, col, grid):
+        """ This function  saves the value of the control into the grid or grid table."""
+        val = self._tc.GetValue()
+        grid.GetTable().SetValue(row, col, float(val)) # update the table
+
+        self.startValue = float(val)
+        self._tc.SetValue('%.7g' % self.startValue)
+        #self._tc.SetValue(self.startValue)
+
+    def IsAcceptedKey(self, evt):
+        """
+        Return True to allow the given key to start editing: the base class
+        version only checks that the event has no modifiers.  F2 is special
+        and will always start the editor.
+        """
+        key = evt.GetKeyCode()
+        return chr(key) in (string.digits + '.-')
+
+    def StartingKey(self, evt):
+        """
+        If the editor is enabled by pressing keys on the grid, this will be
+        called to let the editor do something about that first key if desired.
+        """
+        key = evt.GetKeyCode()
+        ch = None
+        if key in [ wx.WXK_NUMPAD0, wx.WXK_NUMPAD1, wx.WXK_NUMPAD2, wx.WXK_NUMPAD3,
+                    wx.WXK_NUMPAD4, wx.WXK_NUMPAD5, wx.WXK_NUMPAD6, wx.WXK_NUMPAD7,
+                    wx.WXK_NUMPAD8, wx.WXK_NUMPAD9
+                    ]:
+
+            ch = chr(ord('0') + key - wx.WXK_NUMPAD0)
+
+        elif key < 256 and key >= 0 and chr(key) in string.printable:
+            ch = chr(key)
+
+        if ch in (string.digits + '.-'):
+            # For this example, replace the text.  Normally we would append it.
+            #self._tc.AppendText(ch)
+            self._tc.SetValue(ch)
+            self._tc.SetInsertionPointEnd()
+        #else:
+        #    evt.Skip()
+
+
+
+    def Reset(self):
+        """Reset the value in the control back to its starting value."""
+        self._tc.SetValue('%.5g' % self.startValue)
+
+    def Clone(self):
+        """
+        Create a new object which is the copy of this one
+        """
+        return ValueCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value)
+
+
+class ValueCellRenderer(gridlib.PyGridCellRenderer):
+    """ Renderer for the Parameter Values. Colours the Cell if the value is out of bounds.
+    """
+    def __init__(self, value=0, max_value=100.0, min_value=100):
+        gridlib.PyGridCellRenderer.__init__(self)
+
+    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+        if grid.GetCellValue(row,col) != '':
+            val = float(grid.GetCellValue(row,col))
+            if not isSelected:
+                bkg_colour = attr.GetBackgroundColour()
+            else:
+                bkg_colour = grid.GetSelectionBackground()
+            txt_colour = wx.Colour(0, 0, 0)
+
+            dc.SetBackgroundMode(wx.SOLID)
+            dc.SetBrush(wx.Brush(bkg_colour, wx.SOLID))
+            dc.SetPen(wx.TRANSPARENT_PEN)
+            dc.SetClippingRect(rect)
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+
+            text = '%.7g'%val
+
+            dc.SetTextForeground(txt_colour)
+            dc.SetTextBackground(bkg_colour)
+            dc.SetFont(attr.GetFont())
+            width, height = dc.GetTextExtent(text)
+            dc.DrawText(text, rect.x+rect.width - width - 1, rect.y + 1)
+
+            dc.DestroyClippingRegion()
+        else:
+            dc.SetBackgroundMode(wx.SOLID)
+            if isSelected:
+                dc.SetBrush(wx.Brush(grid.GetSelectionBackground(), wx.SOLID))
+            else:
+                dc.SetBrush(wx.Brush(attr.GetBackgroundColour(), wx.SOLID))
+            dc.SetPen(wx.TRANSPARENT_PEN)
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+
+
+    def Clone(self):
+        return SliderCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
+                                  min=self.slider_drawer.min_value)
 
 
 #------------------------------------------------------------------------------
@@ -691,6 +851,11 @@ class ParameterGrid(wx.Panel):
         self.toolbar.Realize()
         self.show_slider = False
         self.SetValueEditorSlider(slider=False)
+        attr = gridlib.GridCellAttr()
+        attr.SetEditor(ValueCellEditor())
+        attr.SetRenderer(ValueCellRenderer())
+        self.grid.SetColAttr(3, attr)
+        self.grid.SetColAttr(4, attr)
 
     def PrepareNewModel(self):
         """ Hack to prepare the grid for a new model.
