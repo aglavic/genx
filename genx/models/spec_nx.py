@@ -116,6 +116,7 @@ except StandardError,S:
     print 'Not using inline c code for reflectivity calcs - can not import module'
     print S
     import lib.paratt as Paratt
+import lib.paratt as Paratt
 import lib.neutron_refl as MatrixNeutron
 from lib.instrument import *
 import lib.refl as refl
@@ -294,8 +295,8 @@ def Specular(TwoThetaQz, sample, instrument):
         e = AA_to_eV/instrument.getWavelength()
         fb = refl.cast_to_array(parameters['f'], e)
     else: 
-        fb = array(parameters['b'], dtype = complex64)*1e-5
-        abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
+        fb = array(parameters['b'], dtype = complex128)*1e-5
+        abs_xs = array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2
     
     dens = array(parameters['dens'], dtype = complex64)
     d = array(parameters['d'], dtype = float64)
@@ -521,7 +522,7 @@ def SLD_calculations(z, item, sample, inst):
         sld = dens*f
     elif type == instrument_string_choices['probe'][1] or type == 1 or\
         type == instrument_string_choices['probe'][4] or type == 4:
-        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-5
+        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-5/(wl**2/2/pi)
         sld_unit = 'fm/\AA^{3}'
     else:
         magnetic = True
@@ -534,7 +535,7 @@ def SLD_calculations(z, item, sample, inst):
         mag_sld_y = mag_sld*sin(magn_ang)
         sld_unit = 'fm/\AA^{3}'
         
-    d = array(parameters['d'], dtype = float64)
+    d = array(parameters['d'], dtype=float64)
     d = d[1:-1]
     # Include one extra element - the zero pos (substrate/film interface)
     int_pos = cumsum(r_[0,d])

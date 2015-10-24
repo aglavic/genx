@@ -731,8 +731,8 @@ def compose_sld(sample, instrument, theta, xray_energy):
 
     #Neutrons
     wl = instrument.getWavelength()
-    abs_xs = array(parameters['xs_ai'], dtype = complex64)#*(1e-4)**2
-    b = array(parameters['b'], dtype = complex64)#*1e-5
+    abs_xs = array(parameters['xs_ai'], dtype = complex128)#*(1e-4)**2
+    b = array(parameters['b'], dtype = complex128)#*1e-5
     dens_n = array(parameters['dens'], dtype = float64)
     sl_n = dens_n*b
     abs_n = dens_n*abs_xs
@@ -1143,8 +1143,8 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, 
                 Q_ok = any(not_equal(NBuffer.TwoThetaQz, Q))
         if NBuffer.parameters != parameters or not Q_ok:
             #print 'Reloading buffer'
-            b = array(parameters['b'], dtype=complex64)*1e-5
-            abs_xs = array(parameters['xs_ai'], dtype=complex64)*(1e-4)**2
+            b = array(parameters['b'], dtype=complex128)*1e-5
+            abs_xs = array(parameters['xs_ai'], dtype=complex128)*(1e-4)**2
             # Bulk of the layers
             #sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
             #                   1.0J*abs_xs*wl/4/pi)

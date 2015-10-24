@@ -38,6 +38,7 @@ def ReflQ(Q,lamda,n,d,sigma):
     d=d[1:-1]
     sigma=sigma[:-1]
     Q0=4*pi/lamda
+    Q = Q.astype(complex128)
     # Calculates the wavevector in each layer
     Qj=sqrt((n[:,newaxis]**2 - n[-1]**2)*Q0**2 + n[-1]**2*Q**2)
     # Fresnel reflectivity for the interfaces
