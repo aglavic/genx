@@ -285,7 +285,7 @@ def Specular(TwoThetaQz, sample, instrument):
         e = AA_to_eV/instrument.getWavelength()
         sld = refl.cast_to_array(parameters['sld_x'], e)*1e-6
     else: 
-        sld = array(parameters['sld_n'], dtype = complex64)*1e-6
+        sld = array(parameters['sld_n'], dtype = complex128)*1e-6
 
     d = array(parameters['d'], dtype = float64)
     sld_m = array(parameters['sld_m'], dtype = float64)*1e-6
