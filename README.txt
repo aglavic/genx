@@ -1,4 +1,4 @@
-This package contain GenX 2.4b2 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contain GenX 2.4.5 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -11,6 +11,13 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes in 2.4.5
+================
+ * Fixed bug that the SLD for neutrons were scaled with wl**2/2/pi.
+ * Problem with the precision in some neutron calculations solved.
+ * Numbers in the grid can be given in scientific/exponential notation, for example 1e5.
+ * Problems with fractional numbers using "." on systems with defualt deciaml seprator as "," solved.
+ * Scan FOM not always functioning with blank rows in the grid solved.
 
 Changes in 2.4.2
 ================
