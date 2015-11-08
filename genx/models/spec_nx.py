@@ -525,10 +525,10 @@ def SLD_calculations(z, item, sample, inst):
         sld_unit = 'fm/\AA^{3}'
     else:
         magnetic = True
-        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-5
+        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-5/(wl**2/2/pi)
         magn = array(parameters['magn'], dtype=float64)
         #Transform to radians
-        magn_ang = array(parameters['magn_ang'], dtype = float64)*pi/180.0
+        magn_ang = array(parameters['magn_ang'], dtype=float64)*pi/180.0
         mag_sld = 2.645*magn*dens
         mag_sld_x = mag_sld*cos(magn_ang)
         mag_sld_y = mag_sld*sin(magn_ang)

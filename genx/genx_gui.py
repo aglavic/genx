@@ -459,7 +459,7 @@ class MainFrame(wx.Frame):
             print 'Error in loading config for the plots. Pyton tractback:\n ', val
             event_handlers.ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
 
-
+        #event_handlers.new(self, None)
         self.model.saved = True
         #### End Manual config
 
@@ -582,8 +582,6 @@ class MainFrame(wx.Frame):
         self.CenterOnScreen()
         wx.Frame.Show(self)
         ## Begin Manual Config
-
-        event_handlers.new(self, None)
         wx.CallAfter(self.LayoutSplitters)
 
     def LayoutSplitters(self):
@@ -609,6 +607,7 @@ class MainFrame(wx.Frame):
             #print self.config.get('plugins','loaded plugins')
 
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
+        #print "eh_mb_new"
         event_handlers.new(self, event)
 
     def eh_mb_open(self, event): # wxGlade: MainFrame.<event_handler>
@@ -688,6 +687,7 @@ class MainFrame(wx.Frame):
 
     def eh_tb_new(self, event): # wxGlade: MainFrame.<event_handler>
         #event.Skip()
+        #print "eh_tb_new"
         event_handlers.new(self, event)
 
     def eh_tb_open(self, event): # wxGlade: MainFrame.<event_handler>

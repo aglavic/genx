@@ -739,7 +739,6 @@ class DataList:
         '''
         [item.set_show(i in positions) for i, item in enumerate(self.items)]
 
-        
     def set_name(self,pos,name):
         '''
         set_name(self,pos,name) --> None

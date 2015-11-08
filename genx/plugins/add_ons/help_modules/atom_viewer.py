@@ -64,7 +64,7 @@ class VTKview(wxVTKRenderWindow):
 
         button_names = ['View X', 'View Y', 'View Z', 'Isometric']
         button_images = [sxrd_images.x, sxrd_images.y, sxrd_images.z, sxrd_images.isometric]
-        callbacks = [self.OnViewX, self.OnViewY, self.OnViewZ,self.OnViewIsometric]
+        callbacks = [self.OnViewX, self.OnViewY, self.OnViewZ, self.OnViewIsometric]
         tooltips = ['View along X', 'View along Y', 'View along Z', 'Isometric view']
 
         for i in range(len(button_names)):
@@ -83,7 +83,7 @@ class VTKview(wxVTKRenderWindow):
         for i in range(len(button_names)):
             new_id = wx.NewId()
             self.cursor_ids.append(new_id)
-            print button_images[i].getBitmap()
+            #print button_images[i].getBitmap()
             toolbar.AddCheckLabelTool(new_id, button_names[i], button_images[i].getBitmap(),
                                  shortHelp=tooltips[i])
             parent.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
@@ -152,7 +152,7 @@ class VTKview(wxVTKRenderWindow):
                 self.cursor_mode = 'pan'
             else:
                 print 'VTKView.OnChangeCursorState: Button name ', name, 'is not a known button'
-            print name, self.cursor_mode
+            #print name, self.cursor_mode
 
     def highlight(self, actor):
         #outline = vtk.vtkOutlineFilter()

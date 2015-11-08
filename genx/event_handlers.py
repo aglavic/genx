@@ -59,6 +59,7 @@ def new(frame, event):
     
     Event handler for creating a new model
     '''
+    #print "Event handler: new"
     if not frame.model.saved:
         ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
                                  ' your model will not be saved.', 
@@ -101,11 +102,11 @@ def open(frame, event):
     
 
 def open_model(frame, path):
-
+    #print "open_model"
     frame.model.new_model()
     frame.paramter_grid.PrepareNewModel()
     # Update all components so all the traces are gone.
-    _post_new_model_event(frame, frame.model)
+    #_post_new_model_event(frame, frame.model)
     try:
         io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
     except modellib.IOError, e:
@@ -165,6 +166,7 @@ def on_new_model(frame, event):
     Callback for NEW_MODEL event. Used to update the script for
     a new model i.e. put the string to the correct value. 
     '''
+    #print "Callback: on_new_model"
     # Set the string in the script_editor
     frame.script_editor.SetText(event.GetModel().get_script())
     # Let the solvergui do its loading and updating:
@@ -992,7 +994,7 @@ def on_find_event(frame, event):
         find()
         
     elif evtype == wx.wxEVT_COMMAND_FIND_REPLACE:
-        print 'find and replace'
+        #print 'find and replace'
         # If we do not have found text already
         # or if we have marked other text by mistake...
         if frame.script_editor.GetSelectedText() != \
@@ -1006,7 +1008,7 @@ def on_find_event(frame, event):
             # Find a new text to replace
             find()
     elif evtype == wx.wxEVT_COMMAND_FIND_REPLACE_ALL:
-        print 'find and replace all'
+        #print 'find and replace all'
         if frame.script_editor.GetSelectedText() != \
                event.GetFindString():
             pos = find()
