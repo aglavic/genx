@@ -550,6 +550,7 @@ class Model:
         Reinitilizes the model. Thus, removes all the traces of the
         previous model. 
         '''
+        print "class Model: new_model"
         self.data = data.DataList()
         self.script = ''
         self.parameters = parameters.Parameters(self)

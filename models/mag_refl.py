@@ -471,13 +471,7 @@ def SLD_calculations(z, item, sample, inst):
         sl_m2p = zeros(new_size, dtype = complex128)
         sl_m2p[::2] = sl_m2
         sl_m2p[1::2] = sl_m2
-        #print sl_m2p
-        #z = zeros(len(d)*2)
-        #z[::2] = cumsum(r_[0,d[:-1]])
-        #z[1::2] = cumsum(r_[d])
 
-        #print d, z
-        #print z.shape, sl_c.shape
         def interleave(a):
             new_a = zeros(len(a)*2, dtype = complex128)
             new_a[::2] = a
@@ -500,7 +494,7 @@ def SLD_calculations(z, item, sample, inst):
 
         new_size = len(d)*2
         def parray(ar):
-            tmp = zeros(new_size, dtype = complex128)
+            tmp = zeros(new_size, dtype=complex128)
             tmp[::2] = ar
             tmp[1::2] = ar
             return tmp
@@ -552,9 +546,7 @@ def neturon_sld(abs_xs, b, dens, wl):
 
 def compose_sld_anal(z, sample, instrument):
     '''Compose a analytical profile funciton'''
-    def sld_interface(z, drho_jm1_l, drho_j, drho_j_u,
-                  sigma_jm1_l, sigma_j, sigma_j_u,
-                  dd_jm1_l, dd_j_u):
+    def sld_interface(z, drho_jm1_l, drho_j, drho_j_u, sigma_jm1_l, sigma_j, sigma_j_u, dd_jm1_l, dd_j_u):
         ''' Calculate the sld of one interface '''
         sld = drho_j_u*(0.5 + 0.5*erf((z - dd_j_u)/sqrt(2*(sigma_j_u**2 + sigma_j**2))))
         sld += drho_jm1_l*(0.5 + 0.5*erf((z + dd_jm1_l)/sqrt(2*(sigma_jm1_l**2 + sigma_j**2))))
@@ -563,9 +555,9 @@ def compose_sld_anal(z, sample, instrument):
 
     def calc_sld(z, int_pos, sld, sld_l, sld_u, sigma_l, sigma_c, sigma_u, dd_l, dd_u):
         return (sum(sld_interface(-(z[:,newaxis]-int_pos), -(sld[1:] - sld_l[1:]),
-                              -(sld_l[1:]  - sld_u[:-1]), -(sld_u[:-1] - sld[:-1]),
+                              -(sld_l[1:] - sld_u[:-1]), -(sld_u[:-1] - sld[:-1]),
                   sigma_l[1:], sigma_c[:-1], sigma_u[:-1],
-                  dd_l[1:], dd_u[:-1]),1) + sld[-1])
+                  dd_l[1:], dd_u[:-1]), 1) + sld[-1])
     re = 2.8179402894e-5
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
@@ -682,7 +674,16 @@ def compose_sld_anal(z, sample, instrument):
         raise ValueError('Wrong value of theory given. Value: %s'%theory)
     
 
-def compose_sld(sample, instrument, theta, xray_energy):
+def compose_sld(sample, instrument, theta, xray_energy, layer=None):
+    """ Composes the sld for a slicing model
+
+    Parameters:
+        sample: The sample
+        instrument: The instrument
+        theta: The incident angle
+        xray_energy: The xray energy either scalar or array
+        layer: Defines which layer number to return. If None (default) returns the entire profile.
+    """
     re = 2.8179402894e-5
     parameters = sample.resolveLayerParameters()
     dmag_l = array(parameters['dmag_l'], dtype=float64)
@@ -707,7 +708,7 @@ def compose_sld(sample, instrument, theta, xray_energy):
     fm1 = refl.harm_sizes(refl.cast_to_array(parameters['fm1'], xray_energy), shape, dtype=complex128)
     fm2 = refl.harm_sizes(refl.cast_to_array(parameters['fm2'], xray_energy), shape, dtype=complex128)
 
-    sl_c = dens*(f + resdens*fr) 
+    sl_c = dens*(f + resdens*fr)
     sl_m1 = dens*resdens*resmag*fm1
     sl_m2 = dens*resdens*resmag*fm2 #mag is multiplied in later
 
@@ -739,13 +740,13 @@ def compose_sld(sample, instrument, theta, xray_energy):
 
     if sample.getSlicing() == sample_string_choices['slicing'][0]:
         dz = sample.getSlice_depth()
-        reply= edm.create_profile_cm2(d[1:-1], sigma_c[:-1].real, 
-                                      sigma_ml.real, sigma_mu.real, 
+        reply= edm.create_profile_cm2(d[1:-1], sigma_c[:-1].real,
+                                      sigma_ml.real, sigma_mu.real,
                                      [edm.erf_profile]*len(d),
                                      [edm.erf_interf]*len(d),
                                      dmag_l, dmag_u, mag, dd_l, dd_u,
-                                     dz = dz, mult = sample.getSld_mult(), 
-                                     buffer = sample.getSld_buffer(), 
+                                     dz = dz, mult = sample.getSld_mult(),
+                                     buffer = sample.getSld_buffer(),
                                      delta = sample.getSld_delta())
         z, comp_prof, mag_prof = reply
         if not shape is None:
@@ -755,21 +756,15 @@ def compose_sld(sample, instrument, theta, xray_energy):
         comp_prof_x = refl.harm_sizes(comp_prof, new_shape, dtype = float64)
         mag_prof_x = refl.harm_sizes(mag_prof, new_shape, dtype = float64)
         sl_c_lay = comp_prof_x*sl_c[:, newaxis]
-        sl_c = sl_c_lay.sum(0)
         sl_m1_lay = comp_prof_x*mag_prof_x*sl_m1[:, newaxis]
-        sl_m1 = sl_m1_lay.sum(0)
         sl_m2_lay = comp_prof_x*mag_prof_x**2*sl_m2[:, newaxis]
-        sl_m2 = sl_m2_lay.sum(0)
-        
+
+
         # Neutrons
         sl_n_lay = comp_prof*sl_n[:, newaxis]
-        sl_n = sl_n_lay.sum(0)
         abs_n_lay = comp_prof*abs_n[:,newaxis]
-        abs_n = abs_n_lay.sum(0)
         mag_dens_lay = comp_prof*mag_prof*dens_n[:, newaxis]
-        mag_dens = mag_dens_lay.sum(0)
-        mag_dens_x = (comp_prof*mag_prof*(dens_n*cos(theta_m)*cos(phi))[:, newaxis]).sum(0)
-        mag_dens_y = (comp_prof*mag_prof*(dens_n*cos(theta_m)*sin(phi))[:, newaxis]).sum(0)
+
 
         if not shape is None:
             M = rollaxis(array((ones(comp_prof_x.shape)*M[:,0][:, newaxis, newaxis],
@@ -786,9 +781,27 @@ def compose_sld(sample, instrument, theta, xray_energy):
         C = lamda**2*re/pi*sl_m2_lay
         g_0 = sin(theta*pi/180.0)
 
-        chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
-                                       B, C, M, d)
-        chi = tuple([c.sum(0) for c in chi[0] + chi[1] + chi[2]])
+        chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, B, C, M, d)
+        if layer is not None:
+            sl_c = sl_c_lay[layer]
+            sl_m1 = sl_m1_lay[layer]
+            sl_m2 = sl_m2_lay[layer]
+            sl_n = sl_n_lay[layer]
+            abs_n = abs_n_lay[layer]
+            mag_dens = mag_dens_lay[layer]
+            mag_dens_x = (comp_prof*mag_prof*(dens_n*cos(theta_m)*cos(phi))[:, newaxis])[layer]
+            mag_dens_y = (comp_prof*mag_prof*(dens_n*cos(theta_m)*sin(phi))[:, newaxis])[layer]
+            chi = tuple([c[layer] for c in chi[0] + chi[1] + chi[2]])
+        else:
+            sl_c = sl_c_lay.sum(0)
+            sl_m1 = sl_m1_lay.sum(0)
+            sl_m2 = sl_m2_lay.sum(0)
+            sl_n = sl_n_lay.sum(0)
+            abs_n = abs_n_lay.sum(0)
+            mag_dens = mag_dens_lay.sum(0)
+            mag_dens_x = (comp_prof*mag_prof*(dens_n*cos(theta_m)*cos(phi))[:, newaxis]).sum(0)
+            mag_dens_y = (comp_prof*mag_prof*(dens_n*cos(theta_m)*sin(phi))[:, newaxis]).sum(0)
+            chi = tuple([c.sum(0) for c in chi[0] + chi[1] + chi[2]])
 
         if sample.getCompress() == sample_string_choices['compress'][0]:
             #Compressing the profile..

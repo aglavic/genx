@@ -75,6 +75,7 @@ class ModelScriptInteractor:
     def append_dataset(self):
         """ Append a new data set to the sim function
         """
+        print "Append data set"
         self.data_sections_interactors.append(DataSetSimulationInteractor())
         default_name = self.get_sim_object_names()[-1]
         sim_method = self.get_sim_methods_info(default_name)[0]
@@ -236,7 +237,9 @@ class ModelScriptInteractor:
             replace_list_items(getattr(self, name.lower()), interactors)
 
         #Empty list
-        [self.data_sections_interactors.pop(0) for d in self.data_sections_interactors]
+        #[self.data_sections_interactors.pop(0) for d in self.data_sections_interactors]
+        self.data_sections_interactors[:] = []
+        print "parse_code", len(self.data_sections_interactors)
         missing_data_section = False
         i = 0
         while not missing_data_section:

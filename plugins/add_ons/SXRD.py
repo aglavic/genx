@@ -60,9 +60,11 @@ code = """
 class Plugin(framework.Template):
     def __init__(self, parent):
         #print "__init__ SXRD Plugin"
+
         framework.Template.__init__(self, parent)
         self.setup_script_interactor()
         if self.GetModelScript() == '':
+            self.script_interactor.parse_code(code)
             self.SetModelScript(self.script_interactor.get_code())
         else:
             self.script_interactor.parse_code(self.GetModelScript())
@@ -73,11 +75,12 @@ class Plugin(framework.Template):
         self.layout_domain_viewer()
         self.create_main_window_menu()
 
-
         self.OnInteractorChanged(None)
         self.update_data_names()
         self.simulation_edit_widget.Update()
         self.update_widgets()
+        #print "end __init__ SXRD Plugin"
+
 
     def setup_script_interactor(self, model_name='sxrd2'):
         """Setup the script interactor"""
@@ -93,7 +96,6 @@ class Plugin(framework.Template):
         script_interactor.add_section('Domains', mi.DomainInteractor, class_name='model.Domain', class_impl=model.Domain)
         script_interactor.add_section('Samples', mi.SampleInteractor, class_name='model.Sample', class_impl=model.Sample)
 
-        script_interactor.parse_code(code)
         self.script_interactor = script_interactor
 
     def layout_sample_view(self):
@@ -160,6 +162,7 @@ class Plugin(framework.Template):
 
     def layout_domain_viewer(self):
         """Creates a 3D view of the sample."""
+        #print "layout_domain_viewer"
         panel = self.NewPlotFolder('Sample view')
         sample_view_sizer = wx.BoxSizer(wx.HORIZONTAL)
         panel.SetSizer(sample_view_sizer)
@@ -169,6 +172,7 @@ class Plugin(framework.Template):
         sample_view_sizer.Add(toolbar, 0, wx.EXPAND)
         sample_view_sizer.Add(self.sample_view, 1, wx.EXPAND|wx.GROW|wx.ALL)
 
+        toolbar.Realize()
         panel.Layout()
 
         # Just to init the view properly
@@ -177,6 +181,7 @@ class Plugin(framework.Template):
         self.parent.plot_notebook.SetSelection(cur_page)
         self.sample_view.show()
         panel.Layout()
+        #print "end layout_domain_viewer"
 
 
     def create_main_window_menu(self):
@@ -209,6 +214,7 @@ class Plugin(framework.Template):
     def update_data_names(self):
         """Updates the DataSetInteractors names from the DataSet names in the model"""
         data_set_list = self.GetModel().data
+        #print "update_data_names"
 
         assert(len(data_set_list) == len(self.script_interactor.data_sections_interactors))
 
@@ -252,6 +258,7 @@ class Plugin(framework.Template):
 
     def OnInteractorChanged(self, event):
         """Callback when an Interactor has been changed by the GUI"""
+        #print "OnInteractor Changed"
         self.update_script()
         self.set_constant_names()
         self.update_widgets()
@@ -259,8 +266,8 @@ class Plugin(framework.Template):
 
     def OnSelectionChanged(self, evnet):
         """Callback when the selection in the sample widget has changed"""
+        #print "OnSelectionChanged"
         self.update_domain_view()
-
 
     def OnNewModel(self, event):
         """Callback for creating a new model"""
@@ -272,7 +279,6 @@ class Plugin(framework.Template):
     def OnOpenModel(self, event):
         """Callback for opening a model"""
         #print 'OnOpenModel'
-        #print self.GetModelScript()
         self.script_interactor.parse_code(self.GetModelScript())
         self.update_data_names()
         self.simulation_edit_widget.Update()
@@ -287,7 +293,7 @@ class Plugin(framework.Template):
             # If a new model is created bail out
             return
 
-        if event.new_data:
+        if event.new_data and len(self.script_interactor.data_sections_interactors) < len(self.GetModel().data):
             # New data has been added:
             self.script_interactor.append_dataset()
         elif event.deleted:
