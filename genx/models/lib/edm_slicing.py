@@ -2,7 +2,7 @@
 profiles (as described by Tolan) and also a home constructed model for
 magnetic moment profiles (element specific). 
 '''
-from pylab import *
+#from pylab import *
 from numpy import *
 
 import numpy as np

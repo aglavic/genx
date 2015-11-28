@@ -70,7 +70,7 @@ def new(frame, event):
     # Reset the model - remove everything from the previous model
     frame.model.new_model()
     # Update all components so all the traces are gone.
-    _post_new_model_event(frame, frame.model, desc = 'Fresh model')
+    _post_new_model_event(frame, frame.model, desc='Fresh model')
     frame.plugin_control.OnNewModel(None)
     frame.main_frame_statusbar.SetStatusText('New model created', 1)
     set_title(frame)

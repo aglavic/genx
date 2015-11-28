@@ -356,7 +356,7 @@ class MainFrame(wx.Frame):
         #self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
         
         
-        self.model = model.Model(config = self.config)
+        self.model = model.Model(config=self.config)
         self.solver_control = solvergui.SolverController(self, self.config)
     
         self.plugin_control = \
@@ -365,22 +365,14 @@ class MainFrame(wx.Frame):
         # Bind all the events that are needed to occur when a new model has
         # been loaded
         # Update the parameter grid
-        self.Bind(event_handlers.EVT_NEW_MODEL, self.paramter_grid.OnNewModel\
-            , self)
-        self.Bind(event_handlers.EVT_NEW_MODEL, \
-            self.data_list.eh_external_new_model, self)
+        self.Bind(event_handlers.EVT_NEW_MODEL, self.paramter_grid.OnNewModel, self)
+        self.Bind(event_handlers.EVT_NEW_MODEL, self.data_list.eh_external_new_model, self)
         # Update the script
-        self.Bind(event_handlers.EVT_NEW_MODEL, \
-            self.eh_new_model, self)
+        self.Bind(event_handlers.EVT_NEW_MODEL, self.eh_new_model, self)
         # Event that the plot should respond to
-        self.Bind(datalist.EVT_DATA_LIST, self.plot_data.OnDataListEvent,\
-                    self.data_list.list_ctrl)
-        self.Bind(datalist.EVT_DATA_LIST,\
-            self.eh_external_update_data_grid_choice,\
-            self.data_list.list_ctrl)
-        self.Bind(datalist.EVT_DATA_LIST,\
-            self.eh_external_update_data,\
-            self.data_list.list_ctrl)
+        self.Bind(datalist.EVT_DATA_LIST, self.plot_data.OnDataListEvent, self.data_list.list_ctrl)
+        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data_grid_choice, self.data_list.list_ctrl)
+        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data, self.data_list.list_ctrl)
         
         self.Bind(event_handlers.EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent,\
                     self)
@@ -459,7 +451,7 @@ class MainFrame(wx.Frame):
             print 'Error in loading config for the plots. Pyton tractback:\n ', val
             event_handlers.ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
 
-        #event_handlers.new(self, None)
+        event_handlers.new(self, None)
         self.model.saved = True
         #### End Manual config
 

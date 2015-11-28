@@ -73,7 +73,8 @@ _CurrentCamera:        The camera for the current renderer
 # import usual libraries
 import math, os, sys
 import wx
-from vtk import *
+#from vtk import *
+from vtk import vtkCellPicker, vtkProperty, vtkRenderWindow
 
 # a few configuration items, see what works best on your system
 
@@ -650,38 +651,41 @@ class wxVTKRenderWindow(baseClass):
             self.Render()
 
 #----------------------------------------------------------------------------  
-def wxVTKRenderWindowConeExample():
 
-    """Like it says, just a simple example
-    """
-    # every wx app needs an app
-    app = wx.PySimpleApp()
-
-    # create the widget
-    frame = wx.Frame(None, -1, "wxRenderWindow", size=wx.Size(400,400))
-    widget = wxVTKRenderWindow(frame, -1)
-
-    ren = vtkRenderer()
-    widget.GetRenderWindow().AddRenderer(ren)
-
-    cone = vtkConeSource()
-    cone.SetResolution(8)
-    
-    coneMapper = vtkPolyDataMapper()
-    coneMapper.SetInputConnection(cone.GetOutputPort())
-    
-    coneActor = vtkActor()
-    coneActor.SetMapper(coneMapper)
-
-    ren.AddActor(coneActor)
-
-    # show the window
-    
-    frame.Show(1)
-
-    app.MainLoop()
 
 if __name__ == "__main__":
     from vtk import *
+
+    def wxVTKRenderWindowConeExample():
+
+        """Like it says, just a simple example
+        """
+        # every wx app needs an app
+        app = wx.PySimpleApp()
+
+        # create the widget
+        frame = wx.Frame(None, -1, "wxRenderWindow", size=wx.Size(400,400))
+        widget = wxVTKRenderWindow(frame, -1)
+
+        ren = vtkRenderer()
+        widget.GetRenderWindow().AddRenderer(ren)
+
+        cone = vtkConeSource()
+        cone.SetResolution(8)
+
+        coneMapper = vtkPolyDataMapper()
+        coneMapper.SetInputConnection(cone.GetOutputPort())
+
+        coneActor = vtkActor()
+        coneActor.SetMapper(coneMapper)
+
+        ren.AddActor(coneActor)
+
+        # show the window
+
+        frame.Show(1)
+
+        app.MainLoop()
+
     wxVTKRenderWindowConeExample()
 
