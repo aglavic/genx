@@ -4,7 +4,8 @@ import string
 
 import wx
 
-import vtk
+#import vtk
+from vtk import vtkRenderer, vtkActor, vtkTextMapper, vtkActor2D, vtkSphereSource, vtkPolyDataMapper, vtkAxesActor
 import vtk.util.colors as vtkc
 
 from wxVTKRenderWindow import wxVTKRenderWindow
@@ -16,10 +17,10 @@ import sxrd_images
 class VTKview(wxVTKRenderWindow):
     def __init__(self, parent):
         wxVTKRenderWindow.__init__(self, parent, wx.NewId(), stereo=0)
-        self.ren = vtk.vtkRenderer()
+        self.ren = vtkRenderer()
         self.GetRenderWindow().AddRenderer(self.ren)
         self.ren.SetBackground(0, 0, 0)
-        self.sphereActor = vtk.vtkActor()
+        self.sphereActor = vtkActor()
 
         # Settings for creation of sample
         self.x_uc = 1
@@ -45,14 +46,14 @@ class VTKview(wxVTKRenderWindow):
         self.toolbar = None
         self.cursor_mode = 'orbit'
 
-        self.textMapper = vtk.vtkTextMapper()
+        self.textMapper = vtkTextMapper()
         tprop = self.textMapper.GetTextProperty()
         tprop.SetFontFamilyToArial()
         tprop.SetFontSize(10)
         tprop.BoldOn()
         tprop.ShadowOn()
         tprop.SetColor(1, 1, 1)
-        self.textActor = vtk.vtkActor2D()
+        self.textActor = vtkActor2D()
         self.textActor.VisibilityOff()
         self.textActor.SetMapper(self.textMapper)
 
@@ -159,16 +160,16 @@ class VTKview(wxVTKRenderWindow):
         #print dir(actor)
         #print dir(actor.GetProperty())
 
-        sphere = vtk.vtkSphereSource()
+        sphere = vtkSphereSource()
         sphere.SetRadius(self.radius*1.1)
         sphere.SetCenter(actor.GetCenter())
         sphere.SetThetaResolution(self.theta_res)
         sphere.SetPhiResolution(self.phi_res)
 
-        spheremapper = vtk.vtkPolyDataMapper()
+        spheremapper = vtkPolyDataMapper()
         spheremapper.SetInputConnection(sphere.GetOutputPort())
 
-        sphereActor = vtk.vtkActor()
+        sphereActor = vtkActor()
         sphereActor.SetMapper(spheremapper)
         sphereActor.GetProperty().SetColor((0.0, 0.0, 0.0))
         sphereActor.GetProperty().SetOpacity(0.5)
@@ -269,7 +270,7 @@ class VTKview(wxVTKRenderWindow):
         self.textActor.VisibilityOff()
 
     def create_axes(self, a=2.0, b=2.0, c=2.0):
-        axesActor=vtk.vtkAxesActor()
+        axesActor = vtkAxesActor()
         #axesActor.SetShaftTypeToCylinder()
         #axesActor.SetXAxisLabelText('x')
         #axesActor.SetYAxisLabelText('y')
@@ -279,16 +280,16 @@ class VTKview(wxVTKRenderWindow):
 
     def _create_sphere(self, x, y, z, col, opacity = 1.0):
         '''Create a sphere actor at (x,y,z) with color c and return it'''
-        sphere=vtk.vtkSphereSource()
+        sphere = vtkSphereSource()
         sphere.SetRadius(self.radius)
         sphere.SetCenter(x,y,z)
         sphere.SetThetaResolution(self.theta_res)
         sphere.SetPhiResolution(self.phi_res)
 
-        spheremapper = vtk.vtkPolyDataMapper()
+        spheremapper = vtkPolyDataMapper()
         spheremapper.SetInputConnection(sphere.GetOutputPort())
 
-        sphereActor = vtk.vtkActor()
+        sphereActor = vtkActor()
         sphereActor.SetMapper(spheremapper)
         sphereActor.GetProperty().SetDiffuseColor(col)
         sphereActor.GetProperty().SetAmbientColor(self.amb_col)

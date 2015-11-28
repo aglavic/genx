@@ -207,6 +207,7 @@ class DataListEvent(wx.PyCommandEvent):
         self.data = data
         self.data_changed = True
         self.new_data = False
+        self.new_model = False
         self.description = ''
         self.data_moved = False
         self.position = 0
@@ -375,9 +376,8 @@ class VirtualDataList(wx.ListCtrl):
         indices.pop(-1)
         return indices
         
-    def _UpdateData(self, desc, data_changed = True, new_data = False,\
-            position = None, moved = False, direction_up = True,\
-             deleted = False, name_change = False, new_model = False):
+    def _UpdateData(self, desc, data_changed=True, new_data=False, position=None, moved=False, direction_up=True,
+                    deleted=False, name_change=False, new_model=False):
         '''
         Internal funciton to send an event to update data
         '''
@@ -393,6 +393,7 @@ class VirtualDataList(wx.ListCtrl):
             evt.SetDataMoved(position, direction_up)
         if deleted:
             evt.SetDataDeleted(position)
+        print evt.new_data
         # Process the event!
         self.GetEventHandler().ProcessEvent(evt)
     
@@ -436,8 +437,7 @@ class VirtualDataList(wx.ListCtrl):
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
             # Send update event
-            self._UpdateData('Data Deleted', deleted = True,\
-                position = indices)
+            self._UpdateData('Data Deleted', deleted=True, position=indices)
 
         dlg.Destroy()
         

@@ -1134,15 +1134,15 @@ class DataParameterPanel(wx.Panel):
         '''
         self.script_update_func = func
     
-    def Update(self, update_script = True):
+    def UpdateListbox(self, update_script=True):
         '''Update(self) --> None
         
         Update the listbox and runs the callback script_update_func
         '''
         self.update_listbox()
-        
         if self.script_update_func and update_script:
             self.script_update_func(None)
+        self.Refresh()
             
     def update_listbox(self):
         '''update_listbox(self) --> None
@@ -1206,7 +1206,7 @@ class DataParameterPanel(wx.Panel):
             if dlg.ShowModal() == wx.ID_OK:
                 exp = dlg.GetExpression()
                 self.expressionlist[data_pos][exp_pos] = exp
-                self.Update()
+                self.UpdateListbox()
         if exp_pos == -1 and data_pos != -1:
             # Editing the simulation function and its arguments
             dlg = SimulationExpressionDialog(self, self.plugin.GetModel(),
@@ -1218,7 +1218,7 @@ class DataParameterPanel(wx.Panel):
                 self.args[data_pos] = dlg.GetExpressions()
                 self.insts[data_pos] = dlg.GetInstrument()
                 self.sim_funcs[data_pos] = dlg.GetSim()
-                self.Update()
+                self.UpdateListbox()
         
     def Insert(self, event):
         ''' Insert(self, event) --> None
@@ -1234,7 +1234,7 @@ class DataParameterPanel(wx.Panel):
                     self.expressionlist[data_pos].insert(0, exp)
                 else:
                     self.expressionlist[data_pos].insert(exp_pos, exp)
-                self.Update()
+                self.UpdateListbox()
         
     def Delete(self, event):
         '''Delete(self, event) --> None
@@ -1244,7 +1244,7 @@ class DataParameterPanel(wx.Panel):
         data_pos, exp_pos = self.get_expression_position()
         if exp_pos != -1 and data_pos != -1:
             self.expressionlist[data_pos].pop(exp_pos)
-            self.Update()
+            self.UpdateListbox()
     
         
     def MoveUp(self, event):
@@ -1270,7 +1270,7 @@ class DataParameterPanel(wx.Panel):
             self.parameterlist)
         if dlg.ShowModal() == wx.ID_OK:
             self.parameterlist = dlg.GetLines()
-            self.Update()
+            self.UpdateListbox()
         dlg.Destroy()
         
     def OnDataChanged(self, event):
@@ -1278,7 +1278,7 @@ class DataParameterPanel(wx.Panel):
         
         Updated the data list
         '''
-        self.Update(update_script = False)
+        self.UpdateListbox(update_script = False)
         
 class EditCustomParameters(wx.Dialog):
     def __init__(self, parent, model, lines):
@@ -1851,8 +1851,10 @@ class Plugin(framework.Template):
         sld_plot_panel.Layout()
         
         if self.model_obj.filename != '' and self.model_obj.script != '':
+            print "Reflectivity plugin: Reading loaded model"
             self.ReadModel()
         else:
+            print "Reflectivity plugin: Creating new model"
             self.CreateNewModel()
         
         # Create a menu for handling the plugin
@@ -1940,8 +1942,7 @@ class Plugin(framework.Template):
         if event.new_model:
             return
 
-        if event.data_moved or event.deleted or event.new_data\
-            or event.name_change:
+        if event.data_moved or event.deleted or event.new_data or event.name_change:
             names = [data_set.name for data_set in self.GetModel().get_data()]
             self.simulation_widget.SetDataList(names)
 
@@ -1994,11 +1995,11 @@ class Plugin(framework.Template):
             # Check so we have not clicked on new model button
             if self.GetModel().script != '':
                 self.WriteModel()
-                self.simulation_widget.Update()
+                self.simulation_widget.UpdateListbox()
                 if event.name_change:
                     self.sld_plot.Plot()
             else:
-                self.simulation_widget.Update(update_script=False)
+                self.simulation_widget.UpdateListbox(update_script=True)
         else:
             if event.data_changed:
                 self.sld_plot.Plot()
@@ -2098,7 +2099,7 @@ class Plugin(framework.Template):
         self.simulation_widget.SetSimArgs(['Specular']*nb_data_sets,
                                           ['inst']*nb_data_sets, 
                                           [['d.x'] for i in range(nb_data_sets)])
-        self.simulation_widget.Update(update_script = True)
+        self.simulation_widget.UpdateListbox(update_script = True)
         
         self.sample_widget.Update(update_script = True)
         #self.WriteModel()
@@ -2410,7 +2411,7 @@ class Plugin(framework.Template):
         self.simulation_widget.SetSimArgs(sim_funcs, insts, sim_args)
         
         self.sample_widget.Update(update_script = False)
-        self.simulation_widget.Update(update_script = False)
+        self.simulation_widget.UpdateListbox(update_script = False)
         # The code have a tendency to screw up the model slightly when compiling it - the sample will be connected to
         # to the module therefore reset the compiled flag so that the model has to be recompiled before fitting.
         self.GetModel().compiled = False
