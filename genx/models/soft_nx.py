@@ -307,11 +307,11 @@ def Specular(TwoThetaQz, sample, instrument):
         # Polarization uu or ++
         if pol == instrument_string_choices['pol'][0] or pol == 0:
             R = Paratt.ReflQ(Q,instrument.getWavelength(),\
-                1.0 - l2pi*(sld - sld_m), d, sigma)
+                1.0 - l2pi*(sld + sld_m), d, sigma)
         # Polarization dd or --
         elif pol == instrument_string_choices['pol'][1] or pol == 1:
             R = Paratt.ReflQ(Q,instrument.getWavelength(),\
-                 1.0 - l2pi*(sld + sld_m), d, sigma)
+                 1.0 - l2pi*(sld - sld_m), d, sigma)
         elif pol == instrument_string_choices['pol'][3] or pol == 3:
             Rp = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0 - l2pi*(sld - sld_m), d, sigma)
             Rm = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0 - l2pi*(sld + sld_m), d, sigma)
@@ -329,8 +329,8 @@ def Specular(TwoThetaQz, sample, instrument):
                 Q_ok = any(not_equal(Buffer.TwoThetaQz, Q))
         if Buffer.parameters != parameters or not Q_ok:
             #msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
-            np = 1.0 - l2pi*(sld - sld_m)
-            nm = 1.0 - l2pi*(sld + sld_m)
+            np = 1.0 - l2pi*(sld + sld_m)
+            nm = 1.0 - l2pi*(sld - sld_m)
             Vp = (2*pi/instrument.getWavelength())**2*(1 - np**2)
             Vm = (2*pi/instrument.getWavelength())**2*(1 - nm**2)
             (Ruu, Rdd, Rud, Rdu) = MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma)
