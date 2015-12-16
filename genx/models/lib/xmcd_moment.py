@@ -535,9 +535,9 @@ class Spectrum2p(refl.ReflBase):
         self.m_l3 = np.arange(-self.j_l3, self.j_l3 + 1./2., 1.0)
         self.m_l2 = np.arange(-self.j_l2, self.j_l2 + 1./2., 1.0)
 
-        self.fres = refl.ReflFunction(self.calc_fres, (valid_e, ), (), id='f(E)')
-        self.fm1 = refl.ReflFunction(self.calc_fm1, (valid_e, ), (), id='f(E)')
-        self.fm2 = refl.ReflFunction(self.calc_fm2, (valid_e, ), (), id='f(E)')
+        self.fres = refl.ReflFunction(self.calc_fres, (valid_e, ), {}, id='f(E)')
+        self.fm1 = refl.ReflFunction(self.calc_fm1, (valid_e, ), {}, id='f(E)')
+        self.fm2 = refl.ReflFunction(self.calc_fm2, (valid_e, ), {}, id='f(E)')
 
     def _make_w_set_func(self, w_index):
         """ Creates a set function for a ground state moment and binds it to the object
