@@ -358,9 +358,9 @@ class DataSet:
         
         for key in self.extra_data_raw:
             exec('%s = self.%s_raw' % (key, key))
-        
+
         for key in self.extra_commands:
-            exec('self.extra_data[%s] = eval(self.extra_commands["%s"])' % (key, key))
+            self.extra_data[key] = eval('self.extra_commands["%s"]' % key)
         
         
     def run_command(self):

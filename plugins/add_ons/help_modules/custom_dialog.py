@@ -415,7 +415,7 @@ class ComplexObjectValidator(wx.PyValidator):
         try:
             val = self.eval_func(text)
         except Exception, S:
-            wx.MessageBox("Can't evaluate the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
+            wx.MessageBox("Can't compile the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
             textCtrl.Refresh()
@@ -431,7 +431,7 @@ class ComplexObjectValidator(wx.PyValidator):
                self.value = complex(val)
             except StandardError,S:
                 if not any([isinstance(val, typ) for typ in self.alt_types]):
-                    wx.MessageBox("Can't evaluate the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
+                    wx.MessageBox("Can't evaluate the complex expression, not the correct type!!\nERROR:\n%s"%S.__str__(), "Error")
                     textCtrl.SetBackgroundColour("pink")
                     textCtrl.SetFocus()
                     textCtrl.Refresh()
