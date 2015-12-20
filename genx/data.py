@@ -360,7 +360,7 @@ class DataSet:
             exec('%s = self.%s_raw' % (key, key))
 
         for key in self.extra_commands:
-            self.extra_data[key] = eval('self.extra_commands["%s"]' % key)
+            self.extra_data[key] = eval(self.extra_commands["%s"%key])
         
         
     def run_command(self):
