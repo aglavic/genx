@@ -616,7 +616,7 @@ class Spectrum2p(refl.ReflBase):
         if len(spectra) == 1:
             spectra = spectra[0]
 
-        return spectra.conj()
+        return spectra
 
     def calc_fres(self, energy):
         """ Calculate the isotropic resonant scattering length. """
@@ -885,7 +885,7 @@ class Background2p(refl.ReflBase):
         ekk, f1kk = kk_int(self.e_tab, f2kk, self.Z)
         f1kk += self.f1_tab
         f1 = np.interp(energy, self.e_tab, f1kk)
-        return f1 + 1.0J*f2
+        return f1 - 1.0J*f2
 
     def calc_abs(self, energy):
         """ Calculates the absorption background function for the given energies.

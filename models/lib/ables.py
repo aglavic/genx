@@ -89,7 +89,7 @@ def ReflQ_mag(Q, lamda, n, d, sigma, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l):
     X_lu = ass_X_2int(k_u[:,1:], k_l[:,:-1])
     X_l = ass_X_2int(k_l[:,:-1], k[:,:-1])
     X_u = ass_X_2int(k[:,1:], k_u[:,1:])
-    print 'X: ', X_lu.shape, X_l.shape, X_u.shape
+    #print 'X: ', X_lu.shape, X_l.shape, X_u.shape
 
     X = int_lay_xmean.calc_iso_Xmean(X_l, X_lu, X_u, k, k_l, k_u, dd_u, dd_l,
                                      sigma, sigma_l, sigma_u)

@@ -238,7 +238,7 @@ class NumberValidator(wx.PyValidator):
         pos = tc.GetInsertionPoint()
 
         if event.GetUnicodeKey() != wx.WXK_NONE:
-            if key in [wx.WXK_RETURN, wx.WXK_TAB]:
+            if key in [wx.WXK_RETURN, wx.WXK_TAB, wx.WXK_BACK]:
                 event.Skip()
                 return
 
@@ -297,7 +297,7 @@ class NumberValidator(wx.PyValidator):
                     return
 
         elif key in [wx.WXK_TAB, wx.WXK_RETURN, wx.WXK_DOWN, wx.WXK_UP, wx.WXK_LEFT, wx.WXK_RIGHT, wx.WXK_NUMPAD_LEFT,
-                     wx.WXK_NUMPAD_RIGHT]:
+                     wx.WXK_NUMPAD_RIGHT, wx.WXK_DELETE, wx.WXK_BACK]:
             event.Skip()
             return
 
