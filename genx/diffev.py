@@ -467,13 +467,16 @@ class DiffEv:
         self.running = True
         self.error = False
         self.n_fom = 0
-        #print self.pop_vec
-        #eval_fom()
-        #self.fom_vec = self.trial_fom[:]
-        # Old leftovers before going parallel
-        self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
+        ## Old leftovers before going parallel
+        #self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
+        #[self.par_evals.append(vec, axis = 0) for vec in self.pop_vec]
+        #[self.fom_evals.append(vec) for vec in self.fom_vec]
+        # New parallel calcualtions
+        self.trial_vec = self.pop_vec[:]
+        self.eval_fom()
         [self.par_evals.append(vec, axis = 0) for vec in self.pop_vec]
-        [self.fom_evals.append(vec) for vec in self.fom_vec]
+        [self.fom_evals.append(vec) for vec in self.trial_fom]
+        self.fom_vec = self.trial_fom[:]
         #print self.fom_vec
         best_index = argmin(self.fom_vec)
         #print self.fom_vec
@@ -513,9 +516,7 @@ class DiffEv:
             [self.update_pop(index) for index in range(self.n_pop)]
 
             # Add the evaluation to the logging
-            #self.par_evals = append(self.par_evals, self.trial_vec, axis = 0)
             [self.par_evals.append(vec, axis = 0) for vec in self.trial_vec]
-            #self.fom_evals = append(self.fom_evals, self.trial_fom)
             [self.fom_evals.append(vec) for vec in self.trial_fom]
 
             # Add the best value to the fom log

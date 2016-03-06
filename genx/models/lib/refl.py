@@ -37,7 +37,7 @@ class ReflFunction:
     def _check_obj(self, other):
         """ Checks the object other so that it fulfills the demands for arithmetic operations.
         """
-        supported_types = [int, float, long, complex]
+        supported_types = [int, float, long, complex, np.float64, np.float32]
         if is_reflfunction(other):
             if self.id != other.id:
                 raise TypeError("Two ReflFunction objects must have identical id's to conduct arithmetic operations")
