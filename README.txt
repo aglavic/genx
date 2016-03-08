@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 2.4.8
+=============
+ * Fixed bug that delete and backspace did not work in the parameter grid under Windows.
+ * Fixed so that data can be loaded with the resolution data loader.
+
 Changes 2.4.7
 =============
  * Fixed bug, parallel fitting with mag_refl stopped in "going into optimisation".
