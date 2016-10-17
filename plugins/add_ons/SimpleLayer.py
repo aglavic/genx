@@ -16,7 +16,7 @@ the x-ray and neutron values ( *f* , *b* ) as well as the density and rename the
 with the given formula.
 
 Written by Artur Glavic
-Last Changes 04/16/15
+Last Changes 10/11/16
 '''
 
 import os, sys
@@ -29,11 +29,17 @@ import images as img
 from plugins import add_on_framework as framework
 
 # configuration file to store the known materials
-config_path = os.path.expanduser(os.path.join('~', '.genx'))
+try:
+  import appdirs
+except ImportError:
+  config_path=os.path.expanduser(os.path.join('~', '.genx'))
+else:
+  config_path=appdirs.user_data_dir('GenX', 'MattsBjorck')
 if not os.path.exists(config_path):
     os.makedirs(config_path)
-config_file = os.path.join(config_path, 'materials.cfg')
+config_file=os.path.join(config_path, 'materials.cfg')
 
+mg=None
 
 class Plugin(framework.Template):
     def __init__(self, parent):
@@ -61,12 +67,12 @@ class Plugin(framework.Template):
         # A list containing chemical formula and atomic density for different
         # materials. Each created material is stored and can be reused.
         if os.path.exists(config_file):
-            self.known_materials = json.loads(open(config_file, 'rb').read())
+            self.known_materials=json.loads(open(config_file, 'rb').read())
         else:
-            self.known_materials = []
-        self.tool_panel = wx.Panel(self.materials_panel)
-        self.materials_list = MaterialsList(self.materials_panel, self.known_materials)
-        self.sizer_vert = wx.BoxSizer(wx.VERTICAL)
+            self.known_materials=[]
+        self.tool_panel=wx.Panel(self.materials_panel)
+        self.materials_list=MaterialsList(self.materials_panel, self.known_materials)
+        self.sizer_vert=wx.BoxSizer(wx.VERTICAL)
         self.materials_panel.SetSizer(self.sizer_vert)
 
         self.create_toolbar()
@@ -104,8 +110,8 @@ class Plugin(framework.Template):
         self.materials_panel.Bind(wx.EVT_BUTTON, self.material_apply, self.bitmap_button_apply)
 
     def material_add(self, event):
-        dialog = MaterialDialog(self.parent)
-        if dialog.ShowModal() == wx.ID_OK:
+        dialog=MaterialDialog(self.parent)
+        if dialog.ShowModal()==wx.ID_OK:
             self.materials_list.AddItem(dialog.GetResult())
         open(config_file, 'wb').write(json.dumps(self.known_materials))
         dialog.Destroy()
@@ -115,33 +121,36 @@ class Plugin(framework.Template):
         open(config_file, 'wb').write(json.dumps(self.known_materials))
 
     def material_apply(self, event):
-        index = self.materials_list.GetFirstSelected()
-        formula, density = self.known_materials[index]
-        f = self.get_f(formula)
-        b = self.get_b(formula)
-        layer = self.get_selected_layer()
+        index=self.materials_list.GetFirstSelected()
+        formula, density=self.known_materials[index]
+        f=self.get_f(formula)
+        b=self.get_b(formula)
+        layer=self.get_selected_layer()
         if layer:
-            layer.f = f
-            layer.b = b
-            layer.dens = density
+            layer.f=f
+            layer.b=b
+            layer.dens=density
         name=u''
         for element, count in formula:
-            if count == 1:
-                name += "%s" % (element)
-            elif float(count) == int(count):
-                name += "%s%i" % (element, count)
+            if count==1:
+                name+="%s"%(element)
+            elif float(count)==int(count):
+                name+="%s%i"%(element, count)
             else:
-                name += ("%s%s" % (element, count)).replace('.', '_')
+                name+=("%s%s"%(element, count)).replace('.', '_')
         self.set_layer_name(name)
-        self.refplugin.sample_widget.UpdateListbox()
+        try:
+          self.refplugin.sample_widget.UpdateListbox()
+        except AttributeError:
+          self.refplugin.sample_widget.Update()
 
     def get_selected_layer(self):
-        layer_idx = self.refplugin.sample_widget.listbox.GetSelection()
-        active_layer = self.refplugin.sampleh.getItem(layer_idx)
-        if active_layer.__class__.__name__ == "Stack":
+        layer_idx=self.refplugin.sample_widget.listbox.GetSelection()
+        active_layer=self.refplugin.sampleh.getItem(layer_idx)
+        if active_layer.__class__.__name__=="Stack":
                 # create a new layer to return
             self.refplugin.sampleh.insertItem(layer_idx, 'Layer', 'WillChange')
-            active_layer = self.refplugin.sampleh.getItem(layer_idx+1)
+            active_layer=self.refplugin.sampleh.getItem(layer_idx+1)
         return active_layer
 
     def set_layer_name(self, name):
@@ -371,13 +380,13 @@ class MaterialDialog(wx.Dialog):
 
         table.Add(wx.StaticText(self, label="1. Unit Cell Parameters:"), (3, 0),
                   span=(1, 3), flag=wx.ALIGN_CENTER)
-        table.Add(wx.StaticText(self, label="a [Å]"), (4, 0), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label=u"a [Å]"), (4, 0), flag=wx.ALIGN_CENTER)
         self.a_entry=wx.TextCtrl(self, size=(50, 25))
         table.Add(self.a_entry, (5, 0), flag=wx.EXPAND)
-        table.Add(wx.StaticText(self, label="b [Å]"), (4, 1), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label=u"b [Å]"), (4, 1), flag=wx.ALIGN_CENTER)
         self.b_entry=wx.TextCtrl(self, size=(50, 25))
         table.Add(self.b_entry, (5, 1), flag=wx.EXPAND)
-        table.Add(wx.StaticText(self, label="c [Å]"), (4, 2), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label=u"c [Å]"), (4, 2), flag=wx.ALIGN_CENTER)
         self.c_entry=wx.TextCtrl(self, size=(50, 25))
         table.Add(self.c_entry, (5, 2), flag=wx.EXPAND)
 
@@ -402,23 +411,38 @@ class MaterialDialog(wx.Dialog):
         cif_button.Bind(wx.EVT_BUTTON, self.OnLoadCif)
         table.Add(cif_button, (8, 1), span=(2, 2), flag=wx.ALIGN_CENTER)
 
+        if mg is None:
+          try:
+            global mg, MPRester
+            import pymatgen as mg
+            from pymatgen.matproj.rest import MPRester
+          except ImportError:
+            pass
+        if mg is None:
+          mg_txt=wx.StaticText(self, label="Install PyMatGen for Online Query")
+          table.Add(mg_txt, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+        else:
+          mg_button=wx.Button(self, label="Query Online (PyMatGen)")
+          mg_button.Bind(wx.EVT_BUTTON, self.OnQuery)
+          table.Add(mg_button, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+
         for entry in [self.a_entry, self.b_entry, self.c_entry,
                       self.alpha_entry, self.beta_entry, self.gamma_entry,
                       self.FUs_entry]:
             entry.Bind(wx.EVT_TEXT, self.OnUnitCellChanged)
 
 
-        table.Add(wx.StaticText(self, label="2. Physical Parameter:"), (10, 0),
+        table.Add(wx.StaticText(self, label="2. Physical Parameter:"), (11, 0),
                   span=(1, 3), flag=wx.ALIGN_CENTER)
         self.mass_density=wx.TextCtrl(self, size=(70, 25))
         self.mass_density.Bind(wx.EVT_TEXT, self.OnMassDensityChange)
-        table.Add(wx.StaticText(self, label=u"Mass Density [g/cm³]:"), (11, 0))
-        table.Add(self.mass_density, (11, 1), span=(1, 1))
+        table.Add(wx.StaticText(self, label=u"Mass Density [g/cm³]:"), (12, 0))
+        table.Add(self.mass_density, (12, 1), span=(1, 1))
 
-        table.Add(wx.StaticText(self, label="Result from 1. or 2.:"), (12, 0), span=(1, 3))
+        table.Add(wx.StaticText(self, label="Result from 1. or 2.:"), (13, 0), span=(1, 3))
         self.result_density=wx.TextCtrl(self, size=(150, 25))
-        table.Add(wx.StaticText(self, label=u"Density [FU/Å³]:"), (13, 0))
-        table.Add(self.result_density, (13, 1), span=(1, 2))
+        table.Add(wx.StaticText(self, label=u"Density [FU/Å³]:"), (14, 0))
+        table.Add(self.result_density, (14, 1), span=(1, 2))
 
         buttons=self.CreateButtonSizer(wx.OK|wx.CANCEL)
 
@@ -516,6 +540,45 @@ class MaterialDialog(wx.Dialog):
             self.extract_cif(filename)
         fd.Destroy()
 
+    def OnQuery(self, event):
+      if os.path.exists(os.path.join(config_path, 'materials.key')):
+        key=open(os.path.join(config_path, 'materials.key'), 'r').read().strip()
+      else:
+        dia=wx.TextEntryDialog(self,
+            'Enter your Materials Project API key,\n (https://www.materialsproject.org/dashboard)',
+            'Enter Key')
+        if not dia.ShowModal()==wx.ID_OK:
+          return None
+        key=dia.GetValue()
+        open(os.path.join(config_path, 'materials.key'), 'w').write(key+'\n')
+      a=MPRester(key)
+      res=a.get_data(self.formula_entry.GetValue())
+      if type(res) is not list:
+        return
+      if len(res)>1:
+        # more then one structure available, ask for user input to select appropriate
+        items=[]
+        for i, ri in enumerate(res):
+          cs=ri['spacegroup']['crystal_system']
+          sgs=ri['spacegroup']['symbol']
+          frm=ri['full_formula']
+          v=ri['volume']
+          dens=ri['density']
+          items.append(u'%i: %s (%s) | UC Formula: %s\n     Density: %s g/cm³ | UC Volume: %s'%
+                       (i+1, sgs, cs, frm, dens, v))
+          if ri['tags'] is not None:
+            items[-1]+='\n     '+';'.join(ri['tags'][:3])
+        dia=wx.SingleChoiceDialog(self,
+                                  'Several entries have been found, please select appropriate:',
+                                  'Select correct database entry',
+                                  items)
+        if not dia.ShowModal()==wx.ID_OK:
+          return None
+        res=res[dia.GetSelection()]
+      else:
+        res=res[0]
+      return self.analyze_cif(res['cif'])
+
     def GetResult(self):
         return (self.extracted_elements, self.result_density.GetValue())
 
@@ -523,27 +586,33 @@ class MaterialDialog(wx.Dialog):
         """
           Try to get unit cell and formula unit information from a .cif file.
         """
-        cell_params=[1., 1., 1., 90., 90., 90., 1.]
-        composition=''
         if not os.path.exists(filename):
             return
-        file_lines=open(filename).readlines()
+        txt=open(filename).read()
+        return self.analyze_cif(txt)
+
+    def analyze_cif(self, txt):
+        cell_params=[1., 1., 1., 90., 90., 90., 1.]
+        composition=''
+        file_lines=txt.splitlines()
         for line in file_lines:
             if line.startswith('_cell_length_a'):
-                cell_params[0]=float(line.split()[1].split('(')[0])
+                cell_params[0]=round(float(line.split()[1].split('(')[0]), 3)
             if line.startswith('_cell_length_b'):
-                cell_params[1]=float(line.split()[1].split('(')[0])
+                cell_params[1]=round(float(line.split()[1].split('(')[0]), 3)
             if line.startswith('_cell_length_c'):
-                cell_params[2]=float(line.split()[1].split('(')[0])
+                cell_params[2]=round(float(line.split()[1].split('(')[0]), 3)
             if line.startswith('_cell_angle_alpha'):
-                cell_params[3]=float(line.split()[1].split('(')[0])
+                cell_params[3]=round(float(line.split()[1].split('(')[0]), 3)
             if line.startswith('_cell_angle_beta'):
-                cell_params[4]=float(line.split()[1].split('(')[0])
+                cell_params[4]=round(float(line.split()[1].split('(')[0]), 3)
             if line.startswith('_cell_angle_gamma'):
-                cell_params[5]=float(line.split()[1].split('(')[0])
+                cell_params[5]=round(float(line.split()[1].split('(')[0]), 3)
             if line.startswith('_cell_formula_units_Z'):
                 cell_params[6]=int(float(line.split()[1]))
-            if line.startswith('_chemical_formula_sum'):
+            if line.startswith('_chemical_formula_structural'):
+                composition=line.strip().split(None, 1)[1].replace(")", "").replace("(", "").replace("'", "").replace('"', '')
+            if line.startswith('_chemical_formula_sum') and composition=='':
                 composition=line.strip().split(None, 1)[1].replace("'", "").replace('"', '')
         self.formula_entry.SetValue(composition)
         self.OnFormulaChanged(None)

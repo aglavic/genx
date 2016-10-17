@@ -3,19 +3,22 @@ Library that contains the the class Model. This
 is a general class that store and binds togheter all the other
 classes that is part of model parameters, such as data and parameters.
 Programmer: Matts Bjorck
-Last changed: 2008 06 24
+Last changed: 2016 09 20
 '''
 
 # Standard libraries
 import shelve, os, new, zipfile
 import cPickle as pickle
 import pdb, StringIO, traceback
+import inspect
 
 import numpy as np
 # GenX libraries
 import data
 import parameters
 import fom_funcs
+
+
 
 #==============================================================================
 #BEGIN: Class Model
@@ -733,16 +736,22 @@ class Model:
         pars = []
         try:
             # Check if the have a pars in module named model
-            pars = self.eval_in_model('model.__pars__')
-            pars = ['model.%s'%p for p in pars]
+            pars_tmp = self.eval_in_model('model.__pars__')
+            pars_tmp = ['model.%s' % p for p in pars_tmp]
+            pars += pars_tmp
         except:
-            # Check if we have a __pars__ in the main script
-            try:
-                pars = self.eval_in_model('__pars__')
-                pars = ['%s'%p for p in pars]
-            except:
-                pass
+            pass
+
+        # Check if we have a __pars__ in the main script
+        try:
+            pars_tmp = self.eval_in_model('__pars__')
+            pars_tmp = ['%s' % p for p in pars_tmp]
+            pars += pars_tmp
+        except:
+            pass
+
         isstrings = sum([type(p) == type('') for p in pars]) == len(pars)
+
         if not isstrings:
             pars = []
         
@@ -755,12 +764,13 @@ class Model:
             except:
                 pass
             else:
-                classes.append(ctemp)
-        #Check so there are any classes defined before we proceed
+                if inspect.isclass(ctemp):
+                    classes.append(ctemp)
+        # Check so there are any classes defined before we proceed
         if len(classes) > 0:
             # Get all the objects in the compiled module
             names = self.script_module.__dict__.keys()
-            # Create a tuple of the classes we dfined above
+            # Create a tuple of the classes we defined above
             tuple_of_classes = tuple(classes)
             # Creating a dictionary that holds the name of the classes
             # eaxh item for a classes is a new dictonary that holds the

@@ -418,6 +418,7 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
 
     # TODO: Fix Corrections
     #R = correct_reflectivity(R, TwoThetaQz, instrument, theta, weight)
+    R = R * instrument.getI0() + instrument.getIbkg()
 
     return R
 

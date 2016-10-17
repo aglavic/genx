@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import sys, os, appdirs, argparse
+import os.path
 
 import version, model
 
@@ -97,6 +98,72 @@ def calc_errorbars(config, mod, opt):
         (error_low, error_high) = opt.calc_error_bar(index, fom_error_bars_level)
         error_values.append('(%.3e, %.3e,)' % (error_low, error_high))
     mod.parameters.set_error_pars(error_values)
+
+
+def create_simulated_data(args):
+    """Function to create simulated data from the model and add it to data.y"""
+
+    import model
+    import diffev
+    import filehandling as io
+
+    from scipy.stats import poisson
+
+    mod = model.Model()
+    config = io.Config()
+    config.load_default(os.path.split(os.path.abspath(__file__))[0] + 'genx.conf')
+    opt = diffev.DiffEv()
+
+    print "Loading file: %s " % args.infile
+    io.load_file(args.infile, mod, opt, config)
+    #io.load_opt_config(opt, config)
+    print "File loaded"
+
+    print "Simualting.."
+    mod.simulate()
+    print "Storing simualted data"
+    for data_set in mod.data:
+        data_set.y_raw = poisson.rvs(data_set.y_sim)
+        data_set.y_command = 'y'
+        data_set.run_y_command()
+        data_set.error_command = 'sqrt(where(y > 0, y, 1.0))'
+        data_set.run_error_command()
+
+    print 'Saving the model to %s' % args.outfile
+    io.save_file(args.outfile, mod, opt, config)
+
+def extract_parameters(args):
+    """Extracts the parameters to outfile"""
+
+    import model
+    import diffev
+    import filehandling as io
+
+    # Open the genx file
+    mod = model.Model()
+    config = io.Config()
+    config.load_default(os.path.split(os.path.abspath(__file__))[0] + 'genx.conf')
+    opt = diffev.DiffEv()
+
+    print "Loading file: %s " % args.infile
+    io.load_file(args.infile, mod, opt, config)
+    print "File loaded"
+
+    names, values = mod.parameters.get_sim_pars()
+
+    if args.outfile == '':
+        outfile = sys.stdout
+        fout = open(outfile, 'w')
+    else:
+        outfile = args.outfile
+        if os.path.isfile(outfile):
+            fout = open(outfile, 'a')
+        else:
+            fout = open(outfile, 'w')
+            # Add header
+            fout.write('\t'.join([name for name in names]) + '\n')
+    fout.write('\t'.join(['%f'%val for val in values]) + '\n')
+    fout.close()
 
 
 def start_fitting(args, rank=0):
@@ -242,6 +309,8 @@ if __name__ == "__main__":
     run_group.add_argument('-r', '--run', action='store_true', help='run GenX fit (no gui)')
     if __mpi__:
         run_group.add_argument('--mpi', action='store_true', help='run GenX fit with mpi (no gui)')
+    run_group.add_argument('-g', '--gen', action='store_true', help='generate data.y with poisson noise added')
+    run_group.add_argument('--pars', action='store_true', help='extract the parameters from the infile')
     opt_group = parser.add_argument_group('optimization arguments')
     opt_group.add_argument('--pr', type=int, default=0, help='Number of processes used in parallel fitting.')
     opt_group.add_argument('--cs', type=int, default=0, help='Chunk size used for parallel processing.')
@@ -274,6 +343,10 @@ if __name__ == "__main__":
         start_fitting(args)
     elif args.mpi:
         start_fitting(args, rank)
+    elif args.gen:
+        create_simulated_data(args)
+    elif args.pars:
+        extract_parameters(args)
     elif not args.run and not args.mpi:
         # Check if the application has been frozen
         if hasattr(sys, "frozen") and True:
