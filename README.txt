@@ -12,6 +12,10 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
 
+Changes in 2.4.3
+================
+ * Bug fix of rand_either_or method for optimisation
+
 Changes in 2.4.2
 ================
  * Minor bug fixes in the gui
