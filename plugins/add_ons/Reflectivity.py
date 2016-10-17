@@ -1940,8 +1940,8 @@ class Plugin(framework.Template):
         if event.new_model:
             return
 
-        if event.data_moved or event.deleted or event.new_data\
-            or event.name_change:
+
+        if event.data_moved or event.deleted or event.new_data or event.name_change:
             names = [data_set.name for data_set in self.GetModel().get_data()]
             self.simulation_widget.SetDataList(names)
 
