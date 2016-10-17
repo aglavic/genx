@@ -15,6 +15,8 @@ Changes 2.4.8
 =============
  * Fixed bug that delete and backspace did not work in the parameter grid under Windows.
  * Fixed so that data can be loaded with the resolution data loader.
+ * Fixed bug in the SimpleLayer plugin.
+ * Small bug fixes in parameter and data model classes
 
 Changes 2.4.7
 =============
