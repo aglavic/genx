@@ -19,7 +19,7 @@ import model as modellib
 import solvergui, help
 import filehandling as io
 
-manual_url = 'http://sourceforge.net/p/genx/wiki/'
+manual_url = 'http://genx.sourceforge.net/doc/'
 homepage_url = 'http://genx.sf.net'
 
 def get_pages(frame):

@@ -181,6 +181,84 @@ def Refl_nvary2(theta,lamda,n_vector,d,sigma):
     #return r
 
 
+def reflq_kin(q, lamda, n, d, sigma):
+    """Calculates the reflectivity in the kinematical approximation"""
+    d = d[:-1]
+    d[0] = 0
+    z = d.sum() - d.cumsum()
+    sigma = sigma[:-1]
+    q0 = 4*pi/lamda
+    # Q = Q.astype(complex128)
+    # The internal wave vector calacuted with the thickness averaged refractive index.
+    n_mean = (n[1:-1]*d[1:]/d.sum()).sum()
+    q_corr = sqrt((n_mean**2 - n[-1]**2)*q0**2 + (n[-1]*q)**2)
+    # Uncomment this for a pure kinematical treatment
+    # q_corr = q
+    # Kinematical reflectivity for the interfaces
+    rp = (n[:-1] - n[1:])[:, newaxis]*exp(-(q_corr*sigma[:, newaxis])**2/2)
+    p = exp(1.0j*z[:, newaxis]*q_corr)
+
+    r = (rp*p).sum(axis=0)*q0**2/q_corr**2/2.
+
+    # return the reflectivity
+    return abs(r)**2
+
+def reflq_pseudo_kin(q, lamda, n, d, sigma):
+    """Calculates the reflectivity in a pseudo kinematical approximation.
+    The mean refractive index of the film is simulated with the single reflection approximation and the deviation from
+    the mean is simulated with the kinematical approximation.
+    """
+    d = d[:-1]
+    d[0] = 0
+    z = d.sum() - d.cumsum()
+    sigma = sigma[:-1]
+    q0 = 4*pi/lamda
+    # Q = Q.astype(complex128)
+    # The internal wave vector calacuted with the thickness averaged refractive index.
+    n_mean = (n[1:-1]*d[1:]/d.sum()).sum()
+    q_corr = sqrt((n_mean**2 - n[-1]**2)*q0**2 + n[-1]**2*q**2)
+    q_sub = sqrt((n[0]**2 - n[-1]**2)*q0**2 + n[-1]**2*q**2)
+    q_amb = n[-1]*q
+    # Top interface
+    rp_top = (q_corr - q_amb) / (q_corr + q_amb) * exp(-q_corr*q/2 * sigma[-1]**2)
+    rp_sub = (q_sub - q_corr) / (q_sub + q_corr) * exp(-q_sub*q_corr/2 * sigma[0]**2)
+    #rp_top = -(n[-1] - n_mean)*exp(-(q_corr*sigma[-1])**2/2)*q0**2/q_corr**2/2.
+    #rp_sub = -(n_mean - n[0])*exp(-(q_corr*sigma[0])**2/2)*q0**2/q_corr**2/2.
+    # Kinematical reflectivity for the interfaces
+    n_diff = n - n_mean
+    n_diff[0] = 0
+    n_diff[-1] = 0
+    rp = (n_diff[:-1] - n_diff[1:])[:, newaxis]*exp(-(q_corr*sigma[:, newaxis])**2/2)
+    p = exp(1.0j*z[:, newaxis]*q_corr)
+
+    r_kin = (rp*p).sum(axis=0)*q0**2/q_corr**2/2.
+    r_sra = rp_top + rp_sub*exp(1.0j*d.sum()*q_corr)
+
+    # return the reflectivity
+    return abs(r_kin + r_sra)**2
+
+
+def reflq_sra(q, lamda, n, d, sigma):
+    """Single reflection approximation calculation of the reflectivity"""
+    # Length of k-vector in vaccum
+    d = d[1:-1]
+    sigma=sigma[:-1]
+    q0 = 4*pi/lamda
+    # Calculates the wavevector in each layer
+    qj = sqrt((n[:, newaxis]**2 - n[-1]**2)*q0**2 + (n[-1]*q)**2)
+    # Fresnel reflectivity for the interfaces
+    rp = (qj[:-1] - qj[1:])/(qj[1:] + qj[:-1])*exp(-qj[1:]*qj[:-1]/2*sigma[:, newaxis]**2)
+    # The wave does not transverse the ambient and substrate - ignoring them
+    # Also, the wave travels from top -> bottom, the array has the first element as the substrate
+    # - need to reverse the order.
+    phaseterm = (d[:, newaxis]*qj[1:-1])[::-1].cumsum(axis=0)[::-1]
+    p = exp(1.0J*phaseterm)
+    # Adding the first interface (top -> last in array) since p is not calculated for that layer (p = 1)
+    r = rp[-1] + (rp[:-1]*p).sum(axis=0)
+    # return the reflectivity
+    return abs(r)**2
+
+
 if __name__=='__main__':
     theta=arange(0,5,0.01)+1e-13
     #c=paratt.Refl(theta,1.54,array([1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1]),array([80,20,80,20,80,20]),0)

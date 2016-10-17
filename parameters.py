@@ -28,7 +28,7 @@ class Parameters:
         :return:
         """
         group['data_labels'] = self.data_labels
-        print np.array([r[0] for r in self.data], dtype='S50')
+        #print np.array([r[0] for r in self.data], dtype='S50')
         group['data col 0'] = np.array([r[0] for r in self.data], dtype=self.string_dtype)
         group['data col 1'] = [r[1] for r in self.data]
         group['data col 2'] = [r[2] for r in self.data]
@@ -47,6 +47,13 @@ class Parameters:
                      zip(group['data col 0'].value, group['data col 1'].value, group['data col 2'].value,
                          group['data col 3'].value,
                          group['data col 4'].value, group['data col 5'].value)]
+
+    def to_dict(self):
+        """Creates a dict from the names in the columns, returns a Dict"""
+        d = {}
+        for i in range(len(self.data_labels)):
+            d[self.data_labels[i]] = [r[i] for r in self.data]
+        return d
 
     def set_value(self, row, col, value):
         """ Set a value in the parameter grid """
