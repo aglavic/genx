@@ -73,7 +73,8 @@ if "py2exe" in sys.argv:
                               "skip_archive": True, # setting not to move compiled code into library.zip file
                               'packages': ['plugins', 'models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
                                            'scipy.weave', "h5py"],
-                              "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll'], 
+                              "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll', 'libgdk_pixbuf-2.0-0.dll',
+                                               'libgobject-2.0-0.dll', 'libgdk-win32-2.0-0.dll', 'libzmq.pyd'],
                               'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',"IPython", "Tkinter",
                                            "tcl", "mpi4py", "PyQt4"
                                            ],

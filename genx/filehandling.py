@@ -73,7 +73,11 @@ def save_hgx(fname, model, optimizer, config, group='current'):
     f = h5py.File(fname, 'w')
     g = f.create_group(group)
     model.write_h5group(g)
-    optimizer.write_h5group(g.create_group('optimizer'), clear_evals=not config.get_boolean('solver', 'save all evals'))
+    try:
+        clear_evals = not config.get_boolean('solver', 'save all evals')
+    except OptionError, e:
+        clear_evals = True
+    optimizer.write_h5group(g.create_group('optimizer'), clear_evals=True)
     g['config'] = config.model_dump()
     f.close()
 
@@ -174,7 +178,7 @@ def load_opt_config(optimizer, config):
                 setfunctions_bool[index](val)
         try:
             val = config.get('solver', 'create trial')
-        except io.OptionError, e:
+        except OptionError, e:
             print 'Could not read option solver.create trial'
         else:
             try:

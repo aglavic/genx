@@ -834,8 +834,6 @@ class SamplePanel(wx.Panel):
                     else:
                         print 'Unexpected problems when changing name...'
             dlg.Destroy()
-        
-        
 
     def lbDoubleClick(self,evt):
         sel = self.sampleh.getItem(self.listbox.GetSelection())

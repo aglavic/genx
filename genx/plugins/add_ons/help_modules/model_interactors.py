@@ -3105,46 +3105,89 @@ class CustomParametersDialog(wx.Dialog):
         return self.interactors
 
 
-if __name__ == "__main__":
+def test_islands():
+
+    class SurfaceCut:
+        __values__ = {'1DimGrating': {'elDens': 0.0, 'f': 0.0J, 'sig': 0.0},
+                      '2DimCircArray': {'mode': 'doubleExp', 'radiusIsl': None, 'nominalHeight': None, 'domeHeight': 0.,
+                                        'domeSig': 0.,'expUpSig': 10.**-6, 'expLowSig': 10.**-6,'expTopSig': 10.**6,
+                                        'expPear': 20.,'genRadialShift': 0., 'genXshift': 0.,'genYshift': 0.,
+                                        'elDens': 0.0, 'f': 0.0J, 'sig': 0.0},
+                      'Oxide': {'elDens': 0.0, 'f': 0.0J, 'sig': 0.0},
+                      }
+
+        def __init__(self, cut_type, **kwargs):
+            pass
+
+    class SurfaceCutInteractor(ObjectScriptInteractor):
+        def __init__(self, **kwargs):
+            ObjectScriptInteractor.__init__(self, **kwargs)
+            self.cut_type = ''
+
+
+    def parse_parameter_string(self, code):
+        """ Parses the creation of a domain object. Overloaded from ModelScriptInteractor.
+
+        The expected form of a domain object is: [name] = [class_name]([cut_type], [parameter]=[value]....)
+
+        Parameters:
+            code (string): code to parse
+
+        Returns:
+            new_parameters_values (dict): A dictionary of new parameter values.
+        """
+        special_values = {}
+        # Parsing bulk_slab
+        ind = code.index(',')
+        if ind < 0:
+            ValueError('Could not parse domain, argument cut_type')
+        special_values['cut_type'] = code[:ind].strip().strip("'").strip('"')
+        code = code[ind + 1:]
+
+        new_parameter_values = ObjectScriptInteractor.parse_parameter_string(self, code)
+        new_parameter_values.update(special_values)
+        return new_parameter_values
+
+    def get_parameter_code(self):
+        """ Create the code to generate the object. Overloaded from ModelScriptInteractor.
+
+        Returns:
+            code (string): Code representing the parameters, the things inside the parenthisis
+        """
+        code = "'%s', " % (self.cut_type, )
+        code += ObjectScriptInteractor.get_parameter_code(self)
+        return code
+
+    code = """
+        # BEGIN SurfaceCuts
+        sc1 = SurfaceCut('Oxide', elDens=10)
+        # END SurfaceCuts
+
+        def Sim(data):
+            I = []
+            # BEGIN DataSet 0
+            d = data[0]
+            I.append(sample.calc_i(inst, d.h, d.k, d.l))
+            # END DataSet 0
+            # BEGIN DataSet 1
+            d = data[1]
+            I.append(sample.calc_f(inst, d.h, d.k, d.l))
+            # END DataSet 1
+            return I
+
+        """
+    script_parser = ModelScriptInteractor()
+    script_parser.add_section('SurfaceCuts', SurfaceCutInteractor, class_name='SurfaceCut', class_impl=SurfaceCut)
+
+    script_parser.parse_code(code)
+
+
+def test_sxrd():
     import models.sxrd as model
     import models.utils as utils
 
-    print utils.__f0_dict__.keys()
-    slab = model.Slab(name='test', c=1.0)
-    slab.add_atom("s", 'Al', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-    slab.add_atom("o", 'Al', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-    slab.add_atom("x", 'Al', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-    slab.add_atom("q", 'Sr', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-    slab.add_atom("e", 'Al', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-    slab.add_atom("y", 'Al', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-    slab.add_atom("n", 'Al', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-    slab.add_atom("g", 'Al', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-    slab.add_atom("p", 'Al', 0.5, 0.5, 0.5, 1.0, 1, 1.0)
-
-    #uc = model.UnitCell(a=5, b=5, c=5, alpha=90, beta=90, gamma=90)
-    #uc_interactor = ObjectScriptInteractor(class_name='model.UnitCell', class_impl=model.UnitCell)
-    #uc_interactor.set_name('uc')
-    #uc_interactor.parse_code('uc = model.UnitCell(a=6, b=6, c=6, alpha=45, beta=45, gamma=45)')
-    #print uc_interactor.get_code()
-
-    #inst_interactor = ObjectScriptInteractor(class_name='model.Instrument', class_impl=model.Instrument)
-    #inst_interactor.parse_code('inst = model.Instrument(wavel=0.64, alpha=0.5, geom="alpha_in fixed")')
-    #print inst_interactor.get_code()
-
-    #dom_interactor = DomainInteractor(class_name='model.Domain', class_impl=model.Domain)
-    #dom_interactor.parse_code('dom = model.Domain(bulk_slab, [laouc, stouc], uc, occ=1.0)')
-    #print dom_interactor.get_code()
-
-    #slab_interactor = SlabInteractor(class_name='model.Slab', class_impl=model.Slab)
-    #slab_interactor.parse_code(
-    #    """slab = model.Slab(c=1.0)
-    #    slab.add_atom(id='al', el='Al', x=0.5, y=0.5, z=0.5, u=1.0, m=1, oc=1.0)
-    #    slab.add_atom(id='la', el='La', x=0.0, y=0.0, z=0.0, u=0.05, m=4, oc=0.5)
-    #    """
-    #)
-    #print slab_interactor.get_code()
-
     code = """
+
         # BEGIN UnitCells
         uc = model.UnitCell(a=6, b=6, c=6, alpha=45, beta=45, gamma=45)
         # END UnitCells
@@ -3236,3 +3279,6 @@ if __name__ == "__main__":
 
     app = MyApp(0)
     app.MainLoop()
+
+if __name__ == "__main__":
+    test_sxrd()

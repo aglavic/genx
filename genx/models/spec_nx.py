@@ -121,6 +121,8 @@ from lib.instrument import *
 import lib.refl as refl
 # Preamble to define the parameters needed for the models outlined below:
 
+#import lib.paratt as slow_paratt
+
 ModelID='SpecNX'
 #InstrumentParameters={'Wavelength':1.54, 'Coordinates':1, 'I0':1.0, 'Sim': 0,\
 #    'Res':0.001, 'Restype':0, 'Respoints':5, 'Resintrange':2, 'Beaw':0.01,\
@@ -316,6 +318,10 @@ def Specular(TwoThetaQz, sample, instrument):
     # Ordinary Paratt X-rays
     if type == instrument_string_choices['probe'][0] or type == 0:
         R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
+        #reload(slow_paratt)
+        #R = slow_paratt.reflq_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
+        #R = slow_paratt.reflq_pseudo_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
+        #R = slow_paratt.reflq_sra(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
     #Ordinary Paratt Neutrons
     elif type == instrument_string_choices['probe'][1] or type == 1:
         R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-sld,d,sigma)
