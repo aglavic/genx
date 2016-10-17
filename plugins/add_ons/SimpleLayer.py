@@ -133,7 +133,7 @@ class Plugin(framework.Template):
             else:
                 name += ("%s%s" % (element, count)).replace('.', '_')
         self.set_layer_name(name)
-        self.refplugin.sample_widget.Update()
+        self.refplugin.sample_widget.UpdateListbox()
 
     def get_selected_layer(self):
         layer_idx = self.refplugin.sample_widget.listbox.GetSelection()
