@@ -195,7 +195,7 @@ def paratt():
     mod.add_function(refl_nvary2_nosigma)
 
 
-    mod.compile(compiler='gcc')
+    mod.compile()
 
 def offspec():
     """
@@ -350,7 +350,7 @@ def offspec():
     mod.add_function(ext)
 
 
-    mod.compile(compiler='gcc')
+    mod.compile()
 
 def sxrd():
     """
@@ -411,7 +411,7 @@ def sxrd():
     mod.add_function(ext)
 
 
-    mod.compile(compiler='gcc')
+    mod.compile()
 
 
 

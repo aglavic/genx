@@ -436,8 +436,7 @@ class VirtualDataList(wx.ListCtrl):
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
             # Send update event
-            self._UpdateData('Data Deleted', deleted = True,\
-                position = indices)
+            self._UpdateData('Data Deleted', deleted=True, position=indices)
 
         dlg.Destroy()
         

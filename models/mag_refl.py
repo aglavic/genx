@@ -682,7 +682,16 @@ def compose_sld_anal(z, sample, instrument):
         raise ValueError('Wrong value of theory given. Value: %s'%theory)
     
 
-def compose_sld(sample, instrument, theta, xray_energy):
+def compose_sld(sample, instrument, theta, xray_energy, layer=None):
+    """ Composes the sld for a slicing model
+
+    Parameters:
+        sample: The sample
+        instrument: The instrument
+        theta: The incident angle
+        xray_energy: The xray energy either scalar or array
+        layer: Defines which layer number to return. If None (default) returns the entire profile.
+    """
     re = 2.8179402894e-5
     parameters = sample.resolveLayerParameters()
     dmag_l = array(parameters['dmag_l'], dtype=float64)
@@ -755,21 +764,15 @@ def compose_sld(sample, instrument, theta, xray_energy):
         comp_prof_x = refl.harm_sizes(comp_prof, new_shape, dtype = float64)
         mag_prof_x = refl.harm_sizes(mag_prof, new_shape, dtype = float64)
         sl_c_lay = comp_prof_x*sl_c[:, newaxis]
-        sl_c = sl_c_lay.sum(0)
         sl_m1_lay = comp_prof_x*mag_prof_x*sl_m1[:, newaxis]
-        sl_m1 = sl_m1_lay.sum(0)
         sl_m2_lay = comp_prof_x*mag_prof_x**2*sl_m2[:, newaxis]
-        sl_m2 = sl_m2_lay.sum(0)
+
         
         # Neutrons
         sl_n_lay = comp_prof*sl_n[:, newaxis]
-        sl_n = sl_n_lay.sum(0)
         abs_n_lay = comp_prof*abs_n[:,newaxis]
-        abs_n = abs_n_lay.sum(0)
         mag_dens_lay = comp_prof*mag_prof*dens_n[:, newaxis]
-        mag_dens = mag_dens_lay.sum(0)
-        mag_dens_x = (comp_prof*mag_prof*(dens_n*cos(theta_m)*cos(phi))[:, newaxis]).sum(0)
-        mag_dens_y = (comp_prof*mag_prof*(dens_n*cos(theta_m)*sin(phi))[:, newaxis]).sum(0)
+
 
         if not shape is None:
             M = rollaxis(array((ones(comp_prof_x.shape)*M[:,0][:, newaxis, newaxis],
@@ -786,9 +789,27 @@ def compose_sld(sample, instrument, theta, xray_energy):
         C = lamda**2*re/pi*sl_m2_lay
         g_0 = sin(theta*pi/180.0)
 
-        chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
-                                       B, C, M, d)
-        chi = tuple([c.sum(0) for c in chi[0] + chi[1] + chi[2]])
+        chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, B, C, M, d)
+        if layer is not None:
+            sl_c = sl_c_lay[layer]
+            sl_m1 = sl_m1_lay[layer]
+            sl_m2 = sl_m2_lay[layer]
+            sl_n = sl_n_lay[layer]
+            abs_n = abs_n_lay[layer]
+            mag_dens = mag_dens_lay[layer]
+            mag_dens_x = (comp_prof*mag_prof*(dens_n*cos(theta_m)*cos(phi))[:, newaxis])[layer]
+            mag_dens_y = (comp_prof*mag_prof*(dens_n*cos(theta_m)*sin(phi))[:, newaxis])[layer]
+            chi = tuple([c[layer] for c in chi[0] + chi[1] + chi[2]])
+        else:
+            sl_c = sl_c_lay.sum(0)
+            sl_m1 = sl_m1_lay.sum(0)
+            sl_m2 = sl_m2_lay.sum(0)
+            sl_n = sl_n_lay.sum(0)
+            abs_n = abs_n_lay.sum(0)
+            mag_dens = mag_dens_lay.sum(0)
+            mag_dens_x = (comp_prof*mag_prof*(dens_n*cos(theta_m)*cos(phi))[:, newaxis]).sum(0)
+            mag_dens_y = (comp_prof*mag_prof*(dens_n*cos(theta_m)*sin(phi))[:, newaxis]).sum(0)
+            chi = tuple([c.sum(0) for c in chi[0] + chi[1] + chi[2]])
 
         if sample.getCompress() == sample_string_choices['compress'][0]:
             #Compressing the profile..
