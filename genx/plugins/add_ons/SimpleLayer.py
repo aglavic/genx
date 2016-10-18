@@ -536,7 +536,7 @@ class MaterialDialog(wx.Dialog):
                          defaultFile='crystal.cif',
                          style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
         if fd.ShowModal()==wx.ID_OK:
-            filename=fd.GetFilename()
+            filename=fd.GetPath()
             self.extract_cif(filename)
         fd.Destroy()
 
