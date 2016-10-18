@@ -1,4 +1,4 @@
-This package contain GenX 2.4b2 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contain GenX 2.4.9 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -10,6 +10,10 @@ References
 ==========
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
+
+Changes 2.4.9
+=============
+ * Fixed bug in SimpleLayer plugin - could not load cif files under OSX.
 
 Changes 2.4.8
 =============
