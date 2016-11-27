@@ -248,7 +248,7 @@ class DataSet:
             raise LookupError('Can not find extra data with name %s'%name)
         return self.extra_data[name]
     
-    def loadfile(self,filename, sep='\t', pos=0):
+    def loadfile(self, filename, sep='\t', pos=0):
         '''
         Function to load data from a file.
         Note that the data should be in ASCII format and it can
@@ -261,7 +261,7 @@ class DataSet:
         
         '''
         try:
-            f=open(filename)
+            f = open(filename)
             #f.close()
         except:
             print "Can't open file: %s"%filename
@@ -289,7 +289,7 @@ class DataSet:
                     return True
                 else:
                     print "There are not enough columns in your data\n\
-                     As I see it there are %i columns"%A.shape[1]
+                           There are %i columns"%A.shape[1]
             return False
         
     def save_file(self, filename):

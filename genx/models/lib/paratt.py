@@ -181,27 +181,38 @@ def Refl_nvary2(theta,lamda,n_vector,d,sigma):
     #return r
 
 
-def reflq_kin(q, lamda, n, d, sigma):
+def reflq_kin(q, lamda, n, d, sigma, correct_q=True):
     """Calculates the reflectivity in the kinematical approximation"""
     d = d[:-1]
     d[0] = 0
     z = d.sum() - d.cumsum()
     sigma = sigma[:-1]
     q0 = 4*pi/lamda
-    # Q = Q.astype(complex128)
-    # The internal wave vector calacuted with the thickness averaged refractive index.
-    n_mean = (n[1:-1]*d[1:]/d.sum()).sum()
-    q_corr = sqrt((n_mean**2 - n[-1]**2)*q0**2 + (n[-1]*q)**2)
-    # Uncomment this for a pure kinematical treatment
-    # q_corr = q
     # Kinematical reflectivity for the interfaces
-    rp = (n[:-1] - n[1:])[:, newaxis]*exp(-(q_corr*sigma[:, newaxis])**2/2)
+    print n.shape, len(n.shape)
+    if len(n.shape) == 1:
+        if correct_q:
+            # The internal wave vector calacuted with the thickness averaged refractive index.
+            n_mean = (n[1:-1] * d[1:] / d.sum()).sum()
+            q_corr = sqrt((n_mean ** 2 - n[-1] ** 2) * q0 ** 2 + (n[-1] * q) ** 2)
+        else:
+            q_corr = q
+        rp = (n[:-1] - n[1:])[:, newaxis]*exp(-(q_corr*sigma[:, newaxis])**2/2)
+    else:
+        if correct_q:
+            # The internal wave vector calacuted with the thickness averaged refractive index.
+            n_mean = (n[1:-1] * d[1:][:, newaxis] / d.sum()).sum(axis=0)
+            q_corr = sqrt((n_mean ** 2 - n[-1] ** 2) * q0 ** 2 + (n[-1] * q) ** 2)
+        else:
+            q_corr = q
+        rp = (n[:-1] - n[1:]) * exp(-(q_corr * sigma[:, newaxis]) ** 2 / 2)
     p = exp(1.0j*z[:, newaxis]*q_corr)
 
     r = (rp*p).sum(axis=0)*q0**2/q_corr**2/2.
 
     # return the reflectivity
     return abs(r)**2
+
 
 def reflq_pseudo_kin(q, lamda, n, d, sigma):
     """Calculates the reflectivity in a pseudo kinematical approximation.
@@ -245,7 +256,10 @@ def reflq_sra(q, lamda, n, d, sigma):
     sigma=sigma[:-1]
     q0 = 4*pi/lamda
     # Calculates the wavevector in each layer
-    qj = sqrt((n[:, newaxis]**2 - n[-1]**2)*q0**2 + (n[-1]*q)**2)
+    if len(n.shape) == 1:
+        qj = sqrt((n[:, newaxis]**2 - n[-1]**2)*q0**2 + (n[-1]*q)**2)
+    else:
+        qj = sqrt((n ** 2 - n[-1] ** 2) * q0 ** 2 + (n[-1] * q) ** 2)
     # Fresnel reflectivity for the interfaces
     rp = (qj[:-1] - qj[1:])/(qj[1:] + qj[:-1])*exp(-qj[1:]*qj[:-1]/2*sigma[:, newaxis]**2)
     # The wave does not transverse the ambient and substrate - ignoring them

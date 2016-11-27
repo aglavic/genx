@@ -166,6 +166,35 @@ def extract_parameters(args):
     fout.close()
 
 
+def modify_file(args):
+    """Modify a GenX file given command line arguments"""
+    import model
+    import diffev
+    import filehandling as io
+
+    # Open the genx file
+    mod = model.Model()
+    config = io.Config()
+    config.load_default(os.path.split(os.path.abspath(__file__))[0] + 'genx.conf')
+    opt = diffev.DiffEv()
+
+    print "Loading file: %s " % args.infile
+    io.load_file(args.infile, mod, opt, config)
+    print "File loaded"
+
+    if args.datafile:
+        datafile = os.path.abspath(args.datafile)
+        if 0 > args.data_set or args.data_set > len(mod.data):
+            print "The selected data set does not exist - select one between 0 and %d" % (len(mod.data) - 1)
+            return
+        print 'Loading dataset %s into data set %d' % (datafile, args.data_set)
+        mod.data[args.data_set].loadfile(datafile)
+
+    if args.outfile:
+        print 'Saving the fit to %s'%args.outfile
+        io.save_file(args.outfile, mod, opt, config)
+
+
 def start_fitting(args, rank=0):
     """ Function to start fitting from the command line.
 
@@ -311,6 +340,7 @@ if __name__ == "__main__":
         run_group.add_argument('--mpi', action='store_true', help='run GenX fit with mpi (no gui)')
     run_group.add_argument('-g', '--gen', action='store_true', help='generate data.y with poisson noise added')
     run_group.add_argument('--pars', action='store_true', help='extract the parameters from the infile')
+    run_group.add_argument('--mod', action='store_true', help='modify the GenX file')
     opt_group = parser.add_argument_group('optimization arguments')
     opt_group.add_argument('--pr', type=int, default=0, help='Number of processes used in parallel fitting.')
     opt_group.add_argument('--cs', type=int, default=0, help='Chunk size used for parallel processing.')
@@ -321,15 +351,21 @@ if __name__ == "__main__":
     opt_group.add_argument('--kr', type=float, default=-1, help='Cross over constant (float 0 < kr < 1)')
     opt_group.add_argument('-s', '--esave', action='store_true', help='Force save evals to gx file.')
     opt_group.add_argument('-e', '--error', action='store_true', help='Calculate error bars before saving to file.')
-
+    data_group = parser.add_argument_group('data arguments')
+    data_group.add_argument('-d', dest='data_set', type=int, default=0,
+                            help='Active data set to act upon. Index starting at 0.')
+    data_group.add_argument('--load', dest='datafile',
+                            help='Load file into active data set. Index starting at 0.')
 
     parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
 
     args = parser.parse_args()
-    if args.infile != '':
-        args.infile = os.path.abspath(args.infile)
+    if not args.outfile:
+        args.outfile = args.infile
     args.outfile = os.path.abspath(args.outfile)
+    if args.infile:
+        args.infile = os.path.abspath(args.infile)
     path = os.path.split(model.__file__)[0]
     if os.path.abspath(path).endswith('.zip'):
         os.chdir(os.path.split(path)[0])
@@ -347,6 +383,8 @@ if __name__ == "__main__":
         create_simulated_data(args)
     elif args.pars:
         extract_parameters(args)
+    elif args.mod:
+        modify_file(args)
     elif not args.run and not args.mpi:
         # Check if the application has been frozen
         if hasattr(sys, "frozen") and True:

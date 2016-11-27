@@ -183,6 +183,9 @@ except StandardError,S:
     import lib.paratt as Paratt
 #import lib.paratt_weave as Paratt
 #import lib.paratt as Paratt
+# Hack to test kinematical approx
+#import lib.paratt as slow_paratt
+#reload(slow_paratt)
 
 import lib.ables as ables
 import lib.neutron_refl as neutron_refl
@@ -1319,15 +1322,27 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             # tot
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
+            # Hack to check kinematical approx
+            #Rm = slow_paratt.reflq_kin(4 * pi / lamda * sin(theta * pi / 180.), lamda*ones(theta.shape), n, d,
+            #                           zeros(d.shape))
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
+            # Hack to check kinematical approx
+            #Rp = slow_paratt.reflq_kin(4 * pi / lamda * sin(theta * pi / 180.), lamda * ones(theta.shape), n, d,
+            #                           zeros(d.shape))
             R = (Rp + Rm)/2.0
         elif pol == 3 or pol == instrument_string_choices['xpol'][3]:
             # ass
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] - sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rm = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
+            # Hack to check kinematical approx
+            #Rm = slow_paratt.reflq_kin(4 * pi / lamda * sin(theta * pi / 180.), lamda * ones(theta.shape), n, d,
+            #                           zeros(d.shape))
             n = 1 - lamda**2*re/pi*(sl_c[:,newaxis] + sl_m1[:, newaxis]*cos(theta*pi/180))/2.0
             Rp = Paratt.Refl_nvary2(theta, lamda*ones(theta.shape), n, d, zeros(d.shape))
+            # Hack to check kinematical approx
+            #Rp = slow_paratt.reflq_kin(4 * pi / lamda * sin(theta * pi / 180.), lamda * ones(theta.shape), n, d,
+            #                           zeros(d.shape))
             R = (Rp - Rm)/(Rp + Rm)
         else:
             raise ValueError('Variable pol has an unvalid value')
