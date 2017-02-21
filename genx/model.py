@@ -722,12 +722,12 @@ class Model:
         return self.filename
     
     def get_possible_parameters(self):
-        ''' get_possible_parameters(self) --> objlist, funclist
-        
-        Returns a list of all the current objects that are of 
-        the classes defined by self.registred_classes.
-        To be used in the parameter grid.
-        '''
+        """ Returns all the parameters that can be fitted. Is used by the parameter grid.
+
+        Returns:
+             par_dict (list):  all the current objects that are of the classes defined by self.registred_classes.
+
+        """
         # Start by updating the config file
         self.read_config()
         # First we should see if any of the 

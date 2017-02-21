@@ -184,16 +184,25 @@ def modify_file(args):
 
     if args.datafile:
         datafile = os.path.abspath(args.datafile)
-        if 0 > args.data_set or args.data_set > len(mod.data):
+        if 0 > args.data_set or args.data_set >= len(mod.data):
             print "The selected data set does not exist - select one between 0 and %d" % (len(mod.data) - 1)
             return
         print 'Loading dataset %s into data set %d' % (datafile, args.data_set)
         mod.data[args.data_set].loadfile(datafile)
 
-    if args.outfile:
-        print 'Saving the fit to %s'%args.outfile
-        io.save_file(args.outfile, mod, opt, config)
+        if args.outfile:
+            print 'Saving the fit to %s' % args.outfile
+            io.save_file(args.outfile, mod, opt, config)
 
+    elif args.save_datafile:
+        save_datafile = os.path.abspath(args.save_datafile)
+        print "Simualting.."
+        mod.simulate()
+        if 0 > args.data_set or args.data_set >= len(mod.data):
+            print "The selected data set does not exist - select one between 0 and %d" % (len(mod.data) - 1)
+            return
+        print 'Exporting data set %d into ASCII file %s' % (args.data_set, save_datafile)
+        mod.data[args.data_set].save_file(save_datafile)
 
 def start_fitting(args, rank=0):
     """ Function to start fitting from the command line.
@@ -356,6 +365,8 @@ if __name__ == "__main__":
                             help='Active data set to act upon. Index starting at 0.')
     data_group.add_argument('--load', dest='datafile',
                             help='Load file into active data set. Index starting at 0.')
+    data_group.add_argument('--export', dest='save_datafile',
+                            help='Save active data set to file. Index starting at 0.')
 
     parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')

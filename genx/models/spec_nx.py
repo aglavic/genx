@@ -318,6 +318,7 @@ def Specular(TwoThetaQz, sample, instrument):
     # Ordinary Paratt X-rays
     if type == instrument_string_choices['probe'][0] or type == 0:
         R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
+        #print 2.82e-5*sld
         #reload(slow_paratt)
         #R = slow_paratt.reflq_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
         #R = slow_paratt.reflq_pseudo_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)

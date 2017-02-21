@@ -15,10 +15,10 @@ def ass_P(k, d, ctype = _ctype):
 
 def ass_X(k, ctype = _ctype):
     '''Assemble the interface matrix for all interfaces'''
-    k_j = k[...,1:]
-    k_jm1 = k[...,:-1]
+    k_j = k[..., 1:]
+    k_jm1 = k[..., :-1]
 
-    X = np.empty((2,2) + k_j.shape, dtype = ctype)
+    X = np.empty((2, 2) + k_j.shape, dtype=ctype)
     
     X[0,0] = (k_j + k_jm1)/k_jm1/2
     X[0,1] = (k_jm1 - k_j)/k_jm1/2
@@ -103,23 +103,24 @@ def ReflQ_mag(Q, lamda, n, d, sigma, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l):
 
     return np.abs(r)**2
 
+
 def ReflQ_ref(Q,lamda,n,d,sigma):
     # Length of k-vector in vaccum
-    d=d[1:-1]
-    sigma=sigma[:-1]
-    Q0=4*pi/lamda
+    d = d[1:-1]
+    sigma = sigma[:-1]
+    Q0 = 4*np.pi/lamda
     # Calculates the wavevector in each layer
-    Qj=sqrt((n[:,newaxis]**2 - n[-1]**2)*Q0**2 + n[-1]**2*Q**2)
+    Qj=np.sqrt((n[:,np.newaxis]**2 - n[-1]**2)*Q0**2 + n[-1]**2*Q**2)
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])#*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     #print rp.shape #For debugging
     #print d.shape
     #print Qj[1:-1].shape
-    p=exp(1.0j*d[:,newaxis]*Qj[1:-1]) # Ignoring the top and bottom layer for the calc.
+    p=np.exp(1.0j*d[:,np.newaxis]*Qj[1:-1]) # Ignoring the top and bottom layer for the calc.
     #print p.shape #For debugging
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=array(map(lambda x,y:[x,y],rp[1:],p))
+    rpp=np.array(map(lambda x,y:[x,y],rp[1:],p))
     #print rpp.shape
     # Paratt's recursion formula
     def formula(rtot,rint):
@@ -128,7 +129,7 @@ def ReflQ_ref(Q,lamda,n,d,sigma):
     r=reduce(formula,rpp,rp[0])
     #print r.shape
     # return the reflectivity 
-    return abs(r)**2
+    return np.abs(r)**2
 
 
 if __name__ == '__main__':

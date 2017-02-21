@@ -173,4 +173,15 @@ if __name__=='__main__':
     ##print bc.fe
     #print fpc.Sn
     #print fp.Sn
-    print fd.Fe(100.0)
+    import time
+    N = 1000
+    t1 = time.time()
+    for i in range(N):
+        fd.Fe(100.0)
+    t2 = time.time()
+    print "Dispersive database access time: ", (t2-t1)/N
+    t1 = time.time()
+    for i in range(N):
+        fp.Fe
+    t2 = time.time()
+    print "Normal database access time: ", (t2 - t1) / N
