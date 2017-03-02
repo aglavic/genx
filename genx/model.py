@@ -18,6 +18,7 @@ import data
 import parameters
 import fom_funcs
 
+from models.lib.parameters import NumericParameter
 
 
 #==============================================================================
@@ -235,8 +236,7 @@ class Model:
         '''
         # Check so the filename is ok i.e. has been saved
         if self.filename == '':
-            raise IOError('File must be saved before new information is added'\
-                            ,'')
+            raise IOError('File must be saved before new information is added', '')
         try:
             savefile = zipfile.ZipFile(self.filename, 'a')
         except StandardError, e:
@@ -244,7 +244,7 @@ class Model:
         
         # Check so the model data is not overwritten
         if name == 'data' or name == 'script' or name == 'parameters':
-            raise IOError('It not alllowed to save a subfile with name: %s'%name)
+            raise IOError('It not alllowed to save a subfile with name: %s' % name)
         
         try:
             savefile.writestr(name, text)
@@ -260,9 +260,7 @@ class Model:
         '''
         # Check so the filename is ok i.e. has been saved
         if self.filename == '':
-            raise IOError('File must be loaded before additional '\
-                        + 'information is read'\
-                            ,'')
+            raise IOError('File must be loaded before additional information is read', '')
         try:
             loadfile = zipfile.ZipFile(self.filename, 'r')
         except StandardError, e:
@@ -271,8 +269,7 @@ class Model:
         try:
             text = loadfile.read(name)
         except StandardError, e:
-            raise IOError('Could not read the section named: %s'%name,\
-                            self.filename)
+            raise IOError('Could not read the section named: %s' % name, self.filename)
         loadfile.close()
         return text
         
@@ -456,12 +453,15 @@ class Model:
         if name == 'instancemethod' or name == 'function':
             return object
         # Nope lets make a function of it
+        elif isinstance(object, NumericParameter):
+            # We have a parameter that should be set
+            exec 'def __tempfunc__(val):\n\t%s.value = val' % str in self.script_module.__dict__
+            return self.script_module.__tempfunc__
         else:
-            #print 'def __tempfunc__(val):\n\t%s = val'%str
-            #The function must be created in the module in order to acess
+            # print 'def __tempfunc__(val):\n\t%s = val'%str
+            # The function must be created in the module in order to access
             # the different variables
-            exec 'def __tempfunc__(val):\n\t%s = val'%str\
-                in self.script_module.__dict__
+            exec 'def __tempfunc__(val):\n\t%s = val' % str in self.script_module.__dict__
                 
             #print self.script_module.__tempfunc__
             return self.script_module.__tempfunc__
@@ -789,15 +789,14 @@ class Model:
             [par_dict[obj.__class__.__name__].__setitem__(name, 
                      [member for member in dir(obj)
                         if member[:len(self.set_func)] == self.set_func])
-             for name,obj in valid_objs]
+             for name, obj in valid_objs]
 
             return par_dict
         
         return {}
         
     
-    # Set functions - a necessary evil...
-        
+    # Set functions
     def set_script(self, text):
         '''
         Set the text in the script use this to change the model script. 
