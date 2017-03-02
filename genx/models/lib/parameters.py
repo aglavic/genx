@@ -458,6 +458,54 @@ class ComplexArray(Complex):
             raise ValueError('%s can not be cast to complex array' % value.__repr__())
         return value
 
+
+def get_parameters(obj, numeric_types_only=False, group_parameters=True):
+    """Searches obj for members that are inherited from Parameters or HasParameters and places them in a dictonary.
+
+    Parameters:
+        obj: An object that has __dict__ (as all classes has.
+        numeric_types_only (bool): returns only NumericParameters.
+        group_parameters (bool): Flag to control if parameters should be grouped by type, default True.
+
+    Returns:
+        par_dict (dict): A Dictonary with class names as keys and items as lists of parameter names.
+    """
+    par_dict = {}
+
+    def add_parameter_to_dict(d, key, item):
+        try:
+            d[key].append(item)
+        except KeyError:
+            d[key] = [item]
+
+    def add_object_to_dict(d, cls, name, object):
+        try:
+            dcls = d[cls]
+        except KeyError:
+            d[cls] = {}
+            dcls = d[cls]
+
+        dcls[name] = object
+
+    members = obj.__dict__
+    allowed_parameter_classes = NumericParameter if numeric_types_only else Parameter
+    # Loop thorough all member objects to find the allowed parameters. Note that if it is not included if it inherits
+    # HasParameters
+    [add_parameter_to_dict(par_dict, members[name].__class__.__name__, name)
+     for name in members
+     if isinstance(members[name], allowed_parameter_classes) and not isinstance(members[name], HasParameters)
+     and name[0] != '_'
+     ]
+    # Loop through all the objects that inherit from HasParameter classes and do the same thing
+    [add_object_to_dict(par_dict, members[name].__class__.__name__, name,
+                        get_parameters(members[name], numeric_types_only, False)
+                        )
+     for name in members
+     if isinstance(members[name], HasParameters)
+     ]
+    return par_dict
+
+
 if __name__ == '__main__':
     import numpy as np
     exp = Wrap(np.exp)
@@ -481,3 +529,4 @@ if __name__ == '__main__':
     l[:] = [p, p]
     print type(l)
     print [item() for item in l]
+    print get_parameters(c)

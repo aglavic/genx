@@ -83,6 +83,9 @@ class Sample(HasParameters):
         self.a = Float(2 * np.pi, unit="AA", help="Unit cell size along the x-direction")
         self.b = Float(2 * np.pi, unit="AA", help="Unit cell size along the y-direction")
 
+        # dictionary that holds the last evaluated layer parameters - used for checking the calcs
+        self.layer_dic = {}
+
         HasParameters.__init__(self, **kwargs)
 
 
@@ -104,6 +107,7 @@ class Sample(HasParameters):
         return out
 
     def simulate(self, instrument, h, k, qz):
+        self.layer_dic = {}
         # Add a q = 0 point for the mean scattering potential
         q = np.c_[h*2*np.pi/self.a(), k*2*np.pi/self.b(), -qz].T
         kwargs = {'z': 0.0, 'q': q}
@@ -115,6 +119,8 @@ class Sample(HasParameters):
         vf, d = 4*np.pi*np.array(dic['sld']), np.array(dic['d'])
         kwargs['q'] = np.array([0, 0, 0])
         vmean = 4*np.pi*np.array(self.build_layer_list(['sld'], kwargs)['sld'])/area_uc
+        self.layer_dic['sld_mean'] = vmean/4/np.pi
+        self.layer_dic['d'] = d
         print vmean.shape, vf.shape
         k_in, k_out = instrument.reflectometer_3axis_kinout(q)
         R = grating.coherent_refl(k_in, k_out, wavelength, vf.T, vmean, d, area_uc, kin=False)

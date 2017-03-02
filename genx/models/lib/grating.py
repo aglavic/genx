@@ -267,7 +267,7 @@ if __name__ == '__main__':
     from pylab import *
     atype = np.complex128
     lamda = 1.54
-    if False:
+    if True:
         # Tests for the calculation of the fields at the vacuum interface.
         theta = arange(0, 5, 0.01) + 1e-13
         Q = 4 * np.pi / lamda * np.sin(theta * np.pi / 180)
@@ -337,7 +337,7 @@ if __name__ == '__main__':
         semilogy(qz, np.abs(R_kin))
         show()
 
-    if True:
+    if False:
         # Do a h mapping
         a = 2e4
         b = 2e4
