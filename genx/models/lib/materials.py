@@ -57,6 +57,7 @@ class Material(HasParameters):
     """ Class to keep transform a chemical formula and mass density to scattering length
 
     The formula is given in ASCII format, for example 'Ag2(NO2)3' or 'HNO3', nested parentheses are allowed.
+    Also non-integer indices are allowed for example Fe0.01Pd
 
     """
     validation_kwargs = {'wl': 1.54}
@@ -116,7 +117,9 @@ class Material(HasParameters):
             formula(string): A string containing the formula.
             multiplier(int): A number representing that will be used to multiply the element count
         """
-        regexp = re.compile(r"([A-Z][a-z]?)(\d*)|\((.*)\)(\d*)")
+        # regexp = re.compile(r"([A-Z][a-z]?)(\d*)|\((.*)\)(\d*)")
+        regexp = re.compile(r"([A-Z][a-z]?)(\d*\.?\d*)|\((.*)\)(\d*\.?\d*)")
+
         element, element_count, group, group_count = (1, 2, 3, 4)
         pos = 0
         while pos < len(formula):
@@ -156,7 +159,7 @@ class Material(HasParameters):
 
 
 if __name__ == "__main__":
-    test = Material("Fe", density=7.87)
+    test = Material("Ag1.1(NO0.01)2", density=7.87)
     print _atomic_weights['fe']
     # print test.Ag.help
     print test._formula_density(), 2/2.88**3
