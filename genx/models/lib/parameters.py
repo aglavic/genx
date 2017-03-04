@@ -333,6 +333,34 @@ class HasParameters(object):
             protected = False
         return protected
 
+    def get_parameter_list(self, numeric_types_only=False):
+        """Returns a list of all the Parameters that exists
+
+        Members that are "private", the name starting with a "_" will not be listed.
+
+        Parameters:
+            numeric_types_only (bool): if true only returns NumericParameter types.
+
+
+        Returns:
+            par_list (list): A list of strings with names of all the parameters.
+        """
+        allowed_parameter_classes = NumericParameter if numeric_types_only else Parameter
+        # Loop thorough all member objects to find the allowed parameters.
+        #  Note that if it is not included if it inherits HasParameters or beginning with a _
+        members = self.__dict__
+        par_list = [name for name in members
+                    if isinstance(members[name], allowed_parameter_classes)
+                    and not isinstance(members[name], HasParameters) and name[0] != '_'
+         ]
+        # Loop through all the objects that inherit from HasParameter classes and add the full parameter name
+        [[par_list.append(name + par_name) for par_name in
+          members[name].get_parameter_list(numeric_types_only=numeric_types_only)
+          ]
+         for name in members if isinstance(members[name], HasParameters)
+         ]
+        return par_list
+
 
 class Var(ArithmeticParameter):
     """ A model specific variable that will be included in the arguments to the evaluation."""
@@ -498,7 +526,7 @@ def get_parameters(obj, numeric_types_only=False, group_parameters=True):
      ]
     # Loop through all the objects that inherit from HasParameter classes and do the same thing
     [add_object_to_dict(par_dict, members[name].__class__.__name__, name,
-                        get_parameters(members[name], numeric_types_only, False)
+                        members[name].get_parameter_list(numeric_types_only=numeric_types_only)
                         )
      for name in members
      if isinstance(members[name], HasParameters)
@@ -529,4 +557,13 @@ if __name__ == '__main__':
     l[:] = [p, p]
     print type(l)
     print [item() for item in l]
-    print get_parameters(c)
+    obj = object()
+    import new
+    test = new.module('test')
+    test.__dict__['c'] = c
+    test.__dict__['q'] = q
+    test.__dict__['p'] = p
+    test.__dict__['l'] = l
+    print get_parameters(test, True)
+    print c.get_parameter_list()
+    print dir()
