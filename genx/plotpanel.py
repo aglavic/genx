@@ -270,10 +270,10 @@ class PlotPanel(wx.Panel):
             self.ax.set_xlim(0, 1)
             self.ax.set_ylim(1e-3, 1.0)
             return
+
         if self.scale == 'log':
-            #print 'log scaling'
-            # Find the lowest possible value of all the y-values that are 
-            #greater than zero. check so that y data contain data before min
+            # Find the lowest possible value of all the y-values that are
+            # greater than zero. check so that y data contain data before min
             # is applied
             tmp = [line.get_ydata().compress(line.get_ydata() > 0.0).min()\
                    for line in self.ax.lines if array(line.get_ydata() > 0.0).sum() > 0]
@@ -288,12 +288,11 @@ class PlotPanel(wx.Panel):
             else:
                 ymax = 1
         else:
-            ymin = min([array(line.get_ydata()).min()\
-                     for line in self.ax.lines if len(line.get_ydata()) > 0])
-            ymax = max([array(line.get_ydata()).max()\
-                   for line in self.ax.lines if len(line.get_ydata()) > 0])
-        tmp = [array(line.get_xdata()).min()\
-                    for line in self.ax.lines if len(line.get_ydata()) > 0]
+            ymin = min([array(line.get_ydata()).compress(isfinite(line.get_ydata())).min()
+                        for line in self.ax.lines if len(line.get_ydata()) > 0 and any(isfinite(line.get_ydata()))])
+            ymax = max([array(line.get_ydata()).compress(isfinite(line.get_ydata())).max()
+                        for line in self.ax.lines if len(line.get_ydata()) > 0 and any(isfinite(line.get_ydata()))])
+        tmp = [array(line.get_xdata()).min() for line in self.ax.lines if len(line.get_ydata()) > 0]
         if len(tmp) > 0:
             xmin = min(tmp)
         else:
@@ -305,13 +304,11 @@ class PlotPanel(wx.Panel):
         else:
             xmax = 1
         # Set the limits
-        #print 'Autoscaling to: ', ymin, ymax
         try:
             if xmin != xmax:
                 self.ax.set_xlim(xmin, xmax)
             if ymin != ymax:
                 self.ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
-            #self.ax.set_yscale(self.scale)
             self.flush_plot()
         except UserWarning:
             pass

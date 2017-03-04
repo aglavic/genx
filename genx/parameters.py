@@ -7,7 +7,9 @@ Programmer: Matts Bjorck
 import numpy as np
 import string
 
-#==============================================================================
+# ==============================================================================
+
+
 class Parameters:
     """
     Class for storing the fitting parameters in GenX
@@ -220,8 +222,6 @@ class Parameters:
         """
         self.data.sort(key=self._sort_key_func)
         return True
-
-
 
     def append(self):
         self.data.append(self.init_data[:])

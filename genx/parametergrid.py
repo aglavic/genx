@@ -1303,20 +1303,31 @@ class ParameterGrid(wx.Panel):
         for cl in classes:
             # Create a submenu for each class
             clmenu = wx.Menu()
-            obj_dict = par_dict[cl]
-            objs = obj_dict.keys()
-            objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
-            # Create a submenu for each object
-            for obj in objs:
-                obj_menu = wx.Menu()
-                funcs = obj_dict[obj]
-                funcs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+            if isinstance(par_dict[cl], dict):
+                obj_dict = par_dict[cl]
+                objs = obj_dict.keys()
+                objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                # Create a submenu for each object
+                for obj in objs:
+                    obj_menu = wx.Menu()
+                    funcs = obj_dict[obj]
+                    funcs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                    # Create an item for each method
+                    for func in funcs:
+                        item = obj_menu.Append(-1, obj + '.' + func)
+                        self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
+                    clmenu.AppendMenu(-1, obj, obj_menu)
+                #self.pmenu.AppendMenu(-1, cl, clmenu)
+            elif isinstance(par_dict[cl], list):
+                objs = par_dict[cl]
+                objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
                 # Create an item for each method
-                for func in funcs:
-                    item = obj_menu.Append(-1, obj + '.' + func)
+                for obj in objs:
+                    item = clmenu.Append(-1, obj)
                     self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
-                clmenu.AppendMenu(-1, obj, obj_menu)
             self.pmenu.AppendMenu(-1, cl, clmenu)
+
+
         # Check if there are no available classes
         if len(classes) == 0:
             # Add an item to compile the model
@@ -1374,6 +1385,22 @@ class ParameterGrid(wx.Panel):
         if len(lis) == 2:
             try:
                 value = self.evalf(lis[0] + '.' + self.get_func + lis[1])().real
+                self.table.SetValue(self.CurSelection[0], 1, value)
+                # Takes care so that also negative numbers give the
+                # correct values in the min and max cells
+                minval = value*(1 - self.variable_span)
+                maxval = value*(1 + self.variable_span)
+                self.table.SetValue(self.CurSelection[0], 3,
+                                    min(minval, maxval))
+                self.table.SetValue(self.CurSelection[0], 4,
+                                    max(minval, maxval))
+            except StandardError, S:
+                print "Not possible to init the variable automatically"
+                #print S
+        else:
+            # It could be a Parameter class
+            try:
+                value = self.evalf(text + '.value')
                 self.table.SetValue(self.CurSelection[0], 1, value)
                 # Takes care so that also negative numbers give the
                 # correct values in the min and max cells

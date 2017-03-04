@@ -18,7 +18,7 @@ import data
 import parameters
 import fom_funcs
 
-from models.lib.parameters import NumericParameter
+from models.lib.parameters import NumericParameter, get_parameters
 
 
 #==============================================================================
@@ -447,23 +447,19 @@ class Model:
         object will be returned.
         '''
         object = self.eval_in_model(str)
-        #print type(object)
         # Is it a function or a method!
         name = type(object).__name__
         if name == 'instancemethod' or name == 'function':
             return object
-        # Nope lets make a function of it
+        # Make a function to set the object
         elif isinstance(object, NumericParameter):
-            # We have a parameter that should be set
+            # We have a NumericParameter that should be set
             exec 'def __tempfunc__(val):\n\t%s.value = val' % str in self.script_module.__dict__
             return self.script_module.__tempfunc__
         else:
-            # print 'def __tempfunc__(val):\n\t%s = val'%str
             # The function must be created in the module in order to access
             # the different variables
             exec 'def __tempfunc__(val):\n\t%s = val' % str in self.script_module.__dict__
-                
-            #print self.script_module.__tempfunc__
             return self.script_module.__tempfunc__
     
     def get_fit_pars(self):
@@ -473,8 +469,7 @@ class Model:
         set the paraemters, the guess value (values), minimum allowed values
         and the maximum allowed values
         '''
-        (row_numbers, sfuncs, vals, minvals, maxvals) =\
-            self.parameters.get_fit_pars()
+        (row_numbers, sfuncs, vals, minvals, maxvals) = self.parameters.get_fit_pars()
         if len(sfuncs) == 0:
             raise ParameterError(sfuncs, 0, 'None', 4)
         # Check for min and max on all the values
@@ -723,6 +718,21 @@ class Model:
     
     def get_possible_parameters(self):
         """ Returns all the parameters that can be fitted. Is used by the parameter grid.
+
+        Returns:
+             par_dict (list):  all the current objects that are of the classes defined by self.registred_classes.
+
+        """
+        # loop through all objects and locate NumericParameters or HasParameters
+        par_dict = get_parameters(self.script_module, numeric_types_only=True)
+
+        if len(par_dict) is 0:
+            par_dict = self.get_possible_set_functions()
+
+        return par_dict
+
+    def get_possible_set_functions(self):
+        """Returns all the parameters that can be fitted given by the old style of defining parameters GenX2.4.X
 
         Returns:
              par_dict (list):  all the current objects that are of the classes defined by self.registred_classes.
