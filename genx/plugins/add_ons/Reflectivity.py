@@ -1758,7 +1758,12 @@ class SamplePlotPanel(wx.Panel):
         else:
             # Old style plotting just one sld
             if self.plugin.GetModel().compiled:
-                plot_dict = model.sample.SimSLD(None, None, model.inst)
+                try:
+                    sample = model.sample
+                except AttributeError:
+                    print "Warning: Could not locate the sample in the model"
+                    return
+                plot_dict = sample.SimSLD(None, None, model.inst)
                 self.plot_dicts = [plot_dict]
                 for key in self.plot_dicts[0]:
                     is_imag = key[:2] == 'Im' or key[:4] == 'imag'
