@@ -577,6 +577,9 @@ class Model:
         model_copy.filename = self.filename
         model_copy.compiled = self.compiled
         model_copy.fom = self.fom
+        model_copy.fom_ignore_nan = self.fom_ignore_nan
+        model_copy.fom_ignore_inf = self.fom_ignore_inf
+        model_copy.set_func = self.set_func
         model_copy.saved = self.saved
         # Needs to reset the fom_mask_func since this fails under windows.
         model_copy.fom_mask_func = None
