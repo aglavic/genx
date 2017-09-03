@@ -10,6 +10,7 @@ r"""
 
 from os import path
 import re
+import cPickle
 
 import numpy as np
 from scipy import interpolate
@@ -44,6 +45,7 @@ def create_fpdisp_lookup(path):
         f2interp = interpolate.interp1d(e, f2, kind='linear')
         def_wl = _AA_to_eV/np.mean(e)
 
+        @MemoizeF
         def f(wl=def_wl, **kwargs):
             return f1interp(_AA_to_eV/wl) - 1.0J*f2interp(_AA_to_eV/wl)
 
@@ -51,6 +53,22 @@ def create_fpdisp_lookup(path):
     return create_dispersion_func
 
 f0 = create_fpdisp_lookup(path.join(_module_dir, "../databases/f1f2_nist/"))
+
+class MemoizeF:
+    """Remember previous evaluations of function fn and stores it in a dictionary.
+
+    Based on the Cookbook recipe: Memoizing (Caching) the Return Values of Functions in
+    Python Cookbook by David Ascher, Alex Martelli.
+    """
+    def __init__(self, fn):
+        self.fn = fn
+        self.memo = {}
+
+    def __call__(self, wl=1.54, **kwds):
+        pickled = cPickle.dumps(wl, 1)
+        if not self.memo.has_key(pickled):
+            self.memo[pickled] = self.fn(wl=wl, **kwds)
+        return self.memo[pickled]
 
 
 class Material(HasParameters):
@@ -128,15 +146,14 @@ class Material(HasParameters):
                 raise ValueError("Error in formula: %s at position %d" % (formula, pos))
             pos = match.end()
             if match.group(element):
-                print "Match %s is an element" % match.group(0)
+                # print "Match %s is an element" % match.group(0)
                 count = self.formula_count(match.group(element_count), multiplier)
                 try:
                     self.formula_dict[match.group(element)] += count
                 except KeyError:
                     self.formula_dict[match.group(element)] = count
-                print self.formula_dict
             elif match.group(group):
-                print "Group found: %s, count: %s" % (match.group(group), match.group(group_count))
+                # print "Group found: %s, count: %s" % (match.group(group), match.group(group_count))
                 count = self.formula_count(match.group(group_count), multiplier)
                 self.parse_formula(match.group(group), multiplier=count)
 
@@ -168,4 +185,7 @@ if __name__ == "__main__":
     print test.sld_x(wl=1.54)
     test.Fe = 1
     print test.sld_x(wl=1.54)
+    print test.sld_x(wl=15.4)
+    print test.sld_x(wl=15.4)
+
 

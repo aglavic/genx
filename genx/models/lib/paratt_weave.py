@@ -19,34 +19,44 @@ if not paratt_ext_built or debug:
     import paratt_ext
 
 
-def Refl(theta,lamda,n,d,sigma):
+def Refl(theta,lamda,n,d,sigma, return_int=True):
     theta = theta.astype(float64)
     lamda = float(lamda)
     n = n.astype(complex128)
     d = d.astype(float64)
     sigma = sigma.astype(float64)
     R = paratt_ext.refl(theta, lamda, n, d, sigma)
-    return R
+    if return_int:
+        return abs(R)**2
+    else:
+        return R
 
-def ReflQ(Q,lamda,n,d,sigma):
+
+def ReflQ(Q,lamda,n,d,sigma, return_int=True):
     Q = Q.astype(float64)
     lamda = float(lamda)
     n = n.astype(complex128)
     d = d.astype(float64)
     sigma = sigma.astype(float64)
     R = paratt_ext.reflq(Q, lamda, n, d, sigma)
-    return R
+    if return_int:
+        return abs(R)**2
+    else:
+        return R
 
-def Refl_nvary2(theta,lamda,n,d,sigma):
+def Refl_nvary2(theta,lamda,n,d,sigma, return_int=True):
     theta=array(theta,dtype=float64)
     n = n.astype(complex128)
     d = d.astype(float64)
     sigma = sigma.astype(float64)
     lamda = lamda.astype(float64)
     R = paratt_ext.refl_nvary2(theta, lamda, n, d, sigma)
-    return R
+    if return_int:
+        return abs(R)**2
+    else:
+        return R
 
-def Refl_nvary2_nosigma(theta, lamda, n, d):
+def Refl_nvary2_nosigma(theta, lamda, n, d, return_int=True):
     # Length of k-vector in vaccum
     #print n.shape, theta.shape, d.shape
     theta=array(theta,dtype=float64)
@@ -55,7 +65,10 @@ def Refl_nvary2_nosigma(theta, lamda, n, d):
     lamda = lamda.astype(float64)
     #print n.shape, theta.shape, d.shape
     R = paratt_ext.refl_nvary2_nosigma(theta, lamda, n, d)
-    return R
+    if return_int:
+        return abs(R)**2
+    else:
+        return R
 
 
 if __name__=='__main__':

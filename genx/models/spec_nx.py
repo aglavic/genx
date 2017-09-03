@@ -280,6 +280,26 @@ def Specular(TwoThetaQz, sample, instrument):
     TwoThetaQz data.x
     # END Parameters
     """
+    return specular_calcs(TwoThetaQz, sample, instrument, return_int=True)
+
+
+def SpecularField(TwoThetaQz, sample, instrument):
+    """ Simulate the specular signal from sample when probed with instrument
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    """
+    return specular_calcs(TwoThetaQz, sample, instrument, return_int=False)
+
+
+def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
+    """ Simulate the specular signal from sample when probed with instrument
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    """
 
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
@@ -317,7 +337,7 @@ def Specular(TwoThetaQz, sample, instrument):
         sld = neutron_sld(abs_xs, dens, fb, wl)
     # Ordinary Paratt X-rays
     if type == instrument_string_choices['probe'][0] or type == 0:
-        R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
+        R = Paratt.ReflQ(Q,instrument.getWavelength(), 1.0-2.82e-5*sld, d, sigma, return_int=return_int)
         #print 2.82e-5*sld
         #reload(slow_paratt)
         #R = slow_paratt.reflq_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
@@ -325,21 +345,19 @@ def Specular(TwoThetaQz, sample, instrument):
         #R = slow_paratt.reflq_sra(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
     #Ordinary Paratt Neutrons
     elif type == instrument_string_choices['probe'][1] or type == 1:
-        R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-sld,d,sigma)
+        R = Paratt.ReflQ(Q,instrument.getWavelength(), 1.0-sld, d, sigma, return_int=return_int)
     #Ordinary Paratt but with magnetization
     elif type == instrument_string_choices['probe'][2] or type == 2:
         msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
         # Polarization uu or ++
         if pol == instrument_string_choices['pol'][0] or pol == 0:
-            R = Paratt.ReflQ(Q,instrument.getWavelength(),\
-                1.0-sld-msld,d,sigma)
+            R = Paratt.ReflQ(Q,instrument.getWavelength(), 1.0-sld-msld, d, sigma, return_int=return_int)
         # Polarization dd or --
         elif pol == instrument_string_choices['pol'][1] or pol == 1:
-            R = Paratt.ReflQ(Q,instrument.getWavelength(),\
-                 1.0-sld+msld,d,sigma)
+            R = Paratt.ReflQ(Q,instrument.getWavelength(), 1.0-sld+msld,d,sigma, return_int=return_int)
         elif pol == instrument_string_choices['pol'][3] or pol == 3:
-            Rp = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld-msld, d, sigma)
-            Rm = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld+msld, d, sigma)
+            Rp = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld-msld, d, sigma, return_int=return_int)
+            Rm = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld+msld, d, sigma, return_int=return_int)
             R = (Rp - Rm)/(Rp + Rm)
 
         else:
@@ -358,7 +376,7 @@ def Specular(TwoThetaQz, sample, instrument):
             nm = 1.0-sld+msld
             Vp = (2*pi/instrument.getWavelength())**2*(1-np**2)
             Vm = (2*pi/instrument.getWavelength())**2*(1-nm**2)
-            (Ruu,Rdd,Rud,Rdu) = MatrixNeutron.Refl(Q,Vp,Vm,d,magn_ang, sigma)
+            (Ruu,Rdd,Rud,Rdu) = MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma, return_int=return_int)
             Buffer.Ruu = Ruu; Buffer.Rdd = Rdd; Buffer.Rud = Rud
             Buffer.parameters = parameters.copy()
             Buffer.TwoThetaQz = Q.copy()
@@ -385,33 +403,31 @@ def Specular(TwoThetaQz, sample, instrument):
     elif type == instrument_string_choices['probe'][4] or type == 4:
         wl = 4*pi*sin(instrument.getIncangle()*pi/180)/Q
         sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
-        R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
-            (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
-                1.0-sld,d,sigma)
+        R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape), (4*pi*sin(instrument.getIncangle()*pi/180)/Q),
+                               1.0-sld, d, sigma, return_int=return_int)
     # tof spin polarized
     elif type == instrument_string_choices['probe'][5] or type == 5:
         wl = 4*pi*sin(instrument.getIncangle()*pi/180)/Q
         sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
-        msld = 2.645e-5*magn[:,newaxis]*dens[:,newaxis]\
-                *(4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
+        msld = 2.645e-5*magn[:,newaxis]*dens[:,newaxis]*(4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
         # polarization uu or ++
         if pol == instrument_string_choices['pol'][0] or pol == 0:
-            R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
-                (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
-                 1.0-sld-msld,d,sigma)
+            R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),
+                                   (4*pi*sin(instrument.getIncangle()*pi/180)/Q), 1.0-sld-msld, d, sigma,
+                                   return_int=return_int)
         # polarization dd or --
         elif pol == instrument_string_choices['pol'][1] or pol == 1:
-            R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),\
-             (4*pi*sin(instrument.getIncangle()*pi/180)/Q),\
-              1.0-sld+msld,d,sigma)
+            R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),
+                                   (4*pi*sin(instrument.getIncangle()*pi/180)/Q), 1.0-sld+msld,d,sigma,
+                                   return_int=return_int)
         # Calculating the asymmetry
         elif pol == instrument_string_choices['pol'][3] or pol == 3:
             Rd = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),
                                     (4*pi*sin(instrument.getIncangle()*pi/180)/Q),
-                                    1.0-sld+msld,d,sigma)
+                                    1.0-sld+msld,d,sigma, return_int=return_int)
             Ru = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),
                                     (4*pi*sin(instrument.getIncangle()*pi/180)/Q),
-                                    1.0-sld-msld,d,sigma)
+                                    1.0-sld-msld,d,sigma, return_int=return_int)
             R = (Ru - Rd)/(Ru + Rd)
 
         else:
@@ -419,13 +435,15 @@ def Specular(TwoThetaQz, sample, instrument):
                 ' It should be uu(0) or dd(1) or ass')
     else:
         raise ValueError('The choice of probe is WRONG')
-    #FootprintCorrections
-
-    foocor = footprintcorr(Q, instrument)
-    #Resolution corrections
-    R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
+    if return_int:
+        # FootprintCorrections
+        foocor = footprintcorr(Q, instrument)
+        # Resolution corrections
+        R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
     
-    return R*instrument.getI0() + instrument.getIbkg()
+        return R*instrument.getI0() + instrument.getIbkg()
+    else:
+        return R
     
 def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
     ''' Simulate the specular signal from sample when probed with instrument. Energy should be in eV.
@@ -580,6 +598,7 @@ def SLD_calculations(z, item, sample, inst):
             raise ValueError('The chosen item, %s, does not exist'%item)
 
 SimulationFunctions={'Specular':Specular,
+                     'SpecularField': SpecularField,
                      'OffSpecular':OffSpecular,
                      'SLD': SLD_calculations,
                      'EnergySpecular': EnergySpecular,
@@ -592,4 +611,55 @@ SimulationFunctions={'Specular':Specular,
 
 
 if __name__=='__main__':
-    pass
+    from utils import UserVars, fp, fw, bc, bw
+    import numpy as np
+
+    # BEGIN Instrument DO NOT CHANGE
+    inst = Instrument(footype='gauss beam', probe='x-ray', beamw=0.04, resintrange=2, pol='uu', wavelength=1.54,
+                            respoints=5, Ibkg=0.0, I0=2, samplelen=10.0, restype='no conv', coords='tth', res=0.001,
+                            incangle=0.0)
+    fp.set_wavelength(inst.wavelength)
+    # Compability issues for pre-fw created gx files
+    try:
+        fw
+    except:
+        pass
+    else:
+        fw.set_wavelength(inst.wavelength)
+    # END Instrument
+
+    # BEGIN Sample DO NOT CHANGE
+    Amb = Layer(b=0, d=0.0, f=(1e-20 + 1e-20j), dens=1.0, magn_ang=0.0, sigma=0.0, xs_ai=0.0, magn=0.0)
+    topPt = Layer(b=0, d=11.0, f=fp.Pt, dens=4 / 3.92 ** 3, magn_ang=0.0, sigma=3.0, xs_ai=0.0, magn=0.0)
+    TopFe = Layer(b=0, d=11.0, f=fp.Fe, dens=2 / 2.866 ** 3, magn_ang=0.0, sigma=2.0, xs_ai=0.0, magn=0.0)
+    Pt = Layer(b=0, d=11.0, f=fp.Pt, dens=4 / 3.92 ** 3, magn_ang=0.0, sigma=2.0, xs_ai=0.0, magn=0.0)
+    Fe = Layer(b=0, d=11, f=fp.Fe, dens=2 / 2.866 ** 3, magn_ang=0.0, sigma=2.0, xs_ai=0.0, magn=0.0)
+    bufPt = Layer(b=0, d=45, f=fp.Pt, dens=4 / 3.92 ** 3, magn_ang=0.0, sigma=2, xs_ai=0.0, magn=0.0)
+    bufFe = Layer(b=0, d=2, f=fp.Fe, dens=2 / 2.866 ** 3, magn_ang=0.0, sigma=2, xs_ai=0.0, magn=0.0)
+    Sub = Layer(b=0, d=0.0, f=fp.Mg + fp.O, dens=2 / 4.2 ** 3, magn_ang=0.0, sigma=4.0, xs_ai=0.0, magn=0.0)
+
+    ML = Stack(Layers=[Fe, Pt], Repetitions=100)
+
+    sample = Sample(Stacks=[ML], Ambient=Amb, Substrate=Sub)
+    # END Sample
+
+    # BEGIN Parameters DO NOT CHANGE
+    cp = UserVars()
+    cp.new_var('Lambda', 33)
+    # END Parameters
+
+    import cProfile
+
+    tth = np.arange(0.01, 8.0, 0.01)
+    cProfile.run('[sample.SimSpecular(tth, inst) for i in range(10)]', sort='tottime')
+
+
+    def Sim(data):
+        I = []
+        # BEGIN Dataset 0 DO NOT CHANGE
+        TopFe.setD(Fe.d)
+        TopFe.setSigma(Fe.sigma)
+        Pt.setD(cp.Lambda - Fe.d)
+        I.append(sample.SimSpecular(data[0].x, inst))
+        # END Dataset 0
+        return I

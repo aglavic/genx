@@ -1,6 +1,6 @@
 ''' Library for reflectivity calculations with neutrons.
 Programmed by Matts Bjorck
-Last changed 2011-06-11
+Last changed 2017-09-02
 '''
 from numpy import *
 import math_utils as mu
@@ -160,7 +160,7 @@ def ass_P(k_p, k_m, d):
     return P
 
 
-def Refl(Q, Vp, Vm, d, M_ang, sigma = None):
+def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell 
         and J.A.C. Bland Phys rev. B. vol 46 3391 (1992)
@@ -172,8 +172,9 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None):
                             Vm: Neutron potential for spin down
                             d: layer thickness
                             M_ang: Angle of the magnetic 
-                                    moment(radians!) M_ang=0 =>M//nuetron spin
+                                    moment(radians!) M_ang=0 =>M//neutron spin
                             sigma: The roughness of the upper interface.
+                            return_int: Flag for returning the instensity, default=True. If False return the amplitudes.
         Returns:            (Ruu,Rdd,Rud,Rdu)
                             (up-up,down-down,up-down,down-up)
     '''
@@ -205,11 +206,14 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None):
     Rud = (M[3,0]*M[2,2]-M[3,2]*M[2,0])/denom
     Rdu = (M[1,2]*M[0,0]-M[1,0]*M[0,2])/denom
     Rdd = (M[3,2]*M[0,0]-M[3,0]*M[0,2])/denom
-    
-    return abs(Ruu)**2,abs(Rdd)**2,abs(Rud)**2,abs(Rdu)**2
+
+    if return_int:
+        return abs(Ruu)**2,abs(Rdd)**2,abs(Rud)**2,abs(Rdu)**2
+    else:
+        return Ruu, Rdd, Rud, Rdu
 
 def Refl_int_lay(Q, V0, Vmag, d, M_ang, sigma, dmag_u, dd_u, M_ang_u, sigma_u,
-                 dmag_l, dd_l, M_ang_l, sigma_l):
+                 dmag_l, dd_l, M_ang_l, sigma_l, return_int=True):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
         and J.A.C. Bland Phys rev. B. vol 46 3391 (1992)
@@ -268,7 +272,10 @@ def Refl_int_lay(Q, V0, Vmag, d, M_ang, sigma, dmag_u, dd_u, M_ang_u, sigma_u,
     Rdu = (M[1,2]*M[0,0]-M[1,0]*M[0,2])/denom
     Rdd = (M[3,2]*M[0,0]-M[3,0]*M[0,2])/denom
 
-    return abs(Ruu)**2,abs(Rdd)**2,abs(Rud)**2,abs(Rdu)**2
+    if return_int:
+        return abs(Ruu) ** 2, abs(Rdd) ** 2, abs(Rud) ** 2, abs(Rdu) ** 2
+    else:
+        return Ruu, Rdd, Rud, Rdu
 
 if __name__=='__main__':
     Q=arange(0.01,0.2,0.0005)

@@ -80,6 +80,7 @@ class Sample(HasParameters):
         self.stacks = List(Stack, value=value, help="The stacks in the sample")
         self.substrate = Layer(d=0.0, sld=0*FLayer())
         self.ambient = Layer(d=0.0, sld=0*FLayer())
+
         self.a = Float(2 * np.pi, unit="AA", help="Unit cell size along the x-direction")
         self.b = Float(2 * np.pi, unit="AA", help="Unit cell size along the y-direction")
 
@@ -87,7 +88,6 @@ class Sample(HasParameters):
         self.layer_dic = {}
 
         HasParameters.__init__(self, **kwargs)
-
 
     def build_layer_list(self, parameters, kwargs):
         """Builds an array for layer parameters by looping through the stacks and layers

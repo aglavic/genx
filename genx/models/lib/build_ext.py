@@ -25,8 +25,10 @@ def paratt():
     std::complex<double> Qj, Qj1, r, rp, p, imag(0.0,1.0);
     std::complex<double> n2amb = n[interfaces]*n[interfaces];
 
-    PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
-    double* r_array = (double*) ((PyArrayObject*) out_array)->data;
+    //PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
+    //double* r_array = (double*) ((PyArrayObject*) out_array)->data;
+    PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_COMPLEX128);
+    std::complex<double>* r_array = (std::complex<double> *) ((PyArrayObject*) out_array)->data;
 
 
     for(int i = 0; i < points; i++){
@@ -44,7 +46,8 @@ def paratt():
             r = (rp+r*p)/(1.0 + rp*r*p);
         }
 
-        r_array[i]=std::real(r*conj(r));
+        //r_array[i]=std::real(r*conj(r));
+        r_array[i]=r;
     }
 
     return_val = out_array;
@@ -74,8 +77,8 @@ def paratt():
     std::complex<double> Q2, Qj, Qj1, r, rp, p, imag(0.0,1.0);
     std::complex<double> n2amb = n[interfaces]*n[interfaces];
 
-    PyObject* out_array = PyArray_SimpleNew(1, NQ, NPY_DOUBLE);
-    double* r_array = (double*) ((PyArrayObject*) out_array)->data;
+    PyObject* out_array = PyArray_SimpleNew(1, NQ, NPY_COMPLEX128);
+    std::complex<double>* r_array = (std::complex<double> *) ((PyArrayObject*) out_array)->data;
 
     int j=0;
     for(int i = 0; i < points; i++){
@@ -92,7 +95,8 @@ def paratt():
             r = (rp+r*p)/(1.0 + rp*r*p);
         }
 
-        r_array[i] = std::real(r*conj(r));
+        //r_array[i] = std::real(r*conj(r));
+        r_array[i] = r;
     }
 
     return_val = out_array;
@@ -120,8 +124,11 @@ def paratt():
     std::complex<double> Qj, Qj1, r, rp, p, imag(0.0, 1.0);
     std::complex<double> n2amb;
 
-    PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
-    double* r_array = (double*) ((PyArrayObject*) out_array)->data;
+    //PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
+    //double* r_array = (double*) ((PyArrayObject*) out_array)->data;
+    PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_COMPLEX128);
+    std::complex<double>* r_array = (std::complex<double> *) ((PyArrayObject*) out_array)->data;
+
 
     for(int i = 0;i < points; i++){
         costheta2 = cos(theta[i]*torad);
@@ -141,7 +148,8 @@ def paratt():
             r = (rp+r*p)/(1.0+rp*r*p);
         }
 
-       r_array[i] = real(r*conj(r));
+       //r_array[i] = real(r*conj(r));
+       r_array[i] = r;
     }
 
     return_val = out_array;
@@ -163,8 +171,11 @@ def paratt():
     std::complex<double> Qj, Qj1, r, rp, p, imag(0.0, 1.0);
     std::complex<double> n2amb;
 
-    PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
-    double* r_array = (double*) ((PyArrayObject*) out_array)->data;
+    //PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_DOUBLE);
+    //double* r_array = (double*) ((PyArrayObject*) out_array)->data;
+    PyObject* out_array = PyArray_SimpleNew(1, Ntheta, NPY_COMPLEX128);
+    std::complex<double>* r_array = (std::complex<double> *) ((PyArrayObject*) out_array)->data;
+
 
     for(int i = 0;i < points; i++){
         costheta2 = cos(theta[i]*torad);
@@ -184,7 +195,8 @@ def paratt():
             r = (rp+r*p)/(1.0+rp*r*p);
         }
 
-       r_array[i] = real(r*conj(r));
+       //r_array[i] = real(r*conj(r));
+       r_array[i] = r;
     }
 
     return_val = out_array;

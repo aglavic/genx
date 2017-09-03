@@ -1,39 +1,35 @@
-#from scipy import *
 from numpy import *
 
 # "Ordinary" implementaion of Parrats recursion formula
 # theta-vector, lamda- can be a vector,n-1Dvector, d-1Dvector, sigma-1Dvector
-def Refl(theta,lamda,n,d,sigma):
-    d=d[1:-1]
-    sigma=sigma[:-1]
+def Refl(theta, lamda, n, d, sigma, return_int=True):
+    d = d[1:-1]
+    sigma = sigma[:-1]
     # Length of k-vector in vaccum
-    k=2*math.pi/lamda
+    k = 2*math.pi/lamda
     # Calculates the wavevector in each layer
-    Qj=2*n[-1]*k*sqrt(n[:,newaxis]**2/n[-1]**2-cos(theta*math.pi/180)**2)
+    Qj = 2*n[-1]*k*sqrt(n[:,newaxis]**2/n[-1]**2-cos(theta*math.pi/180)**2)
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
-    #print rp.shape #For debugging
-    #print d.shape
-    #print Qj[1:-1].shape
-    p=exp(1.0j*d[:,newaxis]*Qj[1:-1]) # Ignoring the top and bottom layer for the calc.
-    #print p.shape #For debugging
+    # Ignoring the top and bottom layer for the calc.
+    p = exp(1.0j*d[:,newaxis]*Qj[1:-1])
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
     rpp=array(map(lambda x,y:[x,y],rp[1:],p))
-    #print rpp.shape
     # Paratt's recursion formula
     def formula(rtot,rint):
         return (rint[0]+rtot*rint[1])/(1+rtot*rint[0]*rint[1])
     # Implement the recursion formula
-    r=reduce(formula,rpp,rp[0])
-    #print r.shape
-    # return the reflectivity 
-    return abs(r)**2
-    #return r
+    r = reduce(formula,rpp,rp[0])
+
+    if return_int:
+        return abs(r)**2
+    else:
+        return r
 
 # "Ordinary" implementaion of Parrats recursion formula
 # Q-vector,n-1Dvector, d-1Dvector, sigma-1Dvector
-def ReflQ(Q,lamda,n,d,sigma):
+def ReflQ(Q,lamda,n,d,sigma, return_int=True):
     # Length of k-vector in vaccum
     d=d[1:-1]
     sigma=sigma[:-1]
@@ -59,11 +55,13 @@ def ReflQ(Q,lamda,n,d,sigma):
     r=reduce(formula,rpp,rp[0])
     #print r.shape
     # return the reflectivity 
-    return abs(r)**2
-    #return r
+    if return_int:
+        return abs(r)**2
+    else:
+        return r
 
 # Parrats recursion formula for varying n given by n_func-function
-def Refl_nvary(theta,lamda,n_func,d,sigma):
+def Refl_nvary(theta,lamda,n_func,d,sigma, return_int=True):
     d=d[1:-1]
     sigma=sigma[:-1]
     # Length of k-vector in vaccum
@@ -93,12 +91,12 @@ def Refl_nvary(theta,lamda,n_func,d,sigma):
         return (rint[0]+rtot*rint[1])/(1+rtot*rint[0]*rint[1])
     # Implement the recursion formula
     r=reduce(formula,rpp,rp[0])
-    #print r.shape
-    # return the reflectivity 
-    return abs(r)**2
-    #return r
+    if return_int:
+        return abs(r)**2
+    else:
+        return r
 
-def ReflProfiles(theta,lamda,n,d,sigma,profile):
+def ReflProfiles(theta,lamda,n,d,sigma,profile, return_int=True):
     d=d[1:-1]
     sigma=sigma[:-1]
     # Length of k-vector in vaccum
@@ -139,11 +137,13 @@ def ReflProfiles(theta,lamda,n,d,sigma,profile):
     r=reduce(formula,rpp,rp[0])
     #print r.shape
     # return the reflectivity 
-    return abs(r)**2
-    #return r
+    if return_int:
+        return abs(r)**2
+    else:
+        return r
 
 # paratts algorithm for n as function of lamda or theta
-def Refl_nvary2(theta,lamda,n_vector,d,sigma):
+def Refl_nvary2(theta,lamda,n_vector,d,sigma, return_int=True):
     d=d[1:-1]
     sigma=sigma[:-1]
     # Length of k-vector in vaccum
@@ -175,13 +175,13 @@ def Refl_nvary2(theta,lamda,n_vector,d,sigma):
         return (rint[0]+rtot*rint[1])/(1+rtot*rint[0]*rint[1])
     # Implement the recursion formula
     r=reduce(formula,rpp,rp[0])
-    #print r.shape
-    # return the reflectivity 
-    return abs(r)**2
-    #return r
+    if return_int:
+        return abs(r)**2
+    else:
+        return r
 
 
-def reflq_kin(q, lamda, n, d, sigma, correct_q=True):
+def reflq_kin(q, lamda, n, d, sigma, correct_q=True, return_int=True):
     """Calculates the reflectivity in the kinematical approximation"""
     d = d[:-1]
     d[0] = 0
@@ -210,11 +210,13 @@ def reflq_kin(q, lamda, n, d, sigma, correct_q=True):
 
     r = (rp*p).sum(axis=0)*q0**2/q_corr**2/2.
 
-    # return the reflectivity
-    return abs(r)**2
+    if return_int:
+        return abs(r)**2
+    else:
+        return r
 
 
-def reflq_pseudo_kin(q, lamda, n, d, sigma):
+def reflq_pseudo_kin(q, lamda, n, d, sigma, return_int=True):
     """Calculates the reflectivity in a pseudo kinematical approximation.
     The mean refractive index of the film is simulated with the single reflection approximation and the deviation from
     the mean is simulated with the kinematical approximation.
@@ -244,12 +246,15 @@ def reflq_pseudo_kin(q, lamda, n, d, sigma):
 
     r_kin = (rp*p).sum(axis=0)*q0**2/q_corr**2/2.
     r_sra = rp_top + rp_sub*exp(1.0j*d.sum()*q_corr)
+    r = r_kin + r_sra
 
-    # return the reflectivity
-    return abs(r_kin + r_sra)**2
+    if return_int:
+        return abs(r)**2
+    else:
+        return r
 
 
-def reflq_sra(q, lamda, n, d, sigma):
+def reflq_sra(q, lamda, n, d, sigma, return_int=True):
     """Single reflection approximation calculation of the reflectivity"""
     # Length of k-vector in vaccum
     d = d[1:-1]
@@ -269,8 +274,10 @@ def reflq_sra(q, lamda, n, d, sigma):
     p = exp(1.0J*phaseterm)
     # Adding the first interface (top -> last in array) since p is not calculated for that layer (p = 1)
     r = rp[-1] + (rp[:-1]*p).sum(axis=0)
-    # return the reflectivity
-    return abs(r)**2
+    if return_int:
+        return abs(r)**2
+    else:
+        return r
 
 
 if __name__=='__main__':

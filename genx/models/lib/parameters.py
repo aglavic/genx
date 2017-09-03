@@ -43,6 +43,9 @@ def is_parameter(obj):
     """Returns true if object is a subclass of the class Parameter"""
     return isinstance(obj, Parameter)
 
+def is_hasparameter(obj):
+    """Returns true if object is a subclass of the class HasParameter"""
+    return isinstance(obj, HasParameters)
 
 class ArithmeticParameter(Parameter):
     """ A parameter that supports arithmetic calculations"""
@@ -193,10 +196,10 @@ class NumericParameter(ArithmeticParameter):
 
     def _get_value(self, **kwargs):
         """Callback for getting the value of the parameter"""
-        if self.has_coupled_parameter():
-            return self.validate(self._coupled_parameter(**kwargs))
-        else:
+        if not self.has_coupled_parameter():
             return self.value
+        else:
+            return self.validate(self._coupled_parameter(**kwargs))
 
     def couple_parameter(self, parameter):
         """Couple a parameter to this parameter, replacing the _get_value output with its output"""
@@ -305,11 +308,11 @@ class HasParameters(object):
             object.__setattr__(self, name, value)
         else:
             if is_parameter(attr) and not self._is_protected(attr):
-                if is_parameter(value):
+                if is_parameter(value) or is_hasparameter(value):
                     # Trying to set a Parameter to a Parameter...
                     # check so that the type is correct:
                     try:
-                        attr.validate(value(**self.validation_kwargs.copy()))
+                        attr.validate(value(parameter=name, **self.validation_kwargs.copy()))
                     except ValueError, e:
                         raise ValueError('Can not set attribute %s. %s' % (name, str(e)))
                     else:
@@ -324,6 +327,19 @@ class HasParameters(object):
                     raise AttributeError("Setting attribute %s is not allowed" % name)
                 else:
                     object.__setattr__(self, name, value)
+
+    def __call__(self, **kwargs):
+        """A call to the object. Will try to look up parameter as a member.
+
+        Parameters:
+            parameter(string): Name of parameter to look up
+
+        """
+        if 'parameter' not in kwargs:
+            raise TypeError('Expected argument "parameter" to of a HasParameters object')
+
+        return self.__getattribute__(kwargs['parameter'])(**kwargs)
+
 
     def _is_protected(self, attr):
         """Check if an attribute is marked as protected (implements variable protected and set to True)"""

@@ -35,8 +35,10 @@ def ass_P(k, d, ctype=_ctype):
 
 def ass_X(k, ctype=_ctype):
     """Assemble the interface matrix for all interfaces"""
-    k_j = k[..., 1:]
-    k_jm1 = k[..., :-1]
+    # k_j = k[..., 1:]
+    # k_jm1 = k[..., :-1]
+    k_j = k[..., :-1]
+    k_jm1 = k[..., 1:]
 
     X = np.empty((2, 2) + k_j.shape, dtype=ctype)
 
@@ -47,7 +49,7 @@ def ass_X(k, ctype=_ctype):
     return X
 
 
-def calc_fields(kz, lamda, v, d):
+def calc_fields(kz, lamda, v, d, return_sub=False):
     """ Calculate the fields inside a multilayer"""
     k_vac = 2 * np.pi / lamda
     kz = kz[:, np.newaxis]
@@ -70,7 +72,10 @@ def calc_fields(kz, lamda, v, d):
 
     #r = M[1, 0, :, -1] / M[0, 0, :, -1]
     #r = E_R[:, -1]/E_T[:, -1]
-    return E_T, E_R, k_j
+    if return_sub:
+        return E_T, E_R, k_j, E_T_sub
+    else:
+        return E_T, E_R, k_j
 
 
 def coherent_nonspec_refl(k_in, k_out, lamda, vf_layers, v_mean, d, kin=False, spec_refl=False):
@@ -130,7 +135,7 @@ def coherent_nonspec_refl(k_in, k_out, lamda, vf_layers, v_mean, d, kin=False, s
 
 
 def coherent_refl(k_in, k_out, lamda, vf, v_mean, d, area_uc, kin=False):
-    """Calculates the coherent reflectivity for non-specular rods using DWBA.
+    """Calculates the coherent reflectivity using DWBA.
 
         Parameters:
             k_in (array): The wave vector of the incoming beam (k_x, k_y, k_z), size 3xM.
@@ -183,11 +188,13 @@ def assemble_vf_func(vf_list):
 #    """Decorator that enables a fourier transform function to used in arithmetic expressions"""
 #    return ArithFunc(func, np.zeros(2), {}, id='ft(q)')
 
+
 def mult(factor, func):
     """Multilies factor with func"""
     def mult_func(*args, **kwargs):
         return factor*func(*args, **kwargs)
     return mult_func
+
 
 def ft_circle(radius=1.):
     """Creates a function that evaluates the fourier transform of a circle with radius"""
@@ -223,7 +230,7 @@ def calc_kin_kout(h, qz_max, qz_step, a, lamda):
         qz_max (float): The maximum qz value wanted.
         qz_step (float): The step length in qz.
         a (float): The unit cell size in the x-direction.
-        lamda (float): The wavelelngth of radiaiton used.
+        lamda (float): The wavelength of radiation used.
 
     Returns:
         k_in (array): A 3xM array representing the incident beam.
