@@ -68,7 +68,7 @@ class Plugin(framework.Template):
         # materials. Each created material is stored and can be reused.
         if os.path.exists(config_file):
             try:
-                self.known_materials=json.loads(open(config_file, 'rb').read())
+                self.known_materials=json.loads(open(config_file, 'r').read())
             except json.JSONDecodeError:
                 print("Can't reload material list, file corrupted.")
                 self.known_materials=[]
@@ -117,12 +117,12 @@ class Plugin(framework.Template):
         dialog=MaterialDialog(self.parent)
         if dialog.ShowModal()==wx.ID_OK:
             self.materials_list.AddItem(dialog.GetResult())
-        open(config_file, 'wb').write(json.dumps(self.known_materials))
+        open(config_file, 'w').write(json.dumps(self.known_materials))
         dialog.Destroy()
 
     def material_delete(self, event):
         self.materials_list.DeleteItem()
-        open(config_file, 'wb').write(json.dumps(self.known_materials))
+        open(config_file, 'w').write(json.dumps(self.known_materials))
 
     def material_apply(self, event):
         index=self.materials_list.GetFirstSelected()
