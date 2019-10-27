@@ -211,10 +211,10 @@ class SliderControl(wx.Control):
                     self.scroll_callback(self.slider_drawer.GetValue())
         event.Skip()
 
-class NumberValidator(wx.PyValidator):
+class NumberValidator(wx.Validator):
     """Validaator to handle numerical values, accepts also 'e' as exponent value as input"""
     def __init__(self):
-        wx.PyValidator.__init__(self)
+        wx.Validator.__init__(self)
         self.Bind(wx.EVT_CHAR, self.OnChar)
 
     def Clone(self):

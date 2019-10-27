@@ -70,16 +70,16 @@ class Plugin(framework.Template):
             size=(-1,-1)
         self.bitmap_button_add=wx.BitmapButton(self.tool_panel,-1
         , img.getaddBitmap(), size=size, style=wx.NO_BORDER)
-        self.bitmap_button_add.SetToolTipString('Add current parameters to Vault')
+        self.bitmap_button_add.SetToolTip('Add current parameters to Vault')
         self.bitmap_button_delete=wx.BitmapButton(self.tool_panel,-1
         , img.getdeleteBitmap(), size=size, style=wx.NO_BORDER)
-        self.bitmap_button_delete.SetToolTipString('Delete selected parameter set')
+        self.bitmap_button_delete.SetToolTip('Delete selected parameter set')
         self.bitmap_button_apply=wx.BitmapButton(self.tool_panel,-1
         , img.getmove_downBitmap(), size=size, style=wx.NO_BORDER)
-        self.bitmap_button_apply.SetToolTipString('Apply selected parameter set to the model')
+        self.bitmap_button_apply.SetToolTip('Apply selected parameter set to the model')
         self.bitmap_button_plot=wx.BitmapButton(self.tool_panel,-1
         , img.plotting.GetBitmap(), size=size, style=wx.NO_BORDER)
-        self.bitmap_button_plot.SetToolTipString('Toggle plotting of the selected parameter set')
+        self.bitmap_button_plot.SetToolTip('Toggle plotting of the selected parameter set')
 
 
         space=(2,-1)

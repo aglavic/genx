@@ -67,7 +67,11 @@ class Plugin(framework.Template):
         # A list containing chemical formula and atomic density for different
         # materials. Each created material is stored and can be reused.
         if os.path.exists(config_file):
-            self.known_materials=json.loads(open(config_file, 'rb').read())
+            try:
+                self.known_materials=json.loads(open(config_file, 'rb').read())
+            except json.JSONDecodeError:
+                print("Can't reload material list, file corrupted.")
+                self.known_materials=[]
         else:
             self.known_materials=[]
         self.tool_panel=wx.Panel(self.materials_panel)
@@ -88,13 +92,13 @@ class Plugin(framework.Template):
         else:
             size=(-1,-1)
         self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1, img.getaddBitmap(), size=size, style=wx.NO_BORDER)
-        self.bitmap_button_add.SetToolTipString('Add material')
+        self.bitmap_button_add.SetToolTip('Add material')
         self.bitmap_button_delete=wx.BitmapButton(self.tool_panel, -1, img.getdeleteBitmap(), size=size,
                                                   style=wx.NO_BORDER)
-        self.bitmap_button_delete.SetToolTipString('Delete selected materials')
+        self.bitmap_button_delete.SetToolTip('Delete selected materials')
         self.bitmap_button_apply = wx.BitmapButton(self.tool_panel, -1, img.getmove_downBitmap(), size=size,
                                                    style=wx.NO_BORDER)
-        self.bitmap_button_apply.SetToolTipString('New Layer/Apply to Layer')
+        self.bitmap_button_apply.SetToolTip('New Layer/Apply to Layer')
 
         space = (2, -1)
         self.sizer_hor = wx.BoxSizer(wx.HORIZONTAL)
@@ -411,11 +415,12 @@ class MaterialDialog(wx.Dialog):
         cif_button.Bind(wx.EVT_BUTTON, self.OnLoadCif)
         table.Add(cif_button, (8, 1), span=(2, 2), flag=wx.ALIGN_CENTER)
 
+        global mg
         if mg is None:
           try:
-            global mg, MPRester
+            global MPRester
+            from pymatgen.ext.matproj import MPRester
             import pymatgen as mg
-            from pymatgen.matproj.rest import MPRester
           except ImportError:
             pass
         if mg is None:

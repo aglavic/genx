@@ -15,14 +15,14 @@ def is_reflfunction(obj):
     '''
     return obj.__class__.__name__ == 'ReflFunction'
 
-class TextObjectValidator(wx.PyValidator):
+class TextObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
     """
     def __init__(self):
         """ Standard constructor.
         """
-        wx.PyValidator.__init__(self)
+        wx.Validator.__init__(self)
 
 
     def Clone(self):
@@ -47,7 +47,7 @@ class TextObjectValidator(wx.PyValidator):
             return False
         else:
             textCtrl.SetBackgroundColour(
-                 wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
             textCtrl.Refresh()
             return True
 
@@ -68,14 +68,14 @@ class TextObjectValidator(wx.PyValidator):
          """
         return True # Prevent wxDialog from complaining.
 
-class MatchTextObjectValidator(wx.PyValidator):
+class MatchTextObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
     """
     def __init__(self,stringlist):
         """ Standard constructor.
         """
-        wx.PyValidator.__init__(self)
+        wx.Validator.__init__(self)
         self.stringlist=stringlist
 
     def Clone(self):
@@ -94,7 +94,7 @@ class MatchTextObjectValidator(wx.PyValidator):
 
         if self.stringlist.__contains__(text):
             textCtrl.SetBackgroundColour(
-                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
             textCtrl.Refresh()
             return True
         else:
@@ -121,14 +121,14 @@ class MatchTextObjectValidator(wx.PyValidator):
         """
         return True # Prevent wxDialog from complaining.
 
-class NoMatchTextObjectValidator(wx.PyValidator):
+class NoMatchTextObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
     """
     def __init__(self,stringlist):
         """ Standard constructor.
         """
-        wx.PyValidator.__init__(self)
+        wx.Validator.__init__(self)
         self.stringlist=stringlist
 
     def Clone(self):
@@ -156,7 +156,7 @@ class NoMatchTextObjectValidator(wx.PyValidator):
             return False
         else:
             textCtrl.SetBackgroundColour(
-                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
             textCtrl.Refresh()
             return True
 
@@ -175,7 +175,7 @@ class NoMatchTextObjectValidator(wx.PyValidator):
         """
         return True # Prevent wxDialog from complaining.
 
-class NoMatchValidTextObjectValidator(wx.PyValidator):
+class NoMatchValidTextObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field. It should not match
         a name in stringlist and it should be a valid varaible name. I.e 
@@ -186,7 +186,7 @@ class NoMatchValidTextObjectValidator(wx.PyValidator):
     def __init__(self,stringlist):
         """ Standard constructor.
         """
-        wx.PyValidator.__init__(self)
+        wx.Validator.__init__(self)
         self.stringlist = stringlist
         self.reserved_words = ['and', 'del', 'from', 'not', 'while', 'as',\
                     'elif', 'global', 'or', 'with', 'assert', 'else', 'if',\
@@ -194,7 +194,7 @@ class NoMatchValidTextObjectValidator(wx.PyValidator):
                     'class', 'exec', 'in', 'raise', 'continue', 'finally', \
                     'is', 'return', 'def', 'for', 'lambda', 'try']
 
-        self.allowed_chars = string.digits+string.letters + '_'
+        self.allowed_chars = string.digits+string.ascii_letters + '_'
 
     def Clone(self):
         """ Standard cloner.
@@ -238,7 +238,7 @@ class NoMatchValidTextObjectValidator(wx.PyValidator):
             return False
         else:
             textCtrl.SetBackgroundColour(
-                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
             textCtrl.Refresh()
             return True
 
@@ -258,14 +258,14 @@ class NoMatchValidTextObjectValidator(wx.PyValidator):
         return True # Prevent wxDialog from complaining.
 
 
-class NoMatchTextCtrlValidator(wx.PyValidator):
+class NoMatchTextCtrlValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field and that it does not match any other string in another textctrl.
     """
     def __init__(self, textctrls):
         """ Standard constructor.
         """
-        wx.PyValidator.__init__(self)
+        wx.Validator.__init__(self)
         self.textctrls = textctrls[:]
 
     def set_nomatch_ctrls(self, textctrls):
@@ -298,7 +298,7 @@ class NoMatchTextCtrlValidator(wx.PyValidator):
             return False
         else:
             textCtrl.SetBackgroundColour(
-                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
             textCtrl.Refresh()
             return True
 
@@ -318,14 +318,14 @@ class NoMatchTextCtrlValidator(wx.PyValidator):
         return True # Prevent wxDialog from complaining.
 
 
-class FloatObjectValidator(wx.PyValidator):
+class FloatObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
     """
     def __init__(self, eval_func = eval, alt_types = []):
         """ Standard constructor.
         """
-        wx.PyValidator.__init__(self)
+        wx.Validator.__init__(self)
         self.value=None
         self.eval_func = eval_func
         self.alt_types = alt_types
@@ -366,7 +366,7 @@ class FloatObjectValidator(wx.PyValidator):
                     textCtrl.Refresh()
                     return False
 
-            textCtrl.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            textCtrl.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
             textCtrl.Refresh()
             return True
 
@@ -386,14 +386,14 @@ class FloatObjectValidator(wx.PyValidator):
         """
         return True
          
-class ComplexObjectValidator(wx.PyValidator):
+class ComplexObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
        into the text object editor dialog's text field.
     """
     def __init__(self, eval_func = eval, alt_types = []):
         """ Standard constructor.
         """
-        wx.PyValidator.__init__(self)
+        wx.Validator.__init__(self)
         self.value=None
         self.eval_func = eval_func
         self.alt_types = alt_types
@@ -436,7 +436,7 @@ class ComplexObjectValidator(wx.PyValidator):
                     textCtrl.Refresh()
                     return False
                 else:
-                    textCtrl.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                    textCtrl.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
                     textCtrl.Refresh()
                     return True
         except Exception as S:
@@ -447,13 +447,13 @@ class ComplexObjectValidator(wx.PyValidator):
                 textCtrl.Refresh()
                 return False
             else:
-                textCtrl.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                textCtrl.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
                 textCtrl.Refresh()
                 return True
         else:
             #print 'OK'
             textCtrl.SetBackgroundColour(
-                wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
             textCtrl.Refresh()
             return True
 
@@ -738,7 +738,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
                     style=wx.NO_BORDER, size = size)
             boxbuttons.Add(button, 1, wx.EXPAND,5)
             boxbuttons.Add(space)
-            button.SetToolTipString(tooltips[i])
+            button.SetToolTip(tooltips[i])
             self.Bind(wx.EVT_BUTTON, callbacks[i], button)
         self.toolbar = boxbuttons
             
@@ -988,7 +988,7 @@ class FitSelectorCombo(wx.ComboCtrl):
     def create_button_bitmap(self):
         # make a custom bitmap showing "F"
         bw, bh = 14, 16
-        bmp = wx.EmptyBitmap(bw, bh)
+        bmp = wx.EmptyBitmap(24, bw, bh)
         dc = wx.MemoryDC(bmp)
         # clear to a specific background colour
         bgcolor = wx.Colour(255, 254, 255)
@@ -1073,7 +1073,7 @@ class ParameterExpressionCombo(wx.ComboCtrl):
     def create_button_bitmap(self):
         # make a custom bitmap showing "F"
         bw, bh = 14, 16
-        bmp = wx.EmptyBitmap(bw, bh)
+        bmp = wx.EmptyBitmap(24, bw, bh)
         dc = wx.MemoryDC(bmp)
         # clear to a specific background colour
         bgcolor = wx.Colour(255, 254, 255)
@@ -1117,13 +1117,13 @@ class ParameterExpressionCombo(wx.ComboCtrl):
         menu = wx.Menu()
         par_dict = self.par_dict
         classes = list(par_dict.keys())
-        classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
+        classes.sort(key=str.lower)
         for cl in classes:
             # Create a submenu for each class
             clmenu = wx.Menu()
             obj_dict = par_dict[cl]
             objs = list(obj_dict.keys())
-            objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+            objs.sort(key=str.lower)
             # Create a submenu for each object
             for obj in objs:
                 obj_menu = wx.Menu()

@@ -1141,17 +1141,17 @@ class MyHtmlListBox(wx.HtmlListBox):
         return self.html_items[n]
 
 
-class InteractorChangedEvent(wx.PyCommandEvent):
+class InteractorChangedEvent(wx.CommandEvent):
     def __init__(self, evt_type, id):
-        wx.PyCommandEvent.__init__(self, evt_type, id)
+        wx.CommandEvent.__init__(self, evt_type, id)
 
 myEVT_INTERACTOR_CHANGED = wx.NewEventType()
 EVT_INTERACTOR_CHANGED = wx.PyEventBinder(myEVT_INTERACTOR_CHANGED, 1)
 
 
-class SelectionChangedEvent(wx.PyCommandEvent):
+class SelectionChangedEvent(wx.CommandEvent):
     def __init__(self, evt_type, id):
-        wx.PyCommandEvent.__init__(self, evt_type, id)
+        wx.CommandEvent.__init__(self, evt_type, id)
 
 myEVT_SELECTION_CHANGED = wx.NewEventType()
 EVT_SELECTION_CHANGED = wx.PyEventBinder(myEVT_SELECTION_CHANGED, 1)

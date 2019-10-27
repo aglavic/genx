@@ -201,13 +201,13 @@ class DataController:
 # END: DataController
 #==============================================================================
 
-class DataListEvent(wx.PyCommandEvent):
+class DataListEvent(wx.CommandEvent):
     '''
     Event class for the data list - in order to deal with 
     updating of the plots and such.
     '''
     def __init__(self, evt_type, id, data):
-        wx.PyCommandEvent.__init__(self, evt_type, id)
+        wx.CommandEvent.__init__(self, evt_type, id)
         self.data = data
         self.data_changed = True
         self.new_data = False

@@ -1420,7 +1420,7 @@ if __name__ == '__main__':
             self.subplot.set_xlim([-400,400])
             self.subplot.set_ylim([-400,400])
             
-    app = wx.PySimpleApp(0)
+    app = wx.SimpleApp(0)
     frame = wx.Frame(None, -1, 'WxPython and Matplotlib')
     panel = DemoPlotPanel(frame)
     sizer = wx.BoxSizer(wx.HORIZONTAL)

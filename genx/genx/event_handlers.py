@@ -1180,14 +1180,14 @@ def show_about_box(frame, event):
 # Custom events needed for updating and message parsing between the different
 # modules.
 
-class GenericModelEvent(wx.PyCommandEvent):
+class GenericModelEvent(wx.CommandEvent):
     '''
     Event class for a new model - for updating
     of the paramters, plots and script.
     '''
     
     def __init__(self,evt_type, id, model):
-        wx.PyCommandEvent.__init__(self, evt_type, id)
+        wx.CommandEvent.__init__(self, evt_type, id)
         self.model = model
         self.description = ''
         

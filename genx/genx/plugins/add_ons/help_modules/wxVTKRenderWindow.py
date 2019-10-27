@@ -661,7 +661,7 @@ if __name__ == "__main__":
         """Like it says, just a simple example
         """
         # every wx app needs an app
-        app = wx.PySimpleApp()
+        app = wx.SimpleApp()
 
         # create the widget
         frame = wx.Frame(None, -1, "wxRenderWindow", size=wx.Size(400,400))

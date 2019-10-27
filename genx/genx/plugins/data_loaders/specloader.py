@@ -1,7 +1,7 @@
 import wx
 import wx.wizard
 import  wx.lib.filebrowsebutton as filebrowse
-from . import help_modules.spec as spec
+from .help_modules import spec
 #import ...data as data
 import numpy as np
 
@@ -521,7 +521,7 @@ def automerge(xval, yvals, rel_cond = 100.0):
     return xnew, ynew
 
 if __name__ == "__main__":
-    app = wx.PySimpleApp()
+    app = wx.SimpleApp()
     plugin = Plugin(-1)
     wizard = wx.wizard.Wizard(None, -1, "Simple Wizard",
                               style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
