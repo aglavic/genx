@@ -1908,7 +1908,7 @@ class Plugin(framework.Template):
         dlg = wx.FileDialog(self.parent, message="Export SLD to ...", 
                             defaultFile="",
                             wildcard="Dat File (*.dat)|*.dat",
-                            style=wx.SAVE | wx.CHANGE_DIR 
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal() == wx.ID_OK:
             fname = dlg.GetPath()

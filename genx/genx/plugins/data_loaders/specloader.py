@@ -176,7 +176,7 @@ class LoadSpecScanPage(wx.wizard.WizardPageSimple):
                                         startDirectory = '.',
                                         size=(450, -1),
                                         changeCallback = self.filebrowser_callback,
-                                        fileMode = wx.OPEN
+                                        fileMode = wx.FD_OPEN
                                                        )
         self.filebrowser.textControl.Disable()
         self.sizer.Add(self.filebrowser, 0, wx.EXPAND|wx.ALL, 10)

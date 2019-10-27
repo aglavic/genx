@@ -29,14 +29,14 @@ class Parameters:
         :param group: h5py Group to export to
         :return:
         """
-        group['data_labels'] = self.data_labels
+        group['data_labels'] = [label.encode('utf-8') for label in self.data_labels]
         #print np.array([r[0] for r in self.data], dtype='S50')
-        group['data col 0'] = np.array([r[0] for r in self.data], dtype=self.string_dtype)
+        group['data col 0'] = [r[0].encode('utf-8') for r in self.data]
         group['data col 1'] = [r[1] for r in self.data]
         group['data col 2'] = [r[2] for r in self.data]
         group['data col 3'] = [r[3] for r in self.data]
         group['data col 4'] = [r[4] for r in self.data]
-        group['data col 5'] = np.array([r[5] for r in self.data], dtype=self.string_dtype)
+        group['data col 5'] = [r[5].encode('utf-8') for r in self.data]
 
     def read_h5group(self, group):
         """ Import data to the object from a h5py group
@@ -44,10 +44,11 @@ class Parameters:
         :param group: h5py Group to import from
         :return:
         """
-        self.data_labels = [str(item) for item in list(group['data_labels'].value)]
-        self.data = [[str(c0), float(c1), bool(c2), float(c3), float(c4), str(c5)] for (c0, c1, c2, c3, c4, c5) in
-                     zip(group['data col 0'].value, group['data col 1'].value, group['data col 2'].value,
-                         group['data col 3'].value,
+        self.data_labels = [item.decode('utf-8') for item in list(group['data_labels'].value)]
+        self.data = [[c0.decode('utf-8'), float(c1), bool(c2), float(c3), float(c4), c5.decode('utf-8')]
+                     for (c0, c1, c2, c3, c4, c5) in
+                     zip(group['data col 0'].value, group['data col 1'].value,
+                         group['data col 2'].value, group['data col 3'].value,
                          group['data col 4'].value, group['data col 5'].value)]
 
     def to_dict(self):

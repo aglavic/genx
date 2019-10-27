@@ -133,6 +133,8 @@ class MainFrame(wx.Frame):
         self.mb_edit.Append(wx.ID_ANY, "Data", self.mb_edit_sub, "")
         self.main_frame_menubar.Append(self.mb_edit, "Edit")
         self.mb_view = wx.Menu()
+        self.main_frame_menubar.mb_view_grid_slider = self.mb_view.Append(wx.ID_ANY, "Value as slider", "View and control the value as a slider", wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_grid_slider, id=self.main_frame_menubar.mb_view_grid_slider.GetId())
         self.main_frame_menubar.mb_view_zoom = self.mb_view.Append(wx.ID_ANY, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_zoom, id=self.main_frame_menubar.mb_view_zoom.GetId())
         self.main_frame_menubar.mb_view_zoomall = self.mb_view.Append(wx.ID_ANY, "Zoom All\tCtrl+A", "Zoom to fit all data points")
@@ -795,6 +797,9 @@ class MainFrame(wx.Frame):
         event.Skip()
     def eh_mb_view_xscale_lin(self, event):  # wxGlade: MainFrame.<event_handler>
         print("Event handler 'eh_mb_view_xscale_lin' not implemented!")
+        event.Skip()
+    def eh_mb_view_grid_slider(self, event):  # wxGlade: MainFrame.<event_handler>
+        print("Event handler 'eh_mb_view_grid_slider' not implemented!")
         event.Skip()
 # end of class MainFrame
 

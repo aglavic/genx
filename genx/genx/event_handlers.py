@@ -93,7 +93,7 @@ def open(frame, event):
      
     dlg = wx.FileDialog(frame, message="Open", defaultFile="",\
                         wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",\
-                         style=wx.OPEN #| wx.CHANGE_DIR
+                         style=wx.FD_OPEN #| wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
@@ -113,7 +113,7 @@ def open_model(frame, path):
     except modellib.IOError as e:
         ShowModelErrorDialog(frame, e.__str__())
     except Exception as e:
-        outp = io.StringIO()
+        outp = StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -123,7 +123,7 @@ def open_model(frame, path):
     try:
         [p.ReadConfig() for p in get_pages(frame)]
     except Exception as e:
-        outp = io.StringIO()
+        outp = StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -132,7 +132,7 @@ def open_model(frame, path):
     try:
         frame.paramter_grid.ReadConfig()
     except Exception as e:
-        outp = io.StringIO()
+        outp = StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -140,12 +140,12 @@ def open_model(frame, path):
         ShowErrorDialog(frame, 'Could not read the config for the parameter grid. Python Error:\n%s' % (val,))
     else:
         # Update the Menu choice
-        frame.mb_view_grid_slider.Check(frame.paramter_grid.GetValueEditorSlider())
+        frame.main_frame_menubar.mb_view_grid_slider.Check(frame.paramter_grid.GetValueEditorSlider())
     # Letting the plugin do their stuff...
     try:
         frame.plugin_control.OnOpenModel(None)
     except Exception as e:
-        outp = io.StringIO()
+        outp = StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -190,7 +190,7 @@ def update_for_save(frame):
     """Updates the various objects for a save"""
     frame.model.set_script(frame.script_editor.GetText())
     # Save the current state of autosim to the config
-    frame.config.set('parameter grid', 'auto sim', frame.mb_fit_autosim.IsChecked())
+    frame.config.set('parameter grid', 'auto sim', frame.main_frame_menubar.mb_fit_autosim.IsChecked())
 
 def save(frame, event):
     '''
@@ -228,7 +228,7 @@ def save_as(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Save As", defaultFile="",
                         wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",
-                        style=wx.SAVE #| wx.CHANGE_DIR
+                        style=wx.FD_SAVE #| wx.FD_CHANGE_DIR
                         )
     if dlg.ShowModal() == wx.ID_OK:
         update_for_save(frame)
@@ -266,7 +266,7 @@ def export_data(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Export data", defaultFile="",\
                         wildcard="Dat File (*.dat)|*.dat",\
-                         style=wx.SAVE | wx.CHANGE_DIR 
+                         style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
@@ -290,7 +290,7 @@ def export_script(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Export data", defaultFile="",\
                         wildcard="Python File (*.py)|*.py",\
-                         style=wx.SAVE | wx.CHANGE_DIR 
+                         style=wx.FD_SAVE | wx.CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
@@ -331,7 +331,7 @@ def export_table(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Export data", defaultFile="",\
                         wildcard="Table File (*.tab)|*.tab",\
-                         style=wx.SAVE | wx.CHANGE_DIR 
+                         style=wx.FD_SAVE | wx.CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
@@ -372,7 +372,7 @@ def import_script(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Import script", defaultFile="",\
                     wildcard="Python files (*.py)|*.py|All files (*.*)|*.*",\
-                         style=wx.OPEN | wx.CHANGE_DIR 
+                         style=wx.FD_OPEN | wx.CHANGE_DIR 
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
@@ -426,7 +426,7 @@ def import_table(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Import script", defaultFile="",\
                     wildcard="Table File (*.tab)|*.tab|All files (*.*)|*.*",\
-                         style=wx.OPEN | wx.CHANGE_DIR 
+                         style=wx.FD_OPEN | wx.CHANGE_DIR 
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
@@ -457,7 +457,7 @@ def parameter_value_changed(frame, event):
     :return:
     """
     frame.simulation_queue_counter += 1
-    if frame.mb_fit_autosim.IsChecked() and not frame.flag_simulating:
+    if frame.main_frame_menubar.mb_fit_autosim.IsChecked() and not frame.flag_simulating:
         _thread.start_new_thread(simulation_loop, (frame,))
 
 def simulation_loop(frame):
@@ -822,9 +822,9 @@ def on_grid_slider_check(frame, event):
     :param event:
     :return:
     """
-    frame.paramter_grid.SetValueEditorSlider(frame.mb_view_grid_slider.IsChecked())
+    frame.paramter_grid.SetValueEditorSlider(frame.main_frame_menubar.mb_view_grid_slider.IsChecked())
     #print frame.paramter_grid.get_toggle_slider_tool_state()
-    frame.paramter_grid.toggle_slider_tool(frame.mb_view_grid_slider.IsChecked())
+    frame.paramter_grid.toggle_slider_tool(frame.main_frame_menubar.mb_view_grid_slider.IsChecked())
     frame.paramter_grid.Refresh()
 
 

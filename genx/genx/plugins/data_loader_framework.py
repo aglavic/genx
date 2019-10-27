@@ -74,7 +74,7 @@ class Template:
         if n_selected == 1:
             dlg = wx.FileDialog(self.parent, message = "Choose your Datafile"
                     , defaultFile = "", wildcard = "All files (*.*)|*.*"
-                    , style=wx.OPEN | wx.CHANGE_DIR)
+                    , style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
                     
             if dlg.ShowModal() == wx.ID_OK:
                 self.LoadData(selected_items[0], dlg.GetPath())

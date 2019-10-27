@@ -537,8 +537,9 @@ def get_parameters(obj, numeric_types_only=False, group_parameters=True):
     # HasParameters
     [add_parameter_to_dict(par_dict, members[name].__class__.__name__, name)
      for name in members
-     if isinstance(members[name], allowed_parameter_classes) and not isinstance(members[name], HasParameters)
-     and name[0] != '_'
+     if name[0] != '_' and
+     isinstance(members[name], allowed_parameter_classes) and
+     not isinstance(members[name], HasParameters)
      ]
     # Loop through all the objects that inherit from HasParameter classes and do the same thing
     [add_object_to_dict(par_dict, members[name].__class__.__name__, name,

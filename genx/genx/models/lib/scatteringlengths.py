@@ -134,6 +134,8 @@ class Database(object):
         
         Looks up and returns the attribure name
         '''
+        if name.startswith('__'):
+            return object.__getattribute__(self, name)
         name = name.lower()
         stored_values = object.__getattribute__(self, 'stored_values')
         if name in stored_values:
@@ -213,7 +215,7 @@ class FormFactor(Database):
         
         Finds and returns a attribute
         '''
-        if name == 'set_wavelength':
+        if name == 'set_wavelength' or name.startswith('__'):
             return object.__getattribute__(self, 'set_wavelength')
         else:
             #print 'getting value'
