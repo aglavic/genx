@@ -10,7 +10,8 @@ from . import version
 __version__ = version.version
 
 import _thread, time
-import wx, os, io, traceback
+import wx, os, traceback
+from io import StringIO
 from wx.lib.wordwrap import wordwrap
 import webbrowser
 import numpy as np
@@ -210,7 +211,7 @@ def save(frame, event):
         except modellib.IOError as e:
             ShowModelErrorDialog(frame, e.__str__())
         except Exception as e:
-            outp = io.StringIO()
+            outp = StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -248,7 +249,7 @@ def save_as(frame, event):
             except modellib.IOError as e:
                 ShowModelErrorDialog(frame, e.__str__())
             except Exception as e:
-                outp = io.StringIO()
+                outp = StringIO()
                 traceback.print_exc(200, outp)
                 val = outp.getvalue()
                 outp.close()
@@ -390,7 +391,7 @@ def import_script(frame, event):
         try:
             frame.plugin_control.OnOpenModel(None)
         except Exception as e:
-            outp = io.StringIO()
+            outp = StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -487,7 +488,7 @@ def evaluate(frame, event):
         ShowModelErrorDialog(frame, str(e))
         frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
     except Exception as e:
-        outp = io.StringIO()
+        outp = StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -526,7 +527,7 @@ def do_simulation(frame):
         ShowModelErrorDialog(frame, str(e))
         frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
     except Exception as e:
-        outp = io.StringIO()
+        outp = StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -543,7 +544,7 @@ def set_possible_parameters_in_grid(frame):
     try:
         pardict = frame.model.get_possible_parameters()
     except Exception as e:
-        outp = io.StringIO()
+        outp = StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -655,7 +656,7 @@ def scan_parameter(frame, row):
                         frame.solver_control.fom_error_bars_level))
             frame.plot_notebook.SetSelection(3)
         except Exception as e:
-            outp = io.StringIO()
+            outp = StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -696,7 +697,7 @@ def project_fom_parameter(frame, row):
                         frame.solver_control.fom_error_bars_level))
         frame.plot_notebook.SetSelection(3)
     except Exception as e:
-        outp = io.StringIO()
+        outp = StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()

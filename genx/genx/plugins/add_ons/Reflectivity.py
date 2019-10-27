@@ -698,6 +698,7 @@ class SamplePanel(wx.Panel):
         dlg = ValidateFitNotebookDialog(self, pars, vals, validators,
                              title='Instrument Editor', groups=groups,
                              units=units, fixed_pages=['inst'], editable_pars=editable)
+
         if dlg.ShowModal()==wx.ID_OK:
             old_vals = vals
             vals = dlg.GetValues()
@@ -712,7 +713,8 @@ class SamplePanel(wx.Panel):
                     new_instrument = True
                 for par in self.model.InstrumentParameters:
                     if not states[inst_name][par]:
-                        setattr(self.instruments[inst_name], par, vals[inst_name][par])
+                        old_type=type(old_vals[inst_name][par])
+                        setattr(self.instruments[inst_name], par, old_type(vals[inst_name][par]))
                     else:
                         setattr(self.instruments[inst_name], par, old_vals[inst_name][par])
                     if new_instrument and states[inst_name][par] > 0:

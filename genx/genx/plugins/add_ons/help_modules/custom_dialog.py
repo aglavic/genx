@@ -682,6 +682,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         Note validators, values and units should be dictonaries of values!
         '''
         wx.Dialog.__init__(self, parent, -1, title)
+        self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         self.pars = pars
         self.validators = validators
         self.cols = cols
@@ -700,7 +701,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         
         self.main_layout()
         self.Layout()
-        
+
     def main_layout(self):
         border = wx.BoxSizer(wx.VERTICAL)
         border.Add((-1,5))
@@ -988,7 +989,7 @@ class FitSelectorCombo(wx.ComboCtrl):
     def create_button_bitmap(self):
         # make a custom bitmap showing "F"
         bw, bh = 14, 16
-        bmp = wx.EmptyBitmap(24, bw, bh)
+        bmp = wx.Bitmap(24, bw, bh)
         dc = wx.MemoryDC(bmp)
         # clear to a specific background colour
         bgcolor = wx.Colour(255, 254, 255)
@@ -1073,7 +1074,7 @@ class ParameterExpressionCombo(wx.ComboCtrl):
     def create_button_bitmap(self):
         # make a custom bitmap showing "F"
         bw, bh = 14, 16
-        bmp = wx.EmptyBitmap(24, bw, bh)
+        bmp = wx.Bitmap(24, bw, bh)
         dc = wx.MemoryDC(bmp)
         # clear to a specific background colour
         bgcolor = wx.Colour(255, 254, 255)
