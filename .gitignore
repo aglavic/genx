@@ -1,0 +1,11 @@
+.*
+*~
+*.pyo
+*.pyc
+build
+dist
+plugin_new
+MANIFEST
+docutils
+doc/_*
+__pycache__
