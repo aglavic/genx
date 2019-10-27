@@ -229,7 +229,7 @@ class Parameters:
     def get_fit_pars(self):
         ''' Returns the variables needed for fitting '''
         #print 'Data in the parameters class: ', self.data
-        rows = range(len(self.data))
+        rows = list(range(len(self.data)))
         row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
                 not self.data[nmb][0]=='']
         funcs=[row[0] for row in self.data if row[2] and not row[0] == '']
@@ -243,7 +243,7 @@ class Parameters:
         
         Transform the row row to the position in the fit_pars list
         '''
-        rows = range(row + 1)
+        rows = list(range(row + 1))
         row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
                 not self.data[nmb][0] == '']
         return len(row_nmb) - 1
@@ -258,7 +258,7 @@ class Parameters:
         '''Transform a row to a psoitions in the sim list 
         that is returned by get_sim_pars
         '''
-        rows = range(row + 1)
+        rows = list(range(row + 1))
         row_nmb=[nmb for nmb in rows if not self.data[nmb][0] == '']
         return len(row_nmb) - 1
        
@@ -345,7 +345,7 @@ class Parameters:
                     min = float(line_strs[3])
                     max = float(line_strs[4])
                     error = line_strs[5]
-                except Exception, e:
+                except Exception as e:
                     sucess = False
                     break
                 else:
@@ -396,4 +396,4 @@ if __name__ == '__main__':
     p2 = Parameters()
     f = h5py.File('test.hdf', 'r')
     p2.read_h5group(f['parameters'])
-    print p2.data
+    print(p2.data)

@@ -13,5 +13,5 @@ class Plugin(framework.Template):
         inputpanel = self.NewInputFolder('Test')
         datapanel = self.NewDataFolder('Test')
         menu = self.NewMenu('Test')
-        print 'Everyting tested, should be visible :-)'
+        print('Everyting tested, should be visible :-)')
     

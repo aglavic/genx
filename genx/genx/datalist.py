@@ -13,15 +13,19 @@ $Date::                                 $:  Date of last commit
 
 import wx, os
 import wx.lib.colourselect as csel
-import wx.wizard
 import wx.lib.scrolledpanel as scrolled
 import  wx.lib.intctrl as intctrl
 
+try:
+    from wx import wizard
+except ImportError:
+    from wx import adv as wizard
 
-import data
-import filehandling as io
-import images as img
-import plugins.data_loader_framework as dlf
+
+from . import data
+from . import filehandling as io
+from . import images as img
+from .plugins import data_loader_framework as dlf
 #==============================================================================
 
 class DataController:
@@ -120,7 +124,7 @@ class DataController:
             try:
                 self.data[i].set_commands(command)
                 self.data[i].run_command()
-            except Exception, e:
+            except Exception as e:
                 result += 'Error occured for data set %i: '%i + e.__str__()
                 break
         return result
@@ -160,7 +164,7 @@ class DataController:
         for the PlotSettings dialog.
         sim_list and data_list has to have the right elements. See data.py
         '''
-        lpos = range(len(sim_list))
+        lpos = list(range(len(sim_list)))
         [self.data[i].set_sim_plot_items(sim_list[j]) for i, j in zip(pos, lpos)]
         [self.data[i].set_data_plot_items(data_list[j]) for i, j in zip(pos, lpos)]
     
@@ -393,7 +397,7 @@ class VirtualDataList(wx.ListCtrl):
             evt.SetDataMoved(position, direction_up)
         if deleted:
             evt.SetDataDeleted(position)
-        print evt.new_data
+        print(evt.new_data)
         # Process the event!
         self.GetEventHandler().ProcessEvent(evt)
     
@@ -603,7 +607,7 @@ class VirtualDataList(wx.ListCtrl):
         # Note that the lists are treated seperately...
         sim_par = sim_list[0].copy()
         data_par = data_list[0].copy()
-        keys = sim_par.keys()
+        keys = list(sim_par.keys())
         for sim_dict, data_dict in zip(sim_list[1:],data_list[1:]):
             # Iterate through the keys and mark the one that are
             # not identical with None!
@@ -674,7 +678,7 @@ class VirtualDataList(wx.ListCtrl):
         commands = self.data_cont.get_items_commands(indices)
         # Get all commands
         all_commands = self.data_cont.get_items_commands(\
-                                    range(self.data_cont.get_count()))
+                                    list(range(self.data_cont.get_count())))
         all_names = self.data_cont.get_items_names()
         
         # Find which values are the same for all lists in sim and data.
@@ -686,7 +690,7 @@ class VirtualDataList(wx.ListCtrl):
             # not identical with None!
             for key in command_dict:
                 # Check if the key exist in my commmand dict
-                if command_par.has_key(key):
+                if key in command_par:
                     # Check so the command is the same
                     if not command_dict[key] == command_par[key]:
                         command_par[key] = ''
@@ -701,7 +705,7 @@ class VirtualDataList(wx.ListCtrl):
                 cmds_x = self.config.get('data commands', 'x commands').split(';')
                 cmds_y = self.config.get('data commands', 'y commands').split(';')
                 cmds_e = self.config.get('data commands', 'e commands').split(';')
-            except io.OptionError, e:
+            except io.OptionError as e:
                 ShowWarningDialog(self.parent, str(e), 'datalist.OnCalcEdit')
                 predef_names = None
                 predef_commands = None
@@ -902,11 +906,11 @@ class PlotSettingsDialog(wx.Dialog):
         col_labels = ['Color', 'Line type', 'Thickness', 'Symbol', 'Size']
         row_labels = ['Simulation: ', 'Data: ']
         
-        for item, index in zip(col_labels, range(len(col_labels))):
+        for item, index in zip(col_labels, list(range(len(col_labels)))):
             label = wx.StaticText(self, -1, item)
             gbs.Add(label,(0, index+1),flag=wx.ALIGN_LEFT,border=5)
             
-        for item, index in zip(row_labels, range(len(row_labels))):
+        for item, index in zip(row_labels, list(range(len(row_labels)))):
             label = wx.StaticText(self, -1, item)
             gbs.Add(label,(index+1,0),\
                 flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
@@ -1133,7 +1137,7 @@ class CalcDialog(wx.Dialog):
         box_choice_sizer.Add(choice_gbs, flag = wx.ALIGN_CENTER, border = 5)
         col_labels = ['  Predefined: ', ' Data set: ']
             
-        for item, index in zip(col_labels, range(len(col_labels))):
+        for item, index in zip(col_labels, list(range(len(col_labels)))):
             label = wx.StaticText(self, -1, item)
             choice_gbs.Add(label,(0, 2*index),\
                 flag = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
@@ -1174,8 +1178,8 @@ class CalcDialog(wx.Dialog):
         #the rest
         self.command_ctrl = {}
         for name, index in zip(command_names_standard,\
-                                    range(len(command_names_standard))):
-            if commands.has_key(name):
+                                    list(range(len(command_names_standard)))):
+            if name in commands:
                 label = wx.StaticText(self, -1, '%s = '%name)
                 gbs.Add(label,(index,0),\
                     flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
@@ -1183,7 +1187,7 @@ class CalcDialog(wx.Dialog):
                                     commands[name], size=(300, -1))
                 gbs.Add(self.command_ctrl[name], (index, 1), flag = wx.EXPAND)
 
-        command_names = commands.keys()
+        command_names = list(commands.keys())
         command_names.sort()
         #index_offset = len(command_names_standard) - 1
         #for name, index in zip(command_names, range(len(command_names))):
@@ -1307,9 +1311,9 @@ class CalcDialog(wx.Dialog):
 #==============================================================================
 # BEGIN: Sim data Wizard
 
-class TitledPage(wx.wizard.WizardPageSimple):
+class TitledPage(wizard.WizardPageSimple):
     def __init__(self, parent, title):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wizard.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         titleText = wx.StaticText(self, -1, title)
@@ -1319,9 +1323,9 @@ class TitledPage(wx.wizard.WizardPageSimple):
         self.sizer.Add(wx.StaticLine(self, -1), 0,
                        wx.EXPAND|wx.ALL, 5)
 
-class CreateSimDataWizard(wx.wizard.Wizard):
+class CreateSimDataWizard(wizard.Wizard):
     def __init__(self, parent):
-        wx.wizard.Wizard.__init__(self, parent, -1, "Create Simulation Data Sets")
+        wizard.Wizard.__init__(self, parent, -1, "Create Simulation Data Sets")
         step_types = ['const', 'log']
         self.pages = []
         self.min_val = None
@@ -1372,9 +1376,9 @@ class CreateSimDataWizard(wx.wizard.Wizard):
         self.add_page(page2)
         self.add_page(page3)
 
-        print len(self.pages)
+        print(len(self.pages))
 
-        self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGING, self.on_page_changing)
+        self.Bind(wizard.EVT_WIZARD_PAGE_CHANGING, self.on_page_changing)
 
     def on_page_changing(self, evt):
         """ Event handler for changing page
@@ -1480,7 +1484,7 @@ def ShowWarningDialog(frame, message, position = ''):
 
 # Test code for the class to be able to independly test the code
 if __name__=='__main__':
-    import data
+    from . import data
     
     class MainFrame(wx.Frame):
         def __init__(self,*args,**kwds):

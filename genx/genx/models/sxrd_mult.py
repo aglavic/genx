@@ -5,11 +5,11 @@ described in Phys. Rev. B vol. 45 p. 9292 (1992).
 # Programmed by Matts Bjorck 20091215
 
 import numpy as np
-import sxrd
-from utils import f, rho
+from . import sxrd
+from .utils import f, rho
 import time
 
-from sxrd import UnitCell, AtomGroup, Instrument, Slab, SymTrans
+from .sxrd import UnitCell, AtomGroup, Instrument, Slab, SymTrans
 
 __pars__ = ['SLSample', 'SLStandard',  'UnitCell', 'Slab', 'AtomGroup', 
             'Instrument']
@@ -129,8 +129,8 @@ class Superlattice:
         '''
         # Extract the parameters we need
         # the star in zip(*... transform the list elements to arguments
-        xt, yt, zt, elt, ut, oct, ct = zip(*[slab._extract_values()
-                                  for slab in slabs])
+        xt, yt, zt, elt, ut, oct, ct = list(zip(*[slab._extract_values()
+                                  for slab in slabs]))
        
         x = np. r_[xt]
         y = np.r_[yt]
@@ -194,8 +194,8 @@ class SLStandard(Superlattice):
         Superlattice.__init__(self,  inst, unit_cell, a_slab, b_slab, 
                  a_sym = a_sym, b_sym = b_sym)
         [self._make_set_func(name, self._pars[name]) for name in 
-         self._pars.keys()]
-        [self._make_get_func(name) for name in self._pars.keys()]
+         list(self._pars.keys())]
+        [self._make_get_func(name) for name in list(self._pars.keys())]
 
     def calc_fa(self, n, h, k, l):
         f_slab, t_z = self.calc_fslab([self.a_slab]*n, self.a_sym, 

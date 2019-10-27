@@ -156,24 +156,24 @@ class wxVTKRenderWindow(baseClass):
         
         stereo = 0
         
-        if kw.has_key('stereo'):
+        if 'stereo' in kw:
             if kw['stereo']:
                 stereo = 1
             del kw['stereo']
 
         position = wx.DefaultPosition
 
-        if kw.has_key('position'):
+        if 'position' in kw:
             position = kw['position']
             del kw['position']
 
         size = wx.DefaultSize
 
-        if kw.has_key('size'):
+        if 'size' in kw:
             size = kw['size']
             del kw['size']
         
-        if kw.has_key('width') and kw.has_key('height'):
+        if 'width' in kw and 'height' in kw:
             size = (kw['width'], kw['height'])
             del kw['width']
             del kw['height']
@@ -182,7 +182,7 @@ class wxVTKRenderWindow(baseClass):
         # wxNO_FULL_REPAINT_ON_RESIZE cuts down resize flicker under GTK
         style = wx.WANTS_CHARS | wx.NO_FULL_REPAINT_ON_RESIZE
 
-        if kw.has_key('style'):
+        if 'style' in kw:
             style = style | kw['style']
             del kw['style']
 

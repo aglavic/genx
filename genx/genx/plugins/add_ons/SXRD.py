@@ -5,14 +5,14 @@ This plugin auto generates the sample definition and simulations of a surface x-
 
 __author__ = 'Matts Bjorck'
 
-import StringIO
+import io
 import traceback
 
 import wx
 
 import plugins.add_on_framework as framework
-import help_modules.model_interactors as mi
-import help_modules.atom_viewer as atom_viewer
+from . import help_modules.model_interactors as mi
+from . import help_modules.atom_viewer as atom_viewer
 
 
 code = """
@@ -200,13 +200,13 @@ class Plugin(framework.Template):
         else:
             try:
                 self.SetModelScript(self.script_interactor.update_code(old_script))
-            except Exception, e:
-                outp = StringIO.StringIO()
+            except Exception as e:
+                outp = io.StringIO()
                 traceback.print_exc(200, outp)
                 tbtext = outp.getvalue()
                 outp.close()
-                print "Error updating the script: "
-                print tbtext
+                print("Error updating the script: ")
+                print(tbtext)
                 if self.ShowQuestionDialog('Could not update the script due to syntax issues. Python error: %s\n\n'
                                             'Do you wish to reset the model to the one defined in the user interface?'):
                     self.SetModelScript(self.script_interactor.get_code())
@@ -247,7 +247,7 @@ class Plugin(framework.Template):
             try:
                 domain = self.GetModel().eval_in_model(domain)
             except Exception:
-                print "Could not load domain ", domain
+                print("Could not load domain ", domain)
             else:
                 self.sample_view.build_sample(domain, use_opacity=False)
 

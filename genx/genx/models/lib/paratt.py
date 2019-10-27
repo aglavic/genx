@@ -1,4 +1,5 @@
 from numpy import *
+from functools import reduce
 
 # "Ordinary" implementaion of Parrats recursion formula
 # theta-vector, lamda- can be a vector,n-1Dvector, d-1Dvector, sigma-1Dvector
@@ -15,7 +16,7 @@ def Refl(theta, lamda, n, d, sigma, return_int=True):
     p = exp(1.0j*d[:,newaxis]*Qj[1:-1])
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=array(map(lambda x,y:[x,y],rp[1:],p))
+    rpp=array(list(map(lambda x,y:[x,y],rp[1:],p)))
     # Paratt's recursion formula
     def formula(rtot,rint):
         return (rint[0]+rtot*rint[1])/(1+rtot*rint[0]*rint[1])
@@ -46,7 +47,7 @@ def ReflQ(Q,lamda,n,d,sigma, return_int=True):
     #print p.shape #For debugging
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=array(map(lambda x,y:[x,y],rp[1:],p))
+    rpp=array(list(map(lambda x,y:[x,y],rp[1:],p)))
     #print rpp.shape
     # Paratt's recursion formula
     def formula(rtot,rint):
@@ -72,7 +73,7 @@ def Refl_nvary(theta,lamda,n_func,d,sigma, return_int=True):
     #print ss.shape
     #print theta.shape
     #print len(n_func)
-    n=array(map(lambda f,val:f(val),n_func,ss))
+    n=array(list(map(lambda f,val:f(val),n_func,ss)))
     #print n
     Qj=2*k*n[-1]*sqrt(n**2/n[-1]**2-cos(theta*math.pi/180)**2)
     # Fresnel reflectivity for the interfaces
@@ -84,7 +85,7 @@ def Refl_nvary(theta,lamda,n_func,d,sigma, return_int=True):
     #print p.shape #For debugging
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=array(map(lambda x,y:[x,y],rp[1:],p))
+    rpp=array(list(map(lambda x,y:[x,y],rp[1:],p)))
     #print rpp.shape
     # Paratt's recursion formula
     def formula(rtot,rint):
@@ -118,7 +119,7 @@ def ReflProfiles(theta,lamda,n,d,sigma,profile, return_int=True):
             # If any wrong number are typed in return the erf profile
             return exp(-QiQj*sigma**2/2)
 
-    interface=array(map(w,Qj[:-1]*Qj[1:],sigma,profile))
+    interface=array(list(map(w,Qj[:-1]*Qj[1:],sigma,profile)))
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*interface
     #print rp.shape #For debugging
@@ -128,7 +129,7 @@ def ReflProfiles(theta,lamda,n,d,sigma,profile, return_int=True):
     #print p.shape #For debugging
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=array(map(lambda x,y:[x,y],rp[1:],p))
+    rpp=array(list(map(lambda x,y:[x,y],rp[1:],p)))
     #print rpp.shape
     # Paratt's recursion formula
     def formula(rtot,rint):
@@ -168,7 +169,7 @@ def Refl_nvary2(theta,lamda,n_vector,d,sigma, return_int=True):
     #print p.shape #For debugging
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=array(map(lambda x,y:[x,y],rp[1:],p))
+    rpp=array(list(map(lambda x,y:[x,y],rp[1:],p)))
     #print rpp.shape
     # Paratt's recursion formula
     def formula(rtot,rint):
@@ -189,7 +190,7 @@ def reflq_kin(q, lamda, n, d, sigma, correct_q=True, return_int=True):
     sigma = sigma[:-1]
     q0 = 4*pi/lamda
     # Kinematical reflectivity for the interfaces
-    print n.shape, len(n.shape)
+    print(n.shape, len(n.shape))
     if len(n.shape) == 1:
         if correct_q:
             # The internal wave vector calacuted with the thickness averaged refractive index.

@@ -6,7 +6,7 @@ import sys
 
 import numpy as np
 
-import version
+from . import version
 
 
 def sld_mc(args):
@@ -15,31 +15,31 @@ def sld_mc(args):
     :param args:
     :return:
     """
-    import model
-    import diffev
-    import filehandling as io
+    from . import model
+    from . import diffev
+    from . import filehandling as io
 
     mod = model.Model()
     config = io.Config()
     config.load_default(os.path.split(os.path.abspath(__file__))[0] + 'genx.conf')
     opt = diffev.DiffEv()
 
-    print 'Loading model %s...'%args.infile
+    print('Loading model %s...'%args.infile)
     io.load_file(args.infile, mod, opt, config)
     io.load_opt_config(opt, config)
     # Hack the script so that it simulates the SLD instead of the data
     mod.script = re.sub(r"SimSpecular\((.*)\,(.*)\)", r"SimSLD(data[0].x, None,\2)", mod.script)
-    print "Hacking the model script. Resulting script:"
-    print mod.script
+    print("Hacking the model script. Resulting script:")
+    print(mod.script)
 
     # Simulate, this will also compile the model script
-    print 'Compiling model...'
+    print('Compiling model...')
     mod.compile_script()
 
     (funcs, vals, minvals, maxvals) = mod.get_fit_pars()
     vals = np.array(vals)
     boundaries = [row[5] for row in mod.parameters.data if not row[0] == '' and row[2]]
-    print boundaries
+    print(boundaries)
     boundaries = np.array([eval(s) for s in boundaries])
     minvals, maxvals = boundaries[:,0] + vals, boundaries[:,1] + vals
     min_SLD = []
@@ -60,7 +60,7 @@ def sld_mc(args):
                 return_dic[key] = cur[key]
         return return_dic
 
-    print "Calculating sld's..."
+    print("Calculating sld's...")
     missed = 0
     for i in range(args.runs):
         current_vals = minvals + (maxvals - minvals)*np.random.random_sample(len(funcs))
@@ -81,9 +81,9 @@ def sld_mc(args):
         sys.stdout.write("\r Progress: %d%%" % (float(i)*100/float(args.runs)))
         sys.stdout.flush()
 
-    print ' '
-    print missed, " simulations was discarded due to wrong size."
-    print "Saving the data to file..."
+    print(' ')
+    print(missed, " simulations was discarded due to wrong size.")
+    print("Saving the data to file...")
     for sim in range(len(min_SLD)):
         new_filename = (args.outfile + '%03d'%sim + '.dat')
         save_array = np.array([min_SLD[sim]['z']])

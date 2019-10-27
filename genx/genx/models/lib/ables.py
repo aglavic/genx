@@ -1,8 +1,9 @@
 import numpy as np
-import math_utils as mu
-import isotropic_matrix as im
-import int_lay_xmean
+from . import math_utils as mu
+from . import isotropic_matrix as im
+from . import int_lay_xmean
 import pdb
+from functools import reduce
 
 _ctype = np.complex128
 
@@ -120,7 +121,7 @@ def ReflQ_ref(Q,lamda,n,d,sigma):
     #print p.shape #For debugging
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=np.array(map(lambda x,y:[x,y],rp[1:],p))
+    rpp=np.array(list(map(lambda x,y:[x,y],rp[1:],p)))
     #print rpp.shape
     # Paratt's recursion formula
     def formula(rtot,rint):
@@ -173,8 +174,8 @@ if __name__ == '__main__':
         R_try = ReflQ(Q, 1.54, n, d, sigma)
         #R_try = ReflQ(Q, 1.54, n3, d3, sigma)
     t3 = time.clock()
-    print 'Paratt: ', (t2 -t1)/n_att
-    print 'Abeles: ', (t3 - t2)/n_att
+    print('Paratt: ', (t2 -t1)/n_att)
+    print('Abeles: ', (t3 - t2)/n_att)
     semilogy(theta, R_ref)
     semilogy(theta, R_try, '.')
     legend(('Parratt', 'Abeles with roughness/interface layer'))

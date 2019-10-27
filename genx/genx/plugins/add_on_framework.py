@@ -6,9 +6,9 @@ Last changed: 2008 07 23
 '''
 
 import os
-import wx, StringIO, traceback
+import wx, io, traceback
 
-from utils import PluginHandler
+from .utils import PluginHandler
 
 head, tail = os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -332,7 +332,7 @@ class PluginController:
                         self.plugin_handler.load_plugin(plugin)
                         self.RegisterPlugin(plugin)
                     except:
-                        outp = StringIO.StringIO()
+                        outp = io.StringIO()
                         traceback.print_exc(200, outp)
                         tbtext = outp.getvalue()
                         outp.close()
@@ -357,7 +357,7 @@ class PluginController:
         try:
             self.plugin_handler.load_plugin(plugin)
         except:
-            outp = StringIO.StringIO()
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             tbtext = outp.getvalue()
             outp.close()
@@ -375,8 +375,8 @@ class PluginController:
         plugin = menuitem.GetText()
         try:
             self.plugin_handler.unload_plugin(plugin)
-        except Exception, e:
-            outp = StringIO.StringIO()
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             tbtext = outp.getvalue()
             outp.close()
@@ -409,7 +409,7 @@ class PluginController:
         
         Runs plugin code when the user tries to open a model 
         '''
-        loaded_plugins = self.plugin_handler.loaded_plugins.keys()
+        loaded_plugins = list(self.plugin_handler.loaded_plugins.keys())
         items = self.unload_menu.GetMenuItems()
         for item in items:
             # Remove the item from the list
@@ -423,7 +423,7 @@ class PluginController:
         # Update the available plugins
         self.update_plugins()
 
-        loaded_plugins = self.plugin_handler.loaded_plugins.keys()
+        loaded_plugins = list(self.plugin_handler.loaded_plugins.keys())
         for name in loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
 

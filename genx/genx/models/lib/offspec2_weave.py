@@ -2,28 +2,28 @@
 from scipy import *
 from scipy import integrate
 from scipy.misc import factorial
-from elfield import *
+from .elfield import *
 
 offspec_ext_built = False
 debug = False
 try:
-    import offspec_ext
+    from . import offspec_ext
     offspec_ext_built = True
 except ImportError:
-    print 'Could not import offspec_ext'
+    print('Could not import offspec_ext')
     offspec_ext_built = False
 
 if not offspec_ext_built and not debug:
-    print "Trying to build module offspec_ext"
-    import build_ext
+    print("Trying to build module offspec_ext")
+    from . import build_ext
     build_ext.offspec()
-    import offspec_ext
+    from . import offspec_ext
 
 
 def vec_realsymint(F,omega,eta,h,eta_z,qz_n,qz_np,sigma_n,sigma_np,max_n):
     I=2*sum([((qz_n*conj(qz_np)*(sigma_n*sigma_np))**n)/factorial(n)*eta/n**(1.0/2.0/h)*F(omega*eta/(n**(1.0/2.0/h))) for n in arange(1.0,max_n+1.0)])
     I=array(I)
-    print I.shape
+    print(I.shape)
     return I
 
 def make_F(q,h):

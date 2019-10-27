@@ -111,13 +111,13 @@ in <code>dimes.py</code> is <code>sqrt(2)*pi*[]</code>
 '''
 
 import numpy as np
-import utils
+from . import utils
 
 sxrd_ext_built = False
 debug = False
 
 try:
-    import lib.sxrd_ext
+    from . import lib.sxrd_ext
     sxrd_ext_built = True
     _turbo_sim = True
 except ImportError:
@@ -127,12 +127,12 @@ except ImportError:
 # Try to complie the extensions - if necessary
 if not sxrd_ext_built or debug:
     try:
-        import lib.build_ext
+        from . import lib.build_ext
         lib.build_ext.sxrd()
-        import lib.sxrd_ext
+        from . import lib.sxrd_ext
         _turbo_sim = True
     except:
-        print 'Could not build sxrd c extension'
+        print('Could not build sxrd c extension')
         _turbo_sim = False
 
 __pars__ = ['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
@@ -309,8 +309,8 @@ class Sample:
         '''
         # Extract the parameters we need
         # the star in zip(*... transform the list elements to arguments
-        xt, yt, zt, elt, ut, oct, ct = zip(*[slab._extract_values()
-                                  for slab in self.slabs])
+        xt, yt, zt, elt, ut, oct, ct = list(zip(*[slab._extract_values()
+                                  for slab in self.slabs]))
        
         x = np. r_[xt]
         y = np.r_[yt]
@@ -1147,9 +1147,9 @@ if __name__ == '__main__':
     t1 = time.time()
     sf = sample2.calc_fs(h, k, l)
     t2 = time.time()
-    print 'Python: %f seconds'%(t2-t1)
+    print('Python: %f seconds'%(t2-t1))
     t3 = time.time()    
     sft = sample2.turbo_calc_fs(h, k, l)
     t4 = time.time()
-    print 'Inline C: %f seconds'%(t4-t3)
+    print('Inline C: %f seconds'%(t4-t3))
     

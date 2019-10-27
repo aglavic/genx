@@ -37,7 +37,7 @@ class ReflFunction:
     def _check_obj(self, other):
         """ Checks the object other so that it fulfills the demands for arithmetic operations.
         """
-        supported_types = [int, float, long, complex, np.float64, np.float32]
+        supported_types = [int, float, int, complex, np.float64, np.float32]
         if is_reflfunction(other):
             if self.id != other.id:
                 raise TypeError("Two ReflFunction objects must have identical id's to conduct arithmetic operations")
@@ -247,6 +247,7 @@ class ReflBase:
         # Set all parameters given as keyword arguments
         for k in kargs:
             if not k in self._parameters and not k in dir(self):
+                continue
                 raise ValueError('%s is not an parameter in %s' %
                                  (k, self.__class__))
             else:
@@ -564,9 +565,9 @@ if __name__ == '__main__':
 
     fFe = ReflFunction(create_dispersion_func('Fe'), (1000,), {}, id = 'f(E)')
     fCo = ReflFunction(create_dispersion_func('Co'), (1000,), {}, id = 'f(E)')
-    print fFe.validate()
-    print 'Cast to array tests:'
+    print(fFe.validate())
+    print('Cast to array tests:')
     ltest = [fFe, 3.0, 3.0]
-    print 'Test single value: ', cast_to_array(ltest, 1000)
-    print 'Test array: ', cast_to_array(ltest, np.arange(1000, 1010))
-    print 'Cast to array finished.'
+    print('Test single value: ', cast_to_array(ltest, 1000))
+    print('Test array: ', cast_to_array(ltest, np.arange(1000, 1010)))
+    print('Cast to array finished.')

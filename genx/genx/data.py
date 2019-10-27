@@ -112,7 +112,7 @@ class DataSet:
                 sub_group = group.create_group(par)
                 for key in obj:
                     item = obj[key]
-                    if type(item) in [float, int, str, ndarray, array]:
+                    if type(item) in [float, int, str, str, ndarray, array]:
                         sub_group[key] = item
             else:
                 group[par] = obj
@@ -220,7 +220,7 @@ class DataSet:
         
         returns the names of the extra data
         '''
-        return self.extra_data.keys()
+        return list(self.extra_data.keys())
     
     def set_extra_data(self, name, value, command = None):
         '''set_extra_data_names(self, name, value, command = None)
@@ -244,7 +244,7 @@ class DataSet:
         returns the extra_data object with name name [string] if does not
         exist an LookupError is yielded.
         '''
-        if not self.extra_data.has_key(name):
+        if name not in self.extra_data:
             raise LookupError('Can not find extra data with name %s'%name)
         return self.extra_data[name]
     
@@ -264,13 +264,13 @@ class DataSet:
             f = open(filename)
             #f.close()
         except:
-            print "Can't open file: %s"%filename
+            print("Can't open file: %s"%filename)
         else:
             try:
                 A = loadtxt(f)
                 #, comments = '#', delimeter = None, skiprows = 0
             except:
-                print "Can't read the file %s, check the format"%filename
+                print("Can't read the file %s, check the format"%filename)
             else:
                 #print A
                 xcol=self.cols[0]
@@ -285,11 +285,11 @@ class DataSet:
                     self.y=A[:,ycol]
                     self.error=A[:,ecol]
                     self.y_sim = array([])
-                    print "Sucessfully loaded %i datapoints"%(A.shape[0])
+                    print("Sucessfully loaded %i datapoints"%(A.shape[0]))
                     return True
                 else:
-                    print "There are not enough columns in your data\n\
-                           There are %i columns"%A.shape[1]
+                    print("There are not enough columns in your data\n\
+                           There are %i columns"%A.shape[1])
             return False
         
     def save_file(self, filename):
@@ -396,21 +396,21 @@ class DataSet:
         if command_dict['x'] != '':
             try:
                 xt = eval(command_dict['x'])
-            except Exception, e:
+            except Exception as e:
                 result += 'Error in evaluating x expression.\n\nPython output:\n'\
                             + e.__str__() + '\n'
         
         if command_dict['y'] != '':
             try:
                 yt = eval(command_dict['y'])
-            except Exception, e:
+            except Exception as e:
                 result += 'Error in evaluating y expression.\n\nPython output:\n'\
                         + e.__str__() + '\n'
         
         if command_dict['e'] != '':
             try:
                 et = eval(command_dict['e'])
-            except Exception, e:
+            except Exception as e:
                 result += 'Error in evaluating e expression.\n\nPython output:\n'\
                         + e.__str__() + '\n'
                         
@@ -418,7 +418,7 @@ class DataSet:
             if command_dict[key] != '':
                 try:
                     exec('%st = eval(command_dict["%s"])'%(key, key))
-                except Exception, e:
+                except Exception as e:
                     result += 'Error in evaluating %s expression.\n\nPython output:\n'%key\
                             + e.__str__() + '\n'
             
@@ -460,7 +460,7 @@ class DataSet:
             self.error_command = command_dict['e']
         # Lets do it for the extra commands as well
         for key in command_dict:
-            if self.extra_commands.has_key(key):
+            if key in self.extra_commands:
                 if command_dict[key] != '':
                     self.extra_commands[key] = command_dict[key]
     
@@ -760,7 +760,7 @@ class DataList:
             if not sum([i < len(self.items) for i in indices]) == len(indices):
                 raise 'Error in export_data_to_files'
         else:
-            indices = range(len(self.items))
+            indices = list(range(len(self.items)))
         #print 'Output: ', indices, len(self.items)
         for index in indices:
             base, ext = os.path.splitext(basename)
@@ -783,7 +783,7 @@ class DataList:
             if not sum([i < len(self.items) for i in indices]) == len(indices):
                 raise 'Error in get_data_as_asciitable'
         else:
-            indices = range(len(self.items))
+            indices = list(range(len(self.items)))
         
         #making some nice looking header so the user know what is what
         header1=''.join(['%s\t\t\t\t'%self.items[index].name\
@@ -839,13 +839,13 @@ if __name__ == '__main__':
     f.close()
 
     d = DataList()
-    print 'x ', d[0].x
+    print('x ', d[0].x)
     f = h5py.File('myfile.hdf5', 'r')
     dic = f['data']
     d.read_h5group(dic)
-    print 'x ', d[0].x
+    print('x ', d[0].x)
     f.close()
-    print 'x ', d[0].x
-    print type(d[0].data_color), d[0].data_color
-    print d[0].extra_data
-    print type(d[0].data_symbolsize)
+    print('x ', d[0].x)
+    print(type(d[0].data_color), d[0].data_color)
+    print(d[0].extra_data)
+    print(type(d[0].data_symbolsize))

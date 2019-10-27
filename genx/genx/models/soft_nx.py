@@ -106,14 +106,14 @@ The model works with scattering lengths densities directly.
 '''
 from numpy import *
 try:
-    import lib.paratt_weave as Paratt
-except StandardError,S:
-    print 'Not using inline c code for reflectivity calcs - can not import module'
-    print S
-    import lib.paratt as Paratt
-import lib.neutron_refl as MatrixNeutron
-from lib.instrument import *
-import lib.refl as refl
+    from .lib import paratt_weave as Paratt
+except Exception as S:
+    print('Not using inline c code for reflectivity calcs - can not import module')
+    print(S)
+    from .lib import paratt as Paratt
+from .lib import neutron_refl as MatrixNeutron
+from .lib.instrument import *
+from .lib import refl as refl
 # Preamble to define the parameters needed for the models outlined below:
 
 ModelID='SoftNX'

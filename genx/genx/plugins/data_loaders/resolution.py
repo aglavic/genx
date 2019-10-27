@@ -39,7 +39,7 @@ class Plugin(Template):
         try:
             load_array = np.loadtxt(filename, delimiter = self.delimiter, 
                 comments = self.comment, skiprows = self.skip_rows)
-        except Exception, e:
+        except Exception as e:
             ShowWarningDialog(self.parent, 'Could not load the file: ' +\
                     filename + ' \nPlease check the format.\n\n numpy.loadtxt'\
                     + ' gave the following error:\n'  +  str(e))
@@ -116,7 +116,7 @@ class SettingsDialog(wx.Dialog):
         #col_values = {'y': 1,'x': 0,'y error': 1}
         col_grid = wx.GridBagSizer(len(col_values), 2)
         self.col_controls = col_values.copy()
-        keys = col_values.keys()
+        keys = list(col_values.keys())
         keys.sort()
         for i, name in enumerate(keys):
             text = wx.StaticText(self, -1, name+': ')
@@ -141,7 +141,7 @@ class SettingsDialog(wx.Dialog):
         #misc_values = {'Comment': '#', 'Skip rows': 0,'Delimiter': 'None'}
         col_grid = wx.GridBagSizer(len(misc_values), 2)
         self.misc_controls = misc_values.copy()
-        keys = misc_values.keys()
+        keys = list(misc_values.keys())
         keys.sort()
         for i, name in enumerate(keys):
             text = wx.StaticText(self, -1, name+': ')
@@ -192,7 +192,7 @@ class SettingsDialog(wx.Dialog):
         values = {}
         for key in self.misc_controls:
             val = self.misc_controls[key].GetValue()
-            if (type(val) == type(u'') or type(val) == type('')):
+            if (type(val) == type('') or type(val) == type('')):
                 if val.lower() == 'none':
                     val = None
             values[key] = val

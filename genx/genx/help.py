@@ -7,7 +7,7 @@ in the models directory.
 
 import wx, os
 import  wx.html as  html
-import event_handlers as eh
+from . import event_handlers as eh
 
 class ExampleHandler:
     '''A class to handle the examples bundled with GenX
@@ -138,7 +138,7 @@ class PluginHelpDialog(wx.Frame):
                 mod = __import__('%s'%(module), \
                              globals(), locals(), [''])
             docs = mod.__doc__
-        except Exception, e:
+        except Exception as e:
             docs = 'Could not load docstring for %s.'%sub_module
             docs += '\n The following exception occured: %s'%str(e)
         if type(docs) != type(''):

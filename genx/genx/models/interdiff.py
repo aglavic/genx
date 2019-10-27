@@ -105,23 +105,23 @@ diffuse interfaces.
 
 #import lib.paratt as Paratt
 try:
-    import lib.paratt_weave as Paratt
-except StandardError,S:
-    print 'Not using inline c code for reflectivity calcs - can not import module'
-    print S
-    import lib.paratt as Paratt
+    from . import lib.paratt_weave as Paratt
+except Exception as S:
+    print('Not using inline c code for reflectivity calcs - can not import module')
+    print(S)
+    from . import lib.paratt as Paratt
 __offspec__ = True
 try:
-    import lib.offspec2_weave
-except Exception,S:
-    print 'Failed to import: offspec2_weave, No off-specular simulations possible'
-    print S
+    from . import lib.offspec2_weave
+except Exception as S:
+    print('Failed to import: offspec2_weave, No off-specular simulations possible')
+    print(S)
     __offspec__ = False
     
 
 from numpy import *
 from scipy.special import erf
-from lib.instrument import *
+from .lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:
 ModelID='MingInterdiff'
@@ -321,7 +321,7 @@ SimulationFunctions = {'Specular':Specular,\
                         'OffSpecular':OffSpecularMingInterdiff,\
                         'SLD': SLD_calculations}
 
-import lib.refl as Refl
+from . import lib.refl as Refl
 (Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,\
         LayerParameters,StackParameters,\
          SampleParameters, SimulationFunctions, ModelID)
@@ -334,5 +334,5 @@ if __name__=='__main__':
     amb=Layer(n=1.0,sigmar=1.0)
     stack=Stack(Layers=[Fe,Si],Repetitions=20)
     sample=Sample(Stacks=[stack],Ambient=amb,Substrate=sub,eta_z=500.0,eta_x=100.0)
-    print sample
+    print(sample)
     inst=Instrument(Wavelength=1.54,Coordinates=1)

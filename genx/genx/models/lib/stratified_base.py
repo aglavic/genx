@@ -14,8 +14,8 @@ from collections import namedtuple
 
 import numpy as np
 
-from parameters import Int, Float, ComplexArray, Func, Var, List, HasParameters
-from materials import Material
+from .parameters import Int, Float, ComplexArray, Func, Var, List, HasParameters
+from .materials import Material
 
 
 q = Var('q', np.array([0, 0, 0]), help="The scattering vector.")
@@ -65,9 +65,9 @@ class Stack(HasParameters):
 
         def outer_loop(rep):
             kwargs['rep'] += 1
-            map(inner_loop, self.layers)
+            list(map(inner_loop, self.layers))
 
-        map(outer_loop, range(self.reps(**kwargs)))
+        list(map(outer_loop, list(range(self.reps(**kwargs)))))
 
         kwargs.pop('rep')
         return out
@@ -109,7 +109,7 @@ class Sample(HasParameters):
             [out[par].extend(stack_dict[par]) for par in parameters]
         kwargs['z'] = 0.0
         [out[par].append(self.ambient.__getattribute__(par)(parameter=par, **kwargs)) for par in parameters]
-        Collection = namedtuple('layer_parameters', out.keys())
+        Collection = namedtuple('layer_parameters', list(out.keys()))
         return Collection(**out)
 
 

@@ -8,10 +8,11 @@ import wx
 from vtk import vtkRenderer, vtkActor, vtkTextMapper, vtkActor2D, vtkSphereSource, vtkPolyDataMapper, vtkAxesActor
 import vtk.util.colors as vtkc
 
-from wxVTKRenderWindow import wxVTKRenderWindow
-import atom_colors as atom_colors
-import custom_dialog
-import sxrd_images
+from .wxVTKRenderWindow import wxVTKRenderWindow
+from . import atom_colors as atom_colors
+from . import custom_dialog
+from . import sxrd_images
+from functools import reduce
 
 
 class VTKview(wxVTKRenderWindow):
@@ -134,7 +135,7 @@ class VTKview(wxVTKRenderWindow):
 
     def OnChangeCursorState(self, event):
         """Callback when changing the cursor state between select, orbit, zoom and pan"""
-        print self.toolbar
+        print(self.toolbar)
         if self.toolbar:
             [self.toolbar.ToggleTool(cid, False) for cid in self.cursor_ids]
             self.toolbar.ToggleTool(event.GetId(), True)
@@ -152,7 +153,7 @@ class VTKview(wxVTKRenderWindow):
             elif name == 'Pan':
                 self.cursor_mode = 'pan'
             else:
-                print 'VTKView.OnChangeCursorState: Button name ', name, 'is not a known button'
+                print('VTKView.OnChangeCursorState: Button name ', name, 'is not a known button')
             #print name, self.cursor_mode
 
     def highlight(self, actor):
@@ -177,8 +178,8 @@ class VTKview(wxVTKRenderWindow):
         #sphereActor.GetProperty().SetRepresentationToWireframe()
         try:
             self.ren.RemoveViewProp(self.sphereActor)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
         self.ren.AddActor(sphereActor)
         self.sphereActor = sphereActor
         self.Render()
@@ -254,7 +255,7 @@ class VTKview(wxVTKRenderWindow):
         if len(element) > 2:
             if element[-2] in string.digits:
                 element = element[:-2]
-        if self.element_col.has_key(element):
+        if element in self.element_col:
             #print 'Found: ', element
             col = self.element_col[element]
         else:

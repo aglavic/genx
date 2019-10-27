@@ -74,7 +74,7 @@ Same thing as bc but scaled so that is can be used with a density
 in g/cm<sup>3<sup>.
 '''
 import numpy as np
-import lib.scatteringlengths as sl
+from .lib import scatteringlengths as sl
 import os
 
 _head, _tail = os.path.split(__file__)
@@ -179,9 +179,9 @@ if __name__=='__main__':
     for i in range(N):
         fd.Fe(100.0)
     t2 = time.time()
-    print "Dispersive database access time: ", (t2-t1)/N
+    print("Dispersive database access time: ", (t2-t1)/N)
     t1 = time.time()
     for i in range(N):
         fp.Fe
     t2 = time.time()
-    print "Normal database access time: ", (t2 - t1) / N
+    print("Normal database access time: ", (t2 - t1) / N)

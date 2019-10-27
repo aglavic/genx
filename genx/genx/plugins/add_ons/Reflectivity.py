@@ -50,18 +50,19 @@ of depth for the sample. The substrate is to the left and the ambient material
 is to the right. This is updated when the simulation button is pressed.
 '''
 
-import plugins.add_on_framework as framework
-from plotpanel import PlotPanel
-import model as modellib
-import wx
+from .. import add_on_framework as framework
+from genx.plotpanel import PlotPanel
+import genx.model as modellib
+import wx.html
 
 import numpy as np
-import sys, os, re, time, StringIO, traceback
+import sys, os, re, time, io, traceback
 
-from help_modules.custom_dialog import *
-import help_modules.reflectivity_images as images
+from .help_modules.custom_dialog import *
+from .help_modules import reflectivity_images as images
 
-_avail_models = ['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx']
+_avail_models=['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx',
+                 'spec_inhom', 'spec_adaptive']
 _set_func_prefix = 'set'
 
 
@@ -90,6 +91,9 @@ class SampleHandler:
                 poslist.append((i,j))
                 j+=1
             slist.append('Stack: Repetitions = %s'%str(stack.Repetitions))
+            for key in list(stack._parameters.keys()):
+              if not key in ['Repetitions', 'Layers']:
+                slist[-1]+=', %s = %s'%(key, str(getattr(stack, key)))
             poslist.append((i,None))
             i+=1
         slist.append(self.sample.Ambient.__repr__())
@@ -305,7 +309,7 @@ class SampleHandler:
 
         
 
-    def canInsertLayer():
+    def canInsertLayer(self):
         return self.poslist>2
 
     def checkName(self, name):
@@ -394,10 +398,10 @@ class SampleHandler:
         else:
             return None
 
-class MyHtmlListBox(wx.HtmlListBox):
+class MyHtmlListBox(wx.html.HtmlListBox):
 
     def __init__(self, parent, id, size=(-1, -1), style = wx.BORDER_SUNKEN):
-        wx.HtmlListBox.__init__(self, parent, id, size=size,
+        wx.html.HtmlListBox.__init__(self, parent, id, size=size,
                                 style=style)
         self.SetItemList(['Starting up...'])
 
@@ -586,11 +590,11 @@ class SamplePanel(wx.Panel):
         editable = {}
         try:
             string_choices = self.model.sample_string_choices
-        except Exception, e:
+        except Exception as e:
             string_choices = {}
         for item in self.model.SampleParameters:
             if item != 'Stacks' and item != 'Substrate' and item != 'Ambient':
-                if string_choices.has_key(item):
+                if item in string_choices:
                     validators[item] = string_choices[item]
                 else:
                     validators[item] = FloatObjectValidator()
@@ -662,7 +666,7 @@ class SamplePanel(wx.Panel):
             
         pars = []
         for item in self.model.InstrumentParameters:
-            if self.model.instrument_string_choices.has_key(item):
+            if item in self.model.instrument_string_choices:
                 #validators.append(self.model.instrument_string_choices[item])
                 validators[item] = self.model.instrument_string_choices[item]
             else:
@@ -727,7 +731,7 @@ class SamplePanel(wx.Panel):
 
             # Loop to remove instrument from grid if not returned from Dialog
             for inst_name in old_insts:
-                if inst_name not in vals.keys():
+                if inst_name not in list(vals.keys()):
                     for par in self.model.InstrumentParameters:
                         if editable[inst_name][par] > 0:
                             func_name = inst_name + '.' + _set_func_prefix + par.capitalize()
@@ -832,7 +836,7 @@ class SamplePanel(wx.Panel):
                     if result:
                         self.Update()
                     else:
-                        print 'Unexpected problems when changing name...'
+                        print('Unexpected problems when changing name...')
             dlg.Destroy()
 
     def lbDoubleClick(self,evt):
@@ -848,7 +852,7 @@ class SamplePanel(wx.Panel):
         grid_parameters = self.plugin.GetModel().get_parameters()
         if isinstance(sel, self.model.Layer):
             # The selected item is a Layer
-            for item in self.model.LayerParameters.keys():
+            for item in list(self.model.LayerParameters.keys()):
                 value = getattr(sel, item)
                 vals[item] = value
                 #if item!='n' and item!='fb':
@@ -900,7 +904,7 @@ class SamplePanel(wx.Panel):
             if dlg.ShowModal()==wx.ID_OK:
                 vals = dlg.GetValues()
                 states = dlg.GetStates()
-                for par in self.model.LayerParameters.keys():
+                for par in list(self.model.LayerParameters.keys()):
                     if not states[par]:
                         setattr(sel, par, vals[par])
                     if editable[par] != states[par]:
@@ -932,7 +936,7 @@ class SamplePanel(wx.Panel):
 
         else: 
             # The selected item is a Stack
-            for item in self.model.StackParameters.keys():
+            for item in list(self.model.StackParameters.keys()):
                 if item!='Layers':
                     value=getattr(sel, item)
                     if isinstance(value,float):
@@ -1023,7 +1027,7 @@ class DataParameterPanel(wx.Panel):
             self.Bind(wx.EVT_TOOL, callbacks[i], id=newid)
 
 
-    def onsimulate(self):
+    def onsimulate(self, event):
         """ Function to simulate the model.
 
         :return:
@@ -1292,7 +1296,7 @@ class EditCustomParameters(wx.Dialog):
         
         col_labels = ['Name', 'Value']
         
-        for item, index in zip(col_labels, range(len(col_labels))):
+        for item, index in zip(col_labels, list(range(len(col_labels)))):
             label = wx.StaticText(self, -1, item)
             name_ctrl_sizer.Add(label,(0, index),flag=wx.ALIGN_LEFT,border=5)
         
@@ -1353,7 +1357,7 @@ class EditCustomParameters(wx.Dialog):
             self.name_ctrl.GetValue(), self.value_ctrl.GetValue())
         try:
             self.model.eval_in_model(line)
-        except Exception, e:
+        except Exception as e:
             result = 'Could not evaluate the expression. The python error' +\
             'is: \n' + e.__repr__()
             dlg = wx.MessageDialog(self, result, 'Error in expression',
@@ -1482,9 +1486,9 @@ class SimulationExpressionDialog(wx.Dialog):
        
         # Instrument choice control
         self.inst_choice = wx.Choice(self, -1, 
-                                    choices=self.instruments.keys())
+                                    choices=list(self.instruments.keys()))
         #self.Bind(wx.EVT_CHOICE, self.on_inst_change, self.inst_choice)
-        self.inst_choice.SetSelection(self.instruments.keys().index(expressions['Instrument']))
+        self.inst_choice.SetSelection(list(self.instruments.keys()).index(expressions['Instrument']))
         gbs.Add(self.inst_choice, (1,1),\
             flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
         
@@ -1541,11 +1545,11 @@ class SimulationExpressionDialog(wx.Dialog):
         '''Callback for pressing the ok button in the dialog'''
         expressions = self.GetExpressions()
         # Hack to get it working with d = data[0]
-        exec 'd = data[%d]'%self.data_index in self.model.script_module.__dict__
+        exec('d = data[%d]'%self.data_index, self.model.script_module.__dict__)
         for exp in expressions:
             try:
                 self.model.eval_in_model(exp)
-            except Exception, e:
+            except Exception as e:
                 result = ('Could not evaluate expression:\n%s.\n'%exp +
                 ' The python error is: \n' + e.__repr__())
                 dlg = wx.MessageDialog(self, result, 'Error in expression',
@@ -1581,7 +1585,7 @@ class ParameterExpressionDialog(wx.Dialog):
         
         col_labels = ['Object', 'Parameter', 'Expression']
         
-        for item, index in zip(col_labels, range(len(col_labels))):
+        for item, index in zip(col_labels, list(range(len(col_labels)))):
             label = wx.StaticText(self, -1, item)
             gbs.Add(label,(0, index),flag=wx.ALIGN_LEFT,border=5)
             
@@ -1675,7 +1679,7 @@ class ParameterExpressionDialog(wx.Dialog):
         evalstring = self.GetExpression()
         try:
             self.model.eval_in_model(evalstring)
-        except Exception, e:
+        except Exception as e:
             result = 'Could not evaluate the expression. The python' +\
             'is: \n' + e.__repr__()
             dlg = wx.MessageDialog(self, result, 'Error in expression',
@@ -1751,7 +1755,7 @@ class SamplePlotPanel(wx.Panel):
                                 self.plot.ax.plot(self.plot_dicts[sim]['z'], self.plot_dicts[sim][key],\
                                                   colors[i%len(colors)], label = label)
 
-                                if self.plot_dicts[sim].has_key('SLD unit'):
+                                if 'SLD unit' in self.plot_dicts[sim]:
                                     if not self.plot_dicts[sim]['SLD unit'] in sld_units:
                                         sld_units.append(self.plot_dicts[sim]['SLD unit'])
                                 i += 1
@@ -1761,7 +1765,7 @@ class SamplePlotPanel(wx.Panel):
                 try:
                     sample = model.sample
                 except AttributeError:
-                    print "Warning: Could not locate the sample in the model"
+                    print("Warning: Could not locate the sample in the model")
                     return
                 plot_dict = sample.SimSLD(None, None, model.inst)
                 self.plot_dicts = [plot_dict]
@@ -1773,7 +1777,7 @@ class SamplePlotPanel(wx.Panel):
                             self.plot.ax.plot(self.plot_dicts[0]['z'], self.plot_dicts[0][key],\
                                               colors[i%len(colors)], label = label)
 
-                            if self.plot_dicts[0].has_key('SLD unit'):
+                            if 'SLD unit' in self.plot_dicts[0]:
                                 if not self.plot_dicts[0]['SLD unit'] in sld_units:
                                     sld_units.append(self.plot_dicts[0]['SLD unit'])
                             i += 1
@@ -1854,10 +1858,10 @@ class Plugin(framework.Template):
         sld_plot_panel.Layout()
         
         if self.model_obj.filename != '' and self.model_obj.script != '':
-            print "Reflectivity plugin: Reading loaded model"
+            print("Reflectivity plugin: Reading loaded model")
             self.ReadModel()
         else:
-            print "Reflectivity plugin: Creating new model"
+            print("Reflectivity plugin: Creating new model")
             self.CreateNewModel()
         
         # Create a menu for handling the plugin
@@ -1916,10 +1920,10 @@ class Plugin(framework.Template):
             if result:
                 try:
                     self.sld_plot.SavePlotData(fname)
-                except IOError, e:
+                except IOError as e:
                     self.ShowErrorDialog(e.__str__())
-                except Exception, e:
-                    outp = StringIO.StringIO()
+                except Exception as e:
+                    outp = io.StringIO()
                     traceback.print_exc(200, outp)
                     val = outp.getvalue()
                     outp.close()
@@ -1959,7 +1963,7 @@ class Plugin(framework.Template):
             sims, insts, args = self.simulation_widget.GetSimArgs()
 
             if event.deleted:
-                pos = range(len(expl))
+                pos = list(range(len(expl)))
                 [self.remove_data_segment(pos[-index-1]) for index in\
                     range(len(event.position))]
                 [expl.pop(index) for index in event.position]
@@ -2257,12 +2261,12 @@ class Plugin(framework.Template):
         self.StatusMessage('Compiling the script...')
         try:
             self.CompileScript()
-        except modellib.GenericError, e:
+        except modellib.GenericError as e:
             self.ShowErrorDialog(str(e))
             self.StatusMessage('Error when compiling the script')
             return
-        except Exception, e:
-            outp = StringIO.StringIO()
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -2344,8 +2348,7 @@ class Plugin(framework.Template):
         for lay in layers:
             for par in lay[1].split(','):
                 vars = par.split('=')
-                exec '%s.%s = "%s"'%(lay[0], vars[0].strip(), vars[1].strip())\
-                                    in self.GetModel().script_module.__dict__
+                exec('%s.%s = "%s"'%(lay[0], vars[0].strip(), vars[1].strip()), self.GetModel().script_module.__dict__)
         
         all_names = [layer_names.pop(0)]
         for stack in stacks:
@@ -2460,7 +2463,7 @@ if __name__ == '__main__':
     stack=Model.Stack(Layers=[Fe,Si],Repetitions=20)
     stack2=Model.Stack(Layers=[Fe,Si])
     sample=Model.Sample(Stacks=[stack,stack2],Ambient=amb,Substrate=sub,eta_z=500.0,eta_x=100.0)
-    print sample
+    print(sample)
     inst=Model.Instrument(Wavelength=1.54,Coordinates=1)
     s = ['Amb','stack1','Fe1','Si1','s2','Fe2','Si2','Sub']
     sh=SampleHandler(sample,s)
@@ -2475,6 +2478,6 @@ if __name__ == '__main__':
             return True
 
 
-    print Si.getN().__repr__()
+    print(Si.getN().__repr__())
     app = MyApp(0)
     app.MainLoop()

@@ -1,7 +1,7 @@
 import wx
 import wx.wizard
 import  wx.lib.filebrowsebutton as filebrowse
-import help_modules.spec as spec
+from . import help_modules.spec as spec
 #import ...data as data
 import numpy as np
 
@@ -52,13 +52,13 @@ class Plugin(Template):
     
     def load_specfile(self, filename):
         self.specfile = spec.SpecDataFile(filename)
-        names = self.specfile.findex.keys()
+        names = list(self.specfile.findex.keys())
         names.sort()
         try:
             sc = self.specfile.scan_commands
             names = ['%s '%(name,) + sc[name] for name in names]
-        except Exception, e:
-            print "Could not create full names, error: ", e.__str__()
+        except Exception as e:
+            print("Could not create full names, error: ", e.__str__())
             ShowErrorDialog(self.parent, "Could not create full names, error:\n %s"%e.__str__())
             names = ['%s '%name for name in names]
         self.specfile_name = filename
@@ -72,10 +72,10 @@ class Plugin(Template):
         try:
             self.scan = self.specfile[scanlist]
             self.dataset.set_extra_data('values', self.scan.values)
-        except Exception, e:
-            print "Could not load the desired scans"
-            print "Error: ", e.__str__()
-            print "scanlist: ", scanlist
+        except Exception as e:
+            print("Could not load the desired scans")
+            print("Error: ", e.__str__())
+            print("scanlist: ", scanlist)
             ShowErrorDialog(self.parent, "Could not load the desired scans, error:\n%s "%e.__str__())
         #for key in self.scan.values:
         #    try:
@@ -89,8 +89,8 @@ class Plugin(Template):
         '''
         try:
             choices = self.scan.cols
-        except Exception, e:
-            print "Could not load the scan cols error: ", e.__str__()
+        except Exception as e:
+            print("Could not load the scan cols error: ", e.__str__())
             ShowErrorDialog(self.parent, "Could not load the scan cols, error:\n%s "%e.__str__())
             choices = []
 
@@ -98,7 +98,7 @@ class Plugin(Template):
 
     def update_data_cols(self, cols, autom = False):
         ''' Update the choices for the different values'''
-        print cols
+        print(cols)
         self.x_val = cols[0]
         self.det_val = cols[1]
         self.mon_val = cols[2]
@@ -221,7 +221,7 @@ class LoadSpecScanPage(wx.wizard.WizardPageSimple):
             if self.plugin.specfile:
                 try:
                     self.plugin.load_scans(scan_numbers)
-                except Exception, e:
+                except Exception as e:
                     ShowErrorDialog(self.Parent, 'Could not load the selected scan'
                                     ' - The scan might be corrupt.\n'
                                     'Please choose another.\n'
@@ -411,7 +411,7 @@ class CustomManipulationPage(wx.wizard.WizardPageSimple):
         '''Sets the manipulations to defualt values as given by
         the choices in the form (x, det, mon, error)
         '''
-        print choices
+        print(choices)
         self.xCtrl.ChangeValue(choices[0])
         if choices[2] == 'None':
             self.yCtrl.ChangeValue(choices[1])
@@ -542,4 +542,4 @@ if __name__ == "__main__":
     wizard.FitToPage(page2)
     #print dir(wizard)
     if wizard.RunWizard(page2):
-        print "Sucess"
+        print("Sucess")

@@ -21,7 +21,7 @@ import wx
 import wx.lib.newevent
 from wx import Printout, PrintData, PAPER_A4, LANDSCAPE, PrintDialogData
 
-import filehandling as io
+from . import filehandling as io
 
 # Okay due to compabiltiy issues with version above 0.91
 spl = matplotlib.__version__.split('.')
@@ -138,9 +138,9 @@ class PlotPanel(wx.Panel):
             try:
                 val = self.config.get_boolean(self.config_name,\
                         bool_items[index])
-            except io.OptionError, e:
-                print 'Could not locate option %s.%s'\
-                %(self.config_name, bool_items[index])
+            except io.OptionError as e:
+                print('Could not locate option %s.%s'\
+                %(self.config_name, bool_items[index]))
                 vals.append(None)
             else:
                 vals.append(val)
@@ -148,20 +148,20 @@ class PlotPanel(wx.Panel):
         try:
             scale = self.config.get(self.config_name, 'y scale')
             string_sucess = True
-        except io.OptionError, e:
+        except io.OptionError as e:
             string_sucess = False
-            print 'Could not locate option %s.%s'\
-            %(self.config_name, 'y scale')
+            print('Could not locate option %s.%s'\
+            %(self.config_name, 'y scale'))
         else:
             self.SetYScale(scale)
 
         try:
             scale = self.config.get(self.config_name, 'x scale')
             string_sucess = True
-        except io.OptionError, e:
+        except io.OptionError as e:
             string_sucess = False
-            print 'Could not locate option %s.%s'\
-            %(self.config_name, 'x scale')
+            print('Could not locate option %s.%s'\
+            %(self.config_name, 'x scale'))
             self.SetXScale('lin')
         else:
             #print 'Found option x scale: ', scale
@@ -1276,7 +1276,7 @@ class ErrorPlotPanel(PlotPanel):
         self.ax.set_autoscale_on(False)
         
         self.ax.lines = []
-        if data == None:
+        if data is None:
             theta = arange(0.1,10,0.001)
             self.ax.plot(theta,floor(15-theta),'-r')
         else:            

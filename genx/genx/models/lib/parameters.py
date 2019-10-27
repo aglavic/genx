@@ -53,7 +53,7 @@ class ArithmeticParameter(Parameter):
     def _check_obj(self, other):
         """ Checks the object other so that it fulfills the demands for arithmetic operations.
         """
-        supported_types = [int, float, long, complex, np.float64, np.float32]
+        supported_types = [int, float, int, complex, np.float64, np.float32]
         if is_parameter(other):
             pass
         elif not type(other) in supported_types:
@@ -313,7 +313,7 @@ class HasParameters(object):
                     # check so that the type is correct:
                     try:
                         attr.validate(value(parameter=name, **self.validation_kwargs.copy()))
-                    except ValueError, e:
+                    except ValueError as e:
                         raise ValueError('Can not set attribute %s. %s' % (name, str(e)))
                     else:
                         #print "Coupling parameter: %s" % name
@@ -557,22 +557,22 @@ if __name__ == '__main__':
     p = Int(10)
     r = FloatArray(33.333)
     q = p**2 + r
-    print p.has_coupled_parameter()
-    print p()
+    print(p.has_coupled_parameter())
+    print(p())
     r.value = 0.0
-    print q()
+    print(q())
     c = Complex(1 + 1.0J)
     c.real = q
     phase = exp(c + 10)
-    print phase()
+    print(phase())
     r.value = 1.0
     c.imag = 0.1
     c.real = 5.0
-    print c(), phase()
+    print(c(), phase())
     l = List(Int, [], help="Testing")
     l[:] = [p, p]
-    print type(l)
-    print [item() for item in l]
+    print(type(l))
+    print([item() for item in l])
     obj = object()
     import new
     test = new.module('test')
@@ -580,6 +580,6 @@ if __name__ == '__main__':
     test.__dict__['q'] = q
     test.__dict__['p'] = p
     test.__dict__['l'] = l
-    print get_parameters(test, True)
-    print c.get_parameter_list()
-    print dir()
+    print(get_parameters(test, True))
+    print(c.get_parameter_list())
+    print(dir())

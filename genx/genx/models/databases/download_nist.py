@@ -3,12 +3,12 @@ Script to download the FFAST library and convert it to nff files
 '''
 
 __author__ = 'Matts Bjorck'
-import urllib, numpy, os, time
+import urllib.request, urllib.parse, urllib.error, numpy, os, time
 
 
 def get_html_code(Z):
     adress = 'http://physics.nist.gov/cgi-bin/ffast/ffast.pl?Z=%d&Formula=&gtype=4&lower=&upper=&density=&frames=no' % Z
-    f = urllib.urlopen(adress)
+    f = urllib.request.urlopen(adress)
     return f.readlines()
 
 
@@ -23,17 +23,17 @@ def parse_page(lines):
     # Find the element
     line, i = find_line(lines, '(Z =')
     element = line.split('<b>')[1].split('&#160;')[0].strip()
-    print 'Element: ', element
+    print('Element: ', element)
 
     # Find the Relativistic correction estimate
     line, i = find_line(lines, 'Relativistic correction estimate')
     rel_corr = float(line.split('=')[1].split(',')[1].split('<i>e</i>')[0].strip())
-    print 'Relativistic correction estimate 3/5CL: ', rel_corr
+    print('Relativistic correction estimate 3/5CL: ', rel_corr)
 
     # Find the Nuclear Thomson correction
     line, i = find_line(lines, 'Nuclear Thomson correction')
     nuc_corr = float(line.split('=')[1].split('<i>e</i>')[0].strip())
-    print 'Nuclear Thomson correction: ', nuc_corr
+    print('Nuclear Thomson correction: ', nuc_corr)
 
     # Find the data
     line, i = find_line(lines, '<b>Form Factors,')

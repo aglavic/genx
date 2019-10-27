@@ -5,7 +5,7 @@ Last changed: 2008 11 23
 '''
 
 from numpy import *
-import thread
+import _thread
 import time
 import random as random_mod
 import sys, os, pickle
@@ -39,9 +39,9 @@ else:
     size = comm.Get_size()
     rank = comm.Get_rank()
 
-import model as mmodel
+from . import model as mmodel
 
-from lib.Simplex import Simplex
+from .lib.Simplex import Simplex
 
 # Add current path to the system paths
 # just in case some user make a directory change
@@ -400,7 +400,7 @@ class DiffEv:
             self.init_fom_eval()
             self.stop = False
             # Start fitting in a new thread
-            thread.start_new_thread(self.optimize, ())
+            _thread.start_new_thread(self.optimize, ())
             # For debugging
             #self.optimize()
             self.text_output('Starting the fit...')
@@ -432,7 +432,7 @@ class DiffEv:
             self.init_fom_eval()
             n_dim_old = self.n_dim
             if self.n_dim == n_dim_old:
-                thread.start_new_thread(self.optimize, ())
+                _thread.start_new_thread(self.optimize, ())
                 self.text_output('Restarting the fit...')
                 self.running = True
                 return True
@@ -715,7 +715,7 @@ class DiffEv:
         '''
 
         # Set the parameter values
-        map(lambda func, value: func(value), self.par_funcs, vec)
+        list(map(lambda func, value: func(value), self.par_funcs, vec))
         fom = self.model.evaluate_fit_func()
         self.n_fom += 1
         return fom
@@ -732,7 +732,7 @@ class DiffEv:
         parameters in vec.
         '''
         # Set the paraemter values
-        map(lambda func, value:func(value), self.par_funcs, vec)
+        list(map(lambda func, value:func(value), self.par_funcs, vec))
 
         self.model.evaluate_sim_func()
         return self.model.fom
@@ -815,7 +815,7 @@ class DiffEv:
             error_bar_high = values_under_level.max() - self.best_vec[index]
             return (error_bar_low, error_bar_high)
         else:
-            raise ErrorBarsError()
+            raise ErrorBarError()
 
     def init_new_generation(self, gen):
         ''' Function that is called every time a new generation starts'''
@@ -847,13 +847,13 @@ class DiffEv:
              generation with a fracitonal step given by simple_step 
              on the best indivual as well a random fraction of simplex_n individuals.
         '''
-        print 'Inits new generation'
+        print('Inits new generation')
         if gen%self.simplex_interval == 0:
             spread = array(self.trial_vec).max(0) - array(self.trial_vec).min(0)
             simp = Simplex(self.calc_fom, self.best_vec, spread*self.simplex_step)
-            print 'Starting simplex run for best vec'
+            print('Starting simplex run for best vec')
             new_vec, err, iter = simp.minimize(epsilon = self.best_fom/self.simplex_rel_epsilon, maxiters = self.simplex_max_iter)
-            print 'FOM improvement: ', self.best_fom - err
+            print('FOM improvement: ', self.best_fom - err)
 
             if self.use_boundaries:
                 # Check so that the parameters lie indside the bounds
@@ -871,9 +871,9 @@ class DiffEv:
                 self.new_best = True
 
             # Apply the simplex to a simplex_n memebers (0-1)
-            for index1 in random_mod.sample(xrange(len(self.pop_vec)),
+            for index1 in random_mod.sample(range(len(self.pop_vec)),
                                    int(len(self.pop_vec)*self.simplex_n)):
-                print 'Starting simplex run for member: ', index1
+                print('Starting simplex run for member: ', index1)
                 mem = self.pop_vec[index1]
                 mem_fom = self.fom_vec[index1]
                 simp = Simplex(self.calc_fom, mem, spread*self.simplex_step)
@@ -899,7 +899,7 @@ class DiffEv:
              generation with a fracitonal step given by simple_step 
              on the simplex_n*n_pop best individuals.
         '''
-        print 'Inits new generation'
+        print('Inits new generation')
         if gen%self.simplex_interval == 0:
             spread = array(self.trial_vec).max(0) - array(self.trial_vec).min(0)
 
@@ -960,7 +960,7 @@ class DiffEv:
         self.km_vec = abs(self.km + random.standard_cauchy(self.n_pop)*0.1)
         self.kr_vec = self.kr + random.normal(size = self.n_pop)*0.1
         #print self.km_vec, self.kr_vec
-        print 'km: ', self.km, ', kr: ', self.kr
+        print('km: ', self.km, ', kr: ', self.kr)
         #self.km_vec = (self.km_vec >= 1)*1 + (self.km_vec < 1)*self.km_vec
         self.km_vec = where(self.km_vec > 0, self.km_vec, 0)
         self.km_vec = where(self.km_vec < 1, self.km_vec, 1)
@@ -1385,7 +1385,7 @@ def parallel_calc_fom(vec):
     global model, par_funcs
     #print 'Trying to set parameters'
     # set the parameter values in the model
-    map(lambda func, value:func(value), par_funcs, vec)
+    list(map(lambda func, value:func(value), par_funcs, vec))
     #print 'Trying to evaluate'
     # evaluate the model and calculate the fom
     fom = model.evaluate_fit_func()
@@ -1395,7 +1395,7 @@ def parallel_calc_fom(vec):
 
 #==============================================================================
 def default_text_output(text):
-    print text
+    print(text)
     sys.stdout.flush()
 
 def default_plot_output(solver):
@@ -1416,7 +1416,7 @@ def _calc_fom(model, vec, par_funcs):
         vec.
         '''
         # Set the paraemter values
-        map(lambda func, value:func(value), par_funcs, vec)
+        list(map(lambda func, value:func(value), par_funcs, vec))
 
         return model.evaluate_fit_func()
 
@@ -1541,11 +1541,11 @@ class ErrorBarError(GenericError):
 if __name__ == '__main__':
     import h5py
     d = DiffEv()
-    print arange(10)
+    print(arange(10))
     d.fom_evals.copy_from(arange(10))
-    print d.fom_evals.buffer, d.fom_evals.pos, d.fom_evals.filled
+    print(d.fom_evals.buffer, d.fom_evals.pos, d.fom_evals.filled)
     d.km = 10
-    print d.fom_evals.array()
+    print(d.fom_evals.array())
     f = h5py.File('myfile.hdf5', 'w')
     dic = f.create_group('optimizer')
     d.write_h5group(dic)
@@ -1555,6 +1555,6 @@ if __name__ == '__main__':
     f = h5py.File('myfile.hdf5', 'r')
     dic = f['optimizer']
     d.read_h5group(dic)
-    print d.km
-    print d.fom_evals.array(),  d.fom_evals.pos, d.fom_evals.filled
+    print(d.km)
+    print(d.fom_evals.array(),  d.fom_evals.pos, d.fom_evals.filled)
     f.close()

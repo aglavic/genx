@@ -16,10 +16,10 @@ import string
 
 from numpy import *
 
-import parameters
-import images as img
-import lib.controls as ctrls
-import filehandling
+from . import parameters
+from . import images as img
+from .lib import controls as ctrls
+from . import filehandling
 
 
 #=============================================================================
@@ -74,7 +74,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
     def SetValue(self, row, col, value):
         try:
             self.pars.set_value(row, col, value)
-        except IndexError, e:
+        except IndexError as e:
             # add a new row
             self.pars.append()
             #print 'Value:', value
@@ -590,7 +590,7 @@ class ValueLimitCellRenderer(gridlib.PyGridCellRenderer):
             dc.SetBackgroundMode(wx.SOLID)
             dc.SetBrush(wx.Brush(bkg_colour, wx.SOLID))
             dc.SetPen(wx.TRANSPARENT_PEN)
-            dc.SetClippingRect(rect)
+            dc.SetClippingRegion(rect.x, rect.y, rect.width, rect.height)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
             text = '%.7g'%val
@@ -755,7 +755,7 @@ class ValueCellRenderer(gridlib.PyGridCellRenderer):
             dc.SetBackgroundMode(wx.SOLID)
             dc.SetBrush(wx.Brush(bkg_colour, wx.SOLID))
             dc.SetPen(wx.TRANSPARENT_PEN)
-            dc.SetClippingRect(rect)
+            dc.SetClippingRegion(rect.x, rect.y, rect.width, rect.height)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
             text = '%.7g'%val
@@ -871,7 +871,7 @@ class ParameterGrid(wx.Panel):
         try:
             val = self.config.get_boolean(self.config_name, 'value slider')
         except filehandling.OptionError:
-            print 'Could not locate option %s.%s'%(self.config_name, 'y scale')
+            print('Could not locate option %s.%s'%(self.config_name, 'y scale'))
             self.SetValueEditorSlider(False)
         else:
             self.SetValueEditorSlider(val)
@@ -953,7 +953,7 @@ class ParameterGrid(wx.Panel):
 
         newid = wx.NewId()
         self.slider_tool_id = newid
-        self.slider_tool = self.toolbar.AddCheckLabelTool(newid, label='Show sliders', bitmap=img.slider.getBitmap(),
+        self.slider_tool = self.toolbar.AddCheckTool(newid, label='Show sliders', bitmap1=img.slider.getBitmap(),
                                                           shortHelp='Show the parameter values as sliders')
         self.Bind(wx.EVT_TOOL, self.eh_slider_toggle, id=newid)
 
@@ -1298,14 +1298,14 @@ class ParameterGrid(wx.Panel):
     def show_parameter_menu(self, pos):
         self.pmenu = wx.Menu()
         par_dict = self.par_dict
-        classes = par_dict.keys()
+        classes = list(par_dict.keys())
         classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
         for cl in classes:
             # Create a submenu for each class
             clmenu = wx.Menu()
             if isinstance(par_dict[cl], dict):
                 obj_dict = par_dict[cl]
-                objs = obj_dict.keys()
+                objs = list(obj_dict.keys())
                 objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
                 # Create a submenu for each object
                 for obj in objs:
@@ -1394,8 +1394,8 @@ class ParameterGrid(wx.Panel):
                                     min(minval, maxval))
                 self.table.SetValue(self.CurSelection[0], 4,
                                     max(minval, maxval))
-            except StandardError, S:
-                print "Not possible to init the variable automatically"
+            except Exception as S:
+                print("Not possible to init the variable automatically")
                 #print S
         else:
             # It could be a Parameter class
@@ -1410,8 +1410,8 @@ class ParameterGrid(wx.Panel):
                                     min(minval, maxval))
                 self.table.SetValue(self.CurSelection[0], 4,
                                     max(minval, maxval))
-            except StandardError, S:
-                print "Not possible to init the variable automatically"
+            except Exception as S:
+                print("Not possible to init the variable automatically")
                 #print S
 
     def OnResize(self, evt):

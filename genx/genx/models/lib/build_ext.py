@@ -5,7 +5,7 @@ Progammed by: Matt Bjorck
 First version: 2014-05-16
 """
 from numpy import *
-from scipy.weave import ext_tools
+from weave import ext_tools
 
 def paratt():
     """
@@ -428,9 +428,9 @@ def sxrd():
 
 
 if __name__ == '__main__':
-    print 'Building Paratt extension module'
+    print('Building Paratt extension module')
     paratt()
-    print 'Building Offspec extension module'
+    print('Building Offspec extension module')
     offspec()
-    print 'Building SXRD extension module'
+    print('Building SXRD extension module')
     sxrd()

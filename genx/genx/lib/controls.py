@@ -1,7 +1,7 @@
 import string
 
 import wx
-from standard_colours import colours
+from .standard_colours import colours
 
 
 class SliderDrawer:
@@ -77,7 +77,7 @@ class SliderDrawer:
             x = (self.radius + self.border_thickness +
                  (width - 2*(self.radius + self.border_thickness))*(self.value - self.min_value)/
                  (self.max_value - self.min_value))
-        except ZeroDivisionError, e:
+        except ZeroDivisionError as e:
             x = self.radius + self.border_thickness
         y = height/2.
         return x, y

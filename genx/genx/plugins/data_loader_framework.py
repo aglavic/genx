@@ -4,9 +4,9 @@ Library that implements a template (Template) class for classes that
 loads data into GenX. Also included here is a DataLoaderController which
 takes care of the use of the DataLoaders. 
 '''
-import wx, os, StringIO, traceback
+import wx, os, io, traceback
 
-from utils import PluginHandler
+from .utils import PluginHandler
 
 head, tail = os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -138,10 +138,10 @@ class PluginController:
         try:
             plugin_name = self.parent.config.get('data handling', 'data loader')
             self.LoadPlugin(plugin_name)
-        except Exception, S:
-            print 'Could not locate the data loader parameter or the data loader. Error:'
-            print S.__str__()
-            print 'Proceeding with laoding the default data loader.'
+        except Exception as S:
+            print('Could not locate the data loader parameter or the data loader. Error:')
+            print(S.__str__())
+            print('Proceeding with laoding the default data loader.')
             self.LoadPlugin('default')
         
     def LoadPlugin(self, plugin):
@@ -154,19 +154,19 @@ class PluginController:
         names = self.plugin_handler.loaded_plugins.copy()
         try:
             [self.plugin_handler.unload_plugin(pl) for pl in names]
-            self.parent.SetStatusText('Unloaded data loader %s'%names.keys()[0])
+            self.parent.SetStatusText('Unloaded data loader %s'%list(names.keys())[0])
         except:
-            outp = StringIO.StringIO()
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             tbtext = outp.getvalue()
             outp.close()
             ShowErrorDialog(self.parent, 'Can NOT unload plugin object'+ \
-                names.keys()[0] + '\nPython traceback below:\n\n' + tbtext)
+                list(names.keys())[0] + '\nPython traceback below:\n\n' + tbtext)
         try:
             self.plugin_handler.load_plugin(plugin)
             self.parent.SetStatusText('Loaded data loader: %s'%plugin)
         except:
-            outp = StringIO.StringIO()
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             tbtext = outp.getvalue()
             outp.close()
@@ -178,7 +178,7 @@ class PluginController:
         
         Shows a dialog boc for the user to choose a data loader.
         '''
-        cur_plugin = self.plugin_handler.loaded_plugins.keys()[0]
+        cur_plugin = list(self.plugin_handler.loaded_plugins.keys())[0]
         plugin_list = self.plugin_handler.get_possible_plugins()
         dlg = PluginDialog(self.parent, plugin_list, cur_plugin,\
                                 self.LoadPlugin)

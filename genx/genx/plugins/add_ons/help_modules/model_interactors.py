@@ -7,9 +7,9 @@ import os
 import wx
 import wx.lib.scrolledpanel as scrolledpanel
 
-import custom_dialog as cust_dia
-import reflectivity_images as icons
-import sxrd_images
+from . import custom_dialog as cust_dia
+from . import reflectivity_images as icons
+from . import sxrd_images
 
 import models.utils as utils
 
@@ -75,7 +75,7 @@ class ModelScriptInteractor:
     def append_dataset(self):
         """ Append a new data set to the sim function
         """
-        print "Append data set"
+        print("Append data set")
         self.data_sections_interactors.append(DataSetSimulationInteractor())
         default_name = self.get_sim_object_names()[-1]
         sim_method = self.get_sim_methods_info(default_name)[0]
@@ -239,7 +239,7 @@ class ModelScriptInteractor:
         #Empty list
         #[self.data_sections_interactors.pop(0) for d in self.data_sections_interactors]
         self.data_sections_interactors[:] = []
-        print "parse_code", len(self.data_sections_interactors)
+        print("parse_code", len(self.data_sections_interactors))
         missing_data_section = False
         i = 0
         while not missing_data_section:
@@ -2262,7 +2262,7 @@ class ObjectDialog(wx.Dialog):
             # Set the position that matches cal
             pos = 0
             #print type(val)
-            if isinstance(val, str) or isinstance(val, unicode):
+            if isinstance(val, str) or isinstance(val, str):
                 pos = choices.index(val)
             elif isinstance(val, int):
                 pos = par
@@ -2404,7 +2404,7 @@ class DomainDialog(wx.Dialog):
         return new_domain
 
 class SlabDialog(wx.Dialog):
-    def __init__(self, parent, slab_interactor, id=-1, elements=utils.__f0_dict__.keys(), taken_names=[]):
+    def __init__(self, parent, slab_interactor, id=-1, elements=list(utils.__f0_dict__.keys()), taken_names=[]):
         """A dialog to define the Slab.
 
         This assumes that Slab implements the add_atom and __init__ with only keyword arguments.
@@ -2590,7 +2590,7 @@ class SlabDialog(wx.Dialog):
         """ Add an atom row. Callback for add button click"""
         row, col = self.atom_sizer.GetItemPosition(event.EventObject)
         # Move the controls downwards
-        rows_to_move = range(row, self.atom_sizer.GetRows())
+        rows_to_move = list(range(row, self.atom_sizer.GetRows()))
         rows_to_move.reverse()
         # Move everything except the buttons and buffer for the slider
         for r in rows_to_move:
@@ -2621,7 +2621,7 @@ class SlabDialog(wx.Dialog):
             obj.Destroy()
 
         # Move the controls upwards
-        rows_to_move = range(row + 1, self.atom_sizer.GetRows())
+        rows_to_move = list(range(row + 1, self.atom_sizer.GetRows()))
         # Move everything except the buttons and buffer for the slider
         for r in rows_to_move:
             for c in range(len(self.parameters)):
@@ -2660,7 +2660,7 @@ class SlabDialog(wx.Dialog):
         """ Returns the edited object (SlabInteractor)"""
         new_slab = self.slab.create_new()
         new_slab.name = self.slab.name
-        for c,par in zip(range(1, len(self.init_parameters)*2, 2), self.init_parameters):
+        for c,par in zip(list(range(1, len(self.init_parameters)*2, 2)), self.init_parameters):
             ctrl = self.slab_sizer.FindItemAtPosition((0, c)).GetWindow()
             setattr(new_slab, par, str(ctrl.GetValue()))
 
@@ -2719,7 +2719,7 @@ class ParameterExpressionDialog(wx.Dialog):
 
         col_labels = ['Object', 'Parameter', 'Expression']
 
-        for item, index in zip(col_labels, range(len(col_labels))):
+        for item, index in zip(col_labels, list(range(len(col_labels)))):
             label = wx.StaticText(self, -1, item)
             gbs.Add(label, (0, index), flag=wx.ALIGN_LEFT, border=self.border)
 
@@ -2804,7 +2804,7 @@ class ParameterExpressionDialog(wx.Dialog):
         expression = self.GetExpression()
         try:
             self.model.eval_in_model(expression.expression)
-        except Exception, e:
+        except Exception as e:
             result = 'Could not evaluate the expression. The python error is: \n' + e.__repr__()
             dlg = wx.MessageDialog(self, result, 'Error in expression', wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
@@ -2987,11 +2987,11 @@ class SimulationExpressionDialog(wx.Dialog):
         '''Callback for pressing the ok button in the dialog'''
         expressions = self.GetExpressions()
         # Hack to get it working with d = data[0]
-        exec 'd = data[%d]'%self.interactor.position in self.model.script_module.__dict__
+        exec('d = data[%d]'%self.interactor.position, self.model.script_module.__dict__)
         for exp in expressions:
             try:
                 self.model.eval_in_model(exp)
-            except Exception, e:
+            except Exception as e:
                 result = ('Could not evaluate expression:\n%s.\n'%exp +
                 ' The python error is: \n' + e.__repr__())
                 dlg = wx.MessageDialog(self, result, 'Error in expression',
@@ -3032,7 +3032,7 @@ class CustomParametersDialog(wx.Dialog):
 
         col_labels = ['Name', 'Value']
 
-        for item, index in zip(col_labels, range(len(col_labels))):
+        for item, index in zip(col_labels, list(range(len(col_labels)))):
             label = wx.StaticText(self, -1, item)
             name_ctrl_sizer.Add(label, (0, index), flag=wx.ALIGN_LEFT, border=5)
 
@@ -3081,7 +3081,7 @@ class CustomParametersDialog(wx.Dialog):
         new_inter = CustomParameterInteractor(name=self.name_ctrl.GetValue(), value=self.value_ctrl.GetValue())
         try:
             self.model.eval_in_model(new_inter.get_code())
-        except Exception, e:
+        except Exception as e:
             result = 'Could not evaluate the expression. The python error is: \n' + e.__repr__()
             dlg = wx.MessageDialog(self, result, 'Error in expression', wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
@@ -3234,20 +3234,20 @@ def test_sxrd():
 
 
     script_parser.parse_code(code)
-    print "Length data sections: ", len(script_parser.data_sections_interactors)
+    print("Length data sections: ", len(script_parser.data_sections_interactors))
     code = script_parser.get_code()
-    print "Parsed code:"
-    print code
+    print("Parsed code:")
+    print(code)
     script_parser.domains[1].name = 'test'
     #script_parser.data_sections_interactors.append(DataSetSimulationInteractor())
     #script_parser.data_sections_interactors.pop(1)
-    print "Updated code:"
-    print script_parser.update_code(code)
+    print("Updated code:")
+    print(script_parser.update_code(code))
 
-    print 'Test finished'
+    print('Test finished')
 
-    print script_parser.get_sim_object_names()
-    print [info.name for info in script_parser.get_sim_methods_info('sample')]
+    print(script_parser.get_sim_object_names())
+    print([info.name for info in script_parser.get_sim_methods_info('sample')])
 
     class MainFrame(wx.Frame):
         def __init__(self, *args, **kwds):

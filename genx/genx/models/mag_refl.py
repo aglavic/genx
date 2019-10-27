@@ -172,26 +172,26 @@ the api can change significantly from version to version. Should only be used by
     
 '''
 
-from lib import refl
-import lib.xrmr
-import lib.edm_slicing as edm
+from .lib import refl
+from . import lib.xrmr
+from . import lib.edm_slicing as edm
 try:
-    import lib.paratt_weave as Paratt
-except StandardError,S:
-    print 'Not using inline c code for reflectivity calcs - can not import module'
-    print S
-    import lib.paratt as Paratt
+    from . import lib.paratt_weave as Paratt
+except Exception as S:
+    print('Not using inline c code for reflectivity calcs - can not import module')
+    print(S)
+    from . import lib.paratt as Paratt
 #import lib.paratt_weave as Paratt
 #import lib.paratt as Paratt
 # Hack to test kinematical approx
 #import lib.paratt as slow_paratt
 #reload(slow_paratt)
 
-import lib.ables as ables
-import lib.neutron_refl as neutron_refl
+from . import lib.ables as ables
+from . import lib.neutron_refl as neutron_refl
 from numpy import *
 from scipy.special import erf
-from lib.instrument import *
+from .lib.instrument import *
 
 mag_limit = 1e-8
 mpy_limit = 1e-8
@@ -354,7 +354,7 @@ def Specular(TwoThetaQz, sample, instrument):
     elif instrument.getCoords() == 0 or instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     if any(theta < theta_limit):
-        print 'Theta min: ', theta.min()
+        print('Theta min: ', theta.min())
         raise ValueError('The incident angle has to be above %.1e'%theta_limit)
     
     R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz, xray_energy)
@@ -1384,7 +1384,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             if Q_ok:
                 Q_ok = any(not_equal(NBuffer.TwoThetaQz, Q))
         if NBuffer.parameters != parameters or not Q_ok or True:
-            print 'Reloading buffer'
+            print('Reloading buffer')
             # Bulk of the layers
             #V0 = 2*2*pi*dens*(sqrt(b**2 - (abs_xs/2.0/wl)**2) -
             #                   1.0J*abs_xs/2.0/wl)

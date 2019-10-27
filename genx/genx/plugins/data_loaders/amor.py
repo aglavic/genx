@@ -1,34 +1,31 @@
 '''
-=====================================================
-:mod:`sns_mr` SNS magnetism reflectometer data loader
-=====================================================
+==================================================
+:mod:`amor` Amor at SINQ reflectometer data loader
+==================================================
 
 Loads the default datafile format used for extracted reflectivity at
-the SNS magnetism reflectometer. It allows to import several channels at
-once, automatically naming the datasets according to the imported
-polarizations.
+the SINQ reflectometer Amor.
 '''
 
 import numpy as np
 import wx
+import os
 
 from plugins.data_loader_framework import Template
 from plugins.utils import ShowWarningDialog
-import event_handlers
 
 class Plugin(Template):
-    wildcard = '*.dat'
+    wildcard='*.Rqz'
 
     def __init__(self, parent):
         Template.__init__(self, parent)
-        self.x_col = 0
-        self.y_col = 1
-        self.e_col = 2
-        self.xe_col = 3
-        self.ai_col = 4
-        self.comment = '#'
-        self.skip_rows = 0
-        self.delimiter = None
+        self.x_col=0
+        self.y_col=1
+        self.e_col=3
+        self.xe_col=2
+        self.comment='#'
+        self.skip_rows=0
+        self.delimiter=None
 
     def LoadData(self, data_item_number, filename):
         '''LoadData(self, data_item_number, filename) --> none
@@ -36,10 +33,10 @@ class Plugin(Template):
         Loads the data from filename into the data_item_number.
         '''
         # get scan number and polarization channel from filename
-        name = ''
+        name=os.path.basename(filename)[:-4]
         fhandle = open(filename, 'r')
         fline = fhandle.readline()
-        while not '[Data]' in fline:
+        while not 'q_z' in fline:
             if 'Input file indices:' in fline:
                 name += fline.split(':')[1].strip()
             if 'Extracted states:' in fline:
@@ -72,9 +69,7 @@ class Plugin(Template):
             self.data[data_item_number].y_raw=load_array[:, self.y_col]
             self.data[data_item_number].error_raw=load_array[:, self.e_col]
             self.data[data_item_number].extra_data_raw['xe'] = load_array[:, self.xe_col]
-            self.data[data_item_number].extra_commands['xe'] = 'xe'
-            self.data[data_item_number].extra_data_raw['ai'] = load_array[:, self.ai_col]
-            self.data[data_item_number].extra_commands['ai'] = 'ai'
+            self.data[data_item_number].extra_commands['xe']='xe'
             # Name the dataset accordign to file name
             self.data[data_item_number].name = name
             # Run the commands on the data - this also sets the x,y, error memebers

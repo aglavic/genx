@@ -130,7 +130,7 @@ class Plugin(framework.Template):
             layer.f=f
             layer.b=b
             layer.dens=density
-        name=u''
+        name=''
         for element, count in formula:
             if count==1:
                 name+="%s"%(element)
@@ -164,7 +164,7 @@ class Plugin(framework.Template):
         tmpname = name
         i = 1
         while tmpname in self.refplugin.sampleh.names:
-            tmpname = u'%s_%i'%(name, i)
+            tmpname = '%s_%i'%(name, i)
             i += 1
         self.refplugin.sampleh.names[layer_idx] = tmpname
 
@@ -184,7 +184,7 @@ class Plugin(framework.Template):
                     name = isotopes[item[0]][1]
             else:
                 name = item[0]
-            output += u'%s.%s*%g+'%(pre, name, item[1])
+            output += '%s.%s*%g+'%(pre, name, item[1])
         return output[:-1] # remove last +
 
 
@@ -212,11 +212,11 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
 
         # Set the column headers
         for col, (text, width) in enumerate([
-                                             (u"Formula", 80),
-                                             (u"SLD-n [10⁻⁶Å⁻²]", 60),
-                                             (u"SLD-kα [10⁻⁶Å⁻²]", 60),
-                                             (u"Density [FU/Å³]", 60),
-                                             (u"Density [g/cm³]", 60)
+                                             ("Formula", 80),
+                                             ("SLD-n [10⁻⁶Å⁻²]", 60),
+                                             ("SLD-kα [10⁻⁶Å⁻²]", 60),
+                                             ("Density [FU/Å³]", 60),
+                                             ("Density [g/cm³]", 60)
                                              ]):
             self.InsertColumn(col, text, width=width)
 
@@ -263,7 +263,7 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             return "%.3f" % (sld.real*10.)
         else:
             formula = self.materials_list[item][0]
-            output = u''
+            output = ''
             for element, count in formula:
                 if count == 1:
                     output += element
@@ -276,10 +276,10 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
           Return a subscript unicode string that equals the given number.
         '''
         scount = '%g'%count
-        result = u''
+        result = ''
         for char in scount:
             if char == '.':
-                result += u'﹒'
+                result += '﹒'
             else:
                 # a subscript digit in unicode
                 result += ('\\u208' + char).decode('unicode-escape')
@@ -380,30 +380,30 @@ class MaterialDialog(wx.Dialog):
 
         table.Add(wx.StaticText(self, label="1. Unit Cell Parameters:"), (3, 0),
                   span=(1, 3), flag=wx.ALIGN_CENTER)
-        table.Add(wx.StaticText(self, label=u"a [Å]"), (4, 0), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label="a [Å]"), (4, 0), flag=wx.ALIGN_CENTER)
         self.a_entry=wx.TextCtrl(self, size=(50, 25))
         table.Add(self.a_entry, (5, 0), flag=wx.EXPAND)
-        table.Add(wx.StaticText(self, label=u"b [Å]"), (4, 1), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label="b [Å]"), (4, 1), flag=wx.ALIGN_CENTER)
         self.b_entry=wx.TextCtrl(self, size=(50, 25))
         table.Add(self.b_entry, (5, 1), flag=wx.EXPAND)
-        table.Add(wx.StaticText(self, label=u"c [Å]"), (4, 2), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label="c [Å]"), (4, 2), flag=wx.ALIGN_CENTER)
         self.c_entry=wx.TextCtrl(self, size=(50, 25))
         table.Add(self.c_entry, (5, 2), flag=wx.EXPAND)
 
-        table.Add(wx.StaticText(self, label=u"α"), (6, 0), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label="α"), (6, 0), flag=wx.ALIGN_CENTER)
         self.alpha_entry=wx.TextCtrl(self, size=(50, 25))
         self.alpha_entry.SetValue('90')
         table.Add(self.alpha_entry, (7, 0), flag=wx.EXPAND)
-        table.Add(wx.StaticText(self, label=u"β"), (6, 1), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label="β"), (6, 1), flag=wx.ALIGN_CENTER)
         self.beta_entry=wx.TextCtrl(self, size=(50, 25))
         self.beta_entry.SetValue('90')
         table.Add(self.beta_entry, (7, 1), flag=wx.EXPAND)
-        table.Add(wx.StaticText(self, label=u"γ"), (6, 2), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label="γ"), (6, 2), flag=wx.ALIGN_CENTER)
         self.gamma_entry=wx.TextCtrl(self, size=(50, 25))
         self.gamma_entry.SetValue('90')
         table.Add(self.gamma_entry, (7, 2), flag=wx.EXPAND)
 
-        table.Add(wx.StaticText(self, label=u"FUs"), (8, 0), flag=wx.ALIGN_CENTER)
+        table.Add(wx.StaticText(self, label="FUs"), (8, 0), flag=wx.ALIGN_CENTER)
         self.FUs_entry=wx.TextCtrl(self, size=(50, 25))
         self.FUs_entry.SetValue('1')
         table.Add(self.FUs_entry, (9, 0), flag=wx.ALIGN_CENTER)
@@ -436,12 +436,12 @@ class MaterialDialog(wx.Dialog):
                   span=(1, 3), flag=wx.ALIGN_CENTER)
         self.mass_density=wx.TextCtrl(self, size=(70, 25))
         self.mass_density.Bind(wx.EVT_TEXT, self.OnMassDensityChange)
-        table.Add(wx.StaticText(self, label=u"Mass Density [g/cm³]:"), (12, 0))
+        table.Add(wx.StaticText(self, label="Mass Density [g/cm³]:"), (12, 0))
         table.Add(self.mass_density, (12, 1), span=(1, 1))
 
         table.Add(wx.StaticText(self, label="Result from 1. or 2.:"), (13, 0), span=(1, 3))
         self.result_density=wx.TextCtrl(self, size=(150, 25))
-        table.Add(wx.StaticText(self, label=u"Density [FU/Å³]:"), (14, 0))
+        table.Add(wx.StaticText(self, label="Density [FU/Å³]:"), (14, 0))
         table.Add(self.result_density, (14, 1), span=(1, 2))
 
         buttons=self.CreateButtonSizer(wx.OK|wx.CANCEL)
@@ -564,7 +564,7 @@ class MaterialDialog(wx.Dialog):
           frm=ri['full_formula']
           v=ri['volume']
           dens=ri['density']
-          items.append(u'%i: %s (%s) | UC Formula: %s\n     Density: %s g/cm³ | UC Volume: %s'%
+          items.append('%i: %s (%s) | UC Formula: %s\n     Density: %s g/cm³ | UC Volume: %s'%
                        (i+1, sgs, cs, frm, dens, v))
           if ri['tags'] is not None:
             items[-1]+='\n     '+';'.join(ri['tags'][:3])

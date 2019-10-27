@@ -8,15 +8,15 @@ from numpy import *
 paratt_ext_built = False
 debug = False
 try:
-    import paratt_ext
+    from . import paratt_ext
     paratt_ext_built = True
 except ImportError:
     paratt_ext_built = False
 
 if not paratt_ext_built or debug:
-    import build_ext
+    from . import build_ext
     build_ext.paratt()
-    import paratt_ext
+    from . import paratt_ext
 
 
 def Refl(theta,lamda,n,d,sigma, return_int=True):
@@ -72,7 +72,7 @@ def Refl_nvary2_nosigma(theta, lamda, n, d, return_int=True):
 
 
 if __name__=='__main__':
-    import paratt
+    from . import paratt
     import time
     import pylab as pl
     theta=arange(0,10,0.01)+1e-12
@@ -81,7 +81,7 @@ if __name__=='__main__':
     n = array([1-7.57e-6+1.73e-7j] + [1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j]*rep +[1])
     d = array([1] + [80,20,80,20,80,20]*rep + [1])*1.0
     sigma = array([0] + [0,0,0,0,0,0]*rep + [0])*1.0
-    print n.shape
+    print(n.shape)
     t1=time.clock()
     #c1=paratt.Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma)
     #c1=paratt.Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma*0)
@@ -91,6 +91,6 @@ if __name__=='__main__':
     #c2 = Refl_nvary2_nosigma(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d)
     c2 = Refl(theta, 1.54, n, d, sigma)
     t3=time.clock()
-    print t2-t1,t3-t2
+    print(t2-t1,t3-t2)
     pl.plot(theta,log10(c1),'x',theta,log10(c2))
     pl.show()

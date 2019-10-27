@@ -3,8 +3,9 @@ Programmed by Matts Bjorck
 Last changed 2017-09-02
 '''
 from numpy import *
-import math_utils as mu
-import int_lay_xmean
+from . import math_utils as mu
+from . import int_lay_xmean
+from functools import reduce
 
 def make_D(q_p,q_m):
     return mat([[1,1,0,0],[q_p,-q_p,0,0],[0,0,1,1],[0,0,q_m,-q_m]])
@@ -300,9 +301,9 @@ if __name__=='__main__':
     for i in range(10):
         r_orig = ReflOld(Q,Vp,Vm,d,M_ang)
     t3 = time.time()
-    print 'Old version: ', t3 - t2
-    print 'New version: ', t2 - t1
-    print 'Speedup: ', (t3 - t2)/(t2 - t1)
+    print('Old version: ', t3 - t2)
+    print('New version: ', t2 - t1)
+    print('Speedup: ', (t3 - t2)/(t2 - t1))
     from pylab import *
     #plot(Q,log10(r[0]+1e-6),Q,log10(r[1]+1e-6),Q,log10(r[2]+1e-6),Q,log10(r[3]+1e-6))
     #io.write_array(open('test.dat','w'),array(zip(Q,abs(r[0]),abs(r[1]),abs(r[2]))))
@@ -310,7 +311,7 @@ if __name__=='__main__':
         plot(Q,log10(abs(rc)))
     for rc in r_orig:   
         plot(Q,log10(abs(rc)),'.')
-    print 'Done'
+    print('Done')
     show()
     if True:
         import profile

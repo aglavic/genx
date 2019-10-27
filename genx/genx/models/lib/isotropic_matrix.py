@@ -19,7 +19,7 @@ def ass_X_test(k_b, k_u, k_l, dd_u, dd_l,
     dd_jm1_l = dd_l[...,1:]
     dd_j_u = dd_u[...,:-1]
     
-    print dd_j_u, dd_jm1_l
+    print(dd_j_u, dd_jm1_l)
 
     #Reflectivites
     r_j_b = refl(k_j_b, k_j_u)
@@ -147,15 +147,15 @@ def ass_X_interfacelayer3(k_b, k_u, k_l, dd_u, dd_l,
     dd_jm1_l = dd_l[...,1:]
     dd_j_u = dd_u[...,:-1]
     
-    print dd_j_u, dd_jm1_l
+    print(dd_j_u, dd_jm1_l)
 
     #Reflectivites
     r_j_b = refl(k_j_b, k_j_u)
-    print 'r_j_b', r_j_b
+    print('r_j_b', r_j_b)
     r_jm1_l = refl(k_jm1_l, k_jm1_b) 
-    print 'r_jm1_l', r_jm1_l
+    print('r_jm1_l', r_jm1_l)
     r_j_u = refl(k_j_u, k_jm1_l)
-    print 'r_j_u', r_j_u
+    print('r_j_u', r_j_u)
     p_jm1_l = np.exp(-1.0J*dd_jm1_l*k_jm1_l)
     p_j_u = np.exp(-1.0J*dd_j_u*k_j_u)
     #p_j_b = np.exp(-1.0J*dd_j_b*k_j_b)
@@ -215,7 +215,7 @@ def ass_X_interfacelayer(k_b, k_u, k_l, dd_u, dd_l,
 
     v 0.2
     '''
-    print dd_l, dd_u
+    print(dd_l, dd_u)
     # Variables definitions that goes into the expressions:
     k_jm1_b = k_b[...,1:]
     k_j_b = k_b[...,:-1]

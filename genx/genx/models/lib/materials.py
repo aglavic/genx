@@ -10,14 +10,14 @@ r"""
 
 from os import path
 import re
-import cPickle
+import pickle
 
 import numpy as np
 from scipy import interpolate
 
-from parameters import HasParameters, ComplexArray, Float, Calc
+from .parameters import HasParameters, ComplexArray, Float, Calc
 
-import scatteringlengths as _sl
+from . import scatteringlengths as _sl
 
 # The scattering length of an electron (Thomson scattering length) in AA
 _r_e = 2.82e-5
@@ -65,8 +65,8 @@ class MemoizeF:
         self.memo = {}
 
     def __call__(self, wl=1.54, **kwds):
-        pickled = cPickle.dumps(wl, 1)
-        if not self.memo.has_key(pickled):
+        pickled = pickle.dumps(wl, 1)
+        if pickled not in self.memo:
             self.memo[pickled] = self.fn(wl=wl, **kwds)
         return self.memo[pickled]
 
@@ -177,15 +177,15 @@ class Material(HasParameters):
 
 if __name__ == "__main__":
     test = Material("Ag1.1(NO0.01)2", density=7.87)
-    print _atomic_weights['fe']
+    print(_atomic_weights['fe'])
     # print test.Ag.help
-    print test._formula_density(), 2/2.88**3
-    print test.sld_x(wl=1.54)
+    print(test._formula_density(), 2/2.88**3)
+    print(test.sld_x(wl=1.54))
     test.Fe = 2
-    print test.sld_x(wl=1.54)
+    print(test.sld_x(wl=1.54))
     test.Fe = 1
-    print test.sld_x(wl=1.54)
-    print test.sld_x(wl=15.4)
-    print test.sld_x(wl=15.4)
+    print(test.sld_x(wl=1.54))
+    print(test.sld_x(wl=15.4))
+    print(test.sld_x(wl=15.4))
 
 

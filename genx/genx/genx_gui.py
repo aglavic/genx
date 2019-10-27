@@ -9,18 +9,18 @@ $Date::                                 $:  Date of last commit
 
 import wx
 import wx.grid, wx.py, wx.stc
-import StringIO
+import io
 import traceback
 
 import os, sys, shutil, appdirs
 
-import data, model, help
-import filehandling as io
-import plotpanel, solvergui, parametergrid, datalist
-import event_handlers
-import images as img
+from genx import data, model, help
+from genx import filehandling as io
+from genx import plotpanel, solvergui, parametergrid, datalist
+from genx import event_handlers
+from genx import images as img
 
-import plugins.add_on_framework as add_on
+from genx.plugins import add_on_framework as add_on
 
 # Add current path to the system paths
 # just in case some user make a directory change
@@ -34,15 +34,15 @@ if _path != '':
 
 # Get the configuration path, create if it not exists
 config_path = appdirs.user_data_dir('GenX', 'MattsBjorck') + '/'
-print config_path
+print(config_path)
 if not os.path.exists(config_path):
-    print 'Creating path: ', config_path
+    print('Creating path: ', config_path)
     os.makedirs(config_path)
 if not os.path.exists(config_path + 'profiles'):
-    print 'Creating path: ', config_path + 'profiles'
+    print('Creating path: ', config_path + 'profiles')
     shutil.copytree(_path + 'profiles', config_path + 'profiles')
 if not os.path.exists(config_path + 'genx.conf'):
-    print 'Creating genx.conf at ', config_path, 'by copying config from ', _path + 'profiles/Default.conf'
+    print('Creating genx.conf at ', config_path, 'by copying config from ', _path + 'profiles/Default.conf')
     shutil.copyfile(_path + 'profiles/Default.conf', config_path + 'genx.conf')
 
 #raise Exception(_path)
@@ -443,12 +443,12 @@ class MainFrame(wx.Frame):
             for p in [self.plot_data, self.plot_fom,
                       self.plot_pars, self.plot_fomscan]:
                 p.ReadConfig()
-        except Exception, e:
-            outp = StringIO.StringIO()
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
-            print 'Error in loading config for the plots. Pyton tractback:\n ', val
+            print('Error in loading config for the plots. Pyton tractback:\n ', val)
             event_handlers.ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
 
         event_handlers.new(self, None)
@@ -619,7 +619,7 @@ class MainFrame(wx.Frame):
         event_handlers.print_parameter_grid(self, event)
 
     def eh_mb_print_script(self, event): # wxGlade: MainFrame.<event_handler>
-        print "Event handler `eh_mb_print_script' not implemented"
+        print("Event handler `eh_mb_print_script' not implemented")
         event.Skip()
 
     def eh_mb_export_data(self, event): # wxGlade: MainFrame.<event_handler>
@@ -665,7 +665,7 @@ class MainFrame(wx.Frame):
         event_handlers.resume_fit(self, event)
 
     def eh_mb_fit_analyze(self, event): # wxGlade: MainFrame.<event_handler>
-        print "Event handler `eh_mb_fit_analyze' not implemented"
+        print("Event handler `eh_mb_fit_analyze' not implemented")
         event.Skip()
 
     def eh_mb_misc_showman(self, event): # wxGlade: MainFrame.<event_handler>

@@ -6,18 +6,18 @@ $Rev::                                  $:  Revision of last commit
 $Author::                               $:  Author of last commit
 $Date::                                 $:  Date of last commit
 '''
-import version
+from . import version
 __version__ = version.version
 
-import thread, time
-import wx, os, StringIO, traceback
+import _thread, time
+import wx, os, io, traceback
 from wx.lib.wordwrap import wordwrap
 import webbrowser
 import numpy as np
 
-import model as modellib
-import solvergui, help
-import filehandling as io
+from . import model as modellib
+from . import solvergui, help
+from . import filehandling as io
 
 manual_url = 'http://genx.sourceforge.net/doc/'
 homepage_url = 'http://genx.sf.net'
@@ -109,33 +109,33 @@ def open_model(frame, path):
     #_post_new_model_event(frame, frame.model)
     try:
         io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
-    except modellib.IOError, e:
+    except modellib.IOError as e:
         ShowModelErrorDialog(frame, e.__str__())
-    except Exception, e:
-        outp = StringIO.StringIO()
+    except Exception as e:
+        outp = io.StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print 'Error in loading the file ', path, '. Pyton traceback:\n ',val
+        print('Error in loading the file ', path, '. Pyton traceback:\n ',val)
         ShowErrorDialog(frame, 'Could not open the file. Python Error:\n%s' % (val,))
         return
     try:
         [p.ReadConfig() for p in get_pages(frame)]
-    except Exception, e:
-        outp = StringIO.StringIO()
+    except Exception as e:
+        outp = io.StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print 'Error in loading config for the plots. Pyton traceback:\n ',val
+        print('Error in loading config for the plots. Pyton traceback:\n ',val)
         ShowErrorDialog(frame, 'Could not read the config for the plots. Python Error:\n%s' % (val,))
     try:
         frame.paramter_grid.ReadConfig()
-    except Exception, e:
-        outp = StringIO.StringIO()
+    except Exception as e:
+        outp = io.StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print 'Error in loading config for parameter grid. Pyton traceback:\n ', val
+        print('Error in loading config for parameter grid. Pyton traceback:\n ', val)
         ShowErrorDialog(frame, 'Could not read the config for the parameter grid. Python Error:\n%s' % (val,))
     else:
         # Update the Menu choice
@@ -143,8 +143,8 @@ def open_model(frame, path):
     # Letting the plugin do their stuff...
     try:
         frame.plugin_control.OnOpenModel(None)
-    except Exception, e:
-        outp = StringIO.StringIO()
+    except Exception as e:
+        outp = io.StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -177,7 +177,7 @@ def on_new_model(frame, event):
     try:
         val = frame.config.get_boolean('parameter grid', 'auto sim')
     except io.OptionError:
-        print 'Could not locate option parameters.auto sim'
+        print('Could not locate option parameters.auto sim')
         frame.mb_fit_autosim.Check(True)
     else:
        frame.mb_fit_autosim.Check(val)
@@ -207,10 +207,10 @@ def save(frame, event):
         # If it has been saved just save it
         try:
             io.save_file(fname, frame.model, frame.solver_control.optimizer, frame.config)
-        except modellib.IOError, e:
+        except modellib.IOError as e:
             ShowModelErrorDialog(frame, e.__str__())
-        except Exception, e:
-            outp = StringIO.StringIO()
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -245,10 +245,10 @@ def save_as(frame, event):
             try:
                 io.save_file(fname, frame.model, frame.solver_control.optimizer,\
                         frame.config)
-            except modellib.IOError, e:
+            except modellib.IOError as e:
                 ShowModelErrorDialog(frame, e.__str__())
-            except Exception, e:
-                outp = StringIO.StringIO()
+            except Exception as e:
+                outp = io.StringIO()
                 traceback.print_exc(200, outp)
                 val = outp.getvalue()
                 outp.close()
@@ -270,11 +270,11 @@ def export_data(frame, event):
     if dlg.ShowModal() == wx.ID_OK:
         try:
             frame.model.export_data(dlg.GetPath())
-        except modellib.IOError, e:
+        except modellib.IOError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(\
                     'Error when exporting data', 1)
-        except Exception, e:
+        except Exception as e:
             ShowErrorDialog(frame, str(e), 'export data - model.export_data')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
         else:
@@ -307,12 +307,12 @@ def export_script(frame, event):
             try:
                 #frame.model.export_script(dlg.GetPath())
                 frame.model.export_script(fname)
-            except modellib.IOError, e:
+            except modellib.IOError as e:
                 ShowModelErrorDialog(frame, str(e))
                 frame.main_frame_statusbar.SetStatusText(\
                         'Error when exporting script', 1)
                 return
-            except Exception, e:
+            except Exception as e:
                 ShowErrorDialog(frame, str(e),\
                                     'export script - model.export_script')
                 frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
@@ -337,7 +337,7 @@ def export_table(frame, event):
         base, ext = os.path.splitext(fname)
         if ext == '':
             ext = '.tab'
-	    fname = base + ext
+        fname = base + ext
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
@@ -348,12 +348,12 @@ def export_table(frame, event):
             try:
                 #frame.model.export_table(dlg.GetPath())
                 frame.model.export_table(fname)
-            except modellib.IOError, e:
+            except modellib.IOError as e:
                 ShowModelErrorDialog(frame, str(e))
                 frame.main_frame_statusbar.SetStatusText(\
                         'Error when exporting table', 1)
                 return
-            except Exception, e:
+            except Exception as e:
                 ShowErrorDialog(frame, str(e),\
                                     'export table - model.export_table')
                 frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
@@ -377,20 +377,20 @@ def import_script(frame, event):
         try:
             frame.model.import_script(dlg.GetPath())
             #frame.model.import_script(fname)
-        except modellib.IOError, e:
+        except modellib.IOError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(\
                     'Error when importing script', 1)
             return
-        except Exception, e:
+        except Exception as e:
             ShowErrorDialog(frame, str(e),\
                                 'import script - model.import_script')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
             return
         try:
             frame.plugin_control.OnOpenModel(None)
-        except Exception, e:
-            outp = StringIO.StringIO()
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -411,7 +411,7 @@ def import_data(frame, event):
     # Reuse of the callback in the datalist.DataController
     try:
         frame.data_list.eh_tb_open(event)
-    except Exception, e:
+    except Exception as e:
             ShowErrorDialog(frame, str(e),\
                                 'import data - data_list.eh_tb_open')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
@@ -430,13 +430,13 @@ def import_table(frame, event):
     if dlg.ShowModal() == wx.ID_OK:
         try:
             frame.model.import_table(dlg.GetPath())
-        except modellib.IOError, e:
+        except modellib.IOError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(\
                     'Error when importing script', 1)
             dlg.Destroy()
             return
-        except Exception, e:
+        except Exception as e:
             ShowErrorDialog(frame, str(e),\
                                 'import script - model.import_script')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
@@ -457,7 +457,7 @@ def parameter_value_changed(frame, event):
     """
     frame.simulation_queue_counter += 1
     if frame.mb_fit_autosim.IsChecked() and not frame.flag_simulating:
-        thread.start_new_thread(simulation_loop, (frame,))
+        _thread.start_new_thread(simulation_loop, (frame,))
 
 def simulation_loop(frame):
     """ Simulation loop for threading to increase the speed of the interactive simulations
@@ -483,11 +483,11 @@ def evaluate(frame, event):
     #frame.model.compile_script()
     try:
         frame.model.simulate(compile = False)
-    except modellib.GenericError, e:
+    except modellib.GenericError as e:
         ShowModelErrorDialog(frame, str(e))
         frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
-    except Exception, e:
-        outp = StringIO.StringIO()
+    except Exception as e:
+        outp = io.StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -522,11 +522,11 @@ def do_simulation(frame):
     #frame.model.compile_script()
     try:
         frame.model.simulate()
-    except modellib.GenericError, e:
+    except modellib.GenericError as e:
         ShowModelErrorDialog(frame, str(e))
         frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
-    except Exception, e:
-        outp = StringIO.StringIO()
+    except Exception as e:
+        outp = io.StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -542,8 +542,8 @@ def set_possible_parameters_in_grid(frame):
     # in the grid
     try:
         pardict = frame.model.get_possible_parameters()
-    except Exception, e:
-        outp = StringIO.StringIO()
+    except Exception as e:
+        outp = io.StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -555,7 +555,7 @@ def set_possible_parameters_in_grid(frame):
     
     try:
         frame.paramter_grid.SetParameterSelections(pardict)
-    except Exception, e:
+    except Exception as e:
         ShowErrorDialog(frame, str(e),\
             'simulate - parameter_grid.SetParameterSelection')
         frame.main_frame_statusbar.SetStatusText('Fatal Error', 0)
@@ -571,10 +571,10 @@ def start_fit(frame, event):
     if frame.model.compiled:
         try:
             frame.solver_control.StartFit()
-        except modellib.GenericError, e:
+        except modellib.GenericError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-        except Exception, e:
+        except Exception as e:
             ShowErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
         else:
@@ -598,10 +598,10 @@ def resume_fit(frame, event):
     if frame.model.compiled:
         try:
             frame.solver_control.ResumeFit()
-        except modellib.GenericError, e:
+        except modellib.GenericError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-        except Exception, e:
+        except Exception as e:
             ShowErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
         else:
@@ -618,9 +618,9 @@ def calculate_error_bars(frame, evt):
     '''
     try:
         error_values = frame.solver_control.CalcErrorBars()
-    except solvergui.ErrorBarError, e:
+    except solvergui.ErrorBarError as e:
         ShowNotificationDialog(frame, str(e))
-    except Exception, e:
+    except Exception as e:
         ShowErrorDialog(frame, str(e), 'solvergui - CalcErrorBars')
         frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
     else:
@@ -654,8 +654,8 @@ def scan_parameter(frame, row):
             frame.plot_fomscan.Plot((x, y, bestx, besty,\
                         frame.solver_control.fom_error_bars_level))
             frame.plot_notebook.SetSelection(3)
-        except Exception, e:
-            outp = StringIO.StringIO()
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -695,8 +695,8 @@ def project_fom_parameter(frame, row):
         frame.plot_fomscan.Plot((x, y, bestx, besty,\
                         frame.solver_control.fom_error_bars_level))
         frame.plot_notebook.SetSelection(3)
-    except Exception, e:
-        outp = StringIO.StringIO()
+    except Exception as e:
+        outp = io.StringIO()
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
@@ -1127,7 +1127,7 @@ def show_about_box(frame, event):
     '''
     import numpy, scipy, matplotlib, platform
     try:
-        import scipy.weave as weave
+        import weave
     except:
         weave_version = 'Not installed'
     else:

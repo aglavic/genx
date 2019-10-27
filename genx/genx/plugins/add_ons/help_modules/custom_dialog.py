@@ -1,5 +1,4 @@
 import wx
-import wx.combo
 import math
 import os
 
@@ -8,7 +7,7 @@ from wx.lib.intctrl import IntCtrl
 
 import string
 
-import reflectivity_images as images
+from . import reflectivity_images as images
 
 def is_reflfunction(obj):
     ''' Convenience function to determine whether obj belongs to the ReflFunction class.
@@ -284,7 +283,7 @@ class NoMatchTextCtrlValidator(wx.PyValidator):
         textCtrl = self.GetWindow()
         text = textCtrl.GetValue()
         stringlist = [ctrl.GetValue() for ctrl in self.textctrls]
-        print text, stringlist
+        print(text, stringlist)
         if len(text) == 0:
             wx.MessageBox("A text object must contain some text!", "Error")
             textCtrl.SetBackgroundColour("pink")
@@ -349,7 +348,7 @@ class FloatObjectValidator(wx.PyValidator):
             val = self.eval_func(text)
             if is_reflfunction(val):
                 val = val.validate()
-        except StandardError,S:
+        except Exception as S:
             wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -358,7 +357,7 @@ class FloatObjectValidator(wx.PyValidator):
         else:
             try:
                 self.value=float(val)
-            except StandardError, S:
+            except Exception as S:
                 #print type(val), self.alt_types
                 if not any([isinstance(val, typ) for typ in self.alt_types]):
                     wx.MessageBox("Wrong type of parameter\nERROR:\n%s"%S.__str__(), "Error")
@@ -414,7 +413,7 @@ class ComplexObjectValidator(wx.PyValidator):
         self.value=None
         try:
             val = self.eval_func(text)
-        except Exception, S:
+        except Exception as S:
             wx.MessageBox("Can't compile the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -426,10 +425,10 @@ class ComplexObjectValidator(wx.PyValidator):
             if is_reflfunction(val):
                 val = val.validate()
             self.value = complex(val.real, val.imag)
-        except AttributeError, S:
+        except AttributeError as S:
             try:
                self.value = complex(val)
-            except StandardError,S:
+            except Exception as S:
                 if not any([isinstance(val, typ) for typ in self.alt_types]):
                     wx.MessageBox("Can't evaluate the complex expression, not the correct type!!\nERROR:\n%s"%S.__str__(), "Error")
                     textCtrl.SetBackgroundColour("pink")
@@ -440,7 +439,7 @@ class ComplexObjectValidator(wx.PyValidator):
                     textCtrl.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
                     textCtrl.Refresh()
                     return True
-        except StandardError, S:
+        except Exception as S:
             if not any([isinstance(val, typ) for typ in self.alt_types]):
                 wx.MessageBox("Can't evaluate the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
                 textCtrl.SetBackgroundColour("pink")
@@ -598,7 +597,7 @@ class ValidateBaseDialog(wx.Dialog):
         #print dir(self.tc[0])
         #print self.tc[0].GetValue()
         p = {}
-        for par in self.validators.keys():
+        for par in list(self.validators.keys()):
             if type(self.validators[par]) == type([]):
                 # have to pad teh text to make it a string inside a string...
                 #text = '\'' 
@@ -748,7 +747,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         '''Do the notebook layout in the dialog
         '''
         self.main_sizer = wx.Notebook(self, -1, style=wx.NB_TOP)
-        names = self.vals.keys()
+        names = list(self.vals.keys())
         names.sort()
         for item in names:
             editable_pars = {}
@@ -764,7 +763,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         if len(self.fixed_pages) > 0:
             current_name = self.fixed_pages[0]
         index = 1
-        while '%s_%d'%(current_name, index) in self.vals.keys():
+        while '%s_%d'%(current_name, index) in list(self.vals.keys()):
             index += 1
         new_name = '%s_%d'%(current_name, index)
 
@@ -852,7 +851,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         p = {}
         for page in self.vals:
             p[page] = {}
-            for par in self.validators.keys():
+            for par in list(self.validators.keys()):
                 if type(self.validators[par]) == type([]):
                     # have to pad teh text to make it a string inside a string...
                     #text = '\'' 
@@ -920,7 +919,7 @@ class FitEditMixIn:
         #print dir(self.tc[0])
         #print self.tc[0].GetValue()
         p = {}
-        for par in self.validators.keys():
+        for par in list(self.validators.keys()):
             if isinstance(self.validators[par], list):
                 p[par] = 0
             else:
@@ -955,7 +954,7 @@ class ValidateFitNotebookDialog(ValidateBaseNotebookDialog, FitEditMixIn):
         p = {}
         for page in self.vals:
             p[page] = {}
-            for par in self.validators.keys():
+            for par in list(self.validators.keys()):
                 if isinstance(self.validators[par], list):
                     p[page][par] = 0
                 else:
@@ -963,7 +962,7 @@ class ValidateFitNotebookDialog(ValidateBaseNotebookDialog, FitEditMixIn):
         return p
 
 
-class FitSelectorCombo(wx.combo.ComboCtrl):
+class FitSelectorCombo(wx.ComboCtrl):
     """Class that defines a Combobox that allows the user to set if the parameter should be handled by the grid
     , fitted or constants from the beginning.
     """
@@ -1017,7 +1016,7 @@ class FitSelectorCombo(wx.combo.ComboCtrl):
         :param kw:
         :return:
         """
-        wx.combo.ComboCtrl.__init__(self, *args, **kw)
+        wx.ComboCtrl.__init__(self, *args, **kw)
 
         self.state = state
         # Green wx.Colour(138, 226, 52), ORANGE wx.Colour(245, 121, 0)
@@ -1066,7 +1065,7 @@ class FitSelectorCombo(wx.combo.ComboCtrl):
         pass
 
 
-class ParameterExpressionCombo(wx.combo.ComboCtrl):
+class ParameterExpressionCombo(wx.ComboCtrl):
     """Class that defines a Combobox for editing an expression and inserting parameters from the model in that
     expression by choosing them from a popupmenu.
     """
@@ -1102,7 +1101,7 @@ class ParameterExpressionCombo(wx.combo.ComboCtrl):
         :param kw:
         :return:
         """
-        wx.combo.ComboCtrl.__init__(self, *args, **kw)
+        wx.ComboCtrl.__init__(self, *args, **kw)
 
         self.create_button_bitmap()
 
@@ -1117,13 +1116,13 @@ class ParameterExpressionCombo(wx.combo.ComboCtrl):
     def OnButtonClick(self):
         menu = wx.Menu()
         par_dict = self.par_dict
-        classes = par_dict.keys()
+        classes = list(par_dict.keys())
         classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
         for cl in classes:
             # Create a submenu for each class
             clmenu = wx.Menu()
             obj_dict = par_dict[cl]
-            objs = obj_dict.keys()
+            objs = list(obj_dict.keys())
             objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
             # Create a submenu for each object
             for obj in objs:
@@ -1241,7 +1240,7 @@ if __name__=='__main__':
             if dlg.ShowModal() == wx.ID_OK:
                 #print 'Pressed OK'
                 vals = dlg.GetValues()
-                print vals
+                print(vals)
             return True
 
 

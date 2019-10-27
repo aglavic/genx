@@ -8,10 +8,10 @@ $Author::                               $:  Author of last commit
 $Date::                                 $:  Date of last commit
 '''
 try:
-    import ConfigParser as CP
+    import configparser as CP
 except ImportError:
     import configparser as CP
-import StringIO
+import io
 import os
 
 import h5py
@@ -75,7 +75,7 @@ def save_hgx(fname, model, optimizer, config, group='current'):
     model.write_h5group(g)
     try:
         clear_evals = not config.get_boolean('solver', 'save all evals')
-    except OptionError, e:
+    except OptionError as e:
         clear_evals = True
     optimizer.write_h5group(g.create_group('optimizer'), clear_evals=True)
     g['config'] = config.model_dump()
@@ -163,8 +163,8 @@ def load_opt_config(optimizer, config):
         for index in range(len(options_float)):
             try:
                 val = config.get_float('solver', options_float[index])
-            except OptionError, e:
-                print 'Could not locate option solver.' + options_float[index]
+            except OptionError as e:
+                print('Could not locate option solver.' + options_float[index])
             else:
                 setfunctions_float[index](val)
 
@@ -172,19 +172,19 @@ def load_opt_config(optimizer, config):
         for index in range(len(options_bool)):
             try:
                 val = config.get_boolean('solver', options_bool[index])
-            except OptionError, e:
-                print 'Could not read option solver.' + options_bool[index]
+            except OptionError as e:
+                print('Could not read option solver.' + options_bool[index])
             else:
                 setfunctions_bool[index](val)
         try:
             val = config.get('solver', 'create trial')
-        except OptionError, e:
-            print 'Could not read option solver.create trial'
+        except OptionError as e:
+            print('Could not read option solver.create trial')
         else:
             try:
                 optimizer.set_create_trial(val)
             except LookupError:
-                print 'The mutation scheme %s does not exist'%val
+                print('The mutation scheme %s does not exist'%val)
 
     return c.error_bars_level, c.save_all_evals
 
@@ -233,20 +233,20 @@ def save_opt_config(optimizer, config, fom_error_bars_level=1.05, save_all_evals
         for index in range(len(options_float)):
             try:
                 config.set('solver', options_float[index], set_float[index])
-            except io.OptionError, e:
-                print 'Could not locate save solver.' + options_float[index]
+            except OptionError as e:
+                print('Could not locate save solver.' + options_float[index])
 
         # Then the bool flags
         for index in range(len(options_bool)):
             try:
                 config.set('solver', options_bool[index], set_bool[index])
-            except OptionError, e:
-                print 'Could not write option solver.' + options_bool[index]
+            except OptionError as e:
+                print('Could not write option solver.' + options_bool[index])
 
         try:
             config.set('solver', 'create trial', optimizer.get_create_trial())
-        except OptionError, e:
-            print 'Could not write option solver.create trial'
+        except OptionError as e:
+            print('Could not write option solver.create trial')
 
 #==============================================================================
 class Config:
@@ -262,8 +262,8 @@ class Config:
         '''
         try:
             self.default_config.read(filename)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             raise IOError('Could not load default config file', filename)
     
     def write_default(self, filename):
@@ -274,8 +274,8 @@ class Config:
         try:
             cfile = open(filename, 'wb')
             self.default_config.write(cfile)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             raise IOError('Could not write default config file', filename)
     
     def load_model(self, str):
@@ -284,11 +284,11 @@ class Config:
         Loads a config from a string str.  Raises an IOError if the string can not be
         read.
         '''
-        buffer = StringIO.StringIO(str)
+        buffer = io.StringIO(str)
         self.model_config = CP.ConfigParser()
         try:
             self.model_config.readfp(buffer)
-        except Exception, e:
+        except Exception as e:
             raise IOError('Could not load model config file')
         
     def _getf(self, default_function, model_function, section, option):
@@ -301,10 +301,10 @@ class Config:
         value = 0
         try:
             value = model_function(section, option)
-        except Exception, e:
+        except Exception as e:
             try:
                 value = default_function(section, option)
-            except Exception, e:
+            except Exception as e:
                 raise OptionError(section, option)
         
         return value
@@ -376,7 +376,7 @@ class Config:
         dumps the model configuration to a string.
         '''
         # Create a buffer - file like object to trick config parser
-        buffer = StringIO.StringIO()
+        buffer = io.StringIO()
         # write
         self.model_config.write(buffer)
         # get the string values
@@ -406,8 +406,8 @@ class IOError(GenericError):
         self.file = file
         
     def __str__(self):
-        text = 'Input/Output error for file:\n' + file +\
-                '\n\n Python error:\n ' + error_message
+        text='Input/Output error for file:\n'+self.file+\
+                '\n\n Python error:\n '+self.error_message
   
 class OptionError(GenericError):
     ''' Error class for not finding an option section pair in the 

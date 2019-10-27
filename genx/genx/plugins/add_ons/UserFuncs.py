@@ -16,7 +16,7 @@ to, for example, dump some internal data into a file or for checking the status
 of some variables.
 '''
 import plugins.add_on_framework as framework
-import types, wx, StringIO, traceback
+import types, wx, io, traceback
 
 class Plugin(framework.Template):
     def __init__(self, parent):
@@ -39,7 +39,7 @@ class Plugin(framework.Template):
         # input parameters
         user_funcs = [f.__name__ for f in funcs if\
                         f.__module__ == 'genx_script_module'\
-                        and f.func_code.co_argcount == 0]
+                        and f.__code__.co_argcount == 0]
         # Remove all the previous functions
         self.clear_menu()
         # Lets add our user functions to our custo menu
@@ -70,10 +70,10 @@ class Plugin(framework.Template):
         # Now try to evaluate the function
         self.StatusMessage('Trying to evaluate %s'%fname)
         try:
-            exec '%s()'%fname in model.script_module.__dict__
-        except Exception, e:
+            exec('%s()'%fname, model.script_module.__dict__)
+        except Exception as e:
             # abit of traceback
-            outp = StringIO.StringIO()
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             tb_string = outp.getvalue()
             outp.close()

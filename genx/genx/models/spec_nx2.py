@@ -9,11 +9,11 @@ r"""
 This model implements a Sample-Stack-Layer model for calculating x-ray and neutron reflectivity.
 """
 
-from lib import stratified_base
-from lib.parameters import Float, Complex, Enum
-from lib.materials import Material
+from .lib import stratified_base
+from .lib.parameters import Float, Complex, Enum
+from .lib.materials import Material
 
-from lib import paratt
+from .lib import paratt
 
 import numpy as np
 

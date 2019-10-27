@@ -95,7 +95,7 @@ def AmpElfield2(kx,k,n,z):
     X=0*ones(kx.shape)
     for i in range(len(n)-2,-1,-1):
         X=exp(-2j*kz[i]*z[i])*(r[i]+X*exp(2j*kz[i+1]*z[i]))/(1+r[i]*X*exp(2j*kz[i+1]*z[i]))
-        print i
+        print(i)
     # X=reflected amplitude...
     r=(kz[1:]-kz[:-1])/(kz[:-1]+kz[1:])
     t=1+r
@@ -109,7 +109,7 @@ def AmpElfield2(kx,k,n,z):
     T=array(T)
     return (T,R,kz)
 
-from xrmr import dot2, inv2
+from .xrmr import dot2, inv2
 
 def AmpElfield_test(th, lam, n, d, dz = 0.1):
     ''' Added 20110317 to see if I can do calcs of the fields inside a multilayer '''
@@ -143,13 +143,13 @@ def AmpElfield_test(th, lam, n, d, dz = 0.1):
     Rlay = R0
     Tlay = 1.0
     z = array([0])
-    print 'R0 ',R0.shape
+    print('R0 ',R0.shape)
     E = array(abs(R0 + 1.0))[:, newaxis]*ones((th.shape[0],1))
     #E = array([])
-    print kz.shape
-    print (th.shape[0], 1)
-    print ones((th.shape[0], 1)).shape
-    print E.shape
+    print(kz.shape)
+    print((th.shape[0], 1))
+    print(ones((th.shape[0], 1)).shape)
+    print(E.shape)
     for di, kzi, M, in zip(d[1:], kz[1:], MMcum):
          Mlay = inv2(M)
          Rlay_new = Mlay[0,0]*Tlay + Mlay[0,1]*Rlay
@@ -165,7 +165,7 @@ def AmpElfield_test(th, lam, n, d, dz = 0.1):
     
          
     #print MM.shape
-    print E.shape
+    print(E.shape)
     #E = E.reshape((th.shape[0], z.shape[0]))
     return (T, R, z, E)
 
@@ -179,7 +179,7 @@ if __name__=='__main__':
     theta=arange(0,1+0.001666670,0.005)
     #(E_p,E_m,Qj)=IntElfield(theta,1.54,array([1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1]),array([0,80,20,80,20,80,20]))
     #(E_p,E_m,Qj)=IntElfield(theta,1.540562,array([1-.15E-04/2+0.35E-06j/2,1-.45E-04/2+0.60E-05j/2,1]),array([0,1000]))
-    from paratt import Refl
+    from .paratt import Refl
     #c=Refl(theta,1.54,array([1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1]),array([80,20,80,20,80,20]),0)
     c=Refl(theta,1.54,array([1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1]),array([0,1000,0]),array([0,0,0]))
     #gplt.plot(theta,log10(abs(E_m[-1]/E_p[-1])**2),theta,log10(abs(c**2)))

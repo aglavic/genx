@@ -11,8 +11,9 @@ index: Meaning
 '''
 
 import numpy as np
-from math_utils import *
-from int_lay_xmean import calc_xrmr_Xmean
+from .math_utils import *
+from .int_lay_xmean import calc_xrmr_Xmean
+from functools import reduce
 
 
 # mpy_limit = 1e-9 corresponds to an angle of 89.998 deg.
@@ -314,7 +315,7 @@ def recursion_matrix(X, chi, d, g_0, lamda, u):
     W0rt = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128)
     W0tr = np.zeros((2, 2, g_0.shape[1]), dtype=np.complex128)
 
-    W = reduce(reduce_func, range(Mtt.shape[2]), (W0tt, W0tr, W0rt, W0rr))
+    W = reduce(reduce_func, list(range(Mtt.shape[2])), (W0tt, W0tr, W0rt, W0rr))
     return W
 
 
@@ -447,8 +448,8 @@ if __name__ == '__main__':
     t2 = time.time()
     W = calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0, d*0, d*0)
     t3 = time.time()
-    print "No roughness, simulation time: ", t2-t1, "s"
-    print "Roughness factors, simulation time ", t3-t2, "s"
+    print("No roughness, simulation time: ", t2-t1, "s")
+    print("Roughness factors, simulation time ", t3-t2, "s")
 
     #W = calc_nonres(g_0, l, chi0, d)
     Ias = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(np.abs(W[0,0])**2 + np.abs(W[1,0])**2 + np.abs(W[0,1])**2 + np.abs(W[1,1])**2)

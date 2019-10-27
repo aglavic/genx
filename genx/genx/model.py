@@ -7,18 +7,18 @@ Last changed: 2016 09 20
 '''
 
 # Standard libraries
-import shelve, os, new, zipfile
-import cPickle as pickle
-import pdb, StringIO, traceback
+import shelve, os, types, zipfile
+import pickle as pickle
+import pdb, io, traceback
 import inspect
 
 import numpy as np
 # GenX libraries
-import data
-import parameters
-import fom_funcs
+from . import data
+from . import parameters
+from . import fom_funcs
 
-from models.lib.parameters import NumericParameter, get_parameters
+from .models.lib.parameters import NumericParameter, get_parameters
 
 
 #==============================================================================
@@ -70,27 +70,27 @@ class Model:
         try:
             val = self.config.get('parameters', 'registred classes')
         except:
-            print 'Could not find config for parameters, registered classes'
+            print('Could not find config for parameters, registered classes')
         else:
             self.registred_classes = [s.strip() for s in val.split(';')]
         try:
             val = self.config.get('parameters', 'set func')
         except:
-            print 'Could not find config for parameters, set func'
+            print('Could not find config for parameters, set func')
         else:
             self.set_func = val
 
         try:
             val = self.config.get_boolean('solver', 'ignore fom nan')
         except:
-            print 'Could not find config for solver, ignore fom nan'
+            print('Could not find config for solver, ignore fom nan')
         else:
             self.fom_ignore_nan = val
 
         try:
             val = self.config.get_boolean('solver', 'ignore fom inf')
         except:
-            print 'Could not find config for solver, ignore fom inf'
+            print('Could not find config for solver, ignore fom inf')
         else:
             self.fom_ignore_inf = val
 
@@ -103,29 +103,29 @@ class Model:
         '''
         try:
             loadfile = zipfile.ZipFile(filename, 'r')
-        except StandardError, e:
+        except Exception as e:
             raise IOError('Could not open file.', filename)
         try:
             new_data = pickle.loads(loadfile.read('data'))
             self.data.safe_copy(new_data)
-        except StandardError, e:
-            print 'Data section loading (gx file) error:\n ', e, '\n'
+        except Exception as e:
+            print('Data section loading (gx file) error:\n ', e, '\n')
             raise IOError('Could not locate the data section.', filename)
         try:
             self.script = pickle.loads(loadfile.read('script'))
-        except StandardError, e:
-            print 'Script section loading (gx file) error:\n ', e, '\n'
+        except Exception as e:
+            print('Script section loading (gx file) error:\n ', e, '\n')
             raise IOError('Could not locate the script.', filename)
         
         try:
             new_parameters = pickle.loads(loadfile.read('parameters'))
             self.parameters.safe_copy(new_parameters)
-        except StandardError, e:
-            print 'Script section loading (gx file) error:\n ', e, '\n'
+        except Exception as e:
+            print('Script section loading (gx file) error:\n ', e, '\n')
             raise IOError('Could not locate the parameters section.', filename)
         try:
             self.fom_func = pickle.loads(loadfile.read('fomfunction'))
-        except StandardError:
+        except Exception:
            raise IOError('Could not locate the fomfunction section.', filename)
         
         loadfile.close()
@@ -133,7 +133,7 @@ class Model:
         self.filename = os.path.abspath(filename)
         self.compiled = False
         self.saved = True
-        self.script_module = new.module('genx_script_module')
+        self.script_module = types.ModuleType('genx_script_module')
         self.script_module.__dict__['data'] = self.data
         self.script_module.__dict__['_sim'] = False
         self.compiled = False
@@ -144,26 +144,26 @@ class Model:
         '''
         try:
             savefile = zipfile.ZipFile(filename, 'w')
-        except StandardError, e:
+        except Exception as e:
             raise IOError(str(e), filename)
 
         # Save the data structures to file
         try:
             savefile.writestr('data', pickle.dumps(self.data))
-        except StandardError, e:
+        except Exception as e:
             raise IOError('Error writing data: ' + str(e), filename)
         try:
             savefile.writestr('script', pickle.dumps(self.script))
-        except StandardError,e:
+        except Exception as e:
             raise IOError('Error writing script: ' + str(e), filename)
         self.parameters.model = None
         try:
             savefile.writestr('parameters', pickle.dumps(self.parameters))
-        except StandardError, e:
+        except Exception as e:
            raise IOError('Error writing parameters: ' + str(e), filename)
         try:
             savefile.writestr('fomfunction', pickle.dumps(self.fom_func))
-        except StandardError, e:
+        except Exception as e:
            raise IOError('Error writing fom_func:  ' + str(e), filename)
         
         savefile.close()
@@ -204,17 +204,17 @@ class Model:
         if fom_func_name in fom_funcs.func_names:
             self.set_fom_func(eval('fom_funcs.' + fom_func_name))
         else:
-            print "Can not find fom function name %s"%fom_func_name.value
+            print("Can not find fom function name %s"%fom_func_name.value)
 
         try:
-            print bool(group['fom_ignore_nan'].value)
+            print(bool(group['fom_ignore_nan'].value))
             self.fom_ignore_nan = bool(group['fom_ignore_nan'].value)
-        except StandardError, e:
-            print "Could not load parameter fom_ignore_nan from file"
+        except Exception as e:
+            print("Could not load parameter fom_ignore_nan from file")
         try:
             self.fom_ignore_inf = bool(group['fom_ignore_inf'].value)
-        except StandardError, e:
-            print "Could not load parameter fom_ignore_inf from file"
+        except Exception as e:
+            print("Could not load parameter fom_ignore_inf from file")
         self.create_fom_mask_func()
 
         for kw in kwargs:
@@ -223,7 +223,7 @@ class Model:
 
         self.compiled = False
         self.saved = True
-        self.script_module = new.module('genx_script_module')
+        self.script_module = types.ModuleType('genx_script_module')
         self.script_module.__dict__['data'] = self.data
         self.script_module.__dict__['_sim'] = False
         self.compiled = False
@@ -239,7 +239,7 @@ class Model:
             raise IOError('File must be saved before new information is added', '')
         try:
             savefile = zipfile.ZipFile(self.filename, 'a')
-        except StandardError, e:
+        except Exception as e:
             raise IOError(str(e), self.filename)
         
         # Check so the model data is not overwritten
@@ -248,7 +248,7 @@ class Model:
         
         try:
             savefile.writestr(name, text)
-        except StandardError, e:
+        except Exception as e:
             raise IOError(str(e), self.filename)
         savefile.close()
     
@@ -263,12 +263,12 @@ class Model:
             raise IOError('File must be loaded before additional information is read', '')
         try:
             loadfile = zipfile.ZipFile(self.filename, 'r')
-        except StandardError, e:
+        except Exception as e:
             raise IOError('Could not open the file', self.filename)
         
         try:
             text = loadfile.read(name)
-        except StandardError, e:
+        except Exception as e:
             raise IOError('Could not read the section named: %s' % name, self.filename)
         loadfile.close()
         return text
@@ -278,7 +278,7 @@ class Model:
         Internal method for resetting the module before compilation
         '''
         self.create_fom_mask_func()
-        self.script_module = new.module('genx_script_module')
+        self.script_module = types.ModuleType('genx_script_module')
         #self.script_module = Temp()
         #self.script_module.__dict__ = {}
         # Bind data for preprocessing with the script
@@ -297,9 +297,9 @@ class Model:
         # Testing to see if this works under windows
         self.script = '\n'.join(self.script.splitlines())
         try:
-            exec self.script in self.script_module.__dict__
-        except Exception, e:
-            outp = StringIO.StringIO()
+            exec(self.script, self.script_module.__dict__)
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -372,7 +372,7 @@ class Model:
         #self.fom_dof = fom/((N-p)*1.0)
         try:
             use_dif = self.fom_func.__div_dof__
-        except StandardError:
+        except Exception:
             use_dif = False
         if use_dif:
             fom = fom/((N-p)*1.0)
@@ -403,8 +403,8 @@ class Model:
         self.script_module._sim = True
         try:
             simulated_data = self.script_module.Sim(self.data)
-        except Exception, e:
-            outp = StringIO.StringIO()
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -429,8 +429,8 @@ class Model:
             #self.fom = self.fom_func(simulated_data, self.data)
             fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
             self.fom = fom
-        except Exception, e:
-            outp = StringIO.StringIO()
+        except Exception as e:
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -454,12 +454,12 @@ class Model:
         # Make a function to set the object
         elif isinstance(object, NumericParameter):
             # We have a NumericParameter that should be set
-            exec 'def __tempfunc__(val):\n\t%s.value = val' % str in self.script_module.__dict__
+            exec('def __tempfunc__(val):\n\t%s.value = val' % str, self.script_module.__dict__)
             return self.script_module.__tempfunc__
         else:
             # The function must be created in the module in order to access
             # the different variables
-            exec 'def __tempfunc__(val):\n\t%s = val' % str in self.script_module.__dict__
+            exec('def __tempfunc__(val):\n\t%s = val' % str, self.script_module.__dict__)
             return self.script_module.__tempfunc__
     
     def get_fit_pars(self):
@@ -486,7 +486,7 @@ class Model:
         for func in sfuncs:
             try:
                 funcs.append(self.create_fit_func(func))
-            except Exception, e:
+            except Exception as e:
                 raise ParameterError(func, row_numbers[len(funcs)], str(e),0)
         return (funcs, vals, minvals, maxvals)
     
@@ -513,7 +513,7 @@ class Model:
         for func in sfuncs:
             try:
                 funcs.append(self.create_fit_func(func))
-            except Exception, e:
+            except Exception as e:
                 raise ParameterError(func, len(funcs), str(e),0)
         
         return (funcs, vals)
@@ -534,7 +534,7 @@ class Model:
         for func, val in zip(funcs,vals):
             try:
                 func(val)
-            except Exception, e:
+            except Exception as e:
                 (sfuncs_tmp, vals_tmp) = self.parameters.get_sim_pars()
                 raise ParameterError(sfuncs_tmp[i], i, str(e), 1)
             i += 1
@@ -548,7 +548,7 @@ class Model:
         Reinitilizes the model. Thus, removes all the traces of the
         previous model. 
         '''
-        print "class Model: new_model"
+        print("class Model: new_model")
         self.data = data.DataList()
         self.script = ''
         self.parameters = parameters.Parameters(self)
@@ -617,7 +617,7 @@ class Model:
         '''
         try:
             self.data.export_data_to_files(basename)
-        except data.IOError, e:
+        except data.IOError as e:
             raise IOError(e.error_message, e.file)
             
         
@@ -651,13 +651,13 @@ class Model:
         '''
         try:
             savefile = open(filename, 'w')
-        except Exception, e:
+        except Exception as e:
             raise IOError(e.__str__(), filename)
 
         # Save the string to file
         try:
             savefile.write(save_string)
-        except Exception, e:
+        except Exception as e:
             raise IOError(e.__str__(), filename)
         
         savefile.close()
@@ -669,13 +669,13 @@ class Model:
         '''
         try:
             loadfile = open(filename, 'r')
-        except Exception, e:
+        except Exception as e:
             raise IOError(e.__str__(), filename)
 
         # Read the text from file
         try:
             read_string = loadfile.read()
-        except Exception, e:
+        except Exception as e:
             raise IOError(e.__str__(), filename)
         
         loadfile.close()
@@ -782,7 +782,7 @@ class Model:
         # Check so there are any classes defined before we proceed
         if len(classes) > 0:
             # Get all the objects in the compiled module
-            names = self.script_module.__dict__.keys()
+            names = list(self.script_module.__dict__.keys())
             # Create a tuple of the classes we defined above
             tuple_of_classes = tuple(classes)
             # Creating a dictionary that holds the name of the classes

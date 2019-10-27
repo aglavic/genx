@@ -126,7 +126,7 @@ class Simplex:
             
             # Optionally, print progress information
             if monitor:
-                print 'Iteration = %d   Best = %f   Worst = %f' % (iter,self.errors[self.lowest],self.errors[self.highest])
+                print('Iteration = %d   Best = %f   Worst = %f' % (iter,self.errors[self.lowest],self.errors[self.highest]))
                 
             if T <= epsilon:   # We converged!  Break out of loop!
                 break;
@@ -241,9 +241,9 @@ def objective_function(args):
 def main():
     s = Simplex(objective_function, [1, 1, 1], [2, 4, 6])
     values, err, iter = s.minimize(maxiters = 60, monitor = 0)
-    print 'args = ', values
-    print 'error = ', err
-    print 'iterations = ', iter
+    print('args = ', values)
+    print('error = ', err)
+    print('iterations = ', iter)
 
 if __name__ == '__main__':
     main()

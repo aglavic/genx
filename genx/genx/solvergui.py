@@ -5,12 +5,12 @@ as some input from dialog boxes.
 Programmer Matts Bjorck
 Last Changed 2009 05 12
 '''
-import wx, StringIO, traceback
+import wx, io, traceback
 import wx.lib.newevent
 from wx.lib.masked import NumCtrl
 
-import diffev, fom_funcs
-import filehandling as io
+from . import diffev, fom_funcs
+from . import filehandling as io
 import numpy as np
 
 #==============================================================================
@@ -84,7 +84,7 @@ class SolverController:
             fom_funcs.func_names.append(fom_func_name)
             exectext = 'fom_funcs.' + fom_func_name +\
                         ' = self.parent.model.fom_func'
-            exec exectext in locals(), globals()
+            exec(exectext, locals(), globals())
         
         dlg = SettingsDialog(frame, self.optimizer, self, fom_func_name)
         
@@ -129,8 +129,8 @@ class SolverController:
             self.parent.plugin_control.OnFittingUpdate(evt)
             #wx.CallAfter(self.parent.plugin_control.OnFittingUpdate, evt)
             #pass
-        except Exception, e:
-            print 'Error in plot output:\n' + repr(e)
+        except Exception as e:
+            print('Error in plot output:\n' + repr(e))
             
     def ParameterOutput(self, solver):
         '''ParameterOutput(self, solver) --> none
@@ -176,7 +176,7 @@ class SolverController:
                     desc = 'Parameter Update', update_errors = False,\
                     permanent_change = False)
             except:
-                print 'Could not create data for paraemters'
+                print('Could not create data for paraemters')
             else:
                 wx.PostEvent(self.parent, evt)
         
@@ -251,7 +251,7 @@ class SolverController:
                 # Chi2 
                 try:
                     (error_low, error_high) = self.optimizer.calc_error_bar(index, self.fom_error_bars_level)
-                except diffev.ErrorBarError, e:
+                except diffev.ErrorBarError as e:
                     ShowWarningDialog(self.parent, str(e))
                     break
                 error_str = '(%.3e, %.3e)'%(error_low, error_high)
@@ -309,9 +309,9 @@ class SolverController:
                 parfunc(par_val)
                 fom_vals = np.append(fom_vals, model.evaluate_fit_func())
                 dlg.Update(len(fom_vals))
-        except Exception, e:
+        except Exception as e:
             dlg.Destroy()
-            outp = StringIO.StringIO()
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()

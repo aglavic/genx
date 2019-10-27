@@ -12,6 +12,7 @@ This module provide functions to calculate the reflectivity from gratings using 
 
 import numpy as np
 from scipy.special import j1
+from functools import reduce
 
 _ctype = np.complex128
 
@@ -260,7 +261,7 @@ def ReflQ_ref(Q, lamda, n, d):
     p = np.exp(1.0j*d[:,np.newaxis]*Qj[1:-1]) # Ignoring the top and bottom layer for the calc.
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp = np.array(map(lambda x,y:[x,y],rp[1:],p))
+    rpp = np.array(list(map(lambda x,y:[x,y],rp[1:],p)))
     # Paratt's recursion formula
 
     def formula(rtot,rint):
@@ -298,8 +299,8 @@ if __name__ == '__main__':
         for i in range(n_att):
             E_T, E_R, k_j = calc_fields(Q/2.0, 1.54, (2*np.pi/1.54)**2*(1 - n**2), d)
         t3 = time.clock()
-        print 'Paratt: ', (t2 - t1) / n_att
-        print 'Abeles: ', (t3 - t2) / n_att
+        print('Paratt: ', (t2 - t1) / n_att)
+        print('Abeles: ', (t3 - t2) / n_att)
         R_try = np.abs(E_R[:, -1])**2
         semilogy(theta, R_ref)
         semilogy(theta, R_try, '.')
@@ -329,7 +330,7 @@ if __name__ == '__main__':
 
         k_in, k_out = calc_kin_kout(h, qz_max, qz_step, a, lamda)
         v_mean = vf_func([0, 0, 0]) / a / b
-        print v_mean
+        print(v_mean)
         vf = vf_func(k_out - k_in).T
         R = coherent_refl(k_in, k_out, lamda, vf, v_mean, d, a * b)
         R_kin = coherent_refl(k_in, k_out, lamda, vf, v_mean, d, a * b, kin=True)
