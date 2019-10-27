@@ -78,7 +78,7 @@ def save_hgx(fname, model, optimizer, config, group='current'):
     except OptionError as e:
         clear_evals = True
     optimizer.write_h5group(g.create_group('optimizer'), clear_evals=True)
-    g['config'] = config.model_dump()
+    g['config'] = config.model_dump().encode('utf-8')
     f.close()
 
 def load_hgx(fname, model, optimizer, config, group='current'):
@@ -95,7 +95,7 @@ def load_hgx(fname, model, optimizer, config, group='current'):
     g = f[group]
     model.read_h5group(g)
     optimizer.read_h5group(g['optimizer'])
-    config.load_model(str(g['config'].value))
+    config.load_model(g['config'].value.decode('utf-8'))
     f.close()
 
 # Not yet used ...

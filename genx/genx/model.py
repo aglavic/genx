@@ -182,7 +182,7 @@ class Model:
         self.data.write_h5group(group.create_group('data'))
         group['script'] = self.script
         self.parameters.write_h5group(group.create_group('parameters'))
-        group['fomfunction'] = self.fom_func.__name__
+        group['fomfunction'] = self.fom_func.__name__.encode('utf-8')
         group['fom_ignore_nan'] = self.fom_ignore_nan
         group['fom_ignore_inf'] = self.fom_ignore_inf
 
@@ -198,9 +198,9 @@ class Model:
         :return:
         """
         self.data.read_h5group(group['data'])
-        self.script = str(group['script'].value)
+        self.script = group['script'].value
         self.parameters.read_h5group(group['parameters'])
-        fom_func_name = str(group['fomfunction'].value)
+        fom_func_name = group['fomfunction'].value.decode('utf-8')
         if fom_func_name in fom_funcs.func_names:
             self.set_fom_func(eval('fom_funcs.' + fom_func_name))
         else:

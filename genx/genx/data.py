@@ -12,6 +12,13 @@ import time
 #==============================================================================
 #BEGIN: Class DataSet
 
+def to_str(item):
+    # convert to string but decode byte str
+    if type(item) is bytes:
+        return item.decode('utf-8')
+    else:
+        return str(item)
+
 class DataSet:
     ''' Class to store each dataset to fit. To fit several items instead the.
         Contains x,y,error values and xraw,yraw,errorraw for the data.
@@ -19,11 +26,11 @@ class DataSet:
     # Parameters used for saving the object state
     export_parameters = {'x':array, 'y':array, 'y_sim':array, 'y_fom':array, 'error':array, 'x_raw':array,
                          'y_raw':array, 'error_raw':array, 'extra_data':array,
-                         'extra_data_raw':array, 'extra_commands':str, 'x_command':str, 'y_command':str,
-                         'error_command':str, 'show':bool, 'name':str, 'use':bool, 'use_error':bool, 'cols':tuple,
-                         'data_color':tuple, 'sim_color':tuple, 'data_symbol':str,
-                         'data_symbolsize':int, 'data_linetype':str, 'data_linethickness':int, 'sim_symbol':str,
-                         'sim_linetype':str, 'sim_linethickness':int,
+                         'extra_data_raw':array, 'extra_commands':to_str, 'x_command':to_str, 'y_command':to_str,
+                         'error_command':to_str, 'show':bool, 'name':to_str, 'use':bool, 'use_error':bool, 'cols':tuple,
+                         'data_color':tuple, 'sim_color':tuple, 'data_symbol':to_str,
+                         'data_symbolsize':int, 'data_linetype':to_str, 'data_linethickness':int, 'sim_symbol':to_str,
+                         'sim_linetype':to_str, 'sim_linethickness':int,
                          }
 
     def __init__(self, name='', copy_from=None):
