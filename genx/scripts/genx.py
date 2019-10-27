@@ -4,7 +4,18 @@
 import sys, os, appdirs, argparse
 import os.path
 
-import version, model
+script_path=os.path.split(os.path.abspath(__file__))[0]
+for pi in sys.path:
+    if os.path.abspath(pi)==script_path:
+        sys.path.remove(pi)
+
+try:
+    from genx import version, model
+except ImportError:
+    genx_path=os.path.split(script_path)[0]
+    sys.path.insert(0, genx_path)
+    print(genx_path)
+    from genx import version, model
 
 def start_interactive(args):
     ''' Start genx in interactive mode (with the gui)
@@ -12,24 +23,18 @@ def start_interactive(args):
     :param args:
     :return:
     '''
-    try:
-        import genx_gui
-    except ImportError:
-        import genx
-        genx_path = os.path.split(os.path.abspath(genx.__file__))[0]
-        sys.path.insert(0, genx_path)
-        import genx_gui
+    from genx import genx_gui
     if args.infile.endswith('.gx') or args.infile.endswith('.hgx'):
         app = genx_gui.MyApp(False, 0)
         # Create the window
         app.Yield()
         frame=app.TopWindow
         # load a model on start
-        import filehandling as io
+        from genx import filehandling as io
         import StringIO, traceback
-        from event_handlers import ShowModelErrorDialog, ShowErrorDialog, get_pages, \
+        from genx.event_handlers import ShowModelErrorDialog, ShowErrorDialog, get_pages, \
                                       _post_new_model_event, set_title
-        import model as modellib
+        from genx import model as modellib
         path = os.path.abspath(args.infile)
         try:
             io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
@@ -103,9 +108,9 @@ def calc_errorbars(config, mod, opt):
 def create_simulated_data(args):
     """Function to create simulated data from the model and add it to data.y"""
 
-    import model
-    import diffev
-    import filehandling as io
+    from genx import model
+    from genx import diffev
+    from genx import filehandling as io
 
     from scipy.stats import poisson
 
@@ -135,9 +140,9 @@ def create_simulated_data(args):
 def extract_parameters(args):
     """Extracts the parameters to outfile"""
 
-    import model
-    import diffev
-    import filehandling as io
+    from genx import model
+    from genx import diffev
+    from genx import filehandling as io
 
     # Open the genx file
     mod = model.Model()
@@ -168,9 +173,9 @@ def extract_parameters(args):
 
 def modify_file(args):
     """Modify a GenX file given command line arguments"""
-    import model
-    import diffev
-    import filehandling as io
+    from genx import model
+    from genx import diffev
+    from genx import filehandling as io
 
     # Open the genx file
     mod = model.Model()
@@ -211,9 +216,9 @@ def start_fitting(args, rank=0):
     :return:
     """
     import time
-    import model
-    import diffev
-    import filehandling as io
+    from genx import model
+    from genx import diffev
+    from genx import filehandling as io
 
     mod = model.Model()
     config = io.Config()
