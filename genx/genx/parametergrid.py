@@ -24,14 +24,14 @@ from . import filehandling
 
 #=============================================================================
 #class ParameterDataTable
-class ParameterDataTable(gridlib.PyGridTableBase):
+class ParameterDataTable(gridlib.GridTableBase):
     '''
     Class for the datatable which is used by the grid. 
     Mostly a compatability layer between the Parameters class
     and the grid.
     '''
     def __init__(self, parent):
-        gridlib.PyGridTableBase.__init__(self)
+        gridlib.GridTableBase.__init__(self)
         self.parent = parent
         self.pars = parameters.Parameters()
 
@@ -43,7 +43,7 @@ class ParameterDataTable(gridlib.PyGridTableBase):
                           gridlib.GRID_VALUE_STRING,
                           ]
 
-    # required methods for the wxPyGridTableBase interface
+    # required methods for the wxGridTableBase interface
     
     def GetNumberRows(self):
         return self.pars.get_len_rows()
@@ -274,10 +274,10 @@ class ParameterDataTable(gridlib.PyGridTableBase):
 
 #Class ParameterDataTable ends here
 #------------------------------------------------------------------------------
-class SliderCellEditor(gridlib.PyGridCellEditor):
+class SliderCellEditor(gridlib.GridCellEditor):
 
     def __init__(self, value=0.0, min_value=0.0, max_value=100.0):
-        gridlib.PyGridCellEditor.__init__(self)
+        gridlib.GridCellEditor.__init__(self)
         self.value = value
         self.startValue = value
         self.min_value = min_value
@@ -392,11 +392,11 @@ class SliderCellEditor(gridlib.PyGridCellEditor):
         super(SliderCellEditor, self).Destroy()
 
 #---------------------------------------------------------------------------
-class SliderCellRenderer(gridlib.PyGridCellRenderer):
+class SliderCellRenderer(gridlib.GridCellRenderer):
     """ Renderer for the Slider Editor. Yields the same representation as the Editor.
     """
     def __init__(self, value=0, max_value=100.0, min_value=100):
-        gridlib.PyGridCellRenderer.__init__(self)
+        gridlib.GridCellRenderer.__init__(self)
         self.slider_drawer = ctrls.SliderDrawer(value, max=max_value, min=min_value)
         self.slider_drawer.ShowGuide(False)
 
@@ -430,10 +430,10 @@ class SliderCellRenderer(gridlib.PyGridCellRenderer):
                                   min=self.slider_drawer.min_value)
 
 
-class ValueLimitCellEditor(gridlib.PyGridCellEditor):
+class ValueLimitCellEditor(gridlib.GridCellEditor):
     """Editor for the parameter values with a spin control"""
     def __init__(self, value=0.0, min_value=0.0, max_value=100.0, ticks=20, digits=5):
-        gridlib.PyGridCellEditor.__init__(self)
+        gridlib.GridCellEditor.__init__(self)
         self.value = value
         self.startValue = value
         self.min_value = min_value
@@ -566,11 +566,11 @@ class ValueLimitCellEditor(gridlib.PyGridCellEditor):
         return ValueLimitCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value)
 
 
-class ValueLimitCellRenderer(gridlib.PyGridCellRenderer):
+class ValueLimitCellRenderer(gridlib.GridCellRenderer):
     """ Renderer for the Parameter Values. Colours the Cell if the value is out of bounds.
     """
     def __init__(self, value=0, max_value=100.0, min_value=100):
-        gridlib.PyGridCellRenderer.__init__(self)
+        gridlib.GridCellRenderer.__init__(self)
 
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
         if grid.GetCellValue(row,col) != '':
@@ -616,10 +616,10 @@ class ValueLimitCellRenderer(gridlib.PyGridCellRenderer):
         return SliderCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
                                   min=self.slider_drawer.min_value)
 
-class ValueCellEditor(gridlib.PyGridCellEditor):
+class ValueCellEditor(gridlib.GridCellEditor):
     """Editor for the parameter values with a spin control"""
     def __init__(self, value=0.0, digits=5):
-        gridlib.PyGridCellEditor.__init__(self)
+        gridlib.GridCellEditor.__init__(self)
         self.value = value
         self.startValue = value
         #self.min_value = min_value
@@ -737,11 +737,11 @@ class ValueCellEditor(gridlib.PyGridCellEditor):
         return ValueCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value)
 
 
-class ValueCellRenderer(gridlib.PyGridCellRenderer):
+class ValueCellRenderer(gridlib.GridCellRenderer):
     """ Renderer for the Parameter Values. Colours the Cell if the value is out of bounds.
     """
     def __init__(self, value=0, max_value=100.0, min_value=100):
-        gridlib.PyGridCellRenderer.__init__(self)
+        gridlib.GridCellRenderer.__init__(self)
 
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
         if grid.GetCellValue(row,col) != '':
@@ -930,40 +930,40 @@ class ParameterGrid(wx.Panel):
         #self.toolbar.SetBackgroundColour('BLUE')
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Add a new row', bitmap=img.getaddBitmap(), shortHelp='Insert new row')
+        self.toolbar.AddTool(newid, label='Add a new row', bitmap=img.getaddBitmap(), shortHelp='Insert new row')
         self.Bind(wx.EVT_TOOL, self.eh_add_row, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Delete row', bitmap=img.getdeleteBitmap(), shortHelp='Delete row')
+        self.toolbar.AddTool(newid, label='Delete row', bitmap=img.getdeleteBitmap(), shortHelp='Delete row')
         self.Bind(wx.EVT_TOOL, self.eh_delete_row, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Move row up', bitmap=img.getmove_upBitmap(), shortHelp='Move row up')
+        self.toolbar.AddTool(newid, label='Move row up', bitmap=img.getmove_upBitmap(), shortHelp='Move row up')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_up, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Move row down', bitmap=img.getmove_downBitmap(),
+        self.toolbar.AddTool(newid, label='Move row down', bitmap=img.getmove_downBitmap(),
                                   shortHelp='Move row down')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Sort parameters', bitmap=img.sort.getBitmap(),
+        self.toolbar.AddTool(newid, label='Sort parameters', bitmap=img.sort.GetBitmap(),
                                   shortHelp='Sort the rows by class, object and name')
         self.Bind(wx.EVT_TOOL, self.eh_sort, id=newid)
 
         newid = wx.NewId()
         self.slider_tool_id = newid
-        self.slider_tool = self.toolbar.AddCheckTool(newid, label='Show sliders', bitmap1=img.slider.getBitmap(),
+        self.slider_tool = self.toolbar.AddCheckTool(newid, label='Show sliders', bitmap1=img.slider.GetBitmap(),
                                                           shortHelp='Show the parameter values as sliders')
         self.Bind(wx.EVT_TOOL, self.eh_slider_toggle, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Project FOM evals', bitmap=img.par_proj.getBitmap(),
+        self.toolbar.AddTool(newid, label='Project FOM evals', bitmap=img.par_proj.GetBitmap(),
                                   shortHelp='Project FOM on parameter axis')
         self.Bind(wx.EVT_TOOL, self.eh_project_fom, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Scan parameter', bitmap=img.par_scan.getBitmap(), shortHelp='Scan FOM')
+        self.toolbar.AddTool(newid, label='Scan parameter', bitmap=img.par_scan.GetBitmap(), shortHelp='Scan FOM')
         self.Bind(wx.EVT_TOOL, self.eh_scan_fom, id=newid)
 
 

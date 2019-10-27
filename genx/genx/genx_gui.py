@@ -492,7 +492,7 @@ class MainFrame(wx.Frame):
         wx.CallAfter(self.LayoutSplitters)
 
     def LayoutSplitters(self):
-         size = self.GetSizeTuple()
+         size = self.GetSize()
          self.ver_splitter.SetSashPosition(size[0]*1./4.)
          self.hor_splitter.SetSashPosition(size[1]*5.0/10.)
          # Gravity sets how much the upper/left window is resized default 0

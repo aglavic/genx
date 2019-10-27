@@ -71,7 +71,7 @@ class VTKview(wxVTKRenderWindow):
 
         for i in range(len(button_names)):
             new_id = wx.NewId()
-            toolbar.AddLabelTool(new_id, label=button_names[i], bitmap=button_images[i].getBitmap(),
+            toolbar.AddTool(new_id, label=button_names[i], bitmap=button_images[i].GetBitmap(),
                                  shortHelp=tooltips[i])
             parent.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
 
@@ -85,8 +85,8 @@ class VTKview(wxVTKRenderWindow):
         for i in range(len(button_names)):
             new_id = wx.NewId()
             self.cursor_ids.append(new_id)
-            #print button_images[i].getBitmap()
-            toolbar.AddCheckLabelTool(new_id, button_names[i], button_images[i].getBitmap(),
+            #print button_images[i].GetBitmap()
+            toolbar.AddCheckLabelTool(new_id, button_names[i], button_images[i].GetBitmap(),
                                  shortHelp=tooltips[i])
             parent.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
 

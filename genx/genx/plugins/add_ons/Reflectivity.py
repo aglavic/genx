@@ -449,41 +449,41 @@ class SamplePanel(wx.Panel):
     def do_toolbar(self):
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, 'Insert Layer', bitmap=images.insert_layer.getBitmap(),
+        self.toolbar.AddTool(newid, 'Insert Layer', bitmap=images.insert_layer.GetBitmap(),
                                   shortHelp='Insert a Layer')
         self.Bind(wx.EVT_TOOL, self.InsertLay, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, 'Insert Stack', bitmap=images.insert_stack.getBitmap(),
+        self.toolbar.AddTool(newid, 'Insert Stack', bitmap=images.insert_stack.GetBitmap(),
                                   shortHelp='Insert a Stack')
         self.Bind(wx.EVT_TOOL, self.InsertStack, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, 'Delete', bitmap=images.delete.getBitmap(), shortHelp='Delete item')
+        self.toolbar.AddTool(newid, 'Delete', bitmap=images.delete.GetBitmap(), shortHelp='Delete item')
         self.Bind(wx.EVT_TOOL, self.DeleteSample, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, 'Rename', bitmap=images.change_name.getBitmap(),
+        self.toolbar.AddTool(newid, 'Rename', bitmap=images.change_name.GetBitmap(),
                                   shortHelp='Rename')
         self.Bind(wx.EVT_TOOL, self.ChangeName, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, 'Move up', bitmap=images.move_up.getBitmap(),
+        self.toolbar.AddTool(newid, 'Move up', bitmap=images.move_up.GetBitmap(),
                                   shortHelp='Move item up')
         self.Bind(wx.EVT_TOOL, self.MoveUp, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, 'Move down', bitmap=images.move_down.getBitmap(),
+        self.toolbar.AddTool(newid, 'Move down', bitmap=images.move_down.GetBitmap(),
                                   shortHelp='Move item down')
         self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, 'Edit Sample', bitmap=images.sample.getBitmap(),
+        self.toolbar.AddTool(newid, 'Edit Sample', bitmap=images.sample.GetBitmap(),
                                   shortHelp='Edit Sample parameters')
         self.Bind(wx.EVT_TOOL, self.EditSampleParameters, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, 'Edit Instrument', bitmap=images.instrument.getBitmap(),
+        self.toolbar.AddTool(newid, 'Edit Instrument', bitmap=images.instrument.GetBitmap(),
                                   shortHelp='Edit Instruments')
         self.Bind(wx.EVT_TOOL, self.EditInstrument, id=newid)
 
@@ -1023,7 +1023,7 @@ class DataParameterPanel(wx.Panel):
 
         for i in range(len(button_names)):
             newid = wx.NewId()
-            self.toolbar.AddLabelTool(newid, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
+            self.toolbar.AddTool(newid, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
             self.Bind(wx.EVT_TOOL, callbacks[i], id=newid)
 
 

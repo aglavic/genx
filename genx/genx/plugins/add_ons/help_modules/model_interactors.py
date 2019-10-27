@@ -1196,7 +1196,7 @@ class SimulationListCtrl(wx.Panel):
 
         for i in range(len(button_names)):
             newid = wx.NewId()
-            self.toolbar.AddLabelTool(newid, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
+            self.toolbar.AddTool(newid, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
             self.Bind(wx.EVT_TOOL, callbacks[i], id=newid)
 
 
@@ -1377,7 +1377,7 @@ class EditList(wx.Panel):
 
         for i in range(len(button_names)):
             new_id = wx.NewId()
-            toolbar.AddLabelTool(new_id, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
+            toolbar.AddTool(new_id, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
             self.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
 
         return toolbar
@@ -1518,11 +1518,11 @@ class DomainListCtrl(wx.Panel):
         button_names = ['Insert Slab', 'Insert Domain', 'Delete', 'Move Up', 'Move Down',
                         'Copy', 'Cut', 'Paste', 'Paste as New',
                         'Domain Editor', 'Sample Editor']
-        button_images = [sxrd_images.insert_layer.getBitmap(), sxrd_images.insert_domain.getBitmap(),
+        button_images = [sxrd_images.insert_layer.GetBitmap(), sxrd_images.insert_domain.GetBitmap(),
                          icons.getdeleteBitmap(), icons.getmove_upBitmap(),
                          icons.getmove_downBitmap(),
-                         sxrd_images.copy.getBitmap(), sxrd_images.cut.getBitmap(), sxrd_images.paste.getBitmap(),
-                         sxrd_images.paste_new.getBitmap(),
+                         sxrd_images.copy.GetBitmap(), sxrd_images.cut.GetBitmap(), sxrd_images.paste.GetBitmap(),
+                         sxrd_images.paste_new.GetBitmap(),
                          sxrd_images.getdomainBitmap(), sxrd_images.getsampleBitmap()]
         callbacks = [self.OnNewSlab, self.OnNewDomain, self.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown,
                      self.listbox.OnCopy, self.listbox.OnCut, self.listbox.OnPaste, self.listbox.OnPasteClone,
@@ -1532,7 +1532,7 @@ class DomainListCtrl(wx.Panel):
 
         for i in range(len(button_names)):
             new_id = wx.NewId()
-            toolbar.AddLabelTool(new_id, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
+            toolbar.AddTool(new_id, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
             self.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
 
         return toolbar

@@ -78,7 +78,7 @@ class Plugin(framework.Template):
         , img.getmove_downBitmap(), size=size, style=wx.NO_BORDER)
         self.bitmap_button_apply.SetToolTipString('Apply selected parameter set to the model')
         self.bitmap_button_plot=wx.BitmapButton(self.tool_panel,-1
-        , img.plotting.getBitmap(), size=size, style=wx.NO_BORDER)
+        , img.plotting.GetBitmap(), size=size, style=wx.NO_BORDER)
         self.bitmap_button_plot.SetToolTipString('Toggle plotting of the selected parameter set')
 
 

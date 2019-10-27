@@ -333,7 +333,7 @@ class VirtualDataList(wx.ListCtrl):
         
         Creates an bmp icon for decorating the list
         '''
-        bmp = wx.EmptyBitmap(16, 16)
+        bmp = wx.Bitmap(24, 16, 16)
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
         dc.SetBackground(wx.Brush(color_fit))
@@ -798,43 +798,43 @@ class DataListControl(wx.Panel):
         
     def do_toolbar(self):
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Add data set', bitmap=img.add.getBitmap(),
+        self.toolbar.AddTool(newid, label='Add data set', bitmap=img.add.GetBitmap(),
                                   shortHelp='Insert empty data set')
         self.Bind(wx.EVT_TOOL, self.eh_tb_add, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Import data set', bitmap=img.open_small.getBitmap(),
+        self.toolbar.AddTool(newid, label='Import data set', bitmap=img.open_small.GetBitmap(),
                                   shortHelp='Import data into selected data set')
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Add simulation data set', bitmap=img.add_simulation.getBitmap(),
+        self.toolbar.AddTool(newid, label='Add simulation data set', bitmap=img.add_simulation.GetBitmap(),
                                   shortHelp='Insert a data set for simulation')
         self.Bind(wx.EVT_TOOL, self.eh_tb_add_simulation, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Move up', bitmap=img.move_up.getBitmap(),
+        self.toolbar.AddTool(newid, label='Move up', bitmap=img.move_up.GetBitmap(),
                                   shortHelp='Move selected data set(s) up')
         self.Bind(wx.EVT_TOOL, self.eh_tb_move_up, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Move_down', bitmap=img.move_down.getBitmap(),
+        self.toolbar.AddTool(newid, label='Move_down', bitmap=img.move_down.GetBitmap(),
                                   shortHelp='Move selected data set(s) down')
         self.Bind(wx.EVT_TOOL, self.eh_tb_move_down, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Delete data set', bitmap=img.delete.getBitmap(),
+        self.toolbar.AddTool(newid, label='Delete data set', bitmap=img.delete.GetBitmap(),
                                   shortHelp='Delete selected data set')
         self.Bind(wx.EVT_TOOL, self.eh_tb_delete, id=newid)
 
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Plot settings', bitmap=img.plotting.getBitmap(),
+        self.toolbar.AddTool(newid, label='Plot settings', bitmap=img.plotting.GetBitmap(),
                                   shortHelp='Plot settings')
         self.Bind(wx.EVT_TOOL, self.eh_tb_plotting, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddLabelTool(newid, label='Calculate', bitmap=img.calc.getBitmap(),
+        self.toolbar.AddTool(newid, label='Calculate', bitmap=img.calc.GetBitmap(),
                                   shortHelp='Calculation on selected data set(s)')
         self.Bind(wx.EVT_TOOL, self.eh_tb_calc, id=newid)
 

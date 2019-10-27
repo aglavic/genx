@@ -261,9 +261,9 @@ class PluginController:
         
         # make the menus
         self.load_menu = wx.Menu()
-        menu.InsertMenu(0, -1, 'Load', self.load_menu, 'Load a plugin')
+        menu.Insert(0, -1, 'Load', self.load_menu, 'Load a plugin')
         self.unload_menu = wx.Menu()
-        menu.InsertMenu(1, -1, 'Unload', self.unload_menu, 'Unload a plugin')
+        menu.Insert(1, -1, 'Unload', self.unload_menu, 'Unload a plugin')
         
         menu.Append(-1, 'Update module list')
         

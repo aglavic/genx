@@ -76,7 +76,7 @@ class PlotPanel(wx.Panel):
         self.canvas.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDblClick)
         self.canvas.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         
-        cursor = wx.StockCursor(wx.CURSOR_CROSS)
+        cursor = wx.Cursor(wx.CURSOR_CROSS)
         self.canvas.SetCursor(cursor)
         self.old_scale_state = True
         self.ax = None
@@ -85,7 +85,7 @@ class PlotPanel(wx.Panel):
         self.fig_printer = FigurePrinter(self)
 
         # Create the drawing bitmap
-        self.bitmap =wx.EmptyBitmap(1, 1)
+        self.bitmap =wx.Bitmap(24, 1, 1)
 #        DEBUG_MSG("__init__() - bitmap w:%d h:%d" % (w,h), 2, self)
         self._isDrawn = False
     
@@ -200,7 +200,7 @@ class PlotPanel(wx.Panel):
         if active:
             #self.zoom_sel.ignore = lambda x: False
             self.zoom = True
-            cursor = wx.StockCursor(wx.CURSOR_MAGNIFIER)
+            cursor = wx.Cursor(wx.CURSOR_MAGNIFIER)
             self.canvas.SetCursor(cursor)
             if self.callback_window:
                 evt = state_changed(zoomstate=True, yscale=self.GetYScale(), autoscale=self.autoscale,
@@ -214,7 +214,7 @@ class PlotPanel(wx.Panel):
         else:
             #self.zoom_sel.ignore = lambda x: True
             self.zoom = False
-            cursor = wx.StockCursor(wx.CURSOR_CROSS)
+            cursor = wx.Cursor(wx.CURSOR_CROSS)
             self.canvas.SetCursor(cursor)
             if self.callback_window:
                 evt = state_changed(zoomstate=False, yscale=self.GetYScale(), autoscale=self.autoscale,
