@@ -172,15 +172,15 @@ def on_new_model(frame, event):
     # Let the solvergui do its loading and updating:
     frame.solver_control.ModelLoaded()
     # Lets update the mb_use_toggle_show Menu item
-    frame.mb_use_toggle_show.Check(frame.config.get_boolean('data handling', 
-                                                              'toggle show'))
+    frame.main_frame_menubar.mb_use_toggle_show.Check(
+        frame.config.get_boolean('data handling', 'toggle show'))
     try:
         val = frame.config.get_boolean('parameter grid', 'auto sim')
     except io.OptionError:
         print('Could not locate option parameters.auto sim')
-        frame.mb_fit_autosim.Check(True)
+        frame.main_frame_menubar.mb_fit_autosim.Check(True)
     else:
-       frame.mb_fit_autosim.Check(val)
+       frame.main_frame_menubar.mb_fit_autosim.Check(val)
 
     # Let other event handlers recieve the event as well
     event.Skip()
@@ -845,16 +845,16 @@ def plot_settings_changed(frame, event):
      - change the toggle for the zoom icon and change the menu items.
     '''
     frame.main_frame_toolbar.ToggleTool(10009, event.zoomstate)
-    frame.mb_view_zoom.Check(event.zoomstate)
+    frame.main_frame_menubar.mb_view_zoom.Check(event.zoomstate)
     if event.yscale == 'log':
-        frame.mb_view_yscale_log.Check(True)
+        frame.main_frame_menubar.mb_view_yscale_log.Check(True)
     elif event.yscale == 'linear':
-        frame.mb_view_yscale_lin.Check(True)
+        frame.main_frame_menubar.mb_view_yscale_lin.Check(True)
     if event.xscale == 'log':
-        frame.mb_view_xscale_log.Check(True)
+        frame.main_frame_menubar.mb_view_xscale_log.Check(True)
     elif event.xscale == 'linear':
-        frame.mb_view_xscale_lin.Check(True)
-    frame.mb_view_autoscale.Check(event.autoscale)
+        frame.main_frame_menubar.mb_view_xscale_lin.Check(True)
+    frame.main_frame_menubar.mb_view_autoscale.Check(event.autoscale)
     
 def plot_page_changed(frame, event):
     '''plot_page_changed(frame, event) --> None

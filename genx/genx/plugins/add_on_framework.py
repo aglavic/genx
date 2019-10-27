@@ -277,7 +277,7 @@ class PluginController:
         '''
         # Remove all the items in load_menu
         items = self.load_menu.GetMenuItems()
-        [self.load_menu.DeleteItem(item) for item in items]
+        [self.load_menu.Delete(item) for item in items]
         
         # Get the new list of plugin modules
         modlist = self.plugin_handler.get_plugins()
@@ -384,7 +384,7 @@ class PluginController:
             plugin + '\nPython traceback below:\n\n' + tbtext)
         else:
             # Remove the item from the list
-            self.unload_menu.DeleteItem(menuitem)
+            self.unload_menu.Delete(menuitem)
             # Update the available plugins
             self.update_plugins()
             
@@ -413,7 +413,7 @@ class PluginController:
         items = self.unload_menu.GetMenuItems()
         for item in items:
             # Remove the item from the list
-            self.unload_menu.DeleteItem(item)
+            self.unload_menu.Delete(item)
 
         for name in loaded_plugins:
             #self.plugin_handler.loaded_plugins[name].OnOpenModel(event)

@@ -1870,19 +1870,19 @@ class Plugin(framework.Template):
                                          "Export SLD...", 
                                          "Export the SLD to a ASCII file", 
                                          wx.ITEM_NORMAL)
-        menu.AppendItem(self.mb_export_sld)
+        menu.Append(self.mb_export_sld)
         self.mb_show_imag_sld = wx.MenuItem(menu, wx.NewId(), 
                                          "Show Im SLD", 
                                          "Toggles showing the imaginary part of the SLD", 
                                          wx.ITEM_CHECK)
-        menu.AppendItem(self.mb_show_imag_sld)
+        menu.Append(self.mb_show_imag_sld)
         self.mb_show_imag_sld.Check(False)
         self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
         self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(), 
                                          "Autoupdate SLD", 
                                          "Toggles autoupdating the SLD during fitting", 
                                          wx.ITEM_CHECK)
-        menu.AppendItem(self.mb_autoupdate_sld)
+        menu.Append(self.mb_autoupdate_sld)
         self.mb_autoupdate_sld.Check(False)
         #self.mb_autoupdate_sld.SetCheckable(True)
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
