@@ -377,8 +377,8 @@ class MainFrame(wx.Frame):
             print('Error in loading config for the plots. Pyton tractback:\n ', val)
             event_handlers.ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
 
-        event_handlers.new(self, None)
-        self.model.saved = True
+        # event_handlers.new(self, None)
+        self.model.saved = False
         #### End Manual config
 
 
@@ -517,13 +517,20 @@ class MainFrame(wx.Frame):
             startup_dialog.ShowModal()
             config_file = startup_dialog.GetConfigFile()
             if config_file:
-                shutil.copyfile(profile_path + 'profiles/' + config_file, profile_path + 'genx.conf')
-                #print profile_path + 'genx.conf'
-                self.config.load_default(profile_path + 'genx.conf')
+                self.config.load_default(profile_path + 'profiles/' + config_file, reset=True)
                 self.config.default_set('startup', 'show profiles', 
                                          startup_dialog.GetShowAtStartup())
                 self.config.write_default(profile_path + 'genx.conf')
-            #print self.config.get('plugins','loaded plugins')
+                #print self.config.get('plugins','loaded plugins')
+                try:
+                    self.plugin_control.OnOpenModel(None)
+                except Exception as e:
+                    outp = io.StringIO()
+                    traceback.print_exc(200, outp)
+                    val = outp.getvalue()
+                    outp.close()
+                    wx.ShowErrorDialog(self, 'Problems when plugins processed model.'\
+                                ' Python Error:\n%s'%(val,))
 
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
         #print "eh_mb_new"

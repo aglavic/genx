@@ -254,7 +254,7 @@ class Config:
         self.default_config = CP.ConfigParser()
         self.model_config = CP.ConfigParser()
     
-    def load_default(self, filename):
+    def load_default(self, filename, reset=False):
         '''load_default(self, filename) --> None
         
         Loads the default config from file filename. Raises a IOError if the
@@ -265,6 +265,8 @@ class Config:
         except Exception as e:
             print(e)
             raise IOError('Could not load default config file', filename)
+        if reset:
+            self.model_config=CP.ConfigParser()
     
     def write_default(self, filename):
         '''write_default(self, filename) --> None
@@ -287,7 +289,7 @@ class Config:
         buffer = io.StringIO(str)
         self.model_config = CP.ConfigParser()
         try:
-            self.model_config.readfp(buffer)
+            self.model_config.read_file(buffer)
         except Exception as e:
             raise IOError('Could not load model config file')
         

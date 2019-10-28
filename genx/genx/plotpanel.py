@@ -453,7 +453,7 @@ class PlotPanel(wx.Panel):
             #self.ax.set_autoscale_on(False)
     
     def OnLeftMouseButtonDown(self, event):
-        self.start_pos = event.GetPositionTuple()
+        self.start_pos = event.Position
         #print 'Left Mouse button pressed ', self.ax.transData.inverse_xy_tup(self.start_pos)
         class Point:
             pass
