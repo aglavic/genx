@@ -118,14 +118,14 @@ if 'install' not in sys.argv:
     os.remove('MANIFEST')
 
 #### Build the extesion modules needed
-print "*** Building weave extensions ***"
+print("*** Building weave extensions ***")
 os.chdir('models')
 os.chdir('lib')
 subprocess.Popen(['python']+ ['build_ext.py'], shell=False, stderr=subprocess.PIPE,
                  stdout=subprocess.PIPE).communicate()
 os.chdir('..')
 os.chdir('..')
-print "*** Running setup ***"
+print("*** Running setup ***")
 
 #### Run the setup command with the selected parameters ####
 setup(name=__name__,
@@ -150,12 +150,12 @@ setup(name=__name__,
 # as these are the versions used in the latest ubuntu releases
 if ('bdist' in sys.argv):
   # These commands requires dpkg-dev alien
-  print "Moving distribution files..."
+  print("Moving distribution files...")
   from glob import glob
   os.chdir('dist')
   os.rename(__name__+'-'+__version__+'-1.noarch.rpm', __name__+'-'+__version__+'.rpm')
   os.remove(__name__+'-'+__version__+'-1.src.rpm')
-  print "Creating debian folder..."
+  print("Creating debian folder...")
   subprocess.Popen(['fakeroot', 'alien', '-k', '-g', __name__+'-'+__version__+'.rpm'], shell=False, 
                    stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
   # creating menu entries
@@ -213,7 +213,7 @@ if ('bdist' in sys.argv):
   #deb_tmp.close()
 
   # python 2.7
-  print "Packaging for debian (python2.7)..."
+  print("Packaging for debian (python2.7)...")
   subprocess.Popen(['dpkg-buildpackage', '-i.*', '-I', '-rfakeroot', '-us', '-uc'], shell=False, 
                    stderr=subprocess.STDOUT, stdout=open('../last_package.log', 'w')
                    ).communicate()
@@ -236,12 +236,12 @@ if ('bdist' in sys.argv):
   #                 stderr=subprocess.STDOUT, stdout=open('../last_package_2.log', 'w')).communicate()
   #os.chdir('..')
   #os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_maverick.deb')
-  print "Removing debian folder..."
+  print("Removing debian folder...")
   os.popen('rm '+__name__+'-'+__version__+' -r')
   os.popen('rm '+(__name__+'_'+__version__).lower()+'-1*')
   os.popen('rm *.rpm')
   os.popen('rm '+(__name__+'_'+__version__).lower()+'.orig.tar.gz')
-  print "Removing build folder..."
+  print("Removing build folder...")
   os.chdir('..')
   os.popen('rm build -r')
 
@@ -260,7 +260,7 @@ if ('bdist' in sys.argv):
   # to pythons module search path when executing.
   # TODO: Try to make this work with all setup parameters not only --install-scripts + --prefix
 if ('--install-scripts' in sys.argv) and ('--prefix' in sys.argv):
-  print "Adding module directory to python path in plot.py script."
+  print("Adding module directory to python path in plot.py script.")
   script=open(os.path.join(sys.argv[sys.argv.index('--install-scripts')+1], 'plot.py'), 'r')
   text=script.read().replace('##---add_python_path_here---##','sys.path.append("'+\
                     glob(os.path.join(sys.argv[sys.argv.index('--prefix')+1], 'lib/python2.?/site-packages'))[-1]\
@@ -278,18 +278,18 @@ if "py2exe" in sys.argv:
       src=os.path.join(*from_folder)
     else:
       src=from_folder
-    print "Copy %s to %s..." % (src, dest)
+    print("Copy %s to %s..." % (src, dest))
     try:
       os.mkdir(os.path.join('dist', to_folder))
     except OSError:
-      print "\tDirectory %s already exists." % dest
+      print("\tDirectory %s already exists." % dest)
     try:
       handle=os.popen('xcopy %s %s /y /e' % (src, dest))
       files=len(handle.read().splitlines())
-      print "\t%i Files" % files
+      print("\t%i Files" % files)
     except:
-      print "\tSkipped because of errors!" % src
-  print "\n*** Copying source and datafiles ***"  
+      print("\tSkipped because of errors!" % src)
+  print("\n*** Copying source and datafiles ***")  
 # py2exe specific stuff to make it work:
   for src, dest in [
                     ('plugins', 'plugins'), 
@@ -308,18 +308,18 @@ if 'py2app' in sys.argv:
       src=os.path.join(*from_folder)
     else:
       src=from_folder
-    print "Copy %s to %s..." % (src, dest)
+    print("Copy %s to %s..." % (src, dest))
     try:
       os.mkdir(os.path.join('dist', to_folder))
     except OSError:
-      print "\tDirectory %s already exists." % dest
+      print("\tDirectory %s already exists." % dest)
     try:
       handle=os.popen('cp -R %s %s' % (src, dest))
       files=len(handle.read().splitlines())
-      print "\t%i Files" % files
+      print("\t%i Files" % files)
     except:
-      print "\tSkipped because of errors!" % src
-  print "\n*** Copying source and datafiles ***"  
+      print("\tSkipped because of errors!" % src)
+  print("\n*** Copying source and datafiles ***")  
   # py2app specific stuff to make it work:
   base = 'GenX.app/Contents/Resources/lib/python2.7'
   for src, dest in [

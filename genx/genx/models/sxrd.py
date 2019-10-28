@@ -117,7 +117,7 @@ sxrd_ext_built = False
 debug = False
 
 try:
-    from . import lib.sxrd_ext
+    from .lib import sxrd_ext
     sxrd_ext_built = True
     _turbo_sim = True
 except ImportError:
@@ -127,9 +127,9 @@ except ImportError:
 # Try to complie the extensions - if necessary
 if not sxrd_ext_built or debug:
     try:
-        from . import lib.build_ext
+        from .lib import build_ext
         lib.build_ext.sxrd()
-        from . import lib.sxrd_ext
+        from .lib import sxrd_ext
         _turbo_sim = True
     except:
         print('Could not build sxrd c extension')

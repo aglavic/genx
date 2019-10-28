@@ -11,8 +11,8 @@ import traceback
 import wx
 
 import plugins.add_on_framework as framework
-from . import help_modules.model_interactors as mi
-from . import help_modules.atom_viewer as atom_viewer
+from .help_modules import model_interactors as mi
+from .help_modules import atom_viewer
 
 
 code = """

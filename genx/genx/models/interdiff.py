@@ -105,14 +105,14 @@ diffuse interfaces.
 
 #import lib.paratt as Paratt
 try:
-    from . import lib.paratt_weave as Paratt
+    from .lib import paratt_weave as Paratt
 except Exception as S:
     print('Not using inline c code for reflectivity calcs - can not import module')
     print(S)
-    from . import lib.paratt as Paratt
+    from .lib import paratt as Paratt
 __offspec__ = True
 try:
-    from . import lib.offspec2_weave
+    from .lib import offspec2_weave
 except Exception as S:
     print('Failed to import: offspec2_weave, No off-specular simulations possible')
     print(S)
@@ -321,7 +321,7 @@ SimulationFunctions = {'Specular':Specular,\
                         'OffSpecular':OffSpecularMingInterdiff,\
                         'SLD': SLD_calculations}
 
-from . import lib.refl as Refl
+from .lib import refl as Refl
 (Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,\
         LayerParameters,StackParameters,\
          SampleParameters, SimulationFunctions, ModelID)
