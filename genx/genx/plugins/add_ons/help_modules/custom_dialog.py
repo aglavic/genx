@@ -188,10 +188,10 @@ class NoMatchValidTextObjectValidator(wx.Validator):
         """
         wx.Validator.__init__(self)
         self.stringlist = stringlist
-        self.reserved_words = ['and', 'del', 'from', 'not', 'while', 'as',\
-                    'elif', 'global', 'or', 'with', 'assert', 'else', 'if',\
-                    'pass', 'yield', 'break', 'except', 'import', 'print',\
-                    'class', 'exec', 'in', 'raise', 'continue', 'finally', \
+        self.reserved_words = ['and', 'del', 'from', 'not', 'while', 'as',
+                    'elif', 'global', 'or', 'with', 'assert', 'else', 'if',
+                    'pass', 'yield', 'break', 'except', 'import', 'print',
+                    'class', 'exec', 'in', 'raise', 'continue', 'finally',
                     'is', 'return', 'def', 'for', 'lambda', 'try']
 
         self.allowed_chars = string.digits+string.ascii_letters + '_'
@@ -229,8 +229,8 @@ class NoMatchValidTextObjectValidator(wx.Validator):
             return False
         elif sum([char in self.allowed_chars for char in text]) != len(text)\
             or text[0] in string.digits:
-            wx.MessageBox("Not a vaild name. Names can only contain letters"\
-            ", digits and underscores(_) and not start with a digit.",\
+            wx.MessageBox("Not a vaild name. Names can only contain letters"
+            ", digits and underscores(_) and not start with a digit.",
              "Bad Input")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -322,13 +322,13 @@ class FloatObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.
     """
-    def __init__(self, eval_func = eval, alt_types = []):
+    def __init__(self, eval_func = eval, alt_types = None):
         """ Standard constructor.
         """
         wx.Validator.__init__(self)
         self.value=None
         self.eval_func = eval_func
-        self.alt_types = alt_types
+        self.alt_types = alt_types or []
 
     def Clone(self):
         """ Standard cloner.
@@ -390,13 +390,13 @@ class ComplexObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
        into the text object editor dialog's text field.
     """
-    def __init__(self, eval_func = eval, alt_types = []):
+    def __init__(self, eval_func = eval, alt_types = None):
         """ Standard constructor.
         """
         wx.Validator.__init__(self)
         self.value=None
         self.eval_func = eval_func
-        self.alt_types = alt_types
+        self.alt_types = alt_types or []
      
     def Clone(self):
         """ Standard cloner.
@@ -425,7 +425,7 @@ class ComplexObjectValidator(wx.Validator):
             if is_reflfunction(val):
                 val = val.validate()
             self.value = complex(val.real, val.imag)
-        except AttributeError as S:
+        except AttributeError:
             try:
                self.value = complex(val)
             except Exception as S:
@@ -478,7 +478,7 @@ class ComplexObjectValidator(wx.Validator):
 
 class ValidateBaseDialog(wx.Dialog):
     def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
-                 units=False, groups=False, cols=2, editable_pars={}):
+                 units=None, groups=None, cols=2, editable_pars=None):
         ''' A dialog that validates the input when OK are pressed. The validation is done
         through the validators given as input.
         
@@ -497,12 +497,12 @@ class ValidateBaseDialog(wx.Dialog):
         '''
         wx.Dialog.__init__(self, parent, -1, title)
         self.pars = pars
-        self.editable_pars = editable_pars
+        self.editable_pars = editable_pars or {}
         self.validators = validators
         self.cols = cols
         self.vals = vals
-        self.units = units
-        self.groups = groups
+        self.units = units or {}
+        self.groups = groups or []
         self.tc = {}
         self.not_editable_bkg_color = wx.GREEN
         self.SetAutoLayout(True)
@@ -558,6 +558,9 @@ class ValidateBaseDialog(wx.Dialog):
                 tc[item] = group_tc[item]
             sizer.Add(col_box_sizer, flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
         return sizer, tc
+    
+    def crete_edit_ctrl(self, editable, par, parent, val, validator):
+        raise NotImplementedError('Method required, subclass must implement')
 
     def layout_group(self, parent, pars, vals, editable_pars):
         if self.units:
@@ -612,6 +615,8 @@ class NormalEditMixin:
     """
     Normal mixin for the Validate Dialog
     """
+    not_editable_bkg_color=None
+    
     def crete_edit_ctrl(self, editable, par, parent, val, validator):
         """
         Creates the edit control for a parameter
@@ -664,8 +669,8 @@ class NormalEditMixin:
 
 class ValidateBaseNotebookDialog(ValidateBaseDialog):
     def __init__(self, parent, pars, vals, validators, title="Validated Dialog", 
-                 units=False, groups=False, cols=2, fixed_pages=[],
-                 editable_pars={}):
+                 units=None, groups=None, cols=2, fixed_pages=None,
+                 editable_pars=None):
         ''' A dialog that validates the input when OK are pressed. The validation is done
         through the validators given as input.
         
@@ -687,13 +692,13 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         self.validators = validators
         self.cols = cols
         self.vals = vals
-        self.units = units
-        self.groups = groups
-        self.fixed_pages = fixed_pages
+        self.units = units or {}
+        self.groups = groups or []
+        self.fixed_pages = fixed_pages or []
         self.changes = []
         self.text_controls = {}
         self.SetAutoLayout(True)
-        self.editable_pars = editable_pars
+        self.editable_pars = editable_pars or {}
         self.not_editable_bkg_color = wx.GREEN
         
         self.layout_notebook()
@@ -726,7 +731,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
             size = (-1, -1)
         space = (5, -1)
         button_names = ['Insert', 'Delete', 'Rename']
-        button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
+        button_images = [images.getaddBitmap(), images.getdeleteBitmap(),
             images.getchange_nameBitmap()]
         callbacks = [self.eh_insert, self.eh_delete, self.eh_rename]
         tooltips = ['Insert', 'Delete', 'Rename']
@@ -735,7 +740,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         boxbuttons.Add((5,-1))
         for i in range(len(button_names)):
             #button = wx.Button(self,-1, button_names[i])
-            button = wx.BitmapButton(self, -1, button_images[i],\
+            button = wx.BitmapButton(self, -1, button_images[i],
                     style=wx.NO_BORDER, size = size)
             boxbuttons.Add(button, 1, wx.EXPAND,5)
             boxbuttons.Add(space)
@@ -875,6 +880,9 @@ class FitEditMixIn:
     """
     Mixin for the Validate Dialogs to enable the definition of fitable parameters.
     """
+    validators=None
+    tc=None
+    
     def __init__(self):
         pass
 
@@ -989,7 +997,7 @@ class FitSelectorCombo(wx.ComboCtrl):
     def create_button_bitmap(self):
         # make a custom bitmap showing "F"
         bw, bh = 14, 16
-        bmp = wx.Bitmap(24, bw, bh)
+        bmp = wx.Bitmap(bw, bh, depth=wx.BITMAP_SCREEN_DEPTH)
         dc = wx.MemoryDC(bmp)
         # clear to a specific background colour
         bgcolor = wx.Colour(255, 254, 255)
@@ -1074,7 +1082,7 @@ class ParameterExpressionCombo(wx.ComboCtrl):
     def create_button_bitmap(self):
         # make a custom bitmap showing "F"
         bw, bh = 14, 16
-        bmp = wx.Bitmap(24, bw, bh)
+        bmp = wx.Bitmap(bw, bh, depth=wx.BITMAP_SCREEN_DEPTH)
         dc = wx.MemoryDC(bmp)
         # clear to a specific background colour
         bgcolor = wx.Colour(255, 254, 255)
@@ -1129,7 +1137,7 @@ class ParameterExpressionCombo(wx.ComboCtrl):
             for obj in objs:
                 obj_menu = wx.Menu()
                 funcs = obj_dict[obj]
-                funcs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                funcs.sort(key=str.lower)
                 # Create an item for each method
                 for func in funcs:
                     item = obj_menu.Append(wx.NewId(), obj + '.' + func.replace('set', 'get'))
@@ -1234,7 +1242,7 @@ if __name__=='__main__':
             dlg = ValidateNotebookDialog(frame, pars, vals, validators,
                              title = 'Instrument Editor', units = units,
                              fixed_pages = ['inst'])
-            dlg.AddPage('test', vals_old)
+            dlg.AddPage('test', vals_old, {})
             dlg.RemovePage('inst')
             #dlg = ValidateDialog(frame, pars, vals_old, validators,
             #                 title = 'Instrument Editor', units = units)

@@ -333,7 +333,7 @@ class VirtualDataList(wx.ListCtrl):
         
         Creates an bmp icon for decorating the list
         '''
-        bmp = wx.Bitmap(24, 16, 16)
+        bmp = wx.Bitmap(16, 16, depth=wx.BITMAP_SCREEN_DEPTH)
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
         dc.SetBackground(wx.Brush(color_fit))

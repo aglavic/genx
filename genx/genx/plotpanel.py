@@ -85,7 +85,7 @@ class PlotPanel(wx.Panel):
         self.fig_printer = FigurePrinter(self)
 
         # Create the drawing bitmap
-        self.bitmap =wx.Bitmap(24, 1, 1)
+        self.bitmap =wx.Bitmap(1, 1, depth=wx.BITMAP_SCREEN_DEPTH)
 #        DEBUG_MSG("__init__() - bitmap w:%d h:%d" % (w,h), 2, self)
         self._isDrawn = False
 
