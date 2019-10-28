@@ -291,7 +291,7 @@ class DiffEv:
         
         Loads the pickled string into the this object. See pickle_string.
         '''
-        obj = pickle.loads(pickled_string)
+        obj = pickle.loads(pickled_string, encoding='latin1', errors='ignore')
         obj.create_mutation_table()
         self.safe_copy(obj)
 

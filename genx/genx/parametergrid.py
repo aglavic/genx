@@ -299,7 +299,7 @@ class SliderCellEditor(gridlib.GridCellEditor):
         """
         Called to position/size the edit control within the cell rectangle.
         """
-        self._tc.SetDimensions(rect.x-1, rect.y-1, rect.width+2, rect.height+2,
+        self._tc.SetSize(rect.x-1, rect.y-1, rect.width+2, rect.height+2,
                                wx.SIZE_ALLOW_MINUS_ONE)
 
     def StartingClick(self):
@@ -457,7 +457,7 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
 
     def SetSize(self, rect):
         """Called to position/size the edit control within the cell rectangle."""
-        self._tc.SetDimensions(rect.x-1, rect.y-1, rect.width+2, rect.height+2,
+        self._tc.SetSize(rect.x-1, rect.y-1, rect.width+2, rect.height+2,
                                wx.SIZE_ALLOW_MINUS_ONE)
 
     def BeginEdit(self, row, col, grid):

@@ -12,7 +12,7 @@ try:
 except ImportError:
     import configparser as CP
 import io
-import os
+import os, sys
 
 import h5py
 
@@ -100,8 +100,16 @@ def load_hgx(fname, model, optimizer, config, group='current'):
 
 # Not yet used ...
 def load_gx(fname, model, optimizer, config):
+    if not 'diffev' in sys.modules:
+        # for compatibility define genx standard modules as base modules
+        import genx.diffev
+        import genx.data
+        import genx.model
+        sys.modules['model']=genx.model
+        sys.modules['diffev']=genx.diffev
+        sys.modules['data']=genx.data
     model.load(fname)
-    config.load_model(model.load_addition('config'))   
+    config.load_model(model.load_addition('config').decode('utf-8'))
     optimizer.pickle_load(model.load_addition('optimizer'))
 
 # Functions to handle optimiser configs

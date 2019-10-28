@@ -186,7 +186,7 @@ class SliderControl(wx.Control):
         self.Refresh()
 
     def OnMouse(self, event):
-        x, y = event.GetPositionTuple()
+        x, y = event.Position
         w, h = self.GetSize()
         if event.LeftDown() and self.slider_drawer.IsPosInSlider(x,y, w, h):
             # Slider drag starts

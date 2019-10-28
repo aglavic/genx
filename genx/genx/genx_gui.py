@@ -378,7 +378,7 @@ class MainFrame(wx.Frame):
             event_handlers.ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
 
         # event_handlers.new(self, None)
-        self.model.saved = False
+        self.model.saved = True
         #### End Manual config
 
 
