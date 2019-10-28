@@ -1134,8 +1134,8 @@ class ParameterExpressionCombo(wx.ComboCtrl):
                 for func in funcs:
                     item = obj_menu.Append(wx.NewId(), obj + '.' + func.replace('set', 'get'))
                     self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
-                clmenu.AppendMenu(-1, obj, obj_menu)
-            menu.AppendMenu(-1, cl, clmenu)
+                clmenu.Append(-1, obj, obj_menu)
+            menu.Append(-1, cl, clmenu)
         # Check if there are no available classes
         # TODO: Test implementation if necessary?
         #if len(classes) == 0:

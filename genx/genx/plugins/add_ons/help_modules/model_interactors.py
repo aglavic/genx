@@ -1697,7 +1697,7 @@ class DomainWidget(wx.ScrolledWindow):
                 new_id = wx.NewId()
                 self.insert_menu.Append(new_id, slab.name)
                 self.Bind(wx.EVT_MENU, self.OnInsert, id=new_id)
-            menu.AppendMenu(self.insert_id, "Insert", self.insert_menu)
+            menu.Append(self.insert_id, "Insert", self.insert_menu)
         if self.selected_item[1] != 0:
             menu.Append(self.delete_id, "Delete")
 

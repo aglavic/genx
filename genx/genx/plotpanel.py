@@ -88,7 +88,8 @@ class PlotPanel(wx.Panel):
         self.bitmap =wx.Bitmap(24, 1, 1)
 #        DEBUG_MSG("__init__() - bitmap w:%d h:%d" % (w,h), 2, self)
         self._isDrawn = False
-    
+
+
     def SetColor(self, rgbtuple=None):
         ''' Set the figure and canvas color to be the same '''
         if not rgbtuple:
@@ -470,6 +471,7 @@ class PlotPanel(wx.Panel):
                 self.zooming = True
                 self.cur_rect = None
                 self.canvas.CaptureMouse()
+                self.overlay = wx.Overlay()
             else:
                 self.zooming = False
         elif self.ax:
@@ -490,7 +492,7 @@ class PlotPanel(wx.Panel):
     
     def OnMouseMove(self, event):
         if self.zooming and event.Dragging() and event.LeftIsDown():
-            self.cur_pos = event.GetPositionTuple()
+            self.cur_pos = event.Position
             #print 'Mouse Move ', self.ax.transData.inverse_xy_tup(self.cur_pos)
             class Point:
                 pass
@@ -515,6 +517,7 @@ class PlotPanel(wx.Panel):
         if self.canvas.HasCapture():
             #print 'Left Mouse button up'
             self.canvas.ReleaseMouse()
+            del(self.overlay)
             if self.zooming and self.cur_rect:
                 # Note: The coordinte system for matplotlib have a different 
                 # direction of the y-axis and a different origin!
@@ -542,16 +545,27 @@ class PlotPanel(wx.Panel):
     def _DrawAndErase(self, box_to_draw, box_to_erase = None):
         '''_DrawAndErase(self, box_to_draw, box_to_erase = None) --> None
         '''
-        dc = wx.ClientDC(self.canvas)
-        dc.BeginDrawing()
-        dc.SetPen(wx.Pen(wx.WHITE, 1, wx.DOT))
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        dc.SetLogicalFunction(wx.XOR)
-        if box_to_erase:
-            dc.DrawRectangle(*box_to_erase)
-        dc.DrawRectangle(*box_to_draw)
-        dc.EndDrawing()
-        
+        rect = wx.Rect(*box_to_draw)
+
+        # Draw the rubber-band rectangle using an overlay so it
+        # will manage keeping the rectangle and the former window
+        # contents separate.
+        dc = wx.ClientDC(self)
+        odc = wx.DCOverlay(self.overlay, dc)
+        odc.Clear()
+
+        # Mac's DC is already the same as a GCDC, and it causes
+        # problems with the overlay if we try to use an actual
+        # wx.GCDC so don't try it.
+        if 'wxMac' not in wx.PlatformInfo:
+            dc = wx.GCDC(dc)
+
+        dc.SetPen(wx.Pen("black", 1, style=wx.DOT_DASH))
+        dc.SetBrush(wx.Brush("black", style=wx.BRUSHSTYLE_TRANSPARENT))
+        dc.DrawRectangle(rect)
+
+        del odc
+
     def OnContextMenu(self, event):
         '''OnContextMenu(self, event) --> None
         
@@ -588,7 +602,7 @@ class PlotPanel(wx.Panel):
         linID = wx.NewId()
         yscalemenu.AppendRadioItem(logID, "log")
         yscalemenu.AppendRadioItem(linID, "linear")
-        menu.AppendMenu(-1, "y-scale", yscalemenu)
+        menu.Append(-1, "y-scale", yscalemenu)
         if self.GetYScale() == 'log':
             yscalemenu.Check(logID, True)
         else:
@@ -612,7 +626,7 @@ class PlotPanel(wx.Panel):
         linID = wx.NewId()
         xscalemenu.AppendRadioItem(logID, "log")
         xscalemenu.AppendRadioItem(linID, "linear")
-        menu.AppendMenu(-1, "x-scale", xscalemenu)
+        menu.Append(-1, "x-scale", xscalemenu)
         if self.GetXScale() == 'log':
             xscalemenu.Check(logID, True)
         else:

@@ -779,7 +779,7 @@ def on_zoom_check(frame, event):
         pages[sel].SetZoom(zoom_state)
             
         frame.main_frame_toolbar.ToggleTool(10009, zoom_state)
-        frame.mb_view_zoom.Check(zoom_state)
+        frame.main_frame_menubar.mb_view_zoom.Check(zoom_state)
 
 def zoomall(frame, event):
     '''zoomall(self, event) --> None

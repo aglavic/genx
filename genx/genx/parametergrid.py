@@ -1316,8 +1316,8 @@ class ParameterGrid(wx.Panel):
                     for func in funcs:
                         item = obj_menu.Append(-1, obj + '.' + func)
                         self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
-                    clmenu.AppendMenu(-1, obj, obj_menu)
-                #self.pmenu.AppendMenu(-1, cl, clmenu)
+                    clmenu.Append(-1, obj, obj_menu)
+                #self.pmenu.Append(-1, cl, clmenu)
             elif isinstance(par_dict[cl], list):
                 objs = par_dict[cl]
                 objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
@@ -1325,7 +1325,7 @@ class ParameterGrid(wx.Panel):
                 for obj in objs:
                     item = clmenu.Append(-1, obj)
                     self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
-            self.pmenu.AppendMenu(-1, cl, clmenu)
+            self.pmenu.Append(-1, cl, clmenu)
 
 
         # Check if there are no available classes
