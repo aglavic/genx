@@ -184,6 +184,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_data_import, id=self.main_frame_menubar.mb_set_import.GetId())
         self.main_frame_menubar.mb_set_dataplot = self.mb_set.Append(wx.ID_ANY, "Plot Markers\tShift+Ctrl+P", "Set the symbols and lines of data and simulations")
         self.Bind(wx.EVT_MENU, self.eh_data_plots, id=self.main_frame_menubar.mb_set_dataplot.GetId())
+        self.main_frame_menubar.show_startup_dialog = self.mb_set.Append(wx.ID_ANY, "Startup Profile...", "")
+        self.Bind(wx.EVT_MENU, self.eh_show_startup_dialog, id=self.main_frame_menubar.show_startup_dialog.GetId())
         self.main_frame_menubar.Append(self.mb_set, "Settings")
         wxglade_tmp_menu = wx.Menu()
         mb_help = wx.Menu()

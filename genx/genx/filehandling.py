@@ -272,7 +272,7 @@ class Config:
         Writes the current defualt configuration to filename
         '''
         try:
-            cfile = open(filename, 'wb')
+            cfile = open(filename, 'w')
             self.default_config.write(cfile)
         except Exception as e:
             print(e)

@@ -245,7 +245,7 @@ class SpecDataFile:
                 '#O'    (Motor positions)
         """
 
-        self.file = open(self.filename, 'rb')
+        self.file = open(self.filename, 'r')
 
         if __verbose__:
             print("---- Reading Header.")
@@ -276,7 +276,7 @@ class SpecDataFile:
         all the scans (Lines beginning with '#S')
 
         """
-        self.file = open(self.filename, 'rb')
+        self.file = open(self.filename, 'r')
 
         if __verbose__:
             print("---- Indexing scan :       ", end=' ')
@@ -392,7 +392,7 @@ class SpecDataFile:
         if len(mask) != len(items):
             raise Exception("The mask list should be the same size as the items list")
 
-        self.file = open(self.filename, 'rb')
+        self.file = open(self.filename, 'r')
         rval = []
         n = 0
         for i,m in zip(items, mask):
