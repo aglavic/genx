@@ -1236,7 +1236,7 @@ def _post_sim_plot_event(parent, model, desc = ''):
 def ShowQuestionDialog(frame, message, title = 'Question?'):
     dlg = wx.MessageDialog(frame, message,
                                title,
-                               #wx.YES_NO | wx.ICON_QUESTION
+                               wx.OK | wx.CANCEL | wx.OK_DEFAULT | wx.ICON_QUESTION
                                )
     result = dlg.ShowModal() == wx.ID_OK
     dlg.Destroy()
