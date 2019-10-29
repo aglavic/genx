@@ -14,7 +14,8 @@ $Date::                                 $:  Date of last commit
 import wx, os
 import wx.lib.colourselect as csel
 import wx.lib.scrolledpanel as scrolled
-import  wx.lib.intctrl as intctrl
+import wx.lib.intctrl as intctrl
+from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
 try:
     from wx import wizard
@@ -264,13 +265,15 @@ EVT_DATA_LIST = wx.PyEventBinder(myEVT_DATA_LIST)
 # END: DataListEvent
 #==============================================================================
 
-class VirtualDataList(wx.ListCtrl):
+class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     '''
     The listcontrol for the data
     '''
     def __init__(self, parent, data_controller, config=None, status_text=None):
-        wx.ListCtrl.__init__(self,parent,-1,\
-        style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_EDIT_LABELS)
+        wx.ListCtrl.__init__(self,parent,-1,
+                        style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_EDIT_LABELS)
+        ListCtrlAutoWidthMixin.__init__(self)
+        
         self.data_cont = data_controller
         self.config = config
         self.parent = parent
@@ -288,7 +291,11 @@ class VirtualDataList(wx.ListCtrl):
         cols=self.data_cont.get_column_headers()
         for col,text in enumerate(cols):
             self.InsertColumn(col,text)
+            length=self.GetFullTextExtent(text)
+            self.GetColumn(col).SetWidth(length[0]+1)
             
+            
+        self.setResizeColumn(0)
         # Trying to get images out...
         self._UpdateImageList()
     

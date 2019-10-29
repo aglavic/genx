@@ -93,7 +93,8 @@ class PlotPanel(wx.Panel):
     def SetColor(self, rgbtuple=None):
         ''' Set the figure and canvas color to be the same '''
         if not rgbtuple:
-            rgbtuple = wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE).Get()
+            rgbtuple = self.parent.GetBackgroundColour()
+                # wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE).Get()
         col = [c/255. for c in rgbtuple]
         self.figure.set_facecolor(col)
         self.figure.set_edgecolor(col)
@@ -119,6 +120,7 @@ class PlotPanel(wx.Panel):
             pixels = self.GetClientSize()
 
         self.canvas.SetSize(pixels)
+        self.figure.tight_layout()
         #self.figure.set_size_inches(pixels[0]/self.figure.get_dpi()
         #, pixels[1]/self.figure.get_dpi())
     
@@ -560,7 +562,7 @@ class PlotPanel(wx.Panel):
         if 'wxMac' not in wx.PlatformInfo:
             dc = wx.GCDC(dc)
 
-        dc.SetPen(wx.Pen("black", 1, style=wx.DOT_DASH))
+        dc.SetPen(wx.Pen("black", 2, style=wx.DOT_DASH))
         dc.SetBrush(wx.Brush("black", style=wx.BRUSHSTYLE_TRANSPARENT))
         dc.DrawRectangle(rect)
 
@@ -665,6 +667,7 @@ class PlotPanel(wx.Panel):
         #self._SetSize()
         #self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
         #self.ax.set_yscale(self.scale)
+        self.figure.tight_layout()
         self.canvas.draw()
         
     def update(self, data):
@@ -1026,13 +1029,29 @@ class DataPlotPanel(PlotPanel):
 
         
     def create_axes(self):
-        self.ax = self.figure.add_axes(self.main_ax_rect)#self.figure.add_subplot(111)
+        # self.ax = self.figure.add_axes(self.main_ax_rect)#
+        gs=self.figure.add_gridspec(4,1)
+        self.ax=self.figure.add_subplot(gs[:3,0])
         #self.ax.xaxis.set_visible(False)
         setp(self.ax.get_xticklabels(), visible=False)
-        self.error_ax = self.figure.add_axes(self.sub_ax_rect, sharex=self.ax)
+        self.error_ax=self.figure.add_subplot(gs[3,0], sharex=self.ax)
+        # self.error_ax = self.figure.add_axes(self.sub_ax_rect, sharex=self.ax)
         self.ax.set_autoscale_on(False)
         self.error_ax.set_autoscale_on(True)
-        
+        self.ax.set_ylabel('Intensity [a.u.]')
+        self.error_ax.set_ylabel('FOM')
+        self.error_ax.set_xlabel('q [Å$^{-1}$]')
+    
+    def update_labels(self, xlabel=None, ylabel=None, elabel=None):
+        if xlabel is not None:
+            self.error_ax.set_xlabel(xlabel)
+        if ylabel is not None:
+            self.ax.set_ylabel(ylabel)
+        if elabel is not None:
+            self.error_ax.set_ylabel(elabel)
+        self.figure.tight_layout()
+        self.canvas.draw()
+
     def autoscale_error_ax(self):
         ymin = min([array(line.get_ydata()).min()\
                      for line in self.error_ax.lines if len(line.get_ydata()) > 0])
@@ -1300,7 +1319,10 @@ class ErrorPlotPanel(PlotPanel):
                 self.ax.set_ylim(data[:,1].min()*0.95, data[:,1].max()*1.05)
                 self.ax.set_xlim(data[:,0].min(), data[:,0].max())
                 #self.AutoScale()
-        
+
+        self.ax.set_xlabel('Iteration')
+        self.ax.set_ylabel('FOM')
+        self.figure.tight_layout()
         self.flush_plot()
         self.canvas.draw()
         
@@ -1344,11 +1366,14 @@ class ParsPlotPanel(PlotPanel):
             width = 0.8
             x = arange(len(best))
             self.ax.set_autoscale_on(False)
-            self.ax.bar(x - width/2.0, pop_max - pop_min, bottom=pop_min, color='b', width= width)
+            self.ax.bar(x, pop_max - pop_min, bottom=pop_min, color='b', width= width)
             self.ax.plot(x, best, 'ro')
             if self.GetAutoScale():
                 self.ax.axis([x.min() - width, x.max() + width, 0., 1.])
-        
+                
+        self.ax.set_xlabel('Parameter Index (only fittable)')
+        self.ax.set_ylabel('Relative value in min/max range')
+        self.figure.tight_layout()
         self.flush_plot()
         self.canvas.draw()
         
@@ -1390,7 +1415,7 @@ class FomScanPlotPanel(PlotPanel):
             #self.ax.set_autoscale_on(True)
             self.type = 'scan'
         
-    def Plot(self, data):
+    def Plot(self, data, l1='', l2=''):
         ''' Plots each variable and its max and min value in the
         population.
         '''
@@ -1411,6 +1436,9 @@ class FomScanPlotPanel(PlotPanel):
             if self.GetAutoScale():
                 self.ax.set_autoscale_on(False)
                 self.ax.axis([x.min(), x.max(), min(y.min(), besty)*0.95, y.max()*1.05])
+        
+        self.ax.set_xlabel(l1)
+        self.ax.set_ylabel(l2)
 
         self.flush_plot()
         self.canvas.draw()

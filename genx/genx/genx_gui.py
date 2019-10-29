@@ -14,6 +14,8 @@ import traceback
 
 import os, sys, shutil, appdirs
 
+# import wx.lib.agw.aui as aui
+
 from genx import data, model, help
 from genx import filehandling as io
 from genx import plotpanel, solvergui, parametergrid, datalist
@@ -58,7 +60,7 @@ class MainFrame(wx.Frame):
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__
-        kwds["style"] = kwds.get("style", 0) | wx.CAPTION | wx.CLOSE_BOX | wx.MAXIMIZE | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU
+        kwds["style"] = kwds.get("style", 0) | wx.CAPTION | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU
         wx.Frame.__init__(self, *args, **kwds)
         
         # Menu Bar
@@ -222,7 +224,7 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.AddTool(1008, "tb_calc_error_bars", img.getcalc_error_barBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
         self.main_frame_toolbar.AddTool(10009, "tb_zoom", img.getzoomBitmap(), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
         # Tool Bar end
-        self.ver_splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER)
+        self.ver_splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
         self.data_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
         self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.data_notebook_data = wx.Panel(self.data_notebook, wx.ID_ANY)
@@ -233,7 +235,7 @@ class MainFrame(wx.Frame):
         self.static_line_1 = wx.StaticLine(self.data_notebook_pane_2, wx.ID_ANY)
         self.data_grid = wx.grid.Grid(self.data_notebook_pane_2, wx.ID_ANY, size=(1, 1))
         self.main_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
-        self.hor_splitter = wx.SplitterWindow(self.main_panel, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER)
+        self.hor_splitter = wx.SplitterWindow(self.main_panel, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
         self.plot_panel = wx.Panel(self.hor_splitter, wx.ID_ANY)
         self.plot_notebook = wx.Notebook(self.plot_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.plot_notebook_data = wx.Panel(self.plot_notebook, wx.ID_ANY)
@@ -388,7 +390,7 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
         self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
             '        FOM:                    ', size = (400, -1))
-        font = wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.NORMAL, wx.NORMAL)
+        font = wx.Font(wx.FontInfo(15))
         self.main_frame_fom_text.SetFont(font)
         self.main_frame_fom_text.SetLabel('        FOM: None')
         #self.main_frame_fom_text.SetEditable(False)
@@ -420,7 +422,9 @@ class MainFrame(wx.Frame):
         self.data_grid.SetColLabelValue(4, "y")
         self.data_grid.SetColLabelValue(5, "Error")
         self.hor_splitter.SetMinimumPaneSize(20)
+        self.hor_splitter.SetSashGravity(0.3)
         self.ver_splitter.SetMinimumPaneSize(20)
+        self.ver_splitter.SetSashGravity(0.2)
         # end wxGlade
         # Turn Line numbering on for the editor
         self.script_editor.setDisplayLineNumbers(True)
@@ -480,13 +484,14 @@ class MainFrame(wx.Frame):
         self.input_notebook.AddPage(self.input_notebook_script, "Script")
         input_sizer.Add(self.input_notebook, 1, wx.EXPAND, 0)
         self.input_panel.SetSizer(input_sizer)
-        self.hor_splitter.SplitHorizontally(self.plot_panel, self.input_panel)
+        self.hor_splitter.SplitHorizontally(self.plot_panel, self.input_panel, 423)
         main_sizer.Add(self.hor_splitter, 1, wx.EXPAND, 0)
         self.main_panel.SetSizer(main_sizer)
-        self.ver_splitter.SplitVertically(self.data_panel, self.main_panel)
+        self.ver_splitter.SplitVertically(self.data_panel, self.main_panel, 512)
         frame_sizer.Add(self.ver_splitter, 1, wx.EXPAND, 0)
         self.SetSizer(frame_sizer)
         frame_sizer.Fit(self)
+        frame_sizer.SetSizeHints(self)
         self.Layout()
         self.Centre()
         # end wxGlade
@@ -809,6 +814,9 @@ class MainFrame(wx.Frame):
         event.Skip()
     def eh_mb_view_grid_slider(self, event):  # wxGlade: MainFrame.<event_handler>
         print("Event handler 'eh_mb_view_grid_slider' not implemented!")
+        event.Skip()
+    def eh_show_startup_dialog(self, event):  # wxGlade: MainFrame.<event_handler>
+        print("Event handler 'eh_show_startup_dialog' not implemented!")
         event.Skip()
 # end of class MainFrame
 

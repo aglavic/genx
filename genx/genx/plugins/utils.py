@@ -40,10 +40,10 @@ class PluginHandler:
         '''
         # Locate all python files in this files directory
         # but excluding this file and not loaded.
-        plugins = [s[:-3] for s in os.listdir(self.directory\
-                        + self.plugin_folder) if '.py' == s[-3:] 
+        plugins = [s.rsplit('.',1)[0] for s in os.listdir(self.directory\
+                        + self.plugin_folder) if s.split('.', 1)[-1] in ['py', 'pyo', 'pyc']
                         and s[:2] != '__' and \
-                        s[:-3] not in self.loaded_plugins]
+                        s.rsplit('.',1)[0] not in self.loaded_plugins]
         return plugins
     
     def get_possible_plugins(self):

@@ -5,16 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cffddda4-0551-49ac-8f16-f4d10505a6a8" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/genx.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/genx/tests/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/genx/tests/model_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/genx.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/genx.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/LICENSE.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/genx.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/genx/datalist.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/datalist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/genx/event_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/event_handlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/genx/genx_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/genx_gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/genx/genx_gui.wxg" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/genx_gui.wxg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/genx/plotpanel.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/plotpanel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/genx/plugins/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/plugins/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/scripts/genx" beforeDir="false" afterPath="$PROJECT_DIR$/genx/scripts/genx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/scripts/genx.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -33,7 +36,7 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="run.code.analysis.last.selected.profile" value="pDefault" />
-    <property name="settings.editor.selected.configurable" value="Errors" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -60,7 +63,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="false" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/genx/scripts/genx.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/genx/scripts/genx" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -216,6 +219,7 @@
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="object.__class__, self.__class__" language="Python" />
+        <watch expression="self.canvas.get_width_height()" language="Python" />
       </configuration>
     </watches-manager>
   </component>

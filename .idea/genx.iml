@@ -3,7 +3,6 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/genx/genx" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/genx/scripts" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/genx" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/genx/genx/lib" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/genx/genx/models" isTestSource="false" />

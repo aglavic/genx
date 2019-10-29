@@ -653,7 +653,9 @@ def scan_parameter(frame, row):
             
             frame.plot_fomscan.SetPlottype('scan')
             frame.plot_fomscan.Plot((x, y, bestx, besty,\
-                        frame.solver_control.fom_error_bars_level))
+                        frame.solver_control.fom_error_bars_level),
+                        frame.model.parameters.get_names()[row],
+                        'FOM')
             frame.plot_notebook.SetSelection(3)
         except Exception as e:
             outp = StringIO()
@@ -693,8 +695,10 @@ def project_fom_parameter(frame, row):
         bestx = pars[row]
         besty = frame.model.fom
         frame.plot_fomscan.SetPlottype('project')
-        frame.plot_fomscan.Plot((x, y, bestx, besty,\
-                        frame.solver_control.fom_error_bars_level))
+        frame.plot_fomscan.Plot((x, y, bestx, besty,
+                        frame.solver_control.fom_error_bars_level),
+                        frame.model.parameters.get_names()[row],
+                        'FOM')
         frame.plot_notebook.SetSelection(3)
     except Exception as e:
         outp = StringIO()
@@ -869,7 +873,7 @@ def plot_page_changed(frame, event):
         zoom_state = pages[sel].GetZoom()        
         # Set the zoom button to the correct value
         frame.main_frame_toolbar.ToggleTool(10009, zoom_state)
-        frame.mb_view_zoom.Check(zoom_state)
+        frame.main_frame_menubar.mb_view_zoom.Check(zoom_state)
         
         yscale = pages[sel].GetYScale()
         if yscale == 'log':
