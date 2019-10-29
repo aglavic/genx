@@ -877,14 +877,14 @@ def plot_page_changed(frame, event):
         
         yscale = pages[sel].GetYScale()
         if yscale == 'log':
-            frame.mb_view_yscale_log.Check(True)
+            frame.main_frame_menubar.mb_view_yscale_log.Check(True)
         elif yscale == 'linear':
-            frame.mb_view_yscale_lin.Check(True)
+            frame.main_frame_menubar.mb_view_yscale_lin.Check(True)
         xscale = pages[sel].GetXScale()
         if xscale == 'log':
-            frame.mb_view_yscale_log.Check(True)
+            frame.main_frame_menubar.mb_view_yscale_log.Check(True)
         elif xscale == 'linear':
-            frame.mb_view_yscale_lin.Check(True)
+            frame.main_frame_menubar.mb_view_yscale_lin.Check(True)
 
 def print_plot(frame, event):
     '''print_plot(frame, event) --> None

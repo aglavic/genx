@@ -74,9 +74,11 @@ else:
                      'scipy', "h5py.defs", "h5py.utils", "h5py._proxy",
                      "h5py._errors"],
         'packages': ['genx.plugins', 'genx.models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
-                     'scipy.spatial', "h5py", 'numpy', 'numpy.lib.format'],
+                     'scipy.spatial', "multiprocessing",
+                     "h5py", 'numpy', 'numpy.lib.format'],
         'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy', "IPython", "Tkinter",
-                     "tcl", "mpi4py", "PyQt4", 'sqlite3'],
+                     "tcl", "mpi4py", "PyQt4", 'sqlite3',
+                     'scipy.spatial.cKDTree','multiprocessing.Pool'],
         }}
 
 # extensions modules written in C

@@ -4,12 +4,9 @@
     <option name="GROUP_BY_SEVERITY" value="true" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cffddda4-0551-49ac-8f16-f4d10505a6a8" name="Default Changelist" comment="Improve GUI layout and plot labeling">
+    <list default="true" id="cffddda4-0551-49ac-8f16-f4d10505a6a8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/genx.conf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/scripts/genx" beforeDir="false" afterPath="$PROJECT_DIR$/genx/scripts/genx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/scripts/genx.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/genx/genx/event_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/event_handlers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/genx/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/setup.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -159,7 +156,14 @@
       <option name="project" value="LOCAL" />
       <updated>1572379088754</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Starting to update the setup script">
+      <created>1572379538457</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1572379538457</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -176,6 +180,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Get rid of depreciated items warnings on startup" />
     <MESSAGE value="Fix load and save, hdf5 needs encoded strings" />
     <MESSAGE value="Fix load and save, of old model" />
@@ -187,7 +192,8 @@
     <MESSAGE value="Fix syntax errors" />
     <MESSAGE value="Some cleanup of warnings" />
     <MESSAGE value="Improve GUI layout and plot labeling" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improve GUI layout and plot labeling" />
+    <MESSAGE value="Starting to update the setup script" />
+    <option name="LAST_COMMIT_MESSAGE" value="Starting to update the setup script" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
