@@ -4,17 +4,10 @@
     <option name="GROUP_BY_SEVERITY" value="true" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cffddda4-0551-49ac-8f16-f4d10505a6a8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/genx.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/genx.iml" afterDir="false" />
+    <list default="true" id="cffddda4-0551-49ac-8f16-f4d10505a6a8" name="Default Changelist" comment="Improve GUI layout and plot labeling">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/genx/LICENSE.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/genx/genx.conf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/genx/datalist.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/datalist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/genx/event_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/event_handlers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/genx/genx_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/genx_gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/genx/genx_gui.wxg" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/genx_gui.wxg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/genx/plotpanel.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/plotpanel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genx/genx/plugins/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/genx/plugins/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/genx/scripts/genx" beforeDir="false" afterPath="$PROJECT_DIR$/genx/scripts/genx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/genx/scripts/genx.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/genx/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/genx/setup.py" afterDir="false" />
@@ -159,7 +152,14 @@
       <option name="project" value="LOCAL" />
       <updated>1572297816862</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Improve GUI layout and plot labeling">
+      <created>1572379088754</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1572379088754</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -186,7 +186,8 @@
     <MESSAGE value="Fix zoom rubber band" />
     <MESSAGE value="Fix syntax errors" />
     <MESSAGE value="Some cleanup of warnings" />
-    <option name="LAST_COMMIT_MESSAGE" value="Some cleanup of warnings" />
+    <MESSAGE value="Improve GUI layout and plot labeling" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improve GUI layout and plot labeling" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

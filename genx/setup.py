@@ -17,14 +17,14 @@ except ImportError:
 
 from glob import glob
 import subprocess
-import version
+from genx import version
 
 __name__='GenX'
-__author__ = "Matts Bjorck"
+__author__ = "Matts Bjorck;Artur Glavic"
 __copyright__ = "Copyright 2008-2011"
 __license__ = "GPL v3"
 __version__ = version.version.split()[0]
-__email__ = "matts.bjorck@gmail.com"
+__email__ = "artur.glavic@gmail.com"
 __author_email__ = __email__
 __url__ = "http://genx.sourceforge.net/"
 __description__='''X-ray and Neutron reflectivity fitting software.'''
@@ -40,74 +40,44 @@ def rec_glob(path):
       output.append(name)
   return output
 
-__scripts__=['genx.py']
+__scripts__=['scripts/genx']
 __py_modules__=[]
-__package_dir__={'genx': '.'}
-__packages__=['genx', 
+__package_dir__={}
+__packages__=['genx',
     'genx.plugins', 'genx.plugins.add_ons',  'genx.plugins.add_ons.help_modules', 
                 'genx.plugins.data_loaders', 'genx.plugins.data_loaders.help_modules', 
                 'genx.models', 'genx.models.lib', 'genx.lib']
 __package_data__={
-                  'genx': ['genx.conf', 'examples/*.*', 'LICENSE.txt', 'changelog.txt', 'profiles/*.*'], 
-                  'genx.models': ['databases/*.*', 'databases/f1f2_cxro/*.*'], 
+                  'genx': ['genx.conf', 'examples/*.*', 'LICENSE.txt', 'changelog.txt', 'profiles/*.*'],
+                  'genx.models': ['databases/*.*', 'databases/f1f2_cxro/*.*'],
                   }
 __data_files__=[]
 
-if "py2exe" in sys.argv:
-  import py2exe
-  import matplotlib  
-  __data_files__+=matplotlib.get_py2exe_datafiles()
-  __options__={ 
-                #"setup_requires": ['py2exe'], 
-                #"console": [ "genx.py"], # set the executable for py2exe
-                "windows": [ {
-                            "script": "genx.py",
-                            "icon_resources": [(1, "windows_build/genx.ico"), (2, "windows_build/genx_file.ico")]
-                            } ], # executable for py2exe is windows application            
-                "options": {  "py2exe": {
-                              "includes": ["numpy", "matplotlib", "StringIO", "traceback", "thread", "multiprocessing",
-                                           "ConfigParser",
-                                           'scipy', 'scipy.weave', "h5py.defs", "h5py.utils", "h5py._proxy",
-                                           "h5py._errors"],
-                              "optimize": 1, # Keep docstring (e.g. Shell usage)
-                              "skip_archive": True, # setting not to move compiled code into library.zip file
-                              'packages': ['plugins', 'models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
-                                           'scipy.weave', "h5py"],
-                              "dll_excludes": ["MSVCP90.dll", 'libglade-2.0-0.dll', 'libgdk_pixbuf-2.0-0.dll',
-                                               'libgobject-2.0-0.dll', 'libgdk-win32-2.0-0.dll', 'libzmq.pyd'],
-                              'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy',"IPython", "Tkinter",
-                                           "tcl", "mpi4py", "PyQt4"
-                                           ],
-                             }, 
-                           }
-              }
-elif"py2app" in sys.argv:
-  import py2app
-  import matplotlib  
-  __data_files__+=matplotlib.get_py2exe_datafiles()
-  
-  __options__ = dict(
-         setup_requires=['py2app'],
-         app=["genx.py"],
-         # Cross-platform applications generally expect sys.argv to
-         # be used for opening files.
-         options=dict(py2app=dict(argv_emulation = True, 
-                                  packages = ['matplotlib', 'numpy', 'plugins', 'models', 'wx', 'h5py'],
-                                  includes = ['genx_gui'], 
-                                  #resources = ['genx.conf','profiles'],
-                                  excludes = ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', "mpi4py"],
-                                  iconfile = 'mac_build/genx.icns',
-                                  plist = 'mac_build/Info.plist',
-                                  ),
-                    )
-     )  
-
-else:
-  __options__={#"setup_requires":[], 
-                }
-
+__options__={}
 __requires__=['numpy', 'matplotlib', 'scipy', 'appdirs', 'wx']
-from distutils.core import setup, Extension
+
+if sys.platform.startswith('win'):
+    icon_dir='windows_build/genx.ico'
+elif sys.platform=='darwin':
+    icon_dir='mac_build/genx.icns'
+else:
+    icon_dir='debian_build/genx_64x64.png'
+try:
+    from cx_Freeze import setup, Executable
+except ImportError:
+    from distutils.core import setup
+else:
+    __options__['executables']=[Executable('scripts/genx', icon=icon_dir)]
+    __options__['options']={"build_exe": {
+        "includes": ["numpy", "matplotlib", "traceback", "multiprocessing",
+                     "ConfigParser", "io",
+                     'scipy', "h5py.defs", "h5py.utils", "h5py._proxy",
+                     "h5py._errors"],
+        'packages': ['genx.plugins', 'genx.models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
+                     'scipy.spatial', "h5py", 'numpy', 'numpy.lib.format'],
+        'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy', "IPython", "Tkinter",
+                     "tcl", "mpi4py", "PyQt4", 'sqlite3'],
+        }}
 
 # extensions modules written in C
 __extensions_modules__=[]
@@ -118,13 +88,13 @@ if 'install' not in sys.argv:
     os.remove('MANIFEST')
 
 #### Build the extesion modules needed
-print("*** Building weave extensions ***")
-os.chdir('models')
-os.chdir('lib')
-subprocess.Popen(['python']+ ['build_ext.py'], shell=False, stderr=subprocess.PIPE,
-                 stdout=subprocess.PIPE).communicate()
-os.chdir('..')
-os.chdir('..')
+# print("*** Building weave extensions ***")
+# os.chdir('models')
+# os.chdir('lib')
+# subprocess.Popen(['python']+ ['build_ext.py'], shell=False, stderr=subprocess.PIPE,
+#                  stdout=subprocess.PIPE).communicate()
+# os.chdir('..')
+# os.chdir('..')
 print("*** Running setup ***")
 
 #### Run the setup command with the selected parameters ####
@@ -163,24 +133,24 @@ if ('bdist' in sys.argv):
   os.makedirs(__name__+'-'+__version__+'.orig/usr/share/')
   os.makedirs(__name__+'-'+__version__+'/usr/share/applications/')
   os.makedirs(__name__+'-'+__version__+'.orig/usr/share/applications/')
-  subprocess.Popen(['cp']+ glob('../debian/*.desktop')+[__name__+'-'+__version__+'/usr/share/applications/'],
+  subprocess.Popen(['cp']+ glob('../debian_build/*.desktop')+[__name__+'-'+__version__+'/usr/share/applications/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['cp']+glob('../debian/*.desktop')+[__name__+'-'+__version__+'.orig/usr/share/applications/'],
+  subprocess.Popen(['cp']+glob('../debian_build/*.desktop')+[__name__+'-'+__version__+'.orig/usr/share/applications/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
   # Icons
   #   menu
   os.makedirs(__name__+'-'+__version__+'/usr/share/pixmaps')
   os.makedirs(__name__+'-'+__version__+'.orig/usr/share/pixmaps')
-  subprocess.Popen(['cp']+ glob('../debian/*.xpm')+[__name__+'-'+__version__+'/usr/share/pixmaps/'],
+  subprocess.Popen(['cp']+ glob('../debian_build/*.xpm')+[__name__+'-'+__version__+'/usr/share/pixmaps/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['cp']+glob('../debian/*.xpm')+[__name__+'-'+__version__+'.orig/usr/share/pixmaps/'],
+  subprocess.Popen(['cp']+glob('../debian_build/*.xpm')+[__name__+'-'+__version__+'.orig/usr/share/pixmaps/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
   #   mime
   os.makedirs(__name__+'-'+__version__+'/tmp')
   os.makedirs(__name__+'-'+__version__+'.orig/tmp')
   os.makedirs(__name__+'-'+__version__+'/tmp/genx_icons')
   os.makedirs(__name__+'-'+__version__+'.orig/tmp/genx_icons')
-  for icon in glob('../debian/genx_*.png'):
+  for icon in glob('../debian_build/genx_*.png'):
     subprocess.Popen(['cp', icon, __name__+'-'+__version__+'/tmp/genx_icons/'], 
                      shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
     subprocess.Popen(['cp', icon, __name__+'-'+__version__+'.orig/tmp/genx_icons/'], 
@@ -191,52 +161,43 @@ if ('bdist' in sys.argv):
   os.makedirs(__name__+'-'+__version__+'/usr/share/mime/packages/')
   os.makedirs(__name__+'-'+__version__+'.orig/usr/share/mime/')
   os.makedirs(__name__+'-'+__version__+'.orig/usr/share/mime/packages/')
-  subprocess.Popen(['cp']+ glob('../debian/*.xml')+[__name__+'-'+__version__+'/usr/share/mime/packages/'],
+  subprocess.Popen(['cp']+ glob('../debian_build/*.xml')+[__name__+'-'+__version__+'/usr/share/mime/packages/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  subprocess.Popen(['cp']+glob('../debian/*.xml')+[__name__+'-'+__version__+'.orig/usr/share/mime/packages/'],
+  subprocess.Popen(['cp']+glob('../debian_build/*.xml')+[__name__+'-'+__version__+'.orig/usr/share/mime/packages/'],
                    shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
   os.chdir(__name__+'-'+__version__)
   # debian control file
+  print(os.path.abspath(os.curdir))
   #os.makedirs('debian')
   deb_con=open('debian/control', 'w')
-  deb_con.write(open('../../debian/control', 'r').read())
+  deb_con.write(open('../../debian_build/control', 'r').read())
   deb_con.close()
   # post install and remove scripts (e.g. adding mime types)
   deb_tmp=open('debian/postinst', 'w')
-  deb_tmp.write(open('../../debian/postinst', 'r').read())
+  deb_tmp.write(open('../../debian_build/postinst', 'r').read())
   deb_tmp.close()
   deb_tmp=open('debian/postrm', 'w')
-  deb_tmp.write(open('../../debian/postrm', 'r').read())
+  deb_tmp.write(open('../../debian_build/postrm', 'r').read())
   deb_tmp.close()
   #deb_tmp=open('debian/changelog', 'w')
   #deb_tmp.write(open('../../debian/changelog', 'r').read())
   #deb_tmp.close()
 
-  # python 2.7
-  print("Packaging for debian (python2.7)...")
+  # create .deb package
+  py_version=sys.version_info
+  print("Packaging for debian  (this python is %s)..."%("%i.%i.%i"%(
+                                                         py_version.major,
+                                                         py_version.minor,
+                                                         py_version.micro)))
   subprocess.Popen(['dpkg-buildpackage', '-i.*', '-I', '-rfakeroot', '-us', '-uc'], shell=False, 
                    stderr=subprocess.STDOUT, stdout=open('../last_package.log', 'w')
                    ).communicate()
   os.chdir('..')
-  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_trusty.deb')
-  # python 2.6
-  #subprocess.Popen(['cp']+ glob('../debian/*.desktop')+[__name__+'-'+__version__+'/usr/share/applications/'],
-  #                 shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  #subprocess.Popen(['cp']+glob('../debian/*.desktop')+[__name__+'-'+__version__+'.orig/usr/share/applications/'],
-  #                 shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  #subprocess.Popen(['mv', __name__+'-'+__version__+'/usr/local/lib/python2.7',
-  #                  __name__+'-'+__version__+'/usr/local/lib/python2.6'],
-  #                 shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  #subprocess.Popen(['mv', __name__+'-'+__version__+'.orig/usr/local/lib/python2.7',
-  #                  __name__+'-'+__version__+'.orig/usr/local/lib/python2.6'],
-  #                 shell=False, stderr=subprocess.PIPE,stdout=subprocess.PIPE).communicate()
-  #os.chdir(__name__+'-'+__version__)
-  #print "Packaging for debian (python2.6)..."
-  #subprocess.Popen(['dpkg-buildpackage', '-i.*', '-I', '-rfakeroot', '-us', '-uc'], shell=False,
-  #                 stderr=subprocess.STDOUT, stdout=open('../last_package_2.log', 'w')).communicate()
-  #os.chdir('..')
-  #os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_maverick.deb')
-  print("Removing debian folder...")
+  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_py%i%i.deb'%(
+                    py_version.major,py_version.minor))
+  
+  print("Removing debian folder")
+
   os.popen('rm '+__name__+'-'+__version__+' -r')
   os.popen('rm '+(__name__+'_'+__version__).lower()+'-1*')
   os.popen('rm *.rpm')
