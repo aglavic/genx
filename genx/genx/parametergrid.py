@@ -1299,19 +1299,19 @@ class ParameterGrid(wx.Panel):
         self.pmenu = wx.Menu()
         par_dict = self.par_dict
         classes = list(par_dict.keys())
-        classes.sort(lambda x, y: cmp(x.lower(), y.lower()))
+        classes.sort(key=str.lower)
         for cl in classes:
             # Create a submenu for each class
             clmenu = wx.Menu()
             if isinstance(par_dict[cl], dict):
                 obj_dict = par_dict[cl]
                 objs = list(obj_dict.keys())
-                objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                objs.sort(key=str.lower)
                 # Create a submenu for each object
                 for obj in objs:
                     obj_menu = wx.Menu()
                     funcs = obj_dict[obj]
-                    funcs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                    funcs.sort(key=str.lower)
                     # Create an item for each method
                     for func in funcs:
                         item = obj_menu.Append(-1, obj + '.' + func)
@@ -1320,7 +1320,7 @@ class ParameterGrid(wx.Panel):
                 #self.pmenu.Append(-1, cl, clmenu)
             elif isinstance(par_dict[cl], list):
                 objs = par_dict[cl]
-                objs.sort(lambda x, y: cmp(x.lower(), y.lower()))
+                objs.sort(key=str.lower)
                 # Create an item for each method
                 for obj in objs:
                     item = clmenu.Append(-1, obj)

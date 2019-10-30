@@ -738,12 +738,24 @@ def quit(frame, event):
         ans = ShowQuestionDialog(frame, 'If you continue any changes in' 
                                  ' your model will not be saved.', 
                                  'Model not saved')
-        if ans:
-            #frame.Destroy()
-            frame.parent.ExitMainLoop()
-    else:
-        #frame.Destroy()
-        frame.parent.ExitMainLoop()
+        if not ans:
+            return
+
+    import appdirs
+    config_path=appdirs.user_data_dir('GenX', 'MattsBjorck')+'/'
+    hsize, vsize=frame.GetSize()
+    frame.config.default_set('gui', 'hsize', hsize)
+    frame.config.default_set('gui', 'vsize', vsize)
+    frame.config.default_set('gui', 'vsplit', frame.ver_splitter.GetSashPosition())
+    frame.config.default_set('gui', 'hsplit', frame.hor_splitter.GetSashPosition())
+    frame.config.write_default(config_path+'genx.conf')
+
+    app=frame.parent
+    frame.findreplace_dlg.Close()
+    frame.findreplace_dlg=None
+    event.Skip()
+    # frame.Destroy()
+    # app.ExitMainLoop()
 
     
 def status_text(frame, event):

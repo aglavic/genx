@@ -345,9 +345,9 @@ class MainFrame(wx.Frame):
         self.findreplace_data = wx.FindReplaceData()
         # Make search down as default
         self.findreplace_data.SetFlags(1)
-        self.findreplace_dlg = wx.FindReplaceDialog(self,\
-                                                  self.findreplace_data,\
-                                                  "Find & replace",\
+        self.findreplace_dlg = wx.FindReplaceDialog(self,
+                                                  self.findreplace_data,
+                                                  "Find & replace",
                                                   wx.FR_REPLACEDIALOG)
         self.Bind(wx.EVT_FIND, self.eh_external_find)
         self.Bind(wx.EVT_FIND_NEXT, self.eh_external_find)
@@ -422,9 +422,7 @@ class MainFrame(wx.Frame):
         self.data_grid.SetColLabelValue(4, "y")
         self.data_grid.SetColLabelValue(5, "Error")
         self.hor_splitter.SetMinimumPaneSize(20)
-        self.hor_splitter.SetSashGravity(0.3)
         self.ver_splitter.SetMinimumPaneSize(20)
-        self.ver_splitter.SetSashGravity(0.2)
         # end wxGlade
         # Turn Line numbering on for the editor
         self.script_editor.setDisplayLineNumbers(True)
@@ -484,10 +482,10 @@ class MainFrame(wx.Frame):
         self.input_notebook.AddPage(self.input_notebook_script, "Script")
         input_sizer.Add(self.input_notebook, 1, wx.EXPAND, 0)
         self.input_panel.SetSizer(input_sizer)
-        self.hor_splitter.SplitHorizontally(self.plot_panel, self.input_panel, 423)
+        self.hor_splitter.SplitHorizontally(self.plot_panel, self.input_panel)
         main_sizer.Add(self.hor_splitter, 1, wx.EXPAND, 0)
         self.main_panel.SetSizer(main_sizer)
-        self.ver_splitter.SplitVertically(self.data_panel, self.main_panel, 512)
+        self.ver_splitter.SplitVertically(self.data_panel, self.main_panel)
         frame_sizer.Add(self.ver_splitter, 1, wx.EXPAND, 0)
         self.SetSizer(frame_sizer)
         frame_sizer.Fit(self)
@@ -502,18 +500,24 @@ class MainFrame(wx.Frame):
             the calls to Show
         '''
         display_size = wx.DisplaySize()
-        self.SetSize((display_size[0]*0.85, display_size[1]*0.9))
+        hsize=self.config.get_int('gui', 'hsize', int(display_size[0]*0.85))
+        vsize=self.config.get_int('gui', 'vsize', int(display_size[1]*0.9))
+        self.SetSize(hsize, vsize)
         self.CenterOnScreen()
+        # Gravity sets how much the upper/left window is resized default 0
+        self.ver_splitter.SetSashGravity(0.25)
+        self.hor_splitter.SetSashGravity(0.75)
+
         wx.Frame.Show(self)
         ## Begin Manual Config
         wx.CallAfter(self.LayoutSplitters)
 
     def LayoutSplitters(self):
-         size = self.GetSize()
-         self.ver_splitter.SetSashPosition(size[0]*1./4.)
-         self.hor_splitter.SetSashPosition(size[1]*5.0/10.)
-         # Gravity sets how much the upper/left window is resized default 0
-         self.hor_splitter.SetSashGravity(0.75)
+        size = self.GetSize()
+        vsplit=self.config.get_int('gui', 'vsplit', size[0]/4)
+        hsplit=self.config.get_int('gui', 'hsplit', size[1]-450)
+        self.ver_splitter.SetSashPosition(vsplit)
+        self.hor_splitter.SetSashPosition(hsplit)
 
     def startup_dialog(self, profile_path, force_show = False):
         show_profiles = self.config.get_boolean('startup', 'show profiles')
@@ -827,7 +831,6 @@ class MyApp(wx.App):
         wx.App.__init__(self, *args, **kwargs)
 
     def OnInit(self):
-        #wx.InitAllImageHandlers()
         locale = wx.Locale(wx.LANGUAGE_ENGLISH)
         self.locale = locale
         main_frame = MainFrame(self, self.show_startup, None, -1, "")

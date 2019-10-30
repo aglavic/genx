@@ -321,14 +321,6 @@ def set_optimiser_pars(optimiser, args):
     #    print "kr not set has to be bigger than 0"
 
 if __name__ == "__main__":
-
-    # py2exe multiprocessing support
-    try:
-        from multiprocessing import freeze_support
-        freeze_support()
-    except ImportError:
-        pass
-
     # Attempt to load mpi:
     __mpi__ = False
     try:

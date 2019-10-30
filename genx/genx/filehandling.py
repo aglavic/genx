@@ -301,7 +301,8 @@ class Config:
         except Exception as e:
             raise IOError('Could not load model config file')
         
-    def _getf(self, default_function, model_function, section, option):
+    def _getf(self, default_function, model_function, section, option,
+              fallback=None):
         '''_getf(default_function, model_function, section, option) --> object
         
         For the function function try to locate the section and option first in
@@ -315,8 +316,10 @@ class Config:
             try:
                 value = default_function(section, option)
             except Exception as e:
-                raise OptionError(section, option)
-        
+                if fallback is None:
+                    raise OptionError(section, option)
+                else:
+                    value=fallback
         return value
     
     def get_float(self, section, option):
@@ -335,13 +338,14 @@ class Config:
         return self._getf(self.default_config.getboolean,\
                     self.model_config.getboolean, section, option)
                     
-    def get_int(self, section, option):
+    def get_int(self, section, option, fallback=None):
         '''get_int(self, section, option) --> int
         
         returns a int value if possible for option in section
         '''
         return self._getf(self.default_config.getint,\
-                    self.model_config.getint, section, option)
+                    self.model_config.getint, section, option,
+                          fallback=fallback)
                     
     def get(self, section, option):
         '''get(self, section, option) --> string

@@ -988,8 +988,6 @@ class DataPlotPanel(PlotPanel):
         self.sub_ax_rect = (0.125, 0.1,0.8,0.18)
         PlotPanel.__init__(self, parent, id, color, dpi, style, **kwargs)
         self.create_axes()
-        self.update=self.singleplot
-        self.update(None)
         self.update = self.plot_data
         self.SetAutoScale(True)
         #self.ax = self.figure.add_subplot(111)
