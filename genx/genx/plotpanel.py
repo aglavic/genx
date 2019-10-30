@@ -412,8 +412,12 @@ class PlotPanel(wx.Panel):
         
         Copy the plot to the clipboard.
         '''
+        self.SetColor((255, 255, 255))
+        self.flush_plot()
         self.canvas.Copy_to_Clipboard(event = event)
-        
+        self.SetColor()
+        self.flush_plot()
+
     def PrintSetup(self, event = None):
         '''PrintSetup(self) --> None
         
@@ -1049,8 +1053,7 @@ class DataPlotPanel(PlotPanel):
             self.ax.set_ylabel(ylabel)
         if elabel is not None:
             self.error_ax.set_ylabel(elabel)
-        self.figure.tight_layout()
-        self.canvas.draw()
+        self.flush_plot()
 
     def autoscale_error_ax(self):
         ymin = min([array(line.get_ydata()).min()\
@@ -1091,8 +1094,6 @@ class DataPlotPanel(PlotPanel):
         # This will be somewhat inefficent since everything is updated
         # at once would be better to update the things that has changed...
         
-        # Clear axes
-        #self.ax.cla()
         self.ax.lines = []
         self.ax.collections = []
         # plot the data
@@ -1324,7 +1325,6 @@ class ErrorPlotPanel(PlotPanel):
         self.ax.set_ylabel('FOM')
         self.figure.tight_layout()
         self.flush_plot()
-        self.canvas.draw()
         
     def OnSolverPlotEvent(self, event):
         ''' OnSolverPlotEvent(self,event) --> None
@@ -1375,7 +1375,6 @@ class ParsPlotPanel(PlotPanel):
         self.ax.set_ylabel('Relative value in min/max range')
         self.figure.tight_layout()
         self.flush_plot()
-        self.canvas.draw()
         
     def OnSolverParameterEvent(self, event):
         ''' OnSolverParameterEvent(self,event) --> None
@@ -1441,7 +1440,6 @@ class FomScanPlotPanel(PlotPanel):
         self.ax.set_ylabel(l2)
 
         self.flush_plot()
-        self.canvas.draw()
 
 #=============================================================================
 # Test code for the class to be able to independly test the code

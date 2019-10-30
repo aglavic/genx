@@ -49,7 +49,7 @@ __packages__=['genx',
                 'genx.models', 'genx.models.lib', 'genx.lib']
 __package_data__={
                   'genx': ['genx.conf', 'examples/*.*', 'LICENSE.txt', 'changelog.txt', 'profiles/*.*'],
-                  'genx.models': ['databases/*.*', 'databases/f1f2_cxro/*.*'],
+                  'genx.models': ['databases/*.*', 'databases/f1f2_cxro/*.*', 'databases/f1f2_nist/*.*'],
                   }
 __data_files__=[]
 
@@ -62,24 +62,24 @@ elif sys.platform=='darwin':
     icon_dir='mac_build/genx.icns'
 else:
     icon_dir='debian_build/genx_64x64.png'
-try:
-    from cx_Freeze import setup, Executable
-except ImportError:
-    from distutils.core import setup
-else:
-    __options__['executables']=[Executable('scripts/genx', icon=icon_dir)]
-    __options__['options']={"build_exe": {
-        "includes": ["numpy", "matplotlib", "traceback", "multiprocessing",
-                     "ConfigParser", "io",
-                     'scipy', "h5py.defs", "h5py.utils", "h5py._proxy",
-                     "h5py._errors"],
-        'packages': ['genx.plugins', 'genx.models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
-                     'scipy.spatial', "multiprocessing",
-                     "h5py", 'numpy', 'numpy.lib.format'],
-        'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy', "IPython", "Tkinter",
-                     "tcl", "mpi4py", "PyQt4", 'sqlite3',
-                     'scipy.spatial.cKDTree','multiprocessing.Pool'],
-        }}
+# try:
+#     from cx_Freeze import setup, Executable
+# except ImportError:
+#     from distutils.core import setup
+# else:
+#     __options__['executables']=[Executable('scripts/genx', icon=icon_dir)]
+#     __options__['options']={"build_exe": {
+#         "includes": ["numpy", "matplotlib", "traceback", "multiprocessing",
+#                      "ConfigParser", "io",
+#                      'scipy', "h5py.defs", "h5py.utils", "h5py._proxy",
+#                      "h5py._errors"],
+#         'packages': ['genx.plugins', 'genx.models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
+#                      'scipy.spatial', "multiprocessing",
+#                      "h5py", 'numpy', 'numpy.lib.format'],
+#         'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy', "IPython", "Tkinter",
+#                      "tcl", "mpi4py", "PyQt4", 'sqlite3',
+#                      'scipy.spatial.cKDTree','multiprocessing.Pool'],
+#         }}
 
 # extensions modules written in C
 __extensions_modules__=[]
@@ -108,7 +108,7 @@ setup(name=__name__,
       url=__url__,
       scripts=__scripts__, 
       py_modules=__py_modules__, 
-      ext_modules=__extensions_modules__, 
+      ext_modules=__extensions_modules__,
       packages=__packages__, 
       package_dir=__package_dir__, 
       package_data=__package_data__,
