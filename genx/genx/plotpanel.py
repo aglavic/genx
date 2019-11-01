@@ -557,21 +557,14 @@ class PlotPanel(wx.Panel):
         # Draw the rubber-band rectangle using an overlay so it
         # will manage keeping the rectangle and the former window
         # contents separate.
-        dc = wx.ClientDC(self)
+        # dc = wx.ClientDC(self)
+        dc = wx.ClientDC(self.canvas)
         odc = wx.DCOverlay(self.overlay, dc)
         odc.Clear()
-
-        # Mac's DC is already the same as a GCDC, and it causes
-        # problems with the overlay if we try to use an actual
-        # wx.GCDC so don't try it.
-        if 'wxMac' not in wx.PlatformInfo:
-            dc = wx.GCDC(dc)
 
         dc.SetPen(wx.Pen("black", 2, style=wx.DOT_DASH))
         dc.SetBrush(wx.Brush("black", style=wx.BRUSHSTYLE_TRANSPARENT))
         dc.DrawRectangle(rect)
-
-        del odc
 
     def OnContextMenu(self, event):
         '''OnContextMenu(self, event) --> None
