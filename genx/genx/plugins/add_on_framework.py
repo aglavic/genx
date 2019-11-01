@@ -267,7 +267,7 @@ class PluginController:
         
         menu.Append(-1, 'Update module list')
         
-        self.LoadDefaultPlugins()
+        wx.CallAfter(self.LoadDefaultPlugins)
         #self.update_plugins()
         
     def update_plugins(self):

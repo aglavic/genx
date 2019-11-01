@@ -36,7 +36,10 @@ class Model:
         '''
         self.config = config
         self.data = data.DataList()
-        self.script = ''
+        if config is None:
+            self.script = ''
+        else:
+            self.script = "\n".join(eval(config.get('startup','script', fallback='')))
         self.parameters = parameters.Parameters(model=self)
         
         #self.fom_func = default_fom_func   

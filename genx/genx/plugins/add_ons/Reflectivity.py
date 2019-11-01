@@ -415,7 +415,6 @@ class MyHtmlListBox(wx.html.HtmlListBox):
     def OnGetItem(self, n):
         return self.html_items[n]
    
-
 class SamplePanel(wx.Panel):
     def __init__(self, parent, plugin, refindexlist=[]):
         wx.Panel.__init__(self, parent)
@@ -1704,7 +1703,6 @@ class ParameterExpressionDialog(wx.Dialog):
         
         return evalstring
         
-
 class SamplePlotPanel(wx.Panel):
     ''' Widget for plotting the scattering length density of 
     a sample.
@@ -1826,9 +1824,7 @@ class SamplePlotPanel(wx.Panel):
             f.write('#' + header + '\n')
             np.savetxt(f, save_array.transpose())
             f.close()
-        
-        
-        
+  
 class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
@@ -1841,14 +1837,14 @@ class Plugin(framework.Template):
         self.sample_widget = SamplePanel(sample_panel, self)
         sample_sizer.Add(self.sample_widget, 1, wx.EXPAND|wx.GROW|wx.ALL)
         sample_panel.Layout()
-        
+
         simulation_panel = self.NewInputFolder('Simulations')
         simulation_sizer = wx.BoxSizer(wx.HORIZONTAL)
         simulation_panel.SetSizer(simulation_sizer)
         self.simulation_widget = DataParameterPanel(simulation_panel, self)
         simulation_sizer.Add(self.simulation_widget, 1, wx.EXPAND|wx.GROW|wx.ALL)
         simulation_panel.Layout()
-        
+
         self.sample_widget.SetUpdateCallback(self.UpdateScript)
         self.simulation_widget.SetUpdateScriptFunc(self.UpdateScript)
         
@@ -1859,14 +1855,21 @@ class Plugin(framework.Template):
         self.sld_plot = SamplePlotPanel(sld_plot_panel, self)
         sld_sizer.Add(self.sld_plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
         sld_plot_panel.Layout()
-        
-        if self.model_obj.filename != '' and self.model_obj.script != '':
-            iprint("Reflectivity plugin: Reading loaded model")
-            self.ReadModel()
+
+        if self.model_obj.script != '':
+            if self.model_obj.filename!='':
+                iprint("Reflectivity plugin: Reading loaded model")
+                self.ReadModel()
+            else:
+                try:
+                    self.ReadModel()
+                except:
+                    iprint("Reflectivity plugin: Creating new model")
+                    self.CreateNewModel()
         else:
             iprint("Reflectivity plugin: Creating new model")
             self.CreateNewModel()
-        
+
         # Create a menu for handling the plugin
         menu = self.NewMenu('Reflec')
         self.mb_export_sld = wx.MenuItem(menu, wx.NewId(), 

@@ -286,6 +286,8 @@ class MainFrame(wx.Frame):
         
         
         self.model = model.Model(config=self.config)
+        if self.model.script!='':
+            self.script_editor.SetText(self.model.script)
         self.solver_control = solvergui.SolverController(self, self.config)
     
         self.plugin_control = \
@@ -383,9 +385,7 @@ class MainFrame(wx.Frame):
         # event_handlers.new(self, None)
         self.model.saved = True
         #### End Manual config
-
-
-        
+   
     def __set_properties(self):
         self.main_frame_toolbar.SetToolBitmapSize((32,32))
         self.main_frame_toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
@@ -429,7 +429,6 @@ class MainFrame(wx.Frame):
         self.script_editor.setDisplayLineNumbers(True)
         self.ver_splitter.SetMinimumPaneSize(1)
         self.hor_splitter.SetMinimumPaneSize(1)
-        
 
     def __do_layout(self):
         # begin wxGlade: MainFrame.__do_layout
@@ -494,7 +493,6 @@ class MainFrame(wx.Frame):
         self.Layout()
         self.Centre()
         # end wxGlade
-        
 
     def Show(self):
         ''' Overiding the default method since any resizing has to come AFTER

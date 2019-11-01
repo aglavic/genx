@@ -560,9 +560,6 @@ class ValidateBaseDialog(wx.Dialog):
             sizer.Add(col_box_sizer, flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
         return sizer, tc
     
-    def crete_edit_ctrl(self, editable, par, parent, val, validator):
-        raise NotImplementedError('Method required, subclass must implement')
-
     def layout_group(self, parent, pars, vals, editable_pars):
         if self.units:
             layout_cols = 3

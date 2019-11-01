@@ -348,13 +348,14 @@ class Config:
                     self.model_config.getint, section, option,
                           fallback=fallback)
                     
-    def get(self, section, option):
+    def get(self, section, option, fallback=None):
         '''get(self, section, option) --> string
         
         returns a string value if possible for option in section
         '''
-        return self._getf(self.default_config.get,\
-                    self.model_config.get, section, option)
+        return self._getf(self.default_config.get,
+                    self.model_config.get, section, option,
+                    fallback=fallback)
                     
     def model_set(self, section, option, value):
         '''model_set(self, section, option, value) --> None
