@@ -421,11 +421,12 @@ class DataSet:
             except Exception as e:
                 result += 'Error in evaluating e expression.\n\nPython output:\n'\
                         + e.__str__() + '\n'
-                        
-        for key in self.extra_commands:
+        
+        extra_results={}
+        for key,value in self.extra_commands.items():
             if command_dict[key] != '':
                 try:
-                    exec('%st = eval(command_dict["%s"])'%(key, key))
+                   extra_results[key] = eval(value)
                 except Exception as e:
                     result += 'Error in evaluating %s expression.\n\nPython output:\n'%key\
                             + e.__str__() + '\n'
@@ -433,16 +434,15 @@ class DataSet:
         # If we got an error - report it
         if result != '':
             return result
-        #print 'Debug, datatry: ', xt, yt, et
         # Finally check so that all the arrays have the same size
-        extra_shape = not all([eval('%st.shape'%key) == xt.shape for \
-                            key in self.extra_commands])
+        extra_shape = not all([resi.shape==xt.shape
+                               for resi in extra_results.values()])
         if (xt.shape != yt.shape or xt.shape != et.shape or extra_shape)\
             and result == '':
             result += 'The resulting arrays are not of the same size:\n' + \
                        'len(x) = %d, len(y) = %d, len(e) = %d'\
                     %(xt.shape[0], yt.shape[0], et.shape[0])
-            for key in self.extra_commands:
+            for key,value in extra_results.items():
                 result += ', len(%s) = %d'%(key, eval('%st.shape[0]'%key))
         return result
             

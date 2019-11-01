@@ -18,6 +18,7 @@ from . import data
 from . import parameters
 from . import fom_funcs
 from .gui_logging import iprint
+from logging import debug
 
 from .models.lib.parameters import NumericParameter, get_parameters
 
@@ -36,10 +37,12 @@ class Model:
         '''
         self.config = config
         self.data = data.DataList()
-        if config is None:
-            self.script = ''
-        else:
-            self.script = "\n".join(eval(config.get('startup','script', fallback='')))
+        self.script=''
+        if config is not None:
+            try:
+                self.script = "\n".join(eval(config.get('startup','script', fallback='[""]')))
+            except:
+                debug('Issue when loading script from config:', exc_info=True)
         self.parameters = parameters.Parameters(model=self)
         
         #self.fom_func = default_fom_func   

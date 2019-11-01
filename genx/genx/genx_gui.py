@@ -286,6 +286,7 @@ class MainFrame(wx.Frame):
         
         
         self.model = model.Model(config=self.config)
+        self.model.data=self.data_list.data_cont.data
         if self.model.script!='':
             self.script_editor.SetText(self.model.script)
         self.solver_control = solvergui.SolverController(self, self.config)
