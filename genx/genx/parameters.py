@@ -6,6 +6,7 @@ Programmer: Matts Bjorck
 
 import numpy as np
 import string
+from genx.gui_logging import iprint
 
 # ==============================================================================
 
@@ -397,4 +398,4 @@ if __name__ == '__main__':
     p2 = Parameters()
     f = h5py.File('test.hdf', 'r')
     p2.read_h5group(f['parameters'])
-    print(p2.data)
+    iprint(p2.data)

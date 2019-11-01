@@ -60,6 +60,7 @@ import sys, os, re, time, io, traceback
 
 from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
+from genx.gui_logging import iprint
 
 _avail_models=['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx',
                  'spec_inhom', 'spec_adaptive']
@@ -838,7 +839,7 @@ class SamplePanel(wx.Panel):
                     if result:
                         self.Update()
                     else:
-                        print('Unexpected problems when changing name...')
+                        iprint('Unexpected problems when changing name...')
             dlg.Destroy()
 
     def lbDoubleClick(self,evt):
@@ -1767,7 +1768,7 @@ class SamplePlotPanel(wx.Panel):
                 try:
                     sample = model.sample
                 except AttributeError:
-                    print("Warning: Could not locate the sample in the model")
+                    iprint("Warning: Could not locate the sample in the model")
                     return
                 plot_dict = sample.SimSLD(None, None, model.inst)
                 self.plot_dicts = [plot_dict]
@@ -1860,10 +1861,10 @@ class Plugin(framework.Template):
         sld_plot_panel.Layout()
         
         if self.model_obj.filename != '' and self.model_obj.script != '':
-            print("Reflectivity plugin: Reading loaded model")
+            iprint("Reflectivity plugin: Reading loaded model")
             self.ReadModel()
         else:
-            print("Reflectivity plugin: Creating new model")
+            iprint("Reflectivity plugin: Creating new model")
             self.CreateNewModel()
         
         # Create a menu for handling the plugin
@@ -2465,7 +2466,7 @@ if __name__ == '__main__':
     stack=Model.Stack(Layers=[Fe,Si],Repetitions=20)
     stack2=Model.Stack(Layers=[Fe,Si])
     sample=Model.Sample(Stacks=[stack,stack2],Ambient=amb,Substrate=sub,eta_z=500.0,eta_x=100.0)
-    print(sample)
+    iprint(sample)
     inst=Model.Instrument(Wavelength=1.54,Coordinates=1)
     s = ['Amb','stack1','Fe1','Si1','s2','Fe2','Si2','Sub']
     sh=SampleHandler(sample,s)
@@ -2480,6 +2481,6 @@ if __name__ == '__main__':
             return True
 
 
-    print(Si.getN().__repr__())
+    iprint(Si.getN().__repr__())
     app = MyApp(0)
     app.MainLoop()

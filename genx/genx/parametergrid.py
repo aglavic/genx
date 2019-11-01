@@ -20,6 +20,7 @@ from . import parameters
 from . import images as img
 from .lib import controls as ctrls
 from . import filehandling
+from .gui_logging import iprint
 
 
 #=============================================================================
@@ -871,7 +872,7 @@ class ParameterGrid(wx.Panel):
         try:
             val = self.config.get_boolean(self.config_name, 'value slider')
         except filehandling.OptionError:
-            print('Could not locate option %s.%s'%(self.config_name, 'y scale'))
+            iprint('Could not locate option %s.%s'%(self.config_name, 'y scale'))
             self.SetValueEditorSlider(False)
         else:
             self.SetValueEditorSlider(val)
@@ -1395,7 +1396,7 @@ class ParameterGrid(wx.Panel):
                 self.table.SetValue(self.CurSelection[0], 4,
                                     max(minval, maxval))
             except Exception as S:
-                print("Not possible to init the variable automatically")
+                iprint("Not possible to init the variable automatically")
                 #print S
         else:
             # It could be a Parameter class
@@ -1411,7 +1412,7 @@ class ParameterGrid(wx.Panel):
                 self.table.SetValue(self.CurSelection[0], 4,
                                     max(minval, maxval))
             except Exception as S:
-                print("Not possible to init the variable automatically")
+                iprint("Not possible to init the variable automatically")
                 #print S
 
     def OnResize(self, evt):

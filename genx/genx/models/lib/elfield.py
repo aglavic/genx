@@ -1,5 +1,5 @@
 from scipy import *
-
+from genx.gui_logging import iprint
 
 def IntElfield(theta,lamda,n,d):
     # Length of k-vector in vaccum
@@ -95,7 +95,7 @@ def AmpElfield2(kx,k,n,z):
     X=0*ones(kx.shape)
     for i in range(len(n)-2,-1,-1):
         X=exp(-2j*kz[i]*z[i])*(r[i]+X*exp(2j*kz[i+1]*z[i]))/(1+r[i]*X*exp(2j*kz[i+1]*z[i]))
-        print(i)
+        iprint(i)
     # X=reflected amplitude...
     r=(kz[1:]-kz[:-1])/(kz[:-1]+kz[1:])
     t=1+r
@@ -143,13 +143,13 @@ def AmpElfield_test(th, lam, n, d, dz = 0.1):
     Rlay = R0
     Tlay = 1.0
     z = array([0])
-    print('R0 ',R0.shape)
+    iprint('R0 ',R0.shape)
     E = array(abs(R0 + 1.0))[:, newaxis]*ones((th.shape[0],1))
     #E = array([])
-    print(kz.shape)
-    print((th.shape[0], 1))
-    print(ones((th.shape[0], 1)).shape)
-    print(E.shape)
+    iprint(kz.shape)
+    iprint((th.shape[0], 1))
+    iprint(ones((th.shape[0], 1)).shape)
+    iprint(E.shape)
     for di, kzi, M, in zip(d[1:], kz[1:], MMcum):
          Mlay = inv2(M)
          Rlay_new = Mlay[0,0]*Tlay + Mlay[0,1]*Rlay
@@ -165,7 +165,7 @@ def AmpElfield_test(th, lam, n, d, dz = 0.1):
     
          
     #print MM.shape
-    print(E.shape)
+    iprint(E.shape)
     #E = E.reshape((th.shape[0], z.shape[0]))
     return (T, R, z, E)
 

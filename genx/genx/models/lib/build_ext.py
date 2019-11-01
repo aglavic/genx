@@ -6,6 +6,7 @@ First version: 2014-05-16
 """
 from numpy import *
 from weave import ext_tools
+from genx.gui_logging import iprint
 
 def paratt():
     """
@@ -428,9 +429,9 @@ def sxrd():
 
 
 if __name__ == '__main__':
-    print('Building Paratt extension module')
+    iprint('Building Paratt extension module')
     paratt()
-    print('Building Offspec extension module')
+    iprint('Building Offspec extension module')
     offspec()
-    print('Building SXRD extension module')
+    iprint('Building SXRD extension module')
     sxrd()

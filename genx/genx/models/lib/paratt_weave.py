@@ -81,7 +81,7 @@ if __name__=='__main__':
     n = array([1-7.57e-6+1.73e-7j] + [1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j]*rep +[1])
     d = array([1] + [80,20,80,20,80,20]*rep + [1])*1.0
     sigma = array([0] + [0,0,0,0,0,0]*rep + [0])*1.0
-    print(n.shape)
+    iprint(n.shape)
     t1=time.clock()
     #c1=paratt.Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma)
     #c1=paratt.Refl_nvary2(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d,sigma*0)
@@ -91,6 +91,6 @@ if __name__=='__main__':
     #c2 = Refl_nvary2_nosigma(theta, 1.54*ones(theta.shape), n[:, newaxis]*ones(theta.shape), d)
     c2 = Refl(theta, 1.54, n, d, sigma)
     t3=time.clock()
-    print(t2-t1,t3-t2)
+    iprint(t2-t1,t3-t2)
     pl.plot(theta,log10(c1),'x',theta,log10(c2))
     pl.show()

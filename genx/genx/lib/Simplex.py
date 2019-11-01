@@ -44,6 +44,7 @@ depending on the initial guess used as a starting point.
 
 import math
 import copy
+from genx.gui_logging import iprint
 
 class Simplex:
     def __init__(self, testfunc, guess, increments, kR = -1, kE = 2, kC = 0.5):
@@ -126,7 +127,7 @@ class Simplex:
             
             # Optionally, print progress information
             if monitor:
-                print('Iteration = %d   Best = %f   Worst = %f' % (iter,self.errors[self.lowest],self.errors[self.highest]))
+                iprint('Iteration = %d   Best = %f   Worst = %f' % (iter,self.errors[self.lowest],self.errors[self.highest]))
                 
             if T <= epsilon:   # We converged!  Break out of loop!
                 break;
@@ -241,9 +242,9 @@ def objective_function(args):
 def main():
     s = Simplex(objective_function, [1, 1, 1], [2, 4, 6])
     values, err, iter = s.minimize(maxiters = 60, monitor = 0)
-    print('args = ', values)
-    print('error = ', err)
-    print('iterations = ', iter)
+    iprint('args = ', values)
+    iprint('error = ', err)
+    iprint('iterations = ', iter)
 
 if __name__ == '__main__':
     main()

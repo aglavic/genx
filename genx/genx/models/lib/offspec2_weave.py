@@ -10,11 +10,11 @@ try:
     from . import offspec_ext
     offspec_ext_built = True
 except ImportError:
-    print('Could not import offspec_ext')
+    iprint('Could not import offspec_ext')
     offspec_ext_built = False
 
 if not offspec_ext_built and not debug:
-    print("Trying to build module offspec_ext")
+    iprint("Trying to build module offspec_ext")
     from . import build_ext
     build_ext.offspec()
     from . import offspec_ext
@@ -23,7 +23,7 @@ if not offspec_ext_built and not debug:
 def vec_realsymint(F,omega,eta,h,eta_z,qz_n,qz_np,sigma_n,sigma_np,max_n):
     I=2*sum([((qz_n*conj(qz_np)*(sigma_n*sigma_np))**n)/factorial(n)*eta/n**(1.0/2.0/h)*F(omega*eta/(n**(1.0/2.0/h))) for n in arange(1.0,max_n+1.0)])
     I=array(I)
-    print(I.shape)
+    iprint(I.shape)
     return I
 
 def make_F(q,h):

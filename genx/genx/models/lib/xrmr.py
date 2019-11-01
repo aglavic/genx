@@ -14,6 +14,7 @@ import numpy as np
 from .math_utils import *
 from .int_lay_xmean import calc_xrmr_Xmean
 from functools import reduce
+from genx.gui_logging import iprint
 
 
 # mpy_limit = 1e-9 corresponds to an angle of 89.998 deg.
@@ -448,8 +449,8 @@ if __name__ == '__main__':
     t2 = time.time()
     W = calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0, d*0, d*0)
     t3 = time.time()
-    print("No roughness, simulation time: ", t2-t1, "s")
-    print("Roughness factors, simulation time ", t3-t2, "s")
+    iprint("No roughness, simulation time: ", t2-t1, "s")
+    iprint("Roughness factors, simulation time ", t3-t2, "s")
 
     #W = calc_nonres(g_0, l, chi0, d)
     Ias = 2*(W[0,0]*W[0,1].conj() + W[1,0]*W[1,1].conj()).imag/(np.abs(W[0,0])**2 + np.abs(W[1,0])**2 + np.abs(W[0,1])**2 + np.abs(W[1,1])**2)

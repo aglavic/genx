@@ -76,6 +76,7 @@ in g/cm<sup>3<sup>.
 import numpy as np
 from .lib import scatteringlengths as sl
 import os
+from genx.gui_logging import iprint
 
 _head, _tail = os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -179,9 +180,9 @@ if __name__=='__main__':
     for i in range(N):
         fd.Fe(100.0)
     t2 = time.time()
-    print("Dispersive database access time: ", (t2-t1)/N)
+    iprint("Dispersive database access time: ", (t2-t1)/N)
     t1 = time.time()
     for i in range(N):
         fp.Fe
     t2 = time.time()
-    print("Normal database access time: ", (t2 - t1) / N)
+    iprint("Normal database access time: ", (t2 - t1) / N)

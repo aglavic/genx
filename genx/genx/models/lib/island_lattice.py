@@ -16,6 +16,7 @@ import numpy as np
 
 
 from . import grating
+from genx.gui_logging import iprint
 
 q = Var('q', np.array([0, 0, 0]), help="The scattering vector.")
 e = Var('wl', 1.54,  help="The wavelength of the radiation.")
@@ -121,7 +122,7 @@ class Sample(HasParameters):
         vmean = 4*np.pi*np.array(self.build_layer_list(['sld'], kwargs)['sld'])/area_uc
         self.layer_dic['sld_mean'] = vmean/4/np.pi
         self.layer_dic['d'] = d
-        print(vmean.shape, vf.shape)
+        iprint(vmean.shape, vf.shape)
         k_in, k_out = instrument.reflectometer_3axis_kinout(q)
         R = grating.coherent_refl(k_in, k_out, wavelength, vf.T, vmean, d, area_uc, kin=False)
         return R
@@ -193,15 +194,15 @@ if __name__ == '__main__':
     Fe = Layer(d=rep*0.1 + 10.0, sld=mat_Fe.sld_x*FCircle(r=radius + z*slope))
     Fe.d = 20.0
     q = np.array([0, 0, 0])
-    print(Fe.sld(q=q))
-    print(Fe.d())
+    iprint(Fe.sld(q=q))
+    iprint(Fe.d())
     ML = Stack(reps=10, layers=[Fe, ])
 
     s = Sample(stacks=[ML, ])
-    print(isinstance(s, HasParameters), s.__class__.__name__)
+    iprint(isinstance(s, HasParameters), s.__class__.__name__)
     inst = Instrument()
 
-    print('D with a gradient: ', s.build_layer_list(['d'], {})['d'])
+    iprint('D with a gradient: ', s.build_layer_list(['d'], {})['d'])
 
     #print s.stacks[0].layers[0]
     qz = np.arange(0, 0.1, 0.001)

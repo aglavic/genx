@@ -13,6 +13,7 @@ import wx
 import plugins.add_on_framework as framework
 from .help_modules import model_interactors as mi
 from .help_modules import atom_viewer
+from genx.gui_logging import iprint
 
 
 code = """
@@ -205,8 +206,8 @@ class Plugin(framework.Template):
                 traceback.print_exc(200, outp)
                 tbtext = outp.getvalue()
                 outp.close()
-                print("Error updating the script: ")
-                print(tbtext)
+                iprint("Error updating the script: ")
+                iprint(tbtext)
                 if self.ShowQuestionDialog('Could not update the script due to syntax issues. Python error: %s\n\n'
                                             'Do you wish to reset the model to the one defined in the user interface?'):
                     self.SetModelScript(self.script_interactor.get_code())
@@ -247,7 +248,7 @@ class Plugin(framework.Template):
             try:
                 domain = self.GetModel().eval_in_model(domain)
             except Exception:
-                print("Could not load domain ", domain)
+                iprint("Could not load domain ", domain)
             else:
                 self.sample_view.build_sample(domain, use_opacity=False)
 

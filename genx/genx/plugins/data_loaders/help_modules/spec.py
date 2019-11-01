@@ -81,6 +81,7 @@ import matplotlib.pylab as pylab
 #from fit import fit
 #from ccd.transformations import FileProcessor
 from copy import deepcopy, copy
+from genx.gui_logging import iprint
 
 __version__ = "$Revision$"
 __author__ = "Stuart B. Wilkins <swilkins@bnl.gov>"
@@ -169,7 +170,7 @@ class SpecDataFile:
 
         if __verbose__:
             for ext in self.userExtensions:
-                print("**** Defining extension %s" % ext.getName())
+                iprint("**** Defining extension %s" % ext.getName())
 
         for ext in self.userExtensions:
             ext.initSpec(self)
@@ -183,11 +184,11 @@ class SpecDataFile:
 
     def _loadSpecFile(self):
         if __verbose__:
-            print("**** Opening specfile %s." % self.filename)
+            iprint("**** Opening specfile %s." % self.filename)
 
         self.index()
         self.readHeader()
-        print(self.getStats())
+        iprint(self.getStats())
 
         self.scandata = {}
         return
@@ -206,7 +207,7 @@ class SpecDataFile:
 
         self.scandata = {}
         if __verbose__:
-            print("**** SpecFile reset (all scans removed)")
+            iprint("**** SpecFile reset (all scans removed)")
 
     def reload(self):
         """Reload the data file
@@ -214,7 +215,7 @@ class SpecDataFile:
         This routine reloads (reindexes) the datafile"""
 
         if __verbose__:
-            print("**** Reloading SpecFile")
+            iprint("**** Reloading SpecFile")
         self._loadSpecFile()
 
     def setMode(self, mode = 'concatenate'):
@@ -227,11 +228,11 @@ class SpecDataFile:
 
         if mode == 'concatenate':
             self.mode = 'concat'
-            print("**** Multiple scans will be concatenated.")
+            iprint("**** Multiple scans will be concatenated.")
             return
         elif mode == 'bin':
             self.mode = 'bin'
-            print("**** Multiple scans will be binned.")
+            iprint("**** Multiple scans will be binned.")
             return
         else:
             raise Exception("Unknown mode %s" % mode)
@@ -248,7 +249,7 @@ class SpecDataFile:
         self.file = open(self.filename, 'r')
 
         if __verbose__:
-            print("---- Reading Header.")
+            iprint("---- Reading Header.")
 
         self.motors = []
         self.file.seek(0,0)
@@ -279,7 +280,7 @@ class SpecDataFile:
         self.file = open(self.filename, 'r')
 
         if __verbose__:
-            print("---- Indexing scan :       ", end=' ')
+            iprint("---- Indexing scan :       ", end=' ')
             sys.stdout.flush()
             sys.stderr.flush()
 
@@ -294,13 +295,13 @@ class SpecDataFile:
                 a = line.split()
                 s = int(a[1])
                 if (s % 5) is 0:
-                    print("\b\b\b\b\b\b\b%5d " % s, end=' ')
+                    iprint("\b\b\b\b\b\b\b%5d " % s, end=' ')
                     sys.stdout.flush()
                 self.findex[s] = pos
                 self.scan_commands[s] = ' '.join(a[2:])
             pos = self.file.tell()
             line = self.file.readline()
-        print("\b\b\b\b\b\b\bDONE  ")
+        iprint("\b\b\b\b\b\b\bDONE  ")
 
         self.file.close()
         return
@@ -330,7 +331,7 @@ class SpecDataFile:
         else:
             # Try re-indexing the file here.
             if __verbose__:
-                print("**** Re-indexing scan file\n")
+                iprint("**** Re-indexing scan file\n")
             self.index()
             if item in self.findex:
                 self.file.seek(self.findex[item])
@@ -397,7 +398,7 @@ class SpecDataFile:
         n = 0
         for i,m in zip(items, mask):
             if __verbose__:
-                    print("**** Reading scan/item %s" % i)
+                    iprint("**** Reading scan/item %s" % i)
             if ((i in self.scandata) is False) or (reread is True):
                 self._moveto(i)
                 self.scandata[i] = SpecScan(self, i, setkeys, mask = m, **kwargs)
@@ -429,7 +430,7 @@ class SpecDataFile:
 
         line = self.file.readline()
         if __verbose__ & 0x10:
-            print("xxxx %s" % line.strip())
+            iprint("xxxx %s" % line.strip())
         return line
 
 class SpecScan:
@@ -488,7 +489,7 @@ class SpecScan:
         line = specfile._getLine()
 
         if __verbose__:
-            print("---- %s" % line.strip())
+            iprint("---- %s" % line.strip())
 
         sline = line.strip().split()
 
@@ -547,7 +548,7 @@ class SpecScan:
                     self.omega = float(pos[6])
                     self.azimuth = float(pos[7])
                 except:
-                    print("**** Unable to read geometry information (G4)")
+                    iprint("**** Unable to read geometry information (G4)")
             elif line[0:3] == "#G1":
                 try:
                     pos = line[3:].strip().split()
@@ -563,7 +564,7 @@ class SpecScan:
                     self.or0Lambda = pos[-2]
                     self.or1Lambda = pos[-1]
                 except:
-                    print("**** Unable to read geometry information (G1)")
+                    iprint("**** Unable to read geometry information (G1)")
 
             elif line[0:3] == "#G3":
                 try:
@@ -572,7 +573,7 @@ class SpecScan:
 
                     self.UB = pos.reshape(-1, 3)
                 except:
-                    print("**** Unable to read UB matrix (G3)")
+                    iprint("**** Unable to read UB matrix (G3)")
             else:
                 # Try using the user extensions to parse the lines
                 for ext in specfile.userExtensions:
@@ -584,12 +585,12 @@ class SpecScan:
         if line[0:2] == "#L":
             # Comment line just before data
             self.cols = splitSpecString(line[3:])
-            print("---- %s" % line.strip())
+            iprint("---- %s" % line.strip())
 
         line = specfile._getLine()
         self.header = self.header + line
 
-        print("---- %s" % line.strip())
+        iprint("---- %s" % line.strip())
 
         while (line[0:2] != "#S") & (line != "") & (line[0:4] != "# CM"):
             if line[0] != "#":
@@ -617,7 +618,7 @@ class SpecScan:
 
         if mask is not None:
             if __verbose__:
-                print("---- Removing rows %s from data." % str(mask))
+                iprint("---- Removing rows %s from data." % str(mask))
             self.data = np.delete(self.data, mask, axis = 0)
 
         self.scanno = numpy.ones(self.data.shape[0], dtype = numpy.int) * self.scan
@@ -627,14 +628,14 @@ class SpecScan:
 
         for ext in specfile.userExtensions:
             if __verbose__:
-                print("---- Using extension %s" % ext.getName()) 
+                iprint("---- Using extension %s" % ext.getName()) 
             ext.postProcessSpecScanHeader(self)
         
         # Now set the motors
         self._setcols()
 
         if __verbose__:
-            print("---- Data is %i rows x %i cols." % (self.data.shape[0], self.data.shape[1]))
+            iprint("---- Data is %i rows x %i cols." % (self.data.shape[0], self.data.shape[1]))
 
         return None
 
@@ -651,7 +652,7 @@ class SpecScan:
             if self.setkeys:
                 for i in list(self.scandata.values.keys()):
                     if __verbose__ & 0x02:
-                        print("oooo Setting variable %s" % i)
+                        iprint("oooo Setting variable %s" % i)
                     setattr(self,i , self.scandata.values[i])
                 self.values = self.scandata.values
 
@@ -764,7 +765,7 @@ class SpecScan:
             if d not in self.scandata.values:
                 if typestoprint.count(type(getattr(self, d))):
                     p = p + "%-19s " % d
-                    print(d, type(getattr(self, d)))
+                    iprint(d, type(getattr(self, d)))
                     j -= 1
                     if j == 0:
                         p = p + "\n"
@@ -803,7 +804,7 @@ class SpecData:
     def setValue(self, key, data, setdata = True):
         self.values[key] = data
         if __verbose__ & 0x20:
-            print("oooo Setting key %s" % key)
+            iprint("oooo Setting key %s" % key)
 
     def get(self, key):
         if key in self.values:
@@ -935,17 +936,17 @@ class SpecPlot:
             self.plotx = self.plotx.transpose()
 
         if __verbose__:
-            print("**** Plotting scan %s (%s)" % (self.scan.scan, self.scan.scan_command))
-            print("---- x  = %s" % self.scan.cols[xcol])
+            iprint("**** Plotting scan %s (%s)" % (self.scan.scan, self.scan.scan_command))
+            iprint("---- x  = %s" % self.scan.cols[xcol])
             if x2col != None:
-                print("---- x2 = %s" % self.scan.cols[x2col])
+                iprint("---- x2 = %s" % self.scan.cols[x2col])
 
         if norm == True:
             self.ploty = self.scan.data[:,ycol] / self.scan.data[:,mcol]
             self.plote = self.ploty * (sqrt(self.scan.data[:,ycol]) / self.scan.data[:,mcol])
             yl = "%s / %s" % (self.scan.cols[ycol], self.scan.cols[mcol])
             if __verbose__:
-                print("---- y  = %s / %s" % (self.scan.cols[ycol], self.scan.cols[mcol]))
+                iprint("---- y  = %s / %s" % (self.scan.cols[ycol], self.scan.cols[mcol]))
         else:
             self.ploty = self.scan.data[:,ycol]
             self.plote = sqrt(self.ploty)
@@ -953,7 +954,7 @@ class SpecPlot:
             if type(errors) == type(''):
                 self.plote = self.scan.data[:, self.scan.cols.index(errors)]
             if __verbose__:
-                print("---- y  = %s" % self.scan.cols[ycol])
+                iprint("---- y  = %s" % self.scan.cols[ycol])
         if log == True:
             plotit = semilogy
         else:
@@ -973,8 +974,8 @@ class SpecPlot:
             if twod:
                 xi = linspace(min(self.plotx[:,0]), max(self.plotx[:,0]), xint)
                 yi = linspace(min(self.plotx[:,1]), max(self.plotx[:,1]), yint)
-                print("---- xint = %d" % xint)
-                print("---- yint = %d" % yint)
+                iprint("---- xint = %d" % xint)
+                iprint("---- yint = %d" % yint)
                 if log:
                     zi = griddata(self.plotx[:,0], self.plotx[:,1], numpy.log10(self.ploty), xi, yi)
                 else:
@@ -999,7 +1000,7 @@ class SpecPlot:
                 mde = mean(self.plote)
                 if (mde > dy) | isnan(mde) :
                     #errors = False
-                    print("---- Errorbars disabled due to large errors")
+                    iprint("---- Errorbars disabled due to large errors")
                 if errors:
                     hold(True) # Needed for errorbar plots
                     if log:

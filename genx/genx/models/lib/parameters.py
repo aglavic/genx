@@ -10,6 +10,7 @@ r"""
 
 import numpy as np
 from collections import MutableSequence
+from genx.gui_logging import iprint
 
 
 class Parameter(object):
@@ -558,22 +559,22 @@ if __name__ == '__main__':
     p = Int(10)
     r = FloatArray(33.333)
     q = p**2 + r
-    print(p.has_coupled_parameter())
-    print(p())
+    iprint(p.has_coupled_parameter())
+    iprint(p())
     r.value = 0.0
-    print(q())
+    iprint(q())
     c = Complex(1 + 1.0J)
     c.real = q
     phase = exp(c + 10)
-    print(phase())
+    iprint(phase())
     r.value = 1.0
     c.imag = 0.1
     c.real = 5.0
-    print(c(), phase())
+    iprint(c(), phase())
     l = List(Int, [], help="Testing")
     l[:] = [p, p]
-    print(type(l))
-    print([item() for item in l])
+    iprint(type(l))
+    iprint([item() for item in l])
     obj = object()
     import new
     test = new.module('test')
@@ -581,6 +582,6 @@ if __name__ == '__main__':
     test.__dict__['q'] = q
     test.__dict__['p'] = p
     test.__dict__['l'] = l
-    print(get_parameters(test, True))
-    print(c.get_parameter_list())
-    print(dir())
+    iprint(get_parameters(test, True))
+    iprint(c.get_parameter_list())
+    iprint(dir())

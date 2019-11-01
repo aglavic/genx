@@ -1,10 +1,11 @@
 """Test for the implementation of calc_fields."""
 
 from . import grating
-import grating_diffuse
+from . import grating_diffuse
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import erf
+from genx.gui_logging import iprint
 
 
 def test_calc_fields_single_interface():
@@ -15,8 +16,8 @@ def test_calc_fields_single_interface():
     t_theory = 2*k_z[:, -1]/(k_z[:, 0] + k_z[:, -1])
     r_theory = (k_z[:, -1] - k_z[:, 0])/ (k_z[:, 0] + k_z[:, -1])
 
-    print((t_theory - t[:, 0]).max())
-    print((r_theory - r[:, 1]).max())
+    iprint((t_theory - t[:, 0]).max())
+    iprint((r_theory - r[:, 1]).max())
 
     if False:
         plt.subplot(211)
@@ -44,9 +45,9 @@ def test_calc_fields_single_layer():
     t_lay_theory = t2*np.exp(1.0J*d[1]*k_z[:, 1])/(r1*r2*np.exp(2*1.0J*d[1]*k_z[:, 1]) + 1.)
     r_lay_theory = r1*t2*np.exp(1.0J*d[1]*k_z[:, 1])/(r1*r2*np.exp(2*1.0J*d[1]*k_z[:, 1]) + 1.)
 
-    print((t_lay_theory - t[:, -2]).max())
-    print((r_theory - r[:, -1]).max())
-    print((r_lay_theory - r[:, -2]).max())
+    iprint((t_lay_theory - t[:, -2]).max())
+    iprint((r_theory - r[:, -1]).max())
+    iprint((r_lay_theory - r[:, -2]).max())
 
     if False:
         plt.subplot(211)
@@ -109,9 +110,9 @@ def test_calc_fields_slicing_single_layer():
     z_bottom_index = np.argmin(np.abs(z_slice - z_int[0]))
 
     # Difficult to get the numbers to agree with high precision due to the slicing.
-    print((((np.abs(T_1_lay[:, -2]) - np.abs(T_1_slice[:, z_bottom_index]))/np.abs(T_1_lay[:, -2])).max()))
-    print((((np.abs(R_1_lay[:, -2]) - np.abs(R_1_slice[:, z_bottom_index])) / np.abs(R_1_lay[:, -2])).max()))
-    print((((np.abs(R_1_lay[:, -1]) - np.abs(R_1_slice[:, -1]))/np.abs(R_1_lay[:, -1])).max()))
+    iprint((((np.abs(T_1_lay[:, -2]) - np.abs(T_1_slice[:, z_bottom_index]))/np.abs(T_1_lay[:, -2])).max()))
+    iprint((((np.abs(R_1_lay[:, -2]) - np.abs(R_1_slice[:, z_bottom_index])) / np.abs(R_1_lay[:, -2])).max()))
+    iprint((((np.abs(R_1_lay[:, -1]) - np.abs(R_1_slice[:, -1]))/np.abs(R_1_lay[:, -1])).max()))
 
     if False:
         plt.subplot(311)
@@ -141,7 +142,7 @@ def test_correlation_function_h05():
     a = 1/eta_r
     analytical_func = 2.*a / (a**2 + q_r ** 2)
 
-    print((np.abs((c_func - analytical_func)/c_func).max()))
+    iprint((np.abs((c_func - analytical_func)/c_func).max()))
 
     if True:
         plt.loglog(q_r, c_func)
@@ -160,7 +161,7 @@ def test_marginal_distributions_bvn_int():
 
     ref_values = 0.5*(1 + erf(delta_z_slice_int1/np.sqrt(2)/sigma1))
 
-    print((np.abs((values - ref_values)/(ref_values)).max()))
+    iprint((np.abs((values - ref_values)/(ref_values)).max()))
 
     if True:
         plt.plot(delta_z_slice_int1, values)

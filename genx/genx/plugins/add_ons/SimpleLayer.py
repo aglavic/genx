@@ -27,6 +27,7 @@ from math import cos, pi, sqrt
 from models.utils import UserVars, fp, fw, bc, bw #@UnusedImport
 import images as img
 from plugins import add_on_framework as framework
+from genx.gui_logging import iprint
 
 # configuration file to store the known materials
 try:
@@ -70,7 +71,7 @@ class Plugin(framework.Template):
             try:
                 self.known_materials=json.loads(open(config_file, 'r').read())
             except json.JSONDecodeError:
-                print("Can't reload material list, file corrupted.")
+                iprint("Can't reload material list, file corrupted.")
                 self.known_materials=[]
         else:
             self.known_materials=[]

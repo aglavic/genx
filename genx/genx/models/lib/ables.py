@@ -2,7 +2,7 @@ import numpy as np
 from . import math_utils as mu
 from . import isotropic_matrix as im
 from . import int_lay_xmean
-import pdb
+from genx.gui_logging import iprint
 from functools import reduce
 
 _ctype = np.complex128
@@ -174,8 +174,8 @@ if __name__ == '__main__':
         R_try = ReflQ(Q, 1.54, n, d, sigma)
         #R_try = ReflQ(Q, 1.54, n3, d3, sigma)
     t3 = time.clock()
-    print('Paratt: ', (t2 -t1)/n_att)
-    print('Abeles: ', (t3 - t2)/n_att)
+    iprint('Paratt: ', (t2 -t1)/n_att)
+    iprint('Abeles: ', (t3 - t2)/n_att)
     semilogy(theta, R_ref)
     semilogy(theta, R_try, '.')
     legend(('Parratt', 'Abeles with roughness/interface layer'))

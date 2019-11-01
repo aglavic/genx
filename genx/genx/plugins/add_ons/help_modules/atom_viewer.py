@@ -8,6 +8,7 @@ import wx
 from vtk import vtkRenderer, vtkActor, vtkTextMapper, vtkActor2D, vtkSphereSource, vtkPolyDataMapper, vtkAxesActor
 import vtk.util.colors as vtkc
 
+from genx.gui_logging import iprint
 from .wxVTKRenderWindow import wxVTKRenderWindow
 from . import atom_colors as atom_colors
 from . import custom_dialog
@@ -135,7 +136,7 @@ class VTKview(wxVTKRenderWindow):
 
     def OnChangeCursorState(self, event):
         """Callback when changing the cursor state between select, orbit, zoom and pan"""
-        print(self.toolbar)
+        iprint(self.toolbar)
         if self.toolbar:
             [self.toolbar.ToggleTool(cid, False) for cid in self.cursor_ids]
             self.toolbar.ToggleTool(event.GetId(), True)
@@ -153,7 +154,7 @@ class VTKview(wxVTKRenderWindow):
             elif name == 'Pan':
                 self.cursor_mode = 'pan'
             else:
-                print('VTKView.OnChangeCursorState: Button name ', name, 'is not a known button')
+                iprint('VTKView.OnChangeCursorState: Button name ', name, 'is not a known button')
             #print name, self.cursor_mode
 
     def highlight(self, actor):
@@ -179,7 +180,7 @@ class VTKview(wxVTKRenderWindow):
         try:
             self.ren.RemoveViewProp(self.sphereActor)
         except Exception as e:
-            print(e)
+            iprint(e)
         self.ren.AddActor(sphereActor)
         self.sphereActor = sphereActor
         self.Render()

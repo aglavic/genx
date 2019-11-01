@@ -11,7 +11,8 @@ from . import custom_dialog as cust_dia
 from . import reflectivity_images as icons
 from . import sxrd_images
 
-import models.utils as utils
+import genx.models import utils
+from genx.gui_logging import iprint
 
 
 class ModelScriptInteractor:
@@ -75,7 +76,7 @@ class ModelScriptInteractor:
     def append_dataset(self):
         """ Append a new data set to the sim function
         """
-        print("Append data set")
+        iprint("Append data set")
         self.data_sections_interactors.append(DataSetSimulationInteractor())
         default_name = self.get_sim_object_names()[-1]
         sim_method = self.get_sim_methods_info(default_name)[0]
@@ -239,7 +240,7 @@ class ModelScriptInteractor:
         #Empty list
         #[self.data_sections_interactors.pop(0) for d in self.data_sections_interactors]
         self.data_sections_interactors[:] = []
-        print("parse_code", len(self.data_sections_interactors))
+        iprint("parse_code", len(self.data_sections_interactors))
         missing_data_section = False
         i = 0
         while not missing_data_section:
@@ -3234,20 +3235,20 @@ def test_sxrd():
 
 
     script_parser.parse_code(code)
-    print("Length data sections: ", len(script_parser.data_sections_interactors))
+    iprint("Length data sections: ", len(script_parser.data_sections_interactors))
     code = script_parser.get_code()
-    print("Parsed code:")
-    print(code)
+    iprint("Parsed code:")
+    iprint(code)
     script_parser.domains[1].name = 'test'
     #script_parser.data_sections_interactors.append(DataSetSimulationInteractor())
     #script_parser.data_sections_interactors.pop(1)
-    print("Updated code:")
-    print(script_parser.update_code(code))
+    iprint("Updated code:")
+    iprint(script_parser.update_code(code))
 
-    print('Test finished')
+    iprint('Test finished')
 
-    print(script_parser.get_sim_object_names())
-    print([info.name for info in script_parser.get_sim_methods_info('sample')])
+    iprint(script_parser.get_sim_object_names())
+    iprint([info.name for info in script_parser.get_sim_methods_info('sample')])
 
     class MainFrame(wx.Frame):
         def __init__(self, *args, **kwds):

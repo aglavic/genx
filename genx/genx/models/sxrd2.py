@@ -114,6 +114,7 @@ import numpy as np
 
 from . import utils
 from .symmetries import SymTrans, Sym
+from genx.gui_logging import iprint
 
 sxrd_ext_built = False
 debug = False
@@ -129,11 +130,11 @@ except ImportError:
 if not sxrd_ext_built or debug:
     try:
         from .lib import build_ext
-        lib.build_ext.sxrd()
+        build_ext.sxrd()
         from .lib import sxrd_ext
         _turbo_sim = True
     except:
-        print('Could not build sxrd c extension')
+        iprint('Could not build sxrd c extension')
         _turbo_sim = False
 
 __pars__ = ['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
@@ -1331,8 +1332,8 @@ if __name__ == '__main__':
     t1 = time.time()
     sf = sample2.calc_f(h, k, l)
     t2 = time.time()
-    print('Python: %f seconds'%(t2-t1))
+    iprint('Python: %f seconds'%(t2-t1))
     t3 = time.time()    
     sft = sample2.turbo_calc_f(h, k, l)
     t4 = time.time()
-    print('Inline C: %f seconds'%(t4-t3))
+    iprint('Inline C: %f seconds'%(t4-t3))

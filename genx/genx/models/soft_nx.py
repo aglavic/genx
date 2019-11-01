@@ -105,11 +105,12 @@ The model works with scattering lengths densities directly.
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.</dd>
 '''
 from numpy import *
+from genx.gui_logging import iprint
 try:
     from .lib import paratt_weave as Paratt
 except Exception as S:
-    print('Not using inline c code for reflectivity calcs - can not import module')
-    print(S)
+    iprint('Not using inline c code for reflectivity calcs - can not import module')
+    iprint(S)
     from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *

@@ -1,5 +1,6 @@
 from numpy import *
 from functools import reduce
+from genx.gui_logging import iprint
 
 # "Ordinary" implementaion of Parrats recursion formula
 # theta-vector, lamda- can be a vector,n-1Dvector, d-1Dvector, sigma-1Dvector
@@ -190,7 +191,7 @@ def reflq_kin(q, lamda, n, d, sigma, correct_q=True, return_int=True):
     sigma = sigma[:-1]
     q0 = 4*pi/lamda
     # Kinematical reflectivity for the interfaces
-    print(n.shape, len(n.shape))
+    iprint(n.shape, len(n.shape))
     if len(n.shape) == 1:
         if correct_q:
             # The internal wave vector calacuted with the thickness averaged refractive index.

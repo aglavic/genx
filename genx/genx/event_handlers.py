@@ -12,6 +12,7 @@ __version__ = version.version
 import _thread, time
 import wx, os, traceback
 from io import StringIO
+import wx.adv
 from wx.lib.wordwrap import wordwrap
 import webbrowser
 import numpy as np
@@ -19,6 +20,7 @@ import numpy as np
 from . import model as modellib
 from . import solvergui, help
 from . import filehandling as io
+from .gui_logging import iprint
 
 manual_url = 'http://genx.sourceforge.net/doc/'
 homepage_url = 'http://genx.sf.net'
@@ -117,7 +119,7 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print('Error in loading the file ', path, '. Pyton traceback:\n ',val)
+        iprint('Error in loading the file ', path, '. Pyton traceback:\n ',val)
         ShowErrorDialog(frame, 'Could not open the file. Python Error:\n%s' % (val,))
         return
     try:
@@ -127,7 +129,7 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print('Error in loading config for the plots. Pyton traceback:\n ',val)
+        iprint('Error in loading config for the plots. Pyton traceback:\n ',val)
         ShowErrorDialog(frame, 'Could not read the config for the plots. Python Error:\n%s' % (val,))
     try:
         frame.paramter_grid.ReadConfig()
@@ -136,7 +138,7 @@ def open_model(frame, path):
         traceback.print_exc(200, outp)
         val = outp.getvalue()
         outp.close()
-        print('Error in loading config for parameter grid. Pyton traceback:\n ', val)
+        iprint('Error in loading config for parameter grid. Pyton traceback:\n ', val)
         ShowErrorDialog(frame, 'Could not read the config for the parameter grid. Python Error:\n%s' % (val,))
     else:
         # Update the Menu choice
@@ -178,7 +180,7 @@ def on_new_model(frame, event):
     try:
         val = frame.config.get_boolean('parameter grid', 'auto sim')
     except io.OptionError:
-        print('Could not locate option parameters.auto sim')
+        iprint('Could not locate option parameters.auto sim')
         frame.main_frame_menubar.mb_fit_autosim.Check(True)
     else:
        frame.main_frame_menubar.mb_fit_autosim.Check(val)
@@ -290,7 +292,7 @@ def export_script(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Export data", defaultFile="",\
                         wildcard="Python File (*.py)|*.py",\
-                         style=wx.FD_SAVE | wx.CHANGE_DIR
+                         style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
@@ -331,7 +333,7 @@ def export_table(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Export data", defaultFile="",\
                         wildcard="Table File (*.tab)|*.tab",\
-                         style=wx.FD_SAVE | wx.CHANGE_DIR
+                         style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
@@ -372,7 +374,7 @@ def import_script(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Import script", defaultFile="",\
                     wildcard="Python files (*.py)|*.py|All files (*.*)|*.*",\
-                         style=wx.FD_OPEN | wx.CHANGE_DIR 
+                         style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
@@ -426,7 +428,7 @@ def import_table(frame, event):
     '''
     dlg = wx.FileDialog(frame, message="Import script", defaultFile="",\
                     wildcard="Table File (*.tab)|*.tab|All files (*.*)|*.*",\
-                         style=wx.FD_OPEN | wx.CHANGE_DIR 
+                         style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
@@ -750,7 +752,7 @@ def quit(frame, event):
     frame.config.default_set('gui', 'hsplit', frame.hor_splitter.GetSashPosition())
     frame.config.write_default(config_path+'genx.conf')
 
-    app=frame.parent
+    # app=frame.parent
     frame.findreplace_dlg.Destroy()
     frame.findreplace_dlg=None
     event.Skip()
@@ -1143,20 +1145,8 @@ def show_about_box(frame, event):
     Show an about box about GenX with some info...
     '''
     import numpy, scipy, matplotlib, platform
-    try:
-        import weave
-    except:
-        weave_version = 'Not installed'
-    else:
-        weave_version = weave.__version__
-    try:
-        import processing
-    except:
-        processing_version = 'Not installed'
-    else:
-        processing_version = processing.__version__
-        
-    info = wx.AboutDialogInfo()
+    
+    info = wx.adv.AboutDialogInfo()
     info.Name = "GenX"
     info.Version = __version__
     info.Copyright = "(C) 2008 Matts Bjorck"
@@ -1168,9 +1158,9 @@ def show_about_box(frame, event):
         "\n\nThe versions of the mandatory libraries are:\n"
         "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
         "\nThe non-mandatory but useful packages:\n"
-        "weave: %s, processing: %s"%(platform.python_version(), wx.__version__,\
+        ""%(platform.python_version(), wx.__version__,
             numpy.version.version, scipy.version.version,\
-             matplotlib.__version__, weave_version, processing_version),
+             matplotlib.__version__),
         500, wx.ClientDC(frame))
     info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")
     # No developers yet
@@ -1191,7 +1181,7 @@ def show_about_box(frame, event):
                             'along with this program.  If not, see <http://www.gnu.org/licenses/>. '
                             , 400, wx.ClientDC(frame))
     
-    wx.AboutBox(info)
+    wx.adv.AboutBox(info)
         
 #=============================================================================
 # Custom events needed for updating and message parsing between the different

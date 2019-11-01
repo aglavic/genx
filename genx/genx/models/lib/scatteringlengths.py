@@ -10,6 +10,7 @@ import re, string
 # Imports needed for the dispersive table implementation
 from scipy import interpolate
 from . import refl
+from genx.gui_logging import iprint
 
 #==============================================================================
 class Func(object):
@@ -162,7 +163,7 @@ class Database(object):
         Used to (externally) lookup a value in a database to be inserted in
         local one for this object.
         '''
-        print('Looking up value')
+        iprint('Looking up value')
         return 1
     
     def reset_database(self):

@@ -172,14 +172,15 @@ the api can change significantly from version to version. Should only be used by
     
 '''
 
+from genx.gui_logging import iprint
 from .lib import refl
 from .lib import xrmr
 from .lib import edm_slicing as edm
 try:
     from .lib import paratt_weave as Paratt
 except Exception as S:
-    print('Not using inline c code for reflectivity calcs - can not import module')
-    print(S)
+    iprint('Not using inline c code for reflectivity calcs - can not import module')
+    iprint(S)
     from .lib import paratt as Paratt
 #import lib.paratt_weave as Paratt
 #import lib.paratt as Paratt
@@ -354,7 +355,7 @@ def Specular(TwoThetaQz, sample, instrument):
     elif instrument.getCoords() == 0 or instrument.getCoords() == instrument_string_choices['coords'][0]:
         theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     if any(theta < theta_limit):
-        print('Theta min: ', theta.min())
+        iprint('Theta min: ', theta.min())
         raise ValueError('The incident angle has to be above %.1e'%theta_limit)
     
     R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz, xray_energy)
@@ -1384,7 +1385,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             if Q_ok:
                 Q_ok = any(not_equal(NBuffer.TwoThetaQz, Q))
         if NBuffer.parameters != parameters or not Q_ok or True:
-            print('Reloading buffer')
+            iprint('Reloading buffer')
             # Bulk of the layers
             #V0 = 2*2*pi*dens*(sqrt(b**2 - (abs_xs/2.0/wl)**2) -
             #                   1.0J*abs_xs/2.0/wl)

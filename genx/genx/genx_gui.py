@@ -11,6 +11,7 @@ import wx
 import wx.grid, wx.py, wx.stc
 import io
 import traceback
+from logging import info, debug, warning, error
 
 import os, sys, shutil, appdirs
 
@@ -36,15 +37,15 @@ if _path != '':
 
 # Get the configuration path, create if it not exists
 config_path = appdirs.user_data_dir('GenX', 'MattsBjorck') + '/'
-print(config_path)
+info(config_path)
 if not os.path.exists(config_path):
-    print('Creating path: ', config_path)
+    info('Creating path: %s'%config_path)
     os.makedirs(config_path)
 if not os.path.exists(config_path + 'profiles'):
-    print('Creating path: ', config_path + 'profiles')
+    info('Creating path: %'%(config_path + 'profiles'))
     shutil.copytree(_path + 'profiles', config_path + 'profiles')
 if not os.path.exists(config_path + 'genx.conf'):
-    print('Creating genx.conf at ', config_path, 'by copying config from ', _path + 'profiles/Default.conf')
+    info('Creating genx.conf at %s by copying config from %s'%(config_path, _path + 'profiles/Default.conf'))
     shutil.copyfile(_path + 'profiles/Default.conf', config_path + 'genx.conf')
 
 #raise Exception(_path)
@@ -376,7 +377,7 @@ class MainFrame(wx.Frame):
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
-            print('Error in loading config for the plots. Pyton tractback:\n ', val)
+            error('Error in loading config for the plots. Pyton tractback:\n %s'%val)
             event_handlers.ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
 
         # event_handlers.new(self, None)
@@ -530,7 +531,7 @@ class MainFrame(wx.Frame):
                 self.config.default_set('startup', 'show profiles', 
                                          startup_dialog.GetShowAtStartup())
                 self.config.write_default(profile_path + 'genx.conf')
-                #print self.config.get('plugins','loaded plugins')
+                debug('Changed profile, plugins loaded=%s'%self.config.get('plugins','loaded plugins'))
                 try:
                     self.plugin_control.OnOpenModel(None)
                 except Exception as e:
@@ -538,21 +539,17 @@ class MainFrame(wx.Frame):
                     traceback.print_exc(200, outp)
                     val = outp.getvalue()
                     outp.close()
+                    error("Exception:\n%s"%outp)
                     wx.ShowErrorDialog(self, 'Problems when plugins processed model.'\
                                 ' Python Error:\n%s'%(val,))
 
     def eh_mb_new(self, event): # wxGlade: MainFrame.<event_handler>
-        #print "eh_mb_new"
         event_handlers.new(self, event)
 
     def eh_mb_open(self, event): # wxGlade: MainFrame.<event_handler>
-        #print "Event handler `eh_mb_open' not implemented"
-        #event.Skip()
         event_handlers.open(self, event)
         
     def eh_mb_save(self, event): # wxGlade: MainFrame.<event_handler>
-        #print "Event handler `eh_mb_save' not implemented"
-        #event.Skip()
         event_handlers.save(self, event)
 
     def eh_mb_print_plot(self, event): # wxGlade: MainFrame.<event_handler>
@@ -562,7 +559,7 @@ class MainFrame(wx.Frame):
         event_handlers.print_parameter_grid(self, event)
 
     def eh_mb_print_script(self, event): # wxGlade: MainFrame.<event_handler>
-        print("Event handler `eh_mb_print_script' not implemented")
+        warning("Event handler `eh_mb_print_script' not implemented")
         event.Skip()
 
     def eh_mb_export_data(self, event): # wxGlade: MainFrame.<event_handler>
@@ -579,22 +576,18 @@ class MainFrame(wx.Frame):
 
     def eh_mb_copy_graph(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.copy_graph(self, event)
-        #event.Skip()
         
     def eh_mb_copy_sim(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.copy_sim(self, event)
-        #event.Skip()
 
     def eh_mb_copy_table(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.copy_table(self, event)
-        #event.Skip()
 
     def eh_mb_view_zoom(self, event): # wxGlade: MainFrame.<event_handler>
-        #print "Event handler `eh_mb_view_zoom' not implemented"
         event_handlers.on_zoom_check(self, event)
         event.Skip()
 
-    def eh_mb_view_grid_slider(self, event):
+    def eh_mb_view_grid_slider(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.on_grid_slider_check(self, event)
         event.Skip()
 
@@ -608,7 +601,7 @@ class MainFrame(wx.Frame):
         event_handlers.resume_fit(self, event)
 
     def eh_mb_fit_analyze(self, event): # wxGlade: MainFrame.<event_handler>
-        print("Event handler `eh_mb_fit_analyze' not implemented")
+        warning("Event handler `eh_mb_fit_analyze' not implemented")
         event.Skip()
 
     def eh_mb_misc_showman(self, event): # wxGlade: MainFrame.<event_handler>
@@ -621,59 +614,47 @@ class MainFrame(wx.Frame):
         event_handlers.change_data_grid_view(self, event)
 
     def eh_tb_new(self, event): # wxGlade: MainFrame.<event_handler>
-        #event.Skip()
-        #print "eh_tb_new"
         event_handlers.new(self, event)
 
     def eh_tb_open(self, event): # wxGlade: MainFrame.<event_handler>
-        #event.Skip()
         event_handlers.open(self, event)
 
     def eh_tb_save(self, event): # wxGlade: MainFrame.<event_handler>
-        #event.Skip()
         event_handlers.save(self, event)
 
     def eh_tb_simulate(self, event): # wxGlade: MainFrame.<event_handler>
-        #event.Skip()
         event_handlers.simulate(self, event)
 
     def eh_tb_start_fit(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.start_fit(self, event)
 
     def eh_tb_stop_fit(self, event): # wxGlade: MainFrame.<event_handler>
-        #event.Skip()
         event_handlers.stop_fit(self, event)
 
     def eh_tb_restart_fit(self, event): # wxGlade: MainFrame.<event_handler>
-        #event.Skip()
         event_handlers.resume_fit(self, event)
 
     def eh_tb_zoom(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.on_zoom_check(self, event)
-        #event.Skip()
         
-    def eh_new_model(self, event):
+    def eh_new_model(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.on_new_model(self, event)
         event.Skip()
-        
+
     def eh_mb_saveas(self, event): # wxGlade: MainFrame.<event_handler>
-        # event.Skip()
         event_handlers.save_as(self, event)
         
-    def eh_ex_status_text(self, event): 
-        # event.Skip()
+    def eh_ex_status_text(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.status_text(self, event)
         
-    def eh_ex_point_pick(self, event): 
-        # event.Skip()
+    def eh_ex_point_pick(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.point_pick(self, event)
         
-    def eh_ex_plot_settings_changed(self, event):
+    def eh_ex_plot_settings_changed(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.plot_settings_changed(self, event)
         event.Skip()
 
     def eh_tb_calc_error_bars(self, event): # wxGlade: MainFrame.<event_handler>
-        #event.Skip()
         event_handlers.calculate_error_bars(self, event)
 
     def eh_plot_page_changed(self, event): # wxGlade: MainFrame.<event_handler>
@@ -706,7 +687,6 @@ class MainFrame(wx.Frame):
 
     def eh_mb_set_opt(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.on_optimizer_settings(self, event)
-        #event.Skip()
 
     def eh_mb_import_data(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.import_data(self, event)
@@ -717,18 +697,18 @@ class MainFrame(wx.Frame):
     def eh_mb_import_script(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.import_script(self, event)
         
-    def eh_external_fom_value(self, event):
+    def eh_external_fom_value(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.fom_value(self, event)
         event.Skip()
-        
+
     def eh_mb_set_dal(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.on_data_loader_settings(self, event)
         
-    def eh_external_update_data_grid_choice(self, event):
+    def eh_external_update_data_grid_choice(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.update_data_grid_choice(self, event)
         event.Skip()
-        
-    def eh_external_update_data(self, event):
+
+    def eh_external_update_data(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.update_data(self, event)
         event.Skip()
 
@@ -738,7 +718,7 @@ class MainFrame(wx.Frame):
     def eh_data_new_set(self, event): # wxGlade: MainFrame.<event_handler>
         self.data_list.eh_tb_add(event)
 
-    def eh_data_new_simulation_set(self, event):
+    def eh_data_new_simulation_set(self, event): # wxGlade: MainFrame.<event_handler>
         self.data_list.eh_tb_add_simulation(event)
 
     def eh_data_delete(self, event): # wxGlade: MainFrame.<event_handler>
@@ -771,10 +751,10 @@ class MainFrame(wx.Frame):
     def eh_mb_models_help(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.models_help(self, event)
     
-    def eh_external_model_changed(self, event):
+    def eh_external_model_changed(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.models_changed(self, event)
         event.Skip()
-    
+
     def eh_mb_plugins_help(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.plugins_help(self, event)
 
@@ -782,42 +762,32 @@ class MainFrame(wx.Frame):
         event_handlers.data_loaders_help(self, event)
 
     def eh_mb_findreplace(self, event): # wxGlade: MainFrame.<event_handler>
-        #print "Event handler `eh_mb_findreplace' not implemented"
-        #event.Skip()
         event_handlers.on_findreplace(self, event)
 
-    def eh_external_find(self, event):
+    def eh_external_find(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.on_find_event(self, event)
 
     def eh_mb_fom_help(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.fom_help(self, event)
 
-    def eh_mb_view_use_toggle_show(self, event):
+    def eh_mb_view_use_toggle_show(self, event): # wxGlade: MainFrame.<event_handler>
         new_val = self.mb_use_toggle_show.IsChecked()
         self.data_list.list_ctrl.SetShowToggle(new_val)
     
     def eh_mb_misc_openhomepage(self, event): # wxGlade: MainFrame.<event_handler>
-        #print "Event handler `eh_mb_misc_openhomepage' not implemented"
-        #event.Skip()
         event_handlers.show_homepage(self, event)
         
-    def eh_show_startup_dialog(self, event):
+    def eh_show_startup_dialog(self, event): # wxGlade: MainFrame.<event_handler>
         self.startup_dialog(config_path, force_show = True)
 
-    def eh_external_parameter_value_changed(self, event):
+    def eh_external_parameter_value_changed(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.parameter_value_changed(self, event)
 
-    def eh_mb_view_use_toggle_show(self, event):  # wxGlade: MainFrame.<event_handler>
-        print("Event handler 'eh_mb_view_use_toggle_show' not implemented!")
-        event.Skip()
     def eh_mb_fit_autosim(self, event):  # wxGlade: MainFrame.<event_handler>
-        print("Event handler 'eh_mb_fit_autosim' not implemented!")
+        warning("Event handler 'eh_mb_fit_autosim' not implemented!")
         event.Skip()
     def eh_mb_view_xscale_lin(self, event):  # wxGlade: MainFrame.<event_handler>
-        print("Event handler 'eh_mb_view_xscale_lin' not implemented!")
-        event.Skip()
-    def eh_mb_view_grid_slider(self, event):  # wxGlade: MainFrame.<event_handler>
-        print("Event handler 'eh_mb_view_grid_slider' not implemented!")
+        warning("Event handler 'eh_mb_view_xscale_lin' not implemented!")
         event.Skip()
 # end of class MainFrame
 

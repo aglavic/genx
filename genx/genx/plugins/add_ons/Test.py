@@ -5,6 +5,7 @@ It also adds a a custom menu.
 '''
 import plugins.add_on_framework as framework
 import plotpanel
+from genx.gui_logging import iprint
 
 class Plugin(framework.Template):
     def __init__(self, parent):
@@ -13,5 +14,5 @@ class Plugin(framework.Template):
         inputpanel = self.NewInputFolder('Test')
         datapanel = self.NewDataFolder('Test')
         menu = self.NewMenu('Test')
-        print('Everyting tested, should be visible :-)')
+        iprint('Everyting tested, should be visible :-)')
     

@@ -1,12 +1,13 @@
 import wx
-import wx.wizard
+import wx.adv
 import  wx.lib.filebrowsebutton as filebrowse
 from .help_modules import spec
 #import ...data as data
 import numpy as np
 
-from plugins.data_loader_framework import Template
-from plugins.utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
+from genx.plugins.data_loader_framework import Template
+from genx.plugins.utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
+from genx.gui_logging import iprint
 
 _maxWidth = 450
 
@@ -27,7 +28,7 @@ class Plugin(Template):
             return False
         old_data = self.datalist[selected_items[0]].copy()
         self.dataset = self.datalist[selected_items[0]]
-        wizard = wx.wizard.Wizard(self.parent, -1, "Load Spec File",
+        wizard = wx.adv.Wizard(self.parent, -1, "Load Spec File",
                               style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
         #page1 = TitledPage(wizard, "Page1")
         page1 = LoadSpecScanPage(wizard, self, 
@@ -37,9 +38,9 @@ class Plugin(Template):
         page4 = SetNamePage(wizard, self)
     
      
-        wx.wizard.WizardPageSimple_Chain(page1, page2)
-        wx.wizard.WizardPageSimple_Chain(page2, page3)
-        wx.wizard.WizardPageSimple_Chain(page3, page4)
+        wx.adv.WizardPageSimple_Chain(page1, page2)
+        wx.adv.WizardPageSimple_Chain(page2, page3)
+        wx.adv.WizardPageSimple_Chain(page3, page4)
     
         wizard.FitToPage(page1)
         #print dir(wizard)
@@ -58,7 +59,7 @@ class Plugin(Template):
             sc = self.specfile.scan_commands
             names = ['%s '%(name,) + sc[name] for name in names]
         except Exception as e:
-            print("Could not create full names, error: ", e.__str__())
+            iprint("Could not create full names, error: ", e.__str__())
             ShowErrorDialog(self.parent, "Could not create full names, error:\n %s"%e.__str__())
             names = ['%s '%name for name in names]
         self.specfile_name = filename
@@ -73,9 +74,9 @@ class Plugin(Template):
             self.scan = self.specfile[scanlist]
             self.dataset.set_extra_data('values', self.scan.values)
         except Exception as e:
-            print("Could not load the desired scans")
-            print("Error: ", e.__str__())
-            print("scanlist: ", scanlist)
+            iprint("Could not load the desired scans")
+            iprint("Error: ", e.__str__())
+            iprint("scanlist: ", scanlist)
             ShowErrorDialog(self.parent, "Could not load the desired scans, error:\n%s "%e.__str__())
         #for key in self.scan.values:
         #    try:
@@ -90,7 +91,7 @@ class Plugin(Template):
         try:
             choices = self.scan.cols
         except Exception as e:
-            print("Could not load the scan cols error: ", e.__str__())
+            iprint("Could not load the scan cols error: ", e.__str__())
             ShowErrorDialog(self.parent, "Could not load the scan cols, error:\n%s "%e.__str__())
             choices = []
 
@@ -98,7 +99,7 @@ class Plugin(Template):
 
     def update_data_cols(self, cols, autom = False):
         ''' Update the choices for the different values'''
-        print(cols)
+        iprint(cols)
         self.x_val = cols[0]
         self.det_val = cols[1]
         self.mon_val = cols[2]
@@ -141,9 +142,9 @@ class Plugin(Template):
         self.dataset.run_command()
         return True
     
-class TitledPage(wx.wizard.WizardPageSimple):
+class TitledPage(wx.adv.WizardPageSimple):
     def __init__(self, parent, title, plugin):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         titleText = wx.StaticText(self, -1, title)
@@ -154,14 +155,14 @@ class TitledPage(wx.wizard.WizardPageSimple):
                        wx.EXPAND|wx.ALL, 5)
 
 
-class LoadSpecScanPage(wx.wizard.WizardPageSimple):
+class LoadSpecScanPage(wx.adv.WizardPageSimple):
 
     def __init__(self, parent, plugin, default_filename=None):
 
         self.plugin = plugin
         
         title = "Load scan"
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         titleText = wx.StaticText(self, -1, title)
@@ -186,7 +187,7 @@ class LoadSpecScanPage(wx.wizard.WizardPageSimple):
         self.scanchooser = wx.CheckListBox(self, -1)
         self.sizer.Add(self.scanchooser, 1, wx.EXPAND|wx.ALL, 2)
 
-        self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
+        self.Bind(wx.adv.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
         self.scanchooser.Bind(wx.EVT_CHECKLISTBOX, self.OnScanSelected)
         
         self.SetControlEnable(wx.ID_FORWARD, False)
@@ -246,9 +247,9 @@ class LoadSpecScanPage(wx.wizard.WizardPageSimple):
         filename = evt.GetString()
         self.load_file(filename)
 
-class SelectCountersPage(wx.wizard.WizardPageSimple):
+class SelectCountersPage(wx.adv.WizardPageSimple):
     def __init__(self, parent, plugin):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.plugin = plugin
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
@@ -285,8 +286,8 @@ class SelectCountersPage(wx.wizard.WizardPageSimple):
         self.automergeSizer.Add(self.automergeCheckBox, 0, wx.EXPAND|wx.ALL, 5)
         self.sizer.Add(self.automergeSizer, 0, wx.ALIGN_CENTRE|wx.ALL )
         
-        self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGED, self.OnWizPageChanged)
-        self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
+        self.Bind(wx.adv.EVT_WIZARD_PAGE_CHANGED, self.OnWizPageChanged)
+        self.Bind(wx.adv.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
 
     def OnWizPageChanged(self, evt):
         # Check if we are moving forward
@@ -326,9 +327,9 @@ class SelectCountersPage(wx.wizard.WizardPageSimple):
                 )
         return data
 
-class CustomManipulationPage(wx.wizard.WizardPageSimple):
+class CustomManipulationPage(wx.adv.WizardPageSimple):
     def __init__(self, parent, plugin, data_sets = []):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.plugin = plugin
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
@@ -372,8 +373,8 @@ class CustomManipulationPage(wx.wizard.WizardPageSimple):
         self.sizer.Add(self.importChoice, 0, wx.ALIGN_CENTRE|wx.ALL, 10)
         self.Bind(wx.EVT_CHOICE, self.EvtImport, self.importChoice)
 
-        self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGED, self.OnWizPageChanged)
-        self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
+        self.Bind(wx.adv.EVT_WIZARD_PAGE_CHANGED, self.OnWizPageChanged)
+        self.Bind(wx.adv.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
 
     def OnWizPageChanged(self, evt):
         ''' Event handler for entering this page'''
@@ -411,7 +412,7 @@ class CustomManipulationPage(wx.wizard.WizardPageSimple):
         '''Sets the manipulations to defualt values as given by
         the choices in the form (x, det, mon, error)
         '''
-        print(choices)
+        iprint(choices)
         self.xCtrl.ChangeValue(choices[0])
         if choices[2] == 'None':
             self.yCtrl.ChangeValue(choices[1])
@@ -430,10 +431,10 @@ class CustomManipulationPage(wx.wizard.WizardPageSimple):
                 self.errorCtrl.ChangeValue(choices[3])
 
 
-class SetNamePage(wx.wizard.WizardPageSimple):
+class SetNamePage(wx.adv.WizardPageSimple):
 
     def __init__(self, parent, plugin, data_sets = []):
-        wx.wizard.WizardPageSimple.__init__(self, parent)
+        wx.adv.WizardPageSimple.__init__(self, parent)
         self.plugin = plugin
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
@@ -459,7 +460,7 @@ class SetNamePage(wx.wizard.WizardPageSimple):
         self.manipSizer.Add(self.xCtrl, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 10)
         self.sizer.Add(self.manipSizer, 0, wx.EXPAND|wx.ALIGN_CENTRE|wx.ALL)
         
-        self.Bind(wx.wizard.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
+        self.Bind(wx.adv.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
 
     def OnWizPageChanging(self, evt):
         ''' Event Handler for leaving this page'''
@@ -523,7 +524,7 @@ def automerge(xval, yvals, rel_cond = 100.0):
 if __name__ == "__main__":
     app = wx.SimpleApp()
     plugin = Plugin(-1)
-    wizard = wx.wizard.Wizard(None, -1, "Simple Wizard",
+    wizard = wx.adv.Wizard(None, -1, "Simple Wizard",
                               style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
     #page1 = TitledPage(wizard, "Page1")
     page2 = LoadSpecScanPage(wizard, plugin)
@@ -534,12 +535,12 @@ if __name__ == "__main__":
     #page1.sizer.Add(wx.StaticText(page1, -1, "Testing the wizard"))
     #page4.sizer.Add(wx.StaticText(page4, -1, "This is the last page"))
 
-    #wx.wizard.WizardPageSimple_Chain(page1, page2)
-    wx.wizard.WizardPageSimple_Chain(page2, page3)
-    wx.wizard.WizardPageSimple_Chain(page3, page4)
-    wx.wizard.WizardPageSimple_Chain(page4, page5)
+    #wx.adv.WizardPageSimple_Chain(page1, page2)
+    wx.adv.WizardPageSimple_Chain(page2, page3)
+    wx.adv.WizardPageSimple_Chain(page3, page4)
+    wx.adv.WizardPageSimple_Chain(page4, page5)
     
     wizard.FitToPage(page2)
     #print dir(wizard)
     if wizard.RunWizard(page2):
-        print("Sucess")
+        iprint("Sucess")

@@ -9,14 +9,15 @@ Last changed: 2016 09 20
 # Standard libraries
 import shelve, os, types, zipfile
 import pickle as pickle
-import pdb, io, traceback
+import io, traceback
 import inspect
-
 import numpy as np
+
 # GenX libraries
 from . import data
 from . import parameters
 from . import fom_funcs
+from .gui_logging import iprint
 
 from .models.lib.parameters import NumericParameter, get_parameters
 
@@ -70,27 +71,27 @@ class Model:
         try:
             val = self.config.get('parameters', 'registred classes')
         except:
-            print('Could not find config for parameters, registered classes')
+            iprint('Could not find config for parameters, registered classes')
         else:
             self.registred_classes = [s.strip() for s in val.split(';')]
         try:
             val = self.config.get('parameters', 'set func')
         except:
-            print('Could not find config for parameters, set func')
+            iprint('Could not find config for parameters, set func')
         else:
             self.set_func = val
 
         try:
             val = self.config.get_boolean('solver', 'ignore fom nan')
         except:
-            print('Could not find config for solver, ignore fom nan')
+            iprint('Could not find config for solver, ignore fom nan')
         else:
             self.fom_ignore_nan = val
 
         try:
             val = self.config.get_boolean('solver', 'ignore fom inf')
         except:
-            print('Could not find config for solver, ignore fom inf')
+            iprint('Could not find config for solver, ignore fom inf')
         else:
             self.fom_ignore_inf = val
 
@@ -109,19 +110,19 @@ class Model:
             new_data = pickle.loads(loadfile.read('data'), encoding='latin1', errors='ignore')
             self.data.safe_copy(new_data)
         except Exception as e:
-            print('Data section loading (gx file) error:\n ', e, '\n')
+            iprint('Data section loading (gx file) error:\n ', e, '\n')
             raise IOError('Could not locate the data section.', filename)
         try:
             self.script = pickle.loads(loadfile.read('script'), encoding='latin1', errors='ignore')
         except Exception as e:
-            print('Script section loading (gx file) error:\n ', e, '\n')
+            iprint('Script section loading (gx file) error:\n ', e, '\n')
             raise IOError('Could not locate the script.', filename)
         
         try:
             new_parameters = pickle.loads(loadfile.read('parameters'), encoding='latin1', errors='ignore')
             self.parameters.safe_copy(new_parameters)
         except Exception as e:
-            print('Script section loading (gx file) error:\n ', e, '\n')
+            iprint('Script section loading (gx file) error:\n ', e, '\n')
             raise IOError('Could not locate the parameters section.', filename)
         try:
             self.fom_func = pickle.loads(loadfile.read('fomfunction'), encoding='latin1', errors='ignore')
@@ -204,17 +205,17 @@ class Model:
         if fom_func_name in fom_funcs.func_names:
             self.set_fom_func(eval('fom_funcs.' + fom_func_name))
         else:
-            print("Can not find fom function name %s"%fom_func_name.value)
+            iprint("Can not find fom function name %s"%fom_func_name.value)
 
         try:
-            print(bool(group['fom_ignore_nan'].value))
+            iprint(bool(group['fom_ignore_nan'].value))
             self.fom_ignore_nan = bool(group['fom_ignore_nan'].value)
         except Exception as e:
-            print("Could not load parameter fom_ignore_nan from file")
+            iprint("Could not load parameter fom_ignore_nan from file")
         try:
             self.fom_ignore_inf = bool(group['fom_ignore_inf'].value)
         except Exception as e:
-            print("Could not load parameter fom_ignore_inf from file")
+            iprint("Could not load parameter fom_ignore_inf from file")
         self.create_fom_mask_func()
 
         for kw in kwargs:
@@ -548,7 +549,7 @@ class Model:
         Reinitilizes the model. Thus, removes all the traces of the
         previous model. 
         '''
-        print("class Model: new_model")
+        iprint("class Model: new_model")
         self.data = data.DataList()
         self.script = ''
         self.parameters = parameters.Parameters(self)

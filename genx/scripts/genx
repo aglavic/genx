@@ -11,6 +11,7 @@ except ImportError:
     sys.path.insert(0, genx_path)
 finally:
     from genx import version, model
+    from genx.gui_logging import setup_system, iprint
 
 def start_interactive(args):
     ''' Start genx in interactive mode (with the gui)
@@ -84,7 +85,7 @@ def start_interactive(args):
         app = genx_gui.MyApp(True, 0)
         app.MainLoop()
     else:
-        print('Wrong file ending on infile, should be .gx or .hgx. Exiting.')
+        iprint('Wrong file ending on infile, should be .gx or .hgx. Exiting.')
 
 
 
@@ -114,14 +115,14 @@ def create_simulated_data(args):
     config.load_default(os.path.split(os.path.abspath(__file__))[0] + 'genx.conf')
     opt = diffev.DiffEv()
 
-    print("Loading file: %s " % args.infile)
+    iprint("Loading file: %s " % args.infile)
     io.load_file(args.infile, mod, opt, config)
     #io.load_opt_config(opt, config)
-    print("File loaded")
+    iprint("File loaded")
 
-    print("Simualting..")
+    iprint("Simualting..")
     mod.simulate()
-    print("Storing simualted data")
+    iprint("Storing simualted data")
     for data_set in mod.data:
         data_set.y_raw = poisson.rvs(data_set.y_sim)
         data_set.y_command = 'y'
@@ -129,7 +130,7 @@ def create_simulated_data(args):
         data_set.error_command = 'sqrt(where(y > 0, y, 1.0))'
         data_set.run_error_command()
 
-    print('Saving the model to %s' % args.outfile)
+    iprint('Saving the model to %s' % args.outfile)
     io.save_file(args.outfile, mod, opt, config)
 
 def extract_parameters(args):
@@ -145,9 +146,9 @@ def extract_parameters(args):
     config.load_default(os.path.split(os.path.abspath(__file__))[0] + 'genx.conf')
     opt = diffev.DiffEv()
 
-    print("Loading file: %s " % args.infile)
+    iprint("Loading file: %s " % args.infile)
     io.load_file(args.infile, mod, opt, config)
-    print("File loaded")
+    iprint("File loaded")
 
     names, values = mod.parameters.get_sim_pars()
 
@@ -178,30 +179,30 @@ def modify_file(args):
     config.load_default(os.path.split(os.path.abspath(__file__))[0] + 'genx.conf')
     opt = diffev.DiffEv()
 
-    print("Loading file: %s " % args.infile)
+    iprint("Loading file: %s " % args.infile)
     io.load_file(args.infile, mod, opt, config)
-    print("File loaded")
+    iprint("File loaded")
 
     if args.datafile:
         datafile = os.path.abspath(args.datafile)
         if 0 > args.data_set or args.data_set >= len(mod.data):
-            print("The selected data set does not exist - select one between 0 and %d" % (len(mod.data) - 1))
+            iprint("The selected data set does not exist - select one between 0 and %d" % (len(mod.data) - 1))
             return
-        print('Loading dataset %s into data set %d' % (datafile, args.data_set))
+        iprint('Loading dataset %s into data set %d' % (datafile, args.data_set))
         mod.data[args.data_set].loadfile(datafile)
 
         if args.outfile:
-            print('Saving the fit to %s' % args.outfile)
+            iprint('Saving the fit to %s' % args.outfile)
             io.save_file(args.outfile, mod, opt, config)
 
     elif args.save_datafile:
         save_datafile = os.path.abspath(args.save_datafile)
-        print("Simualting..")
+        iprint("Simualting..")
         mod.simulate()
         if 0 > args.data_set or args.data_set >= len(mod.data):
-            print("The selected data set does not exist - select one between 0 and %d" % (len(mod.data) - 1))
+            iprint("The selected data set does not exist - select one between 0 and %d" % (len(mod.data) - 1))
             return
-        print('Exporting data set %d into ASCII file %s' % (args.data_set, save_datafile))
+        iprint('Exporting data set %d into ASCII file %s' % (args.data_set, save_datafile))
         mod.data[args.data_set].save_file(save_datafile)
 
 def start_fitting(args, rank=0):
@@ -225,16 +226,16 @@ def start_fitting(args, rank=0):
             #print 'Updating the parameters'
             mod.parameters.set_value_pars(opt.best_vec)
             if args.error:
-                print("Calculating error bars")
+                iprint("Calculating error bars")
                 calc_errorbars(config, mod, opt)
             if args.outfile:
-                print("Saving to %s"%args.outfile)
+                iprint("Saving to %s"%args.outfile)
                 io.save_file(args.outfile, mod, opt, config)
 
         opt.set_autosave_func(autosave)
 
     if rank == 0:
-        print('Loading model %s...'%args.infile)
+        iprint('Loading model %s...'%args.infile)
     io.load_file(args.infile, mod, opt, config)
     io.load_opt_config(opt, config)
     # has to be used in order to save everything....
@@ -242,12 +243,12 @@ def start_fitting(args, rank=0):
         config.set('solver', 'save all evals', True)
     # Simulate, this will also compile the model script
     if rank == 0:
-        print('Simulating model...')
+        iprint('Simulating model...')
     mod.simulate()
 
     # Sets up the fitting ...
     if rank == 0:
-        print('Setting up the optimizer...')
+        iprint('Setting up the optimizer...')
     set_optimiser_pars(opt, args)
     opt.reset()
     opt.init_fitting(mod)
@@ -255,34 +256,34 @@ def start_fitting(args, rank=0):
     opt.set_sleep_time(0.0)
 
     if args.outfile and rank == 0:
-        print('Saving the initial model to %s'%args.outfile)
+        iprint('Saving the initial model to %s'%args.outfile)
         io.save_file(args.outfile, mod, opt, config)
 
     # To start the fitting
     if rank == 0:
-        print('Fitting starting...')
+        iprint('Fitting starting...')
         t1 = time.time()
     #print opt.use_mpi, opt.use_parallel_processing
     opt.optimize()
     if rank == 0:
         t2 = time.time()
-        print('Fitting finished!')
-        print('Time to fit: ', (t2-t1)/60., ' min')
+        iprint('Fitting finished!')
+        iprint('Time to fit: ', (t2-t1)/60., ' min')
 
     if rank == 0:
-        print('Updating the parameters')
+        iprint('Updating the parameters')
         mod.parameters.set_value_pars(opt.best_vec)
 
     if args.outfile and rank == 0:
         if args.error:
-            print('Calculating errorbars')
+            iprint('Calculating errorbars')
             calc_errorbars(config, mod, opt)
-        print('Saving the fit to %s'%args.outfile)
+        iprint('Saving the fit to %s'%args.outfile)
         opt.set_use_mpi(False)
         io.save_file(args.outfile, mod, opt, config)
 
     if rank == 0:
-        print('Fitting successfully completed')
+        iprint('Fitting successfully completed')
 
 
 def set_optimiser_pars(optimiser, args):
@@ -321,6 +322,7 @@ def set_optimiser_pars(optimiser, args):
     #    print "kr not set has to be bigger than 0"
 
 if __name__ == "__main__":
+    setup_system()
     # Attempt to load mpi:
     __mpi__ = False
     try:

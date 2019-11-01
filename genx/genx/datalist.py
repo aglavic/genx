@@ -27,6 +27,7 @@ from . import data
 from . import filehandling as io
 from . import images as img
 from .plugins import data_loader_framework as dlf
+from .gui_logging import iprint
 #==============================================================================
 
 class DataController:
@@ -404,7 +405,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             evt.SetDataMoved(position, direction_up)
         if deleted:
             evt.SetDataDeleted(position)
-        print(evt.new_data)
+        iprint(evt.new_data)
         # Process the event!
         self.GetEventHandler().ProcessEvent(evt)
     
@@ -1383,7 +1384,7 @@ class CreateSimDataWizard(wizard.Wizard):
         self.add_page(page2)
         self.add_page(page3)
 
-        print(len(self.pages))
+        iprint(len(self.pages))
 
         self.Bind(wizard.EVT_WIZARD_PAGE_CHANGING, self.on_page_changing)
 

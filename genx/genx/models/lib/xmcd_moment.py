@@ -182,6 +182,7 @@ from scipy import special
 from scipy import integrate
 
 from . import refl
+from genx.gui_logging import iprint
 
 _head, _tail = os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -385,21 +386,21 @@ def test_h():
     m_L2 = np.array([-1./2., 1./2.])
     j_L2 = 1./2.
 
-    print("Validating the h values at the L3 edge...")
+    iprint("Validating the h values at the L3 edge...")
     failed = False
     i = 0
     for xyz in xyz_table:
         j = 0
         for m in m_L3:
             if not np.isclose(C_table_L3[j, i], calc_h(xyz, int(2*j_L3), int(2*m), 1)):
-                print('Failed for xyz = ', xyz, 'j = ', j_L3, 'm = ', m)
-                print('Values: ', C_table_L3[j, i], calc_h(xyz, int(2*j_L3), int(2*m), 1))
+                iprint('Failed for xyz = ', xyz, 'j = ', j_L3, 'm = ', m)
+                iprint('Values: ', C_table_L3[j, i], calc_h(xyz, int(2*j_L3), int(2*m), 1))
                 failed = True
             j += 1
         i += 1
 
-    print("Validating the h values at the L2 edge...")
-    print(" Note that this assumes a typo in Gold's paper...")
+    iprint("Validating the h values at the L2 edge...")
+    iprint(" Note that this assumes a typo in Gold's paper...")
     i = 0
     for xyz in xyz_table:
         j = 0
@@ -407,16 +408,16 @@ def test_h():
             #TODO: Seems as there is an error in gold's paper CHECK!
             m = -m
             if not np.isclose(C_table_L2[j, i], calc_h(xyz, int(2*j_L2), int(2*m), 1)):
-                print('Failed for xyz = ', xyz, 'j = ', j_L2, 'm = ', m)
-                print('Values: ', C_table_L2[j, i], calc_h(xyz, int(2*j_L2), int(2*m), 1))
+                iprint('Failed for xyz = ', xyz, 'j = ', j_L2, 'm = ', m)
+                iprint('Values: ', C_table_L2[j, i], calc_h(xyz, int(2*j_L2), int(2*m), 1))
                 failed = True
             j += 1
         i += 1
 
     if failed:
-        print('The result is not in agreement with previously published!')
+        iprint('The result is not in agreement with previously published!')
     else:
-        print('All tests passed!')
+        iprint('All tests passed!')
 
 def create_h_table(j2, xyz_values, a):
     """ Create an h values for the given j level's m subleves for the different xyz values

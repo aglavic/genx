@@ -22,6 +22,7 @@ import wx.lib.newevent
 from wx import Printout, PrintData, PAPER_A4, LANDSCAPE, PrintDialogData
 
 from . import filehandling as io
+from .gui_logging import iprint
 
 # Okay due to compabiltiy issues with version above 0.91
 spl = matplotlib.__version__.split('.')
@@ -142,7 +143,7 @@ class PlotPanel(wx.Panel):
                 val = self.config.get_boolean(self.config_name,\
                         bool_items[index])
             except io.OptionError as e:
-                print('Could not locate option %s.%s'\
+                iprint('Could not locate option %s.%s'\
                 %(self.config_name, bool_items[index]))
                 vals.append(None)
             else:
@@ -153,7 +154,7 @@ class PlotPanel(wx.Panel):
             string_sucess = True
         except io.OptionError as e:
             string_sucess = False
-            print('Could not locate option %s.%s'\
+            iprint('Could not locate option %s.%s'\
             %(self.config_name, 'y scale'))
         else:
             self.SetYScale(scale)
@@ -163,7 +164,7 @@ class PlotPanel(wx.Panel):
             string_sucess = True
         except io.OptionError as e:
             string_sucess = False
-            print('Could not locate option %s.%s'\
+            iprint('Could not locate option %s.%s'\
             %(self.config_name, 'x scale'))
             self.SetXScale('lin')
         else:

@@ -104,18 +104,19 @@ diffuse interfaces.
 '''
 
 #import lib.paratt as Paratt
+from genx.gui_logging import iprint
 try:
     from .lib import paratt_weave as Paratt
 except Exception as S:
-    print('Not using inline c code for reflectivity calcs - can not import module')
-    print(S)
+    iprint('Not using inline c code for reflectivity calcs - can not import module')
+    iprint(S)
     from .lib import paratt as Paratt
 __offspec__ = True
 try:
     from .lib import offspec2_weave
 except Exception as S:
-    print('Failed to import: offspec2_weave, No off-specular simulations possible')
-    print(S)
+    iprint('Failed to import: offspec2_weave, No off-specular simulations possible')
+    iprint(S)
     __offspec__ = False
     
 
@@ -334,5 +335,5 @@ if __name__=='__main__':
     amb=Layer(n=1.0,sigmar=1.0)
     stack=Stack(Layers=[Fe,Si],Repetitions=20)
     sample=Sample(Stacks=[stack],Ambient=amb,Substrate=sub,eta_z=500.0,eta_x=100.0)
-    print(sample)
+    iprint(sample)
     inst=Instrument(Wavelength=1.54,Coordinates=1)

@@ -8,6 +8,7 @@ Last changed: 2008 08 22
 from numpy import *
 import os
 import time
+from .gui_logging import iprint
 
 #==============================================================================
 #BEGIN: Class DataSet
@@ -271,13 +272,13 @@ class DataSet:
             f = open(filename)
             #f.close()
         except:
-            print("Can't open file: %s"%filename)
+            iprint("Can't open file: %s"%filename)
         else:
             try:
                 A = loadtxt(f)
                 #, comments = '#', delimeter = None, skiprows = 0
             except:
-                print("Can't read the file %s, check the format"%filename)
+                iprint("Can't read the file %s, check the format"%filename)
             else:
                 #print A
                 xcol=self.cols[0]
@@ -292,10 +293,10 @@ class DataSet:
                     self.y=A[:,ycol]
                     self.error=A[:,ecol]
                     self.y_sim = array([])
-                    print("Sucessfully loaded %i datapoints"%(A.shape[0]))
+                    iprint("Sucessfully loaded %i datapoints"%(A.shape[0]))
                     return True
                 else:
-                    print("There are not enough columns in your data\n\
+                    iprint("There are not enough columns in your data\n\
                            There are %i columns"%A.shape[1])
             return False
         
@@ -846,13 +847,13 @@ if __name__ == '__main__':
     f.close()
 
     d = DataList()
-    print('x ', d[0].x)
+    iprint('x ', d[0].x)
     f = h5py.File('myfile.hdf5', 'r')
     dic = f['data']
     d.read_h5group(dic)
-    print('x ', d[0].x)
+    iprint('x ', d[0].x)
     f.close()
-    print('x ', d[0].x)
-    print(type(d[0].data_color), d[0].data_color)
-    print(d[0].extra_data)
-    print(type(d[0].data_symbolsize))
+    iprint('x ', d[0].x)
+    iprint(type(d[0].data_color), d[0].data_color)
+    iprint(d[0].extra_data)
+    iprint(type(d[0].data_symbolsize))

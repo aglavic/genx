@@ -11,6 +11,7 @@ from wx.lib.masked import NumCtrl
 
 from . import diffev, fom_funcs
 from . import filehandling as io
+from .gui_logging import iprint
 import numpy as np
 
 #==============================================================================
@@ -130,7 +131,7 @@ class SolverController:
             #wx.CallAfter(self.parent.plugin_control.OnFittingUpdate, evt)
             #pass
         except Exception as e:
-            print('Error in plot output:\n' + repr(e))
+            iprint('Error in plot output:\n' + repr(e))
             
     def ParameterOutput(self, solver):
         '''ParameterOutput(self, solver) --> none
@@ -176,7 +177,7 @@ class SolverController:
                     desc = 'Parameter Update', update_errors = False,\
                     permanent_change = False)
             except:
-                print('Could not create data for paraemters')
+                iprint('Could not create data for paraemters')
             else:
                 wx.PostEvent(self.parent, evt)
         

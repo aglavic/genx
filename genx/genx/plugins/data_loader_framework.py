@@ -7,6 +7,7 @@ takes care of the use of the DataLoaders.
 import wx, os, io, traceback
 
 from .utils import PluginHandler
+from genx.gui_logging import iprint
 
 head, tail = os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -139,9 +140,9 @@ class PluginController:
             plugin_name = self.parent.config.get('data handling', 'data loader')
             self.LoadPlugin(plugin_name)
         except Exception as S:
-            print('Could not locate the data loader parameter or the data loader. Error:')
-            print(S.__str__())
-            print('Proceeding with laoding the default data loader.')
+            iprint('Could not locate the data loader parameter or the data loader. Error:')
+            iprint(S.__str__())
+            iprint('Proceeding with laoding the default data loader.')
             self.LoadPlugin('default')
         
     def LoadPlugin(self, plugin):

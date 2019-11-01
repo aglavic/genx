@@ -13,6 +13,7 @@ MakeClasses - Function that creates the classes (backward comparability).
 '''
 
 import numpy as np
+from genx.gui_logging import iprint
 
 
 class ReflFunction:
@@ -565,9 +566,9 @@ if __name__ == '__main__':
 
     fFe = ReflFunction(create_dispersion_func('Fe'), (1000,), {}, id = 'f(E)')
     fCo = ReflFunction(create_dispersion_func('Co'), (1000,), {}, id = 'f(E)')
-    print(fFe.validate())
-    print('Cast to array tests:')
+    iprint(fFe.validate())
+    iprint('Cast to array tests:')
     ltest = [fFe, 3.0, 3.0]
-    print('Test single value: ', cast_to_array(ltest, 1000))
-    print('Test array: ', cast_to_array(ltest, np.arange(1000, 1010)))
-    print('Cast to array finished.')
+    iprint('Test single value: ', cast_to_array(ltest, 1000))
+    iprint('Test array: ', cast_to_array(ltest, np.arange(1000, 1010)))
+    iprint('Cast to array finished.')

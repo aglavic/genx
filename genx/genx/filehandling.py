@@ -15,6 +15,7 @@ import io
 import os, sys
 
 import h5py
+from .gui_logging import iprint
 
 # Functions to save the gx files
 #==============================================================================
@@ -172,7 +173,7 @@ def load_opt_config(optimizer, config):
             try:
                 val = config.get_float('solver', options_float[index])
             except OptionError as e:
-                print('Could not locate option solver.' + options_float[index])
+                iprint('Could not locate option solver.' + options_float[index])
             else:
                 setfunctions_float[index](val)
 
@@ -181,18 +182,18 @@ def load_opt_config(optimizer, config):
             try:
                 val = config.get_boolean('solver', options_bool[index])
             except OptionError as e:
-                print('Could not read option solver.' + options_bool[index])
+                iprint('Could not read option solver.' + options_bool[index])
             else:
                 setfunctions_bool[index](val)
         try:
             val = config.get('solver', 'create trial')
         except OptionError as e:
-            print('Could not read option solver.create trial')
+            iprint('Could not read option solver.create trial')
         else:
             try:
                 optimizer.set_create_trial(val)
             except LookupError:
-                print('The mutation scheme %s does not exist'%val)
+                iprint('The mutation scheme %s does not exist'%val)
 
     return c.error_bars_level, c.save_all_evals
 
@@ -242,19 +243,19 @@ def save_opt_config(optimizer, config, fom_error_bars_level=1.05, save_all_evals
             try:
                 config.set('solver', options_float[index], set_float[index])
             except OptionError as e:
-                print('Could not locate save solver.' + options_float[index])
+                iprint('Could not locate save solver.' + options_float[index])
 
         # Then the bool flags
         for index in range(len(options_bool)):
             try:
                 config.set('solver', options_bool[index], set_bool[index])
             except OptionError as e:
-                print('Could not write option solver.' + options_bool[index])
+                iprint('Could not write option solver.' + options_bool[index])
 
         try:
             config.set('solver', 'create trial', optimizer.get_create_trial())
         except OptionError as e:
-            print('Could not write option solver.create trial')
+            iprint('Could not write option solver.create trial')
 
 #==============================================================================
 class Config:
@@ -271,7 +272,7 @@ class Config:
         try:
             self.default_config.read(filename)
         except Exception as e:
-            print(e)
+            iprint(e)
             raise IOError('Could not load default config file', filename)
         if reset:
             self.model_config=CP.ConfigParser()
@@ -285,7 +286,7 @@ class Config:
             cfile = open(filename, 'w')
             self.default_config.write(cfile)
         except Exception as e:
-            print(e)
+            iprint(e)
             raise IOError('Could not write default config file', filename)
     
     def load_model(self, str):
