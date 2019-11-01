@@ -311,11 +311,11 @@ class MainFrame(wx.Frame):
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_data.OnSolverPlotEvent)
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_fom.OnSolverPlotEvent)
         
-        self.Bind(solvergui.EVT_SOLVER_UPDATE_TEXT, \
+        self.Bind(solvergui.EVT_SOLVER_UPDATE_TEXT,
                             self.eh_ex_status_text)
-        self.Bind(solvergui.EVT_UPDATE_PARAMETERS,\
+        self.Bind(solvergui.EVT_UPDATE_PARAMETERS,
                             self.paramter_grid.OnSolverUpdateEvent)
-        self.Bind(solvergui.EVT_UPDATE_PARAMETERS,\
+        self.Bind(solvergui.EVT_UPDATE_PARAMETERS,
                             self.plot_pars.OnSolverParameterEvent)
         # For picking a point in a plot
         self.Bind(plotpanel.EVT_PLOT_POSITION,\
@@ -329,11 +329,11 @@ class MainFrame(wx.Frame):
                     self.eh_ex_plot_settings_changed)
                     
         # Binding events which means model changes
-        self.Bind(parametergrid.EVT_PARAMETER_GRID_CHANGE,\
+        self.Bind(parametergrid.EVT_PARAMETER_GRID_CHANGE,
             self.eh_external_model_changed)
-        self.Bind(wx.stc.EVT_STC_MODIFIED, self.eh_external_model_changed, \
+        self.Bind(wx.stc.EVT_STC_MODIFIED, self.eh_external_model_changed,
             self.script_editor)
-        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_model_changed,\
+        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_model_changed,
                     self.data_list.list_ctrl)
 
         # Event for when a value of a parameter in the parameter grid has been updated
@@ -818,9 +818,6 @@ class MainFrame(wx.Frame):
         event.Skip()
     def eh_mb_view_grid_slider(self, event):  # wxGlade: MainFrame.<event_handler>
         print("Event handler 'eh_mb_view_grid_slider' not implemented!")
-        event.Skip()
-    def eh_show_startup_dialog(self, event):  # wxGlade: MainFrame.<event_handler>
-        print("Event handler 'eh_show_startup_dialog' not implemented!")
         event.Skip()
 # end of class MainFrame
 

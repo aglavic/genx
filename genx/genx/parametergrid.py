@@ -854,7 +854,7 @@ class ParameterGrid(wx.Panel):
         attr = gridlib.GridCellAttr()
         attr.SetEditor(ValueCellEditor())
         attr.SetRenderer(ValueCellRenderer())
-        self.grid.SetColAttr(3, attr)
+        self.grid.SetColAttr(3, attr.Clone())
         self.grid.SetColAttr(4, attr)
 
     def PrepareNewModel(self):

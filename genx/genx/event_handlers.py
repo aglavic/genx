@@ -751,7 +751,7 @@ def quit(frame, event):
     frame.config.write_default(config_path+'genx.conf')
 
     app=frame.parent
-    frame.findreplace_dlg.Close()
+    frame.findreplace_dlg.Destroy()
     frame.findreplace_dlg=None
     event.Skip()
     # frame.Destroy()
