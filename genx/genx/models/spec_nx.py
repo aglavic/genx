@@ -50,7 +50,7 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     </dl>
     
 <h3>Instrument</h3>
-<code>Instrument(probe = 'x-ray', wavelength = 1.54, coords = 'tth',
+<code>Instrument(probe = 'x-ray', wavelength = 1.54, coords = '2θ',
      I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2,
      beamw = 0.01, footype = 'no corr', samplelen = 10.0, incangle = 0.0, pol = 'uu')</code>
     <dl>
@@ -67,7 +67,7 @@ magnetic non-spin flip as well as neutron spin-flip reflectivity. </p>
     <dd>The wavelength of the radiation given in AA (Angstroms)</dd>
     <dt><code><b>coords</b></code></dt>
     <dd>The coordinates of the data given to the SimSpecular function.
-    The available alternatives are: 'q' or 'tth'. Alternatively the numbers
+    The available alternatives are: 'q' or '2θ'. Alternatively the numbers
     0 (q) or 1 (tth) can be used.</dd>
     <dt><code><b>I0</b></code></dt>
     <dd>The incident intensity (a scaling factor)</dd>
@@ -131,13 +131,13 @@ ModelID='SpecNX'
 __pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
 
 instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',
-    'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q', 'tth'],
+    'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q', '2θ', 'tth'],
     'restype': ['no conv', 'fast conv',
      'full conv and varying res.', 'fast conv + varying res.',
      'full conv and varying res. (dx/x)', 'fast conv + varying res. (dx/x)'],
     'footype': ['no corr', 'gauss beam', 'square beam'],
     'pol': ['uu', 'dd', 'ud', 'ass', 'du']}
-InstrumentParameters = {'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',
+InstrumentParameters = {'probe':'x-ray', 'wavelength':1.54, 'coords':'2θ',
                         'I0':1.0, 'res':0.001,
                         'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,
                         'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu',
@@ -147,12 +147,13 @@ InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']
                     ('Neutron', ['probe', 'pol', 'incangle']),
                     ('Footprint', ['footype', 'beamw', 'samplelen',]),
                     ]
-InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',
+InstrumentUnits = {'probe':'', 'wavelength': 'Å', 'coords':'',
                    'I0': 'arb.', 'res': '[coord]',
                    'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',\
-                   'footype': '', 'samplelen':'mm', 'incangle':'deg.', 'pol': '',\
-                   'Ibkg': 'arb.', 'tthoff':'deg.'}
-# Coordinates=1 or 'tth' => twothetainput
+                   'footype': '', 'samplelen':'mm', 'incangle':'°', 'pol': '',\
+                   'Ibkg': 'arb.', 'tthoff':'°',
+                   '2θ': '°', 'tth': '°', 'q': 'Å$^-1$'}
+# Coordinates=1 or '2θ' => twothetainput
 # Coordinates=0 or 'q'=> Q input
 # probe: Type of simulation
 #   'x-ray' or 0: X-rays (One output)
@@ -257,8 +258,8 @@ def resolution_init(TwoThetaQz, instrument):
                                                 instrument.getRes()*TwoThetaQz, instrument.getRespoints(),
                                                 range=instrument.getResintrange())
     # TTH values given as x
-    if instrument.getCoords() == instrument_string_choices['coords'][1] \
-            or instrument.getCoords() == 1:
+    if instrument.getCoords() in [instrument_string_choices['coords'][1],
+                                  instrument_string_choices['coords'][2],1,2]:
         Q = 4 * pi / instrument.getWavelength() * sin((TwoThetaQz + instrument.getTthoff()) * pi / 360.0)
     # Q vector given....
     elif instrument.getCoords() == instrument_string_choices['coords'][0] \
@@ -617,7 +618,7 @@ if __name__=='__main__':
 
     # BEGIN Instrument DO NOT CHANGE
     inst = Instrument(footype='gauss beam', probe='x-ray', beamw=0.04, resintrange=2, pol='uu', wavelength=1.54,
-                            respoints=5, Ibkg=0.0, I0=2, samplelen=10.0, restype='no conv', coords='tth', res=0.001,
+                            respoints=5, Ibkg=0.0, I0=2, samplelen=10.0, restype='no conv', coords='2θ', res=0.001,
                             incangle=0.0)
     fp.set_wavelength(inst.wavelength)
     # Compability issues for pre-fw created gx files

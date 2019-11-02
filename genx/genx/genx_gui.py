@@ -152,7 +152,7 @@ class MainFrame(wx.Frame):
         self.main_frame_menubar.mb_view_xscale_log = mb_view_xscale.Append(wx.ID_ANY, "log", "Set x-scale logarithmic", wx.ITEM_RADIO)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_log, id=self.main_frame_menubar.mb_view_xscale_log.GetId())
         self.main_frame_menubar.mb_view_xscale_lin = mb_view_xscale.Append(wx.ID_ANY, "lin", "Set x-scale linear", wx.ITEM_RADIO)
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_lin, id=self.main_frame_menubar.mb_view_xscale_lin.GetId())
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_linear, id=self.main_frame_menubar.mb_view_xscale_lin.GetId())
         self.mb_view.Append(wx.ID_ANY, "x scale", mb_view_xscale, "")
         self.main_frame_menubar.mb_view_autoscale = self.mb_view.Append(wx.ID_ANY, "Autoscale", "Sets autoscale on when plotting", wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_autoscale, id=self.main_frame_menubar.mb_view_autoscale.GetId())
@@ -786,9 +786,6 @@ class MainFrame(wx.Frame):
 
     def eh_mb_fit_autosim(self, event):  # wxGlade: MainFrame.<event_handler>
         warning("Event handler 'eh_mb_fit_autosim' not implemented!")
-        event.Skip()
-    def eh_mb_view_xscale_lin(self, event):  # wxGlade: MainFrame.<event_handler>
-        warning("Event handler 'eh_mb_view_xscale_lin' not implemented!")
         event.Skip()
 # end of class MainFrame
 

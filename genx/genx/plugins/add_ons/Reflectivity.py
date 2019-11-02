@@ -1826,6 +1826,8 @@ class SamplePlotPanel(wx.Panel):
             f.close()
   
 class Plugin(framework.Template):
+    previous_xaxis=None
+    
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
         #self.parent = parent
@@ -2159,7 +2161,31 @@ class Plugin(framework.Template):
             script = self.insert_code_segment(script, 'Dataset %i'%i, code)
         
         self.SetModelScript(script)
-        
+        try:
+            self.SetXAxis(instruments[insts[0]])
+        except AttributeError:
+            pass
+
+    def SetXAxis(self, instrument):
+        if self.previous_xaxis==instrument.coords:
+            return
+        coords=instrument.coords
+        if coords in self.model.InstrumentUnits:
+            newx='%s [%s]'%(coords,
+                            self.model.InstrumentUnits[coords])
+        else:
+            newx=coords
+        self.parent.plot_data.update_labels(newx)
+        from genx import data
+        if coords=='q':
+            data.DataSet.simulation_params[0]=0.001
+            data.DataSet.simulation_params[1]=0.601
+        else:
+            data.DataSet.simulation_params[0]=0.01
+            data.DataSet.simulation_params[1]=6.01
+        for ds in self.parent.model.data:
+            ds.run_command()
+
     def insert_new_data_segment(self, number):
         '''insert_new_data_segment(self, number) --> None
         
@@ -2424,11 +2450,16 @@ class Plugin(framework.Template):
         
         self.sample_widget.Update(update_script = False)
         self.simulation_widget.UpdateListbox(update_script = False)
-        # The code have a tendency to screw up the model slightly when compiling it - the sample will be connected to
+        # The code have a tendency to screw up the model slightly when compiling it - the sample will be connected
         # to the module therefore reset the compiled flag so that the model has to be recompiled before fitting.
         self.GetModel().compiled = False
         self.StatusMessage('New sample loaded to plugin!')
-
+        
+        # Setup the plot x-axis and simulation standard
+        try:
+            self.SetXAxis(self.sample_widget.instruments[instrument_names[0]])
+        except AttributeError:
+            pass
         
 def find_code_segment(code, descriptor):
         '''find_code_segment(code, descriptor) --> string

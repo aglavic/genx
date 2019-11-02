@@ -33,6 +33,8 @@ class DataSet:
                          'data_symbolsize':int, 'data_linetype':to_str, 'data_linethickness':int, 'sim_symbol':to_str,
                          'sim_linetype':to_str, 'sim_linethickness':int,
                          }
+    
+    simulation_params=[0.01, 6.01, 600]
 
     def __init__(self, name='', copy_from=None):
         #Processed data
@@ -107,6 +109,7 @@ class DataSet:
             self.sim_symbolsize = 1
             self.sim_linetype = '-'
             self.sim_linethickness = 2
+        self.run_command()
 
     def write_h5group(self, group):
         """ Write the parameters to a hdf group
@@ -369,13 +372,26 @@ class DataSet:
 
         for key in self.extra_commands:
             self.extra_data[key] = eval(self.extra_commands["%s"%key])
-        
+    
+    def set_simulation(self):
+        '''if no data is loaded we set a generic simulation dataset'''
+        self.x=linspace(*self.simulation_params)
+        self.y=nan*self.x
+        self.error=nan*self.x
+
+        for key in self.extra_data_raw:
+            self.extra_data[key] = self.x*0.0
+
         
     def run_command(self):
-        self.run_x_command()
-        self.run_y_command()
-        self.run_error_command()
-        self.run_extra_commands()
+        if len(self.x_raw)==0 and self.x_command=='x':
+            # if no data is loaded and no user setting for simulation, use default
+            self.set_simulation()
+        else:
+            self.run_x_command()
+            self.run_y_command()
+            self.run_error_command()
+            self.run_extra_commands()
         
     def try_commands(self, command_dict):
         ''' try_commands(self, command_dict) --> tuple of bool
