@@ -1052,21 +1052,7 @@ class DataPlotPanel(PlotPanel):
                      for line in self.error_ax.lines if len(line.get_ydata()) > 0])
         ymax = max([array(line.get_ydata()).max()\
                    for line in self.error_ax.lines if len(line.get_ydata()) > 0])
-        tmp = [array(line.get_xdata()).min()\
-                    for line in self.error_ax.lines if len(line.get_ydata()) > 0]
-        if len(tmp) > 0:
-            xmin = min(tmp)
-        else:
-            xmin = 0
-        tmp = [array(line.get_xdata()).max()\
-                    for line in self.ax.lines if len(line.get_ydata()) > 0]
-        if len(tmp) > 0:
-            xmax = max(tmp)
-        else:
-            xmax = 1
         # Set the limits
-        #print 'Autoscaling to: ', ymin, ymax
-        self.error_ax.set_xlim(xmin, xmax)
         self.error_ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
         #self.ax.set_yscale(self.scale)
         
