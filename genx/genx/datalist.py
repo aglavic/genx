@@ -292,11 +292,11 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         cols=self.data_cont.get_column_headers()
         for col,text in enumerate(cols):
             self.InsertColumn(col,text)
-            length=self.GetFullTextExtent(text)
-            self.GetColumn(col).SetWidth(length[0]+1)
-            
+            tw=self.GetFullTextExtent(text)
+            self.SetColumnWidth(col, max(tw[0]+4, 48))
             
         self.setResizeColumn(0)
+
         # Trying to get images out...
         self._UpdateImageList()
     
@@ -779,7 +779,9 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.Bind(wx.EVT_MENU, self.OnPlotSettings, id=plot_settingsID)
         
         self.PopupMenu(menu)
-        menu.Destroy()  
+        menu.Destroy()
+        
+()
 #END: VirtualDataList
 #==============================================================================
 

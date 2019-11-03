@@ -218,11 +218,13 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.AddTool(10001, "tb_new", img.getnewBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N", "Create a new model | Ctrl+N")
         self.main_frame_toolbar.AddTool(10002, "tb_open", img.getopenBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O", "Open an existing model | Ctrl+O")
         self.main_frame_toolbar.AddTool(10003, "tb_save", img.getsaveBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Save | Ctrl+S", "Save model to file | Ctrl+S")
+        self.main_frame_toolbar.AddSeparator()
         self.main_frame_toolbar.AddTool(10004, "tb_simulate", img.getsimulateBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
         self.main_frame_toolbar.AddTool(10005, "tb_start_fit", img.getstart_fitBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Start fit | Ctrl+F", "Start fitting | Ctrl+F")
         self.main_frame_toolbar.AddTool(10006, "tb_stop_fit", img.getstop_fitBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Stop fit | Ctrl+H", "Stop fitting | Ctrl+H")
         self.main_frame_toolbar.AddTool(10007, "tb_restart_fit", img.getrestart_fitBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Restart fit | Ctrl+R", "Restart the fit | Ctrl+R")
         self.main_frame_toolbar.AddTool(1008, "tb_calc_error_bars", img.getcalc_error_barBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
+        self.main_frame_toolbar.AddSeparator()
         self.main_frame_toolbar.AddTool(10009, "tb_zoom", img.getzoomBitmap(), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
         # Tool Bar end
         self.ver_splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
@@ -391,13 +393,14 @@ class MainFrame(wx.Frame):
    
     def __set_properties(self):
         self.main_frame_toolbar.SetToolBitmapSize((32,32))
-        self.main_frame_toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
+        # self.main_frame_toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
         self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
             '        FOM:                    ', size = (400, -1))
         font = wx.Font(wx.FontInfo(15))
         self.main_frame_fom_text.SetFont(font)
         self.main_frame_fom_text.SetLabel('        FOM: None')
         #self.main_frame_fom_text.SetEditable(False)
+        self.main_frame_toolbar.AddSeparator()
         self.main_frame_toolbar.AddSeparator()
         self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
         
@@ -412,7 +415,6 @@ class MainFrame(wx.Frame):
         main_frame_statusbar_fields = ["", "", "x,y"]
         for i in range(len(main_frame_statusbar_fields)):
             self.main_frame_statusbar.SetStatusText(main_frame_statusbar_fields[i], i)
-        self.main_frame_toolbar.SetToolBitmapSize((32, 32))
         self.main_frame_toolbar.Realize()
         self.data_grid_choice.SetSelection(0)
         self.static_line_1.SetMinSize((-1,5))
