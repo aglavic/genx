@@ -51,6 +51,8 @@ if not os.path.exists(config_path + 'genx.conf'):
 #raise Exception(_path)
 class MainFrame(wx.Frame):
     def __init__(self, parent, show_startup, *args, **kwds):
+        self.dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(32*self.dpi_scale_factor)
         
         self.config = io.Config()
         self.parent = parent
@@ -215,17 +217,17 @@ class MainFrame(wx.Frame):
         # Tool Bar
         self.main_frame_toolbar = wx.ToolBar(self, -1, style=wx.TB_DEFAULT_STYLE)
         self.SetToolBar(self.main_frame_toolbar)
-        self.main_frame_toolbar.AddTool(10001, "tb_new", img.getnewBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N", "Create a new model | Ctrl+N")
-        self.main_frame_toolbar.AddTool(10002, "tb_open", img.getopenBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O", "Open an existing model | Ctrl+O")
-        self.main_frame_toolbar.AddTool(10003, "tb_save", img.getsaveBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Save | Ctrl+S", "Save model to file | Ctrl+S")
+        self.main_frame_toolbar.AddTool(10001, "tb_new", wx.Bitmap(img.getnewImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N", "Create a new model | Ctrl+N")
+        self.main_frame_toolbar.AddTool(10002, "tb_open", wx.Bitmap(img.getopenImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O", "Open an existing model | Ctrl+O")
+        self.main_frame_toolbar.AddTool(10003, "tb_save", wx.Bitmap(img.getsaveImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Save | Ctrl+S", "Save model to file | Ctrl+S")
         self.main_frame_toolbar.AddSeparator()
-        self.main_frame_toolbar.AddTool(10004, "tb_simulate", img.getsimulateBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
-        self.main_frame_toolbar.AddTool(10005, "tb_start_fit", img.getstart_fitBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Start fit | Ctrl+F", "Start fitting | Ctrl+F")
-        self.main_frame_toolbar.AddTool(10006, "tb_stop_fit", img.getstop_fitBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Stop fit | Ctrl+H", "Stop fitting | Ctrl+H")
-        self.main_frame_toolbar.AddTool(10007, "tb_restart_fit", img.getrestart_fitBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Restart fit | Ctrl+R", "Restart the fit | Ctrl+R")
-        self.main_frame_toolbar.AddTool(1008, "tb_calc_error_bars", img.getcalc_error_barBitmap(), wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
+        self.main_frame_toolbar.AddTool(10004, "tb_simulate", wx.Bitmap(img.getsimulateImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
+        self.main_frame_toolbar.AddTool(10005, "tb_start_fit", wx.Bitmap(img.getstart_fitImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Start fit | Ctrl+F", "Start fitting | Ctrl+F")
+        self.main_frame_toolbar.AddTool(10006, "tb_stop_fit", wx.Bitmap(img.getstop_fitImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Stop fit | Ctrl+H", "Stop fitting | Ctrl+H")
+        self.main_frame_toolbar.AddTool(10007, "tb_restart_fit", wx.Bitmap(img.getrestart_fitImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Restart fit | Ctrl+R", "Restart the fit | Ctrl+R")
+        self.main_frame_toolbar.AddTool(1008, "tb_calc_error_bars", wx.Bitmap(img.getcalc_error_barImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
         self.main_frame_toolbar.AddSeparator()
-        self.main_frame_toolbar.AddTool(10009, "tb_zoom", img.getzoomBitmap(), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
+        self.main_frame_toolbar.AddTool(10009, "tb_zoom", wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
         # Tool Bar end
         self.ver_splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
         self.data_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
@@ -392,7 +394,7 @@ class MainFrame(wx.Frame):
         #### End Manual config
    
     def __set_properties(self):
-        self.main_frame_toolbar.SetToolBitmapSize((32,32))
+        # self.main_frame_toolbar.SetToolBitmapSize((32,32))
         # self.main_frame_toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
         self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
             '        FOM:                    ', size = (400, -1))
@@ -406,9 +408,7 @@ class MainFrame(wx.Frame):
         
         # begin wxGlade: MainFrame.__set_properties
         self.SetTitle("GenX")
-        _icon = wx.NullIcon
-        _icon.CopyFromBitmap(img.getgenxBitmap())
-        self.SetIcon(_icon)
+        self.SetIcon(img.genx.GetIcon())
         self.main_frame_statusbar.SetStatusWidths([-2, -3, -2])
         
         # statusbar fields
@@ -774,7 +774,7 @@ class MainFrame(wx.Frame):
         event_handlers.fom_help(self, event)
 
     def eh_mb_view_use_toggle_show(self, event): # wxGlade: MainFrame.<event_handler>
-        new_val = self.mb_use_toggle_show.IsChecked()
+        new_val = self.main_frame_menubar.mb_use_toggle_show.IsChecked()
         self.data_list.list_ctrl.SetShowToggle(new_val)
     
     def eh_mb_misc_openhomepage(self, event): # wxGlade: MainFrame.<event_handler>

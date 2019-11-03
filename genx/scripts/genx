@@ -19,6 +19,13 @@ def start_interactive(args):
     :param args:
     :return:
     '''
+    # Fix blurry text on Windows 10
+    import ctypes
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(True)
+    except:
+        pass
+    
     from genx import genx_gui
     if args.infile.endswith('.gx') or args.infile.endswith('.hgx'):
         app = genx_gui.MyApp(False, 0)

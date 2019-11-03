@@ -49,6 +49,8 @@ class PlotPanel(wx.Panel):
             , config = None, config_name='', **kwargs):
         
         wx.Panel.__init__(self,parent, id = id, style = style, **kwargs)
+        if dpi is None:
+            dpi=wx.GetDisplayPPI()[0]
         
         self.parent = parent
         self.callback_window = self

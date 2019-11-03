@@ -929,42 +929,44 @@ class ParameterGrid(wx.Panel):
         #self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
         #self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
         #self.toolbar.SetBackgroundColour('BLUE')
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, label='Add a new row', bitmap=img.getaddBitmap(), shortHelp='Insert new row')
+        self.toolbar.AddTool(newid, label='Add a new row', bitmap=wx.Bitmap(img.add.GetImage().Scale(tb_bmp_size,tb_bmp_size)), shortHelp='Insert new row')
         self.Bind(wx.EVT_TOOL, self.eh_add_row, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, label='Delete row', bitmap=img.getdeleteBitmap(), shortHelp='Delete row')
+        self.toolbar.AddTool(newid, label='Delete row', bitmap=wx.Bitmap(img.delete.GetImage().Scale(tb_bmp_size,tb_bmp_size)), shortHelp='Delete row')
         self.Bind(wx.EVT_TOOL, self.eh_delete_row, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, label='Move row up', bitmap=img.getmove_upBitmap(), shortHelp='Move row up')
+        self.toolbar.AddTool(newid, label='Move row up', bitmap=wx.Bitmap(img.move_up.GetImage().Scale(tb_bmp_size,tb_bmp_size)), shortHelp='Move row up')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_up, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, label='Move row down', bitmap=img.getmove_downBitmap(),
+        self.toolbar.AddTool(newid, label='Move row down', bitmap=wx.Bitmap(img.move_down.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Move row down')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, label='Sort parameters', bitmap=img.sort.GetBitmap(),
+        self.toolbar.AddTool(newid, label='Sort parameters', bitmap=wx.Bitmap(img.sort.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Sort the rows by class, object and name')
         self.Bind(wx.EVT_TOOL, self.eh_sort, id=newid)
 
         newid = wx.NewId()
         self.slider_tool_id = newid
-        self.slider_tool = self.toolbar.AddCheckTool(newid, label='Show sliders', bitmap1=img.slider.GetBitmap(),
+        self.slider_tool = self.toolbar.AddCheckTool(newid, label='Show sliders', bitmap1=wx.Bitmap(img.slider.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                                           shortHelp='Show the parameter values as sliders')
         self.Bind(wx.EVT_TOOL, self.eh_slider_toggle, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, label='Project FOM evals', bitmap=img.par_proj.GetBitmap(),
+        self.toolbar.AddTool(newid, label='Project FOM evals', bitmap=wx.Bitmap(img.par_proj.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Project FOM on parameter axis')
         self.Bind(wx.EVT_TOOL, self.eh_project_fom, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, label='Scan parameter', bitmap=img.par_scan.GetBitmap(), shortHelp='Scan FOM')
+        self.toolbar.AddTool(newid, label='Scan parameter', bitmap=wx.Bitmap(img.par_scan.GetImage().Scale(tb_bmp_size,tb_bmp_size)), shortHelp='Scan FOM')
         self.Bind(wx.EVT_TOOL, self.eh_scan_fom, id=newid)
 
 
