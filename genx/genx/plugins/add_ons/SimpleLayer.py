@@ -272,6 +272,8 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                                              ("Density [g/cm³]", 60)
                                              ]):
             self.InsertColumn(col, text, width=width)
+        
+        self.setResizeColumn(0)
 
     def OnSelectionChanged(self, evt):
         if not self.toggleshow:

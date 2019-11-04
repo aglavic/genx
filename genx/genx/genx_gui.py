@@ -540,7 +540,7 @@ class MainFrame(wx.Frame):
 
     def startup_dialog(self, profile_path, force_show = False):
         show_profiles = self.config.get_boolean('startup', 'show profiles')
-        widescreen=self.config.get_boolean('startup', 'widescreen')
+        widescreen=self.config.get_boolean('startup', 'widescreen', False)
         if show_profiles or force_show:
             startup_dialog = StartUpConfigDialog(self, profile_path + 'profiles/',
                                                  show_cb = show_profiles,
