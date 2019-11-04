@@ -949,11 +949,14 @@ class ParameterGrid(wx.Panel):
                                   shortHelp='Move row down')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
 
+
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Sort parameters', bitmap=wx.Bitmap(img.sort.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Sort the rows by class, object and name')
         self.Bind(wx.EVT_TOOL, self.eh_sort, id=newid)
 
+        self.toolbar.AddSeparator()
+        
         newid = wx.NewId()
         self.slider_tool_id = newid
         self.slider_tool = self.toolbar.AddCheckTool(newid, label='Show sliders', bitmap1=wx.Bitmap(img.slider.GetImage().Scale(tb_bmp_size,tb_bmp_size)),

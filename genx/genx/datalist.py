@@ -824,6 +824,8 @@ class DataListControl(wx.Panel):
                                   shortHelp='Insert a data set for simulation')
         self.Bind(wx.EVT_TOOL, self.eh_tb_add_simulation, id=newid)
 
+        self.toolbar.AddSeparator()
+        
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Move up', bitmap=wx.Bitmap(img.move_up.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Move selected data set(s) up')
@@ -839,6 +841,7 @@ class DataListControl(wx.Panel):
                                   shortHelp='Delete selected data set')
         self.Bind(wx.EVT_TOOL, self.eh_tb_delete, id=newid)
 
+        self.toolbar.AddSeparator()
 
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Plot settings', bitmap=wx.Bitmap(img.plotting.GetImage().Scale(tb_bmp_size,tb_bmp_size)),

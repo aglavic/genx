@@ -20,11 +20,12 @@ Last Changes 10/11/16
 '''
 
 import os, sys
+import re
 import json
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from math import cos, pi, sqrt
-from models.utils import UserVars, fp, fw, bc, bw #@UnusedImport
+from models.utils import UserVars, fp, fw, bc, bw, __bc_dict__ #@UnusedImport
 import images as img
 from plugins import add_on_framework as framework
 from genx.gui_logging import iprint
@@ -50,6 +51,7 @@ class Plugin(framework.Template):
         materials_panel = self.NewDataFolder('Materials')
         materials_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.materials_panel = wx.Panel(materials_panel)
+        self.create_isotopes()
         self.create_materials_list()
         materials_sizer.Add(self.materials_panel, 1, wx.EXPAND | wx.GROW | wx.ALL)
         materials_panel.SetSizer(materials_sizer)
@@ -59,6 +61,26 @@ class Plugin(framework.Template):
     def _init_refplugin(self):
         # connect to the reflectivity plugin for layer creation
         self.refplugin = self.parent.plugin_control.plugin_handler.loaded_plugins['Reflectivity']
+
+    def create_isotopes(self):
+        '''
+            Go through the database of neutron scattering length and generate
+            isotope list accordingly.
+        '''
+        for key in __bc_dict__.keys():
+            if not key.startswith('i'):
+                continue
+            try:
+                N=int(re.findall(r'\d+', key)[0])
+            except IndexError:
+                continue
+            element=key[len('i%i'%N):].capitalize()
+            isokey='^{%i}%s'%(N, element)
+            n='i%i%s'%(N, element)
+            isotopes[isokey]=(n, element)
+            atomic_data[isokey]=(atomic_data[element][0],
+                                 atomic_data[element][1],
+                                 float(N))
 
     def create_materials_list(self):
         '''
@@ -88,31 +110,32 @@ class Plugin(framework.Template):
         self.tool_panel.SetSizer(self.sizer_hor)
 
     def create_toolbar(self):
-        if os.name=='nt':
-            size=(24, 24)
-        else:
-            size=(-1,-1)
-        self.bitmap_button_add = wx.BitmapButton(self.tool_panel, -1, img.getaddBitmap(), size=size, style=wx.NO_BORDER)
-        self.bitmap_button_add.SetToolTip('Add material')
-        self.bitmap_button_delete=wx.BitmapButton(self.tool_panel, -1, img.getdeleteBitmap(), size=size,
-                                                  style=wx.NO_BORDER)
-        self.bitmap_button_delete.SetToolTip('Delete selected materials')
-        self.bitmap_button_apply = wx.BitmapButton(self.tool_panel, -1, img.getmove_downBitmap(), size=size,
-                                                   style=wx.NO_BORDER)
-        self.bitmap_button_apply.SetToolTip('New Layer/Apply to Layer')
+        self.toolbar = wx.ToolBar(self.tool_panel, style=wx.TB_FLAT|wx.TB_HORIZONTAL)
 
-        space = (2, -1)
-        self.sizer_hor = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer_hor.Add(self.bitmap_button_add, proportion=0, border=2)
-        self.sizer_hor.Add(space)
-        self.sizer_hor.Add(self.bitmap_button_delete, proportion=0, border=2)
-        self.sizer_hor.Add(space)
-        self.sizer_hor.Add(self.bitmap_button_apply, proportion=0, border=2)
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
 
+        newid=wx.NewId()
+        self.toolbar.AddTool(newid, label='Add',
+             bitmap=wx.Bitmap(img.add.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+             shortHelp='Add a material to the list')
+        self.tool_panel.Bind(wx.EVT_TOOL, self.material_add, id=newid)
 
-        self.materials_panel.Bind(wx.EVT_BUTTON, self.material_add, self.bitmap_button_add)
-        self.materials_panel.Bind(wx.EVT_BUTTON, self.material_delete, self.bitmap_button_delete)
-        self.materials_panel.Bind(wx.EVT_BUTTON, self.material_apply, self.bitmap_button_apply)
+        newid=wx.NewId()
+        self.toolbar.AddTool(newid, label='Delete',
+             bitmap=wx.Bitmap(img.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+             shortHelp='Delete selected materials')
+        self.tool_panel.Bind(wx.EVT_TOOL, self.material_delete, id=newid)
+
+        newid=wx.NewId()
+        self.toolbar.AddTool(newid, label='Apply',
+             bitmap=wx.Bitmap(img.move_down.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+             shortHelp='New Layer/Apply to Layer')
+        self.tool_panel.Bind(wx.EVT_TOOL, self.material_apply, id=newid)
+
+        self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer_hor.Add(self.toolbar, proportion=0, border=2)
+
 
     def material_add(self, event):
         dialog=MaterialDialog(self.parent)
@@ -256,6 +279,8 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             fw.set_wavelength(1.54)
             elements=''
             for element, count in formula:
+                if element in isotopes:
+                    element=isotopes[element][1]
                 elements += '+fp.%s*%f' % (element, count)
             sld = density*eval(elements)
             return "%.3f" % (sld.real*10.*2.82)
@@ -263,6 +288,8 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             dens = eval('float(%s)' % density)
             elements = ''
             for element, count in formula:
+                if element in isotopes:
+                    element=isotopes[element][0]
                 elements += '+bc.%s*%f' % (element, count)
             sld = dens*eval(elements)
             return "%.3f" % (sld.real*10.)
@@ -270,11 +297,31 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             formula = self.materials_list[item][0]
             output = ''
             for element, count in formula:
+                if element.startswith('^'):
+                    try:
+                        isotope, element=element[2:].split('}')
+                        output += self.get_superscript(int(isotope))
+                    except (IndexError, ValueError):
+                        pass
                 if count == 1:
                     output += element
                 else:
                     output += element + self.get_subscript(count)
             return output
+
+    def get_superscript(self, count):
+        '''
+          Return a subscript unicode string that equals the given number.
+        '''
+        scount = '%g'%count
+        result = ''
+        for char in scount:
+            if char == '.':
+                result += '﹒'
+            else:
+                # a superscript digit in unicode
+                result += (b'\\u207' + char.encode('utf-8')).decode('unicode-escape')
+        return result
 
     def get_subscript(self, count):
         '''
@@ -287,11 +334,8 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                 result += '﹒'
             else:
                 # a subscript digit in unicode
-                result += ('\\u208' + char).decode('unicode-escape')
-        if '.' in scount:
-            return result
-        else:
-            return result
+                result += (b'\\u208' + char.encode('utf-8')).decode('unicode-escape')
+        return result
 
     def _GetSelectedItems(self):
         ''' _GetSelectedItems(self) --> indices [list of integers]
@@ -468,18 +512,18 @@ class MaterialDialog(wx.Dialog):
         i=0
         mlen=len(text)
         while i<mlen:
-            char1=text[i].upper()
-            char2=''
-            if i<mlen-1:
-                char2=text[i+1].lower()
-            if char1+char2 in atomic_data:
-                element=char1+char2
-            elif char1 in atomic_data:
-                element=char1
+            # find next element
+            iso_match=re.search('\^\{[0-9]{1,3}\}[A-Z][a-zA-Z]{0,1}', text[i:])
+            normal_match=re.search('[A-Z][a-zA-Z]{0,1}', text[i:])
+            if iso_match is None and normal_match is None:
+                break
+            elif iso_match is None or iso_match.start()>normal_match.start():
+                element=text[i+normal_match.start():i+normal_match.end()].capitalize()
             else:
-                i+=1
-                continue
-            i=i+len(element)
+                element=text[i+iso_match.start():i+normal_match.start()]
+                element+=text[i+normal_match.start():i+normal_match.end()].capitalize()
+            i+=normal_match.end()
+
             j=0
             while i+j<mlen and not text[i+j].isalpha():
                 j+=1
@@ -495,8 +539,16 @@ class MaterialDialog(wx.Dialog):
             extracted_elements.append([element, count])
         self.extracted_elements=extracted_elements
         output=''
-        for element, number in extracted_elements:
-            output+="%g x %s\n"%(number, atomic_data[element][0])
+        for ei, (element, number) in enumerate(extracted_elements):
+            if element.startswith('^'):
+                iso='-%s'%(element[2:].split('}')[0])
+                if not element in atomic_data:
+                    iso='-unknown isotope'
+                    element=element.split('}')[-1]
+                    extracted_elements[ei][0]=element
+            else:
+                iso=''
+            output+="%g x %s\n"%(number, atomic_data[element][0]+iso)
         self.formula_display.SetValue(output[:-1])
         self.OnMassDensityChange(None)
 
@@ -547,43 +599,40 @@ class MaterialDialog(wx.Dialog):
         fd.Destroy()
 
     def OnQuery(self, event):
-      if os.path.exists(os.path.join(config_path, 'materials.key')):
-        key=open(os.path.join(config_path, 'materials.key'), 'r').read().strip()
-      else:
-        dia=wx.TextEntryDialog(self,
-            'Enter your Materials Project API key,\n (https://www.materialsproject.org/dashboard)',
-            'Enter Key')
-        if not dia.ShowModal()==wx.ID_OK:
-          return None
-        key=dia.GetValue()
-        open(os.path.join(config_path, 'materials.key'), 'w').write(key+'\n')
-      a=MPRester(key)
-      res=a.get_data(self.formula_entry.GetValue())
-      if type(res) is not list:
-        return
-      if len(res)>1:
-        # more then one structure available, ask for user input to select appropriate
-        items=[]
-        for i, ri in enumerate(res):
-          cs=ri['spacegroup']['crystal_system']
-          sgs=ri['spacegroup']['symbol']
-          frm=ri['full_formula']
-          v=ri['volume']
-          dens=ri['density']
-          items.append('%i: %s (%s) | UC Formula: %s\n     Density: %s g/cm³ | UC Volume: %s'%
-                       (i+1, sgs, cs, frm, dens, v))
-          if ri['tags'] is not None:
-            items[-1]+='\n     '+';'.join(ri['tags'][:3])
-        dia=wx.SingleChoiceDialog(self,
-                                  'Several entries have been found, please select appropriate:',
-                                  'Select correct database entry',
-                                  items)
-        if not dia.ShowModal()==wx.ID_OK:
-          return None
-        res=res[dia.GetSelection()]
-      else:
-        res=res[0]
-      return self.analyze_cif(res['cif'])
+        key='NdHi2bTnJ9WDS1sU'
+        a=MPRester(key)
+        formula=''
+        for element, number in self.extracted_elements:
+            if element.startswith('^'):
+                element=element.split('}')[-1]
+            formula+='%s%g'%(element, number)
+        res=a.get_data(formula)
+        if type(res) is not list:
+            return
+        if len(res)>1:
+            # more then one structure available, ask for user input to select appropriate
+            items=[]
+            for i, ri in enumerate(res):
+                cs=ri['spacegroup']['crystal_system']
+                sgs=ri['spacegroup']['symbol']
+                frm=ri['full_formula']
+                v=ri['volume']
+                dens=ri['density']
+                items.append(
+                    '%i: %s (%s) | UC Formula: %s\n     Density: %s g/cm³ | UC Volume: %s'%
+                    (i+1, sgs, cs, frm, dens, v))
+                if ri['tags'] is not None:
+                    items[-1]+='\n     '+';'.join(ri['tags'][:3])
+            dia=wx.SingleChoiceDialog(self,
+                                      'Several entries have been found, please select appropriate:',
+                                      'Select correct database entry',
+                                      items)
+            if not dia.ShowModal()==wx.ID_OK:
+                return None
+            res=res[dia.GetSelection()]
+        else:
+            res=res[0]
+        return self.analyze_cif(res['cif'])
 
     def GetResult(self):
         return (self.extracted_elements, self.result_density.GetValue())
@@ -663,6 +712,7 @@ atomic_data={
               "Cr": ("Chromium", 24, 51.9961),
               "Mn": ("Manganese", 25, 54.938),
               "Fe": ("Iron", 26, 55.845),
+              "Fe^{56}": ("Iron", 26, 56.0),
               "Co": ("Cobalt", 27, 58.9332),
               "Ni": ("Nickel", 28, 58.6934),
               "Cu": ("Copper", 29, 63.546),
