@@ -500,6 +500,16 @@ class MainFrame(wx.Frame):
         self.Layout()
         self.Centre()
         # end wxGlade
+        if self.config.get_boolean('startup', 'widescreen', False):
+            # test adding new notebooks for plugins in wide screen layout
+            self.sep_plot_notebook=self.plot_notebook
+            self.plot_notebook = wx.Notebook(self.plot_panel, wx.ID_ANY,
+                                             style=wx.NB_BOTTOM|wx.BORDER_SUNKEN)
+            plot_sizer.Add(self.plot_notebook, 1, wx.EXPAND|wx.ALL, 4)
+            self.sep_data_notebook=self.data_notebook
+            self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY,
+                                             style=wx.NB_BOTTOM|wx.BORDER_SUNKEN)
+            data_sizer.Add(self.data_notebook, 1, wx.EXPAND|wx.ALL, 4)
 
     def Show(self):
         ''' Overiding the default method since any resizing has to come AFTER
@@ -527,16 +537,22 @@ class MainFrame(wx.Frame):
         self.ver_splitter.SetSashPosition(vsplit)
         self.hor_splitter.SetSashPosition(hsplit)
 
+
     def startup_dialog(self, profile_path, force_show = False):
         show_profiles = self.config.get_boolean('startup', 'show profiles')
+        widescreen=self.config.get_boolean('startup', 'widescreen')
         if show_profiles or force_show:
-            startup_dialog = StartUpConfigDialog(self, profile_path + 'profiles/', show_cb = show_profiles)
+            startup_dialog = StartUpConfigDialog(self, profile_path + 'profiles/',
+                                                 show_cb = show_profiles,
+                                                 wide=widescreen)
             startup_dialog.ShowModal()
             config_file = startup_dialog.GetConfigFile()
             if config_file:
                 self.config.load_default(profile_path + 'profiles/' + config_file, reset=True)
                 self.config.default_set('startup', 'show profiles', 
                                          startup_dialog.GetShowAtStartup())
+                self.config.default_set('startup', 'widescreen',
+                                        startup_dialog.GetWidescreen())
                 self.config.write_default(profile_path + 'genx.conf')
                 debug('Changed profile, plugins loaded=%s'%self.config.get('plugins','loaded plugins'))
                 try:
@@ -815,7 +831,7 @@ class MyApp(wx.App):
 # end of class MyApp
 
 class StartUpConfigDialog(wx.Dialog):
-    def __init__(self, parent, config_folder, show_cb = True):
+    def __init__(self, parent, config_folder, show_cb = True, wide = False):
         wx.Dialog.__init__(self, parent, -1, 'Change Startup Configuration')
         
         self.config_folder = config_folder
@@ -836,6 +852,11 @@ class StartUpConfigDialog(wx.Dialog):
         self.startup_cb = startup_cb
         sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(startup_cb, 0, wx.EXPAND, 5)
+        wide_cb = wx.CheckBox(self, -1, "Widescreen (need restart)", style=wx.ALIGN_LEFT)
+        wide_cb.SetValue(wide)
+        self.wide_cb = wide_cb
+        sizer.Add(wide_cb, 0, wx.EXPAND, 5)
+        
         sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(wx.StaticText(self, label='These settings can be changed at the menu:\n Options/Startup Profile'),
                   0, wx.ALIGN_LEFT, 5)
@@ -874,6 +895,7 @@ class StartUpConfigDialog(wx.Dialog):
     def OnClickOkay(self, event):
         self.selected_config = self.profiles[self.config_list.GetSelection()]
         self.show_at_startup = self.startup_cb.GetValue()
+        self.widescreen = self.wide_cb.GetValue()
         event.Skip()
         
     def GetConfigFile(self):
@@ -881,10 +903,13 @@ class StartUpConfigDialog(wx.Dialog):
             return self.selected_config + '.conf'
         else:
             return None
-    
+
     def GetShowAtStartup(self):
         return self.show_at_startup
-    
+
+    def GetWidescreen(self):
+        return self.widescreen
+
     def get_possible_configs(self):
         '''get_possible_configs(self) --> list of strings
         

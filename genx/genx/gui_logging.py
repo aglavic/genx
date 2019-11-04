@@ -83,12 +83,12 @@ def setup_system():
     console.setFormatter(formatter)
     console.setLevel(CONSOLE_LEVEL)
     logger.addHandler(console)
-
-  logfile=logging.FileHandler('genx.log', 'w')
-  formatter=logging.Formatter('[%(levelname)s] - %(asctime)s - %(filename)s:%(lineno)i:%(funcName)s %(message)s', '')
-  logfile.setFormatter(formatter)
-  logfile.setLevel(FILE_LEVEL)
-  logger.addHandler(logfile)
+  if False:
+    logfile=logging.FileHandler('genx.log', 'w')
+    formatter=logging.Formatter('[%(levelname)s] - %(asctime)s - %(filename)s:%(lineno)i:%(funcName)s %(message)s', '')
+    logfile.setFormatter(formatter)
+    logfile.setLevel(FILE_LEVEL)
+    logger.addHandler(logfile)
 
   logging.info('*** GenX %s Logging started ***'%str_version)
 

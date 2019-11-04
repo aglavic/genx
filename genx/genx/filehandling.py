@@ -331,13 +331,14 @@ class Config:
         return self._getf(self.default_config.getfloat,\
                     self.model_config.getfloat, section, option)
                     
-    def get_boolean(self, section, option):
+    def get_boolean(self, section, option, fallback=None):
         '''get_boolean(self, section, option) --> boolean
         
         returns a boolean value if possible for option in section
         '''
         return self._getf(self.default_config.getboolean,\
-                    self.model_config.getboolean, section, option)
+                    self.model_config.getboolean, section, option,
+                          fallback=fallback)
                     
     def get_int(self, section, option, fallback=None):
         '''get_int(self, section, option) --> int
