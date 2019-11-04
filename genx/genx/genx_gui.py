@@ -408,7 +408,9 @@ class MainFrame(wx.Frame):
         
         # begin wxGlade: MainFrame.__set_properties
         self.SetTitle("GenX")
-        self.SetIcon(img.genx.GetIcon())
+        _icon = wx.NullIcon
+        _icon.CopyFromBitmap(img.genx.GetBitmap())
+        self.SetIcon(_icon)
         self.main_frame_statusbar.SetStatusWidths([-2, -3, -2])
         
         # statusbar fields
@@ -508,6 +510,8 @@ class MainFrame(wx.Frame):
         vsize=self.config.get_int('gui', 'vsize', int(display_size[1]*0.9))
         self.SetSize(hsize, vsize)
         self.CenterOnScreen()
+        self.ver_splitter.SetSashPosition(200)
+        self.hor_splitter.SetSashPosition(200)
         # Gravity sets how much the upper/left window is resized default 0
         self.ver_splitter.SetSashGravity(0.25)
         self.hor_splitter.SetSashGravity(0.75)

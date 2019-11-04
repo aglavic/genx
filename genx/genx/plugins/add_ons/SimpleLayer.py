@@ -44,6 +44,15 @@ config_file=os.path.join(config_path, 'materials.cfg')
 mg=None
 
 class Plugin(framework.Template):
+    _refplugin=None
+    
+    @property
+    def refplugin(self):
+        # check if reflectivity plugin is None or destoryed, try to connect
+        if not self._refplugin:
+            self._init_refplugin()
+        return self._refplugin
+    
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
         self.parent = parent
@@ -56,11 +65,18 @@ class Plugin(framework.Template):
         materials_sizer.Add(self.materials_panel, 1, wx.EXPAND | wx.GROW | wx.ALL)
         materials_panel.SetSizer(materials_sizer)
         materials_panel.Layout()
-        wx.CallAfter(self._init_refplugin)
 
     def _init_refplugin(self):
-        # connect to the reflectivity plugin for layer creation
-        self.refplugin = self.parent.plugin_control.plugin_handler.loaded_plugins['Reflectivity']
+        try:
+            # connect to the reflectivity plugin for layer creation
+            self._refplugin = self.parent.plugin_control.plugin_handler.loaded_plugins['Reflectivity']
+        except KeyError:
+            dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
+                             caption='Information',
+                             style=wx.OK|wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+            self._refplugin=None
 
     def create_isotopes(self):
         '''
@@ -153,7 +169,16 @@ class Plugin(framework.Template):
         formula, density=self.known_materials[index]
         f=self.get_f(formula)
         b=self.get_b(formula)
-        layer=self.get_selected_layer()
+        try:
+            layer=self.get_selected_layer()
+        except:
+            dlg=wx.MessageDialog(self.materials_panel,
+                'You have to select a layer or stack before applying material',
+                             caption='Information',
+                             style=wx.OK|wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
         if layer:
             layer.f=f
             layer.b=b

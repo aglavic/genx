@@ -1007,26 +1007,28 @@ class DataParameterPanel(wx.Panel):
         boxver.Add((-1, 2))
         boxver.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=1)
         boxver.Add((-1, 2))
-        
+
         self.listbox = MyHtmlListBox(self, -1, style=wx.BORDER_SUNKEN)
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.Edit, self.listbox)
         boxver.Add(self.listbox, 1, wx.EXPAND)
         
         self.SetSizer(boxver)
-        self.toolbar.Realize()
 
     def do_toolbar(self):
 
         button_names = ['Insert', 'Delete', 'User Variables']
-        button_images = [images.getaddBitmap(), images.getdeleteBitmap(),\
+        button_images = [images.getaddBitmap(), images.getdeleteBitmap(),
             images.getcustom_parameterBitmap()]
         callbacks = [self.Insert, self.Delete, self.EditPars]
         tooltips = ['Insert a command', 'Delete command', 'Edit user variables']
-
+        
         for i in range(len(button_names)):
             newid = wx.NewId()
-            self.toolbar.AddTool(newid, label=button_names[i], bitmap=button_images[i], shortHelp=tooltips[i])
+            self.toolbar.AddTool(newid, label=button_names[i],
+                                 bitmap=button_images[i],
+                                 shortHelp=tooltips[i])
             self.Bind(wx.EVT_TOOL, callbacks[i], id=newid)
+        self.toolbar.Realize()
 
 
     def onsimulate(self, event):
@@ -1308,7 +1310,7 @@ class EditCustomParameters(wx.Dialog):
         self.value_ctrl = wx.TextCtrl(self, -1, size = (120, -1))
         name_ctrl_sizer.Add(self.value_ctrl, (1,1),\
             flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
-        self.add_button = wx.Button(self, -1, 'Add')
+        self.add_button = wx.Button(self, id=wx.ID_ANY, label='Add')
         name_ctrl_sizer.Add(self.add_button, (1,2), \
             flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
         sizer.Add(name_ctrl_sizer)
@@ -1322,15 +1324,15 @@ class EditCustomParameters(wx.Dialog):
         self.listbox.SetItemList(self.lines)
         sizer.Add(self.listbox, 1, wx.GROW|wx.ALL, 10)
         
-        self.delete_button = wx.Button(self, -1, 'Delete')
+        self.delete_button = wx.Button(self, id=wx.ID_ANY, label='Delete')
         sizer.Add(self.delete_button, 0, wx.CENTRE, 0)
         self.Bind(wx.EVT_BUTTON, self.OnDelete, self.delete_button)
         
         button_sizer = wx.StdDialogButtonSizer()
-        okay_button = wx.Button(self, wx.ID_OK)
+        okay_button = wx.Button(self, id=wx.ID_OK)
         #okay_button.SetDefault()
         button_sizer.AddButton(okay_button)
-        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+        button_sizer.AddButton(wx.Button(self, id=wx.ID_CANCEL))
         button_sizer.Realize()
         self.Bind(wx.EVT_BUTTON, self.OnApply, okay_button)
         
@@ -2509,7 +2511,7 @@ if __name__ == '__main__':
     class MyApp(wx.App):
         def OnInit(self):
             #wx.InitAllImageHandlers()
-            frame = SampleFrame(None, -1, "Sample",sh)
+            frame = SamplePanel(None, -1, "Sample",sh)
             frame.Show(True)
             self.SetTopWindow(frame)
             return True
