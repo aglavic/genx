@@ -144,7 +144,7 @@ InstrumentParameters = {'probe':'x-ray', 'wavelength':1.54, 'coords':'2θ',
                         'Ibkg': 0.0, 'tthoff':0.0}
 InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']),
                     ('Resolution', ['restype', 'res', 'respoints', 'resintrange']),
-                    ('Neutron', ['probe', 'pol', 'incangle']),
+                    ('Probe', ['probe', 'pol', 'incangle']),
                     ('Footprint', ['footype', 'beamw', 'samplelen',]),
                     ]
 InstrumentUnits = {'probe':'', 'wavelength': 'Å', 'coords':'',
@@ -548,18 +548,18 @@ def SLD_calculations(z, item, sample, inst):
         sld = dens*f
     elif type == instrument_string_choices['probe'][1] or type == 1 or\
         type == instrument_string_choices['probe'][4] or type == 4:
-        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-5/(wl**2/2/pi)
-        sld_unit = 'fm/\AA^{3}'
+        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
+        sld_unit = '\AA^{-2}'
     else:
         magnetic = True
-        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-5/(wl**2/2/pi)
+        sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
         magn = array(parameters['magn'], dtype=float64)
         #Transform to radians
         magn_ang = array(parameters['magn_ang'], dtype=float64)*pi/180.0
-        mag_sld = 2.645*magn*dens
+        mag_sld = 2.645*magn*dens*10.
         mag_sld_x = mag_sld*cos(magn_ang)
         mag_sld_y = mag_sld*sin(magn_ang)
-        sld_unit = 'fm/\AA^{3}'
+        sld_unit = '\AA^{-2}'
         
     d = array(parameters['d'], dtype=float64)
     d = d[1:-1]

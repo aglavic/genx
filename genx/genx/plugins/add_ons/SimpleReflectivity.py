@@ -22,405 +22,103 @@ import sys, os, re, time, io, traceback
 
 from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
+from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.gui_logging import iprint
 
 _avail_models=['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx',
                'spec_inhom', 'spec_adaptive']
 _set_func_prefix='set'
 
+class SampleGrid(gridlib.Grid):
+    def __init__(self, *args, **kw):
+        gridlib.Grid.__init__(self, *args, **kw)
 
-def default_html_decorator(name, str):
-    return str
+        attr = gridlib.GridCellAttr()
+        attr.SetEditor(FormulaEditor())
+        self.SetColAttr(2, attr)
 
+        self.cb=None
+        self.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.onCellSelected)
+        self.Bind(gridlib.EVT_GRID_EDITOR_CREATED, self.onEditorCreated)
+        self.Bind(gridlib.EVT_GRID_EDITOR_SHOWN, self.onEditorShown)
 
-class SampleHandler:
-    
-    def __init__(self, sample, names):
-        self.sample=sample
-        self.names=names
-        self.getStringList()
-    
-    def getStringList(self, html_encoding=False,
-                      html_decorator=default_html_decorator):
-        '''
-        Function to generate a list of strings that gives
-        a visual representation of the sample.
-        '''
-        slist=[self.sample.Substrate.__repr__()]
-        poslist=[(None, None)]
-        i=0;
-        j=0
-        for stack in self.sample.Stacks:
-            j=0
-            for layer in stack.Layers:
-                slist.append(layer.__repr__())
-                poslist.append((i, j))
-                j+=1
-            slist.append('Stack: Repetitions = %s'%str(stack.Repetitions))
-            for key in list(stack._parameters.keys()):
-                if not key in ['Repetitions', 'Layers']:
-                    slist[-1]+=', %s = %s'%(key, str(getattr(stack, key)))
-            poslist.append((i, None))
-            i+=1
-        slist.append(self.sample.Ambient.__repr__())
-        for item in range(len(slist)):
-            name=self.names[-item-1]
-            par_str=slist[item]
-            if slist[item][0]=='L' and item!=0 and item!=len(slist)-1:
-                if html_encoding:
-                    slist[item]=('<code>&nbsp;&nbsp;&nbsp;<b>'+name+'</b> = '
-                                 +html_decorator(name, par_str)+'</code>')
-                else:
-                    slist[item]=self.names[-item-1]+' = model.'+slist[item]
-            else:
-                if item==0 or item==len(slist)-1:
-                    # This is then the ambient or substrates
-                    if html_encoding:
-                        slist[item]=('<code><b>'+name+'</b> = '
-                                     +html_decorator(name, par_str)+'</code>')
-                    else:
-                        slist[item]=self.names[-item-1]+' = model.'+slist[item]
-                else:
-                    # This is a stack!
-                    if html_encoding:
-                        slist[item]=(
-                                    '<font color = "BLUE"><code><b>'+name+'</b> = '
-                                    +html_decorator(name,
-                                                    par_str)+'</code></font>')
-                    else:
-                        slist[item]=self.names[-item-1]+' = model.'+slist[item]
-        poslist.append((None, None))
-        slist.reverse()
-        poslist.reverse()
-        self.poslist=poslist
-        return slist
-    
-    def htmlize(self, code):
-        '''htmlize(self, code) --> code
+    def onCellSelected(self, evt):
+        if evt.Col in [1,3,5,7,9]:
+            wx.CallAfter(self.EnableCellEditControl)
+        evt.Skip()
 
-        htmlize the code for display
-        '''
-        p=code.index('=')
-        name='<code><b>%s</b></code>'%code[:p]
-        items=code[p:].split(',')
-        return name+''.join(['<code>%s,</code>'%item for item in items])
-    
-    def getCode(self):
-        '''
-        Generate the python code for the current sample structure.
-        '''
-        slist=self.getStringList()
-        layer_code=''
-        
-        # Create code for the layers:
-        for item in slist:
-            if item.find('Layer')>-1:
-                itemp=item.lstrip()
-                layer_code=layer_code+itemp+'\n'
-        # Create code for the Stacks:
-        i=0
-        stack_code=''
-        item=slist[i]
-        maxi=len(slist)-1
-        while (i<maxi):
-            if item.find('Stack')>-1:
-                stack_strings=item.split(':')
-                stack_code=stack_code+stack_strings[0]+'(Layers=['
-                i+=1
-                item=slist[i]
-                stack_layers=[]
-                while (item.find('Stack')<0 and i<maxi):
-                    itemp=item.split('=')[0]
-                    itemp=itemp.lstrip()
-                    stack_layers.append(itemp)
-                    # stack_code = stack_code + itemp+','
-                    i+=1
-                    item=slist[i]
-                stack_layers.reverse()
-                stack_code+=', '.join(stack_layers)
-                i-=1
-                if stack_code[-1]!='[':
-                    stack_code=stack_code[:-1]+'],'+stack_strings[1]+')\n'
-                else:
-                    stack_code=stack_code[:]+'],'+stack_strings[1]+')\n'
-            i+=1
-            item=slist[i]
-        # Create the code for the sample
-        sample_code='sample = model.Sample(Stacks = ['
-        stack_strings=stack_code.split('\n')
-        rest_sample_rep='], '
-        sample_string_pars=self.sample.__repr__().split(':')[1].split('\n')[
-            0].lstrip()
-        if len(sample_string_pars)!=0:
-            sample_string_pars+=', '
-        rest_sample_rep+=sample_string_pars+'Ambient = Amb, Substrate = Sub)\n'
-        if stack_strings!=['']:
-            # Added 20080831 MB bugfix
-            stack_strings.reverse()
-            for item in stack_strings[1:]:
-                itemp=item.split('=')[0]
-                sample_code=sample_code+itemp+','
-            sample_code=sample_code[:-2]+rest_sample_rep
-        else:
-            sample_code+=rest_sample_rep
-        
-        return layer_code, stack_code, sample_code
-    
-    def getItem(self, pos):
-        '''
-        Returns the item (Stack or Layer) at position pos
-        '''
-        if pos==0:
-            return self.sample.Ambient
-        if pos==len(self.poslist)-1:
-            return self.sample.Substrate
-        stack=self.sample.Stacks[self.poslist[pos][0]]
-        if self.poslist[pos][1]==None:
-            return stack
-        return stack.Layers[self.poslist[pos][1]]
-    
-    def deleteItem(self, pos):
-        '''
-        Delete item pos in the lsit if the item is a stack all the Layers
-        are deleted as well.
-        '''
-        if pos==0:
-            return None
-        if pos==len(self.poslist)-1:
-            return None
-        stack=self.sample.Stacks[self.poslist[pos][0]]
-        if self.poslist[pos][1]==None:
-            self.sample.Stacks.pop(self.poslist[pos][0])
-            p=self.poslist[pos][0]
-            pt=pos
-            while self.poslist[pt][0]==p:
-                pt+=1
-            pt-=1
-            while self.poslist[pt][0]==p:
-                self.names.pop(pt)
-                pt-=1
-        
-        else:
-            stack.Layers.pop(self.poslist[pos][1])
-            self.names.pop(pos)
-        return self.getStringList()
-    
-    def insertItem(self, pos, type, name='test'):
-        '''
-        Insert an item into the sample at position pos in the list
-        and of type. type is a string of either Stack or Layer
-        '''
-        spos=self.poslist[pos]
-        added=False
-        last=False
-        if pos==0:
-            spos=(self.poslist[1][0], self.poslist[1][1])  # +1
-            # spos=(None,None)
-        if pos==len(self.poslist)-1:
-            spos=self.poslist[-2]
-            last=True
-        stackp=False
-        if spos[1]==None:
-            spos=(spos[0], 0)
-            stackp=True
-        if spos[0]==None:
-            spos=(0, spos[1])
-        
-        # If it not the first item i.e. can't insert anything before the
-        # ambient layer
-        if pos!=0:
-            if type=='Stack':
-                stack=self.model.Stack(Layers=[])
-                if last:
-                    self.names.insert(pos, name)
-                else:
-                    if stackp:
-                        self.names.insert(
-                            pos+len(self.sample.Stacks[spos[0]].Layers)+1,
-                            name)
-                    else:
-                        self.names.insert(pos+spos[1]+1, name)
-                self.sample.Stacks.insert(spos[0], stack)
-                added=True
-            
-            if type=='Layer' and len(self.poslist)>2:
-                layer=self.model.Layer()
-                if last:
-                    self.names.insert(pos, name)
-                else:
-                    if spos[1]>=0:
-                        self.names.insert(pos+1, name)
-                    else:
-                        self.names.insert(
-                            pos+len(self.sample.Stacks[spos[0]].Layers)+1,
-                            name)
-                if last:
-                    self.sample.Stacks[spos[0]].Layers.insert(0, layer)
-                else:
-                    if self.poslist[pos][1]==None:
-                        self.sample.Stacks[spos[0]].Layers.append(layer)
-                    else:
-                        self.sample.Stacks[spos[0]].Layers.insert(spos[1],
-                                                                  layer)
-                added=True
-        
-        else:
-            if type=='Stack':
-                stack=self.model.Stack(Layers=[])
-                self.sample.Stacks.append(stack)
-                added=True
-                self.names.insert(pos+1, name)
-            if type=='Layer' and len(self.poslist)>2:
-                layer=self.model.Layer()
-                self.sample.Stacks[spos[0]].Layers.append(layer)
-                added=True
-                self.names.insert(pos+2, name)
-        if added:
-            
-            return self.getStringList()
-        else:
-            return None
-    
-    def canInsertLayer(self):
-        return self.poslist>2
-    
-    def checkName(self, name):
-        return self.names.__contains__(name)
-    
-    def getName(self, pos):
-        """ Returns the name for the object at pos
-        :param pos: list position for the name
-        :return: the name (string)
-        """
-        return self.names[pos]
-    
-    def changeName(self, pos, name):
-        if name in self.names and name!=self.names[pos]:
-            return False
-        elif pos==len(self.names)-1 or pos==0:
-            return False
-        else:
-            self.names[pos]=name
-            return True
-    
-    def moveUp(self, pos):
-        '''
-        Move the item up - with stacks move the entire stack up one step.
-        Moves layer only if it is possible.
-        '''
-        if pos>1 and pos!=len(self.poslist)-1:
-            if self.poslist[pos][1]==None:
-                temp=self.sample.Stacks.pop(self.poslist[pos][0])
-                temps=[]
-                for index in range(len(temp.Layers)+1):
-                    temps.append(self.names.pop(pos))
-                for index in range(len(temp.Layers)+1):
-                    self.names.insert(pos-len(
-                        self.sample.Stacks[self.poslist[pos][0]].Layers)-1,
-                                      temps[-index-1])
-                self.sample.Stacks.insert(self.poslist[pos][0]+1, temp)
-                return self.getStringList()
-            else:  # i.e. it is a layer we move
-                if pos>2:
-                    temp=self.sample.Stacks[self.poslist[pos][0]].Layers.pop(
-                        self.poslist[pos][1])
-                    temps=self.names.pop(pos)
-                    if self.poslist[pos-1][
-                        1]==None:  # Next item a Stack i.e. jump up
-                        self.sample.Stacks[
-                            self.poslist[pos-2][0]].Layers.insert(0, temp)
-                        self.names.insert(pos-1, temps)
-                    else:  # Moving inside a stack
-                        self.sample.Stacks[self.poslist[pos][0]].Layers.insert(
-                            self.poslist[pos][1]+1, temp)
-                        self.names.insert(pos-1, temps)
-                    return self.getStringList()
-                else:
-                    return None
-        else:
-            return None
-    
-    def moveDown(self, pos):
-        '''
-        Move the item down - with stacks move the entire stack up one step.
-        Moves layer only if it is possible.
-        '''
-        
-        if pos!=0 and pos<len(self.poslist)-2:
-            
-            if self.poslist[pos][1]==None:  # Moving a stack
-                if self.poslist[pos][0]!=0:
-                    temp=self.sample.Stacks.pop(self.poslist[pos][0])
-                    temps=[]
-                    for index in range(len(temp.Layers)+1):
-                        temps.append(self.names.pop(pos))
-                    for index in range(len(temp.Layers)+1):
-                        self.names.insert(pos+len(self.sample.Stacks[
-                                                      self.poslist[pos][
-                                                          0]-1].Layers)+1,
-                                          temps[-index-1])
-                    self.sample.Stacks.insert(self.poslist[pos][0]-1, temp)
-                    return self.getStringList()
-                else:
-                    return None
-            
-            else:  # i.e. it is a layer we move
-                if pos<len(self.poslist)-2:
-                    temp=self.sample.Stacks[self.poslist[pos][0]].Layers.pop(
-                        self.poslist[pos][1])
-                    temps=self.names.pop(pos)
-                    if self.poslist[pos+1][
-                        1]==None:  # Next item a Stack i.e. jump down
-                        self.sample.Stacks[
-                            self.poslist[pos+1][0]].Layers.insert(len(
-                            self.sample.Stacks[self.poslist[pos+1][0]].Layers),
-                                                                  temp)
-                        self.names.insert(pos+1, temps)
-                    else:  # Moving inside a stack
-                        self.sample.Stacks[self.poslist[pos][0]].Layers.insert(
-                            self.poslist[pos][1]-1, temp)  # -2
-                        self.names.insert(pos+1, temps)
-                    return self.getStringList()
-        else:
-            return None
+    def onEditorCreated(self, evt):
+        if evt.Col in [3, 5, 7, 9]:
+            self.cb=evt.Control
+            self.cb.WindowStyle|=wx.WANTS_CHARS
+            wx.CallLater(100, self.toggleCheckbox)
+        evt.Skip()
 
+    def onEditorShown(self, evt):
+        if evt.Col in [3, 5, 7, 9] and self.cb is not None:
+            wx.CallLater(100, self.toggleCheckbox)
+        evt.Skip()
+
+    def toggleCheckbox(self):
+        self.cb.SetValue(not self.cb.IsChecked())
+        wx.CallAfter(self.DisableCellEditControl)
+
+class FormulaEditor(gridlib.GridCellTextEditor):
+    def BeginEdit(self, row, col, grid):
+        print(row, col, grid)
+        return gridlib.GridCellTextEditor.BeginEdit(self, row, col, grid)
+
+# new model is ready with a script as value.
+(new_model_event, EVT_NEW_MODEL) = wx.lib.newevent.NewEvent()
 
 class SampleTable(gridlib.GridTableBase):
     _columns=[
-        ('Layer', gridlib.GRID_VALUE_STRING, ''),
-        ('Formula Params:\nMixure Params:', gridlib.GRID_VALUE_CHOICE+':Formula,Mixure', 'Formula'),
-        ('Chem. Formula\nFraction [%]', gridlib.GRID_VALUE_STRING, ''),
+        ('Layer', gridlib.GRID_VALUE_STRING),
+        ('Formula Params:\nMixure Params:', gridlib.GRID_VALUE_CHOICE+':Formula,Mixure'),
+        ('Chem. Formula\nSLD-1 [10⁻⁶Å⁻²]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, False),
-        ('Density [1/Å]\nSLD-1 [1/Å²]', gridlib.GRID_VALUE_STRING, ''),
+        ('Density [g/cm³]\nSLD-2 [10⁻⁶Å⁻²]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, False),
-        ('Moment [µB/FU]\nSLD-2 [1/Å²]', gridlib.GRID_VALUE_STRING, '0.0'),
+        ('Moment [µB/FU]\nFraction [%]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, True),
-        ('d [Å]', gridlib.GRID_VALUE_STRING, '10.0'),
+        ('d [Å]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, False),
-        ('σ [Å]', gridlib.GRID_VALUE_STRING, '5.0'),
+        ('σ [Å]', gridlib.GRID_VALUE_STRING),
         ]
+
+    defaults={
+        'Formula': ['Layer', 'Formula', '',
+                    False, '2.0', False, '0.0',
+                    True, '10.0', False, '5.0'],
+        'Mixure':  ['MixLayer', 'Mixure', '6.0e-6',
+                    False, '2.0e-6', False, '100',
+                    True, '10.0', False, '5.0'],
+        }
     
-    def __init__(self, parent):
+    def __init__(self, parent, grid):
         gridlib.GridTableBase.__init__(self)
-        self.parent = parent
+        self.parent=parent
+        self.grid=grid
         
         self.ambient=[None, 'Formula', 'SLD',
                       False, '0.0', False, '0.0',
-                      False, '-', False, '-']
-        self.substrate=[None, 'Formula', 'Si',
-                        False, '2.0', False, '0.0',
-                        False, '-', True, '5.0']
-        self.layers=[['Layer 1', 'Formula', 'Fe',
-                      False, '5.8', False, '3.0',
+                      False, '0', False, '0']
+        self.substrate=[None, 'Formula', Formula([['Si',1.0]]),
+                        False, '2.0056', False, '0.0',
+                        False, '0', True, '5.0']
+        self.layers=[['Layer 1', 'Formula', Formula([['Fe',2.0],['O', 2.0]]),
+                      False, '4.87479', False, '3.0',
                       True, '100.0', False, '5.0']]
         
-        self.parent.SetTable(self, True)
+        self.grid.SetTable(self, True)
 
-        self.parent.SetRowLabelSize(40)
-        self.parent.SetColLabelSize(60)
+        self.grid.SetRowLabelSize(40)
+        self.grid.SetColLabelSize(60)
         for i, colinfo in enumerate(self._columns):
             # self.parent.SetColSize(i, 50)
-            self.parent.AutoSizeColumn(i, True)
+            self.grid.AutoSizeColumn(i, True)
+        
+        wx.CallAfter(self.updateCode)
 
     def GetNumberRows(self):
         return len(self.layers)+2
@@ -451,6 +149,10 @@ class SampleTable(gridlib.GridTableBase):
         return self.layers[row-1][col]
 
     def SetValue(self, row, col, value):
+        # ignore unchanged values
+        if value==self.GetValue(row,col):
+            return
+        
         if row==0:
             to_edit=self.ambient
         elif row==(self.GetNumberRows()-1):
@@ -463,8 +165,37 @@ class SampleTable(gridlib.GridTableBase):
                 print('Already exits')
             else:
                 to_edit[0]=value
-        elif col in [1, 3, 5, 7, 9]:
-            # layer type and boolean columns are always correct
+        elif col==2:
+            # check formula
+            if to_edit[1]=='Formula':
+                if value=='SLD':
+                    to_edit[2]=value
+                else:
+                    try:
+                        formula=Formula.from_str(value)
+                    except:
+                        pass
+                    else:
+                        to_edit[2]=formula
+                        # a new formula was set, if in DB, set its density
+                        if formula in mdb:
+                            to_edit[4]='%g'%mdb.dens_mass(formula)
+            else:
+                try:
+                    val=float(eval('%s'%value))
+                    if val>=0 and val<=100:
+                        to_edit[2]=value
+                except:
+                    pass
+                else:
+                    to_edit[col]=value
+        elif col==1:
+            # change of layer type resets material data columns
+            to_edit[1]=value
+            for i in [2,4,6]:
+                to_edit[i]=self.defaults[value][i]
+        elif col in [3, 5, 7, 9]:
+            # boolean columns are always correct
             to_edit[col]=value
         elif col in [4,6,8,10]:
             # evaluate float values, can be written as formla
@@ -474,6 +205,13 @@ class SampleTable(gridlib.GridTableBase):
                 pass
             else:
                 to_edit[col]=value
+        self.updateCode()
+    
+    def updateCode(self, evt=None):
+        script=self.getCode()
+        evt=new_model_event()
+        evt.script=script
+        wx.PostEvent(self.parent, evt)
 
     def GetAttr(self, row, col, kind):
         '''Called by the grid to find the attributes of the cell,
@@ -485,6 +223,8 @@ class SampleTable(gridlib.GridTableBase):
             if row==0:
                 if col==1:
                     attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_TOP)
+                elif col in [3, 5, 7, 9]:
+                    attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_TOP)
                 else:
                     attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
                 attr.SetBackgroundColour('#dddddd')
@@ -493,6 +233,8 @@ class SampleTable(gridlib.GridTableBase):
             else:
                 if col==1:
                     attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_BOTTOM)
+                elif col in [3, 5, 7, 9]:
+                    attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_BOTTOM)
                 else:
                     attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
                 attr.SetBackgroundColour('#aaaaff')
@@ -503,6 +245,8 @@ class SampleTable(gridlib.GridTableBase):
                 attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
             if col==1:
                 attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
+            if col in [3,5,7,9]:
+                attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
         return attr
 
     def GetColLabelValue(self, col):
@@ -540,6 +284,124 @@ class SampleTable(gridlib.GridTableBase):
         '''
         pass
 
+    def InsertRow(self, row):
+        if row==(self.GetNumberRows()-1):
+            row-=1
+        
+        if row>0:
+            layer_type=self.layers[row-1][1]
+        else:
+            layer_type=self.ambient[1]
+        newlayer=list(self.defaults[layer_type])
+        self.layers.insert(row, newlayer)
+    
+        msg=gridlib.GridTableMessage(self,
+                                     gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
+        self.GetView().ProcessTableMessage(msg)
+        msg=gridlib.GridTableMessage(self,
+                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        return True
+
+    def DeleteRow(self, row):
+        if row in [0, self.GetNumberRows()-1]:
+            return False
+        self.layers.pop(row-1)
+    
+        msg=gridlib.GridTableMessage(self,
+                                     gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1)
+        self.GetView().ProcessTableMessage(msg)
+        msg=gridlib.GridTableMessage(self,
+                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        return True
+
+    def MoveRow(self, row_from, row_to):
+        if row_from in [0, self.GetNumberRows()-1] or row_to<0\
+                or row_to in [0, (self.GetNumberRows()-1)]:
+            return False
+        moved_row=self.layers.pop(row_from-1)
+        self.layers.insert(row_to-1, moved_row)
+    
+        msg=gridlib.GridTableMessage(self,
+                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        return True
+    
+    def getLayerCode(self, layer):
+        output="model.Layer("
+        if layer[1]=='Formula':
+            formula=layer[2]
+            if formula=='SLD':
+                nSLD=float(eval(layer[4]))
+                mSLD=float(eval(layer[6]))
+                output+="f=%s, "%(10*nSLD-10j*mSLD)
+                output+="b=%g, "%nSLD
+                output+="dens=0.1, magn=%g, "%mSLD
+            else:
+                output+="f=%s, "%formula.f()
+                output+="b=%s, "%formula.b()
+                output+="dens=%g, "%(eval(layer[4])*MASS_DENSITY_CONVERSION/formula.mFU())
+                output+="magn='%s', "%layer[6]
+        else:
+            SLD1=float(eval(layer[2]))
+            SLD2=float(eval(layer[4]))
+            frac=float(eval(layer[6]))/100.
+            output+="f=%g, "%(frac*SLD1+(1-frac)*SLD2)
+            output+="b=%g, "%(frac*SLD1+(1-frac)*SLD2)
+            output+="dens=0.1, magn=0.0, "
+        output+="d='%s', "%layer[8]
+        output+="sigma='%s', "%layer[10]
+        output+="xs_ai=0.0, magn_ang=0.0)"
+        return output
+
+    def getCode(self):
+        '''
+        Generate the python code for the current sample structure.
+        '''
+        script='from numpy import *\n'\
+               'import models.spec_nx as model\n'\
+               'from models.utils import UserVars, fp, fw, bc, bw\n\n'\
+               '# BEGIN Instrument DO NOT CHANGE\n'\
+               'from models.utils import create_fp, create_fw\n'\
+        
+        script+="inst = model.Instrument(probe='x-ray', wavelength=1.54, coords='2θ',"\
+                " I0=1.0, res=0.001, restype='full conv and varying res.', respoints=9,"\
+                " resintrange=2, beamw=0.01, footype='no corr', samplelen=10.0,"\
+                " incangle=0.0, pol='uu', Ibkg=0.0, tthoff=0.0,)\n"
+        
+        script+="inst_fp = create_fp(inst.wavelength); inst_fw = create_fw(inst.wavelength)\n"\
+                "fp.set_wavelength(inst.wavelength); fw.set_wavelength(inst.wavelength)\n"\
+                "# END Instrument\n\n"\
+                "# BEGIN Sample DO NOT CHANGE\n"
+        script+="Amb = %s\n"%self.getLayerCode(self.ambient)
+        for i, layer in enumerate(reversed(self.layers)):
+            script+="layer_%i = %s\n"%(i, self.getLayerCode(layer))
+
+        script+="\nSub = %s\n"%self.getLayerCode(self.substrate)
+        script+="\nML = model.Stack(Layers=[%s ], Repetitions = 1)\n"%str(
+            ", ".join(["layer_%i"%i for i in range(len(self.layers))])
+            )
+        script+="\nsample = model.Sample(Stacks = [ML], Ambient = Amb, Substrate = Sub)\n" \
+                "# END Sample\n\n" \
+                "# BEGIN Parameters DO NOT CHANGE\n" \
+                "cp = UserVars()\n" \
+                "# END Parameters\n\n" \
+                "SLD = []\n" \
+                "def Sim(data):\n" \
+                "    I = []\n" \
+                "    SLD[:] = []\n" \
+                "    # BEGIN Dataset 0 DO NOT CHANGE\n" \
+                "    d = data[0]\n" \
+                "    I.append(sample.SimSpecular(d.x, inst))\n" \
+                "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
+                "    # END Dataset 0\n" \
+                "    return I"
+        return script
+
 
 class SamplePanel(wx.Panel):
     
@@ -562,12 +424,9 @@ class SamplePanel(wx.Panel):
         self.do_toolbar()
         boxhor.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=1)
         boxhor.Add((-1, 2))
-        self.grid = gridlib.Grid(self, -1, style=wx.NO_BORDER)
-        # self.grid._grid_changed = self._grid_changed
-        # self.grid.PostValueChangedEvent = self.PostValueChangedEvent
-        self.sample_table=SampleTable(self.grid)
-        # self.listbox.SetItemList(self.sampleh.getStringList())
-        # self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick, self.listbox)
+        self.grid = SampleGrid(self, -1, style=wx.NO_BORDER)
+        self.sample_table=SampleTable(self, self.grid)
+        self.Bind(EVT_NEW_MODEL, self.UpdateModel)
         boxhor.Add(self.grid, 1, wx.EXPAND)
         
         boxver.Add(boxhor, 1, wx.EXPAND)
@@ -582,12 +441,12 @@ class SamplePanel(wx.Panel):
         self.toolbar.AddTool(newid, 'Insert Layer',
                              bitmap=images.insert_layer.GetBitmap(),
                              shortHelp='Insert a Layer')
-        self.Bind(wx.EVT_TOOL, self.InsertLay, id=newid)
+        self.Bind(wx.EVT_TOOL, self.OnLayerAdd, id=newid)
         
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Delete', bitmap=images.delete.GetBitmap(),
                              shortHelp='Delete item')
-        self.Bind(wx.EVT_TOOL, self.DeleteSample, id=newid)
+        self.Bind(wx.EVT_TOOL, self.OnLayerDelete, id=newid)
         
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Move up',
@@ -607,6 +466,18 @@ class SamplePanel(wx.Panel):
                              shortHelp='Edit Instruments')
         self.Bind(wx.EVT_TOOL, self.EditInstrument, id=newid)
     
+    def UpdateModel(self, evt):
+        print(evt.script)
+        self.plugin.SetModelScript(evt.script)
+        
+    def OnLayerAdd(self, evt):
+        row = self.grid.GetGridCursorRow()
+        self.sample_table.InsertRow(row)
+
+    def OnLayerDelete(self, evt):
+        row = self.grid.GetGridCursorRow()
+        self.sample_table.DeleteRow(row)
+
     def SetUpdateCallback(self, func):
         ''' SetUpdateCallback(self, func) --> None
 
@@ -689,15 +560,12 @@ class SamplePanel(wx.Panel):
         return decorator
     
     def Update(self, update_script=True):
-        deco=self.create_html_decorator()
-        sl=self.sampleh.getStringList(html_encoding=True, html_decorator=deco)
-        # self.listbox.SetItemList(sl)
         if update_script:
             self.update_callback(None)
     
     def SetSample(self, sample, names):
-        self.sampleh.sample=sample
-        self.sampleh.names=names
+        # self.sampleh.sample=sample
+        # self.sampleh.names=names
         self.Update()
     
     def EditSampleParameters(self, evt):
@@ -905,16 +773,16 @@ class SamplePanel(wx.Panel):
         dlg.Destroy()
     
     def MoveUp(self, evt):
-        sl=self.sampleh.moveUp(self.listbox.GetSelection())
-        if sl:
-            self.Update()
-            self.listbox.SetSelection(self.listbox.GetSelection()-1)
-    
+        row = self.grid.GetGridCursorRow()
+        res=self.sample_table.MoveRow(row, row-1)
+        if res:
+            self.grid.MoveCursorUp(False)
+
     def MoveDown(self, evt):
-        sl=self.sampleh.moveDown(self.listbox.GetSelection())
-        if sl:
-            self.Update()
-            self.listbox.SetSelection(self.listbox.GetSelection()+1)
+        row = self.grid.GetGridCursorRow()
+        res=self.sample_table.MoveRow(row, row+1)
+        if res:
+            self.grid.MoveCursorDown(False)
     
     def InsertStack(self, evt):
         # Create Dialog box
@@ -1763,6 +1631,7 @@ class Plugin(framework.Template):
         sample_panel.SetSizer(sample_sizer)
         self.defs=['Instrument', 'Sample']
         self.sample_widget=SamplePanel(sample_panel, self)
+        self.sample_widget.model=self.model_obj
         sample_sizer.Add(self.sample_widget, 1, wx.EXPAND|wx.GROW|wx.ALL)
         sample_panel.Layout()
         
@@ -2031,10 +1900,7 @@ class Plugin(framework.Template):
         sample=self.model.Sample(Stacks=[], Ambient=Amb, Substrate=Sub)
         instrument=self.model.Instrument()
         # self.sample_widget.SetSample(sample, names)
-        self.sampleh=SampleHandler(sample, names)
-        self.sampleh.model=self.model
-        self.sample_widget.sampleh=self.sampleh
-        self.sample_widget.model=self.model
+        # self.sample_widget.model=self.model
         self.sample_widget.SetInstrument({'inst': instrument})
         
         names=[data_set.name for data_set in self.GetModel().get_data()]
@@ -2052,6 +1918,7 @@ class Plugin(framework.Template):
         # self.WriteModel()
     
     def WriteModel(self):
+        return
         script=self.GetModel().get_script()
         
         # Instrument script creation
@@ -2377,7 +2244,7 @@ class Plugin(framework.Template):
         self.sampleh=SampleHandler(sample, all_names)
         self.sampleh.model=self.model
         self.sample_widget.sampleh=self.sampleh
-        self.sample_widget.model=self.model
+        # self.sample_widget.model=self.model
         instruments={}
         for name in instrument_names:
             instruments[name]=getattr(self.GetModel().script_module, name)

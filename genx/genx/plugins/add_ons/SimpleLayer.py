@@ -1,4 +1,3 @@
-#-*- coding: utf8 -*-
 '''
 ===========
 SimpleLayer
@@ -29,17 +28,7 @@ from models.utils import UserVars, fp, fw, bc, bw, __bc_dict__ #@UnusedImport
 import images as img
 from plugins import add_on_framework as framework
 from genx.gui_logging import iprint
-
-# configuration file to store the known materials
-try:
-  import appdirs
-except ImportError:
-  config_path=os.path.expanduser(os.path.join('~', '.genx'))
-else:
-  config_path=appdirs.user_data_dir('GenX', 'MattsBjorck')
-if not os.path.exists(config_path):
-    os.makedirs(config_path)
-config_file=os.path.join(config_path, 'materials.cfg')
+from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 
 mg=None
 
@@ -60,7 +49,6 @@ class Plugin(framework.Template):
         materials_panel = self.NewDataFolder('Materials')
         materials_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.materials_panel = wx.Panel(materials_panel)
-        self.create_isotopes()
         self.create_materials_list()
         materials_sizer.Add(self.materials_panel, 1, wx.EXPAND | wx.GROW | wx.ALL)
         materials_panel.SetSizer(materials_sizer)
@@ -78,55 +66,26 @@ class Plugin(framework.Template):
             dlg.Destroy()
             self._refplugin=None
 
-    def create_isotopes(self):
-        '''
-            Go through the database of neutron scattering length and generate
-            isotope list accordingly.
-        '''
-        for key in __bc_dict__.keys():
-            if not key.startswith('i'):
-                continue
-            try:
-                N=int(re.findall(r'\d+', key)[0])
-            except IndexError:
-                continue
-            element=key[len('i%i'%N):].capitalize()
-            isokey='^{%i}%s'%(N, element)
-            n='i%i%s'%(N, element)
-            isotopes[isokey]=(n, element)
-            atomic_data[isokey]=(atomic_data[element][0],
-                                 atomic_data[element][1],
-                                 float(N))
-
     def create_materials_list(self):
         '''
           Create a list of materials and it's graphical representation as
           well as a toolbar.
         '''
-        # A list containing chemical formula and atomic density for different
-        # materials. Each created material is stored and can be reused.
-        if os.path.exists(config_file):
-            try:
-                self.known_materials=json.loads(open(config_file, 'r').read())
-            except json.JSONDecodeError:
-                iprint("Can't reload material list, file corrupted.")
-                self.known_materials=[]
-        else:
-            self.known_materials=[]
-        self.tool_panel=wx.Panel(self.materials_panel)
+        self.known_materials=mdb
+        # self.tool_panel=wx.Panel(self.materials_panel)
         self.materials_list=MaterialsList(self.materials_panel, self.known_materials)
         self.sizer_vert=wx.BoxSizer(wx.VERTICAL)
         self.materials_panel.SetSizer(self.sizer_vert)
 
         self.create_toolbar()
 
-        self.sizer_vert.Add(self.tool_panel, proportion=0, flag=wx.EXPAND, border=5)
+        # self.sizer_vert.Add(self.tool_panel, proportion=0, flag=wx.EXPAND, border=5)
         self.sizer_vert.Add((-1, 2))
         self.sizer_vert.Add(self.materials_list, proportion=1, flag=wx.EXPAND , border=5)
-        self.tool_panel.SetSizer(self.sizer_hor)
+        # self.tool_panel.SetSizer(self.sizer_hor)
 
     def create_toolbar(self):
-        self.toolbar = wx.ToolBar(self.tool_panel, style=wx.TB_FLAT|wx.TB_HORIZONTAL)
+        self.toolbar = wx.ToolBar(self.materials_panel, style=wx.TB_FLAT|wx.TB_HORIZONTAL)
 
         dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
         tb_bmp_size=int(dpi_scale_factor*20)
@@ -135,40 +94,36 @@ class Plugin(framework.Template):
         self.toolbar.AddTool(newid, label='Add',
              bitmap=wx.Bitmap(img.add.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
              shortHelp='Add a material to the list')
-        self.tool_panel.Bind(wx.EVT_TOOL, self.material_add, id=newid)
+        self.materials_panel.Bind(wx.EVT_TOOL, self.material_add, id=newid)
 
         newid=wx.NewId()
         self.toolbar.AddTool(newid, label='Delete',
              bitmap=wx.Bitmap(img.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
              shortHelp='Delete selected materials')
-        self.tool_panel.Bind(wx.EVT_TOOL, self.material_delete, id=newid)
+        self.materials_panel.Bind(wx.EVT_TOOL, self.material_delete, id=newid)
 
         newid=wx.NewId()
         self.toolbar.AddTool(newid, label='Apply',
-             bitmap=wx.Bitmap(img.move_down.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+             bitmap=wx.Bitmap(img.start_fit.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
              shortHelp='New Layer/Apply to Layer')
-        self.tool_panel.Bind(wx.EVT_TOOL, self.material_apply, id=newid)
-
-        self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer_hor.Add(self.toolbar, proportion=0, border=2)
+        self.materials_panel.Bind(wx.EVT_TOOL, self.material_apply, id=newid)
+        
+        # self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer_vert.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=2)
 
 
     def material_add(self, event):
         dialog=MaterialDialog(self.parent)
         if dialog.ShowModal()==wx.ID_OK:
             self.materials_list.AddItem(dialog.GetResult())
-        open(config_file, 'w').write(json.dumps(self.known_materials))
         dialog.Destroy()
 
     def material_delete(self, event):
         self.materials_list.DeleteItem()
-        open(config_file, 'w').write(json.dumps(self.known_materials))
 
     def material_apply(self, event):
         index=self.materials_list.GetFirstSelected()
         formula, density=self.known_materials[index]
-        f=self.get_f(formula)
-        b=self.get_b(formula)
         try:
             layer=self.get_selected_layer()
         except:
@@ -180,11 +135,13 @@ class Plugin(framework.Template):
             dlg.Destroy()
             return
         if layer:
-            layer.f=f
-            layer.b=b
+            layer.f=formula.f()
+            layer.b=formula.b()
             layer.dens=density
         name=''
         for element, count in formula:
+            # get rid of isotope unusable characters
+            element=element.replace('{', '').replace('}', '').replace('^', 'i')
             if count==1:
                 name+="%s"%(element)
             elif float(count)==int(count):
@@ -221,41 +178,18 @@ class Plugin(framework.Template):
             i += 1
         self.refplugin.sampleh.names[layer_idx] = tmpname
 
-    def get_f(self, formula):
-        return self.get_forms('fp', formula)
-
-    def get_b(self, formula):
-        return self.get_forms('bc', formula)
-
-    def get_forms(self, pre, formula):
-        output = ''
-        for item in formula:
-            if item[0] in isotopes:
-                if pre == 'bc':
-                    name = isotopes[item[0]][0]
-                else:
-                    name = isotopes[item[0]][1]
-            else:
-                name = item[0]
-            output += '%s.%s*%g+'%(pre, name, item[1])
-        return output[:-1] # remove last +
-
-
 
 class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     '''
     The ListCtrl for the materials data.
     '''
     def __init__(self, parent, materials_list):
-        wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_EDIT_LABELS)
+        wx.ListCtrl.__init__(self, parent, -1,
+             style=wx.LC_REPORT|wx.LC_VIRTUAL)
         ListCtrlAutoWidthMixin.__init__(self)
         self.materials_list = materials_list
         self.parent = parent
-        #if sys.platform.startswith('win'):
-        #    font = wx.Font(9, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, face="Lucida Sans Unicode")
-        #else:
-        #    font = wx.Font(9, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,
-        #                   encoding=wx.FONTENCODING_UNICODE)
+
         font = self.GetFont()
         font.SetPointSize(9)
         self.SetFont(font)
@@ -265,11 +199,11 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
 
         # Set the column headers
         for col, (text, width) in enumerate([
-                                             ("Formula", 80),
-                                             ("SLD-n [10⁻⁶Å⁻²]", 60),
-                                             ("SLD-kα [10⁻⁶Å⁻²]", 60),
-                                             ("Density [FU/Å³]", 60),
-                                             ("Density [g/cm³]", 60)
+                                             ("Chemical Formula", 80),
+                                             ("SLD-n\n[10⁻⁶Å⁻²]", 60),
+                                             ("SLD-kα\n[rₑ/Å⁻³]", 60),
+                                             ("Density\n[FU/Å³]", 60),
+                                             ("Density\n[g/cm³]", 60)
                                              ]):
             self.InsertColumn(col, text, width=width)
         
@@ -288,81 +222,17 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         evt.Skip()
 
     def OnGetItemText(self, item, col):
-        formula = self.materials_list[item][0]
-        density = self.materials_list[item][1]
-        try:
-            density = eval('float(%s)'%density)
-        except:
-            density = 0.
         if col == 4:
-            fu_mass = 0.
-            for element, number in formula:
-                fu_mass += number*atomic_data[element][2]
-            mass_density = density*fu_mass/MaterialDialog.MASS_DENSITY_CONVERSION
-            return "%.3f" % mass_density
+            return "%.3f" % self.materials_list.dens_mass(item)
         elif col == 3:
-            return "%.4f" % density
+            return "%.4f" % self.materials_list.dens_FU(item).real
         elif col == 2:
-            fw.set_wavelength(1.54)
-            elements=''
-            for element, count in formula:
-                if element in isotopes:
-                    element=isotopes[element][1]
-                elements += '+fp.%s*%f' % (element, count)
-            sld = density*eval(elements)
-            return "%.3f" % (sld.real*10.*2.82)
+            return "%.3f" % self.materials_list.SLDx(item).real
         elif col == 1:
-            dens = eval('float(%s)' % density)
-            elements = ''
-            for element, count in formula:
-                if element in isotopes:
-                    element=isotopes[element][0]
-                elements += '+bc.%s*%f' % (element, count)
-            sld = dens*eval(elements)
-            return "%.3f" % (sld.real*10.)
+            return "%.3f" % self.materials_list.SLDn(item).real
         else:
             formula = self.materials_list[item][0]
-            output = ''
-            for element, count in formula:
-                if element.startswith('^'):
-                    try:
-                        isotope, element=element[2:].split('}')
-                        output += self.get_superscript(int(isotope))
-                    except (IndexError, ValueError):
-                        pass
-                if count == 1:
-                    output += element
-                else:
-                    output += element + self.get_subscript(count)
-            return output
-
-    def get_superscript(self, count):
-        '''
-          Return a subscript unicode string that equals the given number.
-        '''
-        scount = '%g'%count
-        result = ''
-        for char in scount:
-            if char == '.':
-                result += '﹒'
-            else:
-                # a superscript digit in unicode
-                result += (b'\\u207' + char.encode('utf-8')).decode('unicode-escape')
-        return result
-
-    def get_subscript(self, count):
-        '''
-          Return a subscript unicode string that equals the given number.
-        '''
-        scount = '%g'%count
-        result = ''
-        for char in scount:
-            if char == '.':
-                result += '﹒'
-            else:
-                # a subscript digit in unicode
-                result += (b'\\u208' + char.encode('utf-8')).decode('unicode-escape')
-        return result
+            return str(formula)
 
     def _GetSelectedItems(self):
         ''' _GetSelectedItems(self) --> indices [list of integers]
@@ -430,11 +300,10 @@ class MaterialDialog(wx.Dialog):
       Atomic density can ither be entered manually, by using unit cell parameter,
       by massdensity or by loading a .cif crystallographical file.
     """
-    extracted_elements = []
-    MASS_DENSITY_CONVERSION = 0.60221415  #g/cm³-> u/Å³ : 1e-24 (1/cm³->1/Å³) * 6.0221415e23 (Na)
 
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, name='New Material')
+        self.extracted_elements=Formula([])
         self._create_entries()
 
     def _create_entries(self):
@@ -532,51 +401,12 @@ class MaterialDialog(wx.Dialog):
         for ign_char in [" ", "\t", "_", "-"]:
             text=text.replace(ign_char, "")
         if text=="":
-            self.extracted_elements=[]
+            self.extracted_elements=Formula([])
             self.formula_display.SetValue('')
             return
-        extracted_elements=[]
-        i=0
-        mlen=len(text)
-        while i<mlen:
-            # find next element
-            iso_match=re.search('\^\{[0-9]{1,3}\}[A-Z][a-zA-Z]{0,1}', text[i:])
-            normal_match=re.search('[A-Z][a-zA-Z]{0,1}', text[i:])
-            if iso_match is None and normal_match is None:
-                break
-            elif iso_match is None or iso_match.start()>normal_match.start():
-                element=text[i+normal_match.start():i+normal_match.end()].capitalize()
-            else:
-                element=text[i+iso_match.start():i+normal_match.start()]
-                element+=text[i+normal_match.start():i+normal_match.end()].capitalize()
-            i+=normal_match.end()
-
-            j=0
-            while i+j<mlen and not text[i+j].isalpha():
-                j+=1
-            count_txt=text[i:i+j]
-            i+=j
-            if count_txt=='':
-                count=1.
-            else:
-                try:
-                    count=float(count_txt)
-                except ValueError:
-                    continue
-            extracted_elements.append([element, count])
-        self.extracted_elements=extracted_elements
-        output=''
-        for ei, (element, number) in enumerate(extracted_elements):
-            if element.startswith('^'):
-                iso='-%s'%(element[2:].split('}')[0])
-                if not element in atomic_data:
-                    iso='-unknown isotope'
-                    element=element.split('}')[-1]
-                    extracted_elements[ei][0]=element
-            else:
-                iso=''
-            output+="%g x %s\n"%(number, atomic_data[element][0]+iso)
-        self.formula_display.SetValue(output[:-1])
+        formula=Formula.from_str(text)
+        self.extracted_elements=formula
+        self.formula_display.SetValue(formula.describe())
         self.OnMassDensityChange(None)
 
     def OnUnitCellChanged(self, event):
@@ -604,14 +434,12 @@ class MaterialDialog(wx.Dialog):
         self.result_density.SetValue(self.density)
 
     def OnMassDensityChange(self, event):
-        fu_mass=0.
-        for element, number in self.extracted_elements:
-            fu_mass+=number*atomic_data[element][2]
+        fu_mass=self.extracted_elements.mFU()
         try:
             mass_density=float(self.mass_density.GetValue())
         except ValueError:
             return
-        self.density="%g*%g/%g"%(mass_density, self.MASS_DENSITY_CONVERSION, fu_mass)
+        self.density="%g*%g/%g"%(mass_density, MASS_DENSITY_CONVERSION, fu_mass)
         self.result_density.SetValue(self.density)
 
     def OnLoadCif(self, event):
@@ -708,123 +536,3 @@ class MaterialDialog(wx.Dialog):
                                  self.FUs_entry]):
             entry.SetValue(str(value))
         self.OnUnitCellChanged(None)
-
-# list of elements with their name, atomic number and atomic mass values (+GenX name)
-# mostly to calculate atomic density from mass density
-atomic_data={
-              "D": ("Deuterium", 1, 2.01410178),
-              "H": ("Hydrogen", 1, 1.0079),
-              "He": ("Helium", 2, 4.0026),
-              "Li": ("Lithium", 3, 6.941),
-              "Be": ("Beryllium", 4, 9.0122),
-              "B": ("Boron", 5, 10.811),
-              "C": ("Carbon", 6, 12.0107),
-              "N": ("Nitrogen", 7, 14.0067),
-              "O": ("Oxygen", 8, 15.9994),
-              "F": ("Fluorine", 9, 18.9984),
-              "Ne": ("Neon", 10, 20.1797),
-              "Na": ("Sodium", 11, 22.9897),
-              "Mg": ("Magnesium", 12, 24.305),
-              "Al": ("Aluminum", 13, 26.9815),
-              "Si": ("Silicon", 14, 28.0855),
-              "P": ("Phosphorus", 15, 30.9738),
-              "S": ("Sulfur", 16, 32.065),
-              "Cl": ("Chlorine", 17, 35.453),
-              "Ar": ("Argon", 18, 39.948),
-              "K": ("Potassium", 19, 39.0983),
-              "Ca": ("Calcium", 20, 40.078),
-              "Sc": ("Scandium", 21, 44.9559),
-              "Ti": ("Titanium", 22, 47.867),
-              "V": ("Vanadium", 23, 50.9415),
-              "Cr": ("Chromium", 24, 51.9961),
-              "Mn": ("Manganese", 25, 54.938),
-              "Fe": ("Iron", 26, 55.845),
-              "Fe^{56}": ("Iron", 26, 56.0),
-              "Co": ("Cobalt", 27, 58.9332),
-              "Ni": ("Nickel", 28, 58.6934),
-              "Cu": ("Copper", 29, 63.546),
-              "Zn": ("Zinc", 30, 65.39),
-              "Ga": ("Gallium", 31, 69.723),
-              "Ge": ("Germanium", 32, 72.64),
-              "As": ("Arsenic", 33, 74.9216),
-              "Se": ("Selenium", 34, 78.96),
-              "Br": ("Bromine", 35, 79.904),
-              "Kr": ("Krypton", 36, 83.8),
-              "Rb": ("Rubidium", 37, 85.4678),
-              "Sr": ("Strontium", 38, 87.62),
-              "Y": ("Yttrium", 39, 88.9059),
-              "Zr": ("Zirconium", 40, 91.224),
-              "Nb": ("Niobium", 41, 92.9064),
-              "Mo": ("Molybdenum", 42, 95.94),
-              "Tc": ("Technetium", 43, 98),
-              "Ru": ("Ruthenium", 44, 101.07),
-              "Rh": ("Rhodium", 45, 102.906),
-              "Pd": ("Palladium", 46, 106.42),
-              "Ag": ("Silver", 47, 107.868),
-              "Cd": ("Cadmium", 48, 112.411),
-              "In": ("Indium", 49, 114.818),
-              "Sn": ("Tin", 50, 118.71),
-              "Sb": ("Antimony", 51, 121.76),
-              "Te": ("Tellurium", 52, 127.6),
-              "I": ("Iodine", 53, 126.904),
-              "Xe": ("Xenon", 54, 131.293),
-              "Cs": ("Cesium", 55, 132.905),
-              "Ba": ("Barium", 56, 137.327),
-              "La": ("Lanthanum", 57, 138.905),
-              "Ce": ("Cerium", 58, 140.116),
-              "Pr": ("Praseodymium", 59, 140.908),
-              "Nd": ("Neodymium", 60, 144.24),
-              "Pm": ("Promethium", 61, 145),
-              "Sm": ("Samarium", 62, 150.36),
-              "Eu": ("Europium", 63, 151.964),
-              "Gd": ("Gadolinium", 64, 157.25),
-              "Tb": ("Terbium", 65, 158.925),
-              "Dy": ("Dysprosium", 66, 162.5),
-              "Ho": ("Holmium", 67, 164.93),
-              "Er": ("Erbium", 68, 167.259),
-              "Tm": ("Thulium", 69, 168.934),
-              "Yb": ("Ytterbium", 70, 173.04),
-              "Lu": ("Lutetium", 71, 174.967),
-              "Hf": ("Hafnium", 72, 178.49),
-              "Ta": ("Tantalum", 73, 180.948),
-              "W": ("Tungsten", 74, 183.84),
-              "Re": ("Rhenium", 75, 186.207),
-              "Os": ("Osmium", 76, 190.23),
-              "Ir": ("Iridium", 77, 192.217),
-              "Pt": ("Platinum", 78, 195.078),
-              "Au": ("Gold", 79, 196.966),
-              "Hg": ("Mercury", 80, 200.59),
-              "Tl": ("Thallium", 81, 204.383),
-              "Pb": ("Lead", 82, 207.2),
-              "Bi": ("Bismuth", 83, 208.98),
-              "Po": ("Polonium", 84, 209),
-              "At": ("Astatine", 85, 210),
-              "Rn": ("Radon", 86, 222),
-              "Fr": ("Francium", 87, 223),
-              "Ra": ("Radium", 88, 226),
-              "Ac": ("Actinium", 89, 227),
-              "Th": ("Thorium", 90, 232.038),
-              "Pa": ("Protactinium", 91, 231.036),
-              "U": ("Uranium", 92, 238.029),
-              "Np": ("Neptunium", 93, 237),
-              "Pu": ("Plutonium", 94, 244),
-              "Am": ("Americium", 95, 243),
-              "Cm": ("Curium", 96, 247),
-              "Bk": ("Berkelium", 97, 247),
-              "Cf": ("Californium", 98, 251),
-              "Es": ("Einsteinium", 99, 252),
-              "Fm": ("Fermium", 100, 257),
-              "Md": ("Mendelevium", 101, 258),
-              "No": ("Nobelium", 102, 259),
-              "Lr": ("Lawrencium", 103, 262),
-              "Rf": ("Rutherfordium", 104, 261),
-              "Db": ("Dubnium", 105, 262),
-              "Sg": ("Seaborgium", 106, 266),
-              "Bh": ("Bohrium", 107, 264),
-              "Hs": ("Hassium", 108, 277),
-              "Mt": ("Meitnerium", 109, 268),
-              }
-
-isotopes={
-          'D': ('i2H', 'H'),
-          }

@@ -11,7 +11,7 @@ from . import custom_dialog as cust_dia
 from . import reflectivity_images as icons
 from . import sxrd_images
 
-import genx.models import utils
+from genx.models import utils
 from genx.gui_logging import iprint
 
 

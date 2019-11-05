@@ -231,7 +231,7 @@ class MainFrame(wx.Frame):
         # Tool Bar end
         self.ver_splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
         self.data_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
-        self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
+        self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY, style=wx.NB_TOP)
         self.data_notebook_data = wx.Panel(self.data_notebook, wx.ID_ANY)
         self.data_list = datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.config, status_text)
         self.data_notebook_pane_2 = wx.Panel(self.data_notebook, wx.ID_ANY)
@@ -449,7 +449,7 @@ class MainFrame(wx.Frame):
         sizer_5 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_4 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
-        data_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        data_sizer = wx.BoxSizer(wx.VERTICAL)
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
         data_list_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -508,7 +508,7 @@ class MainFrame(wx.Frame):
             plot_sizer.Add(self.plot_notebook, 1, wx.EXPAND|wx.ALL, 4)
             self.sep_data_notebook=self.data_notebook
             self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY,
-                                             style=wx.NB_BOTTOM|wx.BORDER_SUNKEN)
+                                             style=wx.NB_TOP|wx.BORDER_SUNKEN)
             data_sizer.Add(self.data_notebook, 1, wx.EXPAND|wx.ALL, 4)
 
     def Show(self):
