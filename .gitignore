@@ -7,6 +7,5 @@ dist
 plugin_new
 MANIFEST
 docutils
-genx.log
 doc/_*
 __pycache__

@@ -31,19 +31,17 @@ _avail_models=['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx',
 _set_func_prefix='set'
 
 class SampleGrid(gridlib.Grid):
-    def __init__(self, *args, **kw):
-        gridlib.Grid.__init__(self, *args, **kw)
+    def __init__(self, parent, *args, **kw):
+        gridlib.Grid.__init__(self, parent, *args, **kw)
+        self.parent=parent
 
-        attr = gridlib.GridCellAttr()
-        attr.SetEditor(FormulaEditor())
-        self.SetColAttr(2, attr)
-        
         self.cb=None
         self.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.onCellSelected)
         self.Bind(gridlib.EVT_GRID_EDITOR_CREATED, self.onEditorCreated)
         self.Bind(gridlib.EVT_GRID_EDITOR_SHOWN, self.onEditorShown)
+        self.Bind(gridlib.EVT_GRID_EDITOR_HIDDEN, self.onEditorHidden)
         self._activated_ctrl=False
-
+        
     def onCellSelected(self, evt):
         if evt.Col in [1,3,5,7,9]:
             self._activated_ctrl=True
@@ -56,22 +54,47 @@ class SampleGrid(gridlib.Grid):
             self.cb.WindowStyle|=wx.WANTS_CHARS
             wx.CallLater(100, self.toggleCheckbox)
             self._activated_ctrl=False
+        if evt.Col==2 and self.GetTable().GetValue(evt.Row, 1)=='Formula':
+            # Show tooltip on formula entry to give feedback on input
+            inp=evt.Control
+            inp.Bind(wx.EVT_TEXT, self.onFormula)
+            self.info_text.Show()
+            self.info_text.SetLabel('Enter Chemical Formula:')
+            self.parent.Layout()
+        evt.Skip()
+    
+    def onEditorHidden(self, evt):
+        if self.info_text.IsShown():
+            self.info_text.Hide()
+            self.parent.Layout()
         evt.Skip()
 
     def onEditorShown(self, evt):
         if evt.Col in [3, 5, 7, 9] and self.cb is not None and self._activated_ctrl:
             wx.CallLater(100, self.toggleCheckbox)
             self._activated_ctrl=False
+        if evt.Col==2 and self.GetTable().GetValue(evt.Row, 1)=='Formula':
+            # Show tooltip on formula entry to give feedback on input
+            self.info_text.Show()
+            self.info_text.SetLabel('Enter Chemical Formula:')
+            self.parent.Layout()
         evt.Skip()
 
     def toggleCheckbox(self):
         self.cb.SetValue(not self.cb.IsChecked())
         wx.CallAfter(self.DisableCellEditControl)
-
-class FormulaEditor(gridlib.GridCellTextEditor):
-    def BeginEdit(self, row, col, grid):
-        print('begin')
-        return gridlib.GridCellTextEditor.BeginEdit(self, row, col, grid)
+    
+    def onFormula(self, evt):
+        txt=evt.GetString()
+        try:
+            frm=Formula.from_str(txt)
+        except Exception as e:
+            self.info_text.SetLabel('Error in Formula:\n'+str(e))
+        else:
+            txt='Analyzed Formula:\n'+frm.describe()
+            if frm in mdb:
+                txt+='\n\nFound in DB:\n%g g/cm³'%mdb.dens_mass(frm)
+            self.info_text.SetLabel(txt)
 
 # new model is ready with a script as value.
 (update_model_event, EVT_UPDATE_MODEL) = wx.lib.newevent.NewEvent()
@@ -95,7 +118,7 @@ class SampleTable(gridlib.GridTableBase):
         ]
 
     defaults={
-        'Formula': ['Layer', 'Formula', '',
+        'Formula': ['Layer', 'Formula', Formula([]),
                     False, '2.0', False, '0.0',
                     True, '10.0', False, '5.0', ML_LAYER],
         'Mixure':  ['MixLayer', 'Mixure', '6.0e-6',
@@ -114,13 +137,13 @@ class SampleTable(gridlib.GridTableBase):
         self.substrate=[None, 'Formula', Formula([['Si',1.0]]),
                         False, '2.32998', False, '0.0',
                         False, '0', True, '5.0']
-        self.layers=[['Rust', 'Formula', Formula([['Fe',2.0],['O', 2.0]]),
+        self.layers=[['Surface_Oxide', 'Formula', Formula([['Fe',2.0],['O', 2.0]]),
                       False, '5.25568', False, '0.0',
                       True, '20.0', False, '5.0', TOP_LAYER],
-                     ['Layer 1', 'Formula', Formula([['Fe', 1.0]]),
+                     ['Iron', 'Formula', Formula([['Fe', 1.0]]),
                       False, '7.87422', False, '3.0',
                       True, '100.0', False, '5.0', ML_LAYER],
-                     ['Natural Oxide', 'Formula', Formula([['Si', 2.0], ['O', 3.0]]),
+                     ['Natural_Oxide', 'Formula', Formula([['Si', 1.0], ['O', 2.0]]),
                       False, '4.87479', False, '0.0',
                       True, '20.0', False, '5.0', BOT_LAYER]
                      ]
@@ -159,12 +182,33 @@ class SampleTable(gridlib.GridTableBase):
                 return 'Ambient'
             elif row==(self.GetNumberRows()-1):
                 return 'Substrate'
+            else:
+                return self.layers[row-1][col].replace('_', ' ')
         if row==0:
             return self.ambient[col]
         elif row==self.GetNumberRows()-1:
             return self.substrate[col]
         
         return self.layers[row-1][col]
+
+    def get_valid_name(self, name):
+        # generate a valid identifier string from name
+        identifyier=''
+        for char in name.replace(' ', '_'):
+            if (identifyier+char).isidentifier():
+                identifyier+=char
+        if identifyier in self.invalid_identifiers:
+            identifyier='_'+identifyier
+                
+        existing=[li[0] for li in self.layers]
+        if not identifyier in existing:
+            return identifyier
+        if identifyier.split('_')[-1].isdigit():
+            identifyier=identifyier.rsplit('_',1)[0]
+        i=1
+        while '%s_%i'%(identifyier, i) in existing:
+            i+=1
+        return '%s_%i'%(identifyier, i)
 
     def SetValue(self, row, col, value):
         # ignore unchanged values
@@ -179,10 +223,8 @@ class SampleTable(gridlib.GridTableBase):
             to_edit=self.layers[row-1]
         if col==0:
             # name change
-            if value in [ci[0] for i, ci in enumerate(self.layers) if i!=(row-1)]:
-                print('Already exits')
-            else:
-                to_edit[0]=value
+            to_edit[0]='AboutToChangeValue'
+            to_edit[0]=self.get_valid_name(value)
         elif col==2:
             # check formula
             if to_edit[1]=='Formula':
@@ -319,6 +361,7 @@ class SampleTable(gridlib.GridTableBase):
             layer_stack=TOP_LAYER
         newlayer=list(self.defaults[layer_type])
         newlayer[11]=layer_stack
+        newlayer[0]=self.get_valid_name(newlayer[0])
         self.layers.insert(row, newlayer)
     
         msg=gridlib.GridTableMessage(self,
@@ -333,6 +376,9 @@ class SampleTable(gridlib.GridTableBase):
 
     def DeleteRow(self, row):
         if row in [0, self.GetNumberRows()-1]:
+            return False
+        # make sure we don't delete the last ML layer
+        if self.layers[row-1][11]==ML_LAYER and len([li for li in self.layers if li[11]==ML_LAYER])==1:
             return False
         self.layers.pop(row-1)
     
@@ -389,23 +435,23 @@ class SampleTable(gridlib.GridTableBase):
         output+="xs_ai=0.0, magn_ang=0.0)"
         return output
 
+    invalid_identifiers=['sample', 'Sim', 'model',
+                         'fw', 'fp', 'bc', 'bw',
+                         'Amb', 'Sub', 'inst']
     def getModelCode(self):
         '''
         Generate the python code for the current sample structure.
         '''
         script="# BEGIN Sample DO NOT CHANGE\n"
         script+="Amb = %s\n"%self.getLayerCode(self.ambient)
-        for i, layer in enumerate(self.layers):
-            script+="layer_%i = %s\n"%(i, self.getLayerCode(layer))
+        for layer in self.layers:
+            script+="%s = %s\n"%(layer[0], self.getLayerCode(layer))
 
         script+="\nSub = %s\n"%self.getLayerCode(self.substrate)
         
-        top=["layer_%i"%i for i,li in enumerate(self.layers)
-             if li[11]==TOP_LAYER]
-        ml=["layer_%i"%i for i,li in enumerate(self.layers)
-             if li[11]==ML_LAYER]
-        bot=["layer_%i"%i for i,li in enumerate(self.layers)
-             if li[11]==BOT_LAYER]
+        top=[li[0] for li in self.layers if li[11]==TOP_LAYER]
+        ml=[li[0] for li in self.layers if li[11]==ML_LAYER]
+        bot=[li[0] for li in self.layers if li[11]==BOT_LAYER]
         script+="\nTop = model.Stack(Layers=[%s ], Repetitions = 1)\n"%str(
             ", ".join(reversed(top))
             )
@@ -452,6 +498,10 @@ class SamplePanel(wx.Panel):
         
         boxver.Add(boxhor, 1, wx.EXPAND)
         
+        self.grid.info_text=wx.StaticText(self, -1, 'Bier')
+        boxver.Add(self.grid.info_text, 0)
+        self.grid.info_text.Hide()
+        
         self.SetSizer(boxver)
         self.toolbar.Realize()
         self.update_callback=lambda event: ''
@@ -491,19 +541,16 @@ class SamplePanel(wx.Panel):
         
         
         self.toolbar.AddStretchableSpace()
-        newid=wx.NewId()
-        self.toolbar.AddTool(newid, 'Top',
-                             bitmap=images.insert_stack.GetBitmap(),
-                             shortHelp='Set selection as non-repeated top layer')
-        self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
-
-        newid=wx.NewId()
-        self.toolbar.AddTool(newid, 'Bottom',
-                             bitmap=images.insert_stack.GetBitmap(),
-                             shortHelp='Set selection as non-repeated bottom layer')
-        self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
-
-        text=wx.StaticText(self.toolbar, -1, label='Repetitions:')
+        text=wx.StaticText(self.toolbar, -1, 'Repitions:')
+        text.SetToolTipString(
+            'Number N of repetitions for a multilayer structure.\n'
+            'The model structure is build as a set of bottom\n'
+            'layers (purple) repeated layer structure (white)\n'
+            'and a set of top layers (green):\n'
+            'Model=Substrat/[purple]/Nx[white]/[green]/Ambient\n\n'
+            'If top or bottom is missind, select Ambient or\n'
+            'Substrate when adding a new layer.'
+                                          )
         self.toolbar.AddControl(text)
 
         newid=wx.NewId()

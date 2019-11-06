@@ -197,7 +197,8 @@ class Formula(list):
                     raise KeyError('Unknonw isotope: "%s"'%ei)
                 else:
                     raise KeyError('Element %s does not exist'%ei)
-        return mass
+        # return 1. if formulat is empty to avoid division by zero in density
+        return mass or 1.0
     
     def describe(self):
         '''Return a multile string with written element content.'''
@@ -215,6 +216,8 @@ class Formula(list):
 
     def f(self):
         '''Return string to be used in models to calculate scattering power f'''
+        if len(self)==0:
+            return '0.j'
         fw.set_wavelength(1.54)
         elements=''
         for element, count in self:
@@ -225,6 +228,8 @@ class Formula(list):
 
     def b(self):
         '''Return string to be used in models to calculate scattering length b'''
+        if len(self)==0:
+            return '0.j'
         elements=''
         for element, count in self:
             if element in isotopes:
