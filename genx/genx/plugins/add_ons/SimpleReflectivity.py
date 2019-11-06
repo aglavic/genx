@@ -20,6 +20,7 @@ import wx.grid as gridlib
 import numpy as np
 import sys, os, re, time, io, traceback
 
+from .Reflectivity import SamplePlotPanel, find_code_segment
 from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
@@ -36,27 +37,31 @@ class SampleGrid(gridlib.Grid):
         attr = gridlib.GridCellAttr()
         attr.SetEditor(FormulaEditor())
         self.SetColAttr(2, attr)
-
+        
         self.cb=None
         self.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.onCellSelected)
         self.Bind(gridlib.EVT_GRID_EDITOR_CREATED, self.onEditorCreated)
         self.Bind(gridlib.EVT_GRID_EDITOR_SHOWN, self.onEditorShown)
+        self._activated_ctrl=False
 
     def onCellSelected(self, evt):
         if evt.Col in [1,3,5,7,9]:
+            self._activated_ctrl=True
             wx.CallAfter(self.EnableCellEditControl)
         evt.Skip()
 
     def onEditorCreated(self, evt):
-        if evt.Col in [3, 5, 7, 9]:
+        if evt.Col in [3, 5, 7, 9] and self._activated_ctrl:
             self.cb=evt.Control
             self.cb.WindowStyle|=wx.WANTS_CHARS
             wx.CallLater(100, self.toggleCheckbox)
+            self._activated_ctrl=False
         evt.Skip()
 
     def onEditorShown(self, evt):
-        if evt.Col in [3, 5, 7, 9] and self.cb is not None:
+        if evt.Col in [3, 5, 7, 9] and self.cb is not None and self._activated_ctrl:
             wx.CallLater(100, self.toggleCheckbox)
+            self._activated_ctrl=False
         evt.Skip()
 
     def toggleCheckbox(self):
@@ -65,11 +70,14 @@ class SampleGrid(gridlib.Grid):
 
 class FormulaEditor(gridlib.GridCellTextEditor):
     def BeginEdit(self, row, col, grid):
-        print(row, col, grid)
+        print('begin')
         return gridlib.GridCellTextEditor.BeginEdit(self, row, col, grid)
 
 # new model is ready with a script as value.
-(new_model_event, EVT_NEW_MODEL) = wx.lib.newevent.NewEvent()
+(update_model_event, EVT_UPDATE_MODEL) = wx.lib.newevent.NewEvent()
+TOP_LAYER=0
+ML_LAYER=1
+BOT_LAYER=2
 
 class SampleTable(gridlib.GridTableBase):
     _columns=[
@@ -89,10 +97,10 @@ class SampleTable(gridlib.GridTableBase):
     defaults={
         'Formula': ['Layer', 'Formula', '',
                     False, '2.0', False, '0.0',
-                    True, '10.0', False, '5.0'],
+                    True, '10.0', False, '5.0', ML_LAYER],
         'Mixure':  ['MixLayer', 'Mixure', '6.0e-6',
                     False, '2.0e-6', False, '100',
-                    True, '10.0', False, '5.0'],
+                    True, '10.0', False, '5.0', ML_LAYER],
         }
     
     def __init__(self, parent, grid):
@@ -104,11 +112,18 @@ class SampleTable(gridlib.GridTableBase):
                       False, '0.0', False, '0.0',
                       False, '0', False, '0']
         self.substrate=[None, 'Formula', Formula([['Si',1.0]]),
-                        False, '2.0056', False, '0.0',
+                        False, '2.32998', False, '0.0',
                         False, '0', True, '5.0']
-        self.layers=[['Layer 1', 'Formula', Formula([['Fe',2.0],['O', 2.0]]),
-                      False, '4.87479', False, '3.0',
-                      True, '100.0', False, '5.0']]
+        self.layers=[['Rust', 'Formula', Formula([['Fe',2.0],['O', 2.0]]),
+                      False, '5.25568', False, '0.0',
+                      True, '20.0', False, '5.0', TOP_LAYER],
+                     ['Layer 1', 'Formula', Formula([['Fe', 1.0]]),
+                      False, '7.87422', False, '3.0',
+                      True, '100.0', False, '5.0', ML_LAYER],
+                     ['Natural Oxide', 'Formula', Formula([['Si', 2.0], ['O', 3.0]]),
+                      False, '4.87479', False, '0.0',
+                      True, '20.0', False, '5.0', BOT_LAYER]
+                     ]
         
         self.grid.SetTable(self, True)
 
@@ -118,7 +133,7 @@ class SampleTable(gridlib.GridTableBase):
             # self.parent.SetColSize(i, 50)
             self.grid.AutoSizeColumn(i, True)
         
-        wx.CallAfter(self.updateCode)
+        wx.CallAfter(self.updateModel)
 
     def GetNumberRows(self):
         return len(self.layers)+2
@@ -133,7 +148,10 @@ class SampleTable(gridlib.GridTableBase):
             return '% 2i'%row
 
     def IsEmptyCell(self, row, col):
-        return True
+        try:
+            return not self.GetValue(row, col)
+        except IndexError:
+            return True
 
     def GetValue(self, row, col):
         if col==0:
@@ -205,12 +223,12 @@ class SampleTable(gridlib.GridTableBase):
                 pass
             else:
                 to_edit[col]=value
-        self.updateCode()
+        self.updateModel()
     
-    def updateCode(self, evt=None):
-        script=self.getCode()
-        evt=new_model_event()
-        evt.script=script
+    def updateModel(self, evt=None):
+        model_code=self.getModelCode()
+        evt=update_model_event()
+        evt.script=model_code
         wx.PostEvent(self.parent, evt)
 
     def GetAttr(self, row, col, kind):
@@ -247,6 +265,10 @@ class SampleTable(gridlib.GridTableBase):
                 attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
             if col in [3,5,7,9]:
                 attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+            if self.layers[row-1][11]==TOP_LAYER:
+                attr.SetBackgroundColour('#ccffcc')
+            elif self.layers[row-1][11]==BOT_LAYER:
+                attr.SetBackgroundColour('#ffaaff')
         return attr
 
     def GetColLabelValue(self, col):
@@ -286,13 +308,17 @@ class SampleTable(gridlib.GridTableBase):
 
     def InsertRow(self, row):
         if row==(self.GetNumberRows()-1):
+            layer_type=self.substrate[1]
+            layer_stack=BOT_LAYER
             row-=1
-        
-        if row>0:
+        elif row>0:
             layer_type=self.layers[row-1][1]
+            layer_stack=self.layers[row-1][11]
         else:
             layer_type=self.ambient[1]
+            layer_stack=TOP_LAYER
         newlayer=list(self.defaults[layer_type])
+        newlayer[11]=layer_stack
         self.layers.insert(row, newlayer)
     
         msg=gridlib.GridTableMessage(self,
@@ -302,6 +328,7 @@ class SampleTable(gridlib.GridTableBase):
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
+        self.updateModel()
         return True
 
     def DeleteRow(self, row):
@@ -316,11 +343,14 @@ class SampleTable(gridlib.GridTableBase):
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
+        self.updateModel()
         return True
 
     def MoveRow(self, row_from, row_to):
         if row_from in [0, self.GetNumberRows()-1] or row_to<0\
                 or row_to in [0, (self.GetNumberRows()-1)]:
+            return False
+        if self.layers[row_from-1][11]!=self.layers[row_to-1][11]:
             return False
         moved_row=self.layers.pop(row_from-1)
         self.layers.insert(row_to-1, moved_row)
@@ -329,6 +359,7 @@ class SampleTable(gridlib.GridTableBase):
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
+        self.updateModel()
         return True
     
     def getLayerCode(self, layer):
@@ -358,52 +389,40 @@ class SampleTable(gridlib.GridTableBase):
         output+="xs_ai=0.0, magn_ang=0.0)"
         return output
 
-    def getCode(self):
+    def getModelCode(self):
         '''
         Generate the python code for the current sample structure.
         '''
-        script='from numpy import *\n'\
-               'import models.spec_nx as model\n'\
-               'from models.utils import UserVars, fp, fw, bc, bw\n\n'\
-               '# BEGIN Instrument DO NOT CHANGE\n'\
-               'from models.utils import create_fp, create_fw\n'\
-        
-        script+="inst = model.Instrument(probe='x-ray', wavelength=1.54, coords='2θ',"\
-                " I0=1.0, res=0.001, restype='full conv and varying res.', respoints=9,"\
-                " resintrange=2, beamw=0.01, footype='no corr', samplelen=10.0,"\
-                " incangle=0.0, pol='uu', Ibkg=0.0, tthoff=0.0,)\n"
-        
-        script+="inst_fp = create_fp(inst.wavelength); inst_fw = create_fw(inst.wavelength)\n"\
-                "fp.set_wavelength(inst.wavelength); fw.set_wavelength(inst.wavelength)\n"\
-                "# END Instrument\n\n"\
-                "# BEGIN Sample DO NOT CHANGE\n"
+        script="# BEGIN Sample DO NOT CHANGE\n"
         script+="Amb = %s\n"%self.getLayerCode(self.ambient)
-        for i, layer in enumerate(reversed(self.layers)):
+        for i, layer in enumerate(self.layers):
             script+="layer_%i = %s\n"%(i, self.getLayerCode(layer))
 
         script+="\nSub = %s\n"%self.getLayerCode(self.substrate)
-        script+="\nML = model.Stack(Layers=[%s ], Repetitions = 1)\n"%str(
-            ", ".join(["layer_%i"%i for i in range(len(self.layers))])
+        
+        top=["layer_%i"%i for i,li in enumerate(self.layers)
+             if li[11]==TOP_LAYER]
+        ml=["layer_%i"%i for i,li in enumerate(self.layers)
+             if li[11]==ML_LAYER]
+        bot=["layer_%i"%i for i,li in enumerate(self.layers)
+             if li[11]==BOT_LAYER]
+        script+="\nTop = model.Stack(Layers=[%s ], Repetitions = 1)\n"%str(
+            ", ".join(reversed(top))
             )
-        script+="\nsample = model.Sample(Stacks = [ML], Ambient = Amb, Substrate = Sub)\n" \
+        script+="\nML = model.Stack(Layers=[%s ], Repetitions = %%i)\n"%str(
+            ", ".join(reversed(ml))
+            )
+        script+="\nBot = model.Stack(Layers=[%s ], Repetitions = 1)\n"%str(
+            ", ".join(reversed(bot))
+            )
+        script+="\nsample = model.Sample(Stacks = [Bot, ML, Top], Ambient = Amb, Substrate = Sub)\n" \
                 "# END Sample\n\n" \
-                "# BEGIN Parameters DO NOT CHANGE\n" \
-                "cp = UserVars()\n" \
-                "# END Parameters\n\n" \
-                "SLD = []\n" \
-                "def Sim(data):\n" \
-                "    I = []\n" \
-                "    SLD[:] = []\n" \
-                "    # BEGIN Dataset 0 DO NOT CHANGE\n" \
-                "    d = data[0]\n" \
-                "    I.append(sample.SimSpecular(d.x, inst))\n" \
-                "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
-                "    # END Dataset 0\n" \
-                "    return I"
+                "# BEGIN Parameters DO NOT CHANGE\n"
         return script
 
 
 class SamplePanel(wx.Panel):
+    last_sample_script=''
     
     def __init__(self, parent, plugin, refindexlist=[]):
         wx.Panel.__init__(self, parent)
@@ -426,7 +445,9 @@ class SamplePanel(wx.Panel):
         boxhor.Add((-1, 2))
         self.grid = SampleGrid(self, -1, style=wx.NO_BORDER)
         self.sample_table=SampleTable(self, self.grid)
-        self.Bind(EVT_NEW_MODEL, self.UpdateModel)
+
+
+        self.Bind(EVT_UPDATE_MODEL, self.UpdateModel)
         boxhor.Add(self.grid, 1, wx.EXPAND)
         
         boxver.Add(boxhor, 1, wx.EXPAND)
@@ -459,16 +480,78 @@ class SamplePanel(wx.Panel):
                              bitmap=images.move_down.GetBitmap(),
                              shortHelp='Move item down')
         self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
-        
+        self.toolbar.AddSeparator()
+
         newid=wx.NewId()
-        self.toolbar.AddTool(newid, 'Edit Instrument',
-                             bitmap=images.instrument.GetBitmap(),
-                             shortHelp='Edit Instruments')
-        self.Bind(wx.EVT_TOOL, self.EditInstrument, id=newid)
+        button=wx.Button(self.toolbar, newid, label='Instrument Settings')
+        button.SetBitmap(images.instrument.GetBitmap(), dir=wx.LEFT)
+        self.toolbar.AddControl(button)
+        self.Bind(wx.EVT_BUTTON, self.EditInstrument, id=newid)
+        self.toolbar.AddSeparator()
+        
+        
+        self.toolbar.AddStretchableSpace()
+        newid=wx.NewId()
+        self.toolbar.AddTool(newid, 'Top',
+                             bitmap=images.insert_stack.GetBitmap(),
+                             shortHelp='Set selection as non-repeated top layer')
+        self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
+
+        newid=wx.NewId()
+        self.toolbar.AddTool(newid, 'Bottom',
+                             bitmap=images.insert_stack.GetBitmap(),
+                             shortHelp='Set selection as non-repeated bottom layer')
+        self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
+
+        text=wx.StaticText(self.toolbar, -1, label='Repetitions:')
+        self.toolbar.AddControl(text)
+
+        newid=wx.NewId()
+        self.repetitions=wx.SpinCtrl(self.toolbar, newid,
+                                     min=1, max=1000, initial=1,)
+        self.toolbar.AddControl(self.repetitions)
+        self.Bind(wx.EVT_SPINCTRL, self.ChangeRepetitions, id=newid)
+
+    def ChangeRepetitions(self, evt):
+        self.UpdateModel()
+
+    def UpdateModel(self, evt=None):
+        if evt is None:
+            sample_script=self.last_sample_script
+        else:
+            sample_script=evt.script
+            self.last_sample_script=sample_script
+        script='from numpy import *\n' \
+               'import models.spec_nx as model\n' \
+               'from models.utils import UserVars, fp, fw, bc, bw\n\n' \
+               '# BEGIN Instrument DO NOT CHANGE\n' \
+               'from models.utils import create_fp, create_fw\n'
+        script+="inst = model.Instrument(probe='x-ray', wavelength=1.54, coords='2θ'," \
+                " I0=1.0, res=0.001, restype='full conv and varying res.', respoints=9," \
+                " resintrange=2, beamw=0.01, footype='no corr', samplelen=10.0," \
+                " incangle=0.0, pol='uu', Ibkg=0.0, tthoff=0.0,)\n"
     
-    def UpdateModel(self, evt):
-        print(evt.script)
-        self.plugin.SetModelScript(evt.script)
+        script+="inst_fp = create_fp(inst.wavelength); inst_fw = create_fw(inst.wavelength)\n" \
+                "fp.set_wavelength(inst.wavelength); fw.set_wavelength(inst.wavelength)\n" \
+                "# END Instrument\n\n"
+        # add sample description code
+        script+=sample_script%self.repetitions.GetValue()
+        script+="cp = UserVars()\n" \
+                "# END Parameters\n\n" \
+                "SLD = []\n" \
+                "def Sim(data):\n" \
+                "    I = []\n" \
+                "    SLD[:] = []\n"
+        for i, di in enumerate(['dataset']):
+            script+="    # BEGIN Dataset %i DO NOT CHANGE\n" \
+                    "    d = data[%i]\n" \
+                    "    I.append(sample.SimSpecular(d.x, inst))\n" \
+                    "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
+                    "    # END Dataset 0\n"%(i, i)
+
+        script+="    return I"
+        # print(script)
+        self.plugin.SetModelScript(script)
         
     def OnLayerAdd(self, evt):
         row = self.grid.GetGridCursorRow()
@@ -1052,573 +1135,6 @@ class SamplePanel(wx.Panel):
             self.Update()
 
 
-
-class EditCustomParameters(wx.Dialog):
-    
-    def __init__(self, parent, model, lines):
-        wx.Dialog.__init__(self, parent, -1, 'Custom parameter editor')
-        self.SetAutoLayout(True)
-        self.model=model
-        self.lines=lines
-        self.var_name='cp'
-        
-        sizer=wx.BoxSizer(wx.VERTICAL)
-        name_ctrl_sizer=wx.GridBagSizer(2, 3)
-        
-        col_labels=['Name', 'Value']
-        
-        for item, index in zip(col_labels, list(range(len(col_labels)))):
-            label=wx.StaticText(self, -1, item)
-            name_ctrl_sizer.Add(label, (0, index), flag=wx.ALIGN_LEFT,
-                                border=5)
-        
-        self.name_ctrl=wx.TextCtrl(self, -1, size=(120, -1))
-        name_ctrl_sizer.Add(self.name_ctrl, (1, 0), \
-                            flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
-                            border=5)
-        self.value_ctrl=wx.TextCtrl(self, -1, size=(120, -1))
-        name_ctrl_sizer.Add(self.value_ctrl, (1, 1), \
-                            flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
-                            border=5)
-        self.add_button=wx.Button(self, id=wx.ID_ANY, label='Add')
-        name_ctrl_sizer.Add(self.add_button, (1, 2), \
-                            flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
-                            border=5)
-        sizer.Add(name_ctrl_sizer)
-        self.Bind(wx.EVT_BUTTON, self.OnAdd, self.add_button)
-        
-        line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
-        
-        self.listbox=MyHtmlListBox(self, -1, size=(-1, 150), \
-                                   style=wx.BORDER_SUNKEN)
-        self.listbox.SetItemList(self.lines)
-        sizer.Add(self.listbox, 1, wx.GROW|wx.ALL, 10)
-        
-        self.delete_button=wx.Button(self, id=wx.ID_ANY, label='Delete')
-        sizer.Add(self.delete_button, 0, wx.CENTRE, 0)
-        self.Bind(wx.EVT_BUTTON, self.OnDelete, self.delete_button)
-        
-        button_sizer=wx.StdDialogButtonSizer()
-        okay_button=wx.Button(self, id=wx.ID_OK)
-        # okay_button.SetDefault()
-        button_sizer.AddButton(okay_button)
-        button_sizer.AddButton(wx.Button(self, id=wx.ID_CANCEL))
-        button_sizer.Realize()
-        self.Bind(wx.EVT_BUTTON, self.OnApply, okay_button)
-        
-        line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
-        
-        sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT, 5)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.Layout()
-    
-    def OnApply(self, event):
-        '''OnApply(self, event) --> None
-
-        Callback for ok button click or apply button
-        '''
-        event.Skip()
-    
-    def OnAdd(self, event):
-        '''OnAdd(self, event) --> None
-
-        Callback for adding an entry
-        '''
-        line='%s.new_var(\'%s\', %s)'%(self.var_name, \
-                                       self.name_ctrl.GetValue(),
-                                       self.value_ctrl.GetValue())
-        try:
-            self.model.eval_in_model(line)
-        except Exception as e:
-            result='Could not evaluate the expression. The python error'+ \
-                   'is: \n'+e.__repr__()
-            dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                 wx.OK|wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
-        else:
-            self.lines.append(line)
-            self.listbox.SetItemList(self.lines)
-    
-    def OnDelete(self, event):
-        '''OnDelete(self, event) --> None
-
-        Callback for deleting an entry
-        '''
-        result='Do you want to delete the expression?\n'+ \
-               'Remember to check if parameter is used elsewhere!'
-        dlg=wx.MessageDialog(self, result, 'Delete expression?',
-                             wx.YES_NO|wx.NO_DEFAULT|wx.ICON_INFORMATION)
-        if dlg.ShowModal()==wx.ID_YES:
-            self.lines.pop(self.listbox.GetSelection())
-            self.listbox.SetItemList(self.lines)
-        dlg.Destroy()
-    
-    def GetLines(self):
-        '''GetLines(self) --> uservars lines [list]
-
-        Returns the list user variables.
-        '''
-        return self.lines
-
-
-class SimulationExpressionDialog(wx.Dialog):
-    '''A dialog to edit the Simulation expression
-    '''
-    
-    def __init__(self, parent, model, instruments, sim_func, arguments,
-                 inst_name,
-                 data_index):
-        '''Creates a SimualtionExpressionDialog.
-
-        model - a Model object.
-        instruments - a dictionary of possible instruments
-        arguments - the arguments to the simulation function, a list of strings.
-        sim_func - a string of the simulation function name.
-        inst_name - the name of the current instrument.
-        data_index - an integer for the current data index.
-        '''
-        
-        self.model=model
-        self.instruments=instruments
-        self.available_sim_funcs=self.model.eval_in_model(
-            'model.SimulationFunctions.keys()')
-        self.data_index=data_index
-        
-        # Do the layout of the dialog
-        wx.Dialog.__init__(self, parent, -1, 'Simulation editor')
-        self.SetAutoLayout(True)
-        
-        # Find out the maximum number of arguments to the available sim_funcs
-        max_val=-1
-        self.sim_args={}
-        self.sim_defaults={}
-        for func in self.available_sim_funcs:
-            doc=self.model.eval_in_model('model.SimulationFunctions'
-                                         '["%s"].__doc__'%func)
-            doc_lines=find_code_segment(doc, 'Parameters').splitlines()
-            max_val=max(len(doc_lines), max_val)
-            args=[]
-            defaults=[]
-            for line in doc_lines:
-                items=line.lstrip().rstrip().split(' ')
-                args.append(items[0])
-                defaults.append(items[1].replace('data', 'd'))
-            self.sim_args[func]=args
-            self.sim_defaults[func]=defaults
-        
-        expressions={'Instrument': inst_name}
-        for arg_name, arg in zip(self.sim_args[sim_func], arguments):
-            expressions[arg_name]=arg
-        
-        if max_val<0:
-            raise ValueError(
-                'Wrongly formatted function docs for the simulation functions')
-        
-        gbs=wx.GridBagSizer(2, max_val)
-        
-        # Creating the column labels
-        col_labels=['Simulation', 'Instrument']
-        [col_labels.append(arg) for arg in self.sim_args[sim_func] if
-         not arg in col_labels]
-        self.labels=[]
-        self.arg_controls=[]
-        for index in range(2+max_val):
-            label=wx.StaticText(self, -1, '')
-            gbs.Add(label, (0, index), flag=wx.ALIGN_LEFT, border=5)
-            self.labels.append(label)
-            # If the expression is not an instrument or simulation function
-            if index>1:
-                exp_ctrl=wx.TextCtrl(self, -1, size=(100, -1))
-                gbs.Add(exp_ctrl, (1, index),
-                        flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
-                self.arg_controls.append(exp_ctrl)
-        
-        for item, label in zip(col_labels[:2], self.labels[:2]):
-            label.SetLabel(item)
-        # Creating the text boxes for the arguments
-        # Setting the text in the column labels and text controls
-        for item, label, arg_ctrl in zip(col_labels[2:],
-                                         self.labels[2:],
-                                         self.arg_controls):
-            label.SetLabel(item)
-            arg_ctrl.SetValue(expressions[item])
-            arg_ctrl.SetEditable(True)
-        
-        for i in range(len(col_labels)-2, len(self.arg_controls)):
-            self.arg_controls[i].SetEditable(False)
-            # self.arg_controls[i].Show(False)
-            # self.arg_controls[i].SetValue('NA')
-        
-        # Creating the controls
-        # Simulation choice control
-        self.sim_choice=wx.Choice(self, -1,
-                                  choices=self.available_sim_funcs)
-        self.Bind(wx.EVT_CHOICE, self.on_sim_change, self.sim_choice)
-        self.sim_choice.SetSelection(self.available_sim_funcs.index(sim_func))
-        gbs.Add(self.sim_choice, (1, 0), \
-                flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
-        
-        # Instrument choice control
-        self.inst_choice=wx.Choice(self, -1,
-                                   choices=list(self.instruments.keys()))
-        # self.Bind(wx.EVT_CHOICE, self.on_inst_change, self.inst_choice)
-        self.inst_choice.SetSelection(
-            list(self.instruments.keys()).index(expressions['Instrument']))
-        gbs.Add(self.inst_choice, (1, 1), \
-                flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
-        
-        button_sizer=wx.StdDialogButtonSizer()
-        okay_button=wx.Button(self, wx.ID_OK)
-        okay_button.SetDefault()
-        button_sizer.AddButton(okay_button)
-        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
-        
-        button_sizer.Realize()
-        self.Bind(wx.EVT_BUTTON, self.on_ok_button, okay_button)
-        
-        sizer=wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
-        line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
-        sizer.Add((-1, 5))
-        
-        sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT, 5)
-        sizer.Add((-1, 5))
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.Layout()
-    
-    def on_sim_change(self, evt):
-        '''Callback for changing the choice widget for the different simulations.
-        '''
-        new_sim=self.sim_choice.GetStringSelection()
-        # Update the column labels
-        new_labels=[]
-        for label, arg_name in zip(self.labels[2:], self.sim_args[new_sim]):
-            new_labels.append(label.GetLabel()!=arg_name)
-            label.SetLabel(arg_name)
-        # Clear the remaining column labels
-        for label in self.labels[len(self.sim_args[new_sim])+2:]:
-            label.SetLabel('')
-        
-        # Update the text controls - if needed
-        for i in range(len(self.sim_args[new_sim])):
-            # if new_labels[i]:
-            if True:
-                self.arg_controls[i].SetValue(self.sim_defaults[new_sim][i])
-            self.arg_controls[i].SetEditable(True)
-            # self.arg_controls[i].Show(True)
-        # Hide and clear the remaining text controls
-        for ctrl in self.arg_controls[len(self.sim_args[new_sim]):]:
-            ctrl.SetEditable(False)
-            ctrl.SetValue('')
-
-            # ctrl.Show(False)
-    
-    def on_ok_button(self, event):
-        '''Callback for pressing the ok button in the dialog'''
-        expressions=self.GetExpressions()
-        # Hack to get it working with d = data[0]
-        exec('d = data[%d]'%self.data_index, self.model.script_module.__dict__)
-        for exp in expressions:
-            try:
-                self.model.eval_in_model(exp)
-            except Exception as e:
-                result=('Could not evaluate expression:\n%s.\n'%exp+
-                        ' The python error is: \n'+e.__repr__())
-                dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                     wx.OK|wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
-            else:
-                event.Skip()
-    
-    def GetExpressions(self):
-        ''' Returns the current expressions in the dialog box '''
-        return [ctrl.GetValue() for ctrl in self.arg_controls
-                if ctrl.IsEditable()]
-    
-    def GetInstrument(self):
-        ''' Returns the selected instrument, a string'''
-        return self.inst_choice.GetStringSelection()
-    
-    def GetSim(self):
-        ''' Returns the selected simulation, a string'''
-        return self.sim_choice.GetStringSelection()
-
-
-class ParameterExpressionDialog(wx.Dialog):
-    ''' A dialog for setting parameters for fitting
-    '''
-    
-    def __init__(self, parent, model, expression=None, sim_func=None):
-        wx.Dialog.__init__(self, parent, -1, 'Parameter editor')
-        self.SetAutoLayout(True)
-        self.model=model
-        self.sim_func=sim_func
-        
-        gbs=wx.GridBagSizer(2, 3)
-        
-        col_labels=['Object', 'Parameter', 'Expression']
-        
-        for item, index in zip(col_labels, list(range(len(col_labels)))):
-            label=wx.StaticText(self, -1, item)
-            gbs.Add(label, (0, index), flag=wx.ALIGN_LEFT, border=5)
-        
-        # Get the objects that should be in the choiceboxes
-        par_dict=model.get_possible_parameters()
-        objlist=[]
-        funclist=[]
-        for cl in par_dict:
-            obj_dict=par_dict[cl]
-            for obj in obj_dict:
-                objlist.append(obj)
-                funclist.append(obj_dict[obj])
-        
-        self.objlist=objlist
-        self.funclist=funclist
-        self.obj_choice=wx.Choice(self, -1, choices=objlist)
-        self.Bind(wx.EVT_CHOICE, self.on_obj_change, self.obj_choice)
-        
-        self.func_choice=wx.Choice(self, -1)
-        # This will init func_choice
-        self.obj_choice.SetSelection(0)
-        
-        gbs.Add(self.obj_choice, (1, 0), \
-                flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
-        gbs.Add(self.func_choice, (1, 1), \
-                flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
-        
-        exp_right=''
-        if expression:
-            p=expression.find('(')
-            exp_left=expression[:p]
-            obj=exp_left.split('.')[0]
-            func=exp_left.split('.')[1]
-            exp_right=expression[p+1:-1]
-            obj_pos=[i for i in range(len(objlist)) if objlist[i]==obj]
-            if len(obj_pos)>0:
-                self.obj_choice.SetSelection(obj_pos[0])
-                self.on_obj_change(None)
-                func_pos=[i for i in range(len(funclist[obj_pos[0]])) \
-                          if funclist[obj_pos[0]][i]==func]
-                if len(func_pos)>0:
-                    self.func_choice.SetSelection(func_pos[0])
-                else:
-                    raise ValueError(
-                        'The function %s for object %s does not exist'%(
-                        func, obj))
-            else:
-                raise ValueError('The object %s does not exist'%obj)
-
-        # self.expression_ctrl = wx.TextCtrl(self, -1, exp_right,\
-        #                       size=(300, -1))
-        
-        self.expression_ctrl=ParameterExpressionCombo(par_dict, sim_func, self,
-                                                      -1, exp_right,
-                                                      size=(300, -1))
-        gbs.Add(self.expression_ctrl, (1, 2), \
-                flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
-        
-        button_sizer=wx.StdDialogButtonSizer()
-        okay_button=wx.Button(self, wx.ID_OK)
-        okay_button.SetDefault()
-        button_sizer.AddButton(okay_button)
-        button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
-        # apply_button = wx.Button(self, wx.ID_APPLY)
-        # apply_button.SetDefault()
-        # button_sizer.AddButton(apply_button)
-        button_sizer.Realize()
-        self.Bind(wx.EVT_BUTTON, self.OnApply, okay_button)
-        # self.Bind(wx.EVT_BUTTON, self.OnApply, apply_button)
-        
-        sizer=wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
-        line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
-        sizer.Add((-1, 5))
-        
-        sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT, 5)
-        sizer.Add((-1, 5))
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.Layout()
-    
-    def on_obj_change(self, event):
-        '''on_obj_change(self, event) --> None
-
-        On changing the object the funclist should be updated
-        '''
-        index=self.obj_choice.GetSelection()
-        self.func_choice.SetItems(self.funclist[index])
-    
-    def OnApply(self, event):
-        '''OnApply(self, event) --> None
-        '''
-        evalstring=self.GetExpression()
-        try:
-            self.model.eval_in_model(evalstring)
-        except Exception as e:
-            result='Could not evaluate the expression. The python'+ \
-                   'is: \n'+e.__repr__()
-            dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                 wx.OK|wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
-        else:
-            event.Skip()
-    
-    def GetExpression(self):
-        '''GetExpression(self) --> expression
-
-        Yields the string that has been edited in the dialog
-        '''
-        objstr=self.obj_choice.GetStringSelection()
-        funcstr=self.func_choice.GetStringSelection()
-        set_expression=self.expression_ctrl.GetValue()
-        evalstring='%s.%s(%s)'%(objstr, funcstr, set_expression)
-        
-        return evalstring
-
-
-class SamplePlotPanel(wx.Panel):
-    ''' Widget for plotting the scattering length density of
-    a sample.
-    '''
-    
-    def __init__(self, parent, plugin, id=-1, color=None, dpi=None
-                 , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
-        ''' Inits the plotpanel
-        '''
-        wx.Panel.__init__(self, parent)
-        self.plot=PlotPanel(self, -1, color, dpi, style, **kwargs)
-        self.plugin=plugin
-        
-        sizer=wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
-        
-        self.plot.update(None)
-        self.plot.ax=self.plot.figure.add_subplot(111)
-        box=self.plot.ax.get_position()
-        self.plot.ax.set_position([box.x0, box.y0, box.width*0.95, box.height])
-        self.plot.ax.set_autoscale_on(True)
-        self.plot.update=self.Plot
-        self.SetSizer(sizer)
-        self.plot.ax.set_autoscale_on(False)
-        self.plot_dict={}
-    
-    def Plot(self):
-        ''' Plot(self) --> None
-
-        Plotting the sample Sample.
-        '''
-        colors=['b', 'r', 'g', 'c', 'm', 'y', 'k']
-        model=self.plugin.GetModel().script_module
-        # self.plot_dict = model.sample.SimSLD(None, model.inst)
-        self.plot_dicts=[]
-        self.plot.ax.lines=[]
-        self.plot.ax.clear()
-        i=0
-        data=self.plugin.GetModel().get_data()
-        sld_units=[]
-        
-        if self.plugin.sim_returns_sld and model._sim:
-            # New style sim function with one sld for each simulation
-            self.plot_dicts=model.SLD
-            for sim in range(len(self.plot_dicts)):
-                if data[sim].show:
-                    for key in self.plot_dicts[sim]:
-                        is_imag=key[:2]=='Im' or key[:4]=='imag'
-                        if (
-                                is_imag and self.plugin.show_imag_sld) or not is_imag:
-                            if key!='z' and key!='SLD unit':
-                                label=data[sim].name+'\n'+key
-                                self.plot.ax.plot(self.plot_dicts[sim]['z'],
-                                                  self.plot_dicts[sim][key], \
-                                                  colors[i%len(colors)],
-                                                  label=label)
-                                
-                                if 'SLD unit' in self.plot_dicts[sim]:
-                                    if not self.plot_dicts[sim][
-                                               'SLD unit'] in sld_units:
-                                        sld_units.append(
-                                            self.plot_dicts[sim]['SLD unit'])
-                                i+=1
-        else:
-            # Old style plotting just one sld
-            if self.plugin.GetModel().compiled:
-                try:
-                    sample=model.sample
-                except AttributeError:
-                    iprint("Warning: Could not locate the sample in the model")
-                    return
-                plot_dict=sample.SimSLD(None, None, model.inst)
-                self.plot_dicts=[plot_dict]
-                for key in self.plot_dicts[0]:
-                    is_imag=key[:2]=='Im' or key[:4]=='imag'
-                    if (is_imag and self.plugin.show_imag_sld) or not is_imag:
-                        if key!='z' and key!='SLD unit':
-                            label=key
-                            self.plot.ax.plot(self.plot_dicts[0]['z'],
-                                              self.plot_dicts[0][key], \
-                                              colors[i%len(colors)],
-                                              label=label)
-                            
-                            if 'SLD unit' in self.plot_dicts[0]:
-                                if not self.plot_dicts[0][
-                                           'SLD unit'] in sld_units:
-                                    sld_units.append(
-                                        self.plot_dicts[0]['SLD unit'])
-                            i+=1
-        
-        if i>0:
-            self.plot.ax.legend(loc='center left', bbox_to_anchor=(1, 0.5),
-                                prop={'size': 10}, ncol=1)
-            
-            sld_unit=', '.join(sld_units)
-            self.plot.ax.yaxis.label.set_text(
-                '$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
-            # if self.plot_dict.has_key('SLD unit'):
-            #    self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
-            self.plot.ax.xaxis.label.set_text('$\mathrm{\mathsf{ z\,[\AA]}}$')
-            wx.CallAfter(self.plot.flush_plot)
-            self.plot.AutoScale()
-    
-    def SavePlotData(self, filename):
-        ''' Save all the SLD profiles to file with filename.'''
-        # Check so that there are a simulation to save
-        try:
-            self.plot_dicts
-        except:
-            self.plugin.ShowWarningDialog('No SLD data to save.'
-                                          ' Simulate the model first and then save.')
-            return
-        base, ext=os.path.splitext(filename)
-        if ext=='':
-            ext='.dat'
-        data=self.plugin.GetModel().get_data()
-        for sim in range(len(self.plot_dicts)):
-            new_filename=(base+'%03d'%sim+ext)
-            save_array=np.array([self.plot_dicts[sim]['z']])
-            header='z\t'
-            for key in self.plot_dicts[sim]:
-                if key!='z' and key!='SLD unit':
-                    save_array=np.r_[save_array, [self.plot_dicts[sim][key]]]
-                    header+=key+'\t'
-            f=open(new_filename, 'w')
-            f.write("# File exported from GenX's Reflectivity plugin\n")
-            f.write("# File created: %s\n"%time.ctime())
-            f.write("# Simulated SLD for data set: %s\n"%data[sim].name)
-            f.write("# Headers: \n")
-            f.write('#'+header+'\n')
-            np.savetxt(f, save_array.transpose())
-            f.close()
-
-
 class Plugin(framework.Template):
     previous_xaxis=None
     
@@ -1935,7 +1451,7 @@ class Plugin(framework.Template):
         script=self.insert_code_segment(script, 'Instrument', code)
         
         # Sample script creation
-        layer_code, stack_code, sample_code=self.sampleh.getCode()
+        layer_code, stack_code, sample_code=self.sampleh.getModelCode()
         code=layer_code+'\n'+stack_code+'\n'+sample_code
         script=self.insert_code_segment(script, 'Sample', code)
         
@@ -2269,65 +1785,3 @@ class Plugin(framework.Template):
         except AttributeError:
             pass
 
-
-def find_code_segment(code, descriptor):
-    '''find_code_segment(code, descriptor) --> string
-
-    Finds a segment of code between BEGIN descriptor and END descriptor
-    returns a LookupError if the segement can not be found
-    '''
-    found=0
-    script_lines=code.splitlines(True)
-    line_index=0
-    for line in script_lines[line_index:]:
-        line_index+=1
-        if line.find('# BEGIN %s'%descriptor)!=-1:
-            found+=1
-            break
-    
-    text=''
-    for line in script_lines[line_index:]:
-        line_index+=1
-        if line.find('# END %s'%descriptor)!=-1:
-            found+=1
-            break
-        text+=line
-    
-    if found!=2:
-        raise LookupError('Code segement: %s could not be found'%descriptor)
-    
-    return text
-
-
-if __name__=='__main__':
-    import models.interdiff as Model
-    
-    nSi=3.0
-    Fe=Model.Layer(d=10, sigmar=3.0, n=1-2.247e-5+2.891e-6j)
-    Si=Model.Layer(d=15, sigmar=3.0, n='nSi')
-    sub=Model.Layer(sigmar=3.0, n=1-7.577e-6+1.756e-7j)
-    amb=Model.Layer(n=1.0)
-    stack=Model.Stack(Layers=[Fe, Si], Repetitions=20)
-    stack2=Model.Stack(Layers=[Fe, Si])
-    sample=Model.Sample(Stacks=[stack, stack2], Ambient=amb, Substrate=sub,
-                        eta_z=500.0, eta_x=100.0)
-    iprint(sample)
-    inst=Model.Instrument(Wavelength=1.54, Coordinates=1)
-    s=['Amb', 'stack1', 'Fe1', 'Si1', 's2', 'Fe2', 'Si2', 'Sub']
-    sh=SampleHandler(sample, s)
-    sh.getStringList()
-    
-    
-    class MyApp(wx.App):
-        
-        def OnInit(self):
-            # wx.InitAllImageHandlers()
-            frame=SamplePanel(None, -1, "Sample", sh)
-            frame.Show(True)
-            self.SetTopWindow(frame)
-            return True
-    
-    
-    iprint(Si.getN().__repr__())
-    app=MyApp(0)
-    app.MainLoop()

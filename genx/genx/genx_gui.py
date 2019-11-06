@@ -396,9 +396,9 @@ class MainFrame(wx.Frame):
     def __set_properties(self):
         # self.main_frame_toolbar.SetToolBitmapSize((32,32))
         # self.main_frame_toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
-        self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,\
+        self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,
             '        FOM:                    ', size = (400, -1))
-        font = wx.Font(wx.FontInfo(15))
+        font = wx.Font(wx.FontInfo(15*self.dpi_scale_factor))
         self.main_frame_fom_text.SetFont(font)
         self.main_frame_fom_text.SetLabel('        FOM: None')
         #self.main_frame_fom_text.SetEditable(False)
