@@ -470,6 +470,18 @@ class SampleTable(gridlib.GridTableBase):
 class SamplePanel(wx.Panel):
     last_sample_script=''
     
+    inst_params=dict(probe='neutron pol',
+                     I0=1.0,
+                     res=0.0001,
+                     wl=1.54,
+                     pol='uu',
+                     Ibkg=0.,
+                     samplelen=10.,
+                     beamw=0.1,
+                     footype='no corr',
+                     name='inst',
+                     coords='q')
+    
     def __init__(self, parent, plugin, refindexlist=[]):
         wx.Panel.__init__(self, parent)
         self.refindexlist=refindexlist
@@ -493,6 +505,7 @@ class SamplePanel(wx.Panel):
         self.sample_table=SampleTable(self, self.grid)
 
 
+        self.last_sample_script=self.sample_table.getModelCode()
         self.Bind(EVT_UPDATE_MODEL, self.UpdateModel)
         boxhor.Add(self.grid, 1, wx.EXPAND)
         
@@ -561,8 +574,27 @@ class SamplePanel(wx.Panel):
 
     def ChangeRepetitions(self, evt):
         self.UpdateModel()
+    
+    def instrumentCode(self):
+        pars=dict(self.inst_params)
+        template="%(name)s = model.Instrument(probe='%(probe)s', wavelength=%(wl)g, " \
+                 "coords='%(coords)s', I0=%(I0)g, res=%(res)g, " \
+                 "restype='full conv and varying res.', respoints=9, " \
+                 "resintrange=2, beamw=%(beamw)g, footype='%(footype)s', " \
+                 "samplelen=%(samplelen)g, incangle=0.0, pol='%(pol)s', " \
+                 "Ibkg=%(Ibkg)g, tthoff=0.0,)\n"
+        if pars['probe'] in ['x-ray', 'neutron']:
+            return ['inst'], template%pars
+        output=template%pars
+        if pars['probe']=='neutron pol':
+            pars['pol']='dd'
+            pars['name']='inst_down'
+            output+=template%pars
+            insts=['inst', 'inst_down']
+        return insts, output
 
     def UpdateModel(self, evt=None):
+        probe='neutron pol'
         if evt is None:
             sample_script=self.last_sample_script
         else:
@@ -573,11 +605,9 @@ class SamplePanel(wx.Panel):
                'from models.utils import UserVars, fp, fw, bc, bw\n\n' \
                '# BEGIN Instrument DO NOT CHANGE\n' \
                'from models.utils import create_fp, create_fw\n'
-        script+="inst = model.Instrument(probe='x-ray', wavelength=1.54, coords='2θ'," \
-                " I0=1.0, res=0.001, restype='full conv and varying res.', respoints=9," \
-                " resintrange=2, beamw=0.01, footype='no corr', samplelen=10.0," \
-                " incangle=0.0, pol='uu', Ibkg=0.0, tthoff=0.0,)\n"
-    
+        insts, inst_str=self.instrumentCode()
+        script+=inst_str
+
         script+="inst_fp = create_fp(inst.wavelength); inst_fw = create_fw(inst.wavelength)\n" \
                 "fp.set_wavelength(inst.wavelength); fw.set_wavelength(inst.wavelength)\n" \
                 "# END Instrument\n\n"
@@ -589,12 +619,24 @@ class SamplePanel(wx.Panel):
                 "def Sim(data):\n" \
                 "    I = []\n" \
                 "    SLD[:] = []\n"
-        for i, di in enumerate(['dataset']):
+        datasets=self.model.data
+        for i, di in enumerate(datasets):
+            di.run_command()
+            if probe=='x-ray':
+                self.plugin.parent.plot_data.update_labels('2θ [°]')
+                from genx import data
+                data.DataSet.simulation_params[0]=0.01
+                data.DataSet.simulation_params[1]=6.01
+            else:
+                self.plugin.parent.plot_data.update_labels('q [Å$^{-1}$]')
+                from genx import data
+                data.DataSet.simulation_params[0]=0.001
+                data.DataSet.simulation_params[1]=0.601
             script+="    # BEGIN Dataset %i DO NOT CHANGE\n" \
                     "    d = data[%i]\n" \
-                    "    I.append(sample.SimSpecular(d.x, inst))\n" \
+                    "    I.append(sample.SimSpecular(d.x, %s))\n" \
                     "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
-                    "    # END Dataset 0\n"%(i, i)
+                    "    # END Dataset %i\n"%(i, i, insts[i%len(insts)], i)
 
         script+="    return I"
         # print(script)
@@ -1184,6 +1226,7 @@ class SamplePanel(wx.Panel):
 
 class Plugin(framework.Template):
     previous_xaxis=None
+    sim_returns_sld=True
     
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
@@ -1208,19 +1251,20 @@ class Plugin(framework.Template):
         sld_sizer.Add(self.sld_plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
         sld_plot_panel.Layout()
         
-        if self.model_obj.script!='':
-            if self.model_obj.filename!='':
-                iprint("Reflectivity plugin: Reading loaded model")
-                self.ReadModel()
-            else:
-                try:
-                    self.ReadModel()
-                except:
-                    iprint("Reflectivity plugin: Creating new model")
-                    self.CreateNewModel()
-        else:
-            iprint("Reflectivity plugin: Creating new model")
-            self.CreateNewModel()
+        self.sample_widget.UpdateModel()
+        # if self.model_obj.script!='':
+        #     if self.model_obj.filename!='':
+        #         iprint("Reflectivity plugin: Reading loaded model")
+        #         self.ReadModel()
+        #     else:
+        #         try:
+        #             self.ReadModel()
+        #         except:
+        #             iprint("Reflectivity plugin: Creating new model")
+        #             self.CreateNewModel()
+        # else:
+        #     iprint("Reflectivity plugin: Creating new model")
+        #     self.CreateNewModel()
         
         # Create a menu for handling the plugin
         menu=self.NewMenu('Reflec')
@@ -1242,25 +1286,50 @@ class Plugin(framework.Template):
                                            wx.ITEM_CHECK)
         menu.Append(self.mb_autoupdate_sld)
         self.mb_autoupdate_sld.Check(False)
+        
+        self.mb_hide_advanced=wx.MenuItem(menu, wx.NewId(),
+                                           "Hide Advanced",
+                                           "Toggles hiding of advanced model tabs",
+                                           wx.ITEM_CHECK)
+        menu.Append(self.mb_hide_advanced)
+        self.mb_hide_advanced.Check(True)
         # self.mb_autoupdate_sld.SetCheckable(True)
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD,
                          self.mb_autoupdate_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnShowImagSLD,
                          self.mb_show_imag_sld)
-        
-        # hide all standard tabs
-        for i, page_i in enumerate(self.parent.input_notebook.Children):
-            if self.parent.input_notebook.GetPageText(i)!='Model':
-                page_i.Hide()
-        
+        self.parent.Bind(wx.EVT_MENU, self.OnHideAdvanced,
+                         self.mb_hide_advanced)
+
+        self.HideUIElements()
         self.StatusMessage('Simple Reflectivity plugin loaded')
-    
+
+    def OnHideAdvanced(self, evt):
+        if self.mb_hide_advanced.IsChecked():
+            self.HideUIElements()
+        else:
+            self.ShowUIElements()
+
+    def HideUIElements(self):
+        self._hidden_pages=[]
+        # hide all standard tabs
+        nb=self.parent.input_notebook
+        for i, page_i in reversed(list(enumerate(nb.Children))):
+            title=nb.GetPageText(i)
+            if title!='Model':
+                self._hidden_pages.append([title, page_i, i])
+                nb.RemovePage(i)
+        self._hidden_pages.reverse()
+
+    def ShowUIElements(self):
+        nb=self.parent.input_notebook
+        for title, page_i, i in self._hidden_pages:
+            nb.InsertPage(i, page_i, title)
+        self._hidden_pages=None
+
     def Remove(self):
-        # reset tabs
-        for i, page_i in enumerate(self.parent.input_notebook.Children):
-            if self.parent.input_notebook.GetPageText(i)!='Model':
-                page_i.Show()
+        self.ShowUIElements()
         framework.Template.Remove(self)
 
     
@@ -1319,68 +1388,7 @@ class Plugin(framework.Template):
     def OnDataChanged(self, event):
         ''' Take into account changes in data..
         '''
-        if event.new_model:
-            return
-        
-        if event.data_moved or event.deleted or event.new_data or event.name_change:
-            names=[data_set.name for data_set in self.GetModel().get_data()]
-            self.simulation_widget.SetDataList(names)
-            
-            expl=self.simulation_widget.GetExpressionList()
-            
-            if len(names)-len(expl)==1:
-                # Data set has been added:
-                expl.append([])
-                self.insert_new_data_segment(len(expl)-1)
-            
-            sims, insts, args=self.simulation_widget.GetSimArgs()
-            
-            if event.deleted:
-                pos=list(range(len(expl)))
-                [self.remove_data_segment(pos[-index-1]) for index in \
-                 range(len(event.position))]
-                [expl.pop(index) for index in event.position]
-                [sims.pop(index) for index in event.position]
-                [insts.pop(index) for index in event.position]
-                [args.pop(index) for index in event.position]
-            elif event.data_moved:
-                if event.up:
-                    # Moving up
-                    for pos in event.position:
-                        tmp=expl.pop(pos)
-                        expl.insert(pos-1, tmp)
-                        tmp=sims.pop(pos)
-                        sims.insert(pos-1, tmp)
-                        tmp=insts.pop(pos)
-                        insts.insert(pos-1, tmp)
-                        tmp=args.pop(pos)
-                        args.insert(pos-1, tmp)
-                else:
-                    # Moving down...
-                    for pos in event.position:
-                        tmp=expl.pop(pos)
-                        expl.insert(pos+1, tmp)
-                        tmp=sims.pop(pos)
-                        sims.insert(pos+1, tmp)
-                        tmp=insts.pop(pos)
-                        insts.insert(pos+1, tmp)
-                        tmp=args.pop(pos)
-                        args.insert(pos+1, tmp)
-            
-            self.simulation_widget.SetSimArgs(sims, insts, args)
-            self.simulation_widget.SetExpressionList(expl)
-            
-            # Check so we have not clicked on new model button
-            if self.GetModel().script!='':
-                self.WriteModel()
-                self.simulation_widget.UpdateListbox()
-                if event.name_change:
-                    self.sld_plot.Plot()
-            else:
-                self.simulation_widget.UpdateListbox(update_script=True)
-        else:
-            if event.data_changed:
-                self.sld_plot.Plot()
+        self.sample_widget.UpdateModel()
     
     def OnOpenModel(self, event):
         '''OnOpenModel(self, event) --> None
@@ -1416,238 +1424,15 @@ class Plugin(framework.Template):
         """
         self.sample_widget.Update(update_script=False)
     
-    def InstrumentNameChange(self, old_name, new_name):
-        '''OnInstrumentNameChange --> None
-
-        Exchanges old_name to new name in the simulaitons.
-        '''
-        self.simulation_widget.InstrumentNameChange(old_name, new_name)
-    
     def CreateNewModel(self, modelname='models.spec_nx'):
         '''Init the script in the model to yield the
         correct script for initilization
         '''
-        script='from numpy import *\n'
-        script+='import %s as model\n'%modelname
-        script+='from models.utils import UserVars, fp, fw, bc, bw\n\n'
-        
-        for item in self.defs:
-            script+='# BEGIN %s DO NOT CHANGE\n'%item
-            script+='# END %s\n\n'%item
-        
-        script+='# BEGIN Parameters DO NOT CHANGE\n'
-        script+='cp = UserVars()\n'
-        script+='# END Parameters\n\n'
-        script+='SLD = []\n'
-        script+='def Sim(data):\n'
-        script+='    I = []\n'
-        script+='    SLD[:] = []\n'
-        nb_data_sets=len(self.GetModel().get_data())
-        for i in range(nb_data_sets):
-            script+='    # BEGIN Dataset %i DO NOT CHANGE\n'%i
-            script+='    d = data[%i]\n'%i
-            script+='    I.append(sample.SimSpecular(d.x, inst))\n'
-            script+='    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n'
-            script+='    # END Dataset %i\n'%i
-        script+='    return I\n'
-        
-        self.sim_returns_sld=True
-        
-        self.SetModelScript(script)
-        self.CompileScript()
-        self.model=self.GetModel().script_module.model
-        
-        names=['Amb', 'Sub']
-        Amb=self.model.Layer()
-        Sub=self.model.Layer()
-        sample=self.model.Sample(Stacks=[], Ambient=Amb, Substrate=Sub)
-        instrument=self.model.Instrument()
-        # self.sample_widget.SetSample(sample, names)
-        # self.sample_widget.model=self.model
-        self.sample_widget.SetInstrument({'inst': instrument})
-        
-        names=[data_set.name for data_set in self.GetModel().get_data()]
-        # self.simulation_widget.SetDataList(names)
-        # self.simulation_widget.SetParameterList([])
-        # # An empty list to the expression widget...
-        # self.simulation_widget.SetExpressionList([[] for item in names])
-        # self.simulation_widget.SetSimArgs(['Specular']*nb_data_sets,
-        #                                   ['inst']*nb_data_sets,
-        #                                   [['d.x'] for i in
-        #                                    range(nb_data_sets)])
-        # self.simulation_widget.UpdateListbox(update_script=True)
-        
-        self.sample_widget.Update(update_script=True)
-        # self.WriteModel()
+        pass
     
     def WriteModel(self):
         return
-        script=self.GetModel().get_script()
-        
-        # Instrument script creation
-        code='from models.utils import create_fp, create_fw\n'
-        instruments=self.sample_widget.instruments
-        for inst_name in instruments:
-            code+=('%s = model.'%inst_name+
-                   instruments[inst_name].__repr__()+'\n')
-            code+='%s_fp = create_fp(%s.wavelength);'%(inst_name, inst_name)
-            code+=' %s_fw = create_fw(%s.wavelength)\n\n'%(
-            inst_name, inst_name)
-        code+=('fp.set_wavelength(inst.wavelength); '
-               +'fw.set_wavelength(inst.wavelength)\n')
-        script=self.insert_code_segment(script, 'Instrument', code)
-        
-        # Sample script creation
-        layer_code, stack_code, sample_code=self.sampleh.getModelCode()
-        code=layer_code+'\n'+stack_code+'\n'+sample_code
-        script=self.insert_code_segment(script, 'Sample', code)
-        
-        # User Vars (Parameters) script creation
-        code='cp = UserVars()\n'
-        # code+=''.join([line+'\n' for line in \
-        #                self.simulation_widget.GetParameterList()])
-        script=self.insert_code_segment(script, 'Parameters', code)
-        
-        # Expressions evaluted during simulations (parameter couplings) script creation
-        # sim_funcs, insts, args=self.simulation_widget.GetSimArgs()
-        # for (i, exps) in enumerate(self.simulation_widget.GetExpressionList()):
-        #     exp=[ex+'\n' for ex in exps]
-        #     exp.append('d = data[%i]\n'%i)
-        #     str_arg=', '.join(args[i])
-        #     exp.append('I.append(sample.'
-        #                'Sim%s(%s, %s))\n'%(sim_funcs[i], str_arg,
-        #                                    insts[i]))
-        #     if self.sim_returns_sld:
-        #         exp.append('if _sim: SLD.append(sample.'
-        #                    'SimSLD(None, None, %s))\n'%insts[i])
-        #     code=''.join(exp)
-        #     script=self.insert_code_segment(script, 'Dataset %i'%i, code)
-        
-        self.SetModelScript(script)
-        # try:
-        #     self.SetXAxis(instruments[insts[0]])
-        # except AttributeError:
-        #     pass
     
-    def SetXAxis(self, instrument):
-        if self.previous_xaxis==instrument.coords:
-            return
-        coords=instrument.coords
-        if coords in self.model.InstrumentUnits:
-            newx='%s [%s]'%(coords,
-                            self.model.InstrumentUnits[coords])
-        else:
-            newx=coords
-        self.parent.plot_data.update_labels(newx)
-        from genx import data
-        if coords=='q':
-            data.DataSet.simulation_params[0]=0.001
-            data.DataSet.simulation_params[1]=0.601
-        else:
-            data.DataSet.simulation_params[0]=0.01
-            data.DataSet.simulation_params[1]=6.01
-        for ds in self.parent.model.data:
-            ds.run_command()
-    
-    def insert_new_data_segment(self, number):
-        '''insert_new_data_segment(self, number) --> None
-
-        Inserts a new data segment into the script
-        '''
-        code=self.GetModel().get_script()
-        script_lines=code.splitlines(True)
-        line_index=0
-        found=0
-        for line in script_lines[line_index:]:
-            line_index+=1
-            if line.find('    return I')!=-1:
-                found=1
-                break
-        
-        if found<1:
-            raise LookupError('Could not find "return I" in the script')
-        
-        self.simulation_widget.AppendSim('Specular', 'inst', ['d.x'])
-        
-        script=''.join(script_lines[:line_index-1])
-        script+='    # BEGIN Dataset %i DO NOT CHANGE\n'%number
-        script+='    d = data[%i]\n'%number
-        script+='    I.append(sample.SimSpecular(d.x, inst))\n'
-        script+='    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n'
-        script+='    # END Dataset %i\n'%number
-        script+=''.join(script_lines[line_index-1:])
-        self.SetModelScript(script)
-    
-    def remove_data_segment(self, number):
-        '''remove_data_segment(self, number) --> None
-
-        Removes data segment number
-        '''
-        code=self.GetModel().get_script()
-        found=0
-        script_lines=code.splitlines(True)
-        start_index=-1
-        stop_index=-1
-        for line in range(len(script_lines)):
-            if script_lines[line].find('# BEGIN Dataset %i'%number)!=-1:
-                start_index=line+1
-            if script_lines[line].find('# END Dataset %i'%number)!=-1:
-                stop_index=line-1
-                break
-        
-        # Check so everything have preceeded well
-        if stop_index<0 and start_index<0:
-            raise LookupError(
-                'Code segement: %s could not be found'%descriptor)
-        
-        script=''.join(script_lines[:start_index-1])
-        script+=''.join(script_lines[stop_index+2:])
-        self.SetModelScript(script)
-    
-    def find_code_segment(self, code, descriptor):
-        '''find_code_segment(self, code, descriptor) --> string
-
-        Finds a segment of code between BEGIN descriptor and END descriptor
-        returns a LookupError if the segement can not be found
-        '''
-        
-        return find_code_segment(code, descriptor)
-    
-    def insert_code_segment(self, code, descriptor, insert_code):
-        '''insert_code_segment(self, code, descriptor, insert_code) --> None
-
-        Inserts code segment into the file. See find_code segment.
-        '''
-        found=0
-        script_lines=code.splitlines(True)
-        start_index=-1
-        stop_index=-1
-        for line in range(len(script_lines)):
-            if script_lines[line].find('# BEGIN %s'%descriptor)!=-1:
-                start_index=line+1
-            if script_lines[line].find('# END %s'%descriptor)!=-1:
-                stop_index=line-1
-                break
-        
-        # Check so everything have preceeded well
-        if stop_index<0 and start_index<0:
-            raise LookupError(
-                'Code segement: %s could not be found'%descriptor)
-        
-        # Find the tablevel
-        # tablevel = len([' ' for char in script_lines[stop_index+1]\
-        #    if char == ' '])
-        tablevel=len(script_lines[stop_index+1]) \
-                 -len(script_lines[stop_index+1].lstrip())
-        
-        # Make the new code tabbed
-        tabbed_code=[' '*tablevel+line for line in \
-                     insert_code.splitlines(True)]
-        # Replace the new code segment with the new
-        new_code=''.join(script_lines[:start_index]+tabbed_code \
-                         +script_lines[stop_index+1:])
-        
-        return new_code
     
     def ReadModel(self):
         '''ReadModel(self)  --> None
@@ -1655,180 +1440,4 @@ class Plugin(framework.Template):
         Reads in the current model and locates layers and stacks
         and sample defined inside BEGIN Sample section.
         '''
-        self.StatusMessage('Compiling the script...')
-        try:
-            self.CompileScript()
-        except modellib.GenericError as e:
-            self.ShowErrorDialog(str(e))
-            self.StatusMessage('Error when compiling the script')
-            return
-        except Exception as e:
-            outp=io.StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            self.ShowErrorDialog(val)
-            self.Statusmessage('Fatal Error - compling, Reflectivity')
-            return
-        self.StatusMessage('Script compiled!')
-        
-        self.StatusMessage('Trying to interpret the script...')
-        
-        script=self.GetModel().script
-        code=self.find_code_segment(script, 'Instrument')
-        re_layer=re.compile(
-            '([A-Za-z]\w*)\s*=\s*model\.Instrument\s*\((.*)\)\n')
-        instrument_strings=re_layer.findall(code)
-        instrument_names=[t[0] for t in instrument_strings]
-        
-        if len(instrument_names)==0:
-            self.ShowErrorDialog('Could not find any Instruments in the'+ \
-                                 ' model script. Check the script.')
-            self.StatusMessage('ERROR No Instruments in script')
-            return
-        
-        if not 'inst' in instrument_names:
-            self.ShowErrorDialog('Could not find the default'+
-                                 ' Instrument, inst, in the'+
-                                 ' model script. Check the script.')
-            self.StatusMessage('ERROR No Instrument called inst in script')
-            return
-        
-        # Get the current script and split the lines into list items
-        script_lines=self.GetModel().get_script().splitlines(True)
-        # Try to find out if the script works with multiple SLDs
-        for line in script_lines:
-            if line.find('SLD[:]')!=-1:
-                self.sim_returns_sld=True
-                break
-            else:
-                self.sim_returns_sld=False
-        script=''
-        # Locate the Sample definition
-        line_index=0
-        # Start by finding the right section
-        found=0
-        for line in script_lines[line_index:]:
-            line_index+=1
-            if line.find('# BEGIN Sample')!=-1:
-                found+=1
-                break
-        
-        sample_text=''
-        for line in script_lines[line_index:]:
-            line_index+=1
-            sample_text+=line
-            if line.find('# END Sample')!=-1:
-                found+=1
-                break
-        
-        if found!=2:
-            self.ShowErrorDialog('Could not find the sample section'+ \
-                                 ' in the model script.\n Can not load the sample in the editor.')
-            self.StatusMessage('ERROR No sample section in script')
-            return
-        
-        re_layer=re.compile('([A-Za-z]\w*)\s*=\s*model\.Layer\s*\((.*)\)\n')
-        re_stack=re.compile(
-            '([A-Za-z]\w*)\s*=\s*model\.Stack\s*\(\s*Layers=\[(.*)\].*\n')
-        
-        layers=re_layer.findall(sample_text)
-        layer_names=[t[0] for t in layers]
-        stacks=re_stack.findall(sample_text)
-        
-        if len(layer_names)==0:
-            self.ShowErrorDialog('Could not find any Layers in the'+ \
-                                 ' model script. Check the script.')
-            self.StatusMessage('ERROR No Layers in script')
-            return
-        
-        # Now its time to set all the parameters so that we have the strings
-        # instead of the evaluated value - looks better
-        for lay in layers:
-            for par in lay[1].split(','):
-                vars=par.split('=')
-                exec('%s.%s = "%s"'%(lay[0], vars[0].strip(), vars[1].strip()),
-                     self.GetModel().script_module.__dict__)
-        
-        all_names=[layer_names.pop(0)]
-        for stack in stacks:
-            all_names.append(stack[0])
-            first_name=stack[1].split(',')[0].strip()
-            # check so stack is non-empty
-            if first_name!='':
-                # Find all items above the first name in the stack
-                while (layer_names[0]!=first_name):
-                    all_names.append(layer_names.pop(0))
-                all_names.append(layer_names.pop(0))
-        all_names+=layer_names
-        
-        # Load the simulation parameters
-        script=self.GetModel().script
-        sim_exp=[]
-        data_names=[]
-        data=self.GetModel().get_data()
-        # Lists holding the simulation function arguments
-        sim_funcs=[]
-        sim_args=[]
-        insts=[]
-        try:
-            for i in range(len(data)):
-                code=self.find_code_segment(script, 'Dataset %i'%i)
-                sim_exp.append([])
-                data_names.append(data[i].name)
-                # for line in code.splitlines()[:-1]:
-                #    sim_exp[-1].append(line.strip())
-                for line in code.splitlines():
-                    if (line.find('I.append')==-1 and line.find(
-                            'SLD.append')==-1
-                            and line.find('d = data')==-1):
-                        # The current line is a command for a parameter
-                        sim_exp[-1].append(line.strip())
-                    elif line.find('I.append')>-1:
-                        # The current line is a simulations
-                        (tmp, sim_func, args)=line.split('(', 2)
-                        sim_funcs.append(sim_func[10:])
-                        sim_args.append(
-                            [arg.strip() for arg in args.split(',')[:-1]])
-                        insts.append(args.split(',')[-1][:-2].strip())
-        except LookupError:
-            self.ShowErrorDialog('Could not locate all data sets in the'
-                                 ' script. There should be %i datasets'%len(
-                data))
-            self.StatusMessage('ERROR No Layers in script')
-            return
-        # Load the custom parameters:
-        code=self.find_code_segment(script, 'Parameters')
-        uservars_lines=code.splitlines()[1:]
-        
-        self.model=self.GetModel().script_module.model
-        sample=self.GetModel().script_module.sample
-        
-        self.sampleh=SampleHandler(sample, all_names)
-        self.sampleh.model=self.model
-        self.sample_widget.sampleh=self.sampleh
-        # self.sample_widget.model=self.model
-        instruments={}
-        for name in instrument_names:
-            instruments[name]=getattr(self.GetModel().script_module, name)
-        self.sample_widget.SetInstrument(instruments)
-        
-        self.simulation_widget.SetDataList(data_names)
-        self.simulation_widget.SetExpressionList(sim_exp)
-        self.simulation_widget.SetParameterList(uservars_lines)
-        
-        self.simulation_widget.SetSimArgs(sim_funcs, insts, sim_args)
-        
-        self.sample_widget.Update(update_script=False)
-        self.simulation_widget.UpdateListbox(update_script=False)
-        # The code have a tendency to screw up the model slightly when compiling it - the sample will be connected
-        # to the module therefore reset the compiled flag so that the model has to be recompiled before fitting.
-        self.GetModel().compiled=False
-        self.StatusMessage('New sample loaded to plugin!')
-        
-        # Setup the plot x-axis and simulation standard
-        try:
-            self.SetXAxis(self.sample_widget.instruments[instrument_names[0]])
-        except AttributeError:
-            pass
-
+        pass

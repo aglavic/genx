@@ -110,6 +110,7 @@ class Plugin(framework.Template):
         
         # self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
         self.sizer_vert.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=2)
+        self.toolbar.Realize()
 
 
     def material_add(self, event):
