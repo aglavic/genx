@@ -521,7 +521,7 @@ class SamplePanel(wx.Panel):
     
     def do_toolbar(self):
         dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
-        tb_bmp_size=int(dpi_scale_factor*24)
+        tb_bmp_size=int(dpi_scale_factor*20)
 
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Insert Layer',
