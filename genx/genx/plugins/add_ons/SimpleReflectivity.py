@@ -520,34 +520,36 @@ class SamplePanel(wx.Panel):
         self.update_callback=lambda event: ''
     
     def do_toolbar(self):
-        
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*24)
+
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Insert Layer',
-                             bitmap=images.insert_layer.GetBitmap(),
+                             bitmap=wx.Bitmap(images.insert_layer.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                              shortHelp='Insert a Layer')
         self.Bind(wx.EVT_TOOL, self.OnLayerAdd, id=newid)
         
         newid=wx.NewId()
-        self.toolbar.AddTool(newid, 'Delete', bitmap=images.delete.GetBitmap(),
+        self.toolbar.AddTool(newid, 'Delete', bitmap=wx.Bitmap(images.delete.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                              shortHelp='Delete item')
         self.Bind(wx.EVT_TOOL, self.OnLayerDelete, id=newid)
         
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Move up',
-                             bitmap=images.move_up.GetBitmap(),
+                             bitmap=wx.Bitmap(images.move_up.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                              shortHelp='Move item up')
         self.Bind(wx.EVT_TOOL, self.MoveUp, id=newid)
         
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Move down',
-                             bitmap=images.move_down.GetBitmap(),
+                             bitmap=wx.Bitmap(images.move_down.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                              shortHelp='Move item down')
         self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
         self.toolbar.AddSeparator()
 
         newid=wx.NewId()
         button=wx.Button(self.toolbar, newid, label='Instrument Settings')
-        button.SetBitmap(images.instrument.GetBitmap(), dir=wx.LEFT)
+        button.SetBitmap(wx.Bitmap(images.instrument.GetImage().Scale(tb_bmp_size,tb_bmp_size)), dir=wx.LEFT)
         self.toolbar.AddControl(button)
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, id=newid)
         self.toolbar.AddSeparator()

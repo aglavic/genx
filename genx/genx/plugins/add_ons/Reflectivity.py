@@ -447,43 +447,45 @@ class SamplePanel(wx.Panel):
         self.update_callback = lambda event:''
 
     def do_toolbar(self):
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*24)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, 'Insert Layer', bitmap=images.insert_layer.GetBitmap(),
+        self.toolbar.AddTool(newid, 'Insert Layer', bitmap=wx.Bitmap(images.insert_layer.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Insert a Layer')
         self.Bind(wx.EVT_TOOL, self.InsertLay, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, 'Insert Stack', bitmap=images.insert_stack.GetBitmap(),
+        self.toolbar.AddTool(newid, 'Insert Stack', bitmap=wx.Bitmap(images.insert_stack.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Insert a Stack')
         self.Bind(wx.EVT_TOOL, self.InsertStack, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, 'Delete', bitmap=images.delete.GetBitmap(), shortHelp='Delete item')
+        self.toolbar.AddTool(newid, 'Delete', bitmap=wx.Bitmap(images.delete.GetImage().Scale(tb_bmp_size,tb_bmp_size)), shortHelp='Delete item')
         self.Bind(wx.EVT_TOOL, self.DeleteSample, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, 'Rename', bitmap=images.change_name.GetBitmap(),
+        self.toolbar.AddTool(newid, 'Rename', bitmap=wx.Bitmap(images.change_name.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Rename')
         self.Bind(wx.EVT_TOOL, self.ChangeName, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, 'Move up', bitmap=images.move_up.GetBitmap(),
+        self.toolbar.AddTool(newid, 'Move up', bitmap=wx.Bitmap(images.move_up.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Move item up')
         self.Bind(wx.EVT_TOOL, self.MoveUp, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, 'Move down', bitmap=images.move_down.GetBitmap(),
+        self.toolbar.AddTool(newid, 'Move down', bitmap=wx.Bitmap(images.move_down.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Move item down')
         self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, 'Edit Sample', bitmap=images.sample.GetBitmap(),
+        self.toolbar.AddTool(newid, 'Edit Sample', bitmap=wx.Bitmap(images.sample.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Edit Sample parameters')
         self.Bind(wx.EVT_TOOL, self.EditSampleParameters, id=newid)
 
         newid = wx.NewId()
-        self.toolbar.AddTool(newid, 'Edit Instrument', bitmap=images.instrument.GetBitmap(),
+        self.toolbar.AddTool(newid, 'Edit Instrument', bitmap=wx.Bitmap(images.instrument.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
                                   shortHelp='Edit Instruments')
         self.Bind(wx.EVT_TOOL, self.EditInstrument, id=newid)
 
@@ -1015,10 +1017,13 @@ class DataParameterPanel(wx.Panel):
         self.SetSizer(boxver)
 
     def do_toolbar(self):
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*24)
 
         button_names = ['Insert', 'Delete', 'User Variables']
-        button_images = [images.getaddBitmap(), images.getdeleteBitmap(),
-            images.getcustom_parameterBitmap()]
+        button_images = [wx.Bitmap(images.add.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+                         wx.Bitmap(images.delete.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+            wx.Bitmap(images.custom_parameters.GetImage().Scale(tb_bmp_size,tb_bmp_size))]
         callbacks = [self.Insert, self.Delete, self.EditPars]
         tooltips = ['Insert a command', 'Delete command', 'Edit user variables']
         
