@@ -1417,7 +1417,7 @@ class SimulationExpressionDialog(wx.Dialog):
         
         self.model = model
         self.instruments = instruments
-        self.available_sim_funcs = self.model.eval_in_model('model.SimulationFunctions.keys()')
+        self.available_sim_funcs = list(self.model.eval_in_model('model.SimulationFunctions.keys()'))
         self.data_index = data_index
          
         # Do the layout of the dialog
@@ -2241,7 +2241,7 @@ class Plugin(framework.Template):
             
         # Check so everything have preceeded well
         if stop_index < 0 and start_index < 0:
-            raise LookupError('Code segement: %s could not be found'%descriptor)
+            raise LookupError('Code segement: %s could not be found'%number)
         
         script = ''.join(script_lines[:start_index-1])
         script += ''.join(script_lines[stop_index+2:])

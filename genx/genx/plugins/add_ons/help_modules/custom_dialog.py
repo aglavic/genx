@@ -727,10 +727,14 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
             size = (24, 24)
         else:
             size = (-1, -1)
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
+
         space = (5, -1)
         button_names = ['Insert', 'Delete', 'Rename']
-        button_images = [images.getaddBitmap(), images.getdeleteBitmap(),
-            images.getchange_nameBitmap()]
+        button_images = [wx.Bitmap(images.insert_layer.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+                         wx.Bitmap(images.delete.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+                         wx.Bitmap(images.change_name.GetImage().Scale(tb_bmp_size,tb_bmp_size))]
         callbacks = [self.eh_insert, self.eh_delete, self.eh_rename]
         tooltips = ['Insert', 'Delete', 'Rename']
         
