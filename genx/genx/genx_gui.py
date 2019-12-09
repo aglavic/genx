@@ -242,7 +242,8 @@ class MainFrame(wx.Frame):
         self.main_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
         self.hor_splitter = wx.SplitterWindow(self.main_panel, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
         self.plot_panel = wx.Panel(self.hor_splitter, wx.ID_ANY)
-        self.plot_notebook = wx.Notebook(self.plot_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
+        self.plot_splitter = wx.SplitterWindow(self.plot_panel, wx.ID_ANY)
+        self.plot_notebook = wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.plot_notebook_data = wx.Panel(self.plot_notebook, wx.ID_ANY)
         self.plot_data = plotpanel.DataPlotPanel(self.plot_notebook_data, config = self.config, config_name = 'data plot')
         self.plot_notebook_fom = wx.Panel(self.plot_notebook, wx.ID_ANY)
@@ -251,6 +252,8 @@ class MainFrame(wx.Frame):
         self.plot_pars = plotpanel.ParsPlotPanel(self.plot_notebook_Pars, config = self.config, config_name = 'pars plot')
         self.plot_notebook_foms = wx.Panel(self.plot_notebook, wx.ID_ANY)
         self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook_foms, config = self.config, config_name = 'fom scan plot')
+        self.wide_plugin_notebook = wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
+        self.panel_1 = wx.Panel(self.wide_plugin_notebook, wx.ID_ANY)
         self.input_panel = wx.Panel(self.hor_splitter, wx.ID_ANY)
         self.input_notebook = wx.Notebook(self.input_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.input_notebook_grid = wx.Panel(self.input_notebook, wx.ID_ANY)
@@ -429,6 +432,7 @@ class MainFrame(wx.Frame):
         self.data_grid.SetColLabelValue(3, "x")
         self.data_grid.SetColLabelValue(4, "y")
         self.data_grid.SetColLabelValue(5, "Error")
+        self.plot_splitter.SetMinimumPaneSize(20)
         self.hor_splitter.SetMinimumPaneSize(20)
         self.ver_splitter.SetMinimumPaneSize(20)
         # end wxGlade
@@ -479,7 +483,9 @@ class MainFrame(wx.Frame):
         self.plot_notebook.AddPage(self.plot_notebook_fom, "FOM")
         self.plot_notebook.AddPage(self.plot_notebook_Pars, "Pars")
         self.plot_notebook.AddPage(self.plot_notebook_foms, "FOM scans")
-        plot_sizer.Add(self.plot_notebook, 3, wx.EXPAND, 3)
+        self.wide_plugin_notebook.AddPage(self.panel_1, "Empty Tab")
+        self.plot_splitter.SplitVertically(self.plot_notebook, self.wide_plugin_notebook)
+        plot_sizer.Add(self.plot_splitter, 1, wx.EXPAND, 0)
         self.plot_panel.SetSizer(plot_sizer)
         sizer_7.Add(self.paramter_grid, 1, wx.EXPAND, 0)
         self.input_notebook_grid.SetSizer(sizer_7)
@@ -503,13 +509,19 @@ class MainFrame(wx.Frame):
         if self.config.get_boolean('startup', 'widescreen', False):
             # test adding new notebooks for plugins in wide screen layout
             self.sep_plot_notebook=self.plot_notebook
-            self.plot_notebook = wx.Notebook(self.plot_panel, wx.ID_ANY,
-                                             style=wx.NB_BOTTOM|wx.BORDER_SUNKEN)
-            plot_sizer.Add(self.plot_notebook, 1, wx.EXPAND|wx.ALL, 4)
+            self.plot_notebook=self.wide_plugin_notebook
+            self.plot_notebook.RemovePage(0)
+            self.plot_splitter.SetSashGravity(0.5)
+            self.plot_splitter.SetSashPosition(600)
+            #self.plot_notebook = wx.Notebook(self.plot_panel, wx.ID_ANY,
+            #                                 style=wx.NB_BOTTOM|wx.BORDER_SUNKEN)
+            #plot_sizer.Add(self.plot_notebook, 1, wx.EXPAND|wx.ALL, 4)
             self.sep_data_notebook=self.data_notebook
             self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY,
                                              style=wx.NB_TOP|wx.BORDER_SUNKEN)
             data_sizer.Add(self.data_notebook, 1, wx.EXPAND|wx.ALL, 4)
+        else:
+            self.plot_splitter.Unsplit()
 
     def Show(self):
         ''' Overiding the default method since any resizing has to come AFTER
