@@ -231,7 +231,7 @@ class MainFrame(wx.Frame):
         # Tool Bar end
         self.ver_splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
         self.data_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
-        self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY, style=wx.NB_TOP)
+        self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY)
         self.data_notebook_data = wx.Panel(self.data_notebook, wx.ID_ANY)
         self.data_list = datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.config, status_text)
         self.data_notebook_pane_2 = wx.Panel(self.data_notebook, wx.ID_ANY)
