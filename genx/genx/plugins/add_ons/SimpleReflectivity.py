@@ -43,10 +43,15 @@ class SampleGrid(gridlib.Grid):
         self._activated_ctrl=False
         
     def onCellSelected(self, evt):
-        if evt.Col in [1,3,5,7,9]:
+        if evt.Col in [1]:
             self._activated_ctrl=True
             wx.CallAfter(self.EnableCellEditControl)
-        evt.Skip()
+        if evt.Col in [3,5,7,9]:
+            self.parent.sample_table.SetValue(evt.Row, evt.Col,
+                      not self.parent.sample_table.GetValue(evt.Row, evt.Col))
+            self.ForceRefresh()
+        else:
+            evt.Skip()
 
     def onEditorCreated(self, evt):
         if evt.Col in [3, 5, 7, 9] and self._activated_ctrl:
@@ -70,9 +75,6 @@ class SampleGrid(gridlib.Grid):
         evt.Skip()
 
     def onEditorShown(self, evt):
-        if evt.Col in [3, 5, 7, 9] and self.cb is not None and self._activated_ctrl:
-            wx.CallLater(100, self.toggleCheckbox)
-            self._activated_ctrl=False
         if evt.Col==2 and self.GetTable().GetValue(evt.Row, 1)=='Formula':
             # Show tooltip on formula entry to give feedback on input
             self.info_text.Show()
@@ -80,11 +82,10 @@ class SampleGrid(gridlib.Grid):
             self.parent.Layout()
         evt.Skip()
 
-    def toggleCheckbox(self):
-        self.cb.SetValue(not self.cb.IsChecked())
-        wx.CallAfter(self.DisableCellEditControl)
-    
     def onFormula(self, evt):
+        if not self.info_text.IsShown():
+            evt.Skip()
+            return
         txt=evt.GetString()
         try:
             frm=Formula.from_str(txt)
