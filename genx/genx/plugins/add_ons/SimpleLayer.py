@@ -31,6 +31,7 @@ from genx.gui_logging import iprint
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 
 mg=None
+pymysql=None
 
 class Plugin(framework.Template):
     _refplugin=None
@@ -357,7 +358,7 @@ class MaterialDialog(wx.Dialog):
         cif_button.Bind(wx.EVT_BUTTON, self.OnLoadCif)
         table.Add(cif_button, (8, 1), span=(2, 2), flag=wx.ALIGN_CENTER)
 
-        global mg
+        global mg, pymysql
         if mg is None:
           try:
             global MPRester
@@ -366,12 +367,25 @@ class MaterialDialog(wx.Dialog):
           except ImportError:
             pass
         if mg is None:
-          mg_txt=wx.StaticText(self, label="Install PyMatGen for Online Query")
+          mg_txt=wx.StaticText(self, label="Install PyMatGen for Materials Project Query")
           table.Add(mg_txt, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
         else:
-          mg_button=wx.Button(self, label="Query Online (PyMatGen)")
+          mg_button=wx.Button(self, label="Query The Materials Project")
           mg_button.Bind(wx.EVT_BUTTON, self.OnQuery)
           table.Add(mg_button, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+        
+        if pymysql is None:
+            try:
+                import pymysql
+            except ImportError:
+                pass
+        if pymysql is None:
+            cod_txt=wx.StaticText(self, label="Install pymysql for COD Query")
+            table.Add(cod_txt, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+        else:
+            cod_button=wx.Button(self, label="Query Crystallography Open DB")
+            cod_button.Bind(wx.EVT_BUTTON, self.OnCODQuery)
+            table.Add(cod_button, (11, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
 
         for entry in [self.a_entry, self.b_entry, self.c_entry,
                       self.alpha_entry, self.beta_entry, self.gamma_entry,
@@ -379,17 +393,17 @@ class MaterialDialog(wx.Dialog):
             entry.Bind(wx.EVT_TEXT, self.OnUnitCellChanged)
 
 
-        table.Add(wx.StaticText(self, label="2. Physical Parameter:"), (11, 0),
+        table.Add(wx.StaticText(self, label="2. Physical Parameter:"), (12, 0),
                   span=(1, 3), flag=wx.ALIGN_CENTER)
         self.mass_density=wx.TextCtrl(self, size=(70, 25))
         self.mass_density.Bind(wx.EVT_TEXT, self.OnMassDensityChange)
-        table.Add(wx.StaticText(self, label="Mass Density [g/cm³]:"), (12, 0))
-        table.Add(self.mass_density, (12, 1), span=(1, 1))
+        table.Add(wx.StaticText(self, label="Mass Density [g/cm³]:"), (13, 0))
+        table.Add(self.mass_density, (13, 1), span=(1, 1))
 
-        table.Add(wx.StaticText(self, label="Result from 1. or 2.:"), (13, 0), span=(1, 3))
+        table.Add(wx.StaticText(self, label="Result from 1. or 2.:"), (14, 0), span=(1, 3))
         self.result_density=wx.TextCtrl(self, size=(150, 25))
-        table.Add(wx.StaticText(self, label="Density [FU/Å³]:"), (14, 0))
-        table.Add(self.result_density, (14, 1), span=(1, 2))
+        table.Add(wx.StaticText(self, label="Density [FU/Å³]:"), (15, 0))
+        table.Add(self.result_density, (15, 1), span=(1, 2))
 
         buttons=self.CreateButtonSizer(wx.OK|wx.CANCEL)
 
@@ -489,6 +503,57 @@ class MaterialDialog(wx.Dialog):
         else:
             res=res[0]
         return self.analyze_cif(res['cif'])
+
+    def OnCODQuery(self, event):
+        db=pymysql.connect('sql.crystallography.net', 'cod_reader', None, 'cod')
+        c=db.cursor()
+        formula=[]
+        for element, number in self.extracted_elements:
+            if element.startswith('^'):
+                element=element.split('}')[-1]
+            if number!=1:
+                formula.append('%s%g'%(element, number))
+            else:
+                formula.append('%s'%element)
+        formula=' '.join(sorted(formula))
+        c.execute('select a,b,c,alpha,beta,gamma,'
+                  'Z,vol,sg,chemname,mineral,commonname,'
+                  'authors,title,journal,year'
+                  ' from data where formula like "- %s -"'
+                  ' and status is NULL order by file'%formula)
+        res=c.fetchall()
+        if len(res)>0:
+            # more then one structure available, ask for user input to select appropriate
+            items=[]
+            for i, ri in enumerate(res):
+                a,b,c=ri[:3]
+                Z=ri[6] or 1.
+                V=ri[7] or a*b*c
+                sgs=ri[8]
+                dens=self.extracted_elements.mFU()*Z/V/MASS_DENSITY_CONVERSION
+                name=ri[10] or ri[11] or ri[9] or ""
+                text='%s\n%s\n%s (%s)'%tuple(ri[12:16])
+                items.append(
+                    '%i: %s (%s) |  Density: %.3g g/cm³ | UC Volume: %s\n%s'%
+                    (i+1, name, sgs, dens, V, text))
+            dia=wx.SingleChoiceDialog(self,
+                                      'Several entries have been found, please select appropriate:',
+                                      'Select correct database entry',
+                                      items)
+            if not dia.ShowModal()==wx.ID_OK:
+                return None
+            res=res[dia.GetSelection()]
+        else:
+            return None
+        for value, entry in zip(res,
+                                [self.a_entry,
+                                 self.b_entry,
+                                 self.c_entry,
+                                 self.alpha_entry,
+                                 self.beta_entry,
+                                 self.gamma_entry,
+                                 self.FUs_entry]):
+            entry.SetValue(str(value or ""))
 
     def GetResult(self):
         return (self.extracted_elements, self.result_density.GetValue())
