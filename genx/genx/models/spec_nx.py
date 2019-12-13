@@ -306,8 +306,10 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
     # preamble to get it working with my class interface
     restype = instrument.getRestype()
     Q, TwoThetaQz, weight = resolution_init(TwoThetaQz, instrument)
-    if any(Q < q_limit):
-        raise ValueError('The q vector has to be above %.1e'%q_limit)
+    # often an issue with resolution etc. so just replace Q values < q_limit
+    #if any(Q < q_limit):
+    #    raise ValueError('The q vector has to be above %.1e'%q_limit)
+    Q=maximum(Q, q_limit)
 
     type = instrument.getProbe()
     pol = instrument.getPol()
