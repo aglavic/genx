@@ -410,6 +410,7 @@ class SampleTable(gridlib.GridTableBase):
         return True
     
     def getLayerCode(self, layer):
+        out_param={}
         output="model.Layer("
         if layer[1]=='Formula':
             formula=layer[2]
@@ -419,11 +420,16 @@ class SampleTable(gridlib.GridTableBase):
                 output+="f=%s, "%(10*nSLD-10j*mSLD)
                 output+="b=%g, "%nSLD
                 output+="dens=0.1, magn=%g, "%mSLD
+                out_param['dens']=0.1
+                out_param['magn']=mSLD
             else:
+                dens=(eval(layer[4])*MASS_DENSITY_CONVERSION/formula.mFU())
                 output+="f=%s, "%formula.f()
                 output+="b=%s, "%formula.b()
-                output+="dens=%g, "%(eval(layer[4])*MASS_DENSITY_CONVERSION/formula.mFU())
+                output+="dens=%g, "%dens
                 output+="magn='%s', "%layer[6]
+                out_param['dens']=dens
+                out_param['magn']=float(eval(layer[6]))
         else:
             SLD1=float(eval(layer[2]))
             SLD2=float(eval(layer[4]))
@@ -431,10 +437,14 @@ class SampleTable(gridlib.GridTableBase):
             output+="f=%g, "%(frac*SLD1+(1-frac)*SLD2)
             output+="b=%g, "%(frac*SLD1+(1-frac)*SLD2)
             output+="dens=0.1, magn=0.0, "
+            out_param['dens']=0.1
+            out_param['magn']=0.0
         output+="d='%s', "%layer[8]
         output+="sigma='%s', "%layer[10]
         output+="xs_ai=0.0, magn_ang=0.0)"
-        return output
+        out_param['d']=float(eval(layer[8]))
+        out_param['sigma']=float(eval(layer[10]))
+        return output, out_param
 
     invalid_identifiers=['sample', 'Sim', 'model',
                          'fw', 'fp', 'bc', 'bw',
@@ -443,13 +453,42 @@ class SampleTable(gridlib.GridTableBase):
         '''
         Generate the python code for the current sample structure.
         '''
-        script="# BEGIN Sample DO NOT CHANGE\n"
-        script+="Amb = %s\n"%self.getLayerCode(self.ambient)
-        for layer in self.layers:
-            script+="%s = %s\n"%(layer[0], self.getLayerCode(layer))
-
-        script+="\nSub = %s\n"%self.getLayerCode(self.substrate)
+        grid_parameters=self.parent.plugin.GetModel().get_parameters()
         
+        script="# BEGIN Sample DO NOT CHANGE\n"
+        li,oi=self.getLayerCode(self.ambient)
+        script+="Amb = %s\n"%li
+        for pi, fi in [(3, 'dens'), (5, 'magn')]:
+            value=oi[fi]
+            minval=value*0.5
+            maxval=value*2.0
+            func_name='Amb.'+_set_func_prefix+fi.capitalize()
+            grid_parameters.set_fit_state_by_name(func_name, value,
+                                                  int(self.ambient[pi]), minval, maxval)
+
+        for layer in self.layers:
+            li,oi=self.getLayerCode(layer)
+            script+="%s = %s\n"%(layer[0], li)
+            for pi,fi in [(3, 'dens'),(5, 'magn'),(7, 'd'), (9, 'sigma')]:
+                value=oi[fi]
+                minval=value*0.5
+                maxval=value*2.0
+                func_name=layer[0]+'.'+_set_func_prefix+fi.capitalize()
+                grid_parameters.set_fit_state_by_name(func_name, value,
+                                                      int(layer[pi]), minval, maxval)
+
+        li,oi=self.getLayerCode(self.substrate)
+        script+="\nSub = %s\n"%li
+        for pi, fi in [(3, 'dens'), (5, 'magn'), (9, 'sigma')]:
+            value=oi[fi]
+            minval=value*0.5
+            maxval=value*2.0
+            func_name='Sub.'+_set_func_prefix+fi.capitalize()
+            grid_parameters.set_fit_state_by_name(func_name, value,
+                                                  int(self.substrate[pi]), minval, maxval)
+
+        self.parent.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+
         top=[li[0] for li in self.layers if li[11]==TOP_LAYER]
         ml=[li[0] for li in self.layers if li[11]==ML_LAYER]
         bot=[li[0] for li in self.layers if li[11]==BOT_LAYER]
@@ -597,7 +636,7 @@ class SamplePanel(wx.Panel):
         return insts, output
 
     def UpdateModel(self, evt=None):
-        probe=self.inst_params['probe']
+        coords=self.inst_params['coords']
         if evt is None:
             sample_script=self.last_sample_script
         else:
@@ -623,24 +662,39 @@ class SamplePanel(wx.Panel):
                 "    I = []\n" \
                 "    SLD[:] = []\n"
         datasets=self.model.data
+        from genx import data
+        if coords=='q':
+            self.plugin.parent.plot_data.update_labels('q [Å$^{-1}$]')
+            data.DataSet.simulation_params[0]=0.001
+            data.DataSet.simulation_params[1]=0.601
+        else:
+            self.plugin.parent.plot_data.update_labels('2θ [°]')
+            data.DataSet.simulation_params[0]=0.01
+            data.DataSet.simulation_params[1]=6.01
         for i, di in enumerate(datasets):
             di.run_command()
-            if probe=='x-ray':
-                self.plugin.parent.plot_data.update_labels('2θ [°]')
-                from genx import data
-                data.DataSet.simulation_params[0]=0.01
-                data.DataSet.simulation_params[1]=6.01
-            else:
-                self.plugin.parent.plot_data.update_labels('q [Å$^{-1}$]')
-                from genx import data
-                data.DataSet.simulation_params[0]=0.001
-                data.DataSet.simulation_params[1]=0.601
             script+="    # BEGIN Dataset %i DO NOT CHANGE\n" \
                     "    d = data[%i]\n" \
                     "    I.append(sample.SimSpecular(d.x, %s))\n" \
                     "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
                     "    # END Dataset %i\n"%(i, i, insts[i%len(insts)], i)
-
+            if di.name.startswith('Data') and len(insts)>1:
+                prefix=['Spin Up', 'Spin Down'][i%2]
+                di.name=prefix+' %i'%(i//2+1)
+                if i%2==0:
+                    di.data_color=(0.7,0.0,0.0)
+                    di.sim_color=(1.0,0.0,0.0)
+                else:
+                    di.data_color=(0.0, 0.0, 0.7)
+                    di.sim_color=(0.0, 0.0, 1.0)
+            elif di.name.startswith('Spin') and len(insts)==1:
+                di.name='Data %i'%i
+                di.data_color=(0.0, 0.7, 0.0)
+                di.sim_color=(0.0, 1.0, 0.0)
+        datasets.update_data()
+        # TODO: this is a very ugly unstable solution, try to find alternative.
+        self.plugin.parent.data_list.list_ctrl._UpdateImageList()
+        
         script+="    return I"
         # print(script)
         self.plugin.SetModelScript(script)
@@ -757,7 +811,6 @@ class SamplePanel(wx.Panel):
         :param evt:
         :return: Nothing
         """
-        eval_func=self.plugin.GetModel().eval_in_model
         validators={
             'probe': ['x-ray', 'neutron', 'neutron pol'],
             'coords': ['q', '2θ'], 'I0': FloatObjectValidator(),
@@ -808,7 +861,7 @@ class SamplePanel(wx.Panel):
                     self.inst_params[key]=value
                 else:
                     self.inst_params[key]=value
-                
+            self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
             self.UpdateModel()
         else:
             pass
@@ -1277,7 +1330,7 @@ class Plugin(framework.Template):
         self.sld_plot.Plot()
     
     def OnFittingUpdate(self, event):
-        '''OnSimulate(self, event) --> None
+        '''OnFittingUpdate(self, event) --> None
 
         Updates stuff during fitting
         '''
