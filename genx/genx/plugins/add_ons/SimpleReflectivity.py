@@ -47,22 +47,20 @@ class SampleGrid(gridlib.Grid):
             self._activated_ctrl=True
             wx.CallAfter(self.EnableCellEditControl)
         if evt.Col in [3,5,7,9]:
-            self.parent.sample_table.SetValue(evt.Row, evt.Col,
+            if not self.parent.sample_table.GetAttr(evt.Row, evt.Col, None).IsReadOnly():
+                self.parent.sample_table.SetValue(evt.Row, evt.Col,
                       not self.parent.sample_table.GetValue(evt.Row, evt.Col))
-            self.ForceRefresh()
+                self.ForceRefresh()
         else:
             evt.Skip()
 
     def onEditorCreated(self, evt):
+        # Show tooltip on formula entry to give feedback on input
+        inp=evt.Control
+        inp.Bind(wx.EVT_TEXT, self.onFormula)
         if evt.Col in [3, 5, 7, 9] and self._activated_ctrl:
-            self.cb=evt.Control
-            self.cb.WindowStyle|=wx.WANTS_CHARS
-            wx.CallLater(100, self.toggleCheckbox)
             self._activated_ctrl=False
         if evt.Col==2 and self.GetTable().GetValue(evt.Row, 1)=='Formula':
-            # Show tooltip on formula entry to give feedback on input
-            inp=evt.Control
-            inp.Bind(wx.EVT_TEXT, self.onFormula)
             self.info_text.Show()
             self.info_text.SetLabel('Enter Chemical Formula:')
             self.parent.Layout()
@@ -111,7 +109,7 @@ class SampleTable(gridlib.GridTableBase):
         ('', gridlib.GRID_VALUE_BOOL, False),
         ('Density [g/cm³]\nSLD-2 [10⁻⁶Å⁻²]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, False),
-        ('Moment [µB/FU]\nFraction [%]', gridlib.GRID_VALUE_STRING),
+        ('Moment [µB/FU]\nFraction [% SLD-1]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, True),
         ('d [Å]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, False),
@@ -122,8 +120,8 @@ class SampleTable(gridlib.GridTableBase):
         'Formula': ['Layer', 'Formula', Formula([]),
                     False, '2.0', False, '0.0',
                     True, '10.0', False, '5.0', ML_LAYER],
-        'Mixure':  ['MixLayer', 'Mixure', '6.0e-6',
-                    False, '2.0e-6', False, '100',
+        'Mixure':  ['MixLayer', 'Mixure', '6.0',
+                    False, '2.0', False, '100',
                     True, '10.0', False, '5.0', ML_LAYER],
         }
     
@@ -255,7 +253,7 @@ class SampleTable(gridlib.GridTableBase):
         elif col==1:
             # change of layer type resets material data columns
             to_edit[1]=value
-            for i in [2,4,6]:
+            for i in [2,3,4,5,6]:
                 to_edit[i]=self.defaults[value][i]
         elif col in [3, 5, 7, 9]:
             # boolean columns are always correct
@@ -288,6 +286,12 @@ class SampleTable(gridlib.GridTableBase):
                     attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_TOP)
                 elif col in [3, 5, 7, 9]:
                     attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_TOP)
+                    # If layer is defined as fraction, only allow fitting of either
+                    # density 2 or fraction.
+                    if self.ambient[1]=='Mixure' and col==3 and self.ambient[5]:
+                        attr.SetReadOnly()
+                    elif self.ambient[1]=='Mixure' and col==5 and self.ambient[3]:
+                        attr.SetReadOnly()
                 else:
                     attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
                 attr.SetBackgroundColour('#dddddd')
@@ -298,6 +302,12 @@ class SampleTable(gridlib.GridTableBase):
                     attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_BOTTOM)
                 elif col in [3, 5, 7, 9]:
                     attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_BOTTOM)
+                    # If layer is defined as fraction, only allow fitting of either
+                    # density 2 or fraction.
+                    if self.substrate[1]=='Mixure' and col==3 and self.substrate[5]:
+                        attr.SetReadOnly()
+                    elif self.substrate[1]=='Mixure' and col==5 and self.substrate[3]:
+                        attr.SetReadOnly()
                 else:
                     attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
                 attr.SetBackgroundColour('#aaaaff')
@@ -310,6 +320,12 @@ class SampleTable(gridlib.GridTableBase):
                 attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
             if col in [3,5,7,9]:
                 attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+                # If layer is defined as fraction, only allow fitting of either
+                # density 2 or fraction.
+                if self.layers[row-1][1]=='Mixure' and col==3 and self.layers[row-1][5]:
+                    attr.SetReadOnly()
+                elif self.layers[row-1][1]=='Mixure' and col==5 and self.layers[row-1][3]:
+                    attr.SetReadOnly()
             if self.layers[row-1][11]==TOP_LAYER:
                 attr.SetBackgroundColour('#ccffcc')
             elif self.layers[row-1][11]==BOT_LAYER:
@@ -468,10 +484,15 @@ class SampleTable(gridlib.GridTableBase):
         li,oi=self.getLayerCode(self.ambient)
         script+="Amb = %s\n"%li
         for pi, fi in [(3, 'dens'), (5, 'magn')]:
+            if pi==5 and self.ambient[1]=='Mixure':
+                if not self.ambient[5]:
+                    continue
+                fi='dens'
             value=oi[fi]
             minval=value*0.5
             maxval=value*2.0
             func_name='Amb.'+_set_func_prefix+fi.capitalize()
+            grid_parameters.set_fit_state_by_name(func_name, 0., 0, 0., 0.)
             grid_parameters.set_fit_state_by_name(func_name, value,
                                                   int(self.ambient[pi]), minval, maxval)
 
@@ -479,20 +500,30 @@ class SampleTable(gridlib.GridTableBase):
             li,oi=self.getLayerCode(layer)
             script+="%s = %s\n"%(layer[0], li)
             for pi,fi in [(3, 'dens'),(5, 'magn'),(7, 'd'), (9, 'sigma')]:
+                if pi==5 and layer[1]=='Mixure':
+                    if not layer[5]:
+                        continue
+                    fi='dens'
                 value=oi[fi]
                 minval=value*0.5
                 maxval=value*2.0
                 func_name=layer[0]+'.'+_set_func_prefix+fi.capitalize()
+                grid_parameters.set_fit_state_by_name(func_name, 0., 0, 0., 0.)
                 grid_parameters.set_fit_state_by_name(func_name, value,
                                                       int(layer[pi]), minval, maxval)
 
         li,oi=self.getLayerCode(self.substrate)
         script+="\nSub = %s\n"%li
         for pi, fi in [(3, 'dens'), (5, 'magn'), (9, 'sigma')]:
+            if pi==5 and self.substrate[1]=='Mixure':
+                if not self.substrate[5]:
+                    continue
+                fi='dens'
             value=oi[fi]
             minval=value*0.5
             maxval=value*2.0
             func_name='Sub.'+_set_func_prefix+fi.capitalize()
+            grid_parameters.set_fit_state_by_name(func_name, 0., 0, 0., 0.)
             grid_parameters.set_fit_state_by_name(func_name, value,
                                                   int(self.substrate[pi]), minval, maxval)
 
@@ -522,6 +553,57 @@ class SampleTable(gridlib.GridTableBase):
             func_name=name+'.'+_set_func_prefix+fi.capitalize()
             grid_parameters.set_fit_state_by_name(func_name, 0., 0, 0., 0.)
         self.parent.UpdateGrid(grid_parameters)
+    
+    def get_name_list(self):
+        out=['Amb']
+        for li in self.layers:
+            out.append(li[0])
+        out.append('Sub')
+        return out
+    
+    def update_layer_parameters(self, layer, dens=None, magn=None,
+                                d=None, sigma=None):
+        # update the table during/after a fit, layer can be index or name
+        if type(layer) is not int:
+            layer=self.get_name_list().index(layer)
+        if layer==0:
+            data=self.ambient
+        elif layer==(len(self.layers)+1):
+            data=self.substrate
+        else:
+            data=self.layers[layer-1]
+        
+        if data[1]=='Formula':
+            formula=data[2]
+            if formula=='SLD':
+                if dens is not None and data[3]:
+                    data[4]=str(eval(data[4])*dens/0.1)
+                if magn is not None and data[5]:
+                    data[6]=str(eval(data[6])*dens/0.1)
+            else:
+                if dens is not None and data[3]:
+                    new_dens=float(dens)*formula.mFU()/MASS_DENSITY_CONVERSION
+                    data[4]=str(new_dens)
+                if magn is not None and data[5]:
+                    data[6]=str(float(magn))
+        elif dens is not None:
+            # FIXIT: now yet working as calculation compares with current value
+            SLD1=float(eval(data[2]))
+            SLD2=float(eval(data[4]))
+            frac=float(eval(data[6]))/100.
+            new_dens=(frac*SLD1+(1-frac)*SLD2)*dens/0.1
+            if data[3]:
+                # SLD-2 was fitted
+                sld2_fraction=new_dens-frac*SLD1
+                data[4]=str(sld2_fraction/(1.-frac))
+            if data[5]:
+                # precentage was fitted
+                new_frac=(dens-SLD2)/(SLD1-SLD2)
+                data[6]=str(new_frac*100.)
+        if d is not None and data[7]:
+            data[8]=str(float(d))
+        if sigma is not None and data[9]:
+            data[10]=str(float(sigma))
 
 
 class SamplePanel(wx.Panel):
@@ -803,8 +885,28 @@ class SamplePanel(wx.Panel):
         new_grid=self.plugin.GetModel().get_parameters()
         new_data=[list(di) for di in new_grid.data]
         if self._last_grid_data!=new_data:
-            pass
-    
+            layers=self.sample_table.get_name_list()
+            for (pi, val, _, _, _, _) in new_data:
+                try:
+                    name, param=pi.split('.',1)
+                except ValueError:
+                    continue
+                    
+                if name in layers:
+                    if param==_set_func_prefix+'Dens':
+                        self.sample_table.update_layer_parameters(name,dens=val)
+                    if param==_set_func_prefix+'Magn':
+                        self.sample_table.update_layer_parameters(name,magn=val)
+                    if param==_set_func_prefix+'D':
+                        self.sample_table.update_layer_parameters(name,d=val)
+                    if param==_set_func_prefix+'Sigma':
+                        self.sample_table.update_layer_parameters(name,sigma=val)
+            msg=gridlib.GridTableMessage(self.sample_table,
+                                         gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+            self.sample_table.GetView().ProcessTableMessage(msg)
+            self.sample_table.GetView().ForceRefresh()
+            self._last_grid_data=new_data
+
     def UpdateGrid(self, grid_parameters):
         self._last_grid_data=[list(di) for di in grid_parameters.data]
         self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
