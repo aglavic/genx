@@ -381,8 +381,15 @@ class SampleTable(gridlib.GridTableBase):
         # make sure we don't delete the last ML layer
         if self.layers[row-1][11]==ML_LAYER and len([li for li in self.layers if li[11]==ML_LAYER])==1:
             return False
-        self.layers.pop(row-1)
-    
+        del_layer=self.layers.pop(row-1)
+        
+        # remove grid fit parameters from model, if any
+        grid_parameters=self.parent.plugin.GetModel().get_parameters()
+        for fi in ['dens', 'magn', 'd', 'sigma']:
+            func_name=del_layer[0]+'.'+_set_func_prefix+fi.capitalize()
+            grid_parameters.set_fit_state_by_name(func_name, 0., 0, 0., 0.)
+        self.parent.UpdateGrid(grid_parameters)
+
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1)
         self.GetView().ProcessTableMessage(msg)
@@ -487,7 +494,7 @@ class SampleTable(gridlib.GridTableBase):
             grid_parameters.set_fit_state_by_name(func_name, value,
                                                   int(self.substrate[pi]), minval, maxval)
 
-        self.parent.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+        self.parent.UpdateGrid(grid_parameters)
 
         top=[li[0] for li in self.layers if li[11]==TOP_LAYER]
         ml=[li[0] for li in self.layers if li[11]==ML_LAYER]
@@ -558,6 +565,7 @@ class SamplePanel(wx.Panel):
         self.SetSizer(boxver)
         self.toolbar.Realize()
         self.update_callback=lambda event: ''
+        self._last_grid_data=[]
     
     def do_toolbar(self):
         dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
@@ -715,95 +723,9 @@ class SamplePanel(wx.Panel):
         '''
         self.update_callback=func
     
-    def create_html_decorator(self):
-        """
-        creates a html decorator function
-        :return:
-        """
-        grid_parameters=self.plugin.GetModel().get_parameters()
-        dic_lookup={}
-        for par in grid_parameters.get_names():
-            l=par.split('.')
-            if len(l)==2:
-                name=l[0]
-                par_name=l[1][3:].lower()
-                dic_lookup[(name, par_name)]=(
-                grid_parameters.get_value_by_name(par),
-                grid_parameters.get_fit_state_by_name(par)
-                )
-        fit_color_str="rgb(%d,%d,%d)"%self.fit_colour
-        const_fit_color_str="rgb(%d,%d,%d)"%self.const_fit_colour
-        
-        def decorator(name, str):
-            """ Decorator to indicate the parameters that are fitted"""
-            try:
-                start_index=str.index('(')+1
-            except ValueError:
-                start_index=0
-            ret_str=str[:start_index]
-            for par_str in str[start_index:].split(','):
-                par_name=par_str.split('=')[0].strip()
-                # par_name normal paramter (real number)
-                if (name, par_name) in dic_lookup:
-                    val, state=dic_lookup[(name, par_name)]
-                    if state==1:
-                        par_str=' <font color=%s><b>%s=%.2e</b></font>,'%(
-                        fit_color_str, par_name, val)
-                    elif state==2:
-                        par_str=' <font color=%s><b>%s=%.2e</b></font>,'%(
-                        const_fit_color_str, par_name, val)
-                # par_name is a complex parameter...
-                elif (name, par_name+'real') in dic_lookup or (
-                name, par_name+'imag') in dic_lookup:
-                    if (name, par_name+'real') in dic_lookup:
-                        val, state=dic_lookup[(name, par_name+'real')]
-                        if state==1:
-                            par_str=' <font color=%s><b>%s=(%.2e,</b></font>'%(
-                            fit_color_str, par_name, val)
-                        elif state==2:
-                            par_str=' <font color=%s><b>%s=(%.2e,</b></font>'%(
-                            const_fit_color_str, par_name, val)
-                    else:
-                        par_str=' <b>%s=??+</b>'%(par_name)
-                    if (name, par_name+'imag') in dic_lookup:
-                        val, state=dic_lookup[(name, par_name+'imag')]
-                        if state==1:
-                            par_str+=' <font color=%s><b>%.2e)</b></font>,'%(
-                            fit_color_str, val)
-                        elif state==2:
-                            par_str+=' <font color=%s><b>%.2e)</b></font>,'%(
-                            const_fit_color_str, val)
-                    else:
-                        par_str+=' <b>??)</b>,'
-                
-                else:
-                    par_str+=','
-                ret_str+=par_str
-            # Remove trailing ,
-            if ret_str[-1]==',':
-                ret_str=ret_str[:-1]
-            if str[-1]==')' and ret_str[-1]!=')':
-                ret_str+=')'
-            return ret_str
-        
-        return decorator
-    
     def Update(self, update_script=True):
         if update_script:
             self.update_callback(None)
-    
-    def SetSample(self, sample, names):
-        # self.sampleh.sample=sample
-        # self.sampleh.names=names
-        self.Update()
-    
-    def SetInstrument(self, instruments):
-        '''SetInstrument(self, instrument) --> None
-
-        Sets the instruments should be a dictionary of instruments with the key being the
-        name of the instrument
-        '''
-        self.instruments=instruments
     
     def EditInstrument(self, evt):
         """Event handler that creates an dialog box to edit the instruments.
@@ -861,11 +783,21 @@ class SamplePanel(wx.Panel):
                     self.inst_params[key]=value
                 else:
                     self.inst_params[key]=value
-            self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+            self.UpdateGrid(grid_parameters)
             self.UpdateModel()
         else:
             pass
         dlg.Destroy()
+
+    def CheckGridUpdate(self):
+        new_grid=self.plugin.GetModel().get_parameters()
+        new_data=[list(di) for di in new_grid.data]
+        if self._last_grid_data!=new_data:
+            pass
+    
+    def UpdateGrid(self, grid_parameters):
+        self._last_grid_data=[list(di) for di in grid_parameters.data]
+        self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
     
     def MoveUp(self, evt):
         row = self.grid.GetGridCursorRow()
@@ -878,273 +810,6 @@ class SamplePanel(wx.Panel):
         res=self.sample_table.MoveRow(row, row+1)
         if res:
             self.grid.MoveCursorDown(False)
-    
-    def InsertStack(self, evt):
-        # Create Dialog box
-        items=[('Name', 'name')]
-        validators={}
-        vals={}
-        validators['Name']=NoMatchValidTextObjectValidator(self.sampleh.names)
-        pars=['Name']
-        vals['Name']='name'
-        dlg=ValidateDialog(self, pars, vals, validators,
-                           title='Give Stack Name')
-        
-        # Show the dialog
-        if dlg.ShowModal()==wx.ID_OK:
-            vals=dlg.GetValues()
-        dlg.Destroy()
-        # if not a value is selected operate on first
-        pos=max(self.listbox.GetSelection(), 0)
-        sl=self.sampleh.insertItem(pos, 'Stack', vals['Name'])
-        if sl:
-            self.Update()
-        else:
-            self.plugin.ShowWarningDialog('Can not insert a stack at the'
-                                          ' current position.')
-    
-    def InsertLay(self, evt):
-        # Create Dialog box
-        # items = [('Name', 'name')]
-        # validators = [NoMatchValidTextObjectValidator(self.sampleh.names)]
-        dlg=ValidateDialog(self, ['Name'], {'Name': 'name'},
-                           {
-                               'Name': NoMatchValidTextObjectValidator(
-                                   self.sampleh.names)
-                               },
-                           title='Give Layer Name')
-        # Show the dialog
-        if dlg.ShowModal()==wx.ID_OK:
-            vals=dlg.GetValues()
-        dlg.Destroy()
-        # if not a value is selected operate on first
-        pos=max(self.listbox.GetSelection(), 0)
-        # Create the Layer
-        sl=self.sampleh.insertItem(pos, 'Layer', vals['Name'])
-        if sl:
-            self.Update()
-        else:
-            self.plugin.ShowWarningDialog('Can not insert a layer at the'
-                                          ' current position. Layers has to be part of a stack.')
-    
-    def DeleteSample(self, evt):
-        slold=self.sampleh.getStringList()
-        sl=self.sampleh.deleteItem(self.listbox.GetSelection())
-        if sl:
-            self.Update()
-    
-    def ChangeName(self, evt):
-        '''Change the name of the current selected item.
-        '''
-        pos=self.listbox.GetSelection()
-        if pos==0 or pos==len(self.sampleh.names)-1:
-            self.plugin.ShowInfoDialog('It is forbidden to change the' \
-                                       'name of the substrate (Sub) and the Ambient (Amb) layers.')
-        else:
-            unallowed_names=self.sampleh.names[:pos]+ \
-                            self.sampleh.names[max(0, pos-1):]
-            dlg=ValidateDialog(self, ['Name'],
-                               {'Name': self.sampleh.names[pos]},
-                               {
-                                   'Name': NoMatchValidTextObjectValidator(
-                                       unallowed_names)
-                                   },
-                               title='Give New Name')
-            
-            if dlg.ShowModal()==wx.ID_OK:
-                vals=dlg.GetValues()
-                result=self.sampleh.changeName(pos, vals['Name'])
-                if result:
-                    self.Update()
-                else:
-                    iprint('Unexpected problems when changing name...')
-            dlg.Destroy()
-    
-    def lbDoubleClick(self, evt):
-        sel=self.sampleh.getItem(self.listbox.GetSelection())
-        obj_name=self.sampleh.getName(self.listbox.GetSelection())
-        eval_func=self.plugin.GetModel().eval_in_model
-        sl=None
-        items=[]
-        validators={}
-        vals={}
-        pars=[]
-        editable={}
-        grid_parameters=self.plugin.GetModel().get_parameters()
-        if isinstance(sel, self.model.Layer):
-            # The selected item is a Layer
-            for item in list(self.model.LayerParameters.keys()):
-                value=getattr(sel, item)
-                vals[item]=value
-                # if item!='n' and item!='fb':
-                if type(self.model.LayerParameters[item])!=type(1+1.0J):
-                    # Handle real parameters
-                    validators[item]=FloatObjectValidator(eval_func,
-                                                          alt_types=[
-                                                              self.model.Layer])
-                    func_name=obj_name+'.'+_set_func_prefix+item.capitalize()
-                    grid_value=grid_parameters.get_value_by_name(func_name)
-                    if grid_value is not None:
-                        vals[item]=grid_value
-                    editable[item]=grid_parameters.get_fit_state_by_name(
-                        func_name)
-                
-                else:
-                    # Handle complex parameters
-                    validators[item]=ComplexObjectValidator(eval_func,
-                                                            alt_types=[
-                                                                self.model.Layer])
-                    func_name=obj_name+'.'+_set_func_prefix+item.capitalize()
-                    grid_value_real=grid_parameters.get_value_by_name(
-                        func_name+'real')
-                    grid_value_imag=grid_parameters.get_value_by_name(
-                        func_name+'imag')
-                    if grid_value_real is not None:
-                        v=eval_func(vals[item]) if type(vals[item]) is str else \
-                        vals[item]
-                        vals[item]=grid_value_real+v.imag*1.0J
-                    if grid_value_imag is not None:
-                        v=eval_func(vals[item]) if type(vals[item]) is str else \
-                        vals[item]
-                        vals[item]=v.real+grid_value_imag*1.0J
-                    editable[item]=max(grid_parameters.get_fit_state_by_name(
-                        func_name+'real'),
-                                       grid_parameters.get_fit_state_by_name(
-                                           func_name+'imag'))
-                
-                items.append((item, value))
-                pars.append(item)
-                
-                # Check if the parameter is in the grid and in that case set it as uneditable
-                # func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
-                # grid_value = grid_parameters.get_value_by_name(func_name)
-                # editable[item] = grid_parameters.get_fit_state_by_name(func_name)
-            
-            try:
-                groups=self.model.LayerGroups
-            except Exception:
-                groups=False
-            try:
-                units=self.model.LayerUnits
-            except Exception:
-                units=False
-            
-            dlg=ValidateFitDialog(self, pars, vals, validators,
-                                  title='Layer Editor', groups=groups,
-                                  units=units, editable_pars=editable)
-            
-            if dlg.ShowModal()==wx.ID_OK:
-                vals=dlg.GetValues()
-                states=dlg.GetStates()
-                for par in list(self.model.LayerParameters.keys()):
-                    if not states[par]:
-                        setattr(sel, par, vals[par])
-                    if editable[par]!=states[par]:
-                        value=eval_func(vals[par])
-                        
-                        if type(self.model.LayerParameters[par]) is complex:
-                            # print type(value)
-                            func_name=obj_name+'.'+_set_func_prefix+par.capitalize()+'real'
-                            val=value.real
-                            minval=min(val*(1-self.variable_span),
-                                       val*(1+self.variable_span))
-                            maxval=max(val*(1-self.variable_span),
-                                       val*(1+self.variable_span))
-                            grid_parameters.set_fit_state_by_name(func_name,
-                                                                  val,
-                                                                  states[par],
-                                                                  minval,
-                                                                  maxval)
-                            val=value.imag
-                            minval=min(val*(1-self.variable_span),
-                                       val*(1+self.variable_span))
-                            maxval=max(val*(1-self.variable_span),
-                                       val*(1+self.variable_span))
-                            func_name=obj_name+'.'+_set_func_prefix+par.capitalize()+'imag'
-                            grid_parameters.set_fit_state_by_name(func_name,
-                                                                  val,
-                                                                  states[par],
-                                                                  minval,
-                                                                  maxval)
-                        else:
-                            val=value
-                            minval=min(val*(1-self.variable_span),
-                                       val*(1+self.variable_span))
-                            maxval=max(val*(1-self.variable_span),
-                                       val*(1+self.variable_span))
-                            func_name=obj_name+'.'+_set_func_prefix+par.capitalize()
-                            grid_parameters.set_fit_state_by_name(func_name,
-                                                                  value,
-                                                                  states[par],
-                                                                  minval,
-                                                                  maxval)
-                        
-                        # Does not seem to be necessary
-                        self.plugin.parent.paramter_grid.SetParameters(
-                            grid_parameters)
-                sl=self.sampleh.getStringList()
-            dlg.Destroy()
-        
-        else:
-            # The selected item is a Stack
-            for item in list(self.model.StackParameters.keys()):
-                if item!='Layers':
-                    value=getattr(sel, item)
-                    if isinstance(value, float):
-                        validators[item]=FloatObjectValidator(eval_func,
-                                                              alt_types=[
-                                                                  self.model.Stack])
-                    else:
-                        validators[item]=TextObjectValidator()
-                    items.append((item, value))
-                    pars.append(item)
-                    vals[item]=value
-                    
-                    # Check if the parameter is in the grid and in that case set it as uneditable
-                    func_name=obj_name+'.'+_set_func_prefix+item.capitalize()
-                    grid_value=grid_parameters.get_value_by_name(func_name)
-                    editable[item]=grid_parameters.get_fit_state_by_name(
-                        func_name)
-                    if grid_value is not None:
-                        vals[item]=grid_value
-            
-            try:
-                groups=self.model.StackGroups
-            except Exception:
-                groups=False
-            try:
-                units=self.model.StackUnits
-            except Exception:
-                units=False
-            
-            dlg=ValidateFitDialog(self, pars, vals, validators,
-                                  title='Layer Editor', groups=groups,
-                                  units=units, editable_pars=editable)
-            if dlg.ShowModal()==wx.ID_OK:
-                vals=dlg.GetValues()
-                states=dlg.GetStates()
-                for par in pars:
-                    if not states[par]:
-                        setattr(sel, par, vals[par])
-                    if editable[par]!=states[par]:
-                        value=eval_func(vals[par])
-                        minval=min(value*(1-self.variable_span),
-                                   value*(1+self.variable_span))
-                        maxval=max(value*(1-self.variable_span),
-                                   value*(1+self.variable_span))
-                        func_name=obj_name+'.'+_set_func_prefix+par.capitalize()
-                        grid_parameters.set_fit_state_by_name(func_name, value,
-                                                              states[par],
-                                                              minval, maxval)
-                        # Does not seem to be necessary
-                        self.plugin.parent.paramter_grid.SetParameters(
-                            grid_parameters)
-                sl=self.sampleh.getStringList()
-            
-            dlg.Destroy()
-        
-        if sl:
-            self.Update()
 
 
 class Plugin(framework.Template):
@@ -1345,6 +1010,7 @@ class Plugin(framework.Template):
         :param event:
         :return:
         """
+        self.sample_widget.CheckGridUpdate()
         self.sample_widget.Update(update_script=False)
     
     def CreateNewModel(self, modelname='models.spec_nx'):
