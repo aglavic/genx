@@ -224,8 +224,10 @@ class SampleTable(gridlib.GridTableBase):
             to_edit=self.layers[row-1]
         if col==0:
             # name change
+            old_name=to_edit[0]
             to_edit[0]='AboutToChangeValue'
             to_edit[0]=self.get_valid_name(value)
+            self.delete_grid_items(old_name)
         elif col==2:
             # check formula
             if to_edit[1]=='Formula':
@@ -512,6 +514,14 @@ class SampleTable(gridlib.GridTableBase):
                 "# END Sample\n\n" \
                 "# BEGIN Parameters DO NOT CHANGE\n"
         return script
+
+    def delete_grid_items(self, name):
+        # remove fit grid entries corresponding to a renamed layer
+        grid_parameters=self.parent.plugin.GetModel().get_parameters()
+        for fi in ['dens', 'magn', 'd', 'sigma']:
+            func_name=name+'.'+_set_func_prefix+fi.capitalize()
+            grid_parameters.set_fit_state_by_name(func_name, 0., 0, 0., 0.)
+        self.parent.UpdateGrid(grid_parameters)
 
 
 class SamplePanel(wx.Panel):
