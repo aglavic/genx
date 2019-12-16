@@ -619,7 +619,7 @@ class SamplePanel(wx.Panel):
     
     inst_params=dict(probe='neutron pol',
                      I0=1.0,
-                     res=0.0001,
+                     res=0.0,
                      wavelength=1.54,
                      pol='uu',
                      Ibkg=0.,
@@ -727,9 +727,13 @@ class SamplePanel(wx.Panel):
     
     def instrumentCode(self):
         pars=dict(self.inst_params)
+        if pars['res']==0:
+            pars['restype']='no conv'
+        else:
+            pars['restype']='full conv and varying res.'
         template="%(name)s = model.Instrument(probe='%(probe)s', wavelength=%(wavelength)g, " \
                  "coords='%(coords)s', I0=%(I0)g, res=%(res)g, " \
-                 "restype='full conv and varying res.', respoints=9, " \
+                 "restype='%(restype)s', respoints=5, " \
                  "resintrange=2, beamw=%(beamw)g, footype='%(footype)s', " \
                  "samplelen=%(samplelen)g, incangle=0.0, pol='%(pol)s', " \
                  "Ibkg=%(Ibkg)g, tthoff=0.0,)\n"
