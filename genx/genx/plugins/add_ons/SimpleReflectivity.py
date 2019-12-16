@@ -116,6 +116,8 @@ class SampleTable(gridlib.GridTableBase):
         ('σ [Å]', gridlib.GRID_VALUE_STRING),
         ]
 
+    _last_layer_data=[]
+
     defaults={
         'Formula': ['Layer', 'Formula', Formula([]),
                     False, '2.0', False, '0.0',
@@ -544,6 +546,11 @@ class SampleTable(gridlib.GridTableBase):
         script+="\nsample = model.Sample(Stacks = [Bot, ML, Top], Ambient = Amb, Substrate = Sub)\n" \
                 "# END Sample\n\n" \
                 "# BEGIN Parameters DO NOT CHANGE\n"
+        # store data used for the last script for reuse on update
+        self._last_layer_data=[list(self.ambient)]
+        for li in self.layers:
+            self._last_layer_data.append(list(li))
+        self._last_layer_data.append(list(self.substrate))
         return script
 
     def delete_grid_items(self, name):
@@ -572,14 +579,15 @@ class SampleTable(gridlib.GridTableBase):
             data=self.substrate
         else:
             data=self.layers[layer-1]
+        ref_data=self._last_layer_data[layer]
         
         if data[1]=='Formula':
             formula=data[2]
             if formula=='SLD':
                 if dens is not None and data[3]:
-                    data[4]=str(eval(data[4])*dens/0.1)
+                    data[4]=str(eval(ref_data[4])*dens/0.1)
                 if magn is not None and data[5]:
-                    data[6]=str(eval(data[6])*dens/0.1)
+                    data[6]=str(eval(ref_data[6])*dens/0.1)
             else:
                 if dens is not None and data[3]:
                     new_dens=float(dens)*formula.mFU()/MASS_DENSITY_CONVERSION
@@ -588,17 +596,17 @@ class SampleTable(gridlib.GridTableBase):
                     data[6]=str(float(magn))
         elif dens is not None:
             # FIXIT: now yet working as calculation compares with current value
-            SLD1=float(eval(data[2]))
-            SLD2=float(eval(data[4]))
-            frac=float(eval(data[6]))/100.
+            SLD1=float(eval(ref_data[2]))
+            SLD2=float(eval(ref_data[4]))
+            frac=float(eval(ref_data[6]))/100.
             new_dens=(frac*SLD1+(1-frac)*SLD2)*dens/0.1
             if data[3]:
                 # SLD-2 was fitted
                 sld2_fraction=new_dens-frac*SLD1
                 data[4]=str(sld2_fraction/(1.-frac))
             if data[5]:
-                # precentage was fitted
-                new_frac=(dens-SLD2)/(SLD1-SLD2)
+                # percentage was fitted
+                new_frac=(new_dens-SLD2)/(SLD1-SLD2)
                 data[6]=str(new_frac*100.)
         if d is not None and data[7]:
             data[8]=str(float(d))
