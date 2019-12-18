@@ -62,6 +62,8 @@ elif sys.platform=='darwin':
     icon_dir='mac_build/genx.icns'
 else:
     icon_dir='debian_build/genx_64x64.png'
+
+from distutils.core import setup
 # try:
 #     from cx_Freeze import setup, Executable
 # except ImportError:

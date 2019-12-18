@@ -15,7 +15,9 @@ is to the right. This is updated when the simulation button is pressed.
 from .. import add_on_framework as framework
 from genx.plotpanel import PlotPanel
 import genx.model as modellib
+import wx
 import wx.grid as gridlib
+from wx.adv import Wizard, WizardPage, WizardPageSimple
 
 import numpy as np
 import sys, os, re, time, io, traceback
@@ -132,22 +134,7 @@ class SampleTable(gridlib.GridTableBase):
         self.parent=parent
         self.grid=grid
         
-        self.ambient=[None, 'Formula', 'SLD',
-                      False, '0.0', False, '0.0',
-                      False, '0', False, '0']
-        self.substrate=[None, 'Formula', Formula([['Si',1.0]]),
-                        False, '2.32998', False, '0.0',
-                        False, '0', True, '5.0']
-        self.layers=[['Surface_Oxide', 'Formula', Formula([['Fe',2.0],['O', 2.0]]),
-                      False, '5.25568', False, '0.0',
-                      True, '20.0', False, '5.0', TOP_LAYER],
-                     ['Iron', 'Formula', Formula([['Fe', 1.0]]),
-                      False, '7.87422', False, '3.0',
-                      True, '100.0', False, '5.0', ML_LAYER],
-                     ['Natural_Oxide', 'Formula', Formula([['Si', 1.0], ['O', 2.0]]),
-                      False, '4.87479', False, '0.0',
-                      True, '20.0', False, '5.0', BOT_LAYER]
-                     ]
+        self.ResetModel(first=True)
         
         self.grid.SetTable(self, True)
 
@@ -158,6 +145,42 @@ class SampleTable(gridlib.GridTableBase):
             self.grid.AutoSizeColumn(i, True)
         
         wx.CallAfter(self.updateModel)
+    
+    def ResetModel(self, first=False):
+        if not first:
+            old_len=len(self.layers)
+            
+        self.ambient=[None, 'Formula', 'SLD',
+                      False, '0.0', False, '0.0',
+                      False, '0', False, '0']
+        self.substrate=[None, 'Formula', Formula([['Si', 1.0]]),
+                        False, '2.32998', False, '0.0',
+                        False, '0', True, '5.0']
+        self.layers=[['Surface_Oxide', 'Formula', Formula([['Fe', 2.0], ['O', 2.0]]),
+                      False, '5.25568', False, '0.0',
+                      True, '20.0', False, '5.0', TOP_LAYER],
+                     ['Iron', 'Formula', Formula([['Fe', 1.0]]),
+                      False, '7.87422', False, '3.0',
+                      True, '100.0', False, '5.0', ML_LAYER],
+                     ['Natural_Oxide', 'Formula', Formula([['Si', 1.0], ['O', 2.0]]),
+                      False, '4.87479', False, '0.0',
+                      True, '20.0', False, '5.0', BOT_LAYER]
+                     ]
+        if not first:
+            diff=old_len-len(self.layers)
+            if diff<0:
+                msg=gridlib.GridTableMessage(self,
+                                             gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, -diff)
+                self.GetView().ProcessTableMessage(msg)
+            elif diff>0:
+                msg=gridlib.GridTableMessage(self,
+                                             gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, diff)
+                self.GetView().ProcessTableMessage(msg)
+            msg=gridlib.GridTableMessage(self,
+                                         gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+            self.GetView().ProcessTableMessage(msg)
+            self.GetView().ForceRefresh()
+            self.updateModel()
 
     def GetNumberRows(self):
         return len(self.layers)+2
@@ -936,6 +959,30 @@ class SamplePanel(wx.Panel):
             self.grid.MoveCursorDown(False)
 
 
+class WizarSelectionPage(WizardPageSimple):
+    def __init__(self, parent, choices, intro_title='', intro_text='',
+                 choice_label='',
+                 prev=None, next=None, bitmap=wx.NullBitmap):
+        WizardPageSimple.__init__(self, parent, prev=prev, next=next, bitmap=bitmap)
+        
+        vbox=wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(vbox)
+        text=wx.StaticText(self, style=wx.ALIGN_LEFT, label=intro_title)
+        text.SetFont(text.GetFont().Scale(1.5))
+        text.Layout()
+        vbox.Add(text, 0, wx.EXPAND)
+        text=wx.StaticText(self, style=wx.ALIGN_LEFT, label=intro_text)
+        text.Wrap(480)
+        vbox.Add(text, 0, wx.EXPAND)
+        vbox.AddStretchSpacer()
+        self.ctrl=wx.RadioBox(self, label=choice_label, choices=choices,
+                              style=wx.RA_SPECIFY_ROWS, majorDimension=4)
+        vbox.Add(self.ctrl, 0, 0)
+
+    def selection(self):
+        return self.ctrl.GetString(self.ctrl.GetSelection())
+
+
 class Plugin(framework.Template):
     previous_xaxis=None
     sim_returns_sld=True
@@ -944,6 +991,7 @@ class Plugin(framework.Template):
         framework.Template.__init__(self, parent)
         # self.parent = parent
         self.model_obj=self.GetModel()
+        prev_script=self.model_obj.script
         sample_panel=self.NewInputFolder('Model')
         sample_sizer=wx.BoxSizer(wx.HORIZONTAL)
         sample_panel.SetSizer(sample_sizer)
@@ -964,19 +1012,19 @@ class Plugin(framework.Template):
         sld_plot_panel.Layout()
         
         self.sample_widget.UpdateModel()
-        # if self.model_obj.script!='':
-        #     if self.model_obj.filename!='':
-        #         iprint("Reflectivity plugin: Reading loaded model")
-        #         self.ReadModel()
-        #     else:
-        #         try:
-        #             self.ReadModel()
-        #         except:
-        #             iprint("Reflectivity plugin: Creating new model")
-        #             self.CreateNewModel()
-        # else:
-        #     iprint("Reflectivity plugin: Creating new model")
-        #     self.CreateNewModel()
+        if prev_script!='':
+            if self.model_obj.filename!='':
+                iprint("SimpleReflectivity plugin: Reading loaded model")
+                self.ReadModel()
+            else:
+                try:
+                    self.ReadModel()
+                except:
+                    iprint("SimpleReflectivity plugin: Creating new model")
+                    self.CreateNewModel()
+        else:
+            iprint("SimpleReflectivity plugin: Creating new model")
+            self.OnNewModel(None)
         
         # Create a menu for handling the plugin
         menu=self.NewMenu('Reflec')
@@ -1088,14 +1136,45 @@ class Plugin(framework.Template):
     def OnNewModel(self, event):
         ''' Create a new model
         '''
-        dlg=wx.SingleChoiceDialog(self.parent, 'Choose a model type to use', \
-                                  'Models', _avail_models,
-                                  wx.CHOICEDLG_STYLE
-                                  )
+        dlg=self.parent.data_list.list_ctrl.data_loader_cont
+        dls=list(sorted(dlg.plugin_handler.get_possible_plugins()))
+        dls.remove('default')
         
-        if dlg.ShowModal()==wx.ID_OK:
-            self.CreateNewModel('models.%s'%dlg.GetStringSelection())
-        dlg.Destroy()
+        wiz=Wizard(self.parent, title='Create New Model...',
+                   bitmap=images.getinstrumentBitmap())
+        p1=WizarSelectionPage(wiz, ['x-ray', 'neutron', 'neutron pol'],
+                              'Select Probe\n',
+                              'Please choose the experiment you want to model'
+                              '/fit. This option can be changed later '
+                              'from the Instrument Settings dialog.')
+        p2=WizarSelectionPage(wiz, ['default']+dls,
+                              'Selecte Data Loader\n',
+                              'How to import data '
+                              'into GenX.\nIf your instrument is not listed '
+                              'use the default/resolution loader. '
+                              'This reads  3/4 columns from an ASCII file. '
+                              'If the file does not '
+                              'have x,y,dy(,res) column order, use Setting->'
+                              'Import to select which columns to read.',)
+                              # bitmap=images.getsampleBitmap())
+        p3=WizarSelectionPage(wiz, ['q', '2θ'],
+                              'Select Data Coordinates\n',
+                              'Set the x-coordinates used for simulation. '
+                              '\nYou can define more experimental parameters like '
+                              'wavelength, resolution, footprint correction or '
+                              'background in the Instrument Settings dialog.')
+        WizardPageSimple.Chain(p1,p2)
+        WizardPageSimple.Chain(p2,p3)
+
+        wiz.SetPageSize(wx.Size(500, 350))
+
+        if wiz.RunWizard(p1):
+            params=self.sample_widget.inst_params
+            params['probe']=p1.selection()
+            params['coords']=p3.selection()
+            dlg.plugin_handler.load_plugin(p2.selection())
+            self.sample_widget.sample_table.ResetModel()
+        wiz.Destroy()
     
     def OnDataChanged(self, event):
         ''' Take into account changes in data..
