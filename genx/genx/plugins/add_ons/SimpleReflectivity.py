@@ -25,8 +25,10 @@ import sys, os, re, time, io, traceback
 from .Reflectivity import SamplePlotPanel, find_code_segment
 from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
+from genx.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.gui_logging import iprint
+from genx.help import PluginHelpDialog
 
 _avail_models=['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx',
                'spec_inhom', 'spec_adaptive']
@@ -961,7 +963,7 @@ class SamplePanel(wx.Panel):
 
 class WizarSelectionPage(WizardPageSimple):
     def __init__(self, parent, choices, intro_title='', intro_text='',
-                 choice_label='',
+                 choice_label='', choices_help=None,
                  prev=None, next=None, bitmap=wx.NullBitmap):
         WizardPageSimple.__init__(self, parent, prev=prev, next=next, bitmap=bitmap)
         
@@ -969,7 +971,6 @@ class WizarSelectionPage(WizardPageSimple):
         self.SetSizer(vbox)
         text=wx.StaticText(self, style=wx.ALIGN_LEFT, label=intro_title)
         text.SetFont(text.GetFont().Scale(1.5))
-        text.Layout()
         vbox.Add(text, 0, wx.EXPAND)
         text=wx.StaticText(self, style=wx.ALIGN_LEFT, label=intro_text)
         text.Wrap(480)
@@ -978,6 +979,13 @@ class WizarSelectionPage(WizardPageSimple):
         self.ctrl=wx.RadioBox(self, label=choice_label, choices=choices,
                               style=wx.RA_SPECIFY_ROWS, majorDimension=4)
         vbox.Add(self.ctrl, 0, 0)
+        if choices_help:
+            for i, ti in enumerate(choices_help):
+                self.ctrl.SetItemToolTip(i, ti)
+            text=wx.StaticText(self, style=wx.ALIGN_LEFT, label='Hover items for info')
+            text.SetFont(text.GetFont().Scale(0.75))
+            vbox.Add(text, 0, 0)
+
 
     def selection(self):
         return self.ctrl.GetString(self.ctrl.GetSelection())
@@ -1142,6 +1150,10 @@ class Plugin(framework.Template):
         
         wiz=Wizard(self.parent, title='Create New Model...',
                    bitmap=images.getinstrumentBitmap())
+        
+        # def show_dl_help(event):
+        #     dlg=PluginHelpDialog(wiz, 'plugins.data_loaders')
+        #     dlg.Show()
         p1=WizarSelectionPage(wiz, ['x-ray', 'neutron', 'neutron pol'],
                               'Select Probe\n',
                               'Please choose the experiment you want to model'
@@ -1155,14 +1167,17 @@ class Plugin(framework.Template):
                               'This reads  3/4 columns from an ASCII file. '
                               'If the file does not '
                               'have x,y,dy(,res) column order, use Setting->'
-                              'Import to select which columns to read.',)
-                              # bitmap=images.getsampleBitmap())
+                              'Import to select which columns to read.',
+                              bitmap=getopenBitmap())
         p3=WizarSelectionPage(wiz, ['q', '2θ'],
                               'Select Data Coordinates\n',
                               'Set the x-coordinates used for simulation. '
                               '\nYou can define more experimental parameters like '
                               'wavelength, resolution, footprint correction or '
-                              'background in the Instrument Settings dialog.')
+                              'background in the Instrument Settings dialog.',
+                              choices_help=['Reciprocal lattice vector out-of-plane component qz in Å⁻¹',
+                                            'Detector angle in degrees'],
+                              bitmap=getplottingBitmap())
         WizardPageSimple.Chain(p1,p2)
         WizardPageSimple.Chain(p2,p3)
 
