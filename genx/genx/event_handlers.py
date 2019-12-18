@@ -744,7 +744,7 @@ def quit(frame, event):
             return
 
     import appdirs
-    config_path=appdirs.user_data_dir('GenX', 'MattsBjorck')+'/'
+    config_path=appdirs.user_data_dir('GenX3', 'ArturGlavic')+'/'
     hsize, vsize=frame.GetSize()
     frame.config.default_set('gui', 'hsize', hsize)
     frame.config.default_set('gui', 'vsize', vsize)

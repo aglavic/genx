@@ -16,7 +16,7 @@ try:
 except ImportError:
   config_path=os.path.expanduser(os.path.join('~', '.genx'))
 else:
-  config_path=appdirs.user_data_dir('GenX', 'MattsBjorck')
+  config_path=appdirs.user_data_dir('GenX3', 'ArturGlavic')
 if not os.path.exists(config_path):
     os.makedirs(config_path)
 config_file=os.path.join(config_path, 'materials.cfg')

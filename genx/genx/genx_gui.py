@@ -28,27 +28,26 @@ from genx.plugins import add_on_framework as add_on
 # Add current path to the system paths
 # just in case some user make a directory change
 sys.path.append(os.getcwd())
-_path = os.getcwd()
 _path, _file = os.path.split(__file__)
 if _path[-4:] == '.zip':
     _path, ending = os.path.split(_path)
-if _path != '':
-    _path += '/'
 
 # Get the configuration path, create if it not exists
-config_path = appdirs.user_data_dir('GenX', 'MattsBjorck') + '/'
+config_path = appdirs.user_data_dir('GenX3', 'ArturGlavic') + '/'
 info(config_path)
 if not os.path.exists(config_path):
     info('Creating path: %s'%config_path)
     os.makedirs(config_path)
-if not os.path.exists(config_path + 'profiles'):
-    info('Creating path: %'%(config_path + 'profiles'))
-    shutil.copytree(_path + 'profiles', config_path + 'profiles')
-if not os.path.exists(config_path + 'genx.conf'):
-    info('Creating genx.conf at %s by copying config from %s'%(config_path, _path + 'profiles/Default.conf'))
-    shutil.copyfile(_path + 'profiles/Default.conf', config_path + 'genx.conf')
+if not os.path.exists(os.path.join(config_path, 'profiles')):
+    info('Creating path: %s'%os.path.join(config_path, 'profiles'))
+    shutil.copytree(os.path.join(_path, 'profiles'),
+                    os.path.join(config_path, 'profiles'))
+if not os.path.exists(os.path.join(config_path, 'genx.conf')):
+    info('Creating genx.conf at %s by copying config from %s'%(config_path,
+                            os.path.join(_path, 'profiles/Default.conf')))
+    shutil.copyfile(os.path.join(_path, 'genx.conf'),
+                    os.path.join(config_path, 'genx.conf'))
 
-#raise Exception(_path)
 class MainFrame(wx.Frame):
     def __init__(self, parent, show_startup, *args, **kwds):
         self.dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
@@ -57,7 +56,7 @@ class MainFrame(wx.Frame):
         self.config = io.Config()
         self.parent = parent
 
-        self.config.load_default(config_path + 'genx.conf')
+        self.config.load_default(os.path.join(config_path, 'genx.conf'))
         self.flag_simulating = False
         self.simulation_queue_counter = 0
         status_text = lambda event:event_handlers.status_text(self, event)
@@ -566,7 +565,7 @@ class MainFrame(wx.Frame):
                                          startup_dialog.GetShowAtStartup())
                 self.config.default_set('startup', 'widescreen',
                                         startup_dialog.GetWidescreen())
-                self.config.write_default(profile_path + 'genx.conf')
+                self.config.write_default(os.path.join(config_path, 'genx.conf'))
                 debug('Changed profile, plugins loaded=%s'%self.config.get('plugins','loaded plugins'))
                 try:
                     self.plugin_control.OnOpenModel(None)
@@ -839,6 +838,7 @@ class MyApp(wx.App):
         if self.show_startup:
             main_frame.startup_dialog(config_path)
 
+        wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
         return 1
 
 # end of class MyApp
