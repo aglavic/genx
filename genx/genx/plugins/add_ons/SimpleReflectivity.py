@@ -130,6 +130,8 @@ class SampleTable(gridlib.GridTableBase):
                     False, '2.0', False, '100',
                     True, '10.0', False, '5.0', ML_LAYER],
         }
+
+    repetitions=1
     
     def __init__(self, parent, grid):
         gridlib.GridTableBase.__init__(self)
@@ -145,7 +147,6 @@ class SampleTable(gridlib.GridTableBase):
         for i, colinfo in enumerate(self._columns):
             # self.parent.SetColSize(i, 50)
             self.grid.AutoSizeColumn(i, True)
-        
         wx.CallAfter(self.updateModel)
     
     def ResetModel(self, first=False):
@@ -185,13 +186,16 @@ class SampleTable(gridlib.GridTableBase):
             self.updateModel()
 
     def GetNumberRows(self):
-        return len(self.layers)+2
+        return len(self.layers)+3
 
     def GetNumberCols(self):
         return len(self._columns)
 
     def GetRowLabelValue(self, row):
-        if row in [0, self.GetNumberRows()-1]:
+        if row==self.repeatedInfo():
+            return ''
+        row=self.realRow(row)
+        if row in [0, self.GetNumberRows()-2]:
             return '-'
         else:
             return '% 2i'%row
@@ -203,16 +207,29 @@ class SampleTable(gridlib.GridTableBase):
             return True
 
     def GetValue(self, row, col):
+        if row==self.repeatedInfo():
+            if col==0:
+                return 'Repeated layer structure'
+            if col==8:
+                return 'Repetitions:'
+            if col==10:
+                return str(self.repetitions)
+            return None
+        row=self.realRow(row)
         if col==0:
             if row==0:
                 return 'Ambient'
-            elif row==(self.GetNumberRows()-1):
+            elif row==(self.GetNumberRows()-2):
                 return 'Substrate'
             else:
                 return self.layers[row-1][col].replace('_', ' ')
         if row==0:
+            if col in [7,8,9,10]:
+                return None
             return self.ambient[col]
-        elif row==self.GetNumberRows()-1:
+        elif row==self.GetNumberRows()-2:
+            if col in [7,8]:
+                return None
             return self.substrate[col]
         
         return self.layers[row-1][col]
@@ -240,10 +257,17 @@ class SampleTable(gridlib.GridTableBase):
         # ignore unchanged values
         if value==self.GetValue(row,col):
             return
-        
+
+        if row==self.repeatedInfo():
+            if col==10:
+                self.repetitions=int(value)
+            self.updateModel()
+            return
+        row=self.realRow(row)
+
         if row==0:
             to_edit=self.ambient
-        elif row==(self.GetNumberRows()-1):
+        elif row==(self.GetNumberRows()-2):
             to_edit=self.substrate
         else:
             to_edit=self.layers[row-1]
@@ -300,14 +324,51 @@ class SampleTable(gridlib.GridTableBase):
         evt=update_model_event()
         evt.script=model_code
         wx.PostEvent(self.parent, evt)
+    
+    def repeatedInfo(self):
+        # get the first row of the repeated layer structure
+        info_row=1
+        for li in self.layers:
+            if li[11]!=TOP_LAYER:
+                break
+            info_row+=1
+        return info_row
+    
+    def realRow(self, row):
+        info_row=self.repeatedInfo()
+        if row<info_row:
+            return row
+        else:
+            return row-1
 
     def GetAttr(self, row, col, kind):
         '''Called by the grid to find the attributes of the cell,
         bkg color, text colour, font and so on.
         '''
         attr = gridlib.GridCellAttr()
+        if row==self.repeatedInfo():
+            if col!=10:
+                attr.SetReadOnly()
+            if col==0:
+                attr.SetSize(1,8)
+                attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_BOTTOM)
+                return attr
+            if col==8:
+                attr.SetSize(1,2)
+                return attr
+            if col==10:
+                return attr
+            return attr
+        row=self.realRow(row)
+
         attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
-        if row in [0, (self.GetRowsCount()-1)]:
+        if row==0 and col==6:
+                # ambiance has no thickness or roughness
+                attr.SetSize(1,5)
+        if row==(self.GetRowsCount()-2) and col==6:
+                # ambiance has no thickness
+                attr.SetSize(1,3)
+        if row in [0, (self.GetRowsCount()-2)]:
             if row==0:
                 if col==1:
                     attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_TOP)
@@ -395,20 +456,24 @@ class SampleTable(gridlib.GridTableBase):
         pass
 
     def InsertRow(self, row):
-        if row==(self.GetNumberRows()-1):
+        model_row=self.realRow(row)
+        if model_row==(self.GetNumberRows()-2):
             layer_type=self.substrate[1]
             layer_stack=BOT_LAYER
-            row-=1
-        elif row>0:
+            model_row-=1
+        elif row==self.repeatedInfo():
             layer_type=self.layers[row-1][1]
             layer_stack=self.layers[row-1][11]
+        elif model_row>0:
+            layer_type=self.layers[model_row-1][1]
+            layer_stack=self.layers[model_row-1][11]
         else:
             layer_type=self.ambient[1]
             layer_stack=TOP_LAYER
         newlayer=list(self.defaults[layer_type])
         newlayer[11]=layer_stack
         newlayer[0]=self.get_valid_name(newlayer[0])
-        self.layers.insert(row, newlayer)
+        self.layers.insert(model_row, newlayer)
     
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
@@ -421,6 +486,9 @@ class SampleTable(gridlib.GridTableBase):
         return True
 
     def DeleteRow(self, row):
+        if row==self.repeatedInfo():
+            return False
+        row=self.realRow(row)
         if row in [0, self.GetNumberRows()-1]:
             return False
         # make sure we don't delete the last ML layer
@@ -446,6 +514,9 @@ class SampleTable(gridlib.GridTableBase):
         return True
 
     def MoveRow(self, row_from, row_to):
+        if row_from==self.repeatedInfo():
+            return False
+        row=self.realRow(row_from)
         if row_from in [0, self.GetNumberRows()-1] or row_to<0\
                 or row_to in [0, (self.GetNumberRows()-1)]:
             return False
@@ -562,9 +633,8 @@ class SampleTable(gridlib.GridTableBase):
         script+="\nTop = model.Stack(Layers=[%s ], Repetitions = 1)\n"%str(
             ", ".join(reversed(top))
             )
-        script+="\nML = model.Stack(Layers=[%s ], Repetitions = %%i)\n"%str(
-            ", ".join(reversed(ml))
-            )
+        script+="\nML = model.Stack(Layers=[%s ], Repetitions = %i)\n"%(str(
+            ", ".join(reversed(ml))), self.repetitions)
         script+="\nBot = model.Stack(Layers=[%s ], Repetitions = 1)\n"%str(
             ", ".join(reversed(bot))
             )
@@ -728,24 +798,24 @@ class SamplePanel(wx.Panel):
         self.toolbar.AddSeparator()
         
         
-        self.toolbar.AddStretchableSpace()
-        text=wx.StaticText(self.toolbar, -1, 'Repitions:')
-        text.SetToolTipString(
-            'Number N of repetitions for a multilayer structure.\n'
-            'The model structure is build as a set of bottom\n'
-            'layers (purple) repeated layer structure (white)\n'
-            'and a set of top layers (green):\n'
-            'Model=Substrat/[purple]/Nx[white]/[green]/Ambient\n\n'
-            'If top or bottom is missind, select Ambient or\n'
-            'Substrate when adding a new layer.'
-                                          )
-        self.toolbar.AddControl(text)
-
-        newid=wx.NewId()
-        self.repetitions=wx.SpinCtrl(self.toolbar, newid,
-                                     min=1, max=1000, initial=1,)
-        self.toolbar.AddControl(self.repetitions)
-        self.Bind(wx.EVT_SPINCTRL, self.ChangeRepetitions, id=newid)
+        # self.toolbar.AddStretchableSpace()
+        # text=wx.StaticText(self.toolbar, -1, 'Repitions:')
+        # text.SetToolTipString(
+        #     'Number N of repetitions for a multilayer structure.\n'
+        #     'The model structure is build as a set of bottom\n'
+        #     'layers (purple) repeated layer structure (white)\n'
+        #     'and a set of top layers (green):\n'
+        #     'Model=Substrat/[purple]/Nx[white]/[green]/Ambient\n\n'
+        #     'If top or bottom is missind, select Ambient or\n'
+        #     'Substrate when adding a new layer.'
+        #                                   )
+        # self.toolbar.AddControl(text)
+        #
+        # newid=wx.NewId()
+        # self.repetitions=wx.SpinCtrl(self.toolbar, newid,
+        #                              min=1, max=1000, initial=1,)
+        # self.toolbar.AddControl(self.repetitions)
+        # self.Bind(wx.EVT_SPINCTRL, self.ChangeRepetitions, id=newid)
 
     def ChangeRepetitions(self, evt):
         self.UpdateModel()
@@ -791,7 +861,7 @@ class SamplePanel(wx.Panel):
                 "fp.set_wavelength(inst.wavelength); fw.set_wavelength(inst.wavelength)\n" \
                 "# END Instrument\n\n"
         # add sample description code
-        script+=sample_script%self.repetitions.GetValue()
+        script+=sample_script
         script+="cp = UserVars()\n" \
                 "# END Parameters\n\n" \
                 "SLD = []\n" \
@@ -835,6 +905,9 @@ class SamplePanel(wx.Panel):
         script+="    return I"
         # print(script)
         self.plugin.SetModelScript(script)
+        
+        if evt is not None and self.plugin.mb_autoupdate_sim.IsChecked():
+            self.plugin.parent.eh_tb_simulate(None)
         
     def OnLayerAdd(self, evt):
         row = self.grid.GetGridCursorRow()
@@ -1019,21 +1092,6 @@ class Plugin(framework.Template):
         sld_sizer.Add(self.sld_plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
         sld_plot_panel.Layout()
         
-        self.sample_widget.UpdateModel()
-        if prev_script!='':
-            if self.model_obj.filename!='':
-                iprint("SimpleReflectivity plugin: Reading loaded model")
-                self.ReadModel()
-            else:
-                try:
-                    self.ReadModel()
-                except:
-                    iprint("SimpleReflectivity plugin: Creating new model")
-                    self.CreateNewModel()
-        else:
-            iprint("SimpleReflectivity plugin: Creating new model")
-            self.OnNewModel(None)
-        
         # Create a menu for handling the plugin
         menu=self.NewMenu('Reflec')
         self.mb_export_sld=wx.MenuItem(menu, wx.NewId(),
@@ -1048,19 +1106,40 @@ class Plugin(framework.Template):
         menu.Append(self.mb_show_imag_sld)
         self.mb_show_imag_sld.Check(False)
         self.show_imag_sld=self.mb_show_imag_sld.IsChecked()
+        self.mb_autoupdate_sim=wx.MenuItem(menu, wx.NewId(),
+                                           "Simulate Autom.",
+                                           "Simulates the model automatically after manual changes",
+                                           wx.ITEM_CHECK)
+        menu.Append(self.mb_autoupdate_sim)
+        self.mb_autoupdate_sim.Check(True)
         self.mb_autoupdate_sld=wx.MenuItem(menu, wx.NewId(),
                                            "Autoupdate SLD",
                                            "Toggles autoupdating the SLD during fitting",
                                            wx.ITEM_CHECK)
         menu.Append(self.mb_autoupdate_sld)
-        self.mb_autoupdate_sld.Check(False)
-        
+        self.mb_autoupdate_sld.Check(True)
+
         self.mb_hide_advanced=wx.MenuItem(menu, wx.NewId(),
                                            "Hide Advanced",
                                            "Toggles hiding of advanced model tabs",
                                            wx.ITEM_CHECK)
         menu.Append(self.mb_hide_advanced)
         self.mb_hide_advanced.Check(True)
+        
+        if prev_script!='':
+            if self.model_obj.filename!='':
+                iprint("SimpleReflectivity plugin: Reading loaded model")
+                self.ReadModel()
+            else:
+                try:
+                    self.ReadModel()
+                except:
+                    iprint("SimpleReflectivity plugin: Creating new model")
+                    self.CreateNewModel()
+        else:
+            iprint("SimpleReflectivity plugin: Creating new model")
+            self.OnNewModel(None)
+
         # self.mb_autoupdate_sld.SetCheckable(True)
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD,
@@ -1071,6 +1150,7 @@ class Plugin(framework.Template):
                          self.mb_hide_advanced)
 
         self.HideUIElements()
+        self.sample_widget.UpdateModel()
         self.StatusMessage('Simple Reflectivity plugin loaded')
 
     def OnHideAdvanced(self, evt):
@@ -1187,7 +1267,8 @@ class Plugin(framework.Template):
             params=self.sample_widget.inst_params
             params['probe']=p1.selection()
             params['coords']=p3.selection()
-            dlg.plugin_handler.load_plugin(p2.selection())
+            dlg.LoadPlugin(p2.selection())
+            # dlg.plugin_handler.load_plugin(p2.selection())
             self.sample_widget.sample_table.ResetModel()
         wiz.Destroy()
     
@@ -1230,12 +1311,6 @@ class Plugin(framework.Template):
         """
         self.sample_widget.CheckGridUpdate()
         self.sample_widget.Update(update_script=False)
-    
-    def CreateNewModel(self, modelname='models.spec_nx'):
-        '''Init the script in the model to yield the
-        correct script for initilization
-        '''
-        pass
     
     def WriteModel(self):
         return
