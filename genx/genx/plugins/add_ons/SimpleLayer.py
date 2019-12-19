@@ -33,6 +33,111 @@ from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 mg=None
 pymysql=None
 
+class PluginInterface():
+    def __init__(self, plugin):
+        self._plugin=plugin
+
+class RefPluginInterface(PluginInterface):
+    def Update(self):
+        try:
+          self._plugin.sample_widget.UpdateListbox()
+        except AttributeError:
+          self._plugin.sample_widget.Update()
+
+    def get_selected_layer(self):
+        layer_idx=self._plugin.sample_widget.listbox.GetSelection()
+        active_layer=self._plugin.sampleh.getItem(layer_idx)
+        if active_layer.__class__.__name__=="Stack":
+                # create a new layer to return
+            self._plugin.sampleh.insertItem(layer_idx, 'Layer', 'WillChange')
+            active_layer=self._plugin.sampleh.getItem(layer_idx+1)
+        return active_layer
+
+    def set_layer_name(self, name):
+        layer_idx = self._plugin.sample_widget.listbox.GetSelection()
+        if self._plugin.sampleh.names[layer_idx] in ['Amb', 'Sub']:
+            return
+        active_layer = self._plugin.sampleh.getItem(layer_idx)
+        if active_layer.__class__.__name__ == "Stack":
+            # create a new layer to return
+            layer_idx += 1
+        tmpname = name
+        i = 1
+        while tmpname in self._plugin.sampleh.names:
+            tmpname = '%s_%i'%(name, i)
+            i += 1
+        self._plugin.sampleh.names[layer_idx] = tmpname
+
+    def material_apply(self, formula, density, panel=None):
+        try:
+            layer=self.get_selected_layer()
+        except:
+            dlg=wx.MessageDialog(panel,
+                'You have to select a layer or stack before applying material',
+                             caption='Information',
+                             style=wx.OK|wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        if layer:
+            layer.f=formula.f()
+            layer.b=formula.b()
+            layer.dens=density
+        name=''
+        for element, count in formula:
+            # get rid of isotope unusable characters
+            element=element.replace('{', '').replace('}', '').replace('^', 'i')
+            if count==1:
+                name+="%s"%(element)
+            elif float(count)==int(count):
+                name+="%s%i"%(element, count)
+            else:
+                name+=("%s%s"%(element, count)).replace('.', '_')
+        self.set_layer_name(name)
+        self.Update()
+
+class SimplePluginInterface(PluginInterface):
+    def Update(self):
+        self._plugin.Update()
+
+    def get_selected_layer(self):
+        row=self._plugin.sample_widget.grid.GetGridCursorRow()
+        layer_type=self._plugin.sample_widget.sample_table.GetValue(row, 1)
+        return row, layer_type
+
+    def material_apply(self, formula, density, panel=None):
+        row, layer_type=self.get_selected_layer()
+        if layer_type is None:
+            dlg=wx.MessageDialog(panel,
+                'You have to select a layer to apply the material to',
+                             caption='Information',
+                             style=wx.OK|wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        g=self._plugin.sample_widget.grid
+        t=self._plugin.sample_widget.sample_table
+        if layer_type=='Mixure':
+            col=g.GetGridCursorCol()
+            if not col in [2,4]:
+                dlg=wx.MessageDialog(panel,
+                                     'Select SLD cell to apply material to',
+                                     caption='Information',
+                                     style=wx.OK|wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()
+                return
+            if self._plugin.sample_widget.inst_params['probe']=='x-ray':
+                SLD=mdb.SLDx(formula).real
+            else:
+                SLD=mdb.SLDn(formula).real
+            t.SetValue(row, col, str(SLD))
+            print(row, col, SLD)
+            t.GetView().ForceRefresh()
+        else:
+            t.SetValue(row, 2, formula.estr())
+            t.GetView().ForceRefresh()
+
 class Plugin(framework.Template):
     _refplugin=None
     
@@ -56,10 +161,16 @@ class Plugin(framework.Template):
         materials_panel.Layout()
 
     def _init_refplugin(self):
-        try:
+        ph=self.parent.plugin_control.plugin_handler
+        if 'Reflectivity' in ph.loaded_plugins:
             # connect to the reflectivity plugin for layer creation
-            self._refplugin = self.parent.plugin_control.plugin_handler.loaded_plugins['Reflectivity']
-        except KeyError:
+            self._refplugin = RefPluginInterface(
+                ph.loaded_plugins['Reflectivity'])
+        elif 'SimpleReflectivity' in ph.loaded_plugins:
+            # connect to the reflectivity plugin for layer creation
+            self._refplugin = SimplePluginInterface(
+                ph.loaded_plugins['SimpleReflectivity'])
+        else:
             dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
                              caption='Information',
                              style=wx.OK|wx.ICON_WARNING)
@@ -126,59 +237,8 @@ class Plugin(framework.Template):
     def material_apply(self, event):
         index=self.materials_list.GetFirstSelected()
         formula, density=self.known_materials[index]
-        try:
-            layer=self.get_selected_layer()
-        except:
-            dlg=wx.MessageDialog(self.materials_panel,
-                'You have to select a layer or stack before applying material',
-                             caption='Information',
-                             style=wx.OK|wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-            return
-        if layer:
-            layer.f=formula.f()
-            layer.b=formula.b()
-            layer.dens=density
-        name=''
-        for element, count in formula:
-            # get rid of isotope unusable characters
-            element=element.replace('{', '').replace('}', '').replace('^', 'i')
-            if count==1:
-                name+="%s"%(element)
-            elif float(count)==int(count):
-                name+="%s%i"%(element, count)
-            else:
-                name+=("%s%s"%(element, count)).replace('.', '_')
-        self.set_layer_name(name)
-        try:
-          self.refplugin.sample_widget.UpdateListbox()
-        except AttributeError:
-          self.refplugin.sample_widget.Update()
-
-    def get_selected_layer(self):
-        layer_idx=self.refplugin.sample_widget.listbox.GetSelection()
-        active_layer=self.refplugin.sampleh.getItem(layer_idx)
-        if active_layer.__class__.__name__=="Stack":
-                # create a new layer to return
-            self.refplugin.sampleh.insertItem(layer_idx, 'Layer', 'WillChange')
-            active_layer=self.refplugin.sampleh.getItem(layer_idx+1)
-        return active_layer
-
-    def set_layer_name(self, name):
-        layer_idx = self.refplugin.sample_widget.listbox.GetSelection()
-        if self.refplugin.sampleh.names[layer_idx] in ['Amb', 'Sub']:
-            return
-        active_layer = self.refplugin.sampleh.getItem(layer_idx)
-        if active_layer.__class__.__name__ == "Stack":
-            # create a new layer to return
-            layer_idx += 1
-        tmpname = name
-        i = 1
-        while tmpname in self.refplugin.sampleh.names:
-            tmpname = '%s_%i'%(name, i)
-            i += 1
-        self.refplugin.sampleh.names[layer_idx] = tmpname
+        self.refplugin.material_apply(formula, density,
+                                      panel=self.materials_panel)
 
 
 class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
