@@ -857,7 +857,7 @@ class StartUpConfigDialog(wx.Dialog):
                   0, wx.ALIGN_LEFT, 5)
         self.profiles = self.get_possible_configs()
         self.config_list = wx.ListBox(self, size = (-1, 200), choices = self.profiles, style = wx.LB_SINGLE)
-        self.config_list.SetSelection(self.profiles.index('Default'))
+        self.config_list.SetSelection(self.profiles.index('SimpleReflectivity'))
         sizer.Add(self.config_list, 1, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 5)
         
         startup_cb = wx.CheckBox(self, -1, "Show at startup", style=wx.ALIGN_LEFT)

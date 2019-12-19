@@ -21,7 +21,20 @@ if not os.path.exists(config_path):
     os.makedirs(config_path)
 config_file=os.path.join(config_path, 'materials.cfg')
 
-default_materials=[]
+default_materials=[
+    [[["Cr", 1.0]], "7.19*0.602214/51.9961"],
+    [[["D", 2.0], ["O", 1.0]], "1.107*0.602214/20.0276"],
+    [[["Fe", 1.0]], "7.874*0.602214/55.845"],
+    [[["Fe", 2.0], ["O", 3.0]], "2.0/100.713"],
+    [[["H", 2.0], ["O", 1.0]], "1*0.602214/18.0152"],
+    [[["La", 0.7], ["Sr", 0.3], ["Mn", 1.0], ["O", 3.0]], "6.0/349.916"],
+    [[["Ni", 1.0]], "8.908*0.602214/58.6934"],
+    [[["Si", 1.0]], "2.329*0.602214/28.0855"],
+    [[["Si", 1.0], ["O", 2.0]], "3.0/113.005"],
+    [[["Sr", 1.0], ["Ti", 1.0], ["O", 3.0]], "1.0/(3.905**3)"],
+    [[["Ti", 1.0]], "4.506*0.602214/47.867"],
+    [[["Ti", 1.0], ["O", 2.0]], "4.0/(4.5318*5.5019*4.9063)"],
+    ]
 
 MASS_DENSITY_CONVERSION = 0.60221415  #g/cm³-> u/Å³ : 1e-24 (1/cm³->1/Å³) * 6.0221415e23 (Na)
 
@@ -249,7 +262,7 @@ class MaterialsDatabase(list):
                 known_materials=json.loads(open(config_file, 'r').read())
             except json.JSONDecodeError:
                 iprint("Can't reload material list, file corrupted.")
-                known_materials=[]
+                known_materials=default_materials
         else:
             known_materials=default_materials
         data=[self.prepare(mi) for mi in known_materials]
