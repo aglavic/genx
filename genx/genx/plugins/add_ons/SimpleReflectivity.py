@@ -123,7 +123,7 @@ class SampleTable(gridlib.GridTableBase):
     _last_layer_data=[]
 
     defaults={
-        'Formula': ['Layer', 'Formula', Formula([]),
+        'Formula': ['Layer', 'Formula', 'SLD',
                     False, '2.0', False, '0.0',
                     True, '10.0', False, '5.0', ML_LAYER],
         'Mixure':  ['MixLayer', 'Mixure', '6.0',
@@ -484,6 +484,26 @@ class SampleTable(gridlib.GridTableBase):
         self.GetView().ForceRefresh()
         self.updateModel()
         return True
+    
+    def RebuildTable(self, data):
+        diff=len(self.layers)-len(data)
+        self.layers=list(data)
+
+        if diff<0:
+            # list of layers is longer than previous table data
+            msg=gridlib.GridTableMessage(self,
+                                         gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, -diff)
+            self.GetView().ProcessTableMessage(msg)
+        elif diff>0:
+            # list of layers is shorter than previous table data
+            msg=gridlib.GridTableMessage(self,
+                                         gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, diff)
+            self.GetView().ProcessTableMessage(msg)
+        msg=gridlib.GridTableMessage(self,
+                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        self.updateModel()
 
     def DeleteRow(self, row):
         if row==self.repeatedInfo():
@@ -514,12 +534,11 @@ class SampleTable(gridlib.GridTableBase):
         return True
 
     def MoveRow(self, row_from, row_to):
-        if row_from==self.repeatedInfo():
+        ignore_rows=[0, self.repeatedInfo(), self.GetNumberRows()-1]
+        if row_from in ignore_rows or row_to in ignore_rows or row_to<0:
             return False
-        row=self.realRow(row_from)
-        if row_from in [0, self.GetNumberRows()-1] or row_to<0\
-                or row_to in [0, (self.GetNumberRows()-1)]:
-            return False
+        row_from=self.realRow(row_from)
+        row_to=self.realRow(row_to)
         if self.layers[row_from-1][11]!=self.layers[row_to-1][11]:
             return False
         moved_row=self.layers.pop(row_from-1)
@@ -541,15 +560,15 @@ class SampleTable(gridlib.GridTableBase):
                 nSLD=float(eval(layer[4]))
                 mSLD=float(eval(layer[6]))
                 output+="f=%s, "%(10*nSLD-10j*mSLD)
-                output+="b=%g, "%nSLD
-                output+="dens=0.1, magn=%g, "%mSLD
+                output+="b=%s, "%nSLD
+                output+="dens=0.1, magn=%s, "%mSLD
                 out_param['dens']=0.1
                 out_param['magn']=mSLD
             else:
                 dens=(eval(layer[4])*MASS_DENSITY_CONVERSION/formula.mFU())
                 output+="f=%s, "%formula.f()
                 output+="b=%s, "%formula.b()
-                output+="dens=%g, "%dens
+                output+="dens=%s, "%dens
                 output+="magn='%s', "%layer[6]
                 out_param['dens']=dens
                 out_param['magn']=float(eval(layer[6]))
@@ -557,8 +576,8 @@ class SampleTable(gridlib.GridTableBase):
             SLD1=float(eval(layer[2]))
             SLD2=float(eval(layer[4]))
             frac=float(eval(layer[6]))/100.
-            output+="f=%g, "%(frac*SLD1+(1-frac)*SLD2)
-            output+="b=%g, "%(frac*SLD1+(1-frac)*SLD2)
+            output+="f=(%s*%s+(1-%s)*%s), "%(frac, SLD1, frac, SLD2)
+            output+="b=(%s*%s+(1-%s)*%s), "%(frac, SLD1, frac, SLD2)
             output+="dens=0.1, magn=0.0, "
             out_param['dens']=0.1
             out_param['magn']=0.0
@@ -729,6 +748,7 @@ class SamplePanel(wx.Panel):
         self.refindexlist=refindexlist
         self.plugin=plugin
         self.variable_span=0.25
+        self.inst_params=dict(SamplePanel.inst_params)
         
         # Colours indicating different states
         # Green wx.Colour(138, 226, 52), ORANGE wx.Colour(245, 121, 0)
@@ -747,11 +767,11 @@ class SamplePanel(wx.Panel):
         self.sample_table=SampleTable(self, self.grid)
 
 
-        self.last_sample_script=self.sample_table.getModelCode()
+        self.last_sample_script=''#self.sample_table.getModelCode()
         self.Bind(EVT_UPDATE_MODEL, self.UpdateModel)
         boxhor.Add(self.grid, 1, wx.EXPAND)
-        
         boxver.Add(boxhor, 1, wx.EXPAND)
+        
         
         self.grid.info_text=wx.StaticText(self, -1, 'Bier')
         boxver.Add(self.grid.info_text, 0)
@@ -797,26 +817,6 @@ class SamplePanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, id=newid)
         self.toolbar.AddSeparator()
         
-        
-        # self.toolbar.AddStretchableSpace()
-        # text=wx.StaticText(self.toolbar, -1, 'Repitions:')
-        # text.SetToolTipString(
-        #     'Number N of repetitions for a multilayer structure.\n'
-        #     'The model structure is build as a set of bottom\n'
-        #     'layers (purple) repeated layer structure (white)\n'
-        #     'and a set of top layers (green):\n'
-        #     'Model=Substrat/[purple]/Nx[white]/[green]/Ambient\n\n'
-        #     'If top or bottom is missind, select Ambient or\n'
-        #     'Substrate when adding a new layer.'
-        #                                   )
-        # self.toolbar.AddControl(text)
-        #
-        # newid=wx.NewId()
-        # self.repetitions=wx.SpinCtrl(self.toolbar, newid,
-        #                              min=1, max=1000, initial=1,)
-        # self.toolbar.AddControl(self.repetitions)
-        # self.Bind(wx.EVT_SPINCTRL, self.ChangeRepetitions, id=newid)
-
     def ChangeRepetitions(self, evt):
         self.UpdateModel()
     
@@ -840,11 +840,13 @@ class SamplePanel(wx.Panel):
             pars['name']='inst_down'
             output+=template%pars
             insts=['inst', 'inst_down']
+        else:
+            insts=['inst']
         return insts, output
 
-    def UpdateModel(self, evt=None):
+    def UpdateModel(self, evt=None, first=False):
         coords=self.inst_params['coords']
-        if evt is None:
+        if evt in [None, 'inst']:
             sample_script=self.last_sample_script
         else:
             sample_script=evt.script
@@ -894,7 +896,7 @@ class SamplePanel(wx.Panel):
                 else:
                     di.data_color=(0.0, 0.0, 0.7)
                     di.sim_color=(0.0, 0.0, 1.0)
-            elif di.name.startswith('Spin') and len(insts)==1:
+            elif (di.name.startswith('Spin') and len(insts)==1) or first:
                 di.name='Data %i'%i
                 di.data_color=(0.0, 0.7, 0.0)
                 di.sim_color=(0.0, 1.0, 0.0)
@@ -903,7 +905,6 @@ class SamplePanel(wx.Panel):
         self.plugin.parent.data_list.list_ctrl._UpdateImageList()
         
         script+="    return I"
-        # print(script)
         self.plugin.SetModelScript(script)
         
         if evt is not None and self.plugin.mb_autoupdate_sim.IsChecked():
@@ -986,7 +987,7 @@ class SamplePanel(wx.Panel):
                 else:
                     self.inst_params[key]=value
             self.UpdateGrid(grid_parameters)
-            self.UpdateModel()
+            self.UpdateModel(evt='inst')
         else:
             pass
         dlg.Destroy()
@@ -1063,6 +1064,34 @@ class WizarSelectionPage(WizardPageSimple):
     def selection(self):
         return self.ctrl.GetString(self.ctrl.GetSelection())
 
+def find_code_segment(code, descriptor):
+    '''find_code_segment(code, descriptor) --> string
+
+    Finds a segment of code between BEGIN descriptor and END descriptor
+    returns a LookupError if the segement can not be found
+    '''
+    found=0
+    script_lines=code.splitlines(True)
+    line_index=0
+    for line in script_lines[line_index:]:
+        line_index+=1
+        if line.find('# BEGIN %s'%descriptor)!=-1:
+            found+=1
+            break
+
+    text=''
+    for line in script_lines[line_index:]:
+        line_index+=1
+        if line.find('# END %s'%descriptor)!=-1:
+            found+=1
+            break
+        text+=line
+
+    if found!=2:
+        raise LookupError('Code segement: %s could not be found'%descriptor)
+
+    return text
+
 
 class Plugin(framework.Template):
     previous_xaxis=None
@@ -1081,7 +1110,7 @@ class Plugin(framework.Template):
         self.sample_widget.model=self.model_obj
         sample_sizer.Add(self.sample_widget, 1, wx.EXPAND|wx.GROW|wx.ALL)
         sample_panel.Layout()
-        
+
         self.sample_widget.SetUpdateCallback(self.UpdateScript)
         
         # Create the SLD plot
@@ -1177,9 +1206,9 @@ class Plugin(framework.Template):
         self._hidden_pages=None
 
     def Remove(self):
-        self.ShowUIElements()
+        if self.mb_hide_advanced.IsChecked():
+            self.ShowUIElements()
         framework.Template.Remove(self)
-
     
     def UpdateScript(self, event):
         self.WriteModel()
@@ -1264,12 +1293,14 @@ class Plugin(framework.Template):
         wiz.SetPageSize(wx.Size(500, 350))
 
         if wiz.RunWizard(p1):
+            self.sample_widget.inst_params=dict(SamplePanel.inst_params)
             params=self.sample_widget.inst_params
             params['probe']=p1.selection()
             params['coords']=p3.selection()
             dlg.LoadPlugin(p2.selection())
             # dlg.plugin_handler.load_plugin(p2.selection())
             self.sample_widget.sample_table.ResetModel()
+            self.sample_widget.UpdateModel(first=True)
         wiz.Destroy()
     
     def OnDataChanged(self, event):
@@ -1282,8 +1313,7 @@ class Plugin(framework.Template):
 
         Loads the sample into the plugin...
         '''
-        
-        self.ReadModel()
+        pass #self.ReadModel()
     
     def OnSimulate(self, event):
         '''OnSimulate(self, event) --> None
@@ -1322,4 +1352,138 @@ class Plugin(framework.Template):
         Reads in the current model and locates layers and stacks
         and sample defined inside BEGIN Sample section.
         '''
-        pass
+        self.StatusMessage('Compiling the script...')
+        try:
+            self.CompileScript()
+        except modellib.GenericError as e:
+            self.ShowErrorDialog(str(e))
+            self.StatusMessage('Error when compiling the script')
+            return
+        except Exception as e:
+            outp=io.StringIO()
+            traceback.print_exc(200, outp)
+            val=outp.getvalue()
+            outp.close()
+            self.ShowErrorDialog(val)
+            self.Statusmessage('Fatal Error - compling, SimpleReflectivity')
+            return
+        self.StatusMessage('Script compiled!')
+
+        self.StatusMessage('Trying to interpret the script...')
+        
+        txt=self.GetModel().script
+        grid_parameters=self.GetModel().get_parameters()
+        print(grid_parameters.data)
+        # extract instrument parameters
+        insttxt=find_code_segment(txt, 'Instrument')
+        for li in insttxt.splitlines():
+            if not li.split('=',1)[0].strip()=='inst':
+                continue
+            instoptions=li.split('model.Instrument(')[1].strip()[:-1]
+            items=instoptions.strip(',').split(',')
+            items=dict([tuple(map(str.strip, i.split('=',1))) for i in items])
+        for key, value in self.sample_widget.inst_params.items():
+            if key in items:
+                newval=type(value)(eval(items[key]))
+                self.sample_widget.inst_params[key]=newval
+        
+        # extract layer parameters
+        sampletxt=find_code_segment(txt, 'Sample')
+        layers={}
+        layer_order=[]
+        stacks={}
+        repetitions=1
+        for li in sampletxt.splitlines():
+            if 'model.Layer' in li:
+                name, ltxt=map(str.strip, li.split('=', 1))
+                layers[name]=analyze_layer_txt(name, ltxt)
+                layer_order.append(name)
+            if 'model.Stack' in li:
+                name, stxt=map(str.strip, li.split('=', 1))
+                stacks[name]=analyze_stack_txt(stxt)
+        if 'Top' in stacks:
+            Top=stacks['Top']
+        else:
+            Top=[]
+        if 'Bot' in stacks:
+            Bottom=stacks['Bot']
+        else:
+            Bottom=[]
+        for ni, di in layers.items():
+            if ni in Top:
+                di.append(TOP_LAYER)
+            elif ni in Bottom:
+                di.append(BOT_LAYER)
+            else:
+                di.append(ML_LAYER)
+
+        # get parameters to be fitted
+        for li in layers.values():
+            prefix=li[0]+'.set'
+            fit_items= [(3, 'dens'), (5, 'magn'), (7, 'd'), (9, 'sigma')]
+            for index, si in fit_items:
+                if grid_parameters.get_fit_state_by_name(prefix+si.capitalize()):
+                    li[index]=True
+
+        table=self.sample_widget.sample_table
+        table.ambient=layers['Amb']
+        table.ambient[0]=None
+        table.substrate=layers['Sub']
+        table.substrate[0]=None
+        layers=[layers[key] for key in layer_order if not key in ['Amb', 'Sub']]
+        
+        table.RebuildTable(layers)
+
+        self.StatusMessage('New sample loaded to plugin!')
+
+
+def analyze_layer_txt(name, txt):
+    #['Iron', 'Formula', Formula([['Fe', 1.0]]), False, '7.87422', False, '3.0', True, '100.0', False, '5.0']
+    output=[name]
+    layeroptions=txt.split('model.Layer(')[1].strip()[:-1]
+    items=layeroptions.strip(',').split(',')
+    items=dict([tuple(map(str.strip, i.split('=', 1))) for i in items])
+    
+    if 'bc.' in items['b']:
+        output.append('Formula')
+        output.append(Formula.from_bstr(items['b']))
+        # density
+        output.append(False)
+        dens=float(items['dens'])*output[2].mFU()/MASS_DENSITY_CONVERSION
+        output.append(str(dens))
+        # magnetization
+        output.append(False)
+        output.append(str(eval(items['magn'])))
+    elif '+' in items['b'] and '*' in items['b']:
+        output.append('Mixure')
+        part1,part2=items['b'].strip('()').split('+',1)
+        frac=float(part1.split('*')[0])*100
+        SLD1=float(part1.split('*')[1])
+        SLD2=float(part2.split('*')[1])
+        output.append(str(SLD1))
+        output.append(False)
+        output.append(str(SLD2))
+        output.append(False)
+        output.append(str(frac))
+    else:
+        output.append('Formula')
+        output.append('SLD')
+        # density
+        output.append(False)
+        output.append(str(eval(items['b'])))
+        # magnetization
+        output.append(False)
+        output.append(str(eval(items['magn'])))
+
+    # thickness
+    output.append(False)
+    output.append(str(eval(items['d'])))
+    # roughness
+    output.append(False)
+    output.append(str(eval(items['sigma'])))
+    return output
+
+def analyze_stack_txt(txt):
+    txt=txt.split('Layers',1)[1].split(']',1)[0].strip('=[ ')
+    layers=map(str.strip, txt.split(','))
+    return list(layers)

@@ -103,6 +103,23 @@ class Formula(list):
             extracted_elements.append([element, count])
         return Formula(extracted_elements)
 
+    @classmethod
+    def from_bstr(cls, bstr):
+        '''
+        Try to parse a string of scattering length elements,
+        the same type that is returned by self.b().
+        '''
+        items=map(str.strip, bstr.split('+'))
+        extracted_elements=[]
+        for item in items:
+            if not item.startswith('bc.'):
+                continue
+            else:
+                element, count=item[3:].split('*',1)
+                count=float(count)
+                extracted_elements.append([element, count])
+        return Formula(extracted_elements)
+
     def __str__(self):
         '''Generate a string with sub- and superscript numbers for material.'''
         output = ''
