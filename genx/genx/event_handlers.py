@@ -53,7 +53,7 @@ def models_changed(frame, event):
     except AttributeError:
         frame.model.saved = False
     else:
-        frame.plugin_control.OnGridChanged(None)
+        frame.plugin_control.OnGridChanged(event)
     set_title(frame)
 
 def new(frame, event):

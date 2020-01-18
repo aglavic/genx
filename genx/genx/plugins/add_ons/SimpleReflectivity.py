@@ -14,6 +14,8 @@ is to the right. This is updated when the simulation button is pressed.
 
 from .. import add_on_framework as framework
 from genx.plotpanel import PlotPanel
+from genx.solvergui import EVT_UPDATE_PARAMETERS
+from genx.parametergrid import EVT_PARAMETER_GRID_CHANGE
 import genx.model as modellib
 import wx
 import wx.grid as gridlib
@@ -173,11 +175,11 @@ class SampleTable(gridlib.GridTableBase):
             diff=old_len-len(self.layers)
             if diff<0:
                 msg=gridlib.GridTableMessage(self,
-                                             gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, -diff)
+                                             gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, -diff)
                 self.GetView().ProcessTableMessage(msg)
             elif diff>0:
                 msg=gridlib.GridTableMessage(self,
-                                             gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, diff)
+                                             gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1, diff)
                 self.GetView().ProcessTableMessage(msg)
             msg=gridlib.GridTableMessage(self,
                                          gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
@@ -476,7 +478,7 @@ class SampleTable(gridlib.GridTableBase):
         self.layers.insert(model_row, newlayer)
     
         msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
+                                     gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, 1)
         self.GetView().ProcessTableMessage(msg)
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
@@ -492,12 +494,14 @@ class SampleTable(gridlib.GridTableBase):
         if diff<0:
             # list of layers is longer than previous table data
             msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, -diff)
+                                         gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,
+                                         1, -diff)
             self.GetView().ProcessTableMessage(msg)
         elif diff>0:
             # list of layers is shorter than previous table data
             msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, diff)
+                                         gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                                         1, diff)
             self.GetView().ProcessTableMessage(msg)
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
@@ -524,7 +528,7 @@ class SampleTable(gridlib.GridTableBase):
         self.parent.UpdateGrid(grid_parameters)
 
         msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1)
+                                     gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1, 1)
         self.GetView().ProcessTableMessage(msg)
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
@@ -992,9 +996,12 @@ class SamplePanel(wx.Panel):
             pass
         dlg.Destroy()
 
-    def CheckGridUpdate(self):
-        new_grid=self.plugin.GetModel().get_parameters()
-        new_data=[list(di) for di in new_grid.data]
+    def CheckGridUpdate(self, parameters=None):
+        if parameters is None:
+            new_grid=self.plugin.GetModel().get_parameters()
+            new_data=[list(di) for di in new_grid.data]
+        else:
+            new_data=parameters
         if self._last_grid_data!=new_data:
             layers=self.sample_table.get_name_list()
             for (pi, val, _, _, _, _) in new_data:
@@ -1002,7 +1009,7 @@ class SamplePanel(wx.Panel):
                     name, param=pi.split('.',1)
                 except ValueError:
                     continue
-                    
+
                 if name in layers:
                     if param==_set_func_prefix+'Dens':
                         self.sample_table.update_layer_parameters(name,dens=val)
@@ -1181,6 +1188,8 @@ class Plugin(framework.Template):
         self.HideUIElements()
         self.sample_widget.UpdateModel()
         self.StatusMessage('Simple Reflectivity plugin loaded')
+        
+        self.parent.Bind(EVT_UPDATE_PARAMETERS, self.OnFitParametersUpdated)
 
     def OnHideAdvanced(self, evt):
         if self.mb_hide_advanced.IsChecked():
@@ -1334,14 +1343,18 @@ class Plugin(framework.Template):
         # self.sample_widget.Update(update_script=False)
     
     def OnGridChange(self, event):
-        """ Updates the simualtion panel when the grid changes
-
-        :param event:
-        :return:
-        """
         self.sample_widget.CheckGridUpdate()
         self.sample_widget.Update(update_script=False)
-    
+
+    def OnFitParametersUpdated(self, event):
+        keys=self.GetModel().get_parameters().get_fit_pars()[1]
+        values=event.values
+        parameters=[(key, value, None, None, None, None) for key, value in zip(keys, values)]
+        self.sample_widget.CheckGridUpdate(parameters=parameters)
+        self.sample_widget.Update(update_script=False)
+        if event.permanent_change:
+            self.sample_widget.sample_table.updateModel()
+
     def WriteModel(self):
         return
     
@@ -1373,7 +1386,6 @@ class Plugin(framework.Template):
         
         txt=self.GetModel().script
         grid_parameters=self.GetModel().get_parameters()
-        print(grid_parameters.data)
         # extract instrument parameters
         insttxt=find_code_segment(txt, 'Instrument')
         for li in insttxt.splitlines():
