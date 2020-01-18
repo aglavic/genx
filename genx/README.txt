@@ -1,4 +1,4 @@
-This package contain GenX 2.4.9 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contain GenX 3.0.0 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -10,6 +10,14 @@ References
 ==========
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
+
+Changes 3.0.0
+=============
+ * Convert to python 3
+ * Convert to wxPython 4 (Phoenix)
+ * Add new SimpleReflectivity plugin for simple structures and beginner users
+ * Updated icons with dpi awareness
+
 
 Changes 2.4.9
 =============

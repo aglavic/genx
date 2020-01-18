@@ -5,15 +5,15 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{03439AE4-FE61-49AC-8D3F-1351147CE8FC}
-AppName=GenX
-AppVerName=GenX 2.X.X TRUNK
-AppPublisher=Matts Bjorck
+AppId={{54F9D347-19F3-4833-BA3B-154B6BBED1F9}
+AppName=GenX 3
+AppVerName=GenX 3.0.0
+AppPublisher=Artur Glavic
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
 AppUpdatesURL=https://sourceforge.net/projects/genx
-DefaultDirName={pf}\GenX
-DefaultGroupName=GenX      
+DefaultDirName={pf}\GenX 3
+DefaultGroupName=GenX 3
 AllowNoIcons=true
 
 OutputBaseFilename=install_genx
@@ -21,22 +21,25 @@ Compression=lzma
 SolidCompression=true
 ChangesAssociations=true
 PrivilegesRequired=admin
+PrivilegesRequiredOverridesAllowed=dialog
 UsePreviousTasks=yes
-WizardImageFile=..\windows_build\install_wizard_bkg.bmp
-WizardSmallImageFile=..\windows_build\install_wizard_small.bmp
+WizardImageFile=.\install_wizard_bkg.bmp
+WizardSmallImageFile=.\install_wizard_small.bmp
+WizardStyle=modern
 InfoBeforeFile=..\README.txt
+ArchitecturesInstallIn64BitMode=x64
 
 
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl
 
 [Files]
-Source: ..\dist\genx.exe; DestDir: {app}; Flags: ignoreversion
-Source: ..\dist\*.*; DestDir: {app}; Flags: ignoreversion recursesubdirs
+Source: ..\dist\genx\genx.exe; DestDir: {app}; Flags: ignoreversion
+Source: ..\dist\genx\*.*; DestDir: {app}; Flags: ignoreversion recursesubdirs
 
 [Icons]
-Name: {group}\GenX; Filename: {app}\genx.exe; IconFilename: {app}\genx.exe; IconIndex: 0
-Name: {group}\{cm:UninstallProgram,GenX}; Filename: {uninstallexe}
+Name: {group}\GenX 3; Filename: {app}\genx.exe; IconFilename: {app}\genx.exe; IconIndex: 0
+Name: {group}\{cm:UninstallProgram,GenX 3}; Filename: {uninstallexe}
 
 [Registry]
 Root: HKCU; Subkey: Software\Classes\.gx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
