@@ -1149,7 +1149,7 @@ def show_about_box(frame, event):
     info = wx.adv.AboutDialogInfo()
     info.Name = "GenX"
     info.Version = __version__
-    info.Copyright = "(C) 2008 Matts Bjorck"
+    info.Copyright = "(C) 2008 Matts Bjorck; 2020 Artur Glavic"
     info.Description = wordwrap(
         "GenX is a multipurpose refinement program using the differential "
         "evolution algorithm. It is developed  mainly for refining x-ray reflectivity "

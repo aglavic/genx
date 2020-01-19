@@ -34,7 +34,8 @@ def start_interactive(args):
         frame=app.TopWindow
         # load a model on start
         from genx import filehandling as io
-        import io, traceback
+        import traceback
+        from io import StringIO
         from genx.event_handlers import ShowModelErrorDialog, ShowErrorDialog, get_pages, \
                                       _post_new_model_event, set_title
         from genx import model as modellib
@@ -44,7 +45,7 @@ def start_interactive(args):
         except modellib.IOError as e:
             ShowModelErrorDialog(frame, e.__str__())
         except Exception as e:
-            outp = io.StringIO()
+            outp = StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()
@@ -55,7 +56,7 @@ def start_interactive(args):
             try:
                 [p.ReadConfig() for p in get_pages(frame)]
             except Exception as e:
-                outp = io.StringIO()
+                outp = StringIO()
                 traceback.print_exc(200, outp)
                 val = outp.getvalue()
                 outp.close()
@@ -65,7 +66,7 @@ def start_interactive(args):
         try:
             frame.plugin_control.OnOpenModel(None)
         except Exception as e:
-            outp = io.StringIO()
+            outp = StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
             outp.close()

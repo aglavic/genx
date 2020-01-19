@@ -17,6 +17,10 @@ Changes 3.0.0
  * Convert to wxPython 4 (Phoenix)
  * Add new SimpleReflectivity plugin for simple structures and beginner users
  * Updated icons with dpi awareness
+ * New optional wide screen optimized GUI that allows to see Data and SLD side-by-side
+ * Improved SimpleLayer materials database with query to Materials Project and Open Crystallography databases
+ * Fix windows binary to work with Windows 10 without compatibility mode
+ * Improved plot layout that uses full space, provides correct axes labes and can be copied with white background
 
 
 Changes 2.4.9

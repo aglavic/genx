@@ -21,7 +21,7 @@ from genx import version
 
 __name__='GenX'
 __author__ = "Matts Bjorck;Artur Glavic"
-__copyright__ = "Copyright 2008-2011"
+__copyright__ = "Copyright 2008-2020"
 __license__ = "GPL v3"
 __version__ = version.version.split()[0]
 __email__ = "artur.glavic@gmail.com"
