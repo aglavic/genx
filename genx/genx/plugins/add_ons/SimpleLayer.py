@@ -441,7 +441,7 @@ class MaterialDialog(wx.Dialog):
                 pass
         if pymysql is None:
             cod_txt=wx.StaticText(self, label="Install pymysql for COD Query")
-            table.Add(cod_txt, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+            table.Add(cod_txt, (11, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
         else:
             cod_button=wx.Button(self, label="Query Crystallography Open DB")
             cod_button.Bind(wx.EVT_BUTTON, self.OnCODQuery)
