@@ -1171,7 +1171,7 @@ class Plugin(framework.Template):
                     self.ReadModel()
                 except:
                     iprint("SimpleReflectivity plugin: Creating new model")
-                    self.CreateNewModel()
+                    self.OnNewModel(None)
         else:
             iprint("SimpleReflectivity plugin: Creating new model")
             self.OnNewModel(None)

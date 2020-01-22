@@ -16,11 +16,20 @@ from copy import deepcopy
 import wx
 from plugins import add_on_framework as framework
 from parameters import Parameters
-import event_handlers
+from genx import event_handlers
 import images as img
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
 class Plugin(framework.Template):
+    _refplugin=None
+
+    @property
+    def refplugin(self):
+        # check if reflectivity plugin is None or destoryed, try to connect
+        if not self._refplugin:
+            self._init_refplugin()
+        return self._refplugin
+
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
         self.parent=parent
@@ -32,24 +41,23 @@ class Plugin(framework.Template):
         sizer.Add(self.parameter_panel, 1, wx.EXPAND|wx.GROW|wx.ALL)
         parameter_panel.SetSizer(sizer)
         parameter_panel.Layout()
-        wx.CallAfter(self._init_refplugin)
 
         menu=self.NewMenu('P. Vault')
         self.mb_recalc_all=wx.MenuItem(menu, wx.NewId(),
                              "Recalculate items",
                              "Run simulations for each parameter set again and calculate FOM",
                              wx.ITEM_NORMAL)
-        menu.AppendItem(self.mb_recalc_all)
+        menu.Append(self.mb_recalc_all)
         self.mb_auto_store=wx.MenuItem(menu, wx.NewId(),
                      "Save tables",
                      "Save a parameters table file each time you add something to the vault",
                      wx.ITEM_CHECK)
-        menu.AppendItem(self.mb_auto_store)
+        menu.Append(self.mb_auto_store)
         self.mb_load_all=wx.MenuItem(menu, wx.NewId(),
                              "Recall saved tables",
                              "Load all table parameters previously saved",
                              wx.ITEM_NORMAL)
-        menu.AppendItem(self.mb_load_all)
+        menu.Append(self.mb_load_all)
         self.mb_auto_store.Check(False)
 
         self.parent.Bind(wx.EVT_MENU, self.OnRecalcAll, self.mb_recalc_all)
@@ -58,27 +66,38 @@ class Plugin(framework.Template):
 
 
     def _init_refplugin(self):
-        # connect to the reflectivity plugin for graph and sld plotting
-        self.refplugin=self.parent.plugin_control.plugin_handler.loaded_plugins['Reflectivity']
-        #self._orgi_call=self.refplugin.OnSimulate
-        #self.refplugin.OnSimulate=self._OnSimulate
+        ph=self.parent.plugin_control.plugin_handler
+        if 'Reflectivity' in ph.loaded_plugins:
+            # connect to the reflectivity plugin for layer creation
+            self._refplugin = ph.loaded_plugins['Reflectivity']
+        else:
+            dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
+                             caption='Information',
+                             style=wx.OK|wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+            self._refplugin=None
 
     def create_toolbar(self):
-        if os.name=='nt':
-            size=(24, 24)
-        else:
-            size=(-1,-1)
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
+        size=wx.Size(tb_bmp_size, tb_bmp_size)
+
         self.bitmap_button_add=wx.BitmapButton(self.tool_panel,-1
-        , img.getaddBitmap(), size=size, style=wx.NO_BORDER)
+        , img.add.getImage().Scale(tb_bmp_size, tb_bmp_size).ConvertToBitmap(),
+                                               size=size, style=wx.NO_BORDER)
         self.bitmap_button_add.SetToolTip('Add current parameters to Vault')
         self.bitmap_button_delete=wx.BitmapButton(self.tool_panel,-1
-        , img.getdeleteBitmap(), size=size, style=wx.NO_BORDER)
+        , img.delete.getImage().Scale(tb_bmp_size, tb_bmp_size).ConvertToBitmap(),
+                                               size=size, style=wx.NO_BORDER)
         self.bitmap_button_delete.SetToolTip('Delete selected parameter set')
         self.bitmap_button_apply=wx.BitmapButton(self.tool_panel,-1
-        , img.getmove_downBitmap(), size=size, style=wx.NO_BORDER)
+        , img.start_fit.getImage().Scale(tb_bmp_size, tb_bmp_size).ConvertToBitmap(),
+                                               size=size, style=wx.NO_BORDER)
         self.bitmap_button_apply.SetToolTip('Apply selected parameter set to the model')
         self.bitmap_button_plot=wx.BitmapButton(self.tool_panel,-1
-        , img.plotting.GetBitmap(), size=size, style=wx.NO_BORDER)
+        , img.plotting.getImage().Scale(tb_bmp_size, tb_bmp_size).ConvertToBitmap(),
+                                               size=size, style=wx.NO_BORDER)
         self.bitmap_button_plot.SetToolTip('Toggle plotting of the selected parameter set')
 
 
@@ -120,7 +139,7 @@ class Plugin(framework.Template):
         self.tool_panel.SetSizer(self.sizer_hor)
 
         ppanel=wx.Panel(self.parameter_panel)
-        psizer=wx.GridSizer(2, 2)
+        psizer=wx.GridSizer(2,2,0)
         ppanel.SetSizer(psizer)
 
         psizer.Add(wx.StaticText(ppanel, label='P1 index:'),
@@ -236,12 +255,15 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                              style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_EDIT_LABELS)
         ListCtrlAutoWidthMixin.__init__(self)
         self.plugin=plugin
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
         if sys.platform.startswith('win'):
-            font=wx.Font(9, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL,
-                           wx.FONTWEIGHT_NORMAL, face="Lucida Sans Unicode")
+            font=wx.Font(9,
+                         wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL,
+                         wx.FONTWEIGHT_NORMAL, faceName="Lucida Sans Unicode")
         else:
-            font=wx.Font(9, wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL,
-                           wx.FONTWEIGHT_NORMAL, encoding=wx.FONTENCODING_UNICODE)
+            font=wx.Font(9,
+                         wx.FONTFAMILY_ROMAN, wx.FONTSTYLE_NORMAL,
+                         wx.FONTWEIGHT_NORMAL, encoding=wx.FONTENCODING_UNICODE)
         self.SetFont(font)
 
         # Set list length
@@ -351,7 +373,7 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                 break
         if not was_stored:
             message='Do you want to store the current parameters in the Vault'+\
-                    ' be for applying the selected ones?'
+                    ' before applying the selected ones?'
             dlg=wx.MessageDialog(self, message, 'Store current parameters?',
                 wx.YES_NO|wx.ICON_QUESTION)
             if dlg.ShowModal()==wx.ID_YES:

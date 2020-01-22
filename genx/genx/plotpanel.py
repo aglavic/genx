@@ -2,11 +2,12 @@
 # libary.
 # Programmed by: Matts Bjorck
 # Last changed: 2009 03 10
+import time
 
 import matplotlib
 matplotlib.interactive(False)
 # Use WXAgg backend Wx to slow
-matplotlib.use('Agg')
+matplotlib.use('wxAgg')
 from matplotlib.backends.backend_wx import FigureCanvasWx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
@@ -23,14 +24,6 @@ from wx import Printout, PrintData, PAPER_A4, LANDSCAPE, PrintDialogData
 
 from . import filehandling as io
 from .gui_logging import iprint
-
-# Okay due to compabiltiy issues with version above 0.91
-spl = matplotlib.__version__.split('.')
-mat_ver = float(spl[0]+'.'+spl[1])
-#print mat_ver
-zoom_ver = 0.91
-if mat_ver < zoom_ver:
-    from matplotlib.transforms import Value 
 
 # Event for a click inside an plot which yields a number
 (plot_position, EVT_PLOT_POSITION) = wx.lib.newevent.NewEvent()
@@ -409,17 +402,16 @@ class PlotPanel(wx.Panel):
             return None
 
 
-        
     def CopyToClipboard(self, event = None):
         '''CopyToClipboard(self, event) --> None
         
         Copy the plot to the clipboard.
         '''
         self.SetColor((255, 255, 255))
-        self.flush_plot()
+        self.canvas.draw()
         self.canvas.Copy_to_Clipboard(event = event)
         self.SetColor()
-        self.flush_plot()
+        self.canvas.draw()
 
     def PrintSetup(self, event = None):
         '''PrintSetup(self) --> None
@@ -563,6 +555,7 @@ class PlotPanel(wx.Panel):
         dc = wx.ClientDC(self.canvas)
         odc = wx.DCOverlay(self.overlay, dc)
         odc.Clear()
+
 
         dc.SetPen(wx.Pen("black", 2, style=wx.DOT_DASH))
         dc.SetBrush(wx.Brush("black", style=wx.BRUSHSTYLE_TRANSPARENT))
@@ -1111,8 +1104,7 @@ class DataPlotPanel(PlotPanel):
         self.AutoScale()
         # Force an update of the plot
         self.flush_plot()
-        #self.canvas.draw()
-        #print 'Data plotted'
+
     
     def plot_data_fit(self, data):
         
@@ -1149,11 +1141,9 @@ class DataPlotPanel(PlotPanel):
         # Force an update of the plot
         self.autoscale_error_ax()
         self.flush_plot()
-        #self.canvas.draw()
-        #print 'Data plotted'
         
     def plot_data_sim(self, data):
-        
+
         if not self.ax:
                 #self.ax = self.figure.add_subplot(111)
                 self.create_axes()
@@ -1215,9 +1205,7 @@ class DataPlotPanel(PlotPanel):
         self.AutoScale()
         # Force an update of the plot
         self.flush_plot()
-        #self.canvas.draw()
-        #print 'Data plotted'
-    
+
     
     def OnDataListEvent(self, event):
         '''OnDataListEvent(self, event) --> None
