@@ -21,8 +21,8 @@ class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
         self.parent=parent
-
-        wx.CallAfter(self._init_refplugin)
+        
+        self._init_refplugin()
 
         menu=self.NewMenu('Mag. SLD')
         self.mb_second_axis=wx.MenuItem(menu, wx.NewId(),
@@ -43,8 +43,21 @@ class Plugin(framework.Template):
 
 
     def _init_refplugin(self):
-        # connect to the reflectivity plugin for sld plotting
-        self.refplugin=self.parent.plugin_control.plugin_handler.loaded_plugins['Reflectivity']
+        ph=self.parent.plugin_control.plugin_handler
+        if 'Reflectivity' in ph.loaded_plugins:
+            # connect to the reflectivity plugin for layer creation
+            self.refplugin = ph.loaded_plugins['Reflectivity']
+        elif 'SimpleReflectivity' in ph.loaded_plugins:
+            # connect to the reflectivity plugin for layer creation
+            self.refplugin = ph.loaded_plugins['SimpleReflectivity']
+        else:
+            # dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
+            #                  caption='Information',
+            #                  style=wx.OK|wx.ICON_WARNING)
+            # dlg.ShowModal()
+            # dlg.Destroy()
+            raise RuntimeError("Can't load plugin without Reflectivity plugin present.")
+            
         self._orgi_call=self.refplugin.OnSimulate
         self.refplugin.OnSimulate=self._OnSimulate
 
@@ -57,6 +70,15 @@ class Plugin(framework.Template):
         ax2.set_position([box.x0, box.y0, box.width, box.height])
         ax2.set_visible(False)
         self._annotations=[]
+    
+    def Remove(self):
+        self.refplugin.OnSimulate=self._orgi_call
+        sld_plot=self.refplugin.sld_plot
+        sld_plot.plot.ax2.set_visible(False)
+        del(sld_plot.plot.ax2)
+        del(self.refplugin)
+        framework.Template.Remove(self)
+
 
     def _OnSimulate(self, event):
         '''
@@ -81,7 +103,7 @@ class Plugin(framework.Template):
                 slds=sld_plot.plot_dicts[i]
                 z=slds['z']
                 unit=slds['SLD unit']
-                if unit in ["fm/\AA^{3}", ""] and self.mb_second_axis.IsChecked():
+                if unit in ["fm/\AA^{3}", "\\AA^{-2}",""] and self.mb_second_axis.IsChecked():
                     for key, value in list(slds.items()):
                         if key=='mag' and value.sum()>0.:
                             msld=value
@@ -95,7 +117,7 @@ class Plugin(framework.Template):
                                 self._annotations.append(
                                    ax.annotate('Integrated M:\n%.4g $emu/cm^2$'%trapz(mag, z*1e-8),
                                                (com, 0.02), ha='center'))
-        if msld is not None and unit in ["fm/\AA^{3}", ""] and self.mb_second_axis.IsChecked():
+        if msld is not None and unit in ["fm/\AA^{3}", "\\AA^{-2}", ""] and self.mb_second_axis.IsChecked():
             ax2.set_visible(True)
             ymin, ymax=ax.get_ylim()
             if self.mb_use_SI.IsChecked():
@@ -104,6 +126,8 @@ class Plugin(framework.Template):
             else:
                 ax2.set_ylim((ymin*AAm2_to_emucc, ymax*AAm2_to_emucc))
                 ax2.yaxis.label.set_text('M [$emu/cm^3$]')
-            sld_plot.plot.ax.legend()
+            sld_plot.plot.ax.legend(loc='upper right',# bbox_to_anchor=(1, 0.5),
+                                    framealpha = 0.5,
+                                    fontsize = "small", ncol = 1)
         else:
             ax2.set_visible(False)

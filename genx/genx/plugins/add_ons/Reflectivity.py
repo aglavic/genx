@@ -1756,17 +1756,19 @@ class SamplePlotPanel(wx.Panel):
             for sim in range(len(self.plot_dicts)):
                 if data[sim].show:
                     for key in self.plot_dicts[sim]:
+                        if key in ['z', 'SLD unit'] or (self.plot_dicts[0][key]==0).all():
+                            # skip lines that are all zero to keep legend cleaner
+                            continue
                         is_imag = key[:2] == 'Im' or key[:4] == 'imag'
                         if (is_imag and self.plugin.show_imag_sld) or not is_imag:
-                            if key != 'z' and key != 'SLD unit':
-                                label = data[sim].name + '\n' + key
-                                self.plot.ax.plot(self.plot_dicts[sim]['z'], self.plot_dicts[sim][key],\
-                                                  colors[i%len(colors)], label = label)
+                            label = data[sim].name + '\n' + key
+                            self.plot.ax.plot(self.plot_dicts[sim]['z'], self.plot_dicts[sim][key],\
+                                              colors[i%len(colors)], label = label)
 
-                                if 'SLD unit' in self.plot_dicts[sim]:
-                                    if not self.plot_dicts[sim]['SLD unit'] in sld_units:
-                                        sld_units.append(self.plot_dicts[sim]['SLD unit'])
-                                i += 1
+                            if 'SLD unit' in self.plot_dicts[sim]:
+                                if not self.plot_dicts[sim]['SLD unit'] in sld_units:
+                                    sld_units.append(self.plot_dicts[sim]['SLD unit'])
+                            i += 1
         else:
             # Old style plotting just one sld
             if self.plugin.GetModel().compiled:
@@ -1778,21 +1780,24 @@ class SamplePlotPanel(wx.Panel):
                 plot_dict = sample.SimSLD(None, None, model.inst)
                 self.plot_dicts = [plot_dict]
                 for key in self.plot_dicts[0]:
+                    if key in ['z', 'SLD unit'] or (self.plot_dicts[0][key]==0).all():
+                        # skip lines that are all zero to keep legend cleaner
+                        continue
                     is_imag = key[:2] == 'Im' or key[:4] == 'imag'
                     if (is_imag and self.plugin.show_imag_sld) or not is_imag:
-                        if key != 'z' and key != 'SLD unit':
-                            label = key
-                            self.plot.ax.plot(self.plot_dicts[0]['z'], self.plot_dicts[0][key],\
-                                              colors[i%len(colors)], label = label)
+                        label = key
+                        self.plot.ax.plot(self.plot_dicts[0]['z'], self.plot_dicts[0][key],\
+                                          colors[i%len(colors)], label = label)
 
-                            if 'SLD unit' in self.plot_dicts[0]:
-                                if not self.plot_dicts[0]['SLD unit'] in sld_units:
-                                    sld_units.append(self.plot_dicts[0]['SLD unit'])
-                            i += 1
+                        if 'SLD unit' in self.plot_dicts[0]:
+                            if not self.plot_dicts[0]['SLD unit'] in sld_units:
+                                sld_units.append(self.plot_dicts[0]['SLD unit'])
+                        i += 1
                     
         if i > 0:
-            self.plot.ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), 
-                                prop = {'size': 10}, ncol = 1)
+            self.plot.ax.legend(loc='upper right',# bbox_to_anchor=(1, 0.5),
+                                framealpha = 0.5,
+                                fontsize = "small", ncol = 1)
         
             sld_unit = ', '.join(sld_units)
             self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
