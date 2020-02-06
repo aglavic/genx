@@ -197,8 +197,7 @@ if ('bdist' in sys.argv):
                    stderr=subprocess.STDOUT, stdout=open('../last_package.log', 'w')
                    ).communicate()
   os.chdir('..')
-  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+
-                    '_'+platform.dist()[0].lower()+'_py%i%i.deb'%(
+  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_py%i%i.deb'%(
                     py_version.major,py_version.minor))
   
   print("Removing debian folder")
