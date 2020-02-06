@@ -197,7 +197,8 @@ if ('bdist' in sys.argv):
                    stderr=subprocess.STDOUT, stdout=open('../last_package.log', 'w')
                    ).communicate()
   os.chdir('..')
-  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+'_py%i%i.deb'%(
+  os.rename((__name__+'_'+__version__).lower()+'-1_all.deb', __name__+'-'+__version__+
+                    '_'+platform.dist()[0].lower()+'_py%i%i.deb'%(
                     py_version.major,py_version.minor))
   
   print("Removing debian folder")
@@ -234,67 +235,4 @@ if ('--install-scripts' in sys.argv) and ('--prefix' in sys.argv):
   script=open(os.path.join(sys.argv[sys.argv.index('--install-scripts')+1], 'plot.py'), 'w')
   script.write(text)
   script.close()
-
-
-if "py2exe" in sys.argv:
-  def xcopy_to_folder(from_folder, to_folder):
-    dest=os.path.join('dist', to_folder)
-    if getattr(from_folder, '__iter__', False):
-      src=os.path.join(*from_folder)
-    else:
-      src=from_folder
-    print("Copy %s to %s..." % (src, dest))
-    try:
-      os.mkdir(os.path.join('dist', to_folder))
-    except OSError:
-      print("\tDirectory %s already exists." % dest)
-    try:
-      handle=os.popen('xcopy %s %s /y /e' % (src, dest))
-      files=len(handle.read().splitlines())
-      print("\t%i Files" % files)
-    except:
-      print("\tSkipped because of errors!" % src)
-  print("\n*** Copying source and datafiles ***")  
-# py2exe specific stuff to make it work:
-  for src, dest in [
-                    ('plugins', 'plugins'), 
-                    ('models', 'models'), 
-                    ('profiles', 'profiles'),
-                    ('examples', 'examples'),
-                    ]:
-    xcopy_to_folder(src, dest)
-  os.popen('xcopy genx.conf dist')
-
-
-if 'py2app' in sys.argv:
-  def xcopy_to_folder(from_folder, to_folder):
-    dest=os.path.join('dist', to_folder)
-    if getattr(from_folder, '__iter__', False):
-      src=os.path.join(*from_folder)
-    else:
-      src=from_folder
-    print("Copy %s to %s..." % (src, dest))
-    try:
-      os.mkdir(os.path.join('dist', to_folder))
-    except OSError:
-      print("\tDirectory %s already exists." % dest)
-    try:
-      handle=os.popen('cp -R %s %s' % (src, dest))
-      files=len(handle.read().splitlines())
-      print("\t%i Files" % files)
-    except:
-      print("\tSkipped because of errors!" % src)
-  print("\n*** Copying source and datafiles ***")  
-  # py2app specific stuff to make it work:
-  base = 'GenX.app/Contents/Resources/lib/python2.7'
-  for src, dest in [
-                    ('profiles', ''),
-                    ('examples', ''),
-                    ]:
-    xcopy_to_folder(src, base + dest)
-  os.popen('cp genx.conf ' + 'dist/' + base)
-  # Copy the icon file for gx files to the right folder
-  os.popen('cp mac_build/genx_file.icns ' + 'dist/GenX.app/Contents/Resources')
-
-  #
   

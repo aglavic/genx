@@ -116,7 +116,10 @@ class PlotPanel(wx.Panel):
             pixels = self.GetClientSize()
 
         self.canvas.SetSize(pixels)
-        self.figure.tight_layout()
+        try:
+            self.figure.tight_layout()
+        except ValueError:
+            pass
         #self.figure.set_size_inches(pixels[0]/self.figure.get_dpi()
         #, pixels[1]/self.figure.get_dpi())
     
@@ -1021,7 +1024,11 @@ class DataPlotPanel(PlotPanel):
         
     def create_axes(self):
         # self.ax = self.figure.add_axes(self.main_ax_rect)#
-        gs=self.figure.add_gridspec(4,1)
+        try:
+            gs=self.figure.add_gridspec(4,1)
+        except AttributeError:
+            from matplotlib.gridspec import GridSpec
+            gs=GridSpec(4,1)
         self.ax=self.figure.add_subplot(gs[:3,0])
         #self.ax.xaxis.set_visible(False)
         setp(self.ax.get_xticklabels(), visible=False)
