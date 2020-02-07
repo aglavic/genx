@@ -1,10 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 block_cipher = None
-
+import os
 
 a = Analysis(['scripts\\genx'],
-             pathex=['C:\\Users\\artur\\Documents\\genx'],
+             pathex=[os.path.abspath(os.path.curdir)],
              binaries=[],
              datas=[('genx', 'genx')],
              hiddenimports=[],
