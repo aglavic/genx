@@ -30,6 +30,8 @@ from .gui_logging import iprint
 # Event to tell the main window that the zoom state has changed
 (state_changed, EVT_PLOT_SETTINGS_CHANGE) = wx.lib.newevent.NewEvent()
 
+zoom_state=False
+
 #==============================================================================
 class PlotPanel(wx.Panel):
     ''' Base class for the plotting in GenX - all the basic functionallity
@@ -467,10 +469,7 @@ class PlotPanel(wx.Panel):
         size = self.canvas.GetClientSize()
         p.y = (size.height - p.y)
         if self.zoom and self.ax:
-            if mat_ver > zoom_ver:
-                in_axes = self.ax.in_axes(p)
-            else:
-                in_axes = self.ax.in_axes(*self.start_pos)
+            in_axes = self.ax.in_axes(p)
             if in_axes:
                 self.zooming = True
                 self.cur_rect = None
@@ -480,14 +479,10 @@ class PlotPanel(wx.Panel):
                 self.zooming = False
         elif self.ax:
             size = self.canvas.GetClientSize()
-            if mat_ver > zoom_ver:
-                xy = self.ax.transData.inverted().transform(\
-                    array([self.start_pos[0], size.height-self.start_pos[1]])\
-                    [newaxis,:])
-                x, y = xy[0,0], xy[0,1]
-            else:
-                x, y = self.ax.transData.inverse_xy_tup(\
-                    (self.start_pos[0], size.height - self.start_pos[1]))
+            xy = self.ax.transData.inverted().transform(\
+                array([self.start_pos[0], size.height-self.start_pos[1]])\
+                [newaxis,:])
+            x, y = xy[0,0], xy[0,1]
             if self.callback_window:
                 evt = plot_position(text = '(%.3e, %.3e)'%(x, y))
                 wx.PostEvent(self.callback_window, evt)
@@ -504,10 +499,7 @@ class PlotPanel(wx.Panel):
             p.x, p.y = self.cur_pos
             size = self.canvas.GetClientSize()
             p.y = (size.height - p.y)
-            if mat_ver > zoom_ver:
-                in_axes = self.ax.in_axes(p)
-            else:
-                in_axes = self.ax.in_axes(*self.start_pos)
+            in_axes = self.ax.in_axes(p)
             if in_axes:
                 new_rect = (min(self.start_pos[0], self.cur_pos[0]),
                             min(self.start_pos[1], self.cur_pos[1]),
@@ -526,18 +518,12 @@ class PlotPanel(wx.Panel):
                 # Note: The coordinte system for matplotlib have a different 
                 # direction of the y-axis and a different origin!
                 size = self.canvas.GetClientSize()
-                if mat_ver > zoom_ver:
-                    start = self.ax.transData.inverted().transform(\
-                    array([self.start_pos[0], size.height-self.start_pos[1]])[newaxis,:])
-                    end = self.ax.transData.inverted().transform(\
-                    array([self.cur_pos[0], size.height-self.cur_pos[1]])[newaxis, :])
-                    xend, yend = end[0,0], end[0,1]
-                    xstart, ystart = start[0,0], start[0,1]
-                else:
-                    xstart, ystart = self.ax.transData.inverse_xy_tup(\
-                        (self.start_pos[0], size.height-self.start_pos[1]))
-                    xend, yend = self.ax.transData.inverse_xy_tup(\
-                        (self.cur_pos[0], size.height-self.cur_pos[1]))
+                start = self.ax.transData.inverted().transform(\
+                array([self.start_pos[0], size.height-self.start_pos[1]])[newaxis,:])
+                end = self.ax.transData.inverted().transform(\
+                array([self.cur_pos[0], size.height-self.cur_pos[1]])[newaxis, :])
+                xend, yend = end[0,0], end[0,1]
+                xstart, ystart = start[0,0], start[0,1]
                 
                 #print xstart, xend
                 #print ystart, yend
@@ -924,46 +910,25 @@ class FigurePrintout(wx.Printout):
         """
         figure = self.figure
 
-        if mat_ver < zoom_ver:
-            old_dpi = figure.dpi.get()
-            figure.dpi.set(dpi)
-            old_width = figure.figwidth.get()
-            figure.figwidth.set(wFig)
-            old_height = figure.figheight.get()
-            figure.figheight.set(hFig)
+        old_dpi = figure.dpi.get()
+        figure.dpi.set(dpi)
+        old_width = figure.figwidth.get()
+        figure.figwidth.set(wFig)
+        old_height = figure.figheight.get()
+        figure.figheight.set(hFig)
 
-            wFig_Px = int(figure.bbox.width())
-            hFig_Px = int(figure.bbox.height())
+        wFig_Px = int(figure.bbox.width())
+        hFig_Px = int(figure.bbox.height())
 
-            agg = RendererAgg(wFig_Px, hFig_Px, Value(dpi))
-        else:
-            old_dpi = figure.get_dpi()
-            figure.set_dpi(dpi)
-            old_width = figure.get_figwidth()
-            figure.set_figwidth(wFig)
-            old_height = figure.get_figheight()
-            figure.set_figheight(hFig)
-            old_frameon = figure.frameon
-            figure.frameon = False
-
-            wFig_Px = int(figure.bbox.width)
-            hFig_Px = int(figure.bbox.height)
-
-            agg = RendererAgg(wFig_Px, hFig_Px, dpi)
+        agg = RendererAgg(wFig_Px, hFig_Px, dpi)
         
 
             
         figure.draw(agg)
 
-        if mat_ver < zoom_ver:
-            figure.dpi.set(old_dpi)
-            figure.figwidth.set(old_width)
-            figure.figheight.set(old_height)
-        else:
-            figure.set_dpi(old_dpi)
-            figure.set_figwidth(old_width)
-            figure.set_figheight(old_height)
-            figure.frameon = old_frameon
+        figure.dpi.set(old_dpi)
+        figure.figwidth.set(old_width)
+        figure.figheight.set(old_height)
 
         image = wx.EmptyImage(wFig_Px, hFig_Px)
         image.SetData(agg.tostring_rgb())

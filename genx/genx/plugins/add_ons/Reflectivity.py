@@ -1734,7 +1734,10 @@ class SamplePlotPanel(wx.Panel):
         self.SetSizer(sizer)
         self.plot.ax.set_autoscale_on(False)
         self.plot_dict = {}
-        
+    
+    def SetZoom(self, active = False):
+        return self.plot.SetZoom(active)
+    
     def Plot(self):
         ''' Plot(self) --> None
         

@@ -26,8 +26,18 @@ manual_url = 'http://genx.sourceforge.net/doc/'
 homepage_url = 'http://genx.sf.net'
 
 def get_pages(frame):
-    pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
-                frame.plot_fomscan]
+    # Get all plot panel objects in GUI
+    pages = []
+    for page in frame.plot_notebook.GetChildren():
+        pages+=page.GetChildren()
+    try:
+        for page in frame.sep_plot_notebook.GetChildren():
+            pages+=page.GetChildren()
+    except AttributeError:
+        pass
+
+    # pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
+    #             frame.plot_fomscan]
     return pages
 
 def set_title(frame):
@@ -790,14 +800,17 @@ def on_zoom_check(frame, event):
     
     Takes care of clicks on the toolbar zoom button and the menu item zoom.
     '''
-    sel = frame.plot_notebook.GetSelection()
-    pages = get_pages(frame)
-    if sel < len(pages):
-        zoom_state = not pages[sel].GetZoom()
-        pages[sel].SetZoom(zoom_state)
-            
-        frame.main_frame_toolbar.ToggleTool(10009, zoom_state)
+    if event.GetId()==10009:
+        zoom_state=frame.main_frame_toolbar.GetToolState(10009)
         frame.main_frame_menubar.mb_view_zoom.Check(zoom_state)
+    else:
+        zoom_state=frame.main_frame_menubar.mb_view_zoom.IsChecked()
+        frame.main_frame_toolbar.ToggleTool(10009, zoom_state)
+
+    # Synchronize all plots with zoom state
+    pages = get_pages(frame)
+    for page in pages:
+        page.SetZoom(zoom_state)
 
 def zoomall(frame, event):
     '''zoomall(self, event) --> None
