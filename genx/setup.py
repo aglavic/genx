@@ -10,10 +10,10 @@ import sys, os
 
 try:
   # Use easy setup to ensure dependencies
-  import ez_setup
-  ez_setup.use_setuptools()
+  from setuptools import setup, find_packages
 except ImportError:
-  pass
+  print("Could not import setuptools")
+  from distutils.core import setup
 
 from glob import glob
 import subprocess
@@ -63,25 +63,6 @@ elif sys.platform=='darwin':
 else:
     icon_dir='debian_build/genx_64x64.png'
 
-from distutils.core import setup
-# try:
-#     from cx_Freeze import setup, Executable
-# except ImportError:
-#     from distutils.core import setup
-# else:
-#     __options__['executables']=[Executable('scripts/genx', icon=icon_dir)]
-#     __options__['options']={"build_exe": {
-#         "includes": ["numpy", "matplotlib", "traceback", "multiprocessing",
-#                      "ConfigParser", "io",
-#                      'scipy', "h5py.defs", "h5py.utils", "h5py._proxy",
-#                      "h5py._errors"],
-#         'packages': ['genx.plugins', 'genx.models', 'wx', 'matplotlib', 'ConfigParser', 'scipy',
-#                      'scipy.spatial', "multiprocessing",
-#                      "h5py", 'numpy', 'numpy.lib.format'],
-#         'excludes': ['_gtkagg', '_tkagg', 'gtk', 'glib', 'gobject', 'sympy', "IPython", "Tkinter",
-#                      "tcl", "mpi4py", "PyQt4", 'sqlite3',
-#                      'scipy.spatial.cKDTree','multiprocessing.Pool'],
-#         }}
 
 # extensions modules written in C
 __extensions_modules__=[]
