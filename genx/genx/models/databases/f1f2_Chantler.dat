@@ -17,23 +17,17 @@
 #UD These data are available in electronic form from:
 #UD     NIST Form Factor, Attenuation & Scatterin Tables
 #UD     (from E-1-10eV to E=0.4,1.0 MeV)
-#UD     Jean W. Gallagher
-#UD     Standard Reference Data
+#UD     C.T. Chantler, et al. P
+#UD     Standard Reference Database 66
 #UD     National Institute of Standards and Technology
 #UD     Gaithersburg, MD 20899
-#UD     (301) 975-2204    jwg@enh.nist.gov
-#UD     to order: (301) 975-2208, Fax: (301) 926-0416, e-mail: SRDATA@enh.nist.gov
-#UD 
-#UD 
+#UD     https://www.nist.gov/pml/x-ray-form-factor-attenuation-and-scattering-tables
+#UD     https://physics.nist.gov/PhysRefData/FFast/html/form.html
+#UD
+#UD
 #UD The data in this file has been obtained from the mentioned address.
-#UD The files have been transferren into DABAX data format with the aim 
+#UD The files have been transferred into DABAX data format with the aim
 #UD of making comparisons with other f1f2 data from DABAX.
-#UD Its use is restricted to the copyright notice reproduced below.
-#UD The present license has been purchased by the 
-#UD ESRF Programming Group. No use of these data is allowed from outside
-#UD ESRF. Thus we restricted its accessibility to the Development DABAX
-#UD server inside the ESRF firewall. For questions about the usability or
-#UD these data inside the ESRF contact srio@esrf.fr
 #UD 
 #UD Column description 1:PhotonEnergy[keV], 2: f1(e/atom), 3: f2(e/atom), 
 #UD                    4:mu (cm^2/g), 5: scoh+inc(cm^2/g), 6:muK(cm^2/g),
