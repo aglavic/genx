@@ -608,7 +608,6 @@ class MainFrame(wx.Frame):
 
     def eh_mb_quit(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.quit(self, event)
-        self.Destroy()
 
     def eh_mb_copy_graph(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.copy_graph(self, event)

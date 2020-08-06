@@ -766,7 +766,7 @@ def quit(frame, event):
     frame.findreplace_dlg.Destroy()
     frame.findreplace_dlg=None
     event.Skip()
-    # frame.Destroy()
+    frame.Destroy()
     # app.ExitMainLoop()
 
     
