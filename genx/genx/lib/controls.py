@@ -301,7 +301,7 @@ class NumberValidator(wx.Validator):
             event.Skip()
             return
 
-        if not wx.Validator_IsSilent():
+        if not wx.Validator.IsSilent():
             wx.Bell()
 
         # Does not allow the event to propagate (kills it)
@@ -374,13 +374,8 @@ class SpinCtrl(wx.Control):
         event.Skip()
 
     def OnTextEnter(self, event):
-        wx.Control.SetFocus(self)
-        wx.Control.SetFocus(self)
-        new_event = wx.KeyEvent( wx.wxEVT_KEY_DOWN)
-        new_event.SetEventObject(self)
-        new_event.SetId(self.GetId())
-        new_event.m_keyCode = wx.WXK_RETURN
-        wx.PostEvent(self.parent, new_event)
+        self.parent.SetFocus()
+        event.Skip()
 
     def OnChar(self, event):
         #print event.GetKeyCode()

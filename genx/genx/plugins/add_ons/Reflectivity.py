@@ -1851,6 +1851,8 @@ class Plugin(framework.Template):
     previous_xaxis=None
     
     def __init__(self, parent):
+        if 'SimpleReflectivity' in parent.plugin_control.plugin_handler.get_loaded_plugins():
+            parent.plugin_control.UnLoadPlugin_by_Name('SimpleReflectivity')
         framework.Template.__init__(self, parent)
         #self.parent = parent
         self.model_obj = self.GetModel()

@@ -1105,8 +1105,10 @@ class Plugin(framework.Template):
     sim_returns_sld=True
     
     def __init__(self, parent):
+        if 'Reflectivity' in parent.plugin_control.plugin_handler.get_loaded_plugins():
+            parent.plugin_control.UnLoadPlugin_by_Name('Reflectivity')
         framework.Template.__init__(self, parent)
-        # self.parent = parent
+
         self.model_obj=self.GetModel()
         prev_script=self.model_obj.script
         sample_panel=self.NewInputFolder('Model')

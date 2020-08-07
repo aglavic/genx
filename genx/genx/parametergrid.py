@@ -443,7 +443,6 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         self.digits = digits
 
     def Create(self, parent, id, evtHandler):
-        #self._tc = wx.TextCtrl(parent, id, style=wx.ALIGN_RIGHT, validator=NumberValidator())
         self._tc = ctrls.SpinCtrl(parent, id, value=self.value)
         self.SetControl(self._tc)
 
@@ -629,23 +628,20 @@ class ValueCellEditor(gridlib.GridCellEditor):
         self.digits = digits
 
     def Create(self, parent, id, evtHandler):
-        self._tc = wx.TextCtrl(parent, id, style=wx.ALIGN_RIGHT, validator=ctrls.NumberValidator())
+        self._tc = wx.TextCtrl(parent, id, style=wx.ALIGN_RIGHT|wx.TE_PROCESS_ENTER,
+                               validator=ctrls.NumberValidator())
         #self._tc = ctrls.SpinCtrl(parent, id, value=self.value)
         self.SetControl(self._tc)
 
         if evtHandler:
             self._tc.PushEventHandler(evtHandler)
 
-    def Show(self, show, attr):
-        super(ValueCellEditor, self).Show(show, attr)
-
     def GetValue(self):
         return float(self._tc.GetValue())
 
     def SetSize(self, rect):
         """Called to position/size the edit control within the cell rectangle."""
-        self._tc.SetDimensions(rect.x-1, rect.y-1, rect.width+2, rect.height+2,
-                               wx.SIZE_ALLOW_MINUS_ONE)
+        self._tc.SetSize(rect.x-1, rect.y-1, rect.width+2, rect.height+2, sizeFlags=wx.SIZE_ALLOW_MINUS_ONE)
 
     def BeginEdit(self, row, col, grid):
         """ Fetch the value from the table and prepare the edit control to begin editing.  Set the focus to the

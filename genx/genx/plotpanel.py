@@ -44,7 +44,7 @@ class PlotPanel(wx.Panel):
         self.callback_window = self
         self.config = config
         self.config_name = config_name
-        self.figure = Figure(None,dpi)
+        self.figure = Figure(figsize=(1.0,1.0),dpi=dpi)
         self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
         self.canvas.SetExtraStyle(wx.EXPAND)
         self.SetColor(color)

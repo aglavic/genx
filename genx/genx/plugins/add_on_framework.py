@@ -27,7 +27,7 @@ class Template:
     have to take care of the deletion of objects.
     '''
     # TODO: Implement an Bind/Unbind mehtods.
-    #TODO: Add a Load data function Needs change in data as well. 
+    #TODO: Add a Load data function Needs change in data as well.
     def __init__(self, parent):
         '''__init__(self, parent)
         This method should be overloaded.
@@ -373,6 +373,13 @@ class PluginController:
         '''
         menuitem = self.unload_menu.FindItemById(event.GetId())
         plugin = menuitem.GetText()
+        if self.UnLoadPlugin_by_Name(plugin):
+            # Remove the item from the list
+            self.unload_menu.Delete(menuitem)
+            # Update the available plugins
+            self.update_plugins()
+
+    def UnLoadPlugin_by_Name(self, plugin):
         try:
             self.plugin_handler.unload_plugin(plugin)
         except Exception as e:
@@ -382,12 +389,10 @@ class PluginController:
             outp.close()
             ShowErrorDialog(self.parent, 'Can NOT unload plugin object'+ \
             plugin + '\nPython traceback below:\n\n' + tbtext)
+            return False
         else:
-            # Remove the item from the list
-            self.unload_menu.Delete(menuitem)
-            # Update the available plugins
-            self.update_plugins()
-            
+            return True
+
     def OnNewModel(self, event):
         '''OnNewModel(self, event) --> None
         

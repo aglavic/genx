@@ -71,7 +71,7 @@ class PluginHandler:
         '''load_plugin(self, plugin_name) --> plugin object
         load the plugin given by the plugin_name [string].
         '''
-        # Loafd the module
+        # Load the module
         module = self._load_module(self.plugin_folder + '.' + plugin_name)
         # Create the Plugin object from the module
         plugin = module.Plugin(self.parent)
