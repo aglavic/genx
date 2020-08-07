@@ -140,14 +140,14 @@ class DataSet:
                 sub_group = group[par]
                 for key in sub_group:
                     if self.export_parameters[par] is array:
-                        obj[key] = sub_group[key].value
+                        obj[key] = sub_group[key][()]
                     else:
-                        obj[key] = self.export_parameters[par](sub_group[key].value)
+                        obj[key] = self.export_parameters[par](sub_group[key][()])
             else:
                 if self.export_parameters[par] is array:
-                    setattr(self, par, group[par].value)
+                    setattr(self, par, group[par][()])
                 else:
-                    setattr(self, par, self.export_parameters[par](group[par].value))
+                    setattr(self, par, self.export_parameters[par](group[par][()]))
 
             
     def copy(self):
@@ -600,7 +600,7 @@ class DataList:
         for index in range(len(data_group)):
             self.items.append(DataSet())
             self.items[-1].read_h5group(data_group['%d'%index])
-        self._counter = int(group['_counter'].value)
+        self._counter = int(group['_counter'][()])
 
         
     def __getitem__(self,key):

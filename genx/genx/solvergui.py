@@ -405,58 +405,10 @@ class SettingsDialog(wx.Dialog):
         col_sizer = wx.BoxSizer(wx.HORIZONTAL)
         row_sizer1 = wx.BoxSizer(wx.VERTICAL)
         
-        # Make the Diff. Ev. box
-        de_box = wx.StaticBox(self, -1, "Diff. Ev." )
-        de_box_sizer = wx.StaticBoxSizer(de_box, wx.VERTICAL )
-        de_grid = wx.GridBagSizer(2, 2)
-        
-        km_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        km_text = wx.StaticText(self, -1, 'k_m ')
-        self.km_control = NumCtrl(self, value = self.solver.km,\
-            fractionWidth = 2, integerWidth = 2)
-        km_sizer.Add(km_text,0, \
-                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        km_sizer.Add(self.km_control,1, \
-                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        km_sizer.Add((10, 20), 0, wx.EXPAND)
-        de_grid.Add(km_sizer, (0,0),\
-                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,\
-                    border = 5)
-        
-        kr_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        kr_sizer.Add((10, 20), 0, wx.EXPAND)
-        kr_text = wx.StaticText(self, -1, 'k_r ')
-        self.kr_control = NumCtrl(self, value = self.solver.kr,\
-            fractionWidth = 2, integerWidth = 2)
-        kr_sizer.Add(kr_text, 1, \
-                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        kr_sizer.Add(self.kr_control, 0, \
-                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        de_grid.Add(kr_sizer, (0,1), \
-                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,\
-                    border = 5)
-        
-        method_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        method_text = wx.StaticText(self, -1, 'Method ')
-        mut_schemes = [f.__name__ for f in self.solver.mutation_schemes]
-        self.method_choice = wx.Choice(self, -1,\
-            choices = mut_schemes)
-        self.method_choice.SetSelection(self.solver.get_create_trial(True))
-        method_sizer.Add(method_text,0, \
-            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        method_sizer.Add(self.method_choice,0,\
-            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        de_grid.Add(method_sizer, (1,0),(1,2), \
-                    flag = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,\
-                    border = 5)
-        
-        de_box_sizer.Add(de_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        row_sizer1.Add(de_box_sizer, 0, wx.EXPAND, 5)
+        # FOM BOX SIZER
+        fom_box=wx.StaticBox(self, -1, "FOM")
+        fom_box_sizer=wx.StaticBoxSizer(fom_box, wx.VERTICAL)
 
-        #FOM BOX SIZER
-        fom_box = wx.StaticBox(self, -1, "FOM" )
-        fom_box_sizer = wx.StaticBoxSizer(fom_box, wx.VERTICAL )
-        
         # FOM choice
         fom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         fom_text = wx.StaticText(self, -1, 'Figure of merit ')
@@ -492,7 +444,25 @@ class SettingsDialog(wx.Dialog):
                 wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         errorbar_sizer.Add((10, 20), 0, wx.EXPAND)
         fom_box_sizer.Add(errorbar_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        
+
+        # X-Range limiting
+        cb_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        fom_box_sizer.Add(cb_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.limit_fit_range = wx.CheckBox(self, -1, "Limit x-range")
+        cb_sizer.Add(self.limit_fit_range, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.limit_fit_range.SetValue(self.solver.limit_fit_range)
+
+        cb_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        fom_box_sizer.Add(cb_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        cb_sizer.Add(wx.StaticText(self, -1, 'x_min'))
+        self.fit_xmin=wx.SpinCtrlDouble(self, -1, min=0., max=99.0,
+                                        initial=self.solver.fit_xmin, inc=0.01)
+        cb_sizer.Add(self.fit_xmin)
+        cb_sizer.Add(wx.StaticText(self, -1, 'x_max'))
+        self.fit_xmax=wx.SpinCtrlDouble(self, -1, min=0., max=99.0,
+                                        initial=self.solver.fit_xmax, inc=0.01)
+        cb_sizer.Add(self.fit_xmax)
+
         row_sizer1.Add(fom_box_sizer, 0, wx.EXPAND, 5)
         
         # Make the Fitting box
@@ -552,6 +522,54 @@ class SettingsDialog(wx.Dialog):
         col_sizer.Add(row_sizer1, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
         
         row_sizer2 = wx.BoxSizer(wx.VERTICAL)
+
+        # Make the Diff. Ev. box
+        de_box=wx.StaticBox(self, -1, "Diff. Ev.")
+        de_box_sizer=wx.StaticBoxSizer(de_box, wx.VERTICAL)
+        de_grid=wx.GridBagSizer(2, 2)
+
+        km_sizer=wx.BoxSizer(wx.HORIZONTAL)
+        km_text=wx.StaticText(self, -1, 'k_m ')
+        self.km_control=NumCtrl(self, value=self.solver.km,
+                                fractionWidth=2, integerWidth=2)
+        km_sizer.Add(km_text, 0,
+                     wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        km_sizer.Add(self.km_control, 1,
+                     wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        km_sizer.Add((10, 20), 0, wx.EXPAND)
+        de_grid.Add(km_sizer, (0, 0),
+                    flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
+                    border=5)
+
+        kr_sizer=wx.BoxSizer(wx.HORIZONTAL)
+        kr_sizer.Add((10, 20), 0, wx.EXPAND)
+        kr_text=wx.StaticText(self, -1, 'k_r ')
+        self.kr_control=NumCtrl(self, value=self.solver.kr,
+                                fractionWidth=2, integerWidth=2)
+        kr_sizer.Add(kr_text, 1,
+                     wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        kr_sizer.Add(self.kr_control, 0,
+                     wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        de_grid.Add(kr_sizer, (0, 1),
+                    flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
+                    border=5)
+
+        method_sizer=wx.BoxSizer(wx.HORIZONTAL)
+        method_text=wx.StaticText(self, -1, 'Method ')
+        mut_schemes=[f.__name__ for f in self.solver.mutation_schemes]
+        self.method_choice=wx.Choice(self, -1,
+                                     choices=mut_schemes)
+        self.method_choice.SetSelection(self.solver.get_create_trial(True))
+        method_sizer.Add(method_text, 0,
+                         wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        method_sizer.Add(self.method_choice, 0,
+                         wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        de_grid.Add(method_sizer, (1, 0), (1, 2),
+                    flag=wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+                    border=5)
+
+        de_box_sizer.Add(de_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        row_sizer2.Add(de_box_sizer, 0, wx.EXPAND, 5)
 
         # Make the Population box
         pop_box = wx.StaticBox(self, -1, "Population size" )
@@ -759,6 +777,16 @@ class SettingsDialog(wx.Dialog):
         self.solver.autosave_interval = self.autosave_sc.GetValue()
         self.solvergui.save_all_evals = self.save_all_control.GetValue()
         self.solver.max_log = self.buffer_sc.GetValue()
+        self.solver.limit_fit_range=self.limit_fit_range.GetValue()
+        self.solver.fit_xmin=self.fit_xmin.GetValue()
+        self.solver.fit_xmax=self.fit_xmax.GetValue()
+
+        model=self.solvergui.parent.model
+        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
+                                    self.solver.limit_fit_range,
+                                    self.solver.fit_xmin,
+                                    self.solver.fit_xmax)
+
         if self.apply_change:
             self.apply_change(self)
             

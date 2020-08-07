@@ -21,15 +21,17 @@ try:
     import multiprocessing as processing
     __parallel_loaded__ = True
     _cpu_count = processing.cpu_count()
-except:
+except ImportError:
     debug( 'processing not installed no parallel processing possible')
-    pass
+    processing=None
 
 
 try:
     from mpi4py import MPI as mpi
 except ImportError:
     rank = 0
+    __mpi_loaded__=False
+    mpi=None
 else:
     __mpi_loaded__ = True
     comm = mpi.COMM_WORLD
@@ -57,12 +59,13 @@ class DiffEv:
     export_parameters = {'km': float, 'kr': float, 'pf': float, 'use_pop_mult': bool, 'pop_mult': int, 'pop_size':int,
                          'use_max_generations': bool, 'max_generations': int, 'max_generation_mult': int,
                          'use_start_guess': bool, 'use_boundaries': bool, 'sleep_time': float,
-                         'use_parallel_processing': bool, 'use_mpi': bool, 'fom_log': array, 'start_guess':array
+                         'use_parallel_processing': bool, 'use_mpi': bool, 'fom_log': array, 'start_guess':array,
+                         'limit_fit_range': bool, 'fit_xmin': float, 'fit_xmax': float,
                          }
 
     def create_mutation_table(self):
         # Mutation schemes implemented
-        self.mutation_schemes = [self.best_1_bin, self.rand_1_bin, \
+        self.mutation_schemes = [self.best_1_bin, self.rand_1_bin,
                                  self.best_either_or, self.rand_either_or, self.jade_best, self.simplex_best_1_bin]
 
     def __init__(self):
@@ -148,6 +151,10 @@ class DiffEv:
 
         self.start_guess = array([])
 
+        self.limit_fit_range=False
+        self.fit_xmin=0.01
+        self.fit_xmax=0.1
+
     def write_h5group(self, group, clear_evals=False):
         """ Write parameters into hdf5 group
 
@@ -175,12 +182,16 @@ class DiffEv:
         for par in self.export_parameters:
             obj = getattr(self, par)
             if self.export_parameters[par] is array:
-                setattr(self, par, group[par].value)
+                setattr(self, par, group[par][()])
             else:
-                setattr(self, par, self.export_parameters[par](group[par].value))
+                try:
+                    setattr(self, par, self.export_parameters[par](group[par][()]))
+                except KeyError:
+                    iprint("No value found for %s"%par)
+                    continue
 
-        self.par_evals.copy_from(group['par_evals'].value)
-        self.fom_evals.copy_from(group['fom_evals'].value)
+        self.par_evals.copy_from(group['par_evals'][()])
+        self.fom_evals.copy_from(group['fom_evals'][()])
 
     def safe_copy(self, object):
         '''safe_copy(self, object) --> None
@@ -214,6 +225,11 @@ class DiffEv:
             self.use_parallel_processing = object.use_parallel_processing
         else:
             self.use_parallel_processing = False
+
+        print("copy")
+        self.limit_fit_range=object.limit_fit_range
+        self.fit_xmin=object.fit_xmin
+        self.fit_xmax=object.fit_xmax
 
         # Flag if we should use mpi
         if __mpi_loaded__:
@@ -316,6 +332,10 @@ class DiffEv:
         self.par_funcs = par_funcs
         self.model = model
         self.n_dim = len(par_funcs)
+        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
+                                    self.limit_fit_range,
+                                    self.fit_xmin,
+                                    self.fit_xmax)
         if not self.setup_ok:
             self.start_guess = start_guess
 
@@ -336,8 +356,8 @@ class DiffEv:
             self.max_gen = int(self.max_generation_mult*self.n_dim*self.n_pop)
 
         # Starting values setup
-        self.pop_vec = [self.par_min + random.rand(self.n_dim)*(self.par_max -\
-         self.par_min) for i in range(self.n_pop)]
+        self.pop_vec = [self.par_min + random.rand(self.n_dim)*(self.par_max -self.par_min)
+                        for i in range(self.n_pop)]
 
         if self.use_start_guess:
             self.pop_vec[0] = array(self.start_guess)
@@ -374,6 +394,8 @@ class DiffEv:
         
         Makes the eval_fom function
         '''
+        model=self.model
+
         # Setting up for parallel processing
         if self.use_parallel_processing and __parallel_loaded__:
             self.text_output('Setting up a pool of workers ...')
@@ -434,7 +456,7 @@ class DiffEv:
                 self.running = True
                 return True
             else:
-                self.text_output('The number of parameters has changed'\
+                self.text_output('The number of parameters has changed'
                 ' restart the fit.')
                 return False
         else:
@@ -614,8 +636,7 @@ class DiffEv:
                                 + int(self.fom_log[-1, 0]) + 1):
             if self.stop:
                 break
-            if rank==0:
-                t_start = time.time()
+            t_start = time.time()
 
             self.init_new_generation(gen)
 
@@ -710,6 +731,11 @@ class DiffEv:
         Function to calcuate the figure of merit for parameter vector 
         vec.
         '''
+        model=self.model
+        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
+                                    self.limit_fit_range,
+                                    self.fit_xmin,
+                                    self.fit_xmax)
 
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
@@ -721,6 +747,12 @@ class DiffEv:
         '''
         Function to calculate the fom values for the trial vectors
         '''
+        model=self.model
+        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
+                                    self.limit_fit_range,
+                                    self.fit_xmin,
+                                    self.fit_xmax)
+
         self.trial_fom = [self.calc_fom(vec) for vec in self.trial_vec]
 
     def calc_sim(self, vec):
@@ -728,6 +760,11 @@ class DiffEv:
         Function that will evaluate the the data points for
         parameters in vec.
         '''
+        model=self.model
+        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
+                                    self.limit_fit_range,
+                                    self.fit_xmin,
+                                    self.fit_xmax)
         # Set the paraemter values
         list(map(lambda func, value:func(value), self.par_funcs, vec))
 
@@ -771,11 +808,23 @@ class DiffEv:
         
         Function to calculate the fom in parallel using the pool
         '''
+        model=self.model
+        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
+                                    self.limit_fit_range,
+                                    self.fit_xmin,
+                                    self.fit_xmax)
+
         self.trial_fom = self.pool.map(parallel_calc_fom, self.trial_vec, chunksize=self.chunksize)
 
     def calc_trial_fom_parallel_mpi(self):
         """ Function to calculate the fom in parallel using mpi
         """
+        model=self.model
+        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
+                                    self.limit_fit_range,
+                                    self.fit_xmin,
+                                    self.fit_xmax)
+
         step_len = int(len(self.trial_vec)/size)
         remainder = int(len(self.trial_vec) % size)
         left, right = 0, 0
@@ -793,6 +842,7 @@ class DiffEv:
 
         self.trial_fom = fom_temp
 
+    # noinspection PyArgumentList
     def calc_error_bar(self, index, fom_level):
         '''calc_error_bar(self, parameter) --> (error_bar_low, error_bar_high)
         
@@ -839,6 +889,7 @@ class DiffEv:
                 self.best_vec = self.trial_vec[index].copy()
                 self.best_fom = fom
 
+    # noinspection PyArgumentList
     def simplex_old_init_new_generation(self, gen):
         '''It will run the simplex method every simplex_interval
              generation with a fracitonal step given by simple_step 
@@ -891,6 +942,7 @@ class DiffEv:
                         self.best_vec = new_vec
                         self.new_best = True
 
+    # noinspection PyArgumentList
     def simplex_init_new_generation(self, gen):
         '''It will run the simplex method every simplex_interval
              generation with a fracitonal step given by simple_step 
@@ -980,8 +1032,8 @@ class DiffEv:
 
         # Calculate the mutation vector according to the best/1 scheme
         #print len(self.km_vec), index, len(self.par_evals),  index2
-        mut_vec = vec + self.km_vec[index]*(self.best_vec - vec) + self.km_vec[index]*(self.pop_vec[index1]\
-         - self.par_evals[index2])
+        mut_vec = vec + self.km_vec[index]*(self.best_vec - vec) + self.km_vec[index]*(
+                self.pop_vec[index1]-self.par_evals[index2])
 
         # Binomial test to detemine which parameters to change
         # given by the recombination constant kr
@@ -1017,8 +1069,8 @@ class DiffEv:
             index2 = int(random.rand(1)*self.n_pop)
 
         # Calculate the mutation vector according to the best/1 scheme
-        mut_vec = self.best_vec + self.km*(self.pop_vec[index1]\
-         - self.pop_vec[index2])
+        mut_vec = self.best_vec + self.km*(
+                self.pop_vec[index1]-self.pop_vec[index2])
 
         # Binomial test to detemine which parameters to change
         # given by the recombination constant kr
@@ -1057,12 +1109,12 @@ class DiffEv:
 
         if random.rand(1) < self.pf:
             # Calculate the mutation vector according to the best/1 scheme
-            trial = self.best_vec + self.km*(self.pop_vec[index1]\
-            - self.pop_vec[index2])
+            trial = self.best_vec + self.km*(
+                    self.pop_vec[index1]-self.pop_vec[index2])
         else:
             # Trying something else out more like normal recombination
-            trial = vec + self.kr*(self.pop_vec[index1]\
-            + self.pop_vec[index2] - 2*vec)
+            trial = vec + self.kr*(
+                    self.pop_vec[index1]+self.pop_vec[index2] - 2*vec)
 
         # Implementation of constrained optimization
         if self.use_boundaries:
@@ -1093,8 +1145,8 @@ class DiffEv:
             index3 = int(random.rand(1)*self.n_pop)
 
         # Calculate the mutation vector according to the rand/1 scheme
-        mut_vec = self.pop_vec[index3] + self.km*(self.pop_vec[index1]\
-         - self.pop_vec[index2])
+        mut_vec = self.pop_vec[index3] + self.km*(
+                self.pop_vec[index1]-self.pop_vec[index2])
 
         # Binomial test to detemine which parameters to change
         # given by the recombination constant kr
@@ -1133,13 +1185,13 @@ class DiffEv:
 
         if random.rand(1) < self.pf:
             # Calculate the mutation vector according to the best/1 scheme
-            trial = self.pop_vec[index0] + self.km*(self.pop_vec[index1]\
-            - self.pop_vec[index2])
+            trial = self.pop_vec[index0] + self.km*(
+                    self.pop_vec[index1]-self.pop_vec[index2])
         else:
             # Calculate a continous recomibination
             # Trying something else out more like normal recombination
-            trial = self.pop_vec[index0] + self.kr*(self.pop_vec[index1]\
-            + self.pop_vec[index2] - 2*self.pop_vec[index0])
+            trial = self.pop_vec[index0] + self.kr*(
+                    self.pop_vec[index1]+self.pop_vec[index2]-2*self.pop_vec[index0])
             #trial = vec + self.kr*(self.pop_vec[index1]\
             #        + self.pop_vec[index2] - 2*vec)
 
@@ -1500,8 +1552,8 @@ class CircBuffer:
                 except:
                     self.filled = False
         else:
-            raise TypeError('CircBuffer support only copying from CircBuffer'\
-                        ' and arrays.')
+            raise TypeError('CircBuffer support only copying from CircBuffer'
+                            ' and arrays.')
 
 
     def __len__(self):

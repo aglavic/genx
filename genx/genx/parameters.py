@@ -45,12 +45,12 @@ class Parameters:
         :param group: h5py Group to import from
         :return:
         """
-        self.data_labels = [item.decode('utf-8') for item in list(group['data_labels'].value)]
+        self.data_labels = [item.decode('utf-8') for item in list(group['data_labels'][()])]
         self.data = [[c0.decode('utf-8'), float(c1), bool(c2), float(c3), float(c4), c5.decode('utf-8')]
                      for (c0, c1, c2, c3, c4, c5) in
-                     zip(group['data col 0'].value, group['data col 1'].value,
-                         group['data col 2'].value, group['data col 3'].value,
-                         group['data col 4'].value, group['data col 5'].value)]
+                     zip(group['data col 0'][()], group['data col 1'][()],
+                         group['data col 2'][()], group['data col 3'][()],
+                         group['data col 4'][()], group['data col 5'][()])]
 
     def to_dict(self):
         """Creates a dict from the names in the columns, returns a Dict"""

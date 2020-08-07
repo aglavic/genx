@@ -67,6 +67,10 @@ class Model:
         self.filename = ''
         self.saved = True
         self.compiled = False
+
+        self.limit_fit_range=False
+        self.fit_xmin=0.01
+        self.fit_xmax=0.1
         
     def read_config(self):
         '''Read in the config file
@@ -205,24 +209,31 @@ class Model:
         :return:
         """
         self.data.read_h5group(group['data'])
-        self.script = group['script'].value
+        self.script = group['script'][()]
         self.parameters.read_h5group(group['parameters'])
-        fom_func_name = group['fomfunction'].value.decode('utf-8')
+        fom_func_name = group['fomfunction'][()].decode('utf-8')
         if fom_func_name in fom_funcs.func_names:
             self.set_fom_func(eval('fom_funcs.' + fom_func_name))
         else:
-            iprint("Can not find fom function name %s"%fom_func_name.value)
+            iprint("Can not find fom function name %s"%fom_func_name[()])
 
         try:
-            iprint(bool(group['fom_ignore_nan'].value))
-            self.fom_ignore_nan = bool(group['fom_ignore_nan'].value)
+            iprint(bool(group['parameters']['fom_ignore_nan'][()]))
+            self.fom_ignore_nan = bool(group['parameters']['fom_ignore_nan'][()])
         except Exception as e:
             iprint("Could not load parameter fom_ignore_nan from file")
         try:
-            self.fom_ignore_inf = bool(group['fom_ignore_inf'].value)
+            self.fom_ignore_inf = bool(group['parameters']['fom_ignore_inf'][()])
         except Exception as e:
             iprint("Could not load parameter fom_ignore_inf from file")
         self.create_fom_mask_func()
+
+        try:
+            self.limit_fit_range, self.fit_xmin, self.fit_xmax=(
+                bool(group['optimizer']['limit_fit_range'][()]),
+                float(group['optimizer']['fit_xmin'][()]), float(group['optimizer']['fit_xmax'][()]))
+        except Exception as e:
+            iprint("Could not load limite_fit_range from file")
 
         for kw in kwargs:
             kwargs[kw].read_h5group(group[kw])
@@ -368,6 +379,11 @@ class Model:
          data point to form the overall fom function for all data sets.
         '''
         fom_raw = self.fom_func(simulated_data, self.data)
+        # limit the x-range of fitting
+        if self.limit_fit_range:
+            for i, di in enumerate(self.data):
+                fltr=(di.x<self.fit_xmin)|(di.x>self.fit_xmax)
+                fom_raw[i][fltr]=0.
         # Sum up a unique fom for each data set in use
         fom_indiv = [np.sum(np.abs(self.fom_mask_func(fom_set))) for fom_set in fom_raw]
         fom = np.sum([f for f, d in zip(fom_indiv, self.data) if d.use])
@@ -590,6 +606,10 @@ class Model:
         model_copy.saved = self.saved
         # Needs to reset the fom_mask_func since this fails under windows.
         model_copy.fom_mask_func = None
+        #
+        model_copy.limit_fit_range = self.limit_fit_range
+        model_copy.fit_xmin = self.fit_xmin
+        model_copy.fit_xmax = self.fit_xmax
         
         return model_copy
     
