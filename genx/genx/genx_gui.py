@@ -49,7 +49,7 @@ if not os.path.exists(os.path.join(config_path, 'genx.conf')):
                     os.path.join(config_path, 'genx.conf'))
 
 class MainFrame(wx.Frame):
-    def __init__(self, parent, show_startup, *args, **kwds):
+    def __init__(self, parent, *args, **kwds):
         self.dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
         tb_bmp_size=int(32*self.dpi_scale_factor)
         
@@ -64,7 +64,7 @@ class MainFrame(wx.Frame):
         # begin wxGlade: MainFrame.__init__
         kwds["style"] = kwds.get("style", 0) | wx.CAPTION | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU
         wx.Frame.__init__(self, *args, **kwds)
-        
+
         # Menu Bar
         self.main_frame_menubar = wx.MenuBar()
         self.mb_file = wx.Menu()
@@ -367,7 +367,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_FIND_REPLACE, self.eh_external_find)
         self.Bind(wx.EVT_FIND_REPLACE_ALL, self.eh_external_find)
         self.Bind(wx.EVT_FIND_CLOSE, self.eh_external_find)
-        
+
                     
         # Adding close event so I can take care of it...
         self.Bind(wx.EVT_CLOSE, self.eh_mb_quit)
@@ -832,7 +832,7 @@ class MyApp(wx.App):
     def OnInit(self):
         locale = wx.Locale(wx.LANGUAGE_ENGLISH)
         self.locale = locale
-        main_frame = MainFrame(self, self.show_startup, None, -1, "")
+        main_frame = MainFrame(self, None, -1, "")
         self.SetTopWindow(main_frame)
         main_frame.Show()
         if self.show_startup:

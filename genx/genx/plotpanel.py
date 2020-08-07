@@ -2,25 +2,18 @@
 # libary.
 # Programmed by: Matts Bjorck
 # Last changed: 2009 03 10
-import time
 
 import matplotlib
-matplotlib.interactive(False)
-# Use WXAgg backend Wx to slow
-matplotlib.use('wxAgg')
-from matplotlib.backends.backend_wx import FigureCanvasWx
+matplotlib.use('WXAgg')
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-
-from matplotlib.backends.backend_agg import FigureCanvasAgg, RendererAgg
-from matplotlib.transforms import Bbox#, Point, Value
+from matplotlib.backends.backend_agg import RendererAgg
 from matplotlib.figure import Figure
-from matplotlib.widgets import RectangleSelector
 from matplotlib.pyplot import setp
 
 from numpy import *
 import wx
 import wx.lib.newevent
-from wx import Printout, PrintData, PAPER_A4, LANDSCAPE, PrintDialogData
+from wx import PAPER_A4, LANDSCAPE
 
 from . import filehandling as io
 from .gui_logging import iprint
@@ -148,12 +141,10 @@ class PlotPanel(wx.Panel):
                 vals.append(None)
             else:
                 vals.append(val)
-                
+
         try:
             scale = self.config.get(self.config_name, 'y scale')
-            string_sucess = True
         except io.OptionError as e:
-            string_sucess = False
             iprint('Could not locate option %s.%s'\
             %(self.config_name, 'y scale'))
         else:
@@ -161,14 +152,11 @@ class PlotPanel(wx.Panel):
 
         try:
             scale = self.config.get(self.config_name, 'x scale')
-            string_sucess = True
         except io.OptionError as e:
-            string_sucess = False
             iprint('Could not locate option %s.%s'\
             %(self.config_name, 'x scale'))
             self.SetXScale('lin')
         else:
-            #print 'Found option x scale: ', scale
             self.SetXScale(scale)
 
         # This is done due to that the zoom and autoscale has to read 
@@ -324,31 +312,34 @@ class PlotPanel(wx.Panel):
         Sets the y-scale of the main plotting axes. Currently accepts
         'log' or 'lin'.
         '''
-        if self.ax:
-            if scalestring == 'log':
-                self.scale = 'log'
-                self.AutoScale(force = True)
-                try:
-                    self.ax.set_yscale('log')
-                except OverflowError:
-                    self.AutoScale(force = True)
-                except UserWarning:
-                    pass
-            elif scalestring == 'linear' or scalestring == 'lin':
-                self.scale = 'linear'
-                self.ax.set_yscale('linear')
-                self.AutoScale(force = True)
-            else:
-                raise ValueError('Not allowed scaling')
-            try:
-                self.flush_plot()
-            except UserWarning:
-                pass
-            self.WriteConfig(yscale=self.scale)
-            evt = state_changed(zoomstate = self.GetZoom(),\
-                        yscale = self.GetYScale(), autoscale = self.autoscale,
-                        xscale=self.GetXScale())
-            wx.PostEvent(self.callback_window, evt)
+        if not self.ax:
+            return
+        if scalestring == 'log':
+            self.scale = 'log'
+        elif scalestring == 'linear' or scalestring == 'lin':
+            self.scale = 'linear'
+        else:
+            raise ValueError('Not allowed scaling')
+
+        # do nothing if no data in current plot
+        self.AutoScale(force = True)
+
+        try:
+            self.ax.set_yscale(self.scale)
+        except OverflowError:
+            self.AutoScale(force = True)
+        except UserWarning:
+            pass
+
+        try:
+            self.flush_plot()
+        except UserWarning:
+            pass
+        self.WriteConfig(yscale=self.scale)
+        evt = state_changed(zoomstate = self.GetZoom(),\
+                    yscale = self.GetYScale(), autoscale = self.autoscale,
+                    xscale=self.GetXScale())
+        wx.PostEvent(self.callback_window, evt)
 
 
     def SetXScale(self, scalestring):
@@ -357,31 +348,32 @@ class PlotPanel(wx.Panel):
         Sets the x-scale of the main plotting axes. Currently accepts
         'log' or 'lin'.
         '''
-        if self.ax:
-            if scalestring == 'log':
-                self.x_scale = 'log'
-                self.AutoScale(force = True)
-                try:
-                    self.ax.set_xscale('log')
-                except OverflowError:
-                    self.AutoScale(force = True)
-                except UserWarning:
-                    pass
-            elif scalestring == 'linear' or scalestring == 'lin':
-                self.x_scale = 'linear'
-                self.ax.set_xscale('linear')
-                self.AutoScale(force = True)
-            else:
-                raise ValueError('Not allowed scaling')
+        if not self.ax:
+            return
+        if scalestring == 'log':
+            self.x_scale = 'log'
+            self.AutoScale(force = True)
             try:
-                self.flush_plot()
+                self.ax.set_xscale('log')
+            except OverflowError:
+                self.AutoScale(force = True)
             except UserWarning:
                 pass
-            self.WriteConfig(xscale=self.x_scale)
-            evt = state_changed(zoomstate=self.GetZoom(),
-                        yscale=self.GetYScale(), autoscale=self.autoscale,
-                        xscale=self.GetXScale())
-            wx.PostEvent(self.callback_window, evt)
+        elif scalestring == 'linear' or scalestring == 'lin':
+            self.x_scale = 'linear'
+            self.ax.set_xscale('linear')
+            self.AutoScale(force = True)
+        else:
+            raise ValueError('Not allowed scaling')
+        try:
+            self.flush_plot()
+        except UserWarning:
+            pass
+        self.WriteConfig(xscale=self.x_scale)
+        evt = state_changed(zoomstate=self.GetZoom(),
+                    yscale=self.GetYScale(), autoscale=self.autoscale,
+                    xscale=self.GetXScale())
+        wx.PostEvent(self.callback_window, evt)
 
             
     def GetYScale(self):
