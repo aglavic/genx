@@ -1839,7 +1839,14 @@ class SamplePlotPanel(wx.Panel):
             f.write('#' + header + '\n')
             np.savetxt(f, save_array.transpose())
             f.close()
-  
+
+    def ReadConfig(self):
+        '''ReadConfig(self) --> None
+
+        Reads in the config file
+        '''
+        return self.plot.ReadConfig()
+
 class Plugin(framework.Template):
     previous_xaxis=None
     

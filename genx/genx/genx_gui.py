@@ -78,7 +78,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_saveas, id=self.main_frame_menubar.mb_saveas.GetId())
         self.mb_file.AppendSeparator()
         mb_import = wx.Menu()
-        self.main_frame_menubar.mb_import_data = mb_import.Append(wx.ID_ANY, "Import Data...\tAlt+D", "Import data to the active data set")
+        self.main_frame_menubar.mb_import_data = mb_import.Append(wx.ID_ANY, "Import Data...\tCtrl+D", "Import data to the active data set")
         self.Bind(wx.EVT_MENU, self.eh_mb_import_data, id=self.main_frame_menubar.mb_import_data.GetId())
         self.main_frame_menubar.mb_import_table = mb_import.Append(wx.ID_ANY, "Import Table...", "Import a table from an ASCII file")
         self.Bind(wx.EVT_MENU, self.eh_mb_import_table, id=self.main_frame_menubar.mb_import_table.GetId())
