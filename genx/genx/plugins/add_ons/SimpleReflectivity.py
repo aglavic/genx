@@ -573,7 +573,7 @@ class SampleTable(gridlib.GridTableBase):
                 output+="f=%s, "%formula.f()
                 output+="b=%s, "%formula.b()
                 output+="dens=%s, "%dens
-                output+="magn='%s', "%layer[6]
+                output+="magn=%s, "%layer[6]
                 out_param['dens']=dens
                 out_param['magn']=float(eval(layer[6]))
         else:
@@ -585,8 +585,8 @@ class SampleTable(gridlib.GridTableBase):
             output+="dens=0.1, magn=0.0, "
             out_param['dens']=0.1
             out_param['magn']=0.0
-        output+="d='%s', "%layer[8]
-        output+="sigma='%s', "%layer[10]
+        output+="d=%s, "%layer[8]
+        output+="sigma=%s, "%layer[10]
         output+="xs_ai=0.0, magn_ang=0.0)"
         out_param['d']=float(eval(layer[8]))
         out_param['sigma']=float(eval(layer[10]))
@@ -1185,6 +1185,7 @@ class Plugin(framework.Template):
         self.parent.Bind(wx.EVT_MENU, self.OnHideAdvanced,
                          self.mb_hide_advanced)
 
+        self.DisableGrid()
         self.HideUIElements()
         self.sample_widget.UpdateModel()
         self.StatusMessage('Simple Reflectivity plugin loaded')
@@ -1214,9 +1215,26 @@ class Plugin(framework.Template):
             nb.InsertPage(i, page_i, title)
         self._hidden_pages=None
 
+    def DisableGrid(self):
+        nb=self.parent.input_notebook
+        for i, page_i in enumerate(nb.Children):
+            title=nb.GetPageText(i)
+            if title=='Grid':
+                page_i.Disable()
+
+    def EnableGrid(self):
+        nb=self.parent.input_notebook
+        for i, page_i in enumerate(nb.Children):
+            title=nb.GetPageText(i)
+            if title=='Grid':
+                page_i.Enable()
+
     def Remove(self):
         if self.mb_hide_advanced.IsChecked():
             self.ShowUIElements()
+        self.EnableGrid()
+
+        self.parent.Unbind(EVT_UPDATE_PARAMETERS, handler=self.OnFitParametersUpdated)
         framework.Template.Remove(self)
     
     def UpdateScript(self, event):
