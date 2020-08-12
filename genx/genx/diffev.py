@@ -227,9 +227,12 @@ class DiffEv:
             self.use_parallel_processing = False
 
         print("copy")
-        self.limit_fit_range=object.limit_fit_range
-        self.fit_xmin=object.fit_xmin
-        self.fit_xmax=object.fit_xmax
+        try:
+            self.limit_fit_range=object.limit_fit_range
+            self.fit_xmin=object.fit_xmin
+            self.fit_xmax=object.fit_xmax
+        except AttributeError:
+            self.limit_fit_range=False
 
         # Flag if we should use mpi
         if __mpi_loaded__:

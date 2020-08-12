@@ -133,6 +133,7 @@ class Parameters:
             else:
                 fit = False
             if name in par_names:
+                self.data[par_names.index(name)][1] = value
                 self.data[par_names.index(name)][2] = fit
             else:
                 self.append()

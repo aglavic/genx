@@ -14,7 +14,6 @@ import wx
 
 from plugins.data_loader_framework import Template
 from plugins.utils import ShowWarningDialog
-import event_handlers
 
 class Plugin(Template):
     wildcard = '*.dat'
@@ -71,10 +70,10 @@ class Plugin(Template):
             self.data[data_item_number].x_raw=load_array[:, self.x_col]
             self.data[data_item_number].y_raw=load_array[:, self.y_col]
             self.data[data_item_number].error_raw=load_array[:, self.e_col]
-            self.data[data_item_number].extra_data_raw['xe'] = load_array[:, self.xe_col]
-            self.data[data_item_number].extra_commands['xe'] = 'xe'
+            self.data[data_item_number].set_extra_data('res', load_array[:,self.xe_col], 'res')
+            self.data[data_item_number].res = load_array[:, self.xe_col]
+            self.data[data_item_number].set_extra_data('ai', load_array[:,self.ai_col], 'ai')
             self.data[data_item_number].extra_data_raw['ai'] = load_array[:, self.ai_col]
-            self.data[data_item_number].extra_commands['ai'] = 'ai'
             # Name the dataset accordign to file name
             self.data[data_item_number].name = name
             # Run the commands on the data - this also sets the x,y, error memebers

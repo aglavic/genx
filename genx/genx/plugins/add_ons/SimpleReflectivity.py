@@ -154,7 +154,7 @@ class SampleTable(gridlib.GridTableBase):
     def ResetModel(self, first=False):
         if not first:
             old_len=len(self.layers)
-            
+
         self.ambient=[None, 'Formula', 'SLD',
                       False, '0.0', False, '0.0',
                       False, '0', False, '0']
@@ -173,13 +173,14 @@ class SampleTable(gridlib.GridTableBase):
                      ]
         if not first:
             diff=old_len-len(self.layers)
+            iprint(diff, 'reset table')
             if diff<0:
                 msg=gridlib.GridTableMessage(self,
                                              gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, -diff)
                 self.GetView().ProcessTableMessage(msg)
             elif diff>0:
                 msg=gridlib.GridTableMessage(self,
-                                             gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1, diff)
+                                             gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1, diff)
                 self.GetView().ProcessTableMessage(msg)
             msg=gridlib.GridTableMessage(self,
                                          gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
@@ -966,11 +967,7 @@ class SamplePanel(wx.Panel):
             func_name=inst_name+'.'+_set_func_prefix+item.capitalize()
             editable[item]=grid_parameters.get_fit_state_by_name(func_name)
             val=self.inst_params[item]
-            grid_value=grid_parameters.get_value_by_name(func_name)
-            if grid_value is not None:
-                vals[item]=grid_value
-            else:
-                vals[item]=val
+            vals[item]=val
             
         dlg=ValidateFitDialog(self, pars, vals, validators,
                                       title='Instrument Editor', groups=groups,
@@ -1287,7 +1284,7 @@ class Plugin(framework.Template):
         dls.remove('default')
         
         wiz=Wizard(self.parent, title='Create New Model...',
-                   bitmap=images.getinstrumentBitmap())
+                   bitmap=images.getinstrumentBitmap(), style=wx.DEFAULT_DIALOG_STYLE|wx.STAY_ON_TOP)
         
         # def show_dl_help(event):
         #     dlg=PluginHelpDialog(wiz, 'plugins.data_loaders')
@@ -1367,12 +1364,27 @@ class Plugin(framework.Template):
         self.sample_widget.Update(update_script=False)
 
     def OnFitParametersUpdated(self, event):
-        keys=self.GetModel().get_parameters().get_fit_pars()[1]
+        grid_parameters=self.GetModel().get_parameters()
+        keys=grid_parameters.get_fit_pars()[1]
         values=event.values
         parameters=[(key, value, None, None, None, None) for key, value in zip(keys, values)]
         self.sample_widget.CheckGridUpdate(parameters=parameters)
         self.sample_widget.Update(update_script=False)
         if event.permanent_change:
+            for pi,val in zip(keys, values):
+                try:
+                    name, param=pi.split('.',1)
+                except ValueError:
+                    continue
+                if name == 'inst':
+                    for key in self.sample_widget.inst_params.keys():
+                        if param==_set_func_prefix+key.capitalize():
+                            value=float(val)
+                            self.sample_widget.inst_params[key]=value
+                            minval=value*0.5
+                            maxval=value*2.0
+                            grid_parameters.set_fit_state_by_name(pi, value, 0, 0, 0)
+                            grid_parameters.set_fit_state_by_name(pi, value, 1, minval, maxval)
             self.sample_widget.sample_table.updateModel()
 
     def WriteModel(self):

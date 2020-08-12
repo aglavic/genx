@@ -1264,7 +1264,10 @@ class ErrorPlotPanel(PlotPanel):
 
         self.ax.set_xlabel('Iteration')
         self.ax.set_ylabel('FOM')
-        self.figure.tight_layout(h_pad=0)
+        try:
+            self.figure.tight_layout(h_pad=0)
+        except:
+            pass
         self.flush_plot()
         
     def OnSolverPlotEvent(self, event):

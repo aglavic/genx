@@ -1885,7 +1885,12 @@ class Plugin(framework.Template):
         if self.model_obj.script != '':
             if self.model_obj.filename!='':
                 iprint("Reflectivity plugin: Reading loaded model")
-                self.ReadModel()
+                try:
+                    self.ReadModel()
+                except Exception as e:
+                    iprint("Reflectivity plugin model could not be read.")
+                    self.Remove()
+                    raise e
             else:
                 try:
                     self.ReadModel()

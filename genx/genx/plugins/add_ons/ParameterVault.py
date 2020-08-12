@@ -14,10 +14,9 @@ Last Changes 04/22/15
 import os, sys
 from copy import deepcopy
 import wx
-from plugins import add_on_framework as framework
-from parameters import Parameters
-from genx import event_handlers
-import images as img
+from .. import add_on_framework as framework
+from genx.parameters import Parameters
+import genx.images as img
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
 class Plugin(framework.Template):
@@ -84,19 +83,19 @@ class Plugin(framework.Template):
         size=wx.Size(tb_bmp_size, tb_bmp_size)
 
         self.bitmap_button_add=wx.BitmapButton(self.tool_panel,-1
-        , img.add.getImage().Scale(tb_bmp_size, tb_bmp_size).ConvertToBitmap(),
+        , wx.Bitmap(img.getaddImage().Scale(tb_bmp_size, tb_bmp_size)),
                                                size=size, style=wx.NO_BORDER)
         self.bitmap_button_add.SetToolTip('Add current parameters to Vault')
         self.bitmap_button_delete=wx.BitmapButton(self.tool_panel,-1
-        , img.delete.getImage().Scale(tb_bmp_size, tb_bmp_size).ConvertToBitmap(),
+        ,  wx.Bitmap(img.getdeleteImage().Scale(tb_bmp_size, tb_bmp_size)),
                                                size=size, style=wx.NO_BORDER)
         self.bitmap_button_delete.SetToolTip('Delete selected parameter set')
         self.bitmap_button_apply=wx.BitmapButton(self.tool_panel,-1
-        , img.start_fit.getImage().Scale(tb_bmp_size, tb_bmp_size).ConvertToBitmap(),
+        ,  wx.Bitmap(img.getstart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
                                                size=size, style=wx.NO_BORDER)
         self.bitmap_button_apply.SetToolTip('Apply selected parameter set to the model')
         self.bitmap_button_plot=wx.BitmapButton(self.tool_panel,-1
-        , img.plotting.getImage().Scale(tb_bmp_size, tb_bmp_size).ConvertToBitmap(),
+        ,  wx.Bitmap(img.getplottingImage().Scale(tb_bmp_size, tb_bmp_size)),
                                                size=size, style=wx.NO_BORDER)
         self.bitmap_button_plot.SetToolTip('Toggle plotting of the selected parameter set')
 
@@ -295,7 +294,7 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
 
     def OnGetItemText(self, item, col):
         if col==0:
-            return item+1
+            return str(item+1)
         data=self.parameter_list[item]
         if col==1:
             return "%.4g"%data[0]

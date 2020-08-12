@@ -194,8 +194,9 @@ class Model:
         group['script'] = self.script
         self.parameters.write_h5group(group.create_group('parameters'))
         group['fomfunction'] = self.fom_func.__name__.encode('utf-8')
-        group['fom_ignore_nan'] = self.fom_ignore_nan
-        group['fom_ignore_inf'] = self.fom_ignore_inf
+        sgrp=group.create_group('solver_pars')
+        sgrp['fom_ignore_nan'] = self.fom_ignore_nan
+        sgrp['fom_ignore_inf'] = self.fom_ignore_inf
 
         for kw in kwargs:
             kwargs[kw].write_h5group(group.create_group(kw))
@@ -218,12 +219,11 @@ class Model:
             iprint("Can not find fom function name %s"%fom_func_name[()])
 
         try:
-            iprint(bool(group['parameters']['fom_ignore_nan'][()]))
-            self.fom_ignore_nan = bool(group['parameters']['fom_ignore_nan'][()])
+            self.fom_ignore_nan = bool(group['solver_pars']['fom_ignore_nan'][()])
         except Exception as e:
             iprint("Could not load parameter fom_ignore_nan from file")
         try:
-            self.fom_ignore_inf = bool(group['parameters']['fom_ignore_inf'][()])
+            self.fom_ignore_inf = bool(group['solver_pars']['fom_ignore_inf'][()])
         except Exception as e:
             iprint("Could not load parameter fom_ignore_inf from file")
         self.create_fom_mask_func()
@@ -472,7 +472,7 @@ class Model:
         object = self.eval_in_model(str)
         # Is it a function or a method!
         name = type(object).__name__
-        if name == 'instancemethod' or name == 'function':
+        if callable(object):
             return object
         # Make a function to set the object
         elif isinstance(object, NumericParameter):
