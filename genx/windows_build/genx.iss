@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{54F9D347-19F3-4833-BA3B-154B6BBED1F9}
 AppName=GenX 3
-AppVerName=GenX 3.0.0beta3
+AppVerName=GenX 3.0.0
 AppPublisher=Artur Glavic
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
@@ -16,7 +16,7 @@ DefaultDirName={pf}\GenX 3
 DefaultGroupName=GenX 3
 AllowNoIcons=true
 
-OutputBaseFilename=GenX-3.0.0beta3_win64_setup
+OutputBaseFilename=GenX-3.0.0_win64_setup
 Compression=lzma
 SolidCompression=true
 ChangesAssociations=true
