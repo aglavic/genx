@@ -74,7 +74,7 @@ def numpy_logger(err, flag):
   nplogger.debug('numpy floating point error encountered (%s)'%err)
 
 def setup_system():
-  logger=logging.getLogger()#logging.getLogger('genx')
+  logger=logging.getLogger()
   logger.setLevel(min(FILE_LEVEL, CONSOLE_LEVEL, GUI_LEVEL))
   if not sys.platform.startswith('win'):
     # no console logger for windows (win32gui)

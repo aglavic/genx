@@ -760,6 +760,7 @@ def quit(frame, event):
     frame.config.default_set('gui', 'vsize', vsize)
     frame.config.default_set('gui', 'vsplit', frame.ver_splitter.GetSashPosition())
     frame.config.default_set('gui', 'hsplit', frame.hor_splitter.GetSashPosition())
+    frame.config.default_set('gui', 'psplit', frame.plot_splitter.GetSashPosition())
     frame.config.write_default(config_path+'genx.conf')
 
     # app=frame.parent

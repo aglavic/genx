@@ -50,21 +50,27 @@ if not os.path.exists(os.path.join(config_path, 'genx.conf')):
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, *args, **kwds):
-        self.dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
-        tb_bmp_size=int(32*self.dpi_scale_factor)
-        
-        self.config = io.Config()
         self.parent = parent
+        debug('starting setup of MainFrame')
 
-        self.config.load_default(os.path.join(config_path, 'genx.conf'))
+        self.dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        debug('dpi_scale_factor=%g'%self.dpi_scale_factor)       
+        tb_bmp_size=int(32*self.dpi_scale_factor)
         self.flag_simulating = False
         self.simulation_queue_counter = 0
+        
+        debug('setup of MainFrame - config')
+        self.config = io.Config()
+        self.config.load_default(os.path.join(config_path, 'genx.conf'))
+        
         status_text = lambda event:event_handlers.status_text(self, event)
         
         # begin wxGlade: MainFrame.__init__
         kwds["style"] = kwds.get("style", 0) | wx.CAPTION | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU
+        debug('setup of MainFrame - wx.Frame\n')
         wx.Frame.__init__(self, *args, **kwds)
 
+        debug('setup of MainFrame - menu bar')
         # Menu Bar
         self.main_frame_menubar = wx.MenuBar()
         self.mb_file = wx.Menu()
@@ -214,6 +220,7 @@ class MainFrame(wx.Frame):
         # Menu Bar end
         self.main_frame_statusbar = self.CreateStatusBar(3)
         
+        debug('setup of MainFrame - tool bar')
         # Tool Bar
         self.main_frame_toolbar = wx.ToolBar(self, -1, style=wx.TB_DEFAULT_STYLE)
         self.SetToolBar(self.main_frame_toolbar)
@@ -229,6 +236,7 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.AddSeparator()
         self.main_frame_toolbar.AddTool(10009, "tb_zoom", wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
         # Tool Bar end
+        debug('setup of MainFrame - splitters and panels')
         self.ver_splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
         self.data_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
         self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY)
@@ -261,9 +269,11 @@ class MainFrame(wx.Frame):
         self.input_notebook_script = wx.Panel(self.input_notebook, wx.ID_ANY)
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
 
+        debug('setup of MainFrame - properties and layout')
         self.__set_properties()
         self.__do_layout()
 
+        debug('setup of MainFrame - bind')
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=10001)
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=10002)
         self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=10003)
@@ -277,6 +287,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.eh_plot_page_changed, self.plot_notebook)
         # end wxGlade
         
+        debug('setup of MainFrame - manual config')
         #### Begin Manual Config
         
         # Create objects needed
@@ -395,6 +406,8 @@ class MainFrame(wx.Frame):
         # event_handlers.new(self, None)
         self.model.saved = True
         #### End Manual config
+        debug('finished setup of MainFrame')
+        
    
     def __set_properties(self):
         # self.main_frame_toolbar.SetToolBitmapSize((32,32))
@@ -511,8 +524,7 @@ class MainFrame(wx.Frame):
             self.sep_plot_notebook=self.plot_notebook
             self.plot_notebook=self.wide_plugin_notebook
             self.plot_notebook.RemovePage(0)
-            self.plot_splitter.SetSashGravity(0.5)
-            self.plot_splitter.SetSashPosition(600)
+            self.plot_splitter.SetSashGravity(0.75)
             #self.plot_notebook = wx.Notebook(self.plot_panel, wx.ID_ANY,
             #                                 style=wx.NB_BOTTOM|wx.BORDER_SUNKEN)
             #plot_sizer.Add(self.plot_notebook, 1, wx.EXPAND|wx.ALL, 4)
@@ -549,6 +561,9 @@ class MainFrame(wx.Frame):
         self.ver_splitter.SetSashPosition(vsplit)
         self.hor_splitter.SetSashPosition(hsplit)
 
+        if self.config.get_boolean('startup', 'widescreen', False):
+            psplit=self.config.get_int('gui', 'psplit', int(size[1]*0.6))
+            self.plot_splitter.SetSashPosition(psplit)
 
     def startup_dialog(self, profile_path, force_show = False):
         show_profiles = self.config.get_boolean('startup', 'show profiles')
@@ -826,19 +841,25 @@ class MainFrame(wx.Frame):
 
 class MyApp(wx.App):
     def __init__(self, show_startup, *args, **kwargs):
+        debug('App init started')
         self.show_startup = show_startup
         wx.App.__init__(self, *args, **kwargs)
+        debug('App init complete')
 
     def OnInit(self):
+        debug('entering init phase')
         locale = wx.Locale(wx.LANGUAGE_ENGLISH)
         self.locale = locale
+
         main_frame = MainFrame(self, None, -1, "")
         self.SetTopWindow(main_frame)
-        main_frame.Show()
+        #main_frame.Show()
         if self.show_startup:
             main_frame.startup_dialog(config_path)
-
+           
+        debug('init complete')
         wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
+        wx.CallAfter(main_frame.Show)
         return 1
 
 # end of class MyApp

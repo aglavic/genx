@@ -4,11 +4,9 @@
 # Last changed: 2009 03 10
 
 import matplotlib
-matplotlib.use('WXAgg')
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_agg import RendererAgg
 from matplotlib.figure import Figure
-from matplotlib.pyplot import setp
 
 from numpy import *
 import wx
@@ -17,6 +15,11 @@ from wx import PAPER_A4, LANDSCAPE
 
 from . import filehandling as io
 from .gui_logging import iprint
+from logging import debug, getLogger, ERROR
+
+# deactivate matplotlib logging that we are not interested in
+getLogger('matplotlib.ticker').setLevel(ERROR)
+getLogger('matplotlib.font_manager').setLevel(ERROR)
 
 # Event for a click inside an plot which yields a number
 (plot_position, EVT_PLOT_POSITION) = wx.lib.newevent.NewEvent()
@@ -35,21 +38,21 @@ class PlotPanel(wx.Panel):
     def __init__(self, parent, id = -1, color = None, dpi = None
             , style = wx.NO_FULL_REPAINT_ON_RESIZE|wx.EXPAND|wx.ALL
             , config = None, config_name='', **kwargs):
-        
+
+        debug('start init PlotPanel')
         wx.Panel.__init__(self,parent, id = id, style = style, **kwargs)
         if dpi is None:
             dpi=wx.GetDisplayPPI()[0]
-        
         self.parent = parent
         self.callback_window = self
         self.config = config
         self.config_name = config_name
+        debug('init PlotPanel - setup figure')
         self.figure = Figure(figsize=(1.0,1.0),dpi=dpi)
+        debug('init PlotPanel - setup canvas')
         self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
         self.canvas.SetExtraStyle(wx.EXPAND)
         self.SetColor(color)
-        self.Bind(wx.EVT_IDLE, self._onIdle)
-        self.Bind(wx.EVT_SIZE, self._onSize)
         self._resizeflag = True
         self.print_size = (15./2.54, 12./2.54)
         #self._SetSize()
@@ -61,6 +64,9 @@ class PlotPanel(wx.Panel):
         self.autoscale = True
         
         
+        debug('init PlotPanel - bind events')
+        self.Bind(wx.EVT_IDLE, self._onIdle)
+        self.Bind(wx.EVT_SIZE, self._onSize)
         self.canvas.Bind(wx.EVT_LEFT_DOWN, self.OnLeftMouseButtonDown)
         self.canvas.Bind(wx.EVT_LEFT_UP, self.OnLeftMouseButtonUp)
         self.canvas.Bind(wx.EVT_MOTION, self.OnMouseMove)
@@ -72,6 +78,7 @@ class PlotPanel(wx.Panel):
         self.old_scale_state = True
         self.ax = None
 
+        debug('init PlotPanel - FigurePrinter and Bitmap')
         # Init printout stuff
         self.fig_printer = FigurePrinter(self)
 
@@ -79,6 +86,7 @@ class PlotPanel(wx.Panel):
         self.bitmap =wx.Bitmap(1, 1, depth=wx.BITMAP_SCREEN_DEPTH)
 #        DEBUG_MSG("__init__() - bitmap w:%d h:%d" % (w,h), 2, self)
         self._isDrawn = False
+        debug('end init PlotPanel')
 
 
     def SetColor(self, rgbtuple=None):
@@ -112,7 +120,7 @@ class PlotPanel(wx.Panel):
 
         self.canvas.SetSize(pixels)
         try:
-            self.figure.tight_layout()
+            self.figure.tight_layout(h_pad=0)
         except ValueError:
             pass
         #self.figure.set_size_inches(pixels[0]/self.figure.get_dpi()
@@ -641,7 +649,7 @@ class PlotPanel(wx.Panel):
         #self._SetSize()
         #self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
         #self.ax.set_yscale(self.scale)
-        self.figure.tight_layout()
+        self.figure.tight_layout(h_pad=0)
         self.canvas.draw()
         
     def update(self, data):
@@ -988,7 +996,8 @@ class DataPlotPanel(PlotPanel):
             gs=GridSpec(4,1)
         self.ax=self.figure.add_subplot(gs[:3,0])
         #self.ax.xaxis.set_visible(False)
-        setp(self.ax.get_xticklabels(), visible=False)
+        self.ax.get_xaxis().set_visible(False)
+        #setp(self.ax.get_xticklabels(), visible=False)
         self.error_ax=self.figure.add_subplot(gs[3,0], sharex=self.ax)
         # self.error_ax = self.figure.add_axes(self.sub_ax_rect, sharex=self.ax)
         self.ax.set_autoscale_on(False)
@@ -1255,7 +1264,7 @@ class ErrorPlotPanel(PlotPanel):
 
         self.ax.set_xlabel('Iteration')
         self.ax.set_ylabel('FOM')
-        self.figure.tight_layout()
+        self.figure.tight_layout(h_pad=0)
         self.flush_plot()
         
     def OnSolverPlotEvent(self, event):
@@ -1305,7 +1314,7 @@ class ParsPlotPanel(PlotPanel):
                 
         self.ax.set_xlabel('Parameter Index (only fittable)')
         self.ax.set_ylabel('Relative value in min/max range')
-        self.figure.tight_layout()
+        self.figure.tight_layout(h_pad=0)
         self.flush_plot()
         
     def OnSolverParameterEvent(self, event):

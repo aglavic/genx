@@ -3,14 +3,19 @@
 block_cipher = None
 import os
 
+for pi in os.environ['PATH'].split(';'):
+    if os.path.exists(os.path.join(pi, 'libiomp5md.dll')):
+        dll_path=os.path.join(pi, 'libiomp5md.dll')
+        break
+
 a = Analysis(['scripts\\genx'],
              pathex=[os.path.abspath(os.path.curdir)],
-             binaries=[],
+             binaries=[(dll_path, '.')],
              datas=[('genx', 'genx')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
-             excludes=[],
+             excludes=['PyQt5', ],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
@@ -25,13 +30,13 @@ exe = EXE(pyz,
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
-          upx=True,
+          upx=False,
           console=False , icon='windows_build\\genx.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
                a.datas,
                strip=False,
-               upx=True,
+               upx=False,
                upx_exclude=[],
                name='genx')
