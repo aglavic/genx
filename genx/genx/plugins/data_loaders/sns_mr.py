@@ -36,7 +36,7 @@ class Plugin(Template):
         '''
         # get scan number and polarization channel from filename
         name = ''
-        fhandle = open(filename, 'r')
+        fhandle = open(filename, 'r', encoding='utf-8')
         fline = fhandle.readline()
         while not '[Data]' in fline:
             if 'Input file indices:' in fline:

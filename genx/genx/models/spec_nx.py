@@ -209,7 +209,12 @@ def footprintcorr(Q, instrument):
     footype = instrument.getFootype()
     beamw = instrument.getBeamw()
     samlen = instrument.getSamplelen()
-    theta = arcsin(Q * instrument.getWavelength() / 4.0 / pi) * 180 / pi
+
+    if instrument.getProbe() in [instrument_string_choices['probe'][4],
+                                 instrument_string_choices['probe'][5], 4, 5]:
+        theta = instrument.incangle
+    else:
+        theta = arcsin(Q * instrument.getWavelength() / 4.0 / pi) * 180 / pi
     if footype == 1 or footype == instrument_string_choices['footype'][1]:
         foocor = GaussIntensity(theta, samlen / 2.0, samlen / 2.0, beamw)
     elif footype == 2 or footype == instrument_string_choices['footype'][2]:
