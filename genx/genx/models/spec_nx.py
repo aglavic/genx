@@ -140,7 +140,7 @@ instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',
 InstrumentParameters = {'probe':'x-ray', 'wavelength':1.54, 'coords':'2θ',
                         'I0':1.0, 'res':0.001,
                         'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,
-                        'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu',
+                        'footype': 'no corr', 'samplelen':10.0, 'incangle':0.5, 'pol': 'uu',
                         'Ibkg': 0.0, 'tthoff':0.0}
 InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']),
                     ('Resolution', ['restype', 'res', 'respoints', 'resintrange']),
@@ -267,10 +267,15 @@ def resolution_init(TwoThetaQz, instrument):
                                   instrument_string_choices['coords'][2],1,2]:
         Q = 4 * pi / instrument.getWavelength() * sin((TwoThetaQz + instrument.getTthoff()) * pi / 360.0)
     # Q vector given....
-    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
-            or instrument.getCoords() == 0:
-        Q = 4 * pi / instrument.getWavelength() * sin(
-            arcsin(TwoThetaQz * instrument.getWavelength() / 4 / pi) + instrument.getTthoff() * pi / 360.)
+    elif instrument.getCoords() in [instrument_string_choices['coords'][0], 0]:
+        # for tof the q-values are not angles but wavelenght, so tth-offset is a scaling factor
+        if instrument.getProbe() in [instrument_string_choices['probe'][4],
+                                 instrument_string_choices['probe'][5], 4, 5]:
+            ai=instrument.getIncangle()
+            Q=TwoThetaQz*(sin((ai+instrument.getTthoff()/2.)*pi/180.)/sin(ai*pi/180.))
+        else:
+            Q = 4 * pi / instrument.getWavelength() * sin(
+                arcsin(TwoThetaQz * instrument.getWavelength() / 4 / pi) + instrument.getTthoff() * pi / 360.)
     else:
         raise ValueError('The value for coordinates, coords, is WRONG! should be q(0) or tth(1).')
     return Q, TwoThetaQz, weight
