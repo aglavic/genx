@@ -171,17 +171,19 @@ class SampleTable(gridlib.GridTableBase):
                       False, '4.87479', False, '0.0',
                       True, '20.0', False, '5.0', BOT_LAYER]
                      ]
+
         if not first:
             diff=old_len-len(self.layers)
             iprint(diff, 'reset table')
-            if diff<0:
-                msg=gridlib.GridTableMessage(self,
-                                             gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, -diff)
-                self.GetView().ProcessTableMessage(msg)
-            elif diff>0:
-                msg=gridlib.GridTableMessage(self,
-                                             gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1, diff)
-                self.GetView().ProcessTableMessage(msg)
+            for i in range(abs(diff)):
+                if diff<0:
+                    msg=gridlib.GridTableMessage(self,
+                                                 gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, 1)
+                    self.GetView().ProcessTableMessage(msg)
+                elif diff>0:
+                    msg=gridlib.GridTableMessage(self,
+                                                 gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1, 1)
+                    self.GetView().ProcessTableMessage(msg)
             msg=gridlib.GridTableMessage(self,
                                          gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
@@ -492,18 +494,19 @@ class SampleTable(gridlib.GridTableBase):
         diff=len(self.layers)-len(data)
         self.layers=list(data)
 
-        if diff<0:
-            # list of layers is longer than previous table data
-            msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,
-                                         1, -diff)
-            self.GetView().ProcessTableMessage(msg)
-        elif diff>0:
-            # list of layers is shorter than previous table data
-            msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,
-                                         1, diff)
-            self.GetView().ProcessTableMessage(msg)
+        for i in range(abs(diff)):
+            if diff<0:
+                # list of layers is longer than previous table data
+                msg=gridlib.GridTableMessage(self,
+                                             gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,
+                                             1, 1)
+                self.GetView().ProcessTableMessage(msg)
+            elif diff>0:
+                # list of layers is shorter than previous table data
+                msg=gridlib.GridTableMessage(self,
+                                             gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                                             1, 1)
+                self.GetView().ProcessTableMessage(msg)
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
