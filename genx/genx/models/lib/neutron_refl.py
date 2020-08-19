@@ -191,7 +191,7 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
     #    sigma = zeros(d.shape)
     # Assemble the interface reflectivity matrix
     X = ass_X(k_p, k_m, theta_diff)
-    if sigma != None:
+    if sigma is not None:
         X = include_sigma(X, k_p, k_m, sigma)
     # Assemble the layer propagation matrices
     P = ass_P(k_p, k_m, d)
