@@ -223,3 +223,11 @@ def roots4thdegree(a, b, c, d, e):
     x4 = -b/4./a + np.where(cond, (-w + np.sqrt(-(3*alpha + 2*y - 2*beta/w)))/2.,
                             - np.sqrt(0.5*(-alpha - np.sqrt(alpha**2 - 4*gamma))))
     return (x1, x2, x3, x4)
+
+try:
+    import numba
+except ImportError:
+    pass
+else:
+    dot4=numba.jit(nopython=True)(dot4) #theta, lamda, n, d, sigma
+    dot4_Adiag=numba.jit(nopython=True)(dot4_Adiag) #theta, lamda, n, d, sigma

@@ -161,6 +161,31 @@ def ass_P(k_p, k_m, d):
     P[3,3] = 1/P[2,2]#exp(1.0J*k_m*d)
     return P
 
+def prepare_itms(Q, Vp, Vm, M_ang):
+    # Assume first element=substrate and last=ambient!
+    k_amb = Q.reshape((-1, 1))/2.0
+    # Wavevectors in the layers
+    k_p = sqrt(k_amb**2 - Vp).astype(complex128)
+    k_m = sqrt(k_amb**2 - Vm).astype(complex128)
+    #Angular difference between the magnetization
+    theta_diff=M_ang[1:] - M_ang[:-1]
+    return k_p, k_m, theta_diff
+
+def calc_I(M):
+    denom = M[0,0]*M[2,2]-M[0,2]*M[2,0]
+    Ruu = (M[1,0]*M[2,2]-M[1,2]*M[2,0])/denom
+    Rud = (M[3,0]*M[2,2]-M[3,2]*M[2,0])/denom
+    Rdu = (M[1,2]*M[0,0]-M[1,0]*M[0,2])/denom
+    Rdd = (M[3,2]*M[0,0]-M[3,0]*M[0,2])/denom
+    return absolute(Ruu)**2, absolute(Rdd)**2, absolute(Rud)**2, absolute(Rdu)**2
+
+def calc_A(M):
+    denom = M[0,0]*M[2,2]-M[0,2]*M[2,0]
+    Ruu = (M[1,0]*M[2,2]-M[1,2]*M[2,0])/denom
+    Rud = (M[3,0]*M[2,2]-M[3,2]*M[2,0])/denom
+    Rdu = (M[1,2]*M[0,0]-M[1,0]*M[0,2])/denom
+    Rdd = (M[3,2]*M[0,0]-M[3,0]*M[0,2])/denom
+    return Ruu, Rdd, Rud, Rdu
 
 def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
     '''A quicker implementation than the ordinary slow implementaion in Refl
@@ -180,15 +205,7 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
         Returns:            (Ruu,Rdd,Rud,Rdu)
                             (up-up,down-down,up-down,down-up)
     '''
-    # Assume first element=substrate and last=ambient!
-    k_amb = Q[:, newaxis]/2.0
-    # Wavevectors in the layers
-    k_p = sqrt(k_amb**2 - Vp).astype(complex128)
-    k_m = sqrt(k_amb**2 - Vm).astype(complex128)
-    #Angular difference between the magnetization
-    theta_diff=M_ang[1:] - M_ang[:-1]
-    #if sigma == None:
-    #    sigma = zeros(d.shape)
+    k_p, k_m, theta_diff=prepare_itms(Q, Vp, Vm, M_ang)
     # Assemble the interface reflectivity matrix
     X = ass_X(k_p, k_m, theta_diff)
     if sigma is not None:
@@ -203,16 +220,11 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
     #print M.shape
     #print 'M: ', M[:,:, 0]
     #print 'denom: ',  M[0,0]*M[2,2]-M[0,2]*M[2,0]
-    denom = M[0,0]*M[2,2]-M[0,2]*M[2,0]
-    Ruu = (M[1,0]*M[2,2]-M[1,2]*M[2,0])/denom
-    Rud = (M[3,0]*M[2,2]-M[3,2]*M[2,0])/denom
-    Rdu = (M[1,2]*M[0,0]-M[1,0]*M[0,2])/denom
-    Rdd = (M[3,2]*M[0,0]-M[3,0]*M[0,2])/denom
 
     if return_int:
-        return abs(Ruu)**2,abs(Rdd)**2,abs(Rud)**2,abs(Rdu)**2
+        return calc_I(M)
     else:
-        return Ruu, Rdd, Rud, Rdu
+        return calc_A(M)
 
 def Refl_int_lay(Q, V0, Vmag, d, M_ang, sigma, dmag_u, dd_u, M_ang_u, sigma_u,
                  dmag_l, dd_l, M_ang_l, sigma_l, return_int=True):
@@ -278,6 +290,17 @@ def Refl_int_lay(Q, V0, Vmag, d, M_ang, sigma, dmag_u, dd_u, M_ang_u, sigma_u,
         return abs(Ruu) ** 2, abs(Rdd) ** 2, abs(Rud) ** 2, abs(Rdu) ** 2
     else:
         return Ruu, Rdd, Rud, Rdu
+
+try:
+    import numba
+except ImportError:
+    iprint('Could not find numba, no speed up from JIT compiler.')
+else:
+    ass_X_2int=numba.jit(nopython=True)(ass_X_2int)
+    ass_P=numba.jit(nopython=True)(ass_P)
+    prepare_itms=numba.jit(nopython=True)(prepare_itms)
+    calc_I=numba.jit(nopython=True)(calc_I)
+    calc_A=numba.jit(nopython=True)(calc_A)
 
 if __name__=='__main__':
     Q=arange(0.01,0.2,0.0005)
