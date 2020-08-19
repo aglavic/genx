@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{54F9D347-19F3-4833-BA3B-154B6BBED1F9}
 AppName=GenX 3
-AppVerName=GenX 3.0.0
+AppVerName=GenX 3.0.1
 AppPublisher=Artur Glavic
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
@@ -16,11 +16,11 @@ DefaultDirName={pf}\GenX 3
 DefaultGroupName=GenX 3
 AllowNoIcons=true
 
-OutputBaseFilename=GenX-3.0.0_win64_setup
+OutputBaseFilename=GenX-3.0.1_win64_setup
 Compression=lzma
 SolidCompression=true
 ChangesAssociations=true
-PrivilegesRequired=admin
+PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 UsePreviousTasks=yes
 WizardImageFile=.\install_wizard_bkg.bmp
@@ -42,11 +42,11 @@ Name: {group}\GenX 3; Filename: {app}\genx.exe; IconFilename: {app}\genx.exe; Ic
 Name: {group}\{cm:UninstallProgram,GenX 3}; Filename: {uninstallexe}
 
 [Registry]
-Root: HKCU; Subkey: Software\Classes\.gx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
-Root: HKCU; Subkey: Software\Classes\.hgx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
-Root: HKCU; Subkey: Software\Classes\GenX; ValueType: string; ValueName: ; ValueData: GenX model; Tasks: associate; Flags: uninsdeletekey createvalueifdoesntexist
-Root: HKCU; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,1; Tasks: associate; Flags: createvalueifdoesntexist
-Root: HKCU; Subkey: Software\Classes\GenX\shell\open\command; ValueType: string; ValueName: ; ValueData: """{app}\genx.exe"" ""%1"""; Tasks: associate; Flags: createvalueifdoesntexist
+Root: HKA; Subkey: Software\Classes\.gx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
+Root: HKA; Subkey: Software\Classes\.hgx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
+Root: HKA; Subkey: Software\Classes\GenX; ValueType: string; ValueName: ; ValueData: GenX model; Tasks: associate; Flags: uninsdeletekey createvalueifdoesntexist
+Root: HKA; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,1; Tasks: associate; Flags: createvalueifdoesntexist
+Root: HKA; Subkey: Software\Classes\GenX\shell\open\command; ValueType: string; ValueName: ; ValueData: """{app}\genx.exe"" ""%1"""; Tasks: associate; Flags: createvalueifdoesntexist
 
 [Run]
 

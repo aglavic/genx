@@ -248,6 +248,8 @@ class DataSet:
         self.extra_data_raw[name] = value
         if command:
             self.extra_commands[name] = command
+        else:
+            self.extra_commands[name] = str(name)
     
     def get_extra_data(self, name):
         '''get_extra_data(self, name) --> object
@@ -368,10 +370,13 @@ class DataSet:
         e = self.error_raw
         
         for key in self.extra_data_raw:
-            exec('%s = self.%s_raw' % (key, key))
+            exec('%s = self.extra_data_raw["%s"]' % (key, key))
 
         for key in self.extra_commands:
             self.extra_data[key] = eval(self.extra_commands["%s"%key])
+
+        if 'res' in self.extra_data:
+            self.res=self.extra_data['res']
     
     def set_simulation(self):
         '''if no data is loaded we set a generic simulation dataset'''
@@ -406,16 +411,8 @@ class DataSet:
         
         #Know we have to do this with the extra data
         for key in self.extra_data_raw:
-            exec('%s = self.%s_raw'%(key, key))
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
             
-        xt = self.x
-        yt = self.y
-        et = self.error
-        
-        #Know we have to do this with the extra data
-        for key in self.extra_data_raw:
-            exec('%st = self.%s'%(key, key))
-        
         # Try to evaluate all the expressions
         if command_dict['x'] != '':
             try:
@@ -439,7 +436,8 @@ class DataSet:
                         + e.__str__() + '\n'
         
         extra_results={}
-        for key,value in self.extra_commands.items():
+        for key in self.extra_commands.keys():
+            value=command_dict[key]
             if command_dict[key] != '':
                 try:
                    extra_results[key] = eval(value)
@@ -451,15 +449,14 @@ class DataSet:
         if result != '':
             return result
         # Finally check so that all the arrays have the same size
-        extra_shape = not all([resi.shape==xt.shape
-                               for resi in extra_results.values()])
+        extra_shape = any([resi.shape!=xt.shape for resi in extra_results.values()])
         if (xt.shape != yt.shape or xt.shape != et.shape or extra_shape)\
             and result == '':
             result += 'The resulting arrays are not of the same size:\n' + \
                        'len(x) = %d, len(y) = %d, len(e) = %d'\
                     %(xt.shape[0], yt.shape[0], et.shape[0])
             for key,value in extra_results.items():
-                result += ', len(%s) = %d'%(key, eval('%st.shape[0]'%key))
+                result += ', len(%s) = %d'%(key, extra_results[key].shape[0])
         return result
             
     def get_commands(self):

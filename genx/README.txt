@@ -11,6 +11,14 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.0.1
+=============
+ * Fix issue with model table when creating new model in SimpleReflectivity
+ * Fix unicode error in sns_mr data loader
+ * Handle footpring and tth offset parameter correctly when ToF neutron is selected
+ * Update windows installer to run with user privileges
+ * Fix evaluation of extra data columns like "res"
+
 Changes 3.0.0
 =============
  * Convert to python 3

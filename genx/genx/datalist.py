@@ -1299,7 +1299,7 @@ class CalcDialog(wx.Dialog):
         for name in self.command_ctrl:
             current_command[name] = self.command_ctrl[name].GetValue()
         
-        if self.command_tester and self. command_runner: 
+        if self.command_tester and self.command_runner:
             result = self.command_tester(current_command)
             if result == '':
                 result = self.command_runner(current_command)

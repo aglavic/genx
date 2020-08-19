@@ -64,7 +64,6 @@ class Plugin(Template):
             self.data[data_item_number].y_raw = load_array[:,self.I_col]
             self.data[data_item_number].error_raw = load_array[:,self.eI_col]
             self.data[data_item_number].set_extra_data('res', load_array[:,self.res_col], 'res')
-            self.data[data_item_number].res = load_array[:,self.res_col]*1.0
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
             self.data[data_item_number].run_command()
