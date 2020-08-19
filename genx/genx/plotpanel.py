@@ -1021,6 +1021,8 @@ class DataPlotPanel(PlotPanel):
         ymax = max([array(line.get_ydata()).max()\
                    for line in self.error_ax.lines if len(line.get_ydata()) > 0])
         # Set the limits
+        if ymin>=ymax:
+            return
         self.error_ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
         #self.ax.set_yscale(self.scale)
         
