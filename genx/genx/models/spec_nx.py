@@ -328,12 +328,12 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
     if type ==  instrument_string_choices['probe'][0] or type==0:
         #fb = array(parameters['f'], dtype = complex64)
         e = AA_to_eV/instrument.getWavelength()
-        fb = refl.cast_to_array(parameters['f'], e)
+        fb = refl.cast_to_array(parameters['f'], e).astype(complex128)
     else: 
         fb = array(parameters['b'], dtype = complex128)*1e-5
         abs_xs = array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2
     
-    dens = array(parameters['dens'], dtype = complex64)
+    dens = array(parameters['dens'], dtype = float64)
     d = array(parameters['d'], dtype = float64)
     magn = array(parameters['magn'], dtype = float64)
     #Transform to radians
@@ -493,12 +493,12 @@ def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
 
     parameters = sample.resolveLayerParameters()
     if type ==  instrument_string_choices['probe'][0] or type==0:
-        fb = refl.cast_to_array(parameters['f'], Energy)
+        fb = refl.cast_to_array(parameters['f'], Energy).astype(complex128)
     else:
-        fb = array(parameters['b'], dtype = complex64)*1e-5
-        abs_xs = array(parameters['xs_ai'], dtype = complex64)*(1e-4)**2
+        fb = array(parameters['b'], dtype = complex128)*1e-5
+        abs_xs = array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2
 
-    dens = array(parameters['dens'], dtype = complex64)
+    dens = array(parameters['dens'], dtype = float64)
     d = array(parameters['d'], dtype = float64)
     sigma = array(parameters['sigma'], dtype = float64)
 
@@ -545,12 +545,12 @@ def SLD_calculations(z, item, sample, inst):
     # END Parameters
     '''
     parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = complex64)
+    dens = array(parameters['dens'], dtype = float32)
     #f = array(parameters['f'], dtype = complex64)
     e = AA_to_eV/inst.getWavelength()
-    f = refl.cast_to_array(parameters['f'], e)
+    f = refl.cast_to_array(parameters['f'], e).astype(complex64)
     b = array(parameters['b'], dtype=complex64)*1e-5
-    abs_xs = array(parameters['xs_ai'], dtype=complex64)*(1e-4)**2
+    abs_xs = array(parameters['xs_ai'], dtype=float32)*(1e-4)**2
     wl = inst.getWavelength()
     type = inst.getProbe()
     magnetic = False
@@ -581,16 +581,16 @@ def SLD_calculations(z, item, sample, inst):
     if z == None:
         z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     if not magnetic:
-        rho = sum((sld[:-1] - sld[1:])*(0.5 -\
+        rho = sum((sld[:-1] - sld[1:])*(0.5 -
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
         dic = {'Re': real(rho), 'Im': imag(rho), 'z':z, 
                'SLD unit': sld_unit}
     else:
         sld_p = sld + mag_sld
         sld_m = sld - mag_sld
-        rho_p = sum((sld_p[:-1] - sld_p[1:])*(0.5 -\
+        rho_p = sum((sld_p[:-1] - sld_p[1:])*(0.5 -
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld_p[-1]
-        rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -\
+        rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -
             0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
         rho_mag_x = sum((mag_sld_x[:-1] - mag_sld_x[1:])*
                         (0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + mag_sld_x[-1]
