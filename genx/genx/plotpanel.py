@@ -1169,12 +1169,15 @@ class DataPlotPanel(PlotPanel):
         [self.ax.plot(data_set.x, data_set.y_sim, color = data_set.sim_color, \
             lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
             marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
-            for data_set in data if data_set.show and data_set.use]
+            for data_set in data if data_set.show and data_set.use and data_set.x.shape==data_set.y_sim.shape]
         [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
          lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
-         ms=data_set.sim_symbolsize) for data_set in data if data_set.show
+         ms=data_set.sim_symbolsize) for data_set in data if data_set.show  and data_set.x.shape==data_set.y_fom.shape
         ]
-        self.autoscale_error_ax()
+        try:
+            self.autoscale_error_ax()
+        except ValueError:
+            pass
         self.AutoScale()
         # Force an update of the plot
         self.flush_plot()
