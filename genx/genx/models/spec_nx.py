@@ -207,7 +207,13 @@ def footprintcorr(Q, instrument):
 
     if instrument.getProbe() in [instrument_string_choices['probe'][4],
                                  instrument_string_choices['probe'][5], 4, 5]:
-        theta = instrument.incangle
+        theta = instrument.getIncangle()
+        # if ai is an array, make sure it gets repeated for every resolution point
+        if type(theta) is ndarray and instrument.getRestype() in [2, 4,
+                                               instrument_string_choices['restype'][2],
+                                               instrument_string_choices['restype'][4]]:
+            theta=(theta*ones(instrument.getRespoints())[:, newaxis]).flatten()
+
     else:
         theta = arcsin(Q * instrument.getWavelength() / 4.0 / pi) * 180 / pi
     if footype == 1 or footype == instrument_string_choices['footype'][1]:
@@ -267,6 +273,11 @@ def resolution_init(TwoThetaQz, instrument):
         if instrument.getProbe() in [instrument_string_choices['probe'][4],
                                  instrument_string_choices['probe'][5], 4, 5]:
             ai=instrument.getIncangle()
+            # if ai is an array, make sure it gets repeated for every resolution point
+            if type(ai) is ndarray and restype in [2, 4,
+                                                   instrument_string_choices['restype'][2],
+                                                   instrument_string_choices['restype'][4]]:
+                ai=(ai*ones(instrument.getRespoints())[:,newaxis]).flatten()
             Q=TwoThetaQz*(sin((ai+instrument.getTthoff()/2.)*pi/180.)/sin(ai*pi/180.))
         else:
             Q = 4 * pi / instrument.getWavelength() * sin(
@@ -316,11 +327,11 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
     #    raise ValueError('The q vector has to be above %.1e'%q_limit)
     Q=maximum(Q, q_limit)
 
-    type = instrument.getProbe()
+    ptype = instrument.getProbe()
     pol = instrument.getPol()
 
     parameters = sample.resolveLayerParameters()
-    if type ==  instrument_string_choices['probe'][0] or type==0:
+    if ptype ==  instrument_string_choices['probe'][0] or ptype==0:
         #fb = array(parameters['f'], dtype = complex64)
         e = AA_to_eV/instrument.getWavelength()
         fb = refl.cast_to_array(parameters['f'], e).astype(complex128)
@@ -337,7 +348,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
     sigma = array(parameters['sigma'], dtype = float64)
     
     
-    if type == instrument_string_choices['probe'][0] or type == 0:
+    if ptype == instrument_string_choices['probe'][0] or ptype == 0:
         sld = dens*fb*instrument.getWavelength()**2/2/pi
     else:
         wl = instrument.getWavelength()
@@ -345,7 +356,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
         #                       1.0J*abs_xs*wl/4/pi)
         sld = neutron_sld(abs_xs, dens, fb, wl)
     # Ordinary Paratt X-rays
-    if type == instrument_string_choices['probe'][0] or type == 0:
+    if ptype == instrument_string_choices['probe'][0] or ptype == 0:
         R = Paratt.ReflQ(Q,instrument.getWavelength(), 1.0-2.82e-5*sld, d, sigma, return_int=return_int)
         #print 2.82e-5*sld
         #reload(slow_paratt)
@@ -353,10 +364,10 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
         #R = slow_paratt.reflq_pseudo_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
         #R = slow_paratt.reflq_sra(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
     #Ordinary Paratt Neutrons
-    elif type == instrument_string_choices['probe'][1] or type == 1:
+    elif ptype == instrument_string_choices['probe'][1] or ptype == 1:
         R = Paratt.ReflQ(Q,instrument.getWavelength(), 1.0-sld, d, sigma, return_int=return_int)
     #Ordinary Paratt but with magnetization
-    elif type == instrument_string_choices['probe'][2] or type == 2:
+    elif ptype == instrument_string_choices['probe'][2] or ptype == 2:
         msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
         # Polarization uu or ++
         if pol == instrument_string_choices['pol'][0] or pol == 0:
@@ -373,7 +384,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
             raise ValueError('The value of the polarization is WRONG.'
                 ' It should be uu(0) or dd(1)')
     # Spin flip
-    elif type == instrument_string_choices['probe'][3] or type == 3:
+    elif ptype == instrument_string_choices['probe'][3] or ptype == 3:
         # Check if we have calcluated the same sample previous:
         if Buffer.TwoThetaQz is not None:
             Q_ok = Buffer.TwoThetaQz.shape == Q.shape
@@ -409,13 +420,21 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
                 ' It should be uu(0), dd(1) or ud(2)')
         
     # tof
-    elif type == instrument_string_choices['probe'][4] or type == 4:
-        wl = 4*pi*sin(instrument.getIncangle()*pi/180)/Q
+    elif ptype == instrument_string_choices['probe'][4] or ptype == 4:
+        ai=instrument.getIncangle()
+        # if ai is an array, make sure it gets repeated for every resolution point
+        if type(ai) is ndarray and restype in [2, 4,
+                                               instrument_string_choices['restype'][2],
+                                               instrument_string_choices['restype'][4]]:
+            ai=(ai*ones(instrument.getRespoints())[:, newaxis]).flatten()
+        else:
+            ai=ai*ones(Q.shape)
+        wl = 4*pi*sin(ai*pi/180)/Q
         sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
-        R = Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape), (4*pi*sin(instrument.getIncangle()*pi/180)/Q),
+        R = Paratt.Refl_nvary2(ai, wl,
                                1.0-sld, d, sigma, return_int=return_int)
     # tof spin polarized
-    elif type == instrument_string_choices['probe'][5] or type == 5:
+    elif ptype == instrument_string_choices['probe'][5] or ptype == 5:
         wl = 4*pi*sin(instrument.getIncangle()*pi/180)/Q
         sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
         msld = 2.645e-5*magn[:,newaxis]*dens[:,newaxis]*(4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
@@ -484,10 +503,10 @@ def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
                          'should be q(0) or tth(1).')
     Q = 4 * pi / wl * sin((2*theta + instrument.getTthoff()) * pi / 360.0)
 
-    type = instrument.getProbe()
+    ptype = instrument.getProbe()
 
     parameters = sample.resolveLayerParameters()
-    if type ==  instrument_string_choices['probe'][0] or type==0:
+    if ptype ==  instrument_string_choices['probe'][0] or ptype==0:
         fb = refl.cast_to_array(parameters['f'], Energy).astype(complex128)
     else:
         fb = array(parameters['b'], dtype = complex128)*1e-5
@@ -498,13 +517,13 @@ def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
     sigma = array(parameters['sigma'], dtype = float64)
 
 
-    if type == instrument_string_choices['probe'][0] or type == 0:
+    if ptype == instrument_string_choices['probe'][0] or ptype == 0:
         sld = dens[:, newaxis]*fb*wl**2/2/pi
     else:
         wl = instrument.getWavelength()
         sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)
     # Ordinary Paratt X-rays
-    if type == instrument_string_choices['probe'][0] or type == 0:
+    if ptype == instrument_string_choices['probe'][0] or ptype == 0:
         #R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
         R = Paratt.Refl_nvary2(theta, wl, 1.0 - 2.82e-5*sld, d, sigma)
     else:
@@ -547,14 +566,14 @@ def SLD_calculations(z, item, sample, inst):
     b = array(parameters['b'], dtype=complex64)*1e-5
     abs_xs = array(parameters['xs_ai'], dtype=float32)*(1e-4)**2
     wl = inst.getWavelength()
-    type = inst.getProbe()
+    ptype = inst.getProbe()
     magnetic = False
     mag_sld = 0
     sld_unit = 'r_{e}/\AA^{3}'
-    if type == instrument_string_choices['probe'][0] or type == 0:
+    if ptype == instrument_string_choices['probe'][0] or ptype == 0:
         sld = dens*f
-    elif type == instrument_string_choices['probe'][1] or type == 1 or\
-        type == instrument_string_choices['probe'][4] or type == 4:
+    elif ptype == instrument_string_choices['probe'][1] or ptype == 1 or\
+        ptype == instrument_string_choices['probe'][4] or ptype == 4:
         sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
         sld_unit = '\AA^{-2}'
     else:
