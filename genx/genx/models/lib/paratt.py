@@ -2,34 +2,27 @@ from numpy import *
 from functools import reduce
 from genx.gui_logging import iprint
 
-def parratt_fml(rtot, rint):
-    # Paratt's recursion formula
-    part=rtot*rint[1]
-    return (rint[0]+part)/(1+part*rint[0])
-
 # "Ordinary" implementaion of Parrats recursion formula
-def prepare_rpp(theta, lamda, n, d, sigma):
+# theta-vector, lamda- can be a vector,n-1Dvector, d-1Dvector, sigma-1Dvector
+def Refl(theta, lamda, n, d, sigma, return_int=True):
     d = d[1:-1]
     sigma = sigma[:-1]
     # Length of k-vector in vaccum
-    k = 2*pi/lamda
+    k = 2*math.pi/lamda
     # Calculates the wavevector in each layer
-    Qj = 2*n[-1]*k*sqrt(n.reshape((-1,1))**2/n[-1]**2-cos(theta*(pi/180.))**2)
+    Qj = 2*n[-1]*k*sqrt(n[:,newaxis]**2/n[-1]**2-cos(theta*math.pi/180)**2)
     # Fresnel reflectivity for the interfaces
-    rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma.reshape((-1,1))**2)
+    rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     # Ignoring the top and bottom layer for the calc.
-    p = exp(1.0j*d.reshape((-1,1))*Qj[1:-1])
-    return rp, p
-
-# theta-vector, lamda- can be a vector,n-1Dvector, d-1Dvector, sigma-1Dvector
-def Refl(theta, lamda, n, d, sigma, return_int=True):
-    rp, p=prepare_rpp(theta, lamda, n, d, sigma)
+    p = exp(1.0j*d[:,newaxis]*Qj[1:-1])
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=zip(rp[1:], p)
-
+    rpp=array(list(map(lambda x,y:[x,y],rp[1:],p)))
+    # Paratt's recursion formula
+    def formula(rtot,rint):
+        return (rint[0]+rtot*rint[1])/(1+rtot*rint[0]*rint[1])
     # Implement the recursion formula
-    r = reduce(parratt_fml,rpp,rp[0])
+    r = reduce(formula,rpp,rp[0])
 
     if return_int:
         return abs(r)**2
@@ -37,32 +30,31 @@ def Refl(theta, lamda, n, d, sigma, return_int=True):
         return r
 
 # "Ordinary" implementaion of Parrats recursion formula
-def prepare_rppQ(Q, lamda, n, d, sigma):
+# Q-vector,n-1Dvector, d-1Dvector, sigma-1Dvector
+def ReflQ(Q,lamda,n,d,sigma, return_int=True):
     # Length of k-vector in vaccum
     d=d[1:-1]
     sigma=sigma[:-1]
     Q0=4*pi/lamda
+    Q = Q.astype(complex128)
     # Calculates the wavevector in each layer
-    Qj=sqrt((n.reshape((-1,1))**2 - n[-1]**2)*Q0**2 + n[-1]**2*Q**2)
+    Qj=sqrt((n[:,newaxis]**2 - n[-1]**2)*Q0**2 + n[-1]**2*Q**2)
     # Fresnel reflectivity for the interfaces
-    rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma.reshape((-1,1))**2)
+    rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     #print rp.shape #For debugging
     #print d.shape
     #print Qj[1:-1].shape
-    p=exp(1.0j*d.reshape((-1,1))*Qj[1:-1]) # Ignoring the top and bottom layer for the calc.
-    return rp, p
-
-# Q-vector,n-1Dvector, d-1Dvector, sigma-1Dvector
-def ReflQ(Q,lamda,n,d,sigma, return_int=True):
-    Q = Q.astype(complex128)
-    rp, p=prepare_rppQ(Q, lamda, n, d, sigma)
+    p=exp(1.0j*d[:,newaxis]*Qj[1:-1]) # Ignoring the top and bottom layer for the calc.
     #print p.shape #For debugging
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=zip(rp[1:], p)
-
+    rpp=array(list(map(lambda x,y:[x,y],rp[1:],p)))
+    #print rpp.shape
+    # Paratt's recursion formula
+    def formula(rtot,rint):
+        return (rint[0]+rtot*rint[1])/(1+rtot*rint[0]*rint[1])
     # Implement the recursion formula
-    r=reduce(parratt_fml,rpp,rp[0])
+    r=reduce(formula,rpp,rp[0])
     #print r.shape
     # return the reflectivity 
     if return_int:
@@ -75,7 +67,7 @@ def Refl_nvary(theta,lamda,n_func,d,sigma, return_int=True):
     d=d[1:-1]
     sigma=sigma[:-1]
     # Length of k-vector in vaccum
-    k=2*pi/lamda
+    k=2*math.pi/lamda
     # Calculates the wavevector in each layer
     #print n_func
     ss=transpose((sin(theta[:,newaxis]*pi/180.0)/lamda)*ones(len(n_func)))
@@ -84,7 +76,7 @@ def Refl_nvary(theta,lamda,n_func,d,sigma, return_int=True):
     #print len(n_func)
     n=array(list(map(lambda f,val:f(val),n_func,ss)))
     #print n
-    Qj=2*k*n[-1]*sqrt(n**2/n[-1]**2-cos(theta*pi/180)**2)
+    Qj=2*k*n[-1]*sqrt(n**2/n[-1]**2-cos(theta*math.pi/180)**2)
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
     #print rp.shape #For debugging
@@ -110,9 +102,9 @@ def ReflProfiles(theta,lamda,n,d,sigma,profile, return_int=True):
     d=d[1:-1]
     sigma=sigma[:-1]
     # Length of k-vector in vaccum
-    k=2*pi/lamda
+    k=2*math.pi/lamda
     # Calculates the wavevector in each layer
-    Qj=2*n[-1]*k*sqrt(n[:,newaxis]**2/n[-1]**2 - cos(theta*(pi/180.))**2)
+    Qj=2*n[-1]*k*sqrt(n[:,newaxis]**2/n[-1]**2 - cos(theta*math.pi/180)**2)
     # Function to map caclulate the roughness values
     def w(QiQj,sigma,profile):
         # erf profile
@@ -153,31 +145,43 @@ def ReflProfiles(theta,lamda,n,d,sigma,profile, return_int=True):
         return r
 
 # paratts algorithm for n as function of lamda or theta
-def prepare_rpp_nvary2(theta, lamda, n, d, sigma):
+def Refl_nvary2(theta,lamda,n_vector,d,sigma, return_int=True):
     d=d[1:-1]
     sigma=sigma[:-1]
     # Length of k-vector in vaccum
-    k=2*pi/lamda
+    k=2*math.pi/lamda
     # Calculates the wavevector in each layer
-    Qj=2*n[-1]*k*sqrt(n**2/n[-1]**2-cos(theta*(pi/180.))**2)
+    #print n_func
+    #ss=transpose((sin(theta[:,newaxis]*pi/180.0)/lamda)*ones(len(n_func)))
+    #print ss.shape
+    #print theta.shape
+    #print len(n_func)
+    #n=array(map(lambda f,val:f(val),n_func,ss))
+    n=n_vector
+    #print n
+    Qj=2*n[-1]*k*sqrt(n**2/n[-1]**2-cos(theta*math.pi/180)**2)
+    #print sigma.shape, Qj.shape
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])*exp(-Qj[1:]*Qj[:-1]/2*sigma[:,newaxis]**2)
+    #print rp.shape #For debugging
+    #print d.shape
+    #print Qj[1:-1].shape
     p=exp(1.0j*d[:,newaxis]*Qj[1:-1]) # Ignoring the top and bottom layer for the calc.
-    return rp,p
-
-def Refl_nvary2(theta,lamda,n,d,sigma, return_int=True):
-    rp,p=prepare_rpp_nvary2(theta, lamda, n, d, sigma)
+    #print p.shape #For debugging
     # Setting up a matrix for the reduce function. Reduce only takes one array
     # as argument
-    rpp=zip(rp[1:], p)
-
+    rpp=array(list(map(lambda x,y:[x,y],rp[1:],p)))
+    #print rpp.shape
+    # Paratt's recursion formula
+    def formula(rtot,rint):
+        return (rint[0]+rtot*rint[1])/(1+rtot*rint[0]*rint[1])
     # Implement the recursion formula
-    r = reduce(parratt_fml,rpp,rp[0])
-
+    r=reduce(formula,rpp,rp[0])
     if return_int:
         return abs(r)**2
     else:
         return r
+
 
 def reflq_kin(q, lamda, n, d, sigma, correct_q=True, return_int=True):
     """Calculates the reflectivity in the kinematical approximation"""
@@ -279,13 +283,9 @@ def reflq_sra(q, lamda, n, d, sigma, return_int=True):
 
 # try to use numba to speed up the calculation intensive functions:
 try:
-    import numba
-except ImportError:
-    iprint('Could not find numba, no speed up from JIT compiler.')
-else:
-    prepare_rpp=numba.jit(nopython=True)(prepare_rpp) #theta, lamda, n, d, sigma
-    prepare_rppQ=numba.jit(nopython=True)(prepare_rppQ) #Q, lamda, n, d, sigma
-    prepare_rpp_nvary2=numba.jit(nopython=True)(prepare_rpp_nvary2) #theta, lamda, n, d, sigma
+    from .paratt_numba import Refl, ReflQ, Refl_nvary2
+except Exception as e:
+    iprint('Could not use numba, no speed up from JIT compiler:\n'+str(e))
 
 if __name__=='__main__':
     theta=arange(0,5,0.01)+1e-13
