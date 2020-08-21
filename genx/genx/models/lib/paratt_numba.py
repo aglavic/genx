@@ -1,6 +1,4 @@
 from numpy import *
-from functools import reduce
-from genx.gui_logging import iprint
 import numba
 import math, cmath
 
