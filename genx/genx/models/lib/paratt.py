@@ -281,11 +281,13 @@ def reflq_sra(q, lamda, n, d, sigma, return_int=True):
     else:
         return r
 
-# try to use numba to speed up the calculation intensive functions:
-try:
-    from .paratt_numba import Refl, ReflQ, Refl_nvary2
-except Exception as e:
-    iprint('Could not use numba, no speed up from JIT compiler:\n'+str(e))
+from . import USE_NUMBA
+if USE_NUMBA:
+    # try to use numba to speed up the calculation intensive functions:
+    try:
+        from .paratt_numba import Refl, ReflQ, Refl_nvary2
+    except Exception as e:
+        iprint('Could not use numba, no speed up from JIT compiler:\n'+str(e))
 
 if __name__=='__main__':
     theta=arange(0,5,0.01)+1e-13

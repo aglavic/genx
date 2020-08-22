@@ -279,11 +279,13 @@ def Refl_int_lay(Q, V0, Vmag, d, M_ang, sigma, dmag_u, dd_u, M_ang_u, sigma_u,
     else:
         return Ruu, Rdd, Rud, Rdu
 
-# try to use numba to speed up the calculation intensive functions:
-try:
-    from .neutron_numba import Refl
-except Exception as e:
-    iprint('Could not use numba, no speed up from JIT compiler:\n'+str(e))
+from . import USE_NUMBA
+if USE_NUMBA:
+    # try to use numba to speed up the calculation intensive functions:
+    try:
+        from .neutron_numba import Refl
+    except Exception as e:
+        iprint('Could not use numba, no speed up from JIT compiler:\n'+str(e))
 
 if __name__=='__main__':
     Q=arange(0.01,0.2,0.0005)
