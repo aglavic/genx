@@ -12,7 +12,12 @@ from genx.models.lib.paratt import ReflQ as py_ReflQ
 from genx.models.lib.paratt_numba import ReflQ as nb_ReflQ
 from genx.models.lib.neutron_refl import Refl as py_ReflSF
 from genx.models.lib.neutron_numba import Refl as nb_ReflSF
-from genx.models.lib.neutron_cuda import Refl as nc_ReflSF
+try:
+    from genx.models.lib.neutron_cuda import Refl as nc_ReflSF
+except:
+    HAS_CUDA=False
+else:
+    HAS_CUDA=True
 
 LAMBDA=4.5
 
@@ -136,11 +141,15 @@ for name in REF_ITMS:
 
     T=Timer('py_ReflQ(*%s[1:])'%name, 'from __main__ import py_ReflQ, %s'%name)
     t_py=min(T.repeat(5, nrep))/nrep
-
-    numba.set_num_threads(1)
-    T=Timer('nb_ReflQ(*%s[1:])'%name, 'from __main__ import nb_ReflQ, %s'%name)
-    t_nb1=min(T.repeat(5, 5*nrep))/nrep/5.
-    numba.set_num_threads(cpu_count())
+    
+    try:
+        numba.set_num_threads(1)
+    except AttributeError:
+        t_nb1=nan
+    else:
+        T=Timer('nb_ReflQ(*%s[1:])'%name, 'from __main__ import nb_ReflQ, %s'%name)
+        t_nb1=min(T.repeat(5, 5*nrep))/nrep/5.
+        numba.set_num_threads(cpu_count())
     T=Timer('nb_ReflQ(*%s[1:])'%name, 'from __main__ import nb_ReflQ, %s'%name)
     t_nb=min(T.repeat(5, 5*nrep))/nrep/5.
 
@@ -161,15 +170,22 @@ for name in SF_ITMS:
     T=Timer('py_ReflSF(*%s[1:])'%name, 'from __main__ import py_ReflSF, %s'%name)
     t_py=min(T.repeat(5, nrep))/nrep
 
-    numba.set_num_threads(1)
-    T=Timer('nb_ReflSF(*%s[1:])'%name, 'from __main__ import nb_ReflSF, %s'%name)
-    t_nb1=min(T.repeat(5, 5*nrep))/nrep/5.
-    numba.set_num_threads(cpu_count())
+    try:
+        numba.set_num_threads(1)
+    except AttributeError:
+        t_nb1=nan
+    else:
+        T=Timer('nb_ReflSF(*%s[1:])'%name, 'from __main__ import nb_ReflSF, %s'%name)
+        t_nb1=min(T.repeat(5, 5*nrep))/nrep/5.
+        numba.set_num_threads(cpu_count())
     T=Timer('nb_ReflSF(*%s[1:])'%name, 'from __main__ import nb_ReflSF, %s'%name)
     t_nb=min(T.repeat(5, 5*nrep))/nrep/5.
 
-    T=Timer('nc_ReflSF(*%s[1:])'%name, 'from __main__ import nc_ReflSF, %s'%name)
-    t_nc=min(T.repeat(5, 5*nrep))/nrep/5.
+    if HAS_CUDA:
+        T=Timer('nc_ReflSF(*%s[1:])'%name, 'from __main__ import nc_ReflSF, %s'%name)
+        t_nc=min(T.repeat(5, 5*nrep))/nrep/5.
+    else:
+        t_nc=nan
 
     sf_results.append([t_py, t_nb1, t_nb, t_nc])
     print('%16s | %16.3f | %16.3f | %10.1f | %16.3f | %10.1f | %16.3f | %10.1f'%(
