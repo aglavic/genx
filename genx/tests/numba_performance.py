@@ -1,9 +1,12 @@
 # run performance tests on python, numba and cuda versions of code
 
+from multiprocessing import cpu_count
 from numpy import *
 from timeit import Timer
 from genx.models import lib
 lib.USE_NUMBA=False
+
+import numba
 
 from genx.models.lib.paratt import ReflQ as py_ReflQ
 from genx.models.lib.paratt_numba import ReflQ as nb_ReflQ
@@ -110,7 +113,7 @@ LS_SF=[
 
 LARGE_SF=[
     5,
-    hstack([linspace(0.001, 0.2, 400), linspace(0.001, 0.2, 400)]), # Q - too fine steps breaks python variant
+    hstack([linspace(0.001, 0.2, 400), ]*5), # Q - too fine steps breaks python variant
     array([pot(sld_Si)]+[pot(sld_Pt), pot(sld_Fe_p)]*100+[0], dtype=complex128), # Vp
     array([pot(sld_Si)]+[pot(sld_Pt), pot(sld_Fe_m)]*100+[0], dtype=complex128), # Vm
     array([3.]+[100, 50]*100+[3.]), # d
@@ -123,29 +126,74 @@ REF_ITMS=['SMALL_REF', 'MED_REF', 'LQ_REF', 'LS_REF', 'LARGE_REF']
 SF_ITMS=['SMALL_SF', 'MED_SF', 'LQ_SF', 'LS_SF', 'LARGE_SF']
 
 ref_results=[]
-print('%14s | %14s | %14s | %14s'%('Model', 'Python [ms]', 'Numba [ms]', 'Speedup'))
+print('%16s | %16s | %16s | %10s | %16s | %10s'%('Points/Layers', 'Numpy [ms]',
+                                   'Numba (1x) [ms]', 'Speedup',
+                                   'Numba (%ix) [ms]'%cpu_count(), 'Speedup'))
 for name in REF_ITMS:
-    nrep=eval(name+'[0]')
+    mod=eval(name)
+    nrep=mod[0]
+    mlabel='%i/%i'%(mod[1].shape[0], mod[3].shape[0])
 
     T=Timer('py_ReflQ(*%s[1:])'%name, 'from __main__ import py_ReflQ, %s'%name)
     t_py=min(T.repeat(5, nrep))/nrep
+
+    numba.set_num_threads(1)
+    T=Timer('nb_ReflQ(*%s[1:])'%name, 'from __main__ import nb_ReflQ, %s'%name)
+    t_nb1=min(T.repeat(5, 5*nrep))/nrep/5.
+    numba.set_num_threads(cpu_count())
     T=Timer('nb_ReflQ(*%s[1:])'%name, 'from __main__ import nb_ReflQ, %s'%name)
     t_nb=min(T.repeat(5, 5*nrep))/nrep/5.
-    ref_results.append([t_py, t_nb])
-    print('%14s | %14.3f | %14.3f | %14.1f'%(name, t_py*1000, t_nb*1000, t_py/t_nb))
+
+    ref_results.append([t_py, t_nb1, t_nb])
+    print('%16s | %16.3f | %16.3f | %10.1f | %16.3f | %10.1f'%(mlabel, t_py*1000,
+                                             t_nb1*1000, t_py/t_nb1, t_nb*1000, t_py/t_nb))
 
 sf_results=[]
-print('%14s | %14s | %14s | %14s| %14s | %14s'%('Model', 'Python [ms]', 'Numba [ms]', 'Speedup',
+print('%16s | %16s | %16s | %10s | %16s | %10s | %16s | %10s'%('Points/Layers', 'Numpy [ms]',
+                                                'Numba (1x) [ms]', 'Speedup',
+                                                'Numba (%ix) [ms]'%cpu_count(), 'Speedup',
                                                 'Cuda [ms]', 'Speedup'))
 for name in SF_ITMS:
-    nrep=eval(name+'[0]')
+    mod=eval(name)
+    nrep=mod[0]
+    mlabel='%i/%i'%(mod[1].shape[0], mod[3].shape[0])
 
     T=Timer('py_ReflSF(*%s[1:])'%name, 'from __main__ import py_ReflSF, %s'%name)
     t_py=min(T.repeat(5, nrep))/nrep
+
+    numba.set_num_threads(1)
+    T=Timer('nb_ReflSF(*%s[1:])'%name, 'from __main__ import nb_ReflSF, %s'%name)
+    t_nb1=min(T.repeat(5, 5*nrep))/nrep/5.
+    numba.set_num_threads(cpu_count())
     T=Timer('nb_ReflSF(*%s[1:])'%name, 'from __main__ import nb_ReflSF, %s'%name)
     t_nb=min(T.repeat(5, 5*nrep))/nrep/5.
+
     T=Timer('nc_ReflSF(*%s[1:])'%name, 'from __main__ import nc_ReflSF, %s'%name)
     t_nc=min(T.repeat(5, 5*nrep))/nrep/5.
-    ref_results.append([t_py, t_nb, t_nc])
-    print('%14s | %14.3f | %14.3f | %14.1f| %14.3f | %14.1f'%(name, t_py*1000, t_nb*1000, t_py/t_nb,
-                                             t_nc*1000, t_py/t_nc))
+
+    sf_results.append([t_py, t_nb1, t_nb, t_nc])
+    print('%16s | %16.3f | %16.3f | %10.1f | %16.3f | %10.1f | %16.3f | %10.1f'%(
+                    mlabel, t_py*1000,
+                    t_nb1*1000, t_py/t_nb1, t_nb*1000, t_py/t_nb,
+                    t_nc*1000, t_py/t_nc))
+
+print("\n\nraw data:")
+for i, name in enumerate(REF_ITMS):
+    mod=eval(name)
+    nrep=mod[0]
+    mlabel='%i/%i'%(mod[1].shape[0], mod[3].shape[0])
+
+    t_py, t_nb1, t_nb=ref_results[i]
+    print('%s\t%g\t%g\t%g\t%g\t%g'%(
+                    mlabel, t_py*1000,
+                    t_nb1*1000, t_py/t_nb1, t_nb*1000, t_py/t_nb))
+for i, name in enumerate(SF_ITMS):
+    mod=eval(name)
+    nrep=mod[0]
+    mlabel='%i/%i'%(mod[1].shape[0], mod[3].shape[0])
+
+    t_py, t_nb1, t_nb, t_nc=sf_results[i]
+    print('%s\t%g\t%g\t%g\t%g\t%g\t%g\t%g'%(
+                    mlabel, t_py*1000,
+                    t_nb1*1000, t_py/t_nb1, t_nb*1000, t_py/t_nb,
+                    t_nc*1000, t_py/t_nc))
