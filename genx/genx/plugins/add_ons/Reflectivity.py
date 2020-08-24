@@ -624,12 +624,14 @@ class SamplePanel(wx.Panel):
                                  units=units, editable_pars=editable)
         
         if dlg.ShowModal()==wx.ID_OK:
+            old_vals=vals
             vals=dlg.GetValues()
             #print vals
             states = dlg.GetStates()
             for par in pars:
                 if not states[par]:
-                    setattr(self.sampleh.sample, par, vals[par])
+                    old_type=type(old_vals[par])
+                    setattr(self.sampleh.sample, par, old_type(vals[par]))
                 if editable[par] != states[par]:
                     value = eval_func(vals[par])
                     minval = min(value*(1 - self.variable_span), value*(1 + self.variable_span))
