@@ -171,6 +171,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_tb_simulate, id=self.main_frame_menubar.mb_fit_simulate.GetId())
         self.main_frame_menubar.mb_fit_evaluate = self.mb_fit.Append(wx.ID_ANY, "&Evaluate\tF5", "Evaluate the Sim function only - no recompiling")
         self.Bind(wx.EVT_MENU, self.eh_mb_fit_evaluate, id=self.main_frame_menubar.mb_fit_evaluate.GetId())
+        self.main_frame_menubar.mb_use_cuda = self.mb_fit.Append(wx.ID_ANY, "Use CUDA", "Make use of Nvidia GPU computing with CUDA", wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.eh_mb_use_cuda, id=self.main_frame_menubar.mb_use_cuda.GetId())
         self.mb_fit.AppendSeparator()
         self.main_frame_menubar.mb_fit_start = self.mb_fit.Append(wx.ID_ANY, "Start &Fit\tCtrl+F", "Start fitting")
         self.Bind(wx.EVT_MENU, self.eh_mb_fit_start, id=self.main_frame_menubar.mb_fit_start.GetId())
@@ -733,6 +735,13 @@ class MainFrame(wx.Frame):
 
     def eh_mb_view_autoscale(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.on_autoscale(self, event)
+        event.Skip()
+
+    def eh_mb_use_cuda(self, event):
+        if self.main_frame_menubar.mb_use_cuda.IsChecked():
+            event_handlers.activate_cuda(self, event)
+        else:
+            event_handlers.deactivate_cuda(self, event)
         event.Skip()
 
     def eh_mb_set_opt(self, event): # wxGlade: MainFrame.<event_handler>

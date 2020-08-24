@@ -126,8 +126,7 @@ ModelID='SpecNX'
 __pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
 
 instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',
-    'neutron pol spin flip', 'neutron tof', 'neutron pol tof',
-    'neutron spin flip cuda'], 'coords': ['q', '2θ', 'tth'],
+    'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q', '2θ', 'tth'],
     'restype': ['no conv', 'fast conv',
      'full conv and varying res.', 'fast conv + varying res.',
      'full conv and varying res. (dx/x)', 'fast conv + varying res. (dx/x)'],
@@ -398,12 +397,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
             nm = 1.0-sld+msld
             Vp = (2*pi/instrument.getWavelength())**2*(1-np**2)
             Vm = (2*pi/instrument.getWavelength())**2*(1-nm**2)
-            # use CUDA enhance code
-            if ptype in [6, instrument_string_choices['probe'][6]]:
-                from .lib import neutron_cuda
-                (Ruu, Rdd, Rud, Rdu)=neutron_cuda.Refl(Q, Vp, Vm, d, magn_ang, sigma, return_int=return_int)
-            else:
-                (Ruu,Rdd,Rud,Rdu) = MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma, return_int=return_int)
+            (Ruu,Rdd,Rud,Rdu) = MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma, return_int=return_int)
             Buffer.Ruu = Ruu; Buffer.Rdd = Rdd; Buffer.Rud = Rud
             Buffer.parameters = parameters.copy()
             Buffer.TwoThetaQz = Q.copy()

@@ -1108,6 +1108,46 @@ def update_data(frame, event):
     '''
     frame.plugin_control.OnDataChanged(event)
 
+def activate_cuda(frame, event):
+    dlg = wx.ProgressDialog(parent=frame,
+                            maximum=3,
+                            message="Compiling CUDA GPU computing functions with Numba",
+                            title='Activating CUDA...')
+    dlg.Show()
+
+    dlg.Update(1)
+    from genx.models.lib import paratt_cuda
+    dlg.Update(2)
+    from genx.models.lib import neutron_cuda
+    dlg.Update(3)
+    from models.lib import paratt, neutron_refl
+    paratt.Refl=paratt_cuda.Refl
+    paratt.ReflQ=paratt_cuda.ReflQ
+    paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
+    neutron_refl.Refl=neutron_cuda.Refl
+    from genx.models.lib import paratt, neutron_refl
+    paratt.Refl=paratt_cuda.Refl
+    paratt.ReflQ=paratt_cuda.ReflQ
+    paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
+    neutron_refl.Refl=neutron_cuda.Refl
+
+    dlg.Destroy()
+
+
+def deactivate_cuda(frame, event):
+    from genx.models.lib import paratt_numba, neutron_numba
+    from models.lib import paratt, neutron_refl
+    paratt.Refl=paratt_numba.Refl
+    paratt.ReflQ=paratt_numba.ReflQ
+    paratt.Refl_nvary2=paratt_numba.Refl_nvary2
+    neutron_refl.Refl=neutron_numba.Refl
+    from genx.models.lib import paratt, neutron_refl
+    paratt.Refl=paratt_numba.Refl
+    paratt.ReflQ=paratt_numba.ReflQ
+    paratt.Refl_nvary2=paratt_numba.Refl_nvary2
+    neutron_refl.Refl=neutron_numba.Refl
+
+
 def fom_help(frame, event):
     '''Show a help dialog for information about the different fom.
     '''
