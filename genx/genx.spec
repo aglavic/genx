@@ -3,16 +3,20 @@
 block_cipher = None
 import os
 
-for pi in os.environ['PATH'].split(';'):
-    if os.path.exists(os.path.join(pi, 'libiomp5md.dll')):
-        dll_path=os.path.join(pi, 'libiomp5md.dll')
+for pathi in os.environ['PATH'].split(';'):
+    if os.path.exists(os.path.join(pathi, 'libiomp5md.dll')):
+        dll_path=pathi
         break
 
 a = Analysis(['scripts\\genx'],
              pathex=[os.path.abspath(os.path.curdir)],
-             binaries=[(dll_path, '.')],
+             binaries=[(os.path.join(dll_path, 'libiomp5md.dll'), '.'),
+                       (os.path.join(dll_path, 'nvvm64*.dll'), 'DLLs'), # For CUDA toolkit
+                       (os.path.join(dll_path, 'libdevice*'), 'DLLs'),
+                       (os.path.join(dll_path, 'nvvm64*.dll'), 'Library/bin'),
+                       ],
              datas=[('genx', 'genx')],
-             hiddenimports=['pymysql'],
+             hiddenimports=['pymysql', 'numba', 'numba.cuda'],
              hookspath=[],
              runtime_hooks=[],
              excludes=['PyQt5', ],

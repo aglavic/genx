@@ -5,9 +5,8 @@ import math, cmath
 
 ##################### not yet correct ###############################
 
-@cuda.jit(numba.void(numba.complex128[:,:],
-                                numba.complex128[:,:],
-                                numba.complex128[:,:]), device=True)
+@cuda.jit(numba.void(numba.complex128[:,:], numba.complex128[:,:], numba.complex128[:,:]),
+          device=True)
 def dot4(A, B, D):
     D[0, 0]=(A[0, 0]*B[0, 0]+A[0, 1]*B[1, 0]+A[0, 2]*B[2, 0]+
              A[0, 3]*B[3, 0])

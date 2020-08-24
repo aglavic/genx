@@ -5,7 +5,7 @@ import math, cmath
 ##################### not yet correct ###############################
 
 @numba.jit(numba.complex128[:,:](numba.complex128[:,:], numba.complex128[:,:]),
-           nopython=True)
+           nopython=True, cache=True)
 def dot4(A, B):
     D=empty((4,4), dtype=complex128)
     D[0, 0]=(A[0, 0]*B[0, 0]+A[0, 1]*B[1, 0]+A[0, 2]*B[2, 0]+
@@ -48,7 +48,7 @@ def dot4(A, B):
 
 @numba.jit(numba.float64[:,:](numba.float64[:], numba.complex128[:], numba.complex128[:],
                              numba.float64[:], numba.float64[:], numba.float64[:]),
-          nopython=True, parallel=True)
+          nopython=True, parallel=True, cache=True)
 def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
@@ -168,7 +168,7 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
 
 @numba.jit(numba.float64[:,:](numba.float64[:], numba.complex128[:], numba.complex128[:],
                              numba.float64[:], numba.float64[:]),
-          nopython=True, parallel=True)
+          nopython=True, parallel=True, cache=True)
 def ReflNB(Q, Vp, Vm, d, M_ang):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell

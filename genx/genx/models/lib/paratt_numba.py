@@ -3,7 +3,7 @@ import numba
 import math, cmath
 
 @numba.jit(numba.float64[:](numba.float64[:], numba.float64, numba.complex128[:], numba.float64[:], numba.float64[:]),
-           nopython=True, parallel=True)
+           nopython=True, parallel=True, cache=True)
 def ReflNB(theta, lamda, n, d, sigma):
     layers=d.shape[0]
     angles=theta.shape[0]
@@ -38,7 +38,7 @@ def ReflNB(theta, lamda, n, d, sigma):
     return R
 
 @numba.jit(numba.complex128[:](numba.float64[:], numba.float64, numba.complex128[:], numba.float64[:], numba.float64[:]),
-           nopython=True, parallel=True)
+           nopython=True, parallel=True, cache=True)
 def AmpNB(theta, lamda, n, d, sigma):
     layers=d.shape[0]
     angles=theta.shape[0]
@@ -79,7 +79,7 @@ def Refl(theta, lamda, n, d, sigma, return_int=True):
         return AmpNB(theta, lamda, n, d, sigma)
 
 @numba.jit(numba.float64[:](numba.float64[:], numba.float64, numba.complex128[:], numba.float64[:], numba.float64[:]),
-           nopython=True, parallel=True)
+           nopython=True, parallel=True, cache=True)
 def ReflQNB(Q, lamda, n, d, sigma):
     layers=d.shape[0]
     points=Q.shape[0]
@@ -111,7 +111,7 @@ def ReflQNB(Q, lamda, n, d, sigma):
     return R
 
 @numba.jit(numba.complex128[:](numba.float64[:], numba.float64, numba.complex128[:], numba.float64[:], numba.float64[:]),
-           nopython=True, parallel=True)
+           nopython=True, parallel=True, cache=True)
 def AmpQNB(Q, lamda, n, d, sigma):
     layers=d.shape[0]
     points=Q.shape[0]
@@ -151,7 +151,7 @@ def ReflQ(Q, lamda, n, d, sigma, return_int=True):
 
 @numba.jit(
     numba.float64[:](numba.float64[:], numba.float64[:], numba.complex128[:,:], numba.float64[:], numba.float64[:]),
-    nopython=True, parallel=True)
+    nopython=True, parallel=True, cache=True)
 def Refl_nvary2NB(theta,lamda,n,d,sigma):
     layers=d.shape[0]
     angles=theta.shape[0]
@@ -189,7 +189,7 @@ def Refl_nvary2NB(theta,lamda,n,d,sigma):
 
 @numba.jit(
     numba.complex128[:](numba.float64[:], numba.float64[:], numba.complex128[:,:], numba.float64[:], numba.float64[:]),
-    nopython=True, parallel=True)
+    nopython=True, parallel=True, cache=True)
 def Amp_nvary2NB(theta, lamda, n, d, sigma):
     layers=d.shape[0]
     angles=theta.shape[0]
