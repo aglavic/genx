@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Slicing &#8212; GenX 2.4.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.3.6/flatly/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.4.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Surface X-diffraction tutorial" href="sxrd.html" />
+    <link rel="prev" title="Neutron reflectivity video tutorial" href="neutron_fit.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          GenX</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Content <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#mac-os-x">Mac OS-X</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#from-source">From source</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#introduction">Introduction</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#reflectivity">Reflectivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#surface-x-ray-diffraction">Surface x-ray diffraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#other-tutorials">Other tutorials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../faq.html#general">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq.html#fitting">Fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq.html#reflectivity">Reflectivity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../development/data.html">Data classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../development/write_data_loader.html">How to write a Data Loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../development/write_fom.html">Writing a FOM function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../development/packaging.html">How to package GenX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../development/mag_refl.html">A model for magnetic reflectivity</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Slicing</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#defining-the-sample">Defining the sample</a></li>
+<li><a class="reference internal" href="#adding-some-custom-parameters">Adding some custom parameters</a></li>
+<li><a class="reference internal" href="#modifying-the-script">Modifying the script</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="slicing">
+<span id="tutorial-slicing"></span><h1>Slicing<a class="headerlink" href="#slicing" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes one have a analytical expression for how the sample should look like and one wants to calculate the
+reflectivity from the sample without having to resort to go through the algebra to try to get the closed form
+expression. A simple way of solving this problem is to calculate the scattering length density profile and for
+many thin slicing and inserting this sliced profile into the sample. In the following I will describe how to do this.
+The gx file for this tutorial is <a class="reference download internal" href="../_downloads/slicing.gx" download=""><code class="xref download docutils literal"><span class="pre">available</span> <span class="pre">here</span></code></a>.</p>
+<p>First of all we will need an analytical formula. Here I have chosen an exponentially damped sinus function to model
+the scattering length density,</p>
+<div class="math">
+\[\rho (z) =  A\left( e^{-\frac{z}{\tau}} \sin(\frac{2 \pi}{T}z) + \frac{1}{2}\right).\]</div>
+</div>
+<div class="section" id="defining-the-sample">
+<h2>Defining the sample<a class="headerlink" href="#defining-the-sample" title="Permalink to this headline">¶</a></h2>
+<p>First we create a sample with a substrate and stacks for the ordinary layers. For the part that should
+be sliced up an empty stack is created, see below:</p>
+<img alt="../_images/sample_strucutre.jpg" src="../_images/sample_strucutre.jpg" />
+</div>
+<div class="section" id="adding-some-custom-parameters">
+<h2>Adding some custom parameters<a class="headerlink" href="#adding-some-custom-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Next we have to add some custom parameters to our model. <code class="docutils literal"><span class="pre">cp.rho_amp_x</span></code> is the modulation amplitude for x-rays,
+<code class="docutils literal"><span class="pre">cp.rho_amp_x</span></code> is the modulation amplitude for neutrons , <code class="docutils literal"><span class="pre">cp.tau</span></code> is the damping constant in the
+exponential term and <code class="docutils literal"><span class="pre">cp.period</span></code> is the period of the sinus wave. You add the custom parameters by
+going to the Simulations tab and push on the blue nut in the toolbar.</p>
+<img alt="../_images/custom_parameters.jpg" src="../_images/custom_parameters.jpg" />
+</div>
+<div class="section" id="modifying-the-script">
+<h2>Modifying the script<a class="headerlink" href="#modifying-the-script" title="Permalink to this headline">¶</a></h2>
+<p>The script has to be modified. First of a function that calculates the sld function should be defines.
+Here I have used a function that does it both for neutrons and x-rays. First, however, wee need to import
+array handling routines.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="k">def</span> <span class="nf">profile</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="n">rho_x</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rho_amp_x</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="o">/</span><span class="n">cp</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">z</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="n">cp</span><span class="o">.</span><span class="n">period</span><span class="p">)</span><span class="o">+</span><span class="n">cp</span><span class="o">.</span><span class="n">rho_amp_x</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">rho_n</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rho_amp_n</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="o">/</span><span class="n">cp</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">z</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="n">cp</span><span class="o">.</span><span class="n">period</span><span class="p">)</span><span class="o">+</span><span class="n">cp</span><span class="o">.</span><span class="n">rho_amp_n</span><span class="o">/</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="n">c_</span><span class="p">[</span><span class="n">rho_x</span><span class="p">,</span> <span class="n">rho_n</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Next we define the z-positions that the profiles should be sliced up at:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">z_max</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1"># AA</span>
+<span class="n">stepsize</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># AA</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">z_max</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">stepsize</span></code> define the slice depth of our thin layers. Then in the Sim function we do the actual calculation
+of the sld of each layer and creates a list of layers. Then we add all the layers to the <code class="docutils literal"><span class="pre">ProfStack</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">Layer</span><span class="p">(</span><span class="n">dens</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">rho_x</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">rho_n</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">stepsize</span><span class="p">)</span> <span class="k">for</span> <span class="n">rho_x</span><span class="p">,</span> <span class="n">rho_n</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">(</span><span class="n">z</span><span class="p">)]</span>
+<span class="n">ProfStack</span><span class="o">.</span><span class="n">setLayers</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The entire script should look something like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">models.spec_nx</span> <span class="k">as</span> <span class="nn">model</span>
+<span class="kn">from</span> <span class="nn">models.utils</span> <span class="k">import</span> <span class="n">UserVars</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">fw</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">bw</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="c1"># Define a function</span>
+<span class="k">def</span> <span class="nf">profile</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="n">rho_x</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rho_amp_x</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="o">/</span><span class="n">cp</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">z</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="n">cp</span><span class="o">.</span><span class="n">period</span><span class="p">)</span><span class="o">+</span><span class="n">cp</span><span class="o">.</span><span class="n">rho_amp_x</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">rho_n</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rho_amp_n</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="o">/</span><span class="n">cp</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">z</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="n">cp</span><span class="o">.</span><span class="n">period</span><span class="p">)</span><span class="o">+</span><span class="n">cp</span><span class="o">.</span><span class="n">rho_amp_n</span><span class="o">/</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="n">c_</span><span class="p">[</span><span class="n">rho_x</span><span class="p">,</span> <span class="n">rho_n</span><span class="p">]</span>
+
+<span class="c1"># Define an z-array</span>
+<span class="n">z_max</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1"># AA</span>
+<span class="n">stepsize</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># AA</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">z_max</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">)</span>
+
+<span class="c1"># BEGIN Instrument DO NOT CHANGE</span>
+<span class="n">inst</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Instrument</span><span class="p">(</span><span class="n">footype</span> <span class="o">=</span> <span class="s1">&#39;no corr&#39;</span><span class="p">,</span><span class="n">probe</span> <span class="o">=</span> <span class="s1">&#39;x-ray&#39;</span><span class="p">,</span><span class="n">beamw</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span><span class="n">resintrange</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                        <span class="n">pol</span> <span class="o">=</span> <span class="s1">&#39;uu&#39;</span><span class="p">,</span><span class="n">wavelength</span> <span class="o">=</span> <span class="mf">1.54</span><span class="p">,</span><span class="n">respoints</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span><span class="n">Ibkg</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span><span class="n">I0</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+                        <span class="n">samplelen</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span><span class="n">restype</span> <span class="o">=</span> <span class="s1">&#39;no conv&#39;</span><span class="p">,</span><span class="n">coords</span> <span class="o">=</span> <span class="s1">&#39;tth&#39;</span><span class="p">,</span><span class="n">res</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span><span class="n">incangle</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">fp</span><span class="o">.</span><span class="n">set_wavelength</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)</span>
+<span class="c1">#Compability issues for pre-fw created gx files</span>
+<span class="k">try</span><span class="p">:</span>
+         <span class="n">fw</span>
+<span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+<span class="k">else</span><span class="p">:</span>
+        <span class="n">fw</span><span class="o">.</span><span class="n">set_wavelength</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)</span>
+<span class="c1"># END Instrument</span>
+
+<span class="c1"># BEGIN Sample DO NOT CHANGE</span>
+<span class="n">Amb</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Layer</span><span class="p">(</span><span class="n">b</span> <span class="o">=</span> <span class="mi">0</span><span class="n">j</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="mi">0</span><span class="n">j</span><span class="p">,</span> <span class="n">dens</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+                  <span class="n">magn_ang</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">xs_ai</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">magn</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">TopLay</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Layer</span><span class="p">(</span><span class="n">b</span> <span class="o">=</span> <span class="mf">1e-1</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="mf">1e-1</span><span class="p">,</span> <span class="n">dens</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+                     <span class="n">magn_ang</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">xs_ai</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">magn</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">Sub</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Layer</span><span class="p">(</span><span class="n">b</span> <span class="o">=</span> <span class="n">bc</span><span class="o">.</span><span class="n">Si</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">Si</span><span class="p">,</span> <span class="n">dens</span> <span class="o">=</span> <span class="mi">8</span><span class="o">/</span><span class="mf">5.43</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+                  <span class="n">magn_ang</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">xs_ai</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">magn</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+
+<span class="n">Top</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Stack</span><span class="p">(</span><span class="n">Layers</span><span class="o">=</span><span class="p">[</span><span class="n">TopLay</span><span class="p">],</span> <span class="n">Repetitions</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">ProfStack</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Stack</span><span class="p">(</span><span class="n">Layers</span><span class="o">=</span><span class="p">[],</span> <span class="n">Repetitions</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">Stacks</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProfStack</span> <span class="p">,</span><span class="n">Top</span><span class="p">],</span> <span class="n">Ambient</span> <span class="o">=</span> <span class="n">Amb</span><span class="p">,</span> <span class="n">Substrate</span> <span class="o">=</span> <span class="n">Sub</span><span class="p">)</span>
+<span class="c1"># END Sample</span>
+
+<span class="c1"># BEGIN Parameters DO NOT CHANGE</span>
+<span class="n">cp</span> <span class="o">=</span> <span class="n">UserVars</span><span class="p">()</span>
+<span class="n">cp</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="s1">&#39;rho_amp_x&#39;</span><span class="p">,</span> <span class="mf">2e-1</span><span class="p">)</span>
+<span class="n">cp</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="s1">&#39;rho_amp_n&#39;</span><span class="p">,</span> <span class="mf">2e-1</span><span class="p">)</span>
+<span class="n">cp</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+<span class="n">cp</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="c1"># END Parameters</span>
+
+<span class="k">def</span> <span class="nf">Sim</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="c1"># Lets do the Slicing</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">Layer</span><span class="p">(</span><span class="n">dens</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">rho_x</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">rho_n</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">stepsize</span><span class="p">)</span> <span class="k">for</span> <span class="n">rho_x</span><span class="p">,</span> <span class="n">rho_n</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">(</span><span class="n">z</span><span class="p">)]</span>
+    <span class="n">ProfStack</span><span class="o">.</span><span class="n">Layers</span> <span class="o">=</span> <span class="n">layers</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># BEGIN Dataset 0 DO NOT CHANGE</span>
+    <span class="n">inst</span><span class="o">.</span><span class="n">setProbe</span><span class="p">(</span><span class="s1">&#39;x-ray&#39;</span><span class="p">)</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">SimSpecular</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">inst</span><span class="p">))</span>
+    <span class="c1"># END Dataset 0</span>
+    <span class="k">return</span> <span class="n">I</span>
+</pre></div>
+</div>
+<p>Then all the modifications are done and pressing simulate should generate a nice looking
+reflectivity and a sld looking something like this:</p>
+<img alt="../_images/resulting_sld.jpg" src="../_images/resulting_sld.jpg" />
+<p>That&#8217;s it, the model is also <a class="reference download internal" href="../_downloads/slicing.gx" download=""><code class="xref download docutils literal"><span class="pre">available</span> <span class="pre">here</span></code></a> for anyone to test out. However due to a bug in the
+pickling module there might be problems to open it on windows machines.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="../_sources/tutorials/slicing.rst.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Matts Björck.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

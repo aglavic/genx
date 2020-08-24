@@ -1,0 +1,46 @@
+genx.plugins package
+====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    genx.plugins.add_ons
+    genx.plugins.data_loaders
+
+Submodules
+----------
+
+genx.plugins.add_on_framework module
+------------------------------------
+
+.. automodule:: genx.plugins.add_on_framework
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+genx.plugins.data_loader_framework module
+-----------------------------------------
+
+.. automodule:: genx.plugins.data_loader_framework
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+genx.plugins.utils module
+-------------------------
+
+.. automodule:: genx.plugins.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: genx.plugins
+    :members:
+    :undoc-members:
+    :show-inheritance:

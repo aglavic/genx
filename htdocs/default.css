@@ -18,7 +18,7 @@ img.right {float:right; margin:0 0 5px 12px;}
 
 /* Header and navigation styles */
 #container {width:760px; margin:20px auto; padding:1px 0; text-align:left; background:#ffffff; color:#303030; border:2px solid #a0a0a0;}
-#header {height:110px; width:758px; margin:0 1px 1px 1px; background:#fcaf3e url('banner.png') no-repeat center top; color:#ffffff;}
+#header {height:110px; width:758px; margin:0 1px 1px 1px; background:#fcaf3e url('banner3.png') no-repeat center top; color:#ffffff;}
 #header h1 {padding:35px 0 0 20px; font-size:2.4em; background-color:inherit; color:#ffffff; letter-spacing:-2px; font-weight:normal;}
 #header h2 {margin:10px 0 0 40px; font-size:1.4em; background-color:inherit; color:#ffffff; letter-spacing:-1px; font-weight:normal;}
 #navigation {height:2.2em; line-height:2.2em; width:758px; margin:0 1px; background:#fcaf3e; color:#ffffff;}

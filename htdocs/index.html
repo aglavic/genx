@@ -1,88 +1,77 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-<head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<meta name="description" content="GenX is a versitaile fitting software for x-ray and neutron reflectivity" />
-	<meta name="keywords" content="differential evolution, reflectivity, x-ray, xray, neutron, diffraction, fitting, refinement" />
-	<meta name="author" content="Matts Bjorck"/>
-	<link rel="stylesheet" type="text/css" href="default.css" title="GenX" media="screen,projection" />
-	<title>GenX - Home</title>
-</head>
-
-<body>
-<div id="container" >
-  <!--#include file="header.html" -->
-  <div id="navigation">
-    <ul>
-      <li class="selected"><a href="/index.html">Home</a></li>
-      <li><a href="/install.html">Install</a></li>
-      <li><a href="/howtouse.html">HowToUse</a></li>
-      <li><a href="/publ.html">Publications</a></li>
-      <!--<li><a href="#">Documentation</a></li>
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+    <meta content="GenX 3 is a versitaile fitting software for x-ray and neutron reflectivity"
+      name="description" />
+    <meta content="differential evolution, reflectivity, x-ray, xray, neutron, diffraction, fitting, refinement"
+      name="keywords" />
+    <meta content="Matts Bjorck;Artur Glavic" name="author" />
+    <link media="screen,projection" title="GenX 3" href="default.css" type="text/css"
+      rel="stylesheet" />
+    <title>GenX - Home</title>
+  </head>
+  <body>
+    <div id="container"> <!--#include file="header.html" -->
+      <div id="navigation">
+        <ul>
+          <li class="selected"><a href="/index.html">Home</a></li>
+          <li><a href="/howtouse.html">HowToUse</a></li>
+          <li><a href="/publ.html">Publications</a></li>
+          <!--<li><a href="#">Documentation</a></li>
 	  <li><a href="#">FAQ</a></li> -->
-    </ul>
-  </div>
-  <div id="content">
-    <h2>What is Genx?</h2>
-    <p>GenX is a versatile program using the differential evolution algorithm for 
-    fitting, primarily,  X-ray and neutron reflectivity data. The differential evolution
-    algorithm constitutes a robust method which avoids local minima but at same 
-    is a highly effective fitting algorithm. GenX is written in 
-    <a href="http://www.python.org">python</a> and uses the 
-    <a href="hhtp://www.wxpython.org">wxpython</a> package 
-    for the Graphical User Interface (GUI) <a href="Screenshot.png">
-    <img src="Screenshot_tumbnail.png" width="253" height="158"
-    border="3" alt="Screenshot" align="right"/></a>. A model to fit 
-    is defined either through a pre-written GUI plug-in or via a python script.
-    This makes it easy and effortless to develop completely new fitting model.
-    Clearly, GenX is extremely modular, making it possible to extend the program with 
-    models and plug-ins for most fitting problems. At the present GenX is shipped
-    with models for x-ray and neutron specular reflectivity as well as module
-    for off-specular x-ray reflectivity. A detailed description has been published in 
-    <a href="http://www.iucr.org/cgi-bin/paper?aj5091">
-    J. Appl. Cryst. 40, 1174 (2007)</a>. The program can be downloaded by clicking 
-    on the link on the left hand side.</p>
-
-    <h2>Feedback and Help</h2>
-    Naturally a program does not become better if I do not get feedback from you!
-    If you found a bug or want to have something included in the program follow these
-    links and submit a tracker. This also applies if you want to have support, i.e. questions. 
-    <ul>
-      <li><a href = "http://sourceforge.net/tracker/?group_id=235219&atid=1096267">Bug report</a></li>
-      <li><a href = "http://sourceforge.net/tracker/?group_id=235219&atid=1096270">Feature request</a></li>
-      <li><a href = "http://sourceforge.net/tracker/?group_id=235219&atid=1096268">Support request</a></li>
-    </ul>
-    The reason for using this system is that I will, in time, build up an database of question and
-    answers. In addition I will not forget to implement feature X in GenX when I have some time at my
-    hands.
-    If you feel <b>very</b> uncomfortable with giving your e-mail address in a web-form you can
-    also drop me an e-mail at <a href = "mattsb@sourceforge.net">mattsb at sourceforge.net</a>.
-    
-
-
-    <h2>News <a href="https://sourceforge.net/export/rss2_projnews.php?group_id=235219&rss_fulltext=1"><img src="feed-icon-14x14.png"/></a></h2>
-    <!--#include file="news.php" -->
-		</dl>-->
-	<br><br>
-	<!--#config timefmt="%A %B %d, %Y" -->
-	<span class="small">Last updated: <!--#echo var="LAST_MODIFIED" --></span></p>
-	</div>
-
-	<div id="subcontent">
-		<!--#include file="download_box.html" -->
-
-		<h2>Content</h2>
-		<ul class="menublock">
-			<li><a href="#">What is GenX?</a></li>
-			<li><a href="#">Feedback and Help</a></li>
-			<li><a href="#">News</a></li>
-		</ul>
-		<!--#include file="left_links.html" -->
-
-	</div>
-
-	<!--#include file="footer.html" -->
-
-	</div>
-</body>
+        </ul>
+      </div>
+      <div id="content">
+        <h2>What is Genx?</h2>
+        <p>GenX is a versatile program using the differential evolution
+          algorithm for fitting, primarily, X-ray and neutron reflectivity data,
+          lately also surface x-ray diffraction data. The differential evolution
+          algorithm is a robust optimization method which avoids local minima
+          but at same is a highly effective. GenX is written in <a href="http://www.python.org">python</a>
+          and uses the <a href="hhtp://www.wxpython.org">wxpython</a> package
+          for the Graphical User Interface (GUI) <a href="Screenshot.png"> <img
+              width="253"
+              height="158"
+              border="3"
+              align="right"
+              alt="Screenshot"
+              src="Screenshot_tumbnail.png" /></a>.
+          A model to fit is defined either through a GUI plug-in or via a python
+          script. The possibility to script everything makes it easy to develop
+          completely new fitting model. Clearly, GenX is extremely modular,
+          making it possible to extend the program with models and plug-ins for
+          most fitting problems. At the present GenX is shipped with models for
+          x-ray and neutron specular reflectivity, off-specular x-ray
+          reflectivity and surface x-ray diffraction. A detailed description, of
+          a older version, has been published in <a href="http://www.iucr.org/cgi-bin/paper?aj5091">J.
+            Appl. Cryst. 40, 1174 (2007)</a>. The program can be downloaded by
+          clicking on the link on the left hand side.</p>
+        
+       
+        
+        
+        <h2>Feedback and Help</h2>
+        <p>Naturally a program does not become better if I do not get feedback
+          from you! If you found a bug or want to have something included in the
+          program submit a ticket on <a href="https://sourceforge.net/p/genx/tickets/">SourceForge</a>
+		  or drop me an <a href="mailto:artur.glavic@psi.ch">e-mail</a>.
+        </p>
+          
+          
+        
+        <h2><a href="https://sourceforge.net/p/genx/news/">News</a> <a href="http://sourceforge.net/export/rss2_projnews.php?group_id=235219&amp;rss_fulltext=1"><img
+              src="feed-icon-14x14.png" /></a></h2>
+		<script src="//rss.bloople.net/?url=http%3A%2F%2Fsourceforge.net%2Fexport%2Frss2_projnews.php%3Fgroup_id%3D235219%26rss_fulltext%3D1&detail=-1&limit=3&showtitle=false&type=js"></script>
+		<br /><br />
+        <!--#config timefmt="%A %B %d, %Y" --> <span class="small">Last
+          updated:
+          <!--#echo var="LAST_MODIFIED" --></span>
+        <p></p>
+      </div>
+      <div id="subcontent">
+        <!--#include file="download_box.html" -->
+        <!--#include file="left_links.html" --> </div>
+      <!--#include file="footer.html" --> </div>
+  </body>
 </html>

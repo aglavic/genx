@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorials &#8212; GenX 2.4.9 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.3.6/flatly/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.4.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="shortcut icon" href="_static/genx.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Overview of the user interface" href="tutorials/gui.html" />
+    <link rel="prev" title="Installation" href="install.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          GenX</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Content <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#mac-os-x">Mac OS-X</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#from-source">From source</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reflectivity">Reflectivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#surface-x-ray-diffraction">Surface x-ray diffraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#other-tutorials">Other tutorials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#general">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#fitting">Fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#reflectivity">Reflectivity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development/data.html">Data classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/write_data_loader.html">How to write a Data Loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/write_fom.html">Writing a FOM function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/packaging.html">How to package GenX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/mag_refl.html">A model for magnetic reflectivity</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Tutorials</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#reflectivity">Reflectivity</a></li>
+<li><a class="reference internal" href="#surface-x-ray-diffraction">Surface x-ray diffraction</a></li>
+<li><a class="reference internal" href="#other-tutorials">Other tutorials</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="tutorials">
+<span id="id1"></span><h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/gui.html">Overview of the  user interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/gui.html#main-window">Main window</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/plugin.html">Plugins: an introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/plugin.html#what-they-are">What they are</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/plugin.html#how-to-use-them">How to use them</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/data_handling.html">Data handling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/data_handling.html#adding-removing">Adding/Removing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/data_handling.html#loading">Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/data_handling.html#viewing">Viewing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/data_handling.html#calculations-transformations">Calculations/Transformations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/data_handling.html#exporting">Exporting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/diffev.html">Fitting with Differential Evolution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/diffev.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/writing_model.html">Writing a custom model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/writing_model.html#programming-python">Programming Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/writing_model.html#the-data-class">The Data class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/writing_model.html#simple-example">Simple example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/writing_model.html#making-a-class">Making a class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/writing_model.html#multiple-gaussians">Multiple Gaussians</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/writing_model.html#parameter-coupling">Parameter coupling</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="reflectivity">
+<h2>Reflectivity<a class="headerlink" href="#reflectivity" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/xrr_fitting.html">Fitting of x-ray reflectivity data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/xrr_fitting.html#getting-started">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/xrr_fitting.html#loading-the-data">Loading the data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/xrr_fitting.html#creating-a-sample">Creating a sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/xrr_fitting.html#coupling-parameters">Coupling parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/xrr_fitting.html#fitting-the-data">Fitting the data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/xrr_fitting.html#analyze-the-fit">Analyze the Fit</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/neutron_sim.html">Neutron reflectivity tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/neutron_sim.html#getting-started">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/neutron_sim.html#creating-a-sample">Creating a sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/neutron_sim.html#doing-a-simulation">Doing a simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/neutron_sim.html#adding-layers">Adding Layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/neutron_sim.html#polarized-neutron-reflectivity">Polarized Neutron Reflectivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/neutron_sim.html#finishing-off">Finishing off</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/neutron_fit.html">Neutron reflectivity video tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/slicing.html">Slicing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/slicing.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/slicing.html#defining-the-sample">Defining the sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/slicing.html#adding-some-custom-parameters">Adding some custom parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/slicing.html#modifying-the-script">Modifying the script</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="surface-x-ray-diffraction">
+<h2>Surface x-ray diffraction<a class="headerlink" href="#surface-x-ray-diffraction" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/sxrd.html">Surface X-diffraction tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/sxrd.html#loading-sxrd-data">Loading SXRD data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/sxrd.html#creating-an-sxrd-model">Creating an SXRD model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/sxrd.html#making-a-simulation">Making a simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/sxrd.html#adding-more-layers">Adding more layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/sxrd.html#defining-parameters-to-fit">Defining parameters to fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/sxrd.html#scaling-the-simulation">Scaling the simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/sxrd.html#grouping-atoms">Grouping atoms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/sxrd.html#general-coupling">General coupling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/beta_rough.html">Beta Roughness Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/beta_rough.html#references">References</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="other-tutorials">
+<h2>Other tutorials<a class="headerlink" href="#other-tutorials" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/mpi.html">Using GenX from the command line (with mpi)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/mpi.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/mpi.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/mpi.html#command-line-arguments">Command line arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/mpi.html#using-mpi">Using MPI</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/tutorials.rst.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Matts Björck.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
