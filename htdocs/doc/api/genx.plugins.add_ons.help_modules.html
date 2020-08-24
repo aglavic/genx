@@ -1,0 +1,613 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>genx.plugins.add_ons.help_modules package &mdash; GenX 2.2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="top" title="GenX 2.2.0 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">GenX 2.2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/genx_sidebar.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">genx.plugins.add_ons.help_modules package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-genx.plugins.add_ons.help_modules.custom_dialog">genx.plugins.add_ons.help_modules.custom_dialog module</a></li>
+<li><a class="reference internal" href="#module-genx.plugins.add_ons.help_modules.reflectivity_images">genx.plugins.add_ons.help_modules.reflectivity_images module</a></li>
+<li><a class="reference internal" href="#module-genx.plugins.add_ons.help_modules">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/genx.plugins.add_ons.help_modules.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="genx-plugins-add-ons-help-modules-package">
+<h1>genx.plugins.add_ons.help_modules package<a class="headerlink" href="#genx-plugins-add-ons-help-modules-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-genx.plugins.add_ons.help_modules.custom_dialog">
+<span id="genx-plugins-add-ons-help-modules-custom-dialog-module"></span><h2>genx.plugins.add_ons.help_modules.custom_dialog module<a class="headerlink" href="#module-genx.plugins.add_ons.help_modules.custom_dialog" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">ComplexObjectValidator</tt><big>(</big><em>eval_func=&lt;built-in function eval&gt;</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.PyValidator</span></tt></p>
+<p>This validator is used to ensure that the user has entered something
+into the text object editor dialog&#8217;s text field.</p>
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator.Clone">
+<tt class="descname">Clone</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator.Clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard cloner.
+Note that every validator must implement the Clone() method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator.TransferFromWindow">
+<tt class="descname">TransferFromWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator.TransferFromWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from window to validator.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator.TransferToWindow">
+<tt class="descname">TransferToWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator.TransferToWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from validator to window.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator.Validate">
+<tt class="descname">Validate</tt><big>(</big><em>win</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ComplexObjectValidator.Validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate the contents of the given text control.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">FloatObjectValidator</tt><big>(</big><em>eval_func=&lt;built-in function eval&gt;</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.PyValidator</span></tt></p>
+<p>This validator is used to ensure that the user has entered something
+into the text object editor dialog&#8217;s text field.</p>
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator.Clone">
+<tt class="descname">Clone</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator.Clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard cloner.</p>
+<p>Note that every validator must implement the Clone() method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator.TransferFromWindow">
+<tt class="descname">TransferFromWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator.TransferFromWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from window to validator.</p>
+<p>The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator.TransferToWindow">
+<tt class="descname">TransferToWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator.TransferToWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from validator to window.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator.Validate">
+<tt class="descname">Validate</tt><big>(</big><em>win</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.FloatObjectValidator.Validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate the contents of the given text control.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">MatchTextObjectValidator</tt><big>(</big><em>stringlist</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.PyValidator</span></tt></p>
+<p>This validator is used to ensure that the user has entered something
+into the text object editor dialog&#8217;s text field.</p>
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator.Clone">
+<tt class="descname">Clone</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator.Clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard cloner.</p>
+<p>Note that every validator must implement the Clone() method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator.TransferFromWindow">
+<tt class="descname">TransferFromWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator.TransferFromWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from window to validator.</p>
+<p>The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator.TransferToWindow">
+<tt class="descname">TransferToWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator.TransferToWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from validator to window.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator.Validate">
+<tt class="descname">Validate</tt><big>(</big><em>win</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.MatchTextObjectValidator.Validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate the contents of the given text control.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">NoMatchTextObjectValidator</tt><big>(</big><em>stringlist</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.PyValidator</span></tt></p>
+<p>This validator is used to ensure that the user has entered something
+into the text object editor dialog&#8217;s text field.</p>
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator.Clone">
+<tt class="descname">Clone</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator.Clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard cloner.
+Note that every validator must implement the Clone() method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator.TransferFromWindow">
+<tt class="descname">TransferFromWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator.TransferFromWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from window to validator.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator.TransferToWindow">
+<tt class="descname">TransferToWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator.TransferToWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from validator to window.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator.Validate">
+<tt class="descname">Validate</tt><big>(</big><em>win</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchTextObjectValidator.Validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate the contents of the given text control.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">NoMatchValidTextObjectValidator</tt><big>(</big><em>stringlist</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.PyValidator</span></tt></p>
+<p>This validator is used to ensure that the user has entered something
+into the text object editor dialog&#8217;s text field. It should not match
+a name in stringlist and it should be a valid varaible name. I.e 
+is should start with a letter and can only contains ordinary
+letters as in string.letters as well as numbers as in string.digits
+or _</p>
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator.Clone">
+<tt class="descname">Clone</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator.Clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard cloner.
+Note that every validator must implement the Clone() method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator.TransferFromWindow">
+<tt class="descname">TransferFromWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator.TransferFromWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from window to validator.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator.TransferToWindow">
+<tt class="descname">TransferToWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator.TransferToWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from validator to window.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator.Validate">
+<tt class="descname">Validate</tt><big>(</big><em>win</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.NoMatchValidTextObjectValidator.Validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate the contents of the given text control.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">TextObjectValidator</tt><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._core.PyValidator</span></tt></p>
+<p>This validator is used to ensure that the user has entered something
+into the text object editor dialog&#8217;s text field.</p>
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator.Clone">
+<tt class="descname">Clone</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator.Clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard cloner.</p>
+<p>Note that every validator must implement the Clone() method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator.TransferFromWindow">
+<tt class="descname">TransferFromWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator.TransferFromWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from window to validator.
+The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator.TransferToWindow">
+<tt class="descname">TransferToWindow</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator.TransferToWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer data from validator to window.</p>
+<p>The default implementation returns False, indicating that an error
+occurred.  We simply return True, as we don&#8217;t do any data transfer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator.Validate">
+<tt class="descname">Validate</tt><big>(</big><em>win</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.TextObjectValidator.Validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate the contents of the given text control.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">ValidateDialog</tt><big>(</big><em>parent</em>, <em>pars</em>, <em>vals</em>, <em>validators</em>, <em>title='Validated Dialog'</em>, <em>units=False</em>, <em>groups=False</em>, <em>cols=2</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.Dialog</span></tt></p>
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.GetValues">
+<tt class="descname">GetValues</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.GetValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.create_buttons">
+<tt class="descname">create_buttons</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.create_buttons" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.grid_layout">
+<tt class="descname">grid_layout</tt><big>(</big><em>parent</em>, <em>vals</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.grid_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do an more advanced layout with subboxes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.layout_group">
+<tt class="descname">layout_group</tt><big>(</big><em>parent</em>, <em>pars</em>, <em>vals</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.layout_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.main_layout">
+<tt class="descname">main_layout</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog.main_layout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">ValidateNotebookDialog</tt><big>(</big><em>parent</em>, <em>pars</em>, <em>vals</em>, <em>validators</em>, <em>title='Validated Dialog'</em>, <em>units=False</em>, <em>groups=False</em>, <em>cols=2</em>, <em>fixed_pages=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog" title="genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog"><tt class="xref py py-class docutils literal"><span class="pre">genx.plugins.add_ons.help_modules.custom_dialog.ValidateDialog</span></tt></a></p>
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.AddPage">
+<tt class="descname">AddPage</tt><big>(</big><em>name</em>, <em>vals</em>, <em>select=False</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.AddPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a page to the notebook</p>
+<p>the flag select activates a page change to the current page</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.GetChanges">
+<tt class="descname">GetChanges</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.GetChanges" title="Permalink to this definition">¶</a></dt>
+<dd><p>GetChanges(self) &#8211;&gt; changes
+Returns the changes as a list consisting of tuples (old_name, new_name).
+if the page has been deleted new_name is an empty string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.GetValues">
+<tt class="descname">GetValues</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.GetValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts values from the text controls and returns is as a 
+two level nested dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.RemovePage">
+<tt class="descname">RemovePage</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.RemovePage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a page from the notebook</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.do_toolbar">
+<tt class="descname">do_toolbar</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.do_toolbar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.eh_delete">
+<tt class="descname">eh_delete</tt><big>(</big><em>evt</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.eh_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Eventhandler that deletes the current page and its data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.eh_insert">
+<tt class="descname">eh_insert</tt><big>(</big><em>evt</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.eh_insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Eventhandler that creates a new panel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.eh_rename">
+<tt class="descname">eh_rename</tt><big>(</big><em>evt</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.eh_rename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Eventhandler that renames the current tab</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.layout_notebook">
+<tt class="descname">layout_notebook</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.layout_notebook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the notebook layout in the dialog</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.main_layout">
+<tt class="descname">main_layout</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ValidateNotebookDialog.main_layout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.ZoomFrame">
+<em class="property">class </em><tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">ZoomFrame</tt><big>(</big><em>parent</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.ZoomFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">wx._windows.MiniFrame</span></tt></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.custom_dialog.is_reflfunction">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.custom_dialog.</tt><tt class="descname">is_reflfunction</tt><big>(</big><em>obj</em><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.custom_dialog.is_reflfunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function to determine whether obj belongs to the ReflFunction class.
+Return boolean.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-genx.plugins.add_ons.help_modules.reflectivity_images">
+<span id="genx-plugins-add-ons-help-modules-reflectivity-images-module"></span><h2>genx.plugins.add_ons.help_modules.reflectivity_images module<a class="headerlink" href="#module-genx.plugins.add_ons.help_modules.reflectivity_images" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getaddBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getaddBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getaddBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getaddData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getaddData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getaddData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getaddImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getaddImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getaddImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getchange_nameBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getchange_nameBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getchange_nameBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getchange_nameData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getchange_nameData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getchange_nameData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getchange_nameImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getchange_nameImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getchange_nameImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getcustom_parameterBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getcustom_parameterBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getcustom_parameterBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getcustom_parameterData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getcustom_parameterData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getcustom_parameterData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getcustom_parameterImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getcustom_parameterImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getcustom_parameterImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getdeleteBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getdeleteBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getdeleteBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getdeleteData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getdeleteData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getdeleteData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getdeleteImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getdeleteImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getdeleteImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_layerBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinsert_layerBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_layerBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_layerData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinsert_layerData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_layerData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_layerImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinsert_layerImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_layerImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_stackBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinsert_stackBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_stackBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_stackData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinsert_stackData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_stackData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_stackImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinsert_stackImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinsert_stackImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinstrumentBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinstrumentBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinstrumentBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinstrumentData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinstrumentData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinstrumentData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getinstrumentImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getinstrumentImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getinstrumentImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getmove_downBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getmove_downBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getmove_downBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getmove_downData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getmove_downData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getmove_downData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getmove_downImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getmove_downImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getmove_downImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getmove_upBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getmove_upBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getmove_upBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getmove_upData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getmove_upData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getmove_upData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getmove_upImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getmove_upImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getmove_upImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getsampleBitmap">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getsampleBitmap</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getsampleBitmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getsampleData">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getsampleData</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getsampleData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genx.plugins.add_ons.help_modules.reflectivity_images.getsampleImage">
+<tt class="descclassname">genx.plugins.add_ons.help_modules.reflectivity_images.</tt><tt class="descname">getsampleImage</tt><big>(</big><big>)</big><a class="headerlink" href="#genx.plugins.add_ons.help_modules.reflectivity_images.getsampleImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-genx.plugins.add_ons.help_modules">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-genx.plugins.add_ons.help_modules" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">GenX 2.2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Matts Björck.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

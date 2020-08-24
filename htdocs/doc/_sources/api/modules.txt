@@ -1,0 +1,7 @@
+genx
+====
+
+.. toctree::
+   :maxdepth: 4
+
+   genx

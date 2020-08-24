@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Neutron tutorial" />
+	<meta name="keywords" content="differential evolution, reflectivity, x-ray, xray, neutron, diffraction, fitting, refinement" />
+	<meta name="author" content="Matts Bjorck"/>
+	<link rel="stylesheet" type="text/css" href="../default.css" title="GenX" media="screen,projection" />
+	<title>GenX - Neutron tutorial I</title>
+</head>
+
+<body>
+<div id="container" >
+	<!--#include file="header.html" -->
+	<div id="navigation">
+		<ul>
+			<li><a href = "../index.html">Home</a></li>
+			<li><a href="../install.html">Install</a></li>
+			<li class = "selected"><a href="../howtouse.html">HowToUse</a></li>
+			<li><a href="/publ.html">Publications</a></li>
+			<!--<li><a href="#">Documentation</a></li>
+			<li><a href="#">FAQ</a></li> -->
+		</ul>
+	</div>
+	<div id="content">
+		<a name = "Start"></a><h2>Getting started</h2>		
+		<p> Start by opening GenX. Load the reflectivity plugin by going to the menu
+		Settings - Plugins - Load - Reflectivity. The computer will work abit then
+		two new tabs will appear in the lower right section of the window, Sample and 
+		Simulations. This is where we will define our sample later.</p>
+		
+		<a name = "Data"></a><h2>Loading the data</h2>
+		Load the data by clicking on the folder icon the data tab (leftmost splitter window).
+		Rember that a data set has to be marked in the list below. If you started fresh 
+		the data set will have the name Data 0.
+		In the file dialog choose the file example/xray_fitting.dat. 
+		The data should appear in the plot on the right, tab Data. Change the y-scale to
+		lograthmic by right clicking on the plot and choose y-scale - log. 
+		If you would like to inspect the data values click on the tab View in the left part 
+		of the window. In the top of that tab there is a choice box, choose your data set. 
+		All the data in the data set will appear in the grid below. Note that there are
+		6 columns: x_raw, y_raw, Error_raw, x, y, Error. The one ending with raw is the loaded
+		data. The other 3 can be changed by transformations given in the calculations dialog. 
+		See the neutron tutorial for more information about transformations of data. 
+		
+		<a name = "Sample"></a><h2>Creating a sample</h2>
+		<p>Time to create the sample! Click on the Sample tab.
+		The data we just loaded comes from the a multilayer with the structure:
+		MgO/Fe 4&Aring;/Pt 39&Aring;/[FeCo XX&Aring;/Pt XX&Aring;]*20 </p>
+		<p>Now this structure should be defined in GenX. Start by adding two stacks,
+		second icon on the toolbar in the Sample tab. Give them the names buffer and
+		ML. Then add layers, first button, with parameters shown in the 
+		screenshot below. You edit the values by double clicking on the row.
+		If you become unsecure about what units or what the parameters mean there is
+		an onboard under the menu Misc - Models Help. For this example choose the
+		interdiff model in the frame that appears.</p>
+		<a href = "xrays1_1.png"><img src="xrays1_1.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a> <br>
+		
+		<p>When the sample is defined and the data loaded, lets simulate the 
+		structure to see what happens. Press the yellow lightning on the main
+		toolbar, F9 works as well. A red curve representing the simulated data will 
+		appear in the data plot.</p>
+		
+		<a name = "Coupling"></a><h2>Coupling parameters</h2>
+		In order to make the fitting more effective it can be adventageous to couple
+		parameters. One way is to contrain interdependent parameters another way is to 
+		reexpress the parameters so that information easily obtained from the diffraction 
+		pattern is used, for example the bilayer thickness of a mulilayer. 
+		Under the tab simulations exists the possiblity to express special commands that
+		couple parameters before they are simualted. First create a new parameter by clicking
+		the blue nut on the toolbar. And define the custom parameter (cp) Lambda as shown below.
+		<a href = "xrays1_2.png"><img src="xrays1_2.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a> <br> 
+		Next, choose your data set and press the green plus to add a new command.
+		Press simulate to update the model.
+		<a href = "xrays1_3.png"><img src="xrays1_3.png" width="500" 
+		border="3" alt="Screenshot" align="center"/></a> <br>
+		The command sets the thickness of the Pt in the mulilayer to the 
+		bilayer thickness minus the Fe thickness. 		
+		
+		<a name = "Fitting"></a><h2>Fitting the data</h2>
+		First go to the Grid tab in the lower part of the window. 
+		To define a parameter right click on the leftmost cell. A menu will appear where 
+		the parameters you can fit appear.  
+		
+				
+		
+	 <br><br>
+	 <!--#config timefmt="%A %B %d, %Y" -->
+	 <span class="small">Last updated: <!--#echo var="LAST_MODIFIED" --></span></p>
+
+	</div>
+
+	<div id="subcontent">
+		<!--#include file="download_box.html" -->
+
+		<h2>Content</h2>
+		<ul class="menublock">
+			<li><a href="#Start">Getting Started</a></li>
+			<li><a href="#Sample">Creating a Sample</a></li>
+			<li><a href="#Simulation">Doing a Simulation</a></li>
+			<li><a href="#Layers">Adding Layers</a></li>
+			<li><a href="#Polarized">Polarised Neutron Refelctivity</a></li>
+		</ul>
+		<!--#include file="left_links.html" -->
+
+	</div>
+
+	<!--#include file="footer.html" -->
+
+	</div>
+</body>
+</html>

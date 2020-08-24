@@ -1,0 +1,2 @@
+#! /bin/bash
+rsync --recursive . mattsb,genx@web.sourceforge.net:/home/groups/g/ge/genx/htdocs/

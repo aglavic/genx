@@ -1,0 +1,53 @@
+genx.plugins.add_ons package
+============================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    genx.plugins.add_ons.help_modules
+
+Submodules
+----------
+
+genx.plugins.add_ons.Reflectivity module
+----------------------------------------
+
+.. automodule:: genx.plugins.add_ons.Reflectivity
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+genx.plugins.add_ons.Shell module
+---------------------------------
+
+.. automodule:: genx.plugins.add_ons.Shell
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+genx.plugins.add_ons.Test module
+--------------------------------
+
+.. automodule:: genx.plugins.add_ons.Test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+genx.plugins.add_ons.UserFuncs module
+-------------------------------------
+
+.. automodule:: genx.plugins.add_ons.UserFuncs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: genx.plugins.add_ons
+    :members:
+    :undoc-members:
+    :show-inheritance:

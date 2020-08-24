@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Writing a FOM function &#8212; GenX 2.4.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.3.6/flatly/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.4.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to package GenX" href="packaging.html" />
+    <link rel="prev" title="How to write a Data Loader" href="write_data_loader.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          GenX</a>
+        <span class="navbar-text navbar-version pull-left"><b>2.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Content <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#mac-os-x">Mac OS-X</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install.html#from-source">From source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#reflectivity">Reflectivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#surface-x-ray-diffraction">Surface x-ray diffraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#other-tutorials">Other tutorials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../faq.html#general">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq.html#fitting">Fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq.html#reflectivity">Reflectivity</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../development.html">Development documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="data.html">Data classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="write_data_loader.html">How to write a Data Loader</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Writing a FOM function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="packaging.html">How to package GenX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mag_refl.html">A model for magnetic reflectivity</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Writing a FOM function</a><ul>
+<li><a class="reference internal" href="#making-a-custom-fom-available-in-genx">Making a custom FOM available in GenX</a></li>
+<li><a class="reference internal" href="#example-of-a-fom-function">Example of a FOM function</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="writing-a-fom-function">
+<span id="development-write-fom"></span><h1>Writing a FOM function<a class="headerlink" href="#writing-a-fom-function" title="Permalink to this headline">¶</a></h1>
+<p>The figure of merit (FOM) function is one of the most important things when fitting a model to
+measured data. The FOM defines what a good fit is and distinguishes it from a bad fit.
+Every fitting problem has its own quirks and twists and may therefore benefit from having a custom FOM
+function written for that specific problem. Here, we will briefly go through the steps you need to take to
+extend GenX with your very own FOM function.</p>
+<div class="section" id="making-a-custom-fom-available-in-genx">
+<h2>Making a custom FOM available in GenX<a class="headerlink" href="#making-a-custom-fom-available-in-genx" title="Permalink to this headline">¶</a></h2>
+<p>The file that defines the different built-in FOM functions is called <code class="docutils literal"><span class="pre">fom_funcs.py</span></code>.
+As of svn release 145, there is a simple and transparent way to add your own FOM functions in a separate file,
+which must be called <code class="docutils literal"><span class="pre">fom_funcs_custom.py</span></code> and reside in the same directory as <code class="docutils literal"><span class="pre">fom_funcs.py</span></code>. This file is
+read by <code class="docutils literal"><span class="pre">fom_funcs.py</span></code> if it exists, otherwise it is ignored. The <code class="docutils literal"><span class="pre">fom_funcs_custom.py</span></code> file is not part of the
+GenX distribution, but must be created by the user. This ensures that custom-build FOM functions are not
+overwritten when updating the GenX distribution to the latest version. All custom FOM function definitions can
+be included in this one file, or you may choose to read in several other files from <code class="docutils literal"><span class="pre">fom_funcs_custom.py</span></code>,
+just as <code class="docutils literal"><span class="pre">fom_funcs_custom.py``is</span> <span class="pre">read</span> <span class="pre">in</span> <span class="pre">``fom_funcs.py</span></code>
+(Look at the code of <code class="docutils literal"><span class="pre">fom_funcs.py</span></code> to see how that can be achieved).</p>
+<p>Once you have defined a new FOM function in <code class="docutils literal"><span class="pre">fom_funcs_custom.py</span></code>, you just need to restart GenX and it
+should become available under <span class="menuselection">Settings‣Optimizer</span> as usual. What you might want to do is to
+add some documentation to the html string which is used as a help function within GenX. And finally,
+when it works, why not send it to me for inclusion in the main distribution.</p>
+</div>
+<div class="section" id="example-of-a-fom-function">
+<h2>Example of a FOM function<a class="headerlink" href="#example-of-a-fom-function" title="Permalink to this headline">¶</a></h2>
+<p>It&#8217;s always easiest to start with an example to get ones head around things. Let us start with an absolute
+logarithmic difference figure of merit. The code below is a slow but easy to understand variant:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">simulations</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Total number of data points</span>
+    <span class="n">fom</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># The total fom to calculate</span>
+    <span class="k">for</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sim</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">simulation</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">use</span><span class="p">:</span>
+            <span class="n">fom</span> <span class="o">=</span> <span class="n">fom</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">sim</span><span class="p">)))</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">fom</span> <span class="o">=</span> <span class="n">fom</span><span class="o">/</span><span class="n">N</span>
+    <span class="k">return</span> <span class="n">fom</span>
+</pre></div>
+</div>
+<p>For each data set which is active, i.e. which has its <code class="docutils literal"><span class="pre">use</span></code> attribute set to <code class="docutils literal"><span class="pre">True</span></code>, we add the summed logarithmic
+difference to <code class="docutils literal"><span class="pre">fom</span></code> and the number of data points to <code class="docutils literal"><span class="pre">N</span></code>. The current status of <code class="docutils literal"><span class="pre">active</span></code> is displayed in
+the data list seen in the left panel in GenX.</p>
+<p>The most tricky statement for a non-python programmer is probably the <code class="docutils literal"><span class="pre">zip</span></code> function in the first loop.
+This will, just like a zipper, create a long list of tuple pairs for each element in data and simulation.
+<a class="reference external" href="http://docs.python.org/library/functions.html">See</a>. The statement <code class="docutils literal"><span class="pre">dataset,</span> <span class="pre">sim</span></code> will &#8220;unbundle&#8221; them again,
+just as if two items where returned from a function. Next up is the calculation of each data point in the current
+data set and adding it to the total fom. We also keep track on the number of data points for later normalization.
+Note that the fom is only calculated and added if the flag <code class="docutils literal"><span class="pre">dataset.use</span></code> is <code class="docutils literal"><span class="pre">True</span></code>.</p>
+<p>An example how this can be programmed in a more compact and computationally efficient way is
+seen below, where a faster type of for loop is used.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">simulations</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="n">dataset</span><span class="o">.</span><span class="n">use</span> <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+    <span class="k">return</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">sim</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">sim</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">simulations</span><span class="p">)</span> <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">use</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>It looks a bit more complicated since it uses list comprehension, which is faster and more compact than
+ordinary for loops. Also note the if statement last inside the brackets: <code class="docutils literal"><span class="pre">if</span> <span class="pre">dataset.use</span></code> this will only
+append an item to the list if the condition is true. That is if the use flag is set. To learn more about
+list comprehensions go to <a class="reference external" href="http://docs.python.org/tutorial/datastructures.html#list-comprehensions">the python docs</a>.
+This is the syntax that you will find most in the built-in FOM functions
+provided.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="../_sources/development/write_fom.rst.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Matts Björck.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

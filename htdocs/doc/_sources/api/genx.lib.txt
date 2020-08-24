@@ -1,0 +1,22 @@
+genx.lib package
+================
+
+Submodules
+----------
+
+genx.lib.Simplex module
+-----------------------
+
+.. automodule:: genx.lib.Simplex
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: genx.lib
+    :members:
+    :undoc-members:
+    :show-inheritance:

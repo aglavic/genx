@@ -1,0 +1,30 @@
+genx.plugins.add_ons.help_modules package
+=========================================
+
+Submodules
+----------
+
+genx.plugins.add_ons.help_modules.custom_dialog module
+------------------------------------------------------
+
+.. automodule:: genx.plugins.add_ons.help_modules.custom_dialog
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+genx.plugins.add_ons.help_modules.reflectivity_images module
+------------------------------------------------------------
+
+.. automodule:: genx.plugins.add_ons.help_modules.reflectivity_images
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: genx.plugins.add_ons.help_modules
+    :members:
+    :undoc-members:
+    :show-inheritance:
