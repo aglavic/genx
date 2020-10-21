@@ -5,6 +5,7 @@ import math
 import os
 
 import wx
+import wx.html
 import wx.lib.scrolledpanel as scrolledpanel
 
 from . import custom_dialog as cust_dia
@@ -1125,10 +1126,10 @@ class SlabInteractor(ObjectScriptInteractor):
         return code
 
 
-class MyHtmlListBox(wx.HtmlListBox):
+class MyHtmlListBox(wx.html.HtmlListBox):
 
     def __init__(self, parent, id, size=(-1, -1), style = wx.BORDER_SUNKEN):
-        wx.HtmlListBox.__init__(self, parent, id, size=size,
+        wx.html.HtmlListBox.__init__(self, parent, id, size=size,
                                 style=style)
         self.html_items = []
         self.SetItemList(['Starting up...'])
@@ -1190,8 +1191,13 @@ class SimulationListCtrl(wx.Panel):
 
     def do_toolbar(self):
         """Layout the toolbar"""
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
+
         button_names = ['Insert', 'Delete', 'User Variables']
-        button_images = [icons.getaddBitmap(), icons.getdeleteBitmap(), icons.getcustom_parameterBitmap()]
+        button_images = [wx.Bitmap(icons.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(icons.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(icons.custom_parameters.GetImage().Scale(tb_bmp_size, tb_bmp_size))]
         callbacks = [self.Insert, self.Delete, self.EditPars]
         tooltips = ['Insert a command', 'Delete command', 'Edit user variables']
 
@@ -1369,10 +1375,16 @@ class EditList(wx.Panel):
     def do_toolbar(self):
         """Create and do the toolbar"""
         toolbar = wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
+
+        button_names = ['Insert', 'Delete', 'User Variables']
 
         button_names = ['Insert', 'Delete', 'Move Up', 'Move Down']
-        button_images = [icons.getaddBitmap(), icons.getdeleteBitmap(), icons.getmove_upBitmap(),
-                         icons.getmove_downBitmap()]
+        button_images = [wx.Bitmap(icons.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(icons.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(icons.move_up.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(icons.move_down.GetImage().Scale(tb_bmp_size, tb_bmp_size))]
         callbacks = [self.OnInsert, self.OnDelete, self.OnMoveUp, self.OnMoveDown]
         tooltips = ['Insert item', 'Delete item', 'Move item up', 'Move item down']
 
@@ -1515,16 +1527,25 @@ class DomainListCtrl(wx.Panel):
     def do_toolbar(self):
         """Create and do the toolbar"""
         toolbar = wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
+
+        button_names = ['Insert', 'Delete', 'User Variables']
 
         button_names = ['Insert Slab', 'Insert Domain', 'Delete', 'Move Up', 'Move Down',
                         'Copy', 'Cut', 'Paste', 'Paste as New',
                         'Domain Editor', 'Sample Editor']
-        button_images = [sxrd_images.insert_layer.GetBitmap(), sxrd_images.insert_domain.GetBitmap(),
-                         icons.getdeleteBitmap(), icons.getmove_upBitmap(),
-                         icons.getmove_downBitmap(),
-                         sxrd_images.copy.GetBitmap(), sxrd_images.cut.GetBitmap(), sxrd_images.paste.GetBitmap(),
-                         sxrd_images.paste_new.GetBitmap(),
-                         sxrd_images.getdomainBitmap(), sxrd_images.getsampleBitmap()]
+        button_images = [wx.Bitmap(sxrd_images.insert_layer.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(sxrd_images.insert_domain.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(icons.delete.getImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(icons.move_up.getImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(icons.move_down.getImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(sxrd_images.copy.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(sxrd_images.cut.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(sxrd_images.paste.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(sxrd_images.paste_new.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(sxrd_images.domain.getImage().Scale(tb_bmp_size, tb_bmp_size)),
+                         wx.Bitmap(sxrd_images.sample.getImage().Scale(tb_bmp_size, tb_bmp_size))]
         callbacks = [self.OnNewSlab, self.OnNewDomain, self.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown,
                      self.listbox.OnCopy, self.listbox.OnCut, self.listbox.OnPaste, self.listbox.OnPasteClone,
                      self.OnDomainEdit, self.OnSampleEdit, ]
@@ -2569,11 +2590,14 @@ class SlabDialog(wx.Dialog):
         Parameters:
             row (int): The row in the GridBagSizer to add an row to.
         """
-        btn = wx.BitmapButton(self.atom_panel, -1, icons.add.GetBitmap())
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
+
+        btn = wx.BitmapButton(self.atom_panel, -1, wx.Bitmap(icons.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)))
         self.atom_sizer.Add(btn, (row, len(self.parameters)))
         self.Bind(wx.EVT_BUTTON, self.OnAddAtomRow, btn)
 
-        btn = wx.BitmapButton(self.atom_panel, -1, icons.delete.GetBitmap())
+        btn = wx.BitmapButton(self.atom_panel, -1, wx.Bitmap(icons.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)))
         self.atom_sizer.Add(btn, (row, len(self.parameters) + 1))
         self.Bind(wx.EVT_BUTTON, self.OnRemoveAtomRow, btn)
 

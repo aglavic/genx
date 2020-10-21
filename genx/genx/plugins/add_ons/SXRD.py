@@ -85,7 +85,7 @@ class Plugin(framework.Template):
 
     def setup_script_interactor(self, model_name='sxrd2'):
         """Setup the script interactor"""
-        model = __import__('models.%s' % model_name, globals(), locals(), [model_name], -1)
+        model = __import__('models.%s' % model_name, globals(), locals(), [model_name])
         preamble = "import models.%s as model\nfrom models.utils import UserVars\nfrom models.symmetries import *\n" % model_name
         script_interactor = mi.ModelScriptInteractor(preamble=preamble)
 
