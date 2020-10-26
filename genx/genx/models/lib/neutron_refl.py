@@ -88,19 +88,19 @@ def ass_X_2int(k_mj, k_mj1, k_pj, k_pj1, theta_diff):
     costd = cos(theta_diff / 2.0)
     sintd = sin(theta_diff / 2.0)
     X = zeros((4, 4) + k_pj.shape, dtype=ctype)
-    X[0, 0] = costd * (k_pj1 + k_pj) / 2 / k_pj
-    X[0, 1] = -costd * (k_pj1 - k_pj) / 2 / k_pj
-    X[0, 2] = sintd * (k_pj + k_mj1) / 2 / k_pj
-    X[0, 3] = sintd * (k_pj - k_mj1) / 2 / k_pj
+    X[0, 0] = costd * (k_pj1 + k_pj) / 2. / k_pj
+    X[0, 1] = -costd * (k_pj1 - k_pj) / 2. / k_pj
+    X[0, 2] = sintd * (k_pj + k_mj1) / 2. / k_pj
+    X[0, 3] = sintd * (k_pj - k_mj1) / 2. / k_pj
     #X[0] = X[0]/2/k_pj
     X[1, 0] = X[0, 1]  #-(costd*(k_pj1 - k_pj))/(2*k_pj)
     X[1, 1] = X[0, 0]  #(costd*(k_pj1 + k_pj))/(2*k_pj)
     X[1, 2] = X[0, 3]  #(sintd*(k_pj - k_mj1))/(2*k_pj)
     X[1, 3] = X[0, 2]  #(sintd*(k_pj + k_mj1))/(2*k_pj)
-    X[2, 0] = -(sintd * (k_pj1 + k_mj)) / (2 * k_mj)
-    X[2, 1] = (sintd * (k_pj1 - k_mj)) / (2 * k_mj)
-    X[2, 2] = (costd * (k_mj1 + k_mj)) / (2 * k_mj)
-    X[2, 3] = -(costd * (k_mj1 - k_mj)) / (2 * k_mj)
+    X[2, 0] = -(sintd * (k_pj1 + k_mj)) / (2. * k_mj)
+    X[2, 1] = (sintd * (k_pj1 - k_mj)) / (2. * k_mj)
+    X[2, 2] = (costd * (k_mj1 + k_mj)) / (2. * k_mj)
+    X[2, 3] = -(costd * (k_mj1 - k_mj)) / (2. * k_mj)
     X[3, 0] = X[2, 1]  #(sintd*(k_pj1 - k_mj))/(2*k_mj)
     X[3, 1] = X[2, 0]  #-(sintd*(k_pj1 + k_mj))/(2*k_mj)
     X[3, 2] = X[2, 3]  #-(costd*(k_mj1 - k_mj))/(2*k_mj)
@@ -183,15 +183,15 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
     # Assume first element=substrate and last=ambient!
     k_amb = Q[:, newaxis]/2.0
     # Wavevectors in the layers
-    k_p = sqrt(k_amb**2 - Vp).astype(complex128)
-    k_m = sqrt(k_amb**2 - Vm).astype(complex128)
+    k_p = sqrt(k_amb**2 - Vp.astype(complex128))
+    k_m = sqrt(k_amb**2 - Vm.astype(complex128))
     #Angular difference between the magnetization
     theta_diff=M_ang[1:] - M_ang[:-1]
     #if sigma == None:
     #    sigma = zeros(d.shape)
     # Assemble the interface reflectivity matrix
     X = ass_X(k_p, k_m, theta_diff)
-    if sigma != None:
+    if sigma is not None:
         X = include_sigma(X, k_p, k_m, sigma)
     # Assemble the layer propagation matrices
     P = ass_P(k_p, k_m, d)
