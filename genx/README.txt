@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.0.3
+=============
+ * Fix bug in spin-flip model that failed simulation with an error
+ * Try to make SXRD work again
+
 Changes 3.0.2
 =============
  * Fix plotting error when loading new dataset with different shape
