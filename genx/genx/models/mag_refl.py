@@ -325,7 +325,7 @@ def correct_reflectivity(R, TwoThetaQz, instrument, theta, weight):
     pol = instrument.getXpol()
     theory = instrument.getTheory()
     if not ((pol == 3 or pol == instrument_string_choices['xpol'][3]) and
-                (theory in [0,1]+instrument_string_choices['theory'][:2])):
+                (theory < 2 or theory in instrument_string_choices['theory'][:2])):
         #FootprintCorrections
         foocor = footprint_correction(instrument, theta)
         R = convolute_reflectivity(R, instrument, foocor, TwoThetaQz, weight)
@@ -426,6 +426,47 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
 
     return R
 
+def EnergySpecularField(Energy, TwoThetaQz, sample, instrument):
+    """ Simulate the specular signal from sample when probed with instrument. Energy should be in eV.
+    Returns the wave field (complex number) of the reflected wave.
+    No resolution is taken into account.
+
+    # BEGIN Parameters
+    Energy data.x
+    TwoThetaQz 3.0
+    # END Parameters
+    """
+
+    restype = instrument.getRestype()
+    #TODO: Fix so that resolution can be included.
+    if restype != 0 and restype != instrument_string_choices['restype'][0]:
+        raise ValueError('Only no resolution is allowed for energy scans.')
+
+    wl = AA_to_eV/Energy
+    if isscalar(TwoThetaQz):
+        TwoThetaQz = TwoThetaQz*ones(Energy.shape)
+    # TTH values given as x
+    if instrument.getCoords() == instrument_string_choices['coords'][1] \
+            or instrument.getCoords() == 1:
+        theta = TwoThetaQz/2.0
+    # Q vector given....
+    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
+            or instrument.getCoords() == 0:
+        theta = arcsin(TwoThetaQz * wl / 4 / pi)*180.0/pi
+
+    else:
+        raise ValueError('The value for coordinates, coords, is WRONG!'
+                         'should be q(0) or tth(1).')
+
+    if any(theta < theta_limit):
+        raise ValueError('The incident angle has to be above %.1e'%theta_limit)
+
+    R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz, Energy, return_amplitude=False)
+
+    # TODO: Fix Corrections
+    #R = correct_reflectivity(R, TwoThetaQz, instrument, theta, weight)
+    return R
+
 
 def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
     ''' Function that simulates the off-specular signal (not implemented)
@@ -491,10 +532,10 @@ def SLD_calculations(z, item, sample, inst):
         re = 2.8179402894e-5
         c = 1/(lamda**2*re/pi)
         dic = {'Re sl_xx':chi[0][0].real*c, 'Re sl_xy':chi[0][1].real*c, 'Re sl_xz':chi[0][2].real*c,
-               'Re sl_yy':chi[1][1].real*c,'Re sl_yz':chi[1][2].real*c,'Re sl_zz':chi[2][2].real*c,
-               'Im sl_xx':chi[0][0].imag*c, 'Im sl_xy':chi[0][1].imag*c, 'Im sl_xz':chi[0][2].imag*c,
-               'Im sl_yy':chi[1][1].imag*c,'Im sl_yz':chi[1][2].imag*c,'Im sl_zz':chi[2][2].imag*c,
-               'z':z, 'SLD unit': 'r_e/\AA^{3}'}
+                'Re sl_yy':chi[1][1].real*c,'Re sl_yz':chi[1][2].real*c,'Re sl_zz':chi[2][2].real*c,
+                'Im sl_xx':chi[0][0].imag*c, 'Im sl_xy':chi[0][1].imag*c, 'Im sl_xz':chi[0][2].imag*c,
+                'Im sl_yy':chi[1][1].imag*c,'Im sl_yz':chi[1][2].imag*c,'Im sl_zz':chi[2][2].imag*c,
+                'z':z, 'SLD unit': 'r_e/\AA^{3}'}
     else:
 
         new_size = len(d)*2
@@ -851,7 +892,7 @@ def compose_sld(sample, instrument, theta, xray_energy, layer=None):
         B = lamda**2*re/pi*sl_m1
         C = lamda**2*re/pi*sl_m2
         g_0 = sin(theta*pi/180.0)
-        chi, non_mag, mpy = xrmr.create_chi(g_0, lamda, A, 0.0*A, 
+        chi, non_mag, mpy = xrmr.create_chi(g_0, lamda, A, 0.0*A,
                                                     B, C, M, d)
 
     return d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens, mag_dens_x, mag_dens_y, z[0]
@@ -1500,6 +1541,7 @@ def convolute_reflectivity(R, instrument, foocor, TwoThetaQz, weight):
     
 
 SimulationFunctions = {'Specular': Specular, 'OffSpecular': OffSpecular, 'EnergySpecular': EnergySpecular,
+                        'EnergySpecularField': EnergySpecularField,
                         'SLD': SLD_calculations, 'SpecularElectricField': SpecularElectricField}
 
 (Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters, LayerParameters, StackParameters,

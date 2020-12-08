@@ -110,12 +110,20 @@ BOT_LAYER=2
 class SampleTable(gridlib.GridTableBase):
     _columns=[
         ('Layer', gridlib.GRID_VALUE_STRING),
-        ('Formula Params:\nMixure Params:', gridlib.GRID_VALUE_CHOICE+':Formula,Mixure'),
-        ('Chem. Formula\nSLD-1 [10⁻⁶Å⁻²]', gridlib.GRID_VALUE_STRING),
+        ('Formula Params:\n'
+         '---------------'
+         '\nMixure Params:', gridlib.GRID_VALUE_CHOICE+':Formula,Mixure'),
+        ('Chem. Formula\n'
+         '-------------'
+         '\nSLD-1 [10⁻⁶Å⁻²]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, False),
-        ('Density [g/cm³]\nSLD-2 [10⁻⁶Å⁻²]', gridlib.GRID_VALUE_STRING),
+        ('Density [g/cm³]\n'
+         '---------------'
+         '\nSLD-2 [10⁻⁶Å⁻²]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, False),
-        ('Moment [µB/FU]\nFraction [% SLD-1]', gridlib.GRID_VALUE_STRING),
+        ('Moment [µB/FU]\n'
+         '--------------'
+         '\nFraction [% SLD-1]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, True),
         ('d [Å]', gridlib.GRID_VALUE_STRING),
         ('', gridlib.GRID_VALUE_BOOL, False),
@@ -144,8 +152,10 @@ class SampleTable(gridlib.GridTableBase):
         
         self.grid.SetTable(self, True)
 
-        self.grid.SetRowLabelSize(40)
-        self.grid.SetColLabelSize(60)
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+
+        self.grid.SetRowLabelSize(30*dpi_scale_factor)
+        self.grid.SetColLabelSize(50*dpi_scale_factor)
         for i, colinfo in enumerate(self._columns):
             # self.parent.SetColSize(i, 50)
             self.grid.AutoSizeColumn(i, True)
@@ -819,7 +829,8 @@ class SamplePanel(wx.Panel):
         self.toolbar.AddSeparator()
 
         newid=wx.NewId()
-        button=wx.Button(self.toolbar, newid, label='Instrument Settings')
+        button=wx.Button(self.toolbar, newid, label='Instrument Settings',
+                         size=(132*dpi_scale_factor, 22*dpi_scale_factor))
         button.SetBitmap(wx.Bitmap(images.instrument.GetImage().Scale(tb_bmp_size,tb_bmp_size)), dir=wx.LEFT)
         self.toolbar.AddControl(button)
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, id=newid)

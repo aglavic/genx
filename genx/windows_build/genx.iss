@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{54F9D347-19F3-4833-BA3B-154B6BBED1F9}
 AppName=GenX 3
-AppVerName=GenX 3.1.0
+AppVerName=GenX 3.0.4
 AppPublisher=Artur Glavic
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
@@ -16,7 +16,7 @@ DefaultDirName={pf}\GenX 3
 DefaultGroupName=GenX 3
 AllowNoIcons=true
 
-OutputBaseFilename=GenX-3.1.0_win64_setup
+OutputBaseFilename=GenX-3.0.4_win64_setup
 Compression=lzma
 SolidCompression=true
 ChangesAssociations=true
@@ -36,10 +36,6 @@ Name: english; MessagesFile: compiler:Default.isl
 [Files]
 Source: ..\dist\genx\genx.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\dist\genx\*.*; DestDir: {app}; Flags: ignoreversion recursesubdirs
-
-; Make the cache dire writable for numba JIT functions 
-[Dirs]
-Name: "{app}\genx\models\lib\__pycache__"; Permissions: users-modify
 
 [Icons]
 Name: {group}\GenX 3; Filename: {app}\genx.exe; IconFilename: {app}\genx.exe; IconIndex: 0

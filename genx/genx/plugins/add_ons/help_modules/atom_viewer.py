@@ -64,6 +64,8 @@ class VTKview(wxVTKRenderWindow):
     def do_toolbar(self, parent):
         """Create and return a toolbar that can be used to control the widget"""
         toolbar = wx.ToolBar(parent, style=wx.TB_FLAT | wx.TB_VERTICAL)
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        tb_bmp_size=int(dpi_scale_factor*20)
 
         button_names = ['View X', 'View Y', 'View Z', 'Isometric']
         button_images = [sxrd_images.x, sxrd_images.y, sxrd_images.z, sxrd_images.isometric]
@@ -72,7 +74,8 @@ class VTKview(wxVTKRenderWindow):
 
         for i in range(len(button_names)):
             new_id = wx.NewId()
-            toolbar.AddTool(new_id, label=button_names[i], bitmap=button_images[i].GetBitmap(),
+            toolbar.AddTool(new_id, label=button_names[i],
+                            bitmap=wx.Bitmap(button_images[i].GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                                  shortHelp=tooltips[i])
             parent.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
 
@@ -87,7 +90,8 @@ class VTKview(wxVTKRenderWindow):
             new_id = wx.NewId()
             self.cursor_ids.append(new_id)
             #print button_images[i].GetBitmap()
-            toolbar.AddCheckLabelTool(new_id, button_names[i], button_images[i].GetBitmap(),
+            toolbar.AddCheckTool(new_id, button_names[i],
+                                      wx.Bitmap(button_images[i].GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                                  shortHelp=tooltips[i])
             parent.Bind(wx.EVT_TOOL, callbacks[i], id=new_id)
 
