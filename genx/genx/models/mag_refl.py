@@ -426,6 +426,47 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
 
     return R
 
+def EnergySpecularField(Energy, TwoThetaQz, sample, instrument):
+    """ Simulate the specular signal from sample when probed with instrument. Energy should be in eV.
+    Returns the wave field (complex number) of the reflected wave.
+    No resolution is taken into account.
+
+    # BEGIN Parameters
+    Energy data.x
+    TwoThetaQz 3.0
+    # END Parameters
+    """
+
+    restype = instrument.getRestype()
+    #TODO: Fix so that resolution can be included.
+    if restype != 0 and restype != instrument_string_choices['restype'][0]:
+        raise ValueError('Only no resolution is allowed for energy scans.')
+
+    wl = AA_to_eV/Energy
+    if isscalar(TwoThetaQz):
+        TwoThetaQz = TwoThetaQz*ones(Energy.shape)
+    # TTH values given as x
+    if instrument.getCoords() == instrument_string_choices['coords'][1] \
+            or instrument.getCoords() == 1:
+        theta = TwoThetaQz/2.0
+    # Q vector given....
+    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
+            or instrument.getCoords() == 0:
+        theta = arcsin(TwoThetaQz * wl / 4 / pi)*180.0/pi
+
+    else:
+        raise ValueError('The value for coordinates, coords, is WRONG!'
+                         'should be q(0) or tth(1).')
+
+    if any(theta < theta_limit):
+        raise ValueError('The incident angle has to be above %.1e'%theta_limit)
+
+    R = reflectivity_xmag(sample, instrument, theta, TwoThetaQz, Energy, return_amplitude=False)
+
+    # TODO: Fix Corrections
+    #R = correct_reflectivity(R, TwoThetaQz, instrument, theta, weight)
+    return R
+
 
 def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
     ''' Function that simulates the off-specular signal (not implemented)
@@ -634,9 +675,9 @@ def compose_sld_anal(z, sample, instrument):
 
 
         M = c_[cos(theta_m)*cos(phi), cos(theta_m)*sin(phi), sin(theta_m)]
-        chi = lib.xrmr.create_chi(None, None, A*0, A, B, C, M, None)[0]
-        chi_l = lib.xrmr.create_chi(None, None, A*0, A, B*(1 + dmag_l), C*(1 + dmag_l)**2, M, None)[0]
-        chi_u = lib.xrmr.create_chi(None, None, A*0, A, B*(1 + dmag_u), C*(1 + dmag_u)**2, M, None)[0]
+        chi = xrmr.create_chi(None, None, A*0, A, B, C, M, None)[0]
+        chi_l = xrmr.create_chi(None, None, A*0, A, B*(1 + dmag_l), C*(1 + dmag_l)**2, M, None)[0]
+        chi_u = xrmr.create_chi(None, None, A*0, A, B*(1 + dmag_u), C*(1 + dmag_u)**2, M, None)[0]
 
         chi_xx, chi_xy, chi_xz = chi[0]; chi_yx, chi_yy, chi_yz = chi[1]; chi_zx, chi_zy, chi_zz = chi[2]
         chi_l_xx, chi_l_xy, chi_l_xz = chi_l[0]; chi_l_yx, chi_l_yy, chi_l_yz = chi_l[1]; chi_l_zx, chi_l_zy, chi_l_zz = chi_l[2]
@@ -786,7 +827,7 @@ def compose_sld(sample, instrument, theta, xray_energy, layer=None):
         C = lamda**2*re/pi*sl_m2_lay
         g_0 = sin(theta*pi/180.0)
 
-        chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, B, C, M, d)
+        chi, non_mag, mpy = xrmr.create_chi(g_0, lamda, A, 0.0*A, B, C, M, d)
         if layer is not None:
             sl_c = sl_c_lay[layer]
             sl_m1 = sl_m1_lay[layer]
@@ -851,7 +892,7 @@ def compose_sld(sample, instrument, theta, xray_energy, layer=None):
         B = lamda**2*re/pi*sl_m1
         C = lamda**2*re/pi*sl_m2
         g_0 = sin(theta*pi/180.0)
-        chi, non_mag, mpy = lib.xrmr.create_chi(g_0, lamda, A, 0.0*A, 
+        chi, non_mag, mpy = xrmr.create_chi(g_0, lamda, A, 0.0*A,
                                                     B, C, M, d)
 
     return d, sl_c, sl_m1, sl_m2, M, chi, non_mag, mpy, sl_n, abs_n, mag_dens, mag_dens_x, mag_dens_y, z[0]
@@ -1036,7 +1077,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, 
             if True or (XBuffer.parameters != parameters or XBuffer.coords != instrument.getCoords()
                 or not g0_ok or XBuffer.wavelength != lamda):
                 #print g_0.shape, lamda.shape, A.shape, B.shape, C.shape, M.shape,
-                W = lib.xrmr.calc_refl_int_lay(g_0, lamda, A*0, A[::-1], B[::-1], C[::-1], M[::-1,...]
+                W = xrmr.calc_refl_int_lay(g_0, lamda, A*0, A[::-1], B[::-1], C[::-1], M[::-1,...]
                                                , d[::-1], sigma[::-1], sigma_l[::-1], sigma_u[::-1]
                                                , dd_l[::-1], dd_u[::-1], dmag_l[::-1], dmag_u[::-1])
                 XBuffer.W = W
@@ -1048,8 +1089,8 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, 
                 #print 'Reusing W'
                 W = XBuffer.W
             trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
-            #Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, lib.xrmr.inv2(trans)))
-            Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, conj(lib.xrmr.inv2(trans))))
+            #Wc = xrmr.dot2(trans, xrmr.dot2(W, xrmr.inv2(trans)))
+            Wc = xrmr.dot2(trans, xrmr.dot2(W, conj(xrmr.inv2(trans))))
             #Different polarization channels:
             pol = instrument.getXpol()
             if pol == 0 or pol == instrument_string_choices['xpol'][0]:
@@ -1257,7 +1298,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             d = d[::-1]
             non_mag = non_mag[::-1]
             mpy = mpy[::-1]
-            W = lib.xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
+            W = xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
             XBuffer.W = W
             XBuffer.parameters = parameters.copy()
             XBuffer.coords = instrument.getCoords()
@@ -1267,7 +1308,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             #print "Reusing W"
             W = XBuffer.W
         trans = ones(W.shape, dtype = complex128); trans[0,1] = 1.0J; trans[1,1] = -1.0J; trans = trans/sqrt(2)
-        Wc = lib.xrmr.dot2(trans, lib.xrmr.dot2(W, conj(lib.xrmr.inv2(trans))))
+        Wc = xrmr.dot2(trans, xrmr.dot2(W, conj(xrmr.inv2(trans))))
         #Different polarization channels:
         pol = instrument.getXpol()
         if pol == 0 or pol == instrument_string_choices['xpol'][0]:
@@ -1500,6 +1541,7 @@ def convolute_reflectivity(R, instrument, foocor, TwoThetaQz, weight):
     
 
 SimulationFunctions = {'Specular': Specular, 'OffSpecular': OffSpecular, 'EnergySpecular': EnergySpecular,
+                        'EnergySpecularField': EnergySpecularField,
                         'SLD': SLD_calculations, 'SpecularElectricField': SpecularElectricField}
 
 (Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters, LayerParameters, StackParameters,
