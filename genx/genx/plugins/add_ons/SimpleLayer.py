@@ -68,7 +68,8 @@ class RefPluginInterface(PluginInterface):
             i += 1
         self._plugin.sampleh.names[layer_idx] = tmpname
 
-    def material_apply(self, formula, density, panel=None):
+    def material_apply(self, index, panel=None):
+        formula, density=mdb[index]
         try:
             layer=self.get_selected_layer()
         except:
@@ -105,7 +106,8 @@ class SimplePluginInterface(PluginInterface):
         layer_type=self._plugin.sample_widget.sample_table.GetValue(row, 1)
         return row, layer_type
 
-    def material_apply(self, formula, density, panel=None):
+    def material_apply(self, index, panel=None):
+        formula, density=mdb[index]
         row, layer_type=self.get_selected_layer()
         if layer_type is None:
             dlg=wx.MessageDialog(panel,
@@ -128,15 +130,15 @@ class SimplePluginInterface(PluginInterface):
                 dlg.Destroy()
                 return
             if self._plugin.sample_widget.inst_params['probe']=='x-ray':
-                SLD=mdb.SLDx(formula).real
+                SLD=mdb.SLDx(index).real
             else:
-                SLD=mdb.SLDn(formula).real
+                SLD=mdb.SLDn(index).real
             t.SetValue(row, col, str(SLD))
-            print(row, col, SLD)
             t.GetView().ForceRefresh()
         else:
             t.SetValue(row, 2, formula.estr())
             t.GetView().ForceRefresh()
+            t.SetValue(row, 4, '%g'%mdb.dens_mass(index))
 
 class Plugin(framework.Template):
     _refplugin=None
@@ -236,10 +238,7 @@ class Plugin(framework.Template):
 
     def material_apply(self, event):
         index=self.materials_list.GetFirstSelected()
-        formula, density=self.known_materials[index]
-        self.refplugin.material_apply(formula, density,
-                                      panel=self.materials_panel)
-
+        self.refplugin.material_apply(index, panel=self.materials_panel)
 
 class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     '''
@@ -262,10 +261,10 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         # Set the column headers
         for col, (text, width) in enumerate([
                                              ("Chemical Formula", 80),
-                                             ("SLD-n\n[10⁻⁶Å⁻²]", 60),
-                                             ("SLD-kα\n[rₑ/Å⁻³]", 60),
-                                             ("Density\n[FU/Å³]", 60),
-                                             ("Density\n[g/cm³]", 60)
+                                             ("n [10⁻⁶Å⁻²]", 60),
+                                             ("kα [rₑ/Å⁻³]", 60),
+                                             ("FU/Å³", 60),
+                                             ("g/cm³", 60)
                                              ]):
             self.InsertColumn(col, text, width=width)
         
@@ -345,16 +344,18 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             self.materials_list.pop(index)
             # Update the list
             self.SetItemCount(len(self.materials_list))
+            self.RefreshItems(index, len(self.materials_list))
 
         dlg.Destroy()
 
 
     def AddItem(self, item):
-        i = 0
-        while i < len(self.materials_list) and self.materials_list[i][0] < item[0]:
-            i+=1
-        self.materials_list.insert(i, item)
+        index = 0
+        while index < len(self.materials_list) and self.materials_list[index][0] < item[0]:
+            index+=1
+        self.materials_list.insert(index, item)
         self.SetItemCount(len(self.materials_list))
+        self.RefreshItems(index, len(self.materials_list))
 
 class MaterialDialog(wx.Dialog):
     """

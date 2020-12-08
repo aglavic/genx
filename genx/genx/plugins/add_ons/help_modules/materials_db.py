@@ -70,6 +70,8 @@ class Formula(list):
             raise ValueError("Can't parse formula with brackets.")
         for ign_char in [" ", "\t", "_", "-"]:
             estr=estr.replace(ign_char, "")
+        for i in range(10):
+            estr=estr.replace(cls._get_subscript(i), '%i'%i) # convert to normal str w/o subsccript
         if estr=="":
             return Formula([])
         extracted_elements=[]
@@ -146,7 +148,8 @@ class Formula(list):
                 output += element + "%g"%(count)
         return output
 
-    def _get_superscript(self, count):
+    @classmethod
+    def _get_superscript(cls, count):
         '''
           Return a subscript unicode string that equals the given number.
         '''
@@ -160,7 +163,8 @@ class Formula(list):
                 result += (b'\\u207' + char.encode('utf-8')).decode('unicode-escape')
         return result
 
-    def _get_subscript(self, count):
+    @classmethod
+    def _get_subscript(cls, count):
         '''
           Return a subscript unicode string that equals the given number.
         '''
