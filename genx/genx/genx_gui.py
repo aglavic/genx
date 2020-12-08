@@ -474,7 +474,7 @@ class MainFrame(wx.Frame):
         self.data_notebook_data.SetSizer(data_list_sizer)
         sizer_1.Add((20, 5), 0, 0, 0)
         sizer_2.Add(self.label_2, 0, wx.ALIGN_CENTER_VERTICAL, 0)
-        sizer_2.Add(self.data_grid_choice, 3, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, 0)
+        sizer_2.Add(self.data_grid_choice, 3, wx.EXPAND, 0)
         sizer_2.Add((20, 20), 0, wx.EXPAND, 0)
         sizer_1.Add(sizer_2, 0, wx.EXPAND, 0)
         sizer_1.Add(self.static_line_1, 0, wx.EXPAND, 0)
