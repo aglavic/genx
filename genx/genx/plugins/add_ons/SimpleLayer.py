@@ -24,9 +24,9 @@ import json
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from math import cos, pi, sqrt
-from models.utils import UserVars, fp, fw, bc, bw, __bc_dict__ #@UnusedImport
-import images as img
-from plugins import add_on_framework as framework
+from genx.models.utils import UserVars, fp, fw, bc, bw, __bc_dict__ #@UnusedImport
+from genx import images as img
+from .. import add_on_framework as framework
 from genx.gui_logging import iprint
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 

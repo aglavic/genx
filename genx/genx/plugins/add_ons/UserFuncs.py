@@ -15,7 +15,7 @@ This should be added somewhere in the script. This provides a great way
 to, for example, dump some internal data into a file or for checking the status
 of some variables.
 '''
-import plugins.add_on_framework as framework
+from .. import add_on_framework as framework
 import types, wx, io, traceback
 
 class Plugin(framework.Template):

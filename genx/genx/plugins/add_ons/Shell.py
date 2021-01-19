@@ -19,7 +19,7 @@ The available entry points into GenX is:
     Important object.</dd>
 </dl>
 '''
-import plugins.add_on_framework as framework
+from .. import add_on_framework as framework
 import wx.py.shell, wx
 
 class Plugin(framework.Template):
