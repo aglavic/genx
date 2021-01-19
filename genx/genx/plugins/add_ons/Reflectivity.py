@@ -1761,9 +1761,12 @@ class SamplePlotPanel(wx.Panel):
             for sim in range(len(self.plot_dicts)):
                 if data[sim].show:
                     for key in self.plot_dicts[sim]:
-                        if key in ['z', 'SLD unit'] or (self.plot_dicts[0][key]==0).all():
-                            # skip lines that are all zero to keep legend cleaner
-                            continue
+                        try:
+                            if key in ['z', 'SLD unit'] or (self.plot_dicts[0][key]==0).all():
+                                # skip lines that are all zero to keep legend cleaner
+                                continue
+                        except KeyError:
+                            pass
                         is_imag = key[:2] == 'Im' or key[:4] == 'imag'
                         if (is_imag and self.plugin.show_imag_sld) or not is_imag:
                             label = data[sim].name + '\n' + key
