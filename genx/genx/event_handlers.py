@@ -30,11 +30,9 @@ def get_pages(frame):
     pages = []
     for page in frame.plot_notebook.GetChildren():
         pages+=page.GetChildren()
-    try:
+    if frame.sep_plot_notebook is not frame.plot_notebook:
         for page in frame.sep_plot_notebook.GetChildren():
             pages+=page.GetChildren()
-    except AttributeError:
-        pass
 
     # pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
     #             frame.plot_fomscan]
@@ -668,7 +666,7 @@ def scan_parameter(frame, row):
                         frame.solver_control.fom_error_bars_level),
                         frame.model.parameters.get_names()[row],
                         'FOM')
-            frame.plot_notebook.SetSelection(3)
+            frame.sep_plot_notebook.SetSelection(3)
         except Exception as e:
             outp = StringIO()
             traceback.print_exc(200, outp)
@@ -711,7 +709,7 @@ def project_fom_parameter(frame, row):
                         frame.solver_control.fom_error_bars_level),
                         frame.model.parameters.get_names()[row],
                         'FOM')
-        frame.plot_notebook.SetSelection(3)
+        frame.sep_plot_notebook.SetSelection(3)
     except Exception as e:
         outp = StringIO()
         traceback.print_exc(200, outp)
@@ -818,7 +816,7 @@ def zoomall(frame, event):
     
     Zoom out and show all data points
     '''
-    sel = frame.plot_notebook.GetSelection()
+    sel = frame.sep_plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         tmp = pages[sel].GetAutoScale()
@@ -832,7 +830,7 @@ def set_yscale(frame, type):
     
     Set the y-scale of the current plot. type should be linear or log, strings. 
     '''
-    sel = frame.plot_notebook.GetSelection()
+    sel = frame.sep_plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].SetYScale(type)
@@ -842,7 +840,7 @@ def set_xscale(frame, type):
 
     Set the x-scale of the current plot. type should be linear or log, strings.
     '''
-    sel = frame.plot_notebook.GetSelection()
+    sel = frame.sep_plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].SetXScale(type)
@@ -865,7 +863,7 @@ def on_autoscale(frame, event):
     
     Toggles the autoscale of the current plot.
     '''
-    sel = frame.plot_notebook.GetSelection()
+    sel = frame.sep_plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].SetAutoScale(not pages[sel].GetAutoScale())
@@ -919,7 +917,7 @@ def print_plot(frame, event):
     
     prints the current plot in the plot notebook.
     '''
-    sel = frame.plot_notebook.GetSelection()
+    sel = frame.sep_plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].Print()
@@ -929,7 +927,7 @@ def print_preview_plot(frame, event):
     
     prints a preview of the current plot int the plot notebook.
     '''
-    sel = frame.plot_notebook.GetSelection()
+    sel = frame.sep_plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].PrintPreview()
@@ -956,7 +954,7 @@ def copy_graph(frame, event):
     Callback that copies the current graph in the plot notebook to
     the clipboard.
     '''
-    sel = frame.plot_notebook.GetSelection()
+    sel = frame.sep_plot_notebook.GetSelection()
     pages = get_pages(frame)
     if sel < len(pages):
         pages[sel].CopyToClipboard()

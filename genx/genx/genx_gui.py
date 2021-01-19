@@ -519,9 +519,9 @@ class MainFrame(wx.Frame):
         self.Layout()
         self.Centre()
         # end wxGlade
+        self.sep_plot_notebook=self.plot_notebook
         if self.config.get_boolean('startup', 'widescreen', False):
             # test adding new notebooks for plugins in wide screen layout
-            self.sep_plot_notebook=self.plot_notebook
             self.plot_notebook=self.wide_plugin_notebook
             self.plot_notebook.RemovePage(0)
             self.plot_splitter.SetSashGravity(0.75)
