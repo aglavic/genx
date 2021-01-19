@@ -189,7 +189,7 @@ class NumericParameter(ArithmeticParameter):
         raise NotImplementedError("Validation of value not implemented")
 
     def __setattr__(self, key, value):
-        if key is 'value':
+        if key == 'value':
             object.__setattr__(self, 'value', self.validate(value))
             self._coupled_parameter = None
         else:
@@ -219,7 +219,7 @@ class Enum(Parameter):
         self.value = self.allowed_values[0]
 
     def __setattr__(self, key, value):
-        if key is 'value':
+        if key == 'value':
             object.__setattr__(self, 'value', self.validate(value))
         else:
             object.__setattr__(self, key, value)
@@ -467,7 +467,7 @@ class Complex(NumericParameter, HasParameters):
         return value
 
     def __setattr__(self, key, value):
-        if key is 'value':
+        if key == 'value':
             value = self.validate(value)
             self.real.value = value.real
             self.imag.value = value.imag
