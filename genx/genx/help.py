@@ -131,7 +131,7 @@ class PluginHelpDialog(wx.Frame):
         '''
         docs = ''
         try:
-            if sub_module != None:
+            if sub_module is not None:
                 mod = __import__('%s.%s'%(module, sub_module), \
                              globals(), locals(), [''])
             else:

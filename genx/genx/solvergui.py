@@ -239,7 +239,7 @@ class SolverController:
         if len(self.optimizer.fom_evals) == 0:
             raise ErrorBarError('Can not find any stored evaluations of the model in the optimizer.\n'
                                  'Run a fit before calculating the errorbars.')
-        if self.optimizer.start_guess != None and not self.optimizer.running:
+        if self.optimizer.start_guess is not None and not self.optimizer.running:
             n_elements = len(self.optimizer.start_guess)
             #print 'Number of elemets to calc errobars for ', n_elements
             error_values = []
@@ -272,7 +272,7 @@ class SolverController:
         '''
         model  = self.parent.model
         row = model.parameters.get_pos_from_row(parameter)
-        if self.optimizer.start_guess != None and not self.optimizer.running:
+        if self.optimizer.start_guess is not None and not self.optimizer.running:
             return self.optimizer.par_evals[:, row],\
                 self.optimizer.fom_evals[:]
         else:

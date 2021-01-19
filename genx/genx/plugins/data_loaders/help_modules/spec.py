@@ -684,7 +684,7 @@ class SpecScan:
         if self.cols != a.cols:
             raise Exception("Scan column headers are not the same.")
         self.header = self.header + a.header
-        if binbreak != None:
+        if binbreak is not None:
             if binbreak in self.cols:
                 flag = False
                 for i in range(len(self.cols)):
@@ -719,7 +719,7 @@ class SpecScan:
     def plot(self,  *args, **kwargs):
         """Plot the SpecScan using matplotlib"""
 
-        if self.scanplot == None:
+        if self.scanplot is None:
             self.scanplot = SpecPlot(self)
 
         self.scanplot.show(*args, **kwargs)
@@ -728,7 +728,7 @@ class SpecScan:
     ## def plotCCD(self,  *args, **kwargs):
     ##     """Plot the SpecScan CCD images using matplotlib"""
 
-    ##     if self.scanplotCCD == None:
+    ##     if self.scanplotCCD is None:
     ##         self.scanplotCCD = SpecPlotCCD(self)
 
     ##     self.scanplotCCD.show(*args, **kwargs)
@@ -739,7 +739,7 @@ class SpecScan:
     #    Overloaded function which calls the current scanplot
     #    with scanplot.fit(...)
     #    """
-    #    if self.scanplot == None:
+    #    if self.scanplot is None:
     #        raise Exception("You need to plot something before trying to fit it!")
     #    else:
     #        return self.scanplot.fit(funcs, quiet)
@@ -782,9 +782,9 @@ class SpecScan:
             ycol = self.scan.cols.index(ycol)
         if type(mcol) == str:
             mcol = self.scan.cols.index(mcol)
-        if ycol == None:
+        if ycol is None:
             ycol = -1
-        if mcol == None:
+        if mcol is None:
             mcol = -2
 
         y = self.data[:,ycol]
@@ -882,9 +882,9 @@ class SpecPlot:
         twod = False
         x2col = None
 
-        if ycol == None:
+        if ycol is None:
             ycol = -1
-        if mcol == None:
+        if mcol is None:
             mcol = -2
 
         if xcol is None:
@@ -927,18 +927,18 @@ class SpecPlot:
             mcol = self.scan.cols.index(mcol)
 
 
-        if x2col != None:
+        if x2col is not None:
             twod = True
 
         self.plotx = self.scan.data[:,xcol]
-        if x2col != None:
+        if x2col is not None:
             self.plotx = vstack((self.plotx, self.scan.data[:,x2col]))
             self.plotx = self.plotx.transpose()
 
         if __verbose__:
             iprint("**** Plotting scan %s (%s)" % (self.scan.scan, self.scan.scan_command))
             iprint("---- x  = %s" % self.scan.cols[xcol])
-            if x2col != None:
+            if x2col is not None:
                 iprint("---- x2 = %s" % self.scan.cols[x2col])
 
         if norm == True:

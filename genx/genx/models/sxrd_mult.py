@@ -41,7 +41,7 @@ class SLSample:
         if type(unit_cell) != type(sxrd.UnitCell(1.0, 1.0, 1.0)):
             raise TypeError("The bulk slab has to be a member"
                             " of class UnitCell")
-        if unit_cell == None:
+        if unit_cell is None:
             unit_cell = sxrd.UnitCell(1.0, 1,.0, 1.0)
         self.unit_cell = unit_cell
 

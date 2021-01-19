@@ -304,12 +304,12 @@ def SLD_calculations(z, item, sample, inst):
     sigmai = array(parameters['sigmai'], dtype = float64)
     sigmai = sigmai[:-1]
     sigma = sqrt(sigmai**2 + sigmar**2)+1e-7
-    if z == None:
+    if z is None:
         z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     rho = sum(d_sld*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
     dic = {'Re': real(rho), 'Im': imag(rho), 'z':z,
             'SLD unit': 'r_{e}/\AA^{3}'}
-    if item == None or item == 'all':
+    if item is None or item == 'all':
         return dic
     else:
         try:

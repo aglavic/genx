@@ -290,7 +290,7 @@ class wxVTKRenderWindow(baseClass):
         self.OnEnterWindow(event)
 
     def OnEnterWindow(self,event):
-        if self.__OldFocus == None:
+        if self.__OldFocus is None:
             self.__OldFocus = wx.Window_FindFocus()
             self.SetFocus()
 
@@ -634,14 +634,14 @@ class wxVTKRenderWindow(baseClass):
             picker.Pick(x,(windowY - y - 1),0.0,renderer)
             actor = picker.GetActor()
 
-            if (self._PickedActor != None and
-                self._PrePickedProperty != None):
+            if (self._PickedActor is not None and
+                self._PrePickedProperty is not None):
                 self._PickedActor.SetProperty(self._PrePickedProperty)
                 # release hold of the property
                 self._PrePickedProperty.UnRegister(self._PrePickedProperty)
                 self._PrePickedProperty = None
 
-            if (actor != None):
+            if (actor is not None):
                 self._PickedActor = actor
                 self._PrePickedProperty = self._PickedActor.GetProperty()
                 # hold onto the property

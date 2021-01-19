@@ -230,7 +230,7 @@ class PluginDialog(wx.Dialog):
         self.Layout()
         
     def on_apply(self, event):
-        if self.load_plugin_func != None:
+        if self.load_plugin_func is not None:
             self.load_plugin_func(self.choice_control.GetStringSelection())
         event.Skip()
 
