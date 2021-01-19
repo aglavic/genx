@@ -187,7 +187,7 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
     k_m = sqrt(k_amb**2 - Vm.astype(complex128))
     #Angular difference between the magnetization
     theta_diff=M_ang[1:] - M_ang[:-1]
-    #if sigma == None:
+    #if sigma is None:
     #    sigma = zeros(d.shape)
     # Assemble the interface reflectivity matrix
     X = ass_X(k_p, k_m, theta_diff)

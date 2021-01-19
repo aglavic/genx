@@ -932,13 +932,13 @@ class PlotSettingsDialog(wx.Dialog):
         
         # The Color choosers
         # Some None checking i.e. check for not defined values
-        if sim_pars['color'] == None:
+        if sim_pars['color'] is None:
             color = (255, 255, 255, 255)
         else:
             color = sim_pars['color']
         self.sim_colorbutton = csel.ColourSelect(self, -1, '', color)
         # Some None checking for data.
-        if data_pars['color'] == None:
+        if data_pars['color'] is None:
             color = (255, 255, 255, 255)
         else:
             color = data_pars['color']
@@ -965,13 +965,13 @@ class PlotSettingsDialog(wx.Dialog):
         # The Spin Controls for the Line thickness
         self.sim_linethick_ctrl = wx.SpinCtrl(self, -1, "")
         self.data_linethick_ctrl = wx.SpinCtrl(self, -1, "")
-        if sim_pars['linethickness'] != None:
+        if sim_pars['linethickness'] is not None:
             self.sim_linethick_ctrl.SetRange(1,20)
             self.sim_linethick_ctrl.SetValue(sim_pars['linethickness'])
         else:
             self.sim_linethick_ctrl.SetRange(-1,20)
             self.sim_linethick_ctrl.SetValue(-1)
-        if data_pars['linethickness'] != None:
+        if data_pars['linethickness'] is not None:
             self.data_linethick_ctrl.SetRange(1,20)
             self.data_linethick_ctrl.SetValue(data_pars['linethickness'])
         else:
@@ -1001,13 +1001,13 @@ class PlotSettingsDialog(wx.Dialog):
         # The Spin Controls for the symbol size
         self.sim_symbolsize_ctrl = wx.SpinCtrl(self, -1, "")
         self.data_symbolsize_ctrl = wx.SpinCtrl(self, -1, "")
-        if sim_pars['symbolsize'] != None:
+        if sim_pars['symbolsize'] is not None:
             self.sim_symbolsize_ctrl.SetRange(1, 20)
             self.sim_symbolsize_ctrl.SetValue(sim_pars['symbolsize'])
         else:
             self.sim_symbolsize_ctrl.SetRange(1, 20)
             self.sim_symbolsize_ctrl.SetValue(-1)
-        if data_pars['symbolsize'] != None:
+        if data_pars['symbolsize'] is not None:
             self.data_symbolsize_ctrl.SetRange(1, 20)
             self.data_symbolsize_ctrl.SetValue(data_pars['symbolsize'])
         else:

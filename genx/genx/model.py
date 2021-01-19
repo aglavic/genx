@@ -756,7 +756,7 @@ class Model:
         # loop through all objects and locate NumericParameters or HasParameters
         par_dict = get_parameters(self.script_module, numeric_types_only=True)
 
-        if len(par_dict) is 0:
+        if len(par_dict) == 0:
             par_dict = self.get_possible_set_functions()
 
         return par_dict

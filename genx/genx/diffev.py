@@ -1485,7 +1485,7 @@ class CircBuffer:
         self.maxlen = int(maxlen)
         self.pos = -1
         self.filled = False
-        if buffer == None:
+        if buffer is None:
             self.buffer = zeros((self.maxlen,))
         else:
             if len(buffer) != 0:
@@ -1502,7 +1502,7 @@ class CircBuffer:
         self.pos = -1
         self.filled = False
         #self.buffer = buffer
-        if buffer == None:
+        if buffer is None:
              self.buffer = zeros((self.maxlen,))
         else:
             if len(buffer) != 0:

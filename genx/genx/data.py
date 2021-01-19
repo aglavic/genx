@@ -528,7 +528,7 @@ class DataSet:
         #print 'data set_data_plot_items: '
         #print pars
         for name in self.plot_setting_names:
-            if pars[name] != None:
+            if pars[name] is not None:
                 if type(pars[name]) == type(''):
                     exec('self.data_' + name + ' = "' \
                             + pars[name].__str__() + '"')
@@ -548,7 +548,7 @@ class DataSet:
         #print 'data set_sim_plot_items: '
         #print pars
         for name in self.plot_setting_names:
-            if pars[name] != None:
+            if pars[name] is not None:
                 if type(pars[name]) == type(''):
                     exec('self.sim_' + name + ' = "' \
                             + pars[name].__str__() + '"')

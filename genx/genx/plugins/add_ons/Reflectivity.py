@@ -207,7 +207,7 @@ class SampleHandler:
         if pos==len(self.poslist)-1:
             return self.sample.Substrate
         stack=self.sample.Stacks[self.poslist[pos][0]]
-        if self.poslist[pos][1] == None:
+        if self.poslist[pos][1] is None:
             return stack
         return stack.Layers[self.poslist[pos][1]]
 
@@ -221,7 +221,7 @@ class SampleHandler:
         if pos==len(self.poslist)-1:
             return None
         stack=self.sample.Stacks[self.poslist[pos][0]]
-        if self.poslist[pos][1]==None:
+        if self.poslist[pos][1] is None:
             self.sample.Stacks.pop(self.poslist[pos][0])
             p = self.poslist[pos][0]
             pt = pos
@@ -252,10 +252,10 @@ class SampleHandler:
             spos=self.poslist[-2]
             last=True
         stackp=False
-        if spos[1]==None:
+        if spos[1] is None:
             spos=(spos[0],0)
             stackp=True
-        if spos[0]==None:
+        if spos[0] is None:
             spos=(0,spos[1])
         
         # If it not the first item i.e. can't insert anything before the 
@@ -285,7 +285,7 @@ class SampleHandler:
                 if last:
                     self.sample.Stacks[spos[0]].Layers.insert(0,layer)
                 else:
-                    if self.poslist[pos][1] == None:
+                    if self.poslist[pos][1] is None:
                         self.sample.Stacks[spos[0]].Layers.append(layer)
                     else:
                         self.sample.Stacks[spos[0]].Layers.insert(spos[1], layer)
@@ -339,7 +339,7 @@ class SampleHandler:
         Moves layer only if it is possible.
         '''
         if pos > 1 and pos!=len(self.poslist)-1:
-            if self.poslist[pos][1]==None:
+            if self.poslist[pos][1] is None:
                 temp=self.sample.Stacks.pop(self.poslist[pos][0])
                 temps=[]
                 for index in range(len(temp.Layers)+1):
@@ -352,7 +352,7 @@ class SampleHandler:
                 if pos > 2:
                     temp=self.sample.Stacks[self.poslist[pos][0]].Layers.pop(self.poslist[pos][1])
                     temps=self.names.pop(pos)
-                    if self.poslist[pos-1][1]==None: # Next item a Stack i.e. jump up
+                    if self.poslist[pos-1][1] is None: # Next item a Stack i.e. jump up
                         self.sample.Stacks[self.poslist[pos-2][0]].Layers.insert(0,temp)
                         self.names.insert(pos-1,temps)
                     else: #Moving inside a stack
@@ -372,7 +372,7 @@ class SampleHandler:
 
         if pos != 0 and pos < len(self.poslist)-2:
 
-            if self.poslist[pos][1]==None: #Moving a stack
+            if self.poslist[pos][1] is None: #Moving a stack
                 if self.poslist[pos][0]!=0:
                     temp=self.sample.Stacks.pop(self.poslist[pos][0])
                     temps=[]
@@ -389,7 +389,7 @@ class SampleHandler:
                 if pos < len(self.poslist)-2:
                     temp=self.sample.Stacks[self.poslist[pos][0]].Layers.pop(self.poslist[pos][1])
                     temps=self.names.pop(pos)
-                    if self.poslist[pos+1][1]==None: # Next item a Stack i.e. jump down
+                    if self.poslist[pos+1][1] is None: # Next item a Stack i.e. jump down
                         self.sample.Stacks[self.poslist[pos+1][0]].Layers.insert(len(self.sample.Stacks[self.poslist[pos+1][0]].Layers),temp)
                         self.names.insert(pos+1,temps)
                     else: #Moving inside a stack

@@ -207,7 +207,7 @@ class Sample:
         '''
         if type(unit_cell) != type(UnitCell(1.0, 1.0, 1.0)):
             raise TypeError("The bulk slab has to be a member of class UnitCell")
-        if unit_cell == None:
+        if unit_cell is None:
             unit_cell = UnitCell(1.0, 1,.0, 1.0)
         self.unit_cell = unit_cell
         
@@ -706,7 +706,7 @@ class AtomGroup:
         # Variable for composition ...
         self.comp = 1.0
         self.oc = 1.0
-        if slab != None and  id != None:
+        if slab is not None and  id is not None:
             self.add_atom(slab, id)
 
     def _set_func(self, par):
@@ -1038,7 +1038,7 @@ def scale_sim(data, sim_list, scale_func = None):
                  if data[i].use])
     scale = numerator/denominator
     scaled_sim_list = [sim*scale for sim in sim_list]
-    if not scale_func == None:
+    if not scale_func is None:
         scale_func(scale)
     return scaled_sim_list
 
@@ -1053,7 +1053,7 @@ def scale_sqrt_sim(data, sim_list, scale_func = None):
                  if data[i].use])
     scale = numerator/denominator
     scaled_sim_list = [sim*scale**2 for sim in sim_list]
-    if not scale_func == None:
+    if not scale_func is None:
         scale_func(scale)
     return scaled_sim_list
 

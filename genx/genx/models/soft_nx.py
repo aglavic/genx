@@ -475,7 +475,7 @@ def SLD_calculations(z, item, sample, inst):
     # Include one extra element - the zero pos (substrate/film interface)
     int_pos = cumsum(r_[0,d])
     sigma = array(parameters['sigma'], dtype = float64)[:-1] + 1e-7
-    if z == None:
+    if z is None:
         z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     if not magnetic:
         rho = sum((sld[:-1] - sld[1:])*(0.5 -\
@@ -500,7 +500,7 @@ def SLD_calculations(z, item, sample, inst):
         dic = {'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),
                 'mag': real(rho_p - rho_m)/2, 'mag_x': rho_mag_x, 'mag_y': rho_mag_y,
                 'z':z, 'SLD unit': sld_unit}
-    if item == None or item == 'all':
+    if item is None or item == 'all':
         return dic
     else:
         try:
