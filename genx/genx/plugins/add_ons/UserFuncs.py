@@ -32,9 +32,10 @@ class Plugin(framework.Template):
         '''
         model = self.GetModel()
         # locate all functions in the model.script_module
-        funcs = [eval('model.script_module.%s'%name) \
+        funcs = [eval('model.script_module.%s'%name, globals(), {'model': model}) \
             for name in dir(model.script_module)\
-            if type(eval('model.script_module.%s'%name)) == types.FunctionType]
+            if type(eval('model.script_module.%s'%name, globals(), {'model': model})
+                    ) == types.FunctionType]
         # Find the functions that are defined in the script and takes zero
         # input parameters
         user_funcs = [f.__name__ for f in funcs if\
