@@ -835,7 +835,18 @@ class SamplePanel(wx.Panel):
         self.toolbar.AddControl(button)
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, id=newid)
         self.toolbar.AddSeparator()
-        
+
+        self.toolbar.AddStretchableSpace()
+
+        newid=wx.NewId()
+        button=wx.Button(self.toolbar, newid, label='to Advanced Modelling',
+                         size=(150*dpi_scale_factor, 22*dpi_scale_factor))
+        button.SetBitmap(wx.Bitmap(images.custom_parameters.GetImage().Scale(tb_bmp_size,tb_bmp_size)), dir=wx.LEFT)
+        button.SetToolTip("Switch to Reflectivity plugin for advanced modeling options.\n"
+                          "This converts the model and can't be undone.")
+        self.toolbar.AddControl(button)
+        self.Bind(wx.EVT_BUTTON, self.SwitchAdvancedReflectivity, id=newid)
+
     def ChangeRepetitions(self, evt):
         self.UpdateModel()
     
@@ -1007,6 +1018,21 @@ class SamplePanel(wx.Panel):
             pass
         dlg.Destroy()
 
+    def SwitchAdvancedReflectivity(self, evt):
+        # Load Reflectivity plugin for more advanced options, this will unload current plugin
+        plugin_control=self.plugin.parent.plugin_control
+
+        try:
+            plugin_control.plugin_handler.load_plugin('Reflectivity')
+        except:
+            outp = io.StringIO()
+            traceback.print_exc(200, outp)
+            tbtext = outp.getvalue()
+            outp.close()
+        else:
+            plugin_control.RegisterPlugin('Reflectivity')
+
+
     def CheckGridUpdate(self, parameters=None):
         if parameters is None:
             new_grid=self.plugin.GetModel().get_parameters()
@@ -1058,18 +1084,23 @@ class WizarSelectionPage(WizardPageSimple):
                  choice_label='', choices_help=None,
                  prev=None, next=None, bitmap=wx.NullBitmap):
         WizardPageSimple.__init__(self, parent, prev=prev, next=next, bitmap=bitmap)
-        
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+
         vbox=wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
         text=wx.StaticText(self, style=wx.ALIGN_LEFT, label=intro_title)
         text.SetFont(text.GetFont().Scale(1.5))
         vbox.Add(text, 0, wx.EXPAND)
         text=wx.StaticText(self, style=wx.ALIGN_LEFT, label=intro_text)
-        text.Wrap(480)
+        text.Wrap(int(480*dpi_scale_factor))
         vbox.Add(text, 0, wx.EXPAND)
         vbox.AddStretchSpacer()
+
+        txt_length=max([len(ti) for ti in choices])+4
         self.ctrl=wx.RadioBox(self, label=choice_label, choices=choices,
-                              style=wx.RA_SPECIFY_ROWS, majorDimension=4)
+                              style=wx.RA_SPECIFY_ROWS, majorDimension=4,
+                              size=wx.Size(int(txt_length*(len(choices)//4+1)*dpi_scale_factor*8),
+                                           int(min(len(choices),4)*dpi_scale_factor*28)))
         vbox.Add(self.ctrl, 0, 0)
         if choices_help:
             for i, ti in enumerate(choices_help):
@@ -1330,7 +1361,8 @@ class Plugin(framework.Template):
         WizardPageSimple.Chain(p1,p2)
         WizardPageSimple.Chain(p2,p3)
 
-        wiz.SetPageSize(wx.Size(500, 350))
+        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        wiz.SetPageSize(wx.Size(int(300*dpi_scale_factor), int(200*dpi_scale_factor)))
 
         if wiz.RunWizard(p1):
             self.sample_widget.inst_params=dict(SamplePanel.inst_params)
