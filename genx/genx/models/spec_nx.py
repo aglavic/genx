@@ -384,13 +384,14 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
             raise ValueError('The value of the polarization is WRONG.'
                 ' It should be uu(0) or dd(1)')
     # Spin flip
-    elif ptype in [3, 6, instrument_string_choices['probe'][3],
-                   instrument_string_choices['probe'][6]]:
+    elif ptype in [3, instrument_string_choices['probe'][3]]:
         # Check if we have calcluated the same sample previous:
         if Buffer.TwoThetaQz is not None:
             Q_ok = Buffer.TwoThetaQz.shape == Q.shape
             if Q_ok:
-                Q_ok = any(not_equal(Buffer.TwoThetaQz, Q))
+                Q_ok = not (Buffer.TwoThetaQz!=Q).any()
+        else:
+            Q_ok=False
         if Buffer.parameters != parameters or not Q_ok:
             msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
             np = 1.0-sld-msld
