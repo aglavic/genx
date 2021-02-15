@@ -1,5 +1,5 @@
 '''Library to calculate the reflectivity with the formalism presented in
-S.A. Stephanov and S.K Shina PRB 61 15304.
+S. A. Stepanov and S. K. Sinha, Phys. Rev. B 61, 15302.
 
 All the matrices/arrays in this module has the following index order:
 index: Meaning
@@ -21,7 +21,8 @@ from genx.gui_logging import iprint
 def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit = 1e-8, mpy_limit = 1e-9):
     ''' Calculate the reflectivity according to the
     recursion matrix formalism as given by
-    S.A. Stephanov and S.K Shina PRB 61 15304
+    S. A. Stepanov and S. K. Sinha, Phys. Rev. B 61, 15302.
+    https://doi.org/10.1103/PhysRevB.61.15302
     Note that this formalism has the first item in the parameters
     describing the layers (chi0, A, B, C, d) as the vacuum. 
     Any ambient layer is ignored!
