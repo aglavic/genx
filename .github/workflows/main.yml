@@ -31,9 +31,9 @@ jobs:
         C:\Miniconda\condabin\conda.bat init powershell
     - name: Build with pyinstaller
       run: |
-        working-directory: genx
         # Activate the base environment
         C:\Miniconda\condabin\conda.bat activate base
+        cd genx
         # C:\Miniconda\condabin\conda.bat install flake8
         # stop the build if there are Python syntax errors or undefined names
         pyinstaller genx.spec
