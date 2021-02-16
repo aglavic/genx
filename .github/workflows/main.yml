@@ -15,28 +15,27 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    needs: beer
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.7
-    - name: Install dependencies
-      run: |
-        C:\Miniconda\condabin\conda.bat env update --file genx\windows_build\conda.yml --name base
-        C:\Miniconda\condabin\conda.bat init powershell
-    - name: Build with pyinstaller
-      run: |
-        # Activate the base environment
-        C:\Miniconda\condabin\conda.bat activate base
-        cd genx
-        # C:\Miniconda\condabin\conda.bat install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        pyinstaller genx.spec
+#  build-windows:
+#    runs-on: windows-latest
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Set up Python
+#      uses: actions/setup-python@v2
+#      with:
+#        python-version: 3.7
+#    - name: Install dependencies
+#      run: |
+#        C:\Miniconda\condabin\conda.bat env update --file genx\windows_build\conda.yml --name base
+#        C:\Miniconda\condabin\conda.bat init powershell
+#    - name: Build with pyinstaller
+#      run: |
+#        # Activate the base environment
+#        C:\Miniconda\condabin\conda.bat activate base
+#        cd genx
+#        # C:\Miniconda\condabin\conda.bat install flake8
+#        # stop the build if there are Python syntax errors or undefined names
+#        pyinstaller genx.spec
         
   build-ubuntu:
     runs-on: ubuntu-latest
