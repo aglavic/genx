@@ -34,7 +34,7 @@ jobs:
         pyinstaller genx.spec
     - name: Download and Install Inno Setup installer
       run: |
-        curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-${{ env.INNO_VERSION }}.exe
+        curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-6.1.2.exe
         ./installer.exe /verysilent /allusers /dir=inst
     - name: Build setup file
       run: |
