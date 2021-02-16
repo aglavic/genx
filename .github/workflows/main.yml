@@ -44,7 +44,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install dependencies
       run: |
-        sudo apt install --fix-missing python3 python3-matplotlib python3-scipy python3-wxgtk4.0 python3-numba nvidia-cuda-toolkit alien rpm build-essential
+        sudo apt update
+        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential
     - name: Build binary package
       run: |
         cd genx
