@@ -79,3 +79,4 @@ jobs:
       with:
         artifacts: ubuntu-dist
         token: ${{ secrets.GITHUB_TOKEN }}
+        tag: testrelease
