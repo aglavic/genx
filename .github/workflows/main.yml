@@ -75,8 +75,11 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v2
+      with:
+        name: ubuntu-dist
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: ubuntu-dist
+        artifacts: "genx/dist/*.deb,genx/dist/*.tar.gz"
         token: ${{ secrets.GITHUB_TOKEN }}
         tag: testrelease
