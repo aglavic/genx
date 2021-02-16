@@ -50,22 +50,26 @@ jobs:
       run: |
         cd genx
         python3 setup.py bdist
-    - name: List contents
-      run: |
-        ls genx/dist
+    - name: Archive distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: ubuntu-dist
+        path: |
+          genx/dist/*.deb
+          genx/dist/*.tar.gz
 
-#  build-and-push-image:
-#    runs-on: ubuntu-latest
-#    needs: build-ubuntu
-#    steps:
-#    - name: Checkout
-#      uses: actions/checkout@v2
-#    - name: Build container image
-#      uses: docker/build-push-action@v1
-#      with:
-#        username: ${{ github.actor }}
-#        password: ${{ secrets.GITHUB_TOKEN }}
-#        registry: docker.pkg.github.com
-#        repository: ${{ github.repository }}/octo-image
-#        tag_with_sha: true
-#        tag_with_ref: true
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    needs: build-ubuntu
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build container image
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        registry: docker.pkg.github.com
+        repository: ${{ github.repository }}/testpackage
+        tag_with_sha: true
+        tag_with_ref: true
