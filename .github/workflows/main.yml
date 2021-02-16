@@ -52,7 +52,6 @@ jobs:
         python3 setup.py bdist
     - name: List contents
       run: |
-        ls dist
         ls genx/dist
 
 #  build-and-push-image:
