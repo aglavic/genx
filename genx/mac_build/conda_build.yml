@@ -1,0 +1,13 @@
+name: genx
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+  - wxpython
+  - pyinstaller
+  - matplotlib
+  - appdirs
+  - h5py
+  - scipy
+  - psutil
+  - pymysql
