@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.0.7
+=============
+ * Fix bug in spec_nx when trying to use spin-flip model
+ * Fix bug #160 in spin-flip that would not recognize a changed model correctly
+ * Add button to SimpleReflectivity for switching to Reflecivity plugin for more complex models
+
 Changes 3.0.6
 =============
  * Fix GUI bugs reported in tickets #172 and #173
