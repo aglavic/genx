@@ -41,6 +41,12 @@ jobs:
         cd genx\windows_build
         python update_version.py
         iscc genx.iss
+    - name: Archive distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-dist
+        path: |
+          genx\windows_build\Output\GenX-*_win64_setup.exe
         
   build-ubuntu:
     runs-on: ubuntu-latest
