@@ -558,7 +558,7 @@ def SLD_calculations(z, item, sample, inst):
     elif type == instrument_string_choices['probe'][1] or type == 1 or\
         type == instrument_string_choices['probe'][4] or type == 4:
         sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
-        sld_unit = '\AA^{-2}'
+        sld_unit = '10^{-6}\AA^{-2}'
     else:
         magnetic = True
         sld = dens*(wl**2/2/pi*b - 1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
@@ -568,7 +568,7 @@ def SLD_calculations(z, item, sample, inst):
         mag_sld = 2.645*magn*dens*10.
         mag_sld_x = mag_sld*cos(magn_ang)
         mag_sld_y = mag_sld*sin(magn_ang)
-        sld_unit = '\AA^{-2}'
+        sld_unit = '10^{-6}\AA^{-2}'
         
     d = array(parameters['d'], dtype=float64)
     d = d[1:-1]
