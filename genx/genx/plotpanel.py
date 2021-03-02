@@ -118,6 +118,8 @@ class PlotPanel(wx.Panel):
         if not pixels:
             pixels = self.GetClientSize()
 
+        if min(pixels)<=0:
+            return
         self.canvas.SetSize(pixels)
         try:
             self.figure.tight_layout(h_pad=0)
@@ -649,6 +651,9 @@ class PlotPanel(wx.Panel):
         #self._SetSize()
         #self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
         #self.ax.set_yscale(self.scale)
+        pixels=self.GetClientSize()
+        if min(pixels)<=0:
+            return
         self.figure.tight_layout(h_pad=0)
         self.canvas.draw()
         
@@ -1021,7 +1026,8 @@ class DataPlotPanel(PlotPanel):
         ymax = max([array(line.get_ydata()).max()\
                    for line in self.error_ax.lines if len(line.get_ydata()) > 0])
         # Set the limits
-        self.error_ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
+        if ymin!=ymax:
+            self.error_ax.set_ylim(ymin*(1-sign(ymin)*0.05), ymax*(1+sign(ymax)*0.05))
         #self.ax.set_yscale(self.scale)
         
     def singleplot(self, data):
@@ -1262,7 +1268,9 @@ class ErrorPlotPanel(PlotPanel):
             self.ax.plot(data[:,0],data[:,1], '-r')
             if self.GetAutoScale() and len(data) > 0:
                 self.ax.set_ylim(data[:,1].min()*0.95, data[:,1].max()*1.05)
-                self.ax.set_xlim(data[:,0].min(), data[:,0].max())
+                xmin, xmax=data[:,0].min(), data[:,0].max()
+                if xmin!=xmax:
+                    self.ax.set_xlim(xmin, xmax)
                 #self.AutoScale()
 
         self.ax.set_xlabel('Iteration')
