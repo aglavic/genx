@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.0.8
+=============
+ * Fix some issues with newer wxPython versions (4.1.1)
+ * Fix an error in the unit for neutron SLD display (10^-6 AA^-1)
+ * Automatic build process on github
+
 Changes 3.0.7
 =============
  * Fix bug in spec_nx when trying to use spin-flip model
