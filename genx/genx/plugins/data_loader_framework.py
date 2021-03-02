@@ -221,7 +221,7 @@ class PluginDialog(wx.Dialog):
         sizer.Add((20, 20), 0)
         sizer.Add(choice_sizer, 0, wx.ALIGN_CENTRE|wx.ALL)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 20)
+        sizer.Add(line, 0, wx.GROW|wx.TOP, 20)
         sizer.Add(button_sizer)
         
         self.SetSizer(sizer)
