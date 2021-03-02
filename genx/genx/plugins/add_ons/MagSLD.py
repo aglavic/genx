@@ -103,7 +103,7 @@ class Plugin(framework.Template):
                 slds=sld_plot.plot_dicts[i]
                 z=slds['z']
                 unit=slds['SLD unit']
-                if unit in ["fm/\AA^{3}", "\\AA^{-2}",""] and self.mb_second_axis.IsChecked():
+                if unit in ["fm/\AA^{3}", "\\AA^{-2}","", "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
                     for key, value in list(slds.items()):
                         if key=='mag' and value.sum()>0.:
                             msld=value
@@ -117,7 +117,7 @@ class Plugin(framework.Template):
                                 self._annotations.append(
                                    ax.annotate('Integrated M:\n%.4g $emu/cm^2$'%trapz(mag, z*1e-8),
                                                (com, 0.02), ha='center'))
-        if msld is not None and unit in ["fm/\AA^{3}", "\\AA^{-2}", ""] and self.mb_second_axis.IsChecked():
+        if msld is not None and unit in ["fm/\AA^{3}", "\\AA^{-2}", "", "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
             ax2.set_visible(True)
             ymin, ymax=ax.get_ylim()
             if self.mb_use_SI.IsChecked():
