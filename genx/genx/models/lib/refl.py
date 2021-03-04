@@ -529,7 +529,7 @@ if __name__ == '__main__':
                                                      {'Specualr': lambda x: x}, \
                                                      'test')
     inst = Instrument(footype='gauss beam', probe='x-ray', beamw=0.04, resintrange=2, pol='uu', wavelength=1.54,
-                      respoints=5, Ibkg=0.0, I0=2, samplelen=10.0, restype='fast conv', coords='tth', res=0.001,
+                      respoints=5, Ibkg=0.0, I0=2, samplelen=10.0, restype='fast conv', coords='2θ', res=0.001,
                       incangle=0.0)
 
     # BEGIN Sample DO NOT CHANGE

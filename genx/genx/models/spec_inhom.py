@@ -11,12 +11,12 @@ from .lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:
 ModelID='SpecInhom'
-__pars__=spec_nx.__pars__
+__pars__=spec_nx.__pars__.copy()
 
-instrument_string_choices=spec_nx.instrument_string_choices
-InstrumentParameters=spec_nx.InstrumentParameters
-InstrumentGroups=spec_nx.InstrumentGroups
-InstrumentUnits=spec_nx.InstrumentUnits
+instrument_string_choices=spec_nx.instrument_string_choices.copy()
+InstrumentParameters=spec_nx.InstrumentParameters.copy()
+InstrumentGroups=spec_nx.InstrumentGroups.copy()
+InstrumentUnits=spec_nx.InstrumentUnits.copy()
 
 LayerParameters=spec_nx.LayerParameters.copy()
 LayerParameters.update({'sigma_gradient': 0.0, 'd_gradient': 0.0})
@@ -62,16 +62,16 @@ def Specular(TwoThetaQz, sample, instrument):
     d0=[array([Layer.getD() for Layer in Stack.Layers]) for Stack in sample.Stacks]
     sigma_d=sample.getSigma_inhom()*0.01 # Inhomogeniety in \% (gamma for type 2)
     lorentz_scale=sample.getLscale_inhom()
-    flat_width=sample.getFlatwidth_inhom()*0.01
+    flat_width=maximum(1e-4, sample.getFlatwidth_inhom()*0.01)
     type_inhom=sample.getType_inhom()
     # Define the thicknesses to calculate and their propability
     if type_inhom in sample_string_choices['type_inhom']:
       type_inhom=sample_string_choices['type_inhom'].index(type_inhom)
     else:
       type_inhom=0
-    if sigma_d==0 or flat_width==0:   # no inhomogeniety
-        d_fact=[1.]
-        P=[1.]
+    if sigma_d==0:   # no inhomogeniety
+        d_fact=array([1.])
+        P=array([1.])
     elif type_inhom==1:   # half gaussian shape inhomogeniety
         d_fact=1.+linspace(-2.*sigma_d, 0, sample.getSteps_inhom())
         P=exp(-0.5*(d_fact-sigma_d-1.)**2/sigma_d**2)

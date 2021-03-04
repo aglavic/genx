@@ -11,12 +11,12 @@ from .lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:
 ModelID='SpecAdaptive'
-__pars__=spec_nx.__pars__
+__pars__=spec_nx.__pars__.copy()
 
-instrument_string_choices=spec_nx.instrument_string_choices
-InstrumentParameters=spec_nx.InstrumentParameters
-InstrumentGroups=spec_nx.InstrumentGroups
-InstrumentUnits=spec_nx.InstrumentUnits
+instrument_string_choices=spec_nx.instrument_string_choices.copy()
+InstrumentParameters=spec_nx.InstrumentParameters.copy()
+InstrumentGroups=spec_nx.InstrumentGroups.copy()
+InstrumentUnits=spec_nx.InstrumentUnits.copy()
 
 LayerParameters=spec_nx.LayerParameters.copy()
 LayerParameters.update({'magn_void': False, 'rough_type': 0, 'sigma_mag': 0.0})
