@@ -22,6 +22,7 @@ from genx import filehandling as io
 from genx import plotpanel, solvergui, parametergrid, datalist
 from genx import event_handlers
 from genx import images as img
+from genx.version import version as program_version
 
 from genx.plugins import add_on_framework as add_on
 
@@ -35,6 +36,7 @@ if _path[-4:] == '.zip':
 # Get the configuration path, create if it not exists
 config_path = appdirs.user_data_dir('GenX3', 'ArturGlavic') + '/'
 info(config_path)
+version_file=os.path.join(config_path, 'genx.version')
 if not os.path.exists(config_path):
     info('Creating path: %s'%config_path)
     os.makedirs(config_path)
@@ -42,9 +44,18 @@ if not os.path.exists(os.path.join(config_path, 'profiles')):
     info('Creating path: %s'%os.path.join(config_path, 'profiles'))
     shutil.copytree(os.path.join(_path, 'profiles'),
                     os.path.join(config_path, 'profiles'))
+    open(version_file, 'w').write(program_version+'\n')
+elif not os.path.exists(version_file) or \
+    open(version_file, 'r').read().rsplit('.', 1)[0]!=program_version.rsplit('.', 1)[0]:
+    # update profiles if major version does not match
+    info('Update profiles to default for GenX '+program_version)
+    from glob import glob
+    for fi in glob(os.path.join(_path, 'profiles', '*.conf')):
+        shutil.copy2(fi, os.path.join(config_path, 'profiles'))
+    open(version_file, 'w').write(program_version+'\n')
 if not os.path.exists(os.path.join(config_path, 'genx.conf')):
     info('Creating genx.conf at %s by copying config from %s'%(config_path,
-                            os.path.join(_path, 'profiles/Default.conf')))
+                            os.path.join(_path, 'genx.conf')))
     shutil.copyfile(os.path.join(_path, 'genx.conf'),
                     os.path.join(config_path, 'genx.conf'))
 
