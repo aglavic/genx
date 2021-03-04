@@ -52,10 +52,12 @@ def Specular(TwoThetaQz, sample, instrument):
     Q, TwoThetaQz, weight=spec_nx.resolution_init(TwoThetaQz, instrument)
     if any(Q<q_limit):
         raise ValueError('The q vector has to be above %.1e'%q_limit)
-    instcall=deepcopy(instrument)
-    instcall.setRestype('no conv')
-    instcall.setFootype('no corr')
-    instcall.Ibkg=0.
+    restype=instrument.getRestype()
+    foottype=instrument.getFootype()
+    Ibkg=instrument.getIbkg()
+    instrument.setRestype('no conv')
+    instrument.setFootype('no corr')
+    instrument.Ibkg=0.
     sampcall=deepcopy(sample)
 
     # average thicknesses before inhomogeniety average
@@ -99,8 +101,12 @@ def Specular(TwoThetaQz, sample, instrument):
             for j, Layer in enumerate(Stack.Layers):
                 #Layer.setD(di[i][j])
                 Layer.d=di[i][j]
-        Rlist.append(Pi*spec_nx.Specular(TwoThetaQz, sampcall, instcall))
+        Rlist.append(Pi*spec_nx.Specular(TwoThetaQz, sampcall, instrument))
     R=array(Rlist).sum(axis=0)
+
+    instrument.setRestype(restype)
+    instrument.setFootype(foottype)
+    instrument.Ibkg=Ibkg
 
     # footprint correction
     foocor=spec_nx.footprintcorr(Q, instrument)
