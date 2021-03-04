@@ -1852,6 +1852,31 @@ class SamplePlotPanel(wx.Panel):
         '''
         return self.plot.ReadConfig()
 
+    def GetZoom(self):
+        return self.plot.GetZoom()
+
+    def GetYScale(self):
+        '''GetYScale(self) --> String
+
+        Returns the current y-scale in use. Currently the string
+        'log' or 'linear'. If the axes does not exist it returns None.
+        '''
+        if self.plot.ax:
+            return self.plot.ax.get_yscale()
+        else:
+            return None
+
+    def GetXScale(self):
+        '''GetXScale(self) --> String
+
+        Returns the current x-scale in use. Currently the string
+        'log' or 'linear'. If the axes does not exist it returns None.
+        '''
+        if self.plot.ax:
+            return self.plot.ax.get_xscale()
+        else:
+            return None
+
 class Plugin(framework.Template):
     previous_xaxis=None
     
