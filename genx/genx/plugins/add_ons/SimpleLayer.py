@@ -566,7 +566,10 @@ class MaterialDialog(wx.Dialog):
         return self.analyze_cif(res['cif'])
 
     def OnCODQuery(self, event):
-        db=pymysql.connect('sql.crystallography.net', 'cod_reader', None, 'cod')
+        db=pymysql.connect(host='sql.crystallography.net',
+                           user='cod_reader',
+                           password=None,
+                           database='cod')
         c=db.cursor()
         formula=[]
         for element, number in self.extracted_elements:
