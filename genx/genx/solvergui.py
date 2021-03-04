@@ -416,11 +416,10 @@ class SettingsDialog(wx.Dialog):
         self.fom_choice.SetSelection(fom_funcs.func_names.index(fom_string))
         fom_sizer.Add(fom_text,0, \
             wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        fom_sizer.Add(self.fom_choice,0,\
-            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, border = 10)
+        fom_sizer.Add(self.fom_choice,0, wx.EXPAND, border = 10)
         fom_box_sizer.Add(fom_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
 
-        cb_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        cb_sizer = wx.BoxSizer()
         fom_box_sizer.Add(cb_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
         # Check box for ignoring nans
         self.fom_ignore_nan_control = wx.CheckBox(self, -1, "Ignore Nan")
@@ -440,8 +439,7 @@ class SettingsDialog(wx.Dialog):
                         fractionWidth = 2, integerWidth = 2)
         errorbar_sizer.Add(errorbar_text,0, \
                 wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        errorbar_sizer.Add(self.errorbar_control,1, \
-                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        errorbar_sizer.Add(self.errorbar_control,1, wx.ALIGN_CENTER_VERTICAL, border = 10)
         errorbar_sizer.Add((10, 20), 0, wx.EXPAND)
         fom_box_sizer.Add(errorbar_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
 
@@ -494,8 +492,7 @@ class SettingsDialog(wx.Dialog):
         autosave_sc.Enable(True)
         autosave_sizer.Add(use_autosave_control, 0, \
             wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
-        autosave_sizer.Add(autosave_sc,0,\
-            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+        autosave_sizer.Add(autosave_sc,0, wx.ALIGN_CENTER_VERTICAL, border = 5)
         self.autosave_sc = autosave_sc
         self.use_autosave_control = use_autosave_control
         fit_box_sizer.Add(autosave_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
@@ -510,8 +507,7 @@ class SettingsDialog(wx.Dialog):
         buffer_sc.Enable(True)
         save_sizer.Add(save_all_control, 0, \
             wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
-        save_sizer.Add(buffer_sc,0,\
-            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+        save_sizer.Add(buffer_sc,0, wx.ALIGN_CENTER_VERTICAL, border = 5)
         self.buffer_sc = buffer_sc
         self.save_all_control = save_all_control
         fit_box_sizer.Add(save_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
@@ -534,8 +530,7 @@ class SettingsDialog(wx.Dialog):
                                 fractionWidth=2, integerWidth=2)
         km_sizer.Add(km_text, 0,
                      wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border=10)
-        km_sizer.Add(self.km_control, 1,
-                     wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        km_sizer.Add(self.km_control, 1, wx.ALIGN_CENTER_VERTICAL, border=10)
         km_sizer.Add((10, 20), 0, wx.EXPAND)
         de_grid.Add(km_sizer, (0, 0),
                     flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
@@ -548,8 +543,7 @@ class SettingsDialog(wx.Dialog):
                                 fractionWidth=2, integerWidth=2)
         kr_sizer.Add(kr_text, 1,
                      wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border=10)
-        kr_sizer.Add(self.kr_control, 0,
-                     wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        kr_sizer.Add(self.kr_control, 0, wx.ALIGN_CENTER_VERTICAL, border=10)
         de_grid.Add(kr_sizer, (0, 1),
                     flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
                     border=5)
@@ -562,8 +556,7 @@ class SettingsDialog(wx.Dialog):
         self.method_choice.SetSelection(self.solver.get_create_trial(True))
         method_sizer.Add(method_text, 0,
                          wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border=10)
-        method_sizer.Add(self.method_choice, 0,
-                         wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=10)
+        method_sizer.Add(self.method_choice, 0, wx.ALIGN_CENTER_VERTICAL, border=10)
         de_grid.Add(method_sizer, (1, 0), (1, 2),
                     flag=wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
                     border=5)
@@ -660,8 +653,7 @@ class SettingsDialog(wx.Dialog):
         use_parallel_control.SetValue(self.solver.use_parallel_processing)
         use_parallel_control.Enable(diffev.__parallel_loaded__)
         self.use_parallel_control = use_parallel_control
-        parallel_box_sizer.Add(use_parallel_control, 1,\
-                    wx.ALIGN_CENTRE|wx.EXPAND, 5 )
+        parallel_box_sizer.Add(use_parallel_control, 1, wx.EXPAND, 5 )
         
         processes_sc = wx.SpinCtrl(self, size = (80,-1))
         processes_sc.SetRange(1,100)
@@ -678,16 +670,14 @@ class SettingsDialog(wx.Dialog):
         parallel_sizer.Add(p_text, 0, \
                 wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         parallel_sizer.Add((10, 20), 1, wx.EXPAND)
-        parallel_sizer.Add(processes_sc, 0, \
-                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
-        parallel_box_sizer.Add(parallel_sizer, 1, wx.ALIGN_CENTRE|wx.EXPAND, 10 )
+        parallel_sizer.Add(processes_sc, 0, wx.ALIGN_CENTER_VERTICAL, border = 10)
+        parallel_box_sizer.Add(parallel_sizer, 1, wx.EXPAND, 10 )
         parallel_sizer = wx.BoxSizer(wx.HORIZONTAL)
         p_text = wx.StaticText(self, -1, ' Chunk size ')
         parallel_sizer.Add(p_text, 0, \
                 wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         parallel_sizer.Add((10, 20), 1, wx.EXPAND)
-        parallel_sizer.Add(chunk_size_sc, 0, \
-                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        parallel_sizer.Add(chunk_size_sc, 0, wx.ALIGN_CENTER_VERTICAL, border = 10)
         
         parallel_box_sizer.Add(parallel_sizer, 1, wx.EXPAND, 10 )
         row_sizer2.Add(parallel_box_sizer, 1, wx.EXPAND, 5 )
@@ -712,10 +702,10 @@ class SettingsDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.on_apply_change, apply_button)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(col_sizer, 1, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL, 20)
+        sizer.Add(col_sizer, 1, wx.GROW, 20)
         #sizer.Add(col_sizer, 1, wx.GROW|wx.ALL|wx.EXPAND, 20)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 20)
+        sizer.Add(line, 0, wx.GROW|wx.TOP, 20)
         
         sizer.Add(button_sizer,0,\
                 flag = wx.ALIGN_RIGHT, border = 20)

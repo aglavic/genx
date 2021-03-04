@@ -1053,8 +1053,10 @@ class ParameterGrid(wx.Panel):
 
 
     def OnSelectCell(self, evt):
-         self.grid.SelectRow(evt.GetRow())
-         evt.Skip()
+         row=evt.GetRow()
+         if row>-1:
+            self.grid.SelectRow(row)
+            evt.Skip()
 
     
     def _grid_changed(self, permanent_change = True):

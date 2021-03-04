@@ -105,7 +105,7 @@ class SettingsDialog(wx.Dialog):
             self.col_controls[name]=control
 
         col_box_sizer.Add(col_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        box_sizer.Add(col_box_sizer, 0, wx.ALIGN_CENTRE|wx.ALL|wx.EXPAND, 5)
+        box_sizer.Add(col_box_sizer, 0, wx.ALL|wx.EXPAND, 5)
 
         col_box=wx.StaticBox(self,-1, "Misc")
         col_box_sizer=wx.StaticBoxSizer(col_box, wx.VERTICAL)
@@ -134,7 +134,7 @@ class SettingsDialog(wx.Dialog):
             self.misc_controls[name]=control
 
         col_box_sizer.Add(col_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        box_sizer.Add(col_box_sizer, 0, wx.ALIGN_CENTRE|wx.ALL|wx.EXPAND, 5)
+        box_sizer.Add(col_box_sizer, 0, wx.ALL|wx.EXPAND, 5)
 
         button_sizer=wx.StdDialogButtonSizer()
         okay_button=wx.Button(self, wx.ID_OK)
@@ -144,9 +144,9 @@ class SettingsDialog(wx.Dialog):
         button_sizer.Realize()
 
         sizer=wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(box_sizer, 1, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL, 20)
+        sizer.Add(box_sizer, 1, wx.GROW, 20)
         line=wx.StaticLine(self,-1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL, 30)
+        sizer.Add(line, 0, wx.GROW, 30)
 
         sizer.Add(button_sizer, 0, \
                 flag=wx.ALIGN_RIGHT, border=20)

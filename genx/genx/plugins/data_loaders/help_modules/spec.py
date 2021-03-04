@@ -294,7 +294,7 @@ class SpecDataFile:
             if line[0:2] == "#S":
                 a = line.split()
                 s = int(a[1])
-                if (s % 5) is 0:
+                if (s % 5) == 0:
                     iprint("\b\b\b\b\b\b\b%5d " % s, end=' ')
                     sys.stdout.flush()
                 self.findex[s] = pos

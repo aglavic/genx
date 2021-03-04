@@ -92,6 +92,7 @@ def setup_system():
     logfile.setLevel(FILE_LEVEL)
     logger.addHandler(logfile)
 
+  logging.getLogger('matplotlib').setLevel(logging.WARNING)
   logging.info('*** GenX %s Logging started ***'%str_version)
 
   # define numpy warning behavior
