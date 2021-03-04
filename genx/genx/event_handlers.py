@@ -1129,6 +1129,10 @@ def activate_cuda(frame, event):
     paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
     neutron_refl.Refl=neutron_cuda.Refl
 
+    # cuda does not work with multiple processes as those do not use the fuctions forced above
+    frame.solver_control.optimizer.use_parallel_processing=False
+    frame.solver_control.WriteConfig()
+
     dlg.Destroy()
 
 

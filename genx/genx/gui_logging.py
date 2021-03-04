@@ -93,7 +93,10 @@ def setup_system():
     logger.addHandler(logfile)
 
   logging.getLogger('matplotlib').setLevel(logging.WARNING)
+  if min(FILE_LEVEL, CONSOLE_LEVEL, GUI_LEVEL)>logging.DEBUG:
+    logging.getLogger('numba').setLevel(logging.WARNING)
   logging.info('*** GenX %s Logging started ***'%str_version)
+
 
   # define numpy warning behavior
   global nplogger
