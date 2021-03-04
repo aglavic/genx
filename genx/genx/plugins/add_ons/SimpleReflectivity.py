@@ -1489,6 +1489,8 @@ class Plugin(framework.Template):
             if 'model.Stack' in li:
                 name, stxt=map(str.strip, li.split('=', 1))
                 stacks[name]=analyze_stack_txt(stxt)
+                if name =='ML':
+                    repetitions=int(stxt.split('Repetitions', 1)[1].split('=', 1)[1].split(',',1)[0].rstrip(')'))
         if 'Top' in stacks:
             Top=stacks['Top']
         else:
@@ -1518,6 +1520,7 @@ class Plugin(framework.Template):
         table.ambient[0]=None
         table.substrate=layers['Sub']
         table.substrate[0]=None
+        table.repetitions=repetitions
         layers=[layers[key] for key in layer_order if not key in ['Amb', 'Sub']]
         
         table.RebuildTable(layers)

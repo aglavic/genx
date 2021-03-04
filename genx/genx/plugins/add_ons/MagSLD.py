@@ -29,13 +29,13 @@ class Plugin(framework.Template):
                      "Show second SLD axis",
                      "Show second SLD axis for magnetization",
                      wx.ITEM_CHECK)
-        menu.AppendItem(self.mb_second_axis)
+        menu.Append(self.mb_second_axis)
         self.mb_second_axis.Check(True)
         self.mb_use_SI=wx.MenuItem(menu, wx.NewId(),
                      "Use SI units",
                      "Use SI units of magnetization",
                      wx.ITEM_CHECK)
-        menu.AppendItem(self.mb_use_SI)
+        menu.Append(self.mb_use_SI)
         self.mb_use_SI.Check(False)
 
         self.parent.Bind(wx.EVT_MENU, self._OnSimulate, self.mb_second_axis)
