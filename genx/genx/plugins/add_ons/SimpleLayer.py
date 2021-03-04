@@ -582,7 +582,8 @@ class MaterialDialog(wx.Dialog):
         formula=' '.join(sorted(formula))
         c.execute('select a,b,c,alpha,beta,gamma,'
                   'Z,vol,sg,chemname,mineral,commonname,'
-                  'authors,title,journal,year'
+                  'authors,title,journal,year,'
+                  'formula,calcformula'
                   ' from data where formula like "- %s -"'
                   ' and status is NULL order by file'%formula)
         res=c.fetchall()
@@ -591,7 +592,23 @@ class MaterialDialog(wx.Dialog):
             items=[]
             for i, ri in enumerate(res):
                 a,b,c=ri[:3]
-                Z=ri[6] or 1.
+                if ri[6] is None:
+                    try:
+                        f,calcf=ri[16:18]
+                        fbase=f.split()[1]
+                        cbase=calcf.split()[1]
+                        i=0
+                        while i<len(fbase) and not fbase[i].isdigit():
+                            i+=1
+                        if i==len(fbase):
+                            fbase+='1'
+                        if i==len(cbase):
+                            cbase+='1'
+                        Z=float(cbase[i:])/float(fbase[i:])
+                    except Exception:
+                        Z=1.
+                else:
+                    Z=ri[6]
                 V=ri[7] or a*b*c
                 sgs=ri[8]
                 dens=self.extracted_elements.mFU()*Z/V/MASS_DENSITY_CONVERSION
