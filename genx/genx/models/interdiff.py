@@ -105,17 +105,12 @@ diffuse interfaces.
 
 #import lib.paratt as Paratt
 from genx.gui_logging import iprint
-try:
-    from .lib import paratt_weave as Paratt
-except Exception as S:
-    iprint('Not using inline c code for reflectivity calcs - can not import module')
-    iprint(S)
-    from .lib import paratt as Paratt
+from .lib import paratt as Paratt
 __offspec__ = True
 try:
-    from .lib import offspec2_weave
+    from .lib import offspec
 except Exception as S:
-    iprint('Failed to import: offspec2_weave, No off-specular simulations possible')
+    iprint('Failed to import: offspec, No off-specular simulations possible')
     iprint(S)
     __offspec__ = False
     
@@ -181,9 +176,9 @@ def Specular(TwoThetaQz, sample, instrument):
     
     lamda = instrument.getWavelength()
     parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = complex64)
+    dens = array(parameters['dens'], dtype = float64)
     #print [type(f) for f in parameters['f']]
-    f = array(parameters['f'], dtype = complex64)
+    f = array(parameters['f'], dtype = complex128)
     re = 2.82e-13*1e2/1e-10
     n = 1 - dens*re*lamda**2/2/pi*f*1e-4
     d = array(parameters['d'], dtype = float64)
@@ -275,7 +270,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     eta_z = sample.getEta_z()
     #print eta_z
     if __offspec__:
-        (I, alpha, omega) = lib.offspec2_weave.DWBA_Interdiff(qx, qz, lamda, n, z,\
+        (I, alpha, omega) = lib.offspec.DWBA_Interdiff(qx, qz, lamda, n, z,\
             sigmar, sigmai, eta, h, eta_z, d,\
                 taylor_n = instrument.getTaylor_n())
     else:

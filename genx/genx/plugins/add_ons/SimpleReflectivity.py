@@ -32,8 +32,6 @@ from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.gui_logging import iprint
 from genx.help import PluginHelpDialog
 
-_avail_models=['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx',
-               'spec_inhom', 'spec_adaptive']
 _set_func_prefix='set'
 
 class SampleGrid(gridlib.Grid):

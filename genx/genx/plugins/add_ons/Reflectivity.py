@@ -62,8 +62,8 @@ from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from genx.gui_logging import iprint
 
-_avail_models=['spec_nx', 'interdiff', 'xmag', 'mag_refl', 'soft_nx',
-                 'spec_inhom', 'spec_adaptive']
+_avail_models=['spec_nx', 'spec_inhom', 'spec_adaptive' ,
+               'interdiff', 'mag_refl', 'soft_nx']
 _set_func_prefix = 'set'
 
 

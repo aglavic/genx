@@ -291,7 +291,7 @@ class wxVTKRenderWindow(baseClass):
 
     def OnEnterWindow(self,event):
         if self.__OldFocus is None:
-            self.__OldFocus = wx.Window_FindFocus()
+            self.__OldFocus = wx.Window.FindFocus()
             self.SetFocus()
 
     def _OnLeaveWindow(self,event):

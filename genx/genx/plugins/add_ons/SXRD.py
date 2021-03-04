@@ -68,7 +68,12 @@ class Plugin(framework.Template):
             self.script_interactor.parse_code(code)
             self.SetModelScript(self.script_interactor.get_code())
         else:
-            self.script_interactor.parse_code(self.GetModelScript())
+            try:
+                self.script_interactor.parse_code(self.GetModelScript())
+            except Exception as e:
+                iprint("Reflectivity plugin model could not be read.")
+                self.script_interactor.parse_code(code)
+                self.SetModelScript(self.script_interactor.get_code())
 
         self.layout_sample_edit()
         self.layout_simulation_edit()

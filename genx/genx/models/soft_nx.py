@@ -106,12 +106,7 @@ The model works with scattering lengths densities directly.
 '''
 from numpy import *
 from genx.gui_logging import iprint
-try:
-    from .lib import paratt_weave as Paratt
-except Exception as S:
-    iprint('Not using inline c code for reflectivity calcs - can not import module')
-    iprint(S)
-    from .lib import paratt as Paratt
+from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
 from .lib import refl as refl

@@ -176,17 +176,7 @@ from genx.gui_logging import iprint
 from .lib import refl
 from .lib import xrmr
 from .lib import edm_slicing as edm
-try:
-    from .lib import paratt_weave as Paratt
-except Exception as S:
-    iprint('Not using inline c code for reflectivity calcs - can not import module')
-    iprint(S)
-    from .lib import paratt as Paratt
-#import lib.paratt_weave as Paratt
-#import lib.paratt as Paratt
-# Hack to test kinematical approx
-#import lib.paratt as slow_paratt
-#reload(slow_paratt)
+from .lib import paratt as Paratt
 
 from .lib import ables as ables
 from .lib import neutron_refl as neutron_refl
