@@ -37,6 +37,10 @@ Name: english; MessagesFile: compiler:Default.isl
 Source: ..\dist\genx\genx.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\dist\genx\*.*; DestDir: {app}; Flags: ignoreversion recursesubdirs
 
+; Make the cache dire writable for numba JIT functions 
+[Dirs]
+Name: "{app}\genx\models\lib\__pycache__"; Permissions: users-modify
+
 [Icons]
 Name: {group}\GenX 3; Filename: {app}\genx.exe; IconFilename: {app}\genx.exe; IconIndex: 0
 Name: {group}\{cm:UninstallProgram,GenX 3}; Filename: {uninstallexe}

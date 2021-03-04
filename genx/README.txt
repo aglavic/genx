@@ -1,4 +1,4 @@
-This package contain GenX 3.0 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contain GenX 3.1 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -10,6 +10,14 @@ References
 ==========
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
+
+Changes 3.1.0
+=============
+ * Implement numba JIT compiler for significant x-ray and neutron reflectivity calculation performance gain
+ * Implement GPU accelerated version with CUDA (NVidia graphics cards, menu option to activate)
+ * SpinAsymmetry plugin to plot the SA for data and model
+ * Exporter plugin for reflectivity models, up to now supports BornAgain python scripts
+ * Several bug fixes in various modules
 
 Changes 3.0.8
 =============
