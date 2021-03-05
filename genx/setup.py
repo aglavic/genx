@@ -21,7 +21,7 @@ from genx import version
 
 __name__='GenX'
 __author__ = "Matts Bjorck;Artur Glavic"
-__copyright__ = "Copyright 2008-2020"
+__copyright__ = "Copyright 2008-2021"
 __license__ = "GPL v3"
 __version__ = version.version.split()[0]
 __email__ = "artur.glavic@gmail.com"
@@ -48,7 +48,7 @@ __packages__=['genx',
                 'genx.plugins.data_loaders', 'genx.plugins.data_loaders.help_modules', 
                 'genx.models', 'genx.models.lib', 'genx.lib']
 __package_data__={
-                  'genx': ['genx.conf', 'examples/*.*', 'LICENSE.txt', 'changelog.txt', 'profiles/*.*'],
+                  'genx': ['genx.conf', 'examples/*.*', 'LICENSE.txt', 'README.txt', 'profiles/*.*'],
                   'genx.models': ['databases/*.*', 'databases/f1f2_cxro/*.*', 'databases/f1f2_nist/*.*'],
                   }
 __data_files__=[]
