@@ -562,7 +562,10 @@ class DataSet:
         '''Set show true - show data set in plots
         '''
         self.show = bool(val)
-        
+
+    def __repr__(self):
+        output="DataSet(name=%-15s, show=%s, use=%s, error=%s)"%(self.name, self.show, self.use, self.use_error)
+        return output
         
 #END: Class DataSet
 #==============================================================================
@@ -570,10 +573,14 @@ class DataSet:
 class DataList:
     ''' Class to store a list of DataSets'''
     
-    def __init__(self):
+    def __init__(self, items=None):
         ''' init function - creates a list with one DataSet'''
-        self.items = [DataSet(name='Data 0')]
-        self._counter = 1
+        if items is None:
+            self.items = [DataSet(name='Data 0')]
+            self._counter = 1
+        else:
+            self.items = list(items)
+            self._counter = len(items)
 
     def write_h5group(self, group):
         """ Write parameters to a hdf group
@@ -827,6 +834,13 @@ class DataList:
                         for index in indices])\
                         for row in range(maxlen)])
         return header1 + '\n' + header2 + text_data
+
+    def __repr__(self):
+        output="DataList([\n"
+        for item in self.items:
+            output+="           %s,\n"%repr(item)
+        output+="           ])\n"
+        return output
         
 #==============================================================================
 #Some Exception definition for errorpassing

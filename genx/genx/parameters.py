@@ -388,6 +388,16 @@ class Parameters:
         
         return new_pars
 
+    def __repr__(self):
+        """
+        Display information about the model.
+        """
+        output="Parameters:\n"
+        output+="           "+" ".join(["%-16s"%label for label in self.data_labels])+"\n"
+        for line in self.data:
+            output+="           "+" ".join(["%-16s"%col for col in line])+"\n"
+        return output
+
 if __name__ == '__main__':
     p = Parameters()
     p.append()

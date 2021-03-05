@@ -857,6 +857,21 @@ class Model:
         compiled.
         '''
         return self.compiled
+
+    def __repr__(self):
+        """
+        Display information about the model.
+        """
+        output="Genx Model"
+        if self.compiled:
+            output+=' - compiled'
+        else:
+            output+=' - not compiled yet'
+        output+="\n"
+        output+="File: %s\n"%self.filename
+        output+=self.parameters.__repr__()
+        output+=self.data.__repr__()
+        return output
     
 #END: Class Model
 #==============================================================================

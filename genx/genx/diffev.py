@@ -1411,6 +1411,17 @@ class DiffEv:
         '''
         self.fom_allowed_dis = float(val)
 
+    def __repr__(self):
+        output="Differential Evolution Optimizer:\n"
+        for attr in [
+                     'use_start_guess', 'use_boundaries',
+                     'pop_size', 'max_generations',
+                     'km', 'kr',
+                     'use_parallel_processing', 'processes', 'chunksize',
+                     ]:
+            output+='           %-30s %s\n'%(attr, getattr(self, attr))
+        return output
+
 
 #==============================================================================
 # Functions that is needed for parallel processing!
