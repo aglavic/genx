@@ -292,8 +292,12 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         elif col == 1:
             return "%.3f" % self.materials_list.SLDn(item).real
         else:
-            formula = self.materials_list[item][0]
-            return str(formula)
+            prev_names=[str(mi[0]) for mi in self.materials_list[:item]]
+            name = str(self.materials_list[item][0])
+            prev_count=prev_names.count(name)
+            if prev_count>0:
+                name+='-%i'%(prev_count+1)
+            return name
 
     def _GetSelectedItems(self):
         ''' _GetSelectedItems(self) --> indices [list of integers]
