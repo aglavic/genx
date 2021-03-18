@@ -566,6 +566,14 @@ class DataSet:
     def __repr__(self):
         output="DataSet(name=%-15s, show=%s, use=%s, error=%s)"%(self.name, self.show, self.use, self.use_error)
         return output
+
+    def _repr_html_(self):
+        items=['name', 'show', 'use', 'use_error']
+        output='<table><tr><th colspan="%i"><center>DataSet</center></th></tr>\n'%len(items)
+        output+="           <tr><th>"+"</th><th>".join(items)+"</th></tr>\n"
+        output+="<tr><td>"+"</td><td>".join([str(getattr(self, ii)) for ii in items])+"</tr></table>\n"
+        return output
+
         
 #END: Class DataSet
 #==============================================================================
@@ -841,7 +849,35 @@ class DataList:
             output+="           %s,\n"%repr(item)
         output+="           ])\n"
         return output
-        
+
+    def _repr_html_(self):
+        items=['name', 'show', 'use', 'use_error']
+        output='<table><tr><th colspan="%i"><center>DataList</center></th></tr>\n'%(len(items)+1)
+        output+="           <tr><th>NO</th><th>"+"</th><th>".join(items)+"</th></tr>\n"
+        for i, item in enumerate(self.items):
+            output+="           <tr><td>#%i</td><td>"%i
+            output+="</td><td>".join([str(getattr(item, ii)) for ii in items])+"</td></tr>\n"
+        output+="</table>"
+        return output
+
+    def plot(self):
+        # convenience function to plot all datasets with matplotlib
+        from matplotlib import pyplot as plt
+        for i, ds in enumerate(self.items):
+            plt.semilogy(ds.x, ds.y,
+                color=ds.data_color,
+                lw = ds.data_linethickness, ls = ds.data_linetype,
+                marker = ds.data_symbol, ms = ds.data_symbolsize,
+                label='data-%i: %s'%(i, ds.name))
+            if ds.y_sim.shape == ds.y.shape:
+                plt.semilogy(ds.x, ds.y_sim,
+                             color=ds.sim_color,
+                             lw=ds.sim_linethickness, ls=ds.sim_linetype,
+                             marker=ds.sim_symbol, ms=ds.sim_symbolsize,
+                             label='model-%i: %s'%(i, ds.name))
+        plt.legend()
+
+
 #==============================================================================
 #Some Exception definition for errorpassing
 class GenericError(Exception):

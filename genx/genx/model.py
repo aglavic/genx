@@ -872,7 +872,40 @@ class Model:
         output+=self.parameters.__repr__()
         output+=self.data.__repr__()
         return output
-    
+
+    def _repr_html_(self):
+        """
+        Display information about the model.
+        """
+        output="<h3>Genx Model"
+        if self.compiled:
+            output+=' - compiled'
+        else:
+            output+=' - not compiled yet'
+        output+="</h3>\n"
+        output+="<p>File: %s</p>\n"%self.filename
+
+        output+='<div style="width: 100%;"><div style="width: 40%; float: left;">'
+        output+=self.data._repr_html_()
+        output+="</div>"
+
+        # generate a plot of the model
+        import binascii
+        from io import BytesIO
+        from matplotlib import pyplot as plt
+        sio=BytesIO()
+        fig=plt.figure()
+        self.data.plot()
+        plt.xlabel('q/tth')
+        plt.ylabel('Intensity')
+        fig.canvas.print_png(sio)
+        plt.close()
+        img_data=binascii.b2a_base64(sio.getvalue()).decode('ascii')
+        output+='<div style="margin-left: 40%;"><img src="data:image/png;base64,{}&#10;"></div></div>'.format(img_data)
+
+        output+=self.parameters._repr_html_()
+        return output
+
 #END: Class Model
 #==============================================================================
 #Some Exception definition for errorpassing

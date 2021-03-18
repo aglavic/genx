@@ -398,6 +398,15 @@ class Parameters:
             output+="           "+" ".join(["%-16s"%col for col in line])+"\n"
         return output
 
+    def _repr_html_(self):
+        output='<table><tr><th colspan="%i"><center>Parameters</center></th></tr>\n'%(len(self.data_labels)+1)
+        output+="           <tr><th>No.</th><th>"+"</th><th>".join(["%s"%label for label in self.data_labels])+"</th></tr>\n"
+        for i, line in enumerate(self.data):
+            output+="           <tr><td>%i</td><td>"%i
+            output+="</td><td>".join(["%s"%col for col in line])+"\n"
+        output+="</table>"
+        return output
+
 if __name__ == '__main__':
     p = Parameters()
     p.append()
