@@ -388,6 +388,16 @@ class Parameters:
         
         return new_pars
 
+    def __getitem__(self, item):
+        return ConnectedParameter(self, self.data[item])
+
+    def append(self, parameter):
+        data=list(self.init_data)
+        out=ConnectedParameter(self, data)
+        out.name=parameter
+        self.data.append(data)
+        return out
+
     def __repr__(self):
         """
         Display information about the model.
@@ -406,6 +416,72 @@ class Parameters:
             output+="</td><td>".join(["%s"%col for col in line])+"\n"
         output+="</table>"
         return output
+
+class ConnectedParameter():
+    """
+    A representation of a single fittable parameter for use in api access to GenX.
+    """
+    def __init__(self, parent, data):
+        self.data=data
+        self._parent=parent
+
+    @property
+    def name(self):
+        return self.data[0]
+    @name.setter
+    def name(self, value):
+        par_value=eval('self._parent.model.script_module.'+value.replace('.set', '.get')+'()',
+                       globals(), locals())
+        self.data[0]=value
+        self.value=par_value
+        self.min=0.25*par_value
+        self.max=4.*par_value
+
+    @property
+    def value(self):
+        return self.data[1]
+    @value.setter
+    def value(self, value):
+        self.data[1]=float(value)
+
+    @property
+    def fit(self):
+        return self.data[2]
+    @fit.setter
+    def fit(self, value):
+        self.data[2]=bool(value)
+
+    @property
+    def min(self):
+        return self.data[3]
+    @min.setter
+    def min(self, value):
+        self.data[3]=float(value)
+
+    @property
+    def max(self):
+        return self.data[4]
+    @max.setter
+    def max(self, value):
+        self.data[4]=float(value)
+
+    def __repr__(self):
+        """
+        Display information about the parameter.
+        """
+        output="Parameter:\n"
+        output+="           "+" ".join(["%-16s"%label for label in self._parent.data_labels])+"\n"
+        output+="           "+" ".join(["%-16s"%col for col in self.data])+"\n"
+        return output
+
+    def _repr_html_(self):
+        output='<table><tr><th colspan="%i"><center>Parameter</center></th></tr>\n'%(len(self._parent.data_labels)+1)
+        output+="           <tr><th>No.</th><th>"+"</th><th>".join(["%s"%label for label in self._parent.data_labels])+"</th></tr>\n"
+        output+="           <tr><td>%i</td><td>"%self._parent.data.index(self.data)
+        output+="</td><td>".join(["%s"%col for col in self.data])+"\n"
+        output+="</table>"
+        return output
+
 
 if __name__ == '__main__':
     p = Parameters()
