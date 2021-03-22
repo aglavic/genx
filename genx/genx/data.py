@@ -948,10 +948,37 @@ class DataList:
                 entr.observe(self._ipyw_change, names='value')
 
             vlist.append(ipw.HBox(entries))
-        return ipw.VBox(vlist)
+
+        add_button=ipw.Button(description='Add Dataset')
+        vlist.append(add_button)
+        add_button.on_click(self._ipyw_add)
+        vbox=ipw.VBox(vlist)
+        add_button.vbox=vbox
+        return vbox
 
     def _ipyw_change(self, change):
         exec('self.items[%i].%s=change.new'%(change.owner._child_id, change.owner._child_val))
+
+    def _ipyw_add(self, button):
+        import ipywidgets as ipw
+        self.add_new()
+
+        items=['name', 'show', 'use', 'use_error']
+        item=self.items[-1]
+        i=(len(self.items)-1)
+        entries=[]
+        entries.append(ipw.Label('#%i'%i, layout=ipw.Layout(width='6ex')))
+        entries.append(ipw.Text(item.name, layout=ipw.Layout(width='30ex')))
+        entries.append(ipw.Checkbox(item.show, indent=False, layout=ipw.Layout(width='6ex')))
+        entries.append(ipw.Checkbox(item.use, indent=False, layout=ipw.Layout(width='6ex')))
+        entries.append(ipw.Checkbox(item.use_error, indent=False, layout=ipw.Layout(width='6ex')))
+        for j, entr in enumerate(entries[1:]):
+            entr._child_id=i
+            entr._child_val=items[j]
+            entr.observe(self._ipyw_change, names='value')
+
+        prev_box=button.vbox.children
+        button.vbox.children=prev_box[:-1]+(ipw.HBox(entries), prev_box[-1])
 
     def plot(self):
         # convenience function to plot all datasets with matplotlib

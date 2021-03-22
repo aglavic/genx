@@ -880,7 +880,10 @@ class Model:
         """
         Display information about the model.
         """
-        self.simulate()
+        try:
+            self.simulate()
+        except Exception as error:
+            print(error)
 
         output="<h3>Genx Model"
         if self.compiled:
@@ -917,7 +920,10 @@ class Model:
 
     def _repr_ipyw_(self):
         import ipywidgets as ipw
-        self.simulate()
+        try:
+            self.simulate()
+        except Exception as error:
+            print(error)
 
         graphw=ipw.Output()
         with graphw:
@@ -947,7 +953,10 @@ class Model:
         return ipw.VBox([replot, top, tabs])
 
     def _ipyw_replot(self, button):
-        self.simulate()
+        try:
+            self.simulate()
+        except Exception as error:
+            print(error)
         with button._plot_output:
             from IPython.display import display, clear_output
             from matplotlib import pyplot as plt

@@ -1422,6 +1422,33 @@ class DiffEv:
             output+='           %-30s %s\n'%(attr, getattr(self, attr))
         return output
 
+    @property
+    def widget(self):
+        return self._repr_ipyw_()
+
+    def _repr_ipyw_(self):
+        import ipywidgets as ipw
+        entries=[ipw.Label("Optimizer Settings:")]
+        for attr in [
+                     'use_start_guess', 'use_boundaries',
+                     'pop_size', 'max_generations',
+                     'km', 'kr',
+                     'use_parallel_processing', 'processes', 'chunksize',
+                     ]:
+            val=eval('self.%s'%attr, globals(), locals())
+            if type(val) is bool:
+                entry=ipw.Checkbox(value=val, indent=False, description=attr)
+            elif type(val) is int:
+                entry=ipw.IntText(value=val, description=attr)
+            elif type(val) is float:
+                entry=ipw.FloatText(value=val, description=attr)
+            entry.change_item=attr
+            entry.observe(self._ipyw_change, names='value')
+            entries.append(entry)
+        return ipw.VBox(entries)
+
+    def _ipyw_change(self, change):
+        exec('self.%s=change.new'%change.owner.change_item)
 
 #==============================================================================
 # Functions that is needed for parallel processing!
