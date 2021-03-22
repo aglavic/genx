@@ -938,7 +938,13 @@ class Model:
         replot.on_click(self._ipyw_replot)
         replot._plot_output=graphw
 
-        return ipw.VBox([replot, top, parameters])
+        script_area=ipw.Textarea(self.script, layout=ipw.Layout(width='100%'))
+        script_area.observe(self._ipyw_script, names='value')
+        tabs=ipw.Tab(children=[parameters, script_area])
+        tabs.set_title(0, 'Parameters')
+        tabs.set_title(1, 'Script')
+
+        return ipw.VBox([replot, top, tabs])
 
     def _ipyw_replot(self, button):
         self.simulate()
@@ -953,6 +959,9 @@ class Model:
             clear_output()
             display(fig)
             plt.close()
+
+    def _ipyw_script(self, change):
+        self.script=change.new
 
 #END: Class Model
 #==============================================================================
