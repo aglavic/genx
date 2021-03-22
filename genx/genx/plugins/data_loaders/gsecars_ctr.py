@@ -18,8 +18,8 @@ import numpy as np
 import wx
 from wx.lib.masked import NumCtrl
 
-from plugins.data_loader_framework import Template
-from plugins.utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
+from ..data_loader_framework import Template
+from ..utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
 
 class Plugin(Template):
     def __init__(self, parent):

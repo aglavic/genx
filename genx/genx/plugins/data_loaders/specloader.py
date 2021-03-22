@@ -5,8 +5,8 @@ from .help_modules import spec
 #import ...data as data
 import numpy as np
 
-from genx.plugins.data_loader_framework import Template
-from genx.plugins.utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
+from ..data_loader_framework import Template
+from ..utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
 from genx.gui_logging import iprint
 
 _maxWidth = 450

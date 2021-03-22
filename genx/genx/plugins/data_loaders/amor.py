@@ -11,8 +11,8 @@ import numpy as np
 import wx
 import os
 
-from plugins.data_loader_framework import Template
-from plugins.utils import ShowWarningDialog
+from ..data_loader_framework import Template
+from ..utils import ShowWarningDialog
 
 class Plugin(Template):
     wildcard='*.Rqz'
