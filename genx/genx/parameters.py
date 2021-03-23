@@ -430,7 +430,20 @@ class Parameters:
         vlist.append(header)
         for par in self:
             vlist.append(par._repr_ipyw_())
-        return ipw.VBox(vlist)
+
+        add_button=ipw.Button(description='Add Parameter')
+        vlist.append(add_button)
+        add_button.on_click(self._ipyw_add)
+        vbox=ipw.VBox(vlist)
+        add_button.vbox=vbox
+        return vbox
+
+    def _ipyw_add(self, button):
+        self.append()
+
+        prev_box=button.vbox.children
+        button.vbox.children=prev_box[:-1]+(self[-1]._repr_ipyw_(), prev_box[-1])
+
 
 class ConnectedParameter():
     """
@@ -446,7 +459,7 @@ class ConnectedParameter():
     @name.setter
     def name(self, value):
         par_value=eval('self._parent.model.script_module.'+value.replace('.set', '.get')+'()',
-                       globals(), locals())
+                           globals(), locals())
         self.data[0]=value
         self.value=par_value
         self.min=0.25*par_value
@@ -517,12 +530,18 @@ class ConnectedParameter():
 
     def _ipyw_change(self, change):
         if change.owner.change_item=='name':
+            if change.new=='':
+                self.data[0]=''
+                change.owner.description=''
+                return
+            prev=self.name
             try:
-                prev=self.name
                 self.name=change.new
-            except:
-                self.name=prev
+            except Exception as err:
+                self.data[0]=prev
+                change.owner.description='ERR'
             else:
+                change.owner.description=''
                 change.owner.others[0].value=self.value
                 change.owner.others[1].value=self.fit
                 change.owner.others[2].value=self.min
