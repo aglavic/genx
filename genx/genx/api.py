@@ -209,6 +209,7 @@ class Reflectivity(SampleBuilder):
     Interface to build a model script for reflectivity simulations. Surves the same purpose
     as the Reflectivity plugin in the GUI.
     """
+    _uvar_string='cp.new_var('
 
     def __init__(self, model, optimizer, analyze_model=True):
         SampleBuilder.__init__(self, model)
@@ -228,7 +229,7 @@ class Reflectivity(SampleBuilder):
         optimizer.model=model
         out=cls(model, optimizer, analyze_model=False)
         out.new_model(modelname)
-        return model,optimizer, out
+        return model, optimizer, out
 
     def AppendSim(self, sim_func, inst, args):
         self.sim_funcs.append(sim_func)
@@ -262,8 +263,25 @@ class Reflectivity(SampleBuilder):
         expression_list=self.sim_exp
         instruments=self.instruments
 
+        # make sure the number of datasets is reflected correctly
+        model_data=self.GetModel().get_data()
+        nb_data_sets=len(model_data)
+        diff=nb_data_sets-len(sim_funcs)
+        if diff>0:
+            expression_list+=[[] for item in range(diff)]
+            for i in range(diff):
+                self.insert_new_data_segment(len(sim_funcs))
+        elif diff<0:
+            for i in range(-diff):
+                expression_list.pop(-1)
+                self.remove_data_segment(nb_data_sets)
+
         self.write_model_script(sim_funcs, sim_insts, sim_args,
                                 expression_list, parameter_list, instruments)
+
+    @property
+    def update_script(self):
+        self.WriteModel()
 
     def ReadModel(self):
         '''ReadModel(self)  --> None
@@ -326,49 +344,21 @@ class Reflectivity(SampleBuilder):
 
         self.GetModel().compiled=False
 
-    _uvar_string='cp.new_var('
-
-    def _repr_html_(self):
-        output=''
-        output+='<h3>Instruments:</h3>\n<div>'
-        for key, value in self.instruments.items():
-            output+=self.sampleh.htmlize('%s = %s'%(key, value))
-            output+='<br />'
-        output+='</div>'
-
-        output+='<h3>Sample Structure:</h3>\n<div>'
-        output+='<br />\n'.join(self.sampleh.getStringList(html_encoding=True))
-        output+='</div>'
-
-        output+='<h3>User Parameters:</h3>\n<div><ul>'
-        for line in self.uservars_lines:
-            var,val=line[len(self._uvar_string):].split(')')[0].split(',')
-            output+='<li><b>%s</b> = %s</li>'%(eval(var), val)
-        output+='</ul></div>'
-
-        output+='<h3>Simulations:</h3>\n<div>'
-        for name, func, inst, exps in zip(self.data_names, self.sim_funcs, self.sim_insts, self.sim_exp):
-            output+='<b>%s:</b> %s(%s, %s)'%(name, func, 'd.x', inst)
-            output+='<ul>'
-            for ei in exps:
-                output+='<li>%s</li>'%ei
-            output+='</ul><br />'
-        output+='</div>'
-
-        return output
-
-    def add_stack(self, name, **kwargs):
+    def add_stack(self, name, stack=None, **kwargs):
         if self.sampleh.checkName(name) or not name.isidentifier():
             raise KeyError("Name already exists or not proper identifier")
         self.sampleh.insertItem(len(self.sampleh)-1, 'Stack', name)
         stack=self.sampleh[name]
-        for key, value in kwargs.items():
-            setattr(stack, key, value)
-        self.WriteModel()
+        if stack is not None:
+            self[name]=stack
+        else:
+            for key, value in kwargs.items():
+                setattr(stack, key, value)
+            self.WriteModel()
         return self[name]
 
     def add_layer(self, name, layer=None, **kwargs):
-        if self.sampleh.checkName(name) or not name.isidentifier():
+        if self.sampleh.checkName(name) or name in self.instruments or not name.isidentifier():
             raise KeyError("Name already exists or not proper identifier")
         self.sampleh.insertItem(len(self.sampleh)-1, 'Layer', name)
         lay=self.sampleh[name]
@@ -378,6 +368,16 @@ class Reflectivity(SampleBuilder):
             for key, value in kwargs.items():
                 setattr(lay, key, value)
             self.WriteModel()
+        return self[name]
+
+    def add_instrument(self, name, instrument=None, **kwargs):
+        if self.sampleh.checkName(name) or name in self.instruments or not name.isidentifier():
+            raise KeyError("Name already exists or not proper identifier")
+        if instrument is None:
+            self.instruments[name]=self.Instrument(**kwargs)
+            self.WriteModel()
+        else:
+            self.instruments[name]=instrument
         return self[name]
 
     def move_up(self, item):
@@ -423,6 +423,262 @@ class Reflectivity(SampleBuilder):
         else:
             raise KeyError("Has to be name of a Stack, Layer or Instrument")
         self.WriteModel()
+
+    def __repr__(self):
+        output='Reflectivity Model:\n'
+        output+='    Instruments:'
+        for key, value in self.instruments.items():
+            output+='\n        %s = %s'%(key, value)
+
+        output+='\n    Sample Structure:\n        '
+        output+='\n        '.join(self.sampleh.getStringList(html_encoding=False))
+
+        output+='\n    User Parameters:'
+        for line in self.uservars_lines:
+            var,val=line[len(self._uvar_string):].split(')')[0].split(',')
+            output+='\n        %s = %s'%(eval(var), val)
+
+        output+='\n    Simulations:'
+        for name, func, inst, exps in zip(self.data_names, self.sim_funcs, self.sim_insts, self.sim_exp):
+            output+='\n        %s: %s(%s, %s)'%(name, func, 'd.x', inst)
+            for ei in exps:
+                output+='\n            %s'%ei
+
+        return output
+
+    def _repr_html_(self):
+        output='<h3>Reflectivity Model</h3>'
+        output+='<h4>Instruments:</h4>\n<div>'
+        for key, value in self.instruments.items():
+            output+=self.sampleh.htmlize('%s = %s'%(key, value))
+            output+='<br />'
+        output+='</div>'
+
+        output+='<h4>Sample Structure:</h4>\n<div>'
+        output+='<br />\n'.join(self.sampleh.getStringList(html_encoding=True))
+        output+='</div>'
+
+        output+='<h4>User Parameters:</h4>\n<div><ul>'
+        for line in self.uservars_lines:
+            var,val=line[len(self._uvar_string):].split(')')[0].split(',')
+            output+='<li><b>%s</b> = %s</li>'%(eval(var), val)
+        output+='</ul></div>'
+
+        output+='<h4>Simulations:</h4>\n<div>'
+        for name, func, inst, exps in zip(self.data_names, self.sim_funcs, self.sim_insts, self.sim_exp):
+            output+='<b>%s:</b> %s(%s, %s)'%(name, func, 'd.x', inst)
+            output+='<ul>'
+            for ei in exps:
+                output+='<li>%s</li>'%ei
+            output+='</ul><br />'
+        output+='</div>'
+
+        return output
+
+    @property
+    def instrument_widget(self):
+        import ipywidgets as ipw
+        entries=[ipw.HTML('<b>Instruments (use string to define formulas):</b>')]
+        for key, value in self.instruments.items():
+            ient=[]
+            if key=='inst':
+                name=ipw.HTML(key, layout=ipw.Layout(width='14ex'))
+            else:
+                name=ipw.Text(value=key, layout=ipw.Layout(width='14ex'))
+                name.observe(self._ipyw_change_iname, names='value')
+            ient.append(name)
+            ient.append(ipw.HTML('=Instrument(', layout=ipw.Layout(width='12ex')))
+
+            items=str(value).split('(',1)[1].rsplit(')',1)[0].split(',')
+            for item in items:
+                try:
+                    name,val=item.split('=', 1)
+                except ValueError:
+                    break
+                name=name.strip()
+                label_item=ipw.HTML('%s='%name, layout=ipw.Layout(width='%iex'%(len(name)+1)))
+                ient.append(label_item)
+                entry=ipw.Text(value=val, layout=ipw.Layout(width='18ex'))
+                ient.append(entry)
+                entry.change_item=name
+                entry.change_name=key
+                entry.label_item=label_item
+                entry.observe(self._ipyw_change, names='value')
+
+            ient.append(ipw.HTML(')', layout=ipw.Layout(width='1ex')))
+            entries.append(ipw.HBox(ient))
+        btn=ipw.Button(description='Add Instrument')
+        btn.on_click(self._ipyw_new_instrument)
+        entries.append(btn)
+        vbox=ipw.VBox(entries)
+        btn.vbox=vbox
+        return vbox
+
+    @property
+    def sample_widget(self):
+        import ipywidgets as ipw
+        entries=[ipw.HTML('<b>Sample (use string to define formulas):</b>')]
+
+        maxlen=200
+        vbox=ipw.VBox([])
+
+        for i, line in enumerate(self.sampleh.getStringList(html_encoding=False)):
+            key,data=map(str.strip, line.split('=', 1))
+            ient=[]
+            if key in ['Amb', 'Sub']:
+                name_entr=ipw.HTML(key, layout=ipw.Layout(width='14ex'))
+            else:
+                name_entr=ipw.Text(value=key, layout=ipw.Layout(width='14ex'))
+                name_entr.observe(self._ipyw_change_sname, names='value')
+            ient.append(name_entr)
+
+            if data.startswith('model.Stack'):
+                ient.append(ipw.HTML('=Stack(', layout=ipw.Layout(width='12ex')))
+                values=data[12:].strip()
+            else:
+                if key not in ['Amb', 'Sub']:
+                    ient.insert(0, ipw.HTML("    ", layout=ipw.Layout(width='4ex')))
+                cls, values=map(str.strip, data.split('(', 1))
+                values=values.rsplit(')', 1)[0]
+                ient.append(ipw.HTML('=%s('%cls[6:], layout=ipw.Layout(width='12ex')))
+
+            thislen=14+12+4
+            items=values.split(',')
+            for item in items:
+                try:
+                    name,val=item.split('=', 1)
+                except ValueError:
+                    break
+                name=name.strip()
+                label_item=ipw.HTML('%s='%name, layout=ipw.Layout(width='%iex'%(len(name)+1)))
+                ient.append(label_item)
+                entry=ipw.Text(value=val, layout=ipw.Layout(width='18ex'))
+                ient.append(entry)
+                entry.change_item=name
+                entry.change_name=key
+                entry.label_item=label_item
+                entry.observe(self._ipyw_change, names='value')
+                thislen+=20+(len(name)+1)
+
+            maxlen=max(maxlen, thislen+1)
+            ient.append(ipw.HTML(')', layout=ipw.Layout(width='1ex')))
+            if data.startswith('model.Stack'):
+                btn=ipw.Button(description='Add Layer')
+                btn.on_click(self._ipyw_new_layer)
+                btn.change_stack=key
+                btn.vbox=vbox
+                ient.append(btn)
+            else:
+                name_entr.input_widgets=tuple(wi for wi in ient[2:] if type(wi) is ipw.Text)
+            entries.append(ipw.HBox(ient))
+
+        btn=ipw.Button(description='Add Stack')
+        btn.on_click(self._ipyw_new_stack)
+        entries.append(btn)
+        btn.vbox=vbox
+        vbox.children=tuple(entries)
+        vbox.layout.width='%iex'%maxlen
+        return vbox
+
+    def _ipyw_change(self, change):
+        item=self[change.owner.change_name]
+        try:
+            setattr(item, change.owner.change_item, eval(change.new))
+        except:
+            change.owner.label_item.value='<div style="color: red;">%s=</div>'%change.owner.change_item
+        else:
+            change.owner.label_item.value='%s='%change.owner.change_item
+            self.WriteModel()
+
+    def _ipyw_change_iname(self, change):
+        self.instruments[change.new]=self.instruments[change.old]
+        del(self.instruments[change.old])
+        for i, inst in enumerate(self.sim_insts):
+            if inst==change.old:
+                self.sim_insts[i]=str(change.new)
+        self.WriteModel()
+
+    def _ipyw_new_instrument(self, btn):
+        key='inst_%i'%len(self.instruments)
+        self.add_instrument(key)
+        value=self[key]
+
+        import ipywidgets as ipw
+        ient=[]
+        name=ipw.Text(value=key, layout=ipw.Layout(width='14ex'))
+        name.observe(self._ipyw_change_iname, names='value')
+        ient.append(name)
+        ient.append(ipw.HTML('=Instrument(', layout=ipw.Layout(width='12ex')))
+
+        items=str(value).split('(',1)[1].rsplit(')',1)[0].split(',')
+        for item in items:
+            try:
+                name,val=item.split('=', 1)
+            except ValueError:
+                break
+            name=name.strip()
+            label_item=ipw.HTML('%s='%name, layout=ipw.Layout(width='%iex'%(len(name)+1)))
+            ient.append(label_item)
+            entry=ipw.Text(value=val, layout=ipw.Layout(width='18ex'))
+            ient.append(entry)
+            entry.change_item=name
+            entry.change_name=key
+            entry.label_item=label_item
+            entry.observe(self._ipyw_change, names='value')
+
+        ient.append(ipw.HTML(')', layout=ipw.Layout(width='1ex')))
+        btn.vbox.children=btn.vbox.children[:-1]+(ipw.HBox(ient), btn.vbox.children[-1])
+        self.WriteModel()
+
+    def _ipyw_new_layer(self, btn):
+        idx=[bi.children[-1] for bi in btn.vbox.children[1:-1]].index(btn)+1
+        key='new_layer_%i'%len(self.sampleh.names)
+        self.sampleh.insertItem(btn.change_stack, 'Layer', key)
+        lay=self[key]
+
+        import ipywidgets as ipw
+        ient=[]
+        name_entr=ipw.Text(value=key, layout=ipw.Layout(width='14ex'))
+        name_entr.observe(self._ipyw_change_sname, names='value')
+        ient.append(name_entr)
+        data=repr(lay)
+
+        ient.insert(0, ipw.HTML("    ", layout=ipw.Layout(width='4ex')))
+        cls, values=map(str.strip, data.split('(', 1))
+        values=values.rsplit(')', 1)[0]
+        ient.append(ipw.HTML('=%s('%cls, layout=ipw.Layout(width='12ex')))
+
+        items=values.split(',')
+        for item in items:
+            try:
+                name, val=item.split('=', 1)
+            except ValueError:
+                break
+            name=name.strip()
+            label_item=ipw.HTML('%s='%name, layout=ipw.Layout(width='%iex'%(len(name)+1)))
+            ient.append(label_item)
+            entry=ipw.Text(value=val, layout=ipw.Layout(width='18ex'))
+            ient.append(entry)
+            entry.change_item=name
+            entry.change_name=key
+            entry.label_item=label_item
+            entry.observe(self._ipyw_change, names='value')
+        ient.append(ipw.HTML(')', layout=ipw.Layout(width='1ex')))
+        name_entr.input_widgets=tuple(wi for wi in ient[2:] if type(wi) is ipw.Text)
+
+        btn.vbox.children=btn.vbox.children[:idx+1]+(ipw.HBox(ient), )+btn.vbox.children[idx+1:]
+        self.WriteModel()
+
+    def _ipyw_change_sname(self, change):
+        idx=self.sampleh.names.index(change.old)
+        self.sampleh.names[idx]=change.new
+        # update the name for the layer entries
+        for entr in change.owner.input_widgets:
+            entr.change_name=change.new
+        self.WriteModel()
+
+    def _ipyw_new_stack(self, btn):
+        pass
 
 class DataLoaderInterface():
 

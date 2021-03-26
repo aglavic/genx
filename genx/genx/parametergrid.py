@@ -925,7 +925,7 @@ class ParameterGrid(wx.Panel):
         #self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
         #self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
         #self.toolbar.SetBackgroundColour('BLUE')
-        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
         tb_bmp_size=int(dpi_scale_factor*20)
 
         newid = wx.NewId()

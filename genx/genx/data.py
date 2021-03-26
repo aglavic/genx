@@ -592,8 +592,8 @@ class DataSet:
     def _repr_ipyw_(self):
         import ipywidgets as ipw
         vlist=[]
-        vlist.append(ipw.Label("Dataset"))
-        header=ipw.HBox([ipw.Label(txt[0], layout=ipw.Layout(width=txt[1])) for txt in
+        vlist.append(ipw.HTML("<h3>Dataset</h3>"))
+        header=ipw.HBox([ipw.HTML('<b>%s</b>'%txt[0], layout=ipw.Layout(width=txt[1])) for txt in
                          [('Name', '30ex'), ('show', '6ex'), ('use', '6ex'),
                           ('error', '6ex')]])
         vlist.append(header)
@@ -930,7 +930,7 @@ class DataList:
     def _repr_ipyw_(self):
         import ipywidgets as ipw
         vlist=[]
-        header=ipw.HBox([ipw.Label(txt[0], layout=ipw.Layout(width=txt[1])) for txt in
+        header=ipw.HBox([ipw.HTML('<b>%s</b>'%txt[0], layout=ipw.Layout(width=txt[1])) for txt in
                          [('No.', '6ex'), ('Name', '30ex'), ('show', '6ex'), ('use', '6ex'),
                           ('error', '6ex')]])
         vlist.append(header)

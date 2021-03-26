@@ -423,7 +423,7 @@ class Parameters:
     def _repr_ipyw_(self):
         import ipywidgets as ipw
         vlist=[]
-        header=ipw.HBox([ipw.Label(txt[0], layout=ipw.Layout(width=txt[1])) for txt in
+        header=ipw.HBox([ipw.HTML('<b>%s</b>'%txt[0], layout=ipw.Layout(width=txt[1])) for txt in
                          [('Parameter', '35%'), ('Value', '20%'), ('fit', '5%'),
                           ('min', '20%'), ('max', '20%')]])
         vlist.append(header)
@@ -457,6 +457,9 @@ class ConnectedParameter():
         return self.data[0]
     @name.setter
     def name(self, value):
+        model=self._parent.model
+        if not model.is_compiled():
+            model.compile_script()
         par_value=eval('self._parent.model.script_module.'+value.replace('.set', '.get')+'()',
                            globals(), locals())
         self.data[0]=value

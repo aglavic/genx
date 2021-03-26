@@ -63,6 +63,14 @@ class DiffEv:
                          'limit_fit_range': bool, 'fit_xmin': float, 'fit_xmax': float,
                          }
 
+    parameter_groups=[
+        ['Fitting', ['use_start_guess', 'use_boundaries', 'use_autosave', 'autosave_interval']],
+        ['Diff. Ev.', ['km', 'kr', 'method']],
+        ['Population size', ['use_pop_mult', 'pop_mult', 'pop_size']],
+        ['Max. Generatrions', ['use_max_generations', 'max_generations', 'max_generation_mult']],
+        ['Parallel processing', ['use_parallel_processing', 'processes', 'chunksize']],
+        ]
+
     def create_mutation_table(self):
         # Mutation schemes implemented
         self.mutation_schemes = [self.best_1_bin, self.rand_1_bin,
@@ -154,6 +162,21 @@ class DiffEv:
         self.limit_fit_range=False
         self.fit_xmin=0.01
         self.fit_xmax=0.1
+
+    @property
+    def method(self):
+        return self.create_trial.__name__
+    @method.setter
+    def method(self, value):
+        names=self.methods
+        if value in names:
+            self.create_trial=self.mutation_schemes[names.index(value)]
+        else:
+            raise ValueError("Mutation method has to be in %s"%names)
+
+    @property
+    def methods(self):
+        return [f.__name__ for f in self.mutation_schemes]
 
     def write_h5group(self, group, clear_evals=False):
         """ Write parameters into hdf5 group
@@ -1413,13 +1436,10 @@ class DiffEv:
 
     def __repr__(self):
         output="Differential Evolution Optimizer:\n"
-        for attr in [
-                     'use_start_guess', 'use_boundaries',
-                     'pop_size', 'max_generations',
-                     'km', 'kr',
-                     'use_parallel_processing', 'processes', 'chunksize',
-                     ]:
-            output+='           %-30s %s\n'%(attr, getattr(self, attr))
+        for gname, group in self.parameter_groups:
+            output+='    %s:\n'%gname
+            for attr in group:
+                output+='        %-30s %s\n'%(attr, getattr(self, attr))
         return output
 
     @property
@@ -1428,24 +1448,31 @@ class DiffEv:
 
     def _repr_ipyw_(self):
         import ipywidgets as ipw
-        entries=[ipw.Label("Optimizer Settings:")]
-        for attr in [
-                     'use_start_guess', 'use_boundaries',
-                     'pop_size', 'max_generations',
-                     'km', 'kr',
-                     'use_parallel_processing', 'processes', 'chunksize',
-                     ]:
-            val=eval('self.%s'%attr, globals(), locals())
-            if type(val) is bool:
-                entry=ipw.Checkbox(value=val, indent=False, description=attr)
-            elif type(val) is int:
-                entry=ipw.IntText(value=val, description=attr)
-            elif type(val) is float:
-                entry=ipw.FloatText(value=val, description=attr)
-            entry.change_item=attr
-            entry.observe(self._ipyw_change, names='value')
-            entries.append(entry)
-        return ipw.VBox(entries)
+        entries=[]
+        for gname, group in self.parameter_groups:
+            gentries=[ipw.HTML("<b>%s:</b>"%gname)]
+            for attr in group:
+                val=eval('self.%s'%attr, globals(), locals())
+                if type(val) is bool:
+                    item=ipw.Checkbox(value=val, indent=False, description=attr, layout=ipw.Layout(width='24ex'))
+                    entry=item
+                elif type(val) is int:
+                    entry=ipw.IntText(value=val, layout=ipw.Layout(width='18ex'))
+                    item=ipw.VBox([ipw.Label(attr), entry])
+                elif type(val) is float:
+                    entry=ipw.FloatText(value=val, layout=ipw.Layout(width='18ex'))
+                    item=ipw.VBox([ipw.Label(attr), entry])
+                elif attr=='method':
+                    entry=ipw.Dropdown(value=val, options=self.methods, layout=ipw.Layout(width='18ex'))
+                    item=ipw.VBox([ipw.Label(attr), entry])
+                else:
+                    entry=ipw.Text(value=val, layout=ipw.Layout(width='14ex'))
+                    item=ipw.VBox([ipw.Label(attr), entry])
+                entry.change_item=attr
+                entry.observe(self._ipyw_change, names='value')
+                gentries.append(item)
+            entries.append(ipw.VBox(gentries, layout=ipw.Layout(width='26ex')))
+        return ipw.VBox([ipw.HTML("<h3>Optimizer Settings:</h3>"), ipw.HBox(entries)])
 
     def _ipyw_change(self, change):
         exec('self.%s=change.new'%change.owner.change_item)

@@ -845,6 +845,7 @@ class Model:
         Set the text in the script use this to change the model script. 
         '''
         self.script = text
+        self.compiled = False
         
     def set_fom_func(self, fom_func):
         '''
@@ -860,6 +861,10 @@ class Model:
         compiled.
         '''
         return self.compiled
+
+    def plot(self):
+        self.simulate()
+        return self.data.plot()
 
     def __repr__(self):
         """
