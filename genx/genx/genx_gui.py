@@ -64,9 +64,6 @@ class MainFrame(wx.Frame):
         self.parent = parent
         debug('starting setup of MainFrame')
 
-        self.dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
-        debug('dpi_scale_factor=%g'%self.dpi_scale_factor)       
-        tb_bmp_size=int(32*self.dpi_scale_factor)
         self.flag_simulating = False
         self.simulation_queue_counter = 0
         
@@ -80,6 +77,10 @@ class MainFrame(wx.Frame):
         kwds["style"] = kwds.get("style", 0) | wx.CAPTION | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU
         debug('setup of MainFrame - wx.Frame\n')
         wx.Frame.__init__(self, *args, **kwds)
+
+        self.dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        debug('dpi_scale_factor=%g'%self.dpi_scale_factor)
+        tb_bmp_size=int(32*self.dpi_scale_factor)
 
         debug('setup of MainFrame - menu bar')
         # Menu Bar

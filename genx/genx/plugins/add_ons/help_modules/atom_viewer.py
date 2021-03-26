@@ -64,7 +64,7 @@ class VTKview(wxVTKRenderWindow):
     def do_toolbar(self, parent):
         """Create and return a toolbar that can be used to control the widget"""
         toolbar = wx.ToolBar(parent, style=wx.TB_FLAT | wx.TB_VERTICAL)
-        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
         tb_bmp_size=int(dpi_scale_factor*20)
 
         button_names = ['View X', 'View Y', 'View Z', 'Isometric']

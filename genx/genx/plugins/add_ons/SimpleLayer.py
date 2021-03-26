@@ -201,7 +201,7 @@ class Plugin(framework.Template):
     def create_toolbar(self):
         self.toolbar = wx.ToolBar(self.materials_panel, style=wx.TB_FLAT|wx.TB_HORIZONTAL)
 
-        dpi_scale_factor=wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
         tb_bmp_size=int(dpi_scale_factor*20)
 
         newid=wx.NewId()
