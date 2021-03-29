@@ -476,6 +476,42 @@ class Reflectivity(SampleBuilder):
         return output
 
     @property
+    def widget(self):
+        # alternative widget to the model view with reflectivity controlls
+        import ipywidgets as ipw
+        model=self.GetModel()
+        try:
+            model.simulate()
+        except Exception as error:
+            print(error)
+
+        graphw=ipw.Output()
+        with graphw:
+            from matplotlib import pyplot as plt
+            fig=plt.figure(figsize=(10,8))
+            model.data.plot()
+            plt.xlabel('q/tth')
+            plt.ylabel('Intensity')
+            from IPython.display import display
+            display(fig)
+            plt.close()
+
+        dataw=model.data._repr_ipyw_()
+        top=ipw.HBox([dataw, graphw])
+        parameters=model.parameters._repr_ipyw_()
+
+        replot=ipw.Button(description='simulate')
+        replot.on_click(model._ipyw_replot)
+        replot._plot_output=graphw
+
+        tabs=ipw.Tab(children=[parameters, self.sample_widget, self.instrument_widget])
+        tabs.set_title(0, 'Parameters')
+        tabs.set_title(1, 'Sample')
+        tabs.set_title(2, 'Instrument')
+
+        return ipw.VBox([replot, top, tabs])
+
+    @property
     def instrument_widget(self):
         import ipywidgets as ipw
         entries=[ipw.HTML('<b>Instruments (use string to define formulas):</b>')]
@@ -503,7 +539,7 @@ class Reflectivity(SampleBuilder):
                 entry.change_item=name
                 entry.change_name=key
                 entry.label_item=label_item
-                entry.observe(self._ipyw_change, names='value')
+                entry.observe(self._ipyw_change_eval, names='value')
 
             ient.append(ipw.HTML(')', layout=ipw.Layout(width='1ex')))
             entries.append(ipw.HBox(ient))
@@ -583,8 +619,19 @@ class Reflectivity(SampleBuilder):
     def _ipyw_change(self, change):
         item=self[change.owner.change_name]
         try:
-            setattr(item, change.owner.change_item, eval(change.new))
-        except:
+            eval(change.new, self.GetModel().script_module.__dict__)
+        except Exception as err:
+            change.owner.label_item.value='<div style="color: red;">%s=</div>'%change.owner.change_item
+        else:
+            change.owner.label_item.value='%s='%change.owner.change_item
+            setattr(item, change.owner.change_item, change.new)
+            self.WriteModel()
+
+    def _ipyw_change_eval(self, change):
+        item=self[change.owner.change_name]
+        try:
+            setattr(item, change.owner.change_item, eval(change.new, self.GetModel().script_module.__dict__))
+        except Exception as err:
             change.owner.label_item.value='<div style="color: red;">%s=</div>'%change.owner.change_item
         else:
             change.owner.label_item.value='%s='%change.owner.change_item

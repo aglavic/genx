@@ -515,6 +515,9 @@ class ConnectedParameter():
     def _repr_ipyw_(self):
         import ipywidgets as ipw
         wname=ipw.Text(value=self.name, layout=ipw.Layout(width='35%'))
+        wname=ipw.Combobox(value=self.name,
+                           options=[ni for ni,oi in self._parent.model.script_module.__dict__.items()
+                                    if type(oi).__name__ in ['Layer', 'Stack', 'Instrument']])
         wname.change_item='name'
         wval=ipw.FloatText(value=self.value, layout=ipw.Layout(width='20%'))
         wval.change_item='value'
@@ -532,6 +535,18 @@ class ConnectedParameter():
 
     def _ipyw_change(self, change):
         if change.owner.change_item=='name':
+            if '.' in change.new:
+                try:
+                    name=change.new.split('.')[0]
+                    change.owner.options=tuple("%s.%s"%(name, si)
+                                           for si in dir(self._parent.model.script_module.__dict__[name])
+                                           if si.startswith('set'))
+                except:
+                    pass
+            else:
+                change.owner.options=tuple(ni for ni, oi in self._parent.model.script_module.__dict__.items()
+                                           if type(oi).__name__ in ['Layer', 'Stack', 'Instrument'])
+
             if change.new=='':
                 self.data[0]=''
                 change.owner.description=''

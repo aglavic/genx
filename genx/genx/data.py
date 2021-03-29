@@ -589,14 +589,15 @@ class DataSet:
     def widget(self):
         return self._repr_ipyw_()
 
-    def _repr_ipyw_(self):
+    def _repr_ipyw_(self, add_header=True):
         import ipywidgets as ipw
         vlist=[]
-        vlist.append(ipw.HTML("<h3>Dataset</h3>"))
-        header=ipw.HBox([ipw.HTML('<b>%s</b>'%txt[0], layout=ipw.Layout(width=txt[1])) for txt in
-                         [('Name', '30ex'), ('show', '6ex'), ('use', '6ex'),
-                          ('error', '6ex')]])
-        vlist.append(header)
+        if add_header:
+            vlist.append(ipw.HTML("<h3>Dataset</h3>"))
+            header=ipw.HBox([ipw.HTML('<b>%s</b>'%txt[0], layout=ipw.Layout(width=txt[1])) for txt in
+                             [('Name', '30ex'), ('show', '6ex'), ('use', '6ex'),
+                              ('error', '6ex')]])
+            vlist.append(header)
 
         entries=[]
         entries.append(ipw.Text(self.name, layout=ipw.Layout(width='30ex')))
@@ -608,23 +609,42 @@ class DataSet:
             entr._child_val=items[j]
             entr.observe(self._ipyw_change, names='value')
         vlist.append(ipw.HBox(entries))
-        vlist.append(ipw.Label('Commands:'))
+        cbox=ipw.VBox()
+        plotbox=ipw.VBox()
+        clist=[]
+        commands=ipw.Accordion(children=[cbox, plotbox], selected_index=None, layout=ipw.Layout(width='46x'))
+        commands.set_title(0, 'Commands')
+        commands.set_title(1, 'Plotting')
+        vlist.append(commands)
         for col in ['x','y','error']:
             entr=ipw.Text(eval('self.%s_command'%col, globals(), locals()),
                          description=col)
             entr._command=col
             entr.observe(self._ipyw_command, names='value')
-            vlist.append(entr)
+            clist.append(entr)
         for key, value in self.extra_commands.items():
             entr=ipw.Text(value, description=key)
             entr._command=key
-            vlist.append(entr)
+            clist.append(entr)
             entr.observe(self._ipyw_command, names='value')
+        cbox.children=tuple(clist)
+        clist=[]
+        clist.append(ipw.ColorPicker(description="Sim Color", value=c2html(self.sim_color)))
+        clist[-1]._child_val='sim_color'
+        clist[-1].observe(self._ipyw_change_color)
+        clist.append(ipw.ColorPicker(description="Data Color", value=c2html(self.data_color)))
+        clist[-1]._child_val='data_color'
+        clist[-1].observe(self._ipyw_change_color)
 
+        plotbox.children=tuple(clist)
         return ipw.VBox(vlist)
 
     def _ipyw_change(self, change):
         exec('self.%s=change.new'%(change.owner._child_val))
+
+    def _ipyw_change_color(self, change):
+        if type(change.new) is str:
+            exec('self.%s=html2c(change.new)'%(change.owner._child_val))
 
     def _ipyw_command(self, change):
         if change.owner._command in ['x', 'y', 'error']:
@@ -638,6 +658,18 @@ class DataSet:
         else:
             change.owner.description=change.owner._command
 
+def c2html(colors):
+    out='#'
+    for ci in colors:
+        out+="%02x"%int(ci*255.)
+    return out
+def html2c(colors):
+    out=(
+        int("0x%s"%colors[1:3], 16)/255.,
+        int("0x%s"%colors[3:5], 16)/255.,
+        int("0x%s"%colors[5:7], 16)/255.,
+        )
+    return tuple(out)
 #END: Class DataSet
 #==============================================================================
 #BEGIN: Class DataList
@@ -938,14 +970,15 @@ class DataList:
         for i, item in enumerate(self.items):
             entries=[]
             entries.append(ipw.Label('#%i'%i, layout=ipw.Layout(width='6ex')))
-            entries.append(ipw.Text(item.name, layout=ipw.Layout(width='30ex')))
-            entries.append(ipw.Checkbox(item.show, indent=False, layout=ipw.Layout(width='6ex')))
-            entries.append(ipw.Checkbox(item.use, indent=False, layout=ipw.Layout(width='6ex')))
-            entries.append(ipw.Checkbox(item.use_error, indent=False, layout=ipw.Layout(width='6ex')))
-            for j, entr in enumerate(entries[1:]):
-                entr._child_id=i
-                entr._child_val=items[j]
-                entr.observe(self._ipyw_change, names='value')
+            # entries.append(ipw.Text(item.name, layout=ipw.Layout(width='30ex')))
+            # entries.append(ipw.Checkbox(item.show, indent=False, layout=ipw.Layout(width='6ex')))
+            # entries.append(ipw.Checkbox(item.use, indent=False, layout=ipw.Layout(width='6ex')))
+            # entries.append(ipw.Checkbox(item.use_error, indent=False, layout=ipw.Layout(width='6ex')))
+            # for j, entr in enumerate(entries[1:]):
+            #     entr._child_id=i
+            #     entr._child_val=items[j]
+            #     entr.observe(self._ipyw_change, names='value')
+            entries.append(item._repr_ipyw_(add_header=False))
 
             vlist.append(ipw.HBox(entries))
 
@@ -968,15 +1001,16 @@ class DataList:
         i=(len(self.items)-1)
         entries=[]
         entries.append(ipw.Label('#%i'%i, layout=ipw.Layout(width='6ex')))
-        entries.append(ipw.Text(item.name, layout=ipw.Layout(width='30ex')))
-        entries.append(ipw.Checkbox(item.show, indent=False, layout=ipw.Layout(width='6ex')))
-        entries.append(ipw.Checkbox(item.use, indent=False, layout=ipw.Layout(width='6ex')))
-        entries.append(ipw.Checkbox(item.use_error, indent=False, layout=ipw.Layout(width='6ex')))
-        for j, entr in enumerate(entries[1:]):
-            entr._child_id=i
-            entr._child_val=items[j]
-            entr.observe(self._ipyw_change, names='value')
+        # entries.append(ipw.Text(item.name, layout=ipw.Layout(width='30ex')))
+        # entries.append(ipw.Checkbox(item.show, indent=False, layout=ipw.Layout(width='6ex')))
+        # entries.append(ipw.Checkbox(item.use, indent=False, layout=ipw.Layout(width='6ex')))
+        # entries.append(ipw.Checkbox(item.use_error, indent=False, layout=ipw.Layout(width='6ex')))
+        # for j, entr in enumerate(entries[1:]):
+        #     entr._child_id=i
+        #     entr._child_val=items[j]
+        #     entr.observe(self._ipyw_change, names='value')
 
+        entries.append(item._repr_ipyw_(add_header=False))
         prev_box=button.vbox.children
         button.vbox.children=prev_box[:-1]+(ipw.HBox(entries), prev_box[-1])
 
