@@ -279,9 +279,12 @@ class Reflectivity(SampleBuilder):
         self.write_model_script(sim_funcs, sim_insts, sim_args,
                                 expression_list, parameter_list, instruments)
 
-    @property
     def update_script(self):
         self.WriteModel()
+
+    def add_data(self, name=''):
+        self.GetModel().data.add_new(name=name)
+        self.update_script()
 
     def ReadModel(self):
         '''ReadModel(self)  --> None
