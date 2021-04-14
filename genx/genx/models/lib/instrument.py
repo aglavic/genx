@@ -18,7 +18,11 @@ def GaussArea(alpha,s1,s2,sigma_x):
 # Intensity correction Gaussian beamprofile
 def GaussIntensity(alpha,s1,s2,sigma_x):
     sinalpha=sin(alpha*pi/180)
-    return (erf(s2*sinalpha/sqrt(2.0)/sigma_x)+erf(s1*sinalpha/sqrt(2.0)/sigma_x))/2.0
+    if s1==s2:
+        return erf(s2/sqrt(2.0)/sigma_x*sinalpha)
+    else:
+        common=sinalpha/sqrt(2.0)/sigma_x
+        return (erf(s2*common)+erf(s1*common))/2.0
 
 # Diffuse correction: Area corr
 def GaussDiffCorrection(alpha,s1,s2,sigma_x):
