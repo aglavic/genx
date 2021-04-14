@@ -7,6 +7,8 @@
 from scipy import *
 from numpy import *
 from scipy.special import erf
+rad=pi/180.
+sqrt2=sqrt(2.)
 
 # Area correction
 def GaussArea(alpha,s1,s2,sigma_x):
@@ -17,11 +19,11 @@ def GaussArea(alpha,s1,s2,sigma_x):
 
 # Intensity correction Gaussian beamprofile
 def GaussIntensity(alpha,s1,s2,sigma_x):
-    sinalpha=sin(alpha*pi/180)
+    sinalpha=sin(alpha*rad)
     if s1==s2:
-        return erf(s2/sqrt(2.0)/sigma_x*sinalpha)
+        return erf(s2/sqrt2/sigma_x*sinalpha)
     else:
-        common=sinalpha/sqrt(2.0)/sigma_x
+        common=sinalpha/sqrt2/sigma_x
         return (erf(s2*common)+erf(s1*common))/2.0
 
 # Diffuse correction: Area corr
@@ -30,7 +32,7 @@ def GaussDiffCorrection(alpha,s1,s2,sigma_x):
 
 # Specular foorprintcorrections square beamprofile
 def SquareIntensity(alpha,slen,beamwidth):
-    F=slen/beamwidth*sin(alpha*pi/180)
+    F=slen/beamwidth*sin(alpha*sqrt2)
     return where(F<=1.0,F,ones(F.shape))
 
 # Function to calculate the instrumental resolution in incomming, alpha, and
@@ -78,7 +80,7 @@ def SpecularRes(tth,I,sigma_alpha,sigma_beta,points):
 def ResolutionVector(Q,dQ,points,range=3):
     #if type(dQ)!=type(array([])):
     #    dQ=dQ*ones(Q.shape)
-    Qstep=2*range*dQ/points
+    Qstep=2*range/points*dQ
     Qres=Q+(arange(points)-(points-1)/2)[:,newaxis]*Qstep
     
     weight=1/sqrt(2*pi)/dQ*exp(-(transpose(Q[:,newaxis])-Qres)**2/dQ**2/2)
@@ -120,6 +122,112 @@ def ConvoluteFastVar(Q,I,dQ,range=3):
     Int = trapz(Itemp*weight,axis = 0)/norm_fact
     return Int
 
+def QtoTheta(wavelength, Q):
+    return arcsin(wavelength/4.0/pi*Q)/rad
 
-# Add functions for determining s1,s2,sigma_x,sigma_xp
+def TwoThetatoQ(wavelength, TwoTheta):
+    return 4.0*pi/wavelength*sin(rad/2.*TwoTheta)
 
+# if numba is available, implement optimized versions
+try:
+    import numba
+except ImportError:
+    pass
+else:
+    import math
+    @numba.jit(
+        numba.float64[:](numba.float64[:], numba.float64, numba.float64, numba.float64),
+        nopython=True, parallel=True, cache=True)
+    def GaussIntensity(alpha,s1,s2,sigma_x):
+        I=empty_like(alpha)
+        for ai in numba.prange(alpha.shape[0]):
+            sinalpha=math.sin(alpha[ai]*rad)
+            I[ai]=math.erf(s2/sqrt2/sigma_x*sinalpha)
+        return I
+
+    @numba.jit(
+        numba.float64[:](numba.float64[:], numba.float64, numba.float64),
+        nopython=True, parallel=True, cache=True)
+    def SquareIntensity(alpha, slen, beamwidth):
+        I=empty_like(alpha)
+        scale=slen/beamwidth
+        for ai in numba.prange(alpha.shape[0]):
+            F=scale*sin(alpha[ai]*sqrt2)
+            I[ai]=min(1.0, F)
+        return I
+
+    @numba.jit(
+        numba.float64[:](numba.float64, numba.float64[:]),
+        nopython=True, parallel=True, cache=True)
+    def QtoThetaScalar(wavelength, Q):
+        Theta=empty_like(Q)
+        scale=wavelength/4.0/pi
+        for li in numba.prange(Q.shape[0]):
+            Theta[li]=math.asin(scale*Q[li])/rad
+        return Theta
+
+    @numba.jit(
+        numba.float64[:](numba.float64[:], numba.float64[:]),
+        nopython=True, parallel=True, cache=True)
+    def QtoThetaVector(wavelength, Q):
+        Theta=empty_like(Q)
+        scale=1.0/4.0/pi
+        for li in numba.prange(Q.shape[0]):
+            Theta[li]=math.asin(scale*wavelength[li]*Q[li])/rad
+        return Theta
+
+    def QtoTheta(wavelength, Q):
+        if type(wavelength) is ndarray:
+            return QtoThetaVector(wavelength, Q)
+        else:
+            return QtoThetaScalar(wavelength, Q)
+
+    #
+    @numba.jit(
+        numba.types.Tuple((numba.float64[:],numba.float64[:,:]))(numba.float64[:], numba.float64, numba.int16, numba.float64),
+        nopython=True, parallel=True, cache=True)
+    def ResolutionVectorScalar(Q, dQ, points, range):
+        Qres=empty(Q.shape[0]*points)
+        weight=empty((points, Q.shape[0]))
+        Qstep=2.0*range/points*dQ
+        NQ=Q.shape[0]
+
+        wscale=1.0/math.sqrt(2.0*pi)/dQ/2
+
+        for ri in numba.prange(points):
+            dq=(ri-(points-1.0)/2.0)*Qstep
+            for qi in numba.prange(NQ):
+                Qi=Q[qi]
+                Qj=Qi+dq
+                Qres[qi+ri*NQ]=Qj
+                weight[ri, qi]=wscale*math.exp(-(Qi-Qj)**2/(dQ)**2)
+
+        return (Qres, weight)
+
+    @numba.jit(
+        numba.types.Tuple((numba.float64[:],numba.float64[:,:]))(numba.float64[:], numba.float64[:], numba.int16, numba.float64),
+        nopython=True, parallel=True, cache=True)
+    def ResolutionVectorVector(Q, dQ, points, range):
+        Qres=empty(Q.shape[0]*points)
+        weight=empty((points, Q.shape[0]))
+        Qstep_scale=2.0*range/points
+        NQ=Q.shape[0]
+
+        wscale=1.0/math.sqrt(2.0*pi)/2
+
+        for ri in numba.prange(points):
+            dq_scale=(ri-(points-1.0)/2.0)*Qstep_scale
+            for qi in numba.prange(NQ):
+                dq=dq_scale*dQ[qi]
+                Qi=Q[qi]
+                Qj=Qi+dq
+                Qres[qi+ri*NQ]=Qj
+                weight[ri, qi]=wscale*math.exp(-(Qi-Qj)**2/(dQ[qi])**2)/dQ[qi]
+
+        return (Qres, weight)
+
+    def ResolutionVector(Q, dQ, points, range=3):
+        if type(dQ) is ndarray:
+            return ResolutionVectorVector(Q, dQ, points, range)
+        else:
+            return ResolutionVectorScalar(Q, dQ, points, range)

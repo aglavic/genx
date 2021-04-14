@@ -215,7 +215,8 @@ def footprintcorr(Q, instrument):
             theta=(theta*ones(instrument.getRespoints())[:, newaxis]).flatten()
 
     else:
-        theta = arcsin(Q * instrument.getWavelength() / 4.0 / pi) * 180 / pi
+        #theta =  180./pi*arcsin(instrument.getWavelength() / 4.0 / pi * Q)
+        theta=QtoTheta(instrument.getWavelength(), Q)
     if footype == 1 or footype == instrument_string_choices['footype'][1]:
         foocor = GaussIntensity(theta, samlen / 2.0, samlen / 2.0, beamw)
     elif footype == 2 or footype == instrument_string_choices['footype'][2]:
@@ -266,11 +267,15 @@ def resolution_init(TwoThetaQz, instrument):
     # TTH values given as x
     if instrument.getCoords() in [instrument_string_choices['coords'][1],
                                   instrument_string_choices['coords'][2],1,2]:
-        Q = 4 * pi / instrument.getWavelength() * sin((TwoThetaQz + instrument.getTthoff()) * pi / 360.0)
+        #Q = 4 * pi / instrument.getWavelength() * sin((TwoThetaQz + instrument.getTthoff()) * pi / 360.0)
+        Q=TwoThetatoQ(instrument.getWavelength(), TwoThetaQz + instrument.getTthoff())
     # Q vector given....
     elif instrument.getCoords() in [instrument_string_choices['coords'][0], 0]:
+        # if there is no tth offset, nothing to be done for Q
+        if instrument.getTthoff()==0:
+            Q=TwoThetaQz
         # for tof the q-values are not angles but wavelenght, so tth-offset is a scaling factor
-        if instrument.getProbe() in [instrument_string_choices['probe'][4],
+        elif instrument.getProbe() in [instrument_string_choices['probe'][4],
                                  instrument_string_choices['probe'][5], 4, 5]:
             ai=instrument.getIncangle()
             # if ai is an array, make sure it gets repeated for every resolution point
@@ -280,8 +285,8 @@ def resolution_init(TwoThetaQz, instrument):
                 ai=(ai*ones(instrument.getRespoints())[:,newaxis]).flatten()
             Q=TwoThetaQz*(sin((ai+instrument.getTthoff()/2.)*pi/180.)/sin(ai*pi/180.))
         else:
-            Q = 4 * pi / instrument.getWavelength() * sin(
-                arcsin(TwoThetaQz * instrument.getWavelength() / 4 / pi) + instrument.getTthoff() * pi / 360.)
+            Q=TwoThetatoQ(instrument.getWavelength(),
+                          QtoTheta(instrument.getWavelength(), TwoThetaQz)*2.0+instrument.getTthoff())
     else:
         raise ValueError('The value for coordinates, coords, is WRONG! should be q(0) or tth(1).')
     return Q, TwoThetaQz, weight
