@@ -35,13 +35,19 @@ class Plugin(Template):
         '''
         # get scan number and polarization channel from filename
         name = ''
+        header={'Date': '', 'Type': '', 'Input file indices': '', 'Extracted states': ''}
         fhandle = open(filename, 'r', encoding='utf-8')
         fline = fhandle.readline()
         while not '[Data]' in fline:
-            if 'Input file indices:' in fline:
-                name += fline.split(':')[1].strip()
-            if 'Extracted states:' in fline:
-                name += ' (%s)'%(fline.split(':')[1].strip().split(' ')[0])
+            if ':' in fline:
+                key, value=map(str.strip, fline[2:].split(':', 1))
+                print(key, value)
+                if key=='Input file indices':
+                    name += value
+                elif key=='Extracted states':
+                    name += ' (%s)'%(value.split(' ')[0])
+                if key in header:
+                    header[key]=value
             fline = fhandle.readline()
             if not fline:
                 ShowWarningDialog(self.parent, 'Could not load the file: ' + filename+' \nWrong format.\n')
@@ -66,13 +72,32 @@ class Plugin(Template):
             # The data is set by the default Template.__init__ function, neat hu
             # Know the loaded data goes into *_raw so that they are not
             # changed by the transforms
+            lamda=4.*np.pi/load_array[:, self.x_col]*np.sin(load_array[:,self.ai_col])
             dataset.x_raw=load_array[:, self.x_col]
             dataset.y_raw=load_array[:, self.y_col]
             dataset.error_raw=load_array[:, self.e_col]
             dataset.set_extra_data('res', load_array[:,self.xe_col], 'res')
             dataset.set_extra_data('ai', load_array[:,self.ai_col], 'ai')
+            dataset.set_extra_data('wavelength', lamda, 'wavelength')
             # Name the dataset accordign to file name
             dataset.name = name
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
             dataset.run_command()
+
+            # insert metadata into ORSO compatible fields
+            dataset.meta['data_source']['facility']='SNS@ORNL'
+            dataset.meta['data_source']['experimentDate']=header['Date']
+            dataset.meta['data_source']['experiment']['instrument']='MagRef (4A)'
+            dataset.meta['data_source']['experiment']['probe']='neutron'
+            dataset.meta['data_source']['measurement']['scheme']='energy-dispersive'
+            dataset.meta['data_source']['measurement']['omega']={'min': load_array[:,self.ai_col].min(),
+                                                                 'max': load_array[:,self.ai_col].max(),
+                                                                 'unit': 'rad'}
+            dataset.meta['data_source']['measurement']['wavelength']={'min': lamda.min(),
+                                                                      'max': lamda.max(),
+                                                                      'unit': 'angstrom'}
+            dataset.meta['data_source']['measurement']['scheme']='energy-dispersive'
+            dataset.meta['reduction']={'software': {'name': 'QuickNXS',
+                                                    'file_indices': header['Input file indices'],
+                                                    'spin_states': header['Extracted states']}}

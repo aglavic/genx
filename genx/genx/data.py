@@ -7,6 +7,7 @@ Last changed: 2008 08 22
 
 from numpy import *
 import os
+import sys
 import time
 from .gui_logging import iprint
 
@@ -20,6 +21,14 @@ def to_str(item):
     else:
         return str(item)
 
+_e='unspecified'
+META_DEFAULT={'creator': {'name': _e, 'system': sys.platform, 'affiliation': _e, 'time': _e},
+              'data_source': {'owner': _e, 'facility': _e, 'experimentID': _e, 'experimentDate': _e, 'title': _e,
+                              'experiment': {'instrument': _e, 'probe': 'neutron', 'sample': {'name': _e}},
+                              'measurement': {'scheme': _e, 'omega': {'magnitude': 0.0},
+                                              'wavelength': {'magnitude': 0.0}}},
+              }
+
 class DataSet:
     ''' Class to store each dataset to fit. To fit several items instead the.
         Contains x,y,error values and xraw,yraw,errorraw for the data.
@@ -31,7 +40,7 @@ class DataSet:
                          'error_command':to_str, 'show':bool, 'name':to_str, 'use':bool, 'use_error':bool, 'cols':tuple,
                          'data_color':tuple, 'sim_color':tuple, 'data_symbol':to_str,
                          'data_symbolsize':int, 'data_linetype':to_str, 'data_linethickness':int, 'sim_symbol':to_str,
-                         'sim_linetype':to_str, 'sim_linethickness':int,
+                         'sim_linetype':to_str, 'sim_linethickness':int, 'meta': dict,
                          }
     
     simulation_params=[0.01, 6.01, 600]
@@ -57,7 +66,10 @@ class DataSet:
         self.x_command = 'x'
         self.y_command = 'y'
         self.error_command = 'e'
-        
+
+        # Meta data dictionary
+        self.meta=dict(META_DEFAULT)
+
         # Should we display the dataset, ie plot it
         # This should be default for ALL datasets..
         self.show = True
@@ -111,6 +123,15 @@ class DataSet:
             self.sim_linethickness = 2
         self.run_command()
 
+    def _write_dict(self, group, obj):
+        for key, value in obj.items():
+            if type(value) is dict:
+                sub_group = group.create_group(key)
+                self._write_dict(sub_group, value)
+            elif type(value) in [float, int, str, ndarray, array,
+                                 float16, float32, float64, int8, int16, int32]:
+                group[key]=value
+
     def write_h5group(self, group):
         """ Write the parameters to a hdf group
 
@@ -121,12 +142,31 @@ class DataSet:
             obj = getattr(self, par)
             if type(obj) is dict:
                 sub_group = group.create_group(par)
-                for key in obj:
-                    item = obj[key]
-                    if type(item) in [float, int, str, str, ndarray, array]:
-                        sub_group[key] = item
+                self._write_dict(sub_group, obj)
             else:
                 group[par] = obj
+
+    def _read_meta(self, group, path):
+        import h5py
+
+        node=self.meta
+        for pi in path[:-1]:
+            if pi in node:
+                node=node[pi]
+            else:
+                node[pi]={}
+                node=node[pi]
+        if type(group) is h5py.Dataset:
+            value=group[()]
+            if type(value) in [float16, float32, float64]:
+                value=float(value)
+            elif type(value) in [int8, int16, int32]:
+                value=int(value)
+            node[path[-1]]=value
+            return
+        for key in group:
+            self._read_meta(group[key], path+[key])
+
 
     def read_h5group(self, group):
         """ Read parameters from a hdf group
@@ -137,7 +177,14 @@ class DataSet:
         for par in self.export_parameters:
             obj = getattr(self, par)
             if type(obj) is dict:
-                sub_group = group[par]
+                try:
+                    sub_group = group[par]
+                except KeyError:
+                    iprint("Did not find group in file: %s"%par)
+                    continue
+                if par=='meta':
+                    self._read_meta(sub_group, [])
+                    continue
                 for key in sub_group:
                     if self.export_parameters[par] is array:
                         obj[key] = sub_group[key][()]

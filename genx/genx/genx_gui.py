@@ -110,6 +110,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_import_script, id=self.main_frame_menubar.mb_import_script.GetId())
         self.mb_file.Append(wx.ID_ANY, "Import", mb_import, "")
         mb_export = wx.Menu()
+        self.main_frame_menubar.mb_export_orso = mb_export.Append(wx.ID_ANY, "Export ORT...", "Export data and header in ORSO compatible ASCII format")
+        self.Bind(wx.EVT_MENU, self.eh_mb_export_orso, id=self.main_frame_menubar.mb_export_orso.GetId())
         self.main_frame_menubar.mb_export_data = mb_export.Append(wx.ID_ANY, "Export Data...", "Export data in ASCII format")
         self.Bind(wx.EVT_MENU, self.eh_mb_export_data, id=self.main_frame_menubar.mb_export_data.GetId())
         self.main_frame_menubar.mb_export_table = mb_export.Append(wx.ID_ANY, "Export Table...", "Export table to an ASCII file")
@@ -631,6 +633,9 @@ class MainFrame(wx.Frame):
     def eh_mb_print_script(self, event): # wxGlade: MainFrame.<event_handler>
         warning("Event handler `eh_mb_print_script' not implemented")
         event.Skip()
+
+    def eh_mb_export_orso(self, event): # wxGlade: MainFrame.<event_handler>
+        event_handlers.export_orso(self, event)
 
     def eh_mb_export_data(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.export_data(self, event)

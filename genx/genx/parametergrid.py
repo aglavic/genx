@@ -1379,7 +1379,7 @@ class ParameterGrid(wx.Panel):
             if self.grid.CanEnableCellControl():
                 self.grid.EnableCellEditControl()
             return
-        # GetText seems to screw up underscores a bit replacing the with a 
+        # GetItemLabel seems to screw up underscores a bit replacing the with a
         # double one - this fixes it
         text = item.GetItemLabel().replace('__', '_')
         self.grid.SetCellValue(self.CurSelection[0], self.CurSelection[1], text)

@@ -1,0 +1,216 @@
+{
+  "title": "ORSOHeader",
+  "type": "object",
+  "properties": {
+    "creator": {
+      "$ref": "#/definitions/Creator"
+    },
+    "data_source": {
+      "$ref": "#/definitions/DataSource"
+    }
+  },
+  "required": [
+    "creator",
+    "data_source"
+  ],
+  "definitions": {
+    "Creator": {
+      "title": "Creator",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "affiliation": {
+          "type": "string"
+        },
+        "time": {
+          "description": "timestamp string, formatted as ISO 8601 datetime",
+          "type": "string",
+          "format": "date-time"
+        },
+        "system": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "affiliation",
+        "time",
+        "system"
+      ]
+    },
+    "Sample": {
+      "title": "Sample",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "Experiment": {
+      "title": "Experiment",
+      "type": "object",
+      "properties": {
+        "instrument": {
+          "type": "string"
+        },
+        "probe": {
+          "enum": [
+            "neutron",
+            "xray"
+          ],
+          "type": "string"
+        },
+        "sample": {
+          "$ref": "#/definitions/Sample"
+        }
+      },
+      "required": [
+        "instrument",
+        "probe",
+        "sample"
+      ]
+    },
+    "Value": {
+      "title": "Value",
+      "type": "object",
+      "properties": {
+        "magnitude": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          ]
+        },
+        "unit": {
+          "description": "SI unit string",
+          "type": "string"
+        }
+      },
+      "required": [
+        "magnitude"
+      ]
+    },
+    "ValueRange": {
+      "title": "ValueRange",
+      "type": "object",
+      "properties": {
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "steps": {
+          "type": "integer"
+        },
+        "unit": {
+          "description": "SI unit string",
+          "type": "string"
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ]
+    },
+    "Polarisation": {
+      "title": "Polarisation",
+      "description": "The first symbol indicates the magnetisation direction of the incident beam.\nAn optional second symbol indicates the direction of the scattered beam, if a spin analyser is present.",
+      "enum": [
+        "+",
+        "-",
+        "--",
+        "-+",
+        "+-",
+        "++"
+      ],
+      "type": "string"
+    },
+    "Measurement": {
+      "title": "Measurement",
+      "type": "object",
+      "properties": {
+        "scheme": {
+          "type": "string"
+        },
+        "omega": {
+          "description": "probe angle of incidence",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Value"
+            },
+            {
+              "$ref": "#/definitions/ValueRange"
+            }
+          ]
+        },
+        "wavelength": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Value"
+            },
+            {
+              "$ref": "#/definitions/ValueRange"
+            }
+          ]
+        },
+        "polarisation": {
+          "$ref": "#/definitions/Polarisation"
+        }
+      },
+      "required": [
+        "scheme",
+        "omega",
+        "wavelength"
+      ]
+    },
+    "DataSource": {
+      "title": "DataSource",
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "facility": {
+          "type": "string"
+        },
+        "experimentID": {
+          "type": "string"
+        },
+        "experimentDate": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "experiment": {
+          "$ref": "#/definitions/Experiment"
+        },
+        "measurement": {
+          "$ref": "#/definitions/Measurement"
+        }
+      },
+      "required": [
+        "owner",
+        "facility",
+        "experimentID",
+        "experimentDate",
+        "title",
+        "experiment",
+        "measurement"
+      ]
+    }
+  }
+}

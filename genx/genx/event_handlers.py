@@ -267,7 +267,32 @@ def save_as(frame, event):
             set_title(frame)
         
     dlg.Destroy()
-    
+
+def export_orso(frame, event):
+    '''export_data(frame, event) --> None
+
+    exports the data to one file per data set with a basename with
+    extention given by a save dialog.
+    '''
+    dlg=wx.FileDialog(frame, message="Export data and model", defaultFile="", \
+                      wildcard="ORSO Text File (*.ort)|*.ort", \
+                      style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                      )
+    if dlg.ShowModal()==wx.ID_OK:
+        try:
+            frame.model.export_orso(dlg.GetPath())
+        except modellib.IOError as e:
+            ShowModelErrorDialog(frame, str(e))
+            frame.main_frame_statusbar.SetStatusText( \
+                'Error when exporting data', 1)
+        except Exception as e:
+            ShowErrorDialog(frame, str(e), 'export data - model.export_data')
+            frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+        else:
+            frame.main_frame_statusbar.SetStatusText('Data exported', 1)
+
+    dlg.Destroy()
+
 def export_data(frame, event):
     '''export_data(frame, event) --> None
     

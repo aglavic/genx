@@ -635,7 +635,48 @@ class Model:
         Export the table to filename. ASCII output.
         '''
         self._save_to_file(filename, self.parameters.get_ascii_output())
-        
+
+    def export_orso(self, basename):
+        '''
+        Export the data to files with basename filename. ORT output.
+        The fileending will be .ort
+        '''
+        self.simulate(True)
+        from genx.lib.orso_io import ort, data as odata
+        from genx.version import version
+        para_list=[dict([(nj, pij) for nj, pij in zip(self.parameters.data_labels, pi)])
+                   for pi in self.parameters.data]
+        add_header={'analysis': {
+            'software': {'name': 'GenX', 'version': version},
+            'script': self.script,
+            'parameters': para_list,
+            }}
+        ds=[]
+        for di in self.data:
+            header=dict(di.meta)
+            header.update(add_header)
+            header['data_set']=di.name
+            columns=[di.x, di.y, di.error]
+            column_names=['Qz', 'R', 'sR']
+            if 'res' in di.extra_data:
+                columns.append(di.extra_data['res'])
+                column_names.append('sQz')
+            columns.append(di.y_sim)
+            column_names.append('Rsim')
+            columns.append(di.y_fom)
+            column_names.append('FOM')
+            for name, col in sorted(di.extra_data.items()):
+                if name=='res':
+                    continue
+                columns.append(col)
+                column_names.append(name)
+            header['columns']=[{'name': cn} for cn in column_names]
+            ds.append(odata.ORSOData(header, columns))
+        try:
+            ort.write_file(basename, ds)
+        except data.IOError as e:
+            raise IOError(e.error_message, e.file)
+
     def export_data(self, basename):
         '''
         Export the data to files with basename filename. ASCII output. 
