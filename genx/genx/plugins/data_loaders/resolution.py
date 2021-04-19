@@ -82,6 +82,12 @@ class Plugin(Template):
             # of that data item.
             dataset.run_command()
 
+            # insert metadata into ORSO compatible fields
+            dataset.meta['data_source']['facility']='GenX resolution data loader'
+            dataset.meta['data_source']['experiment']['instrument']='unkown'
+            dataset.meta['data_source']['import_columns']=dict(
+                x=self.x_col, y=self.y_col, error=self.e_col, res=self.res_col)
+
         
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None

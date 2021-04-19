@@ -547,6 +547,56 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         if self.data_loader.LoadDataFile(self._GetSelectedItems()):
             self._UpdateData('New data added', new_data = True)
 
+    def ShowInfo(self):
+        """
+        Show a dialog with the dataset meta dictionary information.
+        """
+        sel=self._GetSelectedItems()
+        if len(sel)==0:
+            dlg=wx.MessageDialog(self, 'Please select a dataset'
+                                 , caption='No active dataset'
+                                 , style=wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        ds=self.data_cont.get_data()[sel[0]]
+
+        dia=wx.Dialog(self, title="Dataset information", style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.MAXIMIZE_BOX)
+        sizer=wx.BoxSizer(wx.HORIZONTAL)
+
+        tree=wx.TreeCtrl(dia)
+        sizer.Add(tree, proportion=1, flag=wx.EXPAND)
+        text=wx.TextCtrl(dia, style=wx.TE_READONLY|wx.TE_MULTILINE)
+        sizer.Add(text, proportion=2, flag=wx.EXPAND)
+
+        import yaml
+
+        root=tree.AddRoot(ds.name)
+        tree.SetItemData(root, ('', 'Select key to show information'))
+        def add_children(node, source):
+            for key, value in source.items():
+                itm=tree.AppendItem(node, key)
+                tree.SetItemData(itm, (key, yaml.dump(value, indent=4).replace('    ', '\t').replace('\n', '\n\t')))
+                if isinstance(value, dict):
+                    add_children(itm, value)
+        add_children(root, ds.meta)
+        tree.Expand(root)
+
+
+        def show_item(event):
+            item=event.GetItem()
+            name, data=tree.GetItemData(item)
+            text.Clear()
+            text.AppendText('%s:\n\n\t%s'%(name, data))
+
+        dia.Bind(wx.EVT_TREE_SEL_CHANGED, show_item)
+
+        dia.SetSizer(sizer)
+        dia.SetSize((800,800))
+        dia.ShowModal()
+        dia.Destroy()
+
+
     def CreateSimData(self):
         """ Create Simulation data through a wizard
 
@@ -823,6 +873,12 @@ class DataListControl(wx.Panel):
                                   shortHelp='Insert a data set for simulation')
         self.Bind(wx.EVT_TOOL, self.eh_tb_add_simulation, id=newid)
 
+        newid = wx.NewId()
+        self.toolbar.AddTool(newid, label='Datset information',
+                             bitmap=wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, size=(tb_bmp_size, tb_bmp_size)),
+                                  shortHelp='Show the meta data information for the selected dataset')
+        self.Bind(wx.EVT_TOOL, self.eh_tb_data_info, id=newid)
+
         self.toolbar.AddSeparator()
         
         newid = wx.NewId()
@@ -865,6 +921,9 @@ class DataListControl(wx.Panel):
 
     def eh_tb_add_simulation(self, event):
         self.list_ctrl.CreateSimData()
+
+    def eh_tb_data_info(self, event):
+        self.list_ctrl.ShowInfo()
 
     def eh_tb_delete(self, event):
         #print "eh_tb_delete not implemented yet"

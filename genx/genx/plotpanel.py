@@ -3,6 +3,7 @@
 # Programmed by: Matts Bjorck
 # Last changed: 2009 03 10
 
+import warnings
 import matplotlib
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_agg import RendererAgg
@@ -117,12 +118,16 @@ class PlotPanel(wx.Panel):
         '''
         if not pixels:
             pixels = self.GetClientSize()
+        if pixels[0]==0 or pixels[1]==0:
+            return
 
         self.canvas.SetSize(pixels)
-        try:
-            self.figure.tight_layout(h_pad=0)
-        except ValueError:
-            pass
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            try:
+                self.figure.tight_layout(h_pad=0)
+            except ValueError:
+                pass
         #self.figure.set_size_inches(pixels[0]/self.figure.get_dpi()
         #, pixels[1]/self.figure.get_dpi())
     
@@ -649,7 +654,9 @@ class PlotPanel(wx.Panel):
         #self._SetSize()
         #self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
         #self.ax.set_yscale(self.scale)
-        self.figure.tight_layout(h_pad=0)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            self.figure.tight_layout(h_pad=0)
         self.canvas.draw()
         
     def update(self, data):

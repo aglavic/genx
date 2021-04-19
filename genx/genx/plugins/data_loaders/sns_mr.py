@@ -97,7 +97,6 @@ class Plugin(Template):
             dataset.meta['data_source']['measurement']['wavelength']={'min': lamda.min(),
                                                                       'max': lamda.max(),
                                                                       'unit': 'angstrom'}
-            dataset.meta['data_source']['measurement']['scheme']='energy-dispersive'
             dataset.meta['reduction']={'software': {'name': 'QuickNXS',
                                                     'file_indices': header['Input file indices'],
                                                     'spin_states': header['Extracted states']}}

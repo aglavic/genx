@@ -73,3 +73,10 @@ class Plugin(Template):
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
             dataset.run_command()
+
+            # insert metadata into ORSO compatible fields
+            dataset.meta['data_source']['facility']='SINQ@PSI'
+            dataset.meta['data_source']['experiment']['instrument']='Amor'
+            dataset.meta['data_source']['experiment']['probe']='neutron'
+            dataset.meta['data_source']['measurement']['scheme']='angle- and energy-dispersive'
+            dataset.meta['reduction']={'software': {'name': 'eos/amor-reducer'}}

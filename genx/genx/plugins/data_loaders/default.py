@@ -78,6 +78,12 @@ class Plugin(Template):
             # Run the commands on the data - this also sets the x,y, error members of the data item.
             dataset.run_command()
 
+            # insert metadata into ORSO compatible fields
+            dataset.meta['data_source']['facility']='GenX default data loader'
+            dataset.meta['data_source']['experiment']['instrument']='unknown'
+            dataset.meta['data_source']['import_columns']=dict(
+                x=self.x_col, y=self.y_col, error=self.e_col)
+
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None
         

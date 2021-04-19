@@ -56,6 +56,12 @@ class Plugin(Template):
             # of that data item.
             dataset.run_command()
 
+            # insert metadata into ORSO compatible fields
+            dataset.meta['data_source']['experiment']['instrument']='XRDML'
+            dataset.meta['data_source']['experiment']['probe']='xray'
+            dataset.meta['data_source']['measurement']['scheme']='angle-dispersive'
+
+
     def SettingsDialog(self):
         '''
         This function should - if necessary implement a dialog box

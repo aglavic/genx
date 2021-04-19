@@ -75,7 +75,11 @@ class Template:
             if dlg.ShowModal() == wx.ID_OK:
                 self.SetData(self.parent.data_cont.get_data())
                 dataset=self.data[selected_items[0]]
+                # in case the data loader does not define any metadata
+                # at least set the instrument to data loader name
+                dataset.meta['data_source']['experiment']['instrument']=self.__module__.rsplit('.', 1)[1]
                 self.LoadData(dataset, dlg.GetPath())
+                dataset.meta['data_source']['file_name']=dlg.GetPath()
 
                 # In case the dataset name has changed
                 self.UpdateDataList()

@@ -51,8 +51,10 @@ class Plugin(Template):
         Loads the data from filename into the data_item_number.
         '''
         try:
-            load_array = np.loadtxt(filename, delimiter = self.delimiter, 
-                comments = self.comment, skiprows = self.skip_rows)
+            with open(filename, 'r') as fh:
+                header=fh.readlines()[:self.skip_rows]
+            load_array = np.loadtxt(filename, delimiter = self.delimiter,
+                    comments = self.comment, skiprows = self.skip_rows)
         except Exception as e:
             ShowWarningDialog(self.parent, 'Could not load the file: ' +\
                     filename + ' \nPlease check the format.\n\n numpy.loadtxt'\
@@ -72,6 +74,13 @@ class Plugin(Template):
             # The data is set by the default Template.__init__ function, neat hu
             # Note that the loaded data goes into *_raw so that they are not
             # changed by the transforms
+            header_info={}
+            for hline in header[:-2]:
+                try:
+                    key,value=map(str.strip, hline.split(':', 1))
+                except:
+                    pass
+                header_info[key]=value
             
             #print load_array
             dataset.x_raw = load_array[:,self.q_col]
@@ -83,7 +92,10 @@ class Plugin(Template):
             # of that data item.
             dataset.run_command()
 
-        
+            # insert metadata into ORSO compatible fields
+            dataset.meta['data_source']['facility']='D17@ILL'
+            dataset.meta['data_source']['file_header']=header_info
+
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None
         
