@@ -903,6 +903,144 @@ class Model:
         '''
         return self.compiled
 
+    def bumps_problem(self):
+        """
+        Return the fit function as a bumps problem to be used with the bumps.fitters.fit function.
+        """
+        if not self.compiled:
+            self.compile_script()
+        indep_module=self.script_module
+        data=self.data
+        # compile again to have a completely independent script module
+        self.compile_script()
+
+        from bumps.fitproblem import FitProblem
+        from bumps.curve import Curve
+        from numpy import hstack
+
+        namespace={'script_module': indep_module, 'data': data,
+                   'model_data': None, 'bmodel': None,
+                   'Curve': Curve, 'hstack': hstack}
+
+        # build function for full model parameters out of parameter grid
+        mstring='def model_data(ignore'
+        fstring=''
+        pstart=[]
+        for p in self.parameters:
+            if p.name.strip()=='':
+                continue
+            name=p.name.replace('.set', '_')
+            fstring+='script_module.%s(%s)\n'%(p.name, name)
+            mstring+=', '+name
+            pstart.append((name, p.value, p.min, p.max, p.fit))
+        mstring+='):'
+        fstring+='res=script_module.Sim(data)\nreturn hstack(res)'
+        namespace['pstart']=pstart
+        exec(mstring+'\n    '+fstring.replace('\n', '\n    '), namespace)
+        exec('''bmodel=Curve(model_data, hstack([di.x for di in data]), 
+                       hstack([di.y for di in data]), 
+                       hstack([di.error for di in data]), 
+                       '''+
+             ', \n                   '.join(['%s=%s'%(pi[0], pi[1]) for pi in pstart])+')',
+             namespace)
+        for pname, pval, pmin, pmax, pfit in pstart:
+            exec('bmodel.%s.range(%s, %s)'%(pname, pmin, pmax), namespace)
+            if not pfit:
+                exec('bmodel.%s.fixed=True'%pname, namespace)
+        bproblem=FitProblem(namespace['bmodel'])
+        return bproblem
+
+    def bumps_fit(self, method='dream',
+                     pop=15, samples=1e5, burn=100, steps=0,
+                     thin=1, alpha=0, outliers='none', trim=False,
+                     monitors=[], problem=None, **options):
+        # create a fitter similar to the bumps.fitters.fit function but with option for GUI monitoring
+        from scipy.optimize import OptimizeResult
+        from bumps.fitters import FitDriver, FIT_AVAILABLE_IDS, FITTERS, FIT_ACTIVE_IDS
+        options['pop']=pop
+        options['samples']=samples
+        options['burn']=burn
+        options['steps']=steps
+        options['thin']=thin
+        options['alpha']=alpha
+        options['outliers']=outliers
+        options['trim']=trim
+
+        if problem is None:
+            problem=self.bumps_problem()
+        monitors=[m(problem) for m in monitors]
+
+        #verbose = True
+        if method not in FIT_AVAILABLE_IDS:
+            raise ValueError("unknown method %r not one of %s"
+                             % (method, ", ".join(sorted(FIT_ACTIVE_IDS))))
+        for fitclass in FITTERS:
+            if fitclass.id == method:
+                break
+        driver = FitDriver(fitclass=fitclass, problem=problem, monitors=monitors, **options)
+        driver.clip() # make sure fit starts within domain
+        x0 = problem.getp()
+        x, fx = driver.fit()
+        problem.setp(x)
+        dx = driver.stderr()
+        result = OptimizeResult(x=x, dx=driver.stderr(), fun=fx,
+            success=True, status=0, message="successful termination",)
+        if hasattr(driver.fitter, 'state'):
+            result.state = driver.fitter.state
+        return result
+
+
+    def build_dream(self, x_n_gen=25, x_n_chain=5, sigmas=None):
+        """
+        Compile an independent script model and function to include in the
+        Dream MCMC model and return that model.
+        """
+        if not self.compiled:
+            self.compile_script()
+        indep_module=self.script_module
+
+        from bumps.dream import Dream
+        from bumps.dream.model import Simulation
+        from numpy import hstack, random
+
+        data=self.data
+        # compile again to have a completely independent script module
+        self.compile_script()
+
+        # generate a function that takes a single parameter list and returns the stacked data
+        mstring='def model_data(p):\n    '
+        fstring=''
+        pstart=[]
+        i=0
+        for p in self.parameters:
+            if not p.fit:
+                continue
+            name=p.name.replace('.set', '_')
+            fstring+='script_module.%s(p[%i])\n'%(p.name, i)
+            pstart.append((name, p.value, p.min, p.max))
+            i+=1
+        fstring+='res=script_module.Sim(data)\nreturn hstack(res)'
+        namespace={'script_module': indep_module, 'data': data,
+                   'model_data': None, 'hstack': hstack}
+        exec(mstring+fstring.replace('\n', '\n    '), namespace)
+
+        n=len(pstart)
+        if sigmas is None:
+            # if no ranges are supplied, use fit range from model
+            bounds=(tuple(p[2] for p in pstart), tuple(p[3] for p in pstart))
+        else:
+            bounds=(tuple(p[1]+3*s[0] for p, s in zip(pstart, sigmas)),
+                    tuple(p[1]+3*s[1] for p, s in zip(pstart, sigmas)))
+        bsim=Simulation(f=namespace['model_data'],
+                        data=hstack([di.y for di in data]),
+                        sigma=hstack([di.error for di in data]),
+                        bounds=bounds,
+                        labels=[p[0] for p in pstart])
+        bdream=Dream(model=bsim, draws=20000,
+                     population=random.randn(x_n_gen*n, x_n_chain*n, n))  # n_gen, n_chain, n_var
+        return bdream
+
+
     def plot(self):
         self.simulate()
         return self.data.plot()

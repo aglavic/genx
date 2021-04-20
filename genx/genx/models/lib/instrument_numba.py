@@ -33,7 +33,7 @@ def SquareIntensity(alpha, slen, beamwidth):
 def TwoThetatoQScalar(wavelength, TwoTheta):
     Q=empty_like(TwoTheta)
     scale=4.*pi/wavelength
-    thscale=1./rad/2.0
+    thscale=rad/2.0
     for li in numba.prange(Q.shape[0]):
         Q[li]=math.sin(TwoTheta[li]*thscale)*scale
     return Q
@@ -44,7 +44,7 @@ def TwoThetatoQScalar(wavelength, TwoTheta):
 def TwoThetatoQVector(wavelength, TwoTheta):
     Q=empty_like(TwoTheta)
     scale=4.*pi
-    thscale=1./rad/2.0
+    thscale=rad/2.0
     for li in numba.prange(Q.shape[0]):
         Q[li]=math.sin(TwoTheta[li]*thscale)*scale/wavelength[li]
     return Q

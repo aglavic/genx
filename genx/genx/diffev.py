@@ -1651,7 +1651,7 @@ class ErrorBarError(GenericError):
         #self.error_message = error_message
 
     def __str__(self):
-        text = 'Could not evaluate the error bars. A fit has to be made' +\
+        text = 'Could not evaluate the error bars. A fit has to be made ' +\
                 'before they can be calculated'
         return text
 
