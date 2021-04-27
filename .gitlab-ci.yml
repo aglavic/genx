@@ -21,7 +21,7 @@ build_ubuntu_lts:
     before_script:
         - cd genx
     script:
-        - python3 setup.py bdist
+        - python3 setup.py bdist_rpm
         - bash debian_build/make_deb.sh
         - ls dist
         - mv dist/*.deb /data/dist/
@@ -36,7 +36,7 @@ build_ubuntu_eoan:
     before_script:
         - cd genx
     script:
-        - python3 setup.py bdist
+        - python3 setup.py bdist_rpm
         - bash debian_build/make_deb.sh
         - ls dist
         - mv dist/*.deb /data/dist/
