@@ -1,7 +1,7 @@
-Source: genx
+Source: genx3
 Section: scientific
 Priority: extra
-Maintainer: Artur Glavic <artur.glavic@gmail.com>
+Maintainer: Artur Glavic <artur.glavic@psi.ch>
 Standards-Version: 3.8.1
 Homepage: http://genx.sourceforge.net/
 

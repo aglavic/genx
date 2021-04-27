@@ -59,7 +59,7 @@ jobs:
     - name: Build binary package
       run: |
         cd genx
-        python3 setup.py bdist
+        bash debian_build/make_deb.sh
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
@@ -79,7 +79,7 @@ jobs:
     - name: Build binary package
       run: |
         cd genx
-        python3 setup.py bdist
+        bash debian_build/make_deb.sh
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:

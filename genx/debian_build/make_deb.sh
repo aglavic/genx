@@ -5,12 +5,12 @@ set -e
 
 # usage: call from the directory containing setup.py
 
-GENX_VERSION=$(python -c "exec(open('genx/version.py').read()); print(__version__)")
-GENX="GenX"
+GENX_VERSION=$(python3 -c "exec(open('genx/version.py').read()); print(__version__)")
+GENX="genx3"
 NAME="${GENX}-${GENX_VERSION}"
 GENX_LOWER="genx"
 
-python setup.py bdist_rpm
+python3 setup.py bdist_rpm
 
 # These commands requires dpkg-dev alien
 echo "Moving distribution files..."
@@ -55,12 +55,12 @@ cp ../../debian_build/postrm debian/
 
 # create .deb package
 
-PY_VERSION=$(python -c "import sys; print(sys.version_info.major + sys.version_info.minor)")
+PY_VERSION=$(python3 -c "import sys; print(str(sys.version_info.major) + str(sys.version_info.minor))")
 
 dpkg-buildpackage -i.* -I -rfakeroot -us -uc > ../last_package.log
 cd ..
 
-mv "${GENX_LOWER}_${GENX_VERSION}-1_all.deb" "${NAME}_py${PY_VERSION}.deb"
+mv "${GENX_LOWER}_${GENX_VERSION}-1_all.deb" "genx_py${PY_VERSION}.deb"
 
 echo "Removing debian folder"
 
