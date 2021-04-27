@@ -4,12 +4,16 @@ Support
 =======
 Tutorials can be found at: http://genx.sourceforge.net/doc/
 Examples can be found in the Menu Help->Examples.
-If you need more support send an e-mail to Matts.Bjorck@gmail.com.
+If you need more support send an e-mail to artur.glavic@psi.ch.
 
 References
 ==========
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
+
+Changes 3.1.2
+=============
+ * Small fix of build system and contact email.
 
 Changes 3.1.1
 =============
