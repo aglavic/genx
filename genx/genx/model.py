@@ -968,7 +968,6 @@ class Model:
 
         if problem is None:
             problem=self.bumps_problem()
-        monitors=[m(problem) for m in monitors]
 
         #verbose = True
         if method not in FIT_AVAILABLE_IDS:

@@ -664,6 +664,16 @@ def calculate_error_bars(frame, evt):
         frame.paramter_grid.SetParameters(frame.model.parameters)
         frame.main_frame_statusbar.SetStatusText('Errorbars calculated', 1)
 
+def error_stats(frame, evt):
+    try:
+        from .bumps_interface import StatisticalAnalysisDialog
+    except Exception as e:
+        ShowErrorDialog(frame, str(e), 'solvergui - CalcErrorBars')
+        frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+    else:
+        dia=StatisticalAnalysisDialog(frame, frame.model)
+        dia.ShowModal()
+
 def scan_parameter(frame, row):
     ''' scan_parameter(frame, row) --> None
     

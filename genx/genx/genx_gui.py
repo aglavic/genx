@@ -255,6 +255,7 @@ class MainFrame(wx.Frame):
         self.main_frame_toolbar.AddTool(10006, "tb_stop_fit", wx.Bitmap(img.getstop_fitImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Stop fit | Ctrl+H", "Stop fitting | Ctrl+H")
         self.main_frame_toolbar.AddTool(10007, "tb_restart_fit", wx.Bitmap(img.getrestart_fitImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Restart fit | Ctrl+R", "Restart the fit | Ctrl+R")
         self.main_frame_toolbar.AddTool(1008, "tb_calc_error_bars", wx.Bitmap(img.getcalc_error_barImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
+        self.main_frame_toolbar.AddTool(10010, "tb_error_stats", wx.Bitmap(img.getpar_projImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_NORMAL, "Error Statistics", "Error Statistics")
         self.main_frame_toolbar.AddSeparator()
         self.main_frame_toolbar.AddTool(10009, "tb_zoom", wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size,tb_bmp_size)), wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
         # Tool Bar end
@@ -304,6 +305,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.eh_tb_stop_fit, id=10006)
         self.Bind(wx.EVT_TOOL, self.eh_tb_restart_fit, id=10007)
         self.Bind(wx.EVT_TOOL, self.eh_tb_calc_error_bars, id=1008)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_error_stats, id=10010)
         self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=10009)
         self.Bind(wx.EVT_CHOICE, self.eh_data_grid_choice, self.data_grid_choice)
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.eh_plot_page_changed, self.plot_notebook)
@@ -731,6 +733,9 @@ class MainFrame(wx.Frame):
 
     def eh_tb_calc_error_bars(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.calculate_error_bars(self, event)
+
+    def eh_tb_error_stats(self, event): # wxGlade: MainFrame.<event_handler>
+        event_handlers.error_stats(self, event)
 
     def eh_plot_page_changed(self, event): # wxGlade: MainFrame.<event_handler>
         event_handlers.plot_page_changed(self, event)
