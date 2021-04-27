@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.1.1
+=============
+ * Update build system to be compatible with PyPI, thanks to Leon Lohse
+ * Include vtk module in windows distribution for SXRD plugin
+
 Changes 3.1.0
 =============
  * Implement numba JIT compiler for significant x-ray and neutron reflectivity calculation performance gain
