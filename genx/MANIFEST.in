@@ -1,1 +1,7 @@
+include README.txt
+include changelog.txt
 
+include genx/genx.conf
+recursive-include genx/examples *
+recursive-include genx/profiles *
+recursive-include genx/models/databases *
