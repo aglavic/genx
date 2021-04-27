@@ -22,7 +22,7 @@ from genx import filehandling as io
 from genx import plotpanel, solvergui, parametergrid, datalist
 from genx import event_handlers
 from genx import images as img
-from genx.version import version as program_version
+from genx.version import __version__ as program_version
 
 from genx.plugins import add_on_framework as add_on
 
