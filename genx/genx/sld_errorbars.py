@@ -105,7 +105,7 @@ def sld_mc(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="sld_errorbars %s, creates a boundary sld profile from given errorbar"
-                                                 " values in a GenX file. Note this is experimental software!"% version.version,
+                                                 " values in a GenX file. Note this is experimental software!"% version.__version__,
                                      epilog="For support, manuals and bug reporting see http://genx.sf.net"
                                     )
 

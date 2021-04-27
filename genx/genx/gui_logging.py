@@ -13,7 +13,7 @@ import inspect
 import warnings
 from numpy import seterr, seterrcall, ComplexWarning
 from io import StringIO
-from .version import version as str_version
+from .version import __version__ as str_version
 
 # default options used if nothing is set in the configuration
 CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.WARNING, logging.INFO, logging.INFO
