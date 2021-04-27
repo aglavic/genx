@@ -55,7 +55,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential
+        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential python3-setuptools
     - name: Build binary package
       run: |
         cd genx
@@ -75,7 +75,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential
+        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential python3-setuptools
     - name: Build binary package
       run: |
         cd genx
