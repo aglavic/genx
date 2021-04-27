@@ -7,7 +7,7 @@ $Author::                               $:  Author of last commit
 $Date::                                 $:  Date of last commit
 '''
 from . import version
-__version__ = version.version
+__version__ = version.__version__
 
 import _thread, time
 import wx, os, traceback
@@ -1215,8 +1215,8 @@ def show_about_box(frame, event):
         "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
         "\nThe non-mandatory but useful packages:\n"
         ""%(platform.python_version(), wx.__version__,
-            numpy.version.version, scipy.version.version,\
-             matplotlib.__version__),
+            numpy.__version__.__version__, scipy.__version__.__version__, \
+            matplotlib.__version__),
         500, wx.ClientDC(frame))
     info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")
     # No developers yet

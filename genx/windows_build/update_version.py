@@ -7,5 +7,5 @@ sys.path.append(os.path.dirname(folder))
 from genx import version
 
 txt=open(os.path.join(folder, 'genx_template.iss'), 'r').read()
-txt=txt.replace('{version}', version.version)
+txt=txt.replace('{version}', version.__version__)
 open(os.path.join(folder, 'genx.iss'), 'w').write(txt)
