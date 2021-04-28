@@ -11,6 +11,13 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.1.3
+=============
+ * Fix some GUI crashes on wxPython >=4.1
+ * Fix GUI issue/crash when auto update SLD is active (issue #177)
+ * Fix about dialog
+ * Use new DPI scaling function for better cross-platfrom high DPI handling, if available (wxPython >=4.1)
+
 Changes 3.1.2
 =============
  * Small fix of build system and contact email.
