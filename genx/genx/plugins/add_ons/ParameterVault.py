@@ -78,7 +78,7 @@ class Plugin(framework.Template):
             self._refplugin=None
 
     def create_toolbar(self):
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
         size=wx.Size(tb_bmp_size, tb_bmp_size)
 
@@ -254,7 +254,7 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                              style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_EDIT_LABELS)
         ListCtrlAutoWidthMixin.__init__(self)
         self.plugin=plugin
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         if sys.platform.startswith('win'):
             font=wx.Font(9,
                          wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL,

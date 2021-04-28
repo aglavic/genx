@@ -150,7 +150,7 @@ class SampleTable(gridlib.GridTableBase):
         
         self.grid.SetTable(self, True)
 
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
 
         self.grid.SetRowLabelSize(30*dpi_scale_factor)
         self.grid.SetColLabelSize(50*dpi_scale_factor)
@@ -799,7 +799,7 @@ class SamplePanel(wx.Panel):
         self._last_grid_data=[]
     
     def do_toolbar(self):
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         newid=wx.NewId()
@@ -1082,7 +1082,7 @@ class WizarSelectionPage(WizardPageSimple):
                  choice_label='', choices_help=None,
                  prev=None, next=None, bitmap=wx.NullBitmap):
         WizardPageSimple.__init__(self, parent, prev=prev, next=next, bitmap=bitmap)
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
 
         vbox=wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
@@ -1098,7 +1098,7 @@ class WizarSelectionPage(WizardPageSimple):
         self.ctrl=wx.RadioBox(self, label=choice_label, choices=choices,
                               style=wx.RA_SPECIFY_ROWS, majorDimension=4,
                               size=wx.Size(int(txt_length*(len(choices)//4+1)*dpi_scale_factor*8),
-                                           int(min(len(choices),4)*dpi_scale_factor*28)))
+                                           int(min(len(choices),4)*dpi_scale_factor*30)))
         vbox.Add(self.ctrl, 0, 0)
         if choices_help:
             for i, ti in enumerate(choices_help):
@@ -1359,7 +1359,7 @@ class Plugin(framework.Template):
         WizardPageSimple.Chain(p1,p2)
         WizardPageSimple.Chain(p2,p3)
 
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         wiz.SetPageSize(wx.Size(int(300*dpi_scale_factor), int(200*dpi_scale_factor)))
 
         if wiz.RunWizard(p1):

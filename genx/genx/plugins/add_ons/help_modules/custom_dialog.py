@@ -727,7 +727,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
             size = (24, 24)
         else:
             size = (-1, -1)
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         space = (5, -1)

@@ -78,8 +78,14 @@ class MainFrame(wx.Frame):
         debug('setup of MainFrame - wx.Frame\n')
         wx.Frame.__init__(self, *args, **kwds)
 
-        self.dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
-        debug('dpi_scale_factor=%g'%self.dpi_scale_factor)
+        try:
+            dpi_scale_factor=self.GetDPIScaleFactor()
+            debug("Detected DPI scale factor %s from GetDPIScaleFactor"%dpi_scale_factor)
+        except AttributeError:
+            dpi_scale_factor=self.GetContentScaleFactor()
+        debug("Detected DPI scale factor %s from GetContentScaleFactor"%dpi_scale_factor)
+        self.dpi_scale_factor=dpi_scale_factor
+        wx.GetApp().dpi_scale_factor=dpi_scale_factor
         tb_bmp_size=int(32*self.dpi_scale_factor)
 
         debug('setup of MainFrame - menu bar')
@@ -874,6 +880,7 @@ class MyApp(wx.App):
 
         main_frame = MainFrame(self, None, -1, "")
         self.SetTopWindow(main_frame)
+
         #main_frame.Show()
         if self.show_startup:
             main_frame.startup_dialog(config_path)

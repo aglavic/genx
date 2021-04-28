@@ -1191,7 +1191,7 @@ class SimulationListCtrl(wx.Panel):
 
     def do_toolbar(self):
         """Layout the toolbar"""
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         button_names = ['Insert', 'Delete', 'User Variables']
@@ -1375,7 +1375,7 @@ class EditList(wx.Panel):
     def do_toolbar(self):
         """Create and do the toolbar"""
         toolbar = wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         button_names = ['Insert', 'Delete', 'User Variables']
@@ -1527,7 +1527,7 @@ class DomainListCtrl(wx.Panel):
     def do_toolbar(self):
         """Create and do the toolbar"""
         toolbar = wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         button_names = ['Insert', 'Delete', 'User Variables']
@@ -2590,7 +2590,7 @@ class SlabDialog(wx.Dialog):
         Parameters:
             row (int): The row in the GridBagSizer to add an row to.
         """
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         btn = wx.BitmapButton(self.atom_panel, -1, wx.Bitmap(icons.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)))

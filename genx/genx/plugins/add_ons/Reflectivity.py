@@ -447,7 +447,7 @@ class SamplePanel(wx.Panel):
         self.update_callback = lambda event:''
 
     def do_toolbar(self):
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         newid = wx.NewId()
@@ -1019,7 +1019,7 @@ class DataParameterPanel(wx.Panel):
         self.SetSizer(boxver)
 
     def do_toolbar(self):
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()#wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         button_names = ['Insert', 'Delete', 'User Variables']
