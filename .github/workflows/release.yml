@@ -105,6 +105,6 @@ jobs:
         name: windows-dist
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe"
+        artifacts: "genx*.deb,genx*.tar.gz,GenX-*_win64_setup.exe"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
