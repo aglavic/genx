@@ -331,7 +331,7 @@ class SampleTable(gridlib.GridTableBase):
             else:
                 to_edit[col]=value
         self.updateModel()
-    
+
     def updateModel(self, evt=None):
         model_code=self.getModelCode()
         evt=update_model_event()
@@ -697,7 +697,7 @@ class SampleTable(gridlib.GridTableBase):
             out.append(li[0])
         out.append('Sub')
         return out
-    
+
     def update_layer_parameters(self, layer, dens=None, magn=None,
                                 d=None, sigma=None):
         # update the table during/after a fit, layer can be index or name
@@ -953,7 +953,7 @@ class SamplePanel(wx.Panel):
         The call is on the form func(event)
         '''
         self.update_callback=func
-    
+
     def Update(self, update_script=True):
         if update_script:
             self.update_callback(None)
@@ -1278,7 +1278,7 @@ class Plugin(framework.Template):
 
         self.parent.Unbind(EVT_UPDATE_PARAMETERS, handler=self.OnFitParametersUpdated)
         framework.Template.Remove(self)
-    
+
     def UpdateScript(self, event):
         self.WriteModel()
     
@@ -1384,7 +1384,7 @@ class Plugin(framework.Template):
         Loads the sample into the plugin...
         '''
         pass #self.ReadModel()
-    
+
     def OnSimulate(self, event):
         '''OnSimulate(self, event) --> None
 
@@ -1392,7 +1392,7 @@ class Plugin(framework.Template):
         '''
         # Calculate and update the sld plot
         self.sld_plot.Plot()
-    
+
     def OnFittingUpdate(self, event):
         '''OnFittingUpdate(self, event) --> None
 
@@ -1400,9 +1400,8 @@ class Plugin(framework.Template):
         '''
         # Calculate and update the sld plot
         if self.mb_autoupdate_sld.IsChecked():
-            self.sld_plot.Plot()
-        # self.sample_widget.Update(update_script=False)
-    
+            wx.CallAfter(self.sld_plot)
+
     def OnGridChange(self, event):
         self.sample_widget.CheckGridUpdate()
         self.sample_widget.Update(update_script=False)

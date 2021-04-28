@@ -2101,8 +2101,7 @@ class Plugin(framework.Template):
         '''
         # Calculate and update the sld plot
         if self.mb_autoupdate_sld.IsChecked():
-            self.sld_plot.Plot()
-        #self.sample_widget.Update(update_script=False)
+            wx.CallAfter(self.sld_plot.Plot)
 
     def OnGridChange(self, event):
         """ Updates the simualtion panel when the grid changes

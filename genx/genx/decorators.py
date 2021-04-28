@@ -5,6 +5,7 @@
 import sys
 import inspect
 import logging
+import threading
 from time import time
 from io import StringIO
 
@@ -149,11 +150,11 @@ def log_call(func, *args, **kw):
   if logging.root.getEffectiveLevel()>logging.DEBUG: return func(*args, **kw)
   infodict=getinfo(func)
   if len(infodict['argnames'])>0 and infodict['argnames'][0]=='self':
-    _logformat('%s.%s.%s'%(infodict['module'],
-                                   args[0].__class__.__name__, infodict['name']),
+    _logformat('%s.%s.%s <%s>'%(infodict['module'],
+                                   args[0].__class__.__name__, infodict['name'], repr(threading.current_thread())),
                'log_call', func)
   else:
-    _logformat('%s.%s'%(infodict['module'], infodict['name']), 'log_call', func)
+    _logformat('%s.%s <%s>'%(infodict['module'], infodict['name'], repr(threading.current_thread())), 'log_call', func)
   return func(*args, **kw)
 
 @decorator
