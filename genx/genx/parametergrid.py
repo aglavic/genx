@@ -1372,16 +1372,16 @@ class ParameterGrid(wx.Panel):
         """
         item = self.pmenu.FindItemById(event.GetId())
         # Check if the item should be edit manually
-        if item.GetText() == 'Simulate to see parameters':
+        if item.GetItemLabel() == 'Simulate to see parameters':
             self.parent.eh_tb_simulate(event)
             return
-        if item.GetText() == 'Manual Edit':
+        if item.GetItemLabel() == 'Manual Edit':
             if self.grid.CanEnableCellControl():
                 self.grid.EnableCellEditControl()
             return
         # GetText seems to screw up underscores a bit replacing the with a 
         # double one - this fixes it
-        text = item.GetText().replace('__', '_')
+        text = item.GetItemLabel().replace('__', '_')
         self.grid.SetCellValue(self.CurSelection[0], self.CurSelection[1], text)
         # Try to find out if the values also has an get function so that
         # we can init the value to the default!

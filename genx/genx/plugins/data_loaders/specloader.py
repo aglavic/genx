@@ -457,7 +457,7 @@ class SetNamePage(wx.adv.WizardPageSimple):
         self.manipSizer.Add(wx.StaticText(self, -1, "Name: "),
                              0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 10)
         self.xCtrl = wx.TextCtrl(self, -1, value = 'Name')
-        self.manipSizer.Add(self.xCtrl, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 10)
+        self.manipSizer.Add(self.xCtrl, 0, wx.EXPAND|wx.ALL, 10)
         self.sizer.Add(self.manipSizer, 0, wx.EXPAND|wx.ALIGN_CENTRE|wx.ALL)
         
         self.Bind(wx.adv.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)

@@ -1201,7 +1201,23 @@ def show_about_box(frame, event):
     Show an about box about GenX with some info...
     '''
     import numpy, scipy, matplotlib, platform
-    
+    useful=''
+    try:
+        import numba
+        useful+='Numba: %s, '%numba.__version__
+    except:
+        pass
+    try:
+        import vtk
+        useful+='VTK: %s, '%vtk.vtkVersion.GetVTKVersion()
+    except:
+        pass
+    try:
+        import dumps
+        useful+='Dumps: %s, '%dumps.__version__
+    except:
+        pass
+
     info = wx.adv.AboutDialogInfo()
     info.Name = "GenX"
     info.Version = __version__
@@ -1213,10 +1229,10 @@ def show_about_box(frame, event):
         
         "\n\nThe versions of the mandatory libraries are:\n"
         "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
-        "\nThe non-mandatory but useful packages:\n"
+        "\n\nThe non-mandatory but useful packages:\n%s"
         ""%(platform.python_version(), wx.__version__,
-            numpy.__version__.__version__, scipy.__version__.__version__, \
-            matplotlib.__version__),
+            numpy.__version__, scipy.__version__, \
+            matplotlib.__version__, useful),
         500, wx.ClientDC(frame))
     info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")
     # No developers yet

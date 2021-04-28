@@ -2235,10 +2235,10 @@ class ObjectDialog(wx.Dialog):
             col_box = wx.StaticBox(parent, -1, group[0])
             col_box_sizer = wx.StaticBoxSizer(col_box, wx.VERTICAL)
             group, group_tc = self.layout_group(self, object_interactor, group[1])
-            col_box_sizer.Add(group, flag=wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, border=self.border)
+            col_box_sizer.Add(group, flag=wx.EXPAND, border=self.border)
             for item in group_tc:
                 tc[item] = group_tc[item]
-            sizer.Add(col_box_sizer, flag=wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
+            sizer.Add(col_box_sizer, flag=wx.EXPAND)
         return sizer, tc
 
     def layout_group(self, parent, object_interactor, parameters):

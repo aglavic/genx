@@ -900,7 +900,7 @@ class StartUpConfigDialog(wx.Dialog):
         self.profiles = self.get_possible_configs()
         self.config_list = wx.ListBox(self, size = (-1, 200), choices = self.profiles, style = wx.LB_SINGLE)
         self.config_list.SetSelection(self.profiles.index('SimpleReflectivity'))
-        sizer.Add(self.config_list, 1, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 5)
+        sizer.Add(self.config_list, 1, wx.GROW|wx.TOP, 5)
         
         startup_cb = wx.CheckBox(self, -1, "Show at startup", style=wx.ALIGN_LEFT)
         startup_cb.SetValue(show_cb)
@@ -929,7 +929,7 @@ class StartUpConfigDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnClickOkay, okay_button)
 
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 20)
+        sizer.Add(line, 0, wx.GROW|wx.TOP, 20)
         
         sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(button_sizer,0,\

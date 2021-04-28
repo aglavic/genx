@@ -521,7 +521,7 @@ class ValidateBaseDialog(wx.Dialog):
         border.Add(self.main_sizer, 1, wx.GROW|wx.ALL, 5)
         
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        border.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        border.Add(line, 0, wx.GROW|wx.RIGHT|wx.TOP, 5)
         
         buttons = self.create_buttons()
         border.Add(buttons, flag = wx.ALIGN_RIGHT|wx.ALL, border = 5)
@@ -557,7 +557,7 @@ class ValidateBaseDialog(wx.Dialog):
                               border = 5)
             for item in group_tc:
                 tc[item] = group_tc[item]
-            sizer.Add(col_box_sizer, flag = wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND)
+            sizer.Add(col_box_sizer, flag = wx.EXPAND)
         return sizer, tc
     
     def layout_group(self, parent, pars, vals, editable_pars):
@@ -714,7 +714,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         border.Add(self.main_sizer, 1, wx.GROW|wx.ALL, 5)
         
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        border.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        border.Add(line, 0, wx.GROW|wx.RIGHT|wx.TOP, 5)
         
         buttons = self.create_buttons()
         border.Add(buttons, flag=wx.ALIGN_RIGHT|wx.ALL, border=5)
@@ -1172,7 +1172,7 @@ class ParameterExpressionCombo(wx.ComboCtrl):
         :return:
         """
         item = self.menu.FindItemById(event.GetId())
-        self.WriteText(item.GetText() + '()')
+        self.WriteText(item.GetItemLabel() + '()')
 
 
     # Overridden from ComboCtrl to avoid assert since there is no ComboPopup

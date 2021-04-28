@@ -1324,7 +1324,7 @@ class EditCustomParameters(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnAdd, self.add_button)
 
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        sizer.Add(line, 0, wx.GROW|wx.RIGHT|wx.TOP, 5)
         
         self.listbox = MyHtmlListBox(self, -1, size = (-1,150),\
             style =  wx.BORDER_SUNKEN)
@@ -1345,7 +1345,7 @@ class EditCustomParameters(wx.Dialog):
         
         
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        sizer.Add(line, 0, wx.GROW|wx.RIGHT|wx.TOP, 5)
         
         sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)
         self.SetSizer(sizer)
@@ -1516,7 +1516,7 @@ class SimulationExpressionDialog(wx.Dialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        sizer.Add(line, 0, wx.GROW|wx.RIGHT|wx.TOP, 5)
         sizer.Add((-1,5))
         
         sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)
@@ -1667,7 +1667,7 @@ class ParameterExpressionDialog(wx.Dialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        sizer.Add(line, 0, wx.GROW|wx.RIGHT|wx.TOP, 5)
         sizer.Add((-1,5))
         
         sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)

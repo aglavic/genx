@@ -1031,7 +1031,7 @@ class PlotSettingsDialog(wx.Dialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(gbs, 1, wx.GROW|wx.ALL, 10)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP, 5)
+        sizer.Add(line, 0, wx.GROW|wx.RIGHT|wx.TOP, 5)
         sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(button_sizer,0, wx.ALIGN_RIGHT, 5)
         sizer.Add((-1, 4), 0, wx.EXPAND)
@@ -1235,10 +1235,10 @@ class CalcDialog(wx.Dialog):
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((-1, 10), 0, wx.EXPAND)
-        sizer.Add(box_choice_sizer, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL, 20)
+        sizer.Add(box_choice_sizer, 0, wx.GROW, 20)
         sizer.Add(gbs, 1, wx.GROW|wx.ALL|wx.EXPAND, 20)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 20)
+        sizer.Add(line, 0, wx.GROW|wx.TOP, 20)
         
         sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(button_sizer,0,\

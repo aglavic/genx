@@ -353,7 +353,7 @@ class PluginController:
         '''
         # Get the name of the plugin
         menuitem = self.load_menu.FindItemById(event.GetId())
-        plugin = menuitem.GetText()
+        plugin = menuitem.GetItemLabel()
         try:
             self.plugin_handler.load_plugin(plugin)
         except:
@@ -372,7 +372,7 @@ class PluginController:
         UnLoads (removes) a plugin module.
         '''
         menuitem = self.unload_menu.FindItemById(event.GetId())
-        plugin = menuitem.GetText()
+        plugin = menuitem.GetItemLabel()
         if self.UnLoadPlugin_by_Name(plugin):
             # Remove the item from the list
             self.unload_menu.Delete(menuitem)

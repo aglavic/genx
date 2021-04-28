@@ -81,7 +81,7 @@ class PluginHelpDialog(wx.Frame):
         #button_sizer.Realize()
         
         #line = wx.StaticLine(self, -1, size=(40,-1), style=wx.LI_HORIZONTAL)
-        #sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 40)
+        #sizer.Add(line, 0, wx.GROW|wx.TOP, 40)
         
         #sizer.Add(button_sizer, 0, flag = wx.ALIGN_RIGHT, border = 20)
         self.SetSizer(sizer)

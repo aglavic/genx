@@ -200,9 +200,9 @@ class SettingsDialog(wx.Dialog):
         button_sizer.Realize()
         
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(box_sizer, 1, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL, 20)
+        sizer.Add(box_sizer, 1, wx.GROW, 20)
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_HORIZONTAL, 30)
+        sizer.Add(line, 0, wx.GROW, 30)
         
         sizer.Add(button_sizer,0,\
                 flag = wx.ALIGN_RIGHT, border = 20)
