@@ -9,6 +9,19 @@ import wx, os
 import  wx.html as  html
 from . import event_handlers as eh
 
+try:
+    from docutils.core import publish_doctree, publish_from_doctree
+    from docutils.parsers.rst import roles
+except ImportError:
+    def rst_html(text):
+        return "For proper display install docutils.<\br>\n"+text
+else:
+    def _role_fn(name, rawtext, text, lineno, inliner, options={}, content=[]):
+        return [], []
+    roles.register_canonical_role('mod', _role_fn)
+    def rst_html(text):
+        return publish_from_doctree(publish_doctree(text), writer_name='html').decode()
+
 class ExampleHandler:
     '''A class to handle the examples bundled with GenX
     '''
@@ -50,8 +63,8 @@ class ExampleHandler:
         eh.open_model(self.parent, path)
 
 class PluginHelpDialog(wx.Frame):
-    def __init__(self, parent, module):
-        wx.Frame.__init__(self, parent, -1, 'Models help')
+    def __init__(self, parent, module, title='Models help'):
+        wx.Frame.__init__(self, parent, -1, title)
         #self.SetAutoLayout(True)
         self.module = module
         self.sub_modules = True
@@ -60,10 +73,9 @@ class PluginHelpDialog(wx.Frame):
         choice_sizer = wx.BoxSizer(wx.HORIZONTAL)
         choice_sizer.Add(wx.StaticText(self, -1, 'Module: '),0 , wx.CENTER)
         mod_list = self.find_modules(module)
-	#if mod_list == []:
-        #    mod_list = [module]
+
         self.choice = wx.Choice(self, -1, choices = mod_list)
-        choice_sizer.Add(self.choice, 0, flag = wx.EXPAND|wx.CENTER,\
+        choice_sizer.Add(self.choice, 0, flag = wx.EXPAND|wx.CENTER,
 				 border = 20)
         self.Bind(wx.EVT_CHOICE, self.on_choice, self.choice)
         sizer.Add(choice_sizer, 0, wx.EXPAND, border = 20)
@@ -73,17 +85,6 @@ class PluginHelpDialog(wx.Frame):
                         style = wx.NO_FULL_REPAINT_ON_RESIZE)
         sizer.Add(self.html_win, 1, flag = wx.EXPAND, border = 20)
         
-        # Add the Dialog buttons
-        #button_sizer = wx.StdDialogButtonSizer()
-        #okay_button = wx.Button(self, wx.ID_OK)
-        #okay_button.SetDefault()
-        #button_sizer.AddButton(okay_button)
-        #button_sizer.Realize()
-        
-        #line = wx.StaticLine(self, -1, size=(40,-1), style=wx.LI_HORIZONTAL)
-        #sizer.Add(line, 0, wx.GROW|wx.TOP, 40)
-        
-        #sizer.Add(button_sizer, 0, flag = wx.ALIGN_RIGHT, border = 20)
         self.SetSizer(sizer)
         
         sizer.Fit(self)
@@ -137,10 +138,16 @@ class PluginHelpDialog(wx.Frame):
             else:
                 mod = __import__('%s'%(module), \
                              globals(), locals(), [''])
-            docs = mod.__doc__
         except Exception as e:
             docs = 'Could not load docstring for %s.'%sub_module
             docs += '\n The following exception occured: %s'%str(e)
+        else:
+            if mod.__doc__ is None:
+                docs="No documentation available for module."
+            elif '<h1>' in mod.__doc__:
+                docs=mod.__doc__
+            else:
+                docs=rst_html(mod.__doc__)
         if type(docs) != type(''):
             docs = 'The doc string is of the wrong type in module %s'%sub_module
         return docs

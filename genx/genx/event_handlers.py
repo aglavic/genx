@@ -1153,7 +1153,7 @@ def deactivate_cuda(frame, event):
 def fom_help(frame, event):
     '''Show a help dialog for information about the different fom.
     '''
-    dlg = help.PluginHelpDialog(frame, 'fom_funcs')
+    dlg = help.PluginHelpDialog(frame, 'fom_funcs', title="FOM functions help")
     dlg.Show()
 
 def models_help(frame, event):
@@ -1161,7 +1161,7 @@ def models_help(frame, event):
     
     Show a help dialog for information about the different models.
     '''
-    dlg = help.PluginHelpDialog(frame,'models')
+    dlg = help.PluginHelpDialog(frame,'models', title="Models help")
     dlg.Show()
     
 def plugins_help(frame, event):
@@ -1169,7 +1169,7 @@ def plugins_help(frame, event):
     
     Show a help dialog for information about the different plugins.
     '''
-    dlg = help.PluginHelpDialog(frame,'plugins.add_ons')
+    dlg = help.PluginHelpDialog(frame, 'plugins.add_ons', title="Plugins help")
     dlg.Show()
 
 def data_loaders_help(frame, event):
@@ -1177,7 +1177,7 @@ def data_loaders_help(frame, event):
     
     Show a help dialog for information about the different data_loaders.
     '''
-    dlg = help.PluginHelpDialog(frame,'plugins.data_loaders')
+    dlg = help.PluginHelpDialog(frame,'plugins.data_loaders', title="Data loaders help")
     dlg.Show()    
     
 def show_manual(frame, event):
