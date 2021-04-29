@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.1.4
+=============
+ * Fix bug in mag_ref (issue #178)
+ * Update GenX documentation website
+
 Changes 3.1.3
 =============
  * Fix some GUI crashes on wxPython >=4.1

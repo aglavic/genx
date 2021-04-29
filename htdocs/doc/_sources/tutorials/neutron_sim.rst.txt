@@ -24,7 +24,7 @@ Making a substrate
 So now we have the right model to simulate neutron reflectivity. The first step is to define a substrate.
 Double click on the substrate line in the list in the Sample tab, see below. This will pop up a dialog for
 feeding in numbers that defines the substrate layer. Put in the same numbers as the ones below. Note that the ``b``
-box should say: ``bc.Mg + bc.O`` and in the ``f`` box should be ``fp.Mg + fp.O``.
+box should say: ``bc.Mg + bc.O`` and in the ``f`` box should be ``fp.Mg + fp.O``
 
 .. image:: _attachments/neutron_sim/neutrons1_2.jpg
 
@@ -45,10 +45,6 @@ So what does all this mean? Here is a short explanations
     The magnetic moment per formula unit (same formula unit as b and dens refer to)
 ``sigma``
     The root mean square roughness of the top interface of the layer in Angstroms.
-
-.. note::
-    To access the scattering length of isotopes use an ``i`` in front of the name. For example: For 57Fe the
-    scattering length expression would be ``bc.i57Fe``. For Deuterium (2H) the expression would be ``bc.2H``.
 
 Doing a simulation
 ==================

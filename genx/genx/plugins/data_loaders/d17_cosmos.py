@@ -1,13 +1,20 @@
-''' <h1>D17 cosmos data loader</h1>
-Loads .out files from the cosmos program that is used to process time of flight 
+'''
+========================================
+:mod:`d17_cosmos` D17 cosmos data loader
+========================================
+
+Loads .out files from the cosmos program that is used to process time of flight
 data from the D17 iunstrument at the ILL. 
- <p>
-The default columns are the following:<br>
-First column q values; Second column Intensitiy values; 
-Third values The unceratinty in the Intensities;
-Fourth column q-resolution;
+
+The default columns are the following:
+
+* First column q values
+* Second column Intensitiy values
+* Third values The unceratinty in the Intensities
+* Fourth column q-resolution
+
 The data loader skips the first 36 lines of the file which is assumed to be the header.
- The other settings are just as in the default data loader.<p>
+The other settings are just as in the default data loader.
 
 The resolution is stored as the member variable res. Can be accessed, for data set 0, 
 data[0].x

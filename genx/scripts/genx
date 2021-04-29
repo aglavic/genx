@@ -12,7 +12,8 @@ except ImportError:
     sys.path.insert(0, genx_path)
 finally:
     from genx import version, model
-    from genx.gui_logging import setup_system, iprint
+    from genx.gui_logging import setup_system, iprint, activate_logging
+
 
 def start_interactive(args):
     ''' Start genx in interactive mode (with the gui)
@@ -338,7 +339,7 @@ def set_optimiser_pars(optimiser, args):
     #    print "kr not set has to be bigger than 0"
 
 if __name__ == "__main__":
-    setup_system()  
+    setup_system()
     import multiprocessing
     multiprocessing.freeze_support()
     # Attempt to load mpi:
@@ -379,11 +380,18 @@ if __name__ == "__main__":
                             help='Load file into active data set. Index starting at 0.')
     data_group.add_argument('--export', dest='save_datafile',
                             help='Save active data set to file. Index starting at 0.')
+    data_group.add_argument('-l', '--logfile', dest='logfile', default=None, type=str,
+                            help='Output debug information to logfile.')
+    data_group.add_argument('--debug', dest='debug', default=False,
+                            help='Save active data set to file. Index starting at 0.')
 
     parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
 
     args = parser.parse_args()
+    if args.logfile:
+        activate_logging(args.logfile)
+    debug("Arguments from parser: %s"%args)
     if not args.outfile:
         args.outfile = args.infile
     args.outfile = os.path.abspath(args.outfile)
@@ -421,5 +429,3 @@ if __name__ == "__main__":
             sys.stdout = open(log_file_path + '/genx.log', 'w')
             sys.stderr = open(log_file_path + '/genx.log', 'w')
         start_interactive(args)
-
-

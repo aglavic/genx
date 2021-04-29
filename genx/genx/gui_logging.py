@@ -16,7 +16,7 @@ from io import StringIO
 from .version import __version__ as str_version
 
 # default options used if nothing is set in the configuration
-CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.WARNING, logging.INFO, logging.INFO
+CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.WARNING, logging.DEBUG, logging.INFO
 
 # set log levels according to options
 if 'pdb' in list(sys.modules.keys()) or 'pydevd' in list(sys.modules.keys()):
@@ -78,25 +78,18 @@ def numpy_logger(err, flag):
 def setup_system():
   logger=logging.getLogger()
   logger.setLevel(min(FILE_LEVEL, CONSOLE_LEVEL, GUI_LEVEL))
-  if not sys.platform.startswith('win'):
-    # no console logger for windows (win32gui)
-    console=logging.StreamHandler(sys.__stdout__)
-    formatter=logging.Formatter('%(levelname) 7s: %(message)s')
-    console.setFormatter(formatter)
-    console.setLevel(CONSOLE_LEVEL)
-    logger.addHandler(console)
-  if False:
-    logfile=logging.FileHandler('genx.log', 'w')
-    formatter=logging.Formatter('[%(levelname)s] - %(asctime)s - %(filename)s:%(lineno)i:%(funcName)s %(message)s', '')
-    logfile.setFormatter(formatter)
-    logfile.setLevel(FILE_LEVEL)
-    logger.addHandler(logfile)
+
+  # no console logger for windows (win32gui)
+  console=logging.StreamHandler(sys.__stdout__)
+  formatter=logging.Formatter('%(levelname) 7s: %(message)s')
+  console.setFormatter(formatter)
+  console.setLevel(CONSOLE_LEVEL)
+  logger.addHandler(console)
 
   logging.getLogger('matplotlib').setLevel(logging.WARNING)
   if min(FILE_LEVEL, CONSOLE_LEVEL, GUI_LEVEL)>logging.DEBUG:
     logging.getLogger('numba').setLevel(logging.WARNING)
   logging.info('*** GenX %s Logging started ***'%str_version)
-
 
   # define numpy warning behavior
   global nplogger
@@ -116,3 +109,14 @@ def setup_system():
   # write information on program exit
   # sys.excepthook=excepthook_overwrite
   atexit.register(goodby)
+
+def activate_logging(logfile):
+  logger=logging.getLogger()
+  logfile=logging.FileHandler(logfile, 'w')
+  formatter=logging.Formatter('[%(levelname)s] - %(asctime)s - %(filename)s:%(lineno)i:%(funcName)s %(message)s', '')
+  logfile.setFormatter(formatter)
+  logfile.setLevel(FILE_LEVEL)
+  logger.addHandler(logfile)
+  logger.info('*** GenX %s Logging started to file ***'%str_version)
+
+

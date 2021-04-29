@@ -1,4 +1,0 @@
-.. py:module:: genx.data
-
-
-.. automodule:: genx.models.spec_nx

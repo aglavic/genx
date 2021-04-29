@@ -1,214 +1,194 @@
+
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Installation &#8212; GenX 2.4.9 documentation</title>
-    
-    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Installation &#8212; GenX 3.1.3 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootswatch-3.3.6/flatly/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.4.9',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
     <link rel="shortcut icon" href="_static/genx.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tutorials" href="tutorials.html" />
-    <link rel="prev" title="Welcome to GenX’s documentation!" href="index.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="prev" title="Welcome to GenX’s documentation!" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorials.html" title="Tutorials"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to GenX’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.1.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
+      </ul>
+    </div>  
 
-  </head>
-  <body role="document">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installation">
+<span id="install"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="windows">
+<h2>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h2>
+<p>Download the windows installer GenX-3.X.X_win64_setup.exe from the home page and follow the instructions in the installation
+guide.</p>
+</div>
+<div class="section" id="mac-os-x">
+<h2>Mac OS-X<a class="headerlink" href="#mac-os-x" title="Permalink to this headline">¶</a></h2>
+<p>Install the required python 3 packages, especially wxPython. I would advice using a new Anaconda environment.
+Afterwards you can install GenX from source.</p>
+</div>
+<div class="section" id="linux">
+<h2>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
+<p>Install the requirements, at least wxPython, from your package manager (Ubuntu <code class="docutils literal notranslate"><span class="pre">python3-wxgtk4.0</span></code>).
+Then either install from source or, if you are using Ubuntu or a derivative, you can use the pre build .deb packages
+for your system python version.</p>
+</div>
+<div class="section" id="from-source">
+<h2>From source<a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h2>
+<p>Download the source distribution GenX-3.X.X.tar.gz and unpack it. Run the file scripts/genx directly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tar -xvzf GenX-3.X.X.tar.gz
+<span class="nb">cd</span> GenX-3.X.X
+python3 scripts/genx
+</pre></div>
+</div>
+<p>You can also install it in your python 3 environment as user <code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">--user</span> <span class="pre">genx3</span></code> or
+system wide <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">genx3</span></code> and run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install --user genx3
+genx
+</pre></div>
+</div>
+<div class="section" id="anaconda">
+<h3>Anaconda<a class="headerlink" href="#anaconda" title="Permalink to this headline">¶</a></h3>
+<p>You can create a suitable anaconda environment using the following commands, i:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create --name genx <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9 matplotlib appdirs h5py scipy numba psutil pymysql
+conda activate genx
+conda install wxpython <span class="c1"># you might need a different channel, e.g. conda-forge</span>
+pip install genx3
+genx
+<span class="c1"># if the command is not recognized you can try instead</span>
+python -m genx.run
+</pre></div>
+</div>
+<p>You can also try <a class="reference download internal" download="" href="_downloads/34da863ef3e1a937bc8feb9258203ec7/conda.yml"><code class="xref download docutils literal notranslate"><span class="pre">this</span></code></a> environment file with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">--file</span> <span class="pre">conda.yml</span></code>.</p>
+</div>
+<div class="section" id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
+<p>The needed dependencies are:</p>
+<ul class="simple">
+<li><p>Python &gt;= 3.6</p></li>
+<li><p>wxPython version &gt; 4.0</p></li>
+<li><p>Numpy version &gt; 1.0</p></li>
+<li><p>Scipy version &gt; 0.5</p></li>
+<li><p>Matplotlib version &gt; 0.9</p></li>
+<li><p>appdirs version &gt; 1.2</p></li>
+<li><p>h5py</p></li>
+</ul>
+<p>The non-mandotary packages are</p>
+<ul class="simple">
+<li><p>mpi4py (with an MPI installation)</p></li>
+<li><p>numba (calculation speedup by Just In Time compiler)</p></li>
+<li><p>vtk (graphical display of unit cells)</p></li>
+</ul>
+<p>On a Linux system these packages can usually be installed through the package manager. On a windows and OSX systems the
+anaconda distribution contains all packages.</p>
+</div>
+</div>
+</div>
 
-  <div id="navbar" class="navbar navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="index.html">
-          GenX</a>
-        <span class="navbar-text navbar-version pull-left"><b>2.4</b></span>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
       </div>
-
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
-            
-            
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="index.html">Content <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#windows">Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mac-os-x">Mac OS-X</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#from-source">From source</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#reflectivity">Reflectivity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#surface-x-ray-diffraction">Surface x-ray diffraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#other-tutorials">Other tutorials</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="faq.html#general">General</a></li>
-<li class="toctree-l2"><a class="reference internal" href="faq.html#fitting">Fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="faq.html#reflectivity">Reflectivity</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="development.html">Development documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="development/data.html">Data classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/write_data_loader.html">How to write a Data Loader</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/write_fom.html">Writing a FOM function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/packaging.html">How to package GenX</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/mag_refl.html">A model for magnetic reflectivity</a></li>
-</ul>
-</li>
-</ul>
-</ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#windows">Windows</a></li>
 <li><a class="reference internal" href="#mac-os-x">Mac OS-X</a></li>
+<li><a class="reference internal" href="#linux">Linux</a></li>
 <li><a class="reference internal" href="#from-source">From source</a><ul>
+<li><a class="reference internal" href="#anaconda">Anaconda</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-</ul>
-</li>
-              
-            
-            
-            
-            
-            
-          </ul>
 
-          
-            
-<form class="navbar-form navbar-right" action="search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
-          
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to GenX’s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorials.html"
+                        title="next chapter">Tutorials</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/install.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
+      </div>
+      <div class="clearer"></div>
     </div>
-  </div>
-
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
-      
-  <div class="section" id="installation">
-<span id="install"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="windows">
-<h2>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h2>
-<p>Download the windows installer GenX-2.X.X-win.exe from the home page and follow the instructions in the installation
-guide.</p>
-</div>
-<div class="section" id="mac-os-x">
-<h2>Mac OS-X<a class="headerlink" href="#mac-os-x" title="Permalink to this headline">¶</a></h2>
-<p>Download the disk image GenX-2.X.X-osx.dmg, open it and drag the GenX app to the application folder.</p>
-</div>
-<div class="section" id="from-source">
-<h2>From source<a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h2>
-<p>Download the source distribution GenX-2.X.X-source.zip and unzip it. Run the file genx.py directly with the
-command <code class="docutils literal"><span class="pre">python</span> <span class="pre">genx.py</span></code>.</p>
-<div class="section" id="requirements">
-<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
-<p>The needed dependencies are:</p>
-<ul class="simple">
-<li>Python newer than 2.3.5</li>
-<li>wxPython version &gt; 3.0</li>
-<li>Numpy version &gt; 1.0</li>
-<li>Scipy version &gt; 0.5</li>
-<li>Matplotlib version &gt; 0.9</li>
-<li>appdirs version &gt; 1.2</li>
-<li>h5py</li>
-</ul>
-<p>The non-mandotary packages are</p>
-<ul class="simple">
-<li>mpi4py (with an MPI installation)</li>
-</ul>
-<p>On a Linux system these packages can usually be installed through the package manager. On a windows system the
-python (x,y) distribution contains all packages except appdirs which can be installed from the python package index.
-On OS-X all the package has to be installed separately.</p>
-</div>
-</div>
-</div>
-
-
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorials.html" title="Tutorials"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to GenX’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.1.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
+      </ul>
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-        <br/>
-        
-<div id="sourcelink">
-  <a href="_sources/install.rst.txt"
-     rel="nofollow">Source</a>
-</div>
-      
-    </p>
-    <p>
-        &copy; Copyright 2017, Matts Björck.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.<br/>
-    </p>
-  </div>
-</footer>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+    </div>
   </body>
 </html>

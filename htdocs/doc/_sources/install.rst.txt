@@ -7,27 +7,65 @@ Installation
 Windows
 =======
 
-Download the windows installer GenX-2.X.X-win.exe from the home page and follow the instructions in the installation
+Download the windows installer GenX-3.X.X_win64_setup.exe from the home page and follow the instructions in the installation
 guide.
 
 Mac OS-X
 ========
 
-Download the disk image GenX-2.X.X-osx.dmg, open it and drag the GenX app to the application folder.
+Install the required python 3 packages, especially wxPython. I would advice using a new Anaconda environment.
+Afterwards you can install GenX from source.
+
+Linux
+=====
+
+Install the requirements, at least wxPython, from your package manager (Ubuntu ``python3-wxgtk4.0``).
+Then either install from source or, if you are using Ubuntu or a derivative, you can use the pre build .deb packages
+for your system python version.
 
 From source
 ===========
 
-Download the source distribution GenX-2.X.X-source.zip and unzip it. Run the file genx.py directly with the
-command ``python genx.py``.
+Download the source distribution GenX-3.X.X.tar.gz and unpack it. Run the file scripts/genx directly:
+
+.. code-block:: bash
+
+    tar -xvzf GenX-3.X.X.tar.gz
+    cd GenX-3.X.X
+    python3 scripts/genx
+
+You can also install it in your python 3 environment as user ``pip3 install --user genx3`` or
+system wide ``sudo pip3 install genx3`` and run:
+
+.. code-block:: bash
+
+    pip3 install --user genx3
+    genx
+
+Anaconda
+--------
+
+You can create a suitable anaconda environment using the following commands, i:
+
+.. code-block:: bash
+
+    conda create --name genx python=3.9 matplotlib appdirs h5py scipy numba psutil pymysql
+    conda activate genx
+    conda install wxpython # you might need a different channel, e.g. conda-forge
+    pip install genx3
+    genx
+    # if the command is not recognized you can try instead
+    python -m genx.run
+
+You can also try :download:`this <_attachments/conda.yml>` environment file with ``conda env create --file conda.yml``.
 
 Requirements
 ------------
 
 The needed dependencies are:
 
-* Python newer than 2.3.5
-* wxPython version > 3.0
+* Python >= 3.6
+* wxPython version > 4.0
 * Numpy version > 1.0
 * Scipy version > 0.5
 * Matplotlib version > 0.9
@@ -37,7 +75,8 @@ The needed dependencies are:
 The non-mandotary packages are
 
 * mpi4py (with an MPI installation)
+* numba (calculation speedup by Just In Time compiler)
+* vtk (graphical display of unit cells)
 
-On a Linux system these packages can usually be installed through the package manager. On a windows system the
-python (x,y) distribution contains all packages except appdirs which can be installed from the python package index.
-On OS-X all the package has to be installed separately.
+On a Linux system these packages can usually be installed through the package manager. On a windows and OSX systems the
+anaconda distribution contains all packages.

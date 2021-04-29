@@ -7,11 +7,9 @@
 Welcome to GenX's documentation!
 ********************************
 
-GenX is a tool to refine x-ray, neutron reflectivity data as well as surface x-ray diffraction data written in Python.
-The refinement is
-conducted with an optimization algorithm called differential evolution which is very robust. The model in GenX
-is defined through a scripting. However, for reflectivity measurements a graphical plugin is available to
-make it more user friendly.
+GenX is a tool to refine x-ray, neutron reflectivity as well as surface x-ray diffraction data written in Python.
+The refinement is conducted with an optimization algorithm called differential evolution which is very robust.
+The refelctivity model in GenX is build using a graphical plugin but can be highly customized in a script.
 
 The documentation is based on tutorials as well as more in depth description of the program. Below you can find the
 table of contents. It is recommended, for the beginner, to start with the tutorials.
@@ -20,7 +18,11 @@ I hope I will get help from users to update and correct the manuals and tutorial
 something that is missing please let me know! If you miss a page please contact me and we can discuss if and where
 it should be added.
 
-Support is given through the mail list genx-support@lists.sourceforge.net or through e-mail to matts.bjorck@gmail.com.
+Support is given through the issue tracker on `Source Forge <https://sourceforge.net/p/genx/tickets/>`_ or
+through e-mail to artur.glavic@psi.ch.
+
+.. note::
+   The current status of the documentation is still primarily based on the GenX 2 version, so some details may be outdated.
 
 Contents
 ========

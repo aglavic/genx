@@ -4,46 +4,27 @@
 How to package GenX
 *******************
 
+.. note::
+    This is outdated and no more valid for GenX 3. An automatic packaging
+    script is placed into the git repository to be run on github automatically.
+    Only the PyPI distribution and upload to sourceforge is manual.
+
 #. Update README.txt
-#. Tag a release into the tags folder.
 #. Change the content in the ``version.py`` file
+#. Create commit on git.
+#. Tag a release into the tags folder.
 
-OS-X
-====
+Right now I could not get a binary OSX distribution to work, please let me know if you find a solution.
 
-#. ``cd models/lib; rm *.cpp; rm *.so; rm *.pyd; python build_ext.py; cd ../..``
-#. ``cd dist; rm -R *; cd ..``
-#. ``run python setup.py py2app``
-#. ``cd mac_build; mv ../dist/GenX.app .``
-#. ``appdmg appdmg.json GenX-2.X.X-OSX.dmg``
+PyPI distribution
+-----------------
 
-Win 7/Win 8
-===========
-#. copy the tagged version to desktop
-#. Go to vX.Y.Z/models/lib; del *.so; del *.cpp; del *.pyc
-#. python build_ext.py
-#. Go to vX.Y.Z
-#. python -m compileall .
-#. python setup.py py2exe
-#. Open vX.Y.Z/windows_build/genx.iss with Inno Script Studio change AppVerName
-#. In Inno Script Studio press Ctrl+F9 to compile script.
+The steps needed for PyPI are:
 
-Source
-======
-#. Copy the current release and rename the folder to genx
-#. Zip it.
-#. Rename the archive to GenX-2.X.X-source.zip
+.. code::
 
-Testing
-=======
-#. Remove AppData/MattsBjorck on Win7 & Win8
-#. Install GenX on the machines
-#. Run the examples
+    python -m build
+    python -m twine upload build/*
+    user: __token__
+    password: {secret token}
 
-Distributing
-============
-#. Create a folder GenX2.X.X on sourceforge
-#. Upload the files GenX-2.X.X-OSX.dmg, GenX-2.X.X-win.exe and GenX-2.X.X-source.zip to the folder.
-#. Set the default downlodd for each file.
-#. Update the homepage by editing download_box.html (changing link and header)
-#. run websync to update the server.

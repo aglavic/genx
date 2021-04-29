@@ -1,9 +1,12 @@
-''' <h1>Default data loader</h1>
+'''
+==================================
+:mod:`default` Default data loader
+==================================
 
 Loads the data from whitespace seperated column formatted ascii data files.
 The module allows the specification of which columns that correspond to the
 x, y and y_error columns in the data file. 
-If y_error is not used the it can safely be set to the same column as y. <p>
+If y_error is not used the it can safely be set to the same column as y.
 
 Which columns that are imported are determined from the dialog box in 
 import settings. Note that these settings apply to the marked data set(s).

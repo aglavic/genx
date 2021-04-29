@@ -1,159 +1,51 @@
+
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Fitting of x-ray reflectivity data &#8212; GenX 2.4.9 documentation</title>
-    
-    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fitting of x-ray reflectivity data &#8212; GenX 3.1.3 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootswatch-3.3.6/flatly/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '2.4.9',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
     <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Neutron reflectivity tutorial" href="neutron_sim.html" />
-    <link rel="prev" title="Writing a custom model" href="writing_model.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="prev" title="Writing a custom model" href="writing_model.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="neutron_sim.html" title="Neutron reflectivity tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="writing_model.html" title="Writing a custom model"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Fitting of x-ray reflectivity data</a></li> 
+      </ul>
+    </div>  
 
-  </head>
-  <body role="document">
-
-  <div id="navbar" class="navbar navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="../index.html">
-          GenX</a>
-        <span class="navbar-text navbar-version pull-left"><b>2.4</b></span>
-      </div>
-
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
-            
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="../index.html">Content <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../install.html#windows">Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../install.html#mac-os-x">Mac OS-X</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../install.html#from-source">From source</a></li>
-</ul>
-</li>
-<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#introduction">Introduction</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#reflectivity">Reflectivity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#surface-x-ray-diffraction">Surface x-ray diffraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#other-tutorials">Other tutorials</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../faq.html#general">General</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../faq.html#fitting">Fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../faq.html#reflectivity">Reflectivity</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../development.html">Development documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../development/data.html">Data classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../development/write_data_loader.html">How to write a Data Loader</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../development/write_fom.html">Writing a FOM function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../development/packaging.html">How to package GenX</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../development/mag_refl.html">A model for magnetic reflectivity</a></li>
-</ul>
-</li>
-</ul>
-</ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Fitting of x-ray reflectivity data</a><ul>
-<li><a class="reference internal" href="#getting-started">Getting started</a></li>
-<li><a class="reference internal" href="#loading-the-data">Loading the data</a></li>
-<li><a class="reference internal" href="#creating-a-sample">Creating a sample</a></li>
-<li><a class="reference internal" href="#coupling-parameters">Coupling parameters</a></li>
-<li><a class="reference internal" href="#fitting-the-data">Fitting the data</a><ul>
-<li><a class="reference internal" href="#defining-fit-parameters">Defining fit parameters</a></li>
-<li><a class="reference internal" href="#the-grid">The Grid</a></li>
-<li><a class="reference internal" href="#starting-the-fit">Starting the fit</a></li>
-<li><a class="reference internal" href="#stopping-the-fit">Stopping the fit</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#analyze-the-fit">Analyze the Fit</a></li>
-</ul>
-</li>
-</ul>
-</ul>
-</li>
-              
-            
-            
-            
-            
-            
-          </ul>
-
-          
-            
-<form class="navbar-form navbar-right" action="../search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
-          
-        </div>
-    </div>
-  </div>
-
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
-      
   <div class="section" id="fitting-of-x-ray-reflectivity-data">
 <span id="tutorial-xrr-fitting"></span><h1>Fitting of x-ray reflectivity data<a class="headerlink" href="#fitting-of-x-ray-reflectivity-data" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="getting-started">
@@ -166,7 +58,7 @@ and Simulations. This is where we will define our sample later.</p>
 <h2>Loading the data<a class="headerlink" href="#loading-the-data" title="Permalink to this headline">¶</a></h2>
 <p>Load the data by clicking on the folder icon the data tab (leftmost splitter window). Remember that a data set has
 to be marked in the list below. If you started fresh the data set will have the name Data 0.
-Download the file <a class="reference download internal" href="../_downloads/xray-tutorial.dat" download=""><code class="xref download docutils literal"><span class="pre">xray-tutorial.dat</span></code></a>. In the file dialog choose
+Download the file <a class="reference download internal" download="" href="../_downloads/49062e5354942263f8009176a80e6073/xray-tutorial.dat"><code class="xref download docutils literal notranslate"><span class="pre">xray-tutorial.dat</span></code></a>. In the file dialog choose
 the downloaded file.The data should appear in the plot on the right, tab Data. Change the y-scale to logarithmic by right clicking on
 the plot and choose y-scale - log. If you would like to inspect the data values click on the tab View in the left part
 of the window. In the top of that tab there is a choice box, choose your data set. All the data in the data set will
@@ -214,8 +106,8 @@ that should be fitted. Note that the custom parameter we defined earlier is foun
 to fill the list so it looks like the screenshot below. In total we will fit 14 parameters.</p>
 <img alt="../_images/xray1_5.png" src="../_images/xray1_5.png" />
 <div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">Do not try to fit the scattering length since the imaginary part of
+<p class="admonition-title">Warning</p>
+<p>Do not try to fit the scattering length since the imaginary part of
 the scattering length will be remove. GenX only fits real valued parameters. Also the parameters Layers and
 Stacks in the Layer and Stack objects should under no circumstances be fitted.</p>
 </div>
@@ -260,7 +152,7 @@ fitting the fit will be reinitialized and everything will be started from the be
 </div>
 <div class="section" id="analyze-the-fit">
 <h2>Analyze the Fit<a class="headerlink" href="#analyze-the-fit" title="Permalink to this headline">¶</a></h2>
-<p>Let&#8217;s hope that the fit you got looked good. The FOM should be below 0.1, i.e., 8e-2. The first thing we want to do
+<p>Let’s hope that the fit you got looked good. The FOM should be below 0.1, i.e., 8e-2. The first thing we want to do
 after we got a god fit is to study the errorbars on the values. Click on the calculate errorbar button on the toolbar,
 see below.</p>
 <img alt="../_images/xray1_7.png" src="../_images/xray1_7.png" />
@@ -269,8 +161,8 @@ see below.</p>
 order to get as good estimate in a multi-dimensional fit GenX logs all the parameter evaluations and uses these to
 find the min and max values corresponding to the increase. The level can be changed in the menu Settings-Optimizer.</p>
 <div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">This is not a strictly a valid statistical estimation. Most x-ray data does not have valid errorbars
+<p class="admonition-title">Warning</p>
+<p>This is not a strictly a valid statistical estimation. Most x-ray data does not have valid errorbars
 and are swamped with systematic error. That is the systematic errors are dominating. Therefore it is usually hard to
 fit x-ray reflectivity with a Chi2 criteria where we actually can calculate valid errorbars. This will be included in
 GenX in the future. However, to my knowledge this procedure gives a pretty good estimate on the error, alas without
@@ -299,28 +191,84 @@ substrate and the Pt buffer.</p>
 </div>
 
 
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Fitting of x-ray reflectivity data</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+<li><a class="reference internal" href="#loading-the-data">Loading the data</a></li>
+<li><a class="reference internal" href="#creating-a-sample">Creating a sample</a></li>
+<li><a class="reference internal" href="#coupling-parameters">Coupling parameters</a></li>
+<li><a class="reference internal" href="#fitting-the-data">Fitting the data</a><ul>
+<li><a class="reference internal" href="#defining-fit-parameters">Defining fit parameters</a></li>
+<li><a class="reference internal" href="#the-grid">The Grid</a></li>
+<li><a class="reference internal" href="#starting-the-fit">Starting the fit</a></li>
+<li><a class="reference internal" href="#stopping-the-fit">Stopping the fit</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#analyze-the-fit">Analyze the Fit</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="writing_model.html"
+                        title="previous chapter">Writing a custom model</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="neutron_sim.html"
+                        title="next chapter">Neutron reflectivity tutorial</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/xrr_fitting.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
     </div>
-      
-  </div>
 </div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-        <br/>
-        
-<div id="sourcelink">
-  <a href="../_sources/tutorials/xrr_fitting.rst.txt"
-     rel="nofollow">Source</a>
-</div>
-      
-    </p>
-    <p>
-        &copy; Copyright 2017, Matts Björck.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.<br/>
-    </p>
-  </div>
-</footer>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="neutron_sim.html" title="Neutron reflectivity tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="writing_model.html" title="Writing a custom model"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Fitting of x-ray reflectivity data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+    </div>
   </body>
 </html>

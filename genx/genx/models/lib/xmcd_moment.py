@@ -688,7 +688,7 @@ class SpectrumComponent(refl.ReflBase):
 
 
 class Background2p(refl.ReflBase):
-    """ A class to model the 2p background spectra, the non-resonant part, with a smoothed step function.
+    r""" A class to model the 2p background spectra, the non-resonant part, with a smoothed step function.
 
 
     Parameters:
@@ -697,14 +697,12 @@ class Background2p(refl.ReflBase):
         pre_edge (float): The width of the pre edge region (eV).
         post_edge (float): The width of the post edge region (eV).
         de (float): The sampling spacing for the recalcualted table (eV).
-        kk_emax (float): The maximum energy values taken from the tables in eV. The value should be well
-                         above the K edge.
-        element (string): The element to which the background applies. Used to find theoretical f values (from the nist
-                          database), position of the L2/L3 edge and Z (number of electrons).
+        kk_emax (float): The maximum energy values taken from the tables in eV. The value should be well above the K edge.
+        element (string): The element to which the background applies. Used to find theoretical f values (from the nist database), position of the L2/L3 edge and Z (number of electrons).
         parent (Spectra2p): The parent spectra to which the Background applies.
 
 
-     The background, B, is modelled with two error function according to
+    The background, B, is modelled with two error function according to
 
     .. math::
         B = a_0 + a_1 e + (a_2 + a_3 e) \Phi(e, e_l3) + (a_4 + a_5 e) \Phi(e, e_l2),
@@ -712,7 +710,7 @@ class Background2p(refl.ReflBase):
     where
 
     .. math::
-        \Phi(e, e_0) = \frac{1}{2}\left( 1 + \mathrm{erf}\left( \frac{e - e_0}{\sqrt(2) \sigma \right)\right).
+        \Phi(e, e_0) = \frac{1}{2}\left( 1 + \mathrm{erf}\left( \frac{e - e_0}{\sqrt{2} \sigma} \right)\right).
 
     This function is used to up-sample the theoretical, tabulates, f2 values for the spectral region (the L2/L3 within
     the pre and post edge values) to a point spacing of de. This data then replaces the data in the tabulated f2 values
@@ -1040,9 +1038,6 @@ class ModelGoering:
 def create_interval(x, x_min, x_max):
     """ Creates a closed slice [x_min, x_max] where x_min < x[slice] < x_max.
 
-        x:
-        x_min:
-        x_max:
     Returns:
         slice object
     """

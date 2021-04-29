@@ -1,152 +1,51 @@
+
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Data handling &#8212; GenX 2.4.9 documentation</title>
-    
-    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data handling &#8212; GenX 3.1.3 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootswatch-3.3.6/flatly/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '2.4.9',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
     <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Fitting with Differential Evolution" href="diffev.html" />
-    <link rel="prev" title="Plugins: an introduction" href="plugin.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="prev" title="Plugins: an introduction" href="plugin.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="diffev.html" title="Fitting with Differential Evolution"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plugin.html" title="Plugins: an introduction"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Data handling</a></li> 
+      </ul>
+    </div>  
 
-  </head>
-  <body role="document">
-
-  <div id="navbar" class="navbar navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="../index.html">
-          GenX</a>
-        <span class="navbar-text navbar-version pull-left"><b>2.4</b></span>
-      </div>
-
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
-            
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="../index.html">Content <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../install.html#windows">Windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../install.html#mac-os-x">Mac OS-X</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../install.html#from-source">From source</a></li>
-</ul>
-</li>
-<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#reflectivity">Reflectivity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#surface-x-ray-diffraction">Surface x-ray diffraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#other-tutorials">Other tutorials</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../faq.html#general">General</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../faq.html#fitting">Fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../faq.html#reflectivity">Reflectivity</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../development.html">Development documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../development/data.html">Data classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../development/write_data_loader.html">How to write a Data Loader</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../development/write_fom.html">Writing a FOM function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../development/packaging.html">How to package GenX</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../development/mag_refl.html">A model for magnetic reflectivity</a></li>
-</ul>
-</li>
-</ul>
-</ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Data handling</a><ul>
-<li><a class="reference internal" href="#adding-removing">Adding/Removing</a></li>
-<li><a class="reference internal" href="#loading">Loading</a></li>
-<li><a class="reference internal" href="#viewing">Viewing</a></li>
-<li><a class="reference internal" href="#calculations-transformations">Calculations/Transformations</a></li>
-<li><a class="reference internal" href="#exporting">Exporting</a></li>
-</ul>
-</li>
-</ul>
-</ul>
-</li>
-              
-            
-            
-            
-            
-            
-          </ul>
-
-          
-            
-<form class="navbar-form navbar-right" action="../search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
-          
-        </div>
-    </div>
-  </div>
-
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
-      
   <div class="section" id="data-handling">
 <span id="tutorial-data-handling"></span><h1>Data handling<a class="headerlink" href="#data-handling" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="adding-removing">
@@ -161,15 +60,15 @@ down in the list by using the two blue arrows.</p>
 by double clicking or clicking twice (platform dependent, I believe) on the dataset name.</p>
 <p>Lastly, the three different columns after name in the data list shows the status for each data set with regards
 to plotting and fitting. The following list will explain them:</p>
-<dl class="docutils">
-<dt>Show</dt>
-<dd>Whether or not to plot the dataset in the plot window. If Yes it will be plotted.</dd>
-<dt>Use</dt>
-<dd>If the dataset should be used to calculate the Figure of merit FOM. If Yes it is used. This is for fitting.</dd>
-<dt>Use Error</dt>
-<dd>If the error bars on the data should be used in _both_ plotting and fitting. The fitting part only works
+<dl class="simple">
+<dt>Show</dt><dd><p>Whether or not to plot the dataset in the plot window. If Yes it will be plotted.</p>
+</dd>
+<dt>Use</dt><dd><p>If the dataset should be used to calculate the Figure of merit FOM. If Yes it is used. This is for fitting.</p>
+</dd>
+<dt>Use Error</dt><dd><p>If the error bars on the data should be used in _both_ plotting and fitting. The fitting part only works
 if the FOM function supports it, i.e. Chi2 functions and similar. The error bars will only be displayed when
-the data is simulated. During fitting they will not be shown due to performance issues with the plotting.</dd>
+the data is simulated. During fitting they will not be shown due to performance issues with the plotting.</p>
+</dd>
 </dl>
 <p>These states can be toggled (switched between yes and no) by right clicking on the data set and choose the
 right menu item in the pop-up menu.</p>
@@ -189,10 +88,10 @@ separated by any whitespace character, i.e., spaces and tabs. A comment should b
 If you would like to change these parameters you can right click on any data set and choose
 <span class="menuselection">Import settings</span> from the pop-up menu to change the behavior. It is also possible to choose
 <span class="menuselection">Settings‣Data Loader</span> from the pull-down menu. This will make a dialog window to appear where the
-data loading process can be customized. Here one should note that all columns and numbered 0, 1, 2 ....</p>
+data loading process can be customized. Here one should note that all columns and numbered 0, 1, 2 ….</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The numbering starts with 0!.</p>
+<p class="admonition-title">Note</p>
+<p>The numbering starts with 0!.</p>
 </div>
 </div>
 <div class="section" id="viewing">
@@ -211,17 +110,17 @@ calculator button on the data toolbar to access the Data Calculations dialog, se
 <p>Any Python expression will work.
 First of all to reset the data to the raw data write, x in the x field and y in the y field. The general
 syntax for selecting data from an array is</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">:</span><span class="n">stride</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">:</span><span class="n">stride</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>If a special interval of the data needs to be fitted:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="o">-</span><span class="mi">300</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="o">-</span><span class="mi">300</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>where the first value is the starting point (number of elements from the beginning) and the last is the end point.
 A negative value means that the end point is calculated from the end of the array. In addition, if the number of
 data points has to be decreased the expression above can be extended to include the stride.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="o">-</span><span class="mi">300</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="o">-</span><span class="mi">300</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>For more information about indexing <a class="reference external" href="http://www.scipy.org/Cookbook/Indexing">see</a>. Consequently with this
@@ -229,7 +128,7 @@ expression only every second data point is included. The operations shown here a
 y values. This is done by typing the same expression into the text field for the y values and exchanging x against y.</p>
 <p>It is also possible to conduct simple arithmetic operations on the data. For example transforming the
 x data from degrees to Qz (scattering vector in reciprocal Angstrom), assuming that a wavelength of 1.54 AA is used:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">4</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="mf">1.54</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">4</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="mf">1.54</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This would then be typed into the text field for the x data. The examples presented here are rather limited but
@@ -240,9 +139,9 @@ reader is referred to the tutorials and manuals found at <a class="reference ext
 <h2>Exporting<a class="headerlink" href="#exporting" title="Permalink to this headline">¶</a></h2>
 <p>Data can be exported to four-column ASCII format (x, y, y_err, simulation) by using the menu
 <span class="menuselection">File‣Export‣Data</span> and choosing a data name. Each dataset will be saved to an individual
-file with a running number from 000, 001 ... and upwards inserted before the given extension.
-For example, if the name <code class="docutils literal"><span class="pre">export.dat</span></code> is given the output files will have the names <code class="docutils literal"><span class="pre">export000.dat</span></code>,
-<code class="docutils literal"><span class="pre">export001.dat</span></code> and so on.</p>
+file with a running number from 000, 001 … and upwards inserted before the given extension.
+For example, if the name <code class="docutils literal notranslate"><span class="pre">export.dat</span></code> is given the output files will have the names <code class="docutils literal notranslate"><span class="pre">export000.dat</span></code>,
+<code class="docutils literal notranslate"><span class="pre">export001.dat</span></code> and so on.</p>
 <p>Also, if you want to plot the data in another plotting program, such as Excel, <a class="reference external" href="http://www.openoffice.org">OpenOffice</a>
 or Origin. The data can be copied in a ASCII spreadsheet format directly to the clipboard.
 This is done by using the menu <span class="menuselection">Edit‣Copy Simulation</span>. This will make all data sets in
@@ -251,28 +150,77 @@ This is done by using the menu <span class="menuselection">Edit‣Copy Simulatio
 </div>
 
 
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Data handling</a><ul>
+<li><a class="reference internal" href="#adding-removing">Adding/Removing</a></li>
+<li><a class="reference internal" href="#loading">Loading</a></li>
+<li><a class="reference internal" href="#viewing">Viewing</a></li>
+<li><a class="reference internal" href="#calculations-transformations">Calculations/Transformations</a></li>
+<li><a class="reference internal" href="#exporting">Exporting</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plugin.html"
+                        title="previous chapter">Plugins: an introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="diffev.html"
+                        title="next chapter">Fitting with Differential Evolution</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/data_handling.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
     </div>
-      
-  </div>
 </div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-        <br/>
-        
-<div id="sourcelink">
-  <a href="../_sources/tutorials/data_handling.rst.txt"
-     rel="nofollow">Source</a>
-</div>
-      
-    </p>
-    <p>
-        &copy; Copyright 2017, Matts Björck.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.<br/>
-    </p>
-  </div>
-</footer>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="diffev.html" title="Fitting with Differential Evolution"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plugin.html" title="Plugins: an introduction"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Data handling</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+    </div>
   </body>
 </html>

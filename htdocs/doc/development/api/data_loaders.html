@@ -1,0 +1,455 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Loader Plugins &#8212; GenX 3.1.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="../../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="A model for fitting the spectral response" href="moment_analysis.html" />
+    <link rel="prev" title="GenX Python Package" href="../genx_package.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="moment_analysis.html" title="A model for fitting the spectral response"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../genx_package.html" title="GenX Python Package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../development.html" >Development documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../genx_package.html" accesskey="U">GenX Python Package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Data Loader Plugins</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-genx.plugins.data_loaders.default">
+<span id="data-loader-plugins"></span><span id="development-genx-package-data-loaders"></span><h1>Data Loader Plugins<a class="headerlink" href="#module-genx.plugins.data_loaders.default" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="default-default-data-loader">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">default</span></code> Default data loader<a class="headerlink" href="#default-default-data-loader" title="Permalink to this headline">¶</a></h2>
+<p>Loads the data from whitespace seperated column formatted ascii data files.
+The module allows the specification of which columns that correspond to the
+x, y and y_error columns in the data file.
+If y_error is not used the it can safely be set to the same column as y.</p>
+<p>Which columns that are imported are determined from the dialog box in
+import settings. Note that these settings apply to the marked data set(s).
+Other possible tunings are the definitions of delimiter, None means any
+white space character (default). Skip rows is how many rows are skipped before
+the file is started to be read. Comment is the first character of a commented
+line.</p>
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.default.Plugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.default.</span></code><code class="sig-name descname"><span class="pre">Plugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.default.Plugin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.default.Plugin.LoadData">
+<code class="sig-name descname"><span class="pre">LoadData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_item_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.default.Plugin.LoadData" title="Permalink to this definition">¶</a></dt>
+<dd><p>LoadData(self, data_item_number, filename) –&gt; none</p>
+<p>Loads the data from filename into the data_item_number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.default.Plugin.SettingsDialog">
+<code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.default.Plugin.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>SettingsDialog(self) –&gt; None</p>
+<p>This function should - if necessary implement a dialog box
+that allows the user set import settings for example.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.default.SettingsDialog">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.default.</span></code><code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misc_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.default.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.default.SettingsDialog.GetColumnValues">
+<code class="sig-name descname"><span class="pre">GetColumnValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.default.SettingsDialog.GetColumnValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.default.SettingsDialog.GetMiscValues">
+<code class="sig-name descname"><span class="pre">GetMiscValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.default.SettingsDialog.GetMiscValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-genx.plugins.data_loaders.resolution"></span><div class="section" id="resolution-data-loader-that-includes-the-resoultion">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">resolution</span></code> Data loader that includes the resoultion<a class="headerlink" href="#resolution-data-loader-that-includes-the-resoultion" title="Permalink to this headline">¶</a></h2>
+<p>Loads files in a four column format where the fourth column contains the resolution of the experiment.
+Note that all reflectivity modules uses the standard deviation as a the resolution. Some instruments might
+use the FWHM instead.</p>
+<p>The default columns are the following:</p>
+<ul class="simple">
+<li><p>First column q values</p></li>
+<li><p>Second column Intensitiy values</p></li>
+<li><p>Third values The uncertainty in the Intensities</p></li>
+<li><p>Fourth column resolution</p></li>
+</ul>
+<p>The other settings are just as in the default data loader.</p>
+<p>The resolution is stored as the member variable res. For data set 0 it can accessed as
+data[0].res</p>
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.resolution.Plugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.resolution.</span></code><code class="sig-name descname"><span class="pre">Plugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.resolution.Plugin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.resolution.Plugin.LoadData">
+<code class="sig-name descname"><span class="pre">LoadData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_item_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.resolution.Plugin.LoadData" title="Permalink to this definition">¶</a></dt>
+<dd><p>LoadData(self, data_item_number, filename) –&gt; none</p>
+<p>Loads the data from filename into the data_item_number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.resolution.Plugin.SettingsDialog">
+<code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.resolution.Plugin.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>SettingsDialog(self) –&gt; None</p>
+<p>This function should - if necessary implement a dialog box
+that allows the user set import settings for example.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.resolution.SettingsDialog">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.resolution.</span></code><code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misc_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.resolution.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.resolution.SettingsDialog.GetColumnValues">
+<code class="sig-name descname"><span class="pre">GetColumnValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.resolution.SettingsDialog.GetColumnValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.resolution.SettingsDialog.GetMiscValues">
+<code class="sig-name descname"><span class="pre">GetMiscValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.resolution.SettingsDialog.GetMiscValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-genx.plugins.data_loaders.amor"></span><div class="section" id="amor-amor-at-sinq-reflectometer-data-loader">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">amor</span></code> Amor at SINQ reflectometer data loader<a class="headerlink" href="#amor-amor-at-sinq-reflectometer-data-loader" title="Permalink to this headline">¶</a></h2>
+<p>Loads the default datafile format used for extracted reflectivity at
+the SINQ reflectometer Amor.</p>
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.amor.Plugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.amor.</span></code><code class="sig-name descname"><span class="pre">Plugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.amor.Plugin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.amor.Plugin.LoadData">
+<code class="sig-name descname"><span class="pre">LoadData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_item_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.amor.Plugin.LoadData" title="Permalink to this definition">¶</a></dt>
+<dd><p>LoadData(self, data_item_number, filename) –&gt; none</p>
+<p>Loads the data from filename into the data_item_number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.amor.Plugin.LoadDataFile">
+<code class="sig-name descname"><span class="pre">LoadDataFile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selected_items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.amor.Plugin.LoadDataFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>LoadDataFile(self, seleceted_items) –&gt; None</p>
+<p>Selected items is the selcted items in the items in the current DataList
+into which data from file(s) should be loaded. Note that the default
+implementation only allows the loading of a single file!
+Overriding this function in subclasses can of course change this
+behaviour. This function calls the LoadData function which implements
+the io function by it self. The LoadData has to be overloaded in
+order to have a working plugin.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="genx.plugins.data_loaders.amor.Plugin.wildcard">
+<code class="sig-name descname"><span class="pre">wildcard</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'*.Rqz'</span></em><a class="headerlink" href="#genx.plugins.data_loaders.amor.Plugin.wildcard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-genx.plugins.data_loaders.d17_cosmos"></span><div class="section" id="d17-cosmos-d17-cosmos-data-loader">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">d17_cosmos</span></code> D17 cosmos data loader<a class="headerlink" href="#d17-cosmos-d17-cosmos-data-loader" title="Permalink to this headline">¶</a></h2>
+<p>Loads .out files from the cosmos program that is used to process time of flight
+data from the D17 iunstrument at the ILL.</p>
+<p>The default columns are the following:</p>
+<ul class="simple">
+<li><p>First column q values</p></li>
+<li><p>Second column Intensitiy values</p></li>
+<li><p>Third values The unceratinty in the Intensities</p></li>
+<li><p>Fourth column q-resolution</p></li>
+</ul>
+<p>The data loader skips the first 36 lines of the file which is assumed to be the header.
+The other settings are just as in the default data loader.</p>
+<p>The resolution is stored as the member variable res. Can be accessed, for data set 0,
+data[0].x</p>
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.d17_cosmos.Plugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.d17_cosmos.</span></code><code class="sig-name descname"><span class="pre">Plugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.d17_cosmos.Plugin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.d17_cosmos.Plugin.LoadData">
+<code class="sig-name descname"><span class="pre">LoadData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_item_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.d17_cosmos.Plugin.LoadData" title="Permalink to this definition">¶</a></dt>
+<dd><p>LoadData(self, data_item_number, filename) –&gt; none</p>
+<p>Loads the data from filename into the data_item_number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.d17_cosmos.Plugin.SettingsDialog">
+<code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.d17_cosmos.Plugin.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>SettingsDialog(self) –&gt; None</p>
+<p>This function should - if necessary implement a dialog box
+that allows the user set import settings for example.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.d17_cosmos.SettingsDialog">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.d17_cosmos.</span></code><code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misc_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.d17_cosmos.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.d17_cosmos.SettingsDialog.GetColumnValues">
+<code class="sig-name descname"><span class="pre">GetColumnValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.d17_cosmos.SettingsDialog.GetColumnValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.d17_cosmos.SettingsDialog.GetMiscValues">
+<code class="sig-name descname"><span class="pre">GetMiscValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.d17_cosmos.SettingsDialog.GetMiscValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-genx.plugins.data_loaders.sns_mr"></span><div class="section" id="sns-mr-sns-magnetism-reflectometer-data-loader">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">sns_mr</span></code> SNS magnetism reflectometer data loader<a class="headerlink" href="#sns-mr-sns-magnetism-reflectometer-data-loader" title="Permalink to this headline">¶</a></h2>
+<p>Loads the default datafile format used for extracted reflectivity at
+the SNS magnetism reflectometer. It allows to import several channels at
+once, automatically naming the datasets according to the imported
+polarizations.</p>
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.sns_mr.Plugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.sns_mr.</span></code><code class="sig-name descname"><span class="pre">Plugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sns_mr.Plugin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.sns_mr.Plugin.LoadData">
+<code class="sig-name descname"><span class="pre">LoadData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_item_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sns_mr.Plugin.LoadData" title="Permalink to this definition">¶</a></dt>
+<dd><p>LoadData(self, data_item_number, filename) –&gt; none</p>
+<p>Loads the data from filename into the data_item_number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.sns_mr.Plugin.LoadDataFile">
+<code class="sig-name descname"><span class="pre">LoadDataFile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selected_items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sns_mr.Plugin.LoadDataFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>LoadDataFile(self, seleceted_items) –&gt; None</p>
+<p>Selected items is the selcted items in the items in the current DataList
+into which data from file(s) should be loaded. Note that the default
+implementation only allows the loading of a single file!
+Overriding this function in subclasses can of course change this
+behaviour. This function calls the LoadData function which implements
+the io function by it self. The LoadData has to be overloaded in
+order to have a working plugin.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="genx.plugins.data_loaders.sns_mr.Plugin.wildcard">
+<code class="sig-name descname"><span class="pre">wildcard</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'*.dat'</span></em><a class="headerlink" href="#genx.plugins.data_loaders.sns_mr.Plugin.wildcard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-genx.plugins.data_loaders.sls_sxrd"></span><div class="section" id="sls-sxrd-sld-sxrd-data-loader">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">sls_sxrd</span></code> SLD sxrd data loader<a class="headerlink" href="#sls-sxrd-sld-sxrd-data-loader" title="Permalink to this headline">¶</a></h2>
+<p>Loads the data from whitespace seperated column formatted ascii data files.
+It is intended for surface x-ray diffraction data where the data sets consists
+of rod scans along the l-direction (perpendicular to the surface). The plugin
+sorts each rod with equal h and k values into one data sets. The l-direction
+is also sorted.</p>
+<p>The default columns are the following:</p>
+<ul class="simple">
+<li><p>First column h values</p></li>
+<li><p>Second column k values</p></li>
+<li><p>Third values l values</p></li>
+<li><p>Fourth column Intensites</p></li>
+<li><p>Fifth column The standard deviation of the intensities.</p></li>
+</ul>
+<p>The other settings are just as in the default data loader.</p>
+<p>The h,k values is stored as extra data in data.extra_data dictonary as
+h and k.</p>
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.sls_sxrd.Plugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.sls_sxrd.</span></code><code class="sig-name descname"><span class="pre">Plugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sls_sxrd.Plugin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.sls_sxrd.Plugin.LoadData">
+<code class="sig-name descname"><span class="pre">LoadData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_item_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sls_sxrd.Plugin.LoadData" title="Permalink to this definition">¶</a></dt>
+<dd><p>LoadData(self, data_item_number, filename) –&gt; none</p>
+<p>Loads the data from filename into the data_item_number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.sls_sxrd.Plugin.SettingsDialog">
+<code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sls_sxrd.Plugin.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>SettingsDialog(self) –&gt; None</p>
+<p>This function should - if necessary implement a dialog box
+that allows the user set import settings for example.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.sls_sxrd.SettingsDialog">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.sls_sxrd.</span></code><code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misc_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sls_sxrd.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.sls_sxrd.SettingsDialog.GetColumnValues">
+<code class="sig-name descname"><span class="pre">GetColumnValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sls_sxrd.SettingsDialog.GetColumnValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.sls_sxrd.SettingsDialog.GetMiscValues">
+<code class="sig-name descname"><span class="pre">GetMiscValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.sls_sxrd.SettingsDialog.GetMiscValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-genx.plugins.data_loaders.xrdml"></span><div class="section" id="xrdml-xrdml-data-loader">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">xrdml</span></code>  XRDML data loader<a class="headerlink" href="#xrdml-xrdml-data-loader" title="Permalink to this headline">¶</a></h2>
+<p>Loads the data from Philips XPert instrument.</p>
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.xrdml.Plugin">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.xrdml.</span></code><code class="sig-name descname"><span class="pre">Plugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.xrdml.Plugin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.xrdml.Plugin.LoadData">
+<code class="sig-name descname"><span class="pre">LoadData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_item_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.xrdml.Plugin.LoadData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the data from filename into the data_item_number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.xrdml.Plugin.SettingsDialog">
+<code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.xrdml.Plugin.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function should - if necessary implement a dialog box
+that allows the user set import settings for example.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="genx.plugins.data_loaders.xrdml.Plugin.wildcard">
+<code class="sig-name descname"><span class="pre">wildcard</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'*.xrdml'</span></em><a class="headerlink" href="#genx.plugins.data_loaders.xrdml.Plugin.wildcard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="genx.plugins.data_loaders.xrdml.ReadXpert">
+<code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.xrdml.</span></code><code class="sig-name descname"><span class="pre">ReadXpert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.xrdml.ReadXpert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the data of a philips X’Pert diffractometer file, exported as text files.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="genx.plugins.data_loaders.xrdml.SettingsDialog">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.xrdml.</span></code><code class="sig-name descname"><span class="pre">SettingsDialog</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misc_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.xrdml.SettingsDialog" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="genx.plugins.data_loaders.xrdml.SettingsDialog.GetColumnValues">
+<code class="sig-name descname"><span class="pre">GetColumnValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.xrdml.SettingsDialog.GetColumnValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="genx.plugins.data_loaders.xrdml.SettingsDialog.GetMiscValues">
+<code class="sig-name descname"><span class="pre">GetMiscValues</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.xrdml.SettingsDialog.GetMiscValues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Data Loader Plugins</a><ul>
+<li><a class="reference internal" href="#default-default-data-loader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">default</span></code> Default data loader</a></li>
+<li><a class="reference internal" href="#resolution-data-loader-that-includes-the-resoultion"><code class="xref py py-mod docutils literal notranslate"><span class="pre">resolution</span></code> Data loader that includes the resoultion</a></li>
+<li><a class="reference internal" href="#amor-amor-at-sinq-reflectometer-data-loader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">amor</span></code> Amor at SINQ reflectometer data loader</a></li>
+<li><a class="reference internal" href="#d17-cosmos-d17-cosmos-data-loader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">d17_cosmos</span></code> D17 cosmos data loader</a></li>
+<li><a class="reference internal" href="#sns-mr-sns-magnetism-reflectometer-data-loader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sns_mr</span></code> SNS magnetism reflectometer data loader</a></li>
+<li><a class="reference internal" href="#sls-sxrd-sld-sxrd-data-loader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sls_sxrd</span></code> SLD sxrd data loader</a></li>
+<li><a class="reference internal" href="#xrdml-xrdml-data-loader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xrdml</span></code>  XRDML data loader</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../genx_package.html"
+                        title="previous chapter">GenX Python Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="moment_analysis.html"
+                        title="next chapter">A model for fitting the spectral response</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/development/api/data_loaders.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="moment_analysis.html" title="A model for fitting the spectral response"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../genx_package.html" title="GenX Python Package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../development.html" >Development documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../genx_package.html" >GenX Python Package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Data Loader Plugins</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+    </div>
+  </body>
+</html>

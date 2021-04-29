@@ -1,13 +1,20 @@
-''' <h1>Data loader that includes the resoultion</h1>
+'''
+==========================================================
+:mod:`resolution` Data loader that includes the resoultion
+==========================================================
+
 Loads files in a four column format where the fourth column contains the resolution of the experiment.
 Note that all reflectivity modules uses the standard deviation as a the resolution. Some instruments might
 use the FWHM instead.
- <p>
-The default columns are the following:<br>
-First column q values; Second column Intensitiy values; 
-Third values The uncertainty in the Intensities;
-Fourth column resolution;
-The other settings are just as in the default data loader.<p>
+
+The default columns are the following:
+
+* First column q values
+* Second column Intensitiy values
+* Third values The uncertainty in the Intensities
+* Fourth column resolution
+
+The other settings are just as in the default data loader.
 
 The resolution is stored as the member variable res. For data set 0 it can accessed as
 data[0].res

@@ -13,18 +13,6 @@ Give a reference to the paper describing GenX:
 M. Björck and G. Andersson J. Appl. Cryst. 40, 1174 (2007)
 And if you want to give a link to the homepage: <http://genx.sf.net>
 
-I can not run GenX on a 64-bit Mac
-----------------------------------
-Some distributions (EPD) does not provide wxPython compiled for 64-bit machines. You then have to tell python
-to use the 32-bit version instead by setting an environment variable.
-
-    export PYTHON_PREFER_32_BIT=yes
-
-
-If you want this to have permanent effect you can edit your ``/etc/bashrc`` file alt. edit your ``.bashrc`` file
-in the home directory. If you do not have a ``.bashrc`` file in home you can copy your ``/etc/bashrc`` file to
-home and then edit it.
-
 Issue with editing the grid on Mac
 ----------------------------------
 If you use a Swedish decimal comma then there are difficulties editing the grid. Swap to a decimal point instead in
@@ -43,7 +31,6 @@ have an error of zero somewhere.
 An error message appears when I start fitting or the FOM plot and the FOM message in the toolbar differ
 -------------------------------------------------------------------------------------------------------
 
-
 The following message appears: ERROR The disagreement between two subsequent evaluations is larger
 than [Number(1e-10)]. Check the model for circular assignments. In older versions this showed up as different
 FOM's in the toolbar and the FOM plot.
@@ -54,6 +41,7 @@ then at the end of each generation the program will do one additional simulation
 gui. The plotted fom shown in the FOM folder comes from the population but the FOM that comes from the simulation
 is shown in the tool bar! This could occur, for example, if you set a value of a variable that you think that you
 will fit but then leave unchanged. For example (``cp`` is a custom parameter)
+
 ::
 
     def Sim(data):
@@ -90,8 +78,8 @@ parameter ``allowed fom discrepancy`` to a larger value.
 Reflectivity
 ============
 
-How do I add an 2Theta offset
------------------------------
+How do I add a 2Theta offset
+----------------------------
 
 
 Sometimes during fitting one needs to add a small 2Theta offset due to misalignment. To do this you start by
@@ -138,10 +126,10 @@ bw which works as for fw. Note that bc is given in fm (fermi meters).
 
 What happens if I fit the scattering length?
 --------------------------------------------
-As GenX only can fit real numbers the complex part of the scattering len    gth will be ignored.
+As GenX only can fit real numbers the complex part of the scattering length will be ignored.
 Thus the absorption is put to zero. If you want to fit both parameters you have to make a custom variable
-for at least the complex part. Note that in newer versions > 2.0b6.2 the real and imaginary part of the
-scattering lengths can be fitted separately.
+to scale both real and imaginary part, fit material density or choose the individual Real and Imag
+variables available for fitting (e.g. ``Layer.setFreal/Layer.setFimag``).
 
 Could you explain how the density is defined/works with an example?
 -------------------------------------------------------------------
@@ -155,6 +143,12 @@ unit cell of Fe ``2*fp.Fe`` Then the density becomes: ``1/2.866**3``
 
 Example 2: SrTiO3. You define the scattering length as ``fp.Sr + fp.Ti + fp.O*3`` Then the density becomes
 (1 formula unit = 1 unitcell of SrTiO:sub:`3`, a = 3.9045): ``1/3.9045**3``
+
+To more easily define materials consider using the SimpleLayer plugin, which allows to calculate the SLDs from
+various materials parameters and automatically sets Layer x-ray and neutron parameters as well as name and density.
+
+.. image:: _attachments/SimpleLayer.png
+   :width: 50%
 
 How do I transform from g/cm\ :sup:`3` to formula unit/Å\ :sup:`3` ?
 --------------------------------------------------------------------
@@ -185,11 +179,6 @@ defined as: ``f = 1*fp.Sr + 1*fp.Ti + 3*fp.O``. The weight of one "formula unit"
 :math:`uscatt = 1 \times 87.62 + 1 \times 47.87 + 3 \times 16.00 = 183.24`.
 The density becomes: :math:`dens = \frac{5.12 \times 10^3}{(1.66054 \times 10^3 \times 183.24} = 0.017`
 
-How do I get the scattering length of an isotope?
--------------------------------------------------
-To access the scattering length of isotopes use an ``i`` in front of the name. For example: For 57Fe the
-scattering length expression would be ``bc.i57Fe``. For Deuterium (2H) the expression would be ``bc.2H``.
-
 Error when simulating spin flip reflectivity
 --------------------------------------------
 I get an error when the program tries to calculate neutron spin flip reflectivity. The error is following::
@@ -212,69 +201,17 @@ autoscale the fit to the data.
 I want to use different instruments instances to fit data sets collected of different instruments
 -------------------------------------------------------------------------------------------------
 
+Multiple instrument can defined in the instrument definition dialog. These could be, for example,
+x-ray and neutron instruments or the same instrument with different polarization.
+By double clicking on the simulation function definition in the simulation tab
+the instrument to use for that particular simulation can be chosen.
+
+In some cases (e.g. polarized neutrons) it may be easier to switch the polarization between
+datasets instead of using multiple instrument configurations as this ensures all instruments
+have the same parameters for all other settings.
+
 .. note::
-    This functionality has been included in the reflectivity plugin since version 2.2.0. Multiple instrument can defined
-    in the instrument definition dialog. By double clicking on the simulation function definition in the simulation tab
-    the instrument to use for that particular simulation can be chosen.
-
-Assuming that you want to use the reflectivity plugin the following hack has to be done to the script.
-1. Define your new instruments manually in the code. This has to be done outside the the BEGIN and END sections of the instrument definition
-2. Inside the Sim function - store the the original inst parameters
-3. Just before the dataset that should use a different instrument redefine the instrument and change the wavelength of the scattering length table, if needed.
-4. Copy over the original settings to the inst object again.
-::
-
-    import models.spec_nx as model
-    from models.utils import UserVars, fp, fw, bc, bw
-
-    # BEGIN Instrument DO NOT CHANGE
-    inst = model.Instrument(footype = 'gauss beam',probe = 'neutron',beamw = 0.2,resintrange = 2,tthoff = 0.0,pol = 'uu',wavelength = 4.4,respoints = 5,Ibkg = 0.0,I0 = 2,samplelen = 50.0,restype = 'full conv and varying res.',coords = 'tth',res = 0.001,incangle = 0.0)
-    fp.set_wavelength(inst.wavelength)
-    #Compability issues for pre-fw created gx files
-    try:
-        fw
-    except:
-        pass
-    else:
-        fw.set_wavelength(inst.wavelength)
-    # END Instrument
-    # Step 1. Defining instruments
-    xraydiff = model.Instrument(footype = 'gauss beam',probe = 'x-ray',beamw = 0.2,resintrange = 2,tthoff = 0.0,wavelength = 1.54,respoints = 5,Ibkg = 0.0,I0 = 2,samplelen = 50.0,restype = 'full conv and varying res.',coords = 'tth',res = 0.01)
-    fp.set_wavelength(xraydiff.wavelength)
-
-    # BEGIN Sample DO NOT CHANGE
-    Amb = model.Layer(b = 0, d = 0.0, f = (1e-20+1e-20j), dens = 1.0, magn_ang = 0.0, sigma = 0.0, xs_ai = 0.0, magn = 0.0)
-    SiO = model.Layer(b = bc.Si.real + bc.O.real*2, d = 1205, f = fp.Si + fp.O*2, dens = 0.026, magn_ang = 0.0, sigma = 2, xs_ai = 0.0, magn = 0.0)
-    Sub = model.Layer(b = bc.Si.real, d = 0.0, f = fp.Si, dens = 8/5.443**3, magn_ang = 0.0, sigma = 2, xs_ai = 0.0, magn = 0.0)
-
-    surf = model.Stack(Layers=[SiO], Repetitions = 1)
-
-    sample = model.Sample(Stacks = [surf], Ambient = Amb, Substrate = Sub)
-    # END Sample
-
-    # BEGIN Parameters DO NOT CHANGE
-    cp = UserVars()
-    # END Parameters
-
-
-    def Sim(data):
-        # Step 2. store the original inst parameters
-        default_pars = inst._todict()
-        I = []
-        # You only need the line below if you work with two different x-ray instruments.
-        #fp.set_wavelength(inst.wavelength)
-        # BEGIN Dataset 0 DO NOT CHANGE
-        I.append(sample.SimSpecular(data[0].x, inst))
-        # END Dataset 0
-        # Step 3. Copying all parameters from instrument xraydiff to inst
-        inst._fromdict(xraydiff._todict())
-        # You only need the line below if you work with two different x-ray instruments.
-        fp.set_wavelength(xraydiff.wavelength)
-        # BEGIN Dataset 1 DO NOT CHANGE
-        I.append(sample.SimSpecular(data[1].x, inst))
-        # END Dataset 1
-        # Step 4. Copying all instrument parameter from the original inst to inst.
-        inst._fromdict(default_pars)
-        return I
-
-Hopefully, this will become automated in the future so that it can be done from within the plugin.
+    When ever you change parameters between datasets you have to make sure they are
+    reset for the first dataset. You may not recognize it upon simulation but the
+    fitting algorithm does not re-run the project definition and thus the first
+    dataset will use the same settings as the last.
