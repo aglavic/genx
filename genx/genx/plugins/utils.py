@@ -6,7 +6,11 @@ Programmer: Matts Bjorck
 Last changed: 2008 07 23
 '''
 
-import os, wx
+import os
+try:
+    import wx
+except ImportError:
+    wx=None
 
 #==============================================================================
 
@@ -107,6 +111,9 @@ class PluginHandler:
 #==============================================================================
 # Utility Dialog functions..
 def ShowInfoDialog(frame, message):
+    if wx is None:
+        print(message)
+        return
     dlg = wx.MessageDialog(frame, message,
                                'Information',
                                wx.OK | wx.ICON_INFORMATION
@@ -115,6 +122,9 @@ def ShowInfoDialog(frame, message):
     dlg.Destroy()
     
 def ShowErrorDialog(frame, message, position = ''):
+    if wx is None:
+        print(message)
+        return
     dlg = wx.MessageDialog(frame, message,
                                'ERROR',
                                wx.OK | wx.ICON_ERROR
@@ -123,6 +133,9 @@ def ShowErrorDialog(frame, message, position = ''):
     dlg.Destroy()
 
 def ShowWarningDialog(frame, message):
+    if wx is None:
+        print(message)
+        return
     dlg = wx.MessageDialog(frame, message, 'Warning',
                                wx.OK | wx.ICON_ERROR
                                )

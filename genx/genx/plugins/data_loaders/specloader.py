@@ -2,11 +2,10 @@ import wx
 import wx.adv
 import  wx.lib.filebrowsebutton as filebrowse
 from .help_modules import spec
-#import ...data as data
 import numpy as np
 
 from ..data_loader_framework import Template
-from ..utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
+from ..utils import ShowErrorDialog, ShowWarningDialog
 from genx.gui_logging import iprint
 
 _maxWidth = 450

@@ -10,7 +10,6 @@ polarizations.
 '''
 
 import numpy as np
-import wx
 
 from ..data_loader_framework import Template
 from ..utils import ShowWarningDialog
@@ -81,33 +80,3 @@ class Plugin(Template):
             # Send an update that new data has been loaded
             self.SendUpdateDataEvent()
             self.UpdateDataList()
-
-    def LoadDataFile(self, selected_items):
-        '''LoadDataFile(self, seleceted_items) --> None
-
-        Selected items is the selcted items in the items in the current DataList
-        into which data from file(s) should be loaded. Note that the default
-        implementation only allows the loading of a single file!
-        Overriding this function in subclasses can of course change this
-        behaviour. This function calls the LoadData function which implements
-        the io function by it self. The LoadData has to be overloaded in
-        order to have a working plugin.
-        '''
-        n_selected = len(selected_items)
-        dlg = wx.FileDialog(self.parent, message="Choose your Datafile", wildcard="All files (%s)|%s" % (self.wildcard,
-                                                                                                         self.wildcard)
-                           , style=wx.FD_OPEN|wx.FD_MULTIPLE|wx.FD_CHANGE_DIR)
-
-        if dlg.ShowModal() == wx.ID_OK:
-            files = dlg.GetPaths()
-            dlg.Destroy()
-            if len(files) != n_selected:
-                dlg = wx.MessageDialog(self.parent, 'Please select %i dataset(s)' % n_selected,
-                                       caption='Wrong number of selections', style=wx.OK | wx.ICON_INFORMATION)
-                dlg.ShowModal()
-                dlg.Destroy()
-                return self.LoadDataFile(selected_items)
-            for i, fname in enumerate(files):
-                self.LoadData(selected_items[i], fname)
-            return True
-        return False

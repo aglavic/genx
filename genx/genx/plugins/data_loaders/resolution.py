@@ -21,11 +21,18 @@ data[0].res
 '''
 
 import numpy as np
-import wx
-from wx.lib.masked import NumCtrl
 
 from ..data_loader_framework import Template
-from ..utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
+from ..utils import ShowWarningDialog
+
+try:
+    import wx
+    from wx.lib.masked import NumCtrl
+except ImportError:
+    class void():
+        pass
+    wx=void()
+    wx.Dialog=void
 
 class Plugin(Template):
     def __init__(self, parent):
