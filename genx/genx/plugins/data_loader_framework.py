@@ -8,11 +8,13 @@ loads data into GenX.
 class Template:
     wildcard=None
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         self.parent = parent
-        # This is made for the virtual datalist controller...
-        self.data = self.parent.data_cont.get_data()
-        self.Register()
+
+        if parent is not None:
+            # This is made for the virtual datalist controller...
+            self.data = self.parent.data_cont.get_data()
+            self.Register()
         
     def Register(self):
         '''Register(self) --> None
@@ -71,7 +73,16 @@ class Template:
                     , style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
                     
             if dlg.ShowModal() == wx.ID_OK:
-                self.LoadData(selected_items[0], dlg.GetPath())
+                self.SetData(self.parent.data_cont.get_data())
+                dataset=self.data[selected_items[0]]
+                self.LoadData(dataset, dlg.GetPath())
+
+                # In case the dataset name has changed
+                self.UpdateDataList()
+
+                # Send an update that new data has been loaded
+                self.SendUpdateDataEvent()
+
                 return True
             dlg.Destroy()
         else:
@@ -89,8 +100,8 @@ class Template:
         
         return False
     
-    def LoadData(self, data_item, file_path):
-        '''LoadData(self, data_item, file_path) --> None
+    def LoadData(self, dataset, file_path):
+        '''LoadData(self, dataset, file_path) --> None
         
         This file should load a single data file into data object of
         the model. Please overide this function. It is called by the 

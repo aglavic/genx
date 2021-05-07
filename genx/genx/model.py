@@ -22,6 +22,9 @@ from logging import debug
 
 from .models.lib.parameters import NumericParameter, get_parameters
 
+# assure compatibility with scripts that don't include genx in import
+import sys
+sys.modules['models']=sys.modules['genx.models']
 
 #==============================================================================
 #BEGIN: Class Model
@@ -877,6 +880,8 @@ class Model:
         """
         Display information about the model.
         """
+        self.simulate()
+
         output="<h3>Genx Model"
         if self.compiled:
             output+=' - compiled'
@@ -894,7 +899,7 @@ class Model:
         from io import BytesIO
         from matplotlib import pyplot as plt
         sio=BytesIO()
-        fig=plt.figure()
+        fig=plt.figure(figsize=(10,8))
         self.data.plot()
         plt.xlabel('q/tth')
         plt.ylabel('Intensity')
@@ -905,6 +910,49 @@ class Model:
 
         output+=self.parameters._repr_html_()
         return output
+
+    @property
+    def widget(self):
+        return self._repr_ipyw_()
+
+    def _repr_ipyw_(self):
+        import ipywidgets as ipw
+        self.simulate()
+
+        graphw=ipw.Output()
+        with graphw:
+            from matplotlib import pyplot as plt
+            fig=plt.figure(figsize=(10,8))
+            self.data.plot()
+            plt.xlabel('q/tth')
+            plt.ylabel('Intensity')
+            from IPython.display import display
+            display(fig)
+            plt.close()
+
+        dataw=self.data._repr_ipyw_()
+        top=ipw.HBox([dataw, graphw])
+        parameters=self.parameters._repr_ipyw_()
+
+        replot=ipw.Button(description='simulate')
+        replot.on_click(self._ipyw_replot)
+        replot._plot_output=graphw
+
+        return ipw.VBox([replot, top, parameters])
+
+    def _ipyw_replot(self, button):
+        self.simulate()
+        with button._plot_output:
+            from IPython.display import display, clear_output
+            from matplotlib import pyplot as plt
+            fig=plt.figure(figsize=(10,8))
+            self.data.plot()
+            plt.xlabel('q/tth')
+            plt.ylabel('Intensity')
+            plt.draw()
+            clear_output()
+            display(fig)
+            plt.close()
 
 #END: Class Model
 #==============================================================================

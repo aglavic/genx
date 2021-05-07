@@ -62,7 +62,7 @@ class Parameters:
     def set_value(self, row, col, value):
         """ Set a value in the parameter grid """
         self.data[row][col] = value
-    
+
     def get_value(self, row, col):
         """ Get the value in the grid """
         return self.data[row][col]
@@ -147,22 +147,22 @@ class Parameters:
 
     def get_len_rows(self):
         return len(self.data)
-    
+
     def get_len_cols(self):
         return len(self.data[0])
-    
+
     def get_len_fit_pars(self):
         return sum([row[2] for row in self.data])
-        
+
     def get_col_headers(self):
         return self.data_labels[:]
-        
+
     def delete_rows(self, rows):
         ''' Delete the rows in the list rows ...'''
         delete_count = 0
         rows=rows[:]
         rows.sort()
-        
+
         for i in rows:
             #Note index changes as we delete values. thats why rows has to be sorted
             try:
@@ -171,9 +171,9 @@ class Parameters:
                 pass
             else:
                 delete_count += 1
-                
+
         return delete_count
-    
+
     def insert_row(self, row):
         ''' Insert a new row at row(int). '''
         self.data.insert(row, self.init_data[:])
@@ -226,9 +226,16 @@ class Parameters:
         self.data.sort(key=self._sort_key_func)
         return True
 
-    def append(self):
+    def append(self, parameter=None):
+        data=list(self.init_data)
         self.data.append(self.init_data[:])
-        
+        out=ConnectedParameter(self, data)
+        if parameter is not None:
+            out.name=parameter
+        self.data.append(data)
+        return out
+
+
     def get_fit_pars(self):
         ''' Returns the variables needed for fitting '''
         #print 'Data in the parameters class: ', self.data
@@ -243,14 +250,14 @@ class Parameters:
     
     def get_pos_from_row(self, row):
         '''get_pos_from_row(self) --> pos [int]
-        
+
         Transform the row row to the position in the fit_pars list
         '''
         rows = list(range(row + 1))
         row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
                 not self.data[nmb][0] == '']
         return len(row_nmb) - 1
-    
+
     def get_sim_pars(self):
         ''' Returns the variables needed for simulation '''
         funcs = [row[0] for row in self.data if not row[0] == '']
@@ -258,13 +265,13 @@ class Parameters:
         return funcs, mytest
 
     def get_sim_pos_from_row(self, row):
-        '''Transform a row to a psoitions in the sim list 
+        '''Transform a row to a psoitions in the sim list
         that is returned by get_sim_pars
         '''
         rows = list(range(row + 1))
         row_nmb=[nmb for nmb in rows if not self.data[nmb][0] == '']
         return len(row_nmb) - 1
-       
+
     def set_value_pars(self, value):
         ''' Set the values of the parameters '''
         valueindex = 0
@@ -272,7 +279,7 @@ class Parameters:
             if row[2] and not row[0] == '':
                 row[1] = value[valueindex]
                 valueindex = valueindex + 1
-                
+
     def set_error_pars(self, value):
         ''' Set the errors on the parameters '''
         valueindex = 0
@@ -284,8 +291,8 @@ class Parameters:
     def clear_error_pars(self):
         ''' clears the errors in the parameters'''
         for row in  self.data:
-            row[5] = '-' 
-                
+            row[5] = '-'
+
     def set_data(self, data):
         rowi = 0
         coli = 0
@@ -295,13 +302,13 @@ class Parameters:
                 coli = coli + 1
             rowi = rowi + 1
             coli = 0
-            
+
     def get_data(self):
         return self.data[:]
-    
+
     def get_ascii_output(self):
         '''get_ascii_output(self) --> text [string]
-        
+
         Returns the parameters grid as an ascii string.
         '''
         text = '#'
@@ -311,7 +318,7 @@ class Parameters:
         text += '\n'
         for row in self.data:
             for item in row:
-                # special handling of floats to reduce the 
+                # special handling of floats to reduce the
                 # col size use 5 significant digits
                 if type(item) == type(10.0):
                     text += '%.4e\t'%item
@@ -319,11 +326,11 @@ class Parameters:
                     text += item.__str__() + '\t'
             text += '\n'
         return text
-    
+
     def _parse_ascii_input(self, text):
         '''parse_ascii_input(self, text) --> list table
-        
-        Parses an ascii string to a parameter table. returns a list table if 
+
+        Parses an ascii string to a parameter table. returns a list table if
         sucessful otherwise it returns None
         '''
         table = []
@@ -357,10 +364,10 @@ class Parameters:
             return table
         else:
             return None
-        
+
     def set_ascii_input(self, text):
         '''set_ascii_input(self, text) --> None
-        
+
         If possible parse the text source and set the current parameters table
         to the one given in text.
         '''
@@ -370,33 +377,26 @@ class Parameters:
             return True
         else:
             return False
-    
+
     def safe_copy(self, object):
         '''safe_copy(self, object) --> None
-        
+
         Does a safe copy from object into this object.
         '''
         self.data = object.data[:]
-    
+
     def copy(self):
         '''get_copy(self) --> copy of Parameters
-        
+
         Does a copy of the current object.
         '''
         new_pars = Parameters()
         new_pars.data = self.data[:]
-        
+
         return new_pars
 
     def __getitem__(self, item):
         return ConnectedParameter(self, self.data[item])
-
-    def append(self, parameter):
-        data=list(self.init_data)
-        out=ConnectedParameter(self, data)
-        out.name=parameter
-        self.data.append(data)
-        return out
 
     def __repr__(self):
         """
@@ -416,6 +416,21 @@ class Parameters:
             output+="</td><td>".join(["%s"%col for col in line])+"\n"
         output+="</table>"
         return output
+
+    @property
+    def widget(self):
+        return self._repr_ipyw_()
+
+    def _repr_ipyw_(self):
+        import ipywidgets as ipw
+        vlist=[]
+        header=ipw.HBox([ipw.Label(txt[0], layout=ipw.Layout(width=txt[1])) for txt in
+                         [('Parameter', '35%'), ('Value', '20%'), ('fit', '5%'),
+                          ('min', '20%'), ('max', '20%')]])
+        vlist.append(header)
+        for par in self:
+            vlist.append(par._repr_ipyw_())
+        return ipw.VBox(vlist)
 
 class ConnectedParameter():
     """
@@ -482,6 +497,44 @@ class ConnectedParameter():
         output+="</table>"
         return output
 
+    def _repr_ipyw_(self):
+        import ipywidgets as ipw
+        wname=ipw.Text(value=self.name, layout=ipw.Layout(width='35%'))
+        wname.change_item='name'
+        wval=ipw.FloatText(value=self.value, layout=ipw.Layout(width='20%'))
+        wval.change_item='value'
+        wfit=ipw.Checkbox(value=self.fit, indent=False, layout=ipw.Layout(width='5%'))
+        wfit.change_item='fit'
+        wmin=ipw.FloatText(value=self.min, layout=ipw.Layout(width='20%'))
+        wmin.change_item='min'
+        wmax=ipw.FloatText(value=self.max, layout=ipw.Layout(width='20%'))
+        wmax.change_item='max'
+        entries=[wname, wval, wfit, wmin, wmax]
+        wname.others=entries[1:]
+        for entr in entries:
+            entr.observe(self._ipyw_change, names='value')
+        return ipw.HBox(entries)
+
+    def _ipyw_change(self, change):
+        if change.owner.change_item=='name':
+            try:
+                prev=self.name
+                self.name=change.new
+            except:
+                self.name=prev
+            else:
+                change.owner.others[0].value=self.value
+                change.owner.others[1].value=self.fit
+                change.owner.others[2].value=self.min
+                change.owner.others[3].value=self.max
+        elif change.owner.change_item=='fit':
+            self.fit=change.new
+        elif change.owner.change_item=='value':
+            self.value=change.new
+        elif change.owner.change_item=='min':
+            self.min=change.new
+        elif change.owner.change_item=='min':
+            self.min=change.new
 
 if __name__ == '__main__':
     p = Parameters()

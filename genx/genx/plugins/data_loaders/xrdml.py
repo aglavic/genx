@@ -34,7 +34,7 @@ class Plugin(Template):
         self.skip_rows=0
         self.delimiter=None
 
-    def LoadData(self, data_item_number, filename):
+    def LoadData(self, dataset, filename):
         '''
         Loads the data from filename into the data_item_number.
         '''
@@ -47,17 +47,14 @@ class Plugin(Template):
                     traceback.format_exc())
         else:
             dataset=datasets[0]
-            self.data[data_item_number].x_raw=dataset[0]
-            self.data[data_item_number].y_raw=dataset[1]
-            self.data[data_item_number].error_raw=dataset[2]
+            dataset.x_raw=dataset[0]
+            dataset.y_raw=dataset[1]
+            dataset.error_raw=dataset[2]
             # no xerror values
-            self.data[data_item_number].xerror_raw=dataset[0]*0.+0.001
+            dataset.xerror_raw=dataset[0]*0.+0.001
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
-            self.data[data_item_number].run_command()
-
-            # Send an update that new data has been loaded
-            self.SendUpdateDataEvent()
+            dataset.run_command()
 
     def SettingsDialog(self):
         '''

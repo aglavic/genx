@@ -35,7 +35,7 @@ except ImportError:
     wx.Dialog=void
 
 class Plugin(Template):
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         Template.__init__(self, parent)
         self.q_col = 0
         self.I_col = 1
@@ -45,7 +45,7 @@ class Plugin(Template):
         self.skip_rows = 42
         self.delimiter = None
     
-    def LoadData(self, data_item_number, filename):
+    def LoadData(self, dataset, filename):
         '''LoadData(self, data_item_number, filename) --> none
         
         Loads the data from filename into the data_item_number.
@@ -74,19 +74,15 @@ class Plugin(Template):
             # changed by the transforms
             
             #print load_array
-            self.data[data_item_number].x_raw = load_array[:,self.q_col]
-            self.data[data_item_number].y_raw = load_array[:,self.I_col]
-            self.data[data_item_number].error_raw = load_array[:,self.eI_col]
-            self.data[data_item_number].set_extra_data('res', load_array[:,self.res_col], 'res')
-            self.data[data_item_number].res = load_array[:,self.res_col]*1.0
+            dataset.x_raw = load_array[:,self.q_col]
+            dataset.y_raw = load_array[:,self.I_col]
+            dataset.error_raw = load_array[:,self.eI_col]
+            dataset.set_extra_data('res', load_array[:,self.res_col], 'res')
+            dataset.res = load_array[:,self.res_col]*1.0
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
-            self.data[data_item_number].run_command()
-            #print self.data[data_item_number].x
-            
-            # Send an update that new data has been loaded
-            self.SendUpdateDataEvent()
-            
+            dataset.run_command()
+
         
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None

@@ -372,7 +372,9 @@ class DataSet:
         for key in self.extra_data_raw:
             exec('%s = self.extra_data_raw["%s"]' % (key, key))
 
-        for key in self.extra_commands:
+        for key in self.extra_data_raw:
+            if not key in self.extra_commands:
+                self.extra_commands[key]="%s"%key
             self.extra_data[key] = eval(self.extra_commands["%s"%key])
 
         if 'res' in self.extra_data:
@@ -571,10 +573,71 @@ class DataSet:
         items=['name', 'show', 'use', 'use_error']
         output='<table><tr><th colspan="%i"><center>DataSet</center></th></tr>\n'%len(items)
         output+="           <tr><th>"+"</th><th>".join(items)+"</th></tr>\n"
-        output+="<tr><td>"+"</td><td>".join([str(getattr(self, ii)) for ii in items])+"</tr></table>\n"
+        output+="<tr><td>"+"</td><td>".join([str(getattr(self, ii)) for ii in items])
+        output+='<tr><th colspan="%i"><center>Commands</center></th></tr>\n'%len(items)
+        for col in ['x','y','error']:
+            output+='<tr><td>%s</td><td colspan="%i"><center>%s</center></td></tr>\n'%(
+                    col, len(items)-1,
+                    eval('self.%s_command'%col, globals(), locals()))
+        for key, value in self.extra_commands.items():
+            output+='<tr><td>%s</td><td colspan="%i"><center>%s</center></td></tr>\n'%(
+                    key, len(items)-1, value)
+        output+="</tr></table>\n"
         return output
 
-        
+    @property
+    def widget(self):
+        return self._repr_ipyw_()
+
+    def _repr_ipyw_(self):
+        import ipywidgets as ipw
+        vlist=[]
+        vlist.append(ipw.Label("Dataset"))
+        header=ipw.HBox([ipw.Label(txt[0], layout=ipw.Layout(width=txt[1])) for txt in
+                         [('Name', '30ex'), ('show', '6ex'), ('use', '6ex'),
+                          ('error', '6ex')]])
+        vlist.append(header)
+
+        entries=[]
+        entries.append(ipw.Text(self.name, layout=ipw.Layout(width='30ex')))
+        entries.append(ipw.Checkbox(self.show, indent=False, layout=ipw.Layout(width='6ex')))
+        entries.append(ipw.Checkbox(self.use, indent=False, layout=ipw.Layout(width='6ex')))
+        entries.append(ipw.Checkbox(self.use_error, indent=False, layout=ipw.Layout(width='6ex')))
+        items=['name', 'show', 'use', 'use_error']
+        for j, entr in enumerate(entries):
+            entr._child_val=items[j]
+            entr.observe(self._ipyw_change, names='value')
+        vlist.append(ipw.HBox(entries))
+        vlist.append(ipw.Label('Commands:'))
+        for col in ['x','y','error']:
+            entr=ipw.Text(eval('self.%s_command'%col, globals(), locals()),
+                         description=col)
+            entr._command=col
+            entr.observe(self._ipyw_command, names='value')
+            vlist.append(entr)
+        for key, value in self.extra_commands.items():
+            entr=ipw.Text(value, description=key)
+            entr._command=key
+            vlist.append(entr)
+            entr.observe(self._ipyw_command, names='value')
+
+        return ipw.VBox(vlist)
+
+    def _ipyw_change(self, change):
+        exec('self.%s=change.new'%(change.owner._child_val))
+
+    def _ipyw_command(self, change):
+        if change.owner._command in ['x', 'y', 'error']:
+            exec('self.%s_command=change.new'%change.owner._command)
+        else:
+            self.extra_commands[change.owner._command]=change.new
+        try:
+            self.run_command()
+        except Exception as error:
+            change.owner.description='ERR!'
+        else:
+            change.owner.description=change.owner._command
+
 #END: Class DataSet
 #==============================================================================
 #BEGIN: Class DataList
@@ -853,17 +916,49 @@ class DataList:
     def _repr_html_(self):
         items=['name', 'show', 'use', 'use_error']
         output='<table><tr><th colspan="%i"><center>DataList</center></th></tr>\n'%(len(items)+1)
-        output+="           <tr><th>NO</th><th>"+"</th><th>".join(items)+"</th></tr>\n"
+        output+="           <tr><th>No.</th><th>"+"</th><th>".join(items)+"</th></tr>\n"
         for i, item in enumerate(self.items):
             output+="           <tr><td>#%i</td><td>"%i
             output+="</td><td>".join([str(getattr(item, ii)) for ii in items])+"</td></tr>\n"
         output+="</table>"
         return output
 
+    @property
+    def widget(self):
+        return self._repr_ipyw_()
+
+    def _repr_ipyw_(self):
+        import ipywidgets as ipw
+        vlist=[]
+        header=ipw.HBox([ipw.Label(txt[0], layout=ipw.Layout(width=txt[1])) for txt in
+                         [('No.', '6ex'), ('Name', '30ex'), ('show', '6ex'), ('use', '6ex'),
+                          ('error', '6ex')]])
+        vlist.append(header)
+        items=['name', 'show', 'use', 'use_error']
+        for i, item in enumerate(self.items):
+            entries=[]
+            entries.append(ipw.Label('#%i'%i, layout=ipw.Layout(width='6ex')))
+            entries.append(ipw.Text(item.name, layout=ipw.Layout(width='30ex')))
+            entries.append(ipw.Checkbox(item.show, indent=False, layout=ipw.Layout(width='6ex')))
+            entries.append(ipw.Checkbox(item.use, indent=False, layout=ipw.Layout(width='6ex')))
+            entries.append(ipw.Checkbox(item.use_error, indent=False, layout=ipw.Layout(width='6ex')))
+            for j, entr in enumerate(entries[1:]):
+                entr._child_id=i
+                entr._child_val=items[j]
+                entr.observe(self._ipyw_change, names='value')
+
+            vlist.append(ipw.HBox(entries))
+        return ipw.VBox(vlist)
+
+    def _ipyw_change(self, change):
+        exec('self.items[%i].%s=change.new'%(change.owner._child_id, change.owner._child_val))
+
     def plot(self):
         # convenience function to plot all datasets with matplotlib
         from matplotlib import pyplot as plt
         for i, ds in enumerate(self.items):
+            if not ds.show:
+                continue
             plt.semilogy(ds.x, ds.y,
                 color=ds.data_color,
                 lw = ds.data_linethickness, ls = ds.data_linetype,

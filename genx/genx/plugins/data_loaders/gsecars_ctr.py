@@ -42,10 +42,10 @@ class Plugin(Template):
         self.skip_rows = 0
         self.delimiter = None
     
-    def LoadData(self, data_item_number, filename):
-        '''LoadData(self, data_item_number, filename) --> none
+    def LoadData(self, dataset, filename):
+        '''LoadData(self, dataset, filename) --> none
         
-        Loads the data from filename into the data_item_number.
+        Loads the data from filename into the dataset.
         '''
         try:
             load_array = np.loadtxt(filename, delimiter = self.delimiter, 
@@ -99,12 +99,7 @@ class Plugin(Template):
                 self.data[-1].set_extra_data('dL', tmp['dL'], 'dL')
                 # Increase the index
                 i += len(tmp)
-            
-            # Update the data list
-            self.UpdateDataList()
-            # Send an update that new data has been loaded
-            self.SendUpdateDataEvent()
-            
+
         
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None

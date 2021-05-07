@@ -39,10 +39,10 @@ class Plugin(Template):
         self.skip_rows = 0
         self.delimiter = None
     
-    def LoadData(self, data_item_number, filename):
-        '''LoadData(self, data_item_number, filename) --> none
+    def LoadData(self, dataset, filename):
+        '''LoadData(self, dataset, filename) --> none
         
-        Loads the data from filename into the data_item_number.
+        Loads the data from filename into the dataset object.
         '''
         try:
             load_array = np.loadtxt(filename, delimiter = self.delimiter, 
@@ -65,25 +65,19 @@ class Plugin(Template):
             # The data is set by the default Template.__init__ function
             # Know the loaded data goes into *_raw so that they are not
             # changed by the transforms
-            self.data = self.parent.data_cont.get_data()
-            self.data[data_item_number].x_raw = load_array[:, self.x_col]
-            self.data[data_item_number].y_raw = load_array[:, self.y_col]
+            dataset.x_raw = load_array[:, self.x_col]
+            dataset.y_raw = load_array[:, self.y_col]
 
             # Check if we have errors in the data - if not handle it with nan's
             if load_array.shape[1]-1 < self.e_col:
-                self.data[data_item_number].error_raw = load_array[:, self.y_col]*np.nan
+                dataset.error_raw = load_array[:, self.y_col]*np.nan
                 self.SetStatusText('Could not load error column - setting it to nan')
             else:
-                self.data[data_item_number].error_raw = load_array[:, self.e_col]
+                dataset.error_raw = load_array[:, self.e_col]
 
             # Run the commands on the data - this also sets the x,y, error members of the data item.
-            self.data[data_item_number].run_command()
-            
-            self.UpdateDataList()
-            
-            # Send an update that new data has been loaded
-            self.SendUpdateDataEvent()
-        
+            dataset.run_command()
+
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None
         

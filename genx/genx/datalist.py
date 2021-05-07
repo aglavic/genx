@@ -26,7 +26,7 @@ except ImportError:
 from . import data
 from . import filehandling as io
 from . import images as img
-from .plugins import data_loader_framework as dlf
+from .plugins import data_loader_wx as dlf
 from .gui_logging import iprint
 #==============================================================================
 
