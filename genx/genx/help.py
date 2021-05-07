@@ -81,8 +81,8 @@ class PluginHelpDialog(wx.Frame):
         sizer.Add(choice_sizer, 0, wx.EXPAND, border = 20)
         
         
-        self.html_win = html.HtmlWindow(self, -1,\
-                        style = wx.NO_FULL_REPAINT_ON_RESIZE)
+        self.html_win = html.HtmlWindow(self, -1,
+                                        style = wx.NO_FULL_REPAINT_ON_RESIZE)
         sizer.Add(self.html_win, 1, flag = wx.EXPAND, border = 20)
         
         self.SetSizer(sizer)
@@ -133,11 +133,11 @@ class PluginHelpDialog(wx.Frame):
         docs = ''
         try:
             if sub_module is not None:
-                mod = __import__('%s.%s'%(module, sub_module), \
-                             globals(), locals(), [''])
+                mod = __import__('%s.%s'%(module, sub_module),
+                                 globals(), locals(), [''])
             else:
-                mod = __import__('%s'%(module), \
-                             globals(), locals(), [''])
+                mod = __import__('%s'%module,
+                                 globals(), locals(), [''])
         except Exception as e:
             docs = 'Could not load docstring for %s.'%sub_module
             docs += '\n The following exception occured: %s'%str(e)

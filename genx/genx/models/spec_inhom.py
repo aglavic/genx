@@ -130,17 +130,17 @@ def ResolutionVectorAsymetric(Q, dQ, points, dLambda, asymmetry, range_=3):
     z0=(0.+(abs(gamma_asym)*1j))/abs(dQ)/sqrt(2)
     weight=wofz(z).real/wofz(z0).real
     Qret=Qres.flatten()
-    return (Qret, weight)
+    return Qret, weight
 
 SLD_calculations=spec_nx.SLD_calculations
 
-SimulationFunctions={'Specular':Specular, \
-                     'SLD': SLD_calculations\
-                    }
+SimulationFunctions={'Specular':Specular,
+                     'SLD': SLD_calculations
+                     }
 
-(Instrument, Layer, Stack, Sample)=refl.MakeClasses(InstrumentParameters, \
-    LayerParameters, StackParameters, SampleParameters, SimulationFunctions, \
-    ModelID)
+(Instrument, Layer, Stack, Sample)=refl.MakeClasses(InstrumentParameters,
+                                                    LayerParameters, StackParameters, SampleParameters, SimulationFunctions,
+                                                    ModelID)
 
 # Add gradient for sigma and thickness to multilayers
 def resolveLayerParameter(self, parameter):
@@ -151,7 +151,7 @@ def resolveLayerParameter(self, parameter):
         for i in range(1, self.Repetitions):
             if self.sigma_gtype==0:
               # linear increase of roughness to (1+sigma_gradient) times bottom roughness)
-              par+=[refl.resolve_par(lay, parameter)*((1.+(sigma_gradient+lay.sigma_gradient)*i/(self.Repetitions-1)))
+              par+=[refl.resolve_par(lay, parameter)*(1.+(sigma_gradient+lay.sigma_gradient)*i/(self.Repetitions-1))
                     for lay in self.Layers]
             elif self.sigma_gtype==1:
               # add roughness using rms
@@ -178,7 +178,7 @@ def resolveLayerParameter(self, parameter):
         #parameters for layers with roughness gradient
         par=[]
         for i in range(self.Repetitions):
-            par+=[refl.resolve_par(lay, parameter)*((1.-dens_gradient*(1./2.-float(i)/self.Repetitions))) for lay in self.Layers]
+            par+=[refl.resolve_par(lay, parameter)*(1.-dens_gradient*(1./2.-float(i)/self.Repetitions)) for lay in self.Layers]
     else:
         par=[refl.resolve_par(lay, parameter)+0.0 for lay in self.Layers]*self.Repetitions
     return par

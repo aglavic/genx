@@ -68,8 +68,8 @@ def start_interactive(args):
             outp.close()
             ShowErrorDialog(frame, 'Problems when plugins processed model.'\
                         ' Python Error:\n%s'%(val,))
-        frame.main_frame_statusbar.SetStatusText('Model loaded from file',\
-                                                1)
+        frame.main_frame_statusbar.SetStatusText('Model loaded from file',
+                                                 1)
         app.Yield()
         # Post an event to update everything else
         _post_new_model_event(frame, frame.model)

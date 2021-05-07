@@ -46,9 +46,9 @@ SimulationFunctions={'Specular':spec_nx.Specular,
                      'SLD': SLD_calculations
                     }
 
-(Instrument, Layer, Stack, Sample)=refl.MakeClasses(InstrumentParameters, \
-    LayerParameters, StackParameters, SampleParameters, SimulationFunctions, \
-    ModelID)
+(Instrument, Layer, Stack, Sample)=refl.MakeClasses(InstrumentParameters,
+                                                    LayerParameters, StackParameters, SampleParameters, SimulationFunctions,
+                                                    ModelID)
 
 def calculate_segmentation(sample):
     '''

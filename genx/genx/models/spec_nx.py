@@ -144,8 +144,8 @@ InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']
                     ]
 InstrumentUnits = {'probe':'', 'wavelength': 'Å', 'coords':'',
                    'I0': 'arb.', 'res': '[coord]',
-                   'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',\
-                   'footype': '', 'samplelen':'mm', 'incangle':'°', 'pol': '',\
+                   'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',
+                   'footype': '', 'samplelen':'mm', 'incangle':'°', 'pol': '',
                    'Ibkg': 'arb.', 'tthoff':'°',
                    '2θ': '°', 'tth': '°', 'q': 'Å$^-1$'}
 # Coordinates=1 or '2θ' => twothetainput
@@ -233,7 +233,7 @@ def resolutioncorr(R, TwoThetaQz, foocor, instrument, weight):
     ''' Do the convolution of the reflectivity to account for resolution effects.'''
     restype = instrument.getRestype()
     if restype == instrument_string_choices['restype'][1] or restype == 1:
-        R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.getRes(), \
+        R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.getRes(),
                           range=instrument.getResintrange())
     elif (restype == instrument_string_choices['restype'][2] or restype == 2 or
           restype == instrument_string_choices['restype'][4] or restype == 4):
@@ -337,7 +337,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
         fb = refl.cast_to_array(parameters['f'], e).astype(complex128)
     else: 
         fb = array(parameters['b'], dtype = complex128)*1e-5
-        abs_xs = array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2
+        abs_xs =array(parameters['xs_ai'], dtype = complex128)*1e-4**2
     
     dens = array(parameters['dens'], dtype = float64)
     d = array(parameters['d'], dtype = float64)
@@ -512,7 +512,7 @@ def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
         fb = refl.cast_to_array(parameters['f'], Energy).astype(complex128)
     else:
         fb = array(parameters['b'], dtype = complex128)*1e-5
-        abs_xs = array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2
+        abs_xs =array(parameters['xs_ai'], dtype = complex128)*1e-4**2
 
     dens = array(parameters['dens'], dtype = float64)
     d = array(parameters['d'], dtype = float64)
@@ -566,7 +566,7 @@ def SLD_calculations(z, item, sample, inst):
     e = AA_to_eV/inst.getWavelength()
     f = refl.cast_to_array(parameters['f'], e).astype(complex64)
     b = array(parameters['b'], dtype=complex64)*1e-5
-    abs_xs = array(parameters['xs_ai'], dtype=float32)*(1e-4)**2
+    abs_xs =array(parameters['xs_ai'], dtype=float32)*1e-4**2
     wl = inst.getWavelength()
     ptype = inst.getProbe()
     magnetic = False
@@ -616,8 +616,8 @@ def SLD_calculations(z, item, sample, inst):
         #        'Re sld -': real(rho_m), 'Im sld -': imag(rho_m), 'z':z,
         #        'SLD unit': sld_unit}
         rho_nucl = (rho_p + rho_m)/2.
-        dic = {'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),\
-                'mag': real(rho_p - rho_m)/2, 'z':z, 'mag_x': rho_mag_x, 'mag_y': rho_mag_y,
+        dic = {'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),
+               'mag': real(rho_p - rho_m)/2, 'z':z, 'mag_x': rho_mag_x, 'mag_y': rho_mag_y,
                 'SLD unit': sld_unit}
     if item is None or item == 'all':
         return dic
@@ -635,9 +635,9 @@ SimulationFunctions={'Specular':Specular,
                     }
 
 
-(Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters,\
-    LayerParameters, StackParameters, SampleParameters, SimulationFunctions,\
-    ModelID)
+(Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters,
+                                                      LayerParameters, StackParameters, SampleParameters, SimulationFunctions,
+                                                      ModelID)
 
 
 if __name__=='__main__':

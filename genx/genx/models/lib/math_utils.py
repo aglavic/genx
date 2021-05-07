@@ -23,7 +23,7 @@ def dot2_Adiag(A, B):
 
 def inv2(A):
     D = np.zeros(A.shape, dtype = np.complex128)
-    det = det2(A);
+    det = det2(A)
     D[0, 0] = A[1, 1]
     D[0, 1] = -A[0, 1]
     D[1, 0] = -A[1, 0]
@@ -222,4 +222,4 @@ def roots4thdegree(a, b, c, d, e):
                             - np.sqrt(0.5*(-alpha + np.sqrt(alpha**2 - 4*gamma))))
     x4 = -b/4./a + np.where(cond, (-w + np.sqrt(-(3*alpha + 2*y - 2*beta/w)))/2.,
                             - np.sqrt(0.5*(-alpha - np.sqrt(alpha**2 - 4*gamma))))
-    return (x1, x2, x3, x4)
+    return x1, x2, x3, x4

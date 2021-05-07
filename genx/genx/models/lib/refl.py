@@ -493,11 +493,11 @@ class ModelFactory:
 
 
 # Function! to create classes with the model given by the input parameters
-def MakeClasses(InstrumentParameters={'Wavelength': 1.54, 'Coordinates': 1}, \
-                LayerParameters={'d': 0.0, 'sigma': 0.0, 'n': 0.0 + 0.0j}, \
-                StackParameters={}, \
-                SampleParameters={}, \
-                SimulationFunctions={'Specular': lambda x: x, 'OffSpecular': lambda x: x}, \
+def MakeClasses(InstrumentParameters={'Wavelength': 1.54, 'Coordinates': 1},
+                LayerParameters={'d': 0.0, 'sigma': 0.0, 'n': 0.0 + 0.0j},
+                StackParameters={},
+                SampleParameters={},
+                SimulationFunctions={'Specular': lambda x: x, 'OffSpecular': lambda x: x},
                 ModelID='Standard'):
     factory = ModelFactory()
     factory.set_layer_parameters(LayerParameters)
@@ -509,7 +509,7 @@ def MakeClasses(InstrumentParameters={'Wavelength': 1.54, 'Coordinates': 1}, \
     Stack = factory.get_stack_class()
     Sample = factory.get_sample_class()
     Instrument = factory.get_instrument_class()
-    return (Instrument, Layer, Stack, Sample)
+    return Instrument, Layer, Stack, Sample
 
 
 if __name__ == '__main__':
@@ -524,9 +524,9 @@ if __name__ == '__main__':
     StackParameters = {'Layers': [], 'Repetitions': 1}
     SampleParameters = {'Stacks': [], 'Ambient': None, 'Substrate': None}
 
-    (Instrument, Layer, Stack, Sample) = MakeClasses(InstrumentParameters, \
+    (Instrument, Layer, Stack, Sample) = MakeClasses(InstrumentParameters,
                                                      LayerParameters, StackParameters, SampleParameters,
-                                                     {'Specualr': lambda x: x}, \
+                                                     {'Specualr': lambda x: x},
                                                      'test')
     inst = Instrument(footype='gauss beam', probe='x-ray', beamw=0.04, resintrange=2, pol='uu', wavelength=1.54,
                       respoints=5, Ibkg=0.0, I0=2, samplelen=10.0, restype='fast conv', coords='2θ', res=0.001,
@@ -553,7 +553,7 @@ if __name__ == '__main__':
 
     def create_dispersion_func(name='Fe'):
         path = '../databases/f1f2_nist/'
-        e, f1, f2 = np.loadtxt(path + '%s.nff' % name.lower(), skiprows=1, \
+        e, f1, f2 = np.loadtxt(path + '%s.nff' % name.lower(), skiprows=1,
                                unpack=True)
         f1interp = interpolate.interp1d(e, f1, kind='linear')
         f2interp = interpolate.interp1d(e, f2, kind='linear')

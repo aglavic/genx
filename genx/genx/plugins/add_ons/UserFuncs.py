@@ -45,8 +45,8 @@ class Plugin(framework.Template):
         self.clear_menu()
         # Lets add our user functions to our custo menu
         for name in user_funcs:
-            menuitem = wx.MenuItem(self.menu, wx.NewId(), name,\
-                        'Evaluate %s'%name, wx.ITEM_NORMAL)
+            menuitem = wx.MenuItem(self.menu, wx.NewId(), name,
+                                   'Evaluate %s'%name, wx.ITEM_NORMAL)
             self.menu.AppendItem(menuitem)
             self.parent.Bind(wx.EVT_MENU, self.eh_menu_choice, menuitem)
             

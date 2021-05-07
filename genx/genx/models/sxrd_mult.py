@@ -56,7 +56,7 @@ class SLSample:
             raise TypeError("The surface symmetries has to contained"
                             " in a list")
 
-        if sym_list == []:
+        if not sym_list:
             sym_list = [sxrd.SymTrans()]
 
         if min([type(sym) == type(sxrd.SymTrans()) for 
@@ -112,11 +112,11 @@ class Superlattice:
                  a_sym = [], b_sym = []):
         self.a_slab = a_slab
         self.b_slab = b_slab
-        if a_sym == []:
+        if not a_sym:
             self.a_sym = [sxrd.SymTrans()]
         else:
             self.a_sym = a_sym
-        if b_sym == []:
+        if not b_sym:
             self.b_sym = [sxrd.SymTrans()]
         else:
             self.b_sym = b_sym

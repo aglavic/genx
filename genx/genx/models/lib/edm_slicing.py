@@ -233,7 +233,7 @@ def create_profile_cm(d, sigma_c, sigma_m, prof_funcs,
     #pdens_c = pdens_indiv_c.sum(0)
     #pdens_m = (pdens_indiv_m*pdens_indiv).sum(0)
 
-    return (z, pdens_indiv_c, pdens_indiv_m)
+    return z, pdens_indiv_c, pdens_indiv_m
 
 
 def create_profile_cm2(d, sigma_c, sigma_ml, sigma_mu, prof_funcs,
@@ -281,7 +281,7 @@ def create_profile_cm2(d, sigma_c, sigma_ml, sigma_mu, prof_funcs,
     #pdens_c = pdens_indiv_c.sum(0)
     #pdens_m = (pdens_indiv_m*pdens_indiv).sum(0)
 
-    return (z, pdens_indiv_c, pdens_indiv_m)
+    return z, pdens_indiv_c, pdens_indiv_m
 
 if __name__ == '__main__':
     from pylab import *

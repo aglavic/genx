@@ -12,7 +12,7 @@ def make_D(q_p,q_m):
     return mat([[1,1,0,0],[q_p,-q_p,0,0],[0,0,1,1],[0,0,q_m,-q_m]])
     
 def make_P(q_p,q_m,d):
-    return mat([[exp(-1.0j*q_p*d),0,0,0],[0,exp(1.0j*q_p*d),0,0],\
+    return mat([[exp(-1.0j*q_p*d),0,0,0],[0,exp(1.0j*q_p*d),0,0],
                 [0,0,exp(-1.0j*q_m*d),0],[0,0,0,exp(1.0j*q_m*d)]])
 
 def make_R(theta_diff):

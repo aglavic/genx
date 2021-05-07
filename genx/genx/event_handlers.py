@@ -101,9 +101,9 @@ def open(frame, event):
         if not ans:
            return
      
-    dlg = wx.FileDialog(frame, message="Open", defaultFile="",\
-                        wildcard="GenX File (*.hgx;*.gx)|*.hgx;*.gx",\
-                         style=wx.FD_OPEN #| wx.FD_CHANGE_DIR
+    dlg = wx.FileDialog(frame, message="Open", defaultFile="",
+                        wildcard="GenX File (*.hgx;*.gx)|*.hgx;*.gx",
+                        style=wx.FD_OPEN #| wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
@@ -161,8 +161,8 @@ def open_model(frame, path):
         outp.close()
         ShowErrorDialog(frame, 'Problems when plugins processed model.'\
                     ' Python Error:\n%s'%(val,))
-    frame.main_frame_statusbar.SetStatusText('Model loaded from file',\
-                                                1)
+    frame.main_frame_statusbar.SetStatusText('Model loaded from file',
+                                             1)
     # Post an event to update everything else
     _post_new_model_event(frame, frame.model)
     # Needs to put it to saved since all the widgets will have 
@@ -254,8 +254,8 @@ def save_as(frame, event):
                                         'Overwrite?')
         if result:
             try:
-                io.save_file(fname, frame.model, frame.solver_control.optimizer,\
-                        frame.config)
+                io.save_file(fname, frame.model, frame.solver_control.optimizer,
+                             frame.config)
             except modellib.IOError as e:
                 ShowModelErrorDialog(frame, e.__str__())
             except Exception as e:
@@ -274,17 +274,17 @@ def export_data(frame, event):
     exports the data to one file per data set with a basename with
     extention given by a save dialog.
     '''
-    dlg = wx.FileDialog(frame, message="Export data", defaultFile="",\
-                        wildcard="Dat File (*.dat)|*.dat",\
-                         style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+    dlg = wx.FileDialog(frame, message="Export data", defaultFile="",
+                        wildcard="Dat File (*.dat)|*.dat",
+                        style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
             frame.model.export_data(dlg.GetPath())
         except modellib.IOError as e:
             ShowModelErrorDialog(frame, str(e))
-            frame.main_frame_statusbar.SetStatusText(\
-                    'Error when exporting data', 1)
+            frame.main_frame_statusbar.SetStatusText(
+                'Error when exporting data', 1)
         except Exception as e:
             ShowErrorDialog(frame, str(e), 'export data - model.export_data')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
@@ -298,9 +298,9 @@ def export_script(frame, event):
     
     Exports the script to a python file given by a filedialog.
     '''
-    dlg = wx.FileDialog(frame, message="Export data", defaultFile="",\
-                        wildcard="Python File (*.py)|*.py",\
-                         style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+    dlg = wx.FileDialog(frame, message="Export data", defaultFile="",
+                        wildcard="Python File (*.py)|*.py",
+                        style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
@@ -311,26 +311,26 @@ def export_script(frame, event):
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
-            result = ShowQuestionDialog(frame, \
-            'The file %s already exists. Do you wish to overwrite it?'%filename\
-            , 'Overwrite?')
+            result = ShowQuestionDialog(frame,
+                                        'The file %s already exists. Do you wish to overwrite it?'%filename
+                                        , 'Overwrite?')
         if result:
             try:
                 #frame.model.export_script(dlg.GetPath())
                 frame.model.export_script(fname)
             except modellib.IOError as e:
                 ShowModelErrorDialog(frame, str(e))
-                frame.main_frame_statusbar.SetStatusText(\
-                        'Error when exporting script', 1)
+                frame.main_frame_statusbar.SetStatusText(
+                    'Error when exporting script', 1)
                 return
             except Exception as e:
-                ShowErrorDialog(frame, str(e),\
-                                    'export script - model.export_script')
+                ShowErrorDialog(frame, str(e),
+                                'export script - model.export_script')
                 frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
                 return
             else:
-                frame.main_frame_statusbar.SetStatusText(\
-                                                'Script exported to file', 1)
+                frame.main_frame_statusbar.SetStatusText(
+                    'Script exported to file', 1)
             
     dlg.Destroy()
     
@@ -339,9 +339,9 @@ def export_table(frame, event):
     
     Exports the table to a dat file given by a filedialog.
     '''
-    dlg = wx.FileDialog(frame, message="Export data", defaultFile="",\
-                        wildcard="Table File (*.tab)|*.tab",\
-                         style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+    dlg = wx.FileDialog(frame, message="Export data", defaultFile="",
+                        wildcard="Table File (*.tab)|*.tab",
+                        style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         fname = dlg.GetPath()
@@ -352,26 +352,26 @@ def export_table(frame, event):
         result = True
         if os.path.exists(fname):
             filepath, filename = os.path.split(fname)
-            result = ShowQuestionDialog(frame, \
-            'The file %s already exists. Do you wish to overwrite it?'%filename\
-            , 'Overwrite?')
+            result = ShowQuestionDialog(frame,
+                                        'The file %s already exists. Do you wish to overwrite it?'%filename
+                                        , 'Overwrite?')
         if result:
             try:
                 #frame.model.export_table(dlg.GetPath())
                 frame.model.export_table(fname)
             except modellib.IOError as e:
                 ShowModelErrorDialog(frame, str(e))
-                frame.main_frame_statusbar.SetStatusText(\
-                        'Error when exporting table', 1)
+                frame.main_frame_statusbar.SetStatusText(
+                    'Error when exporting table', 1)
                 return
             except Exception as e:
-                ShowErrorDialog(frame, str(e),\
-                                    'export table - model.export_table')
+                ShowErrorDialog(frame, str(e),
+                                'export table - model.export_table')
                 frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
                 return
             else:
-                frame.main_frame_statusbar.SetStatusText(\
-                                                'Table exported to file', 1)
+                frame.main_frame_statusbar.SetStatusText(
+                    'Table exported to file', 1)
             
     dlg.Destroy()
     
@@ -380,9 +380,9 @@ def import_script(frame, event):
     
     imports a script from the file given by a file dialog box
     '''
-    dlg = wx.FileDialog(frame, message="Import script", defaultFile="",\
-                    wildcard="Python files (*.py)|*.py|All files (*.*)|*.*",\
-                         style=wx.FD_OPEN | wx.FD_CHANGE_DIR
+    dlg = wx.FileDialog(frame, message="Import script", defaultFile="",
+                        wildcard="Python files (*.py)|*.py|All files (*.*)|*.*",
+                        style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
@@ -390,12 +390,12 @@ def import_script(frame, event):
             #frame.model.import_script(fname)
         except modellib.IOError as e:
             ShowModelErrorDialog(frame, str(e))
-            frame.main_frame_statusbar.SetStatusText(\
-                    'Error when importing script', 1)
+            frame.main_frame_statusbar.SetStatusText(
+                'Error when importing script', 1)
             return
         except Exception as e:
-            ShowErrorDialog(frame, str(e),\
-                                'import script - model.import_script')
+            ShowErrorDialog(frame, str(e),
+                            'import script - model.import_script')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
             return
         try:
@@ -408,8 +408,8 @@ def import_script(frame, event):
             ShowErrorDialog(frame, 'Problems when plugins processed model.'\
                     ' Python Error:\n%s'%(val,))
         else:
-            frame.main_frame_statusbar.SetStatusText(\
-                                                'Script imported from file', 1)
+            frame.main_frame_statusbar.SetStatusText(
+                'Script imported from file', 1)
     dlg.Destroy()
     # Post event to tell that the model has changed
     _post_new_model_event(frame, frame.model)
@@ -423,8 +423,8 @@ def import_data(frame, event):
     try:
         frame.data_list.eh_tb_open(event)
     except Exception as e:
-            ShowErrorDialog(frame, str(e),\
-                                'import data - data_list.eh_tb_open')
+            ShowErrorDialog(frame, str(e),
+                            'import data - data_list.eh_tb_open')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
             return
     
@@ -434,22 +434,22 @@ def import_table(frame, event):
     
     imports a table from the file given by a file dialog box
     '''
-    dlg = wx.FileDialog(frame, message="Import script", defaultFile="",\
-                    wildcard="Table File (*.tab)|*.tab|All files (*.*)|*.*",\
-                         style=wx.FD_OPEN | wx.FD_CHANGE_DIR
+    dlg = wx.FileDialog(frame, message="Import script", defaultFile="",
+                        wildcard="Table File (*.tab)|*.tab|All files (*.*)|*.*",
+                        style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                        )
     if dlg.ShowModal() == wx.ID_OK:
         try:
             frame.model.import_table(dlg.GetPath())
         except modellib.IOError as e:
             ShowModelErrorDialog(frame, str(e))
-            frame.main_frame_statusbar.SetStatusText(\
-                    'Error when importing script', 1)
+            frame.main_frame_statusbar.SetStatusText(
+                'Error when importing script', 1)
             dlg.Destroy()
             return
         except Exception as e:
-            ShowErrorDialog(frame, str(e),\
-                                'import script - model.import_script')
+            ShowErrorDialog(frame, str(e),
+                            'import script - model.import_script')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
             dlg.Destroy()
             return
@@ -559,16 +559,16 @@ def set_possible_parameters_in_grid(frame):
         val = outp.getvalue()
         outp.close()
         #ShowErrorDialog(frame, val)
-        ShowErrorDialog(frame, val,\
-            'simulate - model.get_possible_parameters')
+        ShowErrorDialog(frame, val,
+                        'simulate - model.get_possible_parameters')
         frame.main_frame_statusbar.SetStatusText('Fatal Error', 0)
         return
     
     try:
         frame.paramter_grid.SetParameterSelections(pardict)
     except Exception as e:
-        ShowErrorDialog(frame, str(e),\
-            'simulate - parameter_grid.SetParameterSelection')
+        ShowErrorDialog(frame, str(e),
+                        'simulate - parameter_grid.SetParameterSelection')
         frame.main_frame_statusbar.SetStatusText('Fatal Error', 0)
         return
     # Set the function for which the parameter can be evaluated with
@@ -591,8 +591,8 @@ def start_fit(frame, event):
         else:
             frame.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
     else:
-        ShowNotificationDialog(frame, 'The script is not compiled, do a'\
-        ' simulation before you start fitting.')
+        ShowNotificationDialog(frame, 'The script is not compiled, do a'
+                                      ' simulation before you start fitting.')
     
 def stop_fit(frame, event):
     '''stop_fit(frame, event) --> None
@@ -618,8 +618,8 @@ def resume_fit(frame, event):
         else:
             frame.main_frame_statusbar.SetStatusText('Fitting starting ...',1)
     else:
-        ShowNotificationDialog(frame, 'The script is not compiled, do a'\
-        ' simulation before you start fitting.')
+        ShowNotificationDialog(frame, 'The script is not compiled, do a'
+                                      ' simulation before you start fitting.')
     
     
 def calculate_error_bars(frame, evt):
@@ -650,9 +650,9 @@ def scan_parameter(frame, row):
         ' scanning a parameter. The script needs to be compiled.')
         return
     
-    dlg = wx.NumberEntryDialog(frame,\
-                'Input the number of evaluation points for the scan',\
-                'Steps', '', 50, 2, 1000)
+    dlg = wx.NumberEntryDialog(frame,
+                               'Input the number of evaluation points for the scan',
+                               'Steps', '', 50, 2, 1000)
     if dlg.ShowModal() ==wx.ID_OK:        
         frame.main_frame_statusbar.SetStatusText('Scanning parameter', 1)
         try:
@@ -662,8 +662,8 @@ def scan_parameter(frame, row):
             besty = frame.model.fom
             
             frame.plot_fomscan.SetPlottype('scan')
-            frame.plot_fomscan.Plot((x, y, bestx, besty,\
-                        frame.solver_control.fom_error_bars_level),
+            frame.plot_fomscan.Plot((x, y, bestx, besty,
+                                     frame.solver_control.fom_error_bars_level),
                         frame.model.parameters.get_names()[row],
                         'FOM')
             frame.sep_plot_notebook.SetSelection(3)
@@ -786,7 +786,7 @@ def fom_value(frame, event):
     if fom_value:
         frame.main_frame_fom_text.SetLabel('        FOM %s: %.4e'%(fom_name,fom_value))
     else:
-        frame.main_frame_fom_text.SetLabel('        FOM %s: None'%(fom_name))
+        frame.main_frame_fom_text.SetLabel('        FOM %s: None'%fom_name)
 def point_pick(frame, event):
     '''point_pick(frame, event) --> None
     Callback for the picking of a data point in a plotting window.
@@ -1002,7 +1002,7 @@ def on_find_event(frame, event):
             ##print "Searching up"
             pos = frame.script_editor.SearchPrev(flags, find_str)
         if pos == -1:
-            frame.main_frame_statusbar.SetStatusText(\
+            frame.main_frame_statusbar.SetStatusText(
                 'Could not find text %s'%find_str, 1)
         return pos
 
@@ -1034,7 +1034,7 @@ def on_find_event(frame, event):
         # We already have found and marked text that we should
         # replace
         else:
-            frame.script_editor.ReplaceSelection(\
+            frame.script_editor.ReplaceSelection(
                 event.GetReplaceString())
             # Find a new text to replace
             find()
@@ -1045,13 +1045,13 @@ def on_find_event(frame, event):
             pos = find()
         i = 0
         while pos != -1:
-            frame.script_editor.ReplaceSelection(\
+            frame.script_editor.ReplaceSelection(
                 event.GetReplaceString())
             i += 1
             pos = find()
-        frame.main_frame_statusbar.SetStatusText(\
-                'Replaces %d occurancies of  %s'%(i,\
-                 event.GetFindString()), 1)
+        frame.main_frame_statusbar.SetStatusText(
+            'Replaces %d occurancies of  %s'%(i,
+                                              event.GetFindString()), 1)
         
     ##else:
     ##    ShowErrorDialog(frame, 'Faulty event supplied in find and'\
@@ -1068,8 +1068,8 @@ def change_data_grid_view(frame, event):
     #print event.GetSelection()
     dataset = frame.model.data[event.GetSelection()]
     rows = frame.data_grid.GetNumberRows()
-    new_rows = max(len(dataset.x), len(dataset.y),\
-                    len(dataset.x_raw), len(dataset.y_raw))
+    new_rows = max(len(dataset.x), len(dataset.y),
+                   len(dataset.x_raw), len(dataset.y_raw))
     frame.data_grid.DeleteRows(numRows = rows)
     frame.data_grid.AppendRows(new_rows)
     [[frame.data_grid.SetCellValue(row, col, '-') for col in range(6)]\
@@ -1231,7 +1231,7 @@ def show_about_box(frame, event):
         "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
         "\n\nThe non-mandatory but useful packages:\n%s"
         ""%(platform.python_version(), wx.__version__,
-            numpy.__version__, scipy.__version__, \
+            numpy.__version__, scipy.__version__,
             matplotlib.__version__, useful),
         500, wx.ClientDC(frame))
     info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")

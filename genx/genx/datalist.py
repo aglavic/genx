@@ -101,7 +101,7 @@ class DataController:
         '''
         sim_list = [self.data[i].get_sim_plot_items() for i in pos]
         data_list = [self.data[i].get_data_plot_items() for i in pos]
-        return (sim_list, data_list)
+        return sim_list, data_list
     
     def test_commands(self, command, pos):
         '''test_commands(self, pos) --> result string
@@ -416,8 +416,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         '''
         # Check so that one dataset is selected
         if len(indices) == 0:
-            dlg = wx.MessageDialog(self, \
-                'At least one data set has to be selected'
+            dlg = wx.MessageDialog(self,
+                                   'At least one data set has to be selected'
                 , caption = 'Information', style = wx.OK|wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
@@ -433,8 +433,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             index = self.GetNextSelected(index)
         
         # Create the dialog box        
-        dlg = wx.MessageDialog(self, 'Remove %d dataset(s) ?'%(count), 
-        caption = 'Remove?', style = wx.YES_NO|wx.ICON_QUESTION)
+        dlg = wx.MessageDialog(self, 'Remove %d dataset(s) ?'%count,
+                               caption = 'Remove?', style = wx.YES_NO|wx.ICON_QUESTION)
 
         # Show the dialog box
         if dlg.ShowModal() == wx.ID_YES:
@@ -476,12 +476,12 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             self._UpdateImageList()
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
-            self._UpdateData('Item moved', data_changed = False, moved = True,\
-                direction_up = True, position = indices)
+            self._UpdateData('Item moved', data_changed = False, moved = True,
+                             direction_up = True, position = indices)
             
         else:
-            dlg = wx.MessageDialog(self, \
-                'The first dataset can not be moved up'
+            dlg = wx.MessageDialog(self,
+                                   'The first dataset can not be moved up'
                 , caption = 'Information', style = wx.OK|wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
@@ -503,13 +503,13 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             self._UpdateImageList()
             # Update the list
             self.SetItemCount(self.data_cont.get_count())
-            self._UpdateData('Item moved', data_changed = False, moved = True,\
-                direction_up = False, position = indices)
+            self._UpdateData('Item moved', data_changed = False, moved = True,
+                             direction_up = False, position = indices)
             
         else:
-            dlg = wx.MessageDialog(self, \
-                'The last dataset can not be moved down',\
-                caption = 'Information', style = wx.OK|wx.ICON_INFORMATION)
+            dlg = wx.MessageDialog(self,
+                                   'The last dataset can not be moved down',
+                                   caption = 'Information', style = wx.OK|wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
             
@@ -580,8 +580,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.data_cont.set_data(evt.GetModel().get_data())
         self._UpdateImageList()
         self.SetItemCount(self.data_cont.get_count())
-        self._UpdateData('Data from model loaded', data_changed = True,\
-                new_data = True, new_model = True)
+        self._UpdateData('Data from model loaded', data_changed = True,
+                         new_data = True, new_model = True)
         self.toggleshow = self.config.get_boolean('data handling', 
                                                   'toggle show')
         self.data_loader_cont.load_default()
@@ -595,8 +595,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def OnEndEdit(self, evt):
         if not evt.IsEditCancelled():
             self.data_cont.set_name(evt.GetIndex(),evt.GetLabel())
-        self._UpdateData('Data set name changed', data_changed = False,\
-            name_change = True)
+        self._UpdateData('Data set name changed', data_changed = False,
+                         name_change = True)
         evt.Skip()
     
     def OnPlotSettings(self, evt):
@@ -626,8 +626,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                     data_par[key] = None
 
         def apply_plotsettings(sim_par, data_par):
-            self.data_cont.set_items_plotsettings(indices,\
-                    [sim_par]*len(indices), [data_par]*len(indices))
+            self.data_cont.set_items_plotsettings(indices,
+                                                  [sim_par]*len(indices), [data_par]*len(indices))
             self._UpdateImageList()
             self._UpdateData('Plot settings changed', data_changed = True)
         
@@ -685,8 +685,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         # Get the commands for the selcted values
         commands = self.data_cont.get_items_commands(indices)
         # Get all commands
-        all_commands = self.data_cont.get_items_commands(\
-                                    list(range(self.data_cont.get_count())))
+        all_commands = self.data_cont.get_items_commands(
+            list(range(self.data_cont.get_count())))
         all_names = self.data_cont.get_items_names()
         
         # Find which values are the same for all lists in sim and data.
@@ -727,8 +727,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             predef_commands = None
         
         # Dialog business start here
-        dlg = CalcDialog(self, command_par, all_names, all_commands, \
-                        predef_names, predef_commands)
+        dlg = CalcDialog(self, command_par, all_names, all_commands,
+                         predef_names, predef_commands)
         
         # Some currying for the set functions
         command_tester = \
@@ -736,8 +736,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         def command_runner(command):
             result = self.data_cont.run_commands(command, indices)
             if not self.data_cont.compare_sim_y_length(indices):
-                self._UpdateData('New calculation', data_changed = True,\
-                    new_data = True)
+                self._UpdateData('New calculation', data_changed = True,
+                                 new_data = True)
             else:
                 self._UpdateData('New calculation', data_changed = True)
             return result
@@ -927,8 +927,8 @@ class PlotSettingsDialog(wx.Dialog):
             
         for item, index in zip(row_labels, list(range(len(row_labels)))):
             label = wx.StaticText(self, -1, item)
-            gbs.Add(label,(index+1,0),\
-                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+            gbs.Add(label,(index+1,0),
+                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
         
         # The Color choosers
         # Some None checking i.e. check for not defined values
@@ -952,11 +952,11 @@ class PlotSettingsDialog(wx.Dialog):
         line_type = ['No line','full', 'dotted', 'dashed', 'dash dotted', ' ']
         # Create sim choice and set the current selcetion
         self.sim_linetype_choice = wx.Choice(self, -1, choices = line_type)
-        self.sim_linetype_choice.SetSelection(\
+        self.sim_linetype_choice.SetSelection(
             self._get_first_match(sim_pars['linetype'], self.line_type))
         # Create data choice and set the current selcetion
         self.data_linetype_choice = wx.Choice(self, -1, choices = line_type)
-        self.data_linetype_choice.SetSelection(\
+        self.data_linetype_choice.SetSelection(
             self._get_first_match(data_pars['linetype'], self.line_type))
         # Add them to the grid sizer
         gbs.Add(self.sim_linetype_choice, (1,2))
@@ -983,16 +983,16 @@ class PlotSettingsDialog(wx.Dialog):
         
         # The Choics boxes for symbol type
         self.symbol_type = ['', 's', 'o', '.', 'd', '<', None]
-        symbol_type = ['No symbol','squares', 'circles', 'dots', 'diamonds',\
-         'triangle', ' ']
+        symbol_type = ['No symbol','squares', 'circles', 'dots', 'diamonds',
+                       'triangle', ' ']
         # Create sim choice and set the current selcetion
         self.sim_symboltype_choice = wx.Choice(self, -1, choices = symbol_type)
-        self.sim_symboltype_choice.SetSelection(\
+        self.sim_symboltype_choice.SetSelection(
             self._get_first_match(sim_pars['symbol'], self.symbol_type))
         # Create data choice and set the current selcetion
-        self.data_symboltype_choice = wx.Choice(self, -1,\
+        self.data_symboltype_choice = wx.Choice(self, -1,
                                                 choices = symbol_type)
-        self.data_symboltype_choice.SetSelection(\
+        self.data_symboltype_choice.SetSelection(
             self._get_first_match(data_pars['symbol'], self.symbol_type))
         # Add them to the grid sizer
         gbs.Add(self.sim_symboltype_choice, (1,4))
@@ -1090,12 +1090,12 @@ class PlotSettingsDialog(wx.Dialog):
         if linethickness < 0:
             linethickness = None
             
-        return {'color': color,\
-                'symbol': \
-                self.symbol_type[self.sim_symboltype_choice.GetSelection()],\
-                'symbolsize': symbolsize,\
-                'linetype':\
-                 self.line_type[self.sim_linetype_choice.GetSelection()],\
+        return {'color': color,
+                'symbol':
+                    self.symbol_type[self.sim_symboltype_choice.GetSelection()],
+                'symbolsize': symbolsize,
+                'linetype':
+                    self.line_type[self.sim_linetype_choice.GetSelection()],
                 'linethickness': linethickness
                }
         
@@ -1116,20 +1116,20 @@ class PlotSettingsDialog(wx.Dialog):
         if linethickness < 0:
             linethickness = None
             
-        return {'color': color,\
-                'symbol': \
-                self.symbol_type[self.data_symboltype_choice.GetSelection()],\
-                'symbolsize': self.data_symbolsize_ctrl.GetValue(),\
-                'linetype':\
-                 self.line_type[self.data_linetype_choice.GetSelection()],\
+        return {'color': color,
+                'symbol':
+                    self.symbol_type[self.data_symboltype_choice.GetSelection()],
+                'symbolsize': self.data_symbolsize_ctrl.GetValue(),
+                'linetype':
+                    self.line_type[self.data_linetype_choice.GetSelection()],
                 'linethickness': self.data_linethick_ctrl.GetValue()
                }
 # END: PlotSettingsDialog
 #==============================================================================
 
 class CalcDialog(wx.Dialog):
-    def __init__(self, parent, commands, data_names, data_commands,\
-                predef_commands_names = None, predef_commands = None):
+    def __init__(self, parent, commands, data_names, data_commands,
+                 predef_commands_names = None, predef_commands = None):
         wx.Dialog.__init__(self, parent, -1, 'Data Calculations')
         self.SetAutoLayout(True)
         
@@ -1154,8 +1154,8 @@ class CalcDialog(wx.Dialog):
             
         for item, index in zip(col_labels, list(range(len(col_labels)))):
             label = wx.StaticText(self, -1, item)
-            choice_gbs.Add(label,(0, 2*index),\
-                flag = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+            choice_gbs.Add(label,(0, 2*index),
+                           flag = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
         
         
         # Make the choice boxes we want to have:
@@ -1167,8 +1167,8 @@ class CalcDialog(wx.Dialog):
             self.predef_commands = predef_commands
         else:
             self.predef_list = ['Example', 'Default']
-            self.predef_commands = [{'x':'x*2','y':'y/1000.0','e':'e/1000'},\
-                {'x':'x','y':'y','e':'e'}]
+            self.predef_commands = [{'x':'x*2','y':'y/1000.0','e':'e/1000'},
+                                    {'x':'x','y':'y','e':'e'}]
                 
         self.predef_choice = wx.Choice(self, choices=self.predef_list)
         
@@ -1192,14 +1192,14 @@ class CalcDialog(wx.Dialog):
         # We should for simplicity and layout beuty treat x,y,e seperate from
         #the rest
         self.command_ctrl = {}
-        for name, index in zip(command_names_standard,\
-                                    list(range(len(command_names_standard)))):
+        for name, index in zip(command_names_standard,
+                               list(range(len(command_names_standard)))):
             if name in commands:
                 label = wx.StaticText(self, -1, '%s = '%name)
-                gbs.Add(label,(index,0),\
-                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
-                self.command_ctrl[name] = wx.TextCtrl(self, -1,\
-                                    commands[name], size=(300, -1))
+                gbs.Add(label,(index,0),
+                        flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+                self.command_ctrl[name] = wx.TextCtrl(self, -1,
+                                                      commands[name], size=(300, -1))
                 gbs.Add(self.command_ctrl[name], (index, 1), flag = wx.EXPAND)
 
         command_names = list(commands.keys())
@@ -1211,12 +1211,12 @@ class CalcDialog(wx.Dialog):
         for name in command_names:
             if not (name in command_names_standard):
                 label = wx.StaticText(self, -1, '%s = '%name)
-                gbs.Add(label,(index + index_offset, 0),\
-                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
-                self.command_ctrl[name] = wx.TextCtrl(self, -1,\
-                        commands[name], size=(300, -1))
-                gbs.Add(self.command_ctrl[name], (index + index_offset, 1),\
-                            flag = wx.EXPAND)
+                gbs.Add(label,(index + index_offset, 0),
+                        flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+                self.command_ctrl[name] = wx.TextCtrl(self, -1,
+                                                      commands[name], size=(300, -1))
+                gbs.Add(self.command_ctrl[name], (index + index_offset, 1),
+                        flag = wx.EXPAND)
                 index += 1
         
         # Add the Dilaog buttons
@@ -1241,8 +1241,8 @@ class CalcDialog(wx.Dialog):
         sizer.Add(line, 0, wx.GROW|wx.TOP, 20)
         
         sizer.Add((-1, 4), 0, wx.EXPAND)
-        sizer.Add(button_sizer,0,\
-                flag = wx.ALIGN_RIGHT, border = 20)
+        sizer.Add(button_sizer,0,
+                  flag = wx.ALIGN_RIGHT, border = 20)
         sizer.Add((-1, 4), 0, wx.EXPAND)
         self.SetSizer(sizer)
         

@@ -511,7 +511,7 @@ class Model:
                 funcs.append(self.create_fit_func(func))
             except Exception as e:
                 raise ParameterError(func, row_numbers[len(funcs)], str(e),0)
-        return (funcs, vals, minvals, maxvals)
+        return funcs, vals, minvals, maxvals
     
     def get_fit_values(self):
         '''get_fit_values(self) --> values
@@ -539,7 +539,7 @@ class Model:
             except Exception as e:
                 raise ParameterError(func, len(funcs), str(e),0)
         
-        return (funcs, vals)
+        return funcs, vals
     
     def simulate(self, compile = True):
         '''simulate(self, compile = True) --> None
@@ -895,8 +895,8 @@ class ParameterError(GenericError):
         Yields a human readable description of the problem
         '''
         text = ''
-        text += 'Parameter number %i, %s, '%(self.parameter_number,\
-            self.parameter)
+        text += 'Parameter number %i, %s, '%(self.parameter_number,
+                                             self.parameter)
         
         # Take care of the different cases
         if self.what == 0:

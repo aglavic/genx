@@ -132,7 +132,7 @@ def removeIllegals(key):
     illegal = ['/', ' ']
     for j in illegal:
         key = key.replace(j,'')
-    if key[0].isalpha() == False:
+    if not key[0].isalpha():
         key = "X" + key
 
     return key
@@ -637,8 +637,6 @@ class SpecScan:
         if __verbose__:
             iprint("---- Data is %i rows x %i cols." % (self.data.shape[0], self.data.shape[1]))
 
-        return None
-
     def _setcols(self):
         if self.data.shape[0] > 0:
             for i in range(len(self.cols)):
@@ -794,7 +792,7 @@ class SpecScan:
         y = y / m
         e = e * y
 
-        return (y, e)
+        return y, e
 
 class SpecData:
     """Class defining the data contained in a scan"""
@@ -941,7 +939,7 @@ class SpecPlot:
             if x2col is not None:
                 iprint("---- x2 = %s" % self.scan.cols[x2col])
 
-        if norm == True:
+        if norm:
             self.ploty = self.scan.data[:,ycol] / self.scan.data[:,mcol]
             self.plote = self.ploty * (sqrt(self.scan.data[:,ycol]) / self.scan.data[:,mcol])
             yl = "%s / %s" % (self.scan.cols[ycol], self.scan.cols[mcol])
@@ -955,7 +953,7 @@ class SpecPlot:
                 self.plote = self.scan.data[:, self.scan.cols.index(errors)]
             if __verbose__:
                 iprint("---- y  = %s" % self.scan.cols[ycol])
-        if log == True:
+        if log:
             plotit = semilogy
         else:
             plotit = plot

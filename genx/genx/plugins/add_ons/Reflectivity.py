@@ -155,14 +155,14 @@ class SampleHandler:
         stack_code=''
         item=slist[i]
         maxi=len(slist)-1
-        while(i<maxi):
+        while i<maxi:
             if item.find('Stack')>-1:
                 stack_strings=item.split(':')
                 stack_code = stack_code + stack_strings[0] + '(Layers=['
                 i += 1
                 item = slist[i]
                 stack_layers = []
-                while(item.find('Stack') < 0 and i < maxi):
+                while item.find('Stack') < 0 and i < maxi:
                     itemp = item.split('=')[0]
                     itemp = itemp.lstrip()
                     stack_layers.append(itemp)
@@ -540,7 +540,7 @@ class SamplePanel(wx.Panel):
                         elif state == 2:
                             par_str = ' <font color=%s><b>%s=(%.2e,</b></font>'%(const_fit_color_str, par_name, val)
                     else:
-                        par_str = ' <b>%s=??+</b>'%(par_name)
+                        par_str = ' <b>%s=??+</b>'%par_name
                     if (name, par_name + 'imag') in dic_lookup:
                         val, state = dic_lookup[(name, par_name + 'imag')]
                         if state == 1:
@@ -827,8 +827,8 @@ class SamplePanel(wx.Panel):
         '''
         pos = self.listbox.GetSelection()
         if pos == 0 or pos == len(self.sampleh.names) - 1:
-            self.plugin.ShowInfoDialog('It is forbidden to change the'\
-                'name of the substrate (Sub) and the Ambient (Amb) layers.')
+            self.plugin.ShowInfoDialog('It is forbidden to change the'
+                                       'name of the substrate (Sub) and the Ambient (Amb) layers.')
         else:
             unallowed_names = self.sampleh.names[:pos] +\
                                 self.sampleh.names[max(0,pos - 1):]
@@ -1183,7 +1183,7 @@ class DataParameterPanel(wx.Panel):
         index = self.listbox.GetSelection()
         
         if index == wx.NOT_FOUND:
-            return (-1, -1)
+            return -1, -1
 
         dataindex = -1
         itemindex = -1
@@ -1193,15 +1193,15 @@ class DataParameterPanel(wx.Panel):
             listindex +=1
             itemindex = -1
             if listindex >= index:
-                return (dataindex, itemindex)
+                return dataindex, itemindex
             for item in self.expressionlist[i]:
                 listindex += 1
                 itemindex += 1
                 if listindex >= index:
-                    return (dataindex, itemindex)
+                    return dataindex, itemindex
                 
         # If all other things fail...
-        return (-1, -1)
+        return -1, -1
             
             
     
@@ -1214,8 +1214,8 @@ class DataParameterPanel(wx.Panel):
         if exp_pos != -1 and data_pos != -1:
             # Editing the expressions for variables
             list_item = self.expressionlist[data_pos][exp_pos]
-            dlg = ParameterExpressionDialog(self, self.plugin.GetModel(),\
-                list_item, sim_func=self.onsimulate)
+            dlg = ParameterExpressionDialog(self, self.plugin.GetModel(),
+                                            list_item, sim_func=self.onsimulate)
             if dlg.ShowModal() == wx.ID_OK:
                 exp = dlg.GetExpression()
                 self.expressionlist[data_pos][exp_pos] = exp
@@ -1279,8 +1279,8 @@ class DataParameterPanel(wx.Panel):
         
         Creates a new parameter
         '''
-        dlg = EditCustomParameters(self, self.plugin.GetModel(),\
-            self.parameterlist)
+        dlg = EditCustomParameters(self, self.plugin.GetModel(),
+                                   self.parameterlist)
         if dlg.ShowModal() == wx.ID_OK:
             self.parameterlist = dlg.GetLines()
             self.UpdateListbox()
@@ -1312,22 +1312,22 @@ class EditCustomParameters(wx.Dialog):
             name_ctrl_sizer.Add(label,(0, index),flag=wx.ALIGN_LEFT,border=5)
         
         self.name_ctrl = wx.TextCtrl(self, -1, size = (120, -1))
-        name_ctrl_sizer.Add(self.name_ctrl, (1,0),\
-            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        name_ctrl_sizer.Add(self.name_ctrl, (1,0),
+                            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
         self.value_ctrl = wx.TextCtrl(self, -1, size = (120, -1))
-        name_ctrl_sizer.Add(self.value_ctrl, (1,1),\
-            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        name_ctrl_sizer.Add(self.value_ctrl, (1,1),
+                            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
         self.add_button = wx.Button(self, id=wx.ID_ANY, label='Add')
-        name_ctrl_sizer.Add(self.add_button, (1,2), \
-            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        name_ctrl_sizer.Add(self.add_button, (1,2),
+                            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
         sizer.Add(name_ctrl_sizer)
         self.Bind(wx.EVT_BUTTON, self.OnAdd, self.add_button)
 
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW|wx.RIGHT|wx.TOP, 5)
         
-        self.listbox = MyHtmlListBox(self, -1, size = (-1,150),\
-            style =  wx.BORDER_SUNKEN)
+        self.listbox = MyHtmlListBox(self, -1, size = (-1,150),
+                                     style =  wx.BORDER_SUNKEN)
         self.listbox.SetItemList(self.lines)
         sizer.Add(self.listbox, 1, wx.GROW|wx.ALL, 10)
         
@@ -1364,8 +1364,8 @@ class EditCustomParameters(wx.Dialog):
         
         Callback for adding an entry
         '''
-        line = '%s.new_var(\'%s\', %s)'%(self.var_name,\
-            self.name_ctrl.GetValue(), self.value_ctrl.GetValue())
+        line = '%s.new_var(\'%s\', %s)'%(self.var_name,
+                                         self.name_ctrl.GetValue(), self.value_ctrl.GetValue())
         try:
             self.model.eval_in_model(line)
         except Exception as e:
@@ -1492,16 +1492,16 @@ class SimulationExpressionDialog(wx.Dialog):
                                     choices = self.available_sim_funcs)
         self.Bind(wx.EVT_CHOICE, self.on_sim_change, self.sim_choice)
         self.sim_choice.SetSelection(self.available_sim_funcs.index(sim_func))
-        gbs.Add(self.sim_choice, (1,0),\
-            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        gbs.Add(self.sim_choice, (1,0),
+                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
        
         # Instrument choice control
         self.inst_choice = wx.Choice(self, -1, 
                                     choices=list(self.instruments.keys()))
         #self.Bind(wx.EVT_CHOICE, self.on_inst_change, self.inst_choice)
         self.inst_choice.SetSelection(list(self.instruments.keys()).index(expressions['Instrument']))
-        gbs.Add(self.inst_choice, (1,1),\
-            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        gbs.Add(self.inst_choice, (1,1),
+                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
         
             
         button_sizer = wx.StdDialogButtonSizer()
@@ -1619,10 +1619,10 @@ class ParameterExpressionDialog(wx.Dialog):
         # This will init func_choice
         self.obj_choice.SetSelection(0)
         
-        gbs.Add(self.obj_choice, (1,0),\
-            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
-        gbs.Add(self.func_choice, (1,1),\
-            flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        gbs.Add(self.obj_choice, (1,0),
+                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
+        gbs.Add(self.func_choice, (1,1),
+                flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,border = 5)
             
         exp_right = ''
         if expression:
@@ -1649,8 +1649,8 @@ class ParameterExpressionDialog(wx.Dialog):
 
         self.expression_ctrl = ParameterExpressionCombo(par_dict, sim_func, self, -1, exp_right,
                                                         size=(300, -1))
-        gbs.Add(self.expression_ctrl, (1,2),\
-            flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
+        gbs.Add(self.expression_ctrl, (1,2),
+                flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, border=5)
         
         button_sizer = wx.StdDialogButtonSizer()
         okay_button = wx.Button(self, wx.ID_OK)
@@ -1770,7 +1770,7 @@ class SamplePlotPanel(wx.Panel):
                         is_imag = key[:2] == 'Im' or key[:4] == 'imag'
                         if (is_imag and self.plugin.show_imag_sld) or not is_imag:
                             label = data[sim].name + '\n' + key
-                            self.plot.ax.plot(self.plot_dicts[sim]['z'], self.plot_dicts[sim][key],\
+                            self.plot.ax.plot(self.plot_dicts[sim]['z'], self.plot_dicts[sim][key],
                                               colors[i%len(colors)], label = label)
 
                             if 'SLD unit' in self.plot_dicts[sim]:
@@ -1794,7 +1794,7 @@ class SamplePlotPanel(wx.Panel):
                     is_imag = key[:2] == 'Im' or key[:4] == 'imag'
                     if (is_imag and self.plugin.show_imag_sld) or not is_imag:
                         label = key
-                        self.plot.ax.plot(self.plot_dicts[0]['z'], self.plot_dicts[0][key],\
+                        self.plot.ax.plot(self.plot_dicts[0]['z'], self.plot_dicts[0][key],
                                           colors[i%len(colors)], label = label)
 
                         if 'SLD unit' in self.plot_dicts[0]:
@@ -1808,7 +1808,7 @@ class SamplePlotPanel(wx.Panel):
                                 fontsize = "small", ncol = 1)
         
             sld_unit = ', '.join(sld_units)
-            self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
+            self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%sld_unit)
             #if self.plot_dict.has_key('SLD unit'):
             #    self.plot.ax.yaxis.label.set_text('$\mathrm{\mathsf{SLD\,[%s]}}$'%(sld_unit))
             self.plot.ax.xaxis.label.set_text('$\mathrm{\mathsf{ z\,[\AA]}}$')
@@ -2001,8 +2001,8 @@ class Plugin(framework.Template):
     def OnNewModel(self, event):
         ''' Create a new model
         '''
-        dlg = wx.SingleChoiceDialog(self.parent, 'Choose a model type to use',\
-                'Models', _avail_models, 
+        dlg = wx.SingleChoiceDialog(self.parent, 'Choose a model type to use',
+                                    'Models', _avail_models,
                 wx.CHOICEDLG_STYLE
                 )
 
@@ -2447,7 +2447,7 @@ class Plugin(framework.Template):
             # check so stack is non-empty
             if first_name != '':
                 # Find all items above the first name in the stack
-                while(layer_names[0] != first_name):
+                while layer_names[0] != first_name:
                     all_names.append(layer_names.pop(0))
                 all_names.append(layer_names.pop(0))
         all_names += layer_names

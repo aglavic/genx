@@ -337,8 +337,8 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         '''
         # Check so that one dataset is selected
         if len(indices)==0:
-            dlg=wx.MessageDialog(self, \
-                'At least one data set has to be selected'
+            dlg=wx.MessageDialog(self,
+                                 'At least one data set has to be selected'
                 , caption='Information', style=wx.OK|wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()

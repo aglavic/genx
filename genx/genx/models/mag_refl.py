@@ -240,7 +240,7 @@ InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'incang']
                     ]
 InstrumentUnits={'wavelength':'AA','coords':'','I0':'arb.','res':'[coord]',
                  'restype':'','respoints':'pts.','resintrange': '[coord]',
-                 'beamw':'mm','footype': '',\
+                 'beamw':'mm','footype': '',
                  'samplelen':'mm', 'Ibkg': 'arb.', 'xpol':'', 
                  'theory':'','npol': '','incang':'deg'}
 
@@ -586,7 +586,7 @@ def compose_sld_anal(z, sample, instrument):
         ''' Calculate the sld of one interface '''
         sld = drho_j_u*(0.5 + 0.5*erf((z - dd_j_u)/sqrt(2*(sigma_j_u**2 + sigma_j**2))))
         sld += drho_jm1_l*(0.5 + 0.5*erf((z + dd_jm1_l)/sqrt(2*(sigma_jm1_l**2 + sigma_j**2))))
-        sld += drho_j*(0.5 + 0.5*erf((z)/sqrt(2)/sigma_j))
+        sld += drho_j*(0.5+0.5*erf(z/sqrt(2)/sigma_j))
         return sld
 
     def calc_sld(z, int_pos, sld, sld_l, sld_u, sigma_l, sigma_c, sigma_u, dd_l, dd_u):
@@ -941,7 +941,7 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
             n_u = 1 - lamda**2*re/pi*(sl_c - sl_m1*(1. + dmag_u)[:,newaxis])/2.0
     elif theory in [2,3]+instrument_string_choices['theory'][2:4]:
         b = (array(parameters['b'], dtype = complex128)*1e-5)[:, newaxis]*ones(theta.shape)
-        abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(theta.shape)
+        abs_xs =(array(parameters['xs_ai'], dtype = complex128)*1e-4**2)[:, newaxis]*ones(theta.shape)
         wl = instrument.getWavelength()*1.0
         sld = dens*(wl**2/2.0/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 1.0J*abs_xs*wl/4/pi)
         #print mag.shape, dens.shape, theta_m.shape, phi.shape, theta.shape
@@ -957,7 +957,7 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
     elif theory in [4, instrument_string_choices['theory'][4]]:
         wl = 4*pi*sin(instrument.getIncang()*pi/180)/Q
         b = (array(parameters['b'], dtype = complex128)*1e-5)[:, newaxis]*ones(wl.shape)
-        abs_xs = (array(parameters['xs_ai'], dtype = complex128)*(1e-4)**2)[:, newaxis]*ones(wl.shape)
+        abs_xs =(array(parameters['xs_ai'], dtype = complex128)*1e-4**2)[:, newaxis]*ones(wl.shape)
         sld = dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2 - (abs_xs/2.0/wl)**2) - 
                                1.0J*abs_xs*wl/4/pi)
         msld = (2.645e-5*(mag*dens)[:,newaxis]*wl**2/2/pi)*(cos(theta_m)*cos(phi))[:, newaxis]
@@ -1189,7 +1189,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, 
         if NBuffer.parameters != parameters or not Q_ok:
             #print 'Reloading buffer'
             b = array(parameters['b'], dtype=complex128)*1e-5
-            abs_xs = array(parameters['xs_ai'], dtype=complex128)*(1e-4)**2
+            abs_xs =array(parameters['xs_ai'], dtype=complex128)*1e-4**2
             # Bulk of the layers
             #sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
             #                   1.0J*abs_xs*wl/4/pi)
@@ -1419,7 +1419,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
             # These rows are added to always have an ambient in the structure
             # large roughness messes up the spin-flip channel otherwise.
             sl_n = append(sl_n, sample.Ambient.dens*sample.Ambient.b*1e-5)
-            abs_n = append(abs_n, sample.Ambient.dens*sample.Ambient.xs_ai*(1e-4)**2)
+            abs_n = append(abs_n, sample.Ambient.dens*sample.Ambient.xs_ai*1e-4**2)
             mag_dens = append(mag_dens, 0.0)
             mag_dens_x = append(mag_dens_x, 0.0)
             mag_dens_y = append(mag_dens_y, 0.0)
@@ -1514,13 +1514,13 @@ def convolute_reflectivity(R, instrument, foocor, TwoThetaQz, weight):
     if restype == 0 or restype == instrument_string_choices['restype'][0]:
         R = R[:]*foocor
     elif restype == 1 or restype == instrument_string_choices['restype'][1]:
-        R = ConvoluteFast(TwoThetaQz,R[:]*foocor, instrument.getRes(),\
-            range = instrument.getResintrange())
+        R = ConvoluteFast(TwoThetaQz,R[:]*foocor, instrument.getRes(),
+                          range = instrument.getResintrange())
     elif restype == 2 or restype == instrument_string_choices['restype'][2]:
         R = ConvoluteResolutionVector(TwoThetaQz,R[:]*foocor, weight)
     elif restype == 3 or restype == instrument_string_choices['restype'][3]:
-        R = ConvoluteFastVar(TwoThetaQz,R[:]*foocor, instrument.getRes(),\
-          range = instrument.getResintrange())
+        R = ConvoluteFastVar(TwoThetaQz,R[:]*foocor, instrument.getRes(),
+                             range = instrument.getResintrange())
     else:
         raise ValueError('Variable restype has an unvalid value')
     return R

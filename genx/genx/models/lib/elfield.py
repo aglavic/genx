@@ -31,7 +31,7 @@ def IntElfield(theta,lamda,n,d):
     #print E_p
     E_p=array(E_p[1:])
     E_m=array(E_m[1:])
-    return (E_p/E_p[-1],E_m/E_p[-1],Qj/2) 
+    return E_p/E_p[-1], E_m/E_p[-1], Qj/2
 
 def AmpElfield_q(k,kx,lamda,n,d):
     # Length of k-vector in vaccum
@@ -86,7 +86,7 @@ def AmpElfield_q(k,kx,lamda,n,d):
     q=Qj/2 # Old ver. replaced 020905 with:
     #return (E_p[:-1]/E_p[0],E_m[:-1]/E_p[0],q[:-1]) # Last correspond to kz
     #testar amplitud i lager j+1 istallet
-    return (E_p[1:]/E_p[0],E_m[1:]/E_p[0],q[1:]) # Last correspond to kz
+    return E_p[1:]/E_p[0], E_m[1:]/E_p[0], q[1:]  # Last correspond to kz
 
 def AmpElfield2(kx,k,n,z):
     kz=sqrt(n[:,newaxis]**2*k**2-kx**2)
@@ -107,7 +107,7 @@ def AmpElfield2(kx,k,n,z):
     #R[len(n)-1]=0*ones(X.shape)
     R=array(R)
     T=array(T)
-    return (T,R,kz)
+    return T, R, kz
 
 from .xrmr import dot2, inv2
 
@@ -167,7 +167,7 @@ def AmpElfield_test(th, lam, n, d, dz = 0.1):
     #print MM.shape
     iprint(E.shape)
     #E = E.reshape((th.shape[0], z.shape[0]))
-    return (T, R, z, E)
+    return T, R, z, E
 
 if __name__=='__main__':
 

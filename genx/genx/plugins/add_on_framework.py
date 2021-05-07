@@ -342,7 +342,7 @@ class PluginController:
                 else:
                     ShowInfoDialog(self.parent, 'Could not find plugin "%s"'\
                         '. Either there is an error in the config file'\
-                        ' or the plugin is not installed.'%(plugin))
+                        ' or the plugin is not installed.'%plugin)
         self.update_plugins()
        
     # Callbacks

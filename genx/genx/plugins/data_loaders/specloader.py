@@ -365,7 +365,7 @@ class CustomManipulationPage(wx.adv.WizardPageSimple):
         self.manipSizer.Add(self.errorCtrl, 0, wx.EXPAND|wx.ALL, 5)
         self.sizer.Add(self.manipSizer, 0, wx.ALIGN_CENTRE|wx.ALL)
 
-        help_text = ("Import the settings from data set: ")
+        help_text ="Import the settings from data set: "
         helpText = wx.StaticText(self, -1, help_text)
         helpText.Wrap(_maxWidth)
         self.sizer.Add(helpText, 0,wx.ALIGN_CENTRE|wx.ALL, 10)

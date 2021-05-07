@@ -350,7 +350,7 @@ def calc_W(Wtt, Wtr, Wrt, Wrr, Mtt, Mtr, Mrt, Mrr):
 
 def calc_nonres(g_0, lamda, chi0, d):
     trans = np.ones(g_0.shape, dtype = np.complex128)
-    chi_xx = trans*(chi0)[:, np.newaxis]
+    chi_xx =trans*chi0[:, np.newaxis]
     epsilon = 1.0 + chi_xx
     kappa = 2*np.pi/lamda
     d = np.ones(g_0.shape)*d[:, np.newaxis]
@@ -364,7 +364,7 @@ def calc_nonres(g_0, lamda, chi0, d):
     #S_v = np.array([[1, 0, 1, 0], [0, 1, 0, 1], 
     #                [g_0, 0, -g_0, 0], [0, g_0, 0, -g_0]])
     e = np.sqrt(epsilon[1:])
-    S[0,0,1:] = 1; S[0,2,1:] = 1; 
+    S[0,0,1:] = 1; S[0,2,1:] = 1
     S[1,1,1:] = e; S[1,3,1:] = e
     S[2, 0, 1:] = u1[1:]; S[2,2,1:] = u2[1:]
     S[3, 1, 1:] = u1[1:]/e; S[3,3,1:] = u2[1:]/e

@@ -1251,7 +1251,7 @@ class SimulationListCtrl(wx.Panel):
                     return dataindex, itemindex
 
         # If all other things fail...
-        return (-1, -1)
+        return -1, -1
 
     def Edit(self, event):
         '''Edits an entry in the list'''

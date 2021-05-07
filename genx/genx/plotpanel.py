@@ -141,8 +141,8 @@ class PlotPanel(wx.Panel):
         vals = []
         for index in range(len(bool_items)):
             try:
-                val = self.config.get_boolean(self.config_name,\
-                        bool_items[index])
+                val = self.config.get_boolean(self.config_name,
+                                              bool_items[index])
             except io.OptionError as e:
                 iprint('Could not locate option %s.%s'\
                 %(self.config_name, bool_items[index]))
@@ -242,8 +242,8 @@ class PlotPanel(wx.Panel):
         #self.ax.set_autoscale_on(state)
         self.autoscale = state
         self.WriteConfig(autoscale=self.autoscale)
-        evt = state_changed(zoomstate = self.GetZoom(),\
-                        yscale = self.GetYScale(), autoscale = self.autoscale,
+        evt = state_changed(zoomstate = self.GetZoom(),
+                            yscale = self.GetYScale(), autoscale = self.autoscale,
                         xscale=self.GetXScale())
         wx.PostEvent(self.callback_window, evt)
         
@@ -344,8 +344,8 @@ class PlotPanel(wx.Panel):
         except UserWarning:
             pass
         self.WriteConfig(yscale=self.scale)
-        evt = state_changed(zoomstate = self.GetZoom(),\
-                    yscale = self.GetYScale(), autoscale = self.autoscale,
+        evt = state_changed(zoomstate = self.GetZoom(),
+                            yscale = self.GetYScale(), autoscale = self.autoscale,
                     xscale=self.GetXScale())
         wx.PostEvent(self.callback_window, evt)
 
@@ -479,8 +479,8 @@ class PlotPanel(wx.Panel):
                 self.zooming = False
         elif self.ax:
             size = self.canvas.GetClientSize()
-            xy = self.ax.transData.inverted().transform(\
-                array([self.start_pos[0], size.height-self.start_pos[1]])\
+            xy = self.ax.transData.inverted().transform(
+                array([self.start_pos[0], size.height-self.start_pos[1]])
                 [newaxis,:])
             x, y = xy[0,0], xy[0,1]
             if self.callback_window:
@@ -513,15 +513,15 @@ class PlotPanel(wx.Panel):
         if self.canvas.HasCapture():
             #print 'Left Mouse button up'
             self.canvas.ReleaseMouse()
-            del(self.overlay)
+            del self.overlay
             if self.zooming and self.cur_rect:
                 # Note: The coordinte system for matplotlib have a different 
                 # direction of the y-axis and a different origin!
                 size = self.canvas.GetClientSize()
-                start = self.ax.transData.inverted().transform(\
-                array([self.start_pos[0], size.height-self.start_pos[1]])[newaxis,:])
-                end = self.ax.transData.inverted().transform(\
-                array([self.cur_pos[0], size.height-self.cur_pos[1]])[newaxis, :])
+                start = self.ax.transData.inverted().transform(
+                    array([self.start_pos[0], size.height-self.start_pos[1]])[newaxis,:])
+                end = self.ax.transData.inverted().transform(
+                    array([self.cur_pos[0], size.height-self.cur_pos[1]])[newaxis, :])
                 xend, yend = end[0,0], end[0,1]
                 xstart, ystart = start[0,0], start[0,1]
                 
@@ -820,7 +820,7 @@ class FigurePrintout(wx.Printout):
         Overrides wx.Printout.GetPageInfo() to provide the printing framework
         with the number of pages in this print job.
         """
-        return (1, 1, 1, 1)
+        return 1, 1, 1, 1
 
     def OnPrintPage(self, pageNumber):
         """
@@ -1047,34 +1047,34 @@ class DataPlotPanel(PlotPanel):
         # plot the data
         #[self.ax.semilogy(data_set.x,data_set.y) for data_set in data]
         if self.scale == 'linear':
-            [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color, \
-                lw = data_set.data_linethickness, ls = data_set.data_linetype, \
-                marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+            [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
+                          lw = data_set.data_linethickness, ls = data_set.data_linetype,
+                          marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
-            [self.ax.errorbar(data_set.x, data_set.y,\
-                yerr = c_[data_set.error*(data_set.error > 0),\
-                 data_set.error].transpose(),\
-                color=data_set.data_color, lw = data_set.data_linethickness,\
-                ls = data_set.data_linetype, marker = data_set.data_symbol,\
-                ms = data_set.data_symbolsize)\
+            [self.ax.errorbar(data_set.x, data_set.y,
+                              yerr = c_[data_set.error*(data_set.error > 0),
+                                        data_set.error].transpose(),
+                              color=data_set.data_color, lw = data_set.data_linethickness,
+                              ls = data_set.data_linetype, marker = data_set.data_symbol,
+                              ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
         if self.scale == 'log':
-            [self.ax.plot(data_set.x.compress(data_set.y > 0),\
-             data_set.y.compress(data_set.y > 0), color=data_set.data_color, \
-                lw = data_set.data_linethickness, ls = data_set.data_linetype, \
-                marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+            [self.ax.plot(data_set.x.compress(data_set.y > 0),
+                          data_set.y.compress(data_set.y > 0), color=data_set.data_color,
+                          lw = data_set.data_linethickness, ls = data_set.data_linetype,
+                          marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
-            [self.ax.errorbar(data_set.x.compress(data_set.y\
-                    - data_set.error > 0),\
-                data_set.y.compress(data_set.y -data_set.error > 0),\
-                yerr = c_[data_set.error*(data_set.error > 0),\
-                data_set.error].transpose().compress(data_set.y -\
-                 data_set.error > 0),\
-                color=data_set.data_color, lw = data_set.data_linethickness,\
-                ls = data_set.data_linetype, marker = data_set.data_symbol,\
-                ms = data_set.data_symbolsize)\
+            [self.ax.errorbar(data_set.x.compress(data_set.y
+                                                  - data_set.error > 0),
+                              data_set.y.compress(data_set.y -data_set.error > 0),
+                              yerr = c_[data_set.error*(data_set.error > 0),
+                                        data_set.error].transpose().compress(data_set.y -
+                                                                             data_set.error > 0),
+                              color=data_set.data_color, lw = data_set.data_linethickness,
+                              ls = data_set.data_linetype, marker = data_set.data_symbol,
+                              ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
         self.AutoScale()
         # Force an update of the plot
@@ -1099,19 +1099,19 @@ class DataPlotPanel(PlotPanel):
         # plot the data
         #[self.ax.semilogy(data_set.x, data_set.y, '.'\
         # ,data_set.x, data_set.y_sim) for data_set in data]
-        [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color, \
-        lw = data_set.data_linethickness, ls = data_set.data_linetype, \
-        marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+        [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
+                      lw = data_set.data_linethickness, ls = data_set.data_linetype,
+                      marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
          for data_set in data if data_set.show]
         # The same thing for the simulation
-        [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color, \
-        lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
-        marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
+        [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
+                      lw = data_set.sim_linethickness, ls = data_set.sim_linetype,
+                      marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
          for data_set in data if data_set.show]
         # Plot the point by point error:
-        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color, \
-        lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
-        marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
+        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
+                            lw = data_set.sim_linethickness, ls = data_set.sim_linetype,
+                            marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
          for data_set in data if data_set.show]
         # Force an update of the plot
         self.autoscale_error_ax()
@@ -1138,39 +1138,39 @@ class DataPlotPanel(PlotPanel):
         # Plot the data sets and take care if it is log scaled data
 
         if self.scale == 'linear':
-            [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color, \
-                lw = data_set.data_linethickness, ls = data_set.data_linetype, \
-                marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+            [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
+                          lw = data_set.data_linethickness, ls = data_set.data_linetype,
+                          marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
-            [self.ax.errorbar(data_set.x, data_set.y,\
-                yerr = c_[data_set.error*(data_set.error > 0),\
-                 data_set.error].transpose(),\
-                color=data_set.data_color, lw = data_set.data_linethickness,\
-                ls = data_set.data_linetype, marker = data_set.data_symbol,\
-                ms = data_set.data_symbolsize)\
+            [self.ax.errorbar(data_set.x, data_set.y,
+                              yerr = c_[data_set.error*(data_set.error > 0),
+                                        data_set.error].transpose(),
+                              color=data_set.data_color, lw = data_set.data_linethickness,
+                              ls = data_set.data_linetype, marker = data_set.data_symbol,
+                              ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
         if self.scale == 'log':
-            [self.ax.plot(data_set.x.compress(data_set.y > 0),\
-             data_set.y.compress(data_set.y > 0), color=data_set.data_color, \
-                lw = data_set.data_linethickness, ls = data_set.data_linetype, \
-                marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
+            [self.ax.plot(data_set.x.compress(data_set.y > 0),
+                          data_set.y.compress(data_set.y > 0), color=data_set.data_color,
+                          lw = data_set.data_linethickness, ls = data_set.data_linetype,
+                          marker = data_set.data_symbol, ms = data_set.data_symbolsize)\
                 for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
-            [self.ax.errorbar(data_set.x.compress(data_set.y\
-                    - data_set.error > 0),\
-                data_set.y.compress(data_set.y -data_set.error > 0),\
-                yerr = c_[data_set.error*(data_set.error > 0),\
-                data_set.error].transpose().compress(data_set.y -\
-                 data_set.error > 0),\
-                color= data_set.data_color, lw = data_set.data_linethickness,\
-                ls = data_set.data_linetype, marker = data_set.data_symbol,\
-                ms = data_set.data_symbolsize)\
+            [self.ax.errorbar(data_set.x.compress(data_set.y
+                                                  - data_set.error > 0),
+                              data_set.y.compress(data_set.y -data_set.error > 0),
+                              yerr = c_[data_set.error*(data_set.error > 0),
+                                        data_set.error].transpose().compress(data_set.y -
+                                                                             data_set.error > 0),
+                              color= data_set.data_color, lw = data_set.data_linethickness,
+                              ls = data_set.data_linetype, marker = data_set.data_symbol,
+                              ms = data_set.data_symbolsize)\
              for data_set in data if data_set.use_error and data_set.show]
         # The same thing for the simulation
-        [self.ax.plot(data_set.x, data_set.y_sim, color = data_set.sim_color, \
-            lw = data_set.sim_linethickness, ls = data_set.sim_linetype, \
-            marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
+        [self.ax.plot(data_set.x, data_set.y_sim, color = data_set.sim_color,
+                      lw = data_set.sim_linethickness, ls = data_set.sim_linetype,
+                      marker = data_set.sim_symbol, ms = data_set.sim_symbolsize)\
             for data_set in data if data_set.show and data_set.use and data_set.x.shape==data_set.y_sim.shape]
         [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
          lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,

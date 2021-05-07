@@ -39,7 +39,7 @@ def ResVariance(alpha,beta,sigma_x,sigma_xp,samplewidth,slitwidth,DetGCdist):
     sigma_t2=sigma_x**2*sigma_sample2*sin(beta)**2/(sigma_sample2*sin(alpha)**2+sigma_x**2)
     sigma_beta=sqrt(sigma_slit2+sigma_t2)/DetGCdist
     sigma_alpha=ones(beta.shape)*sigma_xp
-    return (sigma_alpha,sigma_beta)
+    return sigma_alpha, sigma_beta
 
 # Function to convolve the tth scan with a gaussian for simulating
 # the instrumental resolution
@@ -77,12 +77,12 @@ def ResolutionVector(Q,dQ,points,range=3):
     Qstep=2*range*dQ/points
     Qres=Q+(arange(points)-(points-1)/2)[:,newaxis]*Qstep
     
-    weight=1/sqrt(2*pi)/dQ*exp(-(transpose(Q[:,newaxis])-Qres)**2/(dQ)**2/2)
+    weight=1/sqrt(2*pi)/dQ*exp(-(transpose(Q[:,newaxis])-Qres)**2/dQ**2/2)
     Qret = Qres.flatten()#reshape(Qres,(1,Qres.shape[0]*Qres.shape[1]))[0]
     #print Qres
     #print Qres.shape
     #print Qret.shape
-    return (Qret,weight)
+    return Qret, weight
 
 # Include the resolution with Qret and weight calculated from ResolutionVector
 # and I the calculated intensity at each point. returns the intensity
@@ -101,7 +101,7 @@ def ConvoluteResolutionVector(Qret,I,weight):
 def ConvoluteFast(Q,I,dQ,range=3):
     Qstep=Q[1]-Q[0]
     resvector=arange(-range*dQ,range*dQ+Qstep,Qstep)
-    weight=1/sqrt(2*pi)/dQ*exp(-(resvector)**2/(dQ)**2/2)
+    weight=1/sqrt(2*pi)/dQ*exp(-resvector**2/dQ**2/2)
     Iconv=convolve(r_[ones(resvector.shape)*I[0],I,ones(resvector.shape)*I[-1]], weight/weight.sum(), mode=1)[resvector.shape[0]:-resvector.shape[0]]
     return Iconv
 
@@ -110,7 +110,7 @@ def ConvoluteFast(Q,I,dQ,range=3):
 def ConvoluteFastVar(Q,I,dQ,range=3):
     Qstep = Q[1]-Q[0]
     steps = max(dQ*ones(Q.shape))*range/Qstep
-    weight = 1/sqrt(2*pi)/dQ*exp(-(Q[:,newaxis]-Q)**2/(dQ)**2/2)
+    weight = 1/sqrt(2*pi)/dQ*exp(-(Q[:,newaxis]-Q)**2/dQ**2/2)
     Itemp = I[:,newaxis]*ones(I.shape)
     norm_fact = trapz(weight, axis = 0)
     Int = trapz(Itemp*weight,axis = 0)/norm_fact

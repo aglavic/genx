@@ -48,7 +48,7 @@ class Template:
         data sets have been added when the data has been loaded
         '''
         # Just a force update of the data_list
-        self.parent.SetItemCount(\
+        self.parent.SetItemCount(
             self.parent.data_cont.get_count())
         # Updating the imagelist as well
         self.parent._UpdateImageList()
@@ -83,9 +83,9 @@ class Template:
             dlg.Destroy()
         else:
             if n_selected > 1:
-                dlg = wx.MessageDialog(self.parent,\
-                    'Please select only one dataset'\
-                    , caption = 'Too many selections'
+                dlg = wx.MessageDialog(self.parent,
+                                       'Please select only one dataset'
+                                       , caption = 'Too many selections'
                     , style = wx.OK|wx.ICON_INFORMATION)
             else:
                 dlg = wx.MessageDialog(self.parent, 'Please select a dataset'
@@ -130,8 +130,8 @@ class Template:
         
 class PluginController:
     def __init__(self, parent):
-        self.plugin_handler = PluginHandler(parent, __MODULE_DIR__ \
-                            , 'data_loaders')
+        self.plugin_handler = PluginHandler(parent, __MODULE_DIR__
+                                            , 'data_loaders')
         self.parent = parent
         self.plugin_handler.load_plugin('default')
         
@@ -181,15 +181,15 @@ class PluginController:
         '''
         cur_plugin = list(self.plugin_handler.loaded_plugins.keys())[0]
         plugin_list = self.plugin_handler.get_possible_plugins()
-        dlg = PluginDialog(self.parent, plugin_list, cur_plugin,\
-                                self.LoadPlugin)
+        dlg = PluginDialog(self.parent, plugin_list, cur_plugin,
+                           self.LoadPlugin)
         dlg.ShowModal()
         dlg.Destroy()
         
         
 class PluginDialog(wx.Dialog):
-    def __init__(self, parent, plugin_list, current_plugin,\
-            load_plugin_func = None):
+    def __init__(self, parent, plugin_list, current_plugin,
+                 load_plugin_func = None):
         wx.Dialog.__init__(self, parent, -1, 'Choose a data loader')
         
         self.load_plugin_func = load_plugin_func

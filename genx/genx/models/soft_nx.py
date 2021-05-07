@@ -137,8 +137,8 @@ InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']
                     ]
 InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',
                    'I0': 'arb.', 'res': '[coord]',
-                   'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',\
-                   'footype': '', 'samplelen':'mm', 'incangle':'deg.', 'pol': '',\
+                   'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',
+                   'footype': '', 'samplelen':'mm', 'incangle':'deg.', 'pol': '',
                    'Ibkg': 'arb.', 'tthoff':'deg.'}
 # Coordinates=1 or 'tth' => twothetainput
 # Coordinates=0 or 'q'=> Q input
@@ -214,7 +214,7 @@ def resolutioncorr(R, TwoThetaQz, foocor, instrument, weight):
     ''' Do the convolution of the reflectivity to account for resolution effects.'''
     restype = instrument.getRestype()
     if restype == instrument_string_choices['restype'][1] or restype == 1:
-        R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.getRes(), \
+        R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.getRes(),
                           range=instrument.getResintrange())
     elif (restype == instrument_string_choices['restype'][2] or restype == 2 or
           restype == instrument_string_choices['restype'][4] or restype == 4):
@@ -302,12 +302,12 @@ def Specular(TwoThetaQz, sample, instrument):
     elif type == instrument_string_choices['probe'][2] or type == 2:
         # Polarization uu or ++
         if pol == instrument_string_choices['pol'][0] or pol == 0:
-            R = Paratt.ReflQ(Q,instrument.getWavelength(),\
-                1.0 - l2pi*(sld + sld_m), d, sigma)
+            R = Paratt.ReflQ(Q,instrument.getWavelength(),
+                             1.0 - l2pi*(sld + sld_m), d, sigma)
         # Polarization dd or --
         elif pol == instrument_string_choices['pol'][1] or pol == 1:
-            R = Paratt.ReflQ(Q,instrument.getWavelength(),\
-                 1.0 - l2pi*(sld - sld_m), d, sigma)
+            R = Paratt.ReflQ(Q,instrument.getWavelength(),
+                             1.0 - l2pi*(sld - sld_m), d, sigma)
         elif pol == instrument_string_choices['pol'][3] or pol == 3:
             Rp = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0 - l2pi*(sld - sld_m), d, sigma)
             Rm = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0 - l2pi*(sld + sld_m), d, sigma)
@@ -473,17 +473,17 @@ def SLD_calculations(z, item, sample, inst):
     if z is None:
         z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     if not magnetic:
-        rho = sum((sld[:-1] - sld[1:])*(0.5 -\
-            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
+        rho = sum((sld[:-1] - sld[1:])*(0.5 -
+                                        0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
         dic = {'Re': real(rho), 'Im': imag(rho), 'z':z, 
                'SLD unit': sld_unit}
     else:
         sld_p = sld + mag_sld
         sld_m = sld - mag_sld
-        rho_p = sum((sld_p[:-1] - sld_p[1:])*(0.5 -\
-            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld_p[-1]
-        rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -\
-            0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
+        rho_p = sum((sld_p[:-1] - sld_p[1:])*(0.5 -
+                                              0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld_p[-1]
+        rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -
+                                              0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
         rho_mag_x = sum((mag_sld_x[:-1] - mag_sld_x[1:])*
                         (0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + mag_sld_x[-1]
         rho_mag_y = sum((mag_sld_y[:-1] - mag_sld_y[1:])*
@@ -510,9 +510,9 @@ SimulationFunctions={'Specular':Specular,
                     }
 
 
-(Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters,\
-    LayerParameters, StackParameters, SampleParameters, SimulationFunctions,\
-    ModelID)
+(Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters,
+                                                      LayerParameters, StackParameters, SampleParameters, SimulationFunctions,
+                                                      ModelID)
 
 
 if __name__=='__main__':

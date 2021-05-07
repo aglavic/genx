@@ -109,8 +109,8 @@ class UserVars:
 # Now create default databases for scattering lengths and form factors
 # for now only x-rays at single wavelengths
 # The non-disersive part but angle dependent
-__f0_dict__, __rho0_dict__ = sl.load_f0dabax(__MODULE_DIR__ +\
-                                             '/databases/f0_CromerMann.dat',\
+__f0_dict__, __rho0_dict__ = sl.load_f0dabax(__MODULE_DIR__ +
+                                             '/databases/f0_CromerMann.dat',
                                              create_rho = True)
 # Workaround for the oxygen
 __f0_dict__['o2m'] = __f0_dict__['o2-.']
@@ -132,7 +132,7 @@ fp_old = create_fp_old(1.54)
 __lookup_f__ = sl.create_f_lookup(__lookup_fp__, __f0_dict__)
 f = sl.FormFactor(1.54, __lookup_f__)
 # The electrondensity of an atom
-__lookup_rho__ = sl.create_rho_lookup(__lookup_fp__, __rho0_dict__,\
+__lookup_rho__ = sl.create_rho_lookup(__lookup_fp__, __rho0_dict__,
                                       __f0_dict__)
 rho = sl.FormFactor(1.54, __lookup_rho__)
 # The coherent scattering length for neutrons

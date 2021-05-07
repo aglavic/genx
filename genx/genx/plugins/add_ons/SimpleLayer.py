@@ -33,7 +33,7 @@ from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 mg=None
 pymysql=None
 
-class PluginInterface():
+class PluginInterface:
     def __init__(self, plugin):
         self._plugin=plugin
 
@@ -89,7 +89,7 @@ class RefPluginInterface(PluginInterface):
             # get rid of isotope unusable characters
             element=element.replace('{', '').replace('}', '').replace('^', 'i')
             if count==1:
-                name+="%s"%(element)
+                name+="%s"%element
             elif float(count)==int(count):
                 name+="%s%i"%(element, count)
             else:
@@ -328,7 +328,7 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         item_formula = ''
         for element, count in item[0]:
             if count == 1:
-                item_formula += "%s" % (element)
+                item_formula += "%s"%element
             elif float(count) == int(count):
                 item_formula += "%s%i" % (element, count)
             else:
@@ -336,8 +336,8 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
 
 
         # Create the dialog box
-        dlg = wx.MessageDialog(self, 'Remove material %s?' % (item_formula),
-        caption = 'Remove?', style=wx.YES_NO | wx.ICON_QUESTION)
+        dlg = wx.MessageDialog(self, 'Remove material %s?'%item_formula,
+                               caption = 'Remove?', style=wx.YES_NO | wx.ICON_QUESTION)
 
         # Show the dialog box
         if dlg.ShowModal() == wx.ID_YES:
@@ -637,7 +637,7 @@ class MaterialDialog(wx.Dialog):
             entry.SetValue(str(value or ""))
 
     def GetResult(self):
-        return (self.extracted_elements, self.result_density.GetValue())
+        return self.extracted_elements, self.result_density.GetValue()
 
     def extract_cif(self, filename):
         """

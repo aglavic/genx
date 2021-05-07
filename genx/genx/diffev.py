@@ -863,7 +863,7 @@ class DiffEv:
             #print values_under_level
             error_bar_low = values_under_level.min() - self.best_vec[index]
             error_bar_high = values_under_level.max() - self.best_vec[index]
-            return (error_bar_low, error_bar_high)
+            return error_bar_low, error_bar_high
         else:
             raise ErrorBarError()
 

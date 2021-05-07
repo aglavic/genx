@@ -161,7 +161,7 @@ def test_marginal_distributions_bvn_int():
 
     ref_values = 0.5*(1 + erf(delta_z_slice_int1/np.sqrt(2)/sigma1))
 
-    iprint((np.abs((values - ref_values)/(ref_values)).max()))
+    iprint((np.abs((values - ref_values)/ref_values).max()))
 
     if True:
         plt.plot(delta_z_slice_int1, values)

@@ -130,7 +130,7 @@ class Simplex:
                 iprint('Iteration = %d   Best = %f   Worst = %f' % (iter,self.errors[self.lowest],self.errors[self.highest]))
                 
             if T <= epsilon:   # We converged!  Break out of loop!
-                break;
+                break
             else:                   # Didn't converge.  Keep crunching.
                 # Calculate centroid of simplex, excluding highest vertex
                 for x in range(0, self.numvars):

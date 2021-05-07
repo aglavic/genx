@@ -55,8 +55,8 @@ class Plugin(Template):
             if len(load_array.shape) < 2:
                 load_array = np.array([load_array])
             # Check so we have enough columns
-            if load_array.shape[1]-1 < max(self.q_col, self.res_col, \
-                    self.I_col, self.eI_col):
+            if load_array.shape[1]-1 < max(self.q_col, self.res_col,
+                                           self.I_col, self.eI_col):
                 ShowWarningDialog(self.parent, 'The data file does not contain'\
                         + 'enough number of columns. It has ' + str(load_array.shape[1])\
                         + ' columns. Rember that the column index start at zero!')
@@ -86,10 +86,10 @@ class Plugin(Template):
         This function should - if necessary implement a dialog box
         that allows the user set import settings for example.
         '''
-        col_values = {'I': self.I_col,'q': self.q_col,'Resolution': self.res_col,\
-                       'I error': self.eI_col}
-        misc_values = {'Comment': str(self.comment), 'Skip rows': self.skip_rows,\
-                'Delimiter': str(self.delimiter)}
+        col_values = {'I': self.I_col,'q': self.q_col,'Resolution': self.res_col,
+                      'I error': self.eI_col}
+        misc_values = {'Comment': str(self.comment), 'Skip rows': self.skip_rows,
+                       'Delimiter': str(self.delimiter)}
         dlg = SettingsDialog(self.parent, col_values, misc_values)
         if dlg.ShowModal() == wx.ID_OK:
             col_values = dlg.GetColumnValues()
@@ -129,12 +129,12 @@ class SettingsDialog(wx.Dialog):
             control = wx.SpinCtrl(self)
             control.SetRange(0,100)
             control.SetValue(col_values[name])
-            col_grid.Add(text, (i,0),\
-                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,\
-                    border = 5)
-            col_grid.Add(control, (i,1),\
-                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,\
-                    border = 5)
+            col_grid.Add(text, (i,0),
+                         flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
+                         border = 5)
+            col_grid.Add(control, (i,1),
+                         flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
+                         border = 5)
             self.col_controls[name] = control
         
         col_box_sizer.Add(col_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
@@ -156,14 +156,14 @@ class SettingsDialog(wx.Dialog):
                 control.SetRange(0,100)
                 control.SetValue(misc_values[name])
             else:
-                control = wx.TextCtrl(self, value = misc_values[name],\
-                        style = wx.EXPAND)
-            col_grid.Add(text, (i,0),\
-                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,\
-                    border = 5)
-            col_grid.Add(control, (i,1),\
-                    flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,\
-                    border = 5)
+                control = wx.TextCtrl(self, value = misc_values[name],
+                                      style = wx.EXPAND)
+            col_grid.Add(text, (i,0),
+                         flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
+                         border = 5)
+            col_grid.Add(control, (i,1),
+                         flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL,
+                         border = 5)
             self.misc_controls[name] = control
         
         col_box_sizer.Add(col_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
@@ -181,8 +181,8 @@ class SettingsDialog(wx.Dialog):
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW, 30)
         
-        sizer.Add(button_sizer,0,\
-                flag = wx.ALIGN_RIGHT, border = 20)
+        sizer.Add(button_sizer,0,
+                  flag = wx.ALIGN_RIGHT, border = 20)
         self.SetSizer(sizer)
         
         sizer.Fit(self)
@@ -198,7 +198,7 @@ class SettingsDialog(wx.Dialog):
         values = {}
         for key in self.misc_controls:
             val = self.misc_controls[key].GetValue()
-            if (type(val) == type('') or type(val) == type('')):
+            if type(val) == type('') or type(val) == type(''):
                 if val.lower() == 'none':
                     val = None
             values[key] = val

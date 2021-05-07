@@ -97,12 +97,12 @@ class ParameterDataTable(gridlib.GridTableBase):
     def DeleteRows(self, rows):
         delete_count = self.pars.delete_rows(rows)
         
-        msg = gridlib.GridTableMessage(self,\
-            gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.GetNumberRows(),\
-             delete_count)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.GetNumberRows(),
+                                       delete_count)
         self.GetView().ProcessTableMessage(msg)
-        msg = gridlib.GridTableMessage(self,\
-                    gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed()
         #print self.data
@@ -110,11 +110,11 @@ class ParameterDataTable(gridlib.GridTableBase):
     def InsertRow(self, row):
         self.pars.insert_row(row)
         
-        msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
         self.GetView().ProcessTableMessage(msg)
-        msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
@@ -129,8 +129,8 @@ class ParameterDataTable(gridlib.GridTableBase):
 
         success = self.pars.move_row_up(row)
 
-        msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
@@ -170,11 +170,11 @@ class ParameterDataTable(gridlib.GridTableBase):
         #print num_rows
         [self.pars.append() for i in range(num_rows)]
         
-        msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, num_rows)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, num_rows)
         self.GetView().ProcessTableMessage(msg)
-        msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
@@ -235,32 +235,32 @@ class ParameterDataTable(gridlib.GridTableBase):
         '''
         if clear:
             # Start by deleting all rows:
-            msg=gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,\
-                self.parent.GetNumberRows(), self.parent.GetNumberRows())
+            msg=gridlib.GridTableMessage(self,
+                                         gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                                         self.parent.GetNumberRows(), self.parent.GetNumberRows())
             self.pars = parameters.Parameters()
             self.GetView().ProcessTableMessage(msg)
-            msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
             
             self.GetView().ForceRefresh()
             
             self.pars = pars
-            msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, self.pars.get_len_rows()+1)
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, self.pars.get_len_rows()+1)
             self.GetView().ProcessTableMessage(msg)
             
-            msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
             
             self.GetView().ForceRefresh()
             #print 'In parametergrid ', self.pars.data
         else:
             self.pars = pars
-            msg = gridlib.GridTableMessage(self,\
-                gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)            
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed(permanent_change=permanent_change)
 
@@ -407,7 +407,7 @@ class SliderCellRenderer(gridlib.GridCellRenderer):
             min_val = float(grid.GetCellValue(row,col+2))
             max_val = float(grid.GetCellValue(row,col+3))
             val = max(min(val, max_val), min_val)
-            grid.GetTable().SetValue(row, col, (val))
+            grid.GetTable().SetValue(row, col, val)
             self.slider_drawer.SetValue(val)
             self.slider_drawer.SetMaxValue(max_val)
             self.slider_drawer.SetMinValue(min_val)
@@ -542,7 +542,7 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
 
             ch = chr(ord('0') + key - wx.WXK_NUMPAD0)
 
-        elif key < 256 and key >= 0 and chr(key) in string.printable:
+        elif 256>key>=0 and chr(key) in string.printable:
             ch = chr(key)
 
         if ch in (string.digits + '.-'):
@@ -654,7 +654,7 @@ class ValueCellEditor(gridlib.GridCellEditor):
             self.startValue = 0.0
             grid.GetTable().SetValue(row, col, self.startValue)
 
-        self._tc.SetValue('%.7g'%(self.startValue))
+        self._tc.SetValue('%.7g'%self.startValue)
         #self._tc.SetValue(self.startValue)
         #self._tc.SetValueChangeCallback(lambda val: grid.GetTable().ChangeValueInteractively(row, val))
         self._tc.SetFocus()
@@ -710,7 +710,7 @@ class ValueCellEditor(gridlib.GridCellEditor):
 
             ch = chr(ord('0') + key - wx.WXK_NUMPAD0)
 
-        elif key < 256 and key >= 0 and chr(key) in string.printable:
+        elif 256>key>=0 and chr(key) in string.printable:
             ch = chr(key)
 
         if ch in (string.digits + '.-'):
@@ -1078,7 +1078,7 @@ class ParameterGrid(wx.Panel):
         for row in self.GetParameters().get_data():
             #data.append([' %.30s'%row[0],' %.5f'%row[1],\
                #' %d'%row[2],' %.5g'%row[3],' %.5g'%row[4],' '+row[5]])
-            data.append([row[0],'%.5f'%row[1],\
+            data.append([row[0],'%.5f'%row[1],
                          '%d'%row[2],'%.5f'%row[3],'%.5f'%row[4], row[5]])
         self.prt.data = data
         self.prt.label = self.GetParameters().get_col_headers()
@@ -1143,8 +1143,8 @@ class ParameterGrid(wx.Panel):
         '''
         # Set the parameters in the table 
         # this also updates the grid. 
-        self.table.SetParameters(evt.GetModel().get_parameters(),\
-                permanent_change=False)
+        self.table.SetParameters(evt.GetModel().get_parameters(),
+                                 permanent_change=False)
         # Let the event proceed to other fucntions that have signed up.
         evt.Skip()
     
@@ -1163,8 +1163,8 @@ class ParameterGrid(wx.Panel):
         if evt.new_best:
             #print evt.fitting
             self.table.pars.set_value_pars(evt.values)
-            self.table.SetParameters(self.table.pars, clear = False,\
-                permanent_change = evt.permanent_change)
+            self.table.SetParameters(self.table.pars, clear = False,
+                                     permanent_change = evt.permanent_change)
         
         evt.Skip()
         

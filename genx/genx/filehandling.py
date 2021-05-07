@@ -132,8 +132,8 @@ def load_opt_config(optimizer, config):
     c = Container()
 
     # Define all the options we want to set
-    options_float = ['km', 'kr', 'pop mult', 'pop size',\
-                     'max generations', 'max generation mult',\
+    options_float = ['km', 'kr', 'pop mult', 'pop size',
+                     'max generations', 'max generation mult',
                      'sleep time','max log elements',
                      'errorbar level',
                      'autosave interval', 'parallel processes',
@@ -202,23 +202,23 @@ def save_opt_config(optimizer, config, fom_error_bars_level=1.05, save_all_evals
     """ Write the config values from optimizer (DiffEv class) to config (Config class) """
 
     # Define all the options we want to set
-    options_float = ['km', 'kr', 'pop mult', 'pop size',\
-                     'max generations', 'max generation mult',\
-                     'sleep time', 'max log elements', 'errorbar level',\
-                     'autosave interval',\
+    options_float = ['km', 'kr', 'pop mult', 'pop size',
+                     'max generations', 'max generation mult',
+                     'sleep time', 'max log elements', 'errorbar level',
+                     'autosave interval',
                      'parallel processes', 'parallel chunksize',
                      'allowed fom discrepancy']
     set_float = [optimizer.km, optimizer.kr,
-                 optimizer.pop_mult,\
-                 optimizer.pop_size,\
-                 optimizer.max_generations,\
-                 optimizer.max_generation_mult,\
-                 optimizer.sleep_time,\
-                 optimizer.max_log, \
-                 fom_error_bars_level,\
-                 optimizer.autosave_interval,\
-                 optimizer.processes,\
-                 optimizer.chunksize,\
+                 optimizer.pop_mult,
+                 optimizer.pop_size,
+                 optimizer.max_generations,
+                 optimizer.max_generation_mult,
+                 optimizer.sleep_time,
+                 optimizer.max_log,
+                 fom_error_bars_level,
+                 optimizer.autosave_interval,
+                 optimizer.processes,
+                 optimizer.chunksize,
                  optimizer.fom_allowed_dis
                  ]
 
@@ -328,16 +328,16 @@ class Config:
         
         returns a float value if possible for option in section
         '''
-        return self._getf(self.default_config.getfloat,\
-                    self.model_config.getfloat, section, option)
+        return self._getf(self.default_config.getfloat,
+                          self.model_config.getfloat, section, option)
                     
     def get_boolean(self, section, option, fallback=None):
         '''get_boolean(self, section, option) --> boolean
         
         returns a boolean value if possible for option in section
         '''
-        return self._getf(self.default_config.getboolean,\
-                    self.model_config.getboolean, section, option,
+        return self._getf(self.default_config.getboolean,
+                          self.model_config.getboolean, section, option,
                           fallback=fallback)
                     
     def get_int(self, section, option, fallback=None):
@@ -345,8 +345,8 @@ class Config:
         
         returns a int value if possible for option in section
         '''
-        return self._getf(self.default_config.getint,\
-                    self.model_config.getint, section, option,
+        return self._getf(self.default_config.getint,
+                          self.model_config.getint, section, option,
                           fallback=fallback)
                     
     def get(self, section, option, fallback=None):

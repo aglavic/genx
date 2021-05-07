@@ -308,7 +308,7 @@ class SampleTable(gridlib.GridTableBase):
             else:
                 try:
                     val=float(eval('%s'%value))
-                    if val>=0 and val<=100:
+                    if 0<=val<=100:
                         to_edit[2]=value
                 except:
                     pass

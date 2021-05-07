@@ -118,9 +118,9 @@ class SolverController:
         '''
         #print 'sending event plotting'
         #_post_solver_event(self.parent, solver, desc = 'Fitting update')
-        evt = update_plot(model = solver.get_model(), \
-                fom_log = solver.get_fom_log(), update_fit = solver.new_best,\
-                desc = 'Fitting update')
+        evt = update_plot(model = solver.get_model(),
+                          fom_log = solver.get_fom_log(), update_fit = solver.new_best,
+                          desc = 'Fitting update')
         wx.PostEvent(self.parent, evt)
         #wx.CallAfter(wx.PostEvent, self.parent, evt)
         # Hard code the events for the plugins so that they can be run syncrously.
@@ -141,14 +141,14 @@ class SolverController:
         Takes the solver as input argument and picks out the variables to 
         show in the GUI.
         '''
-        evt = update_parameters(values = solver.best_vec.copy(),\
-                new_best = solver.new_best,\
-                population = solver.pop_vec,\
-                max_val = solver.par_max, \
-                min_val = solver.par_min, \
-                fitting = True,\
-                desc = 'Parameter Update', update_errors = False,\
-                permanent_change = False)
+        evt = update_parameters(values = solver.best_vec.copy(),
+                                new_best = solver.new_best,
+                                population = solver.pop_vec,
+                                max_val = solver.par_max,
+                                min_val = solver.par_min,
+                                fitting = True,
+                                desc = 'Parameter Update', update_errors = False,
+                                permanent_change = False)
         wx.PostEvent(self.parent, evt)
         #wx.CallAfter(wx.PostEvent, self.parent, evt)
         
@@ -158,9 +158,9 @@ class SolverController:
         Function that takes care of resetting everything when a model has
         been loaded.
         '''
-        evt = update_plot(model = self.optimizer.get_model(), \
-                fom_log = self.optimizer.get_fom_log(), update_fit = False,\
-                desc = 'Model loaded')
+        evt = update_plot(model = self.optimizer.get_model(),
+                          fom_log = self.optimizer.get_fom_log(), update_fit = False,
+                          desc = 'Model loaded')
         wx.PostEvent(self.parent, evt)
         
         # Update the parameter plot ... 
@@ -168,14 +168,14 @@ class SolverController:
             # remeber to add a check 
             solver = self.optimizer
             try:
-                evt = update_parameters(values = solver.best_vec.copy(),\
-                    new_best = False,\
-                    population = solver.pop_vec,\
-                    max_val = solver.par_max, \
-                    min_val = solver.par_min, \
-                    fitting = True,\
-                    desc = 'Parameter Update', update_errors = False,\
-                    permanent_change = False)
+                evt = update_parameters(values = solver.best_vec.copy(),
+                                        new_best = False,
+                                        population = solver.pop_vec,
+                                        max_val = solver.par_max,
+                                        min_val = solver.par_min,
+                                        fitting = True,
+                                        desc = 'Parameter Update', update_errors = False,
+                                        permanent_change = False)
             except:
                 iprint('Could not create data for paraemters')
             else:
@@ -217,18 +217,18 @@ class SolverController:
         dlg = wx.MessageDialog(self.parent, message, 'Keep the fit?',
             wx.YES_NO|wx.ICON_QUESTION)
         if dlg.ShowModal() == wx.ID_YES:
-            evt = update_parameters(values = solver.best_vec.copy(),\
-                desc = 'Parameter Update', new_best = True, \
-                update_errors = False, fitting = False,\
-                 permanent_change = True)
+            evt = update_parameters(values = solver.best_vec.copy(),
+                                    desc = 'Parameter Update', new_best = True,
+                                    update_errors = False, fitting = False,
+                                    permanent_change = True)
             wx.PostEvent(self.parent, evt)
         else:
             #print 'Resetting the values in the grid to ',\
             #    self.start_parameter_values
-            evt = update_parameters(values = solver.start_guess,\
-                desc = 'Parameter Update', new_best = True, \
-                update_errors = False, fitting = False,\
-                 permanent_change = False)
+            evt = update_parameters(values = solver.start_guess,
+                                    desc = 'Parameter Update', new_best = True,
+                                    update_errors = False, fitting = False,
+                                    permanent_change = False)
             wx.PostEvent(self.parent, evt)
             
     def CalcErrorBars(self):
@@ -414,8 +414,8 @@ class SettingsDialog(wx.Dialog):
         fom_text = wx.StaticText(self, -1, 'Figure of merit ')
         self.fom_choice = wx.Choice(self, -1,choices = fom_funcs.func_names)
         self.fom_choice.SetSelection(fom_funcs.func_names.index(fom_string))
-        fom_sizer.Add(fom_text,0, \
-            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        fom_sizer.Add(fom_text,0,
+                      wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         fom_sizer.Add(self.fom_choice,0, wx.EXPAND, border = 10)
         fom_box_sizer.Add(fom_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
 
@@ -434,11 +434,11 @@ class SettingsDialog(wx.Dialog):
         # Errorbar level 
         errorbar_sizer = wx.BoxSizer(wx.HORIZONTAL)
         errorbar_text = wx.StaticText(self, -1, 'Error bar level ')
-        self.errorbar_control = NumCtrl(self, value =\
-                        self.solvergui.fom_error_bars_level,\
-                        fractionWidth = 2, integerWidth = 2)
-        errorbar_sizer.Add(errorbar_text,0, \
-                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        self.errorbar_control = NumCtrl(self, value =
+        self.solvergui.fom_error_bars_level,
+                                        fractionWidth = 2, integerWidth = 2)
+        errorbar_sizer.Add(errorbar_text,0,
+                           wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         errorbar_sizer.Add(self.errorbar_control,1, wx.ALIGN_CENTER_VERTICAL, border = 10)
         errorbar_sizer.Add((10, 20), 0, wx.EXPAND)
         fom_box_sizer.Add(errorbar_sizer, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
@@ -490,8 +490,8 @@ class SettingsDialog(wx.Dialog):
         autosave_sc.SetRange(1,1000)
         autosave_sc.SetValue(self.solver.autosave_interval)
         autosave_sc.Enable(True)
-        autosave_sizer.Add(use_autosave_control, 0, \
-            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+        autosave_sizer.Add(use_autosave_control, 0,
+                           wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
         autosave_sizer.Add(autosave_sc,0, wx.ALIGN_CENTER_VERTICAL, border = 5)
         self.autosave_sc = autosave_sc
         self.use_autosave_control = use_autosave_control
@@ -505,8 +505,8 @@ class SettingsDialog(wx.Dialog):
         buffer_sc.SetRange(1000,100000000)
         buffer_sc.SetValue(self.solver.max_log)
         buffer_sc.Enable(True)
-        save_sizer.Add(save_all_control, 0, \
-            wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
+        save_sizer.Add(save_all_control, 0,
+                       wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 5)
         save_sizer.Add(buffer_sc,0, wx.ALIGN_CENTER_VERTICAL, border = 5)
         self.buffer_sc = buffer_sc
         self.save_all_control = save_all_control
@@ -569,8 +569,8 @@ class SettingsDialog(wx.Dialog):
         pop_box_sizer = wx.StaticBoxSizer(pop_box, wx.VERTICAL )
         pop_grid = wx.FlexGridSizer(0, 2, 0, 0)
         
-        multsize_radio = wx.RadioButton(self, -1,  " Relative size ",\
-                            style = wx.RB_GROUP )
+        multsize_radio = wx.RadioButton(self, -1,  " Relative size ",
+                                        style = wx.RB_GROUP )
         fixedsize_radio = wx.RadioButton(self, -1, " Fixed size " )
         
         multsize_sc = wx.SpinCtrl(self)
@@ -587,14 +587,14 @@ class SettingsDialog(wx.Dialog):
         self.pop_multsize_sc = multsize_sc
         self.pop_fixedsize_sc = fixedsize_sc
         
-        pop_grid.Add(multsize_radio, 0,\
-            wx.ALIGN_LEFT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
-        pop_grid.Add(multsize_sc, 0,\
-            wx.ALIGN_RIGHT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
-        pop_grid.Add( fixedsize_radio, 0,\
-            wx.ALIGN_LEFT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
-        pop_grid.Add(fixedsize_sc, 0,\
-            wx.ALIGN_RIGHT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
+        pop_grid.Add(multsize_radio, 0,
+                     wx.ALIGN_LEFT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
+        pop_grid.Add(multsize_sc, 0,
+                     wx.ALIGN_RIGHT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
+        pop_grid.Add( fixedsize_radio, 0,
+                      wx.ALIGN_LEFT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
+        pop_grid.Add(fixedsize_sc, 0,
+                     wx.ALIGN_RIGHT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
         
         pop_box_sizer.Add(pop_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5 )
         row_sizer2.Add(pop_box_sizer, 1, wx.EXPAND, 5 )
@@ -608,8 +608,8 @@ class SettingsDialog(wx.Dialog):
         gen_box_sizer = wx.StaticBoxSizer(gen_box, wx.VERTICAL )
         gen_grid = wx.FlexGridSizer(0, 2, 0, 0)
         
-        gen_multsize_radio = wx.RadioButton( self, -1, " Relative size ",\
-                            style = wx.RB_GROUP )
+        gen_multsize_radio = wx.RadioButton( self, -1, " Relative size ",
+                                             style = wx.RB_GROUP )
         gen_fixedsize_radio = wx.RadioButton( self, -1, " Fixed size " )
 
         gen_multsize_sc = wx.SpinCtrl(self)
@@ -626,14 +626,14 @@ class SettingsDialog(wx.Dialog):
         self.gen_multsize_sc = gen_multsize_sc
         self.gen_fixedsize_sc = gen_fixedsize_sc
         
-        gen_grid.Add(gen_multsize_radio, 0,\
-            wx.ALIGN_LEFT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
-        gen_grid.Add(gen_multsize_sc, 0,\
-            wx.ALIGN_CENTRE|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
-        gen_grid.Add(gen_fixedsize_radio, 0,\
-            wx.ALIGN_LEFT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
-        gen_grid.Add(gen_fixedsize_sc, 0,\
-            wx.ALIGN_CENTRE|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
+        gen_grid.Add(gen_multsize_radio, 0,
+                     wx.ALIGN_LEFT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
+        gen_grid.Add(gen_multsize_sc, 0,
+                     wx.ALIGN_CENTRE|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
+        gen_grid.Add(gen_fixedsize_radio, 0,
+                     wx.ALIGN_LEFT|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
+        gen_grid.Add(gen_fixedsize_sc, 0,
+                     wx.ALIGN_CENTRE|wx.LEFT|wx.RIGHT|wx.TOP, 5 )
         
         gen_box_sizer.Add(gen_grid, 0, wx.ALIGN_CENTRE|wx.ALL, 5 )
         row_sizer2.Add(gen_box_sizer, 1, wx.EXPAND, 5 )
@@ -667,15 +667,15 @@ class SettingsDialog(wx.Dialog):
         self.chunk_size_sc = chunk_size_sc
         parallel_sizer = wx.BoxSizer(wx.HORIZONTAL)
         p_text = wx.StaticText(self, -1, '# Processes')
-        parallel_sizer.Add(p_text, 0, \
-                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        parallel_sizer.Add(p_text, 0,
+                           wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         parallel_sizer.Add((10, 20), 1, wx.EXPAND)
         parallel_sizer.Add(processes_sc, 0, wx.ALIGN_CENTER_VERTICAL, border = 10)
         parallel_box_sizer.Add(parallel_sizer, 1, wx.EXPAND, 10 )
         parallel_sizer = wx.BoxSizer(wx.HORIZONTAL)
         p_text = wx.StaticText(self, -1, ' Chunk size ')
-        parallel_sizer.Add(p_text, 0, \
-                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
+        parallel_sizer.Add(p_text, 0,
+                           wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, border = 10)
         parallel_sizer.Add((10, 20), 1, wx.EXPAND)
         parallel_sizer.Add(chunk_size_sc, 0, wx.ALIGN_CENTER_VERTICAL, border = 10)
         
@@ -707,8 +707,8 @@ class SettingsDialog(wx.Dialog):
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW|wx.TOP, 20)
         
-        sizer.Add(button_sizer,0,\
-                flag = wx.ALIGN_RIGHT, border = 20)
+        sizer.Add(button_sizer,0,
+                  flag = wx.ALIGN_RIGHT, border = 20)
         self.SetSizer(sizer)
         
         sizer.Fit(self)

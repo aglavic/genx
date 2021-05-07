@@ -239,7 +239,7 @@ class Parameters:
         mytest=[row[1] for row in self.data if row[2] and not row[0] == '']
         min=[row[3] for row in self.data if row[2] and not row[0] == '']
         max=[row[4] for row in self.data if row[2] and not row[0] == '']
-        return (row_nmb, funcs, mytest, min, max)
+        return row_nmb, funcs, mytest, min, max
     
     def get_pos_from_row(self, row):
         '''get_pos_from_row(self) --> pos [int]
@@ -255,7 +255,7 @@ class Parameters:
         ''' Returns the variables needed for simulation '''
         funcs = [row[0] for row in self.data if not row[0] == '']
         mytest = [row[1] for row in self.data if not row[0] == '']
-        return (funcs, mytest)
+        return funcs, mytest
 
     def get_sim_pos_from_row(self, row):
         '''Transform a row to a psoitions in the sim list 

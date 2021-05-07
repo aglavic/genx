@@ -124,14 +124,14 @@ ModelID='MingInterdiff'
 # Automatic loading of parameters possible by including this list
 __pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
 # Used for making choices in the GUI
-instrument_string_choices = {'coords': ['q','tth'],\
-    'restype': ['no conv', 'fast conv',\
-     'full conv and varying res.', 'fast conv + varying res.'],\
-    'footype': ['no corr', 'gauss beam', 'square beam']}
+instrument_string_choices = {'coords': ['q','tth'],
+                             'restype': ['no conv', 'fast conv',
+                                         'full conv and varying res.', 'fast conv + varying res.'],
+                             'footype': ['no corr', 'gauss beam', 'square beam']}
     
-InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
-    'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',\
-    'samplelen':10.0, 'Ibkg': 0.0, 'taylor_n': 1}
+InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,
+                      'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',
+                      'samplelen':10.0, 'Ibkg': 0.0, 'taylor_n': 1}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
 #Res stddev of resolution
@@ -147,11 +147,11 @@ InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,\
 #          2: Correction for square profile => Beaw given in full width mm
 # Samlen= Samplelength in mm.
 
-LayerParameters = {'sigmai':0.0, 'sigmar':0.0, 'dens':1.0, 'd':0.0,\
-    'f':0.0+0.0j}
+LayerParameters = {'sigmai':0.0, 'sigmar':0.0, 'dens':1.0, 'd':0.0,
+                   'f':0.0+0.0j}
 StackParameters = {'Layers':[], 'Repetitions':1}
-SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 'h':1.0,\
-    'eta_z':10.0, 'eta_x':10.0}
+SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 'h':1.0,
+                    'eta_z':10.0, 'eta_x':10.0}
 
 def Specular(TwoThetaQz, sample, instrument):
     ''' Simulate the specular signal from sample when proped with instrument
@@ -164,9 +164,9 @@ def Specular(TwoThetaQz, sample, instrument):
     restype = instrument.getRestype()
 
     if restype == 2 or restype == instrument_string_choices['restype'][2]:
-            (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:], \
-                instrument.getRes(), instrument.getRespoints(),\
-                 range=instrument.getResintrange())
+            (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:],
+                                                   instrument.getRes(), instrument.getRespoints(),
+                                                   range=instrument.getResintrange())
     if instrument.getCoords() == 1 or\
         instrument.getCoords() == instrument_string_choices['coords'][1]:
         theta = TwoThetaQz/2
@@ -210,13 +210,13 @@ def Specular(TwoThetaQz, sample, instrument):
     if restype == 0 or restype == instrument_string_choices['restype'][0]:
         R = R[:]*foocor
     elif restype == 1 or restype == instrument_string_choices['restype'][1]:
-        R = ConvoluteFast(TwoThetaQz,R[:]*foocor, instrument.getRes(),\
-            range = instrument.getResintrange())
+        R = ConvoluteFast(TwoThetaQz,R[:]*foocor, instrument.getRes(),
+                          range = instrument.getResintrange())
     elif restype == 2 or restype == instrument_string_choices['restype'][2]:
         R = ConvoluteResolutionVector(TwoThetaQz,R[:]*foocor, weight)
     elif restype == 3 or restype == instrument_string_choices['restype'][3]:
-        R = ConvoluteFastVar(TwoThetaQz,R[:]*foocor, instrument.getRes(),\
-          range = instrument.getResintrange())
+        R = ConvoluteFastVar(TwoThetaQz,R[:]*foocor, instrument.getRes(),
+                             range = instrument.getResintrange())
     else:
         raise ValueError('Variable restype has an unvalid value')
     return R + instrument.getIbkg()
@@ -270,9 +270,9 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     eta_z = sample.getEta_z()
     #print eta_z
     if __offspec__:
-        (I, alpha, omega) = lib.offspec.DWBA_Interdiff(qx, qz, lamda, n, z,\
-            sigmar, sigmai, eta, h, eta_z, d,\
-                taylor_n = instrument.getTaylor_n())
+        (I, alpha, omega) = lib.offspec.DWBA_Interdiff(qx, qz, lamda, n, z,
+                                                       sigmar, sigmai, eta, h, eta_z, d,
+                                                       taylor_n = instrument.getTaylor_n())
     else:
         I=ones(len(qx*qz))
     return real(I)*instrument.getI0() + instrument.getIbkg()
@@ -313,14 +313,14 @@ def SLD_calculations(z, item, sample, inst):
             raise ValueError('The chosen item, %s, does not exist'%item)
     
 
-SimulationFunctions = {'Specular':Specular,\
-                        'OffSpecular':OffSpecularMingInterdiff,\
-                        'SLD': SLD_calculations}
+SimulationFunctions = {'Specular':Specular,
+                       'OffSpecular':OffSpecularMingInterdiff,
+                       'SLD': SLD_calculations}
 
 from .lib import refl as Refl
-(Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,\
-        LayerParameters,StackParameters,\
-         SampleParameters, SimulationFunctions, ModelID)
+(Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,
+                                                      LayerParameters,StackParameters,
+                                                      SampleParameters, SimulationFunctions, ModelID)
 
 
 if __name__=='__main__':

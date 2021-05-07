@@ -143,8 +143,8 @@ class Database(object):
             return stored_values[name]
         else:
             try:
-                stored_values[name] = object.__getattribute__(self,\
-                        'lookup_value')(name)
+                stored_values[name] = object.__getattribute__(self,
+                                                              'lookup_value')(name)
             except (LookupError, IOError) as e:
                 raise LookupError('The name %s does not exist in the'\
                     'database'%name)
@@ -272,10 +272,10 @@ def load_f0dabax(filename, create_rho = False):
 
     def create_rho(a, b, c):
         def rho(r, fp, wb, occ):
-            return (sum(a[:, np.newaxis]/\
-                    (8.0*(np.pi*(b[:, np.newaxis]/16/np.pi**2+wb))**1.5)\
-                     *np.exp(-(r**2.0)/4.0/(b[:, np.newaxis]/16/np.pi**2+wb)),\
-                        0) + (c + fp)/(8.0*(np.pi*wb)**1.5)*\
+            return (sum(a[:, np.newaxis]/
+                        (8.0*(np.pi*(b[:, np.newaxis]/16/np.pi**2+wb))**1.5)
+                        *np.exp(-(r**2.0)/4.0/(b[:, np.newaxis]/16/np.pi**2+wb)),
+                        0) + (c + fp)/(8.0*(np.pi*wb)**1.5)*
                     np.exp(-(r**2.0)/4.0/wb))*occ
         return rho
     
@@ -326,8 +326,8 @@ def create_fp_lookup(path):
         a element (note that the databases does not support ions). 
         The data given is the dispersive part + f0 (non dispersive) at Q = 0.
         '''
-        e, f1, f2 = np.loadtxt(path + '%s.nff'%name.lower(), skiprows = 1,\
-                unpack = True)
+        e, f1, f2 = np.loadtxt(path + '%s.nff'%name.lower(), skiprows = 1,
+                               unpack = True)
         energy = 1239.842/wavelength*10
         if energy >= e[-2] or energy <= e[1]:
             raise ValueError('The energy/wavelength is outside the databse'\
@@ -356,8 +356,8 @@ def create_fpdisp_lookup(path):
     that yields a function of dispersive scattering factors f(E) at Q = 0. NOTE energy is in eV
     '''
     def create_dispersion_func(name):
-        e, f1, f2 = np.loadtxt(path + '%s.nff'%name.lower(), skiprows = 1,\
-                unpack = True)
+        e, f1, f2 = np.loadtxt(path + '%s.nff'%name.lower(), skiprows = 1,
+                               unpack = True)
         f1interp = interpolate.interp1d(e, f1, kind = 'linear')
         f2interp = interpolate.interp1d(e, f2, kind = 'linear')
 

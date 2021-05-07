@@ -252,7 +252,7 @@ class Domain:
         if not isinstance(sym_list, list) and not isinstance(sym_list, Sym):
             raise TypeError("The surface symmetries has to contained in a list or Sym")
 
-        if sym_list == []:
+        if not sym_list:
             sym_list = [SymTrans()]
             
         if min([type(sym) == type(SymTrans()) for sym in sym_list]) == 0:
@@ -270,7 +270,7 @@ class Domain:
         if not isinstance(sym_list, list) and not isinstance(sym_list, Sym):
             raise TypeError("The surface symmetries has to contained in a list or Sym")
 
-        if sym_list == []:
+        if not sym_list:
             sym_list = [SymTrans()]
 
         if min([type(sym) == type(SymTrans()) for sym in sym_list]) == 0:
@@ -719,7 +719,7 @@ class Slab:
         '''
         if id in self.id:
             raise ValueError('The id %s is already defined in the'
-                             'slab'%(id))
+                             'slab'%id)
         # TODO: Check the element as well...
         self.x = np.append(self.x, x)
         self.dx = np.append(self.dx, 0.)
@@ -1154,7 +1154,7 @@ class Instrument:
             self.rholib.set_wavelength(wavel)
         except ValueError:
             raise ValueError('%s is not a valid float number needed for the'
-                             'wavelength'%(wavel))
+                             'wavelength'%wavel)
 
     def get_wavel(self, wavel):
         '''Returns the wavelength in AA
@@ -1168,7 +1168,7 @@ class Instrument:
             self.set_wavel(12.39842/float(energy))
         except ValueError:
             raise ValueErrror('%s is not a valid float number needed for the'
-                             'energy'%(wavel))
+                             'energy'%wavel)
 
     def get_energy(self):
         '''Returns the photon energy in keV

@@ -346,10 +346,10 @@ class MainFrame(wx.Frame):
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data_grid_choice, self.data_list.list_ctrl)
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data, self.data_list.list_ctrl)
         
-        self.Bind(event_handlers.EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent,\
-                    self)
-        self.Bind(event_handlers.EVT_SIM_PLOT, self.eh_external_fom_value,\
-                    self)
+        self.Bind(event_handlers.EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent,
+                  self)
+        self.Bind(event_handlers.EVT_SIM_PLOT, self.eh_external_fom_value,
+                  self)
         # Update events from the solver
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.eh_external_fom_value)
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_data.OnSolverPlotEvent)
@@ -362,15 +362,15 @@ class MainFrame(wx.Frame):
         self.Bind(solvergui.EVT_UPDATE_PARAMETERS,
                             self.plot_pars.OnSolverParameterEvent)
         # For picking a point in a plot
-        self.Bind(plotpanel.EVT_PLOT_POSITION,\
-            self.eh_ex_point_pick)
+        self.Bind(plotpanel.EVT_PLOT_POSITION,
+                  self.eh_ex_point_pick)
         # This is needed to be able to create the events
         self.plot_data.SetCallbackWindow(self)
         self.plot_fom.SetCallbackWindow(self)
         self.plot_pars.SetCallbackWindow(self)
         self.plot_fomscan.SetCallbackWindow(self)
-        self.Bind(plotpanel.EVT_PLOT_SETTINGS_CHANGE,\
-                    self.eh_ex_plot_settings_changed)
+        self.Bind(plotpanel.EVT_PLOT_SETTINGS_CHANGE,
+                  self.eh_ex_plot_settings_changed)
                     
         # Binding events which means model changes
         self.Bind(parametergrid.EVT_PARAMETER_GRID_CHANGE,
@@ -381,8 +381,8 @@ class MainFrame(wx.Frame):
                     self.data_list.list_ctrl)
 
         # Event for when a value of a parameter in the parameter grid has been updated
-        self.Bind(parametergrid.EVT_PARAMETER_VALUE_CHANGE,\
-            self.eh_external_parameter_value_changed)
+        self.Bind(parametergrid.EVT_PARAMETER_VALUE_CHANGE,
+                  self.eh_external_parameter_value_changed)
 
 
         # Stuff for the find and replace functionallity
@@ -939,8 +939,8 @@ class StartUpConfigDialog(wx.Dialog):
         sizer.Add(line, 0, wx.GROW|wx.TOP, 20)
         
         sizer.Add((-1, 4), 0, wx.EXPAND)
-        sizer.Add(button_sizer,0,\
-                flag = wx.ALIGN_RIGHT, border = 20)
+        sizer.Add(button_sizer,0,
+                  flag = wx.ALIGN_RIGHT, border = 20)
         sizer.Add((-1, 4), 0, wx.EXPAND)
         
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)

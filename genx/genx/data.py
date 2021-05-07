@@ -63,8 +63,8 @@ class DataSet:
         self.show = True
         
         # Special list for settings when setting the plotting properties
-        self.plot_setting_names = ['color', 'symbol', 'symbolsize', 'linetype',\
-                              'linethickness']
+        self.plot_setting_names = ['color', 'symbol', 'symbolsize', 'linetype',
+                                   'linethickness']
         # Name of the data set
         if name == '':
             self.name = 'New Data'
@@ -497,26 +497,26 @@ class DataSet:
         sybolsize [float], linetype [string], linethickness [float].
         Used for plotting the simulation.
         '''
-        return {'color': (self.sim_color[0]*255, self.sim_color[1]*255,\
-     self.sim_color[2]*255),\
-                'symbol': self.sim_symbol,\
-                'symbolsize': self.sim_symbolsize,\
-                'linetype': self.sim_linetype,\
-                'linethickness': self.sim_linethickness\
-               }
+        return {'color': (self.sim_color[0]*255, self.sim_color[1]*255,
+                          self.sim_color[2]*255),
+                'symbol': self.sim_symbol,
+                'symbolsize': self.sim_symbolsize,
+                'linetype': self.sim_linetype,
+                'linethickness': self.sim_linethickness
+                }
     def get_data_plot_items(self):
         '''get_data_plot_items(self) --> dict
         Returns a dictonary of color [tuple], symbol [string], 
         sybolsize [float], linetype [string], linethickness [float].
         Used for plotting the data.
         '''
-        return {'color': (self.data_color[0]*255, self.data_color[1]*255,\
-     self.data_color[2]*255),\
-                'symbol': self.data_symbol,\
-                'symbolsize': self.data_symbolsize,\
-                'linetype': self.data_linetype,\
-                'linethickness': self.data_linethickness\
-               }
+        return {'color': (self.data_color[0]*255, self.data_color[1]*255,
+                          self.data_color[2]*255),
+                'symbol': self.data_symbol,
+                'symbolsize': self.data_symbolsize,
+                'linetype': self.data_linetype,
+                'linethickness': self.data_linethickness
+                }
     
     def set_data_plot_items(self, pars):
         ''' set_data_plot_items(self, pars) --> None
@@ -640,8 +640,8 @@ class DataList:
         will be given an automatic name
         '''
         if name=='':
-            self.items.append(DataSet('Data %d'%self._counter,\
-                        copy_from=self.items[-1]))
+            self.items.append(DataSet('Data %d'%self._counter,
+                                      copy_from=self.items[-1]))
             self._counter += 1
         else:
             self.items.append(DataSet(name,copy_from=self.items[-1]))
@@ -818,8 +818,8 @@ class DataList:
         def exportFunc(index,row):
             item = self.items[index]
             if row < len(item.x):
-                return '%e\t%e\t%e\t%e\t'%(item.x[row], item.y[row],\
-                                            item.error[row], item.y_sim[row])
+                return '%e\t%e\t%e\t%e\t'%(item.x[row], item.y[row],
+                                           item.error[row], item.y_sim[row])
             else:
                 return ' \t \t \t \t'
         # Now create the data

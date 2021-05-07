@@ -75,8 +75,8 @@ class Plugin(framework.Template):
         self.refplugin.OnSimulate=self._orgi_call
         sld_plot=self.refplugin.sld_plot
         sld_plot.plot.ax2.set_visible(False)
-        del(sld_plot.plot.ax2)
-        del(self.refplugin)
+        del sld_plot.plot.ax2
+        del self.refplugin
         framework.Template.Remove(self)
 
 

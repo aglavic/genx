@@ -224,8 +224,8 @@ def logR1(simulations, data):
     '''
     denom = np.sum([np.sum(np.log10(np.sqrt(dataset.y))) for dataset in data\
         if dataset.use])
-    return [1.0/denom*(np.log10(np.sqrt(dataset.y)) - \
-                                        np.log10(np.sqrt(sim)))\
+    return [1.0/denom*(np.log10(np.sqrt(dataset.y)) -
+                       np.log10(np.sqrt(sim)))\
         for (dataset, sim) in zip(data,simulations)]
 
 def R2(simulations, data):

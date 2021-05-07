@@ -469,13 +469,13 @@ class wxVTKRenderWindow(baseClass):
         for i in range(0,numRenderers):
             renderer = renderers.GetNextItem()
             vx,vy = (0,0)
-            if (windowX > 1):
+            if windowX > 1:
                 vx = float(x)/(windowX-1)
-            if (windowY > 1):
+            if windowY > 1:
                 vy = (windowY-float(y)-1)/(windowY-1)
             (vpxmin,vpymin,vpxmax,vpymax) = renderer.GetViewport()
             
-            if (vx >= vpxmin and vx <= vpxmax and vy >= vpymin and vy <= vpymax):
+            if vx >= vpxmin and vx <= vpxmax and vy >= vpymin and vy <= vpymax:
                 self._CurrentRenderer = renderer
                 self._ViewportCenterX = float(windowX)*(vpxmax-vpxmin)/2.0\
                                         +vpxmin
@@ -518,7 +518,7 @@ class wxVTKRenderWindow(baseClass):
             (pPoint0,pPoint1,pPoint2) = camera.GetPosition()
             (fPoint0,fPoint1,fPoint2) = camera.GetFocalPoint()
 
-            if (camera.GetParallelProjection()):
+            if camera.GetParallelProjection():
                 renderer.SetWorldPoint(fPoint0,fPoint1,fPoint2,1.0)
                 renderer.WorldToDisplay()
                 fx,fy,fz = renderer.GetDisplayPoint()
@@ -555,7 +555,7 @@ class wxVTKRenderWindow(baseClass):
                 renderer.DisplayToWorld()
                 
                 (rPoint0,rPoint1,rPoint2,rPoint3) = renderer.GetWorldPoint()
-                if (rPoint3 != 0.0):
+                if rPoint3 != 0.0:
                     rPoint0 = rPoint0/rPoint3
                     rPoint1 = rPoint1/rPoint3
                     rPoint2 = rPoint2/rPoint3
@@ -641,7 +641,7 @@ class wxVTKRenderWindow(baseClass):
                 self._PrePickedProperty.UnRegister(self._PrePickedProperty)
                 self._PrePickedProperty = None
 
-            if (actor is not None):
+            if actor is not None:
                 self._PickedActor = actor
                 self._PrePickedProperty = self._PickedActor.GetProperty()
                 # hold onto the property

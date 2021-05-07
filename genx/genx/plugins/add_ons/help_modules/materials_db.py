@@ -145,7 +145,7 @@ class Formula(list):
             if count == 1:
                 output += element
             else:
-                output += element + "%g"%(count)
+                output +=element+ "%g"%count
         return output
 
     @classmethod
