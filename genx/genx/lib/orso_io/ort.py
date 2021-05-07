@@ -37,7 +37,7 @@ def parse_yaml(header):
 #     return json_dict
 
 def parse_json(header):
-    return json.loads(header)#, object_hook=date_hook)
+    return json.loads(header)  # , object_hook=date_hook)
 
 def read_data(text_data):
     # read the data from the text, faster then numpy loadtxt with StringIO
@@ -67,8 +67,8 @@ def read_file(fname):
         text=fh.read()
     ftype_info=list(map(str.strip, l1.split('|')))
     data_start=re.search(r'\n[^#]', text).start()
-    header=text[:data_start-1].rsplit('\n', 1)[0] # remove last header line that only contains column info
-    header=header[2:].replace('\n# ', '\n') # remove header comment to make the text valid yaml/json
+    header=text[:data_start-1].rsplit('\n', 1)[0]  # remove last header line that only contains column info
+    header=header[2:].replace('\n# ', '\n')  # remove header comment to make the text valid yaml/json
     header_encoding=ftype_info[2].lower().split()[0]
     if header_encoding=='yaml':
         main_header=parse_yaml(header)
@@ -105,6 +105,7 @@ def encode_yaml(header):
         return dumper.represent_mapping(
             yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
             data.items())
+
     try:
         from yaml import CDumper as Dumper
     except ImportError:
@@ -119,7 +120,7 @@ def encode_yaml(header):
     if 'columns' in header:
         header=header.copy()
         columns=header['columns']
-        del(header['columns'])
+        del (header['columns'])
         output=yaml.dump(header, Dumper=DumperInd,
                          indent=4, width=78, sort_keys=False)
         output+='columns:\n'

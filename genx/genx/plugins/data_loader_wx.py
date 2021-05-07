@@ -8,15 +8,15 @@ import wx, os, io, traceback
 from .utils import PluginHandler
 from genx.gui_logging import iprint
 
-head, tail = os.path.split(__file__)
+head, tail=os.path.split(__file__)
 # Look only after the file name and not the ending since
 # the file ending can be pyc if compiled...
-__FILENAME__ = tail.split('.')[0]
+__FILENAME__=tail.split('.')[0]
 # This assumes that plugin is under the current dir may need
 # changing
-__MODULE_DIR__ = head
-if __MODULE_DIR__ != '/':
-    __MODULE_DIR__ += '/'
+__MODULE_DIR__=head
+if __MODULE_DIR__!='/':
+    __MODULE_DIR__+='/'
 
 class PluginController:
     def __init__(self, parent):

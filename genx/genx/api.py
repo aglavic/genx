@@ -9,7 +9,7 @@ import sys
 
 # workaround for issues with ctrl+c on windows
 if sys.platform=='win32':
-    os.environ['FOR_DISABLE_CONSOLE_CTRL_HANDLER'] = '1'
+    os.environ['FOR_DISABLE_CONSOLE_CTRL_HANDLER']='1'
 
 from genx.model import Model
 from genx.diffev import DiffEv
@@ -19,6 +19,7 @@ from genx.plugins.utils import PluginHandler
 
 _config=io.Config()
 _fit_output=[]
+
 def text_output_api(text):
     _fit_output.append(text)
 
@@ -63,16 +64,16 @@ def fit_notebook(model, optimizer):
     refls=[]
     for i, ds in enumerate(model.data.items):
         refls.append(plt.semilogy(ds.x, ds.y,
-                              color=ds.data_color,
-                              lw=ds.data_linethickness, ls=ds.data_linetype,
-                              marker=ds.data_symbol, ms=ds.data_symbolsize,
-                              label='data-%i: %s'%(i, ds.name))[0])
+                                  color=ds.data_color,
+                                  lw=ds.data_linethickness, ls=ds.data_linetype,
+                                  marker=ds.data_symbol, ms=ds.data_symbolsize,
+                                  label='data-%i: %s'%(i, ds.name))[0])
         if ds.y_sim.shape==ds.y.shape:
             refls.append(plt.semilogy(ds.x, ds.y_sim,
-                                  color=ds.sim_color,
-                                  lw=ds.sim_linethickness, ls=ds.sim_linetype,
-                                  marker=ds.sim_symbol, ms=ds.sim_symbolsize,
-                                  label='model-%i: %s'%(i, ds.name))[0])
+                                      color=ds.sim_color,
+                                      lw=ds.sim_linethickness, ls=ds.sim_linetype,
+                                      marker=ds.sim_symbol, ms=ds.sim_symbolsize,
+                                      label='model-%i: %s'%(i, ds.name))[0])
 
     plt.xlabel('x')
     plt.ylabel('I')
@@ -87,11 +88,11 @@ def fit_notebook(model, optimizer):
                 continue
             x, y=array(optimizer.fom_log).T
             last=len(x)
-            #t1.set_text('FOM: %.4e'%optimizer.best_fom)
+            # t1.set_text('FOM: %.4e'%optimizer.best_fom)
             t1.set_text(_fit_output[-1])
-            #vec=optimizer.best_vec
-            #list(map(lambda func, value: func(value), model.get_fit_pars()[0], vec))
-            #model.evaluate_sim_func()
+            # vec=optimizer.best_vec
+            # list(map(lambda func, value: func(value), model.get_fit_pars()[0], vec))
+            # model.evaluate_sim_func()
             j=0
             for i, ds in enumerate(model.data.items):
                 refls[j].set_ydata(ds.y)
@@ -148,16 +149,16 @@ def fit(model, optimizer):
         refls=[]
         for i, ds in enumerate(model.data.items):
             refls.append(plt.semilogy(ds.x, ds.y,
-                                  color=ds.data_color,
-                                  lw=ds.data_linethickness, ls=ds.data_linetype,
-                                  marker=ds.data_symbol, ms=ds.data_symbolsize,
-                                  label='data-%i: %s'%(i, ds.name))[0])
+                                      color=ds.data_color,
+                                      lw=ds.data_linethickness, ls=ds.data_linetype,
+                                      marker=ds.data_symbol, ms=ds.data_symbolsize,
+                                      label='data-%i: %s'%(i, ds.name))[0])
             if ds.y_sim.shape==ds.y.shape:
                 refls.append(plt.semilogy(ds.x, ds.y_sim,
-                                      color=ds.sim_color,
-                                      lw=ds.sim_linethickness, ls=ds.sim_linetype,
-                                      marker=ds.sim_symbol, ms=ds.sim_symbolsize,
-                                      label='model-%i: %s'%(i, ds.name))[0])
+                                          color=ds.sim_color,
+                                          lw=ds.sim_linethickness, ls=ds.sim_linetype,
+                                          marker=ds.sim_symbol, ms=ds.sim_symbolsize,
+                                          label='model-%i: %s'%(i, ds.name))[0])
 
         plt.xlabel('x')
         plt.ylabel('I')
@@ -259,7 +260,7 @@ class Reflectivity(SampleBuilder):
 
     def WriteModel(self):
         parameter_list=self.uservars_lines
-        sim_funcs, sim_insts, sim_args = self.sim_funcs, self.sim_insts, self.sim_args
+        sim_funcs, sim_insts, sim_args=self.sim_funcs, self.sim_insts, self.sim_args
         expression_list=self.sim_exp
         instruments=self.instruments
 
@@ -298,11 +299,11 @@ class Reflectivity(SampleBuilder):
 
         if len(instrument_names)==0:
             raise ValueError('Could not find any Instruments in the'
-                                 ' model script. Check the script.')
+                             ' model script. Check the script.')
 
         if not 'inst' in instrument_names:
             raise ValueError('Could not find the default Instrument, inst, in the'
-                                 ' model script. Check the script.')
+                             ' model script. Check the script.')
 
         sample_text=self.find_sample_section()
 
@@ -438,7 +439,7 @@ class Reflectivity(SampleBuilder):
 
         output+='\n    User Parameters:'
         for line in self.uservars_lines:
-            var,val=line[len(self._uvar_string):].split(')')[0].split(',')
+            var, val=line[len(self._uvar_string):].split(')')[0].split(',')
             output+='\n        %s = %s'%(eval(var), val)
 
         output+='\n    Simulations:'
@@ -463,7 +464,7 @@ class Reflectivity(SampleBuilder):
 
         output+='<h4>User Parameters:</h4>\n<div><ul>'
         for line in self.uservars_lines:
-            var,val=line[len(self._uvar_string):].split(')')[0].split(',')
+            var, val=line[len(self._uvar_string):].split(')')[0].split(',')
             output+='<li><b>%s</b> = %s</li>'%(eval(var), val)
         output+='</ul></div>'
 
@@ -491,7 +492,7 @@ class Reflectivity(SampleBuilder):
         graphw=ipw.Output()
         with graphw:
             from matplotlib import pyplot as plt
-            fig=plt.figure(figsize=(10,8))
+            fig=plt.figure(figsize=(10, 8))
             model.data.plot()
             plt.xlabel('q/tth')
             plt.ylabel('Intensity')
@@ -528,10 +529,10 @@ class Reflectivity(SampleBuilder):
             ient.append(name)
             ient.append(ipw.HTML('=Instrument(', layout=ipw.Layout(width='12ex')))
 
-            items=str(value).split('(',1)[1].rsplit(')',1)[0].split(',')
+            items=str(value).split('(', 1)[1].rsplit(')', 1)[0].split(',')
             for item in items:
                 try:
-                    name,val=item.split('=', 1)
+                    name, val=item.split('=', 1)
                 except ValueError:
                     break
                 name=name.strip()
@@ -562,7 +563,7 @@ class Reflectivity(SampleBuilder):
         vbox=ipw.VBox([])
 
         for i, line in enumerate(self.sampleh.getStringList(html_encoding=False)):
-            key,data=map(str.strip, line.split('=', 1))
+            key, data=map(str.strip, line.split('=', 1))
             ient=[]
             if key in ['Amb', 'Sub']:
                 name_entr=ipw.HTML(key, layout=ipw.Layout(width='14ex'))
@@ -585,7 +586,7 @@ class Reflectivity(SampleBuilder):
             items=values.split(',')
             for item in items:
                 try:
-                    name,val=item.split('=', 1)
+                    name, val=item.split('=', 1)
                 except ValueError:
                     break
                 name=name.strip()
@@ -642,7 +643,7 @@ class Reflectivity(SampleBuilder):
 
     def _ipyw_change_iname(self, change):
         self.instruments[change.new]=self.instruments[change.old]
-        del(self.instruments[change.old])
+        del (self.instruments[change.old])
         for i, inst in enumerate(self.sim_insts):
             if inst==change.old:
                 self.sim_insts[i]=str(change.new)
@@ -660,10 +661,10 @@ class Reflectivity(SampleBuilder):
         ient.append(name)
         ient.append(ipw.HTML('=Instrument(', layout=ipw.Layout(width='12ex')))
 
-        items=str(value).split('(',1)[1].rsplit(')',1)[0].split(',')
+        items=str(value).split('(', 1)[1].rsplit(')', 1)[0].split(',')
         for item in items:
             try:
-                name,val=item.split('=', 1)
+                name, val=item.split('=', 1)
             except ValueError:
                 break
             name=name.strip()
@@ -716,7 +717,7 @@ class Reflectivity(SampleBuilder):
         ient.append(ipw.HTML(')', layout=ipw.Layout(width='1ex')))
         name_entr.input_widgets=tuple(wi for wi in ient[2:] if type(wi) is ipw.Text)
 
-        btn.vbox.children=btn.vbox.children[:idx+1]+(ipw.HBox(ient), )+btn.vbox.children[idx+1:]
+        btn.vbox.children=btn.vbox.children[:idx+1]+(ipw.HBox(ient),)+btn.vbox.children[idx+1:]
         self.WriteModel()
 
     def _ipyw_change_sname(self, change):

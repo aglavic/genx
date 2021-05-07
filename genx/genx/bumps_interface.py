@@ -16,8 +16,8 @@ class ProgressMonitor(TimedUpdate):
     def __init__(self, problem, pbar, ptxt, progress=0.25, improvement=5.0):
         TimedUpdate.__init__(self, progress=progress, improvement=improvement)
         self.problem=problem
-        self.pbar=pbar # wx.Gauge
-        self.ptxt=ptxt # wx.StaticText
+        self.pbar=pbar  # wx.Gauge
+        self.ptxt=ptxt  # wx.StaticText
         self.chis=[]
         self.steps=[]
 
@@ -49,7 +49,7 @@ class ProgressMonitor(TimedUpdate):
 
 class StatisticalAnalysisDialog(wx.Dialog):
     def __init__(self, parent, model):
-        wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.MAXIMIZE_BOX)
+        wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
         vbox=wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
 
@@ -68,8 +68,8 @@ class StatisticalAnalysisDialog(wx.Dialog):
         lpanel.SetSizer(lsizer)
         self.entries={}
         for key, emin, emax, val in [('pop', 1, 150, 15),
-                              ('samples', 1000, 10000000, 100000),
-                              ('burn', 0, 10000, 100)]:
+                                     ('samples', 1000, 10000000, 100000),
+                                     ('burn', 0, 10000, 100)]:
             lsizer.Add(wx.StaticText(lpanel, label='%s:'%key))
             self.entries[key]=wx.SpinCtrl(lpanel, wx.ID_ANY, min=emin, max=emax, value=str(val))
             lsizer.Add(self.entries[key], flag=wx.EXPAND)
@@ -84,7 +84,6 @@ class StatisticalAnalysisDialog(wx.Dialog):
 
         self.model=model
         self.thread=None
-
 
     def OnRunAnalysis(self, event):
         self.thread=threading.Thread(target=self.run_bumps)
@@ -101,5 +100,3 @@ class StatisticalAnalysisDialog(wx.Dialog):
                                  pop=pop, samples=samples, burn=burn,
                                  thin=1, alpha=0, outliers='none', trim=False,
                                  monitors=[mon], problem=self.bproblem)
-
-

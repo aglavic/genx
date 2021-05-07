@@ -78,47 +78,46 @@ from .lib import scatteringlengths as sl
 import os
 from genx.gui_logging import iprint
 
-_head, _tail = os.path.split(__file__)
+_head, _tail=os.path.split(__file__)
 # Look only after the file name and not the ending since
 # the file ending can be pyc if compiled... 
-__FILENAME__ = _tail.split('.')[0]
+__FILENAME__=_tail.split('.')[0]
 # This assumes that plugin is under the current dir may need 
 # changing
-__MODULE_DIR__ = _head
-if __MODULE_DIR__ == '':
-    __MODULE_DIR__ = '.'
-
+__MODULE_DIR__=_head
+if __MODULE_DIR__=='':
+    __MODULE_DIR__='.'
 
 class UserVars:
     def __init__(self):
         pass
 
-    def newVar(self,name,value):
-        #name=name.lower()
-        setattr(self,name,value)
-        setattr(self,'set'+name[0].upper()+name[1:],lambda value:setattr(self,name,value))
-        setattr(self,'get'+name[0].upper()+name[1:],lambda :getattr(self,name,value))
-        
-    def new_var(self,name,value):
-        #name=name.lower()
-        setattr(self,name,value)
-        setattr(self,'set'+name[0].upper()+name[1:],lambda value:setattr(self,name,value))
-        setattr(self,'get'+name[0].upper()+name[1:],lambda :getattr(self,name,value))
+    def newVar(self, name, value):
+        # name=name.lower()
+        setattr(self, name, value)
+        setattr(self, 'set'+name[0].upper()+name[1:], lambda value: setattr(self, name, value))
+        setattr(self, 'get'+name[0].upper()+name[1:], lambda: getattr(self, name, value))
 
-#==============================================================================
+    def new_var(self, name, value):
+        # name=name.lower()
+        setattr(self, name, value)
+        setattr(self, 'set'+name[0].upper()+name[1:], lambda value: setattr(self, name, value))
+        setattr(self, 'get'+name[0].upper()+name[1:], lambda: getattr(self, name, value))
+
+# ==============================================================================
 # Now create default databases for scattering lengths and form factors
 # for now only x-rays at single wavelengths
 # The non-disersive part but angle dependent
-__f0_dict__, __rho0_dict__ = sl.load_f0dabax(__MODULE_DIR__ +
-                                             '/databases/f0_CromerMann.dat',
-                                             create_rho = True)
+__f0_dict__, __rho0_dict__=sl.load_f0dabax(__MODULE_DIR__+
+                                           '/databases/f0_CromerMann.dat',
+                                           create_rho=True)
 # Workaround for the oxygen
-__f0_dict__['o2m'] = __f0_dict__['o2-.']
-__rho0_dict__['o2m'] = __rho0_dict__['o2-.']
-f0 = sl.ScatteringLength(__f0_dict__)
+__f0_dict__['o2m']=__f0_dict__['o2-.']
+__rho0_dict__['o2m']=__rho0_dict__['o2-.']
+f0=sl.ScatteringLength(__f0_dict__)
 # Dispersive part at Q = 0
-__lookup_fp__ = sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_nist/')
-__lookup_fp_old__ = sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_cxro/')
+__lookup_fp__=sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_nist/')
+__lookup_fp_old__=sl.create_fp_lookup(__MODULE_DIR__+'/databases/f1f2_cxro/')
 
 def create_fp(wavelength):
     return sl.FormFactor(wavelength, __lookup_fp__)
@@ -126,63 +125,65 @@ def create_fp(wavelength):
 def create_fp_old(wavelength):
     return sl.FormFactor(wavelength, __lookup_fp_old__)
 
-fp = create_fp(1.54)
-fp_old = create_fp_old(1.54)
+fp=create_fp(1.54)
+fp_old=create_fp_old(1.54)
 # The total angle dependent form factor
-__lookup_f__ = sl.create_f_lookup(__lookup_fp__, __f0_dict__)
-f = sl.FormFactor(1.54, __lookup_f__)
+__lookup_f__=sl.create_f_lookup(__lookup_fp__, __f0_dict__)
+f=sl.FormFactor(1.54, __lookup_f__)
 # The electrondensity of an atom
-__lookup_rho__ = sl.create_rho_lookup(__lookup_fp__, __rho0_dict__,
-                                      __f0_dict__)
-rho = sl.FormFactor(1.54, __lookup_rho__)
+__lookup_rho__=sl.create_rho_lookup(__lookup_fp__, __rho0_dict__,
+                                    __f0_dict__)
+rho=sl.FormFactor(1.54, __lookup_rho__)
 # The coherent scattering length for neutrons
-__bc_dict__ = sl.load_bdabax(__MODULE_DIR__+'/databases/DeBe_NeutronNews.dat')
-bc = sl.ScatteringLength(__bc_dict__)
-#print 'Loading atomic weights'
-__w_dict__ = sl.load_atomic_weights_dabax(__MODULE_DIR__ +\
-                        '/databases/AtomicWeights.dat')
-#print 'Making bw dict'
-__bw_dict__ = sl.create_scatt_weight(__bc_dict__, __w_dict__)
-#print 'Making bw scattering lengths'
-bw = sl.ScatteringLength(__bw_dict__)
-#print 'Making fw scattering lengths'
-__lookup_fw__ = sl.create_fw_lookup(__lookup_fp__, __w_dict__)
+__bc_dict__=sl.load_bdabax(__MODULE_DIR__+'/databases/DeBe_NeutronNews.dat')
+bc=sl.ScatteringLength(__bc_dict__)
+# print 'Loading atomic weights'
+__w_dict__=sl.load_atomic_weights_dabax(__MODULE_DIR__+ \
+                                        '/databases/AtomicWeights.dat')
+# print 'Making bw dict'
+__bw_dict__=sl.create_scatt_weight(__bc_dict__, __w_dict__)
+# print 'Making bw scattering lengths'
+bw=sl.ScatteringLength(__bw_dict__)
+# print 'Making fw scattering lengths'
+__lookup_fw__=sl.create_fw_lookup(__lookup_fp__, __w_dict__)
+
 def create_fw(wavelength):
     return sl.FormFactor(wavelength, __lookup_fw__)
 
-fw = create_fw(1.54)
+fw=create_fw(1.54)
 
-__f_chantler_dict__ = sl.read_dabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')
-__lookup_fpc__ = sl.load_fdabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')
-fpc = sl.FormFactor(15.4, __lookup_fpc__)
+__f_chantler_dict__=sl.read_dabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')
+__lookup_fpc__=sl.load_fdabax(__MODULE_DIR__+'/databases/f1f2_Chantler.dat')
+fpc=sl.FormFactor(15.4, __lookup_fpc__)
 
-__lookup_fdisp__ = sl.create_fpdisp_lookup(__MODULE_DIR__+'/databases/f1f2_nist/')
-fd = sl.Database()
+__lookup_fdisp__=sl.create_fpdisp_lookup(__MODULE_DIR__+'/databases/f1f2_nist/')
+fd=sl.Database()
 object.__setattr__(fd, 'lookup_value', __lookup_fdisp__)
 
 if __name__=='__main__':
-    #MyVars=UserVars()
-    #MyVars.newVar('a',3)
-    #print 'f0.fe(0)', f0.fe(0)
-    #fp.set_wavelength(1.54)
-    #print 'fp.fe', fp.fe
-    #f.set_wavelength(1.54)
-    #print 'f.fe(0)', f.fe(0)
-    #print 'f.fe2p(0)', f.fe2p(0)
-    #fe = np.array(__f_chantler_dict__['fe'])
-    #print fe.reshape(len(fe)/7, 7)
+    # MyVars=UserVars()
+    # MyVars.newVar('a',3)
+    # print 'f0.fe(0)', f0.fe(0)
+    # fp.set_wavelength(1.54)
+    # print 'fp.fe', fp.fe
+    # f.set_wavelength(1.54)
+    # print 'f.fe(0)', f.fe(0)
+    # print 'f.fe2p(0)', f.fe2p(0)
+    # fe = np.array(__f_chantler_dict__['fe'])
+    # print fe.reshape(len(fe)/7, 7)
     ##print bc.fe
-    #print fpc.Sn
-    #print fp.Sn
+    # print fpc.Sn
+    # print fp.Sn
     import time
-    N = 1000
-    t1 = time.time()
+
+    N=1000
+    t1=time.time()
     for i in range(N):
         fd.Fe(100.0)
-    t2 = time.time()
+    t2=time.time()
     iprint("Dispersive database access time: ", (t2-t1)/N)
-    t1 = time.time()
+    t1=time.time()
     for i in range(N):
         ignore=fp.Fe
-    t2 = time.time()
-    iprint("Normal database access time: ", (t2 - t1) / N)
+    t2=time.time()
+    iprint("Normal database access time: ", (t2-t1)/N)

@@ -1,4 +1,4 @@
-#-*- coding: utf8 -*-
+# -*- coding: utf8 -*-
 '''<h1>Library for combined x-ray and neutrons simulations with adaptive layer segmentation.</h1>
 <p>Most of the model is the same as in spec_nx.</p>
 '''
@@ -24,10 +24,10 @@ LayerUnits=spec_nx.LayerUnits.copy()
 LayerUnits.update({'magn_void': 'True/False',
                    'rough_type': '0-gauss/1-lin\n2/3-exp', 'sigma_mag': 'AA'})
 LayerGroups=[('Standard', ['f', 'dens', 'd', 'sigma']),
-            ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang', 'sigma_mag']),
-            ('Special', ['magn_void', 'rough_type'])]
+             ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang', 'sigma_mag']),
+             ('Special', ['magn_void', 'rough_type'])]
 
-StackParameters={'Layers':[], 'Repetitions':1, 'Element': 0}
+StackParameters={'Layers': [], 'Repetitions': 1, 'Element': 0}
 SampleParameters=spec_nx.SampleParameters.copy()
 SampleParameters.update({'minimal_steps': 0.5, 'max_diff_n': 0.01,
                          'max_diff_x': 0.01, 'smoothen': 0})
@@ -38,16 +38,17 @@ q_limit=spec_nx.q_limit
 Buffer=spec_nx.Buffer
 
 def SLD_calculations(z, item, sample, inst):
-  res=spec_nx.SLD_calculations(z, item, sample, inst)
-  res['z']-=5*refl.resolve_par(sample.Substrate, 'sigma')
-  return res
+    res=spec_nx.SLD_calculations(z, item, sample, inst)
+    res['z']-=5*refl.resolve_par(sample.Substrate, 'sigma')
+    return res
 
-SimulationFunctions={'Specular':spec_nx.Specular, 
+SimulationFunctions={'Specular': spec_nx.Specular,
                      'SLD': SLD_calculations
-                    }
+                     }
 
 (Instrument, Layer, Stack, Sample)=refl.MakeClasses(InstrumentParameters,
-                                                    LayerParameters, StackParameters, SampleParameters, SimulationFunctions,
+                                                    LayerParameters, StackParameters, SampleParameters,
+                                                    SimulationFunctions,
                                                     ModelID)
 
 def calculate_segmentation(sample):
@@ -146,34 +147,34 @@ def calculate_segmentation(sample):
     xs_ai_out=[xs_ai_comb[0]]
     while i<(len(z)-1):
         # calculate SLD differeces for all subsequent positions
-#        diff_x=abs(rho_x[i+1:]-rho_x_out[-1])
-#        diff_n_p=abs(rho_n[i+1:]+rho_m_nsf[i+1:]-rho_n_out[-1]-rho_nsf_out[-1])
-#        diff_n_m=abs(rho_n[i+1:]-rho_m_nsf[i+1:]-rho_n_out[-1]+rho_nsf_out[-1])
-#        diff_m_sf=abs(rho_m_sf[i+1:]-rho_sf_out[-1])
-#        diff_idx=where((diff_n_p>sample.max_diff_n)|(diff_x>sample.max_diff_x)|
-#                       (diff_n_m>sample.max_diff_n)|(diff_m_sf>sample.max_diff_n))[0]
+        #        diff_x=abs(rho_x[i+1:]-rho_x_out[-1])
+        #        diff_n_p=abs(rho_n[i+1:]+rho_m_nsf[i+1:]-rho_n_out[-1]-rho_nsf_out[-1])
+        #        diff_n_m=abs(rho_n[i+1:]-rho_m_nsf[i+1:]-rho_n_out[-1]+rho_nsf_out[-1])
+        #        diff_m_sf=abs(rho_m_sf[i+1:]-rho_sf_out[-1])
+        #        diff_idx=where((diff_n_p>sample.max_diff_n)|(diff_x>sample.max_diff_x)|
+        #                       (diff_n_m>sample.max_diff_n)|(diff_m_sf>sample.max_diff_n))[0]
         # calculate the maximum variation of SLD up to given index
         diff_x=abs(maximum.accumulate(rho_x[i+1:])-minimum.accumulate(rho_x[i+1:]))
         diff_n_p=abs(maximum.accumulate(rho_n[i+1:]+rho_m_nsf[i+1:])-minimum.accumulate(rho_n[i+1:]+rho_m_nsf[i+1:]))
         diff_n_m=abs(maximum.accumulate(rho_n[i+1:]-rho_m_nsf[i+1:])-minimum.accumulate(rho_n[i+1:]-rho_m_nsf[i+1:]))
         diff_m_sf=abs(maximum.accumulate(rho_m_sf[i+1:])-minimum.accumulate(rho_m_sf[i+1:]))
-        diff_idx=where(logical_not((diff_n_p<sample.max_diff_n)&(diff_x<sample.max_diff_x)&
-                       (diff_n_m<sample.max_diff_n)&(diff_m_sf<sample.max_diff_n)))[0]
+        diff_idx=where(logical_not((diff_n_p<sample.max_diff_n) & (diff_x<sample.max_diff_x) &
+                                   (diff_n_m<sample.max_diff_n) & (diff_m_sf<sample.max_diff_n)))[0]
         if len(diff_idx)>0:
             j=min(len(z)-1, max(i+diff_idx[0]+1, i+5))
         else:
-            j=len(z)-1 # last position
+            j=len(z)-1  # last position
         d_segments.append(z[j]-z[i])
         rho_x_out.append(rho_x[i:j].mean())
         rho_n_out.append(rho_n[i:j].mean())
-        rho_nsf_out.append(rho_m_nsf[i:j].mean()*(1.-rho_void[i:j].mean())) # averadge magn taking voids into account
-        rho_sf_out.append(rho_m_sf[i:j].mean()*(1.-rho_void[i:j].mean())) # averadge magn taking voids into account
-        xs_ai_out.append(xs_ai_comb[i:j].mean()) # averadge mang angle
+        rho_nsf_out.append(rho_m_nsf[i:j].mean()*(1.-rho_void[i:j].mean()))  # averadge magn taking voids into account
+        rho_sf_out.append(rho_m_sf[i:j].mean()*(1.-rho_void[i:j].mean()))  # averadge magn taking voids into account
+        xs_ai_out.append(xs_ai_comb[i:j].mean())  # averadge mang angle
         i=j
     rho_nsf_out=array(rho_nsf_out)
     rho_sf_out=array(rho_sf_out)
     rho_m_out=sqrt(rho_nsf_out**2+rho_sf_out**2).tolist()
-    magn_ang_out=(arctan2(rho_nsf_out,-rho_sf_out)*180./pi-90.).tolist()
+    magn_ang_out=(arctan2(rho_nsf_out, -rho_sf_out)*180./pi-90.).tolist()
     return (d_segments[1:], rho_x_out[1:],
             rho_n_out[1:], rho_m_out[1:], xs_ai_out[1:], magn_ang_out[1:])
 
@@ -229,7 +230,6 @@ def resolve_parameters_by_element(sample):
         output['Elements'].append(par)
     return output
 
-
 def resolveLayerParameters(self):
     # resolve parameters by creating layers automatically
     # adapting changes to the SLDs
@@ -244,18 +244,16 @@ def resolveLayerParameters(self):
     par['magn']+=rho_m
     par['xs_ai']+=xs_ai
     if self.smoothen:
-      par['sigma']+=[(d[i]+d[i+1])/4. for i in range(len(d)-1)]+[0.]
+        par['sigma']+=[(d[i]+d[i+1])/4. for i in range(len(d)-1)]+[0.]
     else:
-      par['sigma']+=[0. for ignore in d]
+        par['sigma']+=[0. for ignore in d]
     par['magn_ang']+=magn_ang
     par['dens']+=[1. for ignore in d]
     for k in ['b', 'd', 'dens', 'f', 'magn', 'magn_ang', 'sigma', 'xs_ai']:
         par[k].append(refl.resolve_par(self.Ambient, k))
     return par
 
-
 Sample.resolveLayerParameters=resolveLayerParameters
-
 
 if __name__=='__main__':
     pass

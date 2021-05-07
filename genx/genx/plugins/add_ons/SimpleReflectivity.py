@@ -45,15 +45,15 @@ class SampleGrid(gridlib.Grid):
         self.Bind(gridlib.EVT_GRID_EDITOR_SHOWN, self.onEditorShown)
         self.Bind(gridlib.EVT_GRID_EDITOR_HIDDEN, self.onEditorHidden)
         self._activated_ctrl=False
-        
+
     def onCellSelected(self, evt):
         if evt.Col in [1]:
             self._activated_ctrl=True
             wx.CallAfter(self.EnableCellEditControl)
-        if evt.Col in [3,5,7,9]:
+        if evt.Col in [3, 5, 7, 9]:
             if not self.parent.sample_table.GetAttr(evt.Row, evt.Col, None).IsReadOnly():
                 self.parent.sample_table.SetValue(evt.Row, evt.Col,
-                      not self.parent.sample_table.GetValue(evt.Row, evt.Col))
+                                                  not self.parent.sample_table.GetValue(evt.Row, evt.Col))
                 self.ForceRefresh()
         else:
             evt.Skip()
@@ -69,7 +69,7 @@ class SampleGrid(gridlib.Grid):
             self.info_text.SetLabel('Enter Chemical Formula:')
             self.parent.Layout()
         evt.Skip()
-    
+
     def onEditorHidden(self, evt):
         if self.info_text.IsShown():
             self.info_text.Hide()
@@ -100,7 +100,7 @@ class SampleGrid(gridlib.Grid):
             self.info_text.SetLabel(txt)
 
 # new model is ready with a script as value.
-(update_model_event, EVT_UPDATE_MODEL) = wx.lib.newevent.NewEvent()
+(update_model_event, EVT_UPDATE_MODEL)=wx.lib.newevent.NewEvent()
 TOP_LAYER=0
 ML_LAYER=1
 BOT_LAYER=2
@@ -134,20 +134,20 @@ class SampleTable(gridlib.GridTableBase):
         'Formula': ['Layer', 'Formula', 'SLD',
                     False, '2.0', False, '0.0',
                     True, '10.0', False, '5.0', ML_LAYER],
-        'Mixure':  ['MixLayer', 'Mixure', '6.0',
-                    False, '2.0', False, '100',
-                    True, '10.0', False, '5.0', ML_LAYER],
+        'Mixure': ['MixLayer', 'Mixure', '6.0',
+                   False, '2.0', False, '100',
+                   True, '10.0', False, '5.0', ML_LAYER],
         }
 
     repetitions=1
-    
+
     def __init__(self, parent, grid):
         gridlib.GridTableBase.__init__(self)
         self.parent=parent
         self.grid=grid
-        
+
         self.ResetModel(first=True)
-        
+
         self.grid.SetTable(self, True)
 
         dpi_scale_factor=wx.GetApp().dpi_scale_factor
@@ -158,7 +158,7 @@ class SampleTable(gridlib.GridTableBase):
             # self.parent.SetColSize(i, 50)
             self.grid.AutoSizeColumn(i, True)
         wx.CallAfter(self.updateModel)
-    
+
     def ResetModel(self, first=False):
         if not first:
             old_len=len(self.layers)
@@ -237,14 +237,14 @@ class SampleTable(gridlib.GridTableBase):
             else:
                 return self.layers[row-1][col].replace('_', ' ')
         if row==0:
-            if col in [7,8,9,10]:
+            if col in [7, 8, 9, 10]:
                 return None
             return self.ambient[col]
         elif row==self.GetNumberRows()-2:
-            if col in [7,8]:
+            if col in [7, 8]:
                 return None
             return self.substrate[col]
-        
+
         return self.layers[row-1][col]
 
     def get_valid_name(self, name):
@@ -255,12 +255,12 @@ class SampleTable(gridlib.GridTableBase):
                 identifyier+=char
         if identifyier in self.invalid_identifiers:
             identifyier='_'+identifyier
-                
+
         existing=[li[0] for li in self.layers]
         if not identifyier in existing:
             return identifyier
         if identifyier.split('_')[-1].isdigit():
-            identifyier=identifyier.rsplit('_',1)[0]
+            identifyier=identifyier.rsplit('_', 1)[0]
         i=1
         while '%s_%i'%(identifyier, i) in existing:
             i+=1
@@ -268,7 +268,7 @@ class SampleTable(gridlib.GridTableBase):
 
     def SetValue(self, row, col, value):
         # ignore unchanged values
-        if value==self.GetValue(row,col):
+        if value==self.GetValue(row, col):
             return
 
         if row==self.repeatedInfo():
@@ -317,12 +317,12 @@ class SampleTable(gridlib.GridTableBase):
         elif col==1:
             # change of layer type resets material data columns
             to_edit[1]=value
-            for i in [2,3,4,5,6]:
+            for i in [2, 3, 4, 5, 6]:
                 to_edit[i]=self.defaults[value][i]
         elif col in [3, 5, 7, 9]:
             # boolean columns are always correct
             to_edit[col]=value
-        elif col in [4,6,8,10]:
+        elif col in [4, 6, 8, 10]:
             # evaluate float values, can be written as formla
             try:
                 float(eval('%s'%value))
@@ -337,7 +337,7 @@ class SampleTable(gridlib.GridTableBase):
         evt=update_model_event()
         evt.script=model_code
         wx.PostEvent(self.parent, evt)
-    
+
     def repeatedInfo(self):
         # get the first row of the repeated layer structure
         info_row=1
@@ -346,7 +346,7 @@ class SampleTable(gridlib.GridTableBase):
                 break
             info_row+=1
         return info_row
-    
+
     def realRow(self, row):
         info_row=self.repeatedInfo()
         if row<info_row:
@@ -358,16 +358,16 @@ class SampleTable(gridlib.GridTableBase):
         '''Called by the grid to find the attributes of the cell,
         bkg color, text colour, font and so on.
         '''
-        attr = gridlib.GridCellAttr()
+        attr=gridlib.GridCellAttr()
         if row==self.repeatedInfo():
             if col!=10:
                 attr.SetReadOnly()
             if col==0:
-                attr.SetSize(1,8)
+                attr.SetSize(1, 8)
                 attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_BOTTOM)
                 return attr
             if col==8:
-                attr.SetSize(1,2)
+                attr.SetSize(1, 2)
                 return attr
             if col==10:
                 return attr
@@ -376,11 +376,11 @@ class SampleTable(gridlib.GridTableBase):
 
         attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
         if row==0 and col==6:
-                # ambiance has no thickness or roughness
-                attr.SetSize(1,5)
+            # ambiance has no thickness or roughness
+            attr.SetSize(1, 5)
         if row==(self.GetRowsCount()-2) and col==6:
-                # ambiance has no thickness
-                attr.SetSize(1,3)
+            # ambiance has no thickness
+            attr.SetSize(1, 3)
         if row in [0, (self.GetRowsCount()-2)]:
             if row==0:
                 if col==1:
@@ -419,7 +419,7 @@ class SampleTable(gridlib.GridTableBase):
                 attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
             if col==1:
                 attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
-            if col in [3,5,7,9]:
+            if col in [3, 5, 7, 9]:
                 attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
                 # If layer is defined as fraction, only allow fitting of either
                 # density 2 or fraction.
@@ -487,7 +487,7 @@ class SampleTable(gridlib.GridTableBase):
         newlayer[11]=layer_stack
         newlayer[0]=self.get_valid_name(newlayer[0])
         self.layers.insert(model_row, newlayer)
-    
+
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, 1)
         self.GetView().ProcessTableMessage(msg)
@@ -497,7 +497,7 @@ class SampleTable(gridlib.GridTableBase):
         self.GetView().ForceRefresh()
         self.updateModel()
         return True
-    
+
     def RebuildTable(self, data):
         diff=len(self.layers)-len(data)
         self.layers=list(data)
@@ -531,7 +531,7 @@ class SampleTable(gridlib.GridTableBase):
         if self.layers[row-1][11]==ML_LAYER and len([li for li in self.layers if li[11]==ML_LAYER])==1:
             return False
         del_layer=self.layers.pop(row-1)
-        
+
         # remove grid fit parameters from model, if any
         grid_parameters=self.parent.plugin.GetModel().get_parameters()
         for fi in ['dens', 'magn', 'd', 'sigma']:
@@ -559,14 +559,14 @@ class SampleTable(gridlib.GridTableBase):
             return False
         moved_row=self.layers.pop(row_from-1)
         self.layers.insert(row_to-1, moved_row)
-    
+
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.updateModel()
         return True
-    
+
     def getLayerCode(self, layer):
         out_param={}
         output="model.Layer("
@@ -607,14 +607,15 @@ class SampleTable(gridlib.GridTableBase):
     invalid_identifiers=['sample', 'Sim', 'model',
                          'fw', 'fp', 'bc', 'bw',
                          'Amb', 'Sub', 'inst']
+
     def getModelCode(self):
         '''
         Generate the python code for the current sample structure.
         '''
         grid_parameters=self.parent.plugin.GetModel().get_parameters()
-        
+
         script="# BEGIN Sample DO NOT CHANGE\n"
-        li,oi=self.getLayerCode(self.ambient)
+        li, oi=self.getLayerCode(self.ambient)
         script+="Amb = %s\n"%li
         for pi, fi in [(3, 'dens'), (5, 'magn')]:
             if pi==5 and self.ambient[1]=='Mixure':
@@ -630,9 +631,9 @@ class SampleTable(gridlib.GridTableBase):
                                                   int(self.ambient[pi]), minval, maxval)
 
         for layer in self.layers:
-            li,oi=self.getLayerCode(layer)
+            li, oi=self.getLayerCode(layer)
             script+="%s = %s\n"%(layer[0], li)
-            for pi,fi in [(3, 'dens'),(5, 'magn'),(7, 'd'), (9, 'sigma')]:
+            for pi, fi in [(3, 'dens'), (5, 'magn'), (7, 'd'), (9, 'sigma')]:
                 if pi==5 and layer[1]=='Mixure':
                     if not layer[5]:
                         continue
@@ -645,7 +646,7 @@ class SampleTable(gridlib.GridTableBase):
                 grid_parameters.set_fit_state_by_name(func_name, value,
                                                       int(layer[pi]), minval, maxval)
 
-        li,oi=self.getLayerCode(self.substrate)
+        li, oi=self.getLayerCode(self.substrate)
         script+="\nSub = %s\n"%li
         for pi, fi in [(3, 'dens'), (5, 'magn'), (9, 'sigma')]:
             if pi==5 and self.substrate[1]=='Mixure':
@@ -690,7 +691,7 @@ class SampleTable(gridlib.GridTableBase):
             func_name=name+'.'+_set_func_prefix+fi.capitalize()
             grid_parameters.set_fit_state_by_name(func_name, 0., 0, 0., 0.)
         self.parent.UpdateGrid(grid_parameters)
-    
+
     def get_name_list(self):
         out=['Amb']
         for li in self.layers:
@@ -710,7 +711,7 @@ class SampleTable(gridlib.GridTableBase):
         else:
             data=self.layers[layer-1]
         ref_data=self._last_layer_data[layer]
-        
+
         if data[1]=='Formula':
             formula=data[2]
             if formula=='SLD':
@@ -743,10 +744,9 @@ class SampleTable(gridlib.GridTableBase):
         if sigma is not None and data[9]:
             data[10]=str(float(sigma))
 
-
 class SamplePanel(wx.Panel):
     last_sample_script=''
-    
+
     inst_params=dict(probe='neutron pol',
                      I0=1.0,
                      res=0.0,
@@ -758,7 +758,7 @@ class SamplePanel(wx.Panel):
                      footype='no corr',
                      name='inst',
                      coords='q')
-    
+
     def __init__(self, parent, plugin, refindexlist=None):
         wx.Panel.__init__(self, parent)
         if refindexlist is None:
@@ -767,63 +767,62 @@ class SamplePanel(wx.Panel):
         self.plugin=plugin
         self.variable_span=0.25
         self.inst_params=dict(SamplePanel.inst_params)
-        
+
         # Colours indicating different states
         # Green wx.Colour(138, 226, 52), ORANGE wx.Colour(245, 121, 0)
         self.fit_colour=(245, 121, 0)
         # Tango Sky blue wx.Colour(52, 101, 164), wx.Colour(114, 159, 207)
         self.const_fit_colour=(114, 159, 207)
-        
+
         boxver=wx.BoxSizer(wx.HORIZONTAL)
         boxhor=wx.BoxSizer(wx.VERTICAL)
-        self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT|wx.TB_HORIZONTAL)
+        self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
         boxhor.Add((-1, 2))
         self.do_toolbar()
         boxhor.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=1)
         boxhor.Add((-1, 2))
-        self.grid = SampleGrid(self, -1, style=wx.NO_BORDER)
+        self.grid=SampleGrid(self, -1, style=wx.NO_BORDER)
         self.sample_table=SampleTable(self, self.grid)
 
-
-        self.last_sample_script=''#self.sample_table.getModelCode()
+        self.last_sample_script=''  # self.sample_table.getModelCode()
         self.Bind(EVT_UPDATE_MODEL, self.UpdateModel)
         boxhor.Add(self.grid, 1, wx.EXPAND)
         boxver.Add(boxhor, 1, wx.EXPAND)
-        
-        
+
         self.grid.info_text=wx.StaticText(self, -1, 'Bier')
         boxver.Add(self.grid.info_text, 0)
         self.grid.info_text.Hide()
-        
+
         self.SetSizer(boxver)
         self.toolbar.Realize()
         self.update_callback=lambda event: ''
         self._last_grid_data=[]
-    
+
     def do_toolbar(self):
         dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Insert Layer',
-                             bitmap=wx.Bitmap(images.insert_layer.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+                             bitmap=wx.Bitmap(images.insert_layer.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Insert a Layer')
         self.Bind(wx.EVT_TOOL, self.OnLayerAdd, id=newid)
-        
+
         newid=wx.NewId()
-        self.toolbar.AddTool(newid, 'Delete', bitmap=wx.Bitmap(images.delete.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+        self.toolbar.AddTool(newid, 'Delete',
+                             bitmap=wx.Bitmap(images.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Delete item')
         self.Bind(wx.EVT_TOOL, self.OnLayerDelete, id=newid)
-        
+
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Move up',
-                             bitmap=wx.Bitmap(images.move_up.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+                             bitmap=wx.Bitmap(images.move_up.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Move item up')
         self.Bind(wx.EVT_TOOL, self.MoveUp, id=newid)
-        
+
         newid=wx.NewId()
         self.toolbar.AddTool(newid, 'Move down',
-                             bitmap=wx.Bitmap(images.move_down.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
+                             bitmap=wx.Bitmap(images.move_down.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Move item down')
         self.Bind(wx.EVT_TOOL, self.MoveDown, id=newid)
         self.toolbar.AddSeparator()
@@ -831,7 +830,7 @@ class SamplePanel(wx.Panel):
         newid=wx.NewId()
         button=wx.Button(self.toolbar, newid, label='Instrument Settings',
                          size=(132*dpi_scale_factor, 22*dpi_scale_factor))
-        button.SetBitmap(wx.Bitmap(images.instrument.GetImage().Scale(tb_bmp_size,tb_bmp_size)), dir=wx.LEFT)
+        button.SetBitmap(wx.Bitmap(images.instrument.GetImage().Scale(tb_bmp_size, tb_bmp_size)), dir=wx.LEFT)
         self.toolbar.AddControl(button)
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, id=newid)
         self.toolbar.AddSeparator()
@@ -841,7 +840,7 @@ class SamplePanel(wx.Panel):
         newid=wx.NewId()
         button=wx.Button(self.toolbar, newid, label='to Advanced Modelling',
                          size=(150*dpi_scale_factor, 22*dpi_scale_factor))
-        button.SetBitmap(wx.Bitmap(images.custom_parameters.GetImage().Scale(tb_bmp_size,tb_bmp_size)), dir=wx.LEFT)
+        button.SetBitmap(wx.Bitmap(images.custom_parameters.GetImage().Scale(tb_bmp_size, tb_bmp_size)), dir=wx.LEFT)
         button.SetToolTip("Switch to Reflectivity plugin for advanced modeling options.\n"
                           "This converts the model and can't be undone.")
         self.toolbar.AddControl(button)
@@ -849,7 +848,7 @@ class SamplePanel(wx.Panel):
 
     def ChangeRepetitions(self, evt):
         self.UpdateModel()
-    
+
     def instrumentCode(self):
         pars=dict(self.inst_params)
         if pars['res']==0:
@@ -921,8 +920,8 @@ class SamplePanel(wx.Panel):
                 prefix=['Spin Up', 'Spin Down'][i%2]
                 di.name=prefix+' %i'%(i//2+1)
                 if i%2==0:
-                    di.data_color=(0.7,0.0,0.0)
-                    di.sim_color=(1.0,0.0,0.0)
+                    di.data_color=(0.7, 0.0, 0.0)
+                    di.sim_color=(1.0, 0.0, 0.0)
                 else:
                     di.data_color=(0.0, 0.0, 0.7)
                     di.sim_color=(0.0, 0.0, 1.0)
@@ -933,19 +932,19 @@ class SamplePanel(wx.Panel):
         datasets.update_data()
         # TODO: this is a very ugly unstable solution, try to find alternative.
         self.plugin.parent.data_list.list_ctrl._UpdateImageList()
-        
+
         script+="    return I"
         self.plugin.SetModelScript(script)
-        
+
         if evt is not None and self.plugin.mb_autoupdate_sim.IsChecked():
             self.plugin.parent.eh_tb_simulate(None)
-        
+
     def OnLayerAdd(self, evt):
-        row = self.grid.GetGridCursorRow()
+        row=self.grid.GetGridCursorRow()
         self.sample_table.InsertRow(row)
 
     def OnLayerDelete(self, evt):
-        row = self.grid.GetGridCursorRow()
+        row=self.grid.GetGridCursorRow()
         self.sample_table.DeleteRow(row)
 
     def SetUpdateCallback(self, func):
@@ -959,7 +958,7 @@ class SamplePanel(wx.Panel):
     def Update(self, update_script=True):
         if update_script:
             self.update_callback(None)
-    
+
     def EditInstrument(self, evt):
         """Event handler that creates an dialog box to edit the instruments.
 
@@ -970,7 +969,7 @@ class SamplePanel(wx.Panel):
             'probe': ['x-ray', 'neutron', 'neutron pol'],
             'coords': ['q', '2θ'], 'I0': FloatObjectValidator(),
             'res': FloatObjectValidator(), 'wavelength': FloatObjectValidator(),
-            'Ibkg': FloatObjectValidator(), 'samplelen':FloatObjectValidator(),
+            'Ibkg': FloatObjectValidator(), 'samplelen': FloatObjectValidator(),
             'beamw': FloatObjectValidator(),
             'footype': ['no corr', 'gauss beam', 'square beam'],
             }
@@ -978,30 +977,30 @@ class SamplePanel(wx.Panel):
         vals={}
         editable={}
         grid_parameters=self.plugin.GetModel().get_parameters()
-        
+
         pars=['probe', 'coords', 'wavelength', 'I0', 'Ibkg',
               'res', 'footype', 'samplelen', 'beamw']
-        units={'probe':'', 'wavelength': 'Å', 'coords':'',
-                   'I0': 'arb.', 'res': '[coord]', 'beamw':'mm',
-                   'footype': '', 'samplelen':'mm',
-                   'Ibkg': 'arb.', '2θ': '°', 'q': 'Å$^-1$'}
-        groups=[('Radiation', ('probe',  'wavelength', 'I0')),
-                ('Data', ('coords','Ibkg', 'res')),
-                ('Footprint Correction',('footype', 'samplelen', 'beamw'))]
+        units={'probe': '', 'wavelength': 'Å', 'coords': '',
+               'I0': 'arb.', 'res': '[coord]', 'beamw': 'mm',
+               'footype': '', 'samplelen': 'mm',
+               'Ibkg': 'arb.', '2θ': '°', 'q': 'Å$^-1$'}
+        groups=[('Radiation', ('probe', 'wavelength', 'I0')),
+                ('Data', ('coords', 'Ibkg', 'res')),
+                ('Footprint Correction', ('footype', 'samplelen', 'beamw'))]
         for item in validators.keys():
             func_name=inst_name+'.'+_set_func_prefix+item.capitalize()
             editable[item]=grid_parameters.get_fit_state_by_name(func_name)
             val=self.inst_params[item]
             vals[item]=val
-            
+
         dlg=ValidateFitDialog(self, pars, vals, validators,
-                                      title='Instrument Editor', groups=groups,
-                                      units=units,
-                                      editable_pars=editable)
-        
+                              title='Instrument Editor', groups=groups,
+                              units=units,
+                              editable_pars=editable)
+
         if dlg.ShowModal()==wx.ID_OK:
             vals=dlg.GetValues()
-            states = dlg.GetStates()
+            states=dlg.GetStates()
             for key, value in vals.items():
                 if type(self.inst_params[key]) is not str:
                     value=float(vals[key])
@@ -1025,13 +1024,12 @@ class SamplePanel(wx.Panel):
         try:
             plugin_control.plugin_handler.load_plugin('Reflectivity')
         except:
-            outp = io.StringIO()
+            outp=io.StringIO()
             traceback.print_exc(200, outp)
-            tbtext = outp.getvalue()
+            tbtext=outp.getvalue()
             outp.close()
         else:
             plugin_control.RegisterPlugin('Reflectivity')
-
 
     def CheckGridUpdate(self, parameters=None):
         if parameters is None:
@@ -1043,19 +1041,19 @@ class SamplePanel(wx.Panel):
             layers=self.sample_table.get_name_list()
             for (pi, val, _, _, _, _) in new_data:
                 try:
-                    name, param=pi.split('.',1)
+                    name, param=pi.split('.', 1)
                 except ValueError:
                     continue
 
                 if name in layers:
                     if param==_set_func_prefix+'Dens':
-                        self.sample_table.update_layer_parameters(name,dens=val)
+                        self.sample_table.update_layer_parameters(name, dens=val)
                     if param==_set_func_prefix+'Magn':
-                        self.sample_table.update_layer_parameters(name,magn=val)
+                        self.sample_table.update_layer_parameters(name, magn=val)
                     if param==_set_func_prefix+'D':
-                        self.sample_table.update_layer_parameters(name,d=val)
+                        self.sample_table.update_layer_parameters(name, d=val)
                     if param==_set_func_prefix+'Sigma':
-                        self.sample_table.update_layer_parameters(name,sigma=val)
+                        self.sample_table.update_layer_parameters(name, sigma=val)
             msg=gridlib.GridTableMessage(self.sample_table,
                                          gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.sample_table.GetView().ProcessTableMessage(msg)
@@ -1065,19 +1063,18 @@ class SamplePanel(wx.Panel):
     def UpdateGrid(self, grid_parameters):
         self._last_grid_data=[list(di) for di in grid_parameters.data]
         self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
-    
+
     def MoveUp(self, evt):
-        row = self.grid.GetGridCursorRow()
+        row=self.grid.GetGridCursorRow()
         res=self.sample_table.MoveRow(row, row-1)
         if res:
             self.grid.MoveCursorUp(False)
 
     def MoveDown(self, evt):
-        row = self.grid.GetGridCursorRow()
+        row=self.grid.GetGridCursorRow()
         res=self.sample_table.MoveRow(row, row+1)
         if res:
             self.grid.MoveCursorDown(False)
-
 
 class WizarSelectionPage(WizardPageSimple):
     def __init__(self, parent, choices, intro_title='', intro_text='',
@@ -1100,7 +1097,7 @@ class WizarSelectionPage(WizardPageSimple):
         self.ctrl=wx.RadioBox(self, label=choice_label, choices=choices,
                               style=wx.RA_SPECIFY_ROWS, majorDimension=4,
                               size=wx.Size(int(txt_length*(len(choices)//4+1)*dpi_scale_factor*8),
-                                           int(min(len(choices),4)*dpi_scale_factor*30)))
+                                           int(min(len(choices), 4)*dpi_scale_factor*30)))
         vbox.Add(self.ctrl, 0, 0)
         if choices_help:
             for i, ti in enumerate(choices_help):
@@ -1108,7 +1105,6 @@ class WizarSelectionPage(WizardPageSimple):
             text=wx.StaticText(self, style=wx.ALIGN_LEFT, label='Hover items for info')
             text.SetFont(text.GetFont().Scale(0.75))
             vbox.Add(text, 0, 0)
-
 
     def selection(self):
         return self.ctrl.GetString(self.ctrl.GetSelection())
@@ -1141,11 +1137,10 @@ def find_code_segment(code, descriptor):
 
     return text
 
-
 class Plugin(framework.Template):
     previous_xaxis=None
     sim_returns_sld=True
-    
+
     def __init__(self, parent):
         if 'Reflectivity' in parent.plugin_control.plugin_handler.get_loaded_plugins():
             parent.plugin_control.UnLoadPlugin_by_Name('Reflectivity')
@@ -1159,19 +1154,19 @@ class Plugin(framework.Template):
         self.defs=['Instrument', 'Sample']
         self.sample_widget=SamplePanel(sample_panel, self)
         self.sample_widget.model=self.model_obj
-        sample_sizer.Add(self.sample_widget, 1, wx.EXPAND|wx.GROW|wx.ALL)
+        sample_sizer.Add(self.sample_widget, 1, wx.EXPAND | wx.GROW | wx.ALL)
         sample_panel.Layout()
 
         self.sample_widget.SetUpdateCallback(self.UpdateScript)
-        
+
         # Create the SLD plot
         sld_plot_panel=self.NewPlotFolder('SLD')
         sld_sizer=wx.BoxSizer(wx.HORIZONTAL)
         sld_plot_panel.SetSizer(sld_sizer)
         self.sld_plot=SamplePlotPanel(sld_plot_panel, self)
-        sld_sizer.Add(self.sld_plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
+        sld_sizer.Add(self.sld_plot, 1, wx.EXPAND | wx.GROW | wx.ALL)
         sld_plot_panel.Layout()
-        
+
         # Create a menu for handling the plugin
         menu=self.NewMenu('Reflec')
         self.mb_export_sld=wx.MenuItem(menu, wx.NewId(),
@@ -1200,12 +1195,12 @@ class Plugin(framework.Template):
         self.mb_autoupdate_sld.Check(True)
 
         self.mb_hide_advanced=wx.MenuItem(menu, wx.NewId(),
-                                           "Hide Advanced",
-                                           "Toggles hiding of advanced model tabs",
-                                           wx.ITEM_CHECK)
+                                          "Hide Advanced",
+                                          "Toggles hiding of advanced model tabs",
+                                          wx.ITEM_CHECK)
         menu.Append(self.mb_hide_advanced)
         self.mb_hide_advanced.Check(True)
-        
+
         if prev_script!='':
             if self.model_obj.filename!='':
                 iprint("SimpleReflectivity plugin: Reading loaded model")
@@ -1233,7 +1228,7 @@ class Plugin(framework.Template):
         self.HideUIElements()
         self.sample_widget.UpdateModel()
         self.StatusMessage('Simple Reflectivity plugin loaded')
-        
+
         self.parent.Bind(EVT_UPDATE_PARAMETERS, self.OnFitParametersUpdated)
 
     def OnHideAdvanced(self, evt):
@@ -1283,20 +1278,20 @@ class Plugin(framework.Template):
 
     def UpdateScript(self, event):
         self.WriteModel()
-    
+
     def OnAutoUpdateSLD(self, evt):
         # self.mb_autoupdate_sld.Check(not self.mb_autoupdate_sld.IsChecked())
         pass
-    
+
     def OnShowImagSLD(self, evt):
         self.show_imag_sld=self.mb_show_imag_sld.IsChecked()
         self.sld_plot.Plot()
-    
+
     def OnExportSLD(self, evt):
         dlg=wx.FileDialog(self.parent, message="Export SLD to ...",
                           defaultFile="",
                           wildcard="Dat File (*.dat)|*.dat",
-                          style=wx.FD_SAVE|wx.FD_CHANGE_DIR
+                          style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                           )
         if dlg.ShowModal()==wx.ID_OK:
             fname=dlg.GetPath()
@@ -1320,17 +1315,17 @@ class Plugin(framework.Template):
                     self.ShowErrorDialog('Could not save the file.'
                                          ' Python Error:\n%s'%(val,))
         dlg.Destroy()
-    
+
     def OnNewModel(self, event):
         ''' Create a new model
         '''
         dlg=self.parent.data_list.list_ctrl.data_loader_cont
         dls=list(sorted(dlg.plugin_handler.get_possible_plugins()))
         dls.remove('default')
-        
+
         wiz=Wizard(self.parent, title='Create New Model...',
-                   bitmap=images.getinstrumentBitmap(), style=wx.DEFAULT_DIALOG_STYLE|wx.STAY_ON_TOP)
-        
+                   bitmap=images.getinstrumentBitmap(), style=wx.DEFAULT_DIALOG_STYLE | wx.STAY_ON_TOP)
+
         # def show_dl_help(event):
         #     dlg=PluginHelpDialog(wiz, 'plugins.data_loaders')
         #     dlg.Show()
@@ -1358,8 +1353,8 @@ class Plugin(framework.Template):
                               choices_help=['Reciprocal lattice vector out-of-plane component qz in Å⁻¹',
                                             'Detector angle in degrees'],
                               bitmap=getplottingBitmap())
-        WizardPageSimple.Chain(p1,p2)
-        WizardPageSimple.Chain(p2,p3)
+        WizardPageSimple.Chain(p1, p2)
+        WizardPageSimple.Chain(p2, p3)
 
         dpi_scale_factor=wx.GetApp().dpi_scale_factor
         wiz.SetPageSize(wx.Size(int(300*dpi_scale_factor), int(200*dpi_scale_factor)))
@@ -1374,18 +1369,18 @@ class Plugin(framework.Template):
             self.sample_widget.sample_table.ResetModel()
             self.sample_widget.UpdateModel(first=True)
         wiz.Destroy()
-    
+
     def OnDataChanged(self, event):
         ''' Take into account changes in data..
         '''
         self.sample_widget.UpdateModel()
-    
+
     def OnOpenModel(self, event):
         '''OnOpenModel(self, event) --> None
 
         Loads the sample into the plugin...
         '''
-        pass #self.ReadModel()
+        pass  # self.ReadModel()
 
     def OnSimulate(self, event):
         '''OnSimulate(self, event) --> None
@@ -1416,12 +1411,12 @@ class Plugin(framework.Template):
         self.sample_widget.CheckGridUpdate(parameters=parameters)
         self.sample_widget.Update(update_script=False)
         if event.permanent_change:
-            for pi,val in zip(keys, values):
+            for pi, val in zip(keys, values):
                 try:
-                    name, param=pi.split('.',1)
+                    name, param=pi.split('.', 1)
                 except ValueError:
                     continue
-                if name == 'inst':
+                if name=='inst':
                     for key in self.sample_widget.inst_params.keys():
                         if param==_set_func_prefix+key.capitalize():
                             value=float(val)
@@ -1434,8 +1429,7 @@ class Plugin(framework.Template):
 
     def WriteModel(self):
         return
-    
-    
+
     def ReadModel(self):
         '''ReadModel(self)  --> None
 
@@ -1460,22 +1454,22 @@ class Plugin(framework.Template):
         self.StatusMessage('Script compiled!')
 
         self.StatusMessage('Trying to interpret the script...')
-        
+
         txt=self.GetModel().script
         grid_parameters=self.GetModel().get_parameters()
         # extract instrument parameters
         insttxt=find_code_segment(txt, 'Instrument')
         for li in insttxt.splitlines():
-            if not li.split('=',1)[0].strip()=='inst':
+            if not li.split('=', 1)[0].strip()=='inst':
                 continue
             instoptions=li.split('model.Instrument(')[1].strip()[:-1]
             items=instoptions.strip(',').split(',')
-            items=dict([tuple(map(str.strip, i.split('=',1))) for i in items])
+            items=dict([tuple(map(str.strip, i.split('=', 1))) for i in items])
         for key, value in self.sample_widget.inst_params.items():
             if key in items:
                 newval=type(value)(eval(items[key]))
                 self.sample_widget.inst_params[key]=newval
-        
+
         # extract layer parameters
         sampletxt=find_code_segment(txt, 'Sample')
         layers={}
@@ -1490,8 +1484,8 @@ class Plugin(framework.Template):
             if 'model.Stack' in li:
                 name, stxt=map(str.strip, li.split('=', 1))
                 stacks[name]=analyze_stack_txt(stxt)
-                if name =='ML':
-                    repetitions=int(stxt.split('Repetitions', 1)[1].split('=', 1)[1].split(',',1)[0].rstrip(')'))
+                if name=='ML':
+                    repetitions=int(stxt.split('Repetitions', 1)[1].split('=', 1)[1].split(',', 1)[0].rstrip(')'))
         if 'Top' in stacks:
             Top=stacks['Top']
         else:
@@ -1511,7 +1505,7 @@ class Plugin(framework.Template):
         # get parameters to be fitted
         for li in layers.values():
             prefix=li[0]+'.set'
-            fit_items= [(3, 'dens'), (5, 'magn'), (7, 'd'), (9, 'sigma')]
+            fit_items=[(3, 'dens'), (5, 'magn'), (7, 'd'), (9, 'sigma')]
             for index, si in fit_items:
                 if grid_parameters.get_fit_state_by_name(prefix+si.capitalize()):
                     li[index]=True
@@ -1523,19 +1517,18 @@ class Plugin(framework.Template):
         table.substrate[0]=None
         table.repetitions=repetitions
         layers=[layers[key] for key in layer_order if not key in ['Amb', 'Sub']]
-        
+
         table.RebuildTable(layers)
 
         self.StatusMessage('New sample loaded to plugin!')
 
-
 def analyze_layer_txt(name, txt):
-    #['Iron', 'Formula', Formula([['Fe', 1.0]]), False, '7.87422', False, '3.0', True, '100.0', False, '5.0']
+    # ['Iron', 'Formula', Formula([['Fe', 1.0]]), False, '7.87422', False, '3.0', True, '100.0', False, '5.0']
     output=[name]
     layeroptions=txt.split('model.Layer(')[1].strip()[:-1]
     items=layeroptions.strip(',').split(',')
     items=dict([tuple(map(str.strip, i.split('=', 1))) for i in items])
-    
+
     if 'bc.' in items['b']:
         output.append('Formula')
         output.append(Formula.from_bstr(items['b']))
@@ -1548,7 +1541,7 @@ def analyze_layer_txt(name, txt):
         output.append(str(eval(items['magn'])))
     elif '+' in items['b'] and '*' in items['b']:
         output.append('Mixure')
-        part1,part2=items['b'].strip('()').split('+',1)
+        part1, part2=items['b'].strip('()').split('+', 1)
         frac=float(part1.split('*')[0])*100
         SLD1=float(part1.split('*')[1])
         SLD2=float(part2.split('*')[1])
@@ -1576,6 +1569,6 @@ def analyze_layer_txt(name, txt):
     return output
 
 def analyze_stack_txt(txt):
-    txt=txt.split('Layers',1)[1].split(']',1)[0].strip('=[ ')
+    txt=txt.split('Layers', 1)[1].split(']', 1)[0].strip('=[ ')
     layers=map(str.strip, txt.split(','))
     return list(layers)

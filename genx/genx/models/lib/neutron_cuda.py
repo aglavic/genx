@@ -5,7 +5,7 @@ import math, cmath
 
 ##################### not yet correct ###############################
 
-@cuda.jit(numba.void(numba.complex128[:,:], numba.complex128[:,:], numba.complex128[:,:]),
+@cuda.jit(numba.void(numba.complex128[:, :], numba.complex128[:, :], numba.complex128[:, :]),
           device=True)
 def dot4(A, B, D):
     D[0, 0]=(A[0, 0]*B[0, 0]+A[0, 1]*B[1, 0]+A[0, 2]*B[2, 0]+
@@ -46,7 +46,7 @@ def dot4(A, B, D):
 
 @cuda.jit(numba.void(numba.float64[:], numba.complex128[:], numba.complex128[:],
                      numba.float64[:], numba.float64[:], numba.float64[:],
-                     numba.float64[:,:], numba.complex128[:,:,:,:]))
+                     numba.float64[:, :], numba.complex128[:, :, :, :]))
 def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
@@ -68,27 +68,26 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
     layers=Vp.shape[0]
 
     # Thread id in a 1D block
-    tx = cuda.threadIdx.x
+    tx=cuda.threadIdx.x
     # Block id in a 1D grid
-    ty = cuda.blockIdx.x
+    ty=cuda.blockIdx.x
     # Block width, i.e. number of threads per block
-    bw = cuda.blockDim.x
+    bw=cuda.blockDim.x
     # Compute flattened index inside the array
-    qi = tx + ty * bw
+    qi=tx+ty*bw
     if qi>=Q.shape[0]:
         return
 
     X=cuda.local.array((4, 4), dtype=numba.complex128)
     P=cuda.local.array((4,), dtype=numba.complex128)
-    M=cuda.local.array((4,4), dtype=numba.complex128)
-    Mtmp=cuda.local.array((4,4), dtype=numba.complex128)
+    M=cuda.local.array((4, 4), dtype=numba.complex128)
+    Mtmp=cuda.local.array((4, 4), dtype=numba.complex128)
 
     # Assume first element=substrate and last=ambient!
     k_amb2=(Q[qi]/2.0)**2
 
     k_pi=cmath.sqrt(k_amb2-Vp[0])
     k_mi=cmath.sqrt(k_amb2-Vm[0])
-
 
     for lj in range(1, layers):
         # Wavevectors in the layers
@@ -146,7 +145,6 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
 
         # Assemble the layer propagation matrices
 
-
         # Multiply the propagation matrices with the interface matrix
         for i in range(4):
             for j in range(4):
@@ -157,13 +155,13 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
     ##### ass_P ####
     for i in range(4):
         for j in range(4):
-            M[i,j]=PX[qi, -2, i, j]
+            M[i, j]=PX[qi, -2, i, j]
     for linv in range(layers-3):
         # Multiply up the sample matrix
         dot4(M, PX[qi, layers-3-linv], Mtmp)
         for i in range(4):
             for j in range(4):
-                M[i,j]=Mtmp[i,j]
+                M[i, j]=Mtmp[i, j]
     dot4(X, M, Mtmp)
     for i in range(4):
         for j in range(4):
@@ -181,7 +179,7 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
 
 @cuda.jit(numba.void(numba.float64[:], numba.complex128[:], numba.complex128[:],
                      numba.float64[:], numba.float64[:],
-                     numba.float64[:,:], numba.complex128[:,:,:,:]))
+                     numba.float64[:, :], numba.complex128[:, :, :, :]))
 def ReflNB(Q, Vp, Vm, d, M_ang, Rout, PX):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
@@ -203,27 +201,26 @@ def ReflNB(Q, Vp, Vm, d, M_ang, Rout, PX):
     layers=Vp.shape[0]
 
     # Thread id in a 1D block
-    tx = cuda.threadIdx.x
+    tx=cuda.threadIdx.x
     # Block id in a 1D grid
-    ty = cuda.blockIdx.x
+    ty=cuda.blockIdx.x
     # Block width, i.e. number of threads per block
-    bw = cuda.blockDim.x
+    bw=cuda.blockDim.x
     # Compute flattened index inside the array
-    qi = tx + ty * bw
+    qi=tx+ty*bw
     if qi>=Q.shape[0]:
         return
 
     X=cuda.local.array((4, 4), dtype=numba.complex128)
     P=cuda.local.array((4,), dtype=numba.complex128)
-    M=cuda.local.array((4,4), dtype=numba.complex128)
-    Mtmp=cuda.local.array((4,4), dtype=numba.complex128)
+    M=cuda.local.array((4, 4), dtype=numba.complex128)
+    Mtmp=cuda.local.array((4, 4), dtype=numba.complex128)
 
     # Assume first element=substrate and last=ambient!
     k_amb2=(Q[qi]/2.0)**2
 
     k_pi=cmath.sqrt(k_amb2-Vp[0])
     k_mi=cmath.sqrt(k_amb2-Vm[0])
-
 
     for lj in range(1, layers):
         # Wavevectors in the layers
@@ -262,7 +259,6 @@ def ReflNB(Q, Vp, Vm, d, M_ang, Rout, PX):
 
         # Assemble the layer propagation matrices
 
-
         # Multiply the propagation matrices with the interface matrix
         for i in range(4):
             for j in range(4):
@@ -273,13 +269,13 @@ def ReflNB(Q, Vp, Vm, d, M_ang, Rout, PX):
     ##### ass_P ####
     for i in range(4):
         for j in range(4):
-            M[i,j]=PX[qi, -2, i, j]
+            M[i, j]=PX[qi, -2, i, j]
     for linv in range(layers-3):
         # Multiply up the sample matrix
         dot4(M, PX[qi, layers-3-linv], Mtmp)
         for i in range(4):
             for j in range(4):
-                M[i,j]=Mtmp[i,j]
+                M[i, j]=Mtmp[i, j]
     dot4(X, M, Mtmp)
     for i in range(4):
         for j in range(4):
@@ -295,7 +291,7 @@ def ReflNB(Q, Vp, Vm, d, M_ang, Rout, PX):
     Rout[2, qi]=abs(Rud)**2
     Rout[3, qi]=abs(Rdu)**2
 
-def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
+def Refl(Q, Vp, Vm, d, M_ang, sigma=None, return_int=True):
     threadsperblock=32
     blockspergrid=(Q.shape[0]+(threadsperblock-1))//threadsperblock
 
@@ -305,7 +301,7 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
     Cd=cuda.to_device(d)
     CM_ang=cuda.to_device(M_ang)
     CRout=cuda.device_array(shape=(4, Q.shape[0]), dtype=float64)
-    CPX=cuda.device_array(shape=(Q.shape[0], Vp.shape[0], 4,4), dtype=complex128)
+    CPX=cuda.device_array(shape=(Q.shape[0], Vp.shape[0], 4, 4), dtype=complex128)
 
     if sigma is not None:
         Csigma=cuda.to_device(sigma)

@@ -7,16 +7,16 @@ import os
 import re
 import json
 
-from genx.models.utils import UserVars, fw, fp, bc, __bc_dict__ #@UnusedImport
+from genx.models.utils import UserVars, fw, fp, bc, __bc_dict__  # @UnusedImport
 from genx.gui_logging import iprint
 
 # configuration file to store the known materials
 try:
-  import appdirs
+    import appdirs
 except ImportError:
-  config_path=os.path.expanduser(os.path.join('~', '.genx'))
+    config_path=os.path.expanduser(os.path.join('~', '.genx'))
 else:
-  config_path=appdirs.user_data_dir('GenX3', 'ArturGlavic')
+    config_path=appdirs.user_data_dir('GenX3', 'ArturGlavic')
 if not os.path.exists(config_path):
     os.makedirs(config_path)
 config_file=os.path.join(config_path, 'materials.cfg')
@@ -36,7 +36,7 @@ default_materials=[
     [[["Ti", 1.0], ["O", 2.0]], "4.0/(4.5318*5.5019*4.9063)"],
     ]
 
-MASS_DENSITY_CONVERSION = 0.60221415  #g/cm³-> u/Å³ : 1e-24 (1/cm³->1/Å³) * 6.0221415e23 (Na)
+MASS_DENSITY_CONVERSION=0.60221415  # g/cm³-> u/Å³ : 1e-24 (1/cm³->1/Å³) * 6.0221415e23 (Na)
 
 class Formula(list):
     '''
@@ -44,6 +44,7 @@ class Formula(list):
     Includes the possibility to compare materials that
     have different element orders or base in their fraction.
     '''
+
     def __init__(self, data):
         # check that the data is correct form, list of [Element, fraction] items.
         for di in data:
@@ -51,7 +52,7 @@ class Formula(list):
                 raise ValueError('Formula has to consist of [Element, fraction] entries.')
             di[1]=float(di[1])
         list.__init__(self, data)
-        
+
     @classmethod
     def from_str(cls, estr):
         '''
@@ -71,7 +72,7 @@ class Formula(list):
         for ign_char in [" ", "\t", "_", "-"]:
             estr=estr.replace(ign_char, "")
         for i in range(10):
-            estr=estr.replace(cls._get_subscript(i), '%i'%i) # convert to normal str w/o subsccript
+            estr=estr.replace(cls._get_subscript(i), '%i'%i)  # convert to normal str w/o subsccript
         if estr=="":
             return Formula([])
         extracted_elements=[]
@@ -117,35 +118,35 @@ class Formula(list):
             if not item.startswith('bc.'):
                 continue
             else:
-                element, count=item[3:].split('*',1)
+                element, count=item[3:].split('*', 1)
                 count=float(count)
                 extracted_elements.append([element, count])
         return Formula(extracted_elements)
 
     def __str__(self):
         '''Generate a string with sub- and superscript numbers for material.'''
-        output = ''
+        output=''
         for element, count in self:
             if element.startswith('^'):
                 try:
                     isotope, element=element[2:].split('}')
-                    output += self._get_superscript(int(isotope))
+                    output+=self._get_superscript(int(isotope))
                 except (IndexError, ValueError):
                     pass
-            if count == 1:
-                output += element
+            if count==1:
+                output+=element
             else:
-                output += element + self._get_subscript(count)
+                output+=element+self._get_subscript(count)
         return output
-    
+
     def estr(self):
         '''Generates an editable (ascii) string that can be parsed back as Formul'''
-        output = ''
+        output=''
         for element, count in self:
-            if count == 1:
-                output += element
+            if count==1:
+                output+=element
             else:
-                output +=element+ "%g"%count
+                output+=element+"%g"%count
         return output
 
     @classmethod
@@ -153,14 +154,14 @@ class Formula(list):
         '''
           Return a subscript unicode string that equals the given number.
         '''
-        scount = '%g'%count
-        result = ''
+        scount='%g'%count
+        result=''
         for char in scount:
-            if char == '.':
-                result += '﹒'
+            if char=='.':
+                result+='﹒'
             else:
                 # a superscript digit in unicode
-                result += (b'\\u207' + char.encode('utf-8')).decode('unicode-escape')
+                result+=(b'\\u207'+char.encode('utf-8')).decode('unicode-escape')
         return result
 
     @classmethod
@@ -168,20 +169,20 @@ class Formula(list):
         '''
           Return a subscript unicode string that equals the given number.
         '''
-        scount = '%g'%count
-        result = ''
+        scount='%g'%count
+        result=''
         for char in scount:
-            if char == '.':
-                result += '﹒'
+            if char=='.':
+                result+='﹒'
             else:
                 # a subscript digit in unicode
-                result += (b'\\u208' + char.encode('utf-8')).decode('unicode-escape')
+                result+=(b'\\u208'+char.encode('utf-8')).decode('unicode-escape')
         return result
-    
+
     def elements(self):
         '''Returns alphabetically sorted list of elements in formula.'''
         return list(sorted([ei[0].split('}')[-1] for ei in self]))
-    
+
     def isotopes(self):
         '''Returns same as elements but with isotopes w/ number at end of list.'''
         return list(sorted([ei[0] for ei in self]))
@@ -203,7 +204,7 @@ class Formula(list):
         fractions=self.amounts()
         total=sum(fractions)
         return [f/total for f in fractions]
-    
+
     def __eq__(self, other):
         if type(other)!=Formula:
             try:
@@ -211,7 +212,7 @@ class Formula(list):
             except:
                 return False
         return self.elements()==other.elements() and self.amounts()==other.amounts()
-    
+
     def equivalent(self, other):
         '''
         Returns if formula contains equivalent elemental composition,
@@ -219,7 +220,7 @@ class Formula(list):
         '''
         cmpo=Formula(other)
         return self.elements()==other.elements() and self.fractions()==other.fractions()
-    
+
     def mFU(self):
         '''Calculate mass in u for formula unit (FU).'''
         mass=0.
@@ -233,7 +234,7 @@ class Formula(list):
                     raise KeyError('Element %s does not exist'%ei)
         # return 1. if formulat is empty to avoid division by zero in density
         return mass or 1.0
-    
+
     def describe(self):
         '''Return a multile string with written element content.'''
         output=''
@@ -271,12 +272,11 @@ class Formula(list):
             elements+='+bc.%s*%g'%(element, count)
         return elements[1:]
 
-
-
 class MaterialsDatabase(list):
     '''
     Holds a list of materials and associated methods.
     '''
+
     def __init__(self):
         if os.path.exists(config_file):
             try:
@@ -288,10 +288,10 @@ class MaterialsDatabase(list):
             known_materials=default_materials
         data=[self.prepare(mi) for mi in known_materials]
         list.__init__(self, data)
-    
+
     def save_data(self):
         open(config_file, 'w').write(json.dumps(self))
-    
+
     def prepare(self, item):
         if len(item)!=2:
             raise ValueError("Requires [Formula, density_str] entry")
@@ -315,7 +315,7 @@ class MaterialsDatabase(list):
             raise IndexError("Material %s no in database"%item.estr())
         else:
             return list.__getitem__(self, item)
-    
+
     def __contains__(self, item):
         if type(item) in [str, Formula]:
             # Try to match formula with database
@@ -329,11 +329,11 @@ class MaterialsDatabase(list):
             return False
         else:
             return list.__contains__(self, item)
-    
+
     def SLDx(self, item):
         density=self.dens_FU(item)
         fw.set_wavelength(1.54)
-        return density*eval(self[item][0].f())#*2.82
+        return density*eval(self[item][0].f())  # *2.82
 
     def SLDn(self, item):
         density=self.dens_FU(item)
@@ -342,23 +342,23 @@ class MaterialsDatabase(list):
     def dens_FU(self, item):
         '''Returns the formula unit (FU) density of the compound "item" in 1/Å³'''
         return eval(self[item][1])
-    
+
     def dens_mass(self, item):
         '''Returns the mass density of the compound "item" in g/cm³'''
         return eval(self[item][1])*self[item][0].mFU()/MASS_DENSITY_CONVERSION
-    
+
     def __delitem__(self, index):
         list.__delitem__(self, index)
         self.save_data()
-    
+
     def __setitem__(self, index, item):
         list.__setitem__(index, self.prepare(item))
         self.save_data()
-    
+
     def insert(self, index, item):
         list.insert(self, index, self.prepare(item))
         self.save_data()
-    
+
     def pop(self, index):
         list.pop(self, index)
         self.save_data()
@@ -366,122 +366,121 @@ class MaterialsDatabase(list):
 # list of elements with their name, atomic number and atomic mass values (+GenX name)
 # mostly to calculate atomic density from mass density
 atomic_data={
-              "D": ("Deuterium", 1, 2.01410178),
-              "H": ("Hydrogen", 1, 1.0079),
-              "He": ("Helium", 2, 4.0026),
-              "Li": ("Lithium", 3, 6.941),
-              "Be": ("Beryllium", 4, 9.0122),
-              "B": ("Boron", 5, 10.811),
-              "C": ("Carbon", 6, 12.0107),
-              "N": ("Nitrogen", 7, 14.0067),
-              "O": ("Oxygen", 8, 15.9994),
-              "F": ("Fluorine", 9, 18.9984),
-              "Ne": ("Neon", 10, 20.1797),
-              "Na": ("Sodium", 11, 22.9897),
-              "Mg": ("Magnesium", 12, 24.305),
-              "Al": ("Aluminum", 13, 26.9815),
-              "Si": ("Silicon", 14, 28.0855),
-              "P": ("Phosphorus", 15, 30.9738),
-              "S": ("Sulfur", 16, 32.065),
-              "Cl": ("Chlorine", 17, 35.453),
-              "Ar": ("Argon", 18, 39.948),
-              "K": ("Potassium", 19, 39.0983),
-              "Ca": ("Calcium", 20, 40.078),
-              "Sc": ("Scandium", 21, 44.9559),
-              "Ti": ("Titanium", 22, 47.867),
-              "V": ("Vanadium", 23, 50.9415),
-              "Cr": ("Chromium", 24, 51.9961),
-              "Mn": ("Manganese", 25, 54.938),
-              "Fe": ("Iron", 26, 55.845),
-              "Co": ("Cobalt", 27, 58.9332),
-              "Ni": ("Nickel", 28, 58.6934),
-              "Cu": ("Copper", 29, 63.546),
-              "Zn": ("Zinc", 30, 65.39),
-              "Ga": ("Gallium", 31, 69.723),
-              "Ge": ("Germanium", 32, 72.64),
-              "As": ("Arsenic", 33, 74.9216),
-              "Se": ("Selenium", 34, 78.96),
-              "Br": ("Bromine", 35, 79.904),
-              "Kr": ("Krypton", 36, 83.8),
-              "Rb": ("Rubidium", 37, 85.4678),
-              "Sr": ("Strontium", 38, 87.62),
-              "Y": ("Yttrium", 39, 88.9059),
-              "Zr": ("Zirconium", 40, 91.224),
-              "Nb": ("Niobium", 41, 92.9064),
-              "Mo": ("Molybdenum", 42, 95.94),
-              "Tc": ("Technetium", 43, 98),
-              "Ru": ("Ruthenium", 44, 101.07),
-              "Rh": ("Rhodium", 45, 102.906),
-              "Pd": ("Palladium", 46, 106.42),
-              "Ag": ("Silver", 47, 107.868),
-              "Cd": ("Cadmium", 48, 112.411),
-              "In": ("Indium", 49, 114.818),
-              "Sn": ("Tin", 50, 118.71),
-              "Sb": ("Antimony", 51, 121.76),
-              "Te": ("Tellurium", 52, 127.6),
-              "I": ("Iodine", 53, 126.904),
-              "Xe": ("Xenon", 54, 131.293),
-              "Cs": ("Cesium", 55, 132.905),
-              "Ba": ("Barium", 56, 137.327),
-              "La": ("Lanthanum", 57, 138.905),
-              "Ce": ("Cerium", 58, 140.116),
-              "Pr": ("Praseodymium", 59, 140.908),
-              "Nd": ("Neodymium", 60, 144.24),
-              "Pm": ("Promethium", 61, 145),
-              "Sm": ("Samarium", 62, 150.36),
-              "Eu": ("Europium", 63, 151.964),
-              "Gd": ("Gadolinium", 64, 157.25),
-              "Tb": ("Terbium", 65, 158.925),
-              "Dy": ("Dysprosium", 66, 162.5),
-              "Ho": ("Holmium", 67, 164.93),
-              "Er": ("Erbium", 68, 167.259),
-              "Tm": ("Thulium", 69, 168.934),
-              "Yb": ("Ytterbium", 70, 173.04),
-              "Lu": ("Lutetium", 71, 174.967),
-              "Hf": ("Hafnium", 72, 178.49),
-              "Ta": ("Tantalum", 73, 180.948),
-              "W": ("Tungsten", 74, 183.84),
-              "Re": ("Rhenium", 75, 186.207),
-              "Os": ("Osmium", 76, 190.23),
-              "Ir": ("Iridium", 77, 192.217),
-              "Pt": ("Platinum", 78, 195.078),
-              "Au": ("Gold", 79, 196.966),
-              "Hg": ("Mercury", 80, 200.59),
-              "Tl": ("Thallium", 81, 204.383),
-              "Pb": ("Lead", 82, 207.2),
-              "Bi": ("Bismuth", 83, 208.98),
-              "Po": ("Polonium", 84, 209),
-              "At": ("Astatine", 85, 210),
-              "Rn": ("Radon", 86, 222),
-              "Fr": ("Francium", 87, 223),
-              "Ra": ("Radium", 88, 226),
-              "Ac": ("Actinium", 89, 227),
-              "Th": ("Thorium", 90, 232.038),
-              "Pa": ("Protactinium", 91, 231.036),
-              "U": ("Uranium", 92, 238.029),
-              "Np": ("Neptunium", 93, 237),
-              "Pu": ("Plutonium", 94, 244),
-              "Am": ("Americium", 95, 243),
-              "Cm": ("Curium", 96, 247),
-              "Bk": ("Berkelium", 97, 247),
-              "Cf": ("Californium", 98, 251),
-              "Es": ("Einsteinium", 99, 252),
-              "Fm": ("Fermium", 100, 257),
-              "Md": ("Mendelevium", 101, 258),
-              "No": ("Nobelium", 102, 259),
-              "Lr": ("Lawrencium", 103, 262),
-              "Rf": ("Rutherfordium", 104, 261),
-              "Db": ("Dubnium", 105, 262),
-              "Sg": ("Seaborgium", 106, 266),
-              "Bh": ("Bohrium", 107, 264),
-              "Hs": ("Hassium", 108, 277),
-              "Mt": ("Meitnerium", 109, 268),
-              }
+    "D": ("Deuterium", 1, 2.01410178),
+    "H": ("Hydrogen", 1, 1.0079),
+    "He": ("Helium", 2, 4.0026),
+    "Li": ("Lithium", 3, 6.941),
+    "Be": ("Beryllium", 4, 9.0122),
+    "B": ("Boron", 5, 10.811),
+    "C": ("Carbon", 6, 12.0107),
+    "N": ("Nitrogen", 7, 14.0067),
+    "O": ("Oxygen", 8, 15.9994),
+    "F": ("Fluorine", 9, 18.9984),
+    "Ne": ("Neon", 10, 20.1797),
+    "Na": ("Sodium", 11, 22.9897),
+    "Mg": ("Magnesium", 12, 24.305),
+    "Al": ("Aluminum", 13, 26.9815),
+    "Si": ("Silicon", 14, 28.0855),
+    "P": ("Phosphorus", 15, 30.9738),
+    "S": ("Sulfur", 16, 32.065),
+    "Cl": ("Chlorine", 17, 35.453),
+    "Ar": ("Argon", 18, 39.948),
+    "K": ("Potassium", 19, 39.0983),
+    "Ca": ("Calcium", 20, 40.078),
+    "Sc": ("Scandium", 21, 44.9559),
+    "Ti": ("Titanium", 22, 47.867),
+    "V": ("Vanadium", 23, 50.9415),
+    "Cr": ("Chromium", 24, 51.9961),
+    "Mn": ("Manganese", 25, 54.938),
+    "Fe": ("Iron", 26, 55.845),
+    "Co": ("Cobalt", 27, 58.9332),
+    "Ni": ("Nickel", 28, 58.6934),
+    "Cu": ("Copper", 29, 63.546),
+    "Zn": ("Zinc", 30, 65.39),
+    "Ga": ("Gallium", 31, 69.723),
+    "Ge": ("Germanium", 32, 72.64),
+    "As": ("Arsenic", 33, 74.9216),
+    "Se": ("Selenium", 34, 78.96),
+    "Br": ("Bromine", 35, 79.904),
+    "Kr": ("Krypton", 36, 83.8),
+    "Rb": ("Rubidium", 37, 85.4678),
+    "Sr": ("Strontium", 38, 87.62),
+    "Y": ("Yttrium", 39, 88.9059),
+    "Zr": ("Zirconium", 40, 91.224),
+    "Nb": ("Niobium", 41, 92.9064),
+    "Mo": ("Molybdenum", 42, 95.94),
+    "Tc": ("Technetium", 43, 98),
+    "Ru": ("Ruthenium", 44, 101.07),
+    "Rh": ("Rhodium", 45, 102.906),
+    "Pd": ("Palladium", 46, 106.42),
+    "Ag": ("Silver", 47, 107.868),
+    "Cd": ("Cadmium", 48, 112.411),
+    "In": ("Indium", 49, 114.818),
+    "Sn": ("Tin", 50, 118.71),
+    "Sb": ("Antimony", 51, 121.76),
+    "Te": ("Tellurium", 52, 127.6),
+    "I": ("Iodine", 53, 126.904),
+    "Xe": ("Xenon", 54, 131.293),
+    "Cs": ("Cesium", 55, 132.905),
+    "Ba": ("Barium", 56, 137.327),
+    "La": ("Lanthanum", 57, 138.905),
+    "Ce": ("Cerium", 58, 140.116),
+    "Pr": ("Praseodymium", 59, 140.908),
+    "Nd": ("Neodymium", 60, 144.24),
+    "Pm": ("Promethium", 61, 145),
+    "Sm": ("Samarium", 62, 150.36),
+    "Eu": ("Europium", 63, 151.964),
+    "Gd": ("Gadolinium", 64, 157.25),
+    "Tb": ("Terbium", 65, 158.925),
+    "Dy": ("Dysprosium", 66, 162.5),
+    "Ho": ("Holmium", 67, 164.93),
+    "Er": ("Erbium", 68, 167.259),
+    "Tm": ("Thulium", 69, 168.934),
+    "Yb": ("Ytterbium", 70, 173.04),
+    "Lu": ("Lutetium", 71, 174.967),
+    "Hf": ("Hafnium", 72, 178.49),
+    "Ta": ("Tantalum", 73, 180.948),
+    "W": ("Tungsten", 74, 183.84),
+    "Re": ("Rhenium", 75, 186.207),
+    "Os": ("Osmium", 76, 190.23),
+    "Ir": ("Iridium", 77, 192.217),
+    "Pt": ("Platinum", 78, 195.078),
+    "Au": ("Gold", 79, 196.966),
+    "Hg": ("Mercury", 80, 200.59),
+    "Tl": ("Thallium", 81, 204.383),
+    "Pb": ("Lead", 82, 207.2),
+    "Bi": ("Bismuth", 83, 208.98),
+    "Po": ("Polonium", 84, 209),
+    "At": ("Astatine", 85, 210),
+    "Rn": ("Radon", 86, 222),
+    "Fr": ("Francium", 87, 223),
+    "Ra": ("Radium", 88, 226),
+    "Ac": ("Actinium", 89, 227),
+    "Th": ("Thorium", 90, 232.038),
+    "Pa": ("Protactinium", 91, 231.036),
+    "U": ("Uranium", 92, 238.029),
+    "Np": ("Neptunium", 93, 237),
+    "Pu": ("Plutonium", 94, 244),
+    "Am": ("Americium", 95, 243),
+    "Cm": ("Curium", 96, 247),
+    "Bk": ("Berkelium", 97, 247),
+    "Cf": ("Californium", 98, 251),
+    "Es": ("Einsteinium", 99, 252),
+    "Fm": ("Fermium", 100, 257),
+    "Md": ("Mendelevium", 101, 258),
+    "No": ("Nobelium", 102, 259),
+    "Lr": ("Lawrencium", 103, 262),
+    "Rf": ("Rutherfordium", 104, 261),
+    "Db": ("Dubnium", 105, 262),
+    "Sg": ("Seaborgium", 106, 266),
+    "Bh": ("Bohrium", 107, 264),
+    "Hs": ("Hassium", 108, 277),
+    "Mt": ("Meitnerium", 109, 268),
+    }
 
 isotopes={
-          'D': ('i2H', 'H'),
-          }
-
+    'D': ('i2H', 'H'),
+    }
 
 '''
     Go through the database of neutron scattering length and generate

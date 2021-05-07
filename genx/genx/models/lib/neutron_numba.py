@@ -4,10 +4,10 @@ import math, cmath
 
 ##################### not yet correct ###############################
 
-@numba.jit(numba.complex128[:,:](numba.complex128[:,:], numba.complex128[:,:]),
+@numba.jit(numba.complex128[:, :](numba.complex128[:, :], numba.complex128[:, :]),
            nopython=True, cache=True)
 def dot4(A, B):
-    D=empty((4,4), dtype=complex128)
+    D=empty((4, 4), dtype=complex128)
     D[0, 0]=(A[0, 0]*B[0, 0]+A[0, 1]*B[1, 0]+A[0, 2]*B[2, 0]+
              A[0, 3]*B[3, 0])
     D[0, 1]=(A[0, 0]*B[0, 1]+A[0, 1]*B[1, 1]+A[0, 2]*B[2, 1]+
@@ -46,9 +46,9 @@ def dot4(A, B):
 
     return D
 
-@numba.jit(numba.float64[:,:](numba.float64[:], numba.complex128[:], numba.complex128[:],
-                             numba.float64[:], numba.float64[:], numba.float64[:]),
-          nopython=True, parallel=True, cache=True)
+@numba.jit(numba.float64[:, :](numba.float64[:], numba.complex128[:], numba.complex128[:],
+                               numba.float64[:], numba.float64[:], numba.float64[:]),
+           nopython=True, parallel=True, cache=True)
 def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
@@ -82,7 +82,6 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
 
         k_pi=cmath.sqrt(k_amb2-Vp[0])
         k_mi=cmath.sqrt(k_amb2-Vm[0])
-
 
         for lj in range(1, layers):
             # Wavevectors in the layers
@@ -140,7 +139,6 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
 
             # Assemble the layer propagation matrices
 
-
             # Multiply the propagation matrices with the interface matrix
             for i in range(4):
                 for j in range(4):
@@ -166,9 +164,9 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
         Rout[3, qi]=abs(Rdu)**2
     return Rout
 
-@numba.jit(numba.float64[:,:](numba.float64[:], numba.complex128[:], numba.complex128[:],
-                             numba.float64[:], numba.float64[:]),
-          nopython=True, parallel=True, cache=True)
+@numba.jit(numba.float64[:, :](numba.float64[:], numba.complex128[:], numba.complex128[:],
+                               numba.float64[:], numba.float64[:]),
+           nopython=True, parallel=True, cache=True)
 def ReflNB(Q, Vp, Vm, d, M_ang):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
@@ -202,7 +200,6 @@ def ReflNB(Q, Vp, Vm, d, M_ang):
 
         k_pi=cmath.sqrt(k_amb2-Vp[0])
         k_mi=cmath.sqrt(k_amb2-Vm[0])
-
 
         for lj in range(1, layers):
             # Wavevectors in the layers
@@ -241,7 +238,6 @@ def ReflNB(Q, Vp, Vm, d, M_ang):
 
             # Assemble the layer propagation matrices
 
-
             # Multiply the propagation matrices with the interface matrix
             for i in range(4):
                 for j in range(4):
@@ -267,8 +263,7 @@ def ReflNB(Q, Vp, Vm, d, M_ang):
         Rout[3, qi]=abs(Rdu)**2
     return Rout
 
-
-def Refl(Q, Vp, Vm, d, M_ang, sigma = None, return_int=True):
+def Refl(Q, Vp, Vm, d, M_ang, sigma=None, return_int=True):
     if sigma is not None:
         return ReflNBSigma(Q, Vp.astype(complex128), Vm.astype(complex128), d, M_ang, sigma)
     else:

@@ -4,32 +4,31 @@ Library that implements a template (Template) class for classes that
 loads data into GenX.
 '''
 
-
 class Template:
     wildcard=None
 
     def __init__(self, parent=None):
-        self.parent = parent
+        self.parent=parent
 
         if parent is not None:
             # This is made for the virtual datalist controller...
-            self.data = self.parent.data_cont.get_data()
+            self.data=self.parent.data_cont.get_data()
             self.Register()
-        
+
     def Register(self):
         '''Register(self) --> None
         
         Register the data loader with the parent
         '''
-        self.parent.data_loader = self
-        
+        self.parent.data_loader=self
+
     def SetData(self, data):
         '''SetData(self, data) --> None
         
         Sets the data connection to the plugin.
         '''
-        self.data = data
-        
+        self.data=data
+
     def UpdateDataList(self):
         '''UpdateDataList(self) --> None
         
@@ -41,14 +40,14 @@ class Template:
             self.parent.data_cont.get_count())
         # Updating the imagelist as well
         self.parent._UpdateImageList()
-        
+
     def SetStatusText(self, text):
         '''SetStatusText(self, text) --> None
         
         Set a status text in the main frame for user information 
         '''
         self.parent.SetStatusText(text)
-    
+
     def LoadDataFile(self, selected_items):
         '''LoadDataFile(self, seleceted_items) --> None
         
@@ -61,18 +60,18 @@ class Template:
         order to have a working plugin.
         '''
         import wx
-        n_selected = len(selected_items)
-        if n_selected == 1:
+        n_selected=len(selected_items)
+        if n_selected==1:
             if self.wildcard is None:
                 wc="All files (*.*)|*.*"
             else:
                 wc="%s (%s)|%s|All files (*.*)|*.*"%(self.__module__.rsplit('.', 1)[1].capitalize(),
                                                      self.wildcard, self.wildcard)
-            dlg = wx.FileDialog(self.parent, message = "Choose your Datafile"
-                    , defaultFile = "", wildcard = wc
-                    , style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
-                    
-            if dlg.ShowModal() == wx.ID_OK:
+            dlg=wx.FileDialog(self.parent, message="Choose your Datafile"
+                              , defaultFile="", wildcard=wc
+                              , style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
+
+            if dlg.ShowModal()==wx.ID_OK:
                 self.SetData(self.parent.data_cont.get_data())
                 dataset=self.data[selected_items[0]]
                 # in case the data loader does not define any metadata
@@ -90,20 +89,20 @@ class Template:
                 return True
             dlg.Destroy()
         else:
-            if n_selected > 1:
-                dlg = wx.MessageDialog(self.parent,
-                                       'Please select only one dataset'
-                                       , caption = 'Too many selections'
-                    , style = wx.OK|wx.ICON_INFORMATION)
+            if n_selected>1:
+                dlg=wx.MessageDialog(self.parent,
+                                     'Please select only one dataset'
+                                     , caption='Too many selections'
+                                     , style=wx.OK | wx.ICON_INFORMATION)
             else:
-                dlg = wx.MessageDialog(self.parent, 'Please select a dataset'
-                    , caption = 'No active dataset'
-                    , style = wx.OK|wx.ICON_INFORMATION)
+                dlg=wx.MessageDialog(self.parent, 'Please select a dataset'
+                                     , caption='No active dataset'
+                                     , style=wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-        
+
         return False
-    
+
     def LoadData(self, dataset, file_path):
         '''LoadData(self, dataset, file_path) --> None
         
@@ -112,7 +111,7 @@ class Template:
         LoadFile function.
         '''
         pass
-        
+
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None
         
@@ -120,7 +119,7 @@ class Template:
         that allows the user set import settings for example.
         '''
         pass
-    
+
     def SendUpdateDataEvent(self):
         '''SendUpdateDataEvent(self) --> None
         
@@ -128,10 +127,10 @@ class Template:
         things such as plotting should be updated.
         '''
         self.parent._UpdateData('New data added')
-        
+
     def Remove(self):
         '''Remove(self) --> None
         
         Removes the plugin from knowledge of the parent.
         '''
-        self.parent.data_loader = None
+        self.parent.data_loader=None

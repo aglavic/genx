@@ -1,4 +1,4 @@
-#-*- coding: utf8 -*-
+# -*- coding: utf8 -*-
 '''
 ======
 MagSLD
@@ -21,35 +21,34 @@ class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
         self.parent=parent
-        
+
         self._init_refplugin()
 
         menu=self.NewMenu('Mag. SLD')
         self.mb_second_axis=wx.MenuItem(menu, wx.NewId(),
-                     "Show second SLD axis",
-                     "Show second SLD axis for magnetization",
-                     wx.ITEM_CHECK)
+                                        "Show second SLD axis",
+                                        "Show second SLD axis for magnetization",
+                                        wx.ITEM_CHECK)
         menu.Append(self.mb_second_axis)
         self.mb_second_axis.Check(True)
         self.mb_use_SI=wx.MenuItem(menu, wx.NewId(),
-                     "Use SI units",
-                     "Use SI units of magnetization",
-                     wx.ITEM_CHECK)
+                                   "Use SI units",
+                                   "Use SI units of magnetization",
+                                   wx.ITEM_CHECK)
         menu.Append(self.mb_use_SI)
         self.mb_use_SI.Check(False)
 
         self.parent.Bind(wx.EVT_MENU, self._OnSimulate, self.mb_second_axis)
         self.parent.Bind(wx.EVT_MENU, self._OnSimulate, self.mb_use_SI)
 
-
     def _init_refplugin(self):
         ph=self.parent.plugin_control.plugin_handler
         if 'Reflectivity' in ph.loaded_plugins:
             # connect to the reflectivity plugin for layer creation
-            self.refplugin = ph.loaded_plugins['Reflectivity']
+            self.refplugin=ph.loaded_plugins['Reflectivity']
         elif 'SimpleReflectivity' in ph.loaded_plugins:
             # connect to the reflectivity plugin for layer creation
-            self.refplugin = ph.loaded_plugins['SimpleReflectivity']
+            self.refplugin=ph.loaded_plugins['SimpleReflectivity']
         else:
             # dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
             #                  caption='Information',
@@ -57,7 +56,7 @@ class Plugin(framework.Template):
             # dlg.ShowModal()
             # dlg.Destroy()
             raise RuntimeError("Can't load plugin without Reflectivity plugin present.")
-            
+
         self._orgi_call=self.refplugin.OnSimulate
         self.refplugin.OnSimulate=self._OnSimulate
 
@@ -70,7 +69,7 @@ class Plugin(framework.Template):
         ax2.set_position([box.x0, box.y0, box.width, box.height])
         ax2.set_visible(False)
         self._annotations=[]
-    
+
     def Remove(self):
         self.refplugin.OnSimulate=self._orgi_call
         sld_plot=self.refplugin.sld_plot
@@ -78,7 +77,6 @@ class Plugin(framework.Template):
         del sld_plot.plot.ax2
         del self.refplugin
         framework.Template.Remove(self)
-
 
     def _OnSimulate(self, event):
         '''
@@ -95,7 +93,9 @@ class Plugin(framework.Template):
         sld_plot=self.refplugin.sld_plot
         model=self.GetModel()
         sld_items=len(sld_plot.plot_dicts)
-        msld=None;z=None;unit=""
+        msld=None;
+        z=None;
+        unit=""
         ax=sld_plot.plot.ax
         ax2=sld_plot.plot.ax2
         for i, di in enumerate(model.data):
@@ -103,7 +103,7 @@ class Plugin(framework.Template):
                 slds=sld_plot.plot_dicts[i]
                 z=slds['z']
                 unit=slds['SLD unit']
-                if unit in ["fm/\AA^{3}", "\\AA^{-2}","", "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
+                if unit in ["fm/\AA^{3}", "\\AA^{-2}", "", "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
                     for key, value in list(slds.items()):
                         if key=='mag' and value.sum()>0.:
                             msld=value
@@ -111,13 +111,14 @@ class Plugin(framework.Template):
                             com=(msld*z).sum()/msld.sum()
                             if self.mb_use_SI.IsChecked():
                                 self._annotations.append(
-                                   ax.annotate('Integrated M:\n%.4g $A$'%trapz(mag*1e3, z*1e-10),
-                                               (com, 0.02), ha='center'))
+                                    ax.annotate('Integrated M:\n%.4g $A$'%trapz(mag*1e3, z*1e-10),
+                                                (com, 0.02), ha='center'))
                             else:
                                 self._annotations.append(
-                                   ax.annotate('Integrated M:\n%.4g $emu/cm^2$'%trapz(mag, z*1e-8),
-                                               (com, 0.02), ha='center'))
-        if msld is not None and unit in ["fm/\AA^{3}", "\\AA^{-2}", "", "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
+                                    ax.annotate('Integrated M:\n%.4g $emu/cm^2$'%trapz(mag, z*1e-8),
+                                                (com, 0.02), ha='center'))
+        if msld is not None and unit in ["fm/\AA^{3}", "\\AA^{-2}", "",
+                                         "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
             ax2.set_visible(True)
             ymin, ymax=ax.get_ylim()
             if self.mb_use_SI.IsChecked():
@@ -126,8 +127,8 @@ class Plugin(framework.Template):
             else:
                 ax2.set_ylim((ymin*AAm2_to_emucc, ymax*AAm2_to_emucc))
                 ax2.yaxis.label.set_text('M [$emu/cm^3$]')
-            sld_plot.plot.ax.legend(loc='upper right',# bbox_to_anchor=(1, 0.5),
-                                    framealpha = 0.5,
-                                    fontsize = "small", ncol = 1)
+            sld_plot.plot.ax.legend(loc='upper right',  # bbox_to_anchor=(1, 0.5),
+                                    framealpha=0.5,
+                                    fontsize="small", ncol=1)
         else:
             ax2.set_visible(False)

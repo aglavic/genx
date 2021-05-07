@@ -10,18 +10,17 @@ import wx
 class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
-        self.menu = self.NewMenu('Exporter')
-        self.parent = parent
+        self.menu=self.NewMenu('Exporter')
+        self.parent=parent
 
         self.mb_export_ba=wx.MenuItem(self.menu, wx.NewId(),
-                             "BornAgain script...",
-                             "Export reflectometry layers to BornAgain python script.",
-                             wx.ITEM_NORMAL)
+                                      "BornAgain script...",
+                                      "Export reflectometry layers to BornAgain python script.",
+                                      wx.ITEM_NORMAL)
         self.menu.Append(self.mb_export_ba)
         self.parent.Bind(wx.EVT_MENU, self.OnExportBA, self.mb_export_ba)
 
         self.StatusMessage('Sucessfully loaded Exporter...')
-
 
     def OnExportBA(self, event):
         '''Export layer model to BornAgain script.
@@ -34,7 +33,7 @@ class Plugin(framework.Template):
             return
         fname=dlg.GetPath()
 
-        model = self.GetModel()
+        model=self.GetModel()
         model.simulate()
         m=model.script_module
         names=list(m.__dict__.keys())
@@ -73,7 +72,7 @@ class Plugin(framework.Template):
         Clears the menu from all items present in it
         '''
         [self.menu.RemoveItem(item) for item in self.menu.GetMenuItems()]
-    
+
 TEMPLATE='''import bornagain as ba
 from bornagain import angstrom, deg, nm
 

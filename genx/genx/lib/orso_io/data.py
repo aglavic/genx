@@ -13,7 +13,9 @@ from . import ORSOStandardError, ORSOStandardWarning
 try:
     # read header schema for validation
     import jsonschema
-    SCHEMA=json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reduced_data_header_schema.json'), 'r'))
+
+    SCHEMA=json.load(
+        open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'reduced_data_header_schema.json'), 'r'))
     validator=jsonschema.Draft7Validator(SCHEMA)
 except Exception as err:
     warnings.warn("Can't validate headers: %s"%str(err), UserWarning)
@@ -56,7 +58,7 @@ def get_schema_child_nodes(node_path):
                 value=get_schema_from_path(npath)
             else:
                 raise ValueError("Could not find correct item to referenc, path="+'/'.join(node_path))
-        if value['type'] == 'object':
+        if value['type']=='object':
             output[key]=get_schema_child_nodes(npath)
         elif value['type']=='string':
             if 'enum' in value:
@@ -97,6 +99,7 @@ class ORSOData():
     Representation of a reflectometry dataset with metadata.
     According to ORSO standard definition.
     """
+
     def __init__(self, header, data, strict=True):
         if len(data)<3:
             raise ORSOStandardError("Need at least 3 data columns, Qz, R, dR")
@@ -154,7 +157,7 @@ class ORSOData():
 
     @property
     def units(self):
-        return [di.unit if di.unit is not None else '1' for di in self._data ]
+        return [di.unit if di.unit is not None else '1' for di in self._data]
 
     def __getitem__(self, item):
         return self._data[item]

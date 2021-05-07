@@ -7,16 +7,15 @@ import math, cmath
                      numba.float64[:], numba.float64[:], numba.float64[:]))
 def ReflNB(theta, lamda, n, d, sigma, Rout):
     # Thread id in a 1D block
-    tx = cuda.threadIdx.x
+    tx=cuda.threadIdx.x
     # Block id in a 1D grid
-    ty = cuda.blockIdx.x
+    ty=cuda.blockIdx.x
     # Block width, i.e. number of threads per block
-    bw = cuda.blockDim.x
+    bw=cuda.blockDim.x
     # Compute flattened index inside the array
-    ai = tx + ty * bw
+    ai=tx+ty*bw
     if ai>=theta.shape[0]:
         return
-
 
     layers=d.shape[0]
     n0=n[-1]
@@ -50,16 +49,15 @@ def ReflNB(theta, lamda, n, d, sigma, Rout):
                      numba.float64[:], numba.float64[:], numba.complex128[:]))
 def AmpNB(theta, lamda, n, d, sigma, Aout):
     # Thread id in a 1D block
-    tx = cuda.threadIdx.x
+    tx=cuda.threadIdx.x
     # Block id in a 1D grid
-    ty = cuda.blockIdx.x
+    ty=cuda.blockIdx.x
     # Block width, i.e. number of threads per block
-    bw = cuda.blockDim.x
+    bw=cuda.blockDim.x
     # Compute flattened index inside the array
-    ai = tx + ty * bw
+    ai=tx+ty*bw
     if ai>=theta.shape[0]:
         return
-
 
     layers=d.shape[0]
     n0=n[-1]
@@ -107,34 +105,33 @@ def Refl(theta, lamda, n, d, sigma, return_int=True):
         AmpNB[blockspergrid, threadsperblock](Ctheta, lamda, Cn, Cd, Csigma, CAout)
         return CAout.copy_to_host()
 
-
 @cuda.jit(numba.void(numba.float64[:], numba.float64, numba.complex128[:],
                      numba.float64[:], numba.float64[:], numba.float64[:]))
 def ReflQNB(Q, Q0, n, d, sigma, Rout):
     # Thread id in a 1D block
-    tx = cuda.threadIdx.x
+    tx=cuda.threadIdx.x
     # Block id in a 1D grid
-    ty = cuda.blockIdx.x
+    ty=cuda.blockIdx.x
     # Block width, i.e. number of threads per block
-    bw = cuda.blockDim.x
+    bw=cuda.blockDim.x
     # Compute flattened index inside the array
-    qi = tx + ty * bw
+    qi=tx+ty*bw
     if qi>=Q.shape[0]:
         return
 
     layers=d.shape[0]
     n0=n[-1]
 
-    Qi=cmath.sqrt((n[0]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+    Qi=cmath.sqrt((n[0]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
 
-    Qj=cmath.sqrt((n[1]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+    Qj=cmath.sqrt((n[1]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
     # Fresnel reflectivity for the interfaces
     rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[0]**2)
     Aj=rpj
     Qi=Qj
 
     for lj in range(2, layers):
-        Qj=cmath.sqrt((n[lj]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+        Qj=cmath.sqrt((n[lj]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
         # Fresnel reflectivity for the interfaces
         rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[lj-1]**2)
 
@@ -163,16 +160,16 @@ def AmpQNB(Q, Q0, n, d, sigma, Aout):
     points=Q.shape[0]
     n0=n[-1]
 
-    Qi=cmath.sqrt((n[0]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+    Qi=cmath.sqrt((n[0]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
 
-    Qj=cmath.sqrt((n[1]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+    Qj=cmath.sqrt((n[1]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
     # Fresnel reflectivity for the interfaces
     rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[0]**2)
     Aj=rpj
     Qi=Qj
 
     for lj in range(2, layers):
-        Qj=cmath.sqrt((n[lj]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+        Qj=cmath.sqrt((n[lj]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
         # Fresnel reflectivity for the interfaces
         rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[lj-1]**2)
 
@@ -203,18 +200,17 @@ def ReflQ(Q, lamda, n, d, sigma, return_int=True):
         AmpQNB[blockspergrid, threadsperblock](CQ, Q0, Cn, Cd, Csigma, CAout)
         return CAout.copy_to_host()
 
-
-@cuda.jit(numba.void(numba.float64[:], numba.float64[:], numba.complex128[:,:],
-                        numba.float64[:], numba.float64[:], numba.float64[:]))
-def Refl_nvary2NB(theta,lamda,n,d,sigma, Rout):
+@cuda.jit(numba.void(numba.float64[:], numba.float64[:], numba.complex128[:, :],
+                     numba.float64[:], numba.float64[:], numba.float64[:]))
+def Refl_nvary2NB(theta, lamda, n, d, sigma, Rout):
     # Thread id in a 1D block
-    tx = cuda.threadIdx.x
+    tx=cuda.threadIdx.x
     # Block id in a 1D grid
-    ty = cuda.blockIdx.x
+    ty=cuda.blockIdx.x
     # Block width, i.e. number of threads per block
-    bw = cuda.blockDim.x
+    bw=cuda.blockDim.x
     # Compute flattened index inside the array
-    ai = tx + ty * bw
+    ai=tx+ty*bw
     if ai>=theta.shape[0]:
         return
 
@@ -222,20 +218,20 @@ def Refl_nvary2NB(theta,lamda,n,d,sigma, Rout):
 
     pre2=(pi/180.)
 
-    n0=n[-1,ai]
+    n0=n[-1, ai]
     ki=2.*pi/lamda[ai]
     pre1=2.*n0*ki
 
-    Qi=pre1*cmath.sqrt((n[0,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+    Qi=pre1*cmath.sqrt((n[0, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
 
-    Qj=pre1*cmath.sqrt((n[1,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+    Qj=pre1*cmath.sqrt((n[1, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
     # Fresnel reflectivity for the interfaces
     rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[0]**2)
     Aj=rpj
     Qi=Qj
 
     for lj in range(2, layers):
-        Qj=pre1*cmath.sqrt((n[lj,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+        Qj=pre1*cmath.sqrt((n[lj, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
         # Fresnel reflectivity for the interfaces
         rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[lj-1]**2)
 
@@ -246,18 +242,17 @@ def Refl_nvary2NB(theta,lamda,n,d,sigma, Rout):
         Qi=Qj
     Rout[ai]=abs(Aj)**2
 
-
-@cuda.jit(numba.void(numba.float64[:], numba.float64[:], numba.complex128[:,:],
-                        numba.float64[:], numba.float64[:], numba.complex128[:]))
+@cuda.jit(numba.void(numba.float64[:], numba.float64[:], numba.complex128[:, :],
+                     numba.float64[:], numba.float64[:], numba.complex128[:]))
 def Amp_nvary2NB(theta, lamda, n, d, sigma, Aout):
     # Thread id in a 1D block
-    tx = cuda.threadIdx.x
+    tx=cuda.threadIdx.x
     # Block id in a 1D grid
-    ty = cuda.blockIdx.x
+    ty=cuda.blockIdx.x
     # Block width, i.e. number of threads per block
-    bw = cuda.blockDim.x
+    bw=cuda.blockDim.x
     # Compute flattened index inside the array
-    ai = tx + ty * bw
+    ai=tx+ty*bw
     if ai>=theta.shape[0]:
         return
 
@@ -265,20 +260,20 @@ def Amp_nvary2NB(theta, lamda, n, d, sigma, Aout):
 
     pre2=(pi/180.)
 
-    n0=n[-1,ai]
+    n0=n[-1, ai]
     ki=2.*pi/lamda[ai]
     pre1=2.*n0*ki
 
-    Qi=pre1*cmath.sqrt((n[0,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+    Qi=pre1*cmath.sqrt((n[0, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
 
-    Qj=pre1*cmath.sqrt((n[1,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+    Qj=pre1*cmath.sqrt((n[1, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
     # Fresnel reflectivity for the interfaces
     rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[0]**2)
     Aj=rpj
     Qi=Qj
 
     for lj in range(2, layers):
-        Qj=pre1*cmath.sqrt((n[lj,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+        Qj=pre1*cmath.sqrt((n[lj, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
         # Fresnel reflectivity for the interfaces
         rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[lj-1]**2)
 
@@ -289,8 +284,7 @@ def Amp_nvary2NB(theta, lamda, n, d, sigma, Aout):
         Qi=Qj
     Aout[ai]=Aj
 
-
-def Refl_nvary2(theta,lamda,n,d,sigma, return_int=True):
+def Refl_nvary2(theta, lamda, n, d, sigma, return_int=True):
     threadsperblock=32
     blockspergrid=(theta.shape[0]+(threadsperblock-1))//threadsperblock
 

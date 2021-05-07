@@ -10,9 +10,8 @@ from genx.gui_logging import iprint
 class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
-        plotpanel = self.NewPlotFolder('Test')
-        inputpanel = self.NewInputFolder('Test')
-        datapanel = self.NewDataFolder('Test')
-        menu = self.NewMenu('Test')
+        plotpanel=self.NewPlotFolder('Test')
+        inputpanel=self.NewInputFolder('Test')
+        datapanel=self.NewDataFolder('Test')
+        menu=self.NewMenu('Test')
         iprint('Everyting tested, should be visible :-)')
-    

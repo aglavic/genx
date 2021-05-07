@@ -37,8 +37,9 @@ def ReflNB(theta, lamda, n, d, sigma):
         R[ai]=abs(Aj)**2
     return R
 
-@numba.jit(numba.complex128[:](numba.float64[:], numba.float64, numba.complex128[:], numba.float64[:], numba.float64[:]),
-           nopython=True, parallel=True, cache=True)
+@numba.jit(
+    numba.complex128[:](numba.float64[:], numba.float64, numba.complex128[:], numba.float64[:], numba.float64[:]),
+    nopython=True, parallel=True, cache=True)
 def AmpNB(theta, lamda, n, d, sigma):
     layers=d.shape[0]
     angles=theta.shape[0]
@@ -89,16 +90,16 @@ def ReflQNB(Q, lamda, n, d, sigma):
     R=empty_like(Q)
 
     for qi in numba.prange(points):
-        Qi=cmath.sqrt((n[0]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+        Qi=cmath.sqrt((n[0]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
 
-        Qj=cmath.sqrt((n[1]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+        Qj=cmath.sqrt((n[1]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
         # Fresnel reflectivity for the interfaces
         rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[0]**2)
         Aj=rpj
         Qi=Qj
 
         for lj in range(2, layers):
-            Qj=cmath.sqrt((n[lj]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+            Qj=cmath.sqrt((n[lj]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
             # Fresnel reflectivity for the interfaces
             rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[lj-1]**2)
 
@@ -110,8 +111,9 @@ def ReflQNB(Q, lamda, n, d, sigma):
         R[qi]=abs(Aj)**2
     return R
 
-@numba.jit(numba.complex128[:](numba.float64[:], numba.float64, numba.complex128[:], numba.float64[:], numba.float64[:]),
-           nopython=True, parallel=True, cache=True)
+@numba.jit(
+    numba.complex128[:](numba.float64[:], numba.float64, numba.complex128[:], numba.float64[:], numba.float64[:]),
+    nopython=True, parallel=True, cache=True)
 def AmpQNB(Q, lamda, n, d, sigma):
     layers=d.shape[0]
     points=Q.shape[0]
@@ -121,16 +123,16 @@ def AmpQNB(Q, lamda, n, d, sigma):
     A=empty(Q.shape, dtype=complex128)
 
     for qi in numba.prange(points):
-        Qi=cmath.sqrt((n[0]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+        Qi=cmath.sqrt((n[0]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
 
-        Qj=cmath.sqrt((n[1]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+        Qj=cmath.sqrt((n[1]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
         # Fresnel reflectivity for the interfaces
         rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[0]**2)
         Aj=rpj
         Qi=Qj
 
         for lj in range(2, layers):
-            Qj=cmath.sqrt((n[lj]**2 - n0**2)*Q0**2 + n0**2*Q[qi]**2)
+            Qj=cmath.sqrt((n[lj]**2-n0**2)*Q0**2+n0**2*Q[qi]**2)
             # Fresnel reflectivity for the interfaces
             rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[lj-1]**2)
 
@@ -148,11 +150,10 @@ def ReflQ(Q, lamda, n, d, sigma, return_int=True):
     else:
         return AmpQNB(Q, lamda, n, d, sigma)
 
-
 @numba.jit(
-    numba.float64[:](numba.float64[:], numba.float64[:], numba.complex128[:,:], numba.float64[:], numba.float64[:]),
+    numba.float64[:](numba.float64[:], numba.float64[:], numba.complex128[:, :], numba.float64[:], numba.float64[:]),
     nopython=True, parallel=True, cache=True)
-def Refl_nvary2NB(theta,lamda,n,d,sigma):
+def Refl_nvary2NB(theta, lamda, n, d, sigma):
     layers=d.shape[0]
     angles=theta.shape[0]
 
@@ -161,20 +162,20 @@ def Refl_nvary2NB(theta,lamda,n,d,sigma):
     pre2=(pi/180.)
 
     for ai in numba.prange(angles):
-        n0=n[-1,ai]
+        n0=n[-1, ai]
         ki=2.*pi/lamda[ai]
         pre1=2.*n0*ki
 
-        Qi=pre1*cmath.sqrt((n[0,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+        Qi=pre1*cmath.sqrt((n[0, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
 
-        Qj=pre1*cmath.sqrt((n[1,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+        Qj=pre1*cmath.sqrt((n[1, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
         # Fresnel reflectivity for the interfaces
         rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[0]**2)
         Aj=rpj
         Qi=Qj
 
         for lj in range(2, layers):
-            Qj=pre1*cmath.sqrt((n[lj,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+            Qj=pre1*cmath.sqrt((n[lj, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
             # Fresnel reflectivity for the interfaces
             rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[lj-1]**2)
 
@@ -186,9 +187,8 @@ def Refl_nvary2NB(theta,lamda,n,d,sigma):
         R[ai]=abs(Aj)**2
     return R
 
-
 @numba.jit(
-    numba.complex128[:](numba.float64[:], numba.float64[:], numba.complex128[:,:], numba.float64[:], numba.float64[:]),
+    numba.complex128[:](numba.float64[:], numba.float64[:], numba.complex128[:, :], numba.float64[:], numba.float64[:]),
     nopython=True, parallel=True, cache=True)
 def Amp_nvary2NB(theta, lamda, n, d, sigma):
     layers=d.shape[0]
@@ -199,20 +199,20 @@ def Amp_nvary2NB(theta, lamda, n, d, sigma):
     pre2=(pi/180.)
 
     for ai in numba.prange(angles):
-        n0=n[-1,ai]
+        n0=n[-1, ai]
         ki=2.*pi/lamda[ai]
         pre1=2.*n0*ki
 
-        Qi=pre1*cmath.sqrt((n[0,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+        Qi=pre1*cmath.sqrt((n[0, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
 
-        Qj=pre1*cmath.sqrt((n[1,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+        Qj=pre1*cmath.sqrt((n[1, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
         # Fresnel reflectivity for the interfaces
         rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[0]**2)
         Aj=rpj
         Qi=Qj
 
         for lj in range(2, layers):
-            Qj=pre1*cmath.sqrt((n[lj,ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
+            Qj=pre1*cmath.sqrt((n[lj, ai]/n0)**2-math.cos(theta[ai]*pre2)**2)
             # Fresnel reflectivity for the interfaces
             rpj=(Qj-Qi)/(Qj+Qi)*cmath.exp(-Qj*Qi/2.*sigma[lj-1]**2)
 
@@ -224,8 +224,7 @@ def Amp_nvary2NB(theta, lamda, n, d, sigma):
         A[ai]=Aj
     return A
 
-
-def Refl_nvary2(theta,lamda,n,d,sigma, return_int=True):
+def Refl_nvary2(theta, lamda, n, d, sigma, return_int=True):
     if return_int:
         return Refl_nvary2NB(theta, lamda, n, d, sigma)
     else:

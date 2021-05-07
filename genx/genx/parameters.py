@@ -16,28 +16,28 @@ class Parameters:
     Class for storing the fitting parameters in GenX
     """
     # Parameters used for saving the object state
-    export_parameters = {'data_labels': list, 'init_data': list, 'data': list}
+    export_parameters={'data_labels': list, 'init_data': list, 'data': list}
 
     def __init__(self, model=None):
-        self.data_labels = ['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
-        self.init_data = ['', 0.0, False, 0.0, 0.0, 'None']
-        self.data = [self.init_data[:]]
-        self.model = model
-        self.string_dtype = "S100"
+        self.data_labels=['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
+        self.init_data=['', 0.0, False, 0.0, 0.0, 'None']
+        self.data=[self.init_data[:]]
+        self.model=model
+        self.string_dtype="S100"
 
     def write_h5group(self, group):
         """ Export the members in the object to a h5py group.
         :param group: h5py Group to export to
         :return:
         """
-        group['data_labels'] = [label.encode('utf-8') for label in self.data_labels]
-        #print np.array([r[0] for r in self.data], dtype='S50')
-        group['data col 0'] = [r[0].encode('utf-8') for r in self.data]
-        group['data col 1'] = [r[1] for r in self.data]
-        group['data col 2'] = [r[2] for r in self.data]
-        group['data col 3'] = [r[3] for r in self.data]
-        group['data col 4'] = [r[4] for r in self.data]
-        group['data col 5'] = [r[5].encode('utf-8') for r in self.data]
+        group['data_labels']=[label.encode('utf-8') for label in self.data_labels]
+        # print np.array([r[0] for r in self.data], dtype='S50')
+        group['data col 0']=[r[0].encode('utf-8') for r in self.data]
+        group['data col 1']=[r[1] for r in self.data]
+        group['data col 2']=[r[2] for r in self.data]
+        group['data col 3']=[r[3] for r in self.data]
+        group['data col 4']=[r[4] for r in self.data]
+        group['data col 5']=[r[5].encode('utf-8') for r in self.data]
 
     def read_h5group(self, group):
         """ Import data to the object from a h5py group
@@ -45,23 +45,23 @@ class Parameters:
         :param group: h5py Group to import from
         :return:
         """
-        self.data_labels = [item.decode('utf-8') for item in list(group['data_labels'][()])]
-        self.data = [[c0.decode('utf-8'), float(c1), bool(c2), float(c3), float(c4), c5.decode('utf-8')]
-                     for (c0, c1, c2, c3, c4, c5) in
-                     zip(group['data col 0'][()], group['data col 1'][()],
-                         group['data col 2'][()], group['data col 3'][()],
-                         group['data col 4'][()], group['data col 5'][()])]
+        self.data_labels=[item.decode('utf-8') for item in list(group['data_labels'][()])]
+        self.data=[[c0.decode('utf-8'), float(c1), bool(c2), float(c3), float(c4), c5.decode('utf-8')]
+                   for (c0, c1, c2, c3, c4, c5) in
+                   zip(group['data col 0'][()], group['data col 1'][()],
+                       group['data col 2'][()], group['data col 3'][()],
+                       group['data col 4'][()], group['data col 5'][()])]
 
     def to_dict(self):
         """Creates a dict from the names in the columns, returns a Dict"""
-        d = {}
+        d={}
         for i in range(len(self.data_labels)):
-            d[self.data_labels[i]] = [r[i] for r in self.data]
+            d[self.data_labels[i]]=[r[i] for r in self.data]
         return d
 
     def set_value(self, row, col, value):
         """ Set a value in the parameter grid """
-        self.data[row][col] = value
+        self.data[row][col]=value
 
     def get_value(self, row, col):
         """ Get the value in the grid """
@@ -73,7 +73,7 @@ class Parameters:
         :param name: string representation of a parameter
         :return:
         """
-        par_names = [row[0] for row in self.data]
+        par_names=[row[0] for row in self.data]
         return name in par_names
 
     def get_names(self):
@@ -81,10 +81,9 @@ class Parameters:
 
         :return:
         """
-        par_names = [row[0] for row in self.data]
+        par_names=[row[0] for row in self.data]
 
         return par_names
-
 
     def get_value_by_name(self, name):
         """Get the value for parameter name. Returns None if name can not be found.
@@ -92,11 +91,11 @@ class Parameters:
         :param name:
         :return: Value or None
         """
-        par_names = [row[0] for row in self.data]
+        par_names=[row[0] for row in self.data]
         if name in par_names:
-            value = self.data[par_names.index(name)][1]
+            value=self.data[par_names.index(name)][1]
         else:
-            value = None
+            value=None
         return value
 
     def get_fit_state_by_name(self, name):
@@ -105,13 +104,13 @@ class Parameters:
         :param name:
         :return: int 0 - not found, 1 - fitted, 2 - defined but constant
         """
-        par_names = [row[0] for row in self.data]
-        state = 0
+        par_names=[row[0] for row in self.data]
+        state=0
         if name in par_names:
             if self.data[par_names.index(name)][2]:
-                state = 1
+                state=1
             else:
-                state = 2
+                state=2
         return state
 
     def set_fit_state_by_name(self, name, value, state, min_val, max_val):
@@ -124,26 +123,25 @@ class Parameters:
         :param state: state, see above.
         :return:
         """
-        par_names = [row[0] for row in self.data]
-        if state == 0 and name in par_names:
-            self.delete_rows([par_names.index(name),])
-        elif state == 1 or state == 2:
-            if state == 1:
-                fit = True
+        par_names=[row[0] for row in self.data]
+        if state==0 and name in par_names:
+            self.delete_rows([par_names.index(name), ])
+        elif state==1 or state==2:
+            if state==1:
+                fit=True
             else:
-                fit = False
+                fit=False
             if name in par_names:
-                self.data[par_names.index(name)][1] = value
-                self.data[par_names.index(name)][2] = fit
+                self.data[par_names.index(name)][1]=value
+                self.data[par_names.index(name)][2]=fit
             else:
                 self.append()
-                self.data[-1][0] = name
-                self.data[-1][1] = value
-                self.data[-1][2] = fit
-                self.data[-1][3] = min_val
-                self.data[-1][4] = max_val
-                self.data[-1][5] = '-'
-
+                self.data[-1][0]=name
+                self.data[-1][1]=value
+                self.data[-1][2]=fit
+                self.data[-1][3]=min_val
+                self.data[-1][4]=max_val
+                self.data[-1][5]='-'
 
     def get_len_rows(self):
         return len(self.data)
@@ -159,18 +157,18 @@ class Parameters:
 
     def delete_rows(self, rows):
         ''' Delete the rows in the list rows ...'''
-        delete_count = 0
+        delete_count=0
         rows=rows[:]
         rows.sort()
 
         for i in rows:
-            #Note index changes as we delete values. thats why rows has to be sorted
+            # Note index changes as we delete values. thats why rows has to be sorted
             try:
-                self.data.pop(i - delete_count)
+                self.data.pop(i-delete_count)
             except:
                 pass
             else:
-                delete_count += 1
+                delete_count+=1
 
         return delete_count
 
@@ -185,8 +183,8 @@ class Parameters:
         :return: Boolean True if the row was moved, otherwise False.
         """
 
-        if row != 0 and row < self.get_len_rows():
-            self.data.insert(row - 1, self.data.pop(row))
+        if row!=0 and row<self.get_len_rows():
+            self.data.insert(row-1, self.data.pop(row))
             return True
         else:
             return False
@@ -198,23 +196,23 @@ class Parameters:
         :return: Boolean True if the row was moved, otherwise False.
         """
 
-        if row < self.get_len_rows() - 1:
-            self.data.insert(row + 1, self.data.pop(row))
+        if row<self.get_len_rows()-1:
+            self.data.insert(row+1, self.data.pop(row))
             return True
         else:
             return False
 
     def _sort_key_func(self, item):
-        class_name = ''
-        pname = item[0]
-        obj_name = item[0]
+        class_name=''
+        pname=item[0]
+        obj_name=item[0]
         if self.model is not None:
-            if item[0].count('.') > 0 and self.model.compiled:
-                pieces = item[0].split('.')
-                obj_name = pieces[0]
-                pname = pieces[1]
-                obj = self.model.eval_in_model(obj_name)
-                class_name = obj.__class__.__name__
+            if item[0].count('.')>0 and self.model.compiled:
+                pieces=item[0].split('.')
+                obj_name=pieces[0]
+                pname=pieces[1]
+                obj=self.model.eval_in_model(obj_name)
+                class_name=obj.__class__.__name__
 
         return string.lower(class_name), string.lower(pname), string.lower(obj_name)
 
@@ -234,73 +232,72 @@ class Parameters:
         self.data.append(data)
         return out
 
-
     def get_fit_pars(self):
         ''' Returns the variables needed for fitting '''
-        #print 'Data in the parameters class: ', self.data
-        rows = list(range(len(self.data)))
-        row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
-                not self.data[nmb][0]=='']
-        funcs=[row[0] for row in self.data if row[2] and not row[0] == '']
-        mytest=[row[1] for row in self.data if row[2] and not row[0] == '']
-        min=[row[3] for row in self.data if row[2] and not row[0] == '']
-        max=[row[4] for row in self.data if row[2] and not row[0] == '']
+        # print 'Data in the parameters class: ', self.data
+        rows=list(range(len(self.data)))
+        row_nmb=[nmb for nmb in rows if self.data[nmb][2] and \
+                 not self.data[nmb][0]=='']
+        funcs=[row[0] for row in self.data if row[2] and not row[0]=='']
+        mytest=[row[1] for row in self.data if row[2] and not row[0]=='']
+        min=[row[3] for row in self.data if row[2] and not row[0]=='']
+        max=[row[4] for row in self.data if row[2] and not row[0]=='']
         return row_nmb, funcs, mytest, min, max
-    
+
     def get_pos_from_row(self, row):
         '''get_pos_from_row(self) --> pos [int]
 
         Transform the row row to the position in the fit_pars list
         '''
-        rows = list(range(row + 1))
-        row_nmb=[nmb for nmb in rows if self.data[nmb][2] and\
-                not self.data[nmb][0] == '']
-        return len(row_nmb) - 1
+        rows=list(range(row+1))
+        row_nmb=[nmb for nmb in rows if self.data[nmb][2] and \
+                 not self.data[nmb][0]=='']
+        return len(row_nmb)-1
 
     def get_sim_pars(self):
         ''' Returns the variables needed for simulation '''
-        funcs = [row[0] for row in self.data if not row[0] == '']
-        mytest = [row[1] for row in self.data if not row[0] == '']
+        funcs=[row[0] for row in self.data if not row[0]=='']
+        mytest=[row[1] for row in self.data if not row[0]=='']
         return funcs, mytest
 
     def get_sim_pos_from_row(self, row):
         '''Transform a row to a psoitions in the sim list
         that is returned by get_sim_pars
         '''
-        rows = list(range(row + 1))
-        row_nmb=[nmb for nmb in rows if not self.data[nmb][0] == '']
-        return len(row_nmb) - 1
+        rows=list(range(row+1))
+        row_nmb=[nmb for nmb in rows if not self.data[nmb][0]=='']
+        return len(row_nmb)-1
 
     def set_value_pars(self, value):
         ''' Set the values of the parameters '''
-        valueindex = 0
-        for row in  self.data:
-            if row[2] and not row[0] == '':
-                row[1] = value[valueindex]
-                valueindex = valueindex + 1
+        valueindex=0
+        for row in self.data:
+            if row[2] and not row[0]=='':
+                row[1]=value[valueindex]
+                valueindex=valueindex+1
 
     def set_error_pars(self, value):
         ''' Set the errors on the parameters '''
-        valueindex = 0
-        for row in  self.data:
-            if row[2] and not row[0] == '':
-                row[5] = value[valueindex]
-                valueindex = valueindex + 1
+        valueindex=0
+        for row in self.data:
+            if row[2] and not row[0]=='':
+                row[5]=value[valueindex]
+                valueindex=valueindex+1
 
     def clear_error_pars(self):
         ''' clears the errors in the parameters'''
-        for row in  self.data:
-            row[5] = '-'
+        for row in self.data:
+            row[5]='-'
 
     def set_data(self, data):
-        rowi = 0
-        coli = 0
+        rowi=0
+        coli=0
         for row in data:
             for col in row:
                 self.set_value(rowi, coli, col)
-                coli = coli + 1
-            rowi = rowi + 1
-            coli = 0
+                coli=coli+1
+            rowi=rowi+1
+            coli=0
 
     def get_data(self):
         return self.data[:]
@@ -310,20 +307,20 @@ class Parameters:
 
         Returns the parameters grid as an ascii string.
         '''
-        text = '#'
+        text='#'
         # Show the data labels but with a preceeding # to denote a comment
         for label in self.data_labels:
-            text += label + '\t'
-        text += '\n'
+            text+=label+'\t'
+        text+='\n'
         for row in self.data:
             for item in row:
                 # special handling of floats to reduce the
                 # col size use 5 significant digits
-                if type(item) == type(10.0):
-                    text += '%.4e\t'%item
+                if type(item)==type(10.0):
+                    text+='%.4e\t'%item
                 else:
-                    text += item.__str__() + '\t'
-            text += '\n'
+                    text+=item.__str__()+'\t'
+            text+='\n'
         return text
 
     def _parse_ascii_input(self, text):
@@ -332,30 +329,30 @@ class Parameters:
         Parses an ascii string to a parameter table. returns a list table if
         sucessful otherwise it returns None
         '''
-        table = []
-        sucess = True
-        lines = text.split('\n')
+        table=[]
+        sucess=True
+        lines=text.split('\n')
         for line in lines[:-1]:
             # If line not commented
-            if line[0] != '#' and line[0] != '\n':
-                line_strs = line.split('\t')
+            if line[0]!='#' and line[0]!='\n':
+                line_strs=line.split('\t')
                 # Check the format is it valid?
-                if len(line_strs) > 7 or len(line_strs) < 6:
-                    if len(line_strs) == 1:
+                if len(line_strs)>7 or len(line_strs)<6:
+                    if len(line_strs)==1:
                         break
                     else:
-                        sucess = False
+                        sucess=False
                         break
                 try:
-                    par = line_strs[0]
-                    val = float(line_strs[1])
-                    fitted = line_strs[2].strip() == 'True'\
-                                or line_strs[2].strip() == '1'
-                    min = float(line_strs[3])
-                    max = float(line_strs[4])
-                    error = line_strs[5]
+                    par=line_strs[0]
+                    val=float(line_strs[1])
+                    fitted=line_strs[2].strip()=='True' \
+                           or line_strs[2].strip()=='1'
+                    min=float(line_strs[3])
+                    max=float(line_strs[4])
+                    error=line_strs[5]
                 except Exception as e:
-                    sucess = False
+                    sucess=False
                     break
                 else:
                     table.append([par, val, fitted, min, max, error])
@@ -370,9 +367,9 @@ class Parameters:
         If possible parse the text source and set the current parameters table
         to the one given in text.
         '''
-        table = self._parse_ascii_input(text)
+        table=self._parse_ascii_input(text)
         if table:
-            self.data = table
+            self.data=table
             return True
         else:
             return False
@@ -382,15 +379,15 @@ class Parameters:
 
         Does a safe copy from object into this object.
         '''
-        self.data = object.data[:]
+        self.data=object.data[:]
 
     def copy(self):
         '''get_copy(self) --> copy of Parameters
 
         Does a copy of the current object.
         '''
-        new_pars = Parameters()
-        new_pars.data = self.data[:]
+        new_pars=Parameters()
+        new_pars.data=self.data[:]
 
         return new_pars
 
@@ -409,7 +406,8 @@ class Parameters:
 
     def _repr_html_(self):
         output='<table><tr><th colspan="%i"><center>Parameters</center></th></tr>\n'%(len(self.data_labels)+1)
-        output+="           <tr><th>No.</th><th>"+"</th><th>".join(["%s"%label for label in self.data_labels])+"</th></tr>\n"
+        output+="           <tr><th>No.</th><th>"+"</th><th>".join(
+            ["%s"%label for label in self.data_labels])+"</th></tr>\n"
         for i, line in enumerate(self.data):
             output+="           <tr><td>%i</td><td>"%i
             output+="</td><td>".join(["%s"%col for col in line])+"\n"
@@ -443,11 +441,11 @@ class Parameters:
         prev_box=button.vbox.children
         button.vbox.children=prev_box[:-1]+(self[-1]._repr_ipyw_(), prev_box[-1])
 
-
 class ConnectedParameter():
     """
     A representation of a single fittable parameter for use in api access to GenX.
     """
+
     def __init__(self, parent, data):
         self.data=data
         self._parent=parent
@@ -455,13 +453,14 @@ class ConnectedParameter():
     @property
     def name(self):
         return self.data[0]
+
     @name.setter
     def name(self, value):
         model=self._parent.model
         if not model.is_compiled():
             model.compile_script()
         par_value=eval('self._parent.model.script_module.'+value.replace('.set', '.get')+'()',
-                           globals(), locals())
+                       globals(), locals())
         self.data[0]=value
         self.value=par_value
         self.min=0.25*par_value
@@ -470,6 +469,7 @@ class ConnectedParameter():
     @property
     def value(self):
         return self.data[1]
+
     @value.setter
     def value(self, value):
         self.data[1]=float(value)
@@ -477,6 +477,7 @@ class ConnectedParameter():
     @property
     def fit(self):
         return self.data[2]
+
     @fit.setter
     def fit(self, value):
         self.data[2]=bool(value)
@@ -484,6 +485,7 @@ class ConnectedParameter():
     @property
     def min(self):
         return self.data[3]
+
     @min.setter
     def min(self, value):
         self.data[3]=float(value)
@@ -491,6 +493,7 @@ class ConnectedParameter():
     @property
     def max(self):
         return self.data[4]
+
     @max.setter
     def max(self, value):
         self.data[4]=float(value)
@@ -506,7 +509,8 @@ class ConnectedParameter():
 
     def _repr_html_(self):
         output='<table><tr><th colspan="%i"><center>Parameter</center></th></tr>\n'%(len(self._parent.data_labels)+1)
-        output+="           <tr><th>No.</th><th>"+"</th><th>".join(["%s"%label for label in self._parent.data_labels])+"</th></tr>\n"
+        output+="           <tr><th>No.</th><th>"+"</th><th>".join(
+            ["%s"%label for label in self._parent.data_labels])+"</th></tr>\n"
         output+="           <tr><td>%i</td><td>"%self._parent.data.index(self.data)
         output+="</td><td>".join(["%s"%col for col in self.data])+"\n"
         output+="</table>"
@@ -516,7 +520,7 @@ class ConnectedParameter():
         import ipywidgets as ipw
         wname=ipw.Text(value=self.name, layout=ipw.Layout(width='35%'))
         wname=ipw.Combobox(value=self.name,
-                           options=[ni for ni,oi in self._parent.model.script_module.__dict__.items()
+                           options=[ni for ni, oi in self._parent.model.script_module.__dict__.items()
                                     if type(oi).__name__ in ['Layer', 'Stack', 'Instrument']])
         wname.change_item='name'
         wval=ipw.FloatText(value=self.value, layout=ipw.Layout(width='20%'))
@@ -539,8 +543,8 @@ class ConnectedParameter():
                 try:
                     name=change.new.split('.')[0]
                     change.owner.options=tuple("%s.%s"%(name, si)
-                                           for si in dir(self._parent.model.script_module.__dict__[name])
-                                           if si.startswith('set'))
+                                               for si in dir(self._parent.model.script_module.__dict__[name])
+                                               if si.startswith('set'))
                 except:
                     pass
             else:
@@ -572,15 +576,16 @@ class ConnectedParameter():
         elif change.owner.change_item=='min':
             self.min=change.new
 
-if __name__ == '__main__':
-    p = Parameters()
+if __name__=='__main__':
+    p=Parameters()
     p.append()
     import h5py
-    f = h5py.File('test.hdf', 'w')
-    g = f.create_group('parameters')
+
+    f=h5py.File('test.hdf', 'w')
+    g=f.create_group('parameters')
     p.write_h5group(g)
     f.close()
-    p2 = Parameters()
-    f = h5py.File('test.hdf', 'r')
+    p2=Parameters()
+    f=h5py.File('test.hdf', 'r')
     p2.read_h5group(f['parameters'])
     iprint(p2.data)

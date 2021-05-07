@@ -20,39 +20,38 @@ from .parameters import HasParameters, ComplexArray, Float, Calc
 from . import scatteringlengths as _sl
 
 # The scattering length of an electron (Thomson scattering length) in AA
-_r_e = 2.82e-5
+_r_e=2.82e-5
 # Transformations between AA and eV
-_AA_to_eV = 12398.42
+_AA_to_eV=12398.42
 
-
-_module_dir, _filename = path.split(__file__)
+_module_dir, _filename=path.split(__file__)
 # Look only after the file name and not the ending since
 # the file ending can be pyc if compiled...
-_filename = _filename.split('.')[0]
-_module_dir = '.' if _module_dir == '' else _module_dir
+_filename=_filename.split('.')[0]
+_module_dir='.' if _module_dir=='' else _module_dir
 
-
-_atomic_weights = _sl.load_atomic_weights_dabax(path.join(_module_dir, "../databases/AtomicWeights.dat"))
-
+_atomic_weights=_sl.load_atomic_weights_dabax(path.join(_module_dir, "../databases/AtomicWeights.dat"))
 
 def create_fpdisp_lookup(path):
     """ Creates a lookup function to lookup element names and returns a function
     that yields a function of dispersive scattering factors f(E) at Q = 0. NOTE energy is in eV
     """
+
     def create_dispersion_func(name):
-        e, f1, f2 = np.loadtxt(path + '%s.nff' % name.lower(), skiprows=1, unpack=True)
-        f1interp = interpolate.interp1d(e, f1, kind='linear')
-        f2interp = interpolate.interp1d(e, f2, kind='linear')
-        def_wl = _AA_to_eV/np.mean(e)
+        e, f1, f2=np.loadtxt(path+'%s.nff'%name.lower(), skiprows=1, unpack=True)
+        f1interp=interpolate.interp1d(e, f1, kind='linear')
+        f2interp=interpolate.interp1d(e, f2, kind='linear')
+        def_wl=_AA_to_eV/np.mean(e)
 
         @MemoizeF
         def f(wl=def_wl, **kwargs):
-            return f1interp(_AA_to_eV/wl) - 1.0J*f2interp(_AA_to_eV/wl)
+            return f1interp(_AA_to_eV/wl)-1.0J*f2interp(_AA_to_eV/wl)
 
         return Calc(f)
+
     return create_dispersion_func
 
-f0 = create_fpdisp_lookup(path.join(_module_dir, "../databases/f1f2_nist/"))
+f0=create_fpdisp_lookup(path.join(_module_dir, "../databases/f1f2_nist/"))
 
 class MemoizeF:
     """Remember previous evaluations of function fn and stores it in a dictionary.
@@ -60,16 +59,16 @@ class MemoizeF:
     Based on the Cookbook recipe: Memoizing (Caching) the Return Values of Functions in
     Python Cookbook by David Ascher, Alex Martelli.
     """
+
     def __init__(self, fn):
-        self.fn = fn
-        self.memo = {}
+        self.fn=fn
+        self.memo={}
 
     def __call__(self, wl=1.54, **kwds):
-        pickled = pickle.dumps(wl, 1)
+        pickled=pickle.dumps(wl, 1)
         if pickled not in self.memo:
-            self.memo[pickled] = self.fn(wl=wl, **kwds)
+            self.memo[pickled]=self.fn(wl=wl, **kwds)
         return self.memo[pickled]
-
 
 class Material(HasParameters):
     """ Class to keep transform a chemical formula and mass density to scattering length
@@ -78,7 +77,7 @@ class Material(HasParameters):
     Also non-integer indices are allowed for example Fe0.01Pd
 
     """
-    validation_kwargs = {'wl': 1.54}
+    validation_kwargs={'wl': 1.54}
 
     # The scattering length should be in AA-2
     # Need to transform g/cm3 to formula units per AA3
@@ -89,23 +88,23 @@ class Material(HasParameters):
     # or formula units per AA^ = density [g/cm3]/1.66054/weight per formula unit
 
     def __init__(self, formula, **kwargs):
-        self.sld_x = ComplexArray(0, unit="1/AA-2", help="Scattering length density")
-        self.density = Float(0.0, unit="g/cm3", help="Weight density")
-        self._formula_density = Float(0.0, unit="u", help="weight of one formula unit")
+        self.sld_x=ComplexArray(0, unit="1/AA-2", help="Scattering length density")
+        self.density=Float(0.0, unit="g/cm3", help="Weight density")
+        self._formula_density=Float(0.0, unit="u", help="weight of one formula unit")
         HasParameters.__init__(self, **kwargs)
-        self.formula_dict = {}
+        self.formula_dict={}
         self.parse_formula(formula)
 
         # Create the composition variables needed to describe formula
-        w_list = []
-        f0_list = []
+        w_list=[]
+        f0_list=[]
         for name in self.formula_dict:
-            self.__setattr__(name, Float(self.formula_dict[name], help="Number of %s atoms" % name))
-            element_count = self.__getattribute__(name)
+            self.__setattr__(name, Float(self.formula_dict[name], help="Number of %s atoms"%name))
+            element_count=self.__getattribute__(name)
             w_list.append(element_count*self.get_atomic_weight(name))
             f0_list.append(element_count*self.get_f0(name))
-        self._formula_density = self.density/1.66054/sum(w_list)
-        self.sld_x = self._formula_density*sum(f0_list)*_r_e
+        self._formula_density=self.density/1.66054/sum(w_list)
+        self.sld_x=self._formula_density*sum(f0_list)*_r_e
 
     def get_atomic_weight(self, element):
         """Returns the atomic weight in unified atomic mass units (u)
@@ -136,25 +135,25 @@ class Material(HasParameters):
             multiplier(int): A number representing that will be used to multiply the element count
         """
         # regexp = re.compile(r"([A-Z][a-z]?)(\d*)|\((.*)\)(\d*)")
-        regexp = re.compile(r"([A-Z][a-z]?)(\d*\.?\d*)|\((.*)\)(\d*\.?\d*)")
+        regexp=re.compile(r"([A-Z][a-z]?)(\d*\.?\d*)|\((.*)\)(\d*\.?\d*)")
 
-        element, element_count, group, group_count = (1, 2, 3, 4)
-        pos = 0
-        while pos < len(formula):
-            match = regexp.match(formula, pos)
+        element, element_count, group, group_count=(1, 2, 3, 4)
+        pos=0
+        while pos<len(formula):
+            match=regexp.match(formula, pos)
             if not match:
-                raise ValueError("Error in formula: %s at position %d" % (formula, pos))
-            pos = match.end()
+                raise ValueError("Error in formula: %s at position %d"%(formula, pos))
+            pos=match.end()
             if match.group(element):
                 # print "Match %s is an element" % match.group(0)
-                count = self.formula_count(match.group(element_count), multiplier)
+                count=self.formula_count(match.group(element_count), multiplier)
                 try:
-                    self.formula_dict[match.group(element)] += count
+                    self.formula_dict[match.group(element)]+=count
                 except KeyError:
-                    self.formula_dict[match.group(element)] = count
+                    self.formula_dict[match.group(element)]=count
             elif match.group(group):
                 # print "Group found: %s, count: %s" % (match.group(group), match.group(group_count))
-                count = self.formula_count(match.group(group_count), multiplier)
+                count=self.formula_count(match.group(group_count), multiplier)
                 self.parse_formula(match.group(group), multiplier=count)
 
     def formula_count(self, count_str, multiplier):
@@ -167,25 +166,20 @@ class Material(HasParameters):
         """
         if not count_str:
             # Set count to 1 if count is not exist, ie a single group is parsed
-            count = 1
+            count=1
         else:
-            count = float(count_str)
-        return count * multiplier
+            count=float(count_str)
+        return count*multiplier
 
-
-
-
-if __name__ == "__main__":
-    test = Material("Ag1.1(NO0.01)2", density=7.87)
+if __name__=="__main__":
+    test=Material("Ag1.1(NO0.01)2", density=7.87)
     print(_atomic_weights['fe'])
     # print test.Ag.help
     print(test._formula_density(), 2/2.88**3)
     print(test.sld_x(wl=1.54))
-    test.Fe = 2
+    test.Fe=2
     print(test.sld_x(wl=1.54))
-    test.Fe = 1
+    test.Fe=1
     print(test.sld_x(wl=1.54))
     print(test.sld_x(wl=15.4))
     print(test.sld_x(wl=15.4))
-
-

@@ -110,36 +110,37 @@ from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
 from .lib import refl as refl
+
 # Preamble to define the parameters needed for the models outlined below:
 
 ModelID='SoftNX'
-#InstrumentParameters={'Wavelength':1.54, 'Coordinates':1, 'I0':1.0, 'Sim': 0,\
+# InstrumentParameters={'Wavelength':1.54, 'Coordinates':1, 'I0':1.0, 'Sim': 0,\
 #    'Res':0.001, 'Restype':0, 'Respoints':5, 'Resintrange':2, 'Beaw':0.01,\
 #    'Footype':0.0, 'Samlen':10.0, 'Incangle':0.0}
-__pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
+__pars__=['Layer', 'Stack', 'Sample', 'Instrument']
 
-instrument_string_choices = {'probe': ['x-ray', 'neutron', 'neutron pol',
-    'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q', 'tth'],
-    'restype': ['no conv', 'fast conv',
-     'full conv and varying res.', 'fast conv + varying res.',
-     'full conv and varying res. (dx/x)', 'fast conv + varying res. (dx/x)'],
-    'footype': ['no corr', 'gauss beam', 'square beam'],
-    'pol': ['uu', 'dd', 'ud', 'ass', 'du']}
-InstrumentParameters = {'probe':'x-ray', 'wavelength':1.54, 'coords':'tth',
-                        'I0':1.0, 'res':0.001,
-                        'restype':'no conv', 'respoints':5, 'resintrange':2, 'beamw':0.01,
-                        'footype': 'no corr', 'samplelen':10.0, 'incangle':0.0, 'pol': 'uu',
-                        'Ibkg': 0.0, 'tthoff':0.0}
-InstrumentGroups = [('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']),
-                    ('Resolution', ['restype', 'res', 'respoints', 'resintrange']),
-                    ('Neutron', ['probe', 'pol', 'incangle']),
-                    ('Footprint', ['footype', 'beamw', 'samplelen',]),
-                    ]
-InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',
-                   'I0': 'arb.', 'res': '[coord]',
-                   'restype':'', 'respoints':'pts.', 'resintrange':'[coord]', 'beamw':'mm',
-                   'footype': '', 'samplelen':'mm', 'incangle':'deg.', 'pol': '',
-                   'Ibkg': 'arb.', 'tthoff':'deg.'}
+instrument_string_choices={'probe': ['x-ray', 'neutron', 'neutron pol',
+                                     'neutron pol spin flip', 'neutron tof', 'neutron pol tof'], 'coords': ['q', 'tth'],
+                           'restype': ['no conv', 'fast conv',
+                                       'full conv and varying res.', 'fast conv + varying res.',
+                                       'full conv and varying res. (dx/x)', 'fast conv + varying res. (dx/x)'],
+                           'footype': ['no corr', 'gauss beam', 'square beam'],
+                           'pol': ['uu', 'dd', 'ud', 'ass', 'du']}
+InstrumentParameters={'probe': 'x-ray', 'wavelength': 1.54, 'coords': 'tth',
+                      'I0': 1.0, 'res': 0.001,
+                      'restype': 'no conv', 'respoints': 5, 'resintrange': 2, 'beamw': 0.01,
+                      'footype': 'no corr', 'samplelen': 10.0, 'incangle': 0.0, 'pol': 'uu',
+                      'Ibkg': 0.0, 'tthoff': 0.0}
+InstrumentGroups=[('General', ['wavelength', 'coords', 'I0', 'Ibkg', 'tthoff']),
+                  ('Resolution', ['restype', 'res', 'respoints', 'resintrange']),
+                  ('Neutron', ['probe', 'pol', 'incangle']),
+                  ('Footprint', ['footype', 'beamw', 'samplelen', ]),
+                  ]
+InstrumentUnits={'probe': '', 'wavelength': 'AA', 'coords': '',
+                 'I0': 'arb.', 'res': '[coord]',
+                 'restype': '', 'respoints': 'pts.', 'resintrange': '[coord]', 'beamw': 'mm',
+                 'footype': '', 'samplelen': 'mm', 'incangle': 'deg.', 'pol': '',
+                 'Ibkg': 'arb.', 'tthoff': 'deg.'}
 # Coordinates=1 or 'tth' => twothetainput
 # Coordinates=0 or 'q'=> Q input
 # probe: Type of simulation
@@ -165,43 +166,41 @@ InstrumentUnits = {'probe':'', 'wavelength': 'AA', 'coords':'',
 #            2 or 'square beam': Correction for square profile => Beaw given in full width mm
 # samlen= Samplelength in mm.
 
-LayerParameters = {'sigma': 0.0, 'd': 0.0, 'sld_x': (1.0+1.0j)*1e-20,
-                   'sld_n':  0.0 + 0.0J, 'sld_m': 0.0, 'magn_ang': 0.0}
-LayerUnits = {'sigma': 'AA', 'd': 'AA', 'sld_x':'1e-6 1/AA^2',
-              'sld_n': '1e-6 1/AA^2', 'sld_m': '1e-6 1/AA^2', 'magn_ang': 'deg.'}
-LayerGroups = [('Standard', ['sld_x', 'd', 'sigma']),
-               ('Neutron', ['sld_n', 'sld_m', 'magn_ang'])]
-StackParameters = {'Layers': [], 'Repetitions': 1}
-SampleParameters = {'Stacks': [], 'Ambient': None, 'Substrate': None}
+LayerParameters={'sigma': 0.0, 'd': 0.0, 'sld_x': (1.0+1.0j)*1e-20,
+                 'sld_n': 0.0+0.0J, 'sld_m': 0.0, 'magn_ang': 0.0}
+LayerUnits={'sigma': 'AA', 'd': 'AA', 'sld_x': '1e-6 1/AA^2',
+            'sld_n': '1e-6 1/AA^2', 'sld_m': '1e-6 1/AA^2', 'magn_ang': 'deg.'}
+LayerGroups=[('Standard', ['sld_x', 'd', 'sigma']),
+             ('Neutron', ['sld_n', 'sld_m', 'magn_ang'])]
+StackParameters={'Layers': [], 'Repetitions': 1}
+SampleParameters={'Stacks': [], 'Ambient': None, 'Substrate': None}
 
-AA_to_eV = 12398.5
+AA_to_eV=12398.5
 ''' Conversion from Angstrom to eV E = AA_to_eV/lamda.'''
 
-
-q_limit = 1e-10
+q_limit=1e-10
 ''' Minimum allowed q-value '''
 
 # A buffer to save previous calculations for spin-flip calculations
 class Buffer:
-    Ruu = 0
-    Rdd = 0
-    Rdu = 0
-    Rud = 0
-    parameters = None
-    TwoThetaQz = None
-
+    Ruu=0
+    Rdd=0
+    Rdu=0
+    Rud=0
+    parameters=None
+    TwoThetaQz=None
 
 def footprintcorr(Q, instrument):
-    foocor = 1.0
-    footype = instrument.getFootype()
-    beamw = instrument.getBeamw()
-    samlen = instrument.getSamplelen()
-    theta = arcsin(Q * instrument.getWavelength() / 4.0 / pi) * 180 / pi
-    if footype == 1 or footype == instrument_string_choices['footype'][1]:
-        foocor = GaussIntensity(theta, samlen / 2.0, samlen / 2.0, beamw)
-    elif footype == 2 or footype == instrument_string_choices['footype'][2]:
-        foocor = SquareIntensity(theta, samlen, beamw)
-    elif footype == 0 or footype == instrument_string_choices['footype'][0]:
+    foocor=1.0
+    footype=instrument.getFootype()
+    beamw=instrument.getBeamw()
+    samlen=instrument.getSamplelen()
+    theta=arcsin(Q*instrument.getWavelength()/4.0/pi)*180/pi
+    if footype==1 or footype==instrument_string_choices['footype'][1]:
+        foocor=GaussIntensity(theta, samlen/2.0, samlen/2.0, beamw)
+    elif footype==2 or footype==instrument_string_choices['footype'][2]:
+        foocor=SquareIntensity(theta, samlen, beamw)
+    elif footype==0 or footype==instrument_string_choices['footype'][0]:
         pass
     else:
         raise ValueError('The choice of footprint correction, footype,'
@@ -209,54 +208,51 @@ def footprintcorr(Q, instrument):
 
     return foocor
 
-
 def resolutioncorr(R, TwoThetaQz, foocor, instrument, weight):
     ''' Do the convolution of the reflectivity to account for resolution effects.'''
-    restype = instrument.getRestype()
-    if restype == instrument_string_choices['restype'][1] or restype == 1:
-        R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.getRes(),
-                          range=instrument.getResintrange())
-    elif (restype == instrument_string_choices['restype'][2] or restype == 2 or
-          restype == instrument_string_choices['restype'][4] or restype == 4):
-        R = ConvoluteResolutionVector(TwoThetaQz, R[:] * foocor, weight)
-    elif restype == instrument_string_choices['restype'][3] or restype == 3:
-        R = ConvoluteFastVar(TwoThetaQz, R[:] * foocor, instrument.getRes(), range=instrument.getResintrange())
-    elif restype == instrument_string_choices['restype'][5] or restype == 5:
-        R = ConvoluteFastVar(TwoThetaQz, R[:] * foocor, instrument.getRes()*TwoThetaQz,
-                             range=instrument.getResintrange())
-    elif restype == instrument_string_choices['restype'][0] or restype == 0:
-        R = R[:] * foocor
+    restype=instrument.getRestype()
+    if restype==instrument_string_choices['restype'][1] or restype==1:
+        R=ConvoluteFast(TwoThetaQz, R[:]*foocor, instrument.getRes(),
+                        range=instrument.getResintrange())
+    elif (restype==instrument_string_choices['restype'][2] or restype==2 or
+          restype==instrument_string_choices['restype'][4] or restype==4):
+        R=ConvoluteResolutionVector(TwoThetaQz, R[:]*foocor, weight)
+    elif restype==instrument_string_choices['restype'][3] or restype==3:
+        R=ConvoluteFastVar(TwoThetaQz, R[:]*foocor, instrument.getRes(), range=instrument.getResintrange())
+    elif restype==instrument_string_choices['restype'][5] or restype==5:
+        R=ConvoluteFastVar(TwoThetaQz, R[:]*foocor, instrument.getRes()*TwoThetaQz,
+                           range=instrument.getResintrange())
+    elif restype==instrument_string_choices['restype'][0] or restype==0:
+        R=R[:]*foocor
     else:
         raise ValueError('The choice of resolution type, restype,'
                          'is WRONG')
     return R
 
-
 def resolution_init(TwoThetaQz, instrument):
     ''' Inits the dependet variable with regards to coordinates and resolution.'''
-    restype = instrument.getRestype()
-    weight = 0
-    if restype == 2 or restype == instrument_string_choices['restype'][2]:
-        (TwoThetaQz, weight) = ResolutionVector(TwoThetaQz[:],
-                                                instrument.getRes(), instrument.getRespoints(),
-                                                range=instrument.getResintrange())
-    elif restype == 4 or restype == instrument_string_choices['restype'][4]:
-        (TwoThetaQz, weight) = ResolutionVector(TwoThetaQz[:],
-                                                instrument.getRes()*TwoThetaQz, instrument.getRespoints(),
-                                                range=instrument.getResintrange())
+    restype=instrument.getRestype()
+    weight=0
+    if restype==2 or restype==instrument_string_choices['restype'][2]:
+        (TwoThetaQz, weight)=ResolutionVector(TwoThetaQz[:],
+                                              instrument.getRes(), instrument.getRespoints(),
+                                              range=instrument.getResintrange())
+    elif restype==4 or restype==instrument_string_choices['restype'][4]:
+        (TwoThetaQz, weight)=ResolutionVector(TwoThetaQz[:],
+                                              instrument.getRes()*TwoThetaQz, instrument.getRespoints(),
+                                              range=instrument.getResintrange())
     # TTH values given as x
-    if instrument.getCoords() == instrument_string_choices['coords'][1] \
-            or instrument.getCoords() == 1:
-        Q = 4 * pi / instrument.getWavelength() * sin((TwoThetaQz + instrument.getTthoff()) * pi / 360.0)
+    if instrument.getCoords()==instrument_string_choices['coords'][1] \
+            or instrument.getCoords()==1:
+        Q=4*pi/instrument.getWavelength()*sin((TwoThetaQz+instrument.getTthoff())*pi/360.0)
     # Q vector given....
-    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
-            or instrument.getCoords() == 0:
-        Q = 4 * pi / instrument.getWavelength() * sin(
-            arcsin(TwoThetaQz * instrument.getWavelength() / 4 / pi) + instrument.getTthoff() * pi / 360.)
+    elif instrument.getCoords()==instrument_string_choices['coords'][0] \
+            or instrument.getCoords()==0:
+        Q=4*pi/instrument.getWavelength()*sin(
+            arcsin(TwoThetaQz*instrument.getWavelength()/4/pi)+instrument.getTthoff()*pi/360.)
     else:
         raise ValueError('The value for coordinates, coords, is WRONG! should be q(0) or tth(1).')
     return Q, TwoThetaQz, weight
-
 
 def Specular(TwoThetaQz, sample, instrument):
     """ Simulate the specular signal from sample when probed with instrument
@@ -267,100 +263,102 @@ def Specular(TwoThetaQz, sample, instrument):
     """
 
     # preamble to get it working with my class interface
-    restype = instrument.getRestype()
-    Q, TwoThetaQz, weight = resolution_init(TwoThetaQz, instrument)
-    if any(Q < q_limit):
+    restype=instrument.getRestype()
+    Q, TwoThetaQz, weight=resolution_init(TwoThetaQz, instrument)
+    if any(Q<q_limit):
         raise ValueError('The q vector has to be above %.1e'%q_limit)
 
-    type = instrument.getProbe()
-    pol = instrument.getPol()
+    type=instrument.getProbe()
+    pol=instrument.getPol()
 
-    parameters = sample.resolveLayerParameters()
-    if type ==  instrument_string_choices['probe'][0] or type==0:
-        #fb = array(parameters['f'], dtype = complex64)
-        e = AA_to_eV/instrument.getWavelength()
-        sld = refl.cast_to_array(parameters['sld_x'], e)*1e-6
-    else: 
-        sld = array(parameters['sld_n'], dtype = complex128)*1e-6
+    parameters=sample.resolveLayerParameters()
+    if type==instrument_string_choices['probe'][0] or type==0:
+        # fb = array(parameters['f'], dtype = complex64)
+        e=AA_to_eV/instrument.getWavelength()
+        sld=refl.cast_to_array(parameters['sld_x'], e)*1e-6
+    else:
+        sld=array(parameters['sld_n'], dtype=complex128)*1e-6
 
-    d = array(parameters['d'], dtype = float64)
-    sld_m = array(parameters['sld_m'], dtype = float64)*1e-6
-    #Transform to radians
-    magn_ang = array(parameters['magn_ang'], dtype = float64)*pi/180.0 
-    
-    sigma = array(parameters['sigma'], dtype=float64)
+    d=array(parameters['d'], dtype=float64)
+    sld_m=array(parameters['sld_m'], dtype=float64)*1e-6
+    # Transform to radians
+    magn_ang=array(parameters['magn_ang'], dtype=float64)*pi/180.0
 
-    wl = instrument.getWavelength()
-    l2pi = wl**2/2/3.141592
+    sigma=array(parameters['sigma'], dtype=float64)
+
+    wl=instrument.getWavelength()
+    l2pi=wl**2/2/3.141592
     # Ordinary Paratt X-rays
-    if type == instrument_string_choices['probe'][0] or type == 0:
-        R = Paratt.ReflQ(Q,instrument.getWavelength(), 1.0 - l2pi*sld, d, sigma)
-    #Ordinary Paratt Neutrons
-    elif type == instrument_string_choices['probe'][1] or type == 1:
-        R = Paratt.ReflQ(Q,instrument.getWavelength(), 1.0 - l2pi*sld, d, sigma)
-    #Ordinary Paratt but with magnetization
-    elif type == instrument_string_choices['probe'][2] or type == 2:
+    if type==instrument_string_choices['probe'][0] or type==0:
+        R=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-l2pi*sld, d, sigma)
+    # Ordinary Paratt Neutrons
+    elif type==instrument_string_choices['probe'][1] or type==1:
+        R=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-l2pi*sld, d, sigma)
+    # Ordinary Paratt but with magnetization
+    elif type==instrument_string_choices['probe'][2] or type==2:
         # Polarization uu or ++
-        if pol == instrument_string_choices['pol'][0] or pol == 0:
-            R = Paratt.ReflQ(Q,instrument.getWavelength(),
-                             1.0 - l2pi*(sld + sld_m), d, sigma)
+        if pol==instrument_string_choices['pol'][0] or pol==0:
+            R=Paratt.ReflQ(Q, instrument.getWavelength(),
+                           1.0-l2pi*(sld+sld_m), d, sigma)
         # Polarization dd or --
-        elif pol == instrument_string_choices['pol'][1] or pol == 1:
-            R = Paratt.ReflQ(Q,instrument.getWavelength(),
-                             1.0 - l2pi*(sld - sld_m), d, sigma)
-        elif pol == instrument_string_choices['pol'][3] or pol == 3:
-            Rp = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0 - l2pi*(sld - sld_m), d, sigma)
-            Rm = Paratt.ReflQ(Q, instrument.getWavelength(), 1.0 - l2pi*(sld + sld_m), d, sigma)
-            R = (Rp - Rm)/(Rp + Rm)
+        elif pol==instrument_string_choices['pol'][1] or pol==1:
+            R=Paratt.ReflQ(Q, instrument.getWavelength(),
+                           1.0-l2pi*(sld-sld_m), d, sigma)
+        elif pol==instrument_string_choices['pol'][3] or pol==3:
+            Rp=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-l2pi*(sld-sld_m), d, sigma)
+            Rm=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-l2pi*(sld+sld_m), d, sigma)
+            R=(Rp-Rm)/(Rp+Rm)
 
         else:
             raise ValueError('The value of the polarization is WRONG.'
-                ' It should be uu(0) or dd(1)')
+                             ' It should be uu(0) or dd(1)')
     # Spin flip
-    elif type == instrument_string_choices['probe'][3] or type == 3:
+    elif type==instrument_string_choices['probe'][3] or type==3:
         # Check if we have calcluated the same sample previous:
         if Buffer.TwoThetaQz is not None:
-            Q_ok = Buffer.TwoThetaQz.shape == Q.shape
+            Q_ok=Buffer.TwoThetaQz.shape==Q.shape
             if Q_ok:
-                Q_ok = any(not_equal(Buffer.TwoThetaQz, Q))
-        if Buffer.parameters != parameters or not Q_ok:
-            #msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
-            np = 1.0 - l2pi*(sld + sld_m)
-            nm = 1.0 - l2pi*(sld - sld_m)
-            Vp = (2*pi/instrument.getWavelength())**2*(1 - np**2)
-            Vm = (2*pi/instrument.getWavelength())**2*(1 - nm**2)
-            (Ruu, Rdd, Rud, Rdu) = MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma)
-            Buffer.Ruu = Ruu; Buffer.Rdd = Rdd; Buffer.Rud = Rud
-            Buffer.parameters = parameters.copy()
-            Buffer.TwoThetaQz = Q.copy()
+                Q_ok=any(not_equal(Buffer.TwoThetaQz, Q))
+        if Buffer.parameters!=parameters or not Q_ok:
+            # msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
+            np=1.0-l2pi*(sld+sld_m)
+            nm=1.0-l2pi*(sld-sld_m)
+            Vp=(2*pi/instrument.getWavelength())**2*(1-np**2)
+            Vm=(2*pi/instrument.getWavelength())**2*(1-nm**2)
+            (Ruu, Rdd, Rud, Rdu)=MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma)
+            Buffer.Ruu=Ruu;
+            Buffer.Rdd=Rdd;
+            Buffer.Rud=Rud
+            Buffer.parameters=parameters.copy()
+            Buffer.TwoThetaQz=Q.copy()
         else:
             pass
         # Polarization uu or ++
-        if pol == instrument_string_choices['pol'][0] or pol == 0:
-            R = Buffer.Ruu
+        if pol==instrument_string_choices['pol'][0] or pol==0:
+            R=Buffer.Ruu
         # Polarization dd or --
-        elif pol == instrument_string_choices['pol'][1] or pol == 1:
-            R = Buffer.Rdd
+        elif pol==instrument_string_choices['pol'][1] or pol==1:
+            R=Buffer.Rdd
         # Polarization ud or +-
-        elif (pol == instrument_string_choices['pol'][2] or pol == 2 or
-              pol == instrument_string_choices['pol'][4] or pol == 4):
-            R = Buffer.Rud
+        elif (pol==instrument_string_choices['pol'][2] or pol==2 or
+              pol==instrument_string_choices['pol'][4] or pol==4):
+            R=Buffer.Rud
         # Calculating the asymmetry ass
-        elif pol == instrument_string_choices['pol'][3] or pol == 3:
-            R = (Buffer.Ruu - Buffer.Rdd)/(Buffer.Ruu + Buffer.Rdd + 2*Buffer.Rud)
+        elif pol==instrument_string_choices['pol'][3] or pol==3:
+            R=(Buffer.Ruu-Buffer.Rdd)/(Buffer.Ruu+Buffer.Rdd+2*Buffer.Rud)
         else:
             raise ValueError('The value of the polarization is WRONG. It should be uu(0), dd(1) or ud(2)')
     else:
         raise ValueError('The choice of probe is WRONG')
-    #FootprintCorrections
+    # FootprintCorrections
 
-    foocor = footprintcorr(Q, instrument)
-    #Resolution corrections
-    R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
-    
-    return R*instrument.getI0() + instrument.getIbkg()
-    
-def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
+    foocor=footprintcorr(Q, instrument)
+    # Resolution corrections
+    R=resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
+
+    return R*instrument.getI0()+instrument.getIbkg()
+
+def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
     ''' Simulate the specular signal from sample when probed with instrument. Energy should be in eV.
 
     # BEGIN Parameters
@@ -369,56 +367,55 @@ def EnergySpecular(Energy, TwoThetaQz,sample,instrument):
     # END Parameters
     '''
     # preamble to get it working with my class interface
-    restype = instrument.getRestype()
-    #TODO: Fix so that resolution can be included.
-    if restype != 0 and restype != instrument_string_choices['restype'][0]:
+    restype=instrument.getRestype()
+    # TODO: Fix so that resolution can be included.
+    if restype!=0 and restype!=instrument_string_choices['restype'][0]:
         raise ValueError('Only no resolution is allowed for energy scans.')
 
-    wl = AA_to_eV/Energy
+    wl=AA_to_eV/Energy
 
     # TTH values given as x
-    if instrument.getCoords() == instrument_string_choices['coords'][1] \
-            or instrument.getCoords() == 1:
-        theta = TwoThetaQz/2.0
+    if instrument.getCoords()==instrument_string_choices['coords'][1] \
+            or instrument.getCoords()==1:
+        theta=TwoThetaQz/2.0
     # Q vector given....
-    elif instrument.getCoords() == instrument_string_choices['coords'][0] \
-            or instrument.getCoords() == 0:
-        theta = arcsin(TwoThetaQz * wl / 4 / pi)*180.0/pi
+    elif instrument.getCoords()==instrument_string_choices['coords'][0] \
+            or instrument.getCoords()==0:
+        theta=arcsin(TwoThetaQz*wl/4/pi)*180.0/pi
 
     else:
         raise ValueError('The value for coordinates, coords, is WRONG!'
                          'should be q(0) or tth(1).')
-    Q = 4 * pi / wl * sin((2*theta + instrument.getTthoff()) * pi / 360.0)
+    Q=4*pi/wl*sin((2*theta+instrument.getTthoff())*pi/360.0)
 
-    type = instrument.getProbe()
+    type=instrument.getProbe()
 
-    parameters = sample.resolveLayerParameters()
-    if type ==  instrument_string_choices['probe'][0] or type==0:
-        sld = refl.cast_to_array(parameters['sld_x'], Energy)*1e-6
+    parameters=sample.resolveLayerParameters()
+    if type==instrument_string_choices['probe'][0] or type==0:
+        sld=refl.cast_to_array(parameters['sld_x'], Energy)*1e-6
     else:
-        sld = array(parameters['sld_n'], dtype = complex64).real*1e-6
+        sld=array(parameters['sld_n'], dtype=complex64).real*1e-6
 
-    d = array(parameters['d'], dtype = float64)
-    sigma = array(parameters['sigma'], dtype = float64)
+    d=array(parameters['d'], dtype=float64)
+    sigma=array(parameters['sigma'], dtype=float64)
 
-    wl = instrument.getWavelength()
-    l2pi = wl**2/2/3.141592
+    wl=instrument.getWavelength()
+    l2pi=wl**2/2/3.141592
     # Ordinary Paratt X-rays
-    if type == instrument_string_choices['probe'][0] or type == 0:
-        #R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
-        R = Paratt.Refl_nvary2(theta, wl, 1.0 - l2pi*sld, d, sigma)
+    if type==instrument_string_choices['probe'][0] or type==0:
+        # R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
+        R=Paratt.Refl_nvary2(theta, wl, 1.0-l2pi*sld, d, sigma)
     else:
         raise ValueError('The choice of probe is WRONG')
-    #TODO: Fix corrections
-    #FootprintCorrections
-    #foocor = footprintcorr(Q, instrument)
-    #Resolution corrections
-    #R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
+    # TODO: Fix corrections
+    # FootprintCorrections
+    # foocor = footprintcorr(Q, instrument)
+    # Resolution corrections
+    # R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
 
-    return R*instrument.getI0() + instrument.getIbkg()
+    return R*instrument.getI0()+instrument.getIbkg()
 
-
-def OffSpecular(TwoThetaQz,ThetaQx,sample,instrument):
+def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
     ''' Function that simulates the off-specular signal (not implemented)
     
     # BEGIN Parameters
@@ -427,7 +424,7 @@ def OffSpecular(TwoThetaQz,ThetaQx,sample,instrument):
     # END Parameters
     '''
     raise NotImplementedError('Not implemented use model interdiff insteads')
-    return TwoThetaQz,ThetaQx
+    return TwoThetaQz, ThetaQx
 
 def SLD_calculations(z, item, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
@@ -439,63 +436,63 @@ def SLD_calculations(z, item, sample, inst):
     item 'Re'
     # END Parameters
     '''
-    parameters = sample.resolveLayerParameters()
-    #f = array(parameters['f'], dtype = complex64)
-    e = AA_to_eV/inst.getWavelength()
-    sld_x = refl.cast_to_array(parameters['sld_x'], e)
-    sld_n = array(parameters['sld_n'], dtype = complex64)
-    type = inst.getProbe()
-    magnetic = False
-    mag_sld = 0
-    sld_unit = '10^{-6}\AA^{2}'
-    if type == instrument_string_choices['probe'][0] or type == 0:
-        sld = sld_x
-    elif type == instrument_string_choices['probe'][1] or type == 1 or\
-        type == instrument_string_choices['probe'][4] or type == 4:
-        sld = sld_n
-        sld_unit = '10^{-6}/\AA^{2}'
+    parameters=sample.resolveLayerParameters()
+    # f = array(parameters['f'], dtype = complex64)
+    e=AA_to_eV/inst.getWavelength()
+    sld_x=refl.cast_to_array(parameters['sld_x'], e)
+    sld_n=array(parameters['sld_n'], dtype=complex64)
+    type=inst.getProbe()
+    magnetic=False
+    mag_sld=0
+    sld_unit='10^{-6}\AA^{2}'
+    if type==instrument_string_choices['probe'][0] or type==0:
+        sld=sld_x
+    elif type==instrument_string_choices['probe'][1] or type==1 or \
+            type==instrument_string_choices['probe'][4] or type==4:
+        sld=sld_n
+        sld_unit='10^{-6}/\AA^{2}'
     else:
-        magnetic = True
-        sld = sld_n
-        sld_m = array(parameters['sld_m'], dtype = float64)
-        #Transform to radians
-        magn_ang = array(parameters['magn_ang'], dtype = float64)*pi/180.0
-        mag_sld = sld_m
-        mag_sld_x = mag_sld*cos(magn_ang)
-        mag_sld_y = mag_sld*sin(magn_ang)
-        sld_unit = '10^{-6}/\AA^{2}'
-        
-    d = array(parameters['d'], dtype = float64)
-    d = d[1:-1]
+        magnetic=True
+        sld=sld_n
+        sld_m=array(parameters['sld_m'], dtype=float64)
+        # Transform to radians
+        magn_ang=array(parameters['magn_ang'], dtype=float64)*pi/180.0
+        mag_sld=sld_m
+        mag_sld_x=mag_sld*cos(magn_ang)
+        mag_sld_y=mag_sld*sin(magn_ang)
+        sld_unit='10^{-6}/\AA^{2}'
+
+    d=array(parameters['d'], dtype=float64)
+    d=d[1:-1]
     # Include one extra element - the zero pos (substrate/film interface)
-    int_pos = cumsum(r_[0,d])
-    sigma = array(parameters['sigma'], dtype = float64)[:-1] + 1e-7
+    int_pos=cumsum(r_[0, d])
+    sigma=array(parameters['sigma'], dtype=float64)[:-1]+1e-7
     if z is None:
-        z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
+        z=arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     if not magnetic:
-        rho = sum((sld[:-1] - sld[1:])*(0.5 -
-                                        0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
-        dic = {'Re': real(rho), 'Im': imag(rho), 'z':z, 
-               'SLD unit': sld_unit}
+        rho=sum((sld[:-1]-sld[1:])*(0.5-
+                                    0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+sld[-1]
+        dic={'Re': real(rho), 'Im': imag(rho), 'z': z,
+             'SLD unit': sld_unit}
     else:
-        sld_p = sld + mag_sld
-        sld_m = sld - mag_sld
-        rho_p = sum((sld_p[:-1] - sld_p[1:])*(0.5 -
-                                              0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld_p[-1]
-        rho_m = sum((sld_m[:-1] - sld_m[1:])*(0.5 -
-                                              0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1)  + sld_m[-1]
-        rho_mag_x = sum((mag_sld_x[:-1] - mag_sld_x[1:])*
-                        (0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + mag_sld_x[-1]
-        rho_mag_y = sum((mag_sld_y[:-1] - mag_sld_y[1:])*
-                        (0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + mag_sld_y[-1]
-        #dic = {'Re sld +': real(rho_p), 'Im sld +': imag(rho_p),\
+        sld_p=sld+mag_sld
+        sld_m=sld-mag_sld
+        rho_p=sum((sld_p[:-1]-sld_p[1:])*(0.5-
+                                          0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+sld_p[-1]
+        rho_m=sum((sld_m[:-1]-sld_m[1:])*(0.5-
+                                          0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+sld_m[-1]
+        rho_mag_x=sum((mag_sld_x[:-1]-mag_sld_x[1:])*
+                      (0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+mag_sld_x[-1]
+        rho_mag_y=sum((mag_sld_y[:-1]-mag_sld_y[1:])*
+                      (0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+mag_sld_y[-1]
+        # dic = {'Re sld +': real(rho_p), 'Im sld +': imag(rho_p),\
         #        'Re sld -': real(rho_m), 'Im sld -': imag(rho_m), 'z':z,
         #        'SLD unit': sld_unit}
-        rho_nucl = (rho_p + rho_m)/2.
-        dic = {'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),
-                'mag': real(rho_p - rho_m)/2, 'mag_x': rho_mag_x, 'mag_y': rho_mag_y,
-                'z':z, 'SLD unit': sld_unit}
-    if item is None or item == 'all':
+        rho_nucl=(rho_p+rho_m)/2.
+        dic={'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),
+             'mag': real(rho_p-rho_m)/2, 'mag_x': rho_mag_x, 'mag_y': rho_mag_y,
+             'z': z, 'SLD unit': sld_unit}
+    if item is None or item=='all':
         return dic
     else:
         try:
@@ -503,17 +500,16 @@ def SLD_calculations(z, item, sample, inst):
         except:
             raise ValueError('The chosen item, %s, does not exist'%item)
 
-SimulationFunctions={'Specular':Specular,
-                     'OffSpecular':OffSpecular,
+SimulationFunctions={'Specular': Specular,
+                     'OffSpecular': OffSpecular,
                      'SLD': SLD_calculations,
                      'EnergySpecular': EnergySpecular,
-                    }
+                     }
 
-
-(Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters,
-                                                      LayerParameters, StackParameters, SampleParameters, SimulationFunctions,
-                                                      ModelID)
-
+(Instrument, Layer, Stack, Sample)=refl.MakeClasses(InstrumentParameters,
+                                                    LayerParameters, StackParameters, SampleParameters,
+                                                    SimulationFunctions,
+                                                    ModelID)
 
 if __name__=='__main__':
     pass

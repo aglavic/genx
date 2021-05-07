@@ -66,7 +66,7 @@ class SAPlotPanel(wx.Panel):
                     dj=data[i+1]
                     li=len(di.x)
                     lj=len(dj.x)
-                    l=min(li,lj)
+                    l=min(li, lj)
                     SAdata=(di.y[:l]-dj.y[:l])/(di.y[:l]+dj.y[:l])
                     if not isnan(SAdata).all():
                         self.plot.ax.plot(di.x[:l], SAdata,
@@ -128,11 +128,11 @@ class Plugin(framework.Template):
         self.parent=parent
 
         # Create the SLD plot
-        SA_plot_panel = self.NewPlotFolder('Spin-Asymmetry')
-        SA_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        SA_plot_panel=self.NewPlotFolder('Spin-Asymmetry')
+        SA_sizer=wx.BoxSizer(wx.HORIZONTAL)
         SA_plot_panel.SetSizer(SA_sizer)
-        self.SA_plot = SAPlotPanel(SA_plot_panel, self)
-        SA_sizer.Add(self.SA_plot, 1, wx.EXPAND|wx.GROW|wx.ALL)
+        self.SA_plot=SAPlotPanel(SA_plot_panel, self)
+        SA_sizer.Add(self.SA_plot, 1, wx.EXPAND | wx.GROW | wx.ALL)
         SA_plot_panel.Layout()
 
     def OnSimulate(self, event):

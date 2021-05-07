@@ -103,17 +103,17 @@ diffuse interfaces.
     calculation but also much slower.</dd>
 '''
 
-#import lib.paratt as Paratt
+# import lib.paratt as Paratt
 from genx.gui_logging import iprint
 from .lib import paratt as Paratt
-__offspec__ = True
+
+__offspec__=True
 try:
     from .lib import offspec
 except Exception as S:
     iprint('Failed to import: offspec, No off-specular simulations possible')
     iprint(S)
-    __offspec__ = False
-    
+    __offspec__=False
 
 from numpy import *
 from scipy.special import erf
@@ -122,36 +122,36 @@ from .lib.instrument import *
 # Preamble to define the parameters needed for the models outlined below:
 ModelID='MingInterdiff'
 # Automatic loading of parameters possible by including this list
-__pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
+__pars__=['Layer', 'Stack', 'Sample', 'Instrument']
 # Used for making choices in the GUI
-instrument_string_choices = {'coords': ['q','tth'],
-                             'restype': ['no conv', 'fast conv',
-                                         'full conv and varying res.', 'fast conv + varying res.'],
-                             'footype': ['no corr', 'gauss beam', 'square beam']}
-    
-InstrumentParameters={'wavelength':1.54,'coords':'tth','I0':1.0,'res':0.001,
-                      'restype':'no conv','respoints':5,'resintrange':2,'beamw':0.01,'footype': 'no corr',
-                      'samplelen':10.0, 'Ibkg': 0.0, 'taylor_n': 1}
+instrument_string_choices={'coords': ['q', 'tth'],
+                           'restype': ['no conv', 'fast conv',
+                                       'full conv and varying res.', 'fast conv + varying res.'],
+                           'footype': ['no corr', 'gauss beam', 'square beam']}
+
+InstrumentParameters={'wavelength': 1.54, 'coords': 'tth', 'I0': 1.0, 'res': 0.001,
+                      'restype': 'no conv', 'respoints': 5, 'resintrange': 2, 'beamw': 0.01, 'footype': 'no corr',
+                      'samplelen': 10.0, 'Ibkg': 0.0, 'taylor_n': 1}
 # Coordinates=1 => twothetainput
 # Coordinates=0 => Q input
-#Res stddev of resolution
-#ResType 0: No resolution convlution
+# Res stddev of resolution
+# ResType 0: No resolution convlution
 #               1: Fast convolution
 #               2: Full Convolution +varying resolution
 #               3: Fast convolution varying resolution
-#ResPoints Number of points for the convolution only valid for ResolutionType=2
-#ResIntrange Number of standard deviatons to integrate over default 2
+# ResPoints Number of points for the convolution only valid for ResolutionType=2
+# ResIntrange Number of standard deviatons to integrate over default 2
 # Parameters for footprint coorections
 # Footype: 0: No corections for footprint
 #          1: Correction for Gaussian beam => Beaw given in mm and stddev
 #          2: Correction for square profile => Beaw given in full width mm
 # Samlen= Samplelength in mm.
 
-LayerParameters = {'sigmai':0.0, 'sigmar':0.0, 'dens':1.0, 'd':0.0,
-                   'f':0.0+0.0j}
-StackParameters = {'Layers':[], 'Repetitions':1}
-SampleParameters = {'Stacks':[], 'Ambient':None, 'Substrate':None, 'h':1.0,
-                    'eta_z':10.0, 'eta_x':10.0}
+LayerParameters={'sigmai': 0.0, 'sigmar': 0.0, 'dens': 1.0, 'd': 0.0,
+                 'f': 0.0+0.0j}
+StackParameters={'Layers': [], 'Repetitions': 1}
+SampleParameters={'Stacks': [], 'Ambient': None, 'Substrate': None, 'h': 1.0,
+                  'eta_z': 10.0, 'eta_x': 10.0}
 
 def Specular(TwoThetaQz, sample, instrument):
     ''' Simulate the specular signal from sample when proped with instrument
@@ -161,65 +161,65 @@ def Specular(TwoThetaQz, sample, instrument):
     # END Parameters
     '''
     # preamble to get it working with my class interface
-    restype = instrument.getRestype()
+    restype=instrument.getRestype()
 
-    if restype == 2 or restype == instrument_string_choices['restype'][2]:
-            (TwoThetaQz,weight) = ResolutionVector(TwoThetaQz[:],
-                                                   instrument.getRes(), instrument.getRespoints(),
-                                                   range=instrument.getResintrange())
-    if instrument.getCoords() == 1 or\
-        instrument.getCoords() == instrument_string_choices['coords'][1]:
-        theta = TwoThetaQz/2
-    elif instrument.getCoords() == 0 or\
-        instrument.getCoords() == instrument_string_choices['coords'][0]:
-        theta = arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
-    
-    lamda = instrument.getWavelength()
-    parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = float64)
-    #print [type(f) for f in parameters['f']]
-    f = array(parameters['f'], dtype = complex128)
-    re = 2.82e-13*1e2/1e-10
-    n = 1 - dens*re*lamda**2/2/pi*f*1e-4
-    d = array(parameters['d'], dtype = float64)
-    #d = d[1:-1]
-    sigmar = array(parameters['sigmar'], dtype = float64)
-    #sigmar = sigmar[:-1]
-    sigmai = array(parameters['sigmai'], dtype = float64)
-    #sigmai = sigmai[:-1]
-    sigma = sqrt(sigmai**2 + sigmar**2)
-    #print sigma
-    
-    R = Paratt.Refl(theta, lamda, n, d, sigma)*instrument.getI0()
+    if restype==2 or restype==instrument_string_choices['restype'][2]:
+        (TwoThetaQz, weight)=ResolutionVector(TwoThetaQz[:],
+                                              instrument.getRes(), instrument.getRespoints(),
+                                              range=instrument.getResintrange())
+    if instrument.getCoords()==1 or \
+            instrument.getCoords()==instrument_string_choices['coords'][1]:
+        theta=TwoThetaQz/2
+    elif instrument.getCoords()==0 or \
+            instrument.getCoords()==instrument_string_choices['coords'][0]:
+        theta=arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
 
-    #FootprintCorrections
-    
-    foocor = 1.0
-    footype = instrument.getFootype()
-    beamw = instrument.getBeamw()
-    samlen = instrument.getSamplelen()
-    if footype == 0 or footype == instrument_string_choices['footype'][0]:
-        foocor = 1.0
-    elif footype == 1 or footype == instrument_string_choices['footype'][1]:
-        foocor = GaussIntensity(theta, samlen/2.0, samlen/2.0, beamw)
-    elif footype == 2 or footype == instrument_string_choices['footype'][2]:
-        foocor = SquareIntensity(theta, samlen, beamw)
+    lamda=instrument.getWavelength()
+    parameters=sample.resolveLayerParameters()
+    dens=array(parameters['dens'], dtype=float64)
+    # print [type(f) for f in parameters['f']]
+    f=array(parameters['f'], dtype=complex128)
+    re=2.82e-13*1e2/1e-10
+    n=1-dens*re*lamda**2/2/pi*f*1e-4
+    d=array(parameters['d'], dtype=float64)
+    # d = d[1:-1]
+    sigmar=array(parameters['sigmar'], dtype=float64)
+    # sigmar = sigmar[:-1]
+    sigmai=array(parameters['sigmai'], dtype=float64)
+    # sigmai = sigmai[:-1]
+    sigma=sqrt(sigmai**2+sigmar**2)
+    # print sigma
+
+    R=Paratt.Refl(theta, lamda, n, d, sigma)*instrument.getI0()
+
+    # FootprintCorrections
+
+    foocor=1.0
+    footype=instrument.getFootype()
+    beamw=instrument.getBeamw()
+    samlen=instrument.getSamplelen()
+    if footype==0 or footype==instrument_string_choices['footype'][0]:
+        foocor=1.0
+    elif footype==1 or footype==instrument_string_choices['footype'][1]:
+        foocor=GaussIntensity(theta, samlen/2.0, samlen/2.0, beamw)
+    elif footype==2 or footype==instrument_string_choices['footype'][2]:
+        foocor=SquareIntensity(theta, samlen, beamw)
     else:
         raise ValueError('Variable footype has an unvalid value')
-    
-    if restype == 0 or restype == instrument_string_choices['restype'][0]:
-        R = R[:]*foocor
-    elif restype == 1 or restype == instrument_string_choices['restype'][1]:
-        R = ConvoluteFast(TwoThetaQz,R[:]*foocor, instrument.getRes(),
-                          range = instrument.getResintrange())
-    elif restype == 2 or restype == instrument_string_choices['restype'][2]:
-        R = ConvoluteResolutionVector(TwoThetaQz,R[:]*foocor, weight)
-    elif restype == 3 or restype == instrument_string_choices['restype'][3]:
-        R = ConvoluteFastVar(TwoThetaQz,R[:]*foocor, instrument.getRes(),
-                             range = instrument.getResintrange())
+
+    if restype==0 or restype==instrument_string_choices['restype'][0]:
+        R=R[:]*foocor
+    elif restype==1 or restype==instrument_string_choices['restype'][1]:
+        R=ConvoluteFast(TwoThetaQz, R[:]*foocor, instrument.getRes(),
+                        range=instrument.getResintrange())
+    elif restype==2 or restype==instrument_string_choices['restype'][2]:
+        R=ConvoluteResolutionVector(TwoThetaQz, R[:]*foocor, weight)
+    elif restype==3 or restype==instrument_string_choices['restype'][3]:
+        R=ConvoluteFastVar(TwoThetaQz, R[:]*foocor, instrument.getRes(),
+                           range=instrument.getResintrange())
     else:
         raise ValueError('Variable restype has an unvalid value')
-    return R + instrument.getIbkg()
+    return R+instrument.getIbkg()
 
 def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     ''' Function that simulates the off-specular signal (not implemented)
@@ -229,53 +229,55 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     ThetaQx data.x
     # END Parameters
     '''
-    lamda = instrument.getWavelength()
-    if instrument.getCoords() == 1 or\
-        instrument.getCoords() == instrument_string_choices['coords'][1]:
-        alphaR1 = ThetaQx
-        betaR1 = TwoThetaQz - ThetaQx
-        qx = 2*pi/lamda*(cos(alphaR1*pi/180) - cos(betaR1*pi/180))
-        qz = 2*pi/lamda*(sin(alphaR1*pi/180) + sin(betaR1*pi/180))
+    lamda=instrument.getWavelength()
+    if instrument.getCoords()==1 or \
+            instrument.getCoords()==instrument_string_choices['coords'][1]:
+        alphaR1=ThetaQx
+        betaR1=TwoThetaQz-ThetaQx
+        qx=2*pi/lamda*(cos(alphaR1*pi/180)-cos(betaR1*pi/180))
+        qz=2*pi/lamda*(sin(alphaR1*pi/180)+sin(betaR1*pi/180))
     else:
-        qz = TwoThetaQz
-        qx = ThetaQx
+        qz=TwoThetaQz
+        qx=ThetaQx
 
-    #print qx
-    #print qz
-    parameters = sample.resolveLayerParameters()
+    # print qx
+    # print qz
+    parameters=sample.resolveLayerParameters()
+
     def toarray(a, code):
-        a = list(a)
+        a=list(a)
         a.reverse()
-        return array(a, dtype = code)
-    dens = array(parameters['dens'], dtype = complex64)
-    f = array(parameters['f'], dtype = complex64)
-    re = 2.82e-13*1e2/1e-10
-    n = 1 - dens*re*lamda**2/2/pi*f*1e-4
-    n = toarray(n, code = complex64)
-    sigmar = toarray(parameters['sigmar'], code = float64)
-    sigmar = sigmar[1:]
-    #print sigmar
-    sigmai = toarray(parameters['sigmai'],code = float64)
-    sigmai = sigmai[1:] + 1e-5
-    #print sigmai
-    d=toarray(parameters['d'], code = float64)
+        return array(a, dtype=code)
+
+    dens=array(parameters['dens'], dtype=complex64)
+    f=array(parameters['f'], dtype=complex64)
+    re=2.82e-13*1e2/1e-10
+    n=1-dens*re*lamda**2/2/pi*f*1e-4
+    n=toarray(n, code=complex64)
+    sigmar=toarray(parameters['sigmar'], code=float64)
+    sigmar=sigmar[1:]
+    # print sigmar
+    sigmai=toarray(parameters['sigmai'], code=float64)
+    sigmai=sigmai[1:]+1e-5
+    # print sigmai
+    d=toarray(parameters['d'], code=float64)
     d=r_[0, d[1:-1]]
-    #print d
-    z = -cumsum(d)
-    #print z
-    eta = sample.getEta_x()
-    #print eta
-    h = sample.getH()
-    #print h
-    eta_z = sample.getEta_z()
-    #print eta_z
+    # print d
+    z=-cumsum(d)
+    # print z
+    eta=sample.getEta_x()
+    # print eta
+    h=sample.getH()
+    # print h
+    eta_z=sample.getEta_z()
+    # print eta_z
     if __offspec__:
-        (I, alpha, omega) = lib.offspec.DWBA_Interdiff(qx, qz, lamda, n, z,
-                                                       sigmar, sigmai, eta, h, eta_z, d,
-                                                       taylor_n = instrument.getTaylor_n())
+        (I, alpha, omega)=lib.offspec.DWBA_Interdiff(qx, qz, lamda, n, z,
+                                                     sigmar, sigmai, eta, h, eta_z, d,
+                                                     taylor_n=instrument.getTaylor_n())
     else:
         I=ones(len(qx*qz))
-    return real(I)*instrument.getI0() + instrument.getIbkg()
+    return real(I)*instrument.getI0()+instrument.getIbkg()
 
 def SLD_calculations(z, item, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
@@ -285,50 +287,49 @@ def SLD_calculations(z, item, sample, inst):
     item "Re"
     # END Parameters
     '''
-    parameters = sample.resolveLayerParameters()
-    dens = array(parameters['dens'], dtype = complex64)
-    f = array(parameters['f'], dtype = complex64)
-    sld = dens*f
-    d_sld = sld[:-1] - sld[1:]
-    d = array(parameters['d'], dtype = float64)
-    d = d[1:-1]
+    parameters=sample.resolveLayerParameters()
+    dens=array(parameters['dens'], dtype=complex64)
+    f=array(parameters['f'], dtype=complex64)
+    sld=dens*f
+    d_sld=sld[:-1]-sld[1:]
+    d=array(parameters['d'], dtype=float64)
+    d=d[1:-1]
     # Include one extra element - the zero pos (substrate/film interface)
-    int_pos = cumsum(r_[0,d])
-    sigmar = array(parameters['sigmar'], dtype = float64)
-    sigmar = sigmar[:-1]
-    sigmai = array(parameters['sigmai'], dtype = float64)
-    sigmai = sigmai[:-1]
-    sigma = sqrt(sigmai**2 + sigmar**2)+1e-7
+    int_pos=cumsum(r_[0, d])
+    sigmar=array(parameters['sigmar'], dtype=float64)
+    sigmar=sigmar[:-1]
+    sigmai=array(parameters['sigmai'], dtype=float64)
+    sigmai=sigmai[:-1]
+    sigma=sqrt(sigmai**2+sigmar**2)+1e-7
     if z is None:
-        z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
-    rho = sum(d_sld*(0.5 - 0.5*erf((z[:,newaxis]-int_pos)/sqrt(2.)/sigma)), 1) + sld[-1]
-    dic = {'Re': real(rho), 'Im': imag(rho), 'z':z,
-            'SLD unit': 'r_{e}/\AA^{3}'}
-    if item is None or item == 'all':
+        z=arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
+    rho=sum(d_sld*(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+sld[-1]
+    dic={'Re': real(rho), 'Im': imag(rho), 'z': z,
+         'SLD unit': 'r_{e}/\AA^{3}'}
+    if item is None or item=='all':
         return dic
     else:
         try:
             return dic[item]
         except:
             raise ValueError('The chosen item, %s, does not exist'%item)
-    
 
-SimulationFunctions = {'Specular':Specular,
-                       'OffSpecular':OffSpecularMingInterdiff,
-                       'SLD': SLD_calculations}
+SimulationFunctions={'Specular': Specular,
+                     'OffSpecular': OffSpecularMingInterdiff,
+                     'SLD': SLD_calculations}
 
 from .lib import refl as Refl
-(Instrument, Layer, Stack, Sample) = Refl.MakeClasses(InstrumentParameters,
-                                                      LayerParameters,StackParameters,
-                                                      SampleParameters, SimulationFunctions, ModelID)
 
+(Instrument, Layer, Stack, Sample)=Refl.MakeClasses(InstrumentParameters,
+                                                    LayerParameters, StackParameters,
+                                                    SampleParameters, SimulationFunctions, ModelID)
 
 if __name__=='__main__':
-    Fe=Layer(d=10,sigmar=3.0,n=1-2.247e-5+2.891e-6j)
-    Si=Layer(d=15,sigmar=3.0,n=1-7.577e-6+1.756e-7j)
-    sub=Layer(sigmar=3.0,n=1-7.577e-6+1.756e-7j)
-    amb=Layer(n=1.0,sigmar=1.0)
-    stack=Stack(Layers=[Fe,Si],Repetitions=20)
-    sample=Sample(Stacks=[stack],Ambient=amb,Substrate=sub,eta_z=500.0,eta_x=100.0)
+    Fe=Layer(d=10, sigmar=3.0, n=1-2.247e-5+2.891e-6j)
+    Si=Layer(d=15, sigmar=3.0, n=1-7.577e-6+1.756e-7j)
+    sub=Layer(sigmar=3.0, n=1-7.577e-6+1.756e-7j)
+    amb=Layer(n=1.0, sigmar=1.0)
+    stack=Stack(Layers=[Fe, Si], Repetitions=20)
+    sample=Sample(Stacks=[stack], Ambient=amb, Substrate=sub, eta_z=500.0, eta_x=100.0)
     iprint(sample)
-    inst=Instrument(Wavelength=1.54,Coordinates=1)
+    inst=Instrument(Wavelength=1.54, Coordinates=1)

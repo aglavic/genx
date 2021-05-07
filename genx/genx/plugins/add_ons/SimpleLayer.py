@@ -24,7 +24,7 @@ import json
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from math import cos, pi, sqrt
-from genx.models.utils import UserVars, fp, fw, bc, bw, __bc_dict__ #@UnusedImport
+from genx.models.utils import UserVars, fp, fw, bc, bw, __bc_dict__  # @UnusedImport
 from genx import images as img
 from .. import add_on_framework as framework
 from genx.gui_logging import iprint
@@ -40,33 +40,33 @@ class PluginInterface:
 class RefPluginInterface(PluginInterface):
     def Update(self):
         try:
-          self._plugin.sample_widget.UpdateListbox()
+            self._plugin.sample_widget.UpdateListbox()
         except AttributeError:
-          self._plugin.sample_widget.Update()
+            self._plugin.sample_widget.Update()
 
     def get_selected_layer(self):
         layer_idx=self._plugin.sample_widget.listbox.GetSelection()
         active_layer=self._plugin.sampleh.getItem(layer_idx)
         if active_layer.__class__.__name__=="Stack":
-                # create a new layer to return
+            # create a new layer to return
             self._plugin.sampleh.insertItem(layer_idx, 'Layer', 'WillChange')
             active_layer=self._plugin.sampleh.getItem(layer_idx+1)
         return active_layer
 
     def set_layer_name(self, name):
-        layer_idx = self._plugin.sample_widget.listbox.GetSelection()
+        layer_idx=self._plugin.sample_widget.listbox.GetSelection()
         if self._plugin.sampleh.names[layer_idx] in ['Amb', 'Sub']:
             return
-        active_layer = self._plugin.sampleh.getItem(layer_idx)
-        if active_layer.__class__.__name__ == "Stack":
+        active_layer=self._plugin.sampleh.getItem(layer_idx)
+        if active_layer.__class__.__name__=="Stack":
             # create a new layer to return
-            layer_idx += 1
-        tmpname = name
-        i = 1
+            layer_idx+=1
+        tmpname=name
+        i=1
         while tmpname in self._plugin.sampleh.names:
-            tmpname = '%s_%i'%(name, i)
-            i += 1
-        self._plugin.sampleh.names[layer_idx] = tmpname
+            tmpname='%s_%i'%(name, i)
+            i+=1
+        self._plugin.sampleh.names[layer_idx]=tmpname
 
     def material_apply(self, index, panel=None):
         formula, density=mdb[index]
@@ -74,9 +74,9 @@ class RefPluginInterface(PluginInterface):
             layer=self.get_selected_layer()
         except:
             dlg=wx.MessageDialog(panel,
-                'You have to select a layer or stack before applying material',
-                             caption='Information',
-                             style=wx.OK|wx.ICON_INFORMATION)
+                                 'You have to select a layer or stack before applying material',
+                                 caption='Information',
+                                 style=wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -111,9 +111,9 @@ class SimplePluginInterface(PluginInterface):
         row, layer_type=self.get_selected_layer()
         if layer_type is None:
             dlg=wx.MessageDialog(panel,
-                'You have to select a layer to apply the material to',
-                             caption='Information',
-                             style=wx.OK|wx.ICON_INFORMATION)
+                                 'You have to select a layer to apply the material to',
+                                 caption='Information',
+                                 style=wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -121,11 +121,11 @@ class SimplePluginInterface(PluginInterface):
         t=self._plugin.sample_widget.sample_table
         if layer_type=='Mixure':
             col=g.GetGridCursorCol()
-            if not col in [2,4]:
+            if not col in [2, 4]:
                 dlg=wx.MessageDialog(panel,
                                      'Select SLD cell to apply material to',
                                      caption='Information',
-                                     style=wx.OK|wx.ICON_INFORMATION)
+                                     style=wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()
                 dlg.Destroy()
                 return
@@ -142,21 +142,21 @@ class SimplePluginInterface(PluginInterface):
 
 class Plugin(framework.Template):
     _refplugin=None
-    
+
     @property
     def refplugin(self):
         # check if reflectivity plugin is None or destoryed, try to connect
         if not self._refplugin:
             self._init_refplugin()
         return self._refplugin
-    
+
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
-        self.parent = parent
+        self.parent=parent
         # on the right side, add a list of materials with their density to selct from
-        materials_panel = self.NewDataFolder('Materials')
-        materials_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.materials_panel = wx.Panel(materials_panel)
+        materials_panel=self.NewDataFolder('Materials')
+        materials_sizer=wx.BoxSizer(wx.HORIZONTAL)
+        self.materials_panel=wx.Panel(materials_panel)
         self.create_materials_list()
         materials_sizer.Add(self.materials_panel, 1, wx.EXPAND | wx.GROW | wx.ALL)
         materials_panel.SetSizer(materials_sizer)
@@ -166,16 +166,16 @@ class Plugin(framework.Template):
         ph=self.parent.plugin_control.plugin_handler
         if 'Reflectivity' in ph.loaded_plugins:
             # connect to the reflectivity plugin for layer creation
-            self._refplugin = RefPluginInterface(
+            self._refplugin=RefPluginInterface(
                 ph.loaded_plugins['Reflectivity'])
         elif 'SimpleReflectivity' in ph.loaded_plugins:
             # connect to the reflectivity plugin for layer creation
-            self._refplugin = SimplePluginInterface(
+            self._refplugin=SimplePluginInterface(
                 ph.loaded_plugins['SimpleReflectivity'])
         else:
             dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
-                             caption='Information',
-                             style=wx.OK|wx.ICON_WARNING)
+                                 caption='Information',
+                                 style=wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
             self._refplugin=None
@@ -195,37 +195,36 @@ class Plugin(framework.Template):
 
         # self.sizer_vert.Add(self.tool_panel, proportion=0, flag=wx.EXPAND, border=5)
         self.sizer_vert.Add((-1, 2))
-        self.sizer_vert.Add(self.materials_list, proportion=1, flag=wx.EXPAND , border=5)
+        self.sizer_vert.Add(self.materials_list, proportion=1, flag=wx.EXPAND, border=5)
         # self.tool_panel.SetSizer(self.sizer_hor)
 
     def create_toolbar(self):
-        self.toolbar = wx.ToolBar(self.materials_panel, style=wx.TB_FLAT|wx.TB_HORIZONTAL)
+        self.toolbar=wx.ToolBar(self.materials_panel, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
 
         dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         newid=wx.NewId()
         self.toolbar.AddTool(newid, label='Add',
-             bitmap=wx.Bitmap(img.add.GetImage().Scale(tb_bmp_size,tb_bmp_size)),
-             shortHelp='Add a material to the list')
+                             bitmap=wx.Bitmap(img.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                             shortHelp='Add a material to the list')
         self.materials_panel.Bind(wx.EVT_TOOL, self.material_add, id=newid)
 
         newid=wx.NewId()
         self.toolbar.AddTool(newid, label='Delete',
-             bitmap=wx.Bitmap(img.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
-             shortHelp='Delete selected materials')
+                             bitmap=wx.Bitmap(img.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                             shortHelp='Delete selected materials')
         self.materials_panel.Bind(wx.EVT_TOOL, self.material_delete, id=newid)
 
         newid=wx.NewId()
         self.toolbar.AddTool(newid, label='Apply',
-             bitmap=wx.Bitmap(img.start_fit.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
-             shortHelp='New Layer/Apply to Layer')
+                             bitmap=wx.Bitmap(img.start_fit.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                             shortHelp='New Layer/Apply to Layer')
         self.materials_panel.Bind(wx.EVT_TOOL, self.material_apply, id=newid)
-        
+
         # self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
         self.sizer_vert.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=2)
         self.toolbar.Realize()
-
 
     def material_add(self, event):
         dialog=MaterialDialog(self.parent)
@@ -244,14 +243,15 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     '''
     The ListCtrl for the materials data.
     '''
+
     def __init__(self, parent, materials_list):
         wx.ListCtrl.__init__(self, parent, -1,
-             style=wx.LC_REPORT|wx.LC_VIRTUAL)
+                             style=wx.LC_REPORT | wx.LC_VIRTUAL)
         ListCtrlAutoWidthMixin.__init__(self)
-        self.materials_list = materials_list
-        self.parent = parent
+        self.materials_list=materials_list
+        self.parent=parent
 
-        font = self.GetFont()
+        font=self.GetFont()
         font.SetPointSize(9)
         self.SetFont(font)
 
@@ -260,21 +260,21 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
 
         # Set the column headers
         for col, (text, width) in enumerate([
-                                             ("Chemical Formula", 80),
-                                             ("n [10⁻⁶Å⁻²]", 60),
-                                             ("kα [rₑ/Å⁻³]", 60),
-                                             ("FU/Å³", 60),
-                                             ("g/cm³", 60)
-                                             ]):
+            ("Chemical Formula", 80),
+            ("n [10⁻⁶Å⁻²]", 60),
+            ("kα [rₑ/Å⁻³]", 60),
+            ("FU/Å³", 60),
+            ("g/cm³", 60)
+            ]):
             self.InsertColumn(col, text, width=width)
-        
+
         self.setResizeColumn(0)
 
     def OnSelectionChanged(self, evt):
         if not self.toggleshow:
-            indices = self._GetSelectedItems()
+            indices=self._GetSelectedItems()
             indices.sort()
-            if not indices == self.show_indices:
+            if not indices==self.show_indices:
                 self.data_cont.show_data(indices)
                 self._UpdateData('Show data set flag toggled',
                                  data_changed=True)
@@ -283,17 +283,17 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         evt.Skip()
 
     def OnGetItemText(self, item, col):
-        if col == 4:
-            return "%.3f" % self.materials_list.dens_mass(item)
-        elif col == 3:
-            return "%.4f" % self.materials_list.dens_FU(item).real
-        elif col == 2:
-            return "%.3f" % self.materials_list.SLDx(item).real
-        elif col == 1:
-            return "%.3f" % self.materials_list.SLDn(item).real
+        if col==4:
+            return "%.3f"%self.materials_list.dens_mass(item)
+        elif col==3:
+            return "%.4f"%self.materials_list.dens_FU(item).real
+        elif col==2:
+            return "%.3f"%self.materials_list.SLDx(item).real
+        elif col==1:
+            return "%.3f"%self.materials_list.SLDn(item).real
         else:
             prev_names=[str(mi[0]) for mi in self.materials_list[:item]]
-            name = str(self.materials_list[item][0])
+            name=str(self.materials_list[item][0])
             prev_count=prev_names.count(name)
             if prev_count>0:
                 name+='-%i'%(prev_count+1)
@@ -304,8 +304,8 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         Function that yields a list of the currently selected items
         position in the list. In order of selction, i.e. no order.
         '''
-        indices = [self.GetFirstSelected()]
-        while indices[-1] != -1:
+        indices=[self.GetFirstSelected()]
+        while indices[-1]!=-1:
             indices.append(self.GetNextSelected(indices[-1]))
 
         # Remove the last will be -1
@@ -318,33 +318,32 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         and return False
         '''
         # Check so that one dataset is selected
-        if len(indices) == 0:
-            dlg = wx.MessageDialog(self, 'At least one data set has to be selected', caption='Information',
-                                   style=wx.OK | wx.ICON_INFORMATION)
+        if len(indices)==0:
+            dlg=wx.MessageDialog(self, 'At least one data set has to be selected', caption='Information',
+                                 style=wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
             return False
         return True
 
     def DeleteItem(self):
-        index = self.GetFirstSelected()
-        item = self.materials_list[index]
-        item_formula = ''
+        index=self.GetFirstSelected()
+        item=self.materials_list[index]
+        item_formula=''
         for element, count in item[0]:
-            if count == 1:
-                item_formula += "%s"%element
-            elif float(count) == int(count):
-                item_formula += "%s%i" % (element, count)
+            if count==1:
+                item_formula+="%s"%element
+            elif float(count)==int(count):
+                item_formula+="%s%i"%(element, count)
             else:
-                item_formula += "%s(%f)" % (element, count)
-
+                item_formula+="%s(%f)"%(element, count)
 
         # Create the dialog box
-        dlg = wx.MessageDialog(self, 'Remove material %s?'%item_formula,
-                               caption = 'Remove?', style=wx.YES_NO | wx.ICON_QUESTION)
+        dlg=wx.MessageDialog(self, 'Remove material %s?'%item_formula,
+                             caption='Remove?', style=wx.YES_NO | wx.ICON_QUESTION)
 
         # Show the dialog box
-        if dlg.ShowModal() == wx.ID_YES:
+        if dlg.ShowModal()==wx.ID_YES:
             self.materials_list.pop(index)
             # Update the list
             self.SetItemCount(len(self.materials_list))
@@ -352,10 +351,9 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
 
         dlg.Destroy()
 
-
     def AddItem(self, item):
-        index = 0
-        while index < len(self.materials_list) and self.materials_list[index][0] < item[0]:
+        index=0
+        while index<len(self.materials_list) and self.materials_list[index][0]<item[0]:
             index+=1
         self.materials_list.insert(index, item)
         self.SetItemCount(len(self.materials_list))
@@ -374,11 +372,11 @@ class MaterialDialog(wx.Dialog):
         self._create_entries()
 
     def _create_entries(self):
-        base_layout = wx.BoxSizer(wx.VERTICAL)
+        base_layout=wx.BoxSizer(wx.VERTICAL)
 
-        table = wx.GridBagSizer(5, 2)
+        table=wx.GridBagSizer(5, 2)
 
-        self.formula_entry = wx.TextCtrl(self, size=(100, 25))
+        self.formula_entry=wx.TextCtrl(self, size=(100, 25))
         self.formula_entry.Bind(wx.EVT_TEXT, self.OnFormulaChanged)
         table.Add(wx.StaticText(self, label="Formula:"), (0, 0), flag=wx.ALIGN_CENTER)
         table.Add(self.formula_entry, (0, 1), span=(1, 2), flag=wx.EXPAND)
@@ -386,8 +384,8 @@ class MaterialDialog(wx.Dialog):
         table.Add(wx.StaticText(self, label="Extracted Elements:"), (1, 0),
                   span=(1, 3), flag=wx.ALIGN_CENTER)
         self.formula_display=wx.TextCtrl(self, size=(150, 100),
-                                         style=wx.TE_MULTILINE|wx.TE_READONLY)
-#        self.formula_display.Enable(False)
+                                         style=wx.TE_MULTILINE | wx.TE_READONLY)
+        #        self.formula_display.Enable(False)
         table.Add(self.formula_display, (2, 0), span=(1, 3), flag=wx.EXPAND)
 
         table.Add(wx.StaticText(self, label="1. Unit Cell Parameters:"), (3, 0),
@@ -425,20 +423,20 @@ class MaterialDialog(wx.Dialog):
 
         global mg, pymysql
         if mg is None:
-          try:
-            global MPRester
-            from pymatgen.ext.matproj import MPRester
-            import pymatgen as mg
-          except ImportError:
-            pass
+            try:
+                global MPRester
+                from pymatgen.ext.matproj import MPRester
+                import pymatgen as mg
+            except ImportError:
+                pass
         if mg is None:
-          mg_txt=wx.StaticText(self, label="Install PyMatGen for Materials Project Query")
-          table.Add(mg_txt, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+            mg_txt=wx.StaticText(self, label="Install PyMatGen for Materials Project Query")
+            table.Add(mg_txt, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
         else:
-          mg_button=wx.Button(self, label="Query The Materials Project")
-          mg_button.Bind(wx.EVT_BUTTON, self.OnQuery)
-          table.Add(mg_button, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
-        
+            mg_button=wx.Button(self, label="Query The Materials Project")
+            mg_button.Bind(wx.EVT_BUTTON, self.OnQuery)
+            table.Add(mg_button, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+
         if pymysql is None:
             try:
                 import pymysql
@@ -457,7 +455,6 @@ class MaterialDialog(wx.Dialog):
                       self.FUs_entry]:
             entry.Bind(wx.EVT_TEXT, self.OnUnitCellChanged)
 
-
         table.Add(wx.StaticText(self, label="2. Physical Parameter:"), (12, 0),
                   span=(1, 3), flag=wx.ALIGN_CENTER)
         self.mass_density=wx.TextCtrl(self, size=(70, 25))
@@ -470,9 +467,9 @@ class MaterialDialog(wx.Dialog):
         table.Add(wx.StaticText(self, label="Density [FU/Å³]:"), (15, 0))
         table.Add(self.result_density, (15, 1), span=(1, 2))
 
-        buttons=self.CreateButtonSizer(wx.OK|wx.CANCEL)
+        buttons=self.CreateButtonSizer(wx.OK | wx.CANCEL)
 
-        base_layout.Add(table, 1, wx.ALIGN_CENTER|wx.TOP)
+        base_layout.Add(table, 1, wx.ALIGN_CENTER | wx.TOP)
         base_layout.Add(buttons, 0, wx.ALIGN_RIGHT)
         self.SetSizerAndFit(base_layout)
 
@@ -492,8 +489,8 @@ class MaterialDialog(wx.Dialog):
     def OnUnitCellChanged(self, event):
         params=[]
         for entry in [self.a_entry, self.b_entry, self.c_entry,
-                        self.alpha_entry, self.beta_entry, self.gamma_entry,
-                        self.FUs_entry]:
+                      self.alpha_entry, self.beta_entry, self.gamma_entry,
+                      self.FUs_entry]:
             try:
                 params.append(float(entry.GetValue()))
             except ValueError:
@@ -527,7 +524,7 @@ class MaterialDialog(wx.Dialog):
                          message="Open a (.cif) File...",
                          wildcard='Crystallographic Information File|*.cif;*.CIF|All Files|*',
                          defaultFile='crystal.cif',
-                         style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
+                         style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
         if fd.ShowModal()==wx.ID_OK:
             filename=fd.GetPath()
             self.extract_cif(filename)
@@ -595,10 +592,10 @@ class MaterialDialog(wx.Dialog):
             # more then one structure available, ask for user input to select appropriate
             items=[]
             for i, ri in enumerate(res):
-                a,b,c=ri[:3]
+                a, b, c=ri[:3]
                 if ri[6] is None:
                     try:
-                        f,calcf=ri[16:18]
+                        f, calcf=ri[16:18]
                         fbase=f.split()[1]
                         cbase=calcf.split()[1]
                         i=0
@@ -672,7 +669,8 @@ class MaterialDialog(wx.Dialog):
             if line.startswith('_cell_formula_units_Z'):
                 cell_params[6]=int(float(line.split()[1]))
             if line.startswith('_chemical_formula_structural'):
-                composition=line.strip().split(None, 1)[1].replace(")", "").replace("(", "").replace("'", "").replace('"', '')
+                composition=line.strip().split(None, 1)[1].replace(")", "").replace("(", "").replace("'", "").replace(
+                    '"', '')
             if line.startswith('_chemical_formula_sum') and composition=='':
                 composition=line.strip().split(None, 1)[1].replace("'", "").replace('"', '')
         self.formula_entry.SetValue(composition)

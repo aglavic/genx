@@ -3,8 +3,8 @@ Help class for the Reflectivity plugin to analyze and change the script.
 """
 import re
 
-avail_models=['spec_nx', 'spec_inhom', 'spec_adaptive' ,
-               'interdiff', 'mag_refl', 'soft_nx']
+avail_models=['spec_nx', 'spec_inhom', 'spec_adaptive',
+              'interdiff', 'mag_refl', 'soft_nx']
 
 def default_html_decorator(name, str):
     return str
@@ -596,17 +596,17 @@ class SampleBuilder:
         layer_names=[t[0] for t in layers]
         stacks=re_stack.findall(sample_text)
 
-        all_names = [layer_names.pop(0)]
+        all_names=[layer_names.pop(0)]
         for stack in stacks:
             all_names.append(stack[0])
-            first_name = stack[1].split(',')[0].strip()
+            first_name=stack[1].split(',')[0].strip()
             # check so stack is non-empty
-            if first_name != '':
+            if first_name!='':
                 # Find all items above the first name in the stack
-                while(layer_names[0] != first_name):
+                while (layer_names[0]!=first_name):
                     all_names.append(layer_names.pop(0))
                 all_names.append(layer_names.pop(0))
-        all_names += layer_names
+        all_names+=layer_names
 
         return all_names, layers, stacks
 
@@ -643,7 +643,7 @@ class SampleBuilder:
             return sample_text
 
     def find_instrument_names(self):
-        script = self.GetModel().script
+        script=self.GetModel().script
         code=self.find_code_segment(script, 'Instrument')
         re_layer=re.compile('([A-Za-z]\w*)\s*=\s*model\.Instrument\s*\((.*)\)\n')
         instrument_strings=re_layer.findall(code)
