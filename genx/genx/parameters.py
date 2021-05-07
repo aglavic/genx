@@ -228,7 +228,6 @@ class Parameters:
 
     def append(self, parameter=None):
         data=list(self.init_data)
-        self.data.append(self.init_data[:])
         out=ConnectedParameter(self, data)
         if parameter is not None:
             out.name=parameter
