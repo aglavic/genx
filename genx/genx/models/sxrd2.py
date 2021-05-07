@@ -165,7 +165,9 @@ class Sample:
     __sim_methods__ = [SimMethodInfo('calc_i', ('h', 'k', 'l'), ('0', '0', 'd.x')),
                        SimMethodInfo('calc_f', ('h', 'k', 'l'), ('0', '0', 'd.x'))]
 
-    def __init__(self, domains=[], cohf=0.0):
+    def __init__(self, domains=None, cohf=0.0):
+        if domains is None:
+            domains=[]
         self.domains = []
         self.set_domains(domains)
         self.cohf = cohf
@@ -210,7 +212,11 @@ class Domain:
     __choices__ = {}
     __sim_methods__ = [SimMethodInfo('calc_f', ('h', 'k', 'l'), ('0', '0', 'd.x'))]
 
-    def __init__(self, bulk_slab, slabs, unit_cell, surface_sym=[], bulk_sym=[], occ=1.0):
+    def __init__(self, bulk_slab, slabs, unit_cell, surface_sym=None, bulk_sym=None, occ=1.0):
+        if surface_sym is None:
+            surface_sym=[]
+        if bulk_sym is None:
+            bulk_sym=[]
         self.set_bulk_slab(bulk_slab)
         self.set_slabs(slabs)
         self.set_surface_sym(surface_sym)

@@ -6,8 +6,12 @@ __author__ = 'Matts Bjorck'
 import numpy as np
 
 class SymTrans:
-    def __init__(self, P=[[1, 0], [0, 1]], t=[0, 0]):
+    def __init__(self, P=None, t=None):
         # TODO: Check size of arrays!
+        if P is None:
+            P=[[1, 0], [0, 1]]
+        if t is None:
+            t=[0, 0]
         self.P = np.array(P, dtype=np.float64)
         self.t = np.array(t, dtype=np.float64)
 

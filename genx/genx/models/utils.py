@@ -183,6 +183,6 @@ if __name__=='__main__':
     iprint("Dispersive database access time: ", (t2-t1)/N)
     t1 = time.time()
     for i in range(N):
-        fp.Fe
+        ignore=fp.Fe
     t2 = time.time()
     iprint("Normal database access time: ", (t2 - t1) / N)

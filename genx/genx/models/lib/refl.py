@@ -493,12 +493,22 @@ class ModelFactory:
 
 
 # Function! to create classes with the model given by the input parameters
-def MakeClasses(InstrumentParameters={'Wavelength': 1.54, 'Coordinates': 1},
-                LayerParameters={'d': 0.0, 'sigma': 0.0, 'n': 0.0 + 0.0j},
-                StackParameters={},
-                SampleParameters={},
-                SimulationFunctions={'Specular': lambda x: x, 'OffSpecular': lambda x: x},
+def MakeClasses(InstrumentParameters=None,
+                LayerParameters=None,
+                StackParameters=None,
+                SampleParameters=None,
+                SimulationFunctions=None,
                 ModelID='Standard'):
+    if InstrumentParameters is None:
+        InstrumentParameters={'Wavelength': 1.54, 'Coordinates': 1}
+    if LayerParameters is None:
+        LayerParameters={'d': 0.0, 'sigma': 0.0, 'n': 0.0+0.0j}
+    if StackParameters is None:
+        StackParameters={}
+    if SampleParameters is None:
+        SampleParameters={}
+    if SimulationFunctions is None:
+        SimulationFunctions={'Specular': lambda x: x, 'OffSpecular': lambda x: x}
     factory = ModelFactory()
     factory.set_layer_parameters(LayerParameters)
     factory.set_stack_parameters(StackParameters)

@@ -759,8 +759,10 @@ class SamplePanel(wx.Panel):
                      name='inst',
                      coords='q')
     
-    def __init__(self, parent, plugin, refindexlist=[]):
+    def __init__(self, parent, plugin, refindexlist=None):
         wx.Panel.__init__(self, parent)
+        if refindexlist is None:
+            refindexlist=[]
         self.refindexlist=refindexlist
         self.plugin=plugin
         self.variable_span=0.25

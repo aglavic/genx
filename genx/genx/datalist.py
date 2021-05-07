@@ -780,8 +780,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         
         self.PopupMenu(menu)
         menu.Destroy()
-        
-()
+
 #END: VirtualDataList
 #==============================================================================
 

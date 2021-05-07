@@ -195,7 +195,7 @@ if __name__ == '__main__':
     Fe.d = 20.0
     q = np.array([0, 0, 0])
     iprint(Fe.sld(q=q))
-    iprint(Fe.d())
+    iprint(Fe.d)
     ML = Stack(reps=10, layers=[Fe, ])
 
     s = Sample(stacks=[ML, ])

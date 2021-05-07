@@ -475,7 +475,7 @@ class wxVTKRenderWindow(baseClass):
                 vy = (windowY-float(y)-1)/(windowY-1)
             (vpxmin,vpymin,vpxmax,vpymax) = renderer.GetViewport()
             
-            if vx >= vpxmin and vx <= vpxmax and vy >= vpymin and vy <= vpymax:
+            if vpxmin<=vx<=vpxmax and vpymin<=vy<=vpymax:
                 self._CurrentRenderer = renderer
                 self._ViewportCenterX = float(windowX)*(vpxmax-vpxmin)/2.0\
                                         +vpxmin

@@ -140,7 +140,11 @@ __pars__ = ['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
 
 class Sample:
     def __init__(self, inst, bulk_slab, slabs, unit_cell,
-                 surface_sym=[], bulk_sym=[]):
+                 surface_sym=None, bulk_sym=None):
+        if surface_sym is None:
+            surface_sym=[]
+        if bulk_sym is None:
+            bulk_sym=[]
         self.set_bulk_slab(bulk_slab)
         self.set_slabs(slabs)
         self.set_surface_sym(surface_sym)
@@ -1005,8 +1009,12 @@ class Instrument:
         self.rholib = rholib
 
 class SymTrans:
-    def __init__(self, P = [[1,0],[0,1]], t = [0,0]):
+    def __init__(self, P=None, t=None):
         # TODO: Check size of arrays!
+        if P is None:
+            P=[[1, 0], [0, 1]]
+        if t is None:
+            t=[0, 0]
         self.P = np.array(P, dtype = np.float64)
         self.t = np.array(t, dtype = np.float64)
 

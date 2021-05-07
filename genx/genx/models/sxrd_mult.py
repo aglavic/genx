@@ -19,8 +19,10 @@ class SLSample:
     substrate according to Fullertons model as given in
     PRB ....
     '''
-    def __init__(self, inst, bulk_slab, superlattice, unitcell, 
-                 bulk_sym = []):
+    def __init__(self, inst, bulk_slab, superlattice, unitcell,
+                 bulk_sym=None):
+        if bulk_sym is None:
+            bulk_sym=[]
         self.set_bulk_slab(bulk_slab)
         self.set_bulk_sym(bulk_sym)
         self.superlattice = superlattice
@@ -108,8 +110,12 @@ class Superlattice:
     '''Class that describe a superlattice, can be subclassed
     to implement different strain profiles, interdiffusion etc..
     '''
-    def __init__(self, inst, unit_cell, a_slab, b_slab, 
-                 a_sym = [], b_sym = []):
+    def __init__(self, inst, unit_cell, a_slab, b_slab,
+                 a_sym=None, b_sym=None):
+        if a_sym is None:
+            a_sym=[]
+        if b_sym is None:
+            b_sym=[]
         self.a_slab = a_slab
         self.b_slab = b_slab
         if not a_sym:
@@ -189,11 +195,15 @@ class SLStandard(Superlattice):
     _pars = {'sigmaa': 1e-12, 'sigmab':1e-12, 'repetitions':2, 'na':2, 
              'nb': 2,'a': 0.0, 'c':1e-12}
 
-    def __init__(self, inst, unit_cell, a_slab, b_slab, 
-                 a_sym = [], b_sym = []):
+    def __init__(self, inst, unit_cell, a_slab, b_slab,
+                 a_sym=None, b_sym=None):
         Superlattice.__init__(self,  inst, unit_cell, a_slab, b_slab, 
                  a_sym = a_sym, b_sym = b_sym)
-        [self._make_set_func(name, self._pars[name]) for name in 
+        if a_sym is None:
+            a_sym=[]
+        if b_sym is None:
+            b_sym=[]
+        [self._make_set_func(name, self._pars[name]) for name in
          list(self._pars.keys())]
         [self._make_get_func(name) for name in list(self._pars.keys())]
 

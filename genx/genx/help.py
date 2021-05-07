@@ -16,7 +16,11 @@ except ImportError:
     def rst_html(text):
         return "For proper display install docutils.<\br>\n"+text
 else:
-    def _role_fn(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    def _role_fn(name, rawtext, text, lineno, inliner, options=None, content=None):
+        if options is None:
+            options={}
+        if content is None:
+            content=[]
         return [], []
     roles.register_canonical_role('mod', _role_fn)
     def rst_html(text):

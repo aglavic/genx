@@ -328,8 +328,10 @@ class SelectCountersPage(wx.adv.WizardPageSimple):
         return data
 
 class CustomManipulationPage(wx.adv.WizardPageSimple):
-    def __init__(self, parent, plugin, data_sets = []):
+    def __init__(self, parent, plugin, data_sets=None):
         wx.adv.WizardPageSimple.__init__(self, parent)
+        if data_sets is None:
+            data_sets=[]
         self.plugin = plugin
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
@@ -433,8 +435,10 @@ class CustomManipulationPage(wx.adv.WizardPageSimple):
 
 class SetNamePage(wx.adv.WizardPageSimple):
 
-    def __init__(self, parent, plugin, data_sets = []):
+    def __init__(self, parent, plugin, data_sets=None):
         wx.adv.WizardPageSimple.__init__(self, parent)
+        if data_sets is None:
+            data_sets=[]
         self.plugin = plugin
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)

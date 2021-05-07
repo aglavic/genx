@@ -213,8 +213,10 @@ class NumericParameter(ArithmeticParameter):
 
 class Enum(Parameter):
     """An enumeration object"""
-    def __init__(self, allowed_values=[], help=""):
+    def __init__(self, allowed_values=None, help=""):
         Parameter.__init__(self, help=help)
+        if allowed_values is None:
+            allowed_values=[]
         self.allowed_values = allowed_values
         self.value = self.allowed_values[0]
 
@@ -242,7 +244,9 @@ class List(MutableSequence):
     """A List object with type checking"""
     protected = True
 
-    def __init__(self, allowed_type=None, value=[], help=""):
+    def __init__(self, allowed_type=None, value=None, help=""):
+        if value is None:
+            value=[]
         self.help = help
         self.allowed_type = allowed_type
         self.data = list()

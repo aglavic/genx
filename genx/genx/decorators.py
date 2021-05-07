@@ -27,15 +27,8 @@ def getinfo(func):
       - dict (the function __dict__ : str)
     """
     assert inspect.ismethod(func) or inspect.isfunction(func)
-    regargs, varargs, varkwargs, defaults=inspect.getargspec(func)
-    argnames=list(regargs)
-    if varargs:
-        argnames.append(varargs)
-    if varkwargs:
-        argnames.append(varkwargs)
-    signature=inspect.formatargspec(regargs, varargs, varkwargs, defaults,
-                                      formatvalue=lambda value: "")[1:-1]
-    output=dict(name=func.__name__, argnames=argnames, signature=signature,
+    signature=inspect.signature(func)
+    output=dict(name=func.__name__, argnames=signature.parameters.keys(), signature=str(signature),
                 defaults=func.__defaults__, doc=func.__doc__,
                 module=func.__module__, dict=func.__dict__,
                 globals=func.__globals__, closure=func.__closure__)

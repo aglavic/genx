@@ -876,12 +876,16 @@ class ObjectScriptInteractor(ScriptInteractor):
         """Get the name of the object"""
         return self.name
 
-    def get_parameter_code(self, extra_pars=[], extra_types={}):
+    def get_parameter_code(self, extra_pars=None, extra_types=None):
         """ Create the code for the parameters in the form [parameter]=[value].
 
         Returns:
             code (string): A string of the code
         """
+        if extra_types is None:
+            extra_types={}
+        if extra_pars is None:
+            extra_pars=[]
         code = ""
         pars = self.parameters + extra_pars
         types = self.types.copy()
@@ -1028,7 +1032,7 @@ class SlabInteractor(ObjectScriptInteractor):
     def __init__(self, **kwargs):
         ObjectScriptInteractor.__init__(self, **kwargs)
         # Locate the atom parameters
-        arg_specs = inspect.getargspec(self.class_impl.add_atom)
+        arg_specs = inspect.getfullargspec(self.class_impl.add_atom)
         self.atom_parameters = arg_specs.args[1:]
         atom_defaults = arg_specs.defaults
 
@@ -1326,7 +1330,7 @@ class SimulationListCtrl(wx.Panel):
 
 class EditList(wx.Panel):
     def __init__(self, parent, object_list=None, default_name='object', edit_dialog=None,
-                 taken_names=None, id=-1, edit_dialog_name='object editor', undeletable_names=[]):
+                 taken_names=None, id=-1, edit_dialog_name='object editor', undeletable_names=None):
         """A List control that allows editing of objects
 
         Parameters:
@@ -1341,6 +1345,8 @@ class EditList(wx.Panel):
         Returns:
             EditList
         """
+        if undeletable_names is None:
+            undeletable_names=[]
         self.parent = parent
         if not object_list:
             object_list = []
@@ -2426,7 +2432,7 @@ class DomainDialog(wx.Dialog):
         return new_domain
 
 class SlabDialog(wx.Dialog):
-    def __init__(self, parent, slab_interactor, id=-1, elements=list(utils.__f0_dict__.keys()), taken_names=[]):
+    def __init__(self, parent, slab_interactor, id=-1, elements=None, taken_names=None):
         """A dialog to define the Slab.
 
         This assumes that Slab implements the add_atom and __init__ with only keyword arguments.
@@ -2442,6 +2448,10 @@ class SlabDialog(wx.Dialog):
         Returns:
             SlabDialog
         """
+        if elements is None:
+            elements=list(utils.__f0_dict__.keys())
+        if taken_names is None:
+            taken_names=[]
         self.text_ctrl_width = 70
         self.atom_panel_left_buffer = 20
         self.vertical_buffer = 10
@@ -3208,8 +3218,8 @@ def test_islands():
 
 
 def test_sxrd():
-    import models.sxrd as model
-    import models.utils as utils
+    import genx.models.sxrd as model
+    import genx.models.utils as utils
 
     code = """
 

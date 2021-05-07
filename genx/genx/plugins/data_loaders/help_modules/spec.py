@@ -148,7 +148,7 @@ def splitSpecString(ips):
 
 class SpecDataFile:
     """ DataFile class for handling spec data files"""
-    def __init__(self, fn, userext = [], **kwargs):
+    def __init__(self, fn, userext=None, **kwargs):
         """Initialize SpecDataFile
 
         Parameters
@@ -161,6 +161,8 @@ class SpecDataFile:
         Returns a SpecDataFile object
 
         """
+        if userext is None:
+            userext=[]
         self.filename = fn
         self.mode = 'concat' # Set the default to concatenate multiple files
 

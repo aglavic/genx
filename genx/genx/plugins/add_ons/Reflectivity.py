@@ -416,8 +416,10 @@ class MyHtmlListBox(wx.html.HtmlListBox):
         return self.html_items[n]
    
 class SamplePanel(wx.Panel):
-    def __init__(self, parent, plugin, refindexlist=[]):
+    def __init__(self, parent, plugin, refindexlist=None):
         wx.Panel.__init__(self, parent)
+        if refindexlist is None:
+            refindexlist=[]
         self.refindexlist = refindexlist
         self.plugin = plugin
         self.variable_span = 0.25
