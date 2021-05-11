@@ -977,8 +977,8 @@ class Model:
         x, fx=driver.fit()
         problem.setp(x)
         dx=driver.stderr()
-        result=OptimizeResult(x=x, dx=driver.stderr(), fun=fx,
-                              success=True, status=0, message="successful termination", )
+        result=OptimizeResult(x=x, dx=driver.stderr(), fun=fx, cov=driver.cov(),
+                              success=True, status=0, message="successful termination")
         if hasattr(driver.fitter, 'state'):
             result.state=driver.fitter.state
         return result

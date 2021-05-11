@@ -391,6 +391,9 @@ class Parameters:
 
         return new_pars
 
+    def __len__(self):
+        return len([di for di in self.data if di[0].strip()!=''])
+
     def __getitem__(self, item):
         return ConnectedParameter(self, self.data[item])
 
