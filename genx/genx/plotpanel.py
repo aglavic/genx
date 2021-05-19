@@ -1129,14 +1129,27 @@ class DataPlotPanel(PlotPanel):
         if len(self.ax.lines)==(len(p_datasets)+len(s_datasets)) and \
                 len(self.ax.collections)==len(pe_datasets):
             for i, data_set in enumerate(p_datasets):
-                self.ax.lines[i].set_data(data_set.x, data_set.y)
+                if self.scale=='linear':
+                    self.ax.lines[i].set_data(data_set.x, data_set.y)
+                elif data_set.use_error:
+                    fltr=(data_set.y-data_set.error)>0
+                    self.ax.lines[i].set_data(data_set.x.compress(fltr), data_set.y.compress(fltr))
+                else:
+                    fltr=data_set.y>0
+                    self.ax.lines[i].set_data(data_set.x.compress(fltr), data_set.y.compress(fltr))
             for j, data_set in enumerate(s_datasets):
                 self.ax.lines[len(p_datasets)+j].set_data(data_set.x, data_set.y_sim)
                 self.error_ax.lines[j].set_data(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0))
             for k, data_set in enumerate(pe_datasets):
                 ybot=data_set.y-data_set.error
                 ytop=data_set.y+data_set.error
-                segment_data=hstack([data_set.x, ybot, data_set.x, ytop]).reshape(2,2,-1).transpose(2,0,1)
+                segment_data=hstack([data_set.x, ybot, data_set.x, ytop]).reshape(2, 2, -1).transpose(2, 0, 1)
+                if self.scale=='log':
+                    if data_set.use_error:
+                        fltr=(data_set.y-data_set.error)>0
+                    else:
+                        fltr=data_set.y>0
+                    segment_data=segment_data[fltr, :,:]
                 self.ax.collections[k].set_segments(segment_data)
         else:
             self.ax.lines=[]
