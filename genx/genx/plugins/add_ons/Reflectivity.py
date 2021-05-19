@@ -1548,6 +1548,7 @@ class SamplePlotPanel(wx.Panel):
 
 class Plugin(framework.Template, SampleBuilder):
     previous_xaxis=None
+    _last_script=None
 
     def __init__(self, parent):
         if 'SimpleReflectivity' in parent.plugin_control.plugin_handler.get_loaded_plugins():
@@ -1625,6 +1626,18 @@ class Plugin(framework.Template, SampleBuilder):
         self.parent.Bind(wx.EVT_MENU, self.OnShowImagSLD, self.mb_show_imag_sld)
 
         self.StatusMessage('Reflectivity plugin loaded')
+
+    def SetModelScript(self, script):
+        framework.Template.SetModelScript(self, script)
+        self._last_script=script
+
+    def InputPageChanged(self, pname):
+        # check if the script was changed and in that case update the model
+        if self.model_obj.script!=self._last_script:
+            try:
+                self.ReadModel(reevaluate=True)
+            except Exception as e:
+                self.ShowErrorDialog("Error in evaluation of model script, old model retained!")
 
     def UpdateScript(self, event):
         self.WriteModel()
@@ -1848,7 +1861,7 @@ class Plugin(framework.Template, SampleBuilder):
     def AppendSim(self, sim_func, inst, args):
         self.simulation_widget.AppendSim(sim_func, inst, args)
 
-    def ReadModel(self):
+    def ReadModel(self, reevaluate=False):
         '''ReadModel(self)  --> None
         
         Reads in the current model and locates layers and stacks
@@ -1943,7 +1956,11 @@ class Plugin(framework.Template, SampleBuilder):
         # The code have a tendency to screw up the model slightly when compiling it - the sample will be connected
         # to the module therefore reset the compiled flag so that the model has to be recompiled before fitting.
         self.GetModel().compiled=False
-        self.StatusMessage('New sample loaded to plugin!')
+        if reevaluate:
+            self.StatusMessage('Model analyzed and plugin updated!')
+        else:
+            self.StatusMessage('New sample loaded to plugin!')
+        self._last_script=self.model_obj.script
 
         # Setup the plot x-axis and simulation standard
         try:

@@ -505,7 +505,8 @@ class MainFrame(wx.Frame):
             line=self.script_editor.GetCurrentLine()
             idn=self.script_editor.GetLineIndentation(line)
             txt=self.script_editor.GetLine(line).strip()
-            if txt.startswith('for ') or txt.startswith('if '):
+            if txt.startswith('for ') or txt.startswith('if ') or \
+                    txt.startswith('elif ') or txt.startswith('else:'):
                 idn+=4
             self.script_editor.InsertText(pos, '\n'+' '*idn)
             self.script_editor.GotoPos(pos+idn+1)

@@ -38,6 +38,19 @@ class Template:
         self.input_pages=[]
         self.data_pages=[]
         self.menus=[]
+        self.parent.input_notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnInputPageChanged)
+
+    def OnInputPageChanged(self, evt):
+        tpage, fpage=evt.GetSelection(), evt.GetOldSelection()
+        if fpage!=tpage:
+            tpanel=self.parent.input_notebook.GetPage(tpage)
+            if tpanel in self.input_pages:
+                self.InputPageChanged(self.parent.input_notebook.GetPageText(tpage))
+        evt.Skip()
+
+    def InputPageChanged(self, pname):
+        # Can be used to react to own plugin pages being selected
+        pass
 
     def NewPlotFolder(self, name, pos=-1):
         '''NewPlotFolder(self, name) --> wx.Panel
