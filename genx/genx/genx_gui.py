@@ -359,6 +359,8 @@ class MainFrame(wx.Frame):
         self.paramter_grid=parametergrid.ParameterGrid(self.input_notebook_grid, self, config=self.config)
         self.input_notebook_script=wx.Panel(self.input_notebook, wx.ID_ANY)
         self.script_editor=wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
+        self.script_editor.SetBackSpaceUnIndents(True)
+        self.script_editor.Bind(wx.EVT_KEY_DOWN, self.ScriptEditorKeyEvent)
 
         debug('setup of MainFrame - properties and layout')
         self.__set_properties()
@@ -496,6 +498,19 @@ class MainFrame(wx.Frame):
         self.model.saved=True
         #### End Manual config
         debug('finished setup of MainFrame')
+
+    def ScriptEditorKeyEvent(self, evt):
+        if evt.GetKeyCode()==13:
+            pos=self.script_editor.GetCurrentPos()
+            line=self.script_editor.GetCurrentLine()
+            idn=self.script_editor.GetLineIndentation(line)
+            txt=self.script_editor.GetLine(line).strip()
+            if txt.startswith('for ') or txt.startswith('if '):
+                idn+=4
+            self.script_editor.InsertText(pos, '\n'+' '*idn)
+            self.script_editor.GotoPos(pos+idn+1)
+        else:
+            evt.Skip()
 
     def __set_properties(self):
         # self.main_frame_toolbar.SetToolBitmapSize((32,32))
