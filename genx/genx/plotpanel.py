@@ -940,6 +940,7 @@ class FigurePrintout(wx.Printout):
 class DataPlotPanel(PlotPanel):
     ''' Class for plotting the data and the fit
     '''
+    _last_poptions=None
 
     def __init__(self, parent, id=-1, color=None, dpi=None
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
@@ -1122,11 +1123,19 @@ class DataPlotPanel(PlotPanel):
             # self.ax = self.figure.add_subplot(111)
             self.create_axes()
 
+        p_options=[self.scale]+[[data_set.data_color, data_set.data_linethickness,
+                                 data_set.data_linetype, data_set.data_symbol,
+                                 data_set.data_symbolsize,
+                                 data_set.sim_color, data_set.sim_linethickness,
+                                 data_set.sim_linetype, data_set.sim_symbol,
+                                 data_set.sim_symbolsize
+                                 ] for data_set in data]
         p_datasets=[data_set for data_set in data if data_set.show]
         pe_datasets=[data_set for data_set in data if data_set.use_error and data_set.show]
         s_datasets=[data_set for data_set in data if data_set.show and data_set.use and
                                                      data_set.x.shape==data_set.y_sim.shape]
-        if len(self.ax.lines)==(len(p_datasets)+len(s_datasets)) and \
+        if self._last_poptions == p_options and \
+                len(self.ax.lines)==(len(p_datasets)+len(s_datasets)) and \
                 len(self.ax.collections)==len(pe_datasets):
             for i, data_set in enumerate(p_datasets):
                 if self.scale=='linear':
@@ -1199,6 +1208,7 @@ class DataPlotPanel(PlotPanel):
             [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
                                 lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
                                 ms=data_set.sim_symbolsize) for data_set in s_datasets]
+            self._last_poptions=p_options
         try:
             self.autoscale_error_ax()
         except ValueError:
