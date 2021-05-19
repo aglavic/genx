@@ -324,7 +324,7 @@ def set_optimiser_pars(optimiser, args):
     # else:
     #    print "kr not set has to be bigger than 0"
 
-if __name__=="__main__":
+def main():
     setup_system()
     import multiprocessing
 
@@ -368,8 +368,8 @@ if __name__=="__main__":
                             help='Save active data set to file. Index starting at 0.')
     data_group.add_argument('-l', '--logfile', dest='logfile', default=None, type=str,
                             help='Output debug information to logfile.')
-    data_group.add_argument('--debug', dest='debug', default=False,
-                            help='Save active data set to file. Index starting at 0.')
+    data_group.add_argument('--debug', dest='debug', default=False, action="store_true",
+                            help='Show additional debug information on console/logfile')
 
     parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
@@ -415,3 +415,6 @@ if __name__=="__main__":
             sys.stdout=open(log_file_path+'/genx.log', 'w')
             sys.stderr=open(log_file_path+'/genx.log', 'w')
         start_interactive(args)
+
+if __name__=="__main__":
+    main()
