@@ -65,14 +65,28 @@ class StatisticalAnalysisDialog(wx.Dialog):
         vbox.Add(hbox, proportion=1, flag=wx.EXPAND)
 
         lpanel=wx.Panel(self)
-        self.grid=Grid(self)
+        gpanel=wx.Panel(self)
+        gbox=wx.BoxSizer(wx.VERTICAL)
+        gpanel.SetSizer(gbox)
+        self.grid=Grid(gpanel)
+        gbox.Add(wx.StaticText(gpanel, label='Estimated covariance matrix:'),
+                 proportion=0, flag=wx.FIXED_MINSIZE)
+        gbox.Add(self.grid, proportion=1, flag=wx.EXPAND)
+        self.normalize_checkbox=wx.CheckBox(gpanel, label='Normalize value (σ_ij/σ_i/σ_j)')
+        self.normalize_checkbox.SetValue(True)
+        self.normalize_checkbox.Bind(wx.EVT_CHECKBOX, self.OnToggleNormalize)
+        gbox.Add(self.normalize_checkbox, proportion=0, flag=wx.FIXED_MINSIZE)
+
         self.grid.CreateGrid(len(model.parameters), len(model.parameters))
+        self.grid.SetColLabelTextOrientation(wx.VERTICAL)
+        self.grid.SetColLabelSize(80)
         for i in range(len(model.parameters)):
             self.grid.SetRowSize(i, 80)
             self.grid.SetColSize(i, 80)
             self.grid.SetColLabelValue(i, '%i'%i)
             self.grid.SetRowLabelValue(i, '%i'%i)
         self.grid.DisableCellEditControl()
+        self.grid.SetMinSize((200,200))
         self.grid.Bind(EVT_GRID_CELL_LEFT_DCLICK, self.OnSelectCell)
         rpanel=PlotPanel(self) #wx.Panel(self)
         rpanel.SetMinSize((200,200))
@@ -80,8 +94,8 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.ax=rpanel.figure.add_subplot(111)
 
         hbox.Add(lpanel, proportion=0, flag=wx.EXPAND|wx.ALIGN_TOP)
-        hbox.Add(self.grid, proportion=0, flag=wx.EXPAND)
-        hbox.Add(rpanel, proportion=3, flag=wx.EXPAND)
+        hbox.Add(gpanel, proportion=1, flag=wx.EXPAND)
+        hbox.Add(rpanel, proportion=1, flag=wx.EXPAND)
 
 
         lsizer=wx.GridSizer(vgap=1, hgap=2, cols=2)
@@ -89,7 +103,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.entries={}
         for key, emin, emax, val in [('pop', 1, 20*len(model.parameters), 2*len(model.parameters)),
                                      ('samples', 1000, 10000000, 10000),
-                                     ('burn', 0, 10000, len(model.parameters)*2)]:
+                                     ('burn', 0, 10000, 200)]:
             lsizer.Add(wx.StaticText(lpanel, label='%s:'%key), flag=wx.FIXED_MINSIZE)
             self.entries[key]=wx.SpinCtrl(lpanel, wx.ID_ANY, min=emin, max=emax, value=str(val))
             lsizer.Add(self.entries[key], flag=wx.FIXED_MINSIZE)
@@ -119,6 +133,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         burn=self.entries['burn'].GetValue()
         samples=self.entries['samples'].GetValue()
         self.pbar.SetRange(int(samples/(len(self.bproblem.model_parameters())*pop))+burn)
+
         res=self.model.bumps_fit(method='dream',
                                  pop=pop, samples=samples, burn=burn,
                                  thin=1, alpha=0, outliers='none', trim=False,
@@ -129,14 +144,22 @@ class StatisticalAnalysisDialog(wx.Dialog):
     def display_bumps(self):
         res=self._res
         self.draw=res.state.draw()
+        self.abs_cov=res.cov
         self.rel_cov=res.cov/res.dx[:,newaxis]/res.dx[newaxis,:]
         rel_max=[0, 1, abs(self.rel_cov[0,1])]
+        if self.normalize_checkbox.IsChecked():
+            display_cov=self.rel_cov
+            fmt="%.6f"
+        else:
+            display_cov=self.abs_cov
+            fmt="%.4g"
         for i, ci in enumerate(self.rel_cov):
             self.grid.SetColLabelValue(i, self.draw.labels[i])
             self.grid.SetRowLabelValue(i, self.draw.labels[i])
             for j, cj in enumerate(ci):
-                self.grid.SetCellValue(i, j, "%.6f"%cj)
+                self.grid.SetCellValue(i, j, fmt%display_cov[i,j])
                 self.grid.SetReadOnly(i, j)
+                self.grid.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
                 if i==j:
                     self.grid.SetCellBackgroundColour(i, j, "#888888")
                 elif abs(cj)>0.4:
@@ -158,6 +181,17 @@ class StatisticalAnalysisDialog(wx.Dialog):
         ax.set_xlabel(self.draw.labels[rel_max[1]])
         ax.set_ylabel(self.draw.labels[rel_max[0]])
         self.plot_panel.flush_plot()
+
+    def OnToggleNormalize(self, evt):
+        if self.normalize_checkbox.IsChecked():
+            display_cov=self.rel_cov
+            fmt="%.6f"
+        else:
+            display_cov=self.abs_cov
+            fmt="%.4g"
+        for i, ci in enumerate(self.rel_cov):
+            for j, cj in enumerate(ci):
+                self.grid.SetCellValue(i, j, fmt%display_cov[i,j])
 
     def OnSelectCell(self, evt):
         i, j=evt.GetCol(), evt.GetRow()
