@@ -610,6 +610,20 @@ class DataSet:
         '''
         self.show=bool(val)
 
+    @property
+    def data_kwds(self):
+        # return all keywords to supply to matplotlib plot functions for this dataset graph
+        return dict(color=self.data_color,
+                    lw=self.data_linethickness, ls=self.data_linetype,
+                    marker=self.data_symbol, ms=self.data_symbolsize)
+
+    @property
+    def sim_kwds(self):
+        # return all keywords to supply to matplotlib plot functions for this simulation graph
+        return dict(color=self.sim_color,
+                    lw=self.sim_linethickness, ls=self.sim_linetype,
+                    marker=self.sim_symbol, ms=self.sim_symbolsize)
+
     def __repr__(self):
         output="DataSet(name=%-15s, show=%s, use=%s, error=%s)"%(self.name, self.show, self.use, self.use_error)
         return output
@@ -1060,23 +1074,23 @@ class DataList:
         prev_box=button.vbox.children
         button.vbox.children=prev_box[:-1]+(ipw.HBox(entries), prev_box[-1])
 
-    def plot(self):
+    def plot(self, data_labels=None, sim_labels=None):
         # convenience function to plot all datasets with matplotlib
         from matplotlib import pyplot as plt
         for i, ds in enumerate(self.items):
+            if data_labels is None:
+                dl='data-%i: %s'%(i, ds.name)
+            else:
+                dl=data_labels[i]
+            if sim_labels is None:
+                sl='model-%i: %s'%(i, ds.name)
+            else:
+                sl=sim_labels[i]
             if not ds.show:
                 continue
-            plt.semilogy(ds.x, ds.y,
-                         color=ds.data_color,
-                         lw=ds.data_linethickness, ls=ds.data_linetype,
-                         marker=ds.data_symbol, ms=ds.data_symbolsize,
-                         label='data-%i: %s'%(i, ds.name))
+            plt.semilogy(ds.x, ds.y, label=dl, **ds.data_kwds)
             if ds.y_sim.shape==ds.y.shape:
-                plt.semilogy(ds.x, ds.y_sim,
-                             color=ds.sim_color,
-                             lw=ds.sim_linethickness, ls=ds.sim_linetype,
-                             marker=ds.sim_symbol, ms=ds.sim_symbolsize,
-                             label='model-%i: %s'%(i, ds.name))
+                plt.semilogy(ds.x, ds.y_sim, label=sl, **ds.sim_kwds)
         plt.legend()
 
 # ==============================================================================

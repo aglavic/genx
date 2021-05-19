@@ -797,9 +797,12 @@ class DiffEv:
         setup for parallel proccesing. Creates a pool of workers with
         as many cpus there is available
         '''
+        # check if CUDA has been activated
+        from genx.models.lib import paratt
+        use_cuda=paratt.Refl.__module__.rsplit('.',1)[1]=='paratt_cuda'
         self.pool=processing.Pool(processes=self.processes,
                                   initializer=parallel_init,
-                                  initargs=(self.model.pickable_copy(),))
+                                  initargs=(self.model.pickable_copy(), use_cuda))
         self.text_output("Starting a pool with %i workers ..."%(self.processes,))
         time.sleep(1.0)
         # print "Starting a pool with ", self.processes, " workers ..."
@@ -1467,13 +1470,27 @@ class DiffEv:
 
 # ==============================================================================
 # Functions that is needed for parallel processing!
-def parallel_init(model_copy):
+def parallel_init(model_copy, use_cuda):
     '''parallel_init(model_copy) --> None
     
     parallel initilization of a pool of processes. The function takes a
     pickle safe copy of the model and resets the script module and the compiles
     the script and creates function to set the variables.
     '''
+    if use_cuda:
+        # activate cuda in subprocesses
+        from genx.models.lib import paratt_cuda
+        from genx.models.lib import neutron_cuda
+        from models.lib import paratt, neutron_refl
+        paratt.Refl=paratt_cuda.Refl
+        paratt.ReflQ=paratt_cuda.ReflQ
+        paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
+        neutron_refl.Refl=neutron_cuda.Refl
+        from genx.models.lib import paratt, neutron_refl
+        paratt.Refl=paratt_cuda.Refl
+        paratt.ReflQ=paratt_cuda.ReflQ
+        paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
+        neutron_refl.Refl=neutron_cuda.Refl
     global model, par_funcs
     model=model_copy
     model._reset_module()
