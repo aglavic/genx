@@ -1085,32 +1085,34 @@ class DataPlotPanel(PlotPanel):
             # self.ax = self.figure.add_subplot(111)
             self.create_axes()
 
-        # This will be somewhat inefficent since everything is updated
-        # at once would be better to update the things that has changed...
-        # Clear axes
-        # self.ax.cla()
-        self.ax.lines=[]
-        self.ax.collections=[]
-        self.error_ax.lines=[]
-        self.error_ax.collections=[]
-        # self.ax.set_title('FOM: None')
-        # plot the data
-        # [self.ax.semilogy(data_set.x, data_set.y, '.'\
-        # ,data_set.x, data_set.y_sim) for data_set in data]
-        [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
-                      lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                      marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
-         for data_set in data if data_set.show]
-        # The same thing for the simulation
-        [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
-                      lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                      marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
-         for data_set in data if data_set.show]
-        # Plot the point by point error:
-        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
-                            lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                            marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
-         for data_set in data if data_set.show]
+        shown_data=[data_set for data_set in data if data_set.show]
+        if len(self.ax.lines)==(2*len(shown_data)):
+            for i, data_set in enumerate(shown_data):
+                self.ax.lines[2*i].set_data(data_set.x, data_set.y)
+                self.ax.lines[2*i+1].set_data(data_set.x, data_set.y_sim)
+                self.error_ax.lines[i].set_data(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0))
+        else:
+            self.ax.lines=[]
+            self.ax.collections=[]
+            self.error_ax.lines=[]
+            self.error_ax.collections=[]
+            # plot the data
+            # [self.ax.semilogy(data_set.x, data_set.y, '.'\
+            # ,data_set.x, data_set.y_sim) for data_set in data]
+            [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
+                          lw=data_set.data_linethickness, ls=data_set.data_linetype,
+                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+             for data_set in shown_data]
+            # The same thing for the simulation
+            [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
+                          lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
+                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+             for data_set in shown_data]
+            # Plot the point by point error:
+            [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
+                                lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
+                                marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+             for data_set in shown_data]
         # Force an update of the plot
         self.autoscale_error_ax()
         self.flush_plot()
@@ -1120,60 +1122,70 @@ class DataPlotPanel(PlotPanel):
             # self.ax = self.figure.add_subplot(111)
             self.create_axes()
 
-        # This will be somewhat inefficent since everything is updated
-        # at once would be better to update the things that has changed...
-        # Clear axes
-        # self.ax.cla()
-        self.ax.lines=[]
-        self.ax.collections=[]
-        self.error_ax.lines=[]
-        self.error_ax.collections=[]
-        # self.ax.set_title('FOM: None')
-        # plot the data
-        # [self.ax.semilogy(data_set.x, data_set.y, '.'\
-        # ,data_set.x, data_set.y_sim) for data_set in data]
-        # Plot the data sets and take care if it is log scaled data
+        p_datasets=[data_set for data_set in data if data_set.show]
+        pe_datasets=[data_set for data_set in data if data_set.use_error and data_set.show]
+        s_datasets=[data_set for data_set in data if data_set.show and data_set.use and
+                                                     data_set.x.shape==data_set.y_sim.shape]
+        if len(self.ax.lines)==(len(p_datasets)+len(s_datasets)) and \
+                len(self.ax.collections)==len(pe_datasets):
+            for i, data_set in enumerate(p_datasets):
+                self.ax.lines[i].set_data(data_set.x, data_set.y)
+            for j, data_set in enumerate(s_datasets):
+                self.ax.lines[len(p_datasets)+j].set_data(data_set.x, data_set.y_sim)
+                self.error_ax.lines[j].set_data(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0))
+            for k, data_set in enumerate(pe_datasets):
+                ybot=data_set.y-data_set.error
+                ytop=data_set.y+data_set.error
+                segment_data=hstack([data_set.x, ybot, data_set.x, ytop]).reshape(2,2,-1).transpose(2,0,1)
+                self.ax.collections[k].set_segments(segment_data)
+        else:
+            self.ax.lines=[]
+            self.ax.collections=[]
+            self.error_ax.lines=[]
+            self.error_ax.collections=[]
+            # plot the data
+            # [self.ax.semilogy(data_set.x, data_set.y, '.'\
+            # ,data_set.x, data_set.y_sim) for data_set in data]
+            # Plot the data sets and take care if it is log scaled data
 
-        if self.scale=='linear':
-            [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
-                          lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
-             for data_set in data if not data_set.use_error and data_set.show]
-            # With errorbars
-            [self.ax.errorbar(data_set.x, data_set.y,
-                              yerr=c_[data_set.error*(data_set.error>0),
-                                      data_set.error].transpose(),
-                              color=data_set.data_color, lw=data_set.data_linethickness,
-                              ls=data_set.data_linetype, marker=data_set.data_symbol,
-                              ms=data_set.data_symbolsize) \
-             for data_set in data if data_set.use_error and data_set.show]
-        if self.scale=='log':
-            [self.ax.plot(data_set.x.compress(data_set.y>0),
-                          data_set.y.compress(data_set.y>0), color=data_set.data_color,
-                          lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
-             for data_set in data if not data_set.use_error and data_set.show]
-            # With errorbars
-            [self.ax.errorbar(data_set.x.compress(data_set.y
-                                                  -data_set.error>0),
-                              data_set.y.compress(data_set.y-data_set.error>0),
-                              yerr=c_[data_set.error*(data_set.error>0),
-                                      data_set.error].transpose().compress(data_set.y-
-                                                                           data_set.error>0),
-                              color=data_set.data_color, lw=data_set.data_linethickness,
-                              ls=data_set.data_linetype, marker=data_set.data_symbol,
-                              ms=data_set.data_symbolsize) \
-             for data_set in data if data_set.use_error and data_set.show]
-        # The same thing for the simulation
-        [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
-                      lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                      marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
-         for data_set in data if data_set.show and data_set.use and data_set.x.shape==data_set.y_sim.shape]
-        [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
-                            lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
-                            ms=data_set.sim_symbolsize) for data_set in data if
-         data_set.show and data_set.x.shape==data_set.y_fom.shape
-         ]
+            if self.scale=='linear':
+                [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
+                              lw=data_set.data_linethickness, ls=data_set.data_linetype,
+                              marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                 for data_set in p_datasets if not data_set.use_error]
+                # With errorbars
+                [self.ax.errorbar(data_set.x, data_set.y,
+                                  yerr=c_[data_set.error*(data_set.error>0),
+                                          data_set.error].transpose(),
+                                  color=data_set.data_color, lw=data_set.data_linethickness,
+                                  ls=data_set.data_linetype, marker=data_set.data_symbol,
+                                  ms=data_set.data_symbolsize) \
+                 for data_set in pe_datasets]
+            if self.scale=='log':
+                [self.ax.plot(data_set.x.compress(data_set.y>0),
+                              data_set.y.compress(data_set.y>0), color=data_set.data_color,
+                              lw=data_set.data_linethickness, ls=data_set.data_linetype,
+                              marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                 for data_set in p_datasets if not data_set.use_error]
+                # With errorbars
+                [self.ax.errorbar(data_set.x.compress(data_set.y
+                                                      -data_set.error>0),
+                                  data_set.y.compress(data_set.y-data_set.error>0),
+                                  yerr=c_[data_set.error*(data_set.error>0),
+                                          data_set.error].transpose().compress(data_set.y-
+                                                                               data_set.error>0),
+                                  color=data_set.data_color, lw=data_set.data_linethickness,
+                                  ls=data_set.data_linetype, marker=data_set.data_symbol,
+                                  ms=data_set.data_symbolsize) \
+                 for data_set in pe_datasets]
+            # The same thing for the simulation
+            [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
+                          lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
+                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+             for data_set in s_datasets]
+            [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
+                                lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
+                                ms=data_set.sim_symbolsize) for data_set in s_datasets]
         try:
             self.autoscale_error_ax()
         except ValueError:

@@ -1771,7 +1771,7 @@ class Plugin(framework.Template, SampleBuilder):
         Updates stuff after simulation
         '''
         # Calculate and update the sld plot
-        self.sld_plot.Plot()
+        wx.CallAfter(self.sld_plot.Plot)
 
     def OnFittingUpdate(self, event):
         '''OnSimulate(self, event) --> None
