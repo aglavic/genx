@@ -77,7 +77,7 @@ import numpy
 from numpy import *
 from scipy import *
 from pylab import *
-import matplotlib.pylab as pylab
+from matplotlib import pylab
 # from fit import fit
 # from ccd.transformations import FileProcessor
 from copy import deepcopy, copy
@@ -131,6 +131,7 @@ class SpecExtension:
 # Now try to load default extensions
 DefaultUserExtensions=[]
 try:
+    # noinspection PyUnresolvedReferences
     from ccd.specext import CCDSpecExtension
 
     DefaultUserExtensions.append(CCDSpecExtension())
@@ -485,6 +486,7 @@ class SpecScan:
         setkeys        : [bool]     If true set items of the class
                                     from all variables.
         """
+        from time import strptime
 
         # Keep track of the datafile
 
@@ -974,10 +976,11 @@ class SpecPlot:
 
         # Plot the data
         if doplot:
+            from scipy.interpolate import griddata
             if new:
                 pylab.figure()
 
-            hold(False)
+            pylab.hold(False)
 
             if twod:
                 xi=linspace(min(self.plotx[:, 0]), max(self.plotx[:, 0]), xint)
@@ -1010,7 +1013,7 @@ class SpecPlot:
                     # errors = False
                     iprint("---- Errorbars disabled due to large errors")
                 if errors:
-                    hold(True)  # Needed for errorbar plots
+                    pylab.hold(True)  # Needed for errorbar plots
                     if log:
                         gca().set_yscale('log')
                     if fmt[0] in ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']:

@@ -1,18 +1,18 @@
-from scipy import *
 from genx.gui_logging import iprint
+from numpy import sqrt, pi, sin, cos, newaxis, ones, array, exp, r_, rollaxis, append, c_, arange, log10
 
 def IntElfield(theta, lamda, n, d):
     # Length of k-vector in vaccum
-    k=2*math.pi/lamda
+    k=2*pi/lamda
     # Calculates the wavevector in each layer
-    Qj=2*k*sqrt(n[:, newaxis]**2-cos(theta*math.pi/180)**2)
+    Qj=2*k*sqrt(n[:, newaxis]**2-cos(theta*pi/180)**2)
     # print Qj
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])
     tp=1+rp
     # tp=2*Qj[1:]/(Qj[1:]+Qj[:-1])
     # print tp.shape
-    # Beta=k*d*n[:-1]*sin(theta*math.pi/180)
+    # Beta=k*d*n[:-1]*sin(theta*pi/180)
     # print Beta.shape
     D=d[:, newaxis]*ones(theta.shape)
     # E_p=[1]
@@ -35,9 +35,9 @@ def IntElfield(theta, lamda, n, d):
 
 def AmpElfield_q(k, kx, lamda, n, d):
     # Length of k-vector in vaccum
-    k=2*math.pi/lamda
+    k=2*pi/lamda
     # Calculates the wavevector in each layer
-    # Qj=2*k*sqrt(n[:,newaxis]**2-cos(theta*math.pi/180)**2)
+    # Qj=2*k*sqrt(n[:,newaxis]**2-cos(theta*pi/180)**2)
     Qj=2*sqrt(k**2*n[:, newaxis]**2-kx**2)
     # Fresnel reflectivity for the interfaces
     rp=(Qj[1:]-Qj[:-1])/(Qj[1:]+Qj[:-1])
@@ -45,7 +45,7 @@ def AmpElfield_q(k, kx, lamda, n, d):
     tp=1+rp
     # tp=2*Qj[1:]/(Qj[1:]+Qj[:-1])
     # print tp.shape
-    # Beta=k*d*n[:-1]*sin(theta*math.pi/180)
+    # Beta=k*d*n[:-1]*sin(theta*pi/180)
     # print Beta.shape
     D=d[:, newaxis]*ones(kx.shape)
     # print D.shape
@@ -187,11 +187,11 @@ if __name__=='__main__':
     # t=io.read_array(f)
     # t=transpose(t)
     # gplt.plot(theta,log10(abs(E_m[-1]/E_p[-1])**2),t[0],log10(t[1]))
-    k=2*math.pi/1.54
+    k=2*pi/1.54
     n=[1, 1-2.24e-5+2.89e-6j, 1-7.57e-6+1.73e-7j]
     n=array(n)
     z=array([0, -1000])
-    # (T,R,k)=AmpElfield2(k*cos(theta*math.pi/180),k*ones(theta.shape), n,z)
+    # (T,R,k)=AmpElfield2(k*cos(theta*pi/180),k*ones(theta.shape), n,z)
     # (T,R,k)=IntElfield(theta,1.54, n, array([0,1000]))
     (T, R, zc, E)=AmpElfield_test(theta, 1.54, n, array([0, 1000, 0]))
     # print T[0]

@@ -171,12 +171,12 @@ import numpy as np
 # import also the custom FOM functions defined in fom_funcs_custom.py
 # (do nothing if file does not exist)
 try:
+    # noinspection PyUnresolvedReferences
     from fom_funcs_custom import *
-    # print "Imported custom-defined FOM functions from fom_funcs_custom.py"
+    from .gui_logging import iprint
+    iprint("Imported custom-defined FOM functions from fom_funcs_custom.py")
 except:
     pass
-    # print "Could not find additional custom-defined FOM functions."
-    # print "Nothing imported. All standard FOM functions are available."
 
 # ==============================================================================
 # BEGIN FOM function defintions

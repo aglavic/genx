@@ -1669,7 +1669,7 @@ class Plugin(framework.Template, SampleBuilder):
     def OnNewModel(self, event):
         ''' Create a new model
         '''
-        dlg=wx.SingleChoiceDialog(self.parent, 'Choose a model type to use', \
+        dlg=wx.SingleChoiceDialog(self.parent, 'Choose a model type to use',
                                   'Models', avail_models,
                                   wx.CHOICEDLG_STYLE
                                   )

@@ -20,7 +20,7 @@ if __MODULE_DIR__!='/':
 
 class PluginController:
     def __init__(self, parent):
-        self.plugin_handler=PluginHandler(parent, __MODULE_DIR__ \
+        self.plugin_handler=PluginHandler(parent, __MODULE_DIR__
                                           , 'data_loaders')
         self.parent=parent
         self.plugin_handler.load_plugin('default')
@@ -71,13 +71,13 @@ class PluginController:
         '''
         cur_plugin=list(self.plugin_handler.loaded_plugins.keys())[0]
         plugin_list=self.plugin_handler.get_possible_plugins()
-        dlg=PluginDialog(self.parent, plugin_list, cur_plugin, \
+        dlg=PluginDialog(self.parent, plugin_list, cur_plugin,
                          self.LoadPlugin)
         dlg.ShowModal()
         dlg.Destroy()
 
 class PluginDialog(wx.Dialog):
-    def __init__(self, parent, plugin_list, current_plugin, \
+    def __init__(self, parent, plugin_list, current_plugin,
                  load_plugin_func=None):
         wx.Dialog.__init__(self, parent, -1, 'Choose a data loader')
 

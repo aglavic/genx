@@ -243,9 +243,8 @@ class ReflBase:
         # Set all parameters given as keyword arguments
         for k in kargs:
             if not k in self._parameters and not k in dir(self):
-                continue
-                raise ValueError('%s is not an parameter in %s'%
-                                 (k, self.__class__))
+                iprint('%s is not an parameter in %s so it is ignored'%
+                       (k, self.__class__.__name__))
             else:
                 setattr(self, k, kargs[k])
 

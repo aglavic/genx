@@ -4,9 +4,9 @@
 # as in real space
 
 # THis one really needs scipy
-from scipy import *
 from numpy import *
 from scipy.special import erf
+from genx.gui_logging import iprint
 
 rad=pi/180.
 sqrt2=sqrt(2.)
@@ -61,7 +61,7 @@ def SpecularRes(tth, I, sigma_alpha, sigma_beta, points):
     resfunc=exp(-(dtth*pi/180.0)**2/2*min(sigmainv2))
     resfunc=resfunc/sum(resfunc)
     # print sum(resfunc)
-    Iconv=convolve(I, resfunc, mode=1)
+    Iconv=convolve(I, resfunc, mode='same')
 
     return Iconv
 
@@ -109,8 +109,8 @@ def ConvoluteFast(Q, I, dQ, range=3):
     Qstep=Q[1]-Q[0]
     resvector=arange(-range*dQ, range*dQ+Qstep, Qstep)
     weight=1/sqrt(2*pi)/dQ*exp(-resvector**2/dQ**2/2)
-    Iconv=convolve(r_[ones(resvector.shape)*I[0], I, ones(resvector.shape)*I[-1]], weight/weight.sum(), mode=1)[
-          resvector.shape[0]:-resvector.shape[0]]
+    Iconv=convolve(r_[ones(resvector.shape)*I[0], I, ones(resvector.shape)*I[-1]], weight/weight.sum(),
+                   mode='same')[resvector.shape[0]:-resvector.shape[0]]
     return Iconv
 
 # Fast convolution - varying resolution
