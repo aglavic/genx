@@ -641,7 +641,7 @@ class Model:
         '''
         self.simulate(True)
         from genx.lib.orso_io import ort, data as odata
-        from genx.version import version
+        from genx.version import __version__ as version
         para_list=[dict([(nj, pij) for nj, pij in zip(self.parameters.data_labels, pi)])
                    for pi in self.parameters.data]
         add_header={'analysis': {
@@ -1033,9 +1033,14 @@ class Model:
                      population=random.randn(x_n_gen*n, x_n_chain*n, n))  # n_gen, n_chain, n_var
         return bdream
 
-    def plot(self):
+    def plot(self, data_labels=None, sim_labels=None):
+        """
+        Plot all datasets in the model wtih matplotlib similar to the display in the GUI.
+        data_labels and sim_labels are lists of strings for each curve,
+        if none is supplied the curve label is created from the dataset names and index.
+        """
         self.simulate()
-        return self.data.plot()
+        return self.data.plot(data_labels=data_labels, sim_labels=sim_labels)
 
     def __repr__(self):
         """
