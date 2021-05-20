@@ -87,7 +87,7 @@ class Plugin(Template):
             dataset.meta['data_source']['facility']='GenX resolution data loader'
             dataset.meta['data_source']['experiment']['instrument']='unkown'
             dataset.meta['data_source']['import_columns']=dict(
-                x=self.x_col, y=self.y_col, error=self.e_col, res=self.res_col)
+                x=self.q_col, y=self.I_col, error=self.eI_col, res=self.res_col)
 
     def SettingsDialog(self):
         '''SettingsDialog(self) --> None
@@ -134,7 +134,7 @@ class SettingsDialog(wx.Dialog):
         for i, name in enumerate(keys):
             text=wx.StaticText(self, -1, name+': ')
             control=wx.SpinCtrl(self)
-            control.SetRange(0, 100)
+            control.SetRange(-1, 100)
             control.SetValue(col_values[name])
             col_grid.Add(text, (i, 0),
                          flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL,

@@ -91,11 +91,11 @@ class Plugin(Template):
             dataset.meta['data_source']['experiment']['instrument']='MagRef (4A)'
             dataset.meta['data_source']['experiment']['probe']='neutron'
             dataset.meta['data_source']['measurement']['scheme']='energy-dispersive'
-            dataset.meta['data_source']['measurement']['omega']={'min': load_array[:, self.ai_col].min(),
-                                                                 'max': load_array[:, self.ai_col].max(),
+            dataset.meta['data_source']['measurement']['omega']={'min': float(load_array[:, self.ai_col].min()),
+                                                                 'max': float(load_array[:, self.ai_col].max()),
                                                                  'unit': 'rad'}
-            dataset.meta['data_source']['measurement']['wavelength']={'min': lamda.min(),
-                                                                      'max': lamda.max(),
+            dataset.meta['data_source']['measurement']['wavelength']={'min': float(lamda.min()),
+                                                                      'max': float(lamda.max()),
                                                                       'unit': 'angstrom'}
             dataset.meta['reduction']={'software': {'name': 'QuickNXS',
                                                     'file_indices': header['Input file indices'],
