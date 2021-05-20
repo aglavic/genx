@@ -1,4 +1,4 @@
-This package contain GenX 3.1 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contain GenX 3.2 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -10,6 +10,23 @@ References
 ==========
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
+
+Changes 3.2.0
+=============
+ * Add simple API for use in python scripts and Jupyter notebooks. Can read, write, modify and fit models
+ * Add some examples of Jupyter notebooks to show usage of API
+ * Integration of GenX models into bumps library (see https://bumps.readthedocs.io/en/latest/index.html )
+ * Dialog for statistical error analysis with bumps MCMC to evaluate cross-correlations of parameters
+ * New export function (alpha) for ORSO text format with detailed header containing analysis information
+ * Improvements to script editor behavior concerning indentation
+ * Reflectivity plugin now re-analyses a manually changed script after it has been run once
+ * SimpleReflectivity now shows an error summary dialog when errorbars are calculated
+ * New 'auto' data loader that chooses the method by file type, supports AMOR, SNS MR, default and resolution loaders
+ * Improvements in reflectivity model performance, possibility to use CUDA with multiprocessing
+ * Improvements in plot performance for data and SLD graphs
+ * Some refactoring of code started
+ * Fix SimpleLayer plugin to allow multiple materials with same chemical formula
+ * Fix some bugs where plot updates could crash the GUI or freeze the SLD graph
 
 Changes 3.1.4
 =============
