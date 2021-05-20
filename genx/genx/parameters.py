@@ -501,6 +501,10 @@ class ConnectedParameter():
     def max(self, value):
         self.data[4]=float(value)
 
+    @property
+    def error(self):
+        return self.data[5]
+
     def __repr__(self):
         """
         Display information about the parameter.

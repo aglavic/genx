@@ -1230,6 +1230,7 @@ class Plugin(framework.Template):
         self.StatusMessage('Simple Reflectivity plugin loaded')
 
         self.parent.Bind(EVT_UPDATE_PARAMETERS, self.OnFitParametersUpdated)
+        self.parent.Bind(EVT_PARAMETER_GRID_CHANGE, self.OnGridMayHaveErrors)
 
     def OnHideAdvanced(self, evt):
         if self.mb_hide_advanced.IsChecked():
@@ -1274,6 +1275,7 @@ class Plugin(framework.Template):
         self.EnableGrid()
 
         self.parent.Unbind(EVT_UPDATE_PARAMETERS, handler=self.OnFitParametersUpdated)
+        self.parent.Unbind(EVT_PARAMETER_GRID_CHANGE, handler=self.OnGridMayHaveErrors)
         framework.Template.Remove(self)
 
     def UpdateScript(self, event):
@@ -1402,6 +1404,74 @@ class Plugin(framework.Template):
     def OnGridChange(self, event):
         self.sample_widget.CheckGridUpdate()
         self.sample_widget.Update(update_script=False)
+
+    def OnGridMayHaveErrors(self, event):
+        errors=[pi.error for pi in self.model_obj.parameters if pi.fit]
+        if len(errors)>0 and not '-' in errors:
+            #  summarize error information on fit parameters
+            error_data=[]
+            ST=self.sample_widget.sample_table
+            layers=ST.get_name_list()
+            for pi in self.model_obj.parameters:
+                try:
+                    name, param=pi.name.split('.', 1)
+                except ValueError:
+                    continue
+                show_data=['', '', '', '']
+                if name in layers:
+                    lidx=ST.get_name_list().index(name)
+                    if lidx==0:
+                        st_data=ST.ambient
+                        name='Ambient'
+                    elif lidx==(len(ST.layers)+1):
+                        name='Substrate'
+                        st_data=ST.substrate
+                    else:
+                        st_data=ST.layers[lidx-1]
+                    if param==_set_func_prefix+'Dens':
+
+                        if st_data[1]=='Formula':
+                            formula=st_data[2]
+                            if formula=='SLD':
+                                # result is SLD
+                                show_data=[name, 'SLD [10^6 Å^-1]', '%.6g'%pi.value, pi.error]
+                            else:
+                                emin,emax=map(float, pi.error.strip('(').strip(')').strip().split(','))
+                                scale=formula.mFU()/MASS_DENSITY_CONVERSION
+                                show_data=[name, 'density [g/cm³]', '%.6g'%(pi.value*scale),
+                                           '(%.4g, %.4g)'%(emin*scale, emax*scale)]
+                        else:
+                            show_data=[name, 'density', '%.6g'%pi.value, pi.error]
+                    elif param==_set_func_prefix+'Magn':
+                        show_data=[name, 'magnetization', '%.6g'%pi.value, pi.error]
+                    elif param==_set_func_prefix+'D':
+                        show_data=[name, 'thickness [Å]', '%.6g'%pi.value, pi.error]
+                    elif param==_set_func_prefix+'Sigma':
+                        show_data=[name, 'roughness [Å]', '%.6g'%pi.value, pi.error]
+                    else:
+                        show_data=[name, param, '%.6g'%pi.value, pi.error]
+                else:
+                    show_data=[pi.name, '', '%.6g'%pi.value, pi.error]
+                error_data.append(show_data)
+            dia=wx.Dialog(self.parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
+            dia.SetTitle('Parameter Error Estimation')
+            box=wx.BoxSizer(wx.VERTICAL)
+            dia.SetSizer(box)
+            grid=wx.grid.Grid(dia)
+            grid.CreateGrid(len(error_data), 4)
+            grid.DisableCellEditControl()
+            grid.SetColLabelValue(0, 'Item')
+            grid.SetColLabelValue(1, 'Parameter')
+            grid.SetColLabelValue(2, 'Value')
+            grid.SetColLabelValue(3, 'Error min/max')
+            for i, row in enumerate(error_data):
+                for j, cell_value in enumerate(row):
+                    grid.SetCellValue(i, j, cell_value)
+            for i in range(4):
+                grid.AutoSizeColumn(i)
+            box.Add(grid, proportion=1, flag=wx.EXPAND)
+            dia.ShowModal()
+        event.Skip()
 
     def OnFitParametersUpdated(self, event):
         grid_parameters=self.GetModel().get_parameters()

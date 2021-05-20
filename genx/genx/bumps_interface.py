@@ -100,10 +100,13 @@ class NBMonitor(TimedUpdate):
             close()
 
 class StatisticalAnalysisDialog(wx.Dialog):
+    rel_cov=None
+
     def __init__(self, parent, model):
         wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
         vbox=wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
+        self.SetTitle('Statistical Analysis of Parameters')
 
         self.ptxt=wx.StaticText(self, label="...")
         self.pbar=wx.Gauge(self, range=1000)
@@ -124,14 +127,15 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.normalize_checkbox.Bind(wx.EVT_CHECKBOX, self.OnToggleNormalize)
         gbox.Add(self.normalize_checkbox, proportion=0, flag=wx.FIXED_MINSIZE)
 
-        self.grid.CreateGrid(len(model.parameters), len(model.parameters))
+        self.grid.CreateGrid(len(model.parameters)+1, len(model.parameters))
         self.grid.SetColLabelTextOrientation(wx.VERTICAL)
         self.grid.SetColLabelSize(80)
         for i in range(len(model.parameters)):
             self.grid.SetRowSize(i, 80)
             self.grid.SetColSize(i, 80)
             self.grid.SetColLabelValue(i, '%i'%i)
-            self.grid.SetRowLabelValue(i, '%i'%i)
+            self.grid.SetRowLabelValue(i+1, '%i'%i)
+        self.grid.SetRowSize(len(model.parameters), 80)
         self.grid.DisableCellEditControl()
         self.grid.SetMinSize((200,200))
         self.grid.Bind(EVT_GRID_CELL_LEFT_DCLICK, self.OnSelectCell)
@@ -200,21 +204,26 @@ class StatisticalAnalysisDialog(wx.Dialog):
         else:
             display_cov=self.abs_cov
             fmt="%.4g"
+        self.grid.SetRowLabelValue(0, 'Value/Error:')
         for i, ci in enumerate(self.rel_cov):
             self.grid.SetColLabelValue(i, self.draw.labels[i])
-            self.grid.SetRowLabelValue(i, self.draw.labels[i])
+            self.grid.SetRowLabelValue(i+1, self.draw.labels[i])
+            self.grid.SetCellValue(0, i, "%.8g\n%.4g"%(res.x[i], res.dx[i]))
+            self.grid.SetCellAlignment(0, i, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+            self.grid.SetReadOnly(0, i)
+            self.grid.SetCellBackgroundColour(0, i, "#cccccc")
             for j, cj in enumerate(ci):
-                self.grid.SetCellValue(i, j, fmt%display_cov[i,j])
-                self.grid.SetReadOnly(i, j)
-                self.grid.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+                self.grid.SetCellValue(i+1, j, fmt%display_cov[i,j])
+                self.grid.SetReadOnly(i+1, j)
+                self.grid.SetCellAlignment(i+1, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
                 if i==j:
-                    self.grid.SetCellBackgroundColour(i, j, "#888888")
+                    self.grid.SetCellBackgroundColour(i+1, j, "#888888")
                 elif abs(cj)>0.4:
-                    self.grid.SetCellBackgroundColour(i, j, "#ffcccc")
+                    self.grid.SetCellBackgroundColour(i+1, j, "#ffcccc")
                 elif abs(cj)>0.3:
-                    self.grid.SetCellBackgroundColour(i, j, "#ffdddd")
+                    self.grid.SetCellBackgroundColour(i+1, j, "#ffdddd")
                 elif abs(cj)>0.2:
-                    self.grid.SetCellBackgroundColour(i, j, "#ffeeee")
+                    self.grid.SetCellBackgroundColour(i+1, j, "#ffeeee")
                 if i!=j and abs(cj)>rel_max[2]:
                     rel_max=[min(i, j), max(i, j), abs(cj)]
         self.hists=_hists(self.draw.points.T, bins=50)
@@ -230,6 +239,9 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.plot_panel.flush_plot()
 
     def OnToggleNormalize(self, evt):
+        if self.rel_cov is None:
+            evt.Skip()
+            return
         if self.normalize_checkbox.IsChecked():
             display_cov=self.rel_cov
             fmt="%.6f"
@@ -238,11 +250,11 @@ class StatisticalAnalysisDialog(wx.Dialog):
             fmt="%.4g"
         for i, ci in enumerate(self.rel_cov):
             for j, cj in enumerate(ci):
-                self.grid.SetCellValue(i, j, fmt%display_cov[i,j])
+                self.grid.SetCellValue(i+1, j, fmt%display_cov[i,j])
 
     def OnSelectCell(self, evt):
-        i, j=evt.GetCol(), evt.GetRow()
-        if i==j:
+        i, j=evt.GetCol(), evt.GetRow()-1
+        if i==j or j==-1:
             return
         elif i>j:
             itmp=i
