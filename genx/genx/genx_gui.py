@@ -116,7 +116,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.eh_mb_import_script, id=self.main_frame_menubar.mb_import_script.GetId())
         self.mb_file.Append(wx.ID_ANY, "Import", mb_import, "")
         mb_export=wx.Menu()
-        self.main_frame_menubar.mb_export_orso=mb_export.Append(wx.ID_ANY, "Export ORT...",
+        self.main_frame_menubar.mb_export_orso=mb_export.Append(wx.ID_ANY, "Export ORT (alpha)...",
                                                                 "Export data and header in ORSO compatible ASCII format")
         self.Bind(wx.EVT_MENU, self.eh_mb_export_orso, id=self.main_frame_menubar.mb_export_orso.GetId())
         self.main_frame_menubar.mb_export_data=mb_export.Append(wx.ID_ANY, "Export Data...",

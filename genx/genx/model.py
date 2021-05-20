@@ -76,6 +76,8 @@ class Model:
         self.fit_xmin=0.01
         self.fit_xmax=0.1
 
+        self.extra_analysis={}
+
     def read_config(self):
         '''Read in the config file
         '''
@@ -585,6 +587,8 @@ class Model:
         self.filename=''
         self.saved=False
 
+        self.extra_analysis={}
+
     def pickable_copy(self):
         '''pickable_copy(self) --> model
         
@@ -642,16 +646,26 @@ class Model:
         self.simulate(True)
         from genx.lib.orso_io import ort, data as odata
         from genx.version import __version__ as version
-        para_list=[dict([(nj, pij) for nj, pij in zip(self.parameters.data_labels, pi)])
-                   for pi in self.parameters.data]
+        para_list=[dict([(nj, tpj(pij)) for nj, pij, tpj in zip(self.parameters.data_labels, pi,
+                                                           [str, float, bool, float, float, str])])
+                   for pi in self.parameters.data if pi[0].strip()!='']
         add_header={'analysis': {
             'software': {'name': 'GenX', 'version': version},
             'script': self.script,
             'parameters': para_list,
             }}
+        # add possible additional analysis data to the header
+        add_header['analysis'].update(self.extra_analysis)
         ds=[]
         for di in self.data:
             header=dict(di.meta)
+            try:
+                import getpass
+                header['creator']['name']=getpass.getuser()
+            except Exception:
+                pass
+            import datetime
+            header['creator']['time']=datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
             header.update(add_header)
             header['data_set']=di.name
             columns=[di.x, di.y, di.error]

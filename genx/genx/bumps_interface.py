@@ -7,6 +7,7 @@ from wx.grid import Grid, EVT_GRID_CELL_LEFT_DCLICK
 import threading
 from numpy import newaxis, maximum
 from matplotlib.colors import LogNorm
+from bumps import __version__ as bumps_version
 from bumps.monitor import TimedUpdate
 from bumps.fitproblem import nllf_scale
 from bumps.formatnum import format_uncertainty
@@ -127,19 +128,20 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.normalize_checkbox.Bind(wx.EVT_CHECKBOX, self.OnToggleNormalize)
         gbox.Add(self.normalize_checkbox, proportion=0, flag=wx.FIXED_MINSIZE)
 
-        self.grid.CreateGrid(len(model.parameters)+1, len(model.parameters))
+        nfparams=len([pi for pi in model.parameters if pi.fit])
+        self.grid.CreateGrid(nfparams+1, nfparams)
         self.grid.SetColLabelTextOrientation(wx.VERTICAL)
         self.grid.SetColLabelSize(80)
-        for i in range(len(model.parameters)):
+        for i in range(nfparams):
             self.grid.SetRowSize(i, 80)
             self.grid.SetColSize(i, 80)
             self.grid.SetColLabelValue(i, '%i'%i)
             self.grid.SetRowLabelValue(i+1, '%i'%i)
-        self.grid.SetRowSize(len(model.parameters), 80)
+        self.grid.SetRowSize(nfparams, 80)
         self.grid.DisableCellEditControl()
         self.grid.SetMinSize((200,200))
         self.grid.Bind(EVT_GRID_CELL_LEFT_DCLICK, self.OnSelectCell)
-        rpanel=PlotPanel(self) #wx.Panel(self)
+        rpanel=PlotPanel(self)
         rpanel.SetMinSize((200,200))
         self.plot_panel=rpanel
         self.ax=rpanel.figure.add_subplot(111)
@@ -152,7 +154,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         lsizer=wx.GridSizer(vgap=1, hgap=2, cols=2)
         lpanel.SetSizer(lsizer)
         self.entries={}
-        for key, emin, emax, val in [('pop', 1, 20*len(model.parameters), 2*len(model.parameters)),
+        for key, emin, emax, val in [('pop', 1, 20*nfparams, 2*nfparams),
                                      ('samples', 1000, 10000000, 10000),
                                      ('burn', 0, 10000, 200)]:
             lsizer.Add(wx.StaticText(lpanel, label='%s:'%key), flag=wx.FIXED_MINSIZE)
@@ -237,6 +239,21 @@ class StatisticalAnalysisDialog(wx.Dialog):
         ax.set_xlabel(self.draw.labels[rel_max[1]])
         ax.set_ylabel(self.draw.labels[rel_max[0]])
         self.plot_panel.flush_plot()
+
+        # add analysis data do model for later storange in export header
+        exdict={}
+        exdict['library']='bumps'
+        exdict['version']=bumps_version
+        exdict['settings']=dict(pop=self.entries['pop'].GetValue(),
+                                burn=self.entries['burn'].GetValue(),
+                                samples=self.entries['samples'].GetValue())
+        exdict['parameters']=[
+            dict(name=li, value=float(xi), error=float(dxi),
+                 cross_correlations=dict((self.draw.labels[j], float(res.cov[i,j]))
+                                         for j in range(len(res.x))))
+            for i, (li, xi, dxi) in enumerate(zip(self.draw.labels, res.x, res.dx))
+            ]
+        self.model.extra_analysis['statistics_mcmc']=exdict
 
     def OnToggleNormalize(self, evt):
         if self.rel_cov is None:

@@ -281,7 +281,7 @@ def export_orso(frame, event):
             frame.main_frame_statusbar.SetStatusText(
                 'Error when exporting data', 1)
         except Exception as e:
-            ShowErrorDialog(frame, str(e), 'export data - model.export_data')
+            ShowErrorDialog(frame, str(e), 'export data - model.export_orso')
             frame.main_frame_statusbar.SetStatusText('Fatal Error', 1)
         else:
             frame.main_frame_statusbar.SetStatusText('Data exported', 1)

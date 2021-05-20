@@ -176,7 +176,7 @@ def write_file(fname, data, header_encoding='yaml', force_ending=True):
             raise ORSOIOError('Unknown header encoding "%s"'%header_encoding)
         with open(fname, 'w') as fh:
             header+=data_header(data[0].columns)
-            np.savetxt(fh, np.array(data[0][:]).T, header=header, fmt='%-16.9e')
+            np.savetxt(fh, data[0].data.T, header=header, fmt='%-16.9e')
             for i, di in enumerate(data[1:]):
                 fh.write('\n')
                 update_dict=dict_change(main_dict, di.header)
@@ -188,7 +188,7 @@ def write_file(fname, data, header_encoding='yaml', force_ending=True):
                 elif header_encoding=='json':
                     header=encode_json(update_dict)
                 header+=data_header(di.columns)
-                np.savetxt(fh, np.array(di[:]).T, header=header, fmt='%-16.9e')
+                np.savetxt(fh, di.data.T, header=header, fmt='%-16.9e')
     else:
         main_dict=data.header
         if header_encoding=='yaml':
@@ -200,4 +200,4 @@ def write_file(fname, data, header_encoding='yaml', force_ending=True):
         else:
             raise ORSOIOError('Unknown header encoding "%s"'%header_encoding)
         header+=data_header(data.columns)
-        np.savetxt(fname, np.array(data[:]).T, header=header, fmt='%-16.9e')
+        np.savetxt(fname, data.data.T, header=header, fmt='%-16.9e')

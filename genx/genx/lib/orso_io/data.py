@@ -76,8 +76,11 @@ class DataColumn(np.ndarray):
     unit=None
     dimension=None
 
-    def __new__(cls, data, name='unset', unit=None, dimension=None, **opts):
-        adata=np.array(data, **opts)
+    def __new__(cls, data, name='unset', unit=None, dimension=None, min_size=None, **opts):
+        adata=np.array(data, dtype=np.float64, **opts)
+        if adata.shape[0]<min_size:
+            appends=np.zeros(min_size-adata.shape[0], dtype=np.float64)
+            adata=np.hstack([adata, appends])
         out=adata.view(cls)
         out.name=name
         out.unit=unit
@@ -103,8 +106,9 @@ class ORSOData():
     def __init__(self, header, data, strict=True):
         if len(data)<3:
             raise ORSOStandardError("Need at least 3 data columns, Qz, R, dR")
-        # make sure the data consists of DataColumn arrays
-        self._data=[DataColumn(di) for di in data]
+        # make sure the data consists of DataColumn arrays with same length
+        maxlen=max([len(di) for di in data])
+        self._data=[DataColumn(di, min_size=maxlen) for di in data]
         if 'columns' in header and len(header['columns'])==len(data):
             for i, ci in enumerate(header['columns']):
                 try:
@@ -153,7 +157,7 @@ class ORSOData():
 
     @property
     def data(self):
-        return np.array(self._data)
+        return np.vstack(self._data)
 
     @property
     def units(self):
