@@ -4,12 +4,14 @@
     <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
     <meta name="description" content="How to install GenX" />
     <meta name="keywords" content="differential evolution, reflectivity, x-ray, xray, neutron, diffraction, fitting, refinement" />
-    <meta name="author" content="Matts Bjorck" />
+    <meta name="author" content="Artur Glavic" />
     <link rel="stylesheet" type="text/css" href="default.css" title="GenX" media="screen,projection" />
     <title>GenX - Installing</title>
+
+    <script src="functions.js"></script>
   </head>
   <body>
-    <div id="container"> <!--#include file="header.html" -->
+    <div id="container"> <div w3-include-html="header.html"></div>
       <div id="navigation">
         <ul>
           <li><a href="index.html">Home</a></li>
@@ -75,17 +77,16 @@
           svn client. </p>
         <br />
         <br />
-        <!--#config timefmt="%A %B %d, %Y" --> <span class="small">Last
-          updated:
-          <!--#echo var="LAST_MODIFIED" --></span> </div>
+         <span class="small">Last updated: 05/21/2021</span>
       <div id="subcontent">
-        <!--#include file="download_box.html" -->
-        <!--<h2>Content</h2>
-        <ul class="menublock">
-          <li><a href="#Requirements">Requirements</a></li>
-          <li><a href="#Installation">Installation</a></li>
-        </ul>-->
-        <!--#include file="left_links.html" --> </div>
-      <!--#include file="footer.html" --> </div>
+        <div w3-include-html="download_box.html"></div>
+        <div w3-include-html="left_links.html"></div>
+      </div>
+      <div w3-include-html="footer.html"></div>
+    </div>
+
+  <script>
+    includeHTML();
+  </script>
   </body>
 </html>

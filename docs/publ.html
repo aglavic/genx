@@ -5,13 +5,15 @@
     <meta content="How to Use GenX" name="description" />
     <meta content="differential evolution, reflectivity, x-ray, xray, neutron, diffraction, fitting, refinement"
       name="keywords" />
-    <meta content="Matts Bjorck" name="author" />
+    <meta content="Artur Glavic" name="author" />
     <link media="screen,projection" title="GenX" href="default.css" type="text/css"
       rel="stylesheet" />
     <title>GenX - How To Use</title>
+
+    <script src="functions.js"></script>
   </head>
   <body>
-    <div id="container"> <!--#include file="header.html" -->
+    <div id="container"> <div w3-include-html="header.html"></div>
       <div id="navigation">
         <ul>
           <li><a href="index.html">Home</a></li>
@@ -32,18 +34,18 @@
 	
         <br />
         <br />
-        <!--#config timefmt="%A %B %d, %Y" --> <span class="small">Last
-          updated:
-          <!--#echo var="LAST_MODIFIED" --></span>
+         <span class="small">Last updated: 05/21/2021</span>
         <p></p>
       </div>
       <div id="subcontent">
-        <!--#include file="download_box.html" -->
-        <!--<h2>Content</h2>
-        <ul class="menublock">
-          <li><a href="#Manual">Manual</a></li>
-        </ul>-->
-        <!--#include file="left_links.html" --> </div>
-      <!--#include file="footer.html" --> </div>
+        <div w3-include-html="download_box.html"></div>
+        <div w3-include-html="left_links.html"></div>
+      </div>
+      <div w3-include-html="footer.html"></div>
+    </div>
+
+  <script>
+    includeHTML();
+  </script>
   </body>
 </html>
