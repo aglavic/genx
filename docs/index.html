@@ -10,6 +10,36 @@
     <link media="screen,projection" title="GenX 3" href="default.css" type="text/css"
       rel="stylesheet" />
     <title>GenX - Home</title>
+
+    <script>
+    function includeHTML() {
+      var z, i, elmnt, file, xhttp;
+      /*loop through a collection of all HTML elements:*/
+      z = document.getElementsByTagName("*");
+      for (i = 0; i < z.length; i++) {
+        elmnt = z[i];
+        /*search for elements with a certain atrribute:*/
+        file = elmnt.getAttribute("w3-include-html");
+        if (file) {
+          /*make an HTTP request using the attribute value as the file name:*/
+          xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+              if (this.status == 200) {elmnt.innerHTML = this.responseText;}
+              if (this.status == 404) {elmnt.innerHTML = "Page not found.";}
+              /*remove the attribute, and call this function once more:*/
+              elmnt.removeAttribute("w3-include-html");
+              includeHTML();
+            }
+          }
+          xhttp.open("GET", file, true);
+          xhttp.send();
+          /*exit the function:*/
+          return;
+        }
+      }
+    };
+    </script>
   </head>
   <body>
     <div id="container"> <!--#include file="header.html" -->
@@ -64,12 +94,19 @@
               src="feed-icon-14x14.png" /></a></h2>
 		<script src="//rss.bloople.net/?url=http%3A%2F%2Fsourceforge.net%2Fexport%2Frss2_projnews.php%3Fgroup_id%3D235219%26rss_fulltext%3D1&detail=-1&limit=3&showtitle=false&type=js"></script>
 		<br /><br />
-         <span class="small">Last updated: {% last_modified_at %}</span>
+         <span class="small">Last updated: 05/21/2021</span>
         <p></p>
       </div>
       <div id="subcontent">
-        <!--#include file="download_box.html" -->
-        <!--#include file="left_links.html" --> </div>
-      <!--#include file="footer.html" --> </div>
+        <div w3-include-html="download_box.html"></div>
+        <div w3-include-html="left_links.html"></div>
+      </div>
+      <div w3-include-html="footer.html"></div>
+    </div>
+
+  <script>
+    includeHTML();
+  </script>
+
   </body>
 </html>
