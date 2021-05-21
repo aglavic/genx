@@ -348,9 +348,10 @@ function toggleSettings(){
 -->
 </script>
 <style type="text/css">
-body { background-color: white; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2; padding: 1em; color: #2E2E2E; width: 50em; margin: auto auto; }
+body { background-color: white; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2; padding: 1em; color: #2E2E2E; width: 50em; margin: auto auto;
+       overflow-x: hidden; }
 
-form#quicksearch { width: auto; border-style: solid; border-color: gray; border-width: 1px 0px; padding: 0.7em 0.5em; display:none; position:relative; }
+form#quicksearch { width: 480px; border-style: solid; border-color: gray; border-width: 1px 0px; padding: 0.7em 0.5em; display:none; position:relative; }
 span#searchstat {padding-left: 1em;}
 
 div#settings { margin-top:0.7em; /* border-bottom: 1px transparent solid; background-color: #efefef; border: 1px grey solid; */ }
@@ -367,7 +368,7 @@ div#settings.hidden {display:none;}
 .invalidsearch { background-color: red; }
 input[type="button"] { background-color: #efefef; border: 1px #2E2E2E solid;}
 
-table { border: 1px gray none; width: 100%; empty-cells: show; border-spacing: 0em 0.1em; margin: 1em 0em; }
+table { border: 1px gray none; width: 480px; empty-cells: show; border-spacing: 0em 0.1em; margin: 1em 0em; table-layout: fixed;}
 th, td { border: none; padding: 0.5em; vertical-align: top; text-align: justify; }
 
 td a { color: navy; text-decoration: none; }
@@ -391,7 +392,7 @@ p.infolinks { margin: 0.3em 0em 0em 0em; padding: 0px; }
 
 <form action="" id="quicksearch">
 <input type="text" id="qs_field" autocomplete="off" placeholder="Type to search..." /> <input type="button" onclick="clearQS()" value="clear" />
-<span id="searchstat">Matching entries: <span id="stat">0</span></span>
+<span id="searchstat">Matches: <span id="stat">0</span></span>
 <div id="showsettings" onclick="toggleSettings()">settings...</div>
 <div id="settings" class="hidden">
 <ul>
