@@ -80,13 +80,27 @@ jobs:
       run: |
         cd genx
         bash debian_build/make_deb.sh
+    - name: Build PyPI package
+      run: |
+        python3 -m build
+    - name: Move dist folder
+      run: |
+        mv dist ../dist
+        cd ..
+    - name: Upload to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
+        allowUpdates: true
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
         name: ubuntu-20-dist
         path: |
-          genx/dist/*.deb
-          genx/dist/*.tar.gz
+          dist/*.deb
+          dist/*.tar.gz
+          dist/*.whl
 
   release:
     runs-on: ubuntu-latest
