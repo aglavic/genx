@@ -75,13 +75,14 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential python3-setuptools
+        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential python3-setuptools python3-pip
     - name: Build binary package
       run: |
         cd genx
         bash debian_build/make_deb.sh
     - name: Build PyPI package
       run: |
+        pip3 install build
         python3 -m build
     - name: Move dist folder
       run: |
