@@ -82,11 +82,12 @@ jobs:
         bash debian_build/make_deb.sh
     - name: Build PyPI package
       run: |
+        cd genx
         pip3 install build
         python3 -m build
     - name: Move dist folder
       run: |
-        mv dist ../dist
+        mv genx/dist ./dist
         cd ..
     - name: Upload to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
