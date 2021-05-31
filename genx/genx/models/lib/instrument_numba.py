@@ -11,9 +11,14 @@ sqrt2=math.sqrt(2.)
     nopython=True, parallel=True, cache=True)
 def GaussIntensity(alpha, s1, s2, sigma_x):
     I=empty_like(alpha)
-    for ai in numba.prange(alpha.shape[0]):
-        sinalpha=math.sin(alpha[ai]*rad)
-        I[ai]=math.erf(s2/sqrt2/sigma_x*sinalpha)
+    if s1==s2:
+        for ai in numba.prange(alpha.shape[0]):
+            sinalpha=math.sin(alpha[ai]*rad)
+            I[ai]=math.erf(s2/sqrt2/sigma_x*sinalpha)
+    else:
+        for ai in numba.prange(alpha.shape[0]):
+            sinalpha=math.sin(alpha[ai]*rad)
+            I[ai]=(math.erf(s1/sqrt2/sigma_x*sinalpha)+math.erf(s2/sqrt2/sigma_x*sinalpha))/2.
     return I
 
 @numba.jit(
@@ -92,7 +97,7 @@ def ResolutionVectorScalar(Q, dQ, points, range):
     Qstep=2.0*range/points*dQ
     NQ=Q.shape[0]
 
-    wscale=1.0/math.sqrt(2.0*pi)/dQ/2
+    wscale=1.0/math.sqrt(2.0*pi)/dQ
 
     for ri in numba.prange(points):
         dq=(ri-(points-1.0)/2.0)*Qstep
@@ -100,7 +105,7 @@ def ResolutionVectorScalar(Q, dQ, points, range):
             Qi=Q[qi]
             Qj=Qi+dq
             Qres[qi+ri*NQ]=Qj
-            weight[ri, qi]=wscale*math.exp(-(Qi-Qj)**2/(dQ)**2)
+            weight[ri, qi]=wscale*math.exp(-(Qi-Qj)**2/(dQ)**2/2.0)
 
     return (Qres, weight)
 
@@ -114,7 +119,7 @@ def ResolutionVectorVector(Q, dQ, points, range):
     Qstep_scale=2.0*range/points
     NQ=Q.shape[0]
 
-    wscale=1.0/math.sqrt(2.0*pi)/2
+    wscale=1.0/math.sqrt(2.0*pi)
 
     for ri in numba.prange(points):
         dq_scale=(ri-(points-1.0)/2.0)*Qstep_scale
@@ -123,7 +128,7 @@ def ResolutionVectorVector(Q, dQ, points, range):
             Qi=Q[qi]
             Qj=Qi+dq
             Qres[qi+ri*NQ]=Qj
-            weight[ri, qi]=wscale*math.exp(-(Qi-Qj)**2/(dQ[qi])**2)/dQ[qi]
+            weight[ri, qi]=wscale*math.exp(-(Qi-Qj)**2/(dQ[qi])**2/2.0)/dQ[qi]
 
     return (Qres, weight)
 
