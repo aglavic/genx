@@ -87,8 +87,9 @@ jobs:
         python3 -m build
     - name: Move dist folder
       run: |
-        mv genx/dist ./dist
-        cd ..
+        mkdir dist
+        mv genx/dist/genx*.whl dist/
+        mv genx/dist/genx*.tar.gz dist/
     - name: Upload to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -100,9 +101,8 @@ jobs:
       with:
         name: ubuntu-20-dist
         path: |
-          dist/*.deb
-          dist/*.tar.gz
-          dist/*.whl
+          genx/dist/*.deb
+          genx/dist/*.tar.gz
 
   release:
     runs-on: ubuntu-latest
