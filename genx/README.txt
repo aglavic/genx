@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.2.1
+=============
+ * Fix error in new Numba functions that calculate the resolution vector (ORSO validation failed)
+
 Changes 3.2.0
 =============
  * Add simple API for use in python scripts and Jupyter notebooks. Can read, write, modify and fit models

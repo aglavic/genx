@@ -1,5 +1,7 @@
 """
 Test that all functions implemented in Numba yield same results as pure python functions.
+
+TODO: add refl and neutron module functions
 """
 import unittest
 import numpy as np
