@@ -480,7 +480,7 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         # val = min(self.max_value, val)
         # self._tc.SetValue('%.5g'%(val))
         # self._tc.SetValue(val)
-        # self._tc.value_change_func(val)
+        self._tc.value_change_func(val)
         self._tc.SetValueChangeCallback(None)
         return float(val)
 
@@ -599,8 +599,7 @@ class ValueCellEditor(gridlib.GridCellEditor):
         self.digits=digits
 
     def Create(self, parent, id, evtHandler):
-        self._tc=wx.TextCtrl(parent, id, style=wx.ALIGN_RIGHT | wx.TE_PROCESS_ENTER,
-                             validator=ctrls.NumberValidator())
+        self._tc=wx.TextCtrl(parent, id, style=wx.ALIGN_RIGHT, validator=ctrls.NumberValidator())
         # self._tc = ctrls.SpinCtrl(parent, id, value=self.value)
         self.SetControl(self._tc)
 
@@ -760,6 +759,8 @@ class ParameterGrid(wx.Panel):
         self.grid=gridlib.Grid(self, -1, style=wx.NO_BORDER)
         self.grid._grid_changed=self._grid_changed
         self.grid.PostValueChangedEvent=self.PostValueChangedEvent
+        self.grid.DisableDragColSize()
+        self.grid.DisableDragRowSize()
         # self.grid.SetForegroundColour('BLUE')
 
         self.do_toolbar()

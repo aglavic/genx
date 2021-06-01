@@ -306,40 +306,30 @@ class NumberValidator(wx.Validator):
         # Does not allow the event to propagate (kills it)
         return
 
-class SpinCtrl(wx.Control):
+class SpinCtrl(wx.TextCtrl):
     def __init__(self, parent, id=wx.NewId(), pos=wx.DefaultPosition, size=wx.DefaultSize, value=0.0,
                  min_value=None, max_value=None, steps=20, digits=6, name="SpinCtrl"):
         self.value=value
+        self.digits=digits
         self.min_value=min_value
         self.max_value=max_value
         self.steps=steps
-        self.digits=digits
         self.value_change_func=None
-        wx.Control.__init__(self, parent, id, pos, size,
-                            wx.NO_BORDER | wx.NO_FULL_REPAINT_ON_RESIZE | wx.CLIP_CHILDREN | wx.TAB_TRAVERSAL,
-                            wx.DefaultValidator, name)
-        self.SetLabel(name)
-        self.parent=parent
-        self._text=wx.TextCtrl(self, wx.NewId(), pos=pos, size=wx.Size(size.GetWidth()-16, size.GetHeight()),
-                               style=wx.TE_RIGHT | wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB,
-                               value="%.*g"%(self.digits, self.value),
-                               validator=NumberValidator(),
-                               name=name+"_TextCtrl")
-        self._spin=wx.SpinButton(self, wx.NewId(), pos=pos, size=wx.Size(16, size.GetHeight()),
-                                 style=wx.SP_ARROW_KEYS | wx.SP_VERTICAL, name=name+"_SpinButton")
-        self._spin.SetRange(-32000, 32000)
-        self._sizer=wx.BoxSizer(wx.HORIZONTAL)
-        self._sizer.Add(self._text, 1)
-        self._sizer.Add(self._spin)
-        self.SetSizer(self._sizer)
-        self._sizer.Layout()
+        wx.TextCtrl.__init__(self, parent, id=id, pos=pos, size=size, name=name,
+                             style=wx.TE_RIGHT,
+                             value="%.*g"%(self.digits, self.value),
+                             validator=NumberValidator())
 
+        self.Layout()
+        self._spin=wx.SpinButton(self, wx.NewId(), pos=pos, size=wx.Size(20, self.GetSize().GetHeight()-8),
+                                 style=wx.SP_ARROW_KEYS | wx.SP_VERTICAL, name=name+"_SpinButton")
         self._spin.Bind(wx.EVT_SPIN_UP, self.eh_spin_up,
                         id=self._spin.GetId())
         self._spin.Bind(wx.EVT_SPIN_DOWN, self.eh_spin_down,
                         id=self._spin.GetId())
-        self._text.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
-        self._text.Bind(wx.EVT_CHAR, self.OnChar)
+
+        self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
+        self.Bind(wx.EVT_CHAR, self.OnChar)
 
     def step(self, dir_up=True):
         """Steps the value up/down on increment
@@ -360,6 +350,9 @@ class SpinCtrl(wx.Control):
 
         self.SetValue(val)
 
+        if self.value_change_func is not None:
+            self.value_change_func(val)
+
     def eh_spin_up(self, event):
         self.step(dir_up=True)
         if self.value_change_func is not None:
@@ -372,20 +365,15 @@ class SpinCtrl(wx.Control):
             self.value_change_func(self.GetValue())
         event.Skip()
 
-    def OnTextEnter(self, event):
-        self.parent.SetFocus()
-        event.Skip()
+    def OnMouseWheel(self, event):
+        if event.GetWheelRotation()>0 and not event.IsWheelInverted():
+            self.step(dir_up=True)
+        else:
+            self.step(dir_up=False)
 
     def OnChar(self, event):
         # print event.GetKeyCode()
-        if event.GetKeyCode()==wx.WXK_TAB:
-            wx.Control.SetFocus(self)
-            new_event=wx.KeyEvent(wx.wxEVT_KEY_DOWN)
-            new_event.SetEventObject(self)
-            new_event.SetId(self.GetId())
-            new_event.m_keyCode=wx.WXK_TAB
-            wx.PostEvent(self.parent, new_event)
-        elif event.GetKeyCode()==wx.WXK_UP:
+        if event.GetKeyCode()==wx.WXK_UP:
             self.step(dir_up=True)
         elif event.GetKeyCode()==wx.WXK_DOWN:
             self.step(dir_up=False)
@@ -393,12 +381,18 @@ class SpinCtrl(wx.Control):
             event.Skip()
 
     def SetValue(self, value):
-        self.value=float(value)
-        self._text.SetValue("%.*g"%(self.digits, self.value))
+        try:
+            self.value=float(value)
+            wx.TextCtrl.SetValue(self, "%.*g"%(self.digits, self.value))
+        except ValueError:
+            wx.TextCtrl.SetValue(self, value)
 
     def GetValue(self):
-        self.value=float(self._text.GetValue())
-        return self.value
+        try:
+            self.value=float(wx.TextCtrl.GetValue(self))
+        except ValueError:
+            pass
+        return wx.TextCtrl.GetValue(self)
 
     def SetValueChangeCallback(self, func):
         """ Sets a callback function to execute when the value has changed
@@ -418,17 +412,3 @@ class SpinCtrl(wx.Control):
             raise ValueError('Minimum value to SpinCtrl is larger than maximum allowed value')
         self.min_value=float(min_value)
         self.max_value=float(max_value)
-
-    def SetInsertionPointEnd(self):
-        self._text.SetInsertionPointEnd()
-
-    def SetFocus(self):
-        # wx.Control.SetFocus(self)
-        self._text.SetFocus()
-        self._text.SetSelection(-1, -1)
-        pass
-
-    def DoGetBestSize(self):
-        size=self._text.GetBestSize()
-        size.width+=self._spin.GetBestSize().width
-        return size
