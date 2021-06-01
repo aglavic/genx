@@ -102,7 +102,7 @@ jobs:
         name: ubuntu-20-dist
         path: |
           genx/dist/*.deb
-          genx/dist/*.tar.gz
+          dist/*.tar.gz
 
   release:
     runs-on: ubuntu-latest
