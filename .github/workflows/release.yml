@@ -89,7 +89,7 @@ jobs:
       run: |
         mkdir dist
         mv genx/dist/genx*.whl dist/
-        mv genx/dist/genx*.tar.gz dist/
+        cp genx/dist/genx*.tar.gz dist/
     - name: Upload to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -102,7 +102,7 @@ jobs:
         name: ubuntu-20-dist
         path: |
           genx/dist/*.deb
-          dist/*.tar.gz
+          genx/dist/*.tar.gz
 
   release:
     runs-on: ubuntu-latest
