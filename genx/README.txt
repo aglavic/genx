@@ -11,6 +11,13 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.2.2
+=============
+ * Update windows build to python 3.9 and wxPython 4.1.1 to better support High DPI displays
+ * Improve value entry in parameter grid (ENTER/TAB key, mouse scrolling)
+ * Prevent parameter grid entry resizing to prevent non-intentional layout issues
+ * Automatize PyPI releases
+
 Changes 3.2.1
 =============
  * Fix error in new Numba functions that calculate the resolution vector (ORSO validation failed)
