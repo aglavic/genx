@@ -5,7 +5,7 @@ import os.path
 from logging import debug
 
 from . import version, model
-from .gui_logging import setup_system, iprint, activate_logging
+from .gui_logging import setup_system, iprint, activate_logging, activate_excepthook
 
 def start_interactive(args):
     ''' Start genx in interactive mode (with the gui)
@@ -14,6 +14,7 @@ def start_interactive(args):
     :return:
     '''
     debug('enter start_interactive')
+    activate_excepthook()
     # Fix blurry text on Windows 10
     import ctypes
     try:

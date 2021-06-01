@@ -109,6 +109,8 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.SetSizer(vbox)
         self.SetTitle('Statistical Analysis of Parameters')
 
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
+
         self.ptxt=wx.StaticText(self, label="...")
         self.pbar=wx.Gauge(self, range=1000)
 
@@ -131,18 +133,18 @@ class StatisticalAnalysisDialog(wx.Dialog):
         nfparams=len([pi for pi in model.parameters if pi.fit])
         self.grid.CreateGrid(nfparams+1, nfparams)
         self.grid.SetColLabelTextOrientation(wx.VERTICAL)
-        self.grid.SetColLabelSize(80)
+        self.grid.SetColLabelSize(int(dpi_scale_factor*80))
         for i in range(nfparams):
-            self.grid.SetRowSize(i, 80)
-            self.grid.SetColSize(i, 80)
+            self.grid.SetRowSize(i, int(dpi_scale_factor*80))
+            self.grid.SetColSize(i, int(dpi_scale_factor*80))
             self.grid.SetColLabelValue(i, '%i'%i)
             self.grid.SetRowLabelValue(i+1, '%i'%i)
-        self.grid.SetRowSize(nfparams, 80)
+        self.grid.SetRowSize(nfparams, int(dpi_scale_factor*80))
         self.grid.DisableCellEditControl()
-        self.grid.SetMinSize((200,200))
+        self.grid.SetMinSize((int(dpi_scale_factor*200),int(dpi_scale_factor*200)))
         self.grid.Bind(EVT_GRID_CELL_LEFT_DCLICK, self.OnSelectCell)
         rpanel=PlotPanel(self)
-        rpanel.SetMinSize((200,200))
+        rpanel.SetMinSize((int(dpi_scale_factor*200),int(dpi_scale_factor*200)))
         self.plot_panel=rpanel
         self.ax=rpanel.figure.add_subplot(111)
 

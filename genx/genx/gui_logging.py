@@ -26,13 +26,10 @@ elif '--debug' in sys.argv:
     sys.argv.remove('--debug')
     CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.DEBUG, logging.DEBUG, logging.INFO
 
-def excepthook_overwrite(*exc_info):
-    logging.critical('python error', exc_info=exc_info)
-
 def ip_excepthook_overwrite(self, etype, value, tb, tb_offset=None):
     logging.critical('python error', exc_info=(etype, value, tb))
 
-def goodby():
+def genx_exit_message():
     logging.info('*** GenX %s Logging ended ***'%str_version)
 
 def iprint(*objects, sep=None, end=None, file=None, flush=False):
@@ -108,7 +105,7 @@ def setup_system():
 
     # write information on program exit
     # sys.excepthook=excepthook_overwrite
-    atexit.register(goodby)
+    atexit.register(genx_exit_message)
 
 def activate_logging(logfile):
     logger=logging.getLogger()
@@ -118,3 +115,15 @@ def activate_logging(logfile):
     logfile.setLevel(FILE_LEVEL)
     logger.addHandler(logfile)
     logger.info('*** GenX %s Logging started to file ***'%str_version)
+
+_prev_excepthook=None
+def excepthook_overwrite(*exc_info):
+    # making sure all exceptions are displayed on GUI and logged
+    logging.critical('uncought python error', exc_info=exc_info)
+    return _prev_excepthook(*exc_info)
+
+def activate_excepthook():
+    logging.debug("replacing sys.excepthook with user function")
+    global _prev_excepthook
+    _prev_excepthook=sys.excepthook
+    sys.excepthook=excepthook_overwrite

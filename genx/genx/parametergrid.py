@@ -100,9 +100,6 @@ class ParameterDataTable(gridlib.GridTableBase):
                                      gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.GetNumberRows(),
                                      delete_count)
         self.GetView().ProcessTableMessage(msg)
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
-        self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed()
         # print self.data
 
@@ -111,9 +108,6 @@ class ParameterDataTable(gridlib.GridTableBase):
 
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
-        self.GetView().ProcessTableMessage(msg)
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
@@ -128,9 +122,6 @@ class ParameterDataTable(gridlib.GridTableBase):
 
         success=self.pars.move_row_up(row)
 
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
-        self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
         return success
@@ -144,8 +135,6 @@ class ParameterDataTable(gridlib.GridTableBase):
 
         success=self.pars.move_row_down(row)
 
-        msg=gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
-        self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
         return success
@@ -157,8 +146,6 @@ class ParameterDataTable(gridlib.GridTableBase):
         """
         success=self.pars.sort_rows()
 
-        msg=gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
-        self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
         return success
@@ -169,9 +156,6 @@ class ParameterDataTable(gridlib.GridTableBase):
 
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, num_rows)
-        self.GetView().ProcessTableMessage(msg)
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
@@ -1052,7 +1036,7 @@ class ParameterGrid(wx.Panel):
         
         internal function to yield a EVT_PARAMETER_GRID_CHANGE
         '''
-        # print 'Posting'
+        self.grid.ForceRefresh()
         evt=grid_change()
         evt.permanent_change=permanent_change
         wx.PostEvent(self.parent, evt)

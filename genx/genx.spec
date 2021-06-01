@@ -11,6 +11,7 @@ for pathi in os.environ['PATH'].split(';'):
 a = Analysis(['scripts\\genx'],
              pathex=[os.path.abspath(os.path.curdir)],
              binaries=[(os.path.join(dll_path, 'libiomp5md.dll'), '.'),
+                       (os.path.join(dll_path, 'mkl_*.dll'), '.'), # For CUDA toolkit
                        (os.path.join(dll_path, 'nvvm64*.dll'), 'DLLs'), # For CUDA toolkit
                        (os.path.join(dll_path, 'libdevice*'), 'DLLs'),
                        (os.path.join(dll_path, 'nvvm64*.dll'), 'Library/bin'),
