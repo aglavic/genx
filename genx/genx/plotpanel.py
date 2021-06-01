@@ -1089,8 +1089,8 @@ class DataPlotPanel(PlotPanel):
         shown_data=[data_set for data_set in data if data_set.show]
         if len(self.ax.lines)==(2*len(shown_data)):
             for i, data_set in enumerate(shown_data):
-                self.ax.lines[2*i].set_data(data_set.x, data_set.y)
-                self.ax.lines[2*i+1].set_data(data_set.x, data_set.y_sim)
+                self.ax.lines[i].set_data(data_set.x, data_set.y)
+                self.ax.lines[i+len(shown_data)].set_data(data_set.x, data_set.y_sim)
                 self.error_ax.lines[i].set_data(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0))
         else:
             self.ax.lines=[]

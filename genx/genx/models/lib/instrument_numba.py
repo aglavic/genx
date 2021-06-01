@@ -28,7 +28,7 @@ def SquareIntensity(alpha, slen, beamwidth):
     I=empty_like(alpha)
     scale=slen/beamwidth
     for ai in numba.prange(alpha.shape[0]):
-        F=scale*math.sin(alpha[ai]*sqrt2)
+        F=scale*math.sin(alpha[ai]*rad)
         I[ai]=min(1.0, F)
     return I
 

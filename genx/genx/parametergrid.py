@@ -904,16 +904,12 @@ class ParameterGrid(wx.Panel):
         wx.PostEvent(self.parent, evt)
 
     def do_toolbar(self):
-        # if os.name == 'nt':
-        #    size = (24, 24)
-        # else:
-        #    size = (-1, -1)
         # self.toolbar.SetToolBitmapSize((21,21))
         # self.toolbar.SetToolSeparation(5)
         # self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
         # self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
         # self.toolbar.SetBackgroundColour('BLUE')
-        dpi_scale_factor=wx.GetApp().GetTopWindow().GetContentScaleFactor()  # wx.GetDisplayPPI()[0]/96.
+        dpi_scale_factor=wx.GetApp().dpi_scale_factor
         tb_bmp_size=int(dpi_scale_factor*20)
 
         newid=wx.NewId()

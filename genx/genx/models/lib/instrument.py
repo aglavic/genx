@@ -33,7 +33,7 @@ def GaussDiffCorrection(alpha, s1, s2, sigma_x):
 
 # Specular foorprintcorrections square beamprofile
 def SquareIntensity(alpha, slen, beamwidth):
-    F=slen/beamwidth*sin(alpha*sqrt2)
+    F=slen/beamwidth*sin(alpha*rad)
     return where(F<=1.0, F, ones(F.shape))
 
 # Function to calculate the instrumental resolution in incomming, alpha, and
