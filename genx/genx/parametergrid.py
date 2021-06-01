@@ -529,6 +529,15 @@ class ValueLimitCellRenderer(gridlib.GridCellRenderer):
 
             text='%.7g'%val
 
+            if val<=max_val and val>=min_val:
+                # paint a slight indication of rlative value within range
+                dc.SetBrush(wx.Brush(wx.Colour(240, 240, 240), wx.SOLID))
+                if max_val!=min_val:
+                    rel_value_pix=int(rect.width*(val-min_val)/(max_val-min_val))
+                else:
+                    rel_value_pix=0
+                dc.DrawRectangle(rect.x, rect.y, rel_value_pix, rect.height)
+
             dc.SetTextForeground(txt_colour)
             dc.SetTextBackground(bkg_colour)
             dc.SetFont(attr.GetFont())
@@ -1191,19 +1200,19 @@ class ParameterGrid(wx.Panel):
             self.table.SetValue(row, col, not self.table.GetValue(row, col))
 
         elif col==0 and row>-1:
-            if self.grid.GetGridCursorRow()==row:
+            if self.grid.GetGridCursorRow()==row and self.table.GetValue(row, col)=='':
                 self.CurSelection=(row, col)
                 self.grid.SetGridCursor(row, col)
                 pos=evt.GetPosition()
                 self.show_parameter_menu(pos)
             else:
                 evt.Skip()
-        elif col==1 and row>-1:
-            if self.show_slider:
-                self.grid.SetGridCursor(row, col)
-                self.grid.EnableCellEditControl()
-            evt.Skip()
-            # return
+        # elif col==1 and row>-1:
+        #     if self.show_slider:
+        #         self.grid.SetGridCursor(row, col)
+        #         self.grid.EnableCellEditControl()
+        #     else:
+        #         evt.Skip()
         else:
             evt.Skip()
 

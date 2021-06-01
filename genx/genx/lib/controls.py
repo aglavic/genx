@@ -18,10 +18,19 @@ class SliderControl(wx.Slider):
         self.scroll_callback=None
 
     def bind_handlers(self):
+        self.Bind(wx.EVT_CHAR, self.OnChar)
         self.Bind(wx.EVT_SLIDER, self.OnChange)
 
     def unbind_handlers(self):
         self.Unbind(wx.EVT_SLIDER)
+
+    def OnChar(self, event):
+        if chr(event.GetKeyCode())==' ':
+            self.GetParent().GetParent().SaveEditControlValue()
+            self.GetParent().GetParent().EnableCellEditControl(False)
+            return
+        else:
+            event.Skip()
 
     def OnChange(self, event):
         self.value=self.GetValue()
