@@ -367,44 +367,6 @@ class SliderCellEditor(gridlib.GridCellEditor):
         self._tc.Destroy()
         super(SliderCellEditor, self).Destroy()
 
-# ---------------------------------------------------------------------------
-class SliderCellRenderer(gridlib.GridCellRenderer):
-    """ Renderer for the Slider Editor. Yields the same representation as the Editor.
-    """
-
-    def __init__(self, value=0, max_value=100.0, min_value=100):
-        gridlib.GridCellRenderer.__init__(self)
-        self.slider_drawer=ctrls.SliderDrawer(value, max=max_value, min=min_value)
-        self.slider_drawer.ShowGuide(False)
-
-    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
-        if grid.GetCellValue(row, col)!='':
-            val=float(grid.GetCellValue(row, col))
-            min_val=float(grid.GetCellValue(row, col+2))
-            max_val=float(grid.GetCellValue(row, col+3))
-            val=max(min(val, max_val), min_val)
-            grid.GetTable().SetValue(row, col, val)
-            self.slider_drawer.SetValue(val)
-            self.slider_drawer.SetMaxValue(max_val)
-            self.slider_drawer.SetMinValue(min_val)
-            self.slider_drawer.SetTextHeight(attr.GetFont().GetPixelSize().GetHeight())
-            if isSelected:
-                self.slider_drawer.SetBackgroundColour(grid.GetSelectionBackground())
-            else:
-                self.slider_drawer.SetBackgroundColour(attr.GetBackgroundColour())
-            self.slider_drawer.Draw(dc, rect.width, rect.height, rect.x, rect.y)
-        else:
-            dc.SetBackgroundMode(wx.SOLID)
-            if isSelected:
-                dc.SetBrush(wx.Brush(grid.GetSelectionBackground(), wx.SOLID))
-            else:
-                dc.SetBrush(wx.Brush(attr.GetBackgroundColour(), wx.SOLID))
-            dc.SetPen(wx.TRANSPARENT_PEN)
-            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
-
-    def Clone(self):
-        return SliderCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
-                                  min=self.slider_drawer.min_value)
 
 class ValueLimitCellEditor(gridlib.GridCellEditor):
     """Editor for the parameter values with a spin control"""
@@ -480,7 +442,8 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         # val = min(self.max_value, val)
         # self._tc.SetValue('%.5g'%(val))
         # self._tc.SetValue(val)
-        self._tc.value_change_func(val)
+        if self._tc.value_change_func is not None:
+            self._tc.value_change_func(val)
         self._tc.SetValueChangeCallback(None)
         return float(val)
 
@@ -500,7 +463,7 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         and will always start the editor.
         """
         key=evt.GetKeyCode()
-        return chr(key) in (string.digits+'.-')
+        return chr(key) in (string.digits+'.- ')
 
     def StartingKey(self, evt):
         """
@@ -523,8 +486,8 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
             # self._tc.AppendText(ch)
             self._tc.SetValue(ch)
             self._tc.SetInsertionPointEnd()
-        # else:
-        #    evt.Skip()
+        else:
+           evt.Skip()
 
     def Reset(self):
         """Reset the value in the control back to its starting value."""
@@ -583,7 +546,7 @@ class ValueLimitCellRenderer(gridlib.GridCellRenderer):
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
     def Clone(self):
-        return SliderCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
+        return ValueLimitCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
                                   min=self.slider_drawer.min_value)
 
 class ValueCellEditor(gridlib.GridCellEditor):
@@ -599,7 +562,7 @@ class ValueCellEditor(gridlib.GridCellEditor):
         self.digits=digits
 
     def Create(self, parent, id, evtHandler):
-        self._tc=wx.TextCtrl(parent, id, style=wx.ALIGN_RIGHT, validator=ctrls.NumberValidator())
+        self._tc=wx.TextCtrl(parent, id, style=wx.TE_RIGHT, validator=ctrls.NumberValidator())
         # self._tc = ctrls.SpinCtrl(parent, id, value=self.value)
         self.SetControl(self._tc)
 
@@ -662,7 +625,7 @@ class ValueCellEditor(gridlib.GridCellEditor):
         and will always start the editor.
         """
         key=evt.GetKeyCode()
-        return chr(key) in (string.digits+'.-')
+        return chr(key) in (string.digits+'.- ')
 
     def StartingKey(self, evt):
         """
@@ -685,8 +648,8 @@ class ValueCellEditor(gridlib.GridCellEditor):
             # self._tc.AppendText(ch)
             self._tc.SetValue(ch)
             self._tc.SetInsertionPointEnd()
-        # else:
-        #    evt.Skip()
+        else:
+            evt.Skip()
 
     def Reset(self):
         """Reset the value in the control back to its starting value."""
@@ -739,7 +702,7 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
     def Clone(self):
-        return SliderCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
+        return ValueCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
                                   min=self.slider_drawer.min_value)
 
 # ------------------------------------------------------------------------------
@@ -786,7 +749,7 @@ class ParameterGrid(wx.Panel):
         # table and will destroy it when done.  Otherwise you would need to keep
         # a reference to it and call it's Destroy method later.
         self.grid.SetTable(self.table, True)
-        self.grid.SetSelectionMode(gridlib.Grid.SelectRows)
+        self.grid.SetSelectionMode(gridlib.Grid.SelectCells)
         # self.grid.SetSelectionBackground()
 
         self.grid.SetRowLabelSize(50)
@@ -810,6 +773,7 @@ class ParameterGrid(wx.Panel):
         self.grid.Bind(gridlib.EVT_GRID_LABEL_RIGHT_CLICK, self.OnLabelRightClick)
         self.grid.Bind(wx.EVT_SIZE, self.OnResize)
         self.grid.Bind(gridlib.EVT_GRID_SELECT_CELL, self.OnSelectCell)
+        self.grid.Bind(wx.EVT_CHAR, self.OnKey)
 
         self.toolbar.Realize()
         self.show_slider=False
@@ -819,6 +783,7 @@ class ParameterGrid(wx.Panel):
         attr.SetRenderer(ValueCellRenderer())
         self.grid.SetColAttr(3, attr.Clone())
         self.grid.SetColAttr(4, attr)
+        self._paste_history=None
 
     def PrepareNewModel(self):
         """ Hack to prepare the grid for a new model.
@@ -844,6 +809,55 @@ class ParameterGrid(wx.Panel):
         if show_slider is not None:
             self.config.set(self.config_name, 'value slider', show_slider)
 
+    def OnKey(self, event):
+        if event.ControlDown() and event.GetKeyCode() == 22:
+            self.OnPaste()
+        else:
+            event.Skip()
+
+    def OnPaste(self):
+        clipboard=wx.TextDataObject()
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.GetData(clipboard)
+            wx.TheClipboard.Close()
+        else:
+            wx.MessageBox("Can't open the clipboard", "Error")
+        data=list(map(str.split, clipboard.Text.splitlines()))
+        sblocks=list(self.grid.GetSelectedBlocks())
+        if len(sblocks)==0:
+            start_row=self.grid.GetGridCursorRow()
+            start_col=self.grid.GetGridCursorCol()
+            srows=list(range(start_row, self.grid.GetNumberRows()))
+            scols=list(range(start_col, self.grid.GetNumberCols()))
+        elif len(sblocks)>1:
+            # don't paste if individual blocks have been selected
+            return
+        else:
+            sblock=sblocks[0]
+            start_row=sblock.TopRow
+            start_col=sblock.LeftCol
+            srows=list(range(start_row, sblock.BottomRow+1))
+            scols=list(range(start_col, sblock.RightCol+1))
+
+        self._paste_history=[start_row, start_col, []]
+        for i, di in enumerate(data):
+            self._paste_history[-1].append([])
+            for j, dj in enumerate(di):
+                row, col=i+start_row, j+start_col
+                if row in srows and col in scols:
+                    self._paste_history[-1][-1].append(self.table.GetValue(row, col))
+                    if col in [1,3,4]:
+                        try:
+                            dj=float(dj)
+                        except ValueError:
+                            continue
+                    elif col==2:
+                        try:
+                            dj=bool(dj)
+                        except ValueError:
+                            continue
+                    self.table.SetValue(row, col, dj)
+
     def SetValueEditorSlider(self, slider=True):
         """ Set the Editor and Renderer as slider instead of text.
 
@@ -863,7 +877,7 @@ class ParameterGrid(wx.Panel):
         attr=gridlib.GridCellAttr()
         if slider:
             attr.SetEditor(SliderCellEditor())
-            attr.SetRenderer(SliderCellRenderer())
+            attr.SetRenderer(ValueLimitCellRenderer())
         else:
             attr.SetEditor(ValueLimitCellEditor())
             attr.SetRenderer(ValueLimitCellRenderer())
@@ -1027,10 +1041,10 @@ class ParameterGrid(wx.Panel):
         self.table.SortRows()
 
     def OnSelectCell(self, evt):
-        row=evt.GetRow()
-        if row>-1:
-            self.grid.SelectRow(row)
-            evt.Skip()
+        # row=evt.GetRow()
+        # if row>-1:
+        #     self.grid.SelectRow(row)
+        evt.Skip()
 
     def _grid_changed(self, permanent_change=True):
         '''_grid_changed(self) --> None
