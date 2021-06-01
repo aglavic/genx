@@ -95,9 +95,9 @@ class PluginHelpDialog(wx.Frame):
 
         sizer.Fit(self)
         self.Layout()
-        x, y=parent.GetSizeTuple()
-        x=max(y/2, x/3)
-        self.SetSize((x, y))
+        size=parent.GetSize()
+        x=max(size.y/2, size.x/3)
+        self.SetSize((x, size.y))
 
         self.choice.SetSelection(0)
         self.on_choice(None)
