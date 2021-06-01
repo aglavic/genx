@@ -11,6 +11,16 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.2.3
+=============
+ * Fix a bug in footprint correction introduced in 3.2.0
+ * Improve parameter grid interface with parameter relative value indicator and slider controls
+ * Allow copy & paste in parameter grid
+ * Can now use space to start edit on selected parameter and to accept parameter changes
+ * Fix a DPI display bug for toolbar icons aside grid
+ * Can not toggle negative value with "-" at any edit location in the value editor
+ * Don't automatically open context menu on single click of first column, allows to select and edit manually easier
+
 Changes 3.2.2
 =============
  * Update windows build to python 3.9 and wxPython 4.1.1 to better support High DPI displays
