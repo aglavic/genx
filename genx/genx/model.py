@@ -404,6 +404,9 @@ class Model:
         if use_dif:
             fom=fom/((N-p)*1.0)
 
+        penalty_funcs=self.get_par_penalty()
+        if len(penalty_funcs)>0 and fom is not np.NAN:
+            fom+=sum([pf() for pf in penalty_funcs])
         return fom_raw, fom_indiv, fom
 
     def evaluate_fit_func(self):
@@ -515,6 +518,12 @@ class Model:
             except Exception as e:
                 raise ParameterError(func, row_numbers[len(funcs)], str(e), 0)
         return funcs, vals, minvals, maxvals
+
+    def get_par_penalty(self):
+        for var in self.script_module.__dict__.values():
+            if var.__class__.__name__=='UserVars':
+                return var._penalty_funcs
+        return []
 
     def get_fit_values(self):
         '''get_fit_values(self) --> values

@@ -90,19 +90,24 @@ if __MODULE_DIR__=='':
 
 class UserVars:
     def __init__(self):
-        pass
+        self._penalty_funcs=[]
 
     def newVar(self, name, value):
-        # name=name.lower()
+        # Adds a new user variable to the class
         setattr(self, name, value)
         setattr(self, 'set'+name[0].upper()+name[1:], lambda value: setattr(self, name, value))
         setattr(self, 'get'+name[0].upper()+name[1:], lambda: getattr(self, name, value))
 
-    def new_var(self, name, value):
-        # name=name.lower()
+    new_var=newVar
+
+    def new_sys_err(self, name, value, error, weight=1.0, correction=0.0):
+        # Adds a new systematic error variable to the class that biases the FOM when changed from start value
         setattr(self, name, value)
-        setattr(self, 'set'+name[0].upper()+name[1:], lambda value: setattr(self, name, value))
+        setattr(self, 'set'+name[0].upper()+name[1:], lambda v: setattr(self, name, v))
         setattr(self, 'get'+name[0].upper()+name[1:], lambda: getattr(self, name, value))
+        setattr(self, 'penalty'+name[0].upper()+name[1:],
+                lambda: weight*(((value-getattr(self, name, value))/error)**2-correction))
+        self._penalty_funcs.append(getattr(self, 'penalty'+name[0].upper()+name[1:]))
 
 # ==============================================================================
 # Now create default databases for scattering lengths and form factors
