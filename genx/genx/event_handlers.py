@@ -13,6 +13,7 @@ import wx.adv
 from wx.lib.wordwrap import wordwrap
 import webbrowser
 import numpy as np
+from logging import debug
 
 from . import model as modellib
 from . import solvergui, help
@@ -104,16 +105,18 @@ def open(frame, event):
                       )
     if dlg.ShowModal()==wx.ID_OK:
         path=dlg.GetPath()
+        debug('open: path retrieved')
         open_model(frame, path)
 
     dlg.Destroy()
 
 def open_model(frame, path):
-    # print "open_model"
+    debug('open_model: clear model')
     frame.model.new_model()
     frame.paramter_grid.PrepareNewModel()
     # Update all components so all the traces are gone.
     # _post_new_model_event(frame, frame.model)
+    debug('open_model: load_file')
     try:
         io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
     except modellib.IOError as e:
@@ -126,6 +129,7 @@ def open_model(frame, path):
         iprint('Error in loading the file ', path, '. Pyton traceback:\n ', val)
         ShowErrorDialog(frame, 'Could not open the file. Python Error:\n%s'%(val,))
         return
+    debug('open_model: read config')
     try:
         [p.ReadConfig() for p in get_pages(frame)]
     except Exception as e:
@@ -147,7 +151,7 @@ def open_model(frame, path):
     else:
         # Update the Menu choice
         frame.main_frame_menubar.mb_view_grid_slider.Check(frame.paramter_grid.GetValueEditorSlider())
-    # Letting the plugin do their stuff...
+    debug('open_model: update plugins')
     try:
         frame.plugin_control.OnOpenModel(None)
     except Exception as e:
@@ -160,6 +164,7 @@ def open_model(frame, path):
     frame.main_frame_statusbar.SetStatusText('Model loaded from file',
                                              1)
     # Post an event to update everything else
+    debug('open_model: post new model event')
     _post_new_model_event(frame, frame.model)
     # Needs to put it to saved since all the widgets will have 
     # been updated

@@ -4,8 +4,10 @@ import string
 
 import wx
 
-# import vtk
+# inspection does not work as vtk mangles with the python miport system
+# noinspection PyUnresolvedReferences
 from vtk import vtkRenderer, vtkActor, vtkTextMapper, vtkActor2D, vtkSphereSource, vtkPolyDataMapper, vtkAxesActor
+# noinspection PyUnresolvedReferences
 import vtk.util.colors as vtkc
 
 from genx.gui_logging import iprint
