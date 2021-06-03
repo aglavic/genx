@@ -106,14 +106,7 @@ diffuse interfaces.
 # import lib.paratt as Paratt
 from genx.gui_logging import iprint
 from .lib import paratt as Paratt
-
-__offspec__=True
-try:
-    from .lib import offspec
-except Exception as S:
-    iprint('Failed to import: offspec, No off-specular simulations possible')
-    iprint(S)
-    __offspec__=False
+from .lib import offspec
 
 from numpy import *
 from scipy.special import erf
@@ -271,12 +264,9 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     # print h
     eta_z=sample.getEta_z()
     # print eta_z
-    if __offspec__:
-        (I, alpha, omega)=lib.offspec.DWBA_Interdiff(qx, qz, lamda, n, z,
-                                                     sigmar, sigmai, eta, h, eta_z, d,
-                                                     taylor_n=instrument.getTaylor_n())
-    else:
-        I=ones(len(qx*qz))
+    (I, alpha, omega)=offspec.DWBA_Interdiff(qx, qz, lamda, n, z,
+                                                 sigmar, sigmai, eta, h, eta_z, d,
+                                                 taylor_n=instrument.getTaylor_n())
     return real(I)*instrument.getI0()+instrument.getIbkg()
 
 def SLD_calculations(z, item, sample, inst):
