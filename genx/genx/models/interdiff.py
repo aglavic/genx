@@ -223,8 +223,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     # END Parameters
     '''
     lamda=instrument.getWavelength()
-    if instrument.getCoords()==1 or \
-            instrument.getCoords()==instrument_string_choices['coords'][1]:
+    if instrument.getCoords() in [1, instrument_string_choices['coords'][1]]:
         alphaR1=ThetaQx
         betaR1=TwoThetaQz-ThetaQx
         qx=2*pi/lamda*(cos(alphaR1*pi/180)-cos(betaR1*pi/180))
@@ -233,8 +232,6 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
         qz=TwoThetaQz
         qx=ThetaQx
 
-    # print qx
-    # print qz
     parameters=sample.resolveLayerParameters()
 
     def toarray(a, code):
@@ -249,25 +246,43 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample, instrument):
     n=toarray(n, code=complex64)
     sigmar=toarray(parameters['sigmar'], code=float64)
     sigmar=sigmar[1:]
-    # print sigmar
+
     sigmai=toarray(parameters['sigmai'], code=float64)
     sigmai=sigmai[1:]+1e-5
-    # print sigmai
+
     d=toarray(parameters['d'], code=float64)
     d=r_[0, d[1:-1]]
-    # print d
+
     z=-cumsum(d)
-    # print z
+
     eta=sample.getEta_x()
-    # print eta
+
     h=sample.getH()
-    # print h
+
     eta_z=sample.getEta_z()
-    # print eta_z
+
     (I, alpha, omega)=offspec.DWBA_Interdiff(qx, qz, lamda, n, z,
                                                  sigmar, sigmai, eta, h, eta_z, d,
                                                  taylor_n=instrument.getTaylor_n())
-    return real(I)*instrument.getI0()+instrument.getIbkg()
+
+    restype=instrument.getRestype()
+    if restype==0 or restype==instrument_string_choices['restype'][0]:
+        # if no resolution is defined, don't include specular peak
+        return real(I)*instrument.getI0()+instrument.getIbkg()
+
+    # include specular peak
+    instrument.setRestype(0)
+    if isinstance(TwoThetaQz, ndarray):
+        Ispec=Specular(TwoThetaQz, sample, instrument)
+    else:
+        Ispec=Specular(array([TwoThetaQz], dtype=float64), sample, instrument)[0]
+    instrument.setRestype(restype)
+
+    if instrument.getCoords() in [1, instrument_string_choices['coords'][1]]:
+        spec_peak=Ispec*exp(-0.5*(TwoThetaQz/2.-ThetaQx)**2/instrument.getRes()**2)
+    else:
+        spec_peak=Ispec*exp(-0.5*ThetaQx**2/instrument.getRes()**2)
+    return (spec_peak+real(I))*instrument.getI0()+instrument.getIbkg()
 
 def SLD_calculations(z, item, sample, inst):
     ''' Calculates the scatteringlength density as at the positions z
