@@ -2188,7 +2188,7 @@ class ObjectDialog(wx.Dialog):
                 style=wx.TE_RIGHT | wx.TE_RICH | wx.TE_READONLY
             name_ctrl=wx.TextCtrl(self, -1, str(self.object.name),
                                   validator=cust_dia.NoMatchValidTextObjectValidator(self.taken_names), style=style)
-            name_sizer.Add(name_ctrl, flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, border=self.border)
+            name_sizer.Add(name_ctrl, flag=wx.EXPAND, border=self.border)
             self.main_sizer.Add(name_sizer, 0, wx.EXPAND)
 
             self.parameter_sizer, self.ctrls=self.grid_layout(self, self.object)
@@ -2200,7 +2200,7 @@ class ObjectDialog(wx.Dialog):
         self.main_sizer.Add((-1, self.vertical_buffer), 0, wx.EXPAND)
 
         line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        self.main_sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP | wx.LEFT, self.border)
+        self.main_sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP | wx.LEFT, self.border)
         self.main_sizer.Add(self.create_buttons(), 0, wx.EXPAND)
 
         self.SetSizer(self.main_sizer)
@@ -2247,12 +2247,12 @@ class ObjectDialog(wx.Dialog):
 
             tc[par]=self.crete_edit_ctrl(parent, par, val, validator, editable, choices)
 
-            sizer.Add(label, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=self.border)
-            sizer.Add(tc[par], flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, border=self.border)
+            sizer.Add(label, flag=wx.ALIGN_RIGHT, border=self.border)
+            sizer.Add(tc[par], flag=wx.EXPAND, border=self.border)
 
             # Add the unit
             unit_label=wx.StaticText(parent, -1, ' '+object_interactor.get_unit(par))
-            sizer.Add(unit_label, flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, border=self.border)
+            sizer.Add(unit_label, flag=wx.ALIGN_LEFT, border=self.border)
 
         return sizer, tc
 
@@ -2310,7 +2310,7 @@ class DomainDialog(wx.Dialog):
         # add the name and the rest of the "normal" parameters in the first column
         for par in self.init_parameters:
             label=wx.StaticText(self, -1, par+': ')
-            self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+            self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT)
             val=getattr(self.domain, par)
             # print par, val
             if par!='name':
@@ -2320,7 +2320,7 @@ class DomainDialog(wx.Dialog):
                 ctrl=wx.TextCtrl(self, -1, str(val),
                                  validator=cust_dia.NoMatchValidTextObjectValidator(self.taken_names),
                                  style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
-            self.parameter_sizer.Add(ctrl, (row, col+1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+            self.parameter_sizer.Add(ctrl, (row, col+1), flag=wx.ALIGN_LEFT)
             row+=1
 
     def make_col2(self):
@@ -2330,13 +2330,13 @@ class DomainDialog(wx.Dialog):
                                   ('surface sym.', self.symmetries, self.domain.surface_sym),
                                   ('bulk sym.', self.symmetries, self.domain.bulk_sym)]:
             label=wx.StaticText(self, -1, par+': ')
-            self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+            self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT)
             ctrl=wx.Choice(self, -1, choices=choices)
             pos=ctrl.FindString(val)
             if pos==wx.NOT_FOUND:
                 pos=0
             ctrl.SetSelection(pos)
-            self.parameter_sizer.Add(ctrl, (row, col+1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+            self.parameter_sizer.Add(ctrl, (row, col+1), flag=wx.ALIGN_LEFT)
             row+=1
 
     def __init__(self, parent, domain_interactor, id=-1, taken_names=None, symmetries=None, unit_cells=None):
@@ -2383,7 +2383,7 @@ class DomainDialog(wx.Dialog):
         main_sizer.Add((-1, self.vertical_buffer), 0, wx.EXPAND)
 
         line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        main_sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP, self.border)
+        main_sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, self.border)
         main_sizer.Add(self.create_buttons(), 0, wx.EXPAND)
 
         self.SetSizer(main_sizer)
@@ -2465,7 +2465,7 @@ class SlabDialog(wx.Dialog):
         col=0
         for par in self.init_parameters:
             label=wx.StaticText(self, -1, par+': ')
-            self.slab_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+            self.slab_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT)
             val=getattr(self.slab, par)
             # print par, val
             if par!='name':
@@ -2475,7 +2475,7 @@ class SlabDialog(wx.Dialog):
                 ctrl=wx.TextCtrl(self, -1, str(val),
                                  validator=cust_dia.NoMatchValidTextObjectValidator(self.taken_names),
                                  style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
-            self.slab_sizer.Add(ctrl, (row, col+1), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+            self.slab_sizer.Add(ctrl, (row, col+1), flag=wx.ALIGN_LEFT)
             if col<cols-1:
                 col+=2
             else:
@@ -2523,7 +2523,7 @@ class SlabDialog(wx.Dialog):
         main_sizer.Add((-1, self.vertical_buffer), 0, wx.EXPAND)
 
         line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        main_sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP, self.border)
+        main_sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, self.border)
         main_sizer.Add(self.create_buttons(), 0, wx.EXPAND)
 
         self.SetSizer(main_sizer)
@@ -2799,7 +2799,7 @@ class ParameterExpressionDialog(wx.Dialog):
         sizer=wx.BoxSizer(wx.VERTICAL)
         sizer.Add(gbs, 1, wx.GROW | wx.ALL, border=self.vertical_buffer)
         line=wx.StaticLine(self, -1, size=(self.vertical_buffer, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP, border=self.border)
+        sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, border=self.border)
         sizer.Add((-1, 5))
 
         sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT, border=self.border)
@@ -2945,7 +2945,7 @@ class SimulationExpressionDialog(wx.Dialog):
         sizer=wx.BoxSizer(wx.VERTICAL)
         sizer.Add(gbs, 1, wx.GROW | wx.ALL, 10)
         line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP, 5)
+        sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 5)
         sizer.Add((-1, 5))
 
         sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT, 5)
@@ -3052,16 +3052,16 @@ class CustomParametersDialog(wx.Dialog):
             name_ctrl_sizer.Add(label, (0, index), flag=wx.ALIGN_LEFT, border=5)
 
         self.name_ctrl=wx.TextCtrl(self, -1, size=(120, -1))
-        name_ctrl_sizer.Add(self.name_ctrl, (1, 0), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
+        name_ctrl_sizer.Add(self.name_ctrl, (1, 0), flag=wx.ALIGN_RIGHT, border=5)
         self.value_ctrl=wx.TextCtrl(self, -1, size=(120, -1))
-        name_ctrl_sizer.Add(self.value_ctrl, (1, 1), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
+        name_ctrl_sizer.Add(self.value_ctrl, (1, 1), flag=wx.ALIGN_RIGHT, border=5)
         self.add_button=wx.Button(self, -1, 'Add')
-        name_ctrl_sizer.Add(self.add_button, (1, 2), flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
+        name_ctrl_sizer.Add(self.add_button, (1, 2), flag=wx.ALIGN_RIGHT, border=5)
         sizer.Add(name_ctrl_sizer)
         self.Bind(wx.EVT_BUTTON, self.OnAdd, self.add_button)
 
         line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP, 5)
+        sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 5)
 
         self.listbox=MyHtmlListBox(self, -1, size=(-1, 150), style=wx.BORDER_SUNKEN)
         self.listbox.SetItemList([inter.get_code() for inter in self.interactors])
@@ -3079,7 +3079,7 @@ class CustomParametersDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnApply, okay_button)
 
         line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP, 5)
+        sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 5)
 
         sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT, 5)
         self.SetSizer(sizer)

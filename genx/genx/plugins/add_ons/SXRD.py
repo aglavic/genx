@@ -173,12 +173,14 @@ class Plugin(framework.Template):
         sample_view_sizer=wx.BoxSizer(wx.HORIZONTAL)
         panel.SetSizer(sample_view_sizer)
         self.sample_view=atom_viewer.VTKview(panel)
+        self.sample_view.ReadConfig=lambda: None
         toolbar=self.sample_view.do_toolbar(panel)
 
         sample_view_sizer.Add(toolbar, 0, wx.EXPAND)
         sample_view_sizer.Add(self.sample_view, 1, wx.EXPAND | wx.GROW | wx.ALL)
 
         toolbar.Realize()
+        toolbar.ReadConfig=lambda: None
         panel.Layout()
 
         # Just to init the view properly
@@ -221,7 +223,7 @@ class Plugin(framework.Template):
         data_set_list=self.GetModel().data
         # print "update_data_names"
 
-        assert (len(data_set_list)==len(self.script_interactor.data_sections_interactors))
+        #assert (len(data_set_list)==len(self.script_interactor.data_sections_interactors))
 
         for interactor, data_set in zip(self.script_interactor.data_sections_interactors, data_set_list):
             interactor.set_name(data_set.name)

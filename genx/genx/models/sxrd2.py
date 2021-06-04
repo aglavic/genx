@@ -116,29 +116,16 @@ from . import utils
 from .symmetries import SymTrans, Sym
 from genx.gui_logging import iprint
 
-sxrd_ext_built=False
-debug=False
-try:
-    from .lib import sxrd_ext
-
-    sxrd_ext_built=True
-    _turbo_sim=True
-except ImportError:
-    sxrd_ext_built=False
-    _turbo_sim=False
-
-# Try to complie the extensions - if necessary
-if not sxrd_ext_built or debug:
+from .lib import USE_NUMBA
+if USE_NUMBA:
     try:
-        from .lib import build_ext
-
-        build_ext.sxrd()
-        from .lib import sxrd_ext
-
-        _turbo_sim=True
-    except:
-        iprint('Could not build sxrd c extension')
-        _turbo_sim=False
+        from .lib.surface_scattering import surface_lattice_sum
+    except ImportError:
+        numba_ss=False
+    else:
+        numba_ss=True
+else:
+    numba_ss=False
 
 __pars__=['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
 
@@ -194,7 +181,7 @@ class Sample:
         return self.cohf*f_coh+(1-self.cohf)*f_incoh
 
     def calc_i(self, inst, h, k, l):
-        return self.calc_f(inst, h, k, l)**2
+        return inst.inten*self.calc_f(inst, h, k, l)**2
 
     def calc_f(self, inst, h, k, l):
         f_list=np.array([domain.calc_f(inst, h, k, l) for domain in self.domains])
@@ -318,6 +305,10 @@ class Domain:
         ftot=fs+fb
         return ftot
 
+    if numba_ss:
+        # replace by faster version
+        calc_f=turbo_calc_f
+
     def calc_fs(self, inst, h, k, l):
         '''Calculate the structure factors from the surface
         '''
@@ -334,7 +325,7 @@ class Domain:
                   , 1)
         return fs
 
-    def turbo_calc_fs(self, h, k, l):
+    def turbo_calc_fs(self, inst, h, k, l):
         '''Calculate the structure factors with weave (inline c code)
         Produces faster simulations of large structures.
         '''
@@ -346,7 +337,7 @@ class Domain:
         x, y, z, u, oc, el=self._surf_pars()
         f=self._get_f(inst, el, dinv)
         Pt=np.array([np.c_[so.P, so.t] for so in self.surface_sym])
-        fs=lib.sxrd_ext.surface_lattice_sum(x, y, z, h, k, l, u, oc, f, Pt, dinv)
+        fs=surface_lattice_sum(x, y, z, h, k, l, u, oc, f, Pt, dinv)
         return fs
 
     def calc_fb(self, inst, h, k, l):
@@ -754,19 +745,19 @@ class Slab:
         item=np.argwhere(self.id==id)[0][0]
         if item<len(self.x)-1:
             ar=getattr(self, 'id')
-            setattr(self, 'id', r_[ar[:item], ar[item+1:]])
+            setattr(self, 'id', np.r_[ar[:item], ar[item+1:]])
             ar=getattr(self, 'el')
-            setattr(self, 'el', r_[ar[:item], ar[item+1:]])
+            setattr(self, 'el', np.r_[ar[:item], ar[item+1:]])
             ar=getattr(self, 'x')
-            setattr(self, 'x', r_[ar[:item], ar[item+1:]])
+            setattr(self, 'x', np.r_[ar[:item], ar[item+1:]])
             ar=getattr(self, 'y')
-            setattr(self, 'y', r_[ar[:item], ar[item+1:]])
+            setattr(self, 'y', np.r_[ar[:item], ar[item+1:]])
             ar=getattr(self, 'z')
-            setattr(self, 'z', r_[ar[:item], ar[item+1:]])
+            setattr(self, 'z', np.r_[ar[:item], ar[item+1:]])
 
             for par in self.par_names:
                 ar=getattr(self, par)
-                setattr(self, par, r_[ar[:item], ar[item+1:]])
+                setattr(self, par, np.r_[ar[:item], ar[item+1:]])
                 delattr(self, 'set'+id+par)
                 delattr(self, 'get'+id+par)
         else:
@@ -1104,7 +1095,7 @@ class AtomGroup:
     def __add__(self, other):
         """Adds two Atomic groups together"""
         if not type(other)==type(self):
-            raise TyepError('Adding wrong type to an AtomGroup has to be an'
+            raise TypeError('Adding wrong type to an AtomGroup has to be an'
                             'AtomGroup')
         ids=self.ids+other.ids
         slabs=self.slabs+other.slabs
@@ -1182,8 +1173,8 @@ class Instrument:
         try:
             self.set_wavel(12.39842/float(energy))
         except ValueError:
-            raise ValueErrror('%s is not a valid float number needed for the'
-                              'energy'%wavel)
+            raise ValueError('%s is not a valid float number needed for the'
+                              'energy'%energy)
 
     def get_energy(self):
         '''Returns the photon energy in keV

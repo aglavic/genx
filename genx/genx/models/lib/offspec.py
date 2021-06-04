@@ -9,7 +9,6 @@ from scipy.special import factorial
 from .elfield import *
 
 import numba
-import math, cmath
 
 @numba.jit(numba.float64[:](numba.float64[:], numba.complex128[:,:,:], numba.complex128[:,:,:], numba.float64,
                             numba.float64, numba.float64[:], numba.float64[:], numba.complex128[:], numba.float64[:],
@@ -133,7 +132,7 @@ def DWBA_Interdiff(qx, qz, lamda, n, z, sigma, sigmaid, eta, h, eta_z, d=[0],
                    taylor_n=1):
     # sigmaid-interdiffused part
     # sigma-roughness
-    k=2*math.pi/lamda
+    k=2*pi/lamda
     qx=array(qx, dtype=float64)
     # Calculating electrical fields
     omega=arctan(qx/qz)  # Not the real omega given by Fewster
@@ -174,7 +173,7 @@ def DWBA_Interdiff(qx, qz, lamda, n, z, sigma, sigmaid, eta, h, eta_z, d=[0],
     return (s, omega+omegap, omegap-omega)
 
 def DWBA(qx, qz, lamda, n, z, sigma, eta, h, eta_z, d=[0], taylor_n=1):
-    k=2*math.pi/lamda
+    k=2*pi/lamda
     qx=array(qx, dtype=float64)
     sqn=n**2
     sqn=array(sqn, dtype=complex)
@@ -208,7 +207,7 @@ def DWBA(qx, qz, lamda, n, z, sigma, eta, h, eta_z, d=[0], taylor_n=1):
     return (s, omega+omegap, omegap-omega)
 
 def Born(qx, qz, lamda, n, z, sigma, eta, h, eta_z, d=[0], taylor_n=1):
-    k=2*math.pi/lamda
+    k=2*pi/lamda
     qx=array(qx, dtype=float64)
     sqn=n**2
     sqn=array(sqn, dtype=complex)
