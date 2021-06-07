@@ -538,6 +538,7 @@ class ValueLimitCellRenderer(gridlib.GridCellRenderer):
                     rel_value_pix=0
                 dc.DrawRectangle(rect.x, rect.y, rel_value_pix, rect.height)
 
+            dc.SetBackgroundMode(wx.TRANSPARENT)
             dc.SetTextForeground(txt_colour)
             dc.SetTextBackground(bkg_colour)
             dc.SetFont(attr.GetFont())
