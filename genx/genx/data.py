@@ -376,10 +376,19 @@ class DataSet:
             raise IOError('The data is not in the correct format all the'+ \
                           'arrays have to have the same shape:\n'+debug, filename)
 
+    @staticmethod
+    def rms(*items):
+        # combine errors to RMS using sqrt(s1**2+s2**2+...+si**2)
+        sitems=items[0]**2
+        for itm in items[1:]:
+            sitems+=itm**2
+        return sqrt(sitems)
+
     def run_x_command(self):
         x=self.x_raw
         y=self.y_raw
         e=self.error_raw
+        rms=self.rms
 
         for key in self.extra_data:
             exec('%s = self.%s_raw'%(key, key))
@@ -391,6 +400,7 @@ class DataSet:
         x=self.x_raw
         y=self.y_raw
         e=self.error_raw
+        rms=self.rms
 
         for key in self.extra_data:
             exec('%s = self.%s_raw'%(key, key))
@@ -403,9 +413,26 @@ class DataSet:
         x=self.x_raw
         y=self.y_raw
         e=self.error_raw
+        rms=self.rms
 
         for key in self.extra_data:
             exec('%s = self.%s_raw'%(key, key))
+
+        def fpe(xmax=0.05, relerr=0.01):
+            '''
+            Estimate intensity error due to beam crossection deviating from model foot print
+            xmax: the full beam hits the sample at locations larger than this x-value
+            relerr: relative intensity error expected wrt. footprint
+            '''
+            return where(x<xmax, y*relerr, 0.0)
+
+        def dydx():
+            # numerical calculation of local derivative from data
+            return hstack([
+                (y[1]-y[0])/(x[1]-x[0]),
+                (y[2:]-y[:-2])/(x[2:]-x[:-2]),
+                (y[-1]-y[-2])/(x[-1]-x[-2])
+                ])
 
         self.error=eval(self.error_command)
 
@@ -413,6 +440,7 @@ class DataSet:
         x=self.x_raw
         y=self.y_raw
         e=self.error_raw
+        rms=self.rms
 
         for key in self.extra_data_raw:
             exec('%s = self.extra_data_raw["%s"]'%(key, key))
@@ -454,6 +482,7 @@ class DataSet:
         x=self.x_raw
         y=self.y_raw
         e=self.error_raw
+        rms=self.rms
 
         # Know we have to do this with the extra data
         for key in self.extra_data_raw:
@@ -475,6 +504,22 @@ class DataSet:
                         +e.__str__()+'\n'
 
         if command_dict['e']!='':
+            def fpe(xmax=0.05, relerr=0.01):
+                '''
+                Estimate intensity error due to beam crossection deviating from model foot print
+                xmax: the full beam hits the sample at locations larger than this x-value
+                relerr: relative intensity error expected wrt. footprint
+                '''
+                return where(x < xmax, y*relerr, 0.0)
+
+            def dydx():
+                # numerical calculation of local derivative from data
+                return hstack([
+                    (y[1]-y[0])/(x[1]-x[0]),
+                    (y[2:]-y[:-2])/(x[2:]-x[:-2]),
+                    (y[-1]-y[-2])/(x[-1]-x[-2])
+                    ])
+
             try:
                 et=eval(command_dict['e'])
             except Exception as e:
