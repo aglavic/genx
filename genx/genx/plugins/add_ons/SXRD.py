@@ -174,6 +174,7 @@ class Plugin(framework.Template):
         panel.SetSizer(sample_view_sizer)
         self.sample_view=atom_viewer.VTKview(panel)
         self.sample_view.ReadConfig=lambda: None
+        self.sample_view.GetZoom=lambda: False
         toolbar=self.sample_view.do_toolbar(panel)
 
         sample_view_sizer.Add(toolbar, 0, wx.EXPAND)
