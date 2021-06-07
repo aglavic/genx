@@ -976,7 +976,7 @@ class EditCustomParameters(wx.Dialog):
         sizer=wx.BoxSizer(wx.VERTICAL)
         name_ctrl_sizer=wx.GridBagSizer(2, 3)
 
-        col_labels=['Name', 'Value']
+        col_labels=['Name', 'Value', 'Sigma (for systematic error)']
 
         for item, index in zip(col_labels, list(range(len(col_labels)))):
             label=wx.StaticText(self, -1, item)
@@ -988,8 +988,11 @@ class EditCustomParameters(wx.Dialog):
         self.value_ctrl=wx.TextCtrl(self, -1, size=(120, -1))
         name_ctrl_sizer.Add(self.value_ctrl, (1, 1),
                             flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
+        self.error_ctrl=wx.TextCtrl(self, -1, size=(120, -1))
+        name_ctrl_sizer.Add(self.error_ctrl, (1, 2),
+                            flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
         self.add_button=wx.Button(self, id=wx.ID_ANY, label='Add')
-        name_ctrl_sizer.Add(self.add_button, (1, 2),
+        name_ctrl_sizer.Add(self.add_button, (1, 3),
                             flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, border=5)
         sizer.Add(name_ctrl_sizer)
         self.Bind(wx.EVT_BUTTON, self.OnAdd, self.add_button)
@@ -1034,8 +1037,13 @@ class EditCustomParameters(wx.Dialog):
         
         Callback for adding an entry
         '''
-        line='%s.new_var(\'%s\', %s)'%(self.var_name,
-                                       self.name_ctrl.GetValue(), self.value_ctrl.GetValue())
+        sigma=self.error_ctrl.GetValue()
+        if sigma.strip()=='':
+            line='%s.new_var(\'%s\', %s)'%(self.var_name,
+                                           self.name_ctrl.GetValue(), self.value_ctrl.GetValue())
+        else:
+            line='%s.new_sys_err(\'%s\', %s, %s)'%(self.var_name, self.name_ctrl.GetValue(),
+                                                   self.value_ctrl.GetValue(), sigma)
         try:
             self.model.eval_in_model(line)
         except Exception as e:
@@ -1633,7 +1641,9 @@ class Plugin(framework.Template, SampleBuilder):
 
     def InputPageChanged(self, pname):
         # check if the script was changed and in that case update the model
-        if self.model_obj.script!=self._last_script:
+        if self.parent.script_editor.GetText()!=self._last_script:
+            # update the script, this is done automatically when simulating by user
+            self.model_obj.set_script(self.parent.script_editor.GetText())
             try:
                 self.ReadModel(reevaluate=True)
             except Exception as e:
