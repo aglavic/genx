@@ -145,25 +145,12 @@ def calculate_segmentation(sample):
     rho_nsf_out=[rho_m_nsf[0]]
     rho_sf_out=[rho_m_sf[0]]
     xs_ai_out=[xs_ai_comb[0]]
+    rho_x_r=rho_x.real
+    rho_n_p=rho_n.real+rho_m_nsf
+    rho_n_m=rho_n.real-rho_m_nsf
     while i<(len(z)-1):
-        # calculate SLD differeces for all subsequent positions
-        #        diff_x=abs(rho_x[i+1:]-rho_x_out[-1])
-        #        diff_n_p=abs(rho_n[i+1:]+rho_m_nsf[i+1:]-rho_n_out[-1]-rho_nsf_out[-1])
-        #        diff_n_m=abs(rho_n[i+1:]-rho_m_nsf[i+1:]-rho_n_out[-1]+rho_nsf_out[-1])
-        #        diff_m_sf=abs(rho_m_sf[i+1:]-rho_sf_out[-1])
-        #        diff_idx=where((diff_n_p>sample.max_diff_n)|(diff_x>sample.max_diff_x)|
-        #                       (diff_n_m>sample.max_diff_n)|(diff_m_sf>sample.max_diff_n))[0]
-        # calculate the maximum variation of SLD up to given index
-        diff_x=abs(maximum.accumulate(rho_x[i+1:])-minimum.accumulate(rho_x[i+1:]))
-        diff_n_p=abs(maximum.accumulate(rho_n[i+1:]+rho_m_nsf[i+1:])-minimum.accumulate(rho_n[i+1:]+rho_m_nsf[i+1:]))
-        diff_n_m=abs(maximum.accumulate(rho_n[i+1:]-rho_m_nsf[i+1:])-minimum.accumulate(rho_n[i+1:]-rho_m_nsf[i+1:]))
-        diff_m_sf=abs(maximum.accumulate(rho_m_sf[i+1:])-minimum.accumulate(rho_m_sf[i+1:]))
-        diff_idx=where(logical_not((diff_n_p<sample.max_diff_n) & (diff_x<sample.max_diff_x) &
-                                   (diff_n_m<sample.max_diff_n) & (diff_m_sf<sample.max_diff_n)))[0]
-        if len(diff_idx)>0:
-            j=min(len(z)-1, max(i+diff_idx[0]+1, i+5))
-        else:
-            j=len(z)-1  # last position
+        j=next_adaptive_segment(i, rho_x_r, rho_n_p, rho_n_m, rho_m_sf,
+                                sample.max_diff_n, sample.max_diff_x, z)
         d_segments.append(z[j]-z[i])
         rho_x_out.append(rho_x[i:j].mean())
         rho_n_out.append(rho_n[i:j].mean())
@@ -177,6 +164,20 @@ def calculate_segmentation(sample):
     magn_ang_out=(arctan2(rho_nsf_out, -rho_sf_out)*180./pi-90.).tolist()
     return (d_segments[1:], rho_x_out[1:],
             rho_n_out[1:], rho_m_out[1:], xs_ai_out[1:], magn_ang_out[1:])
+
+def next_adaptive_segment(i, rho_x_r, rho_n_p, rho_n_m, rho_m_sf, max_diff_n, max_diff_x, z):
+    # calculate the maximum variation of SLD up to given index
+    diff_x=abs(maximum.accumulate(rho_x_r[i+1:])-minimum.accumulate(rho_x_r[i+1:]))
+    diff_n_p=abs(maximum.accumulate(rho_n_p[i+1:])-minimum.accumulate(rho_n_p[i+1:]))
+    diff_n_m=abs(maximum.accumulate(rho_n_m[i+1:])-minimum.accumulate(rho_n_m[i+1:]))
+    diff_m_sf=abs(maximum.accumulate(rho_m_sf[i+1:])-minimum.accumulate(rho_m_sf[i+1:]))
+    diff_idx=where(logical_not((diff_n_p<max_diff_n) & (diff_x<max_diff_x) &
+                               (diff_n_m<max_diff_n) & (diff_m_sf<max_diff_n)))[0]
+    if len(diff_idx)>0:
+        j=min(len(z)-1, max(i+diff_idx[0]+1, i+5))
+    else:
+        j=len(z)-1  # last position
+    return j
 
 def resolve_parameters_by_element(sample):
     """
