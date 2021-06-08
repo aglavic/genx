@@ -168,16 +168,16 @@ class SampleTable(gridlib.GridTableBase):
                       False, '0', False, '0']
         self.substrate=[None, 'Formula', Formula([['Si', 1.0]]),
                         False, '2.32998', False, '0.0',
-                        False, '0', True, '5.0']
-        self.layers=[['Surface_Oxide', 'Formula', Formula([['Fe', 2.0], ['O', 2.0]]),
+                        False, '0', False, '5.0']
+        self.layers=[['Surface_Layer', 'Formula', Formula([['Fe', 2.0], ['O', 2.0]]),
                       False, '5.25568', False, '0.0',
-                      True, '20.0', False, '5.0', TOP_LAYER],
-                     ['Iron', 'Formula', Formula([['Fe', 1.0]]),
-                      False, '7.87422', False, '3.0',
-                      True, '100.0', False, '5.0', ML_LAYER],
-                     ['Natural_Oxide', 'Formula', Formula([['Si', 1.0], ['O', 2.0]]),
+                      False, '20.0', False, '5.0', TOP_LAYER],
+                     ['Layer_1', 'Formula', Formula([['Fe', 1.0]]),
+                      False, '7.87422', False, '0.0',
+                      False, '100.0', False, '5.0', ML_LAYER],
+                     ['Interface_Layer', 'Formula', Formula([['Si', 1.0], ['O', 2.0]]),
                       False, '4.87479', False, '0.0',
-                      True, '20.0', False, '5.0', BOT_LAYER]
+                      False, '20.0', False, '5.0', BOT_LAYER]
                      ]
 
         if not first:
@@ -857,8 +857,8 @@ class SamplePanel(wx.Panel):
             pars['restype']='full conv and varying res.'
         template="%(name)s = model.Instrument(probe='%(probe)s', wavelength=%(wavelength)g, " \
                  "coords='%(coords)s', I0=%(I0)g, res=%(res)g, " \
-                 "restype='%(restype)s', respoints=5, " \
-                 "resintrange=2, beamw=%(beamw)g, footype='%(footype)s', " \
+                 "restype='%(restype)s', respoints=11, " \
+                 "resintrange=3, beamw=%(beamw)g, footype='%(footype)s', " \
                  "samplelen=%(samplelen)g, incangle=0.0, pol='%(pol)s', " \
                  "Ibkg=%(Ibkg)g, tthoff=0.0,)\n"
         if pars['probe'] in ['x-ray', 'neutron']:
@@ -909,13 +909,18 @@ class SamplePanel(wx.Panel):
             self.plugin.parent.plot_data.update_labels('2θ [°]')
             data.DataSet.simulation_params[0]=0.01
             data.DataSet.simulation_params[1]=6.01
+        res_set=False
         for i, di in enumerate(datasets):
             di.run_command()
             script+="    # BEGIN Dataset %i DO NOT CHANGE\n" \
-                    "    d = data[%i]\n" \
-                    "    I.append(sample.SimSpecular(d.x, %s))\n" \
+                    "    d = data[%i]\n"%(i,i)
+            if hasattr(di, 'res') and di.res is not None:
+                script+="    inst.setRes(data[%i].res)\n"%i
+            elif res_set:
+                script+="    inst.setRes(0.001)\n"
+            script+="    I.append(sample.SimSpecular(d.x, %s))\n" \
                     "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
-                    "    # END Dataset %i\n"%(i, i, insts[i%len(insts)], i)
+                    "    # END Dataset %i\n"%(insts[i%len(insts)], i)
             if di.name.startswith('Data') and len(insts)>1:
                 prefix=['Spin Up', 'Spin Down'][i%2]
                 di.name=prefix+' %i'%(i//2+1)
@@ -1093,11 +1098,18 @@ class WizarSelectionPage(WizardPageSimple):
         vbox.Add(text, 0, wx.EXPAND)
         vbox.AddStretchSpacer()
 
-        txt_length=max([len(ti) for ti in choices])+4
         self.ctrl=wx.RadioBox(self, label=choice_label, choices=choices,
-                              style=wx.RA_SPECIFY_ROWS, majorDimension=4,
-                              size=wx.Size(int(txt_length*(len(choices)//4+1)*dpi_scale_factor*8),
-                                           int(min(len(choices), 4)*dpi_scale_factor*30)))
+                              style=wx.RA_SPECIFY_ROWS, majorDimension=4)
+
+        # dc=wx.ScreenDC()
+        # dc.SetFont(self.ctrl.GetFont())
+        # txt_height=dc.GetTextExtent("A").height
+        # txt_lengths=[dc.GetTextExtent(ti).width for ti in choices]
+        # total_txt_width=max(txt_lengths[:4])
+        # for i in range(len(choices)//4):
+        #     total_txt_width+=max(txt_lengths[i*4:(i+1)*4])
+        self.ctrl.SetMinSize(self.ctrl.GetBestSize())#wx.Size(total_txt_width, 50))
+
         vbox.Add(self.ctrl, 0, 0)
         if choices_help:
             for i, ti in enumerate(choices_help):
@@ -1323,7 +1335,7 @@ class Plugin(framework.Template):
         '''
         dlg=self.parent.data_list.list_ctrl.data_loader_cont
         dls=list(sorted(dlg.plugin_handler.get_possible_plugins()))
-        dls.remove('default')
+        dls.remove('auto')
 
         wiz=Wizard(self.parent, title='Create New Model...',
                    bitmap=images.getinstrumentBitmap(), style=wx.DEFAULT_DIALOG_STYLE | wx.STAY_ON_TOP)
@@ -1336,7 +1348,7 @@ class Plugin(framework.Template):
                               'Please choose the experiment you want to model'
                               '/fit. This option can be changed later '
                               'from the Instrument Settings dialog.')
-        p2=WizarSelectionPage(wiz, ['default']+dls,
+        p2=WizarSelectionPage(wiz, ['auto']+dls,
                               'Selecte Data Loader\n',
                               'How to import data '
                               'into GenX.\nIf your instrument is not listed '
@@ -1470,6 +1482,11 @@ class Plugin(framework.Template):
             for i in range(4):
                 grid.AutoSizeColumn(i)
             box.Add(grid, proportion=1, flag=wx.EXPAND)
+
+            w=min(grid.GetBestSize().width+80, self.parent.GetSize().width//1.5)
+            h=min(grid.GetBestSize().height+80, self.parent.GetSize().height//1.3)
+            dia.SetSize(wx.Size(w, h))
+
             dia.ShowModal()
         event.Skip()
 

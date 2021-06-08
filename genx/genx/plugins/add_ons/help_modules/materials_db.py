@@ -49,7 +49,9 @@ class Formula(list):
         # check that the data is correct form, list of [Element, fraction] items.
         for di in data:
             if len(di)!=2:
-                raise ValueError('Formula has to consist of [Element, fraction] entries.')
+                raise ValueError('Formula has to consist of [Element, fraction] entries')
+            if not self.check_atom(di[0]):
+                raise ValueError('Element/Isotope %s no in database'%di[0])
             di[1]=float(di[1])
         list.__init__(self, data)
 
@@ -234,6 +236,10 @@ class Formula(list):
                     raise KeyError('Element %s does not exist'%ei)
         # return 1. if formulat is empty to avoid division by zero in density
         return mass or 1.0
+
+    @staticmethod
+    def check_atom(atom_string):
+        return atom_string in atomic_data
 
     def describe(self):
         '''Return a multile string with written element content.'''
