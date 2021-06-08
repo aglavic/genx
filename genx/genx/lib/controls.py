@@ -192,12 +192,12 @@ class SpinCtrl(wx.TextCtrl):
                              validator=NumberValidator())
 
         self.Layout()
-        self._spin=wx.SpinButton(self, wx.NewId(), pos=pos, size=wx.Size(20, self.GetSize().GetHeight()-8),
-                                 style=wx.SP_ARROW_KEYS | wx.SP_VERTICAL, name=name+"_SpinButton")
-        self._spin.Bind(wx.EVT_SPIN_UP, self.eh_spin_up,
-                        id=self._spin.GetId())
-        self._spin.Bind(wx.EVT_SPIN_DOWN, self.eh_spin_down,
-                        id=self._spin.GetId())
+        # self._spin=wx.SpinButton(self, wx.NewId(), pos=pos, size=wx.Size(20, self.GetSize().GetHeight()-8),
+        #                          style=wx.SP_ARROW_KEYS | wx.SP_VERTICAL, name=name+"_SpinButton")
+        # self._spin.Bind(wx.EVT_SPIN_UP, self.eh_spin_up,
+        #                 id=self._spin.GetId())
+        # self._spin.Bind(wx.EVT_SPIN_DOWN, self.eh_spin_down,
+        #                 id=self._spin.GetId())
 
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
         self.Bind(wx.EVT_CHAR, self.OnChar)
