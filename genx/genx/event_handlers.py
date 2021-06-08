@@ -501,7 +501,7 @@ def simulation_loop(frame):
     """
     frame.flag_simulating=True
     while frame.simulation_queue_counter>0:
-        do_simulation(frame)
+        do_simulation(frame, from_thread=True)
         time.sleep(0.1)
         frame.simulation_queue_counter=min(1, frame.simulation_queue_counter-1)
     frame.flag_simulating=False
@@ -544,30 +544,30 @@ def simulate(frame, event):
     set_possible_parameters_in_grid(frame)
     frame.flag_simulating=False
 
-def do_simulation(frame):
+def do_simulation(frame, from_thread=False):
     # Just a debugging output...
     # print frame.script_editor.GetText()
 
-    frame.main_frame_statusbar.SetStatusText('Simulating...', 1)
+    if not from_thread: frame.main_frame_statusbar.SetStatusText('Simulating...', 1)
     frame.model.set_script(frame.script_editor.GetText())
     # Compile is not necessary when using simualate...
     # frame.model.compile_script()
     try:
         frame.model.simulate()
     except modellib.GenericError as e:
-        ShowModelErrorDialog(frame, str(e))
-        frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
+        wx.CallAfter(ShowModelErrorDialog, frame, str(e))
+        if not from_thread: frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
     except Exception as e:
         outp=StringIO()
         traceback.print_exc(200, outp)
         val=outp.getvalue()
         outp.close()
-        ShowErrorDialog(frame, val)
-        frame.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
+        wx.CallAfter(ShowErrorDialog, frame, val)
+        if not from_thread: frame.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
     else:
         _post_sim_plot_event(frame, frame.model, 'Simulation')
-        frame.plugin_control.OnSimulate(None)
-        frame.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
+        wx.CallAfter(frame.plugin_control.OnSimulate, None)
+        if not from_thread: frame.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
 
 def set_possible_parameters_in_grid(frame):
     # Now we should find the parameters that we can use to
