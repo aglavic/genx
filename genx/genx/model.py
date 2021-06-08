@@ -12,6 +12,7 @@ import pickle as pickle
 import io, traceback
 import inspect
 import numpy as np
+import h5py
 
 # GenX libraries
 from . import data
@@ -215,7 +216,10 @@ class Model:
         :return:
         """
         self.data.read_h5group(group['data'])
-        self.script=group['script'][()]
+        if int(h5py.__version__[0])>2:
+            self.script=group['script'][()].decode('utf-8')
+        else:
+            self.script=group['script'][()]
         self.parameters.read_h5group(group['parameters'])
         fom_func_name=group['fomfunction'][()].decode('utf-8')
         if fom_func_name in fom_funcs.func_names:
