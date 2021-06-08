@@ -951,7 +951,7 @@ class MainFrame(wx.Frame):
         event_handlers.parameter_value_changed(self, event)
 
     def eh_mb_fit_autosim(self, event):  # wxGlade: MainFrame.<event_handler>
-        warning("Event handler 'eh_mb_fit_autosim' not implemented!")
+        # warning("Event handler 'eh_mb_fit_autosim' not implemented!")
         event.Skip()
 
 # end of class MainFrame
