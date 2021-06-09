@@ -33,7 +33,7 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
 
     def LoadData(self, dataset, filename):
         for li in self.loaders:
-            if filename.endswith(li.wildcard[1:]):
+            if li.CanOpen(filename):
                 return li.LoadData(dataset, filename)
         if self.res_col<0:
             self.x_col=self.q_col

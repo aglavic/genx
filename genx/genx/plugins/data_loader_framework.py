@@ -134,3 +134,15 @@ class Template:
         Removes the plugin from knowledge of the parent.
         '''
         self.parent.data_loader=None
+
+    def CanOpen(self, file_path):
+        """
+        Return if the data loader class can open the given file.
+        Default implementation just checks if the filename matches the wildcard, if it exists.
+        """
+        if self.wildcard is None:
+            return True
+        for wc in self.wildcard.split(';'):
+            if file_path.endswith(wc[1:]):
+                return True
+        return False

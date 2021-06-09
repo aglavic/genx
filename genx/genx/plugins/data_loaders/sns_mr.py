@@ -28,6 +28,12 @@ class Plugin(Template):
         self.skip_rows=0
         self.delimiter=None
 
+    def CanOpen(self, file_path):
+        if not Template.CanOpen(self, file_path):
+            return False
+        l1=open(file_path, 'r', encoding='utf-8').readline()
+        return l1.startswith('# Datafile created by QuickNXS')
+
     def LoadData(self, dataset, filename):
         '''LoadData(self, data_item_number, filename) --> none
 
