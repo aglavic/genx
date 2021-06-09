@@ -23,7 +23,7 @@ class PluginController:
         self.plugin_handler=PluginHandler(parent, __MODULE_DIR__
                                           , 'data_loaders')
         self.parent=parent
-        self.plugin_handler.load_plugin('default')
+        self.plugin_handler.load_plugin('auto')
 
     def load_default(self):
         try:
