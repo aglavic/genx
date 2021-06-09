@@ -545,15 +545,11 @@ def simulate(frame, event):
     frame.flag_simulating=False
 
 def do_simulation(frame, from_thread=False):
-    # Just a debugging output...
-    # print frame.script_editor.GetText()
-
     if not from_thread: frame.main_frame_statusbar.SetStatusText('Simulating...', 1)
     frame.model.set_script(frame.script_editor.GetText())
-    # Compile is not necessary when using simualate...
-    # frame.model.compile_script()
     try:
-        frame.model.simulate()
+        # when updated from thread and was compiled before, do not compile again
+        frame.model.simulate(compile=not (from_thread and frame.model.is_compiled()))
     except modellib.GenericError as e:
         wx.CallAfter(ShowModelErrorDialog, frame, str(e))
         if not from_thread: frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
@@ -565,7 +561,7 @@ def do_simulation(frame, from_thread=False):
         wx.CallAfter(ShowErrorDialog, frame, val)
         if not from_thread: frame.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
     else:
-        _post_sim_plot_event(frame, frame.model, 'Simulation')
+        wx.CallAfter(_post_sim_plot_event, frame, frame.model, 'Simulation')
         wx.CallAfter(frame.plugin_control.OnSimulate, None)
         if not from_thread: frame.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
 
