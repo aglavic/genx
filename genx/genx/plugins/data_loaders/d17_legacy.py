@@ -36,8 +36,8 @@ except ImportError:
     wx.Dialog=void
 
 class Plugin(Template):
-    wildcard='*.mft'
-
+    wildcard='*.out'
+    
     def __init__(self, parent=None):
         Template.__init__(self, parent)
         self.q_col=0
@@ -45,7 +45,7 @@ class Plugin(Template):
         self.eI_col=2
         self.res_col=3
         self.comment='#'
-        self.skip_rows=23
+        self.skip_rows=42
         self.delimiter=None
 
     def LoadData(self, dataset, filename):
@@ -100,10 +100,6 @@ class Plugin(Template):
             dataset.meta['data_source']['facility']='ILL'
             dataset.meta['data_source']['experiment']['instrument']='D17'
             dataset.meta['data_source']['experiment']['probe']='neutron'
-            if 'Title' in header_info:
-                dataset.meta['data_source']['title']=header_info['Title']
-            if 'Start date + time' in header_info:
-                dataset.meta['data_source']['experimentDate']=header_info['Start date + time']
             dataset.meta['data_source']['file_header']=header_info
 
     def SettingsDialog(self):
