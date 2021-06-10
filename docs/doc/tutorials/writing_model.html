@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Writing a custom model &#8212; GenX 3.1.3 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Writing a custom model &#8212; GenX 3.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -17,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Fitting of x-ray reflectivity data" href="xrr_fitting.html" />
+    <link rel="next" title="Simple Reflectivity Model (XRR/NR)" href="simple_reflectivity.html" />
     <link rel="prev" title="Fitting with Differential Evolution" href="diffev.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -30,12 +31,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="xrr_fitting.html" title="Fitting of x-ray reflectivity data"
+          <a href="simple_reflectivity.html" title="Simple Reflectivity Model (XRR/NR)"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="diffev.html" title="Fitting with Differential Evolution"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a custom model</a></li> 
       </ul>
@@ -46,14 +47,14 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="writing-a-custom-model">
+  <section id="writing-a-custom-model">
 <span id="tutorial-writing-model"></span><h1>Writing a custom model<a class="headerlink" href="#writing-a-custom-model" title="Permalink to this headline">¶</a></h1>
 <p>Writing a model is quite easy in GenX. There is a couple of things one need to keep in mind in order to successful
 which will be covered in this tutorial. The only mandatory thing the model file has to contain is a function called
 <code class="docutils literal notranslate"><span class="pre">Sim</span></code> taking a member of the class Data as input parameter. However, to make the model useful, functions for
 setting the values have to be incorporated. Note that GenX uses function to set the parameters during fitting,
 this is why we need to have them.</p>
-<div class="section" id="programming-python">
+<section id="programming-python">
 <h2>Programming Python<a class="headerlink" href="#programming-python" title="Permalink to this headline">¶</a></h2>
 <p>Since writing a model actually involves writing a script in Python it is good to have some basic knowledge of the syntax.
 However, if you have some basic knowledge about programming it should be fairly easy to just look at the examples
@@ -68,8 +69,8 @@ for the beginner written for computer science students.</p></li>
 </ul>
 <p>In addition there are a number of tutorials on <a class="reference external" href="http://www.scipy.org">SciPy’s homepage</a> which deal w
 ith numerical computations. There is also a migration guide for those who are familiar with MatLab.</p>
-</div>
-<div class="section" id="the-data-class">
+</section>
+<section id="the-data-class">
 <h2>The Data class<a class="headerlink" href="#the-data-class" title="Permalink to this headline">¶</a></h2>
 <p>In order to write the Sim class it is necessary to know the structure of the class <code class="docutils literal notranslate"><span class="pre">Data</span></code> which is taken as a
 parameter. The variables which could be useful in the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function are:</p>
@@ -80,8 +81,8 @@ parameter. The variables which could be useful in the <code class="docutils lite
 <li><p><code class="docutils literal notranslate"><span class="pre">yraw</span></code> A list of 1-D arrays (vectors) containing the raw y-values (the data loaded from the data file)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">use</span></code> A list of booleans (True or False) denoting if the data should be fitted</p></li>
 </ul>
-</div>
-<div class="section" id="simple-example">
+</section>
+<section id="simple-example">
 <h2>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this headline">¶</a></h2>
 <p>Knowing what the Data class contains we will start with a simple example, making a model that fits one
 Gaussian to the first data set. The free parameters of the Gaussian are; the center of the peak, Xc, the peak width,
@@ -117,8 +118,8 @@ are extracted as <code class="docutils literal notranslate"><span class="pre">da
 element. Note that this requires that only one data set has been loaded. In order to fit the parameters created in
 by <code class="docutils literal notranslate"><span class="pre">MyVar</span></code> the user only has to right click on a cell in the grid of the Parameter Window and choose the
 <code class="docutils literal notranslate"><span class="pre">MyVar.set[Name]</span></code> function, i.e. <code class="docutils literal notranslate"><span class="pre">MyVar.setA</span></code>.</p>
-</div>
-<div class="section" id="making-a-class">
+</section>
+<section id="making-a-class">
 <h2>Making a class<a class="headerlink" href="#making-a-class" title="Permalink to this headline">¶</a></h2>
 <p>The code above is usually sufficient for prototyping and simple problems. For more complex models it is
 recommended to write a library. This is what has been done for the simulation of x-ray reflectivity data.
@@ -164,8 +165,8 @@ variables. After the class definition an object, <code class="docutils literal n
 is defined as in the previous example but with the function call exchanged to <code class="docutils literal notranslate"><span class="pre">Peak1.Simulate(data.x[0])</span></code> in order
 to simulate the object <code class="docutils literal notranslate"><span class="pre">Peak1</span></code>. The function names that should go into the parameter column in the
 parameter window will be: <code class="docutils literal notranslate"><span class="pre">Peak1.setW</span></code>, <code class="docutils literal notranslate"><span class="pre">Peak1.setXc</span></code> and <code class="docutils literal notranslate"><span class="pre">Peak1.setA</span></code>.</p>
-</div>
-<div class="section" id="multiple-gaussians">
+</section>
+<section id="multiple-gaussians">
 <h2>Multiple Gaussians<a class="headerlink" href="#multiple-gaussians" title="Permalink to this headline">¶</a></h2>
 <p>Making the model based on a class makes it easier to extend. For example if two peaks should be fitted
 the class does not have to be changed. Instead an additional object of the class <code class="docutils literal notranslate"><span class="pre">Gauss</span></code>, for example called
@@ -185,8 +186,8 @@ modified to (omitting the class definition):</p>
 </div>
 <p>Thus, for fitting the parameters for the second Gaussian the functions used should
 be <code class="docutils literal notranslate"><span class="pre">Peak2.setW</span></code>, <code class="docutils literal notranslate"><span class="pre">Peak2.setXc</span></code> and <code class="docutils literal notranslate"><span class="pre">Peak2.setA</span></code>.</p>
-</div>
-<div class="section" id="parameter-coupling">
+</section>
+<section id="parameter-coupling">
 <h2>Parameter coupling<a class="headerlink" href="#parameter-coupling" title="Permalink to this headline">¶</a></h2>
 <p>When the base class is created it can be extended with more problem oriented constraints by using
 functions as in the first example. For example, in some cases it might be known that the width of the two
@@ -214,8 +215,8 @@ by the MyVar class. In summary it is recommended that the models implemented in 
 classes and that these are as general as possible with respect to the parameters. The specific parameter
 couplings can be included as functions in the model file. The methods shown with the examples in this section also
 apply to the libraries included for x-ray reflectivity. The classes are different but the general use is the same.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -244,8 +245,8 @@ apply to the libraries included for x-ray reflectivity. The classes are differen
   <p class="topless"><a href="diffev.html"
                         title="previous chapter">Fitting with Differential Evolution</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="xrr_fitting.html"
-                        title="next chapter">Fitting of x-ray reflectivity data</a></p>
+  <p class="topless"><a href="simple_reflectivity.html"
+                        title="next chapter">Simple Reflectivity Model (XRR/NR)</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -277,19 +278,19 @@ apply to the libraries included for x-ray reflectivity. The classes are differen
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="xrr_fitting.html" title="Fitting of x-ray reflectivity data"
+          <a href="simple_reflectivity.html" title="Simple Reflectivity Model (XRR/NR)"
              >next</a> |</li>
         <li class="right" >
           <a href="diffev.html" title="Fitting with Differential Evolution"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a custom model</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
   </body>
 </html>

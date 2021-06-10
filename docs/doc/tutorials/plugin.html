@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plugins: an introduction &#8212; GenX 3.1.3 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Plugins: an introduction &#8212; GenX 3.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -35,7 +36,7 @@
         <li class="right" >
           <a href="gui.html" title="Overview of the user interface"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Plugins: an introduction</a></li> 
       </ul>
@@ -46,11 +47,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="plugins-an-introduction">
+  <section id="plugins-an-introduction">
 <span id="tutorial-plugin"></span><h1>Plugins: an introduction<a class="headerlink" href="#plugins-an-introduction" title="Permalink to this headline">¶</a></h1>
 <p>If you start reading these tutorials that are housed here in this wiki you will hear a lot about plugins.
 This page will briefly explain what plugins means in GenX and why they will help you.</p>
-<div class="section" id="what-they-are">
+<section id="what-they-are">
 <h2>What they are<a class="headerlink" href="#what-they-are" title="Permalink to this headline">¶</a></h2>
 <p>A plugin is an extension of GenX which can dynamically (that is when the program is running)
 be loaded and unloaded. A plugin framework exist in most programs in order to make them extensible.
@@ -67,13 +68,13 @@ to load data. See below.</p></li>
 extend the graphical user interface with new functionality. See below.</p></li>
 </ol>
 </div></blockquote>
-</div>
-<div class="section" id="how-to-use-them">
+</section>
+<section id="how-to-use-them">
 <h2>How to use them<a class="headerlink" href="#how-to-use-them" title="Permalink to this headline">¶</a></h2>
 <p>First of all, there are some basic help built in in GenX already. Go to the menu Misc
 and you will see help alternatives for both the models, data loaders and plugins.
 This is mostly intended as a quick reference with most the information ready at hand.</p>
-<div class="section" id="data-loader">
+<section id="data-loader">
 <h3>Data Loader<a class="headerlink" href="#data-loader" title="Permalink to this headline">¶</a></h3>
 <p>The Data loaders are a small but powerful plugin feature. It allows user to load data from different file
 formats. Now , as of 2009-04-25, only two different file formats are implemented. One for column
@@ -95,26 +96,26 @@ These would be accessed by:</p>
 </pre></div>
 </div>
 <p>If you would like to know about how to write your own data loaders gor to <a class="reference internal" href="../development/write_data_loader.html#development-write-data-loader"><span class="std std-ref">How to write a Data Loader</span></a>.</p>
-</div>
-<div class="section" id="plugins">
+</section>
+<section id="plugins">
 <h3>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h3>
 <p>As said above these plugins extends the graphical user interface to implement new functionality.
 To load a plugin use the menu <span class="menuselection">Settings‣Plugins‣Load</span> and choose the plugin you want.
 To remove them from them from GenX use the menu <span class="menuselection">Settings‣Plugins‣Unload</span> - and choose the
 plugin you want to remove.</p>
-<div class="section" id="reflectivity">
+<section id="reflectivity">
 <h4>Reflectivity<a class="headerlink" href="#reflectivity" title="Permalink to this headline">¶</a></h4>
 <p>The reflectivity plugin is first plugin for defining a complete fitting model. ^
 It does so by providing controls to define a sample structure. See the tutorials: <a class="reference internal" href="xrr_fitting.html#tutorial-xrr-fitting"><span class="std std-ref">Fitting of x-ray reflectivity data</span></a> and
 <a class="reference internal" href="neutron_sim.html#tutorial-neutron-sim"><span class="std std-ref">Neutron reflectivity tutorial</span></a>.</p>
-</div>
-<div class="section" id="shell">
+</section>
+<section id="shell">
 <h4>Shell<a class="headerlink" href="#shell" title="Permalink to this headline">¶</a></h4>
 <p>This will open a new folder in the lower input notebook. This allows for introspection of the
 different parts of GenX. It should be used only by expert users for debugging. It can also be used to
 debug script if you are proficient enough in python. See the help for more information.</p>
-</div>
-<div class="section" id="userfuncs">
+</section>
+<section id="userfuncs">
 <h4>UserFuncs<a class="headerlink" href="#userfuncs" title="Permalink to this headline">¶</a></h4>
 <p>This little model creates a new menu item and searches the model for functions that takes no
 input arguments and makes it possible to call them from that menu. This can be used to create output ^
@@ -124,14 +125,14 @@ See the help in <span class="menuselection">Misc‣Plugin</span> help.</p>
 ^^^
 This is just a test plugin which tests all the standard functionality provided in the plugin framework.
 It will open a new folder in each notebook in the window and in addition it creates a new menu item. No practical use.</p>
-</div>
-</div>
-<div class="section" id="models">
+</section>
+</section>
+<section id="models">
 <h3>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h3>
 <p>Have a look at the other <a class="reference internal" href="../tutorials.html#tutorials"><span class="std std-ref">Tutorials</span></a>. Most of the information presented here is about the different models.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -204,14 +205,14 @@ It will open a new folder in each notebook in the window and in addition it crea
         <li class="right" >
           <a href="gui.html" title="Overview of the user interface"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Plugins: an introduction</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
   </body>
 </html>

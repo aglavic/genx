@@ -21,6 +21,7 @@ Reflectivity
 .. toctree::
    :maxdepth: 2
 
+   /tutorials/simple_reflectivity
    /tutorials/xrr_fitting
    /tutorials/neutron_sim
    /tutorials/neutron_fit

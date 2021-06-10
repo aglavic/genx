@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>A model for magnetic reflectivity &#8212; GenX 3.1.3 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>A model for magnetic reflectivity &#8212; GenX 3.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -35,7 +36,7 @@
         <li class="right" >
           <a href="packaging.html" title="How to package GenX"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" accesskey="U">Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">A model for magnetic reflectivity</a></li> 
       </ul>
@@ -46,17 +47,17 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="a-model-for-magnetic-reflectivity">
+  <section id="a-model-for-magnetic-reflectivity">
 <span id="model-mag-refl"></span><h1>A model for magnetic reflectivity<a class="headerlink" href="#a-model-for-magnetic-reflectivity" title="Permalink to this headline">¶</a></h1>
 <p>The model described here is  work in progress and this is only intended as a first draft of the model.
 It is not intended for general use.</p>
-<div class="section" id="changes-necessary">
+<section id="changes-necessary">
 <h2>Changes necessary<a class="headerlink" href="#changes-necessary" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Implement faster calculation of multilayers - make use of repetition unit</p></li>
 </ul>
-</div>
-<div class="section" id="changes-done">
+</section>
+<section id="changes-done">
 <h2>Changes done<a class="headerlink" href="#changes-done" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Perhaps the angle theta_m should be relative the quantization axis of the probe.
@@ -77,10 +78,10 @@ moment comes from the resonant magnetic species. - Done</p></li>
 <li><p>Implement inline c coding of the reflectivity calculations to improve the speed. - Done it is about 3.5
 faster than the previous python implementation.</p></li>
 </ul>
-</div>
-<div class="section" id="layer-parameters">
+</section>
+<section id="layer-parameters">
 <h2>Layer Parameters<a class="headerlink" href="#layer-parameters" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="optical-constants">
+<section id="optical-constants">
 <h3>Optical constants<a class="headerlink" href="#optical-constants" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>f</dt><dd><p>The ordinary (tabualted) scattering length. For example <code class="docutils literal notranslate"><span class="pre">fp.Fe</span></code> for pure Fe, <code class="docutils literal notranslate"><span class="pre">0.5*fp.Fe</span> <span class="pre">+</span> <span class="pre">fp.O*0.5</span></code> for
@@ -99,8 +100,8 @@ This is the opposite as to the definition by Stephanov and Shina, thus fr = -(F1
 <dt>fm2</dt><dd><p>The XMLD scattering term. Responsible for linear dichroism. fm2=2F10-(F11+F1-1)</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="densities">
+</section>
+<section id="densities">
 <h3>Densities<a class="headerlink" href="#densities" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>dens</dt><dd><p>The atomic density of the material in questions in units of atoms/AA3. The density of Fe is calculated as 2/2.8663</p>
@@ -111,8 +112,8 @@ This is the opposite as to the definition by Stephanov and Shina, thus fr = -(F1
 it would correspond to 0.5.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="non-magnetic-layer-parameters">
+</section>
+<section id="non-magnetic-layer-parameters">
 <h3>Non-magnetic layer parameters<a class="headerlink" href="#non-magnetic-layer-parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>d</dt><dd><p>The thickness of the layer.</p>
@@ -120,8 +121,8 @@ it would correspond to 0.5.</p>
 <dt>sigma_c</dt><dd><p>The chemical/structural roughness.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="magnetic-parameters">
+</section>
+<section id="magnetic-parameters">
 <h3>Magnetic parameters<a class="headerlink" href="#magnetic-parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>sigma_m</dt><dd><p>The magnitude of the magnetic roughness.</p>
@@ -147,14 +148,14 @@ in-plane magnetized sample and an angle of 90 deg means an perpendicular magneti
 <dt>sigma_mu</dt><dd><p>The magnetic part of the roughness of the upper interface layer.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="stack-parameters">
+</section>
+</section>
+<section id="stack-parameters">
 <h2>Stack Parameters<a class="headerlink" href="#stack-parameters" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="sample-parameters">
+</section>
+<section id="sample-parameters">
 <h2>Sample Parameters<a class="headerlink" href="#sample-parameters" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="control-flags">
+<section id="control-flags">
 <h3>Control flags<a class="headerlink" href="#control-flags" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>slicing</dt><dd><p>If yes the model will use roughness values and slice the sld profile up as given by the layer parameters.
@@ -162,8 +163,8 @@ Otherwise the layers will only be boxes compress: If yes and slicing also is yes
 with similar optical densities.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="slicing-parameters">
+</section>
+<section id="slicing-parameters">
 <h3>Slicing Parameters<a class="headerlink" href="#slicing-parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>slice_depth</dt><dd><p>This is the size of each layer that the model slices up the model into.</p>
@@ -175,8 +176,8 @@ with similar optical densities.</p>
 <dt>sld_mult</dt><dd><p>To Come…</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="compression-parameters">
+</section>
+<section id="compression-parameters">
 <h3>Compression parameters<a class="headerlink" href="#compression-parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>dsld_max</dt><dd><p>Steps smaller than this parameter will be merged into thicker layers. This applies to the diagonal parts of
@@ -187,9 +188,9 @@ the susceptibility matrix. The units are electrons.</p>
 <dt>dang_max</dt><dd><p>Not used and should be removed.</p>
 </dd>
 </dl>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -266,14 +267,14 @@ the susceptibility matrix. The units are electrons.</p>
         <li class="right" >
           <a href="packaging.html" title="How to package GenX"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.1.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" >Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">A model for magnetic reflectivity</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
   </body>
 </html>
