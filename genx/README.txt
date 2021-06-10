@@ -11,6 +11,28 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.3.0
+=============
+ * Updated the documentation website to include the SimpleReflectivity interface
+ * Reimplementation of the off-specular and x-ray surface diffraction models (sxrd, sxrd2, interdiff)
+ * In Reflectometry plugin, automatically update the GUI when the script is changed manually
+ * Add an alpha version of ORSO text format data reader
+ * Make auto data loader the default, this includes the following loaders:
+   (default, resolution, sns_mr, amor, d17_cosmos, orso)
+   Please send me your instrument data files as examples if you want your own data loader that can include meta data, too.
+ * Fix crashes in Linux systems when changing parameters in the grid (especially when automatic update is active)
+ * Fix incompatibility with h5py version 3 when loading models
+ * Fix the d17_cosmos data loader and add d17_legacy for old style files
+ * Fix issues in windows binary that prohibited opening of Help dialogs
+ * New type os user parameter intended for systematic errors that influence all datapoints. It has
+   a sigma parameter and biases the FOM with (x0-x)²/sigma² to take the systematic error uncertainty
+   into account.
+ * The column calculation now supports a rms(sigma1, sigma2, ...) function to combine different error contributions
+ * Example columns showing how to include systematic errors from motor position and/or beam distribution uncertainty
+ * Remove unnecessary sleep per iteration when fitting in single thread mode. Please report if you notice issues like
+   crashes
+ * Some additional improvements for simulation performance
+
 Changes 3.2.3
 =============
  * Fix a bug in footprint correction introduced in 3.2.0

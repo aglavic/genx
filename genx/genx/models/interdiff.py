@@ -111,8 +111,6 @@ Instrument
     fourier integral of the correlation function. More terms more accurate
     calculation but also much slower.
 '''
-
-# import lib.paratt as Paratt
 from genx.gui_logging import iprint
 from .lib import paratt as Paratt
 from .lib import offspec
