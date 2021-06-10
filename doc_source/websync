@@ -1,2 +1,0 @@
-#! /bin/bash
-rsync --recursive build/html/ aglavic@web.sourceforge.net:/home/groups/g/ge/genx/htdocs/doc
