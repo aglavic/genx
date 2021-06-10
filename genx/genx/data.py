@@ -822,6 +822,11 @@ class DataList:
         '''
         return self.items[key]
 
+    def __setitem__(self, key, value):
+        if not type(key) is int or key>=len(self):
+            raise IndexError("Can only replace existing datasets")
+        self.items[key]=value
+
     def __iter__(self):
         ''' __iter__(self) --> iterator
         

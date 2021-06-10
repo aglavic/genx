@@ -170,7 +170,7 @@ class ORSOData():
         output='ORSOData('
         output+='columns=%s,\n'%repr(self.columns)
         output+='         units=%s'%repr(self.units)
-        return output+') '%self.name
+        return output+') '+self.name
 
     def __eq__(self, other):
         output=(self.header==other.header)

@@ -15,6 +15,7 @@ from .default import Plugin as DefaultPlugin
 from .amor import Plugin as AmorPlugin
 from .sns_mr import Plugin as SNSPlugin
 from .d17_cosmos import Plugin as D17Plugin
+from .orso import Plugin as ORSOPlugin
 
 class Plugin(ResolutionPlugin, DefaultPlugin):
     """
@@ -28,7 +29,7 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
     def __init__(self, parent):
         ResolutionPlugin.__init__(self, parent)
         self.res_col=-1
-        self.loaders=[AmorPlugin(None), SNSPlugin(None), D17Plugin(None)]
+        self.loaders=[AmorPlugin(None), SNSPlugin(None), D17Plugin(None), ORSOPlugin(None)]
         self.wildcard=";".join([li.wildcard for li in self.loaders])
 
     def LoadData(self, dataset, filename):
