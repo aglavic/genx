@@ -2,8 +2,155 @@
 '''
 Library for combined x-ray and neutrons simulations with adaptive layer segmentation
 ====================================================================================
+Library for specular neutron and x-ray reflectometry of more complex structures where elemental composition
+and/or magnetism is better described separately than within one slap model. The model sums up a set of
+*Elements* to calculate a total SLD profile and then uses adaptive layer segmentation to model it.
 
-Most of the model is the same as in spec_nx.
+The actual modeling of the result structure is done with the same function as in spec_nx.
+
+Classes
+-------
+
+Layer
+~~~~~
+``Layer(b = 0.0, d = 0.0, f = 0.0+0.0J, b=0j, dens = 1.0, magn_ang = 0.0, magn = 0.0, sigma = 0.0, xs_ai=0.0, rough_type=0, sigma_magn=0.0, magn_void=False)``
+
+``b``
+   The neutron scattering length per formula unit in fm (fermi meter =
+   1e-15m)
+``d``
+   The thickness of the layer in AA (Angstroms = 1e-10m)
+``f``
+   The x-ray scattering length per formula unit in electrons. To be
+   strict it is the number of Thompson scattering lengths for each
+   formula unit.
+``dens``
+   The density of formula units in units per Angstroms. Note the units!
+``magn_ang``
+   The angle of the magnetic moment in degress. 0 degrees correspond to
+   a moment collinear with the neutron spin.
+``magn``
+   The magnetic moment per formula unit (same formula unit as b and dens
+   refer to)
+``sigma``
+   The root mean square roughness of the top interface of the layer in
+   Angstroms.
+``sigma_mag``
+   A different roughness parameter for the magnetization of the layer, 0 is ignored
+``xs_ai``
+   The sum of the absorption cross section and the incoherent scattering
+   cross section in barns for neutrons
+``magn_void``
+   If true this layer has no magnetization. In case of *sigma_mag* beging larger then 0 the additional
+   roughness is only applied to the magnetic layer and inside this layer follows the chemical profile.
+``rough_type``
+   Used model to get the SLD profile of the interface, *0* is an error function profile (gaussian roughness),
+   *1* is a linear profile, *2* and *3* are exponential decays from bottom or top side.
+
+
+Stack
+~~~~~
+``Stack(Layers = [], Repetitions = 1, Element = 0)``
+
+``Layers``
+   A ``list`` consiting of ``Layer``\ s in the stack the first item is
+   the layer closest to the bottom
+``Repetitions``
+   The number of repsetions of the stack
+``Element``
+   The Element of the model that this stack belongs to. There has to be at least one stack with Element 0.
+   For every *Element* the layers are stacked *on top* of the substrate separately and then all *Elements* are
+   summed up to calculate the total SLD.
+   The main use case for this is either to separate magnetic from nuclear structure
+   (nuclear Element=0, magnetic Element=1) or two or more elemental contributions for element specific diffusion.
+   For layers that have no contribution at a certain depth one can add a layer with 0 density as spacer.
+
+Sample
+~~~~~~
+``Sample(Stacks = [], Ambient = Layer(), Substrate = Layer(), minimal_steps=0.5, max_diff_n=0.01, max_diff_x=0.01, smoothen=0)``
+
+``Stacks``
+   A ``list`` consiting of ``Stack``\ s in the stacks the first item is
+   the layer closest to the bottom
+``Ambient``
+   A ``Layer`` describing the Ambient (enviroment above the sample).
+   Only the scattering lengths and density of the layer is used.
+``Substrate``
+   A ``Layer`` describing the substrate (enviroment below the sample).
+   Only the scattering lengths, density and roughness of the layer is
+   used.
+``minimal_steps``
+   The thickness of the minimal step between layers. Smaller values make the model more precise but slower.
+   For data with larger q-range a smaller minimal_step is required. Try to start with 0.5-1 Å step size and
+   increase the value until you see differences in the simulated data.
+``max_diff_n``
+   Maximum neutron SLD deviation to be allowed for layers to be combined in the adaptive procedure
+``max_diff_x``
+   Maximum x-ray SLD deviation to be allowed for layers to be combined in the adaptive procedure
+``smoothen``
+   Default is to not use any roughness for the segmentation. If set to 1 this will add roughnesses between all
+   segments to make the curve more smooth.
+
+Instrument
+~~~~~~~~~~
+``Instrument(probe = 'x-ray', wavelength = 1.54, coords = '2θ', I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2, beamw = 0.01, footype = 'no corr', samplelen = 10.0, incangle = 0.0, pol = 'uu')``
+
+``probe``
+    Describes the radiation and measurments used is one of: 'x-ray',
+    'neutron', 'neutron pol', 'neutron pol spin flip', 'neutron tof',
+    'neutron pol tof' or the respective number 0, 1, 2, 3, 4, 5, 6. The
+    calculations for x-rays uses ``f`` for the scattering length for
+    neutrons ``b`` for 'neutron pol', 'neutron pol spin flip' and 'neutron
+    pol tof' alternatives the ``magn`` is used in the calculations. Note
+    that the angle of magnetization ``magn_ang`` is only used in the last
+    alternative.
+``wavelength``
+    The wavelength of the radiation given in AA (Angstroms)
+``coords``
+    The coordinates of the data given to the SimSpecular function. The
+    available alternatives are: 'q' or '2θ'. Alternatively the numbers 0 (q)
+    or 1 (tth) can be used.
+``I0``
+    The incident intensity (a scaling factor)
+``Ibkg``
+    The background intensity. Added as a constant value to the calculated
+    reflectivity
+``res``
+    The resolution of the instrument given in the coordinates of ``coords``.
+    This assumes a gaussian resolution function and ``res`` is the standard
+    deviation of that gaussian. If ``restype`` has (dx/x) in its name the
+    gaussian standard deviation is given by res*x where x is either in tth
+    or q.
+``restype``
+    Describes the rype of the resolution calculated. One of the
+    alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
+    'fast conv + varying res.', 'full conv and varying res. (dx/x)', 'fast
+    conv + varying res. (dx/x)'. The respective numbers 0-3 also works. Note
+    that fast convolution only alllows a single value into res wheras the
+    other can also take an array with the same length as the x-data (varying
+    resolution)
+``respoints``
+    The number of points to include in the resolution calculation. This is
+    only used for 'full conv and vaying res.', 'fast conv + varying res',
+    'full conv and varying res. (dx/x)' and 'fast conv + varying res.
+    (dx/x)'.
+``resintrange``
+    Number of standard deviatons to integrate the resolution function times
+    the reflectivity over
+``footype``
+    Which type of footprint correction is to be applied to the simulation.
+    One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, the
+    number 0-2 are also valid. The different choices are self expnalatory.
+``beamw``
+    The width of the beam given in mm. For 'gauss beam' it should be the
+    standard deviation. For 'square beam' it is the full width of the beam.
+``samplelen``
+    The length of the sample given in mm
+``incangle``
+    The incident angle of the neutrons, only valid in tof mode
+``pol``
+    The measured polarization of the instrument. Valid options are:
+    'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
 '''
 from copy import deepcopy
 from numpy import *

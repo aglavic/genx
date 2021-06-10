@@ -1,175 +1,189 @@
-''' <h1> Library for specular magnetic x-ray and neutron reflectivity</h1>
-The magnetic reflectivity is calculated according to: S.A. Stephanov and S.K Shina PRB 61 15304. for 
-the full anisotropic model. It also one simpler model where the media is considered to be isotropic but 
-with different refractive indices for left and right circular light.
-The model also has the possibility to calculate the neutron reflectivity from the same sample structure. 
-This model includes a interface layer for each <code>Layer</code>. This means that the model is suitable for 
-refining data that looks for interfacial changes of the magnetic moment. 
+'''
+Library for specular magnetic x-ray and neutron reflectivity
+============================================================
+The magnetic reflectivity is calculated according to: S.A. Stephanov and
+S.K Shina PRB 61 15304. for the full anisotropic model. It also one
+simpler model where the media is considered to be isotropic but with
+different refractive indices for left and right circular light. The
+model also has the possibility to calculate the neutron reflectivity
+from the same sample structure. This model includes a interface layer
+for each ``Layer``. This means that the model is suitable for refining
+data that looks for interfacial changes of the magnetic moment. Note!
+This model should be considered as a gamma version. It is still under
+heavy development and the api can change significantly from version to
+version. Should only be used by expert users.
 
-Note! This model should be considered as a gamma version. It is still under heavy development and 
-the api can change significantly from version to version. Should only be used by expert users. 
-<h2>Classes</h2>
-<h3>Layer</h3>
-<code> Layer(fr = 1e-20j, b = 1e-20j, dd_u = 0.0, d = 0.0, f = 1e-20j, dens = 1.0, resmag = 1.0, 
-            theta_m = 0.0, fm2 = 1e-20j, xs_ai = 0.0, 
-            sigma_mu = 0.0, fm1 = 1e-20j, dmag_u = 0.0,
-             mag = 0.0, sigma_ml = 0.0, sigma_c = 0.0,
-              resdens = 1.0, phi_m = 0.0, dd_l = 0.0, dmag_l = 0.0)</code>
-    <dl>
-    <dt><code><b>d</b></code></dt>
-    <dd>The thickness of the layer in AA (Angstroms = 1e-10m)</dd>
-    <dt><code><b>dens</b></code></dt>
-    <dd>The density of formula units in units per Angstroms. Note the units!</dd>
-    <dt><code><b>sigma</b></code></dt>
-    <dd>The root mean square roughness of the top interface for the layer in Angstroms.</dd>        
-    <dt><code><b>f</b></code></dt>
-    <dd>The non-resonant x-ray scattering length per formula unit in electrons. To be strict it is the
-    number of Thompson scattering lengths for each formula unit.</dd>
-    <dt><code><b>fr</b></code></dt>
-    <dd>The resonant x-ray scattering length of the resonant species in electrons. This is multiplied by
-    <code>resdens*dens</code> to form the resonant scattering length. The total non-magnetic scattering length is
-    <code>(f + fr*resdens)*dens</code>.</dd>
-    <dt><code><b>fm1</b></code></dt>
-    <dd>The resonant magnetic part of the scattering length - refers to the magnetic circular dichroic part.
-    Same units as <code>f</code></dd>
-    <dt><code><b>fm2</b></code></dt>
-    <dd>The resonant magnetic part of the scattering length - refers to the magnetic linear dichroic part.</dd>
-    <dt><code><b>b</b></code></dt>
-    <dd>The neutron scattering length in fm.</dd>
-    <dt><code><b>xs_ai</b></code></dt>
-    <dd>The sum of the absorption cross section and the incoherent scattering cross section
-        in barns per formula unit for the neutrons</dd>
-    <dt><code><b>mag</b></code></dt>
-    <dd>The magnetic moment per formula unit. The magnetic density is <code>mag*dens</code>.</dd>
-    <dt><code><b>phi_m</b></code></dt>
-    <dd>The in-plane angle of the magnetic moment of the layer relative the projected incident beam for 
-    x-rays and relative the polarization axis for neutrons.</dd>
-    <dt><code><b>theta_m</b></code></dt>
-    <dd>The out-of-plane angle of the magnetic moment. <code>theta_m = 0</code> corresponds to an in-plane 
-    magnetic moment and <code>theta_m</code> corresponds to an out-of-plane magnetic moment.</dd>
-    <dt><code><b>dmag_u</b></code></dt>
-    <dd>The relative increase of the magnetic moment in the interface layer. Total magnetic moment is
-    <code>mag*(1 + dmag_u)</code>.</dd>
-    <dt><code><b>dmag_l</b></code></dt>
-    <dd>As <code>dmag_u</code> but for the lower interface layer.</dd>
-    <dt><code><b>dd_u</b></code></dt>
-    <dd>The width of the upper interface layer in Angstroms.</dd>
-    <dt><code><b>sigma_mu</b></code></dt>
-    <dd>The roughness of the upper magnetic interface.</dd>
-    <dt><code><b>sigma_ml</b></code></dt>
-    <dd>The roughness of the lower magnetic interface.</dd>
-    <dt><code><b>dd_l</b></code></dt>
-    <dd>The width of the lower interface in Angstroms.</dd>
-    <dt><code><b>resmag</b></code></dt>
-    <dd>The relative amount of magnetic resonant atoms  the total resonant magnetic atoms. The total magnetic scattering
-    length is calculated 
-    as (for the circular dichroic term) <code>fm1*resmag*mag*resdens*dens</code></dd>
-    </dl>
-<h3>Stack</h3>
-<code> Stack(Layers = [], Repetitions = 1)</code>
-    <dl>
-    <dt><code><b>Layers</b></code></dt>
-    <dd>A <code>list</code> consiting of <code>Layer</code>s in the stack
-    the first item is the layer closest to the bottom</dd>
-    <dt><code><b>Repetitions</b></code></dt>
-    <dd>The number of repetitions of the stack</dd>
-    </dl>
-<h3>Sample</h3>
-<code> Sample(Stacks = [], dsld_max = 0.1, dsld_offdiag_max = 0.1, 
-            compress = 'yes', slicing = 'no', dsld_n_max = 0.01, 
-            dabs_n_max = 0.01, sld_buffer = 20.0, sld_delta = 5.0, 
-            dmag_max = 0.01, sld_mult = 4.0, slice_depth = 1.0, 
-            Ambient = Amb, Substrate = Sub)</code>
-    <dl>
-    <dt><code><b>Stacks</b></code></dt>
-    <dd>A <code>list</code> consiting of <code>Stack</code>s in the stacks
-    the first item is the layer closest to the bottom</dd>
-    <dt><code><b>Ambient</b></code></dt>
-    <dd>A <code>Layer</code> describing the Ambient (enviroment above the sample).
-     Only the scattering lengths and density of the layer is used.</dd>
-    <dt><code><b>Substrate</b></code></dt>
-    <dd>A <code>Layer</code> describing the substrate (enviroment below the sample).
-     Only the scattering lengths, density and  roughness of the layer is used.</dd>
-    dt><code><b>dsld_max</b></code></dt>
-    <dd>The maximum allowed step in the scattering length density for x-rays (diagonal terms)</dd>
-    <dt><code><b>dsld_offdiag_max</b></code></dt>
-    <dd>The maximum allowed step in the scattering length density for the offdiagonal terms of the 
-    scattering length (magnetic part)</dd>
-    <dt><code><b>compress</b></code></dt>
-    <dd>A flag that signals if the sliced composition profile should be compressed.</dd>
-    <dt><code><b>slicing</b></code></dt>
-    <dd>A flag that signals if the composition profile should be sliced up.</dd>
-    <dt><code><b>dsld_n_max</b></code></dt>
-    <dd>The maximum allowed step (in compression) for the neutron scattering length.</dd>
-    <dt><code><b>dabs_n_max</b></code></dt>
-    <dd>The maximum allowed step (in compression) for the neutron absorption (in units of barn/AA^3)</dd>
-    <dt><code><b>sld_buffer</b></code></dt>
-    <dd>A buffer for the slicing calculations (to assure convergence in the sld profile. </dd>
-    <dt><code><b>sld_delta</b></code></dt>
-    <dd>An extra buffer - needed at all?</dd>
-    <dt><code><b>dmag_max</b></code></dt>
-    <dd>The maximum allowed step (in compression) for the magnetization. Primarily intended to limit the 
-    steps in the magnetic profile for neutrons.</dd>
-    <dt><code><b>sld_mult</b></code></dt>
-    <dd>A multiplication factor for a buffer that takes the roughness into account.</dd>
-    <dt><code><b>slice_depth</b></code></dt>
-    <dd>The depth of the slices in the calculation of the sliced scattering length density profile.</dd>
-    </dl>
-    
-<h3>Instrument</h3>
-<code>model.Instrument(res = 0.001,theory = 'neutron spin-pol',
-                        footype = 'no corr',beamw = 0.01,
-                        wavelength = 4.4,respoints = 5,xpol = 'circ+',Ibkg = 0.0,
-                        I0 = 1.0,samplelen = 10.0,npol = '++',restype = 'no conv',
-                        coords = 'tth',resintrange = 2)</code>
-    <dl>
-    <dt><code><b>wavelength</b></code></dt>
-    <dd>The wavalelngth of the radiation givenin AA (Angstroms)</dd>
-    <dt><code><b>coords</b></code></dt>
-    <dd>The coordinates of the data given to the SimSpecular function.
-    The available alternatives are: 'q' or 'tth'. Alternatively the numbers
-    0 (q) or 1 (tth) can be used.</dd>
-    <dt><code><b>I0</b></code></dt>
-    <dd>The incident intensity (a scaling factor)</dd>
-    <dt><code><b>Ibkg</b></code></dt>
-    <dd>The background intensity. Added as a constant value to the calculated
-    reflectivity</dd>
-    <dt><code><b>res</b></code></dt>
-    <dd>The resolution of the instrument given in the coordinates of
-     <code>coords</code>. This assumes a gaussian reloution function and
-    <code>res</code> is the standard deviation of that gaussian.</dd>
-    <dt><code><b>restype</b></code></dt>
-    <dd>Describes the rype of the resolution calculated. One of the alterantives:
-    'no conv', 'fast conv', 'full conv and varying res.' or 'fast conv + varying res.'.
-    The respective numbers 0-3 also works. Note that fast convolution only alllows
-    a single value into res wheras the other can also take an array with the
-    same length as the x-data (varying resolution)</dd>
-    <dt><code><b>respoints</b></code></dt>
-    <dd>The number of points to include in the resolution calculation. This is only
-    used for 'full conv and vaying res.' and 'fast conv + varying res'</dd>
-    <dt><code><b>resintrange</b></code></dt>
-    <dd>Number of standard deviatons to integrate the resolution fucntion times
-    the relfectivty over</dd>
-    <dt><code><b>footype</b></code></dt>
-    <dd>Which type of footprint correction is to be applied to the simulation.
-    One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, 
-    the number 0-2 are also valid. The different choices are self explanatory.
-    </dd>
-    <dt><code><b>beamw</b></code></dt>
-    <dd>The width of the beam given in mm. For 'gauss beam' it should be
-    the standard deviation. For 'square beam' it is the full width of the beam.</dd>
-    <dt><code><b>samplelen</b></code></dt>
-    <dd>The length of the sample given in mm</dd>
-    <dt><code><b>theory</b></code></dt>
-    <dd>Defines which theory (code) that should calcualte the reflectivity. Should be one of: 
-    'x-ray anis.', 'x-ray simpl. anis.', 'x-ray iso.', 'neutron spin-pol' or 'neutron spin-flip'.
-    </dd>
-    <dt><code><b>xpol</b></code></dt>
-    <dd>The polarization state of the x-ray beam. Should be one of: 'circ+','circ-','tot', 'ass', 'sigma', 'pi',
-     'sigma-sigma', 'sigma-pi', 'pi-pi' or 'pi-sigma'</dd>
-    <dt><code><b>npol</b></code></dt>
-    <dd>The neutron polarization state. Should be '++', '--' or  '+-','-+' for spin flip.</dd>
-    
+Classes
+-------
+
+Layer
+~~~~~
+``Layer(fr = 1e-20j, b = 1e-20j, dd_u = 0.0, d = 0.0, f = 1e-20j, dens = 1.0, resmag = 1.0,              theta_m = 0.0, fm2 = 1e-20j, xs_ai = 0.0,              sigma_mu = 0.0, fm1 = 1e-20j, dmag_u = 0.0,              mag = 0.0, sigma_ml = 0.0, sigma_c = 0.0,               resdens = 1.0, phi_m = 0.0, dd_l = 0.0, dmag_l = 0.0)``
+
+``d``
+   The thickness of the layer in AA (Angstroms = 1e-10m)
+``dens``
+   The density of formula units in units per Angstroms. Note the units!
+``sigma``
+   The root mean square roughness of the top interface for the layer in
+   Angstroms.
+``f``
+   The non-resonant x-ray scattering length per formula unit in
+   electrons. To be strict it is the number of Thompson scattering
+   lengths for each formula unit.
+``fr``
+   The resonant x-ray scattering length of the resonant species in
+   electrons. This is multiplied by ``resdens*dens`` to form the
+   resonant scattering length. The total non-magnetic scattering length
+   is ``(f + fr*resdens)*dens``.
+``fm1``
+   The resonant magnetic part of the scattering length - refers to the
+   magnetic circular dichroic part. Same units as ``f``
+``fm2``
+   The resonant magnetic part of the scattering length - refers to the
+   magnetic linear dichroic part.
+``b``
+   The neutron scattering length in fm.
+``xs_ai``
+   The sum of the absorption cross section and the incoherent scattering
+   cross section in barns per formula unit for the neutrons
+``mag``
+   The magnetic moment per formula unit. The magnetic density is
+   ``mag*dens``.
+``phi_m``
+   The in-plane angle of the magnetic moment of the layer relative the
+   projected incident beam for x-rays and relative the polarization axis
+   for neutrons.
+``theta_m``
+   The out-of-plane angle of the magnetic moment. ``theta_m = 0``
+   corresponds to an in-plane magnetic moment and ``theta_m``
+   corresponds to an out-of-plane magnetic moment.
+``dmag_u``
+   The relative increase of the magnetic moment in the interface layer.
+   Total magnetic moment is ``mag*(1 + dmag_u)``.
+``dmag_l``
+   As ``dmag_u`` but for the lower interface layer.
+``dd_u``
+   The width of the upper interface layer in Angstroms.
+``sigma_mu``
+   The roughness of the upper magnetic interface.
+``sigma_ml``
+   The roughness of the lower magnetic interface.
+``dd_l``
+   The width of the lower interface in Angstroms.
+``resmag``
+   The relative amount of magnetic resonant atoms the total resonant
+   magnetic atoms. The total magnetic scattering length is calculated as
+   (for the circular dichroic term) ``fm1*resmag*mag*resdens*dens``
+
+Stack
+~~~~~
+``Stack(Layers = [], Repetitions = 1)``
+
+``Layers``
+   A ``list`` consiting of ``Layer``\ s in the stack the first item is
+   the layer closest to the bottom
+``Repetitions``
+   The number of repetitions of the stack
+
+Sample
+~~~~~~
+``Sample(Stacks = [], dsld_max = 0.1, dsld_offdiag_max = 0.1,              compress = 'yes', slicing = 'no', dsld_n_max = 0.01,              dabs_n_max = 0.01, sld_buffer = 20.0, sld_delta = 5.0,              dmag_max = 0.01, sld_mult = 4.0, slice_depth = 1.0,              Ambient = Amb, Substrate = Sub)``
+
+``Stacks``
+   A ``list`` consiting of ``Stack``\ s in the stacks the first item is
+   the layer closest to the bottom
+``Ambient``
+   A ``Layer`` describing the Ambient (enviroment above the sample).
+   Only the scattering lengths and density of the layer is used.
+``Substrate``
+   A ``Layer`` describing the substrate (enviroment below the sample).
+   Only the scattering lengths, density and roughness of the layer is
+   used.
+   The maximum allowed step in the scattering length density for x-rays
+   (diagonal terms)
+``dsld_offdiag_max``
+   The maximum allowed step in the scattering length density for the
+   offdiagonal terms of the scattering length (magnetic part)
+``compress``
+   A flag that signals if the sliced composition profile should be
+   compressed.
+``slicing``
+   A flag that signals if the composition profile should be sliced up.
+``dsld_n_max``
+   The maximum allowed step (in compression) for the neutron scattering
+   length.
+``dabs_n_max``
+   The maximum allowed step (in compression) for the neutron absorption
+   (in units of barn/AA^3)
+``sld_buffer``
+   A buffer for the slicing calculations (to assure convergence in the
+   sld profile.
+``sld_delta``
+   An extra buffer - needed at all?
+``dmag_max``
+   The maximum allowed step (in compression) for the magnetization.
+   Primarily intended to limit the steps in the magnetic profile for
+   neutrons.
+``sld_mult``
+   A multiplication factor for a buffer that takes the roughness into
+   account.
+``slice_depth``
+   The depth of the slices in the calculation of the sliced scattering
+   length density profile.
+
+Instrument
+~~~~~~~~~~
+``model.Instrument(res = 0.001,theory = 'neutron spin-pol',                         footype = 'no corr',beamw = 0.01,                         wavelength = 4.4,respoints = 5,xpol = 'circ+',Ibkg = 0.0,                         I0 = 1.0,samplelen = 10.0,npol = '++',restype = 'no conv',                         coords = 'tth',resintrange = 2)``
+
+``wavelength``
+    The wavalelngth of the radiation givenin AA (Angstroms)
+``coords``
+    The coordinates of the data given to the SimSpecular function. The
+    available alternatives are: 'q' or 'tth'. Alternatively the numbers 0
+    (q) or 1 (tth) can be used.
+``I0``
+    The incident intensity (a scaling factor)
+``Ibkg``
+    The background intensity. Added as a constant value to the calculated
+    reflectivity
+``res``
+    The resolution of the instrument given in the coordinates of ``coords``.
+    This assumes a gaussian reloution function and ``res`` is the standard
+    deviation of that gaussian.
+``restype``
+    Describes the rype of the resolution calculated. One of the
+    alterantives: 'no conv', 'fast conv', 'full conv and varying res.' or
+    'fast conv + varying res.'. The respective numbers 0-3 also works. Note
+    that fast convolution only alllows a single value into res wheras the
+    other can also take an array with the same length as the x-data (varying
+    resolution)
+``respoints``
+    The number of points to include in the resolution calculation. This is
+    only used for 'full conv and vaying res.' and 'fast conv + varying res'
+``resintrange``
+    Number of standard deviatons to integrate the resolution fucntion times
+    the relfectivty over
+``footype``
+    Which type of footprint correction is to be applied to the simulation.
+    One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, the
+    number 0-2 are also valid. The different choices are self explanatory.
+``beamw``
+    The width of the beam given in mm. For 'gauss beam' it should be the
+    standard deviation. For 'square beam' it is the full width of the beam.
+``samplelen``
+    The length of the sample given in mm
+``theory``
+    Defines which theory (code) that should calcualte the reflectivity.
+    Should be one of: 'x-ray anis.', 'x-ray simpl. anis.', 'x-ray iso.',
+    'neutron spin-pol' or 'neutron spin-flip'.
+``xpol``
+    The polarization state of the x-ray beam. Should be one of:
+    'circ+','circ-','tot', 'ass', 'sigma', 'pi', 'sigma-sigma', 'sigma-pi',
+    'pi-pi' or 'pi-sigma'
+``npol``
+    The neutron polarization state. Should be '++', '--' or '+-','-+' for
+    spin flip.
 '''
 
 from genx.gui_logging import iprint

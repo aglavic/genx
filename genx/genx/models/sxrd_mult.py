@@ -1,5 +1,8 @@
-'''<h1>Library for surface x-ray diffraction simulations of superlattices</h1>
-<p> The model is based on Fullertons algorithm for superlattices as
+'''
+Library for surface x-ray diffraction simulations of superlattices
+==================================================================
+
+The model is based on Fullertons algorithm for superlattices as
 described in Phys. Rev. B vol. 45 p. 9292 (1992). 
 '''
 # Programmed by Matts Bjorck 20091215

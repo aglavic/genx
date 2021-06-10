@@ -62,7 +62,7 @@ Sample
 
 Instrument
 ~~~~~~~~~~
-``Instrument(probe = 'x-ray', wavelength = 1.54, coords = '2θ',      I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2,      beamw = 0.01, footype = 'no corr', samplelen = 10.0, incangle = 0.0, pol = 'uu')``
+``Instrument(probe = 'x-ray', wavelength = 1.54, coords = '2θ', I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2, beamw = 0.01, footype = 'no corr', samplelen = 10.0, incangle = 0.0, pol = 'uu')``
 
 ``probe``
     Describes the radiation and measurments used is one of: 'x-ray',
@@ -73,29 +73,23 @@ Instrument
     pol tof' alternatives the ``magn`` is used in the calculations. Note
     that the angle of magnetization ``magn_ang`` is only used in the last
     alternative.
-
 ``wavelength``
     The wavelength of the radiation given in AA (Angstroms)
-
 ``coords``
     The coordinates of the data given to the SimSpecular function. The
     available alternatives are: 'q' or '2θ'. Alternatively the numbers 0 (q)
     or 1 (tth) can be used.
-
 ``I0``
     The incident intensity (a scaling factor)
-
 ``Ibkg``
     The background intensity. Added as a constant value to the calculated
     reflectivity
-
 ``res``
     The resolution of the instrument given in the coordinates of ``coords``.
     This assumes a gaussian resolution function and ``res`` is the standard
     deviation of that gaussian. If ``restype`` has (dx/x) in its name the
     gaussian standard deviation is given by res*x where x is either in tth
     or q.
-
 ``restype``
     Describes the rype of the resolution calculated. One of the
     alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
@@ -104,32 +98,25 @@ Instrument
     that fast convolution only alllows a single value into res wheras the
     other can also take an array with the same length as the x-data (varying
     resolution)
-
 ``respoints``
     The number of points to include in the resolution calculation. This is
     only used for 'full conv and vaying res.', 'fast conv + varying res',
     'full conv and varying res. (dx/x)' and 'fast conv + varying res.
     (dx/x)'.
-
 ``resintrange``
     Number of standard deviatons to integrate the resolution function times
     the reflectivity over
-
 ``footype``
     Which type of footprint correction is to be applied to the simulation.
     One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, the
     number 0-2 are also valid. The different choices are self expnalatory.
-
 ``beamw``
     The width of the beam given in mm. For 'gauss beam' it should be the
     standard deviation. For 'square beam' it is the full width of the beam.
-
 ``samplelen``
     The length of the sample given in mm
-
 ``incangle``
     The incident angle of the neutrons, only valid in tof mode
-
 ``pol``
     The measured polarization of the instrument. Valid options are:
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.

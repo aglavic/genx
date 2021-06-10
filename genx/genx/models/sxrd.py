@@ -1,113 +1,106 @@
-'''<h1>Library for surface x-ray diffraction simulations</h1>
-<p> The problem of modelling the sample is divided to four
-different classes: Sample, Slab, UnitCell and Instrument.
-A Slab is the basic unit that builds up a sample and can
-be seen as a quasi-unitcell for the sxrd problem.
-Stricitly it is a 2D unitcell with a finite extension
-out-of-plane. The Sample is then built from these Slabs one slab for
-the bulk and a list of slabs for the surface structure.
+'''
+Library for surface x-ray diffraction simulations
+=================================================
+The problem of modelling the sample is divided to four different
+classes: Sample, Slab, UnitCell and Instrument. A Slab is the basic unit
+that builds up a sample and can be seen as a quasi-unitcell for the sxrd
+problem. Stricitly it is a 2D unitcell with a finite extension
+out-of-plane. The Sample is then built from these Slabs one slab for the
+bulk and a list of slabs for the surface structure.
 
-<p> The unitcell consists of parameters for  the unitcell and the
-instrument contains instrument variables. See below for a full list.
+The unitcell consists of parameters for the unitcell and the instrument
+contains instrument variables. See below for a full list.
 
-<h2>Classes</h2>
-<h3>Slab</h3>
-<code> Slab(c = 1.0, slab_oc = 1.0)</code><br>
-    <dl>
-    <dt><code><b>c</b></code></dt>
-    <dd> A scale factor for ou-of-plane extension of the
-    Slab. All z-positions will be scaled with this factor.</dd>
-    <dt><code><b>slab_oc</b></code></dt>
-    <dd> A global scaling of the occupancy of all atoms in the
-    slab.</dd>
-    </dl>
-<code> [Slab].add_atom(id, el, x, y, z, u = 0, oc = 1.0, m = 1.0)</code><br>
-    <dl>
-    <dt><code><b>id</b></code></dt>
-    <dd>A unique string identifier </dd>
-    <dt><code><b>el</b></code></dt>
-    <dd>The element described in a string. Note that
-    ions is denoted as "Sr2p" and "O2m" where 2 is the oxidation number and
-    p and m denoted plus and minus charge.</dd>
-    <dt><code><b>x</b></code></dt>
-    <dd> The x-position in Slab unit cell coords (same as given by the
-    UnitCell)</dd>
-    <dt><code><b>y</b></code></dt>
-    <dd> The y-position in Slab unit cell coords (same as given by the
-    UnitCell)</dd>
-    <dt><code><b>z</b></code></dt>
-    <dd> The z-position in Slab unit cell coords (The Unitcell c scaled by
-    a factor of the c-value for the slab)</dd>
-    <dt><code><b>u</b></code></dt>
-    <dd> The mean-square displacement for the atom</dd>
-    <dt><code><b>oc</b></code></dt>
-    <dd> The occupancy of the atom</dd>
-    <dt><code><b>m</b></code></dt>
-    <dd> The multiplicity of the site, defined as in the international tables
-    of crystallogrphy. Note that it is plane goups and NOT space groups that
-    will produce valid results.</dd>
-    </dl>
-<code> [Slab].copy()</code><br>
+Classes
+-------
+
+Slab
+~~~~
+``Slab(c = 1.0, slab_oc = 1.0)``
+
+``c``
+   A scale factor for ou-of-plane extension of the Slab. All z-positions
+   will be scaled with this factor.
+``slab_oc``
+   A global scaling of the occupancy of all atoms in the slab.
+
+``[Slab].add_atom(id, el, x, y, z, u = 0, oc = 1.0, m = 1.0)``
+
+``id``
+   A unique string identifier
+``el``
+   The element described in a string. Note that ions is denoted as
+   "Sr2p" and "O2m" where 2 is the oxidation number and p and m denoted
+   plus and minus charge.
+``x``
+   The x-position in Slab unit cell coords (same as given by the
+   UnitCell)
+``y``
+   The y-position in Slab unit cell coords (same as given by the
+   UnitCell)
+``z``
+   The z-position in Slab unit cell coords (The Unitcell c scaled by a
+   factor of the c-value for the slab)
+``u``
+   The mean-square displacement for the atom
+``oc``
+   The occupancy of the atom
+``m``
+   The multiplicity of the site, defined as in the international tables
+   of crystallogrphy. Note that it is plane goups and NOT space groups
+   that will produce valid results.
+
+``[Slab].copy()``
     Creates a copy of object [Slab]. This decouples the new object
     returned by copy from the original [Slab].
-<code> [Slab].find_atoms(expression)</code><br>
+``[Slab].find_atoms(expression)``
     Function to locate atoms in a slab in order to connect parameters
-    between them. Returns an AtomGroup. 
-    <dl>
-    <dt><code><b>expression</b></code></dt>
-    <dd> Either a list of the same length as the number of atoms or
-    a string that will evaluate to true or false for each atom.
-    Allowed variables are: <code>x, y, z, id, el, u, ov, m,/code></dd>
-    </dl>
-<code> [Slab].all_atoms()</code><br>
-    Yields all atoms inside a slab as an AtomGroup.
-    Returns an AtomGroup. 
-<code> [Slab][id]</code><br>
-    Locates atom that has id <code>id</code>. Returns an AtomGroup
-    <dl>
-    <dt><code><b>id</b></code></dt>
-    <dd>Uniqe string identifer for one atom </dd>
-    </dl>
-<h3>Sample</h3>
-<code> Sample(inst, bulk_slab, slabs, unit_cell, surface_sym = [],
-bulk_sym = []) </code><br>
-    <dl>
-    <dt><code><b>inst</b></code></dt>
-    <dd> Instrument object for the sample
-    </dd>
-    <dt><code><b>bulk_slab</b></code></dt>
-    <dd>The Slab that describes the bulk strucutre
-    </dd>
-    <dt><code><b>slabs</b></code></dt>
-    <dd>A list ([]) of slabs for the surface structure
-    </dd>
-    <dt><code><b>unit_cell</b></code></dt>
-    <dd>A UnitCell object 
-    </dd>
-    <dt><code><b>surface_sym</b></code></dt>
-    <dd>A list ([]) of SymTrans objects describing the surface symmetry.
-    Default value - an empty list will implement a p1 symmetry, that is no
-    symmetry operations at all.
-    </dd>
-    <dt><code><b>bulk_sym</b></code></dt>
-    <dd>A list ([]) of SymTrans objects describing the bulk symmetry.
-    Default value - an empty list will implement a p1 symmetry, that is
-    no symetry operations at all.
-    </dd>
-    </dl>
-<code>[Sample].calc_f(h, k, l)</code><br>
-Calculates the total structure factor (complex number) from the
-the surface and bulk strucutre. Returns an array of the same size
-as h, k, l. (h, k, l should be of the same legth and is given in
-coordinates of the reciprocal lattice as defnined by the uit_cell coords)
-<code>[Sample].turbo_calc_f(h, k, l)</code><br>
-A faster version of <code>calc_f</code> which uses inline c code to increase
-the speed. Can be more unstable than <code>calc_f</code> use on your own risk.
-<code>[Sample].calc_rhos(x, y, z, sb)</code><br>
-Calculate the the surface electron density of a model. The parameter sb is a Gaussian convolution factor given the width of the Gaussian in reciprocal space.
-Used mainly for comparison with direct methods, i.e. DCAF.
-NOTE that the transformation from the width of the window function given
-in <code>dimes.py</code> is <code>sqrt(2)*pi*[]</code>
+    between them. Returns an AtomGroup.
+``expression``
+    Either a list of the same length as the number of atoms or a string
+    that will evaluate to true or false for each atom. Allowed variables
+    are: ``x, y, z, id, el, u, ov, m,/code>       [Slab].all_atoms()``
+    Yields all atoms inside a slab as an AtomGroup. Returns an AtomGroup.
+``[Slab][id]``
+    Locates atom that has id ``id``. Returns an AtomGroup
+``id``
+   Uniqe string identifer for one atom
+
+Sample
+~~~~~~
+``Sample(inst, bulk_slab, slabs, unit_cell, surface_sym = [], bulk_sym = [])``
+
+``inst``
+   Instrument object for the sample
+``bulk_slab``
+   The Slab that describes the bulk strucutre
+``slabs``
+   A list ([]) of slabs for the surface structure
+``unit_cell``
+   A UnitCell object
+``surface_sym``
+   A list ([]) of SymTrans objects describing the surface symmetry.
+   Default value - an empty list will implement a p1 symmetry, that is
+   no symmetry operations at all.
+``bulk_sym``
+   A list ([]) of SymTrans objects describing the bulk symmetry. Default
+   value - an empty list will implement a p1 symmetry, that is no
+   symetry operations at all.
+
+``[Sample].calc_f(h, k, l)``
+    Calculates the total structure factor (complex number) from the the
+    surface and bulk strucutre. Returns an array of the same size as h, k,
+    l. (h, k, l should be of the same legth and is given in coordinates of
+    the reciprocal lattice as defnined by the uit_cell coords)
+``[Sample].turbo_calc_f(h, k, l)``
+    A faster version of ``calc_f`` which uses inline c code to increase
+    the speed. Can be more unstable than ``calc_f`` use on your own risk.
+``[Sample].calc_rhos(x, y, z, sb)``
+    Calculate the the surface electron density of a model. The parameter
+    sb is a Gaussian convolution factor given the width of the Gaussian in
+    reciprocal space. Used mainly for comparison with direct methods, i.e.
+    DCAF. NOTE that the transformation from the width of the window
+    function given in ``dimes.py`` is ``sqrt(2)*pi*[]``
 '''
 
 import numpy as np
