@@ -20,8 +20,8 @@ from . import solvergui, help
 from . import filehandling as io
 from .gui_logging import iprint
 
-manual_url='http://genx.sourceforge.net/doc/'
-homepage_url='http://genx.sf.net'
+manual_url='https://aglavic.github.io/genx/doc/'
+homepage_url='https://aglavic.github.io/genx/'
 
 def get_pages(frame):
     # Get all plot panel objects in GUI
@@ -1179,6 +1179,11 @@ def models_help(frame, event):
     Show a help dialog for information about the different models.
     '''
     dlg=help.PluginHelpDialog(frame, 'models', title="Models help")
+    if frame.model.is_compiled():
+        current_model=frame.model.script_module.model.__name__.rsplit('.', 1)[1]
+        if current_model in dlg.choice.GetStrings():
+            dlg.choice.SetStringSelection(current_model)
+            dlg.on_choice(None)
     dlg.Show()
 
 def plugins_help(frame, event):

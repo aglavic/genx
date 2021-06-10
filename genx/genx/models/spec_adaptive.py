@@ -1,6 +1,9 @@
 # -*- coding: utf8 -*-
-'''<h1>Library for combined x-ray and neutrons simulations with adaptive layer segmentation.</h1>
-<p>Most of the model is the same as in spec_nx.</p>
+'''
+Library for combined x-ray and neutrons simulations with adaptive layer segmentation
+====================================================================================
+
+Most of the model is the same as in spec_nx.
 '''
 from copy import deepcopy
 from numpy import *

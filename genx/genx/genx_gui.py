@@ -284,7 +284,7 @@ class MainFrame(wx.Frame):
         self.main_frame_menubar.mb_misc_about=wxglade_tmp_menu.Append(wx.ID_ANY, "About...",
                                                                       "Shows information about GenX")
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, id=self.main_frame_menubar.mb_misc_about.GetId())
-        self.main_frame_menubar.Append(wxglade_tmp_menu, "Info")
+        self.main_frame_menubar.Append(wxglade_tmp_menu, "Help")
         self.SetMenuBar(self.main_frame_menubar)
         # Menu Bar end
         self.main_frame_statusbar=self.CreateStatusBar(3)
