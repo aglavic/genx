@@ -507,6 +507,14 @@ class SettingsDialog(wx.Dialog):
         self.save_all_control=save_all_control
         fit_box_sizer.Add(save_sizer, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
 
+        # Minimum time spend per iteration
+        wait_time_sizer=wx.BoxSizer(wx.HORIZONTAL)
+        wait_time_sizer.Add(wx.StaticText(self, -1, 'sleep time'))
+        self.time_ctrl=wx.SpinCtrlDouble(self, -1, min=0., max=2.0,
+                                        initial=self.solver.sleep_time, inc=0.001)
+        wait_time_sizer.Add(self.time_ctrl, 0, wx.ALIGN_CENTER_VERTICAL, border=5)
+        fit_box_sizer.Add(wait_time_sizer, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
+
         row_sizer1.Add(fit_box_sizer, 1, wx.EXPAND, 5)
 
         col_sizer.Add(row_sizer1, 1, wx.ALIGN_CENTRE | wx.ALL, 5)
@@ -760,6 +768,7 @@ class SettingsDialog(wx.Dialog):
         self.solver.limit_fit_range=self.limit_fit_range.GetValue()
         self.solver.fit_xmin=self.fit_xmin.GetValue()
         self.solver.fit_xmax=self.fit_xmax.GetValue()
+        self.solver.sleep_time=self.time_ctrl.GetValue()
 
         model=self.solvergui.parent.model
         model.limit_fit_range, model.fit_xmin, model.fit_xmax=(

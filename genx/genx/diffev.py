@@ -580,13 +580,11 @@ class DiffEv:
             self.plot_output(self)
             self.parameter_output(self)
 
-            # Let the optimization sleep for a while
-            if self.use_parallel_processing:
-                # limit the length of each iteration in parallel processing
-                # at least on windows there is no issue with fast iterations in single thread
-                to_sleep=self.sleep_time-(time.time()-t_start)
-                if to_sleep>0:
-                    time.sleep(to_sleep)
+            # limit the length of each iteration in parallel processing
+            # at least on windows there is no issue with fast iterations in single thread
+            to_sleep=self.sleep_time-(time.time()-t_start)
+            if to_sleep>0:
+                time.sleep(to_sleep)
 
             # Time measurent to track the speed
             t=time.time()-t_start
