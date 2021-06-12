@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.3.1
+=============
+ * Fix column type in ORSO reader to be ndarray and not derived class
+
 Changes 3.3.0
 =============
  * Updated the documentation website to include the SimpleReflectivity interface

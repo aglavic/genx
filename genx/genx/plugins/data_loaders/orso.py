@@ -48,11 +48,11 @@ class Plugin(Template):
             if type(ord_data) is list:
                 ord_data=ord_data[data_id]
 
-            dataset.x_raw=ord_data.x
-            dataset.y_raw=ord_data.y
-            dataset.error_raw=ord_data.dy
+            dataset.x_raw=np.asarray(ord_data.x)
+            dataset.y_raw=np.asarray(ord_data.y)
+            dataset.error_raw=np.asarray(ord_data.dy)
             if ord_data.dx is not None:
-                dataset.set_extra_data('res', ord_data.dx, 'res')
+                dataset.set_extra_data('res', np.asarray(ord_data.dx), 'res')
             for col in ord_data[4:]:
                 dataset.set_extra_data(col.name, np.asarray(col), col.name)
             # Name the dataset accordign to file name
