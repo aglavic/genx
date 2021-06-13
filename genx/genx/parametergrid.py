@@ -715,6 +715,11 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
         return ValueCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
                                   min=self.slider_drawer.min_value)
 
+    def GetBestSize(self, grid, attr, dc, row, col):
+        dc.SetFont(attr.GetFont())
+        width, height = dc.GetTextExtent("0.1234567e10")
+        return wx.Size(width, height)
+
 # ------------------------------------------------------------------------------
 class ParameterGrid(wx.Panel):
     '''

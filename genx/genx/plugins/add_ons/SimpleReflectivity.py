@@ -31,6 +31,7 @@ from genx.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.gui_logging import iprint
 from genx.help import PluginHelpDialog
+from genx.parametergrid import ValueCellRenderer
 
 _set_func_prefix='set'
 
@@ -431,6 +432,8 @@ class SampleTable(gridlib.GridTableBase):
                 attr.SetBackgroundColour('#ccffcc')
             elif self.layers[row-1][11]==BOT_LAYER:
                 attr.SetBackgroundColour('#ffaaff')
+        if col in [4, 6, 8, 10]:
+            attr.SetRenderer(ValueCellRenderer())
         return attr
 
     def GetColLabelValue(self, col):
@@ -1094,12 +1097,29 @@ class WizarSelectionPage(WizardPageSimple):
         text.SetFont(text.GetFont().Scale(1.5))
         vbox.Add(text, 0, wx.EXPAND)
         text=wx.StaticText(self, style=wx.ALIGN_LEFT, label=intro_text)
-        text.Wrap(int(480*dpi_scale_factor))
+        text.Wrap(text.GetSize().width)
         vbox.Add(text, 0, wx.EXPAND)
         vbox.AddStretchSpacer()
 
-        self.ctrl=wx.RadioBox(self, label=choice_label, choices=choices,
-                              style=wx.RA_SPECIFY_ROWS, majorDimension=4)
+        self.ctrl={}
+
+        box=wx.StaticBox(self, label=choice_label)
+        box_layout=wx.GridSizer(min(4, len(choices)//4+1), 2, 2)
+        box.SetSizer(box_layout)
+        for choice in choices:
+            self.ctrl[choice]=wx.RadioButton(box, label=choice,
+                                             size=wx.Size(-1, 16*dpi_scale_factor))
+            box_layout.Add(self.ctrl[choice], wx.FIXED_MINSIZE)
+        # box.SetSize(wx.Size(box_layout.GetCols()*self.ctrl[choice].GetSize().width,
+        #                     box_layout.GetCols()*self.ctrl[choice].GetSize().height))
+        sz=box_layout.GetMinSize()
+        sa=box.GetBordersForSizer()
+        box.SetMinSize(wx.Size(sz.width+sa[0]*1, sz.height+sa[1]*2))
+
+        #box.SetMinSize(wx.Size(500, 300))
+
+        #wx.RadioBox(self, label=choice_label, choices=choices,
+        #                      style=wx.RA_SPECIFY_ROWS, majorDimension=4)
 
         # dc=wx.ScreenDC()
         # dc.SetFont(self.ctrl.GetFont())
@@ -1108,18 +1128,22 @@ class WizarSelectionPage(WizardPageSimple):
         # total_txt_width=max(txt_lengths[:4])
         # for i in range(len(choices)//4):
         #     total_txt_width+=max(txt_lengths[i*4:(i+1)*4])
-        self.ctrl.SetMinSize(self.ctrl.GetBestSize())#wx.Size(total_txt_width, 50))
+        # self.ctrl.SetMinSize(self.ctrl.GetBestSize())#wx.Size(total_txt_width, 50))
 
-        vbox.Add(self.ctrl, 0, 0)
+        vbox.Add(box, 0, 0)
         if choices_help:
             for i, ti in enumerate(choices_help):
-                self.ctrl.SetItemToolTip(i, ti)
+                #self.ctrl.SetItemToolTip(i, ti)
+                self.ctrl[choices[i]].SetToolTip(ti)
             text=wx.StaticText(self, style=wx.ALIGN_LEFT, label='Hover items for info')
             text.SetFont(text.GetFont().Scale(0.75))
             vbox.Add(text, 0, 0)
 
     def selection(self):
-        return self.ctrl.GetString(self.ctrl.GetSelection())
+        #return self.ctrl.GetString(self.ctrl.GetSelection())
+        for key, ctrl in self.ctrl.items():
+            if ctrl.GetValue():
+                return key
 
 def find_code_segment(code, descriptor):
     '''find_code_segment(code, descriptor) --> string
@@ -1350,8 +1374,8 @@ class Plugin(framework.Template):
                               'from the Instrument Settings dialog.')
         p2=WizarSelectionPage(wiz, ['auto']+dls,
                               'Selecte Data Loader\n',
-                              'How to import data '
-                              'into GenX.\nIf your instrument is not listed '
+                              'How to import data into GenX. '
+                              '\nIf your instrument is not listed '
                               'use the default/resolution loader. '
                               'This reads  3/4 columns from an ASCII file. '
                               'If the file does not '
@@ -1371,7 +1395,7 @@ class Plugin(framework.Template):
         WizardPageSimple.Chain(p2, p3)
 
         dpi_scale_factor=wx.GetApp().dpi_scale_factor
-        wiz.SetPageSize(wx.Size(int(300*dpi_scale_factor), int(200*dpi_scale_factor)))
+        wiz.SetPageSize(wx.Size(int(320*dpi_scale_factor), int(240*dpi_scale_factor)))
 
         if wiz.RunWizard(p1):
             self.sample_widget.inst_params=dict(SamplePanel.inst_params)
