@@ -74,7 +74,7 @@ class Template:
 
             if dlg.ShowModal()==wx.ID_OK:
                 self.SetData(self.parent.data_cont.get_data())
-                dataset=DataSet()
+                dataset=DataSet(copy_from=self.data[selected_items[0]])
                 # in case the data loader does not define any metadata
                 # at least set the instrument to data loader name
                 dataset.meta['data_source']['experiment']['instrument']=self.__module__.rsplit('.', 1)[1]
