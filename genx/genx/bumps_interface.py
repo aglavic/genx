@@ -170,6 +170,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         vbox.Add(self.pbar, proportion=0, flag=wx.EXPAND)
 
         self.Bind(wx.EVT_BUTTON, self.OnRunAnalysis, but)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
 
         self.model=model
         self.thread=None
@@ -178,6 +179,8 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.SetSize(int(psize.GetWidth()*0.75), int(psize.GetHeight()*0.75))
 
     def OnRunAnalysis(self, event):
+        if self.thread is not None:
+            return
         self.thread=threading.Thread(target=self.run_bumps)
         self.thread.start()
 
@@ -197,6 +200,10 @@ class StatisticalAnalysisDialog(wx.Dialog):
         wx.CallAfter(self.display_bumps)
 
     def display_bumps(self):
+        self.thread.join(timeout=5.0)
+        self.thread=None
+        self.pbar.SetValue(0)
+
         res=self._res
         self.draw=res.state.draw()
         self.abs_cov=res.cov
@@ -289,3 +296,11 @@ class StatisticalAnalysisDialog(wx.Dialog):
         ax.set_xlabel(self.draw.labels[j])
         ax.set_ylabel(self.draw.labels[i])
         self.plot_panel.flush_plot()
+
+    def OnClose(self, event):
+        if self.thread is not None and self.thread.is_alive():
+            # a running bumps simulation can't be interrupted from other thread, stop window from closing
+            self.ptxt.SetLabel("Simulation running")
+            event.Veto()
+            return
+        event.Skip()
