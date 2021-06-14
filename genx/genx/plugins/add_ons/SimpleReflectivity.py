@@ -1104,17 +1104,17 @@ class WizarSelectionPage(WizardPageSimple):
         self.ctrl={}
 
         box=wx.StaticBox(self, label=choice_label)
+        out_layout=wx.BoxSizer(wx.VERTICAL)
+        box.SetSizer(out_layout)
         box_layout=wx.GridSizer(min(4, len(choices)//4+1), 2, 2)
-        box.SetSizer(box_layout)
+        out_layout.Add(box_layout, 1, wx.EXPAND|wx.TOP|wx.LEFT, 12*dpi_scale_factor)
         for choice in choices:
             self.ctrl[choice]=wx.RadioButton(box, label=choice,
                                              size=wx.Size(-1, 16*dpi_scale_factor))
-            box_layout.Add(self.ctrl[choice], wx.FIXED_MINSIZE)
-        # box.SetSize(wx.Size(box_layout.GetCols()*self.ctrl[choice].GetSize().width,
-        #                     box_layout.GetCols()*self.ctrl[choice].GetSize().height))
+            box_layout.Add(self.ctrl[choice], 0, wx.FIXED_MINSIZE, 2)
         sz=box_layout.GetMinSize()
         sa=box.GetBordersForSizer()
-        box.SetMinSize(wx.Size(sz.width+sa[0]*1, sz.height+sa[1]*2))
+        box.SetMinSize(wx.Size(sz.width+sa[0]+sa[1]+12*dpi_scale_factor, sz.height+sa[1]*2+12*dpi_scale_factor))
 
         #box.SetMinSize(wx.Size(500, 300))
 
@@ -1395,7 +1395,7 @@ class Plugin(framework.Template):
         WizardPageSimple.Chain(p2, p3)
 
         dpi_scale_factor=wx.GetApp().dpi_scale_factor
-        wiz.SetPageSize(wx.Size(int(320*dpi_scale_factor), int(240*dpi_scale_factor)))
+        wiz.SetPageSize(wx.Size(int(400*dpi_scale_factor), int(240*dpi_scale_factor)))
 
         if wiz.RunWizard(p1):
             self.sample_widget.inst_params=dict(SamplePanel.inst_params)
