@@ -1060,6 +1060,21 @@ class Model:
                      population=random.randn(x_n_gen*n, x_n_chain*n, n))  # n_gen, n_chain, n_var
         return bdream
 
+    def bumps_update_parameters(self, res):
+        """
+        Update the GenX model from a bumps fit result.
+        """
+        x=res.x
+        bproblem=self.bumps_problem()
+        names=list(bproblem.model_parameters().keys())
+        if len(names)!=len(x):
+            raise ValueError('The number of parameters does not fit the model parameters, was the model changed?')
+
+        for pi in self.parameters:
+            if pi.fit:
+                pi.value=x[names.index(pi.name.replace('.set', '_'))]
+
+
     def plot(self, data_labels=None, sim_labels=None):
         """
         Plot all datasets in the model wtih matplotlib similar to the display in the GUI.
