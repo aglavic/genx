@@ -99,33 +99,33 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
             X[0, 1]=-costd*(k_pi-k_pj)/2./k_pj
             X[0, 2]=sintd*(k_pj+k_mi)/2./k_pj
             X[0, 3]=sintd*(k_pj-k_mi)/2./k_pj
-            X[1, 0]=X[0, 1]  # -(costd*(k_pj1 - k_pj))/(2*k_pj)
-            X[1, 1]=X[0, 0]  # (costd*(k_pj1 + k_pj))/(2*k_pj)
-            X[1, 2]=X[0, 3]  # (sintd*(k_pj - k_mj1))/(2*k_pj)
-            X[1, 3]=X[0, 2]  # (sintd*(k_pj + k_mj1))/(2*k_pj)
+            #X[1, 0]=X[0, 1]  # -(costd*(k_pj1 - k_pj))/(2*k_pj)
+            #X[1, 1]=X[0, 0]  # (costd*(k_pj1 + k_pj))/(2*k_pj)
+            #X[1, 2]=X[0, 3]  # (sintd*(k_pj - k_mj1))/(2*k_pj)
+            #X[1, 3]=X[0, 2]  # (sintd*(k_pj + k_mj1))/(2*k_pj)
             X[2, 0]=-(sintd*(k_pi+k_mj))/(2.*k_mj)
             X[2, 1]=(sintd*(k_pi-k_mj))/(2.*k_mj)
             X[2, 2]=(costd*(k_mi+k_mj))/(2.*k_mj)
             X[2, 3]=-(costd*(k_mi-k_mj))/(2.*k_mj)
-            X[3, 0]=X[2, 1]  # (sintd*(k_pj1 - k_mj))/(2*k_mj)
-            X[3, 1]=X[2, 0]  # -(sintd*(k_pj1 + k_mj))/(2*k_mj)
-            X[3, 2]=X[2, 3]  # -(costd*(k_mj1 - k_mj))/(2*k_mj)
-            X[3, 3]=X[2, 2]  # (costd*(k_mj1 + k_mj))/(2*k_mj)
+            #X[3, 0]=X[2, 1]  # (sintd*(k_pj1 - k_mj))/(2*k_mj)
+            #X[3, 1]=X[2, 0]  # -(sintd*(k_pj1 + k_mj))/(2*k_mj)
+            #X[3, 2]=X[2, 3]  # -(costd*(k_mj1 - k_mj))/(2*k_mj)
+            #X[3, 3]=X[2, 2]  # (costd*(k_mj1 + k_mj))/(2*k_mj)
 
             ##### include_sigma #####
-            sigma2=sigma[lj]**2/2.0
-            X[0, 0]=X[0, 0]*cmath.exp(-(k_pj-k_pi)**2*sigma2)
-            X[0, 1]=X[0, 1]*cmath.exp(-(k_pj+k_pi)**2*sigma2)
-            X[0, 2]=X[0, 2]*cmath.exp(-(k_pj-k_mi)**2*sigma2)
-            X[0, 3]=X[0, 3]*cmath.exp(-(k_pj+k_mi)**2*sigma2)
+            sigma2=sigma[lj-1]**2/2.0
+            X[0, 0]*=cmath.exp(-(k_pj-k_pi)**2*sigma2)
+            X[0, 1]*=cmath.exp(-(k_pj+k_pi)**2*sigma2)
+            X[0, 2]*=cmath.exp(-(k_pj-k_mi)**2*sigma2)
+            X[0, 3]*=cmath.exp(-(k_pj+k_mi)**2*sigma2)
             X[1, 0]=X[0, 1]  # X[1,0]*w(k_pj + k_pj1, sigma2)
             X[1, 1]=X[0, 0]  # X[1,1]*w(k_pj - k_pj1, sigma2)
             X[1, 2]=X[0, 3]  # X[1,2]*w(k_pj + k_mj1, sigma2)
             X[1, 3]=X[0, 2]  # X[1,3]*w(k_pj - k_mj1, sigma2)
-            X[2, 0]=X[2, 0]*cmath.exp(-(k_mj-k_pi)**2*sigma2)
-            X[2, 1]=X[2, 1]*cmath.exp(-(k_mj+k_pi)**2*sigma2)
-            X[2, 2]=X[2, 2]*cmath.exp(-(k_mj-k_mi)**2*sigma2)
-            X[2, 3]=X[2, 3]*cmath.exp(-(k_mj+k_mi)**2*sigma2)
+            X[2, 0]*=cmath.exp(-(k_mj-k_pi)**2*sigma2)
+            X[2, 1]*=cmath.exp(-(k_mj+k_pi)**2*sigma2)
+            X[2, 2]*=cmath.exp(-(k_mj-k_mi)**2*sigma2)
+            X[2, 3]*=cmath.exp(-(k_mj+k_mi)**2*sigma2)
             X[3, 0]=X[2, 1]  # X[3,0]*w(k_mj + k_pj1, sigma)
             X[3, 1]=X[2, 0]  # X[3,1]*w(k_mj - k_pj1, sigma)
             X[3, 2]=X[2, 3]  # X[3,2]*w(k_mj + k_mj1, sigma)
@@ -264,6 +264,19 @@ def ReflNB(Q, Vp, Vm, d, M_ang):
     return Rout
 
 def Refl(Q, Vp, Vm, d, M_ang, sigma=None, return_int=True):
+    if M_ang[-1]!=0:
+        raise ValueError("The magnetization in the ambient layer has to be in polarization direction")
+    if Vp[-1]!=0 or Vm[-1]!=0:
+        # Ambient not vacuum
+        raise ValueError("The SLD in the ambient layer has to be zero, apply renormalization first")
+    if len(Vp)==2:
+        # Algorithm breaks without a layer, so add an empty one
+        Vp=hstack([Vp, [Vp[-1]]])
+        Vm=hstack([Vm, [Vm[-1]]])
+        M_ang=array([M_ang[0], 0., 0.], dtype=float64)
+        d=array([d[0], 10., d[1]], dtype=float64)
+        if sigma is not None:
+            sigma=array([sigma[0], sigma[0], sigma[1]], dtype=float64)
     if sigma is not None:
         return ReflNBSigma(Q, Vp.astype(complex128), Vm.astype(complex128), d, M_ang, sigma)
     else:

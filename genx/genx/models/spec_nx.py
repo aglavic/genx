@@ -404,13 +404,17 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
             Q_ok=False
         if Buffer.parameters!=parameters or not Q_ok:
             msld=2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
-            np=1.0-sld-msld
-            nm=1.0-sld+msld
-            Vp=(2*pi/instrument.getWavelength())**2*(1-np**2)
-            Vm=(2*pi/instrument.getWavelength())**2*(1-nm**2)
+            # renormalize SLDs if ambient layer is not vacuum
+            if msld[-1]!=0. or sld[-1]!=0:
+                msld-=msld[-1]
+                sld-=sld[-1]
+            sld_p=sld+msld
+            sld_m=sld-msld
+            Vp=(2*pi/instrument.getWavelength())**2*(sld_p*(2.+sld_p))#(1-np**2) - better numerical accuracy
+            Vm=(2*pi/instrument.getWavelength())**2*(sld_m*(2.+sld_m))#(1-nm**2)
             (Ruu, Rdd, Rud, Rdu)=MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma, return_int=return_int)
-            Buffer.Ruu=Ruu;
-            Buffer.Rdd=Rdd;
+            Buffer.Ruu=Ruu
+            Buffer.Rdd=Rdd
             Buffer.Rud=Rud
             Buffer.parameters=parameters.copy()
             Buffer.TwoThetaQz=Q.copy()

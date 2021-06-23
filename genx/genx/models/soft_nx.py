@@ -330,13 +330,16 @@ def Specular(TwoThetaQz, sample, instrument):
                 Q_ok=any(not_equal(Buffer.TwoThetaQz, Q))
         if Buffer.parameters!=parameters or not Q_ok:
             # msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
-            np=1.0-l2pi*(sld+sld_m)
-            nm=1.0-l2pi*(sld-sld_m)
-            Vp=(2*pi/instrument.getWavelength())**2*(1-np**2)
-            Vm=(2*pi/instrument.getWavelength())**2*(1-nm**2)
+            if sld_m[-1]!=0. or sld[-1]!=0:
+                sld_m-=sld_m[-1]
+                sld-=sld[-1]
+            sld_p=l2pi*(sld+sld_m)
+            sld_m=l2pi*(sld-sld_m)
+            Vp=(2*pi/instrument.getWavelength())**2*(sld_p*(2.+sld_p))#(1-np**2) - better numerical accuracy
+            Vm=(2*pi/instrument.getWavelength())**2*(sld_m*(2.+sld_m))#(1-nm**2)
             (Ruu, Rdd, Rud, Rdu)=MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma)
-            Buffer.Ruu=Ruu;
-            Buffer.Rdd=Rdd;
+            Buffer.Ruu=Ruu
+            Buffer.Rdd=Rdd
             Buffer.Rud=Rud
             Buffer.parameters=parameters.copy()
             Buffer.TwoThetaQz=Q.copy()

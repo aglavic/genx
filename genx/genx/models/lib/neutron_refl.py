@@ -182,9 +182,23 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma=None, return_int=True):
     '''
     # Assume first element=substrate and last=ambient!
     k_amb=Q[:, newaxis]/2.0
+    Vp=Vp.astype(complex128);Vm=Vm.astype(complex128)
+    if M_ang[-1]!=0:
+        raise ValueError("The magnetization in the ambient layer has to be in polarization direction")
+    if Vp[-1]!=0 or Vm[-1]!=0:
+        # Ambient not vacuum
+        raise ValueError("The SLD in the ambient layer has to be zero, apply renormalization first")
+    if len(Vp)==2:
+        # Algorithm breaks without a layer, so add an empty one
+        Vp=hstack([Vp, [Vp[-1]]])
+        Vm=hstack([Vm, [Vm[-1]]])
+        M_ang=array([M_ang[0], 0., 0.], dtype=float64)
+        d=array([d[0], 10., d[1]], dtype=float64)
+        if sigma is not None:
+            sigma=array([sigma[0], sigma[0], sigma[1]], dtype=float64)
     # Wavevectors in the layers
-    k_p=sqrt(k_amb**2-Vp.astype(complex128))
-    k_m=sqrt(k_amb**2-Vm.astype(complex128))
+    k_p=sqrt(k_amb**2-Vp)
+    k_m=sqrt(k_amb**2-Vm)
     # Angular difference between the magnetization
     theta_diff=M_ang[1:]-M_ang[:-1]
     # if sigma is None:

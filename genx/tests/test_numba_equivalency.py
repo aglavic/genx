@@ -91,7 +91,7 @@ class TestInstrumentModule(unittest.TestCase):
         np.testing.assert_array_almost_equal(weight1, weight2)
 
 class TestParattModule(unittest.TestCase):
-    # Test the models.lib.instruments functions implemented in models.lib.instruments_numba
+    # Test the models.lib.paratt functions implemented in models.lib.paratt_numba
 
     def test_refl_int_no_roughness(self):
         theta=np.linspace(0., 5., 1000, dtype=np.float64)
@@ -236,7 +236,7 @@ class TestParattModule(unittest.TestCase):
             np.testing.assert_array_almost_equal(G1, G2)
 
 class TestNeutronModule(unittest.TestCase):
-    # Test the models.lib.instruments functions implemented in models.lib.instruments_numba
+    # Test the models.lib.neutron_refl functions implemented in models.lib.neutron_numba
 
     def test_refl_roughness(self):
         Q=np.linspace(0.001, 0.5, 1000, dtype=np.float64)
@@ -271,6 +271,94 @@ class TestNeutronModule(unittest.TestCase):
         sigma=None
         G1=neutron_refl.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
         G2=neutron_numba.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        np.testing.assert_array_almost_equal(G1, G2)
+        if CUDA:
+            G2=neutron_cuda.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+            np.testing.assert_array_almost_equal(G1, G2)
+
+    def test_refl_nonmag(self):
+        # test ambient layer non-air
+        Q=np.linspace(0.001, 0.5, 1000, dtype=np.float64)
+        SLDs=np.array([6.36e+00, (4.66e+00-1.60e-02j), 2.07e+00], dtype=np.complex128)*1e-6
+        n=1.0-SLDs
+        n_prime=1.0-(SLDs-SLDs[-1]) # use corrected SLD for matrix method
+
+        Vp=((2.0*np.pi/4.5)**2*(1-n_prime**2)).astype(np.complex128)
+        Vm=Vp
+        d=np.array([0, 100, 0], dtype=np.float64)
+        M_ang=np.array([0.0, 0.0, 0.0, ], dtype=np.float64)
+        sigma=np.array([10., 3., 0.], dtype=np.float64)
+
+        G0=paratt.ReflQ(Q, 4.5, n, d, sigma, return_int=True)
+        G1=neutron_refl.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        G2=neutron_numba.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        np.testing.assert_array_almost_equal(G0, G1[0], decimal=5)
+        np.testing.assert_array_almost_equal(G1, G2)
+        if CUDA:
+            G2=neutron_cuda.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+            np.testing.assert_array_almost_equal(G1, G2)
+
+    def test_refl_nonmag_no_roughness(self):
+        # test ambient layer non-air
+        Q=np.linspace(0.001, 0.5, 1000, dtype=np.float64)
+        SLDs=np.array([6.36e+00, (4.66e+00-1.60e-02j), 2.07e+00], dtype=np.complex128)*1e-6
+        n=1.0-SLDs
+        n_prime=1.0-(SLDs-SLDs[-1]) # use corrected SLD for matrix method
+
+        Vp=((2.0*np.pi/4.5)**2*(1-n_prime**2)).astype(np.complex128)
+        Vm=Vp
+
+        d=np.array([0, 100, 0], dtype=np.float64)
+        M_ang=np.array([0.0, 0.0, 0.0, ], dtype=np.float64)
+        sigma=None
+
+        G0=paratt.ReflQ(Q, 4.5, n, d, d*0., return_int=True)
+        G1=neutron_refl.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        G2=neutron_numba.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        np.testing.assert_array_almost_equal(G0, G1[0], decimal=4)
+        np.testing.assert_array_almost_equal(G1, G2)
+        if CUDA:
+            G2=neutron_cuda.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+            np.testing.assert_array_almost_equal(G1, G2)
+
+    def test_refl_air_nonmag(self):
+        # test ambient layer non-air
+        Q=np.linspace(0.001, 0.5, 1000, dtype=np.float64)
+        SLDs=np.array([6.36e+00, (4.66e+00-1.60e-02j), 0e+00], dtype=np.complex128)*1e-6
+        n=1.0-SLDs
+
+        Vp=((2.0*np.pi/4.5)**2*(1-n**2)).astype(np.complex128)
+        Vm=Vp
+        d=np.array([0, 100, 0], dtype=np.float64)
+        M_ang=np.array([0.0, 0.0, 0.0, ], dtype=np.float64)
+        sigma=np.array([10., 3., 0.], dtype=np.float64)
+
+        G0=paratt.ReflQ(Q, 4.5, n, d, sigma, return_int=True)
+        G1=neutron_refl.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        G2=neutron_numba.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        np.testing.assert_array_almost_equal(G0, G1[0])
+        np.testing.assert_array_almost_equal(G1, G2)
+        if CUDA:
+            G2=neutron_cuda.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+            np.testing.assert_array_almost_equal(G1, G2)
+
+    def test_refl_nonmag_air_no_roughness(self):
+        # test ambient layer non-air
+        Q=np.linspace(0.001, 0.5, 1000, dtype=np.float64)
+        SLDs=np.array([6.36e+00, (4.66e+00-1.60e-02j), 0e+00], dtype=np.complex128)*1e-6
+        n=1.0-SLDs
+
+        Vp=((2.0*np.pi/4.5)**2*(2*SLDs-SLDs**2)).astype(np.complex128) #((2.0*np.pi/4.5)**2*(1-n**2)).astype(np.complex128)
+        Vm=Vp
+
+        d=np.array([0, 100, 0], dtype=np.float64)
+        M_ang=np.array([0.0, 0.0, 0.0, ], dtype=np.float64)
+        sigma=None
+
+        G0=paratt.ReflQ(Q, 4.5, n, d, d*0., return_int=True)
+        G1=neutron_refl.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        G2=neutron_numba.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
+        np.testing.assert_array_almost_equal(G0, G1[0]) # Matrix not so accurate without magnetization
         np.testing.assert_array_almost_equal(G1, G2)
         if CUDA:
             G2=neutron_cuda.Refl(Q, Vp, Vm, d, M_ang, sigma, return_int=True)
