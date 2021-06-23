@@ -194,6 +194,7 @@ from .lib import paratt as Paratt
 
 from .lib import ables as ables
 from .lib import neutron_refl as neutron_refl
+from .lib.physical_constants import muB_to_SL
 from numpy import *
 from scipy.special import erf
 from .lib.instrument import *
@@ -954,7 +955,7 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
         wl=instrument.getWavelength()*1.0
         sld=dens*(wl**2/2.0/pi*sqrt(b**2-(abs_xs/2.0/wl)**2)-1.0J*abs_xs*wl/4/pi)
         # print mag.shape, dens.shape, theta_m.shape, phi.shape, theta.shape
-        msld=(2.645e-5*mag*wl**2/2/pi*cos(theta_m)*cos(phi))[:, newaxis]*dens*ones(theta.shape)
+        msld=(muB_to_SL*mag*wl**2/2/pi*cos(theta_m)*cos(phi))[:, newaxis]*dens*ones(theta.shape)
         if pol in ['++', 'uu']:
             n=1.0-sld-msld
             n_l=1.0-sld-msld*(1.0+dmag_l)[:, newaxis]
@@ -969,7 +970,7 @@ def extract_anal_iso_pars(sample, instrument, theta, xray_energy, pol='+', Q=Non
         abs_xs=(array(parameters['xs_ai'], dtype=complex128)*1e-4**2)[:, newaxis]*ones(wl.shape)
         sld=dens[:, newaxis]*(wl**2/2/pi*sqrt(b**2-(abs_xs/2.0/wl)**2)-
                               1.0J*abs_xs*wl/4/pi)
-        msld=(2.645e-5*(mag*dens)[:, newaxis]*wl**2/2/pi)*(cos(theta_m)*cos(phi))[:, newaxis]
+        msld=(muB_to_SL*(mag*dens)[:, newaxis]*wl**2/2/pi)*(cos(theta_m)*cos(phi))[:, newaxis]
 
         if pol in ['++', 'uu']:
             n=1.0-sld-msld
@@ -1203,7 +1204,7 @@ def analytical_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, 
             #                   1.0J*abs_xs*wl/4/pi)
 
             V0=2*2*pi*dens*(b-1.0J*abs_xs/2.0/wl)
-            Vmag=2*2*pi*2.645e-5*mag*dens
+            Vmag=2*2*pi*muB_to_SL*mag*dens
 
             (Ruu, Rdd, Rud, Rdu)=neutron_refl.Refl_int_lay(Q, V0[::-1], Vmag[::-1], d[::-1], phi[::-1], sigma[::-1],
                                                            dmag_u[::-1], dd_u[::-1], phi[::-1], sigma_u[::-1],
@@ -1393,7 +1394,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
         sl_n=sl_n*1e-5
         abs_n=abs_n*1e-8
         sl_n=(lamda**2/2/pi*sl_n-1.0J*abs_n*lamda/4/pi)
-        sl_nm=2.645e-5*mag_dens*lamda**2/2/pi
+        sl_nm=muB_to_SL*mag_dens*lamda**2/2/pi
         pol=instrument.getNpol()
         if pol in ['++', 'uu']:
             n=1.0-sl_n-sl_nm
@@ -1440,7 +1441,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
 
             V0=2*2*pi*(sl_n-1.0J*abs_n/2.0/lamda)
             mag=sqrt(mag_dens_x**2+mag_dens_y**2)
-            Vmag=2*2*pi*2.645e-5*mag
+            Vmag=2*2*pi*muB_to_SL*mag
             phi_tmp=arccos(mag_dens_x/mag)
             phi=where(mag<1e-20, zeros_like(mag), phi_tmp)
             (Ruu, Rdd, Rud, Rdu)=neutron_refl.Refl(Q, V0[::1]+Vmag[::1], V0[::1]-Vmag[::1], d[::1], phi[::1])
@@ -1478,7 +1479,7 @@ def slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, ret
         sl_n=sl_n[:, newaxis]*1e-5
         abs_n=abs_n[:, newaxis]*1e-8
         sl_n=(lamda**2/2/pi*sl_n-1.0J*abs_n*lamda/4/pi)
-        sl_nm=2.645e-5*mag_dens[:, newaxis]*lamda**2/2/pi
+        sl_nm=muB_to_SL*mag_dens[:, newaxis]*lamda**2/2/pi
         pol=instrument.getNpol()
 
         if pol in ['++', 'uu']:

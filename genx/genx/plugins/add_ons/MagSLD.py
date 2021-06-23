@@ -13,9 +13,8 @@ Last Changes 04/28/15
 
 import wx
 from numpy import trapz
+from genx.models.lib.physical_constants import AAm2_to_emucc
 from .. import add_on_framework as framework
-
-AAm2_to_emucc=1.e-5/2.853e-9
 
 class Plugin(framework.Template):
     def __init__(self, parent):

@@ -119,6 +119,7 @@ from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
 from .lib import refl as refl
+# from .lib.physical_constants import muB_to_SL
 
 # Preamble to define the parameters needed for the models outlined below:
 
@@ -329,7 +330,7 @@ def Specular(TwoThetaQz, sample, instrument):
             if Q_ok:
                 Q_ok=any(not_equal(Buffer.TwoThetaQz, Q))
         if Buffer.parameters!=parameters or not Q_ok:
-            # msld = 2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
+            # msld = muB_to_SL*magn*dens*instrument.getWavelength()**2/2/pi
             if sld_m[-1]!=0. or sld[-1]!=0:
                 sld_m-=sld_m[-1]
                 sld-=sld[-1]

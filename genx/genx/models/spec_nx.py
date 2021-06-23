@@ -127,7 +127,7 @@ from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
 from .lib import refl as refl
-from .lib.physical_constants import r_e
+from .lib.physical_constants import r_e, muB_to_SL
 
 # Preamble to define the parameters needed for the models outlined below:
 
@@ -379,7 +379,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
         R=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld, d, sigma, return_int=return_int)
     # Ordinary Paratt but with magnetization
     elif ptype==instrument_string_choices['probe'][2] or ptype==2:
-        msld=2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
+        msld=muB_to_SL*magn*dens*instrument.getWavelength()**2/2/pi
         # Polarization uu or ++
         if pol==instrument_string_choices['pol'][0] or pol==0:
             R=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld-msld, d, sigma, return_int=return_int)
@@ -404,7 +404,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
         else:
             Q_ok=False
         if Buffer.parameters!=parameters or not Q_ok:
-            msld=2.645e-5*magn*dens*instrument.getWavelength()**2/2/pi
+            msld=muB_to_SL*magn*dens*instrument.getWavelength()**2/2/pi
             # renormalize SLDs if ambient layer is not vacuum
             if msld[-1]!=0. or sld[-1]!=0:
                 msld-=msld[-1]
@@ -456,7 +456,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
     elif ptype==instrument_string_choices['probe'][5] or ptype==5:
         wl=4*pi*sin(instrument.getIncangle()*pi/180)/Q
         sld=neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
-        msld=2.645e-5*magn[:, newaxis]*dens[:, newaxis]*(4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
+        msld=muB_to_SL*magn[:, newaxis]*dens[:, newaxis]*(4*pi*sin(instrument.getIncangle()*pi/180)/Q)**2/2/pi
         # polarization uu or ++
         if pol==instrument_string_choices['pol'][0] or pol==0:
             R=Paratt.Refl_nvary2(instrument.getIncangle()*ones(Q.shape),
