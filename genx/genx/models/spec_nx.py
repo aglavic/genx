@@ -40,7 +40,7 @@ Stack
 ``Stack(Layers = [], Repetitions = 1)``
 
 ``Layers``
-   A ``list`` consiting of ``Layer``\ s in the stack the first item is
+   A ``list`` consiting of ``Layer``s in the stack the first item is
    the layer closest to the bottom
 ``Repetitions``
    The number of repsetions of the stack
@@ -50,7 +50,7 @@ Sample
 ``Sample(Stacks = [], Ambient = Layer(), Substrate = Layer())``
 
 ``Stacks``
-   A ``list`` consiting of ``Stack``\ s in the stacks the first item is
+   A ``list`` consiting of ``Stack``s in the stacks the first item is
    the layer closest to the bottom
 ``Ambient``
    A ``Layer`` describing the Ambient (enviroment above the sample).
@@ -134,8 +134,8 @@ from .lib.physical_constants import r_e, muB_to_SL
 # import lib.paratt as slow_paratt
 
 ModelID='SpecNX'
-# InstrumentParameters={'Wavelength':1.54, 'Coordinates':1, 'I0':1.0, 'Sim': 0,\
-#    'Res':0.001, 'Restype':0, 'Respoints':5, 'Resintrange':2, 'Beaw':0.01,\
+# InstrumentParameters={'Wavelength':1.54, 'Coordinates':1, 'I0':1.0, 'Sim': 0,
+#    'Res':0.001, 'Restype':0, 'Respoints':5, 'Resintrange':2, 'Beaw':0.01,
 #    'Footype':0.0, 'Samlen':10.0, 'Incangle':0.0}
 __pars__=['Layer', 'Stack', 'Sample', 'Instrument']
 
@@ -586,13 +586,13 @@ def SLD_calculations(z, item, sample, inst):
     ptype=inst.getProbe()
     magnetic=False
     mag_sld=0
-    sld_unit='r_{e}/\AA^{3}'
+    sld_unit=r'r_{e}/\AA^{3}'
     if ptype==instrument_string_choices['probe'][0] or ptype==0:
         sld=dens*f
     elif ptype==instrument_string_choices['probe'][1] or ptype==1 or \
             ptype==instrument_string_choices['probe'][4] or ptype==4:
         sld=dens*(wl**2/2/pi*b-1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
-        sld_unit='10^{-6}\AA^{-2}'
+        sld_unit=r'10^{-6}\AA^{-2}'
     else:
         magnetic=True
         sld=dens*(wl**2/2/pi*b-1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
@@ -602,7 +602,7 @@ def SLD_calculations(z, item, sample, inst):
         mag_sld=2.645*magn*dens*10.
         mag_sld_x=mag_sld*cos(magn_ang)
         mag_sld_y=mag_sld*sin(magn_ang)
-        sld_unit='10^{-6}\AA^{-2}'
+        sld_unit=r'10^{-6}\AA^{-2}'
 
     d=array(parameters['d'], dtype=float64)
     d=d[1:-1]
