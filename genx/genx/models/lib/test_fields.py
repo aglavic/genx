@@ -1,5 +1,6 @@
 """Test for the implementation of calc_fields."""
 
+from .physical_constants import r_e
 from . import grating
 from . import grating_diffuse
 import numpy as np
@@ -63,8 +64,8 @@ def test_calc_fields_single_layer():
 
 def test_calc_fields_slicing_single_interface():
     lamda=1.54
-    v_lay=(2*np.pi/1.54)**2*(1-(1-(1.57-0.4J)*2.82e-5*lamda**2/2/np.pi)**2)
-    v_sub=(2*np.pi/1.54)**2*(1-(1-(0.71-0.09J)*2.82e-5*lamda**2/2/np.pi)**2)
+    v_lay=(2*np.pi/1.54)**2*(1-(1-(1.57-0.4J)*r_e*lamda**2/2/np.pi)**2)
+    v_sub=(2*np.pi/1.54)**2*(1-(1-(0.71-0.09J)*r_e*lamda**2/2/np.pi)**2)
     v_layers=np.array([v_lay, v_lay, 0.0])
     sigma=np.array([0., 0., 0.])
     z_int=np.array([100., 0., -20.0])
@@ -90,8 +91,8 @@ def test_calc_fields_slicing_single_interface():
 
 def test_calc_fields_slicing_single_layer():
     lamda=1.54
-    v_lay=(2*np.pi/1.54)**2*(1-(1-(1.57-0.4J)*2.82e-5*lamda**2/2/np.pi)**2)
-    v_sub=(2*np.pi/1.54)**2*(1-(1-(0.71-0.09J)*2.82e-5*lamda**2/2/np.pi)**2)
+    v_lay=(2*np.pi/1.54)**2*(1-(1-(1.57-0.4J)*r_e*lamda**2/2/np.pi)**2)
+    v_sub=(2*np.pi/1.54)**2*(1-(1-(0.71-0.09J)*r_e*lamda**2/2/np.pi)**2)
     v_layers=np.array([v_sub, v_lay, 0.0])
     sigma=np.array([0., 0., 0.])
     z_int=np.array([100., 0., -20.0])

@@ -9,6 +9,7 @@ described in Phys. Rev. B vol. 45 p. 9292 (1992).
 
 import numpy as np
 from . import sxrd
+from .lib.physical_constants import r_e
 from .utils import f, rho
 import time
 
@@ -91,7 +92,7 @@ class SLSample:
         f=sxrd._get_f(self.inst, el, dinv)
         # Calculate the "shape factor" for the CTRs
         eff_thick=self.unit_cell.c/np.sin(self.inst.alpha*np.pi/180.0)
-        alpha=(2.82e-5*self.inst.wavel*eff_thick/self.unit_cell.vol()*
+        alpha=(r_e*self.inst.wavel*eff_thick/self.unit_cell.vol()*
                np.sum(f.imag, 1))
         denom=np.exp(2.0*np.pi*1.0J*l)*np.exp(-alpha)-1.0
         # Delta functions to remove finite size effect in hk plane

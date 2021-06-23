@@ -415,7 +415,7 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
     l2pi=wl**2/2/3.141592
     # Ordinary Paratt X-rays
     if type==instrument_string_choices['probe'][0] or type==0:
-        # R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
+        # R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-r_e*sld,d,sigma)
         R=Paratt.Refl_nvary2(theta, wl, 1.0-l2pi*sld, d, sigma)
     else:
         raise ValueError('The choice of probe is WRONG')

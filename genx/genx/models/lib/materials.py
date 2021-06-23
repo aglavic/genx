@@ -16,11 +16,9 @@ import numpy as np
 from scipy import interpolate
 
 from .parameters import HasParameters, ComplexArray, Float, Calc
-
+from .physical_constants import r_e
 from . import scatteringlengths as _sl
 
-# The scattering length of an electron (Thomson scattering length) in AA
-_r_e=2.82e-5
 # Transformations between AA and eV
 _AA_to_eV=12398.42
 
@@ -104,7 +102,7 @@ class Material(HasParameters):
             w_list.append(element_count*self.get_atomic_weight(name))
             f0_list.append(element_count*self.get_f0(name))
         self._formula_density=self.density/1.66054/sum(w_list)
-        self.sld_x=self._formula_density*sum(f0_list)*_r_e
+        self.sld_x=self._formula_density*sum(f0_list)*r_e
 
     def get_atomic_weight(self, element):
         """Returns the atomic weight in unified atomic mass units (u)

@@ -13,6 +13,7 @@ This module provide functions to calculate the reflectivity from gratings using 
 import numpy as np
 from scipy.special import j1
 from functools import reduce
+from .physical_constants import r_e
 from genx.gui_logging import iprint
 
 _ctype=np.complex128
@@ -312,8 +313,8 @@ if __name__=='__main__':
         a=2e4
         b=2e4
 
-        v_lay=(2*pi/1.54)**2*(1-(1-(1.57-0.4J)*2.82e-5*lamda**2/2/np.pi)**2)
-        v_sub=(2*pi/1.54)**2*(1-(1-(0.71-0.09J)*2.82e-5*lamda**2/2/np.pi)**2)
+        v_lay=(2*pi/1.54)**2*(1-(1-(1.57-0.4J)*r_e*lamda**2/2/np.pi)**2)
+        v_sub=(2*pi/1.54)**2*(1-(1-(0.71-0.09J)*r_e*lamda**2/2/np.pi)**2)
         # print v_lay
         v_lay=(2*pi/1.54)**2*(1-(1-7.57e-6+1.73e-7j)**2)
         # print v_lay
@@ -347,8 +348,8 @@ if __name__=='__main__':
         a=2e4
         b=2e4
 
-        v_lay=(2*pi/1.54)**2*(1-(1-(1.57-0.4J)*2.82e-5*lamda**2/2/np.pi)**2)
-        v_sub=(2*pi/1.54)**2*(1-(1-(0.71-0.09J)*2.82e-5*lamda**2/2/np.pi)**2)
+        v_lay=(2*pi/1.54)**2*(1-(1-(1.57-0.4J)*r_e*lamda**2/2/np.pi)**2)
+        v_sub=(2*pi/1.54)**2*(1-(1-(0.71-0.09J)*r_e*lamda**2/2/np.pi)**2)
         # print v_lay
         # v_lay = (2*pi/1.54)**2*(1 - (1 - 7.57e-6 + 1.73e-7j)**2)
         # print v_lay

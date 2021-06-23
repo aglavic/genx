@@ -127,6 +127,7 @@ from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
 from .lib import refl as refl
+from .lib.physical_constants import r_e
 
 # Preamble to define the parameters needed for the models outlined below:
 
@@ -367,7 +368,7 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
         sld=neutron_sld(abs_xs, dens, fb, wl)
     # Ordinary Paratt X-rays
     if ptype==instrument_string_choices['probe'][0] or ptype==0:
-        R=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-2.82e-5*sld, d, sigma, return_int=return_int)
+        R=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-r_e*sld, d, sigma, return_int=return_int)
         # print 2.82e-5*sld
         # reload(slow_paratt)
         # R = slow_paratt.reflq_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
@@ -542,7 +543,7 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
     # Ordinary Paratt X-rays
     if ptype==instrument_string_choices['probe'][0] or ptype==0:
         # R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-2.82e-5*sld,d,sigma)
-        R=Paratt.Refl_nvary2(theta, wl, 1.0-2.82e-5*sld, d, sigma)
+        R=Paratt.Refl_nvary2(theta, wl, 1.0-r_e*sld, d, sigma)
     else:
         raise ValueError('The choice of probe is WRONG')
     # TODO: Fix corrections

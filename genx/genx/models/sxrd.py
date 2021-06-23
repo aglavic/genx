@@ -105,6 +105,7 @@ Sample
 
 import numpy as np
 from . import utils
+from .lib.physical_constants import r_e
 from genx.gui_logging import iprint
 
 from .lib import USE_NUMBA
@@ -259,7 +260,7 @@ class Sample:
         f=self._get_f(el, dinv)
         # Calculate the "shape factor" for the CTRs
         eff_thick=self.unit_cell.c/np.sin(self.inst.alpha*np.pi/180.0)
-        alpha=(2.82e-5*self.inst.wavel*eff_thick/self.unit_cell.vol()*
+        alpha=(r_e*self.inst.wavel*eff_thick/self.unit_cell.vol()*
                np.sum(f.imag, 1))
         denom=np.exp(2.0*np.pi*1.0J*l)*np.exp(-alpha)-1.0
         # Delta functions to remove finite size effect in hk plane
