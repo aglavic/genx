@@ -11,6 +11,16 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.3.4
+=============
+ * Allow neutron matrix calculations with non-zero ambient layer SLD
+ * Fix but in fast neutron matrix calculation where roughnesses were used from wrong layer index
+ * Updating of bumps statistical analysis example notebook
+ * Fix residual High DPI issue in SimpleReflectivity wizard
+ * Fix a bug when loading datasets lost options e.g. for plotting
+ * Added link to new video tutorial do documentation.
+ * Replace some physical constants by more precise values
+
 Changes 3.3.3
 =============
  * Fix issues with SimpleReflectivity Wizard in High DPI environments

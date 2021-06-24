@@ -11,6 +11,10 @@ At the present GenX is shipped with models for x-ray and neutron specular reflec
 A detailed description, of a older version, has been published in [J. Appl. Cryst. 40, 1174 (2007)](https://www.iucr.org/cgi-bin/paper?aj5091).
 
 ## Feedback and Help
+You can find a manual with examples at https://aglavic.github.io/genx/doc/, for reflectometry a good start is with the 
+[Simple Reflectivity Model](https://aglavic.github.io/genx/doc/tutorials/simple_reflectivity.html) guide and our 
+[Tutorial Videos](https://aglavic.github.io/genx/doc/tutorials/neutron_fit.html).
+
 Naturally a program does not become better if I do not get feedback from you! 
 If you found a bug or want to have something included in the program submit a [ticket on SourceForge](https://sourceforge.net/p/genx/tickets/) or [drop me an e-mail](mailto:artur.glavic@psi.ch).
 
