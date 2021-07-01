@@ -82,7 +82,7 @@ class TestInstrumentModule(unittest.TestCase):
 
     def test_resolutionvector_vector(self):
         x=np.linspace(0., 0.5, 1000)
-        dx=x*0.001
+        dx=np.maximum(x*0.001, 1e-8)
         points=10
         range=3.5
         Q1, weight1=instrument.ResolutionVector(x, dx, points, range)

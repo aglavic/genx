@@ -94,7 +94,7 @@ def QtoTheta(wavelength, Q):
 def ResolutionVectorScalar(Q, dQ, points, range):
     Qres=empty(Q.shape[0]*points)
     weight=empty((points, Q.shape[0]))
-    Qstep=2.0*range/points*dQ
+    Qstep=2.0*range/(points-1)*dQ
     NQ=Q.shape[0]
 
     wscale=1.0/math.sqrt(2.0*pi)/dQ
@@ -116,7 +116,7 @@ def ResolutionVectorScalar(Q, dQ, points, range):
 def ResolutionVectorVector(Q, dQ, points, range):
     Qres=empty(Q.shape[0]*points)
     weight=empty((points, Q.shape[0]))
-    Qstep_scale=2.0*range/points
+    Qstep_scale=2.0*range/(points-1.0)
     NQ=Q.shape[0]
 
     wscale=1.0/math.sqrt(2.0*pi)
