@@ -370,10 +370,6 @@ def specular_calcs(TwoThetaQz, sample, instrument, return_int=True):
     if ptype==instrument_string_choices['probe'][0] or ptype==0:
         R=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-r_e*sld, d, sigma, return_int=return_int)
         # print 2.82e-5*sld
-        # reload(slow_paratt)
-        # R = slow_paratt.reflq_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
-        # R = slow_paratt.reflq_pseudo_kin(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
-        # R = slow_paratt.reflq_sra(Q, instrument.getWavelength(), 1.0 - 2.82e-5 * sld, d, sigma)
     # Ordinary Paratt Neutrons
     elif ptype==instrument_string_choices['probe'][1] or ptype==1:
         R=Paratt.ReflQ(Q, instrument.getWavelength(), 1.0-sld, d, sigma, return_int=return_int)
