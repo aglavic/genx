@@ -72,17 +72,6 @@ def ConvoluteFast(Q, I, dQ, range=3):
                    mode='same')[resvector.shape[0]:-resvector.shape[0]]
     return Iconv
 
-# Fast convolution - varying resolution
-# constant spacing between the dat.
-def ConvoluteFastVar(Q, I, dQ, range=3):
-    Qstep=Q[1]-Q[0]
-    steps=max(dQ*ones(Q.shape))*range/Qstep
-    weight=1/sqrt(2*pi)/dQ*exp(-(Q[:, newaxis]-Q)**2/dQ**2/2)
-    Itemp=I[:, newaxis]*ones(I.shape)
-    norm_fact=trapz(weight, axis=0)
-    Int=trapz(Itemp*weight, axis=0)/norm_fact
-    return Int
-
 def QtoTheta(wavelength, Q):
     return arcsin(wavelength/4.0/pi*Q)/rad
 
