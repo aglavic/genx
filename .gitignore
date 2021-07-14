@@ -10,3 +10,4 @@ docutils
 genx.log
 doc/_*
 __pycache__
+/genx/tests/cover/
