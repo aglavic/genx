@@ -294,23 +294,23 @@ def load_f0dabax(filename, create_rho=False):
 
         return rho
 
-    f=open(filename)
-    real_label=''
-    temp_dict={}
-    for line in f.readlines():
-        # Get the label for each line
-        if line[0]=='#':
-            label=line[1]
-            ret=line[1:-1]
-        else:
-            label='D'
-            ret=line[:-1]
-        # Gets the real label, atom name
-        if label=='S':
-            real_label=ret.split()[-1]
-        # The row contains data
-        if label=='D':
-            temp_dict[real_label.lower()]=[float(x) for x in ret.split()]
+    with open(filename, 'r') as f:
+        real_label=''
+        temp_dict={}
+        for line in f.readlines():
+            # Get the label for each line
+            if line[0]=='#':
+                label=line[1]
+                ret=line[1:-1]
+            else:
+                label='D'
+                ret=line[:-1]
+            # Gets the real label, atom name
+            if label=='S':
+                real_label=ret.split()[-1]
+            # The row contains data
+            if label=='D':
+                temp_dict[real_label.lower()]=[float(x) for x in ret.split()]
 
     f0={}
     rho0={}
@@ -543,27 +543,27 @@ def read_dabax(filename):
             f=np.nan
         return f
 
-    f=open(filename)
     real_label=''
     temp_dict={}
-    for line in f.readlines():
-        # Get the label for each line
-        if line[0]=='#':
-            label=line[1]
-            ret=line[1:-1]
-        else:
-            label='Data'
-            ret=line[:-1]
-        # Gets the real label, atom name
-        if label=='S':
-            real_label=ret.split()[-1]
-        # The row contains data
-        if label=='Data':
-            # To get all values in the table
-            if real_label.lower() not in temp_dict:
-                temp_dict[real_label.lower()]=[tofloat(x.split('(')[0]) for x in ret.split()]
+    with open(filename) as f:
+        for line in f.readlines():
+            # Get the label for each line
+            if line[0]=='#':
+                label=line[1]
+                ret=line[1:-1]
             else:
-                temp_dict[real_label.lower()]+=[tofloat(x.split('(')[0]) for x in ret.split()]
+                label='Data'
+                ret=line[:-1]
+            # Gets the real label, atom name
+            if label=='S':
+                real_label=ret.split()[-1]
+            # The row contains data
+            if label=='Data':
+                # To get all values in the table
+                if real_label.lower() not in temp_dict:
+                    temp_dict[real_label.lower()]=[tofloat(x.split('(')[0]) for x in ret.split()]
+                else:
+                    temp_dict[real_label.lower()]+=[tofloat(x.split('(')[0]) for x in ret.split()]
 
     return temp_dict
 

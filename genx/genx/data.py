@@ -319,36 +319,33 @@ class DataSet:
         skiprows - number of rows to skip before starting to read the data
         
         '''
+        if not os.path.exists(filename):
+            iprint("Can't open file: %s does not exist"%filename)
+            return False
         try:
-            f=open(filename)
-            # f.close()
+            A=loadtxt(filename)
+            # , comments = '#', delimeter = None, skiprows = 0
         except:
-            iprint("Can't open file: %s"%filename)
+            iprint("Can't read the file %s, check the format"%filename)
         else:
-            try:
-                A=loadtxt(f)
-                # , comments = '#', delimeter = None, skiprows = 0
-            except:
-                iprint("Can't read the file %s, check the format"%filename)
+            # print A
+            xcol=self.cols[0]
+            ycol=self.cols[1]
+            ecol=self.cols[2]
+            # print xcol,ycol
+            if xcol<A.shape[1] and ycol<A.shape[1] and ecol<A.shape[1]:
+                self.x_raw=A[:, xcol].copy()
+                self.y_raw=A[:, ycol].copy()
+                self.error_raw=A[:, ecol].copy()
+                self.x=A[:, xcol]
+                self.y=A[:, ycol]
+                self.error=A[:, ecol]
+                self.y_sim=array([])
+                iprint("Sucessfully loaded %i datapoints"%(A.shape[0]))
+                return True
             else:
-                # print A
-                xcol=self.cols[0]
-                ycol=self.cols[1]
-                ecol=self.cols[2]
-                # print xcol,ycol
-                if xcol<A.shape[1] and ycol<A.shape[1] and ecol<A.shape[1]:
-                    self.x_raw=A[:, xcol].copy()
-                    self.y_raw=A[:, ycol].copy()
-                    self.error_raw=A[:, ecol].copy()
-                    self.x=A[:, xcol]
-                    self.y=A[:, ycol]
-                    self.error=A[:, ecol]
-                    self.y_sim=array([])
-                    iprint("Sucessfully loaded %i datapoints"%(A.shape[0]))
-                    return True
-                else:
-                    iprint("There are not enough columns in your data\n\
-                           There are %i columns"%A.shape[1])
+                iprint("There are not enough columns in your data\n\
+                       There are %i columns"%A.shape[1])
             return False
 
     def save_file(self, filename):
@@ -359,20 +356,14 @@ class DataSet:
         if self.x.shape==self.y_sim.shape and \
                 self.y.shape==self.error.shape and \
                 self.x.shape==self.y.shape:
-            # save the file
-            # print self.y.shape, self.y_sim.shape
-            # print c_[self.x, self.y_sim, self.y, self.error]
-            f=open(filename, 'w')
-            f.write('# Dataset "%s" exported from GenX on %s\n'% \
-                    (self.name, time.ctime()))
-            f.write('# Column lables:\n')
-            f.write('# x\tI_simulated\tI\terror(I)\n')
-            savetxt(f, c_[self.x, self.y_sim, self.y, self.error])
+            header=f'Dataset "{self.name}" exported from GenX3 on {time.ctime()}\n' \
+                   f'Column lables:\n' \
+                   f'x                I_simulated        I                  error(I)'
+            savetxt(filename, c_[self.x, self.y_sim, self.y, self.error], header=header, fmt='%.12e')
         else:
             debug='y_sim.shape: '+str(self.y_sim.shape)+'\ny.shape: '+ \
                   str(self.y.shape)+'\nx.shape: '+str(self.x.shape)+ \
                   '\nerror.shape: '+str(self.error.shape)
-            # print debug
             raise IOError('The data is not in the correct format all the'+ \
                           'arrays have to have the same shape:\n'+debug, filename)
 

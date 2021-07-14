@@ -323,7 +323,7 @@ def export_script(frame, event):
     
     Exports the script to a python file given by a filedialog.
     '''
-    dlg=wx.FileDialog(frame, message="Export data", defaultFile="",
+    dlg=wx.FileDialog(frame, message="Export script", defaultFile="",
                       wildcard="Python File (*.py)|*.py",
                       style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                       )
@@ -364,7 +364,7 @@ def export_table(frame, event):
     
     Exports the table to a dat file given by a filedialog.
     '''
-    dlg=wx.FileDialog(frame, message="Export data", defaultFile="",
+    dlg=wx.FileDialog(frame, message="Export table", defaultFile="",
                       wildcard="Table File (*.tab)|*.tab",
                       style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                       )

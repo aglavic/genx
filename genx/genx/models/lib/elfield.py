@@ -183,9 +183,9 @@ if __name__=='__main__':
     # c=Refl(theta,1.54,array([1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1-2.24e-5+2.89e-6j,1-7.57e-6+1.73e-7j,1]),array([80,20,80,20,80,20]),0)
     c=Refl(theta, 1.54, array([1-7.57e-6+1.73e-7j, 1-2.24e-5+2.89e-6j, 1]), array([0, 1000, 0]), array([0, 0, 0]))
     # gplt.plot(theta,log10(abs(E_m[-1]/E_p[-1])**2),theta,log10(abs(c**2)))
-    # f=f=open('Specrefl.dat','r')
-    # t=io.read_array(f)
-    # t=transpose(t)
+    # with open('Specrefl.dat','r') as f:
+    #     t=io.read_array(f)
+    #     t=transpose(t)
     # gplt.plot(theta,log10(abs(E_m[-1]/E_p[-1])**2),t[0],log10(t[1]))
     k=2*pi/1.54
     n=[1, 1-2.24e-5+2.89e-6j, 1-7.57e-6+1.73e-7j]

@@ -1513,14 +1513,13 @@ class SamplePlotPanel(wx.Panel):
                 if key!='z' and key!='SLD unit':
                     save_array=np.r_[save_array, [self.plot_dicts[sim][key]]]
                     header+=key+'\t'
-            f=open(new_filename, 'w')
-            f.write("# File exported from GenX's Reflectivity plugin\n")
-            f.write("# File created: %s\n"%time.ctime())
-            f.write("# Simulated SLD for data set: %s\n"%data[sim].name)
-            f.write("# Headers: \n")
-            f.write('#'+header+'\n')
-            np.savetxt(f, save_array.transpose())
-            f.close()
+            with open(new_filename, 'w') as f:
+                f.write("# File exported from GenX's Reflectivity plugin\n")
+                f.write("# File created: %s\n"%time.ctime())
+                f.write("# Simulated SLD for data set: %s\n"%data[sim].name)
+                f.write("# Headers: \n")
+                f.write('#'+header+'\n')
+                np.savetxt(f, save_array.transpose())
 
     def ReadConfig(self):
         '''ReadConfig(self) --> None

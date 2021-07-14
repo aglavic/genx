@@ -281,8 +281,8 @@ class Config:
         Writes the current defualt configuration to filename
         '''
         try:
-            cfile=open(filename, 'w')
-            self.default_config.write(cfile)
+            with open(filename, 'w') as cfile:
+                self.default_config.write(cfile)
         except Exception as e:
             iprint(e)
             raise IOError('Could not write default config file', filename)

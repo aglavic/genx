@@ -93,15 +93,14 @@ def sld_mc(args):
                 save_array=np.r_[save_array, [min_SLD[sim][key].real], [min_SLD[sim][key].imag],
                                  [max_SLD[sim][key].real], [max_SLD[sim][key].imag]]
                 header+='min(%s.real)\tmin(%s.imag)\tmax(%s.real)\tmax(%s.imag)\t'%(key, key, key, key)
-        f=open(new_filename, 'w')
-        f.write(
-            "# Monte Carlo estimation of SLD bounds with script sld_errorbars.py model taken from file: %s\n"%args.infile)
-        f.write("# File created: %s\n"%time.ctime())
-        f.write("# Simulated SLD for data set: %s\n"%mod.data[sim].name)
-        f.write("# Headers: \n")
-        f.write('#'+header+'\n')
-        np.savetxt(f, save_array.transpose(), delimiter='\t')
-        f.close()
+        with open(new_filename, 'w') as f:
+            f.write(
+                "# Monte Carlo estimation of SLD bounds with script sld_errorbars.py model taken from file: %s\n"%args.infile)
+            f.write("# File created: %s\n"%time.ctime())
+            f.write("# Simulated SLD for data set: %s\n"%mod.data[sim].name)
+            f.write("# Headers: \n")
+            f.write('#'+header+'\n')
+            np.savetxt(f, save_array.transpose(), delimiter='\t')
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description="sld_errorbars %s, creates a boundary sld profile from given errorbar"

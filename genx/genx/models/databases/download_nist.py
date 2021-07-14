@@ -43,10 +43,9 @@ def parse_page(lines):
 def create_nff(Z, path):
     html_code=get_html_code(Z)
     table, element=parse_page(html_code)
-    f=open(os.path.join(path, '%s.nff'%element.lower()), 'w')
-    f.write('E (eV)\tf1 e/atom\tf2 e/atom\n')
-    numpy.savetxt(f, table)
-    f.close()
+    with open(os.path.join(path, '%s.nff'%element.lower()), 'w') as f:
+        f.write('E (eV)\tf1 e/atom\tf2 e/atom\n')
+        numpy.savetxt(f, table)
 
 def create_readme(path):
     readme_str=(
@@ -71,9 +70,8 @@ def create_readme(path):
         and Chantler, C.T., J. Phys. Chem. Ref. Data 24, 71-643 (1995).
             '''%(time.ctime(), time.ctime())
     )
-    f=open(os.path.join(path, 'README.txt'), 'w')
-    f.write(readme_str)
-    f.close()
+    with open(os.path.join(path, 'README.txt'), 'w') as f:
+        f.write(readme_str)
 
 if __name__=='__main__':
     lib_path='f1f2_nist'
