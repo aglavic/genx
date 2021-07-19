@@ -24,7 +24,7 @@ class SolverController:
     code are used i.e. interfacing the optimization code to the GUI.
     '''
 
-    def __init__(self, parent, config=None):
+    def __init__(self, parent, config: io.Config=None):
         # Create the optimizer we are using. In this case the standard
         # Differential evolution optimizer.
         self.optimizer=diffev.DiffEv()

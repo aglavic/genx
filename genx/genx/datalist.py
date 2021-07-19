@@ -273,7 +273,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     The listcontrol for the data
     '''
 
-    def __init__(self, parent, data_controller, config=None, status_text=None):
+    def __init__(self, parent, data_controller, config: io.Config=None, status_text=None):
         wx.ListCtrl.__init__(self, parent, -1,
                              style=wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_EDIT_LABELS)
         ListCtrlAutoWidthMixin.__init__(self)
@@ -844,7 +844,7 @@ class DataListControl(wx.Panel):
     The Control window for the whole Data list including a small toolbar
     '''
 
-    def __init__(self, parent, id=-1, config=None, status_text=None):
+    def __init__(self, parent, id=-1, config: io.Config=None, status_text=None):
         wx.Panel.__init__(self, parent)
         # The two major windows:
         self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)

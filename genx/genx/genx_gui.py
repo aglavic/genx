@@ -988,7 +988,7 @@ class StartUpConfigDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, -1, 'Change Startup Configuration')
 
         self.config_folder=config_folder
-        self.selected_config=None
+        self.selected_config: io.Config=None
 
         sizer=wx.BoxSizer(wx.VERTICAL)
         sizer.Add((-1, 10), 0, wx.EXPAND)

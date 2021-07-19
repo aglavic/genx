@@ -1,16 +1,8 @@
 '''I/O functions for GenX. 
 These include loading of initilazation files.
 Also included is the config object.
-File started by: Matts Bjorck
-
-$Rev::                                  $:  Revision of last commit
-$Author::                               $:  Author of last commit
-$Date::                                 $:  Date of last commit
 '''
-try:
-    import configparser as CP
-except ImportError:
-    import configparser as CP
+from configparser import ConfigParser
 import io
 import os, sys
 
@@ -18,18 +10,142 @@ import h5py
 from .gui_logging import iprint
 from .exceptions import GenxIOError, GenxOptionError
 
+# ==============================================================================
+class Config:
+    """
+    GenX configuration handler.
+    """
+    def __init__(self):
+        self.default_config=ConfigParser()
+        self.model_config=ConfigParser()
+
+    def load_default(self, filename, reset=False):
+        '''
+        Loads the default config from file filename. Raises a IOError if the
+        can not be found.
+        '''
+        try:
+            self.default_config.read(filename)
+        except Exception as e:
+            iprint(e)
+            raise GenxIOError('Could not load default config file', filename)
+        if reset:
+            self.model_config=ConfigParser()
+
+    def write_default(self, filename):
+        '''
+        Writes the current default configuration to filename
+        '''
+        try:
+            with open(filename, 'w') as cfile:
+                self.default_config.write(cfile)
+        except Exception as e:
+            iprint(e)
+            raise GenxIOError('Could not write default config file', filename)
+
+    def load_string(self, input: str):
+        '''
+        Loads a config from a string input.  Raises an IOError if the string can not be
+        read.
+        '''
+        self.model_config=ConfigParser()
+        try:
+            self.model_config.read_string(input)
+        except Exception as e:
+            raise GenxIOError('Could not load model config file')
+
+    def _getf(self, default_function, model_function, section, option,
+              fallback=None):
+        '''
+        For the function function try to locate the section and option first in
+        model_config if that fails try to locate it in default_config. If both
+        fails raise a GenxOptionError.
+        '''
+        try:
+            value=model_function(section, option)
+        except Exception as e:
+            try:
+                value=default_function(section, option)
+            except Exception as e:
+                if fallback is None:
+                    raise GenxOptionError(section, option)
+                else:
+                    value=fallback
+        return value
+
+    def get_float(self, section, option):
+        '''
+        returns a float value if possible for option in section
+        '''
+        return self._getf(self.default_config.getfloat,
+                          self.model_config.getfloat, section, option)
+
+    def get_boolean(self, section, option, fallback=None):
+        '''
+        returns a boolean value if possible for option in section
+        '''
+        return self._getf(self.default_config.getboolean,
+                          self.model_config.getboolean, section, option,
+                          fallback=fallback)
+
+    def get_int(self, section, option, fallback=None):
+        '''
+        returns a int value if possible for option in section
+        '''
+        return self._getf(self.default_config.getint,
+                          self.model_config.getint, section, option,
+                          fallback=fallback)
+
+    def get(self, section, option, fallback=None):
+        '''
+        returns a string value if possible for option in section
+        '''
+        return self._getf(self.default_config.get,
+                          self.model_config.get, section, option,
+                          fallback=fallback)
+
+    def model_set(self, section, option, value):
+        '''
+        Set a value in section, option for the model configuration.
+        '''
+        if not self.model_config.has_section(section):
+            self.model_config.add_section(section)
+        self.model_config.set(section, option, str(value))
+
+    def default_set(self, section, option, value):
+        '''
+        Set a value in section, option for the model configuration.
+        '''
+        if not self.default_config.has_section(section):
+            self.default_config.add_section(section)
+        self.default_config.set(section, option, str(value))
+
+    def set(self, section, option, value):
+        '''
+        Set a value in section, option for the model configuration. 
+        Just a duplication of model_set.
+        '''
+        self.model_set(section, option, value)
+
+    def model_dump(self):
+        '''
+        dumps the model configuration to a string.
+        '''
+        buffer=io.StringIO()
+        self.model_config.write(buffer)
+        str=buffer.getvalue()
+        buffer.close()
+        return str
+
+# END: class Config
+
 # Functions to save the gx files
 # ==============================================================================
 
 
-def save_file(fname, model, optimizer, config):
-    """Saves objects model, optimiser and config into file fnmame
-
-    :param fname: string, ending with .gx or .hgx
-    :param model:
-    :param optimizer:
-    :param config:
-    :return:
+def save_file(fname: str, model, optimizer, config: Config):
+    """
+    Saves objects model, optimiser and config into file fnmame
     """
     if fname.endswith('.gx'):
         save_gx(fname, model, optimizer, config)
@@ -41,7 +157,7 @@ def save_file(fname, model, optimizer, config):
     model.filename=os.path.abspath(fname)
     model.saved=True
 
-def load_file(fname, model, optimizer, config):
+def load_file(fname: str, model, optimizer, config: Config):
     """Loads parameters from fname into model, optimizer and config"""
     if fname.endswith('.gx'):
         load_gx(fname, model, optimizer, config)
@@ -52,7 +168,7 @@ def load_file(fname, model, optimizer, config):
 
     model.filename=os.path.abspath(fname)
 
-def save_gx(fname, model, optimizer, config):
+def save_gx(fname: str, model, optimizer, config: Config):
     model.save(fname)
     model.save_addition('config', config.model_dump())
     model.save_addition('optimizer',
@@ -60,7 +176,7 @@ def save_gx(fname, model, optimizer, config):
                                                 not config.get_boolean('solver',
                                                                        'save all evals')))
 
-def save_hgx(fname, model, optimizer, config, group='current'):
+def save_hgx(fname: str, model, optimizer, config: Config, group='current'):
     """ Saves the current objects to a hdf gx file (hgx).
 
     :param fname: filename
@@ -81,7 +197,7 @@ def save_hgx(fname, model, optimizer, config, group='current'):
     g['config']=config.model_dump().encode('utf-8')
     f.close()
 
-def load_hgx(fname, model, optimizer, config, group='current'):
+def load_hgx(fname: str, model, optimizer, config: Config, group='current'):
     """ Loads the current objects to a hdf gx file (hgx).
 
     :param fname: filename
@@ -98,7 +214,7 @@ def load_hgx(fname, model, optimizer, config, group='current'):
     config.load_string(g['config'][()].decode('utf-8'))
     f.close()
 
-def load_gx(fname, model, optimizer, config):
+def load_gx(fname: str, model, optimizer, config: Config):
     if not 'diffev' in sys.modules:
         # for compatibility define genx standard modules as base modules
         import genx.diffev
@@ -255,149 +371,3 @@ def save_opt_config(optimizer, config, fom_error_bars_level=1.05, save_all_evals
         except GenxOptionError as e:
             iprint('Could not write option solver.create trial')
 
-# ==============================================================================
-class Config:
-    def __init__(self):
-        self.default_config=CP.ConfigParser()
-        self.model_config=CP.ConfigParser()
-
-    def load_default(self, filename, reset=False):
-        '''load_default(self, filename) --> None
-        
-        Loads the default config from file filename. Raises a IOError if the
-        can not be found.
-        '''
-        try:
-            self.default_config.read(filename)
-        except Exception as e:
-            iprint(e)
-            raise GenxIOError('Could not load default config file', filename)
-        if reset:
-            self.model_config=CP.ConfigParser()
-
-    def write_default(self, filename):
-        '''write_default(self, filename) --> None
-        
-        Writes the current defualt configuration to filename
-        '''
-        try:
-            with open(filename, 'w') as cfile:
-                self.default_config.write(cfile)
-        except Exception as e:
-            iprint(e)
-            raise GenxIOError('Could not write default config file', filename)
-
-    def load_model(self, str):
-        '''load_model(self, str) --> None
-        
-        Loads a config from a string str.  Raises an IOError if the string can not be
-        read.
-        '''
-        buffer=io.StringIO(str)
-        self.model_config=CP.ConfigParser()
-        try:
-            self.model_config.read_file(buffer)
-        except Exception as e:
-            raise GenxIOError('Could not load model config file')
-
-    def _getf(self, default_function, model_function, section, option,
-              fallback=None):
-        '''_getf(default_function, model_function, section, option) --> object
-        
-        For the function function try to locate the section and option first in
-        model_config if that fails try to locate it in default_config. If both
-        fails raise an OptionError.
-        '''
-        value=0
-        try:
-            value=model_function(section, option)
-        except Exception as e:
-            try:
-                value=default_function(section, option)
-            except Exception as e:
-                if fallback is None:
-                    raise GenxOptionError(section, option)
-                else:
-                    value=fallback
-        return value
-
-    def get_float(self, section, option):
-        '''get_float(self, section, option) --> float
-        
-        returns a float value if possible for option in section
-        '''
-        return self._getf(self.default_config.getfloat,
-                          self.model_config.getfloat, section, option)
-
-    def get_boolean(self, section, option, fallback=None):
-        '''get_boolean(self, section, option) --> boolean
-        
-        returns a boolean value if possible for option in section
-        '''
-        return self._getf(self.default_config.getboolean,
-                          self.model_config.getboolean, section, option,
-                          fallback=fallback)
-
-    def get_int(self, section, option, fallback=None):
-        '''get_int(self, section, option) --> int
-        
-        returns a int value if possible for option in section
-        '''
-        return self._getf(self.default_config.getint,
-                          self.model_config.getint, section, option,
-                          fallback=fallback)
-
-    def get(self, section, option, fallback=None):
-        '''get(self, section, option) --> string
-        
-        returns a string value if possible for option in section
-        '''
-        return self._getf(self.default_config.get,
-                          self.model_config.get, section, option,
-                          fallback=fallback)
-
-    def model_set(self, section, option, value):
-        '''model_set(self, section, option, value) --> None
-        
-        Set a value in section, option for the model configuration.
-        '''
-        if not self.model_config.has_section(section):
-            self.model_config.add_section(section)
-        self.model_config.set(section, option, str(value))
-        # print 'Model set: ', section, ' ', option, ' ', value
-
-    def default_set(self, section, option, value):
-        '''model_set(self, section, option, value) --> None
-        
-        Set a value in section, option for the model configuration.
-        '''
-        if not self.default_config.has_section(section):
-            self.default_config.add_section(section)
-        self.default_config.set(section, option, str(value))
-        # print 'Default set: ', section, ' ', option, ' ', value
-
-    def set(self, section, option, value):
-        '''set(self, section, option, value) --> None
-        
-        Set a value in section, option for the model configuration. 
-        Just a duplication of model_set.
-        '''
-        self.model_set(section, option, value)
-
-    def model_dump(self):
-        '''model_save(self, file_pointer) --> string
-        
-        dumps the model configuration to a string.
-        '''
-        # Create a buffer - file like object to trick config parser
-        buffer=io.StringIO()
-        # write
-        self.model_config.write(buffer)
-        # get the string values
-        str=buffer.getvalue()
-        # Close the buffer - destroy it
-        buffer.close()
-        # print 'model content: ', str
-        return str
-
-# END: class Config

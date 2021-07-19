@@ -19,6 +19,7 @@ from . import data
 from . import parameters
 from . import fom_funcs
 from .exceptions import GenxIOError, FomError, ModelError, ParameterError
+from .filehandling import Config
 from .gui_logging import iprint
 from logging import debug
 
@@ -37,7 +38,7 @@ class Model:
         the model and the data + various other attributes.
     '''
 
-    def __init__(self, config=None):
+    def __init__(self, config: Config=None):
         '''
         Create a instance and init all the varaibles.
         '''

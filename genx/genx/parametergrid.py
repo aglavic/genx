@@ -19,6 +19,7 @@ from numpy import *
 from . import parameters
 from . import images as img
 from .exceptions import GenxOptionError
+from .filehandling import Config
 from .lib import controls as ctrls
 from .gui_logging import iprint
 
@@ -726,7 +727,7 @@ class ParameterGrid(wx.Panel):
     The GUI component itself. This is the thing to use in a GUI.
     '''
 
-    def __init__(self, parent, frame, config=None):
+    def __init__(self, parent, frame, config: Config=None):
         wx.Panel.__init__(self, parent)
 
         self.config=config

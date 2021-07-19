@@ -14,7 +14,7 @@ import wx
 import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE
 
-from . import filehandling as io
+from .filehandling import Config
 from .exceptions import GenxOptionError
 from .gui_logging import iprint
 from logging import debug, getLogger, ERROR
@@ -38,9 +38,9 @@ class PlotPanel(wx.Panel):
         the plots. 
     '''
 
-    def __init__(self, parent, id=-1, color=None, dpi=None
-                 , style=wx.NO_FULL_REPAINT_ON_RESIZE | wx.EXPAND | wx.ALL
-                 , config=None, config_name='', **kwargs):
+    def __init__(self, parent, id=-1, color=None, dpi=None,
+                 style=wx.NO_FULL_REPAINT_ON_RESIZE | wx.EXPAND | wx.ALL,
+                 config: Config=None, config_name='', **kwargs):
         debug('start init PlotPanel')
         wx.Panel.__init__(self, parent, id=id, style=style, **kwargs)
         if dpi is None:
