@@ -15,6 +15,7 @@ import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE
 
 from . import filehandling as io
+from .exceptions import GenxOptionError
 from .gui_logging import iprint
 from logging import debug, getLogger, ERROR
 
@@ -144,7 +145,7 @@ class PlotPanel(wx.Panel):
             try:
                 val=self.config.get_boolean(self.config_name,
                                             bool_items[index])
-            except io.OptionError as e:
+            except GenxOptionError as e:
                 iprint('Could not locate option %s.%s' \
                        %(self.config_name, bool_items[index]))
                 vals.append(None)
@@ -153,7 +154,7 @@ class PlotPanel(wx.Panel):
 
         try:
             scale=self.config.get(self.config_name, 'y scale')
-        except io.OptionError as e:
+        except GenxOptionError as e:
             iprint('Could not locate option %s.%s' \
                    %(self.config_name, 'y scale'))
         else:
@@ -161,7 +162,7 @@ class PlotPanel(wx.Panel):
 
         try:
             scale=self.config.get(self.config_name, 'x scale')
-        except io.OptionError as e:
+        except GenxOptionError as e:
             iprint('Could not locate option %s.%s' \
                    %(self.config_name, 'x scale'))
             self.SetXScale('lin')

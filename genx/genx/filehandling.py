@@ -16,6 +16,7 @@ import os, sys
 
 import h5py
 from .gui_logging import iprint
+from .exceptions import GenxIOError, GenxOptionError
 
 # Functions to save the gx files
 # ==============================================================================
@@ -35,7 +36,7 @@ def save_file(fname, model, optimizer, config):
     elif fname.endswith('.hgx'):
         save_hgx(fname, model, optimizer, config)
     else:
-        raise IOError('Wrong file ending, should be .gx or .hgx')
+        raise GenxIOError('Wrong file ending, should be .gx or .hgx')
 
     model.filename=os.path.abspath(fname)
     model.saved=True
@@ -47,7 +48,7 @@ def load_file(fname, model, optimizer, config):
     elif fname.endswith('.hgx'):
         load_hgx(fname, model, optimizer, config)
     else:
-        raise IOError('Wrong file ending, should be .gx or .hgx')
+        raise GenxIOError('Wrong file ending, should be .gx or .hgx')
 
     model.filename=os.path.abspath(fname)
 
@@ -74,7 +75,7 @@ def save_hgx(fname, model, optimizer, config, group='current'):
     model.write_h5group(g)
     try:
         clear_evals=not config.get_boolean('solver', 'save all evals')
-    except OptionError as e:
+    except GenxOptionError as e:
         clear_evals=True
     optimizer.write_h5group(g.create_group('optimizer'), clear_evals=True)
     g['config']=config.model_dump().encode('utf-8')
@@ -94,10 +95,9 @@ def load_hgx(fname, model, optimizer, config, group='current'):
     g=f[group]
     model.read_h5group(g)
     optimizer.read_h5group(g['optimizer'])
-    config.load_model(g['config'][()].decode('utf-8'))
+    config.load_string(g['config'][()].decode('utf-8'))
     f.close()
 
-# Not yet used ...
 def load_gx(fname, model, optimizer, config):
     if not 'diffev' in sys.modules:
         # for compatibility define genx standard modules as base modules
@@ -108,7 +108,7 @@ def load_gx(fname, model, optimizer, config):
         sys.modules['diffev']=genx.diffev
         sys.modules['data']=genx.data
     model.load(fname)
-    config.load_model(model.load_addition('config').decode('utf-8'))
+    config.load_string(model.load_addition('config').decode('utf-8'))
     optimizer.pickle_load(model.load_addition('optimizer'))
 
 # Functions to handle optimiser configs
@@ -171,7 +171,7 @@ def load_opt_config(optimizer, config):
         for index in range(len(options_float)):
             try:
                 val=config.get_float('solver', options_float[index])
-            except OptionError as e:
+            except GenxOptionError as e:
                 iprint('Could not locate option solver.'+options_float[index])
             else:
                 setfunctions_float[index](val)
@@ -180,13 +180,13 @@ def load_opt_config(optimizer, config):
         for index in range(len(options_bool)):
             try:
                 val=config.get_boolean('solver', options_bool[index])
-            except OptionError as e:
+            except GenxOptionError as e:
                 iprint('Could not read option solver.'+options_bool[index])
             else:
                 setfunctions_bool[index](val)
         try:
             val=config.get('solver', 'create trial')
-        except OptionError as e:
+        except GenxOptionError as e:
             iprint('Could not read option solver.create trial')
         else:
             try:
@@ -240,19 +240,19 @@ def save_opt_config(optimizer, config, fom_error_bars_level=1.05, save_all_evals
         for index in range(len(options_float)):
             try:
                 config.set('solver', options_float[index], set_float[index])
-            except OptionError as e:
+            except GenxOptionError as e:
                 iprint('Could not locate save solver.'+options_float[index])
 
         # Then the bool flags
         for index in range(len(options_bool)):
             try:
                 config.set('solver', options_bool[index], set_bool[index])
-            except OptionError as e:
+            except GenxOptionError as e:
                 iprint('Could not write option solver.'+options_bool[index])
 
         try:
             config.set('solver', 'create trial', optimizer.get_create_trial())
-        except OptionError as e:
+        except GenxOptionError as e:
             iprint('Could not write option solver.create trial')
 
 # ==============================================================================
@@ -271,7 +271,7 @@ class Config:
             self.default_config.read(filename)
         except Exception as e:
             iprint(e)
-            raise IOError('Could not load default config file', filename)
+            raise GenxIOError('Could not load default config file', filename)
         if reset:
             self.model_config=CP.ConfigParser()
 
@@ -285,7 +285,7 @@ class Config:
                 self.default_config.write(cfile)
         except Exception as e:
             iprint(e)
-            raise IOError('Could not write default config file', filename)
+            raise GenxIOError('Could not write default config file', filename)
 
     def load_model(self, str):
         '''load_model(self, str) --> None
@@ -298,7 +298,7 @@ class Config:
         try:
             self.model_config.read_file(buffer)
         except Exception as e:
-            raise IOError('Could not load model config file')
+            raise GenxIOError('Could not load model config file')
 
     def _getf(self, default_function, model_function, section, option,
               fallback=None):
@@ -316,7 +316,7 @@ class Config:
                 value=default_function(section, option)
             except Exception as e:
                 if fallback is None:
-                    raise OptionError(section, option)
+                    raise GenxOptionError(section, option)
                 else:
                     value=fallback
         return value
@@ -401,39 +401,3 @@ class Config:
         return str
 
 # END: class Config
-# ==============================================================================
-# Some Exception definition for errorpassing
-class GenericError(Exception):
-    ''' Just a empty class used for inheritance. Only useful
-    to check if the errors are originating from the model library.
-    All these errors are controllable. If they not originate from
-    this class something has passed trough and that should be impossible '''
-    pass
-
-class IOError(GenericError):
-    ''' Error class for input output, mostly concerning files'''
-
-    def __init__(self, error_message, file=''):
-        '''__init__(self, error_message)'''
-        self.error_message=error_message
-        self.file=file
-
-    def __str__(self):
-        text='Input/Output error for file:\n'+self.file+ \
-             '\n\n Python error:\n '+self.error_message
-
-class OptionError(GenericError):
-    ''' Error class for not finding an option section pair in the 
-    configuration '''
-
-    def __init__(self, section, option):
-        '''__init__(self, error_message)'''
-        # self.error_message = error_message
-        self.section=section
-        self.option=option
-
-    def __str__(self):
-        text='Error in trying to loacate values in GenX configuration.'+ \
-             '\nCould not locate the section: '+self.section+ \
-             ' or option: '+self.option+'.'
-        return text

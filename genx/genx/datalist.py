@@ -24,6 +24,7 @@ except ImportError:
 
 from . import data
 from . import filehandling as io
+from .exceptions import GenxOptionError
 from . import images as img
 from .plugins import data_loader_wx as dlf
 from .gui_logging import iprint
@@ -766,7 +767,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                 cmds_x=self.config.get('data commands', 'x commands').split(';')
                 cmds_y=self.config.get('data commands', 'y commands').split(';')
                 cmds_e=self.config.get('data commands', 'e commands').split(';')
-            except io.OptionError as e:
+            except GenxOptionError as e:
                 ShowWarningDialog(self.parent, str(e), 'datalist.OnCalcEdit')
                 predef_names=None
                 predef_commands=None

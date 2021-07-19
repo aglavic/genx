@@ -51,8 +51,8 @@ is to the right. This is updated when the simulation button is pressed.
 '''
 
 from .. import add_on_framework as framework
+from genx.exceptions import GenxError
 from genx.plotpanel import PlotPanel
-import genx.model as modellib
 import wx.html
 
 import numpy as np
@@ -1879,7 +1879,7 @@ class Plugin(framework.Template, SampleBuilder):
         self.StatusMessage('Compiling the script...')
         try:
             self.CompileScript()
-        except modellib.GenericError as e:
+        except GenxError as e:
             self.ShowErrorDialog(str(e))
             self.StatusMessage('Error when compiling the script')
             return

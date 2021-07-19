@@ -15,8 +15,8 @@ import webbrowser
 import numpy as np
 from logging import debug
 
-from . import model as modellib
-from . import solvergui, help
+from .exceptions import GenxError, GenxIOError, GenxOptionError, ErrorBarError
+from . import help
 from . import filehandling as io
 from .gui_logging import iprint
 
@@ -119,7 +119,7 @@ def open_model(frame, path):
     debug('open_model: load_file')
     try:
         io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
-    except modellib.IOError as e:
+    except GenxIOError as e:
         ShowModelErrorDialog(frame, e.__str__())
     except Exception as e:
         outp=StringIO()
@@ -188,7 +188,7 @@ def on_new_model(frame, event):
         frame.config.get_boolean('data handling', 'toggle show'))
     try:
         val=frame.config.get_boolean('parameter grid', 'auto sim')
-    except io.OptionError:
+    except GenxOptionError:
         iprint('Could not locate option parameters.auto sim')
         frame.main_frame_menubar.mb_fit_autosim.Check(True)
     else:
@@ -219,7 +219,7 @@ def save(frame, event):
         # If it has been saved just save it
         try:
             io.save_file(fname, frame.model, frame.solver_control.optimizer, frame.config)
-        except modellib.IOError as e:
+        except GenxIOError as e:
             ShowModelErrorDialog(frame, e.__str__())
         except Exception as e:
             outp=StringIO()
@@ -256,7 +256,7 @@ def save_as(frame, event):
             try:
                 io.save_file(fname, frame.model, frame.solver_control.optimizer,
                              frame.config)
-            except modellib.IOError as e:
+            except GenxIOError as e:
                 ShowModelErrorDialog(frame, e.__str__())
             except Exception as e:
                 outp=StringIO()
@@ -281,7 +281,7 @@ def export_orso(frame, event):
     if dlg.ShowModal()==wx.ID_OK:
         try:
             frame.model.export_orso(dlg.GetPath())
-        except modellib.IOError as e:
+        except GenxIOError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(
                 'Error when exporting data', 1)
@@ -306,7 +306,7 @@ def export_data(frame, event):
     if dlg.ShowModal()==wx.ID_OK:
         try:
             frame.model.export_data(dlg.GetPath())
-        except modellib.IOError as e:
+        except GenxIOError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(
                 'Error when exporting data', 1)
@@ -343,7 +343,7 @@ def export_script(frame, event):
             try:
                 # frame.model.export_script(dlg.GetPath())
                 frame.model.export_script(fname)
-            except modellib.IOError as e:
+            except GenxIOError as e:
                 ShowModelErrorDialog(frame, str(e))
                 frame.main_frame_statusbar.SetStatusText(
                     'Error when exporting script', 1)
@@ -384,7 +384,7 @@ def export_table(frame, event):
             try:
                 # frame.model.export_table(dlg.GetPath())
                 frame.model.export_table(fname)
-            except modellib.IOError as e:
+            except GenxIOError as e:
                 ShowModelErrorDialog(frame, str(e))
                 frame.main_frame_statusbar.SetStatusText(
                     'Error when exporting table', 1)
@@ -413,7 +413,7 @@ def import_script(frame, event):
         try:
             frame.model.import_script(dlg.GetPath())
             # frame.model.import_script(fname)
-        except modellib.IOError as e:
+        except GenxIOError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(
                 'Error when importing script', 1)
@@ -465,7 +465,7 @@ def import_table(frame, event):
     if dlg.ShowModal()==wx.ID_OK:
         try:
             frame.model.import_table(dlg.GetPath())
-        except modellib.IOError as e:
+        except GenxIOError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText(
                 'Error when importing script', 1)
@@ -517,7 +517,7 @@ def evaluate(frame, event):
     # frame.model.compile_script()
     try:
         frame.model.simulate(compile=False)
-    except modellib.GenericError as e:
+    except GenxError as e:
         ShowModelErrorDialog(frame, str(e))
         frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
     except Exception as e:
@@ -550,7 +550,7 @@ def do_simulation(frame, from_thread=False):
     try:
         # when updated from thread and was compiled before, do not compile again
         frame.model.simulate(compile=not (from_thread and frame.model.is_compiled()))
-    except modellib.GenericError as e:
+    except GenxError as e:
         wx.CallAfter(ShowModelErrorDialog, frame, str(e))
         if not from_thread: frame.main_frame_statusbar.SetStatusText('Error in simulation', 1)
     except Exception as e:
@@ -599,7 +599,7 @@ def start_fit(frame, event):
     if frame.model.compiled:
         try:
             frame.solver_control.StartFit()
-        except modellib.GenericError as e:
+        except GenxError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
         except Exception as e:
@@ -626,7 +626,7 @@ def resume_fit(frame, event):
     if frame.model.compiled:
         try:
             frame.solver_control.ResumeFit()
-        except modellib.GenericError as e:
+        except GenxError as e:
             ShowModelErrorDialog(frame, str(e))
             frame.main_frame_statusbar.SetStatusText('Error in fitting', 1)
         except Exception as e:
@@ -645,7 +645,7 @@ def calculate_error_bars(frame, evt):
     '''
     try:
         error_values=frame.solver_control.CalcErrorBars()
-    except solvergui.ErrorBarError as e:
+    except ErrorBarError as e:
         ShowNotificationDialog(frame, str(e))
     except Exception as e:
         ShowErrorDialog(frame, str(e), 'solvergui - CalcErrorBars')

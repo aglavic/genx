@@ -18,6 +18,7 @@ import h5py
 from . import data
 from . import parameters
 from . import fom_funcs
+from .exceptions import GenxIOError, FomError, ModelError, ParameterError
 from .gui_logging import iprint
 from logging import debug
 
@@ -121,29 +122,29 @@ class Model:
         try:
             loadfile=zipfile.ZipFile(filename, 'r')
         except Exception as e:
-            raise IOError('Could not open file.', filename)
+            raise GenxIOError('Could not open file.', filename)
         try:
             new_data=pickle.loads(loadfile.read('data'), encoding='latin1', errors='ignore')
             self.data.safe_copy(new_data)
         except Exception as e:
             iprint('Data section loading (gx file) error:\n ', e, '\n')
-            raise IOError('Could not locate the data section.', filename)
+            raise GenxIOError('Could not locate the data section.', filename)
         try:
             self.script=pickle.loads(loadfile.read('script'), encoding='latin1', errors='ignore')
         except Exception as e:
             iprint('Script section loading (gx file) error:\n ', e, '\n')
-            raise IOError('Could not locate the script.', filename)
+            raise GenxIOError('Could not locate the script.', filename)
 
         try:
             new_parameters=pickle.loads(loadfile.read('parameters'), encoding='latin1', errors='ignore')
             self.parameters.safe_copy(new_parameters)
         except Exception as e:
             iprint('Script section loading (gx file) error:\n ', e, '\n')
-            raise IOError('Could not locate the parameters section.', filename)
+            raise GenxIOError('Could not locate the parameters section.', filename)
         try:
             self.fom_func=pickle.loads(loadfile.read('fomfunction'), encoding='latin1', errors='ignore')
         except Exception:
-            raise IOError('Could not locate the fomfunction section.', filename)
+            raise GenxIOError('Could not locate the fomfunction section.', filename)
 
         loadfile.close()
 
@@ -162,26 +163,26 @@ class Model:
         try:
             savefile=zipfile.ZipFile(filename, 'w')
         except Exception as e:
-            raise IOError(str(e), filename)
+            raise GenxIOError(str(e), filename)
 
         # Save the data structures to file
         try:
             savefile.writestr('data', pickle.dumps(self.data))
         except Exception as e:
-            raise IOError('Error writing data: '+str(e), filename)
+            raise GenxIOError('Error writing data: '+str(e), filename)
         try:
             savefile.writestr('script', pickle.dumps(self.script))
         except Exception as e:
-            raise IOError('Error writing script: '+str(e), filename)
+            raise GenxIOError('Error writing script: '+str(e), filename)
         self.parameters.model=None
         try:
             savefile.writestr('parameters', pickle.dumps(self.parameters))
         except Exception as e:
-            raise IOError('Error writing parameters: '+str(e), filename)
+            raise GenxIOError('Error writing parameters: '+str(e), filename)
         try:
             savefile.writestr('fomfunction', pickle.dumps(self.fom_func))
         except Exception as e:
-            raise IOError('Error writing fom_func:  '+str(e), filename)
+            raise GenxIOError('Error writing fom_func:  '+str(e), filename)
 
         savefile.close()
 
@@ -262,20 +263,20 @@ class Model:
         '''
         # Check so the filename is ok i.e. has been saved
         if self.filename=='':
-            raise IOError('File must be saved before new information is added', '')
+            raise GenxIOError('File must be saved before new information is added', '')
         try:
             savefile=zipfile.ZipFile(self.filename, 'a')
         except Exception as e:
-            raise IOError(str(e), self.filename)
+            raise GenxIOError(str(e), self.filename)
 
         # Check so the model data is not overwritten
         if name=='data' or name=='script' or name=='parameters':
-            raise IOError('It not alllowed to save a subfile with name: %s'%name)
+            raise GenxIOError('It not alllowed to save a subfile with name: %s'%name)
 
         try:
             savefile.writestr(name, text)
         except Exception as e:
-            raise IOError(str(e), self.filename)
+            raise GenxIOError(str(e), self.filename)
         savefile.close()
 
     def load_addition(self, name):
@@ -286,16 +287,16 @@ class Model:
         '''
         # Check so the filename is ok i.e. has been saved
         if self.filename=='':
-            raise IOError('File must be loaded before additional information is read', '')
+            raise GenxIOError('File must be loaded before additional information is read', '')
         try:
             loadfile=zipfile.ZipFile(self.filename, 'r')
         except Exception as e:
-            raise IOError('Could not open the file', self.filename)
+            raise GenxIOError('Could not open the file', self.filename)
 
         try:
             text=loadfile.read(name)
         except Exception as e:
-            raise IOError('Could not read the section named: %s'%name, self.filename)
+            raise GenxIOError('Could not read the section named: %s'%name, self.filename)
         loadfile.close()
         return text
 
@@ -504,15 +505,15 @@ class Model:
         '''
         (row_numbers, sfuncs, vals, minvals, maxvals)=self.parameters.get_fit_pars()
         if len(sfuncs)==0:
-            raise ParameterError(sfuncs, 0, 'None', 4)
+            raise ParameterError(sfuncs, 0, None, 4)
         # Check for min and max on all the values
         for i in range(len(vals)):
             # parameter less than min
             if vals[i]<minvals[i]:
-                raise ParameterError(sfuncs[i], row_numbers[i], 'None', 3)
+                raise ParameterError(sfuncs[i], row_numbers[i], None, 3)
             # parameter larger than max
             if vals[i]>maxvals[i]:
-                raise ParameterError(sfuncs[i], row_numbers[i], 'None', 2)
+                raise ParameterError(sfuncs[i], row_numbers[i], None, 2)
 
         # Compile the strings to create the functions..
         funcs=[]
@@ -520,7 +521,7 @@ class Model:
             try:
                 funcs.append(self.create_fit_func(func))
             except Exception as e:
-                raise ParameterError(func, row_numbers[len(funcs)], str(e), 0)
+                raise ParameterError(func, row_numbers[len(funcs)], e, 0)
         return funcs, vals, minvals, maxvals
 
     def get_par_penalty(self):
@@ -553,7 +554,7 @@ class Model:
             try:
                 funcs.append(self.create_fit_func(func))
             except Exception as e:
-                raise ParameterError(func, len(funcs), str(e), 0)
+                raise ParameterError(func, len(funcs), e, 0)
 
         return funcs, vals
 
@@ -575,7 +576,7 @@ class Model:
                 func(val)
             except Exception as e:
                 (sfuncs_tmp, vals_tmp)=self.parameters.get_sim_pars()
-                raise ParameterError(sfuncs_tmp[i], i, str(e), 1)
+                raise ParameterError(sfuncs_tmp[i], i, e, 1)
             i+=1
 
         self.evaluate_sim_func()
@@ -699,8 +700,8 @@ class Model:
             ds.append(odata.ORSOData(header, columns))
         try:
             ort.write_file(basename, ds)
-        except data.IOError as e:
-            raise IOError(e.error_message, e.file)
+        except GenxIOError as e:
+            raise GenxIOError(e.error_message, e.file)
 
     def export_data(self, basename):
         '''
@@ -713,8 +714,8 @@ class Model:
         '''
         try:
             self.data.export_data_to_files(basename)
-        except data.IOError as e:
-            raise IOError(e.error_message, e.file)
+        except GenxIOError as e:
+            raise GenxIOError(e.error_message, e.file)
 
     def export_script(self, filename):
         '''
@@ -747,13 +748,13 @@ class Model:
         try:
             savefile=open(filename, 'w')
         except Exception as e:
-            raise IOError(e.__str__(), filename)
+            raise GenxIOError(e.__str__(), filename)
 
         # Save the string to file
         try:
             savefile.write(save_string)
         except Exception as e:
-            raise IOError(e.__str__(), filename)
+            raise GenxIOError(e.__str__(), filename)
 
         savefile.close()
 
@@ -765,13 +766,13 @@ class Model:
         try:
             loadfile=open(filename, 'r')
         except Exception as e:
-            raise IOError(e.__str__(), filename)
+            raise GenxIOError(e.__str__(), filename)
 
         # Read the text from file
         try:
             read_string=loadfile.read()
         except Exception as e:
-            raise IOError(e.__str__(), filename)
+            raise GenxIOError(e.__str__(), filename)
 
         loadfile.close()
 
@@ -1195,127 +1196,8 @@ class Model:
     def _ipyw_script(self, change):
         self.script=change.new
 
-# END: Class Model
-# ==============================================================================
-# Some Exception definition for errorpassing
-class GenericError(Exception):
-    ''' Just a empty class used for inheritance. Only useful
-    to check if the errors are originating from the model library.
-    All these errors are controllable. If they not originate from
-    this class something has passed trough and that should be impossible '''
-    pass
 
-class ParameterError(GenericError):
-    ''' Class for yielding Parameter errors
-    '''
-
-    def __init__(self, parameter, parameter_number, error_message, what=-1):
-        '''__init__(self, parameter, parameter_number, error_message) --> None
-        
-        parameter: the name of the parameter [string]
-        parameter_number: the position of the parameter in the list [int]
-        error_mesage: pythons error message from the original exception
-        set: int to show where the error lies. 
-            -1 : undefined
-             0 : an not find the parameter
-             1 : can not evaluate i.e. set the parameter
-             2 : value are larger than max
-             3 : value are smaller than min
-             4 : No parameters to fit
-        '''
-        self.parameter=parameter
-        self.parameter_number=parameter_number
-        self.error_message=error_message
-        self.what=what
-
-    def __str__(self):
-        ''' __str__(self) --> text [string]
-        Yields a human readable description of the problem
-        '''
-        text=''
-        text+='Parameter number %i, %s, '%(self.parameter_number,
-                                           self.parameter)
-
-        # Take care of the different cases
-        if self.what==0:
-            text+='could not be found. Check the spelling.\n'
-        elif self.what==1:
-            text+='could not be evaluated. Check the code of the function.\n'
-        elif self.what==2:
-            text+='is larger than the value in the max column.\n'
-        elif self.what==3:
-            text+='is smaller than the value in the min column\n'
-        elif self.what==4:
-            text='There are no parameter selcted to be fitted.\n'+ \
-                 'Select the parameters you want to fit by checking the '+ \
-                 'boxes in the fit column, folder grid'
-        else:
-            text+='yielded an undefined error. Check the Python output\n'
-
-        if self.error_message!='None':
-            text+='\nPython error output:\n'+self.error_message
-
-        return text
-
-class ModelError(GenericError):
-    ''' Class for yielding compile or evaluation errors in the model text
-    '''
-
-    def __init__(self, error_message, where):
-        '''__init__(self, error_message, where = -1) --> None
-        
-        error_mesage: pythons error message from the original exception
-        where: integer describing where the error was raised.
-                -1: undef
-                 0: compile error
-                 1: evaulation error
-        '''
-        self.error_message=error_message
-        self.where=where
-
-    def __str__(self):
-        ''' __str__(self) --> text [string]
-        Yields a human readable description of the problem
-        '''
-        text=''
-        if self.where==0:
-            text+='It was not possible to compile the model script.\n'
-        elif self.where==1:
-            text+='It was not possible to evaluate the model script.\n' \
-                  +'Check the Sim function.\n'
-        elif self.where==-1:
-            text+='Undefined error from the Model. See below.\n'
-
-        text+='\n'+self.error_message
-
-        return text
-
-class FomError(GenericError):
-    '''Error class for the fom evaluation'''
-
-    def __init__(self, error_message):
-        ''' __init__(self, error_message) --> None'''
-        self.error_message=error_message
-
-    def __str__(self):
-        text='Could not evaluate the FOM function. See python output.\n' \
-             +'\n'+self.error_message
-        return text
-
-class IOError(GenericError):
-    ''' Error class for input output, mostly concerning files'''
-
-    def __init__(self, error_message, file=''):
-        '''__init__(self, error_message)'''
-        self.error_message=error_message
-        self.file=file
-
-    def __str__(self):
-        text='Input/Output error for file:\n'+self.file+ \
-             '\n\n Python error:\n '+self.error_message
-        return text
-
-# Some small default function that are needed for initilization
+# Some small default function that is needed for initialization
 
 def default_fom_func(simulated_data, data):
     '''

@@ -13,10 +13,10 @@ is to the right. This is updated when the simulation button is pressed.
 '''
 
 from .. import add_on_framework as framework
+from genx.exceptions import GenxError
 from genx.plotpanel import PlotPanel
 from genx.solvergui import EVT_UPDATE_PARAMETERS
 from genx.parametergrid import EVT_PARAMETER_GRID_CHANGE
-import genx.model as modellib
 import wx
 import wx.grid as gridlib
 from wx.adv import Wizard, WizardPage, WizardPageSimple
@@ -1550,7 +1550,7 @@ class Plugin(framework.Template):
         self.StatusMessage('Compiling the script...')
         try:
             self.CompileScript()
-        except modellib.GenericError as e:
+        except GenxError as e:
             self.ShowErrorDialog(str(e))
             self.StatusMessage('Error when compiling the script')
             return

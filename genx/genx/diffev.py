@@ -5,6 +5,7 @@ Last changed: 2008 11 23
 '''
 
 from numpy import *
+from .exceptions import ErrorBarError
 from .gui_logging import iprint
 from logging import debug
 import _thread
@@ -1635,46 +1636,3 @@ class CircBuffer:
 
     def __getitem__(self, key):
         return self.array().__getitem__(key)
-
-# END: class CircBuffer
-# ==============================================================================
-class GenericError(Exception):
-    ''' Just a empty class used for inheritance. Only useful
-    to check if the errors are originating from the model library.
-    All these errors are controllable. If they not originate from
-    this class something has passed trough and that should be impossible '''
-    pass
-
-class ErrorBarError(GenericError):
-    '''Error class for the fom evaluation'''
-
-    def __init__(self):
-        ''' __init__(self) --> None'''
-        # self.error_message = error_message
-
-    def __str__(self):
-        text='Could not evaluate the error bars. A fit has to be made '+ \
-             'before they can be calculated'
-        return text
-
-if __name__=='__main__':
-    import h5py
-
-    d=DiffEv()
-    iprint(arange(10))
-    d.fom_evals.copy_from(arange(10))
-    iprint(d.fom_evals.buffer, d.fom_evals.pos, d.fom_evals.filled)
-    d.km=10
-    iprint(d.fom_evals.array())
-    f=h5py.File('myfile.hdf5', 'w')
-    dic=f.create_group('optimizer')
-    d.write_h5group(dic)
-    f.close()
-
-    d=DiffEv()
-    f=h5py.File('myfile.hdf5', 'r')
-    dic=f['optimizer']
-    d.read_h5group(dic)
-    iprint(d.km)
-    iprint(d.fom_evals.array(), d.fom_evals.pos, d.fom_evals.filled)
-    f.close()

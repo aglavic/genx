@@ -9,6 +9,7 @@ import wx, io, traceback
 import wx.lib.newevent
 from wx.lib.masked import NumCtrl
 
+from .exceptions import ErrorBarError
 from . import diffev, fom_funcs
 from . import filehandling as io
 from .gui_logging import iprint
@@ -249,7 +250,7 @@ class SolverController:
                 # Chi2 
                 try:
                     (error_low, error_high)=self.optimizer.calc_error_bar(index, self.fom_error_bars_level)
-                except diffev.ErrorBarError as e:
+                except ErrorBarError as e:
                     ShowWarningDialog(self.parent, str(e))
                     break
                 error_str='(%.3e, %.3e)'%(error_low, error_high)
@@ -821,24 +822,3 @@ def ShowErrorDialog(frame, message, position=''):
     dlg.ShowModal()
     dlg.Destroy()
 
-class GenericError(Exception):
-    ''' Just a empty class used for inheritance. Only useful
-    to check if the errors are originating from the model library.
-    All these errors are controllable. If they not originate from
-    this class something has passed trough and that should be impossible '''
-    pass
-
-class ErrorBarError(GenericError):
-    def __init__(self, error_message=None):
-        """Error class for the fom evaluation
-
-        :param error_message: Error message that explains the error, string.
-        :return:
-        """
-        if error_message is None:
-            self.error_message='Could not evaluate the error bars. A fit has to be run before they can be calculated'
-        else:
-            self.error_message=error_message
-
-    def __str__(self):
-        return self.error_message

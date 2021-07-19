@@ -5,6 +5,7 @@ import os.path
 from logging import debug
 
 from . import version, model
+from .exceptions import GenxIOError
 from .gui_logging import setup_system, iprint, activate_logging, activate_excepthook
 
 def start_interactive(args):
@@ -39,7 +40,7 @@ def start_interactive(args):
         path=os.path.abspath(args.infile)
         try:
             io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
-        except modellib.IOError as e:
+        except GenxIOError as e:
             ShowModelErrorDialog(frame, e.__str__())
         except Exception as e:
             outp=StringIO()

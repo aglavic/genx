@@ -9,6 +9,7 @@ from numpy import *
 import os
 import sys
 import time
+from .exceptions import GenxIOError
 from .gui_logging import iprint
 
 # ==============================================================================
@@ -364,7 +365,7 @@ class DataSet:
             debug='y_sim.shape: '+str(self.y_sim.shape)+'\ny.shape: '+ \
                   str(self.y.shape)+'\nx.shape: '+str(self.x.shape)+ \
                   '\nerror.shape: '+str(self.error.shape)
-            raise IOError('The data is not in the correct format all the'+ \
+            raise GenxIOError('The data is not in the correct format all the'+ \
                           'arrays have to have the same shape:\n'+debug, filename)
 
     @staticmethod
@@ -990,7 +991,7 @@ class DataList:
 
         if indices:
             if not sum([i<len(self.items) for i in indices])==len(indices):
-                raise IOError('Error in export_data_to_files')
+                raise GenxIOError('Error in export_data_to_files')
         else:
             indices=list(range(len(self.items)))
         # print 'Output: ', indices, len(self.items)
@@ -1133,47 +1134,3 @@ class DataList:
             if ds.y_sim.shape==ds.y.shape:
                 plt.semilogy(ds.x, ds.y_sim, label=sl, **ds.sim_kwds)
         plt.legend()
-
-# ==============================================================================
-# Some Exception definition for errorpassing
-class GenericError(Exception):
-    ''' Just a empty class used for inheritance. Only useful
-    to check if the errors are originating from the model library.
-    All these errors are controllable. If they not originate from
-    this class something has passed trough and that should be impossible '''
-    pass
-
-class IOError(GenericError):
-    ''' Error class for input output, mostly concerning files'''
-
-    def __init__(self, error_message, file=''):
-        '''__init__(self, error_message)'''
-        self.error_message=error_message
-        self.file=file
-
-    def __str__(self):
-        text='Input/Output error for file:\n'+self.file+ \
-             '\n\n Python error:\n '+self.error_message
-        return text
-
-if __name__=='__main__':
-    import h5py
-
-    d=DataList()
-    d[0].x=arange(0, 10)
-    f=h5py.File('myfile.hdf5', 'w')
-    dic=f.create_group('data')
-    d.write_h5group(dic)
-    f.close()
-
-    d=DataList()
-    iprint('x ', d[0].x)
-    f=h5py.File('myfile.hdf5', 'r')
-    dic=f['data']
-    d.read_h5group(dic)
-    iprint('x ', d[0].x)
-    f.close()
-    iprint('x ', d[0].x)
-    iprint(type(d[0].data_color), d[0].data_color)
-    iprint(d[0].extra_data)
-    iprint(type(d[0].data_symbolsize))

@@ -18,8 +18,8 @@ from numpy import *
 
 from . import parameters
 from . import images as img
+from .exceptions import GenxOptionError
 from .lib import controls as ctrls
-from . import filehandling
 from .gui_logging import iprint
 
 # =============================================================================
@@ -813,7 +813,7 @@ class ParameterGrid(wx.Panel):
         """ Reads the variables stored in the config file."""
         try:
             val=self.config.get_boolean(self.config_name, 'value slider')
-        except filehandling.OptionError:
+        except GenxOptionError:
             iprint('Could not locate option %s.%s'%(self.config_name, 'y scale'))
             self.SetValueEditorSlider(False)
         else:
