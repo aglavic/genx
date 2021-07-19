@@ -308,7 +308,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
         # For binding selction showing data sets
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelectionChanged)
-        self.toggleshow=self.config.get_boolean('data handling',
+        self.toggleshow=self.config.getboolean('data handling',
                                                 'toggle show')
 
     def SetShowToggle(self, toggle):
@@ -636,7 +636,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.SetItemCount(self.data_cont.get_count())
         self._UpdateData('Data from model loaded', data_changed=True,
                          new_data=True, new_model=True)
-        self.toggleshow=self.config.get_boolean('data handling',
+        self.toggleshow=self.config.getboolean('data handling',
                                                 'toggle show')
         self.data_loader_cont.load_default()
         # print "new data from model loaded"

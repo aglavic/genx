@@ -624,7 +624,7 @@ class MainFrame(wx.Frame):
         self.Centre()
         # end wxGlade
         self.sep_plot_notebook=self.plot_notebook
-        if self.config.get_boolean('startup', 'widescreen', False):
+        if self.config.getboolean('startup', 'widescreen', False):
             # test adding new notebooks for plugins in wide screen layout
             self.plot_notebook=self.wide_plugin_notebook
             self.plot_notebook.RemovePage(0)
@@ -644,8 +644,8 @@ class MainFrame(wx.Frame):
             the calls to Show
         '''
         display_size=wx.DisplaySize()
-        hsize=self.config.get_int('gui', 'hsize', int(display_size[0]*0.85))
-        vsize=self.config.get_int('gui', 'vsize', int(display_size[1]*0.9))
+        hsize=self.config.getint('gui', 'hsize', int(display_size[0]*0.85))
+        vsize=self.config.getint('gui', 'vsize', int(display_size[1]*0.9))
         self.SetSize(hsize, vsize)
         self.CenterOnScreen()
         self.ver_splitter.SetSashPosition(200)
@@ -660,18 +660,18 @@ class MainFrame(wx.Frame):
 
     def LayoutSplitters(self):
         size=self.GetSize()
-        vsplit=self.config.get_int('gui', 'vsplit', size[0]/4)
-        hsplit=self.config.get_int('gui', 'hsplit', size[1]-450)
+        vsplit=self.config.getint('gui', 'vsplit', size[0]/4)
+        hsplit=self.config.getint('gui', 'hsplit', size[1]-450)
         self.ver_splitter.SetSashPosition(vsplit)
         self.hor_splitter.SetSashPosition(hsplit)
 
-        if self.config.get_boolean('startup', 'widescreen', False):
-            psplit=self.config.get_int('gui', 'psplit', int(size[1]*0.6))
+        if self.config.getboolean('startup', 'widescreen', False):
+            psplit=self.config.getint('gui', 'psplit', int(size[1]*0.6))
             self.plot_splitter.SetSashPosition(psplit)
 
     def startup_dialog(self, profile_path, force_show=False):
-        show_profiles=self.config.get_boolean('startup', 'show profiles')
-        widescreen=self.config.get_boolean('startup', 'widescreen', False)
+        show_profiles=self.config.getboolean('startup', 'show profiles')
+        widescreen=self.config.getboolean('startup', 'widescreen', False)
         if show_profiles or force_show:
             startup_dialog=StartUpConfigDialog(self, profile_path+'profiles/',
                                                show_cb=show_profiles,

@@ -813,7 +813,7 @@ class ParameterGrid(wx.Panel):
     def ReadConfig(self):
         """ Reads the variables stored in the config file."""
         try:
-            val=self.config.get_boolean(self.config_name, 'value slider')
+            val=self.config.getboolean(self.config_name, 'value slider')
         except GenxOptionError:
             iprint('Could not locate option %s.%s'%(self.config_name, 'y scale'))
             self.SetValueEditorSlider(False)

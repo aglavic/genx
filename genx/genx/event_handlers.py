@@ -185,9 +185,9 @@ def on_new_model(frame, event):
     frame.solver_control.ModelLoaded()
     # Lets update the mb_use_toggle_show Menu item
     frame.main_frame_menubar.mb_use_toggle_show.Check(
-        frame.config.get_boolean('data handling', 'toggle show'))
+        frame.config.getboolean('data handling', 'toggle show'))
     try:
-        val=frame.config.get_boolean('parameter grid', 'auto sim')
+        val=frame.config.getboolean('parameter grid', 'auto sim')
     except GenxOptionError:
         iprint('Could not locate option parameters.auto sim')
         frame.main_frame_menubar.mb_fit_autosim.Check(True)

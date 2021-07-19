@@ -2,7 +2,10 @@
 These include loading of initilazation files.
 Also included is the config object.
 '''
+import dataclasses
 from configparser import ConfigParser
+from functools import lru_cache
+from abc import ABC, abstractmethod
 import io
 import os, sys
 
@@ -28,7 +31,7 @@ class Config:
             self.default_config.read(filename)
         except Exception as e:
             iprint(e)
-            raise GenxIOError('Could not load default config file', filename)
+            raise GenxIOError(f'Could not load default config file:\n {e}', filename)
         if reset:
             self.model_config=ConfigParser()
 
@@ -41,7 +44,7 @@ class Config:
                 self.default_config.write(cfile)
         except Exception as e:
             iprint(e)
-            raise GenxIOError('Could not write default config file', filename)
+            raise GenxIOError(f'Could not write default config file:\n {e}', filename)
 
     def load_string(self, input: str):
         '''
@@ -52,57 +55,39 @@ class Config:
         try:
             self.model_config.read_string(input)
         except Exception as e:
-            raise GenxIOError('Could not load model config file')
+            raise GenxIOError(f'Could not load model config file:\n {e}')
 
-    def _getf(self, default_function, model_function, section, option,
-              fallback=None):
+    def _getf(self, method: str, section: str, option: str, fallback=None):
         '''
         For the function function try to locate the section and option first in
         model_config if that fails try to locate it in default_config. If both
         fails raise a GenxOptionError.
         '''
+        if self.model_config.has_option(section, option):
+            func=getattr(self.model_config, method)
+        elif self.default_config.has_option(section, option):
+            func=getattr(self.default_config, method)
+        else:
+            raise GenxOptionError(section, option)
         try:
-            value=model_function(section, option)
-        except Exception as e:
-            try:
-                value=default_function(section, option)
-            except Exception as e:
-                if fallback is None:
-                    raise GenxOptionError(section, option)
-                else:
-                    value=fallback
-        return value
+            return func(section, option, fallback=fallback)
+        except ValueError:
+            if fallback is None:
+                raise GenxOptionError(section, option)
+            else:
+                return fallback
 
-    def get_float(self, section, option):
-        '''
-        returns a float value if possible for option in section
-        '''
-        return self._getf(self.default_config.getfloat,
-                          self.model_config.getfloat, section, option)
-
-    def get_boolean(self, section, option, fallback=None):
-        '''
-        returns a boolean value if possible for option in section
-        '''
-        return self._getf(self.default_config.getboolean,
-                          self.model_config.getboolean, section, option,
-                          fallback=fallback)
-
-    def get_int(self, section, option, fallback=None):
-        '''
-        returns a int value if possible for option in section
-        '''
-        return self._getf(self.default_config.getint,
-                          self.model_config.getint, section, option,
-                          fallback=fallback)
-
-    def get(self, section, option, fallback=None):
-        '''
-        returns a string value if possible for option in section
-        '''
-        return self._getf(self.default_config.get,
-                          self.model_config.get, section, option,
-                          fallback=fallback)
+    @lru_cache(maxsize=10)
+    def __getattr__(self, item: str):
+        """
+        Handle all get functions from ConfigParser to be redirected through _getf,
+        everything else is treated normally.
+        The lambda functions are cached so they only get generated once.
+        """
+        if item.startswith('get') and hasattr(self.model_config, item):
+            return lambda section, option, fallback=None: self._getf(item, section, option, fallback=fallback)
+        else:
+            raise AttributeError(f"'Config' object has no attribute '{item}'")
 
     def model_set(self, section, option, value):
         '''
@@ -139,9 +124,56 @@ class Config:
 
 # END: class Config
 
+
+
 # Functions to save the gx files
 # ==============================================================================
+class BaseConfig(ABC):
+    """
+    Base class for handling configuration that shall be stored by a GenX Config object.
 
+    Handles general parameter read/write so that derived classes only have to
+    inherit from it and use dataclass attributes.
+    """
+    @property
+    @abstractmethod
+    def section(self):
+        raise NotImplementedError("Subclass needs to define the section attribute.")
+
+    def asdict(self):
+        return dataclasses.asdict(self)
+
+    def load_config(self, config: Config):
+        field: dataclasses.Field
+        for field in dataclasses.fields(self):
+            if field.type is float:
+                getf=config.getfloat
+            elif field.type is int:
+                getf=config.getint
+            elif field.type is bool:
+                getf=config.getboolean
+            else:
+                getf=config.get
+            if field.default is dataclasses.MISSING:
+                fallback=None
+            else:
+                fallback=field.default
+            option=field.name.replace('_', ' ')
+            try:
+                value=getf(self.section, option, fallback=fallback)
+            except GenxOptionError as e:
+                iprint(f'Could not read option {self.section}/{option} of type {field.type}:\n    {e}')
+            else:
+                setattr(self, field.name, value)
+
+    def safe_config(self, config: Config, default=False):
+        data=self.asdict()
+        if default:
+            set=config.default_set
+        else:
+            set=config.model_set
+        for key, value in data.items():
+            set(self.section, key.replace('_', ' '), value)
 
 def save_file(fname: str, model, optimizer, config: Config):
     """
@@ -173,7 +205,7 @@ def save_gx(fname: str, model, optimizer, config: Config):
     model.save_addition('config', config.model_dump())
     model.save_addition('optimizer',
                         optimizer.pickle_string(clear_evals=
-                                                not config.get_boolean('solver',
+                                                not config.getboolean('solver',
                                                                        'save all evals')))
 
 def save_hgx(fname: str, model, optimizer, config: Config, group='current'):
@@ -190,7 +222,7 @@ def save_hgx(fname: str, model, optimizer, config: Config, group='current'):
     g=f.create_group(group)
     model.write_h5group(g)
     try:
-        clear_evals=not config.get_boolean('solver', 'save all evals')
+        clear_evals=not config.getboolean('solver', 'save all evals')
     except GenxOptionError as e:
         clear_evals=True
     optimizer.write_h5group(g.create_group('optimizer'), clear_evals=True)
@@ -231,7 +263,7 @@ def load_gx(fname: str, model, optimizer, config: Config):
 # ==============================================================================
 
 
-def load_opt_config(optimizer, config):
+def load_opt_config(optimizer, config: Config):
     """Load the config (Config class) values to the optimiser class (DiffEv class)."""
 
     class Container:
@@ -286,7 +318,7 @@ def load_opt_config(optimizer, config):
         # Start witht the float values
         for index in range(len(options_float)):
             try:
-                val=config.get_float('solver', options_float[index])
+                val=config.getfloat('solver', options_float[index])
             except GenxOptionError as e:
                 iprint('Could not locate option solver.'+options_float[index])
             else:
@@ -295,7 +327,7 @@ def load_opt_config(optimizer, config):
         # Then the bool flags
         for index in range(len(options_bool)):
             try:
-                val=config.get_boolean('solver', options_bool[index])
+                val=config.getboolean('solver', options_bool[index])
             except GenxOptionError as e:
                 iprint('Could not read option solver.'+options_bool[index])
             else:
@@ -312,7 +344,7 @@ def load_opt_config(optimizer, config):
 
     return c.error_bars_level, c.save_all_evals
 
-def save_opt_config(optimizer, config, fom_error_bars_level=1.05, save_all_evals=False):
+def save_opt_config(optimizer, config: Config, fom_error_bars_level=1.05, save_all_evals=False):
     """ Write the config values from optimizer (DiffEv class) to config (Config class) """
 
     # Define all the options we want to set

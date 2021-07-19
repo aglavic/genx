@@ -101,14 +101,14 @@ class Model:
             self.set_func=val
 
         try:
-            val=self.config.get_boolean('solver', 'ignore fom nan')
+            val=self.config.getboolean('solver', 'ignore fom nan')
         except:
             iprint('Could not find config for solver, ignore fom nan')
         else:
             self.fom_ignore_nan=val
 
         try:
-            val=self.config.get_boolean('solver', 'ignore fom inf')
+            val=self.config.getboolean('solver', 'ignore fom inf')
         except:
             iprint('Could not find config for solver, ignore fom inf')
         else:

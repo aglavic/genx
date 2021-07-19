@@ -143,8 +143,8 @@ class PlotPanel(wx.Panel):
         vals=[]
         for index in range(len(bool_items)):
             try:
-                val=self.config.get_boolean(self.config_name,
-                                            bool_items[index])
+                val=self.config.getboolean(self.config_name,
+                                           bool_items[index])
             except GenxOptionError as e:
                 iprint('Could not locate option %s.%s' \
                        %(self.config_name, bool_items[index]))

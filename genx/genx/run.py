@@ -99,7 +99,7 @@ def start_interactive(args):
 
 def calc_errorbars(config, mod, opt):
     error_values=[]
-    fom_error_bars_level=config.get_float('solver', 'errorbar level')
+    fom_error_bars_level=config.getfloat('solver', 'errorbar level')
     n_elements=len(opt.start_guess)
     for index in range(n_elements):
         # calculate the error
