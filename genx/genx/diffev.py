@@ -100,7 +100,7 @@ class DiffEv(Configurable):
                                self.jade_best, self.simplex_best_1_bin]
 
     def __init__(self):
-        Configurable.__init__(self, DiffEvConfig)
+        Configurable.__init__(self)
         self.create_mutation_table()
 
         self.model=mmodel.Model()

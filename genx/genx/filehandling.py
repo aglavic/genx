@@ -8,7 +8,7 @@ import os, sys
 from configparser import ConfigParser
 from functools import lru_cache
 from abc import ABC, abstractmethod
-from typing import Type
+from typing import Type, get_type_hints
 from logging import debug
 
 import h5py
@@ -188,7 +188,12 @@ class Configurable:
     Defines methods for reading and writing configurations. Subclasses can
     define the config_updated method to be called after changing a configuration.
     """
-    def __init__(self, config_class: Type[BaseConfig]):
+    def __init__(self, config_class: Type[BaseConfig]=None):
+        if config_class is None:
+            hints=get_type_hints(self)
+            if not 'opt' in hints:
+                raise ValueError("Configurable needs either an explicit config_class or 'opt' type hint")
+            config_class=hints['opt']
         self.opt=config_class()
 
     def ReadConfig(self):

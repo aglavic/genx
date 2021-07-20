@@ -285,12 +285,13 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
     '''
     The listcontrol for the data
     '''
+    opt: VDataListConfig
 
     def __init__(self, parent, data_controller, status_text=None):
         wx.ListCtrl.__init__(self, parent, -1,
                              style=wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_EDIT_LABELS)
         ListCtrlAutoWidthMixin.__init__(self)
-        Configurable.__init__(self, VDataListConfig)
+        Configurable.__init__(self)
 
         self.data_cont=data_controller
         self.parent=parent

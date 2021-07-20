@@ -33,7 +33,7 @@ class SolverController(Configurable):
     opt: SolverConfig
 
     def __init__(self, parent):
-        Configurable.__init__(self, SolverConfig)
+        Configurable.__init__(self)
         # Create the optimizer we are using. In this case the standard
         # Differential evolution optimizer.
         self.optimizer=diffev.DiffEv()

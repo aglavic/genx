@@ -726,10 +726,11 @@ class ParameterGrid(wx.Panel, Configurable):
     '''
     The GUI component itself. This is the thing to use in a GUI.
     '''
+    opt: ParameterGridConfig
 
     def __init__(self, parent, frame):
         wx.Panel.__init__(self, parent)
-        Configurable.__init__(self, ParameterGridConfig)
+        Configurable.__init__(self)
 
         # The two main widgets
         self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_VERTICAL)

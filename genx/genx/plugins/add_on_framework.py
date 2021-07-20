@@ -260,10 +260,12 @@ class PluginConfig(BaseConfig):
     loaded_plugins: str=''
 
 class PluginController(Configurable):
-    ''' A controller class to interact with the gui 
+    '''
+    A controller class to interact with the gui
     so we can load and unload modules as well as
     update the module list.
     '''
+    opt: PluginConfig
 
     def __init__(self, parent, menu):
         '''
@@ -272,7 +274,7 @@ class PluginController(Configurable):
         '''
         self.plugin_handler=PluginHandler(parent, __MODULE_DIR__, 'add_ons')
         self.parent=parent
-        Configurable.__init__(self, PluginConfig)
+        Configurable.__init__(self)
 
         # make the menus
         self.load_menu=wx.Menu()
