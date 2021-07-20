@@ -17,7 +17,7 @@ from genx import filehandling as io
 from genx.plugins.add_ons.help_modules.reflectivity_utils import avail_models, SampleHandler, SampleBuilder
 from genx.plugins.utils import PluginHandler
 
-_config=io.Config()
+_config=io.config
 _fit_output=[]
 
 def text_output_api(text):

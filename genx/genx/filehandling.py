@@ -122,12 +122,9 @@ class Config:
         buffer.close()
         return str
 
-# END: class Config
+# create the global GenX config object used by the program, it does not depend on anything else
+config=Config()
 
-
-
-# Functions to save the gx files
-# ==============================================================================
 class BaseConfig(ABC):
     """
     Base class for handling configuration that shall be stored by a GenX Config object.
@@ -143,7 +140,7 @@ class BaseConfig(ABC):
     def asdict(self):
         return dataclasses.asdict(self)
 
-    def load_config(self, config: Config):
+    def load_config(self):
         field: dataclasses.Field
         for field in dataclasses.fields(self):
             if field.type is float:
@@ -166,14 +163,24 @@ class BaseConfig(ABC):
             else:
                 setattr(self, field.name, value)
 
-    def safe_config(self, config: Config, default=False):
+    def safe_config(self, default=False):
         data=self.asdict()
         if default:
-            set=config.default_set
+            setter=config.default_set
         else:
-            set=config.model_set
+            setter=config.model_set
         for key, value in data.items():
-            set(self.section, key.replace('_', ' '), value)
+            setter(self.section, key.replace('_', ' '), value)
+
+class Configurable:
+    """
+    A mixin class for classes that store parameters in a savable configuration.
+
+    Defines methods for reading and writing configurations. Subclasses can
+    define the config_updated method to be called after changing a configuration.
+    """
+
+
 
 def save_file(fname: str, model, optimizer, config: Config):
     """

@@ -69,7 +69,7 @@ class MainFrame(wx.Frame):
         self.simulation_queue_counter=0
 
         debug('setup of MainFrame - config')
-        self.config=io.Config()
+        self.config=io.config
         self.config.load_default(os.path.join(config_path, 'genx.conf'))
 
         status_text=lambda event: event_handlers.status_text(self, event)

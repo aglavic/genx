@@ -118,7 +118,7 @@ def create_simulated_data(args):
     from scipy.stats import poisson
 
     mod=model.Model()
-    config=io.Config()
+    config=io.config
     config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
     opt=diffev.DiffEv()
 
@@ -149,7 +149,7 @@ def extract_parameters(args):
 
     # Open the genx file
     mod=model.Model()
-    config=io.Config()
+    config=io.config
     config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
     opt=diffev.DiffEv()
 
@@ -181,7 +181,7 @@ def modify_file(args):
 
     # Open the genx file
     mod=model.Model()
-    config=io.Config()
+    config=io.config
     config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
     opt=diffev.DiffEv()
 
@@ -223,7 +223,7 @@ def start_fitting(args, rank=0):
     from genx import filehandling as io
 
     mod=model.Model()
-    config=io.Config()
+    config=io.config
     config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
     opt=diffev.DiffEv()
 

@@ -20,7 +20,7 @@ def sld_mc(args):
     from . import filehandling as io
 
     mod=model.Model()
-    config=io.Config()
+    config=io.config
     config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
     opt=diffev.DiffEv()
 
