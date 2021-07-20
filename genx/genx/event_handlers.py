@@ -878,7 +878,6 @@ def on_grid_slider_check(frame, event):
     :return:
     """
     frame.paramter_grid.SetValueEditorSlider(frame.main_frame_menubar.mb_view_grid_slider.IsChecked())
-    # print frame.paramter_grid.get_toggle_slider_tool_state()
     frame.paramter_grid.toggle_slider_tool(frame.main_frame_menubar.mb_view_grid_slider.IsChecked())
     frame.paramter_grid.Refresh()
 

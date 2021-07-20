@@ -7,7 +7,9 @@ Last changed: 2008 07 23
 
 import os
 import wx, io, traceback
+from dataclasses import dataclass
 
+from genx.filehandling import BaseConfig, Configurable
 from .utils import PluginHandler
 
 head, tail=os.path.split(__file__)
@@ -252,25 +254,25 @@ class Template:
             idx=self.parent.main_frame_menubar.FindMenu(name)
             self.parent.main_frame_menubar.Remove(idx)
 
-# END: Template
-# ==============================================================================
+@dataclass
+class PluginConfig(BaseConfig):
+    section='plugins'
+    loaded_plugins: str=''
 
-# ==============================================================================
-class PluginController:
+class PluginController(Configurable):
     ''' A controller class to interact with the gui 
     so we can load and unload modules as well as
     update the module list.
     '''
 
-    def __init__(self, parent, menu, config):
-        '''__init__(self, parent, menu) --> None
-        
-        Insert menu items for controlling plugins in menu. 
+    def __init__(self, parent, menu):
+        '''
+        Insert menu items for controlling plugins in menu.
         Parent is the main window.
         '''
         self.plugin_handler=PluginHandler(parent, __MODULE_DIR__, 'add_ons')
         self.parent=parent
-        self.config=config
+        Configurable.__init__(self, PluginConfig)
 
         # make the menus
         self.load_menu=wx.Menu()
@@ -279,9 +281,6 @@ class PluginController:
         menu.Insert(1, -1, 'Unload', self.unload_menu, 'Unload a plugin')
 
         menu.Append(-1, 'Update module list')
-
-        # wx.CallAfter(self.LoadDefaultPlugins)
-        # self.update_plugins()
 
     def update_plugins(self):
         '''update_modules(self) --> None
@@ -318,8 +317,8 @@ class PluginController:
         Updates the config object
         '''
         loaded_plugins=self.plugin_handler.get_loaded_plugins()
-        plugins_str=';'.join(loaded_plugins)
-        self.config.set('plugins', 'loaded plugins', plugins_str)
+        self.opt.loaded_plugins=';'.join(loaded_plugins)
+        self.WriteConfig()
 
     def LoadDefaultPlugins(self):
         '''LoadDefaultPlugins(self) --> None
@@ -327,10 +326,9 @@ class PluginController:
         Tries to load the default plugins from the config object
         if they are not already loaded.
         '''
-        plugin_str=self.config.get('plugins', 'loaded plugins')
-        # print' plugins:', plugin_str
-        # Check so we have any plugins to load else bail out
-        # print 'Plugin string:', plugin_str
+        self.ReadConfig()
+        plugin_str=self.opt.loaded_plugins
+
         if plugin_str=='':
             self.update_plugins()
             return

@@ -1,11 +1,10 @@
-'''File: diffev.py an implementation of the differential evolution algoithm
-for fitting.
-Programmed by: Matts Bjorck
-Last changed: 2008 11 23
 '''
-
+An implementation of the differential evolution algoithm for fitting.
+'''
+from dataclasses import dataclass
 from numpy import *
 from .exceptions import ErrorBarError
+from .filehandling import BaseConfig, Configurable
 from .gui_logging import iprint
 from logging import debug
 import _thread
@@ -42,19 +41,42 @@ from . import model as mmodel
 
 from .lib.Simplex import Simplex
 
-# Add current path to the system paths
-# just in case some user make a directory change
-sys.path.append(os.getcwd())
+@dataclass
+class DiffEvConfig(BaseConfig):
+    section='solver'
+    km:float=0.7
+    kr:float=0.7
+    allowed_fom_discrepancy:float= 1e-10
 
-# ==============================================================================
-# class: DiffEv
-class DiffEv:
+    use_pop_mult: bool=False
+    pop_mult:int=3
+    pop_size:int=50
+    create_trial:str='best_1_bin'
+
+    use_max_enerations:bool=False
+    max_generations:int=500
+    max_generation_mult:int=6
+
+    use_start_guess:bool=True
+    use_boundaries:bool=False
+
+    sleep_time:float=0.5
+    max_log_elements:int=100000
+    use_parallel_processing:bool=False
+    parallel_processes:int=2
+    parallel_chunksize:int=25
+
+    use_autosave:bool=False
+    autosave_interval:int=10
+
+
+class DiffEv(Configurable):
     '''
-    Class DiffEv
     Contains the implemenetation of the differential evolution algorithm.
     It also contains thread support which is activated by the start_fit 
     function.
     '''
+    opt: DiffEvConfig
 
     export_parameters={'km': float, 'kr': float, 'pf': float, 'use_pop_mult': bool, 'pop_mult': int, 'pop_size': int,
                        'use_max_generations': bool, 'max_generations': int, 'max_generation_mult': int,
@@ -74,9 +96,11 @@ class DiffEv:
     def create_mutation_table(self):
         # Mutation schemes implemented
         self.mutation_schemes=[self.best_1_bin, self.rand_1_bin,
-                               self.best_either_or, self.rand_either_or, self.jade_best, self.simplex_best_1_bin]
+                               self.best_either_or, self.rand_either_or,
+                               self.jade_best, self.simplex_best_1_bin]
 
     def __init__(self):
+        Configurable.__init__(self, DiffEvConfig)
         self.create_mutation_table()
 
         self.model=mmodel.Model()

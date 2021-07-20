@@ -52,7 +52,7 @@ is to the right. This is updated when the simulation button is pressed.
 
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
-from genx.plotpanel import PlotPanel
+from genx.plotpanel import PlotPanel, BasePlotConfig
 import wx.html
 
 import numpy as np
@@ -1388,6 +1388,9 @@ class ParameterExpressionDialog(wx.Dialog):
 
         return evalstring
 
+class SamplePlotConfig(BasePlotConfig):
+    section='sample plot'
+
 class SamplePlotPanel(wx.Panel):
     ''' Widget for plotting the scattering length density of 
     a sample.
@@ -1395,10 +1398,8 @@ class SamplePlotPanel(wx.Panel):
 
     def __init__(self, parent, plugin, id=-1, color=None, dpi=None
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
-        ''' Inits the plotpanel
-        '''
         wx.Panel.__init__(self, parent)
-        self.plot=PlotPanel(self, -1, color, dpi, style, **kwargs)
+        self.plot=PlotPanel(self, -1, color, dpi, SamplePlotConfig, style, **kwargs)
         self.plugin=plugin
 
         sizer=wx.BoxSizer(wx.VERTICAL)

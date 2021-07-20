@@ -15,16 +15,15 @@ from wx.lib.masked import NumCtrl
 import string
 
 from numpy import *
+from dataclasses import dataclass
 
 from . import parameters
 from . import images as img
-from .exceptions import GenxOptionError
-from .filehandling import Config
+from .filehandling import BaseConfig, Configurable
 from .lib import controls as ctrls
 from .gui_logging import iprint
 
-# =============================================================================
-# class ParameterDataTable
+
 class ParameterDataTable(gridlib.GridTableBase):
     '''
     Class for the datatable which is used by the grid. 
@@ -253,8 +252,6 @@ class ParameterDataTable(gridlib.GridTableBase):
         self.SetValue(row, 1, value)
         self.parent.PostValueChangedEvent()
 
-# Class ParameterDataTable ends here
-# ------------------------------------------------------------------------------
 class SliderCellEditor(gridlib.GridCellEditor):
 
     def __init__(self, value=0.0, min_value=0.0, max_value=100.0):
@@ -367,7 +364,6 @@ class SliderCellEditor(gridlib.GridCellEditor):
         """final cleanup"""
         self._tc.Destroy()
         super(SliderCellEditor, self).Destroy()
-
 
 class ValueLimitCellEditor(gridlib.GridCellEditor):
     """Editor for the parameter values with a spin control"""
@@ -721,17 +717,19 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
         width, height = dc.GetTextExtent("0.1234567e10")
         return wx.Size(width, height)
 
-# ------------------------------------------------------------------------------
-class ParameterGrid(wx.Panel):
+@dataclass
+class ParameterGridConfig(BaseConfig):
+    section='parameter grid'
+    value_slider: bool=False
+
+class ParameterGrid(wx.Panel, Configurable):
     '''
     The GUI component itself. This is the thing to use in a GUI.
     '''
 
-    def __init__(self, parent, frame, config: Config=None):
+    def __init__(self, parent, frame):
         wx.Panel.__init__(self, parent)
-
-        self.config=config
-        self.config_name='parameter grid'
+        Configurable.__init__(self, ParameterGridConfig)
 
         # The two main widgets
         self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_VERTICAL)
@@ -792,8 +790,7 @@ class ParameterGrid(wx.Panel):
         self.grid.Bind(wx.EVT_CHAR, self.OnKey)
 
         self.toolbar.Realize()
-        self.show_slider=False
-        self.SetValueEditorSlider(slider=False)
+        self.SetValueEditorSlider(slider=self.opt.value_slider)
         attr=gridlib.GridCellAttr()
         attr.SetEditor(ValueCellEditor())
         attr.SetRenderer(ValueCellRenderer())
@@ -810,20 +807,9 @@ class ParameterGrid(wx.Panel):
         self.grid.SetGridCursor(0, 3)
         self.grid.SetGridCursor(0, 4)
 
-    def ReadConfig(self):
-        """ Reads the variables stored in the config file."""
-        try:
-            val=self.config.getboolean(self.config_name, 'value slider')
-        except GenxOptionError:
-            iprint('Could not locate option %s.%s'%(self.config_name, 'y scale'))
-            self.SetValueEditorSlider(False)
-        else:
-            self.SetValueEditorSlider(val)
-
-    def WriteConfig(self, show_slider=None):
-        """Writes the varaibles to be stored to the config"""
-        if show_slider is not None:
-            self.config.set(self.config_name, 'value slider', show_slider)
+    def UpdateConfigValues(self):
+        self.SetValueEditorSlider(slider=self.opt.value_slider)
+        self.toggle_slider_tool(self.opt.value_slider)
 
     def OnKey(self, event):
         if event.ControlDown() and event.GetKeyCode() == 22:
@@ -899,12 +885,12 @@ class ParameterGrid(wx.Panel):
             attr.SetRenderer(ValueLimitCellRenderer())
         self.grid.SetColAttr(1, attr)
         self.grid.SetGridCursor(row, col)
-        self.show_slider=slider
-        self.WriteConfig(show_slider=slider)
+        self.opt.value_slider=slider
+        self.WriteConfig()
 
     def GetValueEditorSlider(self):
         """Returns True if the slider editor is active"""
-        return self.show_slider
+        return self.opt.value_slider
 
     def PostValueChangedEvent(self):
         evt=value_change()
@@ -1211,7 +1197,7 @@ class ParameterGrid(wx.Panel):
             else:
                 evt.Skip()
         # elif col==1 and row>-1:
-        #     if self.show_slider:
+        #     if self.opt.value_slider:
         #         self.grid.SetGridCursor(row, col)
         #         self.grid.EnableCellEditControl()
         #     else:

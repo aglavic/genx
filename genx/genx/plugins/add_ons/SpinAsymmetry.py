@@ -11,8 +11,11 @@ Written by Artur Glavic
 
 import wx
 from numpy import isnan
-from genx.plotpanel import PlotPanel
+from genx.plotpanel import PlotPanel, BasePlotConfig
 from .. import add_on_framework as framework
+
+class SAPlotConfig(BasePlotConfig):
+    section='spin asymmetry plot'
 
 class SAPlotPanel(wx.Panel):
     ''' Widget for plotting the spin-asymmetry of datasets.
@@ -20,10 +23,8 @@ class SAPlotPanel(wx.Panel):
 
     def __init__(self, parent, plugin, id=-1, color=None, dpi=None
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
-        ''' Inits the plotpanel
-        '''
         wx.Panel.__init__(self, parent)
-        self.plot=PlotPanel(self, -1, color, dpi, style, **kwargs)
+        self.plot=PlotPanel(self, -1, color, dpi, SAPlotConfig, style, **kwargs)
         self.plugin=plugin
 
         sizer=wx.BoxSizer(wx.VERTICAL)

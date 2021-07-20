@@ -3,11 +3,13 @@ These include loading of initilazation files.
 Also included is the config object.
 '''
 import dataclasses
+import io
+import os, sys
 from configparser import ConfigParser
 from functools import lru_cache
 from abc import ABC, abstractmethod
-import io
-import os, sys
+from typing import Type
+from logging import debug
 
 import h5py
 from .gui_logging import iprint
@@ -151,6 +153,7 @@ class BaseConfig(ABC):
                 getf=config.getboolean
             else:
                 getf=config.get
+
             if field.default is dataclasses.MISSING:
                 fallback=None
             else:
@@ -162,6 +165,7 @@ class BaseConfig(ABC):
                 iprint(f'Could not read option {self.section}/{option} of type {field.type}:\n    {e}')
             else:
                 setattr(self, field.name, value)
+                debug(f'Read option {field.name}={value} from config {self.section}/{option}.')
 
     def safe_config(self, default=False):
         data=self.asdict()
@@ -170,7 +174,12 @@ class BaseConfig(ABC):
         else:
             setter=config.model_set
         for key, value in data.items():
-            setter(self.section, key.replace('_', ' '), value)
+            option=key.replace('_', ' ')
+            debug(f'Write option {key}={value} to config {self.section}/{option}, default={default}.')
+            setter(self.section, option, value)
+
+    def copy(self):
+        return dataclasses.replace(self)
 
 class Configurable:
     """
@@ -179,6 +188,23 @@ class Configurable:
     Defines methods for reading and writing configurations. Subclasses can
     define the config_updated method to be called after changing a configuration.
     """
+    def __init__(self, config_class: Type[BaseConfig]):
+        self.opt=config_class()
+
+    def ReadConfig(self):
+        """ Reads the variables stored in the config file."""
+        self.opt.load_config()
+        self.UpdateConfigValues()
+
+    def WriteConfig(self):
+        """Writes the varaibles to be stored to the config"""
+        self.opt.safe_config()
+
+    def UpdateConfigValues(self):
+        """
+        Sub-classes can overwrite this method to preform some action after
+        a configuration has been loaded.
+        """
 
 
 

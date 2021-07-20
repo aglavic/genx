@@ -330,7 +330,7 @@ class MainFrame(wx.Frame):
         self.data_panel=wx.Panel(self.ver_splitter, wx.ID_ANY)
         self.data_notebook=wx.Notebook(self.data_panel, wx.ID_ANY)
         self.data_notebook_data=wx.Panel(self.data_notebook, wx.ID_ANY)
-        self.data_list=datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.config, status_text)
+        self.data_list=datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, status_text)
         self.data_notebook_pane_2=wx.Panel(self.data_notebook, wx.ID_ANY)
         self.label_2=wx.StaticText(self.data_notebook_pane_2, wx.ID_ANY, "  Data set: ")
         self.data_grid_choice=wx.Choice(self.data_notebook_pane_2, wx.ID_ANY, choices=["test2", "test1"])
@@ -343,20 +343,19 @@ class MainFrame(wx.Frame):
         self.plot_splitter=wx.SplitterWindow(self.plot_panel, wx.ID_ANY)
         self.plot_notebook=wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.plot_notebook_data=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_data=plotpanel.DataPlotPanel(self.plot_notebook_data, config=self.config, config_name='data plot')
+        self.plot_data=plotpanel.DataPlotPanel(self.plot_notebook_data)
         self.plot_notebook_fom=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_fom=plotpanel.ErrorPlotPanel(self.plot_notebook_fom, config=self.config, config_name='fom plot')
+        self.plot_fom=plotpanel.ErrorPlotPanel(self.plot_notebook_fom)
         self.plot_notebook_Pars=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_pars=plotpanel.ParsPlotPanel(self.plot_notebook_Pars, config=self.config, config_name='pars plot')
+        self.plot_pars=plotpanel.ParsPlotPanel(self.plot_notebook_Pars)
         self.plot_notebook_foms=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_fomscan=plotpanel.FomScanPlotPanel(self.plot_notebook_foms, config=self.config,
-                                                     config_name='fom scan plot')
+        self.plot_fomscan=plotpanel.FomScanPlotPanel(self.plot_notebook_foms)
         self.wide_plugin_notebook=wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.panel_1=wx.Panel(self.wide_plugin_notebook, wx.ID_ANY)
         self.input_panel=wx.Panel(self.hor_splitter, wx.ID_ANY)
         self.input_notebook=wx.Notebook(self.input_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.input_notebook_grid=wx.Panel(self.input_notebook, wx.ID_ANY)
-        self.paramter_grid=parametergrid.ParameterGrid(self.input_notebook_grid, self, config=self.config)
+        self.paramter_grid=parametergrid.ParameterGrid(self.input_notebook_grid, self)
         self.input_notebook_script=wx.Panel(self.input_notebook, wx.ID_ANY)
         self.script_editor=wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
         self.script_editor.SetBackSpaceUnIndents(True)
@@ -396,16 +395,16 @@ class MainFrame(wx.Frame):
         # self.main_frame_toolbar.AddSeparator()
         # self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
 
-        self.model=model.Model(config=self.config)
+        self.model=model.Model()
         self.model.data=self.data_list.data_cont.data
         self.paramter_grid.SetParameters(self.model.parameters)
 
         if self.model.script!='':
             self.script_editor.SetText(self.model.script)
-        self.solver_control=solvergui.SolverController(self, self.config)
+        self.solver_control=solvergui.SolverController(self)
 
         self.plugin_control= \
-            add_on.PluginController(self, mb_set_plugins, self.config)
+            add_on.PluginController(self, mb_set_plugins)
 
         # Bind all the events that are needed to occur when a new model has
         # been loaded

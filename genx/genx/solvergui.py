@@ -8,30 +8,38 @@ Last Changed 2009 05 12
 import wx, io, traceback
 import wx.lib.newevent
 from wx.lib.masked import NumCtrl
+from dataclasses import dataclass
 
 from .exceptions import ErrorBarError
+from .filehandling import BaseConfig, Configurable
 from . import diffev, fom_funcs
 from . import filehandling as io
 from .gui_logging import iprint
 import numpy as np
 
-# ==============================================================================
-class SolverController:
+@dataclass
+class SolverConfig(BaseConfig):
+    section='solver'
+    save_all_evals:bool=False
+    errorbar_level:float=1.05
+
+class SolverController(Configurable):
     '''
     Class to take care of the GUI - solver interaction.
     Implements dialogboxes for setting parameters and controls
     for the solver routine. This is where the application specific
     code are used i.e. interfacing the optimization code to the GUI.
     '''
+    opt: SolverConfig
 
-    def __init__(self, parent, config: io.Config=None):
+    def __init__(self, parent):
+        Configurable.__init__(self, SolverConfig)
         # Create the optimizer we are using. In this case the standard
         # Differential evolution optimizer.
         self.optimizer=diffev.DiffEv()
         # Store the parent we need this to bind the different components to
         # the optimization algorithm.
         self.parent=parent
-        self.config=config
 
         # Just storage of the starting values for the paramters before
         # the fit is started so the user can go back to the start values
@@ -57,9 +65,12 @@ class SolverController:
         Reads the parameter that should be read from the config file.
         And set the parameters in both the optimizer and this class.
         '''
-        error_bars_level, save_all_evals=io.load_opt_config(self.optimizer, self.config)
-        self.set_error_bars_level(error_bars_level)
-        self.set_save_all_evals(save_all_evals)
+        Configurable.ReadConfig(self)
+        self.optimizer.ReadConfig()
+
+    def UpdateConfigValues(self):
+        self.set_error_bars_level(self.opt.errorbar_level)
+        self.set_save_all_evals(self.opt.save_all_evals)
 
     def WriteConfig(self):
         ''' WriteConfig(self) --> None
@@ -420,12 +431,11 @@ class SettingsDialog(wx.Dialog):
         # Check box for ignoring nans
         self.fom_ignore_nan_control=wx.CheckBox(self, -1, "Ignore Nan")
         cb_sizer.Add(self.fom_ignore_nan_control, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        self.fom_ignore_nan_control.SetValue(self.solvergui.parent.model.fom_ignore_nan)
+        self.fom_ignore_nan_control.SetValue(self.solvergui.parent.model.solver_parameters.ignore_fom_nan)
         # Check box for ignoring infs
         self.fom_ignore_inf_control=wx.CheckBox(self, -1, "Ignore +/-Inf")
         cb_sizer.Add(self.fom_ignore_inf_control, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        self.fom_ignore_inf_control.SetValue(self.solvergui.parent.model.fom_ignore_inf)
-        self.fom_ignore_inf_control.SetValue(self.solvergui.parent.model.fom_ignore_inf)
+        self.fom_ignore_inf_control.SetValue(self.solvergui.parent.model.solver_parameters.ignore_fom_inf)
 
         # Errorbar level 
         errorbar_sizer=wx.BoxSizer(wx.HORIZONTAL)

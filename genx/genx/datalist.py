@@ -16,6 +16,7 @@ import wx.lib.colourselect as csel
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.intctrl as intctrl
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
+from dataclasses import dataclass
 
 try:
     from wx import wizard
@@ -24,6 +25,7 @@ except ImportError:
 
 from . import data
 from . import filehandling as io
+from .filehandling import BaseConfig, Configurable
 from .exceptions import GenxOptionError
 from . import images as img
 from .plugins import data_loader_wx as dlf
@@ -265,21 +267,32 @@ myEVT_DATA_LIST=wx.NewEventType()
 # Creating an event binder object
 EVT_DATA_LIST=wx.PyEventBinder(myEVT_DATA_LIST)
 
-# END: DataListEvent
-# ==============================================================================
+@dataclass
+class VDataListConfig(BaseConfig):
+    section='data handling'
+    toggle_show: bool=True
 
-class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
+@dataclass
+class DataCommandConfig(BaseConfig):
+    section='data commands'
+    names: str = 'A Example;Default;Simulation;Sustematic Errors'
+    x_commands: str = 'x+33;x;arange(0.01, 6, 0.01);x'
+    y_commands: str = 'y/1e5;y;arange(0.01, 6, 0.01)*0;y'
+    e_commands: str = 'e/2.;e;arange(0.01, 6, 0.01)*0;rms(e, fpe(1.0, 0.02), 0.01*dydx())'
+
+
+class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
     '''
     The listcontrol for the data
     '''
 
-    def __init__(self, parent, data_controller, config: io.Config=None, status_text=None):
+    def __init__(self, parent, data_controller, status_text=None):
         wx.ListCtrl.__init__(self, parent, -1,
                              style=wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_EDIT_LABELS)
         ListCtrlAutoWidthMixin.__init__(self)
+        Configurable.__init__(self, VDataListConfig)
 
         self.data_cont=data_controller
-        self.config=config
         self.parent=parent
         self.status_text=status_text
         # This will set by the register function in the
@@ -308,19 +321,18 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
         # For binding selction showing data sets
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelectionChanged)
-        self.toggleshow=self.config.getboolean('data handling',
-                                                'toggle show')
+        self.ReadConfig()
 
     def SetShowToggle(self, toggle):
         '''Sets the selction type of the show. If toggle is true
         then the selection is via toggle if false via selection of
         data set only.
         '''
-        self.toggleshow=bool(toggle)
-        self.config.set('data handling', 'toggle show', toggle)
+        self.opt.toggle_show=bool(toggle)
+        self.WriteConfig()
 
     def OnSelectionChanged(self, evt):
-        if not self.toggleshow:
+        if not self.opt.toggle_show:
             indices=self._GetSelectedItems()
             indices.sort()
             if not indices==self.show_indices:
@@ -636,8 +648,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.SetItemCount(self.data_cont.get_count())
         self._UpdateData('Data from model loaded', data_changed=True,
                          new_data=True, new_model=True)
-        self.toggleshow=self.config.getboolean('data handling',
-                                                'toggle show')
+        self.ReadConfig()
         self.data_loader_cont.load_default()
         # print "new data from model loaded"
 
@@ -760,25 +771,16 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                     # Add a new key and set it to ''
                     command_par[key]=''
 
-        # Check if we have a config file:
-        if self.config:
-            try:
-                predef_names=self.config.get('data commands', 'names').split(';')
-                cmds_x=self.config.get('data commands', 'x commands').split(';')
-                cmds_y=self.config.get('data commands', 'y commands').split(';')
-                cmds_e=self.config.get('data commands', 'e commands').split(';')
-            except GenxOptionError as e:
-                ShowWarningDialog(self.parent, str(e), 'datalist.OnCalcEdit')
-                predef_names=None
-                predef_commands=None
-            else:
-                predef_commands=[]
-                for cmd_x, cmd_y, cmd_e in zip(cmds_x, cmds_y, cmds_e):
-                    command={'x': cmd_x, 'y': cmd_y, 'e': cmd_e}
-                    predef_commands.append(command)
-        else:
-            predef_names=None
-            predef_commands=None
+        # Read commands from config
+        dcfg=DataCommandConfig()
+        dcfg.load_config()
+        predef_names=dcfg.names.split(';')
+        cmds_x=dcfg.x_commands.split(';')
+        cmds_y=dcfg.y_commands.split(';')
+        cmds_e=dcfg.e_commands.split(';')
+
+        predef_commands=[{'x': cmd_x, 'y': cmd_y, 'e': cmd_e}
+                         for cmd_x, cmd_y, cmd_e in zip(cmds_x, cmds_y, cmds_e)]
 
         # Dialog business start here
         dlg=CalcDialog(self, command_par, all_names, all_commands,
@@ -844,13 +846,13 @@ class DataListControl(wx.Panel):
     The Control window for the whole Data list including a small toolbar
     '''
 
-    def __init__(self, parent, id=-1, config: io.Config=None, status_text=None):
+    def __init__(self, parent, id=-1, status_text=None):
         wx.Panel.__init__(self, parent)
         # The two major windows:
         self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
         mydata=data.DataList()
         self.data_cont=DataController(mydata)
-        self.list_ctrl=VirtualDataList(self, self.data_cont, config=config, status_text=status_text)
+        self.list_ctrl=VirtualDataList(self, self.data_cont, status_text=status_text)
 
         self.sizer_vert=wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer_vert)

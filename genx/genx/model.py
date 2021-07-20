@@ -2,54 +2,70 @@
 Library that contains the the class Model. This
 is a general class that store and binds togheter all the other
 classes that is part of model parameters, such as data and parameters.
-Programmer: Matts Bjorck
-Last changed: 2016 09 20
 '''
 
 # Standard libraries
-import shelve, os, types, zipfile
+import os, types, zipfile
 import pickle as pickle
 import io, traceback
 import inspect
 import numpy as np
 import h5py
+from dataclasses import dataclass
+from logging import debug
 
 # GenX libraries
 from . import data
 from . import parameters
 from . import fom_funcs
 from .exceptions import GenxIOError, FomError, ModelError, ParameterError
-from .filehandling import Config
+from .filehandling import BaseConfig, Configurable
 from .gui_logging import iprint
-from logging import debug
 
 from .models.lib.parameters import NumericParameter, get_parameters
 
 # assure compatibility with scripts that don't include genx in import
 import sys
-
 sys.modules['models']=sys.modules['genx.models']
 
-# ==============================================================================
-# BEGIN: Class Model
+@dataclass
+class StartupScript(BaseConfig):
+    section='startup'
+    script: str='[""]'
+
+@dataclass
+class ModelParameters(BaseConfig):
+    section='parameters'
+    registred_classes: str='Layer;Stack;Sample;Instrument;UserVars'
+    set_func: str='set'
+
+@dataclass
+class SolverParameters(BaseConfig):
+    section='solver'
+    ignore_fom_nan: bool=True
+    ignore_fom_inf: bool=True
+
 
 class Model:
     ''' A class that holds the model i.e. the script that defines
         the model and the data + various other attributes.
     '''
 
-    def __init__(self, config: Config=None):
+    def __init__(self):
         '''
         Create a instance and init all the varaibles.
         '''
-        self.config=config
+        self.startup_script=StartupScript()
+        self.model_parameters=ModelParameters()
+        self.solver_parameters=SolverParameters()
+
         self.data=data.DataList()
         self.script=''
-        if config is not None:
-            try:
-                self.script="\n".join(eval(config.get('startup', 'script', fallback='[""]')))
-            except:
-                debug('Issue when loading script from config:', exc_info=True)
+        self.startup_script.load_config()
+        try:
+            self.script="\n".join(eval(self.startup_script.script))
+        except:
+            debug('Issue when loading script from config:', exc_info=True)
         self.parameters=parameters.Parameters(model=self)
 
         # self.fom_func = default_fom_func
@@ -57,17 +73,10 @@ class Model:
         self.fom=None  # The value of the fom function
 
         self.fom_mask_func=None
-        self.fom_ignore_nan=False
-        self.fom_ignore_inf=False
         self.create_fom_mask_func()
 
         # Registred classes that is looked for in the model
         self.registred_classes=[]
-        # self.registred_classes = ['Layer','Stack','Sample','Instrument',\
-        #                            'model.Layer', 'model.Stack',\
-        #                             'model.Sample','model.Instrument',\
-        #                             'UserVars','Surface','Bulk']
-        self.set_func='set'  # 'set'
         self._reset_module()
 
         # Temporary stuff that needs to keep track on
@@ -84,35 +93,11 @@ class Model:
     def read_config(self):
         '''Read in the config file
         '''
-        # Ceck so that config is loaded
-        if not self.config:
-            return
-        try:
-            val=self.config.get('parameters', 'registred classes')
-        except:
-            iprint('Could not find config for parameters, registered classes')
-        else:
-            self.registred_classes=[s.strip() for s in val.split(';')]
-        try:
-            val=self.config.get('parameters', 'set func')
-        except:
-            iprint('Could not find config for parameters, set func')
-        else:
-            self.set_func=val
+        self.startup_script.load_config()
+        self.model_parameters.load_config()
+        self.solver_parameters.load_config()
 
-        try:
-            val=self.config.getboolean('solver', 'ignore fom nan')
-        except:
-            iprint('Could not find config for solver, ignore fom nan')
-        else:
-            self.fom_ignore_nan=val
-
-        try:
-            val=self.config.getboolean('solver', 'ignore fom inf')
-        except:
-            iprint('Could not find config for solver, ignore fom inf')
-        else:
-            self.fom_ignore_inf=val
+        self.registred_classes=[s.strip() for s in self.model_parameters.registred_classes.split(';')]
 
         self.create_fom_mask_func()
 
@@ -203,8 +188,8 @@ class Model:
         self.parameters.write_h5group(group.create_group('parameters'))
         group['fomfunction']=self.fom_func.__name__.encode('utf-8')
         sgrp=group.create_group('solver_pars')
-        sgrp['fom_ignore_nan']=self.fom_ignore_nan
-        sgrp['fom_ignore_inf']=self.fom_ignore_inf
+        sgrp['fom_ignore_nan']=self.solver_parameters.ignore_fom_nan
+        sgrp['fom_ignore_inf']=self.solver_parameters.ignore_fom_inf
 
         for kw in kwargs:
             kwargs[kw].write_h5group(group.create_group(kw))
@@ -230,11 +215,11 @@ class Model:
             iprint("Can not find fom function name %s"%fom_func_name[()])
 
         try:
-            self.fom_ignore_nan=bool(group['solver_pars']['fom_ignore_nan'][()])
+            self.solver_parameters.ignore_fom_nan=bool(group['solver_pars']['fom_ignore_nan'][()])
         except Exception as e:
             iprint("Could not load parameter fom_ignore_nan from file")
         try:
-            self.fom_ignore_inf=bool(group['solver_pars']['fom_ignore_inf'][()])
+            self.solver_parameters.ignore_fom_inf=bool(group['solver_pars']['fom_ignore_inf'][()])
         except Exception as e:
             iprint("Could not load parameter fom_ignore_inf from file")
         self.create_fom_mask_func()
@@ -351,7 +336,7 @@ class Model:
         :param flag: boolean
         :return:
         """
-        self.fom_ignore_inf=bool(flag)
+        self.solver_parameters.ignore_fom_inf=bool(flag)
         self.create_fom_mask_func()
 
     def set_fom_ignore_nan(self, flag):
@@ -360,7 +345,7 @@ class Model:
         :param flag: boolean flag
         :return:
         """
-        self.fom_ignore_nan=bool(flag)
+        self.solver_parameters.ignore_fom_nan=bool(flag)
         self.create_fom_mask_func()
 
     def create_fom_mask_func(self):
@@ -369,11 +354,11 @@ class Model:
         :param fom: an array
         :return: an masked array
         """
-        if self.fom_ignore_nan and self.fom_ignore_inf:
+        if self.solver_parameters.ignore_fom_nan and self.solver_parameters.ignore_fom_inf:
             fom_mask=lambda a: np.where(np.isfinite(a), a, np.zeros_like(a))
-        elif self.fom_ignore_nan:
+        elif self.solver_parameters.ignore_fom_nan:
             fom_mask=lambda a: np.where(np.isnan(a), a, np.zeros_like(a))
-        elif self.fom_ignore_inf:
+        elif self.solver_parameters.ignore_fom_inf:
             fom_mask=lambda a: np.where(np.isinf(a), a, np.zeros_like(a))
         else:
             fom_mask=lambda a: a*1.0
@@ -610,7 +595,7 @@ class Model:
         Creates a pickable object of the model. Can be used for saving or
         sending to other processes, i.e., parallel processing.
         '''
-        model_copy=Model(self.config)
+        model_copy=Model()
         model_copy.data=self.data
         model_copy.script=self.script
         model_copy.parameters=self.parameters.copy()
@@ -620,9 +605,8 @@ class Model:
         model_copy.filename=self.filename
         model_copy.compiled=self.compiled
         model_copy.fom=self.fom
-        model_copy.fom_ignore_nan=self.fom_ignore_nan
-        model_copy.fom_ignore_inf=self.fom_ignore_inf
-        model_copy.set_func=self.set_func
+        model_copy.solver_parameters=self.solver_parameters.copy()
+        model_copy.model_parameters=self.model_parameters.copy()
         model_copy.saved=self.saved
         # Needs to reset the fom_mask_func since this fails under windows.
         model_copy.fom_mask_func=None
@@ -892,12 +876,12 @@ class Model:
             valid_objs=[(name, obj) for name, obj in objs
                         if isinstance(obj, tuple_of_classes)]
             # nested for loop for finding for each valid object
-            # the right name as given by self.set_func
+            # the right name as given by self.model_parameters.set_func
             # Add this to the right item in par_dict given
             # its class and name.
             [par_dict[obj.__class__.__name__].__setitem__(name,
                                                           [member for member in dir(obj)
-                                                           if member[:len(self.set_func)]==self.set_func])
+                                                           if member[:len(self.model_parameters.set_func)]==self.model_parameters.set_func])
              for name, obj in valid_objs]
 
             return par_dict
