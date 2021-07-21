@@ -27,6 +27,7 @@ from genx.plugins import add_on_framework as add_on
 from . import datalist, filehandling as io, images as img, model, parametergrid, plotpanel, solvergui, help
 from .version import __version__ as program_version
 from .exceptions import GenxError, GenxIOError, ErrorBarError
+from .exception_handling import CatchModelError
 from .gui_logging import iprint
 
 # import wx.lib.agw.aui as aui
@@ -501,17 +502,9 @@ class MainFrame(wx.Frame, io.Configurable):
         # To force an update of the menubar...
         self.plot_data.SetZoom(False)
 
-        try:
-            for p in [self.plot_data, self.plot_fom,
-                      self.plot_pars, self.plot_fomscan]:
+        with self.catch_error(action='init', step=f'reading plot config'):
+            for p in [self.plot_data, self.plot_fom, self.plot_pars, self.plot_fomscan]:
                 p.ReadConfig()
-        except Exception as e:
-            outp=io.StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            error('Error in loading config for the plots. Pyton tractback:\n %s'%val)
-            ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
 
         self.model.saved=True
         debug('finished setup of MainFrame')
@@ -532,7 +525,7 @@ class MainFrame(wx.Frame, io.Configurable):
                                    'Steps', '', 50, 2, 1000)
         if dlg.ShowModal()==wx.ID_OK:
             self.main_frame_statusbar.SetStatusText('Scanning parameter', 1)
-            try:
+            with self.catch_error(action='scan_parameters', step=f'scanning parameters'):
                 x, y = self.solver_control.ScanParameter(row, dlg.GetValue())
                 fs, pars = self.model.get_sim_pars()
                 bestx = self.model.parameters.get_data()[row][1]
@@ -544,15 +537,6 @@ class MainFrame(wx.Frame, io.Configurable):
                                        self.model.parameters.get_names()[row],
                                        'FOM')
                 self.sep_plot_notebook.SetSelection(3)
-            except Exception as e:
-                outp = StringIO()
-                traceback.print_exc(200, outp)
-                val = outp.getvalue()
-                outp.close()
-                ShowErrorDialog(self, val)
-                self.main_frame_statusbar.SetStatusText('Fatal Error - scan fom', 1)
-            else:
-                self.main_frame_statusbar.SetStatusText('Scanning finished', 1)
 
         dlg.Destroy()
 
@@ -569,7 +553,7 @@ class MainFrame(wx.Frame, io.Configurable):
             return
 
         self.main_frame_statusbar.SetStatusText('Trying to project fom', 1)
-        try:
+        with self.catch_error(action='project_fom_parameters', step=f'projecting fom parameters'):
             x, y = self.solver_control.ProjectEvals(row)
             if len(x)==0 or len(y)==0:
                 ShowNotificationDialog(self, 'Please conduct a fit before'+
@@ -588,15 +572,6 @@ class MainFrame(wx.Frame, io.Configurable):
                                    self.model.parameters.get_names()[row],
                                    'FOM')
             self.sep_plot_notebook.SetSelection(3)
-        except Exception as e:
-            outp = StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(self, val)
-            self.main_frame_statusbar.SetStatusText('Fatal Error - project fom', 1)
-        else:
-            self.main_frame_statusbar.SetStatusText('Projected fom plotted', 1)
 
     def ScriptEditorKeyEvent(self, evt):
         if evt.GetKeyCode()==13:
@@ -776,16 +751,8 @@ class MainFrame(wx.Frame, io.Configurable):
                 self.wstartup.safe_config(default=True)
                 io.config.write_default(os.path.join(config_path, 'genx.conf'))
                 debug('Changed profile, plugins to load=%s'%io.config.get('plugins', 'loaded plugins'))
-                try:
+                with self.catch_error(action='startup_dialog', step=f'open model'):
                     self.plugin_control.OnOpenModel(None)
-                except Exception as e:
-                    outp=io.StringIO()
-                    traceback.print_exc(200, outp)
-                    val=outp.getvalue()
-                    outp.close()
-                    error("Exception:\n%s"%outp)
-                    ShowErrorDialog(self, 'Problems when plugins processed model.' \
-                                             ' Python Error:\n%s'%(val,))
 
     def set_title(self):
         filepath, filename = os.path.split(self.model.filename)
@@ -855,6 +822,14 @@ class MainFrame(wx.Frame, io.Configurable):
         #             frame.plot_fomscan]
         return pages
 
+    def catch_error(self, action='execution', step=None, verbose=True):
+        if verbose:
+            return CatchModelError(self, action=action, step=step,
+                                   status_update=self.main_frame_statusbar.SetStatusText)
+        else:
+            return CatchModelError(self, action=action, step=step,
+                                   status_update=None)
+
     def open_model(self, path):
         debug('open_model: clear model')
         self.model.new_model()
@@ -862,52 +837,21 @@ class MainFrame(wx.Frame, io.Configurable):
         # Update all components so all the traces are gone.
         # _post_new_model_event(frame, frame.model)
         debug('open_model: load_file')
-        try:
+        with self.catch_error(action='open_model', step=f'open file {os.path.basename(path)}') as mng:
             io.load_file(path, self.model, self.solver_control.optimizer)
-        except GenxIOError as e:
-            ShowModelErrorDialog(self, e.__str__())
-        except Exception as e:
-            outp = StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            iprint('Error in loading the file ', path, '. Pyton traceback:\n ', val)
-            ShowErrorDialog(self, 'Could not open the file. Python Error:\n%s'%(val,))
-            return
+        if not mng.successful: return # don't continue after error
+
         debug('open_model: read config')
-        try:
+        with self.catch_error(action='open_model', step=f'loading config for plots'):
             [p.ReadConfig() for p in self.get_pages()]
-        except Exception as e:
-            outp = StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            iprint('Error in loading config for the plots. Pyton traceback:\n ', val)
-            ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
-        try:
+        with self.catch_error(action='open_model', step=f'loading config for parameter grid'):
             self.paramter_grid.ReadConfig()
-        except Exception as e:
-            outp = StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            iprint('Error in loading config for parameter grid. Pyton traceback:\n ', val)
-            ShowErrorDialog(self, 'Could not read the config for the parameter grid. Python Error:\n%s'%(val,))
-        else:
-            # Update the Menu choice
             self.main_frame_menubar.mb_view_grid_slider.Check(self.paramter_grid.GetValueEditorSlider())
         debug('open_model: update plugins')
-        try:
+        with self.catch_error(action='open_model', step=f'processing plugins'):
             self.plugin_control.OnOpenModel(None)
-        except Exception as e:
-            outp = StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(self, 'Problems when plugins processed model.' \
-                                  ' Python Error:\n%s'%(val,))
-        self.main_frame_statusbar.SetStatusText('Model loaded from file',
-                                                1)
+        self.main_frame_statusbar.SetStatusText('Model loaded from file', 1)
+
         # Post an event to update everything else
         debug('open_model: post new model event')
         _post_new_model_event(self, self.model)
@@ -947,19 +891,9 @@ class MainFrame(wx.Frame, io.Configurable):
             # Proceed with calling save as
             self.eh_mb_saveas(event)
         else:
-            # If it has been saved just save it
-            try:
+            with self.catch_error(action='save_model', step=f'save file {os.path.basename(fname)}'):
                 io.save_file(fname, self.model, self.solver_control.optimizer)
-            except GenxIOError as e:
-                ShowModelErrorDialog(self, e.__str__())
-            except Exception as e:
-                outp = StringIO()
-                traceback.print_exc(200, outp)
-                val = outp.getvalue()
-                outp.close()
-                ShowErrorDialog(self, 'Could not save the file. Python Error: \n%s'%(val,))
-            self.set_title()
-        self.main_frame_statusbar.SetStatusText('Model saved to file', 1)
+                self.set_title()
 
     def eh_mb_print_plot(self, event):
         '''
@@ -987,17 +921,9 @@ class MainFrame(wx.Frame, io.Configurable):
                             style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            try:
-                self.model.export_orso(dlg.GetPath())
-            except GenxIOError as e:
-                ShowModelErrorDialog(self, str(e))
-                self.main_frame_statusbar.SetStatusText(
-                    'Error when exporting data', 1)
-            except Exception as e:
-                ShowErrorDialog(self, str(e), 'export data - model.export_orso')
-                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-            else:
-                self.main_frame_statusbar.SetStatusText('Data exported', 1)
+            path=dlg.GetPath()
+            with self.catch_error(action='export_orso', step=f'export file {os.path.basename(path)}'):
+                self.model.export_orso(path)
         dlg.Destroy()
 
     def eh_mb_export_data(self, event):
@@ -1010,17 +936,9 @@ class MainFrame(wx.Frame, io.Configurable):
                             style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            try:
-                self.model.export_data(dlg.GetPath())
-            except GenxIOError as e:
-                ShowModelErrorDialog(self, str(e))
-                self.main_frame_statusbar.SetStatusText(
-                    'Error when exporting data', 1)
-            except Exception as e:
-                ShowErrorDialog(self, str(e), 'export data - model.export_data')
-                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-            else:
-                self.main_frame_statusbar.SetStatusText('Data exported', 1)
+            path=dlg.GetPath()
+            with self.catch_error(action='export_data', step=f'data file {os.path.basename(path)}'):
+                self.model.export_data(path)
 
         dlg.Destroy()
 
@@ -1045,22 +963,8 @@ class MainFrame(wx.Frame, io.Configurable):
                                             'The file %s already exists. Do you wish to overwrite it?'%filename
                                             , 'Overwrite?')
             if result:
-                try:
-                    # frame.model.export_table(dlg.GetPath())
+                with self.catch_error(action='export_table', step=f'table file {os.path.basename(fname)}'):
                     self.model.export_table(fname)
-                except GenxIOError as e:
-                    ShowModelErrorDialog(self, str(e))
-                    self.main_frame_statusbar.SetStatusText(
-                        'Error when exporting table', 1)
-                    return
-                except Exception as e:
-                    ShowErrorDialog(self, str(e),
-                                    'export table - model.export_table')
-                    self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-                    return
-                else:
-                    self.main_frame_statusbar.SetStatusText(
-                        'Table exported to file', 1)
 
         dlg.Destroy()
 
@@ -1085,22 +989,8 @@ class MainFrame(wx.Frame, io.Configurable):
                                             'The file %s already exists. Do you wish to overwrite it?'%filename
                                             , 'Overwrite?')
             if result:
-                try:
-                    # frame.model.export_script(dlg.GetPath())
+                with self.catch_error(action='export_orso', step=f'export file {os.path.basename(fname)}'):
                     self.model.export_script(fname)
-                except GenxIOError as e:
-                    ShowModelErrorDialog(self, str(e))
-                    self.main_frame_statusbar.SetStatusText(
-                        'Error when exporting script', 1)
-                    return
-                except Exception as e:
-                    ShowErrorDialog(self, str(e),
-                                    'export script - model.export_script')
-                    self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-                    return
-                else:
-                    self.main_frame_statusbar.SetStatusText(
-                        'Script exported to file', 1)
 
         dlg.Destroy()
 
@@ -1193,16 +1083,8 @@ class MainFrame(wx.Frame, io.Configurable):
         Event handler to start fitting
         '''
         if self.model.compiled:
-            try:
+            with self.catch_error(action='fit_start', step=f'starting fit'):
                 self.solver_control.StartFit()
-            except GenxError as e:
-                ShowModelErrorDialog(self, str(e))
-                self.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-            except Exception as e:
-                ShowErrorDialog(self, str(e))
-                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-            else:
-                self.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
         else:
             ShowNotificationDialog(self, 'The script is not compiled, do a'
                                          ' simulation before you start fitting.')
@@ -1218,16 +1100,8 @@ class MainFrame(wx.Frame, io.Configurable):
         Event handler to resume the fitting routine. No initilization.
         '''
         if self.model.compiled:
-            try:
+            with self.catch_error(action='fit_resume', step=f'resume fit'):
                 self.solver_control.ResumeFit()
-            except GenxError as e:
-                ShowModelErrorDialog(self, str(e))
-                self.main_frame_statusbar.SetStatusText('Error in fitting', 1)
-            except Exception as e:
-                ShowErrorDialog(self, str(e))
-                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-            else:
-                self.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
         else:
             ShowNotificationDialog(self, 'The script is not compiled, do a'
                                          ' simulation before you start fitting.')
@@ -1335,20 +1209,10 @@ class MainFrame(wx.Frame, io.Configurable):
     def do_simulation(self, from_thread=False):
         if not from_thread: self.main_frame_statusbar.SetStatusText('Simulating...', 1)
         self.model.set_script(self.script_editor.GetText())
-        try:
-            # when updated from thread and was compiled before, do not compile again
+        with self.catch_error(action='do_simulation', step=f'simulating the model') as mgr:
             self.model.simulate(compile=not (from_thread and self.model.is_compiled()))
-        except GenxError as e:
-            wx.CallAfter(ShowModelErrorDialog, self, str(e))
-            if not from_thread: self.main_frame_statusbar.SetStatusText('Error in simulation', 1)
-        except Exception as e:
-            outp = StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            wx.CallAfter(ShowErrorDialog, self, val)
-            if not from_thread: self.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
-        else:
+
+        if mgr.successful:
             wx.CallAfter(_post_sim_plot_event, self, self.model, 'Simulation')
             wx.CallAfter(self.plugin_control.OnSimulate, None)
             if not from_thread: self.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
@@ -1356,28 +1220,16 @@ class MainFrame(wx.Frame, io.Configurable):
     def set_possible_parameters_in_grid(self):
         # Now we should find the parameters that we can use to
         # in the grid
-        try:
+        with self.catch_error(action='set_possible_parameters_in_grid', step=f'getting possible parameters',
+                              verbose=False) as mgr:
             pardict = self.model.get_possible_parameters()
-        except Exception as e:
-            outp = StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            # ShowErrorDialog(frame, val)
-            ShowErrorDialog(self, val,
-                            'simulate - model.get_possible_parameters')
-            self.main_frame_statusbar.SetStatusText('Fatal Error', 0)
-            return
+        if not mgr.successful: return
 
-        try:
+        with self.catch_error(action='set_possible_parameters_in_grid', step=f'setting parameter selections',
+                              verbose=False):
             self.paramter_grid.SetParameterSelections(pardict)
-        except Exception as e:
-            ShowErrorDialog(self, str(e),
-                            'simulate - parameter_grid.SetParameterSelection')
-            self.main_frame_statusbar.SetStatusText('Fatal Error', 0)
-            return
-        # Set the function for which the parameter can be evaluated with
-        self.paramter_grid.SetEvalFunc(self.model.eval_in_model)
+            # Set the function for which the parameter can be evaluated with
+            self.paramter_grid.SetEvalFunc(self.model.eval_in_model)
 
     def eh_tb_simulate(self, event):
         '''
@@ -1436,16 +1288,8 @@ class MainFrame(wx.Frame, io.Configurable):
                 result = ShowQuestionDialog(self, 'The file %s already exists. Do you wish to overwrite it?'%filename,
                                             'Overwrite?')
             if result:
-                try:
+                with self.catch_error(action='saveas', step=f'saveing file as {os.path.basename(fname)}'):
                     io.save_file(fname, self.model, self.solver_control.optimizer)
-                except GenxIOError as e:
-                    ShowModelErrorDialog(self, e.__str__())
-                except Exception as e:
-                    outp = StringIO()
-                    traceback.print_exc(200, outp)
-                    val = outp.getvalue()
-                    outp.close()
-                    ShowErrorDialog(self, 'Could not save the file. Python Error:\n%s'%(val,))
                 self.set_title()
         dlg.Destroy()
 
@@ -1477,25 +1321,15 @@ class MainFrame(wx.Frame, io.Configurable):
         '''
         callback to calculate the error bars on the data.
         '''
-        try:
+        with self.catch_error(action='calc_error_bars', step=f'calculating errorbars'):
             error_values = self.solver_control.CalcErrorBars()
-        except ErrorBarError as e:
-            ShowNotificationDialog(self, str(e))
-        except Exception as e:
-            ShowErrorDialog(self, str(e), 'solvergui - CalcErrorBars')
-            self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-        else:
             self.model.parameters.set_error_pars(error_values)
             self.paramter_grid.SetParameters(self.model.parameters)
             self.main_frame_statusbar.SetStatusText('Errorbars calculated', 1)
 
     def eh_tb_error_stats(self, event):
-        try:
+        with self.catch_error(action='error_stats', step=f'opening Bumps analysis dialog'):
             from .bumps_interface import StatisticalAnalysisDialog
-        except Exception as e:
-            ShowErrorDialog(self, str(e), 'solvergui - CalcErrorBars')
-            self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-        else:
             dia = StatisticalAnalysisDialog(self, self.model)
             dia.ShowModal()
 
@@ -1628,12 +1462,8 @@ class MainFrame(wx.Frame, io.Configurable):
         '''
         callback to import data into the program
         '''
-        try:
+        with self.catch_error(action='import_data', step=f'open data file'):
             self.data_list.eh_tb_open(event)
-        except Exception as e:
-            ShowErrorDialog(self, str(e),
-                            'import data - data_list.eh_tb_open')
-            self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
 
     def eh_mb_import_table(self, event):
         '''
@@ -1644,21 +1474,12 @@ class MainFrame(wx.Frame, io.Configurable):
                             style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            try:
-                self.model.import_table(dlg.GetPath())
-            except GenxIOError as e:
-                ShowModelErrorDialog(self, str(e))
-                self.main_frame_statusbar.SetStatusText(
-                    'Error when importing script', 1)
+            path=dlg.GetPath()
+            with self.catch_error(action='import_table', step=f'importing table {os.path.basename(path)}') as mgr:
+                self.model.import_table(path)
+            if not mgr.successful:
                 dlg.Destroy()
                 return
-            except Exception as e:
-                ShowErrorDialog(self, str(e),
-                                'import script - model.import_script')
-                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-                dlg.Destroy()
-                return
-
         dlg.Destroy()
         # Post event to tell that the model has cahnged
         _post_new_model_event(self, self.model)
@@ -1673,31 +1494,10 @@ class MainFrame(wx.Frame, io.Configurable):
                             style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            try:
-                self.model.import_script(dlg.GetPath())
-                # frame.model.import_script(fname)
-            except GenxIOError as e:
-                ShowModelErrorDialog(self, str(e))
-                self.main_frame_statusbar.SetStatusText(
-                    'Error when importing script', 1)
-                return
-            except Exception as e:
-                ShowErrorDialog(self, str(e),
-                                'import script - model.import_script')
-                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
-                return
-            try:
+            path=dlg.GetPath()
+            with self.catch_error(action='import_script', step=f'importing file {os.path.basename(path)}'):
+                self.model.import_script(path)
                 self.plugin_control.OnOpenModel(None)
-            except Exception as e:
-                outp = StringIO()
-                traceback.print_exc(200, outp)
-                val = outp.getvalue()
-                outp.close()
-                ShowErrorDialog(self, 'Problems when plugins processed model.' \
-                                      ' Python Error:\n%s'%(val,))
-            else:
-                self.main_frame_statusbar.SetStatusText(
-                    'Script imported from file', 1)
         dlg.Destroy()
         # Post event to tell that the model has changed
         _post_new_model_event(self, self.model)
@@ -1738,22 +1538,9 @@ class MainFrame(wx.Frame, io.Configurable):
         self.flag_simulating = True
         self.main_frame_statusbar.SetStatusText('Simulating...', 1)
         # Compile is not necessary when using simualate...
-        # frame.model.compile_script()
-        try:
+        with self.catch_error(action='fit_evaluate', step=f'simulating model'):
             self.model.simulate(compile=False)
-        except GenxError as e:
-            ShowModelErrorDialog(self, str(e))
-            self.main_frame_statusbar.SetStatusText('Error in simulation', 1)
-        except Exception as e:
-            outp = StringIO()
-            traceback.print_exc(200, outp)
-            val = outp.getvalue()
-            outp.close()
-            ShowErrorDialog(self, val)
-            self.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
-        else:
             _post_sim_plot_event(self, self.model, 'Simulation')
-            self.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
             self.plugin_control.OnSimulate(None)
         self.flag_simulating = False
 
@@ -1901,8 +1688,7 @@ class MainFrame(wx.Frame, io.Configurable):
                                                   event.GetFindString()), 1)
 
         else:
-           ShowErrorDialog(self, 'Faulty event supplied in find and'
-                                 ' repalce functionallity', 'on_find_event')
+            raise ValueError(f'Faulty event supplied in find and repalce functionallity: {event}')
         # This will scroll the editor to the right position so we can see
         # the text
         self.script_editor.EnsureCaretVisible()
@@ -2070,33 +1856,11 @@ def ShowQuestionDialog(frame, message, title='Question?'):
     dlg.Destroy()
     return result
 
-def ShowModelErrorDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message,
-                         'Warning',
-                         wx.OK | wx.ICON_WARNING
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
 def ShowNotificationDialog(frame, message):
     dlg=wx.MessageDialog(frame, message,
                          'Information',
                          wx.OK | wx.ICON_INFORMATION
                          )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowErrorDialog(frame, message, position=''):
-    if position!='':
-        dlg=wx.MessageDialog(frame, message+'\n'+'Position: '+position,
-                             'FATAL ERROR',
-                             wx.OK | wx.ICON_ERROR
-                             )
-    else:
-        dlg=wx.MessageDialog(frame, message,
-                             'FATAL ERROR',
-                             wx.OK | wx.ICON_ERROR
-                             )
     dlg.ShowModal()
     dlg.Destroy()
 
