@@ -7,7 +7,6 @@ in the models directory.
 
 import wx, os
 import wx.html as  html
-from . import event_handlers as eh
 
 try:
     from docutils.core import publish_doctree, publish_from_doctree
@@ -67,7 +66,7 @@ class ExampleHandler:
         menuitem=self.menu.FindItemById(event.GetId())
         example=menuitem.GetLabel()
         path=self.path+example+'.gx'
-        eh.open_model(self.parent, path)
+        # eh.open_model(self.parent, path)
 
 class PluginHelpDialog(wx.Frame):
     def __init__(self, parent, module, title='Models help'):

@@ -8,18 +8,26 @@ import os
 import shutil
 import sys
 import traceback
+import webbrowser
+import _thread, time
 from logging import debug, error, info, warning
 from dataclasses import dataclass
+from enum import Enum
+from io import StringIO
+from typing import List
 
 import wx
+import wx.adv
 import wx.grid
 import wx.py
 import wx.stc
+from wx.lib.wordwrap import wordwrap
 
 from genx.plugins import add_on_framework as add_on
-from . import datalist, event_handlers, filehandling as io, images as img, model, parametergrid, plotpanel, solvergui
+from . import datalist, filehandling as io, images as img, model, parametergrid, plotpanel, solvergui, help
 from .version import __version__ as program_version
-
+from .exceptions import GenxError, GenxIOError, ErrorBarError
+from .gui_logging import iprint
 
 # import wx.lib.agw.aui as aui
 
@@ -57,6 +65,21 @@ if not os.path.exists(os.path.join(config_path, 'genx.conf')):
     shutil.copyfile(os.path.join(_path, 'genx.conf'),
                     os.path.join(config_path, 'genx.conf'))
 
+manual_url='https://aglavic.github.io/genx/doc/'
+homepage_url='https://aglavic.github.io/genx/'
+
+class ToolId(int, Enum):
+    NEW_MODEL=10001
+    OPEN_MODEL=10002
+    SAVE_MODEL=10003
+    SIM_MODEL=10004
+    START_FIT=10005
+    STOP_FIT=10006
+    RESTART_FIT=10007
+    CALC_ERROR=10008
+    ZOOM=10009
+    ERROR_STATS=10010
+
 @dataclass
 class GUIConfig(io.BaseConfig):
     section='gui'
@@ -88,8 +111,6 @@ class MainFrame(wx.Frame, io.Configurable):
         io.config.load_default(os.path.join(config_path, 'genx.conf'))
         self.ReadConfig()
         self.wstartup.load_config()
-
-        status_text=lambda event: event_handlers.status_text(self, event)
 
         debug('setup of MainFrame - wx.Frame\n')
         wx.Frame.__init__(self, None, id=wx.ID_ANY, title='GenX '+program_version,
@@ -309,36 +330,36 @@ class MainFrame(wx.Frame, io.Configurable):
         # Tool Bar
         self.main_frame_toolbar=wx.ToolBar(self, -1, style=wx.TB_DEFAULT_STYLE)
         self.SetToolBar(self.main_frame_toolbar)
-        self.main_frame_toolbar.AddTool(10001, "tb_new", wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
+        self.main_frame_toolbar.AddTool(ToolId.NEW_MODEL, "tb_new", wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N",
                                         "Create a new model | Ctrl+N")
-        self.main_frame_toolbar.AddTool(10002, "tb_open", wx.Bitmap(img.getopenImage().Scale(tb_bmp_size, tb_bmp_size)),
+        self.main_frame_toolbar.AddTool(ToolId.OPEN_MODEL, "tb_open", wx.Bitmap(img.getopenImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O",
                                         "Open an existing model | Ctrl+O")
-        self.main_frame_toolbar.AddTool(10003, "tb_save", wx.Bitmap(img.getsaveImage().Scale(tb_bmp_size, tb_bmp_size)),
+        self.main_frame_toolbar.AddTool(ToolId.SAVE_MODEL, "tb_save", wx.Bitmap(img.getsaveImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Save | Ctrl+S", "Save model to file | Ctrl+S")
         self.main_frame_toolbar.AddSeparator()
-        self.main_frame_toolbar.AddTool(10004, "tb_simulate",
+        self.main_frame_toolbar.AddTool(ToolId.SIM_MODEL, "tb_simulate",
                                         wx.Bitmap(img.getsimulateImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
-        self.main_frame_toolbar.AddTool(10005, "tb_start_fit",
+        self.main_frame_toolbar.AddTool(ToolId.START_FIT, "tb_start_fit",
                                         wx.Bitmap(img.getstart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Start fit | Ctrl+F", "Start fitting | Ctrl+F")
-        self.main_frame_toolbar.AddTool(10006, "tb_stop_fit",
+        self.main_frame_toolbar.AddTool(ToolId.STOP_FIT, "tb_stop_fit",
                                         wx.Bitmap(img.getstop_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Stop fit | Ctrl+H", "Stop fitting | Ctrl+H")
-        self.main_frame_toolbar.AddTool(10007, "tb_restart_fit",
+        self.main_frame_toolbar.AddTool(ToolId.RESTART_FIT, "tb_restart_fit",
                                         wx.Bitmap(img.getrestart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Restart fit | Ctrl+R",
                                         "Restart the fit | Ctrl+R")
-        self.main_frame_toolbar.AddTool(1008, "tb_calc_error_bars",
+        self.main_frame_toolbar.AddTool(ToolId.CALC_ERROR, "tb_calc_error_bars",
                                         wx.Bitmap(img.getcalc_error_barImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
-        self.main_frame_toolbar.AddTool(10010, "tb_error_stats",
+        self.main_frame_toolbar.AddTool(ToolId.ERROR_STATS, "tb_error_stats",
                                         wx.Bitmap(img.getpar_projImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Error Statistics", "Error Statistics")
         self.main_frame_toolbar.AddSeparator()
-        self.main_frame_toolbar.AddTool(10009, "tb_zoom", wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size, tb_bmp_size)),
+        self.main_frame_toolbar.AddTool(ToolId.ZOOM, "tb_zoom", wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
         # Tool Bar end
         debug('setup of MainFrame - splitters and panels')
@@ -346,7 +367,7 @@ class MainFrame(wx.Frame, io.Configurable):
         self.data_panel=wx.Panel(self.ver_splitter, wx.ID_ANY)
         self.data_notebook=wx.Notebook(self.data_panel, wx.ID_ANY)
         self.data_notebook_data=wx.Panel(self.data_notebook, wx.ID_ANY)
-        self.data_list=datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, status_text)
+        self.data_list=datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.eh_ex_status_text)
         self.data_notebook_pane_2=wx.Panel(self.data_notebook, wx.ID_ANY)
         self.label_2=wx.StaticText(self.data_notebook_pane_2, wx.ID_ANY, "  Data set: ")
         self.data_grid_choice=wx.Choice(self.data_notebook_pane_2, wx.ID_ANY, choices=["test2", "test1"])
@@ -382,16 +403,16 @@ class MainFrame(wx.Frame, io.Configurable):
         self.__do_layout()
 
         debug('setup of MainFrame - bind')
-        self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=10001)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=10002)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=10003)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_simulate, id=10004)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_start_fit, id=10005)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_stop_fit, id=10006)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_restart_fit, id=10007)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_calc_error_bars, id=1008)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_error_stats, id=10010)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=10009)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=ToolId.NEW_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=ToolId.OPEN_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=ToolId.SAVE_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_simulate, id=ToolId.SIM_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_start_fit, id=ToolId.START_FIT)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_stop_fit, id=ToolId.STOP_FIT)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_restart_fit, id=ToolId.RESTART_FIT)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_calc_error_bars, id=ToolId.CALC_ERROR)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_error_stats, id=ToolId.ERROR_STATS)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=ToolId.ZOOM)
         self.Bind(wx.EVT_CHOICE, self.eh_data_grid_choice, self.data_grid_choice)
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.eh_plot_page_changed, self.plot_notebook)
 
@@ -412,18 +433,18 @@ class MainFrame(wx.Frame, io.Configurable):
         # Bind all the events that are needed to occur when a new model has
         # been loaded
         # Update the parameter grid
-        self.Bind(event_handlers.EVT_NEW_MODEL, self.paramter_grid.OnNewModel, self)
-        self.Bind(event_handlers.EVT_NEW_MODEL, self.data_list.eh_external_new_model, self)
+        self.Bind(EVT_NEW_MODEL, self.paramter_grid.OnNewModel, self)
+        self.Bind(EVT_NEW_MODEL, self.data_list.eh_external_new_model, self)
         # Update the script
-        self.Bind(event_handlers.EVT_NEW_MODEL, self.eh_new_model, self)
+        self.Bind(EVT_NEW_MODEL, self.eh_new_model, self)
         # Event that the plot should respond to
         self.Bind(datalist.EVT_DATA_LIST, self.plot_data.OnDataListEvent, self.data_list.list_ctrl)
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data_grid_choice, self.data_list.list_ctrl)
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data, self.data_list.list_ctrl)
 
-        self.Bind(event_handlers.EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent,
+        self.Bind(EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent,
                   self)
-        self.Bind(event_handlers.EVT_SIM_PLOT, self.eh_external_fom_value,
+        self.Bind(EVT_SIM_PLOT, self.eh_external_fom_value,
                   self)
         # Update events from the solver
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.eh_external_fom_value)
@@ -474,9 +495,7 @@ class MainFrame(wx.Frame, io.Configurable):
         self.Bind(wx.EVT_FIND_CLOSE, self.eh_external_find)
         self.Bind(wx.EVT_CLOSE, self.eh_mb_quit)
 
-        proj_func=lambda row: event_handlers.project_fom_parameter(self, row)
-        scan_func=lambda row: event_handlers.scan_parameter(self, row)
-        self.paramter_grid.SetFOMFunctions(proj_func, scan_func)
+        self.paramter_grid.SetFOMFunctions(self.project_fom_parameter, self.scan_parameter)
 
         # Initiializations..
         # To force an update of the menubar...
@@ -492,10 +511,92 @@ class MainFrame(wx.Frame, io.Configurable):
             val=outp.getvalue()
             outp.close()
             error('Error in loading config for the plots. Pyton tractback:\n %s'%val)
-            event_handlers.ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
+            ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
 
         self.model.saved=True
         debug('finished setup of MainFrame')
+
+    def scan_parameter(self, row):
+        ''' scan_parameter(frame, row) --> None
+
+        Scans the parameter in row row [int] from max to min in the number
+        of steps given by dialog input.
+        '''
+        if not self.model.is_compiled():
+            ShowNotificationDialog(self, 'Please conduct a simulation before'+ \
+                                   ' scanning a parameter. The script needs to be compiled.')
+            return
+
+        dlg = wx.NumberEntryDialog(self,
+                                   'Input the number of evaluation points for the scan',
+                                   'Steps', '', 50, 2, 1000)
+        if dlg.ShowModal()==wx.ID_OK:
+            self.main_frame_statusbar.SetStatusText('Scanning parameter', 1)
+            try:
+                x, y = self.solver_control.ScanParameter(row, dlg.GetValue())
+                fs, pars = self.model.get_sim_pars()
+                bestx = self.model.parameters.get_data()[row][1]
+                besty = self.model.fom
+
+                self.plot_fomscan.SetPlottype('scan')
+                self.plot_fomscan.Plot((x, y, bestx, besty,
+                                        self.solver_control.fom_error_bars_level),
+                                       self.model.parameters.get_names()[row],
+                                       'FOM')
+                self.sep_plot_notebook.SetSelection(3)
+            except Exception as e:
+                outp = StringIO()
+                traceback.print_exc(200, outp)
+                val = outp.getvalue()
+                outp.close()
+                ShowErrorDialog(self, val)
+                self.main_frame_statusbar.SetStatusText('Fatal Error - scan fom', 1)
+            else:
+                self.main_frame_statusbar.SetStatusText('Scanning finished', 1)
+
+        dlg.Destroy()
+
+    def project_fom_parameter(self, row):
+        '''project_fom_parameter(frame, row) --> None
+
+        Plots the project fom given by the row row [int]
+        '''
+        import numpy as np
+        if not self.solver_control.IsFitted():
+            ShowNotificationDialog(self, 'Please conduct a fit before'+
+                                   ' scanning a parameter. The script needs to be compiled and foms have'
+                                   +' to be collected.')
+            return
+
+        self.main_frame_statusbar.SetStatusText('Trying to project fom', 1)
+        try:
+            x, y = self.solver_control.ProjectEvals(row)
+            if len(x)==0 or len(y)==0:
+                ShowNotificationDialog(self, 'Please conduct a fit before'+
+                                       ' projecting a parameter. The script needs to be compiled and foms have'
+                                       +' to be collected.')
+                return
+            elif self.model.fom is None or np.isnan(self.model.fom):
+                ShowNotificationDialog(self, 'The model must be simulated (FOM is not a valid number)')
+                return
+            fs, pars = self.model.get_sim_pars()
+            bestx = pars[row]
+            besty = self.model.fom
+            self.plot_fomscan.SetPlottype('project')
+            self.plot_fomscan.Plot((x, y, bestx, besty,
+                                    self.solver_control.fom_error_bars_level),
+                                   self.model.parameters.get_names()[row],
+                                   'FOM')
+            self.sep_plot_notebook.SetSelection(3)
+        except Exception as e:
+            outp = StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            ShowErrorDialog(self, val)
+            self.main_frame_statusbar.SetStatusText('Fatal Error - project fom', 1)
+        else:
+            self.main_frame_statusbar.SetStatusText('Projected fom plotted', 1)
 
     def ScriptEditorKeyEvent(self, evt):
         if evt.GetKeyCode()==13:
@@ -630,7 +731,7 @@ class MainFrame(wx.Frame, io.Configurable):
         else:
             self.plot_splitter.Unsplit()
 
-    def Show(self):
+    def Show(self, **kwargs):
         '''
         Overiding the default method since any resizing has to come AFTER
         the calls to Show
@@ -670,6 +771,8 @@ class MainFrame(wx.Frame, io.Configurable):
             config_file=startup_dialog.GetConfigFile()
             if config_file:
                 io.config.load_default(profile_path+'profiles/'+config_file, reset=True)
+                self.wstartup.show_profiles=startup_dialog.GetShowAtStartup()
+                self.wstartup.widescreen=startup_dialog.GetWidescreen()
                 self.wstartup.safe_config(default=True)
                 io.config.write_default(os.path.join(config_path, 'genx.conf'))
                 debug('Changed profile, plugins to load=%s'%io.config.get('plugins', 'loaded plugins'))
@@ -681,193 +784,978 @@ class MainFrame(wx.Frame, io.Configurable):
                     val=outp.getvalue()
                     outp.close()
                     error("Exception:\n%s"%outp)
-                    event_handlers.ShowErrorDialog(self, 'Problems when plugins processed model.' \
+                    ShowErrorDialog(self, 'Problems when plugins processed model.' \
                                              ' Python Error:\n%s'%(val,))
 
+    def set_title(self):
+        filepath, filename = os.path.split(self.model.filename)
+        if filename!='':
+            if self.model.saved:
+                self.SetTitle(filename+' - '+filepath+' - GenX ' \
+                              +program_version)
+            else:
+                self.SetTitle(filename+'* - '+filepath+' - GenX ' \
+                              +program_version)
+        else:
+            self.SetTitle('GenX '+program_version)
+
     def eh_mb_new(self, event):
-        event_handlers.new(self, event)
+        '''
+        Event handler for creating a new model
+        '''
+        if not self.model.saved:
+            ans = ShowQuestionDialog(self, 'If you continue any changes in'
+                                           ' your model will not be saved.',
+                                     'Model not saved')
+            if not ans:
+                return
+
+        # Reset the model - remove everything from the previous model
+        self.model.new_model()
+        # Update all components so all the traces are gone.
+        _post_new_model_event(self, self.model, desc='Fresh model')
+        self.plugin_control.OnNewModel(None)
+        self.main_frame_statusbar.SetStatusText('New model created', 1)
+        self.set_title()
+        self.model.saved = True
 
     def eh_mb_open(self, event):
-        event_handlers.open(self, event)
+        '''
+        Event handler for opening a model file...
+        '''
+        # Check so the model is saved before quitting
+        if not self.model.saved:
+            ans = ShowQuestionDialog(self, 'If you continue any changes in'
+                                           ' your model will not be saved.',
+                                     'Model not saved')
+            if not ans:
+                return
+
+        dlg = wx.FileDialog(self, message="Open", defaultFile="",
+                            wildcard="GenX File (*.hgx;*.gx)|*.hgx;*.gx",
+                            style=wx.FD_OPEN  # | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            path = dlg.GetPath()
+            debug('open: path retrieved')
+            self.open_model(path)
+
+        dlg.Destroy()
+
+    def get_pages(self):
+        # Get all plot panel objects in GUI
+        pages = []
+        for page in self.plot_notebook.GetChildren():
+            pages += page.GetChildren()
+        if self.sep_plot_notebook is not self.plot_notebook:
+            for page in self.sep_plot_notebook.GetChildren():
+                pages += page.GetChildren()
+
+        # pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
+        #             frame.plot_fomscan]
+        return pages
+
+    def open_model(self, path):
+        debug('open_model: clear model')
+        self.model.new_model()
+        self.paramter_grid.PrepareNewModel()
+        # Update all components so all the traces are gone.
+        # _post_new_model_event(frame, frame.model)
+        debug('open_model: load_file')
+        try:
+            io.load_file(path, self.model, self.solver_control.optimizer)
+        except GenxIOError as e:
+            ShowModelErrorDialog(self, e.__str__())
+        except Exception as e:
+            outp = StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            iprint('Error in loading the file ', path, '. Pyton traceback:\n ', val)
+            ShowErrorDialog(self, 'Could not open the file. Python Error:\n%s'%(val,))
+            return
+        debug('open_model: read config')
+        try:
+            [p.ReadConfig() for p in self.get_pages()]
+        except Exception as e:
+            outp = StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            iprint('Error in loading config for the plots. Pyton traceback:\n ', val)
+            ShowErrorDialog(self, 'Could not read the config for the plots. Python Error:\n%s'%(val,))
+        try:
+            self.paramter_grid.ReadConfig()
+        except Exception as e:
+            outp = StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            iprint('Error in loading config for parameter grid. Pyton traceback:\n ', val)
+            ShowErrorDialog(self, 'Could not read the config for the parameter grid. Python Error:\n%s'%(val,))
+        else:
+            # Update the Menu choice
+            self.main_frame_menubar.mb_view_grid_slider.Check(self.paramter_grid.GetValueEditorSlider())
+        debug('open_model: update plugins')
+        try:
+            self.plugin_control.OnOpenModel(None)
+        except Exception as e:
+            outp = StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            ShowErrorDialog(self, 'Problems when plugins processed model.' \
+                                  ' Python Error:\n%s'%(val,))
+        self.main_frame_statusbar.SetStatusText('Model loaded from file',
+                                                1)
+        # Post an event to update everything else
+        debug('open_model: post new model event')
+        _post_new_model_event(self, self.model)
+        # Needs to put it to saved since all the widgets will have
+        # been updated
+        self.model.saved = True
+        self.set_title()
+
+    def models_changed(self, event):
+        '''models_changed(frame, event) --> None
+
+        callback when something has changed in the model so that the
+        user can be made aware that the model needs saving.
+        '''
+        try:
+            self.model.saved = not event.permanent_change
+        except AttributeError:
+            self.model.saved = False
+        else:
+            self.plugin_control.OnGridChanged(event)
+        self.set_title()
+
+    def update_for_save(self):
+        """Updates the various objects for a save"""
+        self.model.set_script(self.script_editor.GetText())
+        self.paramter_grid.opt.auto_sim=self.main_frame_menubar.mb_fit_autosim.IsChecked()
+        self.paramter_grid.WriteConfig()
 
     def eh_mb_save(self, event):
-        event_handlers.save(self, event)
+        '''
+        Event handler for saving a model file ...
+        '''
+        self.update_for_save()
+        fname = self.model.get_filename()
+        # If model hasn't been saved
+        if fname=='':
+            # Proceed with calling save as
+            self.eh_mb_saveas(event)
+        else:
+            # If it has been saved just save it
+            try:
+                io.save_file(fname, self.model, self.solver_control.optimizer)
+            except GenxIOError as e:
+                ShowModelErrorDialog(self, e.__str__())
+            except Exception as e:
+                outp = StringIO()
+                traceback.print_exc(200, outp)
+                val = outp.getvalue()
+                outp.close()
+                ShowErrorDialog(self, 'Could not save the file. Python Error: \n%s'%(val,))
+            self.set_title()
+        self.main_frame_statusbar.SetStatusText('Model saved to file', 1)
 
     def eh_mb_print_plot(self, event):
-        event_handlers.print_plot(self, event)
+        '''
+        prints the current plot in the plot notebook.
+        '''
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            pages[sel].Print()
 
     def eh_mb_print_grid(self, event):
-        event_handlers.print_parameter_grid(self, event)
+        self.paramter_grid.Print()
 
     def eh_mb_print_script(self, event):
         warning("Event handler `eh_mb_print_script' not implemented")
         event.Skip()
 
     def eh_mb_export_orso(self, event):
-        event_handlers.export_orso(self, event)
+        '''
+        Exports the data to one file per data set with a basename with
+        extention given by a save dialog.
+        '''
+        dlg = wx.FileDialog(self, message="Export data and model", defaultFile="",
+                            wildcard="ORSO Text File (*.ort)|*.ort",
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            try:
+                self.model.export_orso(dlg.GetPath())
+            except GenxIOError as e:
+                ShowModelErrorDialog(self, str(e))
+                self.main_frame_statusbar.SetStatusText(
+                    'Error when exporting data', 1)
+            except Exception as e:
+                ShowErrorDialog(self, str(e), 'export data - model.export_orso')
+                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+            else:
+                self.main_frame_statusbar.SetStatusText('Data exported', 1)
+        dlg.Destroy()
 
     def eh_mb_export_data(self, event):
-        event_handlers.export_data(self, event)
+        '''
+        Exports the data to one file per data set with a basename with
+        extension given by a save dialog.
+        '''
+        dlg = wx.FileDialog(self, message="Export data", defaultFile="",
+                            wildcard="Dat File (*.dat)|*.dat",
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            try:
+                self.model.export_data(dlg.GetPath())
+            except GenxIOError as e:
+                ShowModelErrorDialog(self, str(e))
+                self.main_frame_statusbar.SetStatusText(
+                    'Error when exporting data', 1)
+            except Exception as e:
+                ShowErrorDialog(self, str(e), 'export data - model.export_data')
+                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+            else:
+                self.main_frame_statusbar.SetStatusText('Data exported', 1)
+
+        dlg.Destroy()
 
     def eh_mb_export_table(self, event):
-        event_handlers.export_table(self, event)
+        '''
+        Exports the table to a dat file given by a filedialog.
+        '''
+        dlg = wx.FileDialog(self, message="Export table", defaultFile="",
+                            wildcard="Table File (*.tab)|*.tab",
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            fname = dlg.GetPath()
+            base, ext = os.path.splitext(fname)
+            if ext=='':
+                ext = '.tab'
+            fname = base+ext
+            result = True
+            if os.path.exists(fname):
+                filepath, filename = os.path.split(fname)
+                result = ShowQuestionDialog(self,
+                                            'The file %s already exists. Do you wish to overwrite it?'%filename
+                                            , 'Overwrite?')
+            if result:
+                try:
+                    # frame.model.export_table(dlg.GetPath())
+                    self.model.export_table(fname)
+                except GenxIOError as e:
+                    ShowModelErrorDialog(self, str(e))
+                    self.main_frame_statusbar.SetStatusText(
+                        'Error when exporting table', 1)
+                    return
+                except Exception as e:
+                    ShowErrorDialog(self, str(e),
+                                    'export table - model.export_table')
+                    self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+                    return
+                else:
+                    self.main_frame_statusbar.SetStatusText(
+                        'Table exported to file', 1)
+
+        dlg.Destroy()
 
     def eh_mb_export_script(self, event):
-        event_handlers.export_script(self, event)
+        '''
+        Exports the script to a python file given by a filedialog.
+        '''
+        dlg = wx.FileDialog(self, message="Export script", defaultFile="",
+                            wildcard="Python File (*.py)|*.py",
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            fname = dlg.GetPath()
+            base, ext = os.path.splitext(fname)
+            if ext=='':
+                ext = '.py'
+            fname = base+ext
+            result = True
+            if os.path.exists(fname):
+                filepath, filename = os.path.split(fname)
+                result = ShowQuestionDialog(self,
+                                            'The file %s already exists. Do you wish to overwrite it?'%filename
+                                            , 'Overwrite?')
+            if result:
+                try:
+                    # frame.model.export_script(dlg.GetPath())
+                    self.model.export_script(fname)
+                except GenxIOError as e:
+                    ShowModelErrorDialog(self, str(e))
+                    self.main_frame_statusbar.SetStatusText(
+                        'Error when exporting script', 1)
+                    return
+                except Exception as e:
+                    ShowErrorDialog(self, str(e),
+                                    'export script - model.export_script')
+                    self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+                    return
+                else:
+                    self.main_frame_statusbar.SetStatusText(
+                        'Script exported to file', 1)
+
+        dlg.Destroy()
 
     def eh_mb_quit(self, event):
-        event_handlers.quit(self, event)
+        '''
+        Quit the program
+        '''
+        # Check so the model is saved before quitting
+        if not self.model.saved:
+            ans = ShowQuestionDialog(self, 'If you continue any changes in'
+                                           ' your model will not be saved.',
+                                     'Model not saved')
+            if not ans:
+                return
+
+        self.opt.hsize, self.opt.vsize = self.GetSize()
+        self.opt.vsplit=self.ver_splitter.GetSashPosition()
+        self.opt.hsplit=self.hor_splitter.GetSashPosition()
+        self.opt.psplit=self.plot_splitter.GetSashPosition()
+        self.opt.safe_config(default=True)
+
+        config_path = appdirs.user_data_dir('GenX3', 'ArturGlavic')
+        io.config.write_default(os.path.join(config_path, 'genx.conf'))
+
+        self.findreplace_dlg.Destroy()
+        self.findreplace_dlg = None
+
+        event.Skip()
+        self.Destroy()
 
     def eh_mb_copy_graph(self, event):
-        event_handlers.copy_graph(self, event)
+        '''
+        Callback that copies the current graph in the plot notebook to
+        the clipboard.
+        '''
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            pages[sel].CopyToClipboard()
 
     def eh_mb_copy_sim(self, event):
-        event_handlers.copy_sim(self, event)
+        '''
+        Copies the simulation and the data to the clipboard. Note that this
+        copies ALL data.
+        '''
+        text_string = self.model.get_data_as_asciitable()
+        text = wx.TextDataObject(text_string)
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.SetData(text)
+            wx.TheClipboard.Close()
 
     def eh_mb_copy_table(self, event):
-        event_handlers.copy_table(self, event)
+        '''
+        Copies the table as ascii text to the clipboard
+        '''
+        ascii_table = self.paramter_grid.table.pars.get_ascii_output()
+        text_table = wx.TextDataObject(ascii_table)
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.SetData(text_table)
+            wx.TheClipboard.Close()
 
     def eh_mb_view_zoom(self, event):
-        event_handlers.on_zoom_check(self, event)
+        '''
+        Takes care of clicks on the toolbar zoom button and the menu item zoom.
+        '''
+        if event.GetId()==ToolId.ZOOM:
+            zoom_state = self.main_frame_toolbar.GetToolState(ToolId.ZOOM)
+            self.main_frame_menubar.mb_view_zoom.Check(zoom_state)
+        else:
+            zoom_state = self.main_frame_menubar.mb_view_zoom.IsChecked()
+            self.main_frame_toolbar.ToggleTool(ToolId.ZOOM, zoom_state)
+
+        # Synchronize all plots with zoom state
+        pages = self.get_pages()
+        for page in pages:
+            page.SetZoom(zoom_state)
         event.Skip()
 
     def eh_mb_view_grid_slider(self, event):
-        event_handlers.on_grid_slider_check(self, event)
+        """
+        Change the state of the grid value input, either as slider or as a number.
+        """
+        self.paramter_grid.SetValueEditorSlider(self.main_frame_menubar.mb_view_grid_slider.IsChecked())
+        self.paramter_grid.toggle_slider_tool(self.main_frame_menubar.mb_view_grid_slider.IsChecked())
+        self.paramter_grid.Refresh()
         event.Skip()
 
     def eh_mb_fit_start(self, event):
-        event_handlers.start_fit(self, event)
+        '''
+        Event handler to start fitting
+        '''
+        if self.model.compiled:
+            try:
+                self.solver_control.StartFit()
+            except GenxError as e:
+                ShowModelErrorDialog(self, str(e))
+                self.main_frame_statusbar.SetStatusText('Error in fitting', 1)
+            except Exception as e:
+                ShowErrorDialog(self, str(e))
+                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+            else:
+                self.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
+        else:
+            ShowNotificationDialog(self, 'The script is not compiled, do a'
+                                         ' simulation before you start fitting.')
 
     def eh_mb_fit_stop(self, event):
-        event_handlers.stop_fit(self, event)
+        '''
+        Event handler to stop the fitting routine
+        '''
+        self.solver_control.StopFit()
 
     def eh_mb_fit_resume(self, event):
-        event_handlers.resume_fit(self, event)
+        '''
+        Event handler to resume the fitting routine. No initilization.
+        '''
+        if self.model.compiled:
+            try:
+                self.solver_control.ResumeFit()
+            except GenxError as e:
+                ShowModelErrorDialog(self, str(e))
+                self.main_frame_statusbar.SetStatusText('Error in fitting', 1)
+            except Exception as e:
+                ShowErrorDialog(self, str(e))
+                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+            else:
+                self.main_frame_statusbar.SetStatusText('Fitting starting ...', 1)
+        else:
+            ShowNotificationDialog(self, 'The script is not compiled, do a'
+                                         ' simulation before you start fitting.')
 
     def eh_mb_fit_analyze(self, event):
         warning("Event handler `eh_mb_fit_analyze' not implemented")
         event.Skip()
 
     def eh_mb_misc_showman(self, event):
-        event_handlers.show_manual(self, event)
+        webbrowser.open_new(manual_url)
 
     def eh_mb_misc_about(self, event):
-        event_handlers.show_about_box(self, event)
+        '''
+        Show an about box about GenX with some info...
+        '''
+        import numpy, scipy, matplotlib, platform
+        useful = ''
+        try:
+            import numba
+            useful += 'Numba: %s, '%numba.__version__
+        except:
+            pass
+        try:
+            import vtk
+            useful += 'VTK: %s, '%vtk.vtkVersion.GetVTKVersion()
+        except:
+            pass
+        try:
+            import bumps
+            useful += 'Bumps: %s, '%bumps.__version__
+        except:
+            pass
+
+        info = wx.adv.AboutDialogInfo()
+        info.Name = "GenX"
+        info.Version = program_version
+        info.Copyright = "(C) 2008 Matts Bjorck; 2020 Artur Glavic"
+        info.Description = wordwrap(
+            "GenX is a multipurpose refinement program using the differential "
+            "evolution algorithm. It is developed  mainly for refining x-ray reflectivity "
+            "and neutron reflectivity data."
+
+            "\n\nThe versions of the mandatory libraries are:\n"
+            "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
+            "\n\nThe non-mandatory but useful packages:\n%s"
+            ""%(platform.python_version(), wx.__version__,
+                numpy.__version__, scipy.__version__,
+                matplotlib.__version__, useful),
+            500, wx.ClientDC(self))
+        info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")
+        # No developers yet
+        # info.Developers = []
+        # head, tail = os.path.split(__file__)
+        # license_text = file(head + '/LICENSE.txt','r').read()
+        # license_text = file(_path + 'LICENSE.txt','r').read()
+        # info.License = license_text#wordwrap(license_text, 500, wx.ClientDC(self))
+        info.Licence = wordwrap('This program is free software: you can redistribute it and/or modify '
+                                'it under the terms of the GNU General Public License as published by '
+                                'the Free Software Foundation, either version 3 of the License, or '
+                                '(at your option) any later version. '
+                                '\n\nThis program is distributed in the hope that it will be useful, '
+                                'but WITHOUT ANY WARRANTY; without even the implied warranty of '
+                                'MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the '
+                                'GNU General Public License for more details. '
+                                '\n\nYou should have received a copy of the GNU General Public License '
+                                'along with this program.  If not, see <http://www.gnu.org/licenses/>. '
+                                , 400, wx.ClientDC(self))
+
+        wx.adv.AboutBox(info)
 
     def eh_data_grid_choice(self, event):
-        event_handlers.change_data_grid_view(self, event)
+        '''
+        change the data displayed in the grid...
+        '''
+        dataset = self.model.data[event.GetSelection()]
+        rows = self.data_grid.GetNumberRows()
+        new_rows = max(len(dataset.x), len(dataset.y),
+                       len(dataset.x_raw), len(dataset.y_raw))
+        self.data_grid.DeleteRows(numRows=rows)
+        self.data_grid.AppendRows(new_rows)
+        [[self.data_grid.SetCellValue(row, col, '-') for col in range(6)] \
+         for row in range(new_rows)]
+        [self.data_grid.SetCellValue(row, 0, '%.3e'%dataset.x_raw[row]) \
+         for row in range(len(dataset.x_raw))]
+        [self.data_grid.SetCellValue(row, 1, '%.3e'%dataset.y_raw[row]) \
+         for row in range(len(dataset.y_raw))]
+        [self.data_grid.SetCellValue(row, 2, '%.3e'%dataset.error_raw[row]) \
+         for row in range(len(dataset.error_raw))]
+        [self.data_grid.SetCellValue(row, 3, '%.3e'%dataset.x[row]) \
+         for row in range(len(dataset.x))]
+        [self.data_grid.SetCellValue(row, 4, '%.3e'%dataset.y[row]) \
+         for row in range(len(dataset.y))]
+        [self.data_grid.SetCellValue(row, 5, '%.3e'%dataset.error[row]) \
+         for row in range(len(dataset.error))]
 
     def eh_tb_new(self, event):
-        event_handlers.new(self, event)
+        self.eh_mb_new(event)
 
     def eh_tb_open(self, event):
-        event_handlers.open(self, event)
+        self.eh_mb_open(event)
 
     def eh_tb_save(self, event):
-        event_handlers.save(self, event)
+        self.eh_mb_save(event)
+
+    def do_simulation(self, from_thread=False):
+        if not from_thread: self.main_frame_statusbar.SetStatusText('Simulating...', 1)
+        self.model.set_script(self.script_editor.GetText())
+        try:
+            # when updated from thread and was compiled before, do not compile again
+            self.model.simulate(compile=not (from_thread and self.model.is_compiled()))
+        except GenxError as e:
+            wx.CallAfter(ShowModelErrorDialog, self, str(e))
+            if not from_thread: self.main_frame_statusbar.SetStatusText('Error in simulation', 1)
+        except Exception as e:
+            outp = StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            wx.CallAfter(ShowErrorDialog, self, val)
+            if not from_thread: self.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
+        else:
+            wx.CallAfter(_post_sim_plot_event, self, self.model, 'Simulation')
+            wx.CallAfter(self.plugin_control.OnSimulate, None)
+            if not from_thread: self.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
+
+    def set_possible_parameters_in_grid(self):
+        # Now we should find the parameters that we can use to
+        # in the grid
+        try:
+            pardict = self.model.get_possible_parameters()
+        except Exception as e:
+            outp = StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            # ShowErrorDialog(frame, val)
+            ShowErrorDialog(self, val,
+                            'simulate - model.get_possible_parameters')
+            self.main_frame_statusbar.SetStatusText('Fatal Error', 0)
+            return
+
+        try:
+            self.paramter_grid.SetParameterSelections(pardict)
+        except Exception as e:
+            ShowErrorDialog(self, str(e),
+                            'simulate - parameter_grid.SetParameterSelection')
+            self.main_frame_statusbar.SetStatusText('Fatal Error', 0)
+            return
+        # Set the function for which the parameter can be evaluated with
+        self.paramter_grid.SetEvalFunc(self.model.eval_in_model)
 
     def eh_tb_simulate(self, event):
-        event_handlers.simulate(self, event)
+        '''
+        Event handler for simulation.
+        '''
+        self.flag_simulating = True
+        self.do_simulation()
+        self.set_possible_parameters_in_grid()
+        self.flag_simulating = False
 
     def eh_tb_start_fit(self, event):
-        event_handlers.start_fit(self, event)
+        self.eh_mb_fit_start(event)
 
     def eh_tb_stop_fit(self, event):
-        event_handlers.stop_fit(self, event)
+        self.eh_mb_fit_stop(event)
 
     def eh_tb_restart_fit(self, event):
-        event_handlers.resume_fit(self, event)
+        self.eh_mb_fit_resume(event)
 
     def eh_tb_zoom(self, event):
-        event_handlers.on_zoom_check(self, event)
+        self.eh_mb_view_zoom(event)
 
     def eh_new_model(self, event):
-        event_handlers.on_new_model(self, event)
+        '''
+        Callback for NEW_MODEL event. Used to update the script for
+        a new model i.e. put the string to the correct value.
+        '''
+        # Set the string in the script_editor
+        self.script_editor.SetText(event.GetModel().get_script())
+        # Let the solvergui do its loading and updating:
+        self.solver_control.ModelLoaded()
+        # Lets update the mb_use_toggle_show Menu item
+        self.main_frame_menubar.mb_use_toggle_show.Check(self.data_list.list_ctrl.opt.toggle_show)
+        self.main_frame_menubar.mb_fit_autosim.Check(self.paramter_grid.opt.auto_sim)
+        # Let other event handlers recieve the event as well
         event.Skip()
 
     def eh_mb_saveas(self, event):
-        event_handlers.save_as(self, event)
+        '''
+        Event handler for save as ...
+        '''
+        dlg = wx.FileDialog(self, message="Save As", defaultFile="",
+                            wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",
+                            style=wx.FD_SAVE  # | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            self.update_for_save()
+            fname = dlg.GetPath()
+            base, ext = os.path.splitext(fname)
+            if ext=='':
+                ext = '.hgx'
+            fname = base+ext
+            result = True
+            if os.path.exists(fname):
+                filepath, filename = os.path.split(fname)
+                result = ShowQuestionDialog(self, 'The file %s already exists. Do you wish to overwrite it?'%filename,
+                                            'Overwrite?')
+            if result:
+                try:
+                    io.save_file(fname, self.model, self.solver_control.optimizer)
+                except GenxIOError as e:
+                    ShowModelErrorDialog(self, e.__str__())
+                except Exception as e:
+                    outp = StringIO()
+                    traceback.print_exc(200, outp)
+                    val = outp.getvalue()
+                    outp.close()
+                    ShowErrorDialog(self, 'Could not save the file. Python Error:\n%s'%(val,))
+                self.set_title()
+        dlg.Destroy()
 
     def eh_ex_status_text(self, event):
-        event_handlers.status_text(self, event)
+        self.main_frame_statusbar.SetStatusText(event.text, 1)
 
     def eh_ex_point_pick(self, event):
-        event_handlers.point_pick(self, event)
+        self.main_frame_statusbar.SetStatusText(event.text, 2)
 
     def eh_ex_plot_settings_changed(self, event):
-        event_handlers.plot_settings_changed(self, event)
+        '''
+        Callback for the settings change event for the current plot
+         - change the toggle for the zoom icon and change the menu items.
+        '''
+        self.main_frame_toolbar.ToggleTool(ToolId.ZOOM, event.zoomstate)
+        self.main_frame_menubar.mb_view_zoom.Check(event.zoomstate)
+        if event.yscale=='log':
+            self.main_frame_menubar.mb_view_yscale_log.Check(True)
+        elif event.yscale=='linear':
+            self.main_frame_menubar.mb_view_yscale_lin.Check(True)
+        if event.xscale=='log':
+            self.main_frame_menubar.mb_view_xscale_log.Check(True)
+        elif event.xscale=='linear':
+            self.main_frame_menubar.mb_view_xscale_lin.Check(True)
+        self.main_frame_menubar.mb_view_autoscale.Check(event.autoscale)
         event.Skip()
 
     def eh_tb_calc_error_bars(self, event):
-        event_handlers.calculate_error_bars(self, event)
+        '''
+        callback to calculate the error bars on the data.
+        '''
+        try:
+            error_values = self.solver_control.CalcErrorBars()
+        except ErrorBarError as e:
+            ShowNotificationDialog(self, str(e))
+        except Exception as e:
+            ShowErrorDialog(self, str(e), 'solvergui - CalcErrorBars')
+            self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+        else:
+            self.model.parameters.set_error_pars(error_values)
+            self.paramter_grid.SetParameters(self.model.parameters)
+            self.main_frame_statusbar.SetStatusText('Errorbars calculated', 1)
 
     def eh_tb_error_stats(self, event):
-        event_handlers.error_stats(self, event)
+        try:
+            from .bumps_interface import StatisticalAnalysisDialog
+        except Exception as e:
+            ShowErrorDialog(self, str(e), 'solvergui - CalcErrorBars')
+            self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+        else:
+            dia = StatisticalAnalysisDialog(self, self.model)
+            dia.ShowModal()
 
     def eh_plot_page_changed(self, event):
-        event_handlers.plot_page_changed(self, event)
+        '''plot_page_changed(frame, event) --> None
+
+        Callback for page change in plot notebook. Changes the state of
+        the zoom toggle button.
+        '''
+        sel = event.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            zoom_state = pages[sel].GetZoom()
+            # Set the zoom button to the correct value
+            self.main_frame_toolbar.ToggleTool(ToolId.ZOOM, zoom_state)
+            self.main_frame_menubar.mb_view_zoom.Check(zoom_state)
+
+            yscale = pages[sel].GetYScale()
+            if yscale=='log':
+                self.main_frame_menubar.mb_view_yscale_log.Check(True)
+            elif yscale=='linear':
+                self.main_frame_menubar.mb_view_yscale_lin.Check(True)
+            xscale = pages[sel].GetXScale()
+            if xscale=='log':
+                self.main_frame_menubar.mb_view_yscale_log.Check(True)
+            elif xscale=='linear':
+                self.main_frame_menubar.mb_view_yscale_lin.Check(True)
         event.Skip()
 
     def eh_mb_view_zoomall(self, event):
-        event_handlers.zoomall(self, event)
+        '''zoomall(self, event) --> None
+
+        Zoom out and show all data points
+        '''
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            tmp = pages[sel].GetAutoScale()
+            pages[sel].SetAutoScale(True)
+            pages[sel].AutoScale()
+            pages[sel].SetAutoScale(tmp)
+            pages[sel].AutoScale()
         event.Skip()
+
+    def view_yscale(self, value):
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            pages[sel].SetYScale(value)
+
+    def view_xscale(self, value):
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            pages[sel].SetXScale(value)
 
     def eh_mb_view_yscale_log(self, event):
-        event_handlers.set_yscale(self, 'log')
-        event.Skip()
+        self.view_yscale('log')
 
     def eh_mb_view_yscale_linear(self, event):
-        event_handlers.set_yscale(self, 'linear')
-        event.Skip()
+        self.view_yscale('linear')
 
     def eh_mb_view_xscale_log(self, event):
-        event_handlers.set_xscale(self, 'log')
-        event.Skip()
+        '''
+        Set the x-scale of the current plot. type should be linear or log, strings.
+        '''
+        self.view_xscale('log')
 
     def eh_mb_view_xscale_linear(self, event):
-        event_handlers.set_xscale(self, 'linear')
-        event.Skip()
+        self.view_xscale('linear')
 
     def eh_mb_view_autoscale(self, event):
-        event_handlers.on_autoscale(self, event)
-        event.Skip()
+        '''on_autoscale(frame, event) --> None
+
+        Toggles the autoscale of the current plot.
+        '''
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            pages[sel].SetAutoScale(not pages[sel].GetAutoScale())
+
+    def activate_cuda(self):
+        dlg = wx.ProgressDialog(parent=self,
+                                maximum=3,
+                                message="Compiling CUDA GPU computing functions with Numba",
+                                title='Activating CUDA...')
+        dlg.Show()
+
+        dlg.Update(1)
+        from genx.models.lib import paratt_cuda
+        dlg.Update(2)
+        from genx.models.lib import neutron_cuda
+        dlg.Update(3)
+        from models.lib import paratt, neutron_refl
+        paratt.Refl = paratt_cuda.Refl
+        paratt.ReflQ = paratt_cuda.ReflQ
+        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
+        neutron_refl.Refl = neutron_cuda.Refl
+        from genx.models.lib import paratt, neutron_refl
+        paratt.Refl = paratt_cuda.Refl
+        paratt.ReflQ = paratt_cuda.ReflQ
+        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
+        neutron_refl.Refl = neutron_cuda.Refl
+
+        dlg.Destroy()
+
+    def deactivate_cuda(self):
+        from genx.models.lib import paratt_numba, neutron_numba
+        from models.lib import paratt, neutron_refl
+        paratt.Refl = paratt_numba.Refl
+        paratt.ReflQ = paratt_numba.ReflQ
+        paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
+        neutron_refl.Refl = neutron_numba.Refl
+        from genx.models.lib import paratt, neutron_refl
+        paratt.Refl = paratt_numba.Refl
+        paratt.ReflQ = paratt_numba.ReflQ
+        paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
+        neutron_refl.Refl = neutron_numba.Refl
 
     def eh_mb_use_cuda(self, event):
         if self.main_frame_menubar.mb_use_cuda.IsChecked():
-            event_handlers.activate_cuda(self, event)
+            self.activate_cuda()
         else:
-            event_handlers.deactivate_cuda(self, event)
-        event.Skip()
+            self.deactivate_cuda()
 
     def eh_mb_set_opt(self, event):
-        event_handlers.on_optimizer_settings(self, event)
+        self.solver_control.ParametersDialog(self)
 
     def eh_mb_import_data(self, event):
-        event_handlers.import_data(self, event)
+        '''
+        callback to import data into the program
+        '''
+        try:
+            self.data_list.eh_tb_open(event)
+        except Exception as e:
+            ShowErrorDialog(self, str(e),
+                            'import data - data_list.eh_tb_open')
+            self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
 
     def eh_mb_import_table(self, event):
-        event_handlers.import_table(self, event)
+        '''
+        imports a table from the file given by a file dialog box
+        '''
+        dlg = wx.FileDialog(self, message="Import script", defaultFile="",
+                            wildcard="Table File (*.tab)|*.tab|All files (*.*)|*.*",
+                            style=wx.FD_OPEN | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            try:
+                self.model.import_table(dlg.GetPath())
+            except GenxIOError as e:
+                ShowModelErrorDialog(self, str(e))
+                self.main_frame_statusbar.SetStatusText(
+                    'Error when importing script', 1)
+                dlg.Destroy()
+                return
+            except Exception as e:
+                ShowErrorDialog(self, str(e),
+                                'import script - model.import_script')
+                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+                dlg.Destroy()
+                return
+
+        dlg.Destroy()
+        # Post event to tell that the model has cahnged
+        _post_new_model_event(self, self.model)
+        self.main_frame_statusbar.SetStatusText('Table imported from file', 1)
 
     def eh_mb_import_script(self, event):
-        event_handlers.import_script(self, event)
+        '''
+        imports a script from the file given by a file dialog box
+        '''
+        dlg = wx.FileDialog(self, message="Import script", defaultFile="",
+                            wildcard="Python files (*.py)|*.py|All files (*.*)|*.*",
+                            style=wx.FD_OPEN | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            try:
+                self.model.import_script(dlg.GetPath())
+                # frame.model.import_script(fname)
+            except GenxIOError as e:
+                ShowModelErrorDialog(self, str(e))
+                self.main_frame_statusbar.SetStatusText(
+                    'Error when importing script', 1)
+                return
+            except Exception as e:
+                ShowErrorDialog(self, str(e),
+                                'import script - model.import_script')
+                self.main_frame_statusbar.SetStatusText('Fatal Error', 1)
+                return
+            try:
+                self.plugin_control.OnOpenModel(None)
+            except Exception as e:
+                outp = StringIO()
+                traceback.print_exc(200, outp)
+                val = outp.getvalue()
+                outp.close()
+                ShowErrorDialog(self, 'Problems when plugins processed model.' \
+                                      ' Python Error:\n%s'%(val,))
+            else:
+                self.main_frame_statusbar.SetStatusText(
+                    'Script imported from file', 1)
+        dlg.Destroy()
+        # Post event to tell that the model has changed
+        _post_new_model_event(self, self.model)
 
     def eh_external_fom_value(self, event):
-        event_handlers.fom_value(self, event)
+        '''
+        Callback to update the fom_value displayed by the gui
+        '''
+        fom_value = event.model.fom
+        fom_name = event.model.fom_func.__name__
+        if fom_value:
+            self.main_frame_fom_text.SetLabel('        FOM %s: %.4e'%(fom_name, fom_value))
+        else:
+            self.main_frame_fom_text.SetLabel('        FOM %s: None'%fom_name)
         event.Skip()
 
     def eh_mb_set_dal(self, event):
-        event_handlers.on_data_loader_settings(self, event)
+        self.data_list.DataLoaderSettingsDialog()
 
     def eh_external_update_data_grid_choice(self, event):
-        event_handlers.update_data_grid_choice(self, event)
+        '''
+        Updates the choices of the grids to display from the data.
+        '''
+        data = event.GetData()
+        names = [data_set.name for data_set in data]
+        self.data_grid_choice.Clear()
+        self.data_grid_choice.AppendItems(names)
         event.Skip()
 
     def eh_external_update_data(self, event):
-        event_handlers.update_data(self, event)
+        self.plugin_control.OnDataChanged(event)
         event.Skip()
 
     def eh_mb_fit_evaluate(self, event):
-        event_handlers.evaluate(self, event)
+        '''
+        Event handler for only evaluating the Sim function - no recompiling
+        '''
+        self.flag_simulating = True
+        self.main_frame_statusbar.SetStatusText('Simulating...', 1)
+        # Compile is not necessary when using simualate...
+        # frame.model.compile_script()
+        try:
+            self.model.simulate(compile=False)
+        except GenxError as e:
+            ShowModelErrorDialog(self, str(e))
+            self.main_frame_statusbar.SetStatusText('Error in simulation', 1)
+        except Exception as e:
+            outp = StringIO()
+            traceback.print_exc(200, outp)
+            val = outp.getvalue()
+            outp.close()
+            ShowErrorDialog(self, val)
+            self.main_frame_statusbar.SetStatusText('Fatal Error - simulate', 1)
+        else:
+            _post_sim_plot_event(self, self.model, 'Simulation')
+            self.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
+            self.plugin_control.OnSimulate(None)
+        self.flag_simulating = False
 
     def eh_data_new_set(self, event):
         self.data_list.eh_tb_add(event)
@@ -903,39 +1791,160 @@ class MainFrame(wx.Frame, io.Configurable):
         self.data_list.list_ctrl.OnPlotSettings(event)
 
     def eh_mb_models_help(self, event):
-        event_handlers.models_help(self, event)
+        '''
+        Show a help dialog for information about the different models.
+        '''
+        dlg = help.PluginHelpDialog(self, 'models', title="Models help")
+        if self.model.is_compiled():
+            current_model = self.model.script_module.model.__name__.rsplit('.', 1)[1]
+            if current_model in dlg.choice.GetStrings():
+                dlg.choice.SetStringSelection(current_model)
+                dlg.on_choice(None)
+        dlg.Show()
 
     def eh_external_model_changed(self, event):
-        event_handlers.models_changed(self, event)
+        '''
+        callback when something has changed in the model so that the
+        user can be made aware that the model needs saving.
+        '''
+        try:
+            self.model.saved = not event.permanent_change
+        except AttributeError:
+            self.model.saved = False
+        else:
+            self.plugin_control.OnGridChanged(event)
+        self.set_title()
         event.Skip()
 
     def eh_mb_plugins_help(self, event):
-        event_handlers.plugins_help(self, event)
+        '''
+        Show a help dialog for information about the different plugins.
+        '''
+        dlg = help.PluginHelpDialog(self, 'plugins.add_ons', title="Plugins help")
+        dlg.Show()
 
     def eh_mb_data_loaders_help(self, event):
-        event_handlers.data_loaders_help(self, event)
+        '''
+        Show a help dialog for information about the different data_loaders.
+        '''
+        dlg = help.PluginHelpDialog(self, 'plugins.data_loaders', title="Data loaders help")
+        dlg.Show()
 
     def eh_mb_findreplace(self, event):
-        event_handlers.on_findreplace(self, event)
+        self.findreplace_dlg.Show(True)
 
     def eh_external_find(self, event):
-        event_handlers.on_find_event(self, event)
+        '''callback for find events - coupled to the script
+        '''
+        evtype = event.GetEventType()
+
+        def find():
+            find_str = event.GetFindString()
+            ##print frame.findreplace_data.GetFlags()
+            flags = event.GetFlags()
+            if flags & 1:
+                ##print "Searching down"
+                pos = self.script_editor.SearchNext(flags, find_str)
+            else:
+                ##print "Searching up"
+                pos = self.script_editor.SearchPrev(flags, find_str)
+            if pos==-1:
+                self.main_frame_statusbar.SetStatusText(
+                    'Could not find text %s'%find_str, 1)
+            return pos
+
+        def replace():
+            replace_str = event.GetReplaceString()
+            self.script_editor.ReplaceSelection(replace_str)
+
+        # Deal with the different cases
+        if evtype==wx.wxEVT_COMMAND_FIND:
+            self.script_editor.SearchAnchor()
+            find()
+
+        elif evtype==wx.wxEVT_COMMAND_FIND_NEXT:
+            pnew = self.script_editor.GetSelectionEnd()
+            ##print pnew
+            self.script_editor.GotoPos(pnew)
+            self.script_editor.SetAnchor(pnew)
+            self.script_editor.SearchAnchor()
+            ##print 'Finding next'
+            find()
+
+        elif evtype==wx.wxEVT_COMMAND_FIND_REPLACE:
+            # If we do not have found text already
+            # or if we have marked other text by mistake...
+            if self.script_editor.GetSelectedText()!= \
+                    event.GetFindString():
+                find()
+            # We already have found and marked text that we should
+            # replace
+            else:
+                self.script_editor.ReplaceSelection(
+                    event.GetReplaceString())
+                # Find a new text to replace
+                find()
+        elif evtype==wx.wxEVT_COMMAND_FIND_REPLACE_ALL:
+            if self.script_editor.GetSelectedText()!= \
+                    event.GetFindString():
+                pos = find()
+            else:
+                pos = -1
+            i = 0
+            while pos!=-1:
+                self.script_editor.ReplaceSelection(
+                    event.GetReplaceString())
+                i += 1
+                pos = find()
+            self.main_frame_statusbar.SetStatusText(
+                'Replaces %d occurancies of  %s'%(i,
+                                                  event.GetFindString()), 1)
+
+        else:
+           ShowErrorDialog(self, 'Faulty event supplied in find and'
+                                 ' repalce functionallity', 'on_find_event')
+        # This will scroll the editor to the right position so we can see
+        # the text
+        self.script_editor.EnsureCaretVisible()
 
     def eh_mb_fom_help(self, event):
-        event_handlers.fom_help(self, event)
+        '''
+        Show a help dialog for information about the different fom.
+        '''
+        dlg = help.PluginHelpDialog(self, 'fom_funcs', title="FOM functions help")
+        dlg.Show()
 
     def eh_mb_view_use_toggle_show(self, event):
         new_val=self.main_frame_menubar.mb_use_toggle_show.IsChecked()
         self.data_list.list_ctrl.SetShowToggle(new_val)
 
     def eh_mb_misc_openhomepage(self, event):
-        event_handlers.show_homepage(self, event)
+        webbrowser.open_new(homepage_url)
 
     def eh_show_startup_dialog(self, event):
+        pre_dia=self.wstartup.copy()
         self.startup_dialog(config_path, force_show=True)
+        print(pre_dia==self.wstartup)
+
+    def simulation_loop(self):
+        """ Simulation loop for threading to increase the speed of the interactive simulations
+        :param self:
+        :return:
+        """
+        self.flag_simulating = True
+        while self.simulation_queue_counter>0:
+            self.do_simulation(from_thread=True)
+            time.sleep(0.1)
+            self.simulation_queue_counter = min(1, self.simulation_queue_counter-1)
+        self.flag_simulating = False
 
     def eh_external_parameter_value_changed(self, event):
-        event_handlers.parameter_value_changed(self, event)
+        """
+        Event handler for when a value of a parameter in the grid has been updated.
+        """
+        self.simulation_queue_counter += 1
+        if self.main_frame_menubar.mb_fit_autosim.IsChecked() and not self.flag_simulating:
+            _thread.start_new_thread(self.simulation_loop, ())
 
     def eh_mb_fit_autosim(self, event):
         event.Skip()
@@ -971,7 +1980,7 @@ class StartUpConfigDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, -1, 'Change Startup Configuration')
 
         self.config_folder=config_folder
-        self.selected_config: io.Config=None
+        self.selected_config=None
 
         sizer=wx.BoxSizer(wx.VERTICAL)
         sizer.Add((-1, 10), 0, wx.EXPAND)
@@ -1029,7 +2038,6 @@ class StartUpConfigDialog(wx.Dialog):
         self.selected_config=self.profiles[self.config_list.GetSelection()]
         self.show_at_startup=self.startup_cb.GetValue()
         self.widescreen=self.wide_cb.GetValue()
-        event.Skip()
 
     def GetConfigFile(self):
         if self.selected_config:
@@ -1043,7 +2051,7 @@ class StartUpConfigDialog(wx.Dialog):
     def GetWidescreen(self):
         return self.widescreen
 
-    def get_possible_configs(self):
+    def get_possible_configs(self)->List[str]:
         '''
         search the plugin directory. 
         Checks the list for python scripts and returns a list of 
@@ -1052,6 +2060,97 @@ class StartUpConfigDialog(wx.Dialog):
         plugins=[s[:-5] for s in os.listdir(self.config_folder) if '.conf'==s[-5:]
                  and s[:2]!='__']
         return plugins
+
+def ShowQuestionDialog(frame, message, title='Question?'):
+    dlg=wx.MessageDialog(frame, message,
+                         title,
+                         wx.OK | wx.CANCEL | wx.OK_DEFAULT | wx.ICON_QUESTION
+                         )
+    result=dlg.ShowModal()==wx.ID_OK
+    dlg.Destroy()
+    return result
+
+def ShowModelErrorDialog(frame, message):
+    dlg=wx.MessageDialog(frame, message,
+                         'Warning',
+                         wx.OK | wx.ICON_WARNING
+                         )
+    dlg.ShowModal()
+    dlg.Destroy()
+
+def ShowNotificationDialog(frame, message):
+    dlg=wx.MessageDialog(frame, message,
+                         'Information',
+                         wx.OK | wx.ICON_INFORMATION
+                         )
+    dlg.ShowModal()
+    dlg.Destroy()
+
+def ShowErrorDialog(frame, message, position=''):
+    if position!='':
+        dlg=wx.MessageDialog(frame, message+'\n'+'Position: '+position,
+                             'FATAL ERROR',
+                             wx.OK | wx.ICON_ERROR
+                             )
+    else:
+        dlg=wx.MessageDialog(frame, message,
+                             'FATAL ERROR',
+                             wx.OK | wx.ICON_ERROR
+                             )
+    dlg.ShowModal()
+    dlg.Destroy()
+
+# =============================================================================
+# Custom events needed for updating and message parsing between the different
+# modules.
+
+class GenericModelEvent(wx.CommandEvent):
+    '''
+    Event class for a new model - for updating
+    of the paramters, plots and script.
+    '''
+
+    def __init__(self, evt_type, id, model):
+        wx.CommandEvent.__init__(self, evt_type, id)
+        self.model=model
+        self.description=''
+
+    def GetModel(self):
+        return self.model
+
+    def SetModel(self, model):
+        self.model=model
+
+    def SetDescription(self, desc):
+        '''
+        Set a string that describes the event that has occurred
+        '''
+        self.description=desc
+
+# Generating an event type:
+myEVT_NEW_MODEL=wx.NewEventType()
+# Creating an event binder object
+EVT_NEW_MODEL=wx.PyEventBinder(myEVT_NEW_MODEL)
+
+def _post_new_model_event(parent, model, desc=''):
+    # Send an event that a new data set has been loaded
+    evt=GenericModelEvent(myEVT_NEW_MODEL, parent.GetId(), model)
+    evt.SetDescription(desc)
+    # Process the event!
+    parent.GetEventHandler().ProcessEvent(evt)
+
+# Generating an event type:
+myEVT_SIM_PLOT=wx.NewEventType()
+# Creating an event binder object
+EVT_SIM_PLOT=wx.PyEventBinder(myEVT_SIM_PLOT)
+
+def _post_sim_plot_event(parent, model, desc=''):
+    # Send an event that a new data set ahs been loaded
+    evt=GenericModelEvent(myEVT_SIM_PLOT, parent.GetId(), model)
+    evt.SetDescription(desc)
+    # Process the event!
+    parent.GetEventHandler().ProcessEvent(evt)
+
 
 if __name__=="__main__":
     app=MyApp(True, 0)
