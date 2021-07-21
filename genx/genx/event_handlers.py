@@ -118,7 +118,7 @@ def open_model(frame, path):
     # _post_new_model_event(frame, frame.model)
     debug('open_model: load_file')
     try:
-        io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
+        io.load_file(path, frame.model, frame.solver_control.optimizer)
     except GenxIOError as e:
         ShowModelErrorDialog(frame, e.__str__())
     except Exception as e:
@@ -218,7 +218,7 @@ def save(frame, event):
     else:
         # If it has been saved just save it
         try:
-            io.save_file(fname, frame.model, frame.solver_control.optimizer, frame.config)
+            io.save_file(fname, frame.model, frame.solver_control.optimizer)
         except GenxIOError as e:
             ShowModelErrorDialog(frame, e.__str__())
         except Exception as e:
@@ -254,8 +254,7 @@ def save_as(frame, event):
                                       'Overwrite?')
         if result:
             try:
-                io.save_file(fname, frame.model, frame.solver_control.optimizer,
-                             frame.config)
+                io.save_file(fname, frame.model, frame.solver_control.optimizer)
             except GenxIOError as e:
                 ShowModelErrorDialog(frame, e.__str__())
             except Exception as e:

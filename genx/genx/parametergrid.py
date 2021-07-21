@@ -12,6 +12,7 @@ import wx.grid as gridlib
 import wx.lib.printout as printout
 import wx.lib.agw.floatspin as fs
 from wx.lib.masked import NumCtrl
+import wx.lib.newevent
 import string
 
 from numpy import *

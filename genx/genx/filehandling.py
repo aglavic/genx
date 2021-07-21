@@ -77,7 +77,12 @@ class Config:
             if fallback is None:
                 raise GenxOptionError(section, option)
             else:
+                debug(f'Return fallback due to ValueError in _getf, {section=}/{option=}')
                 return fallback
+
+    def getlist(self, section: str, option: str, fallback=None):
+        str_value=self.get(section, option, fallback=fallback)
+        return [s.strip() for s in str_value.split(';')]
 
     @lru_cache(maxsize=10)
     def __getattr__(self, item: str):
@@ -134,6 +139,8 @@ class BaseConfig(ABC):
     Handles general parameter read/write so that derived classes only have to
     inherit from it and use dataclass attributes.
     """
+    section:str
+
     @property
     @abstractmethod
     def section(self):
@@ -151,6 +158,8 @@ class BaseConfig(ABC):
                 getf=config.getint
             elif field.type is bool:
                 getf=config.getboolean
+            elif field.type is list:
+                getf=config.getlist
             else:
                 getf=config.get
 
@@ -162,10 +171,10 @@ class BaseConfig(ABC):
             try:
                 value=getf(self.section, option, fallback=fallback)
             except GenxOptionError as e:
-                iprint(f'Could not read option {self.section}/{option} of type {field.type}:\n    {e}')
+                debug(f'Could not read option {self.section}/{option} of type {field.type}:\n    {e}')
             else:
                 setattr(self, field.name, value)
-                debug(f'Read option {field.name}={value} from config {self.section}/{option}.')
+                debug(f'Read option {field.name}={str(value).splitlines()[0]} from config {self.section}/{option}.')
 
     def safe_config(self, default=False):
         data=self.asdict()
@@ -175,7 +184,10 @@ class BaseConfig(ABC):
             setter=config.model_set
         for key, value in data.items():
             option=key.replace('_', ' ')
-            debug(f'Write option {key}={value} to config {self.section}/{option}, default={default}.')
+            if type(value) is list:
+                value=';'.join(value)
+            debug(f'Write option {key}={str(value).splitlines()[0]} to config '
+                  f'{self.section}/{option}, default={default}.')
             setter(self.section, option, value)
 
     def copy(self):
@@ -186,14 +198,20 @@ class Configurable:
     A mixin class for classes that store parameters in a savable configuration.
 
     Defines methods for reading and writing configurations. Subclasses can
-    define the config_updated method to be called after changing a configuration.
+    define the config_updated method to be called after reading a configuration.
+
+    If no config_class is passed to the constructor explicitly, any existing type hint
+    to a BaseConfig derived object will be used to configure the opt attribute.
     """
     def __init__(self, config_class: Type[BaseConfig]=None):
         if config_class is None:
             hints=get_type_hints(self)
-            if not 'opt' in hints:
-                raise ValueError("Configurable needs either an explicit config_class or 'opt' type hint")
-            config_class=hints['opt']
+            config_class=hints.get('opt', None)
+
+        if not issubclass(config_class, BaseConfig):
+            raise ValueError("Configurable needs either an explicit config_class "
+                             "or 'opt' type hint derived from BaseConfig")
+
         self.opt=config_class()
 
     def ReadConfig(self):
@@ -213,32 +231,32 @@ class Configurable:
 
 
 
-def save_file(fname: str, model, optimizer, config: Config):
+def save_file(fname: str, model, optimizer):
     """
     Saves objects model, optimiser and config into file fnmame
     """
     if fname.endswith('.gx'):
-        save_gx(fname, model, optimizer, config)
+        save_gx(fname, model, optimizer)
     elif fname.endswith('.hgx'):
-        save_hgx(fname, model, optimizer, config)
+        save_hgx(fname, model, optimizer)
     else:
         raise GenxIOError('Wrong file ending, should be .gx or .hgx')
 
     model.filename=os.path.abspath(fname)
     model.saved=True
 
-def load_file(fname: str, model, optimizer, config: Config):
+def load_file(fname: str, model, optimizer):
     """Loads parameters from fname into model, optimizer and config"""
     if fname.endswith('.gx'):
-        load_gx(fname, model, optimizer, config)
+        load_gx(fname, model, optimizer)
     elif fname.endswith('.hgx'):
-        load_hgx(fname, model, optimizer, config)
+        load_hgx(fname, model, optimizer)
     else:
         raise GenxIOError('Wrong file ending, should be .gx or .hgx')
 
     model.filename=os.path.abspath(fname)
 
-def save_gx(fname: str, model, optimizer, config: Config):
+def save_gx(fname: str, model, optimizer):
     model.save(fname)
     model.save_addition('config', config.model_dump())
     model.save_addition('optimizer',
@@ -246,7 +264,7 @@ def save_gx(fname: str, model, optimizer, config: Config):
                                                 not config.getboolean('solver',
                                                                        'save all evals')))
 
-def save_hgx(fname: str, model, optimizer, config: Config, group='current'):
+def save_hgx(fname: str, model, optimizer, group='current'):
     """ Saves the current objects to a hdf gx file (hgx).
 
     :param fname: filename
@@ -267,7 +285,7 @@ def save_hgx(fname: str, model, optimizer, config: Config, group='current'):
     g['config']=config.model_dump().encode('utf-8')
     f.close()
 
-def load_hgx(fname: str, model, optimizer, config: Config, group='current'):
+def load_hgx(fname: str, model, optimizer, group='current'):
     """ Loads the current objects to a hdf gx file (hgx).
 
     :param fname: filename
@@ -284,7 +302,7 @@ def load_hgx(fname: str, model, optimizer, config: Config, group='current'):
     config.load_string(g['config'][()].decode('utf-8'))
     f.close()
 
-def load_gx(fname: str, model, optimizer, config: Config):
+def load_gx(fname: str, model, optimizer):
     if not 'diffev' in sys.modules:
         # for compatibility define genx standard modules as base modules
         import genx.diffev
@@ -296,148 +314,3 @@ def load_gx(fname: str, model, optimizer, config: Config):
     model.load(fname)
     config.load_string(model.load_addition('config').decode('utf-8'))
     optimizer.pickle_load(model.load_addition('optimizer'))
-
-# Functions to handle optimiser configs
-# ==============================================================================
-
-
-def load_opt_config(optimizer, config: Config):
-    """Load the config (Config class) values to the optimiser class (DiffEv class)."""
-
-    class Container:
-        error_bars_level=1.05
-        save_all_evals=False
-
-        def set_error_bars_level(self, val):
-            self.error_bars_level=val
-
-        def set_save_all_evals(self, val):
-            self.save_all_evals=val
-
-    c=Container()
-
-    # Define all the options we want to set
-    options_float=['km', 'kr', 'pop mult', 'pop size',
-                   'max generations', 'max generation mult',
-                   'sleep time', 'max log elements',
-                   'errorbar level',
-                   'autosave interval', 'parallel processes',
-                   'parallel chunksize', 'allowed fom discrepancy']
-    setfunctions_float=[optimizer.set_km, optimizer.set_kr,
-                        optimizer.set_pop_mult,
-                        optimizer.set_pop_size,
-                        optimizer.set_max_generations,
-                        optimizer.set_max_generation_mult,
-                        optimizer.set_sleep_time,
-                        optimizer.set_max_log,
-                        c.set_error_bars_level,
-                        optimizer.set_autosave_interval,
-                        optimizer.set_processes,
-                        optimizer.set_chunksize,
-                        optimizer.set_fom_allowed_dis,
-                        ]
-
-    options_bool=['use pop mult', 'use max generations',
-                  'use start guess', 'use boundaries',
-                  'use parallel processing', 'use autosave',
-                  'save all evals'
-                  ]
-    setfunctions_bool=[optimizer.set_use_pop_mult,
-                       optimizer.set_use_max_generations,
-                       optimizer.set_use_start_guess,
-                       optimizer.set_use_boundaries,
-                       optimizer.set_use_parallel_processing,
-                       optimizer.set_use_autosave,
-                       c.set_save_all_evals,
-                       ]
-
-    # Make sure that the config is set
-    if config:
-        # Start witht the float values
-        for index in range(len(options_float)):
-            try:
-                val=config.getfloat('solver', options_float[index])
-            except GenxOptionError as e:
-                iprint('Could not locate option solver.'+options_float[index])
-            else:
-                setfunctions_float[index](val)
-
-        # Then the bool flags
-        for index in range(len(options_bool)):
-            try:
-                val=config.getboolean('solver', options_bool[index])
-            except GenxOptionError as e:
-                iprint('Could not read option solver.'+options_bool[index])
-            else:
-                setfunctions_bool[index](val)
-        try:
-            val=config.get('solver', 'create trial')
-        except GenxOptionError as e:
-            iprint('Could not read option solver.create trial')
-        else:
-            try:
-                optimizer.set_create_trial(val)
-            except LookupError:
-                iprint('The mutation scheme %s does not exist'%val)
-
-    return c.error_bars_level, c.save_all_evals
-
-def save_opt_config(optimizer, config: Config, fom_error_bars_level=1.05, save_all_evals=False):
-    """ Write the config values from optimizer (DiffEv class) to config (Config class) """
-
-    # Define all the options we want to set
-    options_float=['km', 'kr', 'pop mult', 'pop size',
-                   'max generations', 'max generation mult',
-                   'sleep time', 'max log elements', 'errorbar level',
-                   'autosave interval',
-                   'parallel processes', 'parallel chunksize',
-                   'allowed fom discrepancy']
-    set_float=[optimizer.km, optimizer.kr,
-               optimizer.pop_mult,
-               optimizer.pop_size,
-               optimizer.max_generations,
-               optimizer.max_generation_mult,
-               optimizer.sleep_time,
-               optimizer.max_log,
-               fom_error_bars_level,
-               optimizer.autosave_interval,
-               optimizer.processes,
-               optimizer.chunksize,
-               optimizer.fom_allowed_dis
-               ]
-
-    options_bool=['use pop mult', 'use max generations',
-                  'use start guess', 'use boundaries',
-                  'use parallel processing', 'use autosave',
-                  'save all evals',
-                  ]
-    set_bool=[optimizer.use_pop_mult,
-              optimizer.use_max_generations,
-              optimizer.use_start_guess,
-              optimizer.use_boundaries,
-              optimizer.use_parallel_processing,
-              optimizer.use_autosave,
-              save_all_evals,
-              ]
-
-    # Make sure that the config is set
-    if config:
-        # Start witht the float values
-        for index in range(len(options_float)):
-            try:
-                config.set('solver', options_float[index], set_float[index])
-            except GenxOptionError as e:
-                iprint('Could not locate save solver.'+options_float[index])
-
-        # Then the bool flags
-        for index in range(len(options_bool)):
-            try:
-                config.set('solver', options_bool[index], set_bool[index])
-            except GenxOptionError as e:
-                iprint('Could not write option solver.'+options_bool[index])
-
-        try:
-            config.set('solver', 'create trial', optimizer.get_create_trial())
-        except GenxOptionError as e:
-            iprint('Could not write option solver.create trial')
-

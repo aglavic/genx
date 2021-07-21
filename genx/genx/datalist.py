@@ -1559,27 +1559,3 @@ def ShowWarningDialog(frame, message, position=''):
     dlg.Destroy()
 
 # ==============================================================================
-
-# Test code for the class to be able to independly test the code
-if __name__=='__main__':
-    from . import data
-
-    class MainFrame(wx.Frame):
-        def __init__(self, *args, **kwds):
-            kwds["style"]=wx.DEFAULT_FRAME_STYLE
-            wx.Frame.__init__(self, *args, **kwds)
-            mydata=data.DataList()
-            mydata.add_new()
-            data_cont=DataController(mydata)
-            datalist=DataListControl(self, data_cont)
-
-    class MyApp(wx.App):
-        def OnInit(self):
-            wx.InitAllImageHandlers()
-            main_frame=MainFrame(None, -1, "")
-            self.SetTopWindow(main_frame)
-            main_frame.Show()
-            return 1
-
-    app=MyApp(0)
-    app.MainLoop()

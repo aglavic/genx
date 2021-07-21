@@ -60,8 +60,7 @@ class SolverController(Configurable):
         self.ReadConfig()
 
     def ReadConfig(self):
-        '''ReadConfig(self) --> None
-        
+        '''
         Reads the parameter that should be read from the config file.
         And set the parameters in both the optimizer and this class.
         '''
@@ -73,15 +72,14 @@ class SolverController(Configurable):
         self.set_save_all_evals(self.opt.save_all_evals)
 
     def WriteConfig(self):
-        ''' WriteConfig(self) --> None
-        
+        '''
         Writes the current configuration of the solver to file.
         '''
-        io.save_opt_config(self.optimizer, self.config, self.fom_error_bars_level, self.save_all_evals)
+        Configurable.WriteConfig(self)
+        self.optimizer.WriteConfig()
 
     def ParametersDialog(self, frame):
-        '''ParametersDialog(self, frame) --> None
-        
+        '''
         Shows the Parameters dialog box to set the parameters for the solver.
         '''
         # Update the configuration if a model has been loaded after
@@ -112,41 +110,33 @@ class SolverController(Configurable):
         dlg.Destroy()
 
     def TextOutput(self, text):
-        '''TextOutput(self, text) --> None
+        '''
         Function to present the output from the optimizer to the user. 
         Takes a string as input.
         '''
-        # self.parent.main_frame_statusbar.SetStatusText(text, 0)
         evt=update_text(text=text)
         wx.PostEvent(self.parent, evt)
-        # wx.CallAfter(wx.PostEvent, self.parent, evt)
 
     def PlotOutput(self, solver):
-        ''' PlotOutput(self, solver) --> None
+        '''
         Solver to present the graphical output from the optimizer to the 
         user. Takes the solver as input argument and picks out the 
         variables to show in the GUI.
         '''
-        # print 'sending event plotting'
-        # _post_solver_event(self.parent, solver, desc = 'Fitting update')
         evt=update_plot(model=solver.get_model(),
                         fom_log=solver.get_fom_log(), update_fit=solver.new_best,
                         desc='Fitting update')
         wx.PostEvent(self.parent, evt)
-        # wx.CallAfter(wx.PostEvent, self.parent, evt)
         # Hard code the events for the plugins so that they can be run syncrously.
         # This is important since the Refelctevity model, for example, relies on the
         # current state of the model.
         try:
             self.parent.plugin_control.OnFittingUpdate(evt)
-            # wx.CallAfter(self.parent.plugin_control.OnFittingUpdate, evt)
-            # pass
         except Exception as e:
             iprint('Error in plot output:\n'+repr(e))
 
     def ParameterOutput(self, solver):
-        '''ParameterOutput(self, solver) --> none
-        
+        '''
         Function to send an update event to update windows that displays
         the parameters to update the values. 
         Takes the solver as input argument and picks out the variables to 
@@ -161,11 +151,9 @@ class SolverController(Configurable):
                               desc='Parameter Update', update_errors=False,
                               permanent_change=False)
         wx.PostEvent(self.parent, evt)
-        # wx.CallAfter(wx.PostEvent, self.parent, evt)
 
     def ModelLoaded(self):
-        '''ModelLoaded(self) --> None
-        
+        '''
         Function that takes care of resetting everything when a model has
         been loaded.
         '''
@@ -193,26 +181,22 @@ class SolverController(Configurable):
                 wx.PostEvent(self.parent, evt)
 
     def AutoSave(self):
-        '''DoAutoSave(self) --> None
-        
+        '''
         Function that conducts an autosave of the model.
         '''
-        io.save_file(self.parent.model.get_filename(), self.parent.model, self.optimizer, self.config)
-        # print 'AutoSaved!'
+        io.save_file(self.parent.model.get_filename(), self.parent.model, self.optimizer)
 
     def FittingEnded(self, solver):
-        '''FittingEnded(self, solver) --> None
-        
+        '''
         function used to post an event when the fitting has ended.
-        This must be done since it is not htread safe otherwise. Same GUI in
+        This must be done since it is not thread safe otherwise. Same GUI in
         two threads when dialogs are run. dangerous...
         '''
         evt=fitting_ended(solver=solver, desc='Fitting Ended')
         wx.PostEvent(self.parent, evt)
 
     def OnFittingEnded(self, evt):
-        '''OnFittingEnded(self, solver) --> None
-        
+        '''
         Callback when fitting has ended. Takes care of cleaning up after
         the fit. Calculates errors on the parameters and updates the grid.
         '''
@@ -232,8 +216,6 @@ class SolverController(Configurable):
                                   permanent_change=True)
             wx.PostEvent(self.parent, evt)
         else:
-            # print 'Resetting the values in the grid to ',\
-            #    self.start_parameter_values
             evt=update_parameters(values=solver.start_guess,
                                   desc='Parameter Update', new_best=True,
                                   update_errors=False, fitting=False,
@@ -250,7 +232,6 @@ class SolverController(Configurable):
                                 'Run a fit before calculating the errorbars.')
         if self.optimizer.start_guess is not None and not self.optimizer.running:
             n_elements=len(self.optimizer.start_guess)
-            # print 'Number of elemets to calc errobars for ', n_elements
             error_values=[]
             dlg=wx.ProgressDialog("Calculating", "Error bars are calculated ...",
                                   maximum=n_elements, parent=self.parent,
@@ -274,10 +255,9 @@ class SolverController(Configurable):
             raise ErrorBarError()
 
     def ProjectEvals(self, parameter):
-        ''' ProjectEvals(self, parameter) --> prameter, fomvals
-        
+        '''
         Projects the parameter number parameter on one axis and returns
-        the fomvals.
+        the fom values.
         '''
         model=self.parent.model
         row=model.parameters.get_pos_from_row(parameter)
@@ -288,9 +268,7 @@ class SolverController(Configurable):
             raise ErrorBarError()
 
     def ScanParameter(self, parameter, points):
-        '''ScanParameter(self, parameter, points) 
-            --> par_vals, fom_vals
-        
+        '''
         Scans one parameter and records its fom value as a function 
         of the parameter value.
         '''
@@ -335,14 +313,13 @@ class SolverController(Configurable):
         return par_vals, fom_vals
 
     def ResetOptimizer(self):
-        '''ResetOptimizer(self) --> None
-        
+        '''
         Resets the optimizer - clears the memory and special flags.
         '''
         self.start_parameter_values=None
 
     def StartFit(self):
-        ''' StartFit(self) --> None
+        '''
         Function to start running the fit
         '''
         # Make sure that the config of the solver is updated..
@@ -355,14 +332,13 @@ class SolverController(Configurable):
         # print 'Optimizer starting'
 
     def StopFit(self):
-        ''' StopFit(self) --> None
+        '''
         Function to stop a running fit
         '''
         self.optimizer.stop_fit()
 
     def ResumeFit(self):
-        ''' ResumeFit(self) --> None
-        
+        '''
         Function to resume the fitting after it has been stopped
         '''
         # Make sure the settings are updated..
@@ -373,15 +349,13 @@ class SolverController(Configurable):
         self.optimizer.resume_fit(model)
 
     def IsFitted(self):
-        '''IsFitted(self) --> bool
-        
+        '''
         Returns true if a fit has been started otherwise False
         '''
         return len(self.optimizer.start_guess)>0
 
     def set_error_bars_level(self, value):
-        '''set_error_bars_level(value) --> None
-        
+        '''
         Sets the value of increase of the fom used for errorbar calculations
         '''
         if value<1:
@@ -390,21 +364,18 @@ class SolverController(Configurable):
             self.fom_error_bars_level=value
 
     def set_save_all_evals(self, value):
-        '''Sets the boolean value to save all evals to file
+        '''
+        Sets the boolean value to save all evals to file
         '''
         self.save_all_evals=bool(value)
 
 # ==============================================================================
 class SettingsDialog(wx.Dialog):
-    def __init__(self, parent, solver, solvergui, fom_string):
-        '''__init__(self, parent, solver, fom_string, mut_schemes,\
-                    current_mut_scheme)
-                    
-        parent - parent window, solver - the solver (Diffev alg.)
-        fom_string - the fom function string
+    def __init__(self, parent, solver: diffev.DiffEv, solvergui: SolverController, fom_string: str):
+        '''
+        Configuration optitons for a DiffEv solver.
         '''
         wx.Dialog.__init__(self, parent, -1, 'Optimizer settings')
-        # self.SetAutoLayout(True)
         self.solver=solver
         self.solvergui=solvergui
         self.apply_change=None
@@ -454,17 +425,17 @@ class SettingsDialog(wx.Dialog):
         fom_box_sizer.Add(cb_sizer, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         self.limit_fit_range=wx.CheckBox(self, -1, "Limit x-range")
         cb_sizer.Add(self.limit_fit_range, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        self.limit_fit_range.SetValue(self.solver.limit_fit_range)
+        self.limit_fit_range.SetValue(self.solver.opt.limit_fit_range)
 
         cb_sizer=wx.BoxSizer(wx.HORIZONTAL)
         fom_box_sizer.Add(cb_sizer, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         cb_sizer.Add(wx.StaticText(self, -1, 'x_min'))
         self.fit_xmin=wx.SpinCtrlDouble(self, -1, min=0., max=99.0,
-                                        initial=self.solver.fit_xmin, inc=0.01)
+                                        initial=self.solver.opt.fit_xmin, inc=0.01)
         cb_sizer.Add(self.fit_xmin)
         cb_sizer.Add(wx.StaticText(self, -1, 'x_max'))
         self.fit_xmax=wx.SpinCtrlDouble(self, -1, min=0., max=99.0,
-                                        initial=self.solver.fit_xmax, inc=0.01)
+                                        initial=self.solver.opt.fit_xmax, inc=0.01)
         cb_sizer.Add(self.fit_xmax)
 
         row_sizer1.Add(fom_box_sizer, 0, wx.EXPAND, 5)
@@ -479,22 +450,22 @@ class SettingsDialog(wx.Dialog):
         # Check box for start guess
         startguess_control=wx.CheckBox(self, -1, "Start guess")
         cb_sizer.Add(startguess_control, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        startguess_control.SetValue(self.solver.use_start_guess)
+        startguess_control.SetValue(self.solver.opt.use_start_guess)
         self.startguess_control=startguess_control
 
         # Check box for using boundaries
         bound_control=wx.CheckBox(self, -1, "Use (Max, Min)")
         cb_sizer.Add(bound_control, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        bound_control.SetValue(self.solver.use_boundaries)
+        bound_control.SetValue(self.solver.opt.use_boundaries)
         self.bound_control=bound_control
 
         # Check box and integer input for autosave
         autosave_sizer=wx.BoxSizer(wx.HORIZONTAL)
         use_autosave_control=wx.CheckBox(self, -1, "Autosave, interval ")
-        use_autosave_control.SetValue(self.solver.use_autosave)
+        use_autosave_control.SetValue(self.solver.opt.use_autosave)
         autosave_sc=wx.SpinCtrl(self)
         autosave_sc.SetRange(1, 1000)
-        autosave_sc.SetValue(self.solver.autosave_interval)
+        autosave_sc.SetValue(self.solver.opt.autosave_interval)
         autosave_sc.Enable(True)
         autosave_sizer.Add(use_autosave_control, 0,
                            wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, border=5)
@@ -509,7 +480,7 @@ class SettingsDialog(wx.Dialog):
         save_all_control.SetValue(self.solvergui.save_all_evals)
         buffer_sc=wx.SpinCtrl(self)
         buffer_sc.SetRange(1000, 100000000)
-        buffer_sc.SetValue(self.solver.max_log)
+        buffer_sc.SetValue(self.solver.opt.max_log_elements)
         buffer_sc.Enable(True)
         save_sizer.Add(save_all_control, 0,
                        wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, border=5)
@@ -522,7 +493,7 @@ class SettingsDialog(wx.Dialog):
         wait_time_sizer=wx.BoxSizer(wx.HORIZONTAL)
         wait_time_sizer.Add(wx.StaticText(self, -1, 'sleep time'))
         self.time_ctrl=wx.SpinCtrlDouble(self, -1, min=0., max=2.0,
-                                        initial=self.solver.sleep_time, inc=0.001)
+                                        initial=self.solver.opt.sleep_time, inc=0.001)
         wait_time_sizer.Add(self.time_ctrl, 0, wx.ALIGN_CENTER_VERTICAL, border=5)
         fit_box_sizer.Add(wait_time_sizer, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
 
@@ -539,7 +510,7 @@ class SettingsDialog(wx.Dialog):
 
         km_sizer=wx.BoxSizer(wx.HORIZONTAL)
         km_text=wx.StaticText(self, -1, 'k_m ')
-        self.km_control=NumCtrl(self, value=self.solver.km,
+        self.km_control=NumCtrl(self, value=self.solver.opt.km,
                                 fractionWidth=2, integerWidth=2)
         km_sizer.Add(km_text, 0,
                      wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
@@ -552,7 +523,7 @@ class SettingsDialog(wx.Dialog):
         kr_sizer=wx.BoxSizer(wx.HORIZONTAL)
         kr_sizer.Add((10, 20), 0, wx.EXPAND)
         kr_text=wx.StaticText(self, -1, 'k_r ')
-        self.kr_control=NumCtrl(self, value=self.solver.kr,
+        self.kr_control=NumCtrl(self, value=self.solver.opt.kr,
                                 fractionWidth=2, integerWidth=2)
         kr_sizer.Add(kr_text, 1,
                      wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
@@ -588,12 +559,12 @@ class SettingsDialog(wx.Dialog):
 
         multsize_sc=wx.SpinCtrl(self)
         multsize_sc.SetRange(1, 1000)
-        multsize_sc.SetValue(self.solver.pop_mult)
-        multsize_sc.Enable(self.solver.use_pop_mult)
+        multsize_sc.SetValue(self.solver.opt.pop_mult)
+        multsize_sc.Enable(self.solver.opt.use_pop_mult)
         fixedsize_sc=wx.SpinCtrl(self)
         fixedsize_sc.SetRange(1, 1000)
-        fixedsize_sc.SetValue(self.solver.pop_size)
-        fixedsize_sc.Enable(not self.solver.use_pop_mult)
+        fixedsize_sc.SetValue(self.solver.opt.pop_size)
+        fixedsize_sc.Enable(not self.solver.opt.use_pop_mult)
 
         self.pop_multsize_radio=multsize_radio
         self.pop_fixedsize_radio=fixedsize_radio
@@ -613,8 +584,8 @@ class SettingsDialog(wx.Dialog):
         row_sizer2.Add(pop_box_sizer, 1, wx.EXPAND, 5)
         self.Bind(wx.EVT_RADIOBUTTON, self.on_pop_select, multsize_radio)
         self.Bind(wx.EVT_RADIOBUTTON, self.on_pop_select, fixedsize_radio)
-        multsize_radio.SetValue(self.solver.use_pop_mult)
-        fixedsize_radio.SetValue(not self.solver.use_pop_mult)
+        multsize_radio.SetValue(self.solver.opt.use_pop_mult)
+        fixedsize_radio.SetValue(not self.solver.opt.use_pop_mult)
 
         # Make the Generation box
         gen_box=wx.StaticBox(self, -1, "Max Generations")
@@ -627,12 +598,12 @@ class SettingsDialog(wx.Dialog):
 
         gen_multsize_sc=wx.SpinCtrl(self)
         gen_multsize_sc.SetRange(1, 10000)
-        gen_multsize_sc.SetValue(self.solver.max_generation_mult)
-        gen_multsize_sc.Enable(not self.solver.use_max_generations)
+        gen_multsize_sc.SetValue(self.solver.opt.max_generation_mult)
+        gen_multsize_sc.Enable(not self.solver.opt.use_max_generations)
         gen_fixedsize_sc=wx.SpinCtrl(self)
         gen_fixedsize_sc.SetRange(1, 10000)
-        gen_fixedsize_sc.SetValue(self.solver.max_generations)
-        gen_fixedsize_sc.Enable(self.solver.use_max_generations)
+        gen_fixedsize_sc.SetValue(self.solver.opt.max_generations)
+        gen_fixedsize_sc.Enable(self.solver.opt.use_max_generations)
 
         self.gen_multsize_radio=gen_multsize_radio
         self.gen_fixedsize_radio=gen_fixedsize_radio
@@ -652,8 +623,8 @@ class SettingsDialog(wx.Dialog):
         row_sizer2.Add(gen_box_sizer, 1, wx.EXPAND, 5)
         self.Bind(wx.EVT_RADIOBUTTON, self.on_gen_select, gen_multsize_radio)
         self.Bind(wx.EVT_RADIOBUTTON, self.on_gen_select, gen_fixedsize_radio)
-        gen_fixedsize_radio.SetValue(self.solver.use_max_generations)
-        gen_multsize_radio.SetValue(not self.solver.use_max_generations)
+        gen_fixedsize_radio.SetValue(self.solver.opt.use_max_generations)
+        gen_multsize_radio.SetValue(not self.solver.opt.use_max_generations)
 
         ##
         # Make the parallel fitting box
@@ -661,18 +632,18 @@ class SettingsDialog(wx.Dialog):
         parallel_box_sizer=wx.StaticBoxSizer(parallel_box, wx.VERTICAL)
 
         use_parallel_control=wx.CheckBox(self, -1, "Parallel fitting")
-        use_parallel_control.SetValue(self.solver.use_parallel_processing)
+        use_parallel_control.SetValue(self.solver.opt.use_parallel_processing)
         use_parallel_control.Enable(diffev.__parallel_loaded__)
         self.use_parallel_control=use_parallel_control
         parallel_box_sizer.Add(use_parallel_control, 1, wx.EXPAND, 5)
 
         processes_sc=wx.SpinCtrl(self, size=(80, -1))
         processes_sc.SetRange(1, 100)
-        processes_sc.SetValue(self.solver.processes)
+        processes_sc.SetValue(self.solver.opt.parallel_processes)
         processes_sc.Enable(diffev.__parallel_loaded__)
         chunk_size_sc=wx.SpinCtrl(self, size=(80, -1))
         chunk_size_sc.SetRange(1, 100)
-        chunk_size_sc.SetValue(self.solver.chunksize)
+        chunk_size_sc.SetValue(self.solver.opt.parallel_chunksize)
         chunk_size_sc.Enable(diffev.__parallel_loaded__)
         self.processes_sc=processes_sc
         self.chunk_size_sc=chunk_size_sc
@@ -724,8 +695,7 @@ class SettingsDialog(wx.Dialog):
         self.Layout()
 
     def on_pop_select(self, event):
-        '''on_pop_select(self, event) --> None
-        
+        '''
         callback for selction of a radio button in the population group
         '''
         radio_selected=event.GetEventObject()
@@ -738,8 +708,7 @@ class SettingsDialog(wx.Dialog):
             self.pop_multsize_sc.Enable(True)
 
     def on_gen_select(self, event):
-        '''on_pop_select(self, event) --> None
-        
+        '''
         callback for selection of a radio button in the Generation group
         '''
         radio_selected=event.GetEventObject()
@@ -755,37 +724,38 @@ class SettingsDialog(wx.Dialog):
         return self.fom_choice.GetStringSelection()
 
     def on_apply_change(self, event):
-        self.solver.kr=self.kr_control.GetValue()
-        self.solver.km=self.km_control.GetValue()
-        self.solver.max_generation_mult=self.gen_multsize_sc.GetValue()
-        self.solver.max_generations=self.gen_fixedsize_sc.GetValue()
-        self.solver.pop_mult=self.pop_multsize_sc.GetValue()
-        self.solver.pop_size=self.pop_fixedsize_sc.GetValue()
-        self.solver.use_max_generations=self.gen_fixedsize_radio.GetValue()
-        self.solver.use_pop_mult=self.pop_multsize_radio.GetValue()
-        self.solver.use_start_guess=self.startguess_control.GetValue()
-        self.solver.use_boundaries=self.bound_control.GetValue()
-        self.solver.set_create_trial(self.method_choice.GetStringSelection())
-        self.solver.use_parallel_processing=self.use_parallel_control.GetValue()
-        self.solver.processes=self.processes_sc.GetValue()
-        self.solver.chunksize=self.chunk_size_sc.GetValue()
-        self.solvergui.parent.model.set_fom_ignore_inf(self.fom_ignore_inf_control.GetValue())
-        self.solvergui.parent.model.set_fom_ignore_nan(self.fom_ignore_nan_control.GetValue())
-        self.solvergui.fom_error_bars_level=self.errorbar_control.GetValue()
-        self.solver.use_autosave=self.use_autosave_control.GetValue()
-        self.solver.autosave_interval=self.autosave_sc.GetValue()
-        self.solvergui.save_all_evals=self.save_all_control.GetValue()
-        self.solver.max_log=self.buffer_sc.GetValue()
-        self.solver.limit_fit_range=self.limit_fit_range.GetValue()
-        self.solver.fit_xmin=self.fit_xmin.GetValue()
-        self.solver.fit_xmax=self.fit_xmax.GetValue()
-        self.solver.sleep_time=self.time_ctrl.GetValue()
-
         model=self.solvergui.parent.model
-        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
-            self.solver.limit_fit_range,
-            self.solver.fit_xmin,
-            self.solver.fit_xmax)
+
+        self.solver.opt.kr=self.kr_control.GetValue()
+        self.solver.opt.km=self.km_control.GetValue()
+        self.solver.opt.max_generation_mult=self.gen_multsize_sc.GetValue()
+        self.solver.opt.max_generations=self.gen_fixedsize_sc.GetValue()
+        self.solver.opt.pop_mult=self.pop_multsize_sc.GetValue()
+        self.solver.opt.pop_size=self.pop_fixedsize_sc.GetValue()
+        self.solver.opt.use_max_generations=self.gen_fixedsize_radio.GetValue()
+        self.solver.opt.use_pop_mult=self.pop_multsize_radio.GetValue()
+        self.solver.opt.use_start_guess=self.startguess_control.GetValue()
+        self.solver.opt.use_boundaries=self.bound_control.GetValue()
+        self.solver.set_create_trial(self.method_choice.GetStringSelection())
+        self.solver.opt.use_parallel_processing=self.use_parallel_control.GetValue()
+        self.solver.opt.processes=self.processes_sc.GetValue()
+        self.solver.opt.chunksize=self.chunk_size_sc.GetValue()
+        model.set_fom_ignore_inf(self.fom_ignore_inf_control.GetValue())
+        model.set_fom_ignore_nan(self.fom_ignore_nan_control.GetValue())
+        self.solvergui.opt.fom_error_bars_level=self.errorbar_control.GetValue()
+        self.solver.opt.use_autosave=self.use_autosave_control.GetValue()
+        self.solver.opt.autosave_interval=self.autosave_sc.GetValue()
+        self.solvergui.opt.save_all_evals=self.save_all_control.GetValue()
+        self.solver.opt.max_log=self.buffer_sc.GetValue()
+        self.solver.opt.limit_fit_range=self.limit_fit_range.GetValue()
+        self.solver.opt.fit_xmin=self.fit_xmin.GetValue()
+        self.solver.opt.fit_xmax=self.fit_xmax.GetValue()
+        self.solver.opt.sleep_time=self.time_ctrl.GetValue()
+
+        model.opt.limit_fit_range, model.opt.fit_xmin, model.opt.fit_xmax=(
+            self.solver.opt.limit_fit_range,
+            self.solver.opt.fit_xmin,
+            self.solver.opt.fit_xmax)
 
         if self.apply_change:
             self.apply_change(self)
@@ -793,8 +763,7 @@ class SettingsDialog(wx.Dialog):
         event.Skip()
 
     def set_apply_change_func(self, func):
-        '''set_apply_change_func(self, func) --> None
-        
+        '''
         Set the apply_change function. Is executed when the apply or ok button
         is clicked.
         '''

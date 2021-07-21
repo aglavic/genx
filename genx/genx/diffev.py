@@ -10,7 +10,7 @@ from logging import debug
 import _thread
 import time
 import random as random_mod
-import sys, os, pickle
+import sys, pickle
 
 __mpi_loaded__=False
 __parallel_loaded__=False
@@ -53,21 +53,26 @@ class DiffEvConfig(BaseConfig):
     pop_size:int=50
     create_trial:str='best_1_bin'
 
-    use_max_enerations:bool=False
+    use_max_generations:bool=False
     max_generations:int=500
     max_generation_mult:int=6
 
     use_start_guess:bool=True
-    use_boundaries:bool=False
+    use_boundaries:bool=True
 
-    sleep_time:float=0.5
+    sleep_time:float=0.2
     max_log_elements:int=100000
     use_parallel_processing:bool=False
+    use_mpi:bool=False
     parallel_processes:int=2
     parallel_chunksize:int=25
 
     use_autosave:bool=False
     autosave_interval:int=10
+
+    limit_fit_range:bool=False
+    fit_xmin:float=0.0
+    fit_xmax:float=180.0
 
 
 class DiffEv(Configurable):
@@ -77,13 +82,16 @@ class DiffEv(Configurable):
     function.
     '''
     opt: DiffEvConfig
+    pf=0.5 # probablility for mutation
+    c=0.07
+    simplex_interval = 5  # Interval of running the simplex opt
+    simplex_step = 0.05  # first step as a fraction of pop size
+    simplex_n = 0.0  # Number of individuals that will be optimized by simplex
+    simplex_rel_epsilon = 1000  # The relative epsilon - convergence critera
+    simplex_max_iter = 100  # THe maximum number of simplex runs
 
-    export_parameters={'km': float, 'kr': float, 'pf': float, 'use_pop_mult': bool, 'pop_mult': int, 'pop_size': int,
-                       'use_max_generations': bool, 'max_generations': int, 'max_generation_mult': int,
-                       'use_start_guess': bool, 'use_boundaries': bool, 'sleep_time': float,
-                       'use_parallel_processing': bool, 'use_mpi': bool, 'fom_log': array, 'start_guess': array,
-                       'limit_fit_range': bool, 'fit_xmin': float, 'fit_xmax': float,
-                       }
+
+    export_parameters={'fom_log': array, 'start_guess': array}
 
     parameter_groups=[
         ['Fitting', ['use_start_guess', 'use_boundaries', 'use_autosave', 'autosave_interval']],
@@ -105,51 +113,6 @@ class DiffEv(Configurable):
 
         self.model=mmodel.Model()
 
-        self.km=0.7  # Mutation constant
-        self.kr=0.7  # Cross over constant
-        self.pf=0.5  # probablility for mutation
-        self.c=0.07
-        self.simplex_interval=5  # Interval of running the simplex opt
-        self.simplex_step=0.05  # first step as a fraction of pop size
-        self.simplex_n=0.0  # Number of individuals that will be optimized by simplex
-        self.simplex_rel_epsilon=1000  # The relative epsilon - convergence critera
-        self.simplex_max_iter=100  # THe maximum number of simplex runs
-        # Flag to choose beween the two alternatives below
-        self.use_pop_mult=False
-        self.pop_mult=3  # Set the pop_size to pop_mult * # free parameters
-        self.pop_size=10  # Set the pop_size only
-
-        # Flag to choose between the two alternatives below
-        self.use_max_generations=False
-        self.max_generations=500  # Use a fixed # of iterations
-        self.max_generation_mult=6  # A mult const for max number of iter
-
-        # Flag to choose whether or not to use a starting guess
-        self.use_start_guess=True
-        # Flag to choose wheter or not to use the boundaries
-        self.use_boundaries=True
-
-        # Sleeping time for every generation
-        self.sleep_time=0.2
-        # Allowed disagreement between the two different fom
-        # evaluations
-        self.fom_allowed_dis=1e-10
-        # Flag if we should use parallel processing 
-        self.use_parallel_processing=__parallel_loaded__*0
-        if __parallel_loaded__:
-            self.processes=_cpu_count
-        else:
-            self.processes=0
-
-        self.chunksize=1
-
-        # Flag for using mpi
-        self.use_mpi=False
-
-        # Flag for using autosave
-        self.use_autosave=True
-        # autosave interval in generations        
-        self.autosave_interval=10
 
         # Functions that are user definable
         self.plot_output=default_plot_output
@@ -170,20 +133,12 @@ class DiffEv(Configurable):
         self.error=False  # True/string if an error ahs occured
 
         # Logging variables
-        # Maximum number of logged elements
-        self.max_log=100000
         self.fom_log=array([[0, 0]])[0:0]
-        # self.par_evals = array([[]])[0:0]
 
-        self.par_evals=CircBuffer(self.max_log, buffer=array([[]])[0:0])
-        # self.fom_evals = array([])
-        self.fom_evals=CircBuffer(self.max_log)
+        self.par_evals=CircBuffer(self.opt.max_log_elements, buffer=array([[]])[0:0])
+        self.fom_evals=CircBuffer(self.opt.max_log_elements)
 
         self.start_guess=array([])
-
-        self.limit_fit_range=False
-        self.fit_xmin=0.01
-        self.fit_xmax=0.1
 
     @property
     def method(self):
@@ -239,58 +194,13 @@ class DiffEv(Configurable):
         self.par_evals.copy_from(group['par_evals'][()])
         self.fom_evals.copy_from(group['fom_evals'][()])
 
-    def safe_copy(self, object):
+    def safe_copy(self, object: 'DiffEv'):
         '''safe_copy(self, object) --> None
         
         Does a safe copy of object to this object. Makes copies of everything 
         if necessary. The two objects become decoupled.
         '''
-        self.km=object.km  # Mutation constant
-        self.kr=object.kr  # Cross over constant
-        self.pf=object.pf  # probablility for mutation
-
-        # Flag to choose beween the two alternatives below
-        self.use_pop_mult=object.use_pop_mult
-        self.pop_mult=object.pop_mult
-        self.pop_size=object.pop_size
-
-        # Flag to choose between the two alternatives below
-        self.use_max_generations=object.use_max_generations
-        self.max_generations=object.max_generations
-        self.max_generation_mult=object.max_generation_mult
-
-        # Flag to choose whether or not to use a starting guess
-        self.use_start_guess=object.use_start_guess
-        # Flag to choose wheter or not to use the boundaries
-        self.use_boundaries=object.use_boundaries
-
-        # Sleeping time for every generation
-        self.sleep_time=object.sleep_time
-        # Flag if we should use parallel processing 
-        if __parallel_loaded__:
-            self.use_parallel_processing=object.use_parallel_processing
-        else:
-            self.use_parallel_processing=False
-
-        print("copy")
-        try:
-            self.limit_fit_range=object.limit_fit_range
-            self.fit_xmin=object.fit_xmin
-            self.fit_xmax=object.fit_xmax
-        except AttributeError:
-            self.limit_fit_range=False
-
-        # Flag if we should use mpi
-        if __mpi_loaded__:
-            try:
-                self.use_mpi=object.use_mpi
-            except AttributeError:
-                self.use_mpi=False
-        else:
-            self.use_mpi=False
-
-        # Definition for the create_trial function
-        # self.set_create_trial(object.get_create_trial())
+        self.opt=object.opt.copy()
 
         # True if the optimization have been setup
         self.setup_ok=object.setup_ok
@@ -314,14 +224,14 @@ class DiffEv(Configurable):
 
             self.fom_vec=object.fom_vec
             self.best_fom=object.best_fom
-            # Not all implementaions has these copied within their files
+            # Not all implementaions have these copied within their files
             # Just ignore if an error occur
             try:
                 self.n_dim=object.n_dim
                 self.par_min=object.par_min
                 self.par_max=object.par_max
             except:
-                pass
+                debug("Ignoring undefined parameters from DiffEv object in copy due to error:", exc_info=True)
 
     def pickle_string(self, clear_evals=False):
         '''Pickle the object.
@@ -380,10 +290,10 @@ class DiffEv(Configurable):
         self.par_funcs=par_funcs
         self.model=model
         self.n_dim=len(par_funcs)
-        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
-            self.limit_fit_range,
-            self.fit_xmin,
-            self.fit_xmax)
+        model.opt.limit_fit_range, model.opt.fit_xmin, model.opt.fit_xmax=(
+            self.opt.limit_fit_range,
+            self.opt.fit_xmin,
+            self.opt.fit_xmax)
         if not self.setup_ok:
             self.start_guess=start_guess
 
@@ -394,20 +304,20 @@ class DiffEv(Configurable):
         of generation and the population size.
         '''
         self.connect_model(model)
-        if self.use_pop_mult:
-            self.n_pop=int(self.pop_mult*self.n_dim)
+        if self.opt.use_pop_mult:
+            self.n_pop=int(self.opt.pop_mult*self.n_dim)
         else:
-            self.n_pop=int(self.pop_size)
-        if self.use_max_generations:
-            self.max_gen=int(self.max_generations)
+            self.n_pop=int(self.opt.pop_size)
+        if self.opt.use_max_generations:
+            self.max_gen=int(self.opt.max_generations)
         else:
-            self.max_gen=int(self.max_generation_mult*self.n_dim*self.n_pop)
+            self.max_gen=int(self.opt.max_generation_mult*self.n_dim*self.n_pop)
 
         # Starting values setup
         self.pop_vec=[self.par_min+random.rand(self.n_dim)*(self.par_max-self.par_min)
                       for i in range(self.n_pop)]
 
-        if self.use_start_guess:
+        if self.opt.use_start_guess:
             self.pop_vec[0]=array(self.start_guess)
 
         self.trial_vec=[zeros(self.n_dim) for i in range(self.n_pop)]
@@ -417,14 +327,14 @@ class DiffEv(Configurable):
         self.best_fom=1e20
 
         # Storage area for JADE archives
-        self.km_vec=ones(self.n_dim)*self.km
-        self.kr_vec=ones(self.n_dim)*self.kr
+        self.km_vec=ones(self.n_dim)*self.opt.km
+        self.kr_vec=ones(self.n_dim)*self.opt.kr
 
         # Logging varaibles
         self.fom_log=array([[0, 1]])[0:0]
-        self.par_evals=CircBuffer(self.max_log, buffer=array([self.par_min])[0:0])
+        self.par_evals=CircBuffer(self.opt.max_log_elements, buffer=array([self.par_min])[0:0])
         # self.fom_evals = array([])
-        self.fom_evals=CircBuffer(self.max_log)
+        self.fom_evals=CircBuffer(self.opt.max_log_elements)
         # Number of FOM evaluations
         self.n_fom=0
         # self.par_evals.reset(array([self.par_min])[0:0])
@@ -444,11 +354,11 @@ class DiffEv(Configurable):
         model=self.model
 
         # Setting up for parallel processing
-        if self.use_parallel_processing and __parallel_loaded__:
+        if self.opt.use_parallel_processing and __parallel_loaded__:
             self.text_output('Setting up a pool of workers ...')
             self.setup_parallel()
             self.eval_fom=self.calc_trial_fom_parallel
-        elif self.use_mpi and __mpi_loaded__:
+        elif self.opt.use_mpi and __mpi_loaded__:
             self.setup_parallel_mpi()
             self.eval_fom=self.calc_trial_fom_parallel_mpi
         else:
@@ -516,7 +426,7 @@ class DiffEv(Configurable):
         Note that this method does not run in a separate thread.
         For threading use start_fit, stop_fit and resume_fit instead.
         """
-        if self.use_mpi:
+        if self.opt.use_mpi:
             self.optimize_mpi()
         else:
             self.optimize_standard()
@@ -592,13 +502,13 @@ class DiffEv(Configurable):
 
             # Sanity of the model does the simualtions fom agree with
             # the best fom
-            if abs(sim_fom-self.best_fom)>self.fom_allowed_dis:
+            if abs(sim_fom-self.best_fom)>self.opt.allowed_fom_discrepancy:
                 self.text_output('Disagrement between two different fom'
                                  ' evaluations')
                 self.error=('The disagreement between two subsequent '
                             'evaluations is larger than %s. Check the '
                             'model for circular assignments.'
-                            %self.fom_allowed_dis)
+                            %self.opt.allowed_fom_discrepancy)
                 break
 
             # Update the plot data for any gui or other output
@@ -607,7 +517,7 @@ class DiffEv(Configurable):
 
             # limit the length of each iteration in parallel processing
             # at least on windows there is no issue with fast iterations in single thread
-            to_sleep=self.sleep_time-(time.time()-t_start)
+            to_sleep=self.opt.sleep_time-(time.time()-t_start)
             if to_sleep>0:
                 time.sleep(to_sleep)
 
@@ -622,14 +532,14 @@ class DiffEv(Configurable):
 
             self.new_best=False
             # Do an autosave if activated and the interval is coorect
-            if gen%self.autosave_interval==0 and self.use_autosave:
+            if gen%self.opt.autosave_interval==0 and self.opt.use_autosave:
                 self.autosave()
 
         if not self.error:
             self.text_output('Stopped at Generation: %d after %d fom evaluations...'%(gen, gen*self.n_pop))
 
         # Lets clean up and delete our pool of workers
-        if self.use_parallel_processing:
+        if self.opt.use_parallel_processing:
             self.dismount_parallel()
         self.eval_fom=None
 
@@ -728,13 +638,13 @@ class DiffEv(Configurable):
 
                 # Sanity of the model does the simualtions fom agree with
                 # the best fom
-                if abs(sim_fom-self.best_fom)>self.fom_allowed_dis and rank==0:
+                if abs(sim_fom-self.best_fom)>self.opt.allowed_fom_discrepancy and rank==0:
                     self.text_output('Disagrement between two different fom'
                                      ' evaluations')
                     self.error=('The disagreement between two subsequent '
                                 'evaluations is larger than %s. Check the '
                                 'model for circular assignments.'
-                                %self.fom_allowed_dis)
+                                %self.opt.allowed_fom_discrepancy)
                     break
 
                 # Update the plot data for any gui or other output
@@ -742,7 +652,7 @@ class DiffEv(Configurable):
                 self.parameter_output(self)
 
                 # Let the optimization sleep for a while
-                # time.sleep(self.sleep_time)
+                # time.sleep(self.opt.sleep_time)
 
                 # Time measurent to track the speed
                 t=time.time()-t_start
@@ -756,7 +666,7 @@ class DiffEv(Configurable):
 
                 self.new_best=False
                 # Do an autosave if activated and the interval is coorect
-                if gen%self.autosave_interval==0 and self.use_autosave:
+                if gen%self.opt.autosave_interval==0 and self.opt.use_autosave:
                     self.autosave()
 
         if rank==0:
@@ -779,10 +689,10 @@ class DiffEv(Configurable):
         vec.
         '''
         model=self.model
-        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
-            self.limit_fit_range,
-            self.fit_xmin,
-            self.fit_xmax)
+        model.opt.limit_fit_range, model.opt.fit_xmin, model.opt.fit_xmax=(
+            self.opt.limit_fit_range,
+            self.opt.fit_xmin,
+            self.opt.fit_xmax)
 
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
@@ -795,10 +705,10 @@ class DiffEv(Configurable):
         Function to calculate the fom values for the trial vectors
         '''
         model=self.model
-        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
-            self.limit_fit_range,
-            self.fit_xmin,
-            self.fit_xmax)
+        model.opt.limit_fit_range, model.opt.fit_xmin, model.opt.fit_xmax=(
+            self.opt.limit_fit_range,
+            self.opt.fit_xmin,
+            self.opt.fit_xmax)
 
         self.trial_fom=[self.calc_fom(vec) for vec in self.trial_vec]
 
@@ -808,10 +718,10 @@ class DiffEv(Configurable):
         parameters in vec.
         '''
         model=self.model
-        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
-            self.limit_fit_range,
-            self.fit_xmin,
-            self.fit_xmax)
+        model.opt.limit_fit_range, model.opt.fit_xmin, model.opt.fit_xmax=(
+            self.opt.limit_fit_range,
+            self.opt.fit_xmin,
+            self.opt.fit_xmax)
         # Set the paraemter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
 
@@ -827,12 +737,12 @@ class DiffEv(Configurable):
         # check if CUDA has been activated
         from genx.models.lib import paratt
         use_cuda=paratt.Refl.__module__.rsplit('.',1)[1]=='paratt_cuda'
-        self.pool=processing.Pool(processes=self.processes,
+        self.pool=processing.Pool(processes=self.opt.parallel_processes,
                                   initializer=parallel_init,
                                   initargs=(self.model.pickable_copy(), use_cuda))
-        self.text_output("Starting a pool with %i workers ..."%(self.processes,))
+        self.text_output("Starting a pool with %i workers ..."%(self.opt.parallel_processes,))
         time.sleep(1.0)
-        # print "Starting a pool with ", self.processes, " workers ..."
+        # print "Starting a pool with ", self.opt.parallel_processes, " workers ..."
 
     def setup_parallel_mpi(self):
         """Inits the number or process used for mpi.
@@ -858,21 +768,21 @@ class DiffEv(Configurable):
         Function to calculate the fom in parallel using the pool
         '''
         model=self.model
-        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
-            self.limit_fit_range,
-            self.fit_xmin,
-            self.fit_xmax)
+        model.opt.limit_fit_range, model.opt.fit_xmin, model.opt.fit_xmax=(
+            self.opt.limit_fit_range,
+            self.opt.fit_xmin,
+            self.opt.fit_xmax)
 
-        self.trial_fom=self.pool.map(parallel_calc_fom, self.trial_vec, chunksize=self.chunksize)
+        self.trial_fom=self.pool.map(parallel_calc_fom, self.trial_vec, chunksize=self.opt.parallel_chunksize)
 
     def calc_trial_fom_parallel_mpi(self):
         """ Function to calculate the fom in parallel using mpi
         """
         model=self.model
-        model.limit_fit_range, model.fit_xmin, model.fit_xmax=(
-            self.limit_fit_range,
-            self.fit_xmin,
-            self.fit_xmax)
+        model.opt.limit_fit_range, model.opt.fit_xmin, model.opt.fit_xmax=(
+            self.opt.limit_fit_range,
+            self.opt.fit_xmin,
+            self.opt.fit_xmax)
 
         step_len=int(len(self.trial_vec)/size)
         remainder=int(len(self.trial_vec)%size)
@@ -952,7 +862,7 @@ class DiffEv(Configurable):
                                              maxiters=self.simplex_max_iter)
             iprint('FOM improvement: ', self.best_fom-err)
 
-            if self.use_boundaries:
+            if self.opt.use_boundaries:
                 # Check so that the parameters lie indside the bounds
                 ok=bitwise_and(self.par_max>new_vec, self.par_min<new_vec)
                 # If not inside make a random re-initilazation of that parameter
@@ -976,7 +886,7 @@ class DiffEv(Configurable):
                 simp=Simplex(self.calc_fom, mem, spread*self.simplex_step)
                 new_vec, err, iter=simp.minimize(epsilon=self.best_fom/self.simplex_rel_epsilon,
                                                  maxiters=self.simplex_max_iter)
-                if self.use_boundaries:
+                if self.opt.use_boundaries:
                     # Check so that the parameters lie indside the bounds
                     ok=bitwise_and(self.par_max>new_vec, self.par_min<new_vec)
                     # If not inside make a random re-initilazation of that parameter
@@ -1014,7 +924,7 @@ class DiffEv(Configurable):
                 simp=Simplex(self.calc_fom, mem, spread*self.simplex_step)
                 new_vec, err, iter=simp.minimize(epsilon=self.best_fom/self.simplex_rel_epsilon,
                                                  maxiters=self.simplex_max_iter)
-                if self.use_boundaries:
+                if self.opt.use_boundaries:
                     # Check so that the parameters lie indside the bounds
                     ok=bitwise_and(self.par_max>new_vec, self.par_min<new_vec)
                     # If not inside make a random re-initilazation of that parameter
@@ -1053,13 +963,11 @@ class DiffEv(Configurable):
             updated_kms=array(self.updated_km)
             updated_krs=array(self.updated_kr)
             if len(updated_kms)!=0:
-                self.km=(1.0-self.c)*self.km+self.c*sum(updated_kms**2)/sum(updated_kms)
-                self.kr=(1.0-self.c)*self.kr+self.c*mean(updated_krs)
-        self.km_vec=abs(self.km+random.standard_cauchy(self.n_pop)*0.1)
-        self.kr_vec=self.kr+random.normal(size=self.n_pop)*0.1
-        # print self.km_vec, self.kr_vec
-        iprint('km: ', self.km, ', kr: ', self.kr)
-        # self.km_vec = (self.km_vec >= 1)*1 + (self.km_vec < 1)*self.km_vec
+                self.opt.km=(1.0-self.c)*self.opt.km+self.c*sum(updated_kms**2)/sum(updated_kms)
+                self.opt.kr=(1.0-self.c)*self.opt.kr+self.c*mean(updated_krs)
+        self.km_vec=abs(self.opt.km+random.standard_cauchy(self.n_pop)*0.1)
+        self.kr_vec=self.opt.kr+random.normal(size=self.n_pop)*0.1
+        iprint('km: ', self.opt.km, ', kr: ', self.opt.kr)
         self.km_vec=where(self.km_vec>0, self.km_vec, 0)
         self.km_vec=where(self.km_vec<1, self.km_vec, 1)
         self.kr_vec=where(self.kr_vec>0, self.kr_vec, 0)
@@ -1079,7 +987,6 @@ class DiffEv(Configurable):
         #    index2 = int(random.rand(1)*self.n_pop)
 
         # Calculate the mutation vector according to the best/1 scheme
-        # print len(self.km_vec), index, len(self.par_evals),  index2
         mut_vec=vec+self.km_vec[index]*(self.best_vec-vec)+self.km_vec[index]*(
                 self.pop_vec[index1]-self.par_evals[index2])
 
@@ -1092,7 +999,7 @@ class DiffEv(Configurable):
         trial=where(recombine, mut_vec, vec)
 
         # Implementation of constrained optimization
-        if self.use_boundaries:
+        if self.opt.use_boundaries:
             # Check so that the parameters lie indside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
             # If not inside make a random re-initilazation of that parameter
@@ -1117,19 +1024,19 @@ class DiffEv(Configurable):
             index2=int(random.rand(1)*self.n_pop)
 
         # Calculate the mutation vector according to the best/1 scheme
-        mut_vec=self.best_vec+self.km*(
+        mut_vec=self.best_vec+self.opt.km*(
                 self.pop_vec[index1]-self.pop_vec[index2])
 
         # Binomial test to detemine which parameters to change
         # given by the recombination constant kr
-        recombine=random.rand(self.n_dim)<self.kr
+        recombine=random.rand(self.n_dim)<self.opt.kr
         # Make sure at least one parameter is changed
         recombine[int(random.rand(1)*self.n_dim)]=1
         # Make the recombination
         trial=where(recombine, mut_vec, vec)
 
         # Implementation of constrained optimization
-        if self.use_boundaries:
+        if self.opt.use_boundaries:
             # Check so that the parameters lie indside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
             # If not inside make a random re-initilazation of that parameter
@@ -1156,15 +1063,15 @@ class DiffEv(Configurable):
 
         if random.rand(1)<self.pf:
             # Calculate the mutation vector according to the best/1 scheme
-            trial=self.best_vec+self.km*(
+            trial=self.best_vec+self.opt.km*(
                     self.pop_vec[index1]-self.pop_vec[index2])
         else:
             # Trying something else out more like normal recombination
-            trial=vec+self.kr*(
+            trial=vec+self.opt.kr*(
                     self.pop_vec[index1]+self.pop_vec[index2]-2*vec)
 
         # Implementation of constrained optimization
-        if self.use_boundaries:
+        if self.opt.use_boundaries:
             # Check so that the parameters lie indside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
             # If not inside make a random re-initilazation of that parameter
@@ -1192,19 +1099,19 @@ class DiffEv(Configurable):
             index3=int(random.rand(1)*self.n_pop)
 
         # Calculate the mutation vector according to the rand/1 scheme
-        mut_vec=self.pop_vec[index3]+self.km*(
+        mut_vec=self.pop_vec[index3]+self.opt.km*(
                 self.pop_vec[index1]-self.pop_vec[index2])
 
         # Binomial test to detemine which parameters to change
         # given by the recombination constant kr
-        recombine=random.rand(self.n_dim)<self.kr
+        recombine=random.rand(self.n_dim)<self.opt.kr
         # Make sure at least one parameter is changed
         recombine[int(random.rand(1)*self.n_dim)]=1
         # Make the recombination
         trial=where(recombine, mut_vec, vec)
 
         # Implementation of constrained optimization
-        if self.use_boundaries:
+        if self.opt.use_boundaries:
             # Check so that the parameters lie indside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
             # If not inside make a random re-initilazation of that parameter
@@ -1232,18 +1139,16 @@ class DiffEv(Configurable):
 
         if random.rand(1)<self.pf:
             # Calculate the mutation vector according to the best/1 scheme
-            trial=self.pop_vec[index0]+self.km*(
+            trial=self.pop_vec[index0]+self.opt.km*(
                     self.pop_vec[index1]-self.pop_vec[index2])
         else:
             # Calculate a continous recomibination
             # Trying something else out more like normal recombination
-            trial=self.pop_vec[index0]+self.kr*(
+            trial=self.pop_vec[index0]+self.opt.kr*(
                     self.pop_vec[index1]+self.pop_vec[index2]-2*self.pop_vec[index0])
-            # trial = vec + self.kr*(self.pop_vec[index1]\
-            #        + self.pop_vec[index2] - 2*vec)
 
         # Implementation of constrained optimization
-        if self.use_boundaries:
+        if self.opt.use_boundaries:
             # Check so that the parameters lie indside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
             # If not inside make a random re-initilazation of that parameter
@@ -1331,12 +1236,12 @@ class DiffEv(Configurable):
     def set_km(self, val):
         '''set_km(self, val) --> None
         '''
-        self.km=val
+        self.opt.km=val
 
     def set_kr(self, val):
         '''set_kr(self, val) --> None
         '''
-        self.kr=val
+        self.opt.kr=val
 
     def set_create_trial(self, val):
         '''set_create_trial(self, val) --> None
@@ -1350,6 +1255,7 @@ class DiffEv(Configurable):
 
         pos=names.index(val)
         self.create_trial=self.mutation_schemes[pos]
+        self.opt.create_trial=val
         if val=='jade_best':
             self.update_pop=self.jade_update_pop
             self.init_new_generation=self.jade_init_new_generation
@@ -1363,101 +1269,101 @@ class DiffEv(Configurable):
     def set_pop_mult(self, val):
         '''set_pop_mult(self, val) --> None
         '''
-        self.pop_mult=val
+        self.opt.pop_mult=val
 
     def set_pop_size(self, val):
         '''set_pop_size(self, val) --> None
         '''
-        self.pop_size=int(val)
+        self.opt.pop_size=int(val)
 
     def set_max_generations(self, val):
         '''set_max_generations(self, val) --> None
         '''
-        self.max_generations=int(val)
+        self.opt.max_generations=int(val)
 
     def set_max_generation_mult(self, val):
         '''set_max_generation_mult(self, val) --> None
         '''
-        self.max_generation_mult=val
+        self.opt.max_generation_mult=val
 
     def set_sleep_time(self, val):
         '''set_sleep_time(self, val) --> None
         '''
-        self.sleep_time=val
+        self.opt.sleep_time=val
 
     def set_max_log(self, val):
         '''Sets the maximum number of logged elements
         '''
-        self.max_log=val
+        self.opt.max_log_elements=val
 
     def set_use_pop_mult(self, val):
         '''set_use_pop_mult(self, val) --> None
         '''
-        self.use_pop_mult=val
+        self.opt.use_pop_mult=val
 
     def set_use_max_generations(self, val):
         '''set_use_max_generations(self, val) --> None
         '''
-        self.use_max_generations=val
+        self.opt.use_max_generations=val
 
     def set_use_start_guess(self, val):
         '''set_use_start_guess(self, val) --> None
         '''
-        self.use_start_guess=val
+        self.opt.use_start_guess=val
 
     def set_use_boundaries(self, val):
         '''set_use_boundaries(self, val) --> None
         '''
-        self.use_boundaries=val
+        self.opt.use_boundaries=val
 
     def set_use_autosave(self, val):
         '''set_use_autosave(self, val) --> None
         '''
-        self.use_autosave=val
+        self.opt.use_autosave=val
 
     def set_autosave_interval(self, val):
         '''set_autosave_interval(self, val) --> None
         '''
-        self.autosave_interval=int(val)
+        self.opt.autosave_interval=int(val)
 
     def set_use_parallel_processing(self, val):
         '''set_use_parallel_processing(self, val) --> None
         '''
         if __parallel_loaded__:
-            self.use_parallel_processing=val
-            self.use_mpi=False if val else self.use_mpi
+            self.opt.use_parallel_processing=val
+            self.opt.use_mpi=False if val else self.opt.use_mpi
         else:
-            self.use_parallel_processing=False
+            self.opt.use_parallel_processing=False
 
     def set_use_mpi(self, val):
         """Sets if mpi should use for parallel optimization"""
         if __mpi_loaded__:
-            self.use_mpi=val
-            self.use_parallel_processing=False if val else self.use_parallel_processing
+            self.opt.use_mpi=val
+            self.opt.use_parallel_processing=False if val else self.opt.use_parallel_processing
         else:
-            self.use_mpi=False
+            self.opt.use_mpi=False
 
     def set_processes(self, val):
         '''set_processes(self, val) --> None
         '''
-        self.processes=int(val)
+        self.opt.parallel_processes=int(val)
 
     def set_chunksize(self, val):
         '''set_chunksize(self, val) --> None
         '''
-        self.chunksize=int(val)
+        self.opt.parallel_chunksize=int(val)
 
     def set_fom_allowed_dis(self, val):
         '''set_chunksize(self, val) --> None
         '''
-        self.fom_allowed_dis=float(val)
+        self.opt.allowed_fom_discrepancy=float(val)
 
     def __repr__(self):
         output="Differential Evolution Optimizer:\n"
         for gname, group in self.parameter_groups:
             output+='    %s:\n'%gname
             for attr in group:
-                output+='        %-30s %s\n'%(attr, getattr(self, attr))
+                output+='        %-30s %s\n'%(attr, getattr(self.opt, attr))
         return output
 
     @property
@@ -1470,7 +1376,7 @@ class DiffEv(Configurable):
         for gname, group in self.parameter_groups:
             gentries=[ipw.HTML("<b>%s:</b>"%gname)]
             for attr in group:
-                val=eval('self.%s'%attr, globals(), locals())
+                val=eval('self.opt.%s'%attr, globals(), locals())
                 if type(val) is bool:
                     item=ipw.Checkbox(value=val, indent=False, description=attr, layout=ipw.Layout(width='24ex'))
                     entry=item

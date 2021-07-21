@@ -4,101 +4,102 @@ is a general class that store and binds togheter all the other
 classes that is part of model parameters, such as data and parameters.
 '''
 
-# Standard libraries
-import os, types, zipfile
-import pickle as pickle
-import io, traceback
 import inspect
-import numpy as np
-import h5py
-from dataclasses import dataclass
-from logging import debug
-
-# GenX libraries
-from . import data
-from . import parameters
-from . import fom_funcs
-from .exceptions import GenxIOError, FomError, ModelError, ParameterError
-from .filehandling import BaseConfig, Configurable
-from .gui_logging import iprint
-
-from .models.lib.parameters import NumericParameter, get_parameters
-
+import io
+# Standard libraries
+import os
+import pickle as pickle
 # assure compatibility with scripts that don't include genx in import
 import sys
-sys.modules['models']=sys.modules['genx.models']
+import traceback
+import types
+import zipfile
+from dataclasses import dataclass, field
+from logging import debug
+
+import h5py
+import numpy as np
+
+# GenX libraries
+from . import data, fom_funcs, parameters
+from .exceptions import FomError, GenxIOError, ModelError, ParameterError
+from .filehandling import BaseConfig
+from .gui_logging import iprint
+from .models.lib.parameters import get_parameters, NumericParameter
+
+
+sys.modules['models'] = sys.modules['genx.models']
+
 
 @dataclass
 class StartupScript(BaseConfig):
-    section='startup'
-    script: str='[""]'
+    section = 'startup'
+    script: str = '[""]'
+
 
 @dataclass
 class ModelParameters(BaseConfig):
-    section='parameters'
-    registred_classes: str='Layer;Stack;Sample;Instrument;UserVars'
-    set_func: str='set'
+    section = 'parameters'
+    registred_classes: list = field(default_factory=list)
+    set_func: str = 'set'
+
 
 @dataclass
 class SolverParameters(BaseConfig):
-    section='solver'
-    ignore_fom_nan: bool=True
-    ignore_fom_inf: bool=True
+    section = 'solver'
+    ignore_fom_nan: bool = True
+    ignore_fom_inf: bool = True
 
+    limit_fit_range:bool=False
+    fit_xmin:float=0.0
+    fit_xmax:float=180.0
 
 class Model:
     ''' A class that holds the model i.e. the script that defines
         the model and the data + various other attributes.
     '''
+    fom: float=None
+    fom_mask_func=None
 
     def __init__(self):
         '''
         Create a instance and init all the varaibles.
         '''
-        self.startup_script=StartupScript()
-        self.model_parameters=ModelParameters()
-        self.solver_parameters=SolverParameters()
+        self.opt = ModelParameters()
+        self.startup_script = StartupScript()
+        self.solver_parameters = SolverParameters()
+        self.read_config()
 
-        self.data=data.DataList()
-        self.script=''
-        self.startup_script.load_config()
+        self.data = data.DataList()
+        self.script = ''
         try:
-            self.script="\n".join(eval(self.startup_script.script))
+            self.script = "\n".join(eval(self.startup_script.script))
         except:
             debug('Issue when loading script from config:', exc_info=True)
-        self.parameters=parameters.Parameters(model=self)
+        self.parameters = parameters.Parameters(model=self)
 
         # self.fom_func = default_fom_func
-        self.fom_func=fom_funcs.log  # The function that evaluates the fom
-        self.fom=None  # The value of the fom function
+        self.fom_func = fom_funcs.log  # The function that evaluates the fom
 
-        self.fom_mask_func=None
-        self.create_fom_mask_func()
-
-        # Registred classes that is looked for in the model
-        self.registred_classes=[]
         self._reset_module()
 
         # Temporary stuff that needs to keep track on
-        self.filename=''
-        self.saved=True
-        self.compiled=False
+        self.filename = ''
+        self.saved = True
+        self.compiled = False
 
-        self.limit_fit_range=False
-        self.fit_xmin=0.01
-        self.fit_xmax=0.1
+        self.limit_fit_range = False
+        self.fit_xmin = 0.01
+        self.fit_xmax = 0.1
 
-        self.extra_analysis={}
+        self.extra_analysis = {}
 
     def read_config(self):
         '''Read in the config file
         '''
+        self.opt.load_config()
         self.startup_script.load_config()
-        self.model_parameters.load_config()
         self.solver_parameters.load_config()
-
-        self.registred_classes=[s.strip() for s in self.model_parameters.registred_classes.split(';')]
-
         self.create_fom_mask_func()
 
     def load(self, filename):
@@ -106,48 +107,48 @@ class Model:
         Function to load the necessary parameters from a model file.
         '''
         try:
-            loadfile=zipfile.ZipFile(filename, 'r')
+            loadfile = zipfile.ZipFile(filename, 'r')
         except Exception as e:
             raise GenxIOError('Could not open file.', filename)
         try:
-            new_data=pickle.loads(loadfile.read('data'), encoding='latin1', errors='ignore')
+            new_data = pickle.loads(loadfile.read('data'), encoding='latin1', errors='ignore')
             self.data.safe_copy(new_data)
         except Exception as e:
             iprint('Data section loading (gx file) error:\n ', e, '\n')
             raise GenxIOError('Could not locate the data section.', filename)
         try:
-            self.script=pickle.loads(loadfile.read('script'), encoding='latin1', errors='ignore')
+            self.script = pickle.loads(loadfile.read('script'), encoding='latin1', errors='ignore')
         except Exception as e:
             iprint('Script section loading (gx file) error:\n ', e, '\n')
             raise GenxIOError('Could not locate the script.', filename)
 
         try:
-            new_parameters=pickle.loads(loadfile.read('parameters'), encoding='latin1', errors='ignore')
+            new_parameters = pickle.loads(loadfile.read('parameters'), encoding='latin1', errors='ignore')
             self.parameters.safe_copy(new_parameters)
         except Exception as e:
             iprint('Script section loading (gx file) error:\n ', e, '\n')
             raise GenxIOError('Could not locate the parameters section.', filename)
         try:
-            self.fom_func=pickle.loads(loadfile.read('fomfunction'), encoding='latin1', errors='ignore')
+            self.fom_func = pickle.loads(loadfile.read('fomfunction'), encoding='latin1', errors='ignore')
         except Exception:
             raise GenxIOError('Could not locate the fomfunction section.', filename)
 
         loadfile.close()
 
-        self.filename=os.path.abspath(filename)
-        self.compiled=False
-        self.saved=True
-        self.script_module=types.ModuleType('genx_script_module')
-        self.script_module.__dict__['data']=self.data
-        self.script_module.__dict__['_sim']=False
-        self.compiled=False
+        self.filename = os.path.abspath(filename)
+        self.compiled = False
+        self.saved = True
+        self.script_module = types.ModuleType('genx_script_module')
+        self.script_module.__dict__['data'] = self.data
+        self.script_module.__dict__['_sim'] = False
+        self.compiled = False
 
     def save(self, filename):
         '''
         Function to save the model to file filename
         '''
         try:
-            savefile=zipfile.ZipFile(filename, 'w')
+            savefile = zipfile.ZipFile(filename, 'w')
         except Exception as e:
             raise GenxIOError(str(e), filename)
 
@@ -160,7 +161,7 @@ class Model:
             savefile.writestr('script', pickle.dumps(self.script))
         except Exception as e:
             raise GenxIOError('Error writing script: '+str(e), filename)
-        self.parameters.model=None
+        self.parameters.model = None
         try:
             savefile.writestr('parameters', pickle.dumps(self.parameters))
         except Exception as e:
@@ -172,8 +173,8 @@ class Model:
 
         savefile.close()
 
-        self.filename=os.path.abspath(filename)
-        self.saved=True
+        self.filename = os.path.abspath(filename)
+        self.saved = True
 
     def write_h5group(self, group, **kwargs):
         """ Write the current parameters into a hdf5 group
@@ -184,12 +185,12 @@ class Model:
         :return:
         """
         self.data.write_h5group(group.create_group('data'))
-        group['script']=self.script
+        group['script'] = self.script
         self.parameters.write_h5group(group.create_group('parameters'))
-        group['fomfunction']=self.fom_func.__name__.encode('utf-8')
-        sgrp=group.create_group('solver_pars')
-        sgrp['fom_ignore_nan']=self.solver_parameters.ignore_fom_nan
-        sgrp['fom_ignore_inf']=self.solver_parameters.ignore_fom_inf
+        group['fomfunction'] = self.fom_func.__name__.encode('utf-8')
+        sgrp = group.create_group('solver_pars')
+        sgrp['fom_ignore_nan'] = self.solver_parameters.ignore_fom_nan
+        sgrp['fom_ignore_inf'] = self.solver_parameters.ignore_fom_inf
 
         for kw in kwargs:
             kwargs[kw].write_h5group(group.create_group(kw))
@@ -204,28 +205,28 @@ class Model:
         """
         self.data.read_h5group(group['data'])
         if int(h5py.__version__[0])>2:
-            self.script=group['script'][()].decode('utf-8')
+            self.script = group['script'][()].decode('utf-8')
         else:
-            self.script=group['script'][()]
+            self.script = group['script'][()]
         self.parameters.read_h5group(group['parameters'])
-        fom_func_name=group['fomfunction'][()].decode('utf-8')
+        fom_func_name = group['fomfunction'][()].decode('utf-8')
         if fom_func_name in fom_funcs.func_names:
             self.set_fom_func(eval('fom_funcs.'+fom_func_name))
         else:
             iprint("Can not find fom function name %s"%fom_func_name[()])
 
         try:
-            self.solver_parameters.ignore_fom_nan=bool(group['solver_pars']['fom_ignore_nan'][()])
+            self.solver_parameters.ignore_fom_nan = bool(group['solver_pars']['fom_ignore_nan'][()])
         except Exception as e:
             iprint("Could not load parameter fom_ignore_nan from file")
         try:
-            self.solver_parameters.ignore_fom_inf=bool(group['solver_pars']['fom_ignore_inf'][()])
+            self.solver_parameters.ignore_fom_inf = bool(group['solver_pars']['fom_ignore_inf'][()])
         except Exception as e:
             iprint("Could not load parameter fom_ignore_inf from file")
         self.create_fom_mask_func()
 
         try:
-            self.limit_fit_range, self.fit_xmin, self.fit_xmax=(
+            self.limit_fit_range, self.fit_xmin, self.fit_xmax = (
                 bool(group['optimizer']['limit_fit_range'][()]),
                 float(group['optimizer']['fit_xmin'][()]), float(group['optimizer']['fit_xmax'][()]))
         except Exception as e:
@@ -234,12 +235,12 @@ class Model:
         for kw in kwargs:
             kwargs[kw].read_h5group(group[kw])
 
-        self.compiled=False
-        self.saved=True
-        self.script_module=types.ModuleType('genx_script_module')
-        self.script_module.__dict__['data']=self.data
-        self.script_module.__dict__['_sim']=False
-        self.compiled=False
+        self.compiled = False
+        self.saved = True
+        self.script_module = types.ModuleType('genx_script_module')
+        self.script_module.__dict__['data'] = self.data
+        self.script_module.__dict__['_sim'] = False
+        self.compiled = False
 
     def save_addition(self, name, text):
         '''save_addition(self, name, text) --> None
@@ -251,7 +252,7 @@ class Model:
         if self.filename=='':
             raise GenxIOError('File must be saved before new information is added', '')
         try:
-            savefile=zipfile.ZipFile(self.filename, 'a')
+            savefile = zipfile.ZipFile(self.filename, 'a')
         except Exception as e:
             raise GenxIOError(str(e), self.filename)
 
@@ -275,12 +276,12 @@ class Model:
         if self.filename=='':
             raise GenxIOError('File must be loaded before additional information is read', '')
         try:
-            loadfile=zipfile.ZipFile(self.filename, 'r')
+            loadfile = zipfile.ZipFile(self.filename, 'r')
         except Exception as e:
             raise GenxIOError('Could not open the file', self.filename)
 
         try:
-            text=loadfile.read(name)
+            text = loadfile.read(name)
         except Exception as e:
             raise GenxIOError('Could not read the section named: %s'%name, self.filename)
         loadfile.close()
@@ -291,15 +292,15 @@ class Model:
         Internal method for resetting the module before compilation
         '''
         self.create_fom_mask_func()
-        self.script_module=types.ModuleType('genx_script_module')
+        self.script_module = types.ModuleType('genx_script_module')
         # self.script_module = Temp()
         # self.script_module.__dict__ = {}
         # Bind data for preprocessing with the script
-        self.script_module.__dict__['data']=self.data
+        self.script_module.__dict__['data'] = self.data
         # Flag to indicate to the Sim funtion if a simulation is conducted (True)
         # or a fit is running (False). 
-        self.script_module.__dict__['_sim']=False
-        self.compiled=False
+        self.script_module.__dict__['_sim'] = False
+        self.compiled = False
 
     def compile_script(self):
         ''' 
@@ -308,17 +309,17 @@ class Model:
 
         self._reset_module()
         # Testing to see if this works under windows
-        self.script='\n'.join(self.script.splitlines())
+        self.script = '\n'.join(self.script.splitlines())
         try:
             exec(self.script, self.script_module.__dict__)
         except Exception as e:
-            outp=io.StringIO()
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
-            val=outp.getvalue()
+            val = outp.getvalue()
             outp.close()
             raise ModelError(str(val), 0)
         else:
-            self.compiled=True
+            self.compiled = True
 
     def eval_in_model(self, codestring):
         '''
@@ -326,7 +327,7 @@ class Model:
         model module
         '''
         # exec codestring in self.script_module.__dict__
-        result=eval(codestring, self.script_module.__dict__)
+        result = eval(codestring, self.script_module.__dict__)
         # print 'Sucessfully evaluted: ', codestring
         return result
 
@@ -336,7 +337,7 @@ class Model:
         :param flag: boolean
         :return:
         """
-        self.solver_parameters.ignore_fom_inf=bool(flag)
+        self.solver_parameters.ignore_fom_inf = bool(flag)
         self.create_fom_mask_func()
 
     def set_fom_ignore_nan(self, flag):
@@ -345,7 +346,7 @@ class Model:
         :param flag: boolean flag
         :return:
         """
-        self.solver_parameters.ignore_fom_nan=bool(flag)
+        self.solver_parameters.ignore_fom_nan = bool(flag)
         self.create_fom_mask_func()
 
     def create_fom_mask_func(self):
@@ -355,15 +356,15 @@ class Model:
         :return: an masked array
         """
         if self.solver_parameters.ignore_fom_nan and self.solver_parameters.ignore_fom_inf:
-            fom_mask=lambda a: np.where(np.isfinite(a), a, np.zeros_like(a))
+            fom_mask = lambda a: np.where(np.isfinite(a), a, np.zeros_like(a))
         elif self.solver_parameters.ignore_fom_nan:
-            fom_mask=lambda a: np.where(np.isnan(a), a, np.zeros_like(a))
+            fom_mask = lambda a: np.where(np.isnan(a), a, np.zeros_like(a))
         elif self.solver_parameters.ignore_fom_inf:
-            fom_mask=lambda a: np.where(np.isinf(a), a, np.zeros_like(a))
+            fom_mask = lambda a: np.where(np.isinf(a), a, np.zeros_like(a))
         else:
-            fom_mask=lambda a: a*1.0
+            fom_mask = lambda a: a
 
-        self.fom_mask_func=fom_mask
+        self.fom_mask_func = fom_mask
 
     def calc_fom(self, simulated_data):
         '''calc_fom(self, fomlist) -> fom_raw (list of arrays), 
@@ -373,31 +374,31 @@ class Model:
         Sums up the evaluation of the fom values calculated for each
          data point to form the overall fom function for all data sets.
         '''
-        fom_raw=self.fom_func(simulated_data, self.data)
+        fom_raw = self.fom_func(simulated_data, self.data)
         # limit the x-range of fitting
         if self.limit_fit_range:
             for i, di in enumerate(self.data):
-                fltr=(di.x<self.fit_xmin) | (di.x>self.fit_xmax)
-                fom_raw[i][fltr]=0.
+                fltr = (di.x<self.fit_xmin) | (di.x>self.fit_xmax)
+                fom_raw[i][fltr] = 0.
         # Sum up a unique fom for each data set in use
-        fom_indiv=[np.sum(np.abs(self.fom_mask_func(fom_set))) for fom_set in fom_raw]
-        fom=np.sum([f for f, d in zip(fom_indiv, self.data) if d.use])
+        fom_indiv = [np.sum(np.abs(self.fom_mask_func(fom_set))) for fom_set in fom_raw]
+        fom = np.sum([f for f, d in zip(fom_indiv, self.data) if d.use])
 
         # Lets extract the number of datapoints as well:
-        N=np.sum([len(self.fom_mask_func(fom_set)) for fom_set, d in zip(fom_raw, self.data) if d.use])
+        N = np.sum([len(self.fom_mask_func(fom_set)) for fom_set, d in zip(fom_raw, self.data) if d.use])
         # And the number of fit parameters
-        p=self.parameters.get_len_fit_pars()
+        p = self.parameters.get_len_fit_pars()
         # self.fom_dof = fom/((N-p)*1.0)
         try:
-            use_dif=self.fom_func.__div_dof__
+            use_dif = self.fom_func.__div_dof__
         except Exception:
-            use_dif=False
+            use_dif = False
         if use_dif:
-            fom=fom/((N-p)*1.0)
+            fom = fom/((N-p)*1.0)
 
-        penalty_funcs=self.get_par_penalty()
+        penalty_funcs = self.get_par_penalty()
         if len(penalty_funcs)>0 and fom is not np.NAN:
-            fom+=sum([pf() for pf in penalty_funcs])
+            fom += sum([pf() for pf in penalty_funcs])
         return fom_raw, fom_indiv, fom
 
     def evaluate_fit_func(self):
@@ -407,10 +408,10 @@ class Model:
         for fitting. Use evaluate_sim_func(self) for updating of plots
         and such.
         '''
-        self.script_module._sim=False
-        simulated_data=self.script_module.Sim(self.data)
+        self.script_module._sim = False
+        simulated_data = self.script_module.Sim(self.data)
         # fom = self.fom_func(simulated_data, self.data)
-        fom_raw, fom_inidv, fom=self.calc_fom(simulated_data)
+        fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
         return fom
 
     def evaluate_sim_func(self):
@@ -420,39 +421,39 @@ class Model:
         as well as the fom of the model. Use this one for calculating data to
         update plots, simulations and such.
         '''
-        self.script_module._sim=True
+        self.script_module._sim = True
         try:
-            simulated_data=self.script_module.Sim(self.data)
+            simulated_data = self.script_module.Sim(self.data)
         except Exception as e:
-            outp=io.StringIO()
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
-            val=outp.getvalue()
+            val = outp.getvalue()
             outp.close()
             raise ModelError(str(val), 1)
 
         # check so that the Sim function returns anything
         if not simulated_data:
-            text='The Sim function does not return anything, it should'+ \
-                 ' return a list of the same length as the number of data sets.'
+            text = 'The Sim function does not return anything, it should'+ \
+                   ' return a list of the same length as the number of data sets.'
             raise ModelError(text, 1)
         # Check so the number of data sets is correct
         if len(simulated_data)!=len(self.data):
-            text='The number of simulated data sets returned by the Sim function' \
-                 +' has to be same as the number of loaded data sets.\n'+ \
-                 'Number of loaded data sets: '+str(len(self.data))+ \
-                 '\nNumber of simulated data sets: '+str(len(simulated_data))
+            text = 'The number of simulated data sets returned by the Sim function' \
+                   +' has to be same as the number of loaded data sets.\n'+ \
+                   'Number of loaded data sets: '+str(len(self.data))+ \
+                   '\nNumber of simulated data sets: '+str(len(simulated_data))
             raise ModelError(text, 1)
 
         self.data.set_simulated_data(simulated_data)
 
         try:
             # self.fom = self.fom_func(simulated_data, self.data)
-            fom_raw, fom_inidv, fom=self.calc_fom(simulated_data)
-            self.fom=fom
+            fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
+            self.fom = fom
         except Exception as e:
-            outp=io.StringIO()
+            outp = io.StringIO()
             traceback.print_exc(200, outp)
-            val=outp.getvalue()
+            val = outp.getvalue()
             outp.close()
             raise FomError(str(val))
         # print len(fom_raw)
@@ -466,9 +467,9 @@ class Model:
         returned if string represents anything else a function that sets that 
         object will be returned.
         '''
-        object=self.eval_in_model(str)
+        object = self.eval_in_model(str)
         # Is it a function or a method!
-        name=type(object).__name__
+        name = type(object).__name__
         if callable(object):
             return object
         # Make a function to set the object
@@ -489,7 +490,7 @@ class Model:
         set the paraemters, the guess value (values), minimum allowed values
         and the maximum allowed values
         '''
-        (row_numbers, sfuncs, vals, minvals, maxvals)=self.parameters.get_fit_pars()
+        (row_numbers, sfuncs, vals, minvals, maxvals) = self.parameters.get_fit_pars()
         if len(sfuncs)==0:
             raise ParameterError(sfuncs, 0, None, 4)
         # Check for min and max on all the values
@@ -502,7 +503,7 @@ class Model:
                 raise ParameterError(sfuncs[i], row_numbers[i], None, 2)
 
         # Compile the strings to create the functions..
-        funcs=[]
+        funcs = []
         for func in sfuncs:
             try:
                 funcs.append(self.create_fit_func(func))
@@ -522,7 +523,7 @@ class Model:
         Returns the current parameters values that the user has ticked as
         fittable.
         '''
-        (row_numbers, sfuncs, vals, minvals, maxvals)= \
+        (row_numbers, sfuncs, vals, minvals, maxvals) = \
             self.parameters.get_fit_pars()
         return vals
 
@@ -533,9 +534,9 @@ class Model:
         set the parameters, the guess value (values). Used for simulation, 
         for fitting see get_fit_pars(self).s
         '''
-        (sfuncs, vals)=self.parameters.get_sim_pars()
+        (sfuncs, vals) = self.parameters.get_sim_pars()
         # Compile the strings to create the functions..
-        funcs=[]
+        funcs = []
         for func in sfuncs:
             try:
                 funcs.append(self.create_fit_func(func))
@@ -552,18 +553,18 @@ class Model:
         '''
         if compile:
             self.compile_script()
-        (funcs, vals)=self.get_sim_pars()
+        (funcs, vals) = self.get_sim_pars()
         # print 'Functions to evulate: ', funcs
         # Set the parameter values in the model
         # [func(val) for func,val in zip(funcs, vals)]
-        i=0
+        i = 0
         for func, val in zip(funcs, vals):
             try:
                 func(val)
             except Exception as e:
-                (sfuncs_tmp, vals_tmp)=self.parameters.get_sim_pars()
+                (sfuncs_tmp, vals_tmp) = self.parameters.get_sim_pars()
                 raise ParameterError(sfuncs_tmp[i], i, e, 1)
-            i+=1
+            i += 1
 
         self.evaluate_sim_func()
 
@@ -575,19 +576,19 @@ class Model:
         previous model. 
         '''
         iprint("class Model: new_model")
-        self.data=data.DataList()
-        self.script=''
-        self.parameters=parameters.Parameters(self)
+        self.data = data.DataList()
+        self.script = ''
+        self.parameters = parameters.Parameters(self)
 
         # self.fom_func = default_fom_func
-        self.fom_func=fom_funcs.log
+        self.fom_func = fom_funcs.log
         self._reset_module()
 
         # Temporary stuff that needs to keep track on
-        self.filename=''
-        self.saved=False
+        self.filename = ''
+        self.saved = False
 
-        self.extra_analysis={}
+        self.extra_analysis = {}
 
     def pickable_copy(self):
         '''pickable_copy(self) --> model
@@ -595,25 +596,26 @@ class Model:
         Creates a pickable object of the model. Can be used for saving or
         sending to other processes, i.e., parallel processing.
         '''
-        model_copy=Model()
-        model_copy.data=self.data
-        model_copy.script=self.script
-        model_copy.parameters=self.parameters.copy()
-        model_copy.fom_func=self.fom_func
+        model_copy = Model()
+        model_copy.data = self.data
+        model_copy.script = self.script
+        model_copy.parameters = self.parameters.copy()
+        model_copy.fom_func = self.fom_func
         # The most important stuff - a module is not pickable
-        model_copy.script_module=None
-        model_copy.filename=self.filename
-        model_copy.compiled=self.compiled
-        model_copy.fom=self.fom
-        model_copy.solver_parameters=self.solver_parameters.copy()
-        model_copy.model_parameters=self.model_parameters.copy()
-        model_copy.saved=self.saved
+        model_copy.script_module = None
+        model_copy.filename = self.filename
+        model_copy.compiled = self.compiled
+        model_copy.fom = self.fom
+        model_copy.solver_parameters = self.solver_parameters.copy()
+        model_copy.startup_script=self.startup_script.copy()
+        model_copy.opt = self.opt.copy()
+        model_copy.saved = self.saved
         # Needs to reset the fom_mask_func since this fails under windows.
-        model_copy.fom_mask_func=None
+        model_copy.fom_mask_func = None
         #
-        model_copy.limit_fit_range=self.limit_fit_range
-        model_copy.fit_xmin=self.fit_xmin
-        model_copy.fit_xmax=self.fit_xmax
+        model_copy.limit_fit_range = self.limit_fit_range
+        model_copy.fit_xmin = self.fit_xmin
+        model_copy.fit_xmax = self.fit_xmax
 
         return model_copy
 
@@ -645,30 +647,32 @@ class Model:
         self.simulate(True)
         from genx.lib.orso_io import ort, data as odata
         from genx.version import __version__ as version
-        para_list=[dict([(nj, tpj(pij)) for nj, pij, tpj in zip(self.parameters.data_labels, pi,
-                                                           [str, float, bool, float, float, str])])
-                   for pi in self.parameters.data if pi[0].strip()!='']
-        add_header={'analysis': {
-            'software': {'name': 'GenX', 'version': version},
-            'script': self.script,
-            'parameters': para_list,
-            }}
+        para_list = [dict([(nj, tpj(pij)) for nj, pij, tpj in zip(self.parameters.data_labels, pi,
+                                                                  [str, float, bool, float, float, str])])
+                     for pi in self.parameters.data if pi[0].strip()!='']
+        add_header = {
+            'analysis': {
+                'software': {'name': 'GenX', 'version': version},
+                'script': self.script,
+                'parameters': para_list,
+                }
+            }
         # add possible additional analysis data to the header
         add_header['analysis'].update(self.extra_analysis)
-        ds=[]
+        ds = []
         for di in self.data:
-            header=dict(di.meta)
+            header = dict(di.meta)
             try:
                 import getpass
-                header['creator']['name']=getpass.getuser()
+                header['creator']['name'] = getpass.getuser()
             except Exception:
                 pass
             import datetime
-            header['creator']['time']=datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+            header['creator']['time'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
             header.update(add_header)
-            header['data_set']=di.name
-            columns=[di.x, di.y, di.error]
-            column_names=['Qz', 'R', 'sR']
+            header['data_set'] = di.name
+            columns = [di.x, di.y, di.error]
+            column_names = ['Qz', 'R', 'sR']
             if 'res' in di.extra_data:
                 columns.append(di.extra_data['res'])
                 column_names.append('sQz')
@@ -681,7 +685,7 @@ class Model:
                     continue
                 columns.append(col)
                 column_names.append(name)
-            header['columns']=[{'name': cn} for cn in column_names]
+            header['columns'] = [{'name': cn} for cn in column_names]
             ds.append(odata.ORSOData(header, columns))
         try:
             ort.write_file(basename, ds)
@@ -714,15 +718,15 @@ class Model:
         
         Imports the script from file filename
         '''
-        read_string=self._read_from_file(filename)
+        read_string = self._read_from_file(filename)
         self.set_script(read_string)
-        self.compiled=False
+        self.compiled = False
 
     def import_table(self, filename):
         '''
         import the table from filename. ASCII input. tab delimited
         '''
-        read_string=self._read_from_file(filename)
+        read_string = self._read_from_file(filename)
         self.parameters.set_ascii_input(read_string)
 
     def _save_to_file(self, filename, save_string):
@@ -731,7 +735,7 @@ class Model:
         Save the string to file with filename.
         '''
         try:
-            savefile=open(filename, 'w')
+            savefile = open(filename, 'w')
         except Exception as e:
             raise GenxIOError(e.__str__(), filename)
 
@@ -749,13 +753,13 @@ class Model:
         Reads the entrie file into string and returns it.
         '''
         try:
-            loadfile=open(filename, 'r')
+            loadfile = open(filename, 'r')
         except Exception as e:
             raise GenxIOError(e.__str__(), filename)
 
         # Read the text from file
         try:
-            read_string=loadfile.read()
+            read_string = loadfile.read()
         except Exception as e:
             raise GenxIOError(e.__str__(), filename)
 
@@ -807,10 +811,10 @@ class Model:
 
         """
         # loop through all objects and locate NumericParameters or HasParameters
-        par_dict=get_parameters(self.script_module, numeric_types_only=True)
+        par_dict = get_parameters(self.script_module, numeric_types_only=True)
 
         if len(par_dict)==0:
-            par_dict=self.get_possible_set_functions()
+            par_dict = self.get_possible_set_functions()
 
         return par_dict
 
@@ -826,34 +830,34 @@ class Model:
         # First we should see if any of the 
         # classes is defnined in model.__pars__
         # or in __pars__
-        pars=[]
+        pars = []
         try:
             # Check if the have a pars in module named model
-            pars_tmp=self.eval_in_model('model.__pars__')
-            pars_tmp=['model.%s'%p for p in pars_tmp]
-            pars+=pars_tmp
+            pars_tmp = self.eval_in_model('model.__pars__')
+            pars_tmp = ['model.%s'%p for p in pars_tmp]
+            pars += pars_tmp
         except:
             pass
 
         # Check if we have a __pars__ in the main script
         try:
-            pars_tmp=self.eval_in_model('__pars__')
-            pars_tmp=['%s'%p for p in pars_tmp]
-            pars+=pars_tmp
+            pars_tmp = self.eval_in_model('__pars__')
+            pars_tmp = ['%s'%p for p in pars_tmp]
+            pars += pars_tmp
         except:
             pass
 
-        isstrings=sum([type(p)==type('') for p in pars])==len(pars)
+        isstrings = sum([type(p)==type('') for p in pars])==len(pars)
 
         if not isstrings:
-            pars=[]
+            pars = []
 
         # First find the classes that exists..
         # and defined in self.registred_classes
-        classes=[]
-        for c in self.registred_classes+pars:
+        classes = []
+        for c in self.opt.registred_classes+pars:
             try:
-                ctemp=self.eval_in_model(c)
+                ctemp = self.eval_in_model(c)
             except:
                 pass
             else:
@@ -862,26 +866,26 @@ class Model:
         # Check so there are any classes defined before we proceed
         if len(classes)>0:
             # Get all the objects in the compiled module
-            names=list(self.script_module.__dict__.keys())
+            names = list(self.script_module.__dict__.keys())
             # Create a tuple of the classes we defined above
-            tuple_of_classes=tuple(classes)
+            tuple_of_classes = tuple(classes)
             # Creating a dictionary that holds the name of the classes
             # eaxh item for a classes is a new dictonary that holds the
             # object name and then a list of the methods.
-            par_dict={}
+            par_dict = {}
             [par_dict.__setitem__(clas.__name__, {}) for clas in classes]
             # find all the names of the objects that belongs to 
             # one of the classes
-            objs=[(name, self.eval_in_model(name)) for name in names]
-            valid_objs=[(name, obj) for name, obj in objs
-                        if isinstance(obj, tuple_of_classes)]
+            objs = [(name, self.eval_in_model(name)) for name in names]
+            valid_objs = [(name, obj) for name, obj in objs
+                          if isinstance(obj, tuple_of_classes)]
             # nested for loop for finding for each valid object
             # the right name as given by self.model_parameters.set_func
             # Add this to the right item in par_dict given
             # its class and name.
             [par_dict[obj.__class__.__name__].__setitem__(name,
                                                           [member for member in dir(obj)
-                                                           if member[:len(self.model_parameters.set_func)]==self.model_parameters.set_func])
+                                                           if member.startswith(self.opt.set_func)])
              for name, obj in valid_objs]
 
             return par_dict
@@ -893,15 +897,15 @@ class Model:
         '''
         Set the text in the script use this to change the model script. 
         '''
-        self.script=text
-        self.compiled=False
+        self.script = text
+        self.compiled = False
 
     def set_fom_func(self, fom_func):
         '''
         Set the fucntion that calculates the figure of merit between the model
         and the data.
         '''
-        self.fom_func=fom_func
+        self.fom_func = fom_func
 
     def is_compiled(self):
         '''is_compiled(self) --> compiled [boolean]
@@ -917,8 +921,8 @@ class Model:
         """
         if not self.compiled:
             self.compile_script()
-        indep_module=self.script_module
-        data=self.data
+        indep_module = self.script_module
+        data = self.data
         # compile again to have a completely independent script module
         self.compile_script()
 
@@ -926,24 +930,26 @@ class Model:
         from bumps.curve import Curve
         from numpy import hstack
 
-        namespace={'script_module': indep_module, 'data': data,
-                   'model_data': None, 'bmodel': None,
-                   'Curve': Curve, 'hstack': hstack}
+        namespace = {
+            'script_module': indep_module, 'data': data,
+            'model_data': None, 'bmodel': None,
+            'Curve': Curve, 'hstack': hstack
+            }
 
         # build function for full model parameters out of parameter grid
-        mstring='def model_data(ignore'
-        fstring=''
-        pstart=[]
+        mstring = 'def model_data(ignore'
+        fstring = ''
+        pstart = []
         for p in self.parameters:
             if p.name.strip()=='':
                 continue
-            name=p.name.replace('.set', '_')
-            fstring+='script_module.%s(%s)\n'%(p.name, name)
-            mstring+=', '+name
+            name = p.name.replace('.set', '_')
+            fstring += 'script_module.%s(%s)\n'%(p.name, name)
+            mstring += ', '+name
             pstart.append((name, p.value, p.min, p.max, p.fit))
-        mstring+='):'
-        fstring+='res=script_module.Sim(data)\nreturn hstack(res)'
-        namespace['pstart']=pstart
+        mstring += '):'
+        fstring += 'res=script_module.Sim(data)\nreturn hstack(res)'
+        namespace['pstart'] = pstart
         exec(mstring+'\n    '+fstring.replace('\n', '\n    '), namespace)
         exec('''bmodel=Curve(model_data, hstack([di.x for di in data]), 
                        hstack([di.y for di in data]), 
@@ -955,7 +961,7 @@ class Model:
             exec('bmodel.%s.range(%s, %s)'%(pname, pmin, pmax), namespace)
             if not pfit:
                 exec('bmodel.%s.fixed=True'%pname, namespace)
-        bproblem=FitProblem(namespace['bmodel'])
+        bproblem = FitProblem(namespace['bmodel'])
         return bproblem
 
     def bumps_fit(self, method='dream',
@@ -965,17 +971,17 @@ class Model:
         # create a fitter similar to the bumps.fitters.fit function but with option for GUI monitoring
         from scipy.optimize import OptimizeResult
         from bumps.fitters import FitDriver, FIT_AVAILABLE_IDS, FITTERS, FIT_ACTIVE_IDS
-        options['pop']=pop
-        options['samples']=samples
-        options['burn']=burn
-        options['steps']=steps
-        options['thin']=thin
-        options['alpha']=alpha
-        options['outliers']=outliers
-        options['trim']=trim
+        options['pop'] = pop
+        options['samples'] = samples
+        options['burn'] = burn
+        options['steps'] = steps
+        options['thin'] = thin
+        options['alpha'] = alpha
+        options['outliers'] = outliers
+        options['trim'] = trim
 
         if problem is None:
-            problem=self.bumps_problem()
+            problem = self.bumps_problem()
 
         # verbose = True
         if method not in FIT_AVAILABLE_IDS:
@@ -984,16 +990,16 @@ class Model:
         for fitclass in FITTERS:
             if fitclass.id==method:
                 break
-        driver=FitDriver(fitclass=fitclass, problem=problem, monitors=monitors, **options)
+        driver = FitDriver(fitclass=fitclass, problem=problem, monitors=monitors, **options)
         driver.clip()  # make sure fit starts within domain
-        x0=problem.getp()
-        x, fx=driver.fit()
+        x0 = problem.getp()
+        x, fx = driver.fit()
         problem.setp(x)
-        dx=driver.stderr()
-        result=OptimizeResult(x=x, dx=driver.stderr(), fun=fx, cov=driver.cov(),
-                              success=True, status=0, message="successful termination")
+        dx = driver.stderr()
+        result = OptimizeResult(x=x, dx=driver.stderr(), fun=fx, cov=driver.cov(),
+                                success=True, status=0, message="successful termination")
         if hasattr(driver.fitter, 'state'):
-            result.state=driver.fitter.state
+            result.state = driver.fitter.state
         return result
 
     def build_dream(self, x_n_gen=25, x_n_chain=5, sigmas=None):
@@ -1003,63 +1009,64 @@ class Model:
         """
         if not self.compiled:
             self.compile_script()
-        indep_module=self.script_module
+        indep_module = self.script_module
 
         from bumps.dream import Dream
         from bumps.dream.model import Simulation
         from numpy import hstack, random
 
-        data=self.data
+        data = self.data
         # compile again to have a completely independent script module
         self.compile_script()
 
         # generate a function that takes a single parameter list and returns the stacked data
-        mstring='def model_data(p):\n    '
-        fstring=''
-        pstart=[]
-        i=0
+        mstring = 'def model_data(p):\n    '
+        fstring = ''
+        pstart = []
+        i = 0
         for p in self.parameters:
             if not p.fit:
                 continue
-            name=p.name.replace('.set', '_')
-            fstring+='script_module.%s(p[%i])\n'%(p.name, i)
+            name = p.name.replace('.set', '_')
+            fstring += 'script_module.%s(p[%i])\n'%(p.name, i)
             pstart.append((name, p.value, p.min, p.max))
-            i+=1
-        fstring+='res=script_module.Sim(data)\nreturn hstack(res)'
-        namespace={'script_module': indep_module, 'data': data,
-                   'model_data': None, 'hstack': hstack}
+            i += 1
+        fstring += 'res=script_module.Sim(data)\nreturn hstack(res)'
+        namespace = {
+            'script_module': indep_module, 'data': data,
+            'model_data': None, 'hstack': hstack
+            }
         exec(mstring+fstring.replace('\n', '\n    '), namespace)
 
-        n=len(pstart)
+        n = len(pstart)
         if sigmas is None:
             # if no ranges are supplied, use fit range from model
-            bounds=(tuple(p[2] for p in pstart), tuple(p[3] for p in pstart))
+            bounds = (tuple(p[2] for p in pstart), tuple(p[3] for p in pstart))
         else:
-            bounds=(tuple(p[1]+3*s[0] for p, s in zip(pstart, sigmas)),
-                    tuple(p[1]+3*s[1] for p, s in zip(pstart, sigmas)))
-        bsim=Simulation(f=namespace['model_data'],
-                        data=hstack([di.y for di in data]),
-                        sigma=hstack([di.error for di in data]),
-                        bounds=bounds,
-                        labels=[p[0] for p in pstart])
-        bdream=Dream(model=bsim, draws=20000,
-                     population=random.randn(x_n_gen*n, x_n_chain*n, n))  # n_gen, n_chain, n_var
+            bounds = (tuple(p[1]+3*s[0] for p, s in zip(pstart, sigmas)),
+                      tuple(p[1]+3*s[1] for p, s in zip(pstart, sigmas)))
+        bsim = Simulation(f=namespace['model_data'],
+                          data=hstack([di.y for di in data]),
+                          sigma=hstack([di.error for di in data]),
+                          bounds=bounds,
+                          labels=[p[0] for p in pstart])
+        bdream = Dream(model=bsim, draws=20000,
+                       population=random.randn(x_n_gen*n, x_n_chain*n, n))  # n_gen, n_chain, n_var
         return bdream
 
     def bumps_update_parameters(self, res):
         """
         Update the GenX model from a bumps fit result.
         """
-        x=res.x
-        bproblem=self.bumps_problem()
-        names=list(bproblem.model_parameters().keys())
+        x = res.x
+        bproblem = self.bumps_problem()
+        names = list(bproblem.opt().keys())
         if len(names)!=len(x):
             raise ValueError('The number of parameters does not fit the model parameters, was the model changed?')
 
         for pi in self.parameters:
             if pi.fit:
-                pi.value=x[names.index(pi.name.replace('.set', '_'))]
-
+                pi.value = x[names.index(pi.name.replace('.set', '_'))]
 
     def plot(self, data_labels=None, sim_labels=None):
         """
@@ -1074,15 +1081,15 @@ class Model:
         """
         Display information about the model.
         """
-        output="Genx Model"
+        output = "Genx Model"
         if self.compiled:
-            output+=' - compiled'
+            output += ' - compiled'
         else:
-            output+=' - not compiled yet'
-        output+="\n"
-        output+="File: %s\n"%self.filename
-        output+=self.parameters.__repr__()
-        output+=self.data.__repr__()
+            output += ' - not compiled yet'
+        output += "\n"
+        output += "File: %s\n"%self.filename
+        output += self.parameters.__repr__()
+        output += self.data.__repr__()
         return output
 
     def _repr_html_(self):
@@ -1094,33 +1101,34 @@ class Model:
         except Exception as error:
             print(error)
 
-        output="<h3>Genx Model"
+        output = "<h3>Genx Model"
         if self.compiled:
-            output+=' - compiled'
+            output += ' - compiled'
         else:
-            output+=' - not compiled yet'
-        output+="</h3>\n"
-        output+="<p>File: %s</p>\n"%self.filename
+            output += ' - not compiled yet'
+        output += "</h3>\n"
+        output += "<p>File: %s</p>\n"%self.filename
 
-        output+='<div style="width: 100%;"><div style="width: 40%; float: left;">'
-        output+=self.data._repr_html_()
-        output+="</div>"
+        output += '<div style="width: 100%;"><div style="width: 40%; float: left;">'
+        output += self.data._repr_html_()
+        output += "</div>"
 
         # generate a plot of the model
         import binascii
         from io import BytesIO
         from matplotlib import pyplot as plt
-        sio=BytesIO()
-        fig=plt.figure(figsize=(10, 8))
+        sio = BytesIO()
+        fig = plt.figure(figsize=(10, 8))
         self.data.plot()
         plt.xlabel('q/tth')
         plt.ylabel('Intensity')
         fig.canvas.print_png(sio)
         plt.close()
-        img_data=binascii.b2a_base64(sio.getvalue()).decode('ascii')
-        output+='<div style="margin-left: 40%;"><img src="data:image/png;base64,{}&#10;"></div></div>'.format(img_data)
+        img_data = binascii.b2a_base64(sio.getvalue()).decode('ascii')
+        output += '<div style="margin-left: 40%;"><img src="data:image/png;base64,{}&#10;"></div></div>'.format(
+            img_data)
 
-        output+=self.parameters._repr_html_()
+        output += self.parameters._repr_html_()
         return output
 
     @property
@@ -1134,10 +1142,10 @@ class Model:
         except Exception as error:
             print(error)
 
-        graphw=ipw.Output()
+        graphw = ipw.Output()
         with graphw:
             from matplotlib import pyplot as plt
-            fig=plt.figure(figsize=(10, 8))
+            fig = plt.figure(figsize=(10, 8))
             self.data.plot()
             plt.xlabel('q/tth')
             plt.ylabel('Intensity')
@@ -1145,17 +1153,17 @@ class Model:
             display(fig)
             plt.close()
 
-        dataw=self.data._repr_ipyw_()
-        top=ipw.HBox([dataw, graphw])
-        parameters=self.parameters._repr_ipyw_()
+        dataw = self.data._repr_ipyw_()
+        top = ipw.HBox([dataw, graphw])
+        parameters = self.parameters._repr_ipyw_()
 
-        replot=ipw.Button(description='simulate')
+        replot = ipw.Button(description='simulate')
         replot.on_click(self._ipyw_replot)
-        replot._plot_output=graphw
+        replot._plot_output = graphw
 
-        script_area=ipw.Textarea(self.script, layout=ipw.Layout(width='100%'))
+        script_area = ipw.Textarea(self.script, layout=ipw.Layout(width='100%'))
         script_area.observe(self._ipyw_script, names='value')
-        tabs=ipw.Tab(children=[parameters, script_area])
+        tabs = ipw.Tab(children=[parameters, script_area])
         tabs.set_title(0, 'Parameters')
         tabs.set_title(1, 'Script')
 
@@ -1169,7 +1177,7 @@ class Model:
         with button._plot_output:
             from IPython.display import display, clear_output
             from matplotlib import pyplot as plt
-            fig=plt.figure(figsize=(10, 8))
+            fig = plt.figure(figsize=(10, 8))
             self.data.plot()
             plt.xlabel('q/tth')
             plt.ylabel('Intensity')
@@ -1179,7 +1187,7 @@ class Model:
             plt.close()
 
     def _ipyw_script(self, change):
-        self.script=change.new
+        self.script = change.new
 
 
 # Some small default function that is needed for initialization
@@ -1190,6 +1198,7 @@ def default_fom_func(simulated_data, data):
     '''
     return sum([abs(d.y-sim_d).sum() for sim_d, d \
                 in zip(simulated_data, data)])
+
 
 class Temp:
     pass
