@@ -186,49 +186,14 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         debug("Detected DPI scale factor %s from GetContentScaleFactor"%dpi_scale_factor)
         self.dpi_scale_factor=dpi_scale_factor
         wx.GetApp().dpi_scale_factor=dpi_scale_factor
-        tb_bmp_size=int(32*self.dpi_scale_factor)
 
-        mb_set_plugins=self.create_menu()
-        self.bind_menu()
+        self.create_menu()
 
         self.main_frame_statusbar=self.CreateStatusBar(3)
 
         debug('setup of MainFrame - tool bar')
-        # Tool Bar
-        self.main_frame_toolbar=wx.ToolBar(self, -1, style=wx.TB_DEFAULT_STYLE)
-        self.SetToolBar(self.main_frame_toolbar)
-        self.main_frame_toolbar.AddTool(ToolId.NEW_MODEL, "tb_new", wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N",
-                                        "Create a new model | Ctrl+N")
-        self.main_frame_toolbar.AddTool(ToolId.OPEN_MODEL, "tb_open", wx.Bitmap(img.getopenImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O",
-                                        "Open an existing model | Ctrl+O")
-        self.main_frame_toolbar.AddTool(ToolId.SAVE_MODEL, "tb_save", wx.Bitmap(img.getsaveImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "Save | Ctrl+S", "Save model to file | Ctrl+S")
-        self.main_frame_toolbar.AddSeparator()
-        self.main_frame_toolbar.AddTool(ToolId.SIM_MODEL, "tb_simulate",
-                                        wx.Bitmap(img.getsimulateImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
-        self.main_frame_toolbar.AddTool(ToolId.START_FIT, "tb_start_fit",
-                                        wx.Bitmap(img.getstart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "Start fit | Ctrl+F", "Start fitting | Ctrl+F")
-        self.main_frame_toolbar.AddTool(ToolId.STOP_FIT, "tb_stop_fit",
-                                        wx.Bitmap(img.getstop_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "Stop fit | Ctrl+H", "Stop fitting | Ctrl+H")
-        self.main_frame_toolbar.AddTool(ToolId.RESTART_FIT, "tb_restart_fit",
-                                        wx.Bitmap(img.getrestart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "Restart fit | Ctrl+R",
-                                        "Restart the fit | Ctrl+R")
-        self.main_frame_toolbar.AddTool(ToolId.CALC_ERROR, "tb_calc_error_bars",
-                                        wx.Bitmap(img.getcalc_error_barImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
-        self.main_frame_toolbar.AddTool(ToolId.ERROR_STATS, "tb_error_stats",
-                                        wx.Bitmap(img.getpar_projImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "Error Statistics", "Error Statistics")
-        self.main_frame_toolbar.AddSeparator()
-        self.main_frame_toolbar.AddTool(ToolId.ZOOM, "tb_zoom", wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
-        # Tool Bar end
+        self.create_toolbar()
+
         debug('setup of MainFrame - splitters and panels')
         self.ver_splitter=wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
         self.data_panel=wx.Panel(self.ver_splitter, wx.ID_ANY)
@@ -270,16 +235,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.__do_layout()
 
         debug('setup of MainFrame - bind')
-        self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=ToolId.NEW_MODEL)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=ToolId.OPEN_MODEL)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=ToolId.SAVE_MODEL)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_simulate, id=ToolId.SIM_MODEL)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_start_fit, id=ToolId.START_FIT)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_stop_fit, id=ToolId.STOP_FIT)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_restart_fit, id=ToolId.RESTART_FIT)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_calc_error_bars, id=ToolId.CALC_ERROR)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_error_stats, id=ToolId.ERROR_STATS)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=ToolId.ZOOM)
+        self.bind_menu()
+        self.bind_toolbar()
         self.Bind(wx.EVT_CHOICE, self.eh_data_grid_choice, self.data_grid_choice)
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.eh_plot_page_changed, self.plot_notebook)
 
@@ -293,9 +250,6 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         if self.model.script!='':
             self.script_editor.SetText(self.model.script)
         self.solver_control=solvergui.SolverController(self)
-
-        self.plugin_control= \
-            add_on.PluginController(self, mb_set_plugins)
 
         # Bind all the events that are needed to occur when a new model has
         # been loaded
@@ -482,8 +436,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         wxglade_tmp_menu.Append(MenuId.HELP_ABOUT, "About...", "Shows information about GenX")
         mfmb.Append(wxglade_tmp_menu, "Help")
         self.SetMenuBar(mfmb)
-
-        return mb_set_plugins
+        # Plugin controller builds own menu entries
+        self.plugin_control=add_on.PluginController(self, mb_set_plugins)
 
     def bind_menu(self):
         self.Bind(wx.EVT_MENU, self.eh_mb_new, id=MenuId.NEW_MODEL)
@@ -543,6 +497,58 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_openhomepage, id=MenuId.HELP_HOMEPAGE)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, id=MenuId.HELP_ABOUT)
 
+    def create_toolbar(self):
+        tb_bmp_size=int(32*self.dpi_scale_factor)
+        self.main_frame_toolbar=wx.ToolBar(self, -1, style=wx.TB_DEFAULT_STYLE)
+        self.SetToolBar(self.main_frame_toolbar)
+        self.main_frame_toolbar.AddTool(ToolId.NEW_MODEL, "tb_new",
+                                        wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N",
+                                        "Create a new model | Ctrl+N")
+        self.main_frame_toolbar.AddTool(ToolId.OPEN_MODEL, "tb_open",
+                                        wx.Bitmap(img.getopenImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O",
+                                        "Open an existing model | Ctrl+O")
+        self.main_frame_toolbar.AddTool(ToolId.SAVE_MODEL, "tb_save",
+                                        wx.Bitmap(img.getsaveImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "Save | Ctrl+S", "Save model to file | Ctrl+S")
+        self.main_frame_toolbar.AddSeparator()
+        self.main_frame_toolbar.AddTool(ToolId.SIM_MODEL, "tb_simulate",
+                                        wx.Bitmap(img.getsimulateImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
+        self.main_frame_toolbar.AddTool(ToolId.START_FIT, "tb_start_fit",
+                                        wx.Bitmap(img.getstart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "Start fit | Ctrl+F", "Start fitting | Ctrl+F")
+        self.main_frame_toolbar.AddTool(ToolId.STOP_FIT, "tb_stop_fit",
+                                        wx.Bitmap(img.getstop_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "Stop fit | Ctrl+H", "Stop fitting | Ctrl+H")
+        self.main_frame_toolbar.AddTool(ToolId.RESTART_FIT, "tb_restart_fit",
+                                        wx.Bitmap(img.getrestart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "Restart fit | Ctrl+R",
+                                        "Restart the fit | Ctrl+R")
+        self.main_frame_toolbar.AddTool(ToolId.CALC_ERROR, "tb_calc_error_bars",
+                                        wx.Bitmap(img.getcalc_error_barImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "Calculate errorbars", "Calculate errorbars")
+        self.main_frame_toolbar.AddTool(ToolId.ERROR_STATS, "tb_error_stats",
+                                        wx.Bitmap(img.getpar_projImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "Error Statistics", "Error Statistics")
+        self.main_frame_toolbar.AddSeparator()
+        self.main_frame_toolbar.AddTool(ToolId.ZOOM, "tb_zoom",
+                                        wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_CHECK, "Zoom | Ctrl+Z", "Turn zoom on/off  | Ctrl+Z")
+
+    def bind_toolbar(self):
+        self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=ToolId.NEW_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=ToolId.OPEN_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=ToolId.SAVE_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_simulate, id=ToolId.SIM_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_start_fit, id=ToolId.START_FIT)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_stop_fit, id=ToolId.STOP_FIT)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_restart_fit, id=ToolId.RESTART_FIT)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_calc_error_bars, id=ToolId.CALC_ERROR)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_error_stats, id=ToolId.ERROR_STATS)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=ToolId.ZOOM)
+
     def scan_parameter(self, row):
         ''' scan_parameter(frame, row) --> None
 
@@ -585,7 +591,6 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.main_frame_toolbar.AddSeparator()
         self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
 
-        # begin wxGlade: MainFrame.__set_properties
         _icon=wx.NullIcon
         _icon.CopyFromBitmap(img.genx.GetBitmap())
         self.SetIcon(_icon)

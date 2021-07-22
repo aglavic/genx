@@ -886,7 +886,7 @@ class ObjectScriptInteractor(ScriptInteractor):
         types=self.types.copy()
         types.update(extra_types)
         for p in pars:
-            if p is not 'name':
+            if p != 'name':
                 if types[p] is str:
                     code+="%s='%s', "%(p, getattr(self, p))
                 else:
