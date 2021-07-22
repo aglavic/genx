@@ -96,7 +96,7 @@ class WindowStartup(io.BaseConfig):
     show_profiles: bool=True
     widescreen: bool=False
 
-class MainFrame(wx.Frame, io.Configurable):
+class GenxMainWindow(wx.Frame, io.Configurable):
     opt: GUIConfig
 
     def __init__(self, parent: wx.App):
@@ -540,53 +540,6 @@ class MainFrame(wx.Frame, io.Configurable):
 
         dlg.Destroy()
 
-    def project_fom_parameter(self, row):
-        '''project_fom_parameter(frame, row) --> None
-
-        Plots the project fom given by the row row [int]
-        '''
-        import numpy as np
-        if not self.solver_control.IsFitted():
-            ShowNotificationDialog(self, 'Please conduct a fit before'+
-                                   ' scanning a parameter. The script needs to be compiled and foms have'
-                                   +' to be collected.')
-            return
-
-        self.main_frame_statusbar.SetStatusText('Trying to project fom', 1)
-        with self.catch_error(action='project_fom_parameters', step=f'projecting fom parameters'):
-            x, y = self.solver_control.ProjectEvals(row)
-            if len(x)==0 or len(y)==0:
-                ShowNotificationDialog(self, 'Please conduct a fit before'+
-                                       ' projecting a parameter. The script needs to be compiled and foms have'
-                                       +' to be collected.')
-                return
-            elif self.model.fom is None or np.isnan(self.model.fom):
-                ShowNotificationDialog(self, 'The model must be simulated (FOM is not a valid number)')
-                return
-            fs, pars = self.model.get_sim_pars()
-            bestx = pars[row]
-            besty = self.model.fom
-            self.plot_fomscan.SetPlottype('project')
-            self.plot_fomscan.Plot((x, y, bestx, besty,
-                                    self.solver_control.fom_error_bars_level),
-                                   self.model.parameters.get_names()[row],
-                                   'FOM')
-            self.sep_plot_notebook.SetSelection(3)
-
-    def ScriptEditorKeyEvent(self, evt):
-        if evt.GetKeyCode()==13:
-            pos=self.script_editor.GetCurrentPos()
-            line=self.script_editor.GetCurrentLine()
-            idn=self.script_editor.GetLineIndentation(line)
-            txt=self.script_editor.GetLine(line).strip()
-            if txt.startswith('for ') or txt.startswith('if ') or \
-                    txt.startswith('elif ') or txt.startswith('else:'):
-                idn+=4
-            self.script_editor.InsertText(pos, '\n'+' '*idn)
-            self.script_editor.GotoPos(pos+idn+1)
-        else:
-            evt.Skip()
-
     def __set_properties(self):
         self.main_frame_fom_text=wx.StaticText(self.main_frame_toolbar, -1,
                                                '        FOM:                    ', size=(400, -1))
@@ -754,7 +707,54 @@ class MainFrame(wx.Frame, io.Configurable):
                 with self.catch_error(action='startup_dialog', step=f'open model'):
                     self.plugin_control.OnOpenModel(None)
 
-    def set_title(self):
+    def ScriptEditorKeyEvent(self, evt):
+        if evt.GetKeyCode()==13:
+            pos=self.script_editor.GetCurrentPos()
+            line=self.script_editor.GetCurrentLine()
+            idn=self.script_editor.GetLineIndentation(line)
+            txt=self.script_editor.GetLine(line).strip()
+            if txt.startswith('for ') or txt.startswith('if ') or \
+                    txt.startswith('elif ') or txt.startswith('else:'):
+                idn+=4
+            self.script_editor.InsertText(pos, '\n'+' '*idn)
+            self.script_editor.GotoPos(pos+idn+1)
+        else:
+            evt.Skip()
+
+    def project_fom_parameter(self, row):
+        '''project_fom_parameter(frame, row) --> None
+
+        Plots the project fom given by the row row [int]
+        '''
+        import numpy as np
+        if not self.solver_control.IsFitted():
+            ShowNotificationDialog(self, 'Please conduct a fit before'+
+                                   ' scanning a parameter. The script needs to be compiled and foms have'
+                                   +' to be collected.')
+            return
+
+        self.main_frame_statusbar.SetStatusText('Trying to project fom', 1)
+        with self.catch_error(action='project_fom_parameters', step=f'projecting fom parameters'):
+            x, y = self.solver_control.ProjectEvals(row)
+            if len(x)==0 or len(y)==0:
+                ShowNotificationDialog(self, 'Please conduct a fit before'+
+                                       ' projecting a parameter. The script needs to be compiled and foms have'
+                                       +' to be collected.')
+                return
+            elif self.model.fom is None or np.isnan(self.model.fom):
+                ShowNotificationDialog(self, 'The model must be simulated (FOM is not a valid number)')
+                return
+            fs, pars = self.model.get_sim_pars()
+            bestx = pars[row]
+            besty = self.model.fom
+            self.plot_fomscan.SetPlottype('project')
+            self.plot_fomscan.Plot((x, y, bestx, besty,
+                                    self.solver_control.fom_error_bars_level),
+                                   self.model.parameters.get_names()[row],
+                                   'FOM')
+            self.sep_plot_notebook.SetSelection(3)
+
+    def update_title(self):
         filepath, filename = os.path.split(self.model.filename)
         if filename!='':
             if self.model.saved:
@@ -765,49 +765,6 @@ class MainFrame(wx.Frame, io.Configurable):
                               +program_version)
         else:
             self.SetTitle('GenX '+program_version)
-
-    def eh_mb_new(self, event):
-        '''
-        Event handler for creating a new model
-        '''
-        if not self.model.saved:
-            ans = ShowQuestionDialog(self, 'If you continue any changes in'
-                                           ' your model will not be saved.',
-                                     'Model not saved')
-            if not ans:
-                return
-
-        # Reset the model - remove everything from the previous model
-        self.model.new_model()
-        # Update all components so all the traces are gone.
-        _post_new_model_event(self, self.model, desc='Fresh model')
-        self.plugin_control.OnNewModel(None)
-        self.main_frame_statusbar.SetStatusText('New model created', 1)
-        self.set_title()
-        self.model.saved = True
-
-    def eh_mb_open(self, event):
-        '''
-        Event handler for opening a model file...
-        '''
-        # Check so the model is saved before quitting
-        if not self.model.saved:
-            ans = ShowQuestionDialog(self, 'If you continue any changes in'
-                                           ' your model will not be saved.',
-                                     'Model not saved')
-            if not ans:
-                return
-
-        dlg = wx.FileDialog(self, message="Open", defaultFile="",
-                            wildcard="GenX File (*.hgx;*.gx)|*.hgx;*.gx",
-                            style=wx.FD_OPEN  # | wx.FD_CHANGE_DIR
-                            )
-        if dlg.ShowModal()==wx.ID_OK:
-            path = dlg.GetPath()
-            debug('open: path retrieved')
-            self.open_model(path)
-
-        dlg.Destroy()
 
     def get_pages(self):
         # Get all plot panel objects in GUI
@@ -858,7 +815,7 @@ class MainFrame(wx.Frame, io.Configurable):
         # Needs to put it to saved since all the widgets will have
         # been updated
         self.model.saved = True
-        self.set_title()
+        self.update_title()
 
     def models_changed(self, event):
         '''models_changed(frame, event) --> None
@@ -872,13 +829,180 @@ class MainFrame(wx.Frame, io.Configurable):
             self.model.saved = False
         else:
             self.plugin_control.OnGridChanged(event)
-        self.set_title()
+        self.update_title()
 
     def update_for_save(self):
         """Updates the various objects for a save"""
         self.model.set_script(self.script_editor.GetText())
         self.paramter_grid.opt.auto_sim=self.main_frame_menubar.mb_fit_autosim.IsChecked()
         self.paramter_grid.WriteConfig()
+
+    def do_simulation(self, from_thread=False):
+        if not from_thread: self.main_frame_statusbar.SetStatusText('Simulating...', 1)
+        self.model.set_script(self.script_editor.GetText())
+        with self.catch_error(action='do_simulation', step=f'simulating the model') as mgr:
+            self.model.simulate(compile=not (from_thread and self.model.is_compiled()))
+
+        if mgr.successful:
+            wx.CallAfter(_post_sim_plot_event, self, self.model, 'Simulation')
+            wx.CallAfter(self.plugin_control.OnSimulate, None)
+            if not from_thread: self.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
+
+    def set_possible_parameters_in_grid(self):
+        # Now we should find the parameters that we can use to
+        # in the grid
+        with self.catch_error(action='set_possible_parameters_in_grid', step=f'getting possible parameters',
+                              verbose=False) as mgr:
+            pardict = self.model.get_possible_parameters()
+        if not mgr.successful: return
+
+        with self.catch_error(action='set_possible_parameters_in_grid', step=f'setting parameter selections',
+                              verbose=False):
+            self.paramter_grid.SetParameterSelections(pardict)
+            # Set the function for which the parameter can be evaluated with
+            self.paramter_grid.SetEvalFunc(self.model.eval_in_model)
+
+    def view_yscale(self, value):
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            pages[sel].SetYScale(value)
+
+    def view_xscale(self, value):
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            pages[sel].SetXScale(value)
+
+    def activate_cuda(self):
+        dlg = wx.ProgressDialog(parent=self,
+                                maximum=3,
+                                message="Compiling CUDA GPU computing functions with Numba",
+                                title='Activating CUDA...')
+        dlg.Show()
+
+        dlg.Update(1)
+        from genx.models.lib import paratt_cuda
+        dlg.Update(2)
+        from genx.models.lib import neutron_cuda
+        dlg.Update(3)
+        from models.lib import paratt, neutron_refl
+        paratt.Refl = paratt_cuda.Refl
+        paratt.ReflQ = paratt_cuda.ReflQ
+        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
+        neutron_refl.Refl = neutron_cuda.Refl
+        from genx.models.lib import paratt, neutron_refl
+        paratt.Refl = paratt_cuda.Refl
+        paratt.ReflQ = paratt_cuda.ReflQ
+        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
+        neutron_refl.Refl = neutron_cuda.Refl
+
+        dlg.Destroy()
+
+    def deactivate_cuda(self):
+        from genx.models.lib import paratt_numba, neutron_numba
+        from models.lib import paratt, neutron_refl
+        paratt.Refl = paratt_numba.Refl
+        paratt.ReflQ = paratt_numba.ReflQ
+        paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
+        neutron_refl.Refl = neutron_numba.Refl
+        from genx.models.lib import paratt, neutron_refl
+        paratt.Refl = paratt_numba.Refl
+        paratt.ReflQ = paratt_numba.ReflQ
+        paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
+        neutron_refl.Refl = neutron_numba.Refl
+
+    def simulation_loop(self):
+        """ Simulation loop for threading to increase the speed of the interactive simulations
+        :param self:
+        :return:
+        """
+        self.flag_simulating = True
+        while self.simulation_queue_counter>0:
+            self.do_simulation(from_thread=True)
+            time.sleep(0.1)
+            self.simulation_queue_counter = min(1, self.simulation_queue_counter-1)
+        self.flag_simulating = False
+
+    def eh_external_parameter_value_changed(self, event):
+        """
+        Event handler for when a value of a parameter in the grid has been updated.
+        """
+        self.simulation_queue_counter += 1
+        if self.main_frame_menubar.mb_fit_autosim.IsChecked() and not self.flag_simulating:
+            _thread.start_new_thread(self.simulation_loop, ())
+
+    def eh_external_update_data_grid_choice(self, event):
+        '''
+        Updates the choices of the grids to display from the data.
+        '''
+        data = event.GetData()
+        names = [data_set.name for data_set in data]
+        self.data_grid_choice.Clear()
+        self.data_grid_choice.AppendItems(names)
+        event.Skip()
+
+    def eh_external_update_data(self, event):
+        self.plugin_control.OnDataChanged(event)
+        event.Skip()
+
+    def eh_new_model(self, event):
+        '''
+        Callback for NEW_MODEL event. Used to update the script for
+        a new model i.e. put the string to the correct value.
+        '''
+        # Set the string in the script_editor
+        self.script_editor.SetText(event.GetModel().get_script())
+        # Let the solvergui do its loading and updating:
+        self.solver_control.ModelLoaded()
+        # Lets update the mb_use_toggle_show Menu item
+        self.main_frame_menubar.mb_use_toggle_show.Check(self.data_list.list_ctrl.opt.toggle_show)
+        self.main_frame_menubar.mb_fit_autosim.Check(self.paramter_grid.opt.auto_sim)
+        # Let other event handlers recieve the event as well
+        event.Skip()
+
+    def eh_mb_new(self, event):
+        '''
+        Event handler for creating a new model
+        '''
+        if not self.model.saved:
+            ans = ShowQuestionDialog(self, 'If you continue any changes in'
+                                           ' your model will not be saved.',
+                                     'Model not saved')
+            if not ans:
+                return
+
+        # Reset the model - remove everything from the previous model
+        self.model.new_model()
+        # Update all components so all the traces are gone.
+        _post_new_model_event(self, self.model, desc='Fresh model')
+        self.plugin_control.OnNewModel(None)
+        self.main_frame_statusbar.SetStatusText('New model created', 1)
+        self.update_title()
+        self.model.saved = True
+
+    def eh_mb_open(self, event):
+        '''
+        Event handler for opening a model file...
+        '''
+        # Check so the model is saved before quitting
+        if not self.model.saved:
+            ans = ShowQuestionDialog(self, 'If you continue any changes in'
+                                           ' your model will not be saved.',
+                                     'Model not saved')
+            if not ans:
+                return
+
+        dlg = wx.FileDialog(self, message="Open", defaultFile="",
+                            wildcard="GenX File (*.hgx;*.gx)|*.hgx;*.gx",
+                            style=wx.FD_OPEN  # | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            path = dlg.GetPath()
+            debug('open: path retrieved')
+            self.open_model(path)
+
+        dlg.Destroy()
 
     def eh_mb_save(self, event):
         '''
@@ -893,7 +1017,7 @@ class MainFrame(wx.Frame, io.Configurable):
         else:
             with self.catch_error(action='save_model', step=f'save file {os.path.basename(fname)}'):
                 io.save_file(fname, self.model, self.solver_control.optimizer)
-                self.set_title()
+                self.update_title()
 
     def eh_mb_print_plot(self, event):
         '''
@@ -1172,6 +1296,57 @@ class MainFrame(wx.Frame, io.Configurable):
 
         wx.adv.AboutBox(info)
 
+    def eh_mb_saveas(self, event):
+        '''
+        Event handler for save as ...
+        '''
+        dlg = wx.FileDialog(self, message="Save As", defaultFile="",
+                            wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",
+                            style=wx.FD_SAVE  # | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            self.update_for_save()
+            fname = dlg.GetPath()
+            base, ext = os.path.splitext(fname)
+            if ext=='':
+                ext = '.hgx'
+            fname = base+ext
+            result = True
+            if os.path.exists(fname):
+                filepath, filename = os.path.split(fname)
+                result = ShowQuestionDialog(self, 'The file %s already exists. Do you wish to overwrite it?'%filename,
+                                            'Overwrite?')
+            if result:
+                with self.catch_error(action='saveas', step=f'saveing file as {os.path.basename(fname)}'):
+                    io.save_file(fname, self.model, self.solver_control.optimizer)
+                self.update_title()
+        dlg.Destroy()
+
+    def eh_mb_view_yscale_log(self, event):
+        self.view_yscale('log')
+
+    def eh_mb_view_yscale_linear(self, event):
+        self.view_yscale('linear')
+
+    def eh_mb_view_xscale_log(self, event):
+        '''
+        Set the x-scale of the current plot. type should be linear or log, strings.
+        '''
+        self.view_xscale('log')
+
+    def eh_mb_view_xscale_linear(self, event):
+        self.view_xscale('linear')
+
+    def eh_mb_view_autoscale(self, event):
+        '''on_autoscale(frame, event) --> None
+
+        Toggles the autoscale of the current plot.
+        '''
+        sel = self.sep_plot_notebook.GetSelection()
+        pages = self.get_pages()
+        if sel<len(pages):
+            pages[sel].SetAutoScale(not pages[sel].GetAutoScale())
+
     def eh_data_grid_choice(self, event):
         '''
         change the data displayed in the grid...
@@ -1206,31 +1381,6 @@ class MainFrame(wx.Frame, io.Configurable):
     def eh_tb_save(self, event):
         self.eh_mb_save(event)
 
-    def do_simulation(self, from_thread=False):
-        if not from_thread: self.main_frame_statusbar.SetStatusText('Simulating...', 1)
-        self.model.set_script(self.script_editor.GetText())
-        with self.catch_error(action='do_simulation', step=f'simulating the model') as mgr:
-            self.model.simulate(compile=not (from_thread and self.model.is_compiled()))
-
-        if mgr.successful:
-            wx.CallAfter(_post_sim_plot_event, self, self.model, 'Simulation')
-            wx.CallAfter(self.plugin_control.OnSimulate, None)
-            if not from_thread: self.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
-
-    def set_possible_parameters_in_grid(self):
-        # Now we should find the parameters that we can use to
-        # in the grid
-        with self.catch_error(action='set_possible_parameters_in_grid', step=f'getting possible parameters',
-                              verbose=False) as mgr:
-            pardict = self.model.get_possible_parameters()
-        if not mgr.successful: return
-
-        with self.catch_error(action='set_possible_parameters_in_grid', step=f'setting parameter selections',
-                              verbose=False):
-            self.paramter_grid.SetParameterSelections(pardict)
-            # Set the function for which the parameter can be evaluated with
-            self.paramter_grid.SetEvalFunc(self.model.eval_in_model)
-
     def eh_tb_simulate(self, event):
         '''
         Event handler for simulation.
@@ -1251,47 +1401,6 @@ class MainFrame(wx.Frame, io.Configurable):
 
     def eh_tb_zoom(self, event):
         self.eh_mb_view_zoom(event)
-
-    def eh_new_model(self, event):
-        '''
-        Callback for NEW_MODEL event. Used to update the script for
-        a new model i.e. put the string to the correct value.
-        '''
-        # Set the string in the script_editor
-        self.script_editor.SetText(event.GetModel().get_script())
-        # Let the solvergui do its loading and updating:
-        self.solver_control.ModelLoaded()
-        # Lets update the mb_use_toggle_show Menu item
-        self.main_frame_menubar.mb_use_toggle_show.Check(self.data_list.list_ctrl.opt.toggle_show)
-        self.main_frame_menubar.mb_fit_autosim.Check(self.paramter_grid.opt.auto_sim)
-        # Let other event handlers recieve the event as well
-        event.Skip()
-
-    def eh_mb_saveas(self, event):
-        '''
-        Event handler for save as ...
-        '''
-        dlg = wx.FileDialog(self, message="Save As", defaultFile="",
-                            wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",
-                            style=wx.FD_SAVE  # | wx.FD_CHANGE_DIR
-                            )
-        if dlg.ShowModal()==wx.ID_OK:
-            self.update_for_save()
-            fname = dlg.GetPath()
-            base, ext = os.path.splitext(fname)
-            if ext=='':
-                ext = '.hgx'
-            fname = base+ext
-            result = True
-            if os.path.exists(fname):
-                filepath, filename = os.path.split(fname)
-                result = ShowQuestionDialog(self, 'The file %s already exists. Do you wish to overwrite it?'%filename,
-                                            'Overwrite?')
-            if result:
-                with self.catch_error(action='saveas', step=f'saveing file as {os.path.basename(fname)}'):
-                    io.save_file(fname, self.model, self.solver_control.optimizer)
-                self.set_title()
-        dlg.Destroy()
 
     def eh_ex_status_text(self, event):
         self.main_frame_statusbar.SetStatusText(event.text, 1)
@@ -1374,81 +1483,6 @@ class MainFrame(wx.Frame, io.Configurable):
             pages[sel].AutoScale()
         event.Skip()
 
-    def view_yscale(self, value):
-        sel = self.sep_plot_notebook.GetSelection()
-        pages = self.get_pages()
-        if sel<len(pages):
-            pages[sel].SetYScale(value)
-
-    def view_xscale(self, value):
-        sel = self.sep_plot_notebook.GetSelection()
-        pages = self.get_pages()
-        if sel<len(pages):
-            pages[sel].SetXScale(value)
-
-    def eh_mb_view_yscale_log(self, event):
-        self.view_yscale('log')
-
-    def eh_mb_view_yscale_linear(self, event):
-        self.view_yscale('linear')
-
-    def eh_mb_view_xscale_log(self, event):
-        '''
-        Set the x-scale of the current plot. type should be linear or log, strings.
-        '''
-        self.view_xscale('log')
-
-    def eh_mb_view_xscale_linear(self, event):
-        self.view_xscale('linear')
-
-    def eh_mb_view_autoscale(self, event):
-        '''on_autoscale(frame, event) --> None
-
-        Toggles the autoscale of the current plot.
-        '''
-        sel = self.sep_plot_notebook.GetSelection()
-        pages = self.get_pages()
-        if sel<len(pages):
-            pages[sel].SetAutoScale(not pages[sel].GetAutoScale())
-
-    def activate_cuda(self):
-        dlg = wx.ProgressDialog(parent=self,
-                                maximum=3,
-                                message="Compiling CUDA GPU computing functions with Numba",
-                                title='Activating CUDA...')
-        dlg.Show()
-
-        dlg.Update(1)
-        from genx.models.lib import paratt_cuda
-        dlg.Update(2)
-        from genx.models.lib import neutron_cuda
-        dlg.Update(3)
-        from models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_cuda.Refl
-        paratt.ReflQ = paratt_cuda.ReflQ
-        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
-        neutron_refl.Refl = neutron_cuda.Refl
-        from genx.models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_cuda.Refl
-        paratt.ReflQ = paratt_cuda.ReflQ
-        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
-        neutron_refl.Refl = neutron_cuda.Refl
-
-        dlg.Destroy()
-
-    def deactivate_cuda(self):
-        from genx.models.lib import paratt_numba, neutron_numba
-        from models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_numba.Refl
-        paratt.ReflQ = paratt_numba.ReflQ
-        paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
-        neutron_refl.Refl = neutron_numba.Refl
-        from genx.models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_numba.Refl
-        paratt.ReflQ = paratt_numba.ReflQ
-        paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
-        neutron_refl.Refl = neutron_numba.Refl
-
     def eh_mb_use_cuda(self, event):
         if self.main_frame_menubar.mb_use_cuda.IsChecked():
             self.activate_cuda()
@@ -1516,20 +1550,6 @@ class MainFrame(wx.Frame, io.Configurable):
 
     def eh_mb_set_dal(self, event):
         self.data_list.DataLoaderSettingsDialog()
-
-    def eh_external_update_data_grid_choice(self, event):
-        '''
-        Updates the choices of the grids to display from the data.
-        '''
-        data = event.GetData()
-        names = [data_set.name for data_set in data]
-        self.data_grid_choice.Clear()
-        self.data_grid_choice.AppendItems(names)
-        event.Skip()
-
-    def eh_external_update_data(self, event):
-        self.plugin_control.OnDataChanged(event)
-        event.Skip()
 
     def eh_mb_fit_evaluate(self, event):
         '''
@@ -1600,7 +1620,7 @@ class MainFrame(wx.Frame, io.Configurable):
             self.model.saved = False
         else:
             self.plugin_control.OnGridChanged(event)
-        self.set_title()
+        self.update_title()
         event.Skip()
 
     def eh_mb_plugins_help(self, event):
@@ -1712,26 +1732,6 @@ class MainFrame(wx.Frame, io.Configurable):
         self.startup_dialog(config_path, force_show=True)
         print(pre_dia==self.wstartup)
 
-    def simulation_loop(self):
-        """ Simulation loop for threading to increase the speed of the interactive simulations
-        :param self:
-        :return:
-        """
-        self.flag_simulating = True
-        while self.simulation_queue_counter>0:
-            self.do_simulation(from_thread=True)
-            time.sleep(0.1)
-            self.simulation_queue_counter = min(1, self.simulation_queue_counter-1)
-        self.flag_simulating = False
-
-    def eh_external_parameter_value_changed(self, event):
-        """
-        Event handler for when a value of a parameter in the grid has been updated.
-        """
-        self.simulation_queue_counter += 1
-        if self.main_frame_menubar.mb_fit_autosim.IsChecked() and not self.flag_simulating:
-            _thread.start_new_thread(self.simulation_loop, ())
-
     def eh_mb_fit_autosim(self, event):
         event.Skip()
 
@@ -1748,7 +1748,7 @@ class MyApp(wx.App):
         locale=wx.Locale(wx.LANGUAGE_ENGLISH)
         self.locale=locale
 
-        main_frame=MainFrame(self)
+        main_frame=GenxMainWindow(self)
         self.SetTopWindow(main_frame)
 
         # main_frame.Show()
