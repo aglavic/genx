@@ -6,14 +6,11 @@ import appdirs
 import io
 import os
 import shutil
-import sys
-import traceback
 import webbrowser
 import _thread, time
-from logging import debug, error, info, warning
+from logging import debug, info, warning
 from dataclasses import dataclass
 from enum import Enum
-from io import StringIO
 from typing import List
 
 import wx
@@ -26,15 +23,8 @@ from wx.lib.wordwrap import wordwrap
 from genx.plugins import add_on_framework as add_on
 from . import datalist, filehandling as io, images as img, model, parametergrid, plotpanel, solvergui, help
 from .version import __version__ as program_version
-from .exceptions import GenxError, GenxIOError, ErrorBarError
 from .exception_handling import CatchModelError
-from .gui_logging import iprint
 
-# import wx.lib.agw.aui as aui
-
-# Add current path to the system paths
-# just in case some user make a directory change
-sys.path.append(os.getcwd())
 _path, _file=os.path.split(__file__)
 if _path[-4:]=='.zip':
     _path, ending=os.path.split(_path)
@@ -70,16 +60,86 @@ manual_url='https://aglavic.github.io/genx/doc/'
 homepage_url='https://aglavic.github.io/genx/'
 
 class ToolId(int, Enum):
-    NEW_MODEL=10001
-    OPEN_MODEL=10002
-    SAVE_MODEL=10003
-    SIM_MODEL=10004
-    START_FIT=10005
-    STOP_FIT=10006
-    RESTART_FIT=10007
-    CALC_ERROR=10008
-    ZOOM=10009
-    ERROR_STATS=10010
+    NEW_MODEL=wx.Window.NewControlId()
+    OPEN_MODEL=wx.Window.NewControlId()
+    SAVE_MODEL=wx.Window.NewControlId()
+    SIM_MODEL=wx.Window.NewControlId()
+    START_FIT=wx.Window.NewControlId()
+    STOP_FIT=wx.Window.NewControlId()
+    RESTART_FIT=wx.Window.NewControlId()
+    CALC_ERROR=wx.Window.NewControlId()
+    ZOOM=wx.Window.NewControlId()
+    ERROR_STATS=wx.Window.NewControlId()
+
+class MenuId(int, Enum):
+    NEW_MODEL=wx.Window.NewControlId()
+    OPEN_MODEL=wx.Window.NewControlId()
+    SAVE_MODEL=wx.Window.NewControlId()
+    SAVE_MODEL_AS=wx.Window.NewControlId()
+
+    IMPORT_DATA=wx.Window.NewControlId()
+    IMPORT_TABLE=wx.Window.NewControlId()
+    IMPORT_SCRIPT=wx.Window.NewControlId()
+
+    EXPORT_ORSO=wx.Window.NewControlId()
+    EXPORT_DATA=wx.Window.NewControlId()
+    EXPORT_TABLE=wx.Window.NewControlId()
+    EXPORT_SCRIPT=wx.Window.NewControlId()
+
+    PRINT_PLOT=wx.Window.NewControlId()
+    PRINT_GRID=wx.Window.NewControlId()
+    PRINT_SCRIPT=wx.Window.NewControlId()
+
+    QUIT=wx.Window.NewControlId()
+
+    COPY_GRAPH=wx.Window.NewControlId()
+    COPY_SIM=wx.Window.NewControlId()
+    COPY_TABLE=wx.Window.NewControlId()
+    FIND_REPLACE=wx.Window.NewControlId()
+
+    NEW_DATA=wx.Window.NewControlId()
+    DELETE_DATA=wx.Window.NewControlId()
+    LOWER_DATA=wx.Window.NewControlId()
+    RAISE_DATA=wx.Window.NewControlId()
+    TOGGLE_SHOW=wx.Window.NewControlId()
+    TOGGLE_USE=wx.Window.NewControlId()
+    TOGGLE_ERROR=wx.Window.NewControlId()
+    CALCS_DATA=wx.Window.NewControlId()
+
+    TOGGLE_SLIDER=wx.Window.NewControlId()
+    ZOOM=wx.Window.NewControlId()
+    ZOOM_ALL=wx.Window.NewControlId()
+    Y_SCALE_LIN=wx.Window.NewControlId()
+    Y_SCALE_LOG=wx.Window.NewControlId()
+    X_SCALE_LIN=wx.Window.NewControlId()
+    X_SCALE_LOG=wx.Window.NewControlId()
+    AUTO_SCALE=wx.Window.NewControlId()
+    USE_TOGGLE_SHOW=wx.Window.NewControlId()
+
+    SIM_MODEL=wx.Window.NewControlId()
+    EVAL_MODEL=wx.Window.NewControlId()
+    TOGGLE_CUDA=wx.Window.NewControlId()
+    START_FIT=wx.Window.NewControlId()
+    STOP_FIT=wx.Window.NewControlId()
+    RESTART_FIT=wx.Window.NewControlId()
+    CALC_ERROR=wx.Window.NewControlId()
+    ANALYZE=wx.Window.NewControlId()
+    AUTO_SIM=wx.Window.NewControlId()
+
+    SET_OPTIMIZER=wx.Window.NewControlId()
+    SET_DATA_LOADER=wx.Window.NewControlId()
+    SET_IMPORT=wx.Window.NewControlId()
+    SET_PLOT=wx.Window.NewControlId()
+    SET_PROFILE=wx.Window.NewControlId()
+
+    HELP_MODEL=wx.Window.NewControlId()
+    HELP_FOM=wx.Window.NewControlId()
+    HELP_PLUGINS=wx.Window.NewControlId()
+    HELP_DATA_LOADERS=wx.Window.NewControlId()
+    HELP_MANUAL=wx.Window.NewControlId()
+    HELP_HOMEPAGE=wx.Window.NewControlId()
+    HELP_ABOUT=wx.Window.NewControlId()
+
 
 @dataclass
 class GUIConfig(io.BaseConfig):
@@ -319,205 +379,169 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         debug('setup of MainFrame - menu bar')
         # Menu Bar
         self.main_frame_menubar=wx.MenuBar()
+        self.mb_checkables={}
         mfmb=self.main_frame_menubar
-        self.mb_file=wx.Menu()
-        mfmb.mb_new=self.mb_file.Append(wx.ID_ANY, "New...\tCtrl+N", "Creates a new model")
-        mfmb.mb_open=self.mb_file.Append(wx.ID_ANY, "Open...\tCtrl+O", "Opens an existing model")
-        mfmb.mb_save=self.mb_file.Append(wx.ID_ANY, "Save...\tCtrl+S", "Saves the current model")
-        mfmb.mb_saveas=self.mb_file.Append(wx.ID_ANY, "Save As...",
-                                                              "Saves the active model with a new name")
-        self.mb_file.AppendSeparator()
+        mb_file=wx.Menu()
+        mb_file.Append(MenuId.NEW_MODEL, "New...\tCtrl+N", "Creates a new model")
+        mb_file.Append(MenuId.OPEN_MODEL, "Open...\tCtrl+O", "Opens an existing model")
+        mb_file.Append(MenuId.SAVE_MODEL, "Save...\tCtrl+S", "Saves the current model")
+        mb_file.Append(MenuId.SAVE_MODEL_AS, "Save As...", "Saves the active model with a new name")
+        mb_file.AppendSeparator()
         mb_import=wx.Menu()
-        mfmb.mb_import_data=mb_import.Append(wx.ID_ANY, "Import Data...\tCtrl+D",
-                                                                "Import data to the active data set")
-        mfmb.mb_import_table=mb_import.Append(wx.ID_ANY, "Import Table...",
-                                                                 "Import a table from an ASCII file")
-        mfmb.mb_import_script=mb_import.Append(wx.ID_ANY, "Import Script...",
-                                                                  "Import a python model script")
-        self.mb_file.Append(wx.ID_ANY, "Import", mb_import, "")
+        mb_import.Append(MenuId.IMPORT_DATA, "Import Data...\tCtrl+D", "Import data to the active data set")
+        mb_import.Append(MenuId.IMPORT_TABLE, "Import Table...", "Import a table from an ASCII file")
+        mb_import.Append(MenuId.IMPORT_SCRIPT, "Import Script...", "Import a python model script")
+        mb_file.Append(wx.ID_ANY, "Import", mb_import, "")
         mb_export=wx.Menu()
-        mfmb.mb_export_orso=mb_export.Append(wx.ID_ANY, "Export ORT (alpha)...",
-                                                                "Export data and header in ORSO compatible ASCII format")
-        mfmb.mb_export_data=mb_export.Append(wx.ID_ANY, "Export Data...",
-                                                                "Export data in ASCII format")
-        mfmb.mb_export_table=mb_export.Append(wx.ID_ANY, "Export Table...",
-                                                                 "Export table to an ASCII file")
-        mfmb.mb_export_script=mb_export.Append(wx.ID_ANY, "Export Script...",
-                                                                  "Export the script to a python file")
-        self.mb_file.Append(wx.ID_ANY, "Export", mb_export, "")
-        self.mb_file.AppendSeparator()
+        mb_export.Append(MenuId.EXPORT_ORSO, "Export ORT (alpha)...", "Export data and header in ORSO compatible ASCII format")
+        mb_export.Append(MenuId.EXPORT_DATA, "Export Data...", "Export data in ASCII format")
+        mb_export.Append(MenuId.EXPORT_TABLE, "Export Table...", "Export table to an ASCII file")
+        mb_export.Append(MenuId.EXPORT_SCRIPT, "Export Script...", "Export the script to a python file")
+        mb_file.Append(wx.ID_ANY, "Export", mb_export, "")
+        mb_file.AppendSeparator()
         mb_print=wx.Menu()
-        mfmb.mb_print_plot=mb_print.Append(wx.ID_ANY, "Print Plot...\tCtrl+P",
-                                                              "Print the current plot")
-        mfmb.mb_print_grid=mb_print.Append(wx.ID_ANY, "Print Grid...", "Prints the grid")
-        mfmb.mb_print_script=mb_print.Append(wx.ID_ANY, "Print Script...", "Prints the model script")
-        self.mb_file.Append(wx.ID_ANY, "Print", mb_print, "")
-        self.mb_file.AppendSeparator()
-        mfmb.mb_quit=self.mb_file.Append(wx.ID_ANY, "&Quit\tAlt+Q", "Quit the program")
-        mfmb.Append(self.mb_file, "File")
-        self.mb_edit=wx.Menu()
-        mfmb.mb_copy_graph=self.mb_edit.Append(wx.ID_ANY, "Copy Graph",
-                                                                  "Copy the current graph to the clipboard as a bitmap")
-        mfmb.mb_copy_sim=self.mb_edit.Append(wx.ID_ANY, "Copy Simulation",
-                                                                "Copy the current simulation and data as ASCII text")
-        mfmb.mb_copy_table=self.mb_edit.Append(wx.ID_ANY, "Copy Table", "Copy the parameter grid")
-        mfmb.mb_findreplace=self.mb_edit.Append(wx.ID_ANY, "&Find/Replace...\tCtrl+F",
-                                                                   "Find and replace in the script")
-        self.mb_edit_sub=wx.Menu()
-        mfmb.mb_new_data_set=self.mb_edit_sub.Append(wx.ID_ANY, "&New data set\tAlt+N",
-                                                                        "Appends a new data set")
-        mfmb.mb_data_delete=self.mb_edit_sub.Append(wx.ID_ANY, "&Delete\tAlt+D",
-                                                                       "Deletes the selected data sets")
-        mfmb.mb_data_move_down=self.mb_edit_sub.Append(wx.ID_ANY, "&Lower item\tAlt+L",
-                                                                          "Move selected item down")
-        mfmb.mb_data_move_up=self.mb_edit_sub.Append(wx.ID_ANY, "&Raise item\tAlt+R",
-                                                                        "Moves selected data sets up")
-        self.mb_edit_sub.AppendSeparator()
-        mfmb.mb_toggle_show=self.mb_edit_sub.Append(wx.ID_ANY, "Toggle &Show\tAlt+S",
-                                                                       "Toggle show on and off for the selected data set")
-        mfmb.mb_toggle_use=self.mb_edit_sub.Append(wx.ID_ANY, "Toggle &Use\tAlt+U",
-                                                                      "Toggle use on and off for the selected data sets")
-        mfmb.mb_toggle_error=self.mb_edit_sub.Append(wx.ID_ANY, "Toggle &Error\tAlt+E",
-                                                                        "Turn the use of error on and off")
-        self.mb_edit_sub.AppendSeparator()
-        mfmb.mb_toggle_calc=self.mb_edit_sub.Append(wx.ID_ANY, "&Calculations\tAlt+C",
-                                                                       "OPens dialog box to define dataset calculations")
-        self.mb_edit.Append(wx.ID_ANY, "Data", self.mb_edit_sub, "")
-        mfmb.Append(self.mb_edit, "Edit")
-        self.mb_view=wx.Menu()
-        mfmb.mb_view_grid_slider=self.mb_view.Append(wx.ID_ANY, "Value as slider",
-                                                                        "View and control the value as a slider",
-                                                                        wx.ITEM_CHECK)
-        mfmb.mb_view_zoom=self.mb_view.Append(wx.ID_ANY, "Zoom\tCtrl+Z", "Turn the zoom on/off",
-                                                                 wx.ITEM_CHECK)
-        mfmb.mb_view_zoomall=self.mb_view.Append(wx.ID_ANY, "Zoom All\tCtrl+A",
-                                                                    "Zoom to fit all data points")
+        mb_print.Append(MenuId.PRINT_PLOT, "Print Plot...\tCtrl+P", "Print the current plot")
+        mb_print.Append(MenuId.PRINT_GRID, "Print Grid...", "Prints the grid")
+        mb_print.Append(MenuId.PRINT_SCRIPT, "Print Script...", "Prints the model script")
+        mb_file.Append(wx.ID_ANY, "Print", mb_print, "")
+        mb_file.AppendSeparator()
+        mb_file.Append(MenuId.QUIT, "&Quit\tAlt+Q", "Quit the program")
+        mfmb.Append(mb_file, "File")
+        mb_edit=wx.Menu()
+        mb_edit.Append(MenuId.COPY_GRAPH, "Copy Graph", "Copy the current graph to the clipboard as a bitmap")
+        mb_edit.Append(MenuId.COPY_SIM, "Copy Simulation", "Copy the current simulation and data as ASCII text")
+        mb_edit.Append(MenuId.COPY_TABLE, "Copy Table", "Copy the parameter grid")
+        mb_edit.Append(MenuId.FIND_REPLACE, "&Find/Replace...\tCtrl+F", "Find and replace in the script")
+        mb_edit_sub=wx.Menu()
+        mb_edit_sub.Append(MenuId.NEW_DATA, "&New data set\tAlt+N", "Appends a new data set")
+        mb_edit_sub.Append(MenuId.DELETE_DATA, "&Delete\tAlt+D", "Deletes the selected data sets")
+        mb_edit_sub.Append(MenuId.LOWER_DATA, "&Lower item\tAlt+L", "Move selected item down")
+        mb_edit_sub.Append(MenuId.RAISE_DATA, "&Raise item\tAlt+R", "Moves selected data sets up")
+        mb_edit_sub.AppendSeparator()
+        mb_edit_sub.Append(MenuId.TOGGLE_SHOW, "Toggle &Show\tAlt+S", "Toggle show on and off for the selected data set")
+        mb_edit_sub.Append(MenuId.TOGGLE_USE, "Toggle &Use\tAlt+U", "Toggle use on and off for the selected data sets")
+        mb_edit_sub.Append(MenuId.TOGGLE_ERROR, "Toggle &Error\tAlt+E", "Turn the use of error on and off")
+        mb_edit_sub.AppendSeparator()
+        mb_edit_sub.Append(MenuId.CALCS_DATA, "&Calculations\tAlt+C", "Opens dialog box to define dataset calculations")
+        mb_edit.Append(wx.ID_ANY, "Data", mb_edit_sub, "")
+        mfmb.Append(mb_edit, "Edit")
+        mb_view=wx.Menu()
+        self.mb_checkables[MenuId.TOGGLE_SLIDER]=mb_view.Append(MenuId.TOGGLE_SLIDER, "Value as slider",
+                                                                "Control the grid value as a slider", wx.ITEM_CHECK)
+        self.mb_checkables[MenuId.ZOOM]=mb_view.Append(MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK)
+        mb_view.Append(MenuId.ZOOM_ALL, "Zoom All\tCtrl+A", "Zoom to fit all data points")
         mb_view_yscale=wx.Menu()
-        mfmb.mb_view_yscale_log=mb_view_yscale.Append(wx.ID_ANY, "log", "Set y-scale logarithmic",
-                                                                         wx.ITEM_RADIO)
-        mfmb.mb_view_yscale_lin=mb_view_yscale.Append(wx.ID_ANY, "lin", "Set y-scale linear",
-                                                                         wx.ITEM_RADIO)
-        self.mb_view.Append(wx.ID_ANY, "y scale", mb_view_yscale, "")
+        self.mb_checkables[MenuId.Y_SCALE_LOG]=mb_view_yscale.Append(MenuId.Y_SCALE_LOG, "log",
+                                                                     "Set y-scale logarithmic", wx.ITEM_RADIO)
+        self.mb_checkables[MenuId.Y_SCALE_LIN]=mb_view_yscale.Append(MenuId.Y_SCALE_LIN, "lin",
+                                                                     "Set y-scale linear", wx.ITEM_RADIO)
+        mb_view.Append(wx.ID_ANY, "y scale", mb_view_yscale, "")
         mb_view_xscale=wx.Menu()
-        mfmb.mb_view_xscale_log=mb_view_xscale.Append(wx.ID_ANY, "log", "Set x-scale logarithmic",
-                                                                         wx.ITEM_RADIO)
-        mfmb.mb_view_xscale_lin=mb_view_xscale.Append(wx.ID_ANY, "lin", "Set x-scale linear",
-                                                                         wx.ITEM_RADIO)
-        self.mb_view.Append(wx.ID_ANY, "x scale", mb_view_xscale, "")
-        mfmb.mb_view_autoscale=self.mb_view.Append(wx.ID_ANY, "Autoscale",
-                                                                      "Sets autoscale on when plotting", wx.ITEM_CHECK)
-        mfmb.mb_use_toggle_show=self.mb_view.Append(wx.ID_ANY, "Use Toggle Show",
-                                                                       "Set if the plotted data shold be toggled or selcted by the mouse",
-                                                                       wx.ITEM_CHECK)
-        mfmb.Append(self.mb_view, "View")
-        self.mb_fit=wx.Menu()
-        mfmb.mb_fit_simulate=self.mb_fit.Append(wx.ID_ANY, "&Simulate\tF9",
-                                                                   "Compile the script and run the Sim function")
-        mfmb.mb_fit_evaluate=self.mb_fit.Append(wx.ID_ANY, "&Evaluate\tF5",
-                                                                   "Evaluate the Sim function only - no recompiling")
-        mfmb.mb_use_cuda=self.mb_fit.Append(wx.ID_ANY, "Use CUDA",
-                                                               "Make use of Nvidia GPU computing with CUDA",
-                                                               wx.ITEM_CHECK)
-        self.mb_fit.AppendSeparator()
-        mfmb.mb_fit_start=self.mb_fit.Append(wx.ID_ANY, "Start &Fit\tCtrl+F", "Start fitting")
-        mfmb.mb_fit_stop=self.mb_fit.Append(wx.ID_ANY, "&Halt Fit\tCtrl+H", "Stop fitting")
-        mfmb.mb_fit_resume=self.mb_fit.Append(wx.ID_ANY, "&Resume Fit\tCtrl+R",
-                                                                 "Resumes fitting without reinitilazation of the optimizer")
-        mfmb.mb_fit_analyze=self.mb_fit.Append(wx.ID_ANY, "Analyze fit", "Analyze the fit")
-        self.mb_fit.AppendSeparator()
-        mfmb.mb_fit_autosim=self.mb_fit.Append(wx.ID_ANY, "Simulate Automatically",
-                                                                  "Update simulation on model changes automatically",
-                                                                  wx.ITEM_CHECK)
-        mfmb.Append(self.mb_fit, "Fit")
-        self.mb_set=wx.Menu()
+        self.mb_checkables[MenuId.X_SCALE_LOG]=mb_view_xscale.Append(MenuId.X_SCALE_LOG, "log",
+                                                                     "Set x-scale logarithmic", wx.ITEM_RADIO)
+        self.mb_checkables[MenuId.X_SCALE_LIN]=mb_view_xscale.Append(MenuId.X_SCALE_LIN, "lin",
+                                                                     "Set x-scale linear", wx.ITEM_RADIO)
+        mb_view.Append(wx.ID_ANY, "x scale", mb_view_xscale, "")
+        self.mb_checkables[MenuId.AUTO_SCALE]=mb_view.Append(MenuId.AUTO_SCALE, "Autoscale",
+                                                             "Sets autoscale on when plotting", wx.ITEM_CHECK)
+        self.mb_checkables[MenuId.USE_TOGGLE_SHOW]=mb_view.Append(MenuId.USE_TOGGLE_SHOW, "Use Toggle Show",
+                            "Set if the plotted data shold be toggled or selected by the mouse", wx.ITEM_CHECK)
+        mfmb.Append(mb_view, "View")
+        mb_fit=wx.Menu()
+        mb_fit.Append(MenuId.SIM_MODEL, "&Simulate\tF9", "Compile the script and run the Sim function")
+        mb_fit.Append(MenuId.EVAL_MODEL, "&Evaluate\tF5", "Evaluate the Sim function only - no recompiling")
+        self.mb_checkables[MenuId.TOGGLE_CUDA]=mb_fit.Append(MenuId.TOGGLE_CUDA, "Use CUDA",
+                             "Make use of Nvidia GPU computing with CUDA", wx.ITEM_CHECK)
+        mb_fit.AppendSeparator()
+        mb_fit.Append(MenuId.START_FIT, "Start &Fit\tCtrl+F", "Start fitting")
+        mb_fit.Append(MenuId.STOP_FIT, "&Halt Fit\tCtrl+H", "Stop fitting")
+        mb_fit.Append(MenuId.RESTART_FIT, "&Resume Fit\tCtrl+R", "Resumes fitting without reinitilazation of the optimizer")
+        mb_fit.Append(MenuId.ANALYZE, "Analyze fit", "Analyze the fit")
+        mb_fit.AppendSeparator()
+        self.mb_checkables[MenuId.AUTO_SIM]=mb_fit.Append(MenuId.AUTO_SIM, "Simulate Automatically",
+                           "Update simulation on model changes automatically", wx.ITEM_CHECK)
+        mfmb.Append(mb_fit, "Fit")
+        mb_set=wx.Menu()
         mb_set_plugins=wx.Menu()
         mb_set_plugins.AppendSeparator()
-        self.mb_set.Append(wx.ID_ANY, "Plugins", mb_set_plugins, "")
-        mfmb.mb_set_opt=self.mb_set.Append(wx.ID_ANY, "Optimizer\tShift+Ctrl+O", "")
-        mfmb.mb_set_dataloader=self.mb_set.Append(wx.ID_ANY, "Data Loader\tShift+Ctrl+D", "")
-        mfmb.mb_set_import=self.mb_set.Append(wx.ID_ANY, "Import\tShift+Ctrl+I",
-                                                                 "Import settings for the data sets")
-        mfmb.mb_set_dataplot=self.mb_set.Append(wx.ID_ANY, "Plot Markers\tShift+Ctrl+P",
-                                                                   "Set the symbols and lines of data and simulations")
-        mfmb.show_startup_dialog=self.mb_set.Append(wx.ID_ANY, "Startup Profile...", "")
-        mfmb.Append(self.mb_set, "Settings")
+        mb_set.Append(wx.ID_ANY, "Plugins", mb_set_plugins, "")
+        mb_set.Append(MenuId.SET_OPTIMIZER, "Optimizer\tShift+Ctrl+O", "")
+        mb_set.Append(MenuId.SET_DATA_LOADER, "Data Loader\tShift+Ctrl+D", "")
+        mb_set.Append(MenuId.SET_IMPORT, "Import\tShift+Ctrl+I", "Import settings for the data sets")
+        mb_set.Append(MenuId.SET_PLOT, "Plot Markers\tShift+Ctrl+P", "Set the symbols and lines of data and simulations")
+        mb_set.Append(MenuId.SET_PROFILE, "Startup Profile...", "")
+        mfmb.Append(mb_set, "Settings")
         wxglade_tmp_menu=wx.Menu()
-        mfmb.mb_models_help=wxglade_tmp_menu.Append(wx.ID_ANY, "Models Help...",
-                                                                       "Show help for the models")
-        mfmb.mb_fom_help=wxglade_tmp_menu.Append(wx.ID_ANY, "FOM Help", "Show help about the fom")
-        mfmb.mb_plugins_help=wxglade_tmp_menu.Append(wx.ID_ANY, "Plugins Helps...",
-                                                                        "Show help for the plugins")
-        mfmb.mb_data_loaders_help=wxglade_tmp_menu.Append(wx.ID_ANY, "Data loaders Help...",
-                                                                             "Show help for the data loaders")
+        wxglade_tmp_menu.Append(MenuId.HELP_MODEL, "Models Help...", "Show help for the models")
+        wxglade_tmp_menu.Append(MenuId.HELP_FOM, "FOM Help", "Show help about the fom")
+        wxglade_tmp_menu.Append(MenuId.HELP_PLUGINS, "Plugins Helps...", "Show help for the plugins")
+        wxglade_tmp_menu.Append(MenuId.HELP_DATA_LOADERS, "Data loaders Help...", "Show help for the data loaders")
         wxglade_tmp_menu.AppendSeparator()
-        mfmb.mb_misc_showman=wxglade_tmp_menu.Append(wx.ID_ANY, "Open Manual...", "Show the manual")
-        mfmb.mb_open_homepage=wxglade_tmp_menu.Append(wx.ID_ANY, "Open Homepage...",
-                                                                         "Open the homepage")
-        mfmb.mb_misc_about=wxglade_tmp_menu.Append(wx.ID_ANY, "About...",
-                                                                      "Shows information about GenX")
+        wxglade_tmp_menu.Append(MenuId.HELP_MANUAL, "Open Manual...", "Show the manual")
+        wxglade_tmp_menu.Append(MenuId.HELP_HOMEPAGE, "Open Homepage...", "Open the homepage")
+        wxglade_tmp_menu.Append(MenuId.HELP_ABOUT, "About...", "Shows information about GenX")
         mfmb.Append(wxglade_tmp_menu, "Help")
         self.SetMenuBar(mfmb)
 
         return mb_set_plugins
 
     def bind_menu(self):
-        mfmb=self.main_frame_menubar
-        self.Bind(wx.EVT_MENU, self.eh_mb_new, id=mfmb.mb_new.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_open, id=mfmb.mb_open.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_save, id=mfmb.mb_save.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_saveas, id=mfmb.mb_saveas.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_import_data, id=mfmb.mb_import_data.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_import_table, id=mfmb.mb_import_table.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_import_script, id=mfmb.mb_import_script.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_export_orso, id=mfmb.mb_export_orso.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_export_data, id=mfmb.mb_export_data.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_export_table, id=mfmb.mb_export_table.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_export_script, id=mfmb.mb_export_script.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_print_plot, id=mfmb.mb_print_plot.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_print_grid, id=mfmb.mb_print_grid.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_print_script, id=mfmb.mb_print_script.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_quit, id=mfmb.mb_quit.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_copy_graph, id=mfmb.mb_copy_graph.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_copy_sim, id=mfmb.mb_copy_sim.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, id=mfmb.mb_copy_table.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_findreplace, id=mfmb.mb_findreplace.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_new_set, id=mfmb.mb_new_data_set.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_delete, id=mfmb.mb_data_delete.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_move_down, id=mfmb.mb_data_move_down.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_move_up, id=mfmb.mb_data_move_up.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_toggle_show, id=mfmb.mb_toggle_show.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_toggle_use, id=mfmb.mb_toggle_use.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_toggle_error, id=mfmb.mb_toggle_error.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_calc, id=mfmb.mb_toggle_calc.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_grid_slider, id=mfmb.mb_view_grid_slider.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_zoom, id=mfmb.mb_view_zoom.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_zoomall, id=mfmb.mb_view_zoomall.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_log, id=mfmb.mb_view_yscale_log.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_linear, id=mfmb.mb_view_yscale_lin.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_log, id=mfmb.mb_view_xscale_log.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_linear, id=mfmb.mb_view_xscale_lin.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_autoscale, id=mfmb.mb_view_autoscale.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_use_toggle_show, id=mfmb.mb_use_toggle_show.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_tb_simulate, id=mfmb.mb_fit_simulate.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_fit_evaluate, id=mfmb.mb_fit_evaluate.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_use_cuda, id=mfmb.mb_use_cuda.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_fit_start, id=mfmb.mb_fit_start.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_fit_stop, id=mfmb.mb_fit_stop.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_fit_resume, id=mfmb.mb_fit_resume.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_fit_analyze, id=mfmb.mb_fit_analyze.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_fit_autosim, id=mfmb.mb_fit_autosim.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_set_opt, id=mfmb.mb_set_opt.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_set_dal, id=mfmb.mb_set_dataloader.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_import, id=mfmb.mb_set_import.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_data_plots, id=mfmb.mb_set_dataplot.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_show_startup_dialog, id=mfmb.show_startup_dialog.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_models_help, id=mfmb.mb_models_help.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_fom_help, id=mfmb.mb_fom_help.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, id=mfmb.mb_plugins_help.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_data_loaders_help, id=mfmb.mb_data_loaders_help.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, id=mfmb.mb_misc_showman.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_misc_openhomepage, id=mfmb.mb_open_homepage.GetId())
-        self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, id=mfmb.mb_misc_about.GetId())
+        self.Bind(wx.EVT_MENU, self.eh_mb_new, id=MenuId.NEW_MODEL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_open, id=MenuId.OPEN_MODEL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_save, id=MenuId.SAVE_MODEL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_saveas, id=MenuId.SAVE_MODEL_AS)
+        self.Bind(wx.EVT_MENU, self.eh_mb_import_data, id=MenuId.IMPORT_DATA)
+        self.Bind(wx.EVT_MENU, self.eh_mb_import_table, id=MenuId.IMPORT_TABLE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_import_script, id=MenuId.IMPORT_SCRIPT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_export_orso, id=MenuId.EXPORT_ORSO)
+        self.Bind(wx.EVT_MENU, self.eh_mb_export_data, id=MenuId.EXPORT_DATA)
+        self.Bind(wx.EVT_MENU, self.eh_mb_export_table, id=MenuId.EXPORT_TABLE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_export_script, id=MenuId.EXPORT_SCRIPT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_print_plot, id=MenuId.PRINT_PLOT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_print_grid, id=MenuId.PRINT_GRID)
+        self.Bind(wx.EVT_MENU, self.eh_mb_print_script, id=MenuId.PRINT_SCRIPT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_quit, id=MenuId.QUIT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_copy_graph, id=MenuId.COPY_GRAPH)
+        self.Bind(wx.EVT_MENU, self.eh_mb_copy_sim, id=MenuId.COPY_SIM)
+        self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, id=MenuId.COPY_TABLE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_findreplace, id=MenuId.FIND_REPLACE)
+        self.Bind(wx.EVT_MENU, self.eh_data_new_set, id=MenuId.NEW_DATA)
+        self.Bind(wx.EVT_MENU, self.eh_data_delete, id=MenuId.DELETE_DATA)
+        self.Bind(wx.EVT_MENU, self.eh_data_move_down, id=MenuId.RAISE_DATA)
+        self.Bind(wx.EVT_MENU, self.eh_data_move_up, id=MenuId.LOWER_DATA)
+        self.Bind(wx.EVT_MENU, self.eh_data_toggle_show, id=MenuId.TOGGLE_SHOW)
+        self.Bind(wx.EVT_MENU, self.eh_data_toggle_use, id=MenuId.TOGGLE_USE)
+        self.Bind(wx.EVT_MENU, self.eh_data_toggle_error, id=MenuId.TOGGLE_ERROR)
+        self.Bind(wx.EVT_MENU, self.eh_data_calc, id=MenuId.CALCS_DATA)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_grid_slider, id=MenuId.TOGGLE_SLIDER)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_zoom, id=MenuId.ZOOM)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_zoomall, id=MenuId.ZOOM_ALL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_log, id=MenuId.Y_SCALE_LOG)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_linear, id=MenuId.Y_SCALE_LIN)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_log, id=MenuId.X_SCALE_LOG)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_linear, id=MenuId.X_SCALE_LOG)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_autoscale, id=MenuId.AUTO_SCALE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_view_use_toggle_show, id=MenuId.USE_TOGGLE_SHOW)
+        self.Bind(wx.EVT_MENU, self.eh_tb_simulate, id=MenuId.SIM_MODEL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_fit_evaluate, id=MenuId.EVAL_MODEL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_use_cuda, id=MenuId.TOGGLE_CUDA)
+        self.Bind(wx.EVT_MENU, self.eh_mb_fit_start, id=MenuId.START_FIT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_fit_stop, id=MenuId.STOP_FIT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_fit_resume, id=MenuId.RESTART_FIT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_fit_analyze, id=MenuId.ANALYZE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_fit_autosim, id=MenuId.AUTO_SIM)
+        self.Bind(wx.EVT_MENU, self.eh_mb_set_opt, id=MenuId.SET_OPTIMIZER)
+        self.Bind(wx.EVT_MENU, self.eh_mb_set_dal, id=MenuId.SET_DATA_LOADER)
+        self.Bind(wx.EVT_MENU, self.eh_data_import, id=MenuId.SET_IMPORT)
+        self.Bind(wx.EVT_MENU, self.eh_data_plots, id=MenuId.SET_PLOT)
+        self.Bind(wx.EVT_MENU, self.eh_show_startup_dialog, id=MenuId.SET_PROFILE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_models_help, id=MenuId.HELP_MODEL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_fom_help, id=MenuId.HELP_FOM)
+        self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, id=MenuId.HELP_PLUGINS)
+        self.Bind(wx.EVT_MENU, self.eh_mb_data_loaders_help, id=MenuId.HELP_DATA_LOADERS)
+        self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, id=MenuId.HELP_MANUAL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_misc_openhomepage, id=MenuId.HELP_HOMEPAGE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, id=MenuId.HELP_ABOUT)
 
     def scan_parameter(self, row):
         ''' scan_parameter(frame, row) --> None
@@ -537,7 +561,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
             self.main_frame_statusbar.SetStatusText('Scanning parameter', 1)
             with self.catch_error(action='scan_parameters', step=f'scanning parameters'):
                 x, y = self.solver_control.ScanParameter(row, dlg.GetValue())
-                fs, pars = self.model.get_sim_pars()
+                self.model.get_sim_pars()
                 bestx = self.model.parameters.get_data()[row][1]
                 besty = self.model.fom
 
@@ -813,7 +837,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
             [p.ReadConfig() for p in self.get_pages()]
         with self.catch_error(action='open_model', step=f'loading config for parameter grid'):
             self.paramter_grid.ReadConfig()
-            self.main_frame_menubar.mb_view_grid_slider.Check(self.paramter_grid.GetValueEditorSlider())
+            self.mb_checkables[MenuId.TOGGLE_SLIDER].Check(self.paramter_grid.GetValueEditorSlider())
         debug('open_model: update plugins')
         with self.catch_error(action='open_model', step=f'processing plugins'):
             self.plugin_control.OnOpenModel(None)
@@ -844,7 +868,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
     def update_for_save(self):
         """Updates the various objects for a save"""
         self.model.set_script(self.script_editor.GetText())
-        self.paramter_grid.opt.auto_sim=self.main_frame_menubar.mb_fit_autosim.IsChecked()
+        self.paramter_grid.opt.auto_sim=self.mb_checkables[MenuId.AUTO_SIM].IsChecked()
         self.paramter_grid.WriteConfig()
 
     def do_simulation(self, from_thread=False):
@@ -909,7 +933,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
         dlg.Destroy()
 
-    def deactivate_cuda(self):
+    @staticmethod
+    def deactivate_cuda():
         from genx.models.lib import paratt_numba, neutron_numba
         from models.lib import paratt, neutron_refl
         paratt.Refl = paratt_numba.Refl
@@ -939,7 +964,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         Event handler for when a value of a parameter in the grid has been updated.
         """
         self.simulation_queue_counter += 1
-        if self.main_frame_menubar.mb_fit_autosim.IsChecked() and not self.flag_simulating:
+        if self.mb_checkables[MenuId.AUTO_SIM].IsChecked() and not self.flag_simulating:
             _thread.start_new_thread(self.simulation_loop, ())
 
     def eh_external_update_data_grid_choice(self, event):
@@ -966,8 +991,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         # Let the solvergui do its loading and updating:
         self.solver_control.ModelLoaded()
         # Lets update the mb_use_toggle_show Menu item
-        self.main_frame_menubar.mb_use_toggle_show.Check(self.data_list.list_ctrl.opt.toggle_show)
-        self.main_frame_menubar.mb_fit_autosim.Check(self.paramter_grid.opt.auto_sim)
+        self.mb_checkables[MenuId.USE_TOGGLE_SHOW].Check(self.data_list.list_ctrl.opt.toggle_show)
+        self.mb_checkables[MenuId.AUTO_SIM].Check(self.paramter_grid.opt.auto_sim)
         # Let other event handlers recieve the event as well
         event.Skip()
 
@@ -1146,7 +1171,6 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.opt.psplit=self.plot_splitter.GetSashPosition()
         self.opt.safe_config(default=True)
 
-        config_path = appdirs.user_data_dir('GenX3', 'ArturGlavic')
         io.config.write_default(os.path.join(config_path, 'genx.conf'))
 
         self.findreplace_dlg.Destroy()
@@ -1192,9 +1216,9 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         '''
         if event.GetId()==ToolId.ZOOM:
             zoom_state = self.main_frame_toolbar.GetToolState(ToolId.ZOOM)
-            self.main_frame_menubar.mb_view_zoom.Check(zoom_state)
+            self.mb_checkables[MenuId.ZOOM].Check(zoom_state)
         else:
-            zoom_state = self.main_frame_menubar.mb_view_zoom.IsChecked()
+            zoom_state = self.mb_checkables[MenuId.ZOOM].IsChecked()
             self.main_frame_toolbar.ToggleTool(ToolId.ZOOM, zoom_state)
 
         # Synchronize all plots with zoom state
@@ -1207,8 +1231,9 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         """
         Change the state of the grid value input, either as slider or as a number.
         """
-        self.paramter_grid.SetValueEditorSlider(self.main_frame_menubar.mb_view_grid_slider.IsChecked())
-        self.paramter_grid.toggle_slider_tool(self.main_frame_menubar.mb_view_grid_slider.IsChecked())
+        val=self.mb_checkables[MenuId.TOGGLE_SLIDER].IsChecked()
+        self.paramter_grid.SetValueEditorSlider(val)
+        self.paramter_grid.toggle_slider_tool(val)
         self.paramter_grid.Refresh()
         event.Skip()
 
@@ -1256,24 +1281,25 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         try:
             import numba
             useful += 'Numba: %s, '%numba.__version__
-        except:
+        except ImportError:
             pass
         try:
             import vtk
+            # noinspection PyUnresolvedReferences
             useful += 'VTK: %s, '%vtk.vtkVersion.GetVTKVersion()
-        except:
+        except ImportError:
             pass
         try:
             import bumps
             useful += 'Bumps: %s, '%bumps.__version__
-        except:
+        except ImportError:
             pass
 
-        info = wx.adv.AboutDialogInfo()
-        info.Name = "GenX"
-        info.Version = program_version
-        info.Copyright = "(C) 2008 Matts Bjorck; 2020 Artur Glavic"
-        info.Description = wordwrap(
+        info_dilog = wx.adv.AboutDialogInfo()
+        info_dilog.Name ="GenX"
+        info_dilog.Version = program_version
+        info_dilog.Copyright ="(C) 2008 Matts Bjorck; 2020 Artur Glavic"
+        info_dilog.Description = wordwrap(
             "GenX is a multipurpose refinement program using the differential "
             "evolution algorithm. It is developed  mainly for refining x-ray reflectivity "
             "and neutron reflectivity data."
@@ -1285,14 +1311,10 @@ class GenxMainWindow(wx.Frame, io.Configurable):
                 numpy.__version__, scipy.__version__,
                 matplotlib.__version__, useful),
             500, wx.ClientDC(self))
-        info.WebSite = ("http:////genx.sourceforge.net", "GenX homepage")
+        info_dilog.WebSite = (homepage_url, "GenX homepage")
         # No developers yet
-        # info.Developers = []
-        # head, tail = os.path.split(__file__)
-        # license_text = file(head + '/LICENSE.txt','r').read()
-        # license_text = file(_path + 'LICENSE.txt','r').read()
-        # info.License = license_text#wordwrap(license_text, 500, wx.ClientDC(self))
-        info.Licence = wordwrap('This program is free software: you can redistribute it and/or modify '
+        info_dilog.Developers = ['Artur Glavic <artur.glavic@psi.ch>']
+        info_dilog.Licence = wordwrap('This program is free software: you can redistribute it and/or modify '
                                 'it under the terms of the GNU General Public License as published by '
                                 'the Free Software Foundation, either version 3 of the License, or '
                                 '(at your option) any later version. '
@@ -1302,9 +1324,9 @@ class GenxMainWindow(wx.Frame, io.Configurable):
                                 'GNU General Public License for more details. '
                                 '\n\nYou should have received a copy of the GNU General Public License '
                                 'along with this program.  If not, see <http://www.gnu.org/licenses/>. '
-                                , 400, wx.ClientDC(self))
+                                      , 400, wx.ClientDC(self))
 
-        wx.adv.AboutBox(info)
+        wx.adv.AboutBox(info_dilog)
 
     def eh_mb_saveas(self, event):
         '''
@@ -1424,16 +1446,16 @@ class GenxMainWindow(wx.Frame, io.Configurable):
          - change the toggle for the zoom icon and change the menu items.
         '''
         self.main_frame_toolbar.ToggleTool(ToolId.ZOOM, event.zoomstate)
-        self.main_frame_menubar.mb_view_zoom.Check(event.zoomstate)
+        self.mb_checkables[MenuId.ZOOM].Check(event.zoomstate)
         if event.yscale=='log':
-            self.main_frame_menubar.mb_view_yscale_log.Check(True)
+            self.mb_checkables[MenuId.Y_SCALE_LOG].Check(True)
         elif event.yscale=='linear':
-            self.main_frame_menubar.mb_view_yscale_lin.Check(True)
+            self.mb_checkables[MenuId.Y_SCALE_LIN].Check(True)
         if event.xscale=='log':
-            self.main_frame_menubar.mb_view_xscale_log.Check(True)
+            self.mb_checkables[MenuId.X_SCALE_LOG].Check(True)
         elif event.xscale=='linear':
-            self.main_frame_menubar.mb_view_xscale_lin.Check(True)
-        self.main_frame_menubar.mb_view_autoscale.Check(event.autoscale)
+            self.mb_checkables[MenuId.X_SCALE_LIN].Check(True)
+        self.mb_checkables[MenuId.AUTO_SCALE].Check(event.autoscale)
         event.Skip()
 
     def eh_tb_calc_error_bars(self, event):
@@ -1464,18 +1486,18 @@ class GenxMainWindow(wx.Frame, io.Configurable):
             zoom_state = pages[sel].GetZoom()
             # Set the zoom button to the correct value
             self.main_frame_toolbar.ToggleTool(ToolId.ZOOM, zoom_state)
-            self.main_frame_menubar.mb_view_zoom.Check(zoom_state)
+            self.mb_checkables[MenuId.ZOOM].Check(zoom_state)
 
             yscale = pages[sel].GetYScale()
             if yscale=='log':
-                self.main_frame_menubar.mb_view_yscale_log.Check(True)
+                self.mb_checkables[MenuId.Y_SCALE_LOG].Check(True)
             elif yscale=='linear':
-                self.main_frame_menubar.mb_view_yscale_lin.Check(True)
+                self.mb_checkables[MenuId.Y_SCALE_LIN].Check(True)
             xscale = pages[sel].GetXScale()
             if xscale=='log':
-                self.main_frame_menubar.mb_view_yscale_log.Check(True)
+                self.mb_checkables[MenuId.X_SCALE_LOG].Check(True)
             elif xscale=='linear':
-                self.main_frame_menubar.mb_view_yscale_lin.Check(True)
+                self.mb_checkables[MenuId.X_SCALE_LIN].Check(True)
         event.Skip()
 
     def eh_mb_view_zoomall(self, event):
@@ -1494,7 +1516,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         event.Skip()
 
     def eh_mb_use_cuda(self, event):
-        if self.main_frame_menubar.mb_use_cuda.IsChecked():
+        if self.mb_checkables[MenuId.TOGGLE_CUDA].IsChecked():
             self.activate_cuda()
         else:
             self.deactivate_cuda()
@@ -1731,7 +1753,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         dlg.Show()
 
     def eh_mb_view_use_toggle_show(self, event):
-        new_val=self.main_frame_menubar.mb_use_toggle_show.IsChecked()
+        new_val=self.mb_checkables[MenuId.USE_TOGGLE_SHOW].IsChecked()
         self.data_list.list_ctrl.SetShowToggle(new_val)
 
     def eh_mb_misc_openhomepage(self, event):

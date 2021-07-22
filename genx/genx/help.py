@@ -121,7 +121,7 @@ class PluginHelpDialog(wx.Frame):
         '''
         # Load the package, note the non-empty fromlist that 
         # makes subpackages being loaded
-        mod=__import__(module, globals(), locals(), [''])
+        mod=__import__('genx.'+module, globals(), locals(), [''])
         try:
             modules=[s[:-3] for s in os.listdir(mod.__path__[0]) \
                      if s[0]!='_' and s[-3:]=='.py']
@@ -138,10 +138,10 @@ class PluginHelpDialog(wx.Frame):
         docs=''
         try:
             if sub_module is not None:
-                mod=__import__('%s.%s'%(module, sub_module),
+                mod=__import__('genx.%s.%s'%(module, sub_module),
                                globals(), locals(), [''])
             else:
-                mod=__import__('%s'%module,
+                mod=__import__('genx.%s'%module,
                                globals(), locals(), [''])
         except Exception as e:
             docs='Could not load docstring for %s.'%sub_module
