@@ -286,29 +286,21 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.plot_fom.SetCallbackWindow(self)
         self.plot_pars.SetCallbackWindow(self)
         self.plot_fomscan.SetCallbackWindow(self)
-        self.Bind(plotpanel.EVT_PLOT_SETTINGS_CHANGE,
-                  self.eh_ex_plot_settings_changed)
+        self.Bind(plotpanel.EVT_PLOT_SETTINGS_CHANGE, self.eh_ex_plot_settings_changed)
 
         # Binding events which means model changes
-        self.Bind(parametergrid.EVT_PARAMETER_GRID_CHANGE,
-                  self.eh_external_model_changed)
-        self.Bind(wx.stc.EVT_STC_MODIFIED, self.eh_external_model_changed,
-                  self.script_editor)
-        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_model_changed,
-                  self.data_list.list_ctrl)
+        self.Bind(parametergrid.EVT_PARAMETER_GRID_CHANGE, self.eh_external_model_changed)
+        self.Bind(wx.stc.EVT_STC_MODIFIED, self.eh_external_model_changed, self.script_editor)
+        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_model_changed, self.data_list.list_ctrl)
 
         # Event for when a value of a parameter in the parameter grid has been updated
-        self.Bind(parametergrid.EVT_PARAMETER_VALUE_CHANGE,
-                  self.eh_external_parameter_value_changed)
+        self.Bind(parametergrid.EVT_PARAMETER_VALUE_CHANGE, self.eh_external_parameter_value_changed)
 
         # Stuff for the find and replace functionallity
         self.findreplace_data=wx.FindReplaceData()
         # Make search down as default
         self.findreplace_data.SetFlags(1)
-        self.findreplace_dlg=wx.FindReplaceDialog(self,
-                                                  self.findreplace_data,
-                                                  "Find & replace",
-                                                  wx.FR_REPLACEDIALOG)
+        self.findreplace_dlg=wx.FindReplaceDialog(self, self.findreplace_data, "Find & replace", wx.FR_REPLACEDIALOG)
         self.Bind(wx.EVT_FIND, self.eh_external_find)
         self.Bind(wx.EVT_FIND_NEXT, self.eh_external_find)
         self.Bind(wx.EVT_FIND_REPLACE, self.eh_external_find)

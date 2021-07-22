@@ -1414,28 +1414,25 @@ class Plugin(framework.Template):
         self.sample_widget.UpdateModel()
 
     def OnOpenModel(self, event):
-        '''OnOpenModel(self, event) --> None
-
+        '''
         Loads the sample into the plugin...
         '''
         pass  # self.ReadModel()
 
     def OnSimulate(self, event):
-        '''OnSimulate(self, event) --> None
-
+        '''
         Updates stuff after simulation
         '''
         # Calculate and update the sld plot
         self.sld_plot.Plot()
 
     def OnFittingUpdate(self, event):
-        '''OnFittingUpdate(self, event) --> None
-
+        '''
         Updates stuff during fitting
         '''
         # Calculate and update the sld plot
         if self.mb_autoupdate_sld.IsChecked():
-            wx.CallAfter(self.sld_plot)
+            wx.CallAfter(self.sld_plot.Plot)
 
     def OnGridChange(self, event):
         self.sample_widget.CheckGridUpdate()

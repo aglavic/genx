@@ -6,6 +6,7 @@ from numpy import *
 from .exceptions import ErrorBarError
 from .filehandling import BaseConfig, Configurable
 from .gui_logging import iprint
+from .model_control import GenxOptimizer
 from logging import debug
 import _thread
 import time
@@ -60,7 +61,7 @@ class DiffEvConfig(BaseConfig):
     use_start_guess:bool=True
     use_boundaries:bool=True
 
-    sleep_time:float=0.2
+    sleep_time:float=0.5
     max_log_elements:int=100000
     use_parallel_processing:bool=False
     use_mpi:bool=False
@@ -75,7 +76,7 @@ class DiffEvConfig(BaseConfig):
     fit_xmax:float=180.0
 
 
-class DiffEv(Configurable):
+class DiffEv(GenxOptimizer, Configurable):
     '''
     Contains the implemenetation of the differential evolution algorithm.
     It also contains thread support which is activated by the start_fit 
@@ -259,8 +260,7 @@ class DiffEv(Configurable):
         return pickle.dumps(cpy)
 
     def pickle_load(self, pickled_string):
-        '''load_pickles(self, pickled_string) --> None
-        
+        '''
         Loads the pickled string into the this object. See pickle_string.
         '''
         obj=pickle.loads(pickled_string, encoding='latin1', errors='ignore')

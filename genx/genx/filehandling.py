@@ -171,10 +171,10 @@ class BaseConfig(ABC):
             try:
                 value=getf(self.section, option, fallback=fallback)
             except GenxOptionError as e:
-                debug(f'Could not read option {self.section}/{option} of type {field.type}:\n    {e}')
+                debug(f'Could not read option {self.section}/{option} of type {field.type.__name__}:\n    {e}')
             else:
                 setattr(self, field.name, value)
-                debug(f'Read option {field.name}={str(value).splitlines()[0]} from config {self.section}/{option}.')
+                debug(f'Read option {field.name}={str(value)[:50]} from config {self.section}/{option}.')
 
     def safe_config(self, default=False):
         data=self.asdict()
@@ -186,7 +186,7 @@ class BaseConfig(ABC):
             option=key.replace('_', ' ')
             if type(value) is list:
                 value=';'.join(value)
-            debug(f'Write option {key}={str(value).splitlines()[0]} to config '
+            debug(f'Write option {key}={str(value)[:50]} to config '
                   f'{self.section}/{option}, default={default}.')
             setter(self.section, option, value)
 

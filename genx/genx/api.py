@@ -17,7 +17,6 @@ from genx import filehandling as io
 from genx.plugins.add_ons.help_modules.reflectivity_utils import avail_models, SampleHandler, SampleBuilder
 from genx.plugins.utils import PluginHandler
 
-_config=io.config
 _fit_output=[]
 
 def text_output_api(text):
@@ -26,14 +25,14 @@ def text_output_api(text):
 def load(fname, compile=True):
     model=Model()
     optimizer=DiffEv()
-    io.load_file(fname, model, optimizer, _config)
+    io.load_file(fname, model, optimizer)
     if compile:
         model.compile_script()
     optimizer.model=model
     return model, optimizer
 
 def save(fname, model, optimizer):
-    io.save_file(fname, model, optimizer, _config)
+    io.save_file(fname, model, optimizer)
 
 def fit_notebook(model, optimizer):
     """

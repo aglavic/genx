@@ -117,7 +117,7 @@ class SolverController(Configurable):
         evt=update_text(text=text)
         wx.PostEvent(self.parent, evt)
 
-    def PlotOutput(self, solver):
+    def PlotOutput(self, solver: diffev.DiffEv):
         '''
         Solver to present the graphical output from the optimizer to the 
         user. Takes the solver as input argument and picks out the 
@@ -135,7 +135,7 @@ class SolverController(Configurable):
         except Exception as e:
             iprint('Error in plot output:\n'+repr(e))
 
-    def ParameterOutput(self, solver):
+    def ParameterOutput(self, solver: diffev.DiffEv):
         '''
         Function to send an update event to update windows that displays
         the parameters to update the values. 
@@ -176,7 +176,7 @@ class SolverController(Configurable):
                                       desc='Parameter Update', update_errors=False,
                                       permanent_change=False)
             except:
-                iprint('Could not create data for paraemters')
+                iprint('Could not create data for parameters')
             else:
                 wx.PostEvent(self.parent, evt)
 
