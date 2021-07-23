@@ -287,6 +287,9 @@ class Model:
         loadfile.close()
         return text
 
+    def reset(self):
+        self._reset_module()
+
     def _reset_module(self):
         ''' 
         Internal method for resetting the module before compilation

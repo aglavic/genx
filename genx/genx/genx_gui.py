@@ -24,6 +24,7 @@ from genx.plugins import add_on_framework as add_on
 from . import datalist, filehandling as io, images as img, model, parametergrid, plotpanel, solvergui, help
 from .version import __version__ as program_version
 from .exception_handling import CatchModelError
+from .gui_logging import iprint
 
 _path, _file=os.path.split(__file__)
 if _path[-4:]=='.zip':
@@ -249,7 +250,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
         if self.model.script!='':
             self.script_editor.SetText(self.model.script)
-        self.solver_control=solvergui.SolverController(self)
+        self.solver_control=solvergui.ModelControlGUI(self)
+        self.solver_control.controller.model=self.model
 
         # Bind all the events that are needed to occur when a new model has
         # been loaded
@@ -263,21 +265,17 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data_grid_choice, self.data_list.list_ctrl)
         self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data, self.data_list.list_ctrl)
 
-        self.Bind(EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent,
-                  self)
-        self.Bind(EVT_SIM_PLOT, self.eh_external_fom_value,
-                  self)
+        self.Bind(EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent, self)
+        self.Bind(EVT_SIM_PLOT, self.eh_external_fom_value, self)
         # Update events from the solver
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.eh_external_fom_value)
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_data.OnSolverPlotEvent)
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_fom.OnSolverPlotEvent)
 
-        self.Bind(solvergui.EVT_SOLVER_UPDATE_TEXT,
-                  self.eh_ex_status_text)
-        self.Bind(solvergui.EVT_UPDATE_PARAMETERS,
-                  self.paramter_grid.OnSolverUpdateEvent)
-        self.Bind(solvergui.EVT_UPDATE_PARAMETERS,
-                  self.plot_pars.OnSolverParameterEvent)
+        self.Bind(solvergui.EVT_SOLVER_UPDATE_TEXT, self.eh_ex_status_text)
+        self.Bind(solvergui.EVT_UPDATE_PARAMETERS, self.paramter_grid.OnSolverUpdateEvent)
+        self.Bind(solvergui.EVT_UPDATE_PARAMETERS, self.plot_pars.OnSolverParameterEvent)
+
         # For picking a point in a plot
         self.Bind(plotpanel.EVT_PLOT_POSITION,
                   self.eh_ex_point_pick)
@@ -826,7 +824,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         # _post_new_model_event(frame, frame.model)
         debug('open_model: load_file')
         with self.catch_error(action='open_model', step=f'open file {os.path.basename(path)}') as mng:
-            io.load_file(path, self.model, self.solver_control.optimizer)
+            self.solver_control.load_file(path)
         if not mng.successful: return # don't continue after error
 
         debug('open_model: read config')
@@ -1276,17 +1274,20 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         import numpy, scipy, matplotlib, platform
         useful = ''
         try:
+            # noinspection PyUnresolvedReferences
             import numba
             useful += 'Numba: %s, '%numba.__version__
         except ImportError:
             pass
         try:
+            # noinspection PyUnresolvedReferences
             import vtk
             # noinspection PyUnresolvedReferences
             useful += 'VTK: %s, '%vtk.vtkVersion.GetVTKVersion()
         except ImportError:
             pass
         try:
+            # noinspection PyUnresolvedReferences
             import bumps
             useful += 'Bumps: %s, '%bumps.__version__
         except ImportError:
@@ -1569,13 +1570,25 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         '''
         Callback to update the fom_value displayed by the gui
         '''
-        fom_value = event.model.fom
-        fom_name = event.model.fom_func.__name__
+        if hasattr(event, 'fom_value'):
+            fom_value = event.fom_value
+            fom_name = event.fom_name
+        else:
+            # workaround for GenericModelEvent, TODO: fix this in the future with better event
+            fom_value=self.model.fom
+            fom_name=self.model.fom_func.__name__
         if fom_value:
             self.main_frame_fom_text.SetLabel('        FOM %s: %.4e'%(fom_name, fom_value))
         else:
             self.main_frame_fom_text.SetLabel('        FOM %s: None'%fom_name)
         event.Skip()
+        # Hard code the events for the plugins so that they can be run syncrously.
+        # This is important since the Refelctevity model, for example, relies on the
+        # current state of the model.
+        try:
+            self.plugin_control.OnFittingUpdate(event)
+        except Exception as e:
+            iprint('Error in plot output:\n'+repr(e))
 
     def eh_mb_set_dal(self, event):
         self.data_list.DataLoaderSettingsDialog()

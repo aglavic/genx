@@ -5,17 +5,20 @@ as some input from dialog boxes.
 Programmer Matts Bjorck
 Last Changed 2009 05 12
 '''
-import wx, io, traceback
+import traceback
+import numpy as np
+from io import StringIO
+from dataclasses import dataclass
+
+import wx
 import wx.lib.newevent
 from wx.lib.masked import NumCtrl
-from dataclasses import dataclass
 
 from .exceptions import ErrorBarError
 from .filehandling import BaseConfig, Configurable
-from . import diffev, fom_funcs
+from . import diffev, fom_funcs, solver_basis, model_control
 from . import filehandling as io
 from .gui_logging import iprint
-import numpy as np
 
 @dataclass
 class SolverConfig(BaseConfig):
@@ -23,7 +26,79 @@ class SolverConfig(BaseConfig):
     save_all_evals:bool=False
     errorbar_level:float=1.05
 
-class SolverController(Configurable):
+# Custom events needed for updating and message parsing between the different
+# modules.
+(update_plot, EVT_UPDATE_PLOT)=wx.lib.newevent.NewEvent()
+(update_text, EVT_SOLVER_UPDATE_TEXT)=wx.lib.newevent.NewEvent()
+(update_parameters, EVT_UPDATE_PARAMETERS)=wx.lib.newevent.NewEvent()
+(fitting_ended, EVT_FITTING_ENDED)=wx.lib.newevent.NewEvent()
+(autosave, EVT_AUTOSAVE)=wx.lib.newevent.NewEvent()
+
+class GuiCallbacks(solver_basis.GenxOptimizerCallback):
+    def __init__(self, parent: wx.Window):
+        self.parent=parent
+
+    def text_output(self, text):
+        '''
+        Function to present the output from the optimizer to the user.
+        Takes a string as input.
+        '''
+        evt=update_text(text=text)
+        wx.QueueEvent(self.parent, evt)
+
+    def plot_output(self, update_data):
+        '''
+        Solver to present the graphical output from the optimizer to the
+        user. Takes the solver as input argument and picks out the
+        variables to show in the GUI.
+        '''
+        evt=update_plot(data=update_data.data, fom_value=update_data.fom_value,
+                        fom_name=update_data.fom_name,
+                        fom_log=update_data.fom_log, update_fit=update_data.new_best,
+                        desc='Fitting update')
+        wx.QueueEvent(self.parent, evt)
+
+    def parameter_output(self, param_info):
+        '''
+        Function to send an update event to update windows that displays
+        the parameters to update the values.
+        Takes the solver as input argument and picks out the variables to
+        show in the GUI.
+        '''
+        evt=update_parameters(values=param_info.values,
+                              new_best=param_info.new_best,
+                              population=param_info.population,
+                              max_val=param_info.max_val,
+                              min_val=param_info.min_val,
+                              fitting=True,
+                              desc='Parameter Update', update_errors=False,
+                              permanent_change=False)
+        wx.QueueEvent(self.parent, evt)
+
+    def fitting_ended(self, result_data):
+        '''
+        function used to post an event when the fitting has ended.
+        This must be done since it is not thread safe otherwise. Same GUI in
+        two threads when dialogs are run. dangerous...
+        '''
+        evt=fitting_ended(start_guess=result_data.start_guess,
+                          error_message=result_data.error_message,
+                          values=result_data.values,
+                          new_best=result_data.new_best,
+                          population=result_data.population,
+                          max_val=result_data.max_val,
+                          min_val=result_data.min_val,
+                          fitting=True, desc='Fitting Ended')
+        wx.QueueEvent(self.parent, evt)
+
+    def autosave(self):
+        '''
+        Function that conducts an autosave of the model.
+        '''
+        evt=autosave()
+        wx.QueueEvent(self.parent, evt)
+
+class ModelControlGUI(Configurable):
     '''
     Class to take care of the GUI - solver interaction.
     Implements dialogboxes for setting parameters and controls
@@ -34,27 +109,13 @@ class SolverController(Configurable):
 
     def __init__(self, parent):
         Configurable.__init__(self)
-        # Create the optimizer we are using. In this case the standard
-        # Differential evolution optimizer.
-        self.optimizer=diffev.DiffEv()
-        # Store the parent we need this to bind the different components to
-        # the optimization algorithm.
         self.parent=parent
 
-        # Just storage of the starting values for the paramters before
-        # the fit is started so the user can go back to the start values
-        self.start_parameter_values=None
-        # The level used for error bar calculations
-        self.fom_error_bars_level=1.05
-
-        # Setup the output functions.
-        self.optimizer.set_text_output_func(self.TextOutput)
-        self.optimizer.set_plot_output_func(self.PlotOutput)
-        self.optimizer.set_parameter_output_func(self.ParameterOutput)
-        self.optimizer.set_fitting_ended_func(self.FittingEnded)
-        self.optimizer.set_autosave_func(self.AutoSave)
-
+        self.controller=model_control.ModelController(diffev.DiffEv())
+        self.callback_controller=GuiCallbacks(parent)
+        self.controller.set_callbacks(self.callback_controller)
         self.parent.Bind(EVT_FITTING_ENDED, self.OnFittingEnded)
+        self.parent.Bind(EVT_AUTOSAVE, self.AutoSave)
 
         # Now load the default configuration
         self.ReadConfig()
@@ -65,18 +126,14 @@ class SolverController(Configurable):
         And set the parameters in both the optimizer and this class.
         '''
         Configurable.ReadConfig(self)
-        self.optimizer.ReadConfig()
-
-    def UpdateConfigValues(self):
-        self.set_error_bars_level(self.opt.errorbar_level)
-        self.set_save_all_evals(self.opt.save_all_evals)
+        self.controller.ReadConfig()
 
     def WriteConfig(self):
         '''
         Writes the current configuration of the solver to file.
         '''
         Configurable.WriteConfig(self)
-        self.optimizer.WriteConfig()
+        self.controller.WriteConfig()
 
     def ParametersDialog(self, frame):
         '''
@@ -109,69 +166,26 @@ class SolverController(Configurable):
         #    pass
         dlg.Destroy()
 
-    def TextOutput(self, text):
-        '''
-        Function to present the output from the optimizer to the user. 
-        Takes a string as input.
-        '''
-        evt=update_text(text=text)
-        wx.PostEvent(self.parent, evt)
-
-    def PlotOutput(self, solver: diffev.DiffEv):
-        '''
-        Solver to present the graphical output from the optimizer to the 
-        user. Takes the solver as input argument and picks out the 
-        variables to show in the GUI.
-        '''
-        evt=update_plot(model=solver.get_model(),
-                        fom_log=solver.get_fom_log(), update_fit=solver.new_best,
-                        desc='Fitting update')
-        wx.PostEvent(self.parent, evt)
-        # Hard code the events for the plugins so that they can be run syncrously.
-        # This is important since the Refelctevity model, for example, relies on the
-        # current state of the model.
-        try:
-            self.parent.plugin_control.OnFittingUpdate(evt)
-        except Exception as e:
-            iprint('Error in plot output:\n'+repr(e))
-
-    def ParameterOutput(self, solver: diffev.DiffEv):
-        '''
-        Function to send an update event to update windows that displays
-        the parameters to update the values. 
-        Takes the solver as input argument and picks out the variables to 
-        show in the GUI.
-        '''
-        evt=update_parameters(values=solver.best_vec.copy(),
-                              new_best=solver.new_best,
-                              population=solver.pop_vec,
-                              max_val=solver.par_max,
-                              min_val=solver.par_min,
-                              fitting=True,
-                              desc='Parameter Update', update_errors=False,
-                              permanent_change=False)
-        wx.PostEvent(self.parent, evt)
-
     def ModelLoaded(self):
         '''
         Function that takes care of resetting everything when a model has
         been loaded.
         '''
-        evt=update_plot(model=self.optimizer.get_model(),
-                        fom_log=self.optimizer.get_fom_log(), update_fit=False,
+        evt=update_plot(model=self.controller.get_fitted_model(),
+                        fom_log=self.controller.get_fom_log(), update_fit=False,
                         desc='Model loaded')
         wx.PostEvent(self.parent, evt)
 
-        # Update the parameter plot ... 
-        if self.optimizer.setup_ok:
-            # remeber to add a check 
-            solver=self.optimizer
+        # Update the parameter plot ...
+        if self.controller.is_configured():
+            # remeber to add a check
+            res=self.controller.get_result_info()
             try:
-                evt=update_parameters(values=solver.best_vec.copy(),
+                evt=update_parameters(values=res.values,
                                       new_best=False,
-                                      population=solver.pop_vec,
-                                      max_val=solver.par_max,
-                                      min_val=solver.par_min,
+                                      population=res.population,
+                                      max_val=res.par_max,
+                                      min_val=res.par_min,
                                       fitting=True,
                                       desc='Parameter Update', update_errors=False,
                                       permanent_change=False)
@@ -180,92 +194,43 @@ class SolverController(Configurable):
             else:
                 wx.PostEvent(self.parent, evt)
 
-    def AutoSave(self):
-        '''
-        Function that conducts an autosave of the model.
-        '''
-        io.save_file(self.parent.model.get_filename(), self.parent.model, self.optimizer)
-
-    def FittingEnded(self, solver):
-        '''
-        function used to post an event when the fitting has ended.
-        This must be done since it is not thread safe otherwise. Same GUI in
-        two threads when dialogs are run. dangerous...
-        '''
-        evt=fitting_ended(solver=solver, desc='Fitting Ended')
-        wx.PostEvent(self.parent, evt)
-
     def OnFittingEnded(self, evt):
         '''
         Callback when fitting has ended. Takes care of cleaning up after
         the fit. Calculates errors on the parameters and updates the grid.
         '''
-        solver=evt.solver
-        if solver.error:
-            ShowErrorDialog(self.parent, solver.error)
+        if evt.error_message:
+            ShowErrorDialog(self.parent, evt.error_message)
             return
 
-        message='Do you want to keep the parameter values from '+ \
-                'the fit?'
-        dlg=wx.MessageDialog(self.parent, message, 'Keep the fit?',
-                             wx.YES_NO | wx.ICON_QUESTION)
+        message='Do you want to keep the parameter values from the fit?'
+        dlg=wx.MessageDialog(self.parent, message, 'Keep the fit?', wx.YES_NO | wx.ICON_QUESTION)
         if dlg.ShowModal()==wx.ID_YES:
-            evt=update_parameters(values=solver.best_vec.copy(),
-                                  desc='Parameter Update', new_best=True,
-                                  update_errors=False, fitting=False,
-                                  permanent_change=True)
+            evt = update_parameters(values=evt.values,
+                                    new_best=True,
+                                    population=evt.population,
+                                    max_val=evt.max_val,
+                                    min_val=evt.min_val,
+                                    fitting=False,
+                                    desc='Parameter Update', update_errors=False,
+                                    permanent_change=True)
             wx.PostEvent(self.parent, evt)
         else:
-            evt=update_parameters(values=solver.start_guess,
-                                  desc='Parameter Update', new_best=True,
-                                  update_errors=False, fitting=False,
-                                  permanent_change=False)
+            evt = update_parameters(values=evt.start_guess,
+                                    new_best=True,
+                                    population=evt.population,
+                                    max_val=evt.max_val,
+                                    min_val=evt.min_val,
+                                    fitting=False,
+                                    desc='Parameter Update', update_errors=False,
+                                    permanent_change=False)
             wx.PostEvent(self.parent, evt)
 
     def CalcErrorBars(self):
-        '''
-        Method that calculates the errorbars for the fit that has been
-        done. Note that the fit has to been conducted before this is run.
-        '''
-        if len(self.optimizer.fom_evals)==0:
-            raise ErrorBarError('Can not find any stored evaluations of the model in the optimizer.\n'
-                                'Run a fit before calculating the errorbars.')
-        if self.optimizer.start_guess is not None and not self.optimizer.running:
-            n_elements=len(self.optimizer.start_guess)
-            error_values=[]
-            dlg=wx.ProgressDialog("Calculating", "Error bars are calculated ...",
-                                  maximum=n_elements, parent=self.parent,
-                                  style=wx.PD_AUTO_HIDE)
-            for index in range(n_elements):
-                # calculate the error
-                # TODO: Check the error bar buisness again and how to treat 
-                # Chi2 
-                try:
-                    (error_low, error_high)=self.optimizer.calc_error_bar(index, self.fom_error_bars_level)
-                except ErrorBarError as e:
-                    ShowWarningDialog(self.parent, str(e))
-                    break
-                error_str='(%.3e, %.3e)'%(error_low, error_high)
-                error_values.append(error_str)
-                dlg.Update(index+1)
-
-            dlg.Destroy()
-            return error_values
-        else:
-            raise ErrorBarError()
+        return self.controller.CalcErrorBars()
 
     def ProjectEvals(self, parameter):
-        '''
-        Projects the parameter number parameter on one axis and returns
-        the fom values.
-        '''
-        model=self.parent.model
-        row=model.parameters.get_pos_from_row(parameter)
-        if self.optimizer.start_guess is not None and not self.optimizer.running:
-            return self.optimizer.par_evals[:, row], \
-                   self.optimizer.fom_evals[:]
-        else:
-            raise ErrorBarError()
+        return self.controller.ProjectEvals()
 
     def ScanParameter(self, parameter, points):
         '''
@@ -273,7 +238,7 @@ class SolverController(Configurable):
         of the parameter value.
         '''
         row=parameter
-        model=self.parent.model
+        model=self.controller.model
         (funcs, vals)=model.get_sim_pars()
         minval=model.parameters.get_data()[row][3]
         maxval=model.parameters.get_data()[row][4]
@@ -299,7 +264,7 @@ class SolverController(Configurable):
                 dlg.Update(len(fom_vals))
         except Exception as e:
             dlg.Destroy()
-            outp=io.StringIO()
+            outp=StringIO()
             traceback.print_exc(200, outp)
             val=outp.getvalue()
             outp.close()
@@ -313,46 +278,25 @@ class SolverController(Configurable):
         return par_vals, fom_vals
 
     def ResetOptimizer(self):
-        '''
-        Resets the optimizer - clears the memory and special flags.
-        '''
-        self.start_parameter_values=None
+        pass
 
     def StartFit(self):
-        '''
-        Function to start running the fit
-        '''
-        # Make sure that the config of the solver is updated..
-        self.ReadConfig()
-        model=self.parent.model
-        # Reset all the errorbars
-        model.parameters.clear_error_pars()
-        # self.start_parameter_values = model.get_fit_values()
-        self.optimizer.start_fit(model)
-        # print 'Optimizer starting'
+        self.controller.StartFit()
 
     def StopFit(self):
-        '''
-        Function to stop a running fit
-        '''
-        self.optimizer.stop_fit()
+        self.controller.StopFit()
 
     def ResumeFit(self):
-        '''
-        Function to resume the fitting after it has been stopped
-        '''
-        # Make sure the settings are updated..
-        self.ReadConfig()
-        model=self.parent.model
-        # Remove all previous erros ...
-
-        self.optimizer.resume_fit(model)
+        self.controller.ResumeFit()
 
     def IsFitted(self):
-        '''
-        Returns true if a fit has been started otherwise False
-        '''
-        return len(self.optimizer.start_guess)>0
+        return self.controller.IsFitted()
+
+    def AutoSave(self, event):
+        self.controller.save()
+
+    def load_file(self, fname):
+        self.controller.load_file(fname)
 
     def set_error_bars_level(self, value):
         '''
@@ -361,7 +305,7 @@ class SolverController(Configurable):
         if value<1:
             raise ValueError('fom_error_bars_level has to be above 1')
         else:
-            self.fom_error_bars_level=value
+            self.opt.errorbar_level=value
 
     def set_save_all_evals(self, value):
         '''
@@ -371,7 +315,7 @@ class SolverController(Configurable):
 
 # ==============================================================================
 class SettingsDialog(wx.Dialog):
-    def __init__(self, parent, solver: diffev.DiffEv, solvergui: SolverController, fom_string: str):
+    def __init__(self, parent, solver: diffev.DiffEv, solvergui: ModelControlGUI, fom_string: str):
         '''
         Configuration optitons for a DiffEv solver.
         '''
@@ -412,7 +356,7 @@ class SettingsDialog(wx.Dialog):
         errorbar_sizer=wx.BoxSizer(wx.HORIZONTAL)
         errorbar_text=wx.StaticText(self, -1, 'Error bar level ')
         self.errorbar_control=NumCtrl(self, value=
-        self.solvergui.fom_error_bars_level,
+        self.solvergui.opt.errorbar_level,
                                       fractionWidth=2, integerWidth=2)
         errorbar_sizer.Add(errorbar_text, 0,
                            wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
@@ -477,7 +421,7 @@ class SettingsDialog(wx.Dialog):
         # Checkbox for saving all evals
         save_sizer=wx.BoxSizer(wx.HORIZONTAL)
         save_all_control=wx.CheckBox(self, -1, "Save evals, buffer ")
-        save_all_control.SetValue(self.solvergui.save_all_evals)
+        save_all_control.SetValue(self.solvergui.opt.save_all_evals)
         buffer_sc=wx.SpinCtrl(self)
         buffer_sc.SetRange(1000, 100000000)
         buffer_sc.SetValue(self.solver.opt.max_log_elements)
@@ -742,7 +686,7 @@ class SettingsDialog(wx.Dialog):
         self.solver.opt.chunksize=self.chunk_size_sc.GetValue()
         model.set_fom_ignore_inf(self.fom_ignore_inf_control.GetValue())
         model.set_fom_ignore_nan(self.fom_ignore_nan_control.GetValue())
-        self.solvergui.opt.fom_error_bars_level=self.errorbar_control.GetValue()
+        self.solvergui.opt.errorbar_level=self.errorbar_control.GetValue()
         self.solver.opt.use_autosave=self.use_autosave_control.GetValue()
         self.solver.opt.autosave_interval=self.autosave_sc.GetValue()
         self.solvergui.opt.save_all_evals=self.save_all_control.GetValue()
@@ -769,16 +713,6 @@ class SettingsDialog(wx.Dialog):
         '''
         self.apply_change=func
 
-# ==============================================================================
-# Custom events needed for updating and message parsing between the different
-# modules.
-
-(update_plot, EVT_UPDATE_PLOT)=wx.lib.newevent.NewEvent()
-(update_text, EVT_SOLVER_UPDATE_TEXT)=wx.lib.newevent.NewEvent()
-(update_parameters, EVT_UPDATE_PARAMETERS)=wx.lib.newevent.NewEvent()
-(fitting_ended, EVT_FITTING_ENDED)=wx.lib.newevent.NewEvent()
-
-# ==============================================================================
 def ShowWarningDialog(frame, message):
     dlg=wx.MessageDialog(frame, message,
                          'Warning',

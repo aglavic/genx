@@ -4,42 +4,123 @@ GenX model and optimizer control classes. All functional aspects should be cover
 import os
 import sys
 import h5py
-from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
-from .exceptions import GenxIOError, GenxOptionError
+from .exceptions import GenxIOError, GenxOptionError, ErrorBarError
 from .model import Model
-from .filehandling import config
+from .filehandling import config, BaseConfig, Configurable
+from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
-class GenxOptimizer(ABC):
-    """
-    Defines an abstract base class for a optimizer for GenX models.
-    DiffEv is implementing this abstraction.
-    """
-    @abstractmethod
-    def pickle_string(self, clear_evals: bool=False):
-        """ Return a pickle string for the object """
+@dataclass
+class SolverConfig(BaseConfig):
+    section='solver'
+    save_all_evals:bool=False
+    errorbar_level:float=1.05
 
-    @abstractmethod
-    def pickle_load(self, pickled_string: str):
-        """ Configure object from pickled copy """
+class ModelController(Configurable):
+    opt: SolverConfig
 
-    @abstractmethod
-    def write_h5group(self, group: h5py.Group, clear_evals: bool=False):
-        """ Save configuration to hdf5 group """
-
-    @abstractmethod
-    def read_h5group(self, group: h5py.Group):
-        """ Configure object from hdf5 group """
-
-
-class ModelController:
     def __init__(self, optimizer: GenxOptimizer):
+        Configurable.__init__(self)
         self.model=Model()
         self.optimizer=optimizer
 
+    def set_callbacks(self, callbacks: GenxOptimizerCallback):
+        self.optimizer.set_callbacks(callbacks)
+
+    def is_configured(self):
+        return self.optimizer.is_configured()
+
+    def get_result_info(self):
+        return self.optimizer.get_result_info()
+
+    def get_fitted_model(self):
+        return self.optimizer.get_model()
+
+    def get_fom_log(self):
+        return self.optimizer.get_fom_log()
+
+    def ReadConfig(self):
+        '''
+        Reads the parameter that should be read from the config file.
+        And set the parameters in both the optimizer and this class.
+        '''
+        Configurable.ReadConfig(self)
+        self.optimizer.ReadConfig()
+
+    def WriteConfig(self):
+        '''
+        Writes the current configuration of the solver to file.
+        '''
+        Configurable.WriteConfig(self)
+        self.optimizer.WriteConfig()
+
+    def CalcErrorBars(self):
+        '''
+        Method that calculates the errorbars for the fit that has been
+        done. Note that the fit has to been conducted before this is run.
+        '''
+        if self.optimizer.n_fom_evals==0:
+            raise ErrorBarError('Can not find any stored evaluations of the model in the optimizer.\n'
+                                'Run a fit before calculating the errorbars.')
+        if self.optimizer.get_start_guess() is not None and not self.optimizer.is_running():
+            n_elements=len(self.optimizer.get_start_guess())
+            error_values=[]
+            for index in range(n_elements):
+                # calculate the error, this is threshold based and not rigours
+                (error_low, error_high)=self.optimizer.calc_error_bar(index, self.opt.errorbar_level)
+                error_str='(%.3e, %.3e)'%(error_low, error_high)
+                error_values.append(error_str)
+            return error_values
+        else:
+            raise ErrorBarError('Wait for fit to finish or fit to changed model first.')
+
+    def ProjectEvals(self, parameter: int):
+        '''
+        Projects the parameter number parameter on one axis and returns
+        the fom values.
+        '''
+        row=self.model.parameters.get_pos_from_row(parameter)
+        if self.optimizer.get_start_guess() is not None and not self.optimizer.is_running():
+            return self.optimizer.project_evals(row)
+        else:
+            raise ErrorBarError()
+
+    def StartFit(self):
+        '''
+        Function to start running the fit
+        '''
+        # Make sure that the config of the solver is updated..
+        self.optimizer.ReadConfig()
+        # Reset all the errorbars
+        self.model.parameters.clear_error_pars()
+        self.optimizer.start_fit(self.model)
+
+    def StopFit(self):
+        '''
+        Function to stop a running fit
+        '''
+        self.optimizer.stop_fit()
+
+    def ResumeFit(self):
+        '''
+        Function to resume the fitting after it has been stopped
+        '''
+        self.optimizer.ReadConfig()
+        self.optimizer.resume_fit(self.model)
+
+    def IsFitted(self):
+        '''
+        Returns true if a fit has been started otherwise False
+        '''
+        return self.optimizer.is_fitted()
+
+    def save(self):
+        self.save_file(self.model.get_filename())
+
     def save_file(self, fname: str):
         """
-        Saves objects model, optimiser and config into file fnmame
+        Saves objects model, optimiser and config into file fname
         """
         if fname.endswith('.gx'):
             self.save_gx(fname)
@@ -68,9 +149,9 @@ class ModelController:
         self.model.write_h5group(g)
         try:
             clear_evals=not config.getboolean('solver', 'save all evals')
-        except GenxOptionError as e:
+        except GenxOptionError:
             clear_evals=True
-        self.optimizer.write_h5group(g.create_group('optimizer'), clear_evals=True)
+        self.optimizer.write_h5group(g.create_group('optimizer'), clear_evals=clear_evals)
         g['config']=config.model_dump().encode('utf-8')
         f.close()
 

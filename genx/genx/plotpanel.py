@@ -1227,11 +1227,10 @@ class DataPlotPanel(PlotPanel):
         # print 'plotting'
 
         if event.update_fit:
-            data_list=event.model.get_data()
             if self.update!=self.plot_data_fit:
                 self.update=self.plot_data_fit
                 self.SetAutoScale(False)
-            self.update(data_list)
+            self.update(event.data)
         # Do not forget - pass the event on
         event.Skip()
 
