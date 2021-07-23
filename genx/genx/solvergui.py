@@ -5,11 +5,8 @@ as some input from dialog boxes.
 Programmer Matts Bjorck
 Last Changed 2009 05 12
 '''
-import traceback
 import numpy as np
 import time
-from io import StringIO
-from dataclasses import dataclass
 from typing import Union
 from threading import Thread, Event
 
@@ -17,17 +14,11 @@ import wx
 import wx.lib.newevent
 from wx.lib.masked import NumCtrl
 
-from .filehandling import BaseConfig, Configurable
+from .exception_handling import CatchModelError
 from . import diffev, fom_funcs, model_control
 from .gui_logging import iprint
 from .solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
 
-
-@dataclass
-class SolverConfig(BaseConfig):
-    section='solver'
-    save_all_evals:bool=False
-    errorbar_level:float=1.05
 
 # Custom events needed for updating and message parsing between the different
 # modules.
@@ -160,17 +151,15 @@ class DelayedCallbacks(Thread, GuiCallbacks):
         self.last_update=update_data
         self.wait_lock.set()
 
-class ModelControlGUI(Configurable):
+class ModelControlGUI:
     '''
     Class to take care of the GUI - solver interaction.
     Implements dialogboxes for setting parameters and controls
     for the solver routine. This is where the application specific
     code are used i.e. interfacing the optimization code to the GUI.
     '''
-    opt: SolverConfig
 
     def __init__(self, parent):
-        Configurable.__init__(self)
         self.parent=parent
 
         self.controller=model_control.ModelController(diffev.DiffEv())
@@ -188,14 +177,12 @@ class ModelControlGUI(Configurable):
         Reads the parameter that should be read from the config file.
         And set the parameters in both the optimizer and this class.
         '''
-        Configurable.ReadConfig(self)
         self.controller.ReadConfig()
 
     def WriteConfig(self):
         '''
         Writes the current configuration of the solver to file.
         '''
-        Configurable.WriteConfig(self)
         self.controller.WriteConfig()
 
     def ParametersDialog(self, frame):
@@ -205,7 +192,7 @@ class ModelControlGUI(Configurable):
         # Update the configuration if a model has been loaded after
         # the object have been created..
         self.ReadConfig()
-        fom_func_name=self.parent.model.fom_func.__name__
+        fom_func_name=self.controller.model.fom_func.__name__
         if not fom_func_name in fom_funcs.func_names:
             ShowWarningDialog(self.parent, 'The loaded fom function, ' \
                               +fom_func_name+', does not exist '+ \
@@ -216,11 +203,11 @@ class ModelControlGUI(Configurable):
                      ' = self.parent.model.fom_func'
             exec(exectext, locals(), globals())
 
-        dlg=SettingsDialog(frame, self.controller.optimizer, self, fom_func_name)
+        dlg=SettingsDialog(frame, self.controller, fom_func_name)
 
-        def applyfunc(object):
+        def applyfunc():
             self.WriteConfig()
-            self.parent.model.set_fom_func(eval('fom_funcs.'+object.get_fom_string()))
+            self.controller.model.set_fom_func(eval('fom_funcs.'+dlg.get_fom_string()))
 
         dlg.set_apply_change_func(applyfunc)
 
@@ -252,7 +239,7 @@ class ModelControlGUI(Configurable):
                                       fitting=True,
                                       desc='Parameter Update', update_errors=False,
                                       permanent_change=False)
-            except:
+            except AttributeError:
                 iprint('Could not create data for parameters')
             else:
                 wx.PostEvent(self.parent, evt)
@@ -293,7 +280,7 @@ class ModelControlGUI(Configurable):
         return self.controller.CalcErrorBars()
 
     def ProjectEvals(self, parameter):
-        return self.controller.ProjectEvals()
+        return self.controller.ProjectEvals(parameter)
 
     def ScanParameter(self, parameter, points):
         '''
@@ -318,27 +305,18 @@ class ModelControlGUI(Configurable):
                               parent=self.parent,
                               style=wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME
                                     | wx.PD_REMAINING_TIME | wx.PD_AUTO_HIDE)
-        try:
+        with CatchModelError(self.parent, 'ScanParameter', 'scan through values') as cme:
             # Start with setting all values
             [f(v) for (f, v) in zip(funcs, vals)]
             for par_val in par_vals:
                 parfunc(par_val)
                 fom_vals=np.append(fom_vals, model.evaluate_fit_func())
                 dlg.Update(len(fom_vals))
-        except Exception as e:
-            dlg.Destroy()
-            outp=StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            ShowWarningDialog(self.parent, 'Error while evaluatating the'+ \
-                              ' simulation and fom. Please check so it is possible to simulate'+ \
-                              ' your model. Detailed output below: \n\n'+val)
-        else:
-            dlg.Destroy()
+        dlg.Destroy()
         # resetting the scanned parameter
         parfunc(par_def_val)
-        return par_vals, fom_vals
+        if cme.successful:
+            return par_vals, fom_vals
 
     def ResetOptimizer(self):
         pass
@@ -355,7 +333,7 @@ class ModelControlGUI(Configurable):
     def IsFitted(self):
         return self.controller.IsFitted()
 
-    def AutoSave(self, event):
+    def AutoSave(self, _event):
         self.controller.save()
 
     def load_file(self, fname):
@@ -368,23 +346,24 @@ class ModelControlGUI(Configurable):
         if value<1:
             raise ValueError('fom_error_bars_level has to be above 1')
         else:
-            self.opt.errorbar_level=value
+            self.controller.optimizer.opt.errorbar_level=value
 
     def set_save_all_evals(self, value):
         '''
         Sets the boolean value to save all evals to file
         '''
-        self.save_all_evals=bool(value)
+        self.controller.optimizer.opt.save_all_evals=bool(value)
 
 # ==============================================================================
 class SettingsDialog(wx.Dialog):
-    def __init__(self, parent, solver: diffev.DiffEv, solvergui: ModelControlGUI, fom_string: str):
+    def __init__(self, parent, controller: model_control.ModelController, fom_string: str):
         '''
         Configuration optitons for a DiffEv solver.
         '''
         wx.Dialog.__init__(self, parent, -1, 'Optimizer settings')
-        self.solver=solver
-        self.solvergui=solvergui
+        # noinspection PyTypeChecker
+        self.solver: diffev.DiffEv=controller.optimizer
+        self.model=controller.model
         self.apply_change=None
 
         col_sizer=wx.BoxSizer(wx.HORIZONTAL)
@@ -409,20 +388,18 @@ class SettingsDialog(wx.Dialog):
         # Check box for ignoring nans
         self.fom_ignore_nan_control=wx.CheckBox(self, -1, "Ignore Nan")
         cb_sizer.Add(self.fom_ignore_nan_control, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        self.fom_ignore_nan_control.SetValue(self.solvergui.parent.model.solver_parameters.ignore_fom_nan)
+        self.fom_ignore_nan_control.SetValue(self.model.solver_parameters.ignore_fom_nan)
         # Check box for ignoring infs
         self.fom_ignore_inf_control=wx.CheckBox(self, -1, "Ignore +/-Inf")
         cb_sizer.Add(self.fom_ignore_inf_control, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        self.fom_ignore_inf_control.SetValue(self.solvergui.parent.model.solver_parameters.ignore_fom_inf)
+        self.fom_ignore_inf_control.SetValue(self.model.solver_parameters.ignore_fom_inf)
 
         # Errorbar level 
         errorbar_sizer=wx.BoxSizer(wx.HORIZONTAL)
         errorbar_text=wx.StaticText(self, -1, 'Error bar level ')
         self.errorbar_control=NumCtrl(self, value=
-        self.solvergui.opt.errorbar_level,
-                                      fractionWidth=2, integerWidth=2)
-        errorbar_sizer.Add(errorbar_text, 0,
-                           wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
+        self.solver.opt.errorbar_level, fractionWidth=2, integerWidth=2)
+        errorbar_sizer.Add(errorbar_text, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, border=10)
         errorbar_sizer.Add(self.errorbar_control, 1, wx.ALIGN_CENTER_VERTICAL, border=10)
         errorbar_sizer.Add((10, 20), 0, wx.EXPAND)
         fom_box_sizer.Add(errorbar_sizer, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
@@ -484,7 +461,7 @@ class SettingsDialog(wx.Dialog):
         # Checkbox for saving all evals
         save_sizer=wx.BoxSizer(wx.HORIZONTAL)
         save_all_control=wx.CheckBox(self, -1, "Save evals, buffer ")
-        save_all_control.SetValue(self.solvergui.opt.save_all_evals)
+        save_all_control.SetValue(self.solver.opt.save_all_evals)
         buffer_sc=wx.SpinCtrl(self)
         buffer_sc.SetRange(1000, 100000000)
         buffer_sc.SetValue(self.solver.opt.max_log_elements)
@@ -723,7 +700,7 @@ class SettingsDialog(wx.Dialog):
         return self.fom_choice.GetStringSelection()
 
     def on_apply_change(self, event):
-        model=self.solvergui.parent.model
+        model=self.model
 
         self.solver.opt.kr=self.kr_control.GetValue()
         self.solver.opt.km=self.km_control.GetValue()
@@ -741,10 +718,10 @@ class SettingsDialog(wx.Dialog):
         self.solver.opt.chunksize=self.chunk_size_sc.GetValue()
         model.set_fom_ignore_inf(self.fom_ignore_inf_control.GetValue())
         model.set_fom_ignore_nan(self.fom_ignore_nan_control.GetValue())
-        self.solvergui.opt.errorbar_level=self.errorbar_control.GetValue()
+        self.solver.opt.errorbar_level=self.errorbar_control.GetValue()
         self.solver.opt.use_autosave=self.use_autosave_control.GetValue()
         self.solver.opt.autosave_interval=self.autosave_sc.GetValue()
-        self.solvergui.opt.save_all_evals=self.save_all_control.GetValue()
+        self.solver.opt.save_all_evals=self.save_all_control.GetValue()
         self.solver.opt.max_log=self.buffer_sc.GetValue()
         self.solver.opt.limit_fit_range=self.limit_fit_range.GetValue()
         self.solver.opt.fit_xmin=self.fit_xmin.GetValue()
@@ -756,7 +733,7 @@ class SettingsDialog(wx.Dialog):
             self.solver.opt.fit_xmax)
 
         if self.apply_change:
-            self.apply_change(self)
+            self.apply_change()
 
         event.Skip()
 

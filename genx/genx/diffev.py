@@ -94,6 +94,8 @@ class DiffEvConfig(BaseConfig):
     fit_xmin:float=0.0
     fit_xmax:float=180.0
 
+    save_all_evals:bool=False
+    errorbar_level:float=1.05
 
 class DiffEv(GenxOptimizer):
     '''
@@ -821,13 +823,14 @@ class DiffEv(GenxOptimizer):
         self.trial_fom=fom_temp
 
     # noinspection PyArgumentList
-    def calc_error_bar(self, index, fom_level):
+    def calc_error_bar(self, index):
         '''
         Calculates the errorbar for one parameter number index. 
         returns a float tuple with the error bars. fom_level is the 
         level which is the upperboundary of the fom is allowed for the
         calculated error.
         '''
+        fom_level=self.opt.errorbar_level
         if self.setup_ok:  # and len(self.par_evals) != 0:
             par_values=self.par_evals[:, index]
             values_under_level=compress(self.fom_evals[:]<fom_level*self.best_fom, par_values)

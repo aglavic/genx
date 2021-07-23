@@ -51,7 +51,7 @@ class GenxOptimizer(ABC, Configurable):
         """Return array of FOM evaluations from fit"""
 
     @abstractmethod
-    def calc_error_bar(self, index:int, level:float)->(float, float):
+    def calc_error_bar(self, index:int)->(float, float):
         """Use simple threshold based calculation for errorbar estimation"""
 
     @abstractmethod

@@ -4,24 +4,14 @@ GenX model and optimizer control classes. All functional aspects should be cover
 import os
 import sys
 import h5py
-from dataclasses import dataclass
 
 from .exceptions import GenxIOError, GenxOptionError, ErrorBarError
 from .model import Model
-from .filehandling import config, BaseConfig, Configurable
+from .filehandling import config
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
-@dataclass
-class SolverConfig(BaseConfig):
-    section='solver'
-    save_all_evals:bool=False
-    errorbar_level:float=1.05
-
-class ModelController(Configurable):
-    opt: SolverConfig
-
+class ModelController:
     def __init__(self, optimizer: GenxOptimizer):
-        Configurable.__init__(self)
         self.model=Model()
         self.optimizer=optimizer
 
@@ -45,14 +35,12 @@ class ModelController(Configurable):
         Reads the parameter that should be read from the config file.
         And set the parameters in both the optimizer and this class.
         '''
-        Configurable.ReadConfig(self)
         self.optimizer.ReadConfig()
 
     def WriteConfig(self):
         '''
         Writes the current configuration of the solver to file.
         '''
-        Configurable.WriteConfig(self)
         self.optimizer.WriteConfig()
 
     def CalcErrorBars(self):
@@ -68,7 +56,7 @@ class ModelController(Configurable):
             error_values=[]
             for index in range(n_elements):
                 # calculate the error, this is threshold based and not rigours
-                (error_low, error_high)=self.optimizer.calc_error_bar(index, self.opt.errorbar_level)
+                (error_low, error_high)=self.optimizer.calc_error_bar(index)
                 error_str='(%.3e, %.3e)'%(error_low, error_high)
                 error_values.append(error_str)
             return error_values
