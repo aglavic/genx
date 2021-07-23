@@ -244,14 +244,13 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         debug('setup of MainFrame - manual config')
 
         # GenX objects
-        self.model=model.Model()
+        self.solver_control=solvergui.ModelControlGUI(self)
+        self.model=self.solver_control.controller.model
         self.model.data=self.data_list.data_cont.data
         self.paramter_grid.SetParameters(self.model.parameters)
 
         if self.model.script!='':
             self.script_editor.SetText(self.model.script)
-        self.solver_control=solvergui.ModelControlGUI(self)
-        self.solver_control.controller.model=self.model
 
         # Bind all the events that are needed to occur when a new model has
         # been loaded
