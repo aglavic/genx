@@ -21,7 +21,8 @@ import h5py
 import numpy as np
 
 # GenX libraries
-from . import data, fom_funcs, parameters
+from . import fom_funcs, parameters
+from .data import DataList
 from .exceptions import FomError, GenxIOError, ModelError, ParameterError
 from .filehandling import BaseConfig
 from .gui_logging import iprint
@@ -54,12 +55,26 @@ class SolverParameters(BaseConfig):
     fit_xmin:float=0.0
     fit_xmax:float=180.0
 
+class GenxScriptModule(types.ModuleType):
+    data: DataList
+
+    def __init__(self, data: DataList):
+        types.ModuleType.__init__(self, 'genx_script_module')
+        self.data=data
+        self._sim=False
+
+    @staticmethod
+    def Sim(data: DataList):
+        # default implementation of Sim function, will be overwritten by user.
+        return [di.y*0 for di in data]
+
 class Model:
     ''' A class that holds the model i.e. the script that defines
         the model and the data + various other attributes.
     '''
     fom: float=None
     fom_mask_func=None
+    fom_func:callable
 
     def __init__(self):
         '''
@@ -70,15 +85,15 @@ class Model:
         self.solver_parameters = SolverParameters()
         self.read_config()
 
-        self.data = data.DataList()
+        self.data = DataList()
         self.script = ''
+        # noinspection PyBroadException
         try:
             self.script = "\n".join(eval(self.startup_script.script))
         except:
             debug('Issue when loading script from config:', exc_info=True)
         self.parameters = parameters.Parameters(model=self)
 
-        # self.fom_func = default_fom_func
         self.fom_func = fom_funcs.log  # The function that evaluates the fom
 
         self._reset_module()
@@ -95,8 +110,6 @@ class Model:
         self.extra_analysis = {}
 
     def read_config(self):
-        '''Read in the config file
-        '''
         self.opt.load_config()
         self.startup_script.load_config()
         self.solver_parameters.load_config()
@@ -109,7 +122,7 @@ class Model:
         try:
             loadfile = zipfile.ZipFile(filename, 'r')
         except Exception as e:
-            raise GenxIOError('Could not open file.', filename)
+            raise GenxIOError(f'Could not open file, python error {e!r}', filename)
         try:
             new_data = pickle.loads(loadfile.read('data'), encoding='latin1', errors='ignore')
             self.data.safe_copy(new_data)
@@ -138,9 +151,7 @@ class Model:
         self.filename = os.path.abspath(filename)
         self.compiled = False
         self.saved = True
-        self.script_module = types.ModuleType('genx_script_module')
-        self.script_module.__dict__['data'] = self.data
-        self.script_module.__dict__['_sim'] = False
+        self.script_module = GenxScriptModule(self.data)
         self.compiled = False
 
     def save(self, filename):
@@ -177,12 +188,8 @@ class Model:
         self.saved = True
 
     def write_h5group(self, group, **kwargs):
-        """ Write the current parameters into a hdf5 group
-
-        :param group: h5py Group to write into
-        :param kwargs: Additional object parameters to be written (stored_name=object), these objects has to incorporate
-            a write_h5group.
-        :return:
+        """
+        Write the current parameters into a hdf5 group
         """
         self.data.write_h5group(group.create_group('data'))
         group['script'] = self.script
@@ -196,12 +203,8 @@ class Model:
             kwargs[kw].write_h5group(group.create_group(kw))
 
     def read_h5group(self, group, **kwargs):
-        """ Read the parameters from a hdf5 group
-
-        :param group: hdf5 Group to read the parameters from
-        :param kwargs: Additional object parameters to be read (stored_name=object), these objects has to incorporate
-            a read_h5group.
-        :return:
+        """
+        Read the parameters from a hdf5 group
         """
         self.data.read_h5group(group['data'])
         if int(h5py.__version__[0])>2:
@@ -237,18 +240,13 @@ class Model:
 
         self.compiled = False
         self.saved = True
-        self.script_module = types.ModuleType('genx_script_module')
-        self.script_module.__dict__['data'] = self.data
-        self.script_module.__dict__['_sim'] = False
+        self.script_module = GenxScriptModule(self.data)
         self.compiled = False
 
     def save_addition(self, name, text):
-        '''save_addition(self, name, text) --> None
-        
-        save additional text [string] subfile with name name [string]\
-         to the current file.
         '''
-        # Check so the filename is ok i.e. has been saved
+        Save additional text sub-file with name name/text to the current file.
+        '''
         if self.filename=='':
             raise GenxIOError('File must be saved before new information is added', '')
         try:
@@ -266,13 +264,10 @@ class Model:
             raise GenxIOError(str(e), self.filename)
         savefile.close()
 
-    def load_addition(self, name):
-        '''load_addition(self, name) --> text
-        
-        load additional text [string] subfile with name name [string]\
-         to the current model file.
+    def load_addition(self, name)->str:
         '''
-        # Check so the filename is ok i.e. has been saved
+        Load additional text from sub-file
+        '''
         if self.filename=='':
             raise GenxIOError('File must be loaded before additional information is read', '')
         try:
@@ -281,7 +276,7 @@ class Model:
             raise GenxIOError('Could not open the file', self.filename)
 
         try:
-            text = loadfile.read(name)
+            text = loadfile.read(name).decode('utf-8')
         except Exception as e:
             raise GenxIOError('Could not read the section named: %s'%name, self.filename)
         loadfile.close()
@@ -295,21 +290,13 @@ class Model:
         Internal method for resetting the module before compilation
         '''
         self.create_fom_mask_func()
-        self.script_module = types.ModuleType('genx_script_module')
-        # self.script_module = Temp()
-        # self.script_module.__dict__ = {}
-        # Bind data for preprocessing with the script
-        self.script_module.__dict__['data'] = self.data
-        # Flag to indicate to the Sim funtion if a simulation is conducted (True)
-        # or a fit is running (False). 
-        self.script_module.__dict__['_sim'] = False
+        self.script_module = GenxScriptModule(self.data)
         self.compiled = False
 
     def compile_script(self):
         ''' 
         compile the script in a seperate module.
         '''
-
         self._reset_module()
         # Testing to see if this works under windows
         self.script = '\n'.join(self.script.splitlines())
@@ -326,37 +313,28 @@ class Model:
 
     def eval_in_model(self, codestring):
         '''
-        Excecute the code in codestring in the namespace of
-        model module
+        Excecute the code in codestring in the namespace of model module
         '''
-        # exec codestring in self.script_module.__dict__
         result = eval(codestring, self.script_module.__dict__)
-        # print 'Sucessfully evaluted: ', codestring
         return result
 
     def set_fom_ignore_inf(self, flag):
-        """ Sets if the fom calculation should ignore infs
-
-        :param flag: boolean
-        :return:
+        """
+        Sets if the fom calculation should ignore infs
         """
         self.solver_parameters.ignore_fom_inf = bool(flag)
         self.create_fom_mask_func()
 
     def set_fom_ignore_nan(self, flag):
-        """ Sets if fom calculations should ignore nan's
-
-        :param flag: boolean flag
-        :return:
+        """
+        Sets if fom calculations should ignore nan's
         """
         self.solver_parameters.ignore_fom_nan = bool(flag)
         self.create_fom_mask_func()
 
     def create_fom_mask_func(self):
-        """ Create a mask func for fom to take care of unallowed values.
-
-        :param fom: an array
-        :return: an masked array
+        """
+        Create a mask func for fom to take care of unallowed values.
         """
         if self.solver_parameters.ignore_fom_nan and self.solver_parameters.ignore_fom_inf:
             fom_mask = lambda a: np.where(np.isfinite(a), a, np.zeros_like(a))
@@ -370,12 +348,9 @@ class Model:
         self.fom_mask_func = fom_mask
 
     def calc_fom(self, simulated_data):
-        '''calc_fom(self, fomlist) -> fom_raw (list of arrays), 
-                                      fom_indiv(list of floats), 
-                                      fom(float)
-        
+        '''
         Sums up the evaluation of the fom values calculated for each
-         data point to form the overall fom function for all data sets.
+        data point to form the overall fom function for all data sets.
         '''
         fom_raw = self.fom_func(simulated_data, self.data)
         # limit the x-range of fitting
@@ -394,7 +369,7 @@ class Model:
         # self.fom_dof = fom/((N-p)*1.0)
         try:
             use_dif = self.fom_func.__div_dof__
-        except Exception:
+        except AttributeError:
             use_dif = False
         if use_dif:
             fom = fom/((N-p)*1.0)
@@ -405,21 +380,18 @@ class Model:
         return fom_raw, fom_indiv, fom
 
     def evaluate_fit_func(self):
-        ''' evaluate_fit_func(self) --> fom (float)
-        
+        '''
         Evalute the Simulation fucntion and returns the fom. Use this one
         for fitting. Use evaluate_sim_func(self) for updating of plots
         and such.
         '''
         self.script_module._sim = False
         simulated_data = self.script_module.Sim(self.data)
-        # fom = self.fom_func(simulated_data, self.data)
         fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
         return fom
 
     def evaluate_sim_func(self):
-        '''evaluate_sim_func(self) --> None
-        
+        '''
         Evalute the Simulation function and updates the data simulated data
         as well as the fom of the model. Use this one for calculating data to
         update plots, simulations and such.
@@ -450,7 +422,6 @@ class Model:
         self.data.set_simulated_data(simulated_data)
 
         try:
-            # self.fom = self.fom_func(simulated_data, self.data)
             fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
             self.fom = fom
         except Exception as e:
@@ -459,36 +430,35 @@ class Model:
             val = outp.getvalue()
             outp.close()
             raise FomError(str(val))
-        # print len(fom_raw)
         self.data.set_fom_data(fom_raw)
 
-    def create_fit_func(self, str):
-        '''create_fit_func(self, str) --> function
-        
+    def create_fit_func(self, identifier):
+        '''
         Creates a function from the string expression in string. 
         If the string is a function in the model this function will be
         returned if string represents anything else a function that sets that 
         object will be returned.
         '''
-        object = self.eval_in_model(str)
+        object = self.eval_in_model(identifier)
         # Is it a function or a method!
-        name = type(object).__name__
         if callable(object):
             return object
         # Make a function to set the object
         elif isinstance(object, NumericParameter):
             # We have a NumericParameter that should be set
-            exec('def __tempfunc__(val):\n\t%s.value = val'%str, self.script_module.__dict__)
+            exec('def __tempfunc__(val):\n'
+                 '    %s.value = val'%identifier, self.script_module.__dict__)
+            # noinspection PyUnresolvedReferences
             return self.script_module.__tempfunc__
         else:
             # The function must be created in the module in order to access
             # the different variables
-            exec('def __tempfunc__(val):\n\t%s = val'%str, self.script_module.__dict__)
+            exec('def __tempfunc__(val):\n\t%s = val'%identifier, self.script_module.__dict__)
+            # noinspection PyUnresolvedReferences
             return self.script_module.__tempfunc__
 
     def get_fit_pars(self):
-        ''' get_fit_pars(self) --> (funcs, values, min_values, max_values)
-        
+        '''
         Returns the parameters used with fitting. i.e. the function to 
         set the paraemters, the guess value (values), minimum allowed values
         and the maximum allowed values
@@ -521,8 +491,7 @@ class Model:
         return []
 
     def get_fit_values(self):
-        '''get_fit_values(self) --> values
-        
+        '''
         Returns the current parameters values that the user has ticked as
         fittable.
         '''
@@ -531,8 +500,7 @@ class Model:
         return vals
 
     def get_sim_pars(self):
-        ''' get_sim_pars(self) --> (funcs, values)
-        
+        '''
         Returns the parameters used with simulations. i.e. the function to 
         set the parameters, the guess value (values). Used for simulation, 
         for fitting see get_fit_pars(self).s
@@ -549,17 +517,14 @@ class Model:
         return funcs, vals
 
     def simulate(self, compile=True):
-        '''simulate(self, compile = True) --> None
-        
+        '''
         Simulates the data sets using the values given in parameters...
         also compiles the script if asked for (default)
         '''
         if compile:
             self.compile_script()
         (funcs, vals) = self.get_sim_pars()
-        # print 'Functions to evulate: ', funcs
         # Set the parameter values in the model
-        # [func(val) for func,val in zip(funcs, vals)]
         i = 0
         for func, val in zip(funcs, vals):
             try:
@@ -573,17 +538,14 @@ class Model:
 
     def new_model(self):
         '''
-        new_model(self) --> None
-        
         Reinitilizes the model. Thus, removes all the traces of the
         previous model. 
         '''
         iprint("class Model: new_model")
-        self.data = data.DataList()
+        self.data = DataList()
         self.script = ''
         self.parameters = parameters.Parameters(self)
 
-        # self.fom_func = default_fom_func
         self.fom_func = fom_funcs.log
         self._reset_module()
 
@@ -594,8 +556,7 @@ class Model:
         self.extra_analysis = {}
 
     def pickable_copy(self):
-        '''pickable_copy(self) --> model
-        
+        '''
         Creates a pickable object of the model. Can be used for saving or
         sending to other processes, i.e., parallel processing.
         '''
@@ -623,15 +584,13 @@ class Model:
         return model_copy
 
     def get_table_as_ascii(self):
-        '''get_table_as_ascii(self) --> None
-        
+        '''
         Just a copy of the parameters class method get_ascii_output()
         '''
         return self.parameters.get_ascii_output()
 
     def get_data_as_asciitable(self, indices=None):
-        '''get_data_as_asciitable(self, indices None) --> string
-        
+        '''
         Just a copy of the method defined in data with the same name.
         '''
         return self.data.get_data_as_asciitable(indices)
@@ -667,10 +626,12 @@ class Model:
             header = dict(di.meta)
             try:
                 import getpass
+                # noinspection PyTypeChecker
                 header['creator']['name'] = getpass.getuser()
             except Exception:
                 pass
             import datetime
+            # noinspection PyTypeChecker
             header['creator']['time'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
             header.update(add_header)
             header['data_set'] = di.name
@@ -717,8 +678,7 @@ class Model:
         self._save_to_file(filename, self.script)
 
     def import_script(self, filename):
-        '''import_script(self, filename) --> None
-        
+        '''
         Imports the script from file filename
         '''
         read_string = self._read_from_file(filename)
@@ -733,8 +693,7 @@ class Model:
         self.parameters.set_ascii_input(read_string)
 
     def _save_to_file(self, filename, save_string):
-        '''_save_to_file(self, filename, save_string) --> None
-        
+        '''
         Save the string to file with filename.
         '''
         try:
@@ -751,8 +710,7 @@ class Model:
         savefile.close()
 
     def _read_from_file(self, filename):
-        '''_read_from_file(self, filename) --> string
-        
+        '''
         Reads the entrie file into string and returns it.
         '''
         try:
@@ -770,63 +728,30 @@ class Model:
 
         return read_string
 
-    # Get functions
-
-    def get_parameters(self):
-        '''
-        get_parameters(self) --> parameters
-        
-        returns the parameters of the model. Instace of Parameters class
-        '''
+    def get_parameters(self)->parameters.Parameters:
         return self.parameters
 
-    def get_data(self):
-        '''
-        get_data(self) --> self.data
-        
-        Returns the DataList object.
-        '''
-
+    def get_data(self)->DataList:
         return self.data
 
-    def get_script(self):
-        '''
-        get_script(self) --> self.script
-        
-        Returns the model script (string).
-        '''
+    def get_script(self)->str:
         return self.script
 
-    def get_filename(self):
-        '''
-        get_filename(self) --> string
-        
-        returns the filename of the model id the model has not been saved
-        it returns an empty string 
-        '''
+    def get_filename(self)->str:
         return self.filename
 
-    def get_possible_parameters(self):
-        """ Returns all the parameters that can be fitted. Is used by the parameter grid.
-
-        Returns:
-             par_dict (list):  all the current objects that are of the classes defined by self.registred_classes.
-
+    def get_possible_parameters(self)->dict:
         """
-        # loop through all objects and locate NumericParameters or HasParameters
+        Returns all the parameters that can be fitted. Is used by the parameter grid.
+        """
         par_dict = get_parameters(self.script_module, numeric_types_only=True)
-
         if len(par_dict)==0:
             par_dict = self.get_possible_set_functions()
-
         return par_dict
 
-    def get_possible_set_functions(self):
-        """Returns all the parameters that can be fitted given by the old style of defining parameters GenX2.4.X
-
-        Returns:
-             par_dict (list):  all the current objects that are of the classes defined by self.registred_classes.
-
+    def get_possible_set_functions(self)->dict:
+        """
+        Returns all the parameters that can be fitted given by the old style of defining parameters GenX2.4.X
         """
         # Start by updating the config file
         self.read_config()
@@ -866,7 +791,7 @@ class Model:
             else:
                 if inspect.isclass(ctemp):
                     classes.append(ctemp)
-        # Check so there are any classes defined before we proceed
+        # Check if there are any classes defined before we proceed
         if len(classes)>0:
             # Get all the objects in the compiled module
             names = list(self.script_module.__dict__.keys())
@@ -887,35 +812,20 @@ class Model:
             # Add this to the right item in par_dict given
             # its class and name.
             [par_dict[obj.__class__.__name__].__setitem__(name,
-                                                          [member for member in dir(obj)
-                                                           if member.startswith(self.opt.set_func)])
-             for name, obj in valid_objs]
-
+                                                        [member for member in dir(obj)
+                                                        if member.startswith(self.opt.set_func)])
+                                                        for name, obj in valid_objs]
             return par_dict
-
         return {}
 
-    # Set functions
-    def set_script(self, text):
-        '''
-        Set the text in the script use this to change the model script. 
-        '''
+    def set_script(self, text: str):
         self.script = text
         self.compiled = False
 
-    def set_fom_func(self, fom_func):
-        '''
-        Set the fucntion that calculates the figure of merit between the model
-        and the data.
-        '''
+    def set_fom_func(self, fom_func: callable):
         self.fom_func = fom_func
 
-    def is_compiled(self):
-        '''is_compiled(self) --> compiled [boolean]
-        
-        Returns true if the model script has been sucessfully 
-        compiled.
-        '''
+    def is_compiled(self)->bool:
         return self.compiled
 
     def bumps_problem(self):
@@ -970,8 +880,10 @@ class Model:
     def bumps_fit(self, method='dream',
                   pop=15, samples=1e5, burn=100, steps=0,
                   thin=1, alpha=0, outliers='none', trim=False,
-                  monitors=[], problem=None, **options):
+                  monitors=None, problem=None, **options):
         # create a fitter similar to the bumps.fitters.fit function but with option for GUI monitoring
+        if monitors is None:
+            monitors = []
         from scipy.optimize import OptimizeResult
         from bumps.fitters import FitDriver, FIT_AVAILABLE_IDS, FITTERS, FIT_ACTIVE_IDS
         options['pop'] = pop
@@ -993,6 +905,7 @@ class Model:
         for fitclass in FITTERS:
             if fitclass.id==method:
                 break
+        # noinspection PyUnboundLocalVariable
         driver = FitDriver(fitclass=fitclass, problem=problem, monitors=monitors, **options)
         driver.clip()  # make sure fit starts within domain
         x0 = problem.getp()
@@ -1191,17 +1104,3 @@ class Model:
 
     def _ipyw_script(self, change):
         self.script = change.new
-
-
-# Some small default function that is needed for initialization
-
-def default_fom_func(simulated_data, data):
-    '''
-    The default fom function. Its just a dummy so far dont use it!
-    '''
-    return sum([abs(d.y-sim_d).sum() for sim_d, d \
-                in zip(simulated_data, data)])
-
-
-class Temp:
-    pass

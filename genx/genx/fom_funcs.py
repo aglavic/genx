@@ -180,10 +180,14 @@ except:
 
 # ==============================================================================
 # BEGIN FOM function defintions
+def _div_dof(func):
+    # decorator to set function attribute
+    func.__div_dof__=True
+    return func
 
 # =========================
 # unweighted FOM functions
-
+@_div_dof
 def diff(simulations, data):
     ''' Average absolute difference
     '''
@@ -193,8 +197,7 @@ def diff(simulations, data):
     return [(dataset.y-sim)
             for (dataset, sim) in zip(data, simulations)]
 
-diff.__div_dof__=True
-
+@_div_dof
 def log(simulations, data):
     ''' Average absolute logartihmic difference
     '''
@@ -202,16 +205,13 @@ def log(simulations, data):
     return [(np.log10(dataset.y)-np.log10(sim))
             for (dataset, sim) in zip(data, simulations)]
 
-log.__div_dof__=True
-
+@_div_dof
 def sqrt(simulations, data):
     ''' Average absolute difference of the square root
     '''
     N=np.sum([len(dataset.y)*dataset.use for dataset in data])
     return [(np.sqrt(dataset.y)-np.sqrt(sim))
             for (dataset, sim) in zip(data, simulations)]
-
-sqrt.__div_dof__=True
 
 def R1(simulations, data):
     ''' Crystallographic R-factor (R1)
@@ -246,6 +246,7 @@ def logR2(simulations, data):
     return [1.0/denom*np.sign(np.log10(dataset.y)-np.log10(sim))*(np.log10(dataset.y)-np.log10(sim))**2 \
             for (dataset, sim) in zip(data, simulations)]
 
+@_div_dof
 def sintth4(simulations, data):
     ''' Sin(tth)^4 scaling of the average absolute difference for reflectivity.
     '''
@@ -254,19 +255,17 @@ def sintth4(simulations, data):
             (dataset.y-sim)
             for (dataset, sim) in zip(data, simulations)]
 
-sintth4.__div_dof__=True
-
+@_div_dof
 def Norm(simulations, data):
     '''  dataset normalized 1/3 scaling of the error
     '''
     return [1.0/np.sum(np.abs(dataset.y))*(np.sign(dataset.y)*np.abs(dataset.y)-np.sign(sim)*np.abs(sim)) \
             for (dataset, sim) in zip(data, simulations)]
 
-Norm.__div_dof__=True
-
 # =======================
 # weighted FOM functions
 
+@_div_dof
 def chi2bars(simulations, data):
     ''' Weighted chi squared
     '''
@@ -274,8 +273,7 @@ def chi2bars(simulations, data):
     return [np.sign(dataset.y-sim)*(dataset.y-sim)**2/dataset.error**2
             for (dataset, sim) in zip(data, simulations)]
 
-chi2bars.__div_dof__=True
-
+@_div_dof
 def chibars(simulations, data):
     ''' Weighted chi squared but without the squaring
     '''
@@ -283,8 +281,7 @@ def chibars(simulations, data):
     return [((dataset.y-sim)/dataset.error)
             for (dataset, sim) in zip(data, simulations)]
 
-chibars.__div_dof__=True
-
+@_div_dof
 def logbars(simulations, data):
     ''' Weighted average absolute difference of the logarithm of the data
     '''
@@ -292,8 +289,6 @@ def logbars(simulations, data):
     return [((np.log10(dataset.y)-np.log10(sim))
              /dataset.error*np.log(10)*dataset.y)
             for (dataset, sim) in zip(data, simulations)]
-
-logbars.__div_dof__=True
 
 def R1bars(simulations, data):
     ''' Weighted crystallographic R-factor (R1)

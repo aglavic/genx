@@ -13,26 +13,28 @@ if sys.platform=='win32':
 
 from genx.model import Model
 from genx.diffev import DiffEv
-from genx import filehandling as io
+from genx.model_control import ModelController
 from genx.plugins.add_ons.help_modules.reflectivity_utils import avail_models, SampleHandler, SampleBuilder
 from genx.plugins.utils import PluginHandler
 
 _fit_output=[]
 
+controller=ModelController(DiffEv())
+
 def text_output_api(text):
     _fit_output.append(text)
 
 def load(fname, compile=True):
-    model=Model()
-    optimizer=DiffEv()
-    io.load_file(fname, model, optimizer)
+    controller.load_file(fname)
     if compile:
-        model.compile_script()
-    optimizer.model=model
-    return model, optimizer
+        controller.model.compile_script()
+    controller.optimizer.model=controller.model
+    return controller.model, controller.optimizer
 
 def save(fname, model, optimizer):
-    io.save_file(fname, model, optimizer)
+    controller.model=model
+    controller.optimizer=optimizer
+    controller.save_file(fname)
 
 def fit_notebook(model, optimizer):
     """

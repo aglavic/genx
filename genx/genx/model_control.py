@@ -167,5 +167,5 @@ class ModelController:
             sys.modules['diffev']=genx.diffev
             sys.modules['data']=genx.data
         self.model.load(fname)
-        config.load_string(self.model.load_addition('config').decode('utf-8'))
+        config.load_string(self.model.load_addition('config'))
         self.optimizer.pickle_load(self.model.load_addition('optimizer'))
