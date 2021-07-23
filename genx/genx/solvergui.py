@@ -7,18 +7,21 @@ Last Changed 2009 05 12
 '''
 import traceback
 import numpy as np
+import time
 from io import StringIO
 from dataclasses import dataclass
+from typing import Union
+from threading import Thread, Event
 
 import wx
 import wx.lib.newevent
 from wx.lib.masked import NumCtrl
 
-from .exceptions import ErrorBarError
 from .filehandling import BaseConfig, Configurable
-from . import diffev, fom_funcs, solver_basis, model_control
-from . import filehandling as io
+from . import diffev, fom_funcs, model_control
 from .gui_logging import iprint
+from .solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
+
 
 @dataclass
 class SolverConfig(BaseConfig):
@@ -34,7 +37,7 @@ class SolverConfig(BaseConfig):
 (fitting_ended, EVT_FITTING_ENDED)=wx.lib.newevent.NewEvent()
 (autosave, EVT_AUTOSAVE)=wx.lib.newevent.NewEvent()
 
-class GuiCallbacks(solver_basis.GenxOptimizerCallback):
+class GuiCallbacks(GenxOptimizerCallback):
     def __init__(self, parent: wx.Window):
         self.parent=parent
 
@@ -98,6 +101,65 @@ class GuiCallbacks(solver_basis.GenxOptimizerCallback):
         evt=autosave()
         wx.QueueEvent(self.parent, evt)
 
+class DelayedCallbacks(Thread, GuiCallbacks):
+    last_text: Union[str, None]=None
+    last_param: Union[SolverParameterInfo, None]=None
+    last_update: Union[SolverUpdateInfo, None]=None
+    last_endet: Union[SolverResultInfo, None]=None
+    min_time=0.5
+    last_iter: float=0.0
+    wait_lock: Event
+    stop_thread: Event
+
+    def __init__(self, parent: wx.Window):
+        GuiCallbacks.__init__(self, parent)
+        Thread.__init__(self, daemon=True, name="GenxDelayedCallbacks")
+        self.wait_lock=Event()
+        self.stop_thread=Event()
+
+    def run(self):
+        self.last_iter=time.time()
+        self.stop_thread.clear()
+        while not self.stop_thread.is_set():
+            # main loop for checking for updates and sending GUI events
+            time.sleep(max(0., (self.last_iter-time.time()+self.min_time)))
+            if self.last_text:
+                GuiCallbacks.text_output(self, self.last_text)
+                self.last_text=None
+            if self.last_param:
+                GuiCallbacks.parameter_output(self, self.last_param)
+                self.last_param=None
+            if self.last_update:
+                GuiCallbacks.plot_output(self, self.last_update)
+                self.last_update=None
+            if self.last_endet:
+                GuiCallbacks.fitting_ended(self, self.last_endet)
+                self.last_endet=None
+            self.last_iter=time.time()
+            self.wait_lock.clear()
+            self.wait_lock.wait()
+
+    def exit(self):
+        self.stop_thread.set()
+        self.wait_lock.set()
+        self.join(timeout=1.0)
+
+    def text_output(self, text):
+        self.last_text=text
+        self.wait_lock.set()
+
+    def fitting_ended(self, result_data):
+        self.last_endet=result_data
+        self.wait_lock.set()
+
+    def parameter_output(self, param_info):
+        self.last_param=param_info
+        self.wait_lock.set()
+
+    def plot_output(self, update_data):
+        self.last_update=update_data
+        self.wait_lock.set()
+
 class ModelControlGUI(Configurable):
     '''
     Class to take care of the GUI - solver interaction.
@@ -112,7 +174,8 @@ class ModelControlGUI(Configurable):
         self.parent=parent
 
         self.controller=model_control.ModelController(diffev.DiffEv())
-        self.callback_controller=GuiCallbacks(parent)
+        self.callback_controller=DelayedCallbacks(parent)
+        self.callback_controller.start()
         self.controller.set_callbacks(self.callback_controller)
         self.parent.Bind(EVT_FITTING_ENDED, self.OnFittingEnded)
         self.parent.Bind(EVT_AUTOSAVE, self.AutoSave)
@@ -153,7 +216,7 @@ class ModelControlGUI(Configurable):
                      ' = self.parent.model.fom_func'
             exec(exectext, locals(), globals())
 
-        dlg=SettingsDialog(frame, self.optimizer, self, fom_func_name)
+        dlg=SettingsDialog(frame, self.controller.optimizer, self, fom_func_name)
 
         def applyfunc(object):
             self.WriteConfig()
@@ -433,14 +496,6 @@ class SettingsDialog(wx.Dialog):
         self.save_all_control=save_all_control
         fit_box_sizer.Add(save_sizer, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
 
-        # Minimum time spend per iteration
-        wait_time_sizer=wx.BoxSizer(wx.HORIZONTAL)
-        wait_time_sizer.Add(wx.StaticText(self, -1, 'sleep time'))
-        self.time_ctrl=wx.SpinCtrlDouble(self, -1, min=0., max=2.0,
-                                        initial=self.solver.opt.sleep_time, inc=0.001)
-        wait_time_sizer.Add(self.time_ctrl, 0, wx.ALIGN_CENTER_VERTICAL, border=5)
-        fit_box_sizer.Add(wait_time_sizer, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-
         row_sizer1.Add(fit_box_sizer, 1, wx.EXPAND, 5)
 
         col_sizer.Add(row_sizer1, 1, wx.ALIGN_CENTRE | wx.ALL, 5)
@@ -694,7 +749,6 @@ class SettingsDialog(wx.Dialog):
         self.solver.opt.limit_fit_range=self.limit_fit_range.GetValue()
         self.solver.opt.fit_xmin=self.fit_xmin.GetValue()
         self.solver.opt.fit_xmax=self.fit_xmax.GetValue()
-        self.solver.opt.sleep_time=self.time_ctrl.GetValue()
 
         model.opt.limit_fit_range, model.opt.fit_xmin, model.opt.fit_xmax=(
             self.solver.opt.limit_fit_range,

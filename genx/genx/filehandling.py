@@ -4,14 +4,12 @@ Also included is the config object.
 '''
 import dataclasses
 import io
-import os, sys
 from configparser import ConfigParser
 from functools import lru_cache
 from abc import ABC, abstractmethod
 from typing import Type, get_type_hints
 from logging import debug
 
-import h5py
 from .gui_logging import iprint
 from .exceptions import GenxIOError, GenxOptionError
 
@@ -147,10 +145,12 @@ class BaseConfig(ABC):
         raise NotImplementedError("Subclass needs to define the section attribute.")
 
     def asdict(self):
+        # noinspection PyDataclass
         return dataclasses.asdict(self)
 
     def load_config(self):
         field: dataclasses.Field
+        # noinspection PyDataclass
         for field in dataclasses.fields(self):
             if field.type is float:
                 getf=config.getfloat
@@ -191,6 +191,7 @@ class BaseConfig(ABC):
             setter(self.section, option, value)
 
     def copy(self):
+        # noinspection PyDataclass
         return dataclasses.replace(self)
 
 class Configurable:
@@ -228,89 +229,3 @@ class Configurable:
         Sub-classes can overwrite this method to preform some action after
         a configuration has been loaded.
         """
-
-
-
-def save_file(fname: str, model, optimizer):
-    """
-    Saves objects model, optimiser and config into file fnmame
-    """
-    if fname.endswith('.gx'):
-        save_gx(fname, model, optimizer)
-    elif fname.endswith('.hgx'):
-        save_hgx(fname, model, optimizer)
-    else:
-        raise GenxIOError('Wrong file ending, should be .gx or .hgx')
-
-    model.filename=os.path.abspath(fname)
-    model.saved=True
-
-def load_file(fname: str, model, optimizer):
-    """Loads parameters from fname into model, optimizer and config"""
-    if fname.endswith('.gx'):
-        load_gx(fname, model, optimizer)
-    elif fname.endswith('.hgx'):
-        load_hgx(fname, model, optimizer)
-    else:
-        raise GenxIOError('Wrong file ending, should be .gx or .hgx')
-
-    model.filename=os.path.abspath(fname)
-
-def save_gx(fname: str, model, optimizer):
-    model.save(fname)
-    model.save_addition('config', config.model_dump())
-    model.save_addition('optimizer',
-                        optimizer.pickle_string(clear_evals=
-                                                not config.getboolean('solver',
-                                                                       'save all evals')))
-
-def save_hgx(fname: str, model, optimizer, group='current'):
-    """ Saves the current objects to a hdf gx file (hgx).
-
-    :param fname: filename
-    :param model: model object
-    :param optimizer: optimizer object
-    :param config: config object
-    :param group: name of the group, default current
-    :return:
-    """
-    f=h5py.File(fname, 'w')
-    g=f.create_group(group)
-    model.write_h5group(g)
-    try:
-        clear_evals=not config.getboolean('solver', 'save all evals')
-    except GenxOptionError as e:
-        clear_evals=True
-    optimizer.write_h5group(g.create_group('optimizer'), clear_evals=True)
-    g['config']=config.model_dump().encode('utf-8')
-    f.close()
-
-def load_hgx(fname: str, model, optimizer, group='current'):
-    """ Loads the current objects to a hdf gx file (hgx).
-
-    :param fname: filename
-    :param model: model object
-    :param optimizer: optimizer object
-    :param config: config object
-    :param group: name of the group, default current
-    :return:
-    """
-    f=h5py.File(fname, 'r')
-    g=f[group]
-    model.read_h5group(g)
-    optimizer.read_h5group(g['optimizer'])
-    config.load_string(g['config'][()].decode('utf-8'))
-    f.close()
-
-def load_gx(fname: str, model, optimizer):
-    if not 'diffev' in sys.modules:
-        # for compatibility define genx standard modules as base modules
-        import genx.diffev
-        import genx.data
-        import genx.model
-        sys.modules['model']=genx.model
-        sys.modules['diffev']=genx.diffev
-        sys.modules['data']=genx.data
-    model.load(fname)
-    config.load_string(model.load_addition('config').decode('utf-8'))
-    optimizer.pickle_load(model.load_addition('optimizer'))

@@ -81,7 +81,6 @@ class DiffEvConfig(BaseConfig):
     use_start_guess:bool=True
     use_boundaries:bool=True
 
-    sleep_time:float=0.5
     max_log_elements:int=100000
     use_parallel_processing:bool=False
     use_mpi:bool=False
@@ -540,12 +539,6 @@ class DiffEv(GenxOptimizer):
             # Update the plot data for any gui or other output
             self.plot_output()
             self.parameter_output()
-
-            # limit the length of each iteration in parallel processing
-            # at least on windows there is no issue with fast iterations in single thread
-            to_sleep=self.opt.sleep_time-(time.time()-t_start)
-            if to_sleep>0:
-                time.sleep(to_sleep)
 
             # Time measurent to track the speed
             t=time.time()-t_start
