@@ -1779,10 +1779,10 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
 
 class MyApp(wx.App):
-    def __init__(self, show_startup, *args, **kwargs):
+    def __init__(self, filename=None):
         debug('App init started')
-        self.show_startup=show_startup
-        wx.App.__init__(self, *args, **kwargs)
+        self.open_file=filename
+        wx.App.__init__(self, redirect=False)
         debug('App init complete')
 
     def ShowSplash(self):
@@ -1822,10 +1822,17 @@ class MyApp(wx.App):
         main_frame=GenxMainWindow(self)
         self.SetTopWindow(main_frame)
 
-        if self.show_startup:
+        if self.open_file is None:
             self.splash.Destroy()
             main_frame.startup_dialog(config_path)
             self.ShowSplash()
+        else:
+            wx.CallAfter(self.WriteSplash, 'display main window...')
+            wx.CallAfter(main_frame.Show)
+            wx.CallAfter(self.splash.Destroy)
+            # open model must be after splash is Destroyed to show proper error dialogs
+            wx.CallAfter(main_frame.open_model, self.open_file)
+            return 1
 
         debug('init complete')
         wx.CallAfter(self.WriteSplash, 'load default plugins...')

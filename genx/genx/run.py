@@ -24,77 +24,15 @@ def start_interactive(args):
         pass
 
     from genx import genx_gui
-    if args.infile.endswith('.gx') or args.infile.endswith('.hgx'):
+    if args.infile!='':
         debug('start GUI setup with file to load')
-        app=genx_gui.MyApp(False, 0)
-        # Create the window
-        app.Yield()
-        frame=app.TopWindow
-        # load a model on start
-        from genx import filehandling as io
-        import traceback
-        from io import StringIO
-        from genx.event_handlers import ShowModelErrorDialog, ShowErrorDialog, get_pages, \
-            _post_new_model_event, set_title
-        from genx import model as modellib
-        path=os.path.abspath(args.infile)
-        try:
-            io.load_file(path, frame.model, frame.solver_control.optimizer, frame.config)
-        except GenxIOError as e:
-            ShowModelErrorDialog(frame, e.__str__())
-        except Exception as e:
-            outp=StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            ShowErrorDialog(frame, 'Could not open the file. Python Error:' \
-                                   '\n%s'%(val,))
-        else:
-            app.Yield()
-            try:
-                [p.ReadConfig() for p in get_pages(frame)]
-            except Exception as e:
-                outp=StringIO()
-                traceback.print_exc(200, outp)
-                val=outp.getvalue()
-                outp.close()
-                ShowErrorDialog(frame, 'Could not read the config for the'
-                                       ' plots. Python Error:\n%s'%(val,))
-        # Letting the plugin do their stuff...
-        try:
-            frame.plugin_control.OnOpenModel(None)
-        except Exception as e:
-            outp=StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            ShowErrorDialog(frame, 'Problems when plugins processed model.' \
-                                   ' Python Error:\n%s'%(val,))
-        frame.main_frame_statusbar.SetStatusText('Model loaded from file',
-                                                 1)
-        app.Yield()
-        # Post an event to update everything else
-        _post_new_model_event(frame, frame.model)
-        # Needs to put it to saved since all the widgets will have
-        # been updated
-        frame.model.saved=True
-        set_title(frame)
-        app.Yield()
-        # Just a force update of the data_list
-        frame.data_list.list_ctrl.SetItemCount(frame.data_list.list_ctrl.data_cont.get_count())
-        # Updating the imagelist as well
-        frame.data_list.list_ctrl._UpdateImageList()
-        frame.plot_data.plot_data(frame.model.data)
-        frame.paramter_grid.SetParameters(frame.model.parameters)
-        debug('setup complete, start WX MainLoop')
-        app.MainLoop()
-    elif args.infile=='':
-        debug('start GUI setup')
-        app=genx_gui.MyApp(True, 0)
-        debug('setup complete, start WX MainLoop')
-        app.MainLoop()
+        filename=args.infile
     else:
-        iprint('Wrong file ending on infile, should be .gx or .hgx. Exiting.')
+        filename=None
+    debug('start GUI setup')
+    app=genx_gui.MyApp(filename=filename)
+    debug('setup complete, start WX MainLoop')
+    app.MainLoop()
     debug('leave start_interactive')
 
 def calc_errorbars(config, mod, opt):
@@ -110,20 +48,18 @@ def calc_errorbars(config, mod, opt):
 
 def create_simulated_data(args):
     """Function to create simulated data from the model and add it to data.y"""
-
-    from genx import model
-    from genx import diffev
+    from genx.diffev import DiffEv
+    from genx.model_control import ModelController
     from genx import filehandling as io
 
     from scipy.stats import poisson
 
-    mod=model.Model()
-    config=io.config
-    config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
-    opt=diffev.DiffEv()
+    io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
+    ctrl=ModelController(DiffEv())
+    mod=ctrl.model
 
     iprint("Loading file: %s "%args.infile)
-    io.load_file(args.infile, mod, opt, config)
+    ctrl.load_file(args.infile)
     # io.load_opt_config(opt, config)
     iprint("File loaded")
 
@@ -138,30 +74,28 @@ def create_simulated_data(args):
         data_set.run_error_command()
 
     iprint('Saving the model to %s'%args.outfile)
-    io.save_file(args.outfile, mod, opt, config)
+    ctrl.save_file(args.outfile)
 
 def extract_parameters(args):
     """Extracts the parameters to outfile"""
 
-    from genx import model
-    from genx import diffev
+    from genx.diffev import DiffEv
+    from genx.model_control import ModelController
     from genx import filehandling as io
 
     # Open the genx file
-    mod=model.Model()
-    config=io.config
-    config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
-    opt=diffev.DiffEv()
+    io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
+    ctrl=ModelController(DiffEv())
+    mod=ctrl.model
 
     iprint("Loading file: %s "%args.infile)
-    io.load_file(args.infile, mod, opt, config)
+    ctrl.load_file(args.infile)
     iprint("File loaded")
 
     names, values=mod.parameters.get_sim_pars()
 
     if args.outfile=='':
-        outfile=sys.stdout
-        fout=open(outfile, 'w')
+        fout=sys.stdout
     else:
         outfile=args.outfile
         if os.path.isfile(outfile):
@@ -175,18 +109,17 @@ def extract_parameters(args):
 
 def modify_file(args):
     """Modify a GenX file given command line arguments"""
-    from genx import model
-    from genx import diffev
+    from genx.diffev import DiffEv
+    from genx.model_control import ModelController
     from genx import filehandling as io
 
     # Open the genx file
-    mod=model.Model()
-    config=io.config
-    config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
-    opt=diffev.DiffEv()
+    io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
+    ctrl=ModelController(DiffEv())
+    mod=ctrl.model
 
     iprint("Loading file: %s "%args.infile)
-    io.load_file(args.infile, mod, opt, config)
+    ctrl.load_file(args.infile)
     iprint("File loaded")
 
     if args.datafile:
@@ -199,7 +132,7 @@ def modify_file(args):
 
         if args.outfile:
             iprint('Saving the fit to %s'%args.outfile)
-            io.save_file(args.outfile, mod, opt, config)
+            ctrl.save_file(args.outfile)
 
     elif args.save_datafile:
         save_datafile=os.path.abspath(args.save_datafile)
@@ -213,19 +146,19 @@ def modify_file(args):
 
 def start_fitting(args, rank=0):
     """ Function to start fitting from the command line.
-
-    :param args:
-    :return:
     """
+    # TODO: fix implementation of this
     import time
-    from genx import model
-    from genx import diffev
+    from genx.diffev import DiffEv
+    from genx.model_control import ModelController
     from genx import filehandling as io
 
-    mod=model.Model()
+    # Open the genx file
+    io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
+    ctrl=ModelController(DiffEv())
+    mod=ctrl.model
+    opt=ctrl.optimizer
     config=io.config
-    config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
-    opt=diffev.DiffEv()
 
     if rank==0:
         def autosave():
@@ -233,20 +166,20 @@ def start_fitting(args, rank=0):
             mod.parameters.set_value_pars(opt.best_vec)
             if args.error:
                 iprint("Calculating error bars")
-                calc_errorbars(config, mod, opt)
+                calc_errorbars(io.config, mod, ctrl.optimizer)
             if args.outfile:
                 iprint("Saving to %s"%args.outfile)
-                io.save_file(args.outfile, mod, opt, config)
+                ctrl.save_file(args.outfile)
 
-        opt.set_autosave_func(autosave)
+        ctrl.set_autosave_func(autosave)
 
     if rank==0:
         iprint('Loading model %s...'%args.infile)
-    io.load_file(args.infile, mod, opt, config)
-    io.load_opt_config(opt, config)
+    ctrl.load_file(args.infile)
+    ctrl.load_opt_config(opt, config)
     # has to be used in order to save everything....
     if args.esave:
-        config.set('solver', 'save all evals', True)
+        io.config.set('solver', 'save all evals', True)
     # Simulate, this will also compile the model script
     if rank==0:
         iprint('Simulating model...')
