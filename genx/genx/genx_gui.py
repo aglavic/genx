@@ -720,6 +720,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
     def startup_dialog(self, profile_path, force_show=False):
         if self.wstartup.show_profiles or force_show:
+            prev_widescreen=self.wstartup.widescreen
             startup_dialog=StartUpConfigDialog(self, profile_path+'profiles/',
                                                show_cb=self.wstartup.show_profiles,
                                                wide=self.wstartup.widescreen)
@@ -1784,21 +1785,54 @@ class MyApp(wx.App):
         wx.App.__init__(self, *args, **kwargs)
         debug('App init complete')
 
+    def ShowSplash(self):
+        debug('Display Splash Screen')
+        image=wx.Bitmap(img.getgenxImage().Scale(400,400))
+        self.splash = wx.adv.SplashScreen(image, wx.adv.SPLASH_CENTER_ON_SCREEN, 30_000, None)
+        wx.Yield()
+
+    def WriteSplash(self, text):
+        image=self.splash.GetBitmap()
+        self._draw_bmp(image, text)
+        self.splash.Refresh()
+        self.splash.Update()
+        wx.Yield()
+
+    @staticmethod
+    def _draw_bmp(bmp, txt):
+        w,h=400,400
+        dc = wx.MemoryDC()
+        dc.SelectObject(bmp)
+        gc = wx.GraphicsContext.Create(dc)
+        font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+        gc.SetFont(font, wx.Colour(0,0,0))
+        gc.SetBrush(wx.Brush(wx.Colour(255,255,255)))
+        gc.DrawRectangle(30, 0, 370, font.GetPixelSize().height+4)
+        tw, th = gc.GetTextExtent(txt)
+        gc.DrawText(txt, (w-tw)/2, 0)
+        dc.SelectObject(wx.NullBitmap)
+
     def OnInit(self):
+        self.ShowSplash()
         debug('entering init phase')
         locale=wx.Locale(wx.LANGUAGE_ENGLISH)
         self.locale=locale
 
+        self.WriteSplash('initializeing main window...')
         main_frame=GenxMainWindow(self)
         self.SetTopWindow(main_frame)
 
-        # main_frame.Show()
         if self.show_startup:
+            self.splash.Destroy()
             main_frame.startup_dialog(config_path)
+            self.ShowSplash()
 
         debug('init complete')
+        wx.CallAfter(self.WriteSplash, 'load default plugins...')
         wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
+        wx.CallAfter(self.WriteSplash, 'display main window...')
         wx.CallAfter(main_frame.Show)
+        wx.CallAfter(self.splash.Destroy)
         return 1
 
 
@@ -1865,6 +1899,7 @@ class StartUpConfigDialog(wx.Dialog):
         self.selected_config=self.profiles[self.config_list.GetSelection()]
         self.show_at_startup=self.startup_cb.GetValue()
         self.widescreen=self.wide_cb.GetValue()
+        event.Skip()
 
     def GetConfigFile(self):
         if self.selected_config:
