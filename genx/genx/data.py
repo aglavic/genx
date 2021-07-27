@@ -5,10 +5,12 @@ Programmer Matts Bjorck
 Last changed: 2008 08 22
 '''
 
-from numpy import *
 import os
 import sys
 import time
+from numpy import *
+from typing import List
+
 from .exceptions import GenxIOError
 from .gui_logging import iprint
 
@@ -272,6 +274,9 @@ class DataSet:
 
         raise AttributeError("%r object has no attribute %r"%
                              (self.__class__, attr))
+
+    def has_data(self):
+        return len(self.x_raw)>0
 
     def get_extra_data_names(self):
         '''get_extra_data_names(self) --> names [list]
@@ -773,6 +778,7 @@ def html2c(colors):
 # BEGIN: Class DataList
 class DataList:
     ''' Class to store a list of DataSets'''
+    items: List[DataSet]
 
     def __init__(self, items=None):
         ''' init function - creates a list with one DataSet'''
@@ -808,10 +814,6 @@ class DataList:
         self._counter=int(group['_counter'][()])
 
     def __getitem__(self, key):
-        '''__getitem__(self,key) --> DataSet
-        
-        returns item at position key
-        '''
         return self.items[key]
 
     def __setitem__(self, key, value):

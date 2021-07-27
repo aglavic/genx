@@ -37,6 +37,7 @@ class DataController:
     '''
     Interface layer class between the VirtualDataList and the Data class
     '''
+    data: data.DataList
 
     def __init__(self, data_list):
         self.data=data_list
@@ -49,6 +50,11 @@ class DataController:
 
     def get_count(self):
         return self.data.get_len()
+
+    def has_data(self, index):
+        if index<0 or index>=self.get_count():
+            return False
+        return self.data[index].has_data()
 
     def get_item_text(self, item, col):
         bool_output={True: 'Yes', False: 'No'}
@@ -280,18 +286,28 @@ class DataCommandConfig(BaseConfig):
     y_commands: str = 'y/1e5;y;arange(0.01, 6, 0.01)*0;y'
     e_commands: str = 'e/2.;e;arange(0.01, 6, 0.01)*0;rms(e, fpe(1.0, 0.02), 0.01*dydx())'
 
+class DataFileDropTarget(wx.FileDropTarget):
+    def __init__(self, parent):
+        self.parent=parent
+        wx.FileDropTarget.__init__(self)
+
+    def OnDropFiles(self, x, y, filenames):
+        return self.parent.load_from_files(filenames)
 
 class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
     '''
-    The listcontrol for the data
+    The ListCtrl for the data
     '''
     opt: VDataListConfig
 
-    def __init__(self, parent, data_controller, status_text=None):
+    def __init__(self, parent, data_controller: DataController, status_text:str=None):
         wx.ListCtrl.__init__(self, parent, -1,
                              style=wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_EDIT_LABELS)
         ListCtrlAutoWidthMixin.__init__(self)
         Configurable.__init__(self)
+
+        self.drop_target=DataFileDropTarget(self)
+        self.SetDropTarget(self.drop_target)
 
         self.data_cont=data_controller
         self.parent=parent
@@ -563,6 +579,16 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         if self.data_loader.LoadDataFile(self._GetSelectedItems()):
             self._UpdateData('New data added', new_data=True)
 
+    def load_from_files(self, files):
+        offset=self.data_cont.get_count()
+        while offset>0 and not self.data_cont.has_data(offset-1):
+            offset-=1
+        for i, fi in enumerate(files):
+            if self.data_cont.get_count()<(i+offset+1):
+                self.AddItem()
+            self.data_loader.LoadData(self.data_cont.get_data()[i+offset], fi)
+        return True
+
     def ShowInfo(self):
         """
         Show a dialog with the dataset meta dictionary information.
@@ -654,8 +680,6 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         # print "new data from model loaded"
 
     def OnBeginEdit(self, evt):
-        # print (evt.GetIndex(),evt.GetColumn())
-        # print evt.GetText()
         evt.Skip()
 
     def OnEndEdit(self, evt):
