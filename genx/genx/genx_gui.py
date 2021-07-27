@@ -161,6 +161,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
     opt: GUIConfig
 
     def __init__(self, parent: wx.App):
+        self._init_phase=True
         self.parent=parent
         debug('starting setup of MainFrame')
         io.Configurable.__init__(self)
@@ -706,6 +707,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         wx.Frame.Show(self)
         ## Begin Manual Config
         wx.CallAfter(self.LayoutSplitters)
+        wx.CallAfter(self.EndInit)
 
     def LayoutSplitters(self):
         size=self.GetSize()
@@ -717,6 +719,10 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         if self.wstartup.widescreen:
             psplit=self.opt.psplit or int(size[1]*0.6)
             self.plot_splitter.SetSashPosition(psplit)
+
+    def EndInit(self):
+        wx.Yield() # make sure that all GUI layout is performed before _init_phase is unset
+        self._init_phase=False
 
     def startup_dialog(self, profile_path, force_show=False):
         if self.wstartup.show_profiles or force_show:
@@ -844,20 +850,6 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         # Needs to put it to saved since all the widgets will have
         # been updated
         self.model.saved = True
-        self.update_title()
-
-    def models_changed(self, event):
-        '''models_changed(frame, event) --> None
-
-        callback when something has changed in the model so that the
-        user can be made aware that the model needs saving.
-        '''
-        try:
-            self.model.saved = not event.permanent_change
-        except AttributeError:
-            self.model.saved = False
-        else:
-            self.plugin_control.OnGridChanged(event)
         self.update_title()
 
     def update_for_save(self):
@@ -1656,6 +1648,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         callback when something has changed in the model so that the
         user can be made aware that the model needs saving.
         '''
+        if self._init_phase:
+            return
         try:
             self.model.saved = not event.permanent_change
         except AttributeError:
@@ -1827,11 +1821,11 @@ class MyApp(wx.App):
             main_frame.startup_dialog(config_path)
             self.ShowSplash()
         else:
+            wx.CallAfter(self.WriteSplash, f'loading file {os.path.basename(self.open_file)}...')
+            wx.CallAfter(main_frame.open_model, self.open_file)
             wx.CallAfter(self.WriteSplash, 'display main window...')
             wx.CallAfter(main_frame.Show)
             wx.CallAfter(self.splash.Destroy)
-            # open model must be after splash is Destroyed to show proper error dialogs
-            wx.CallAfter(main_frame.open_model, self.open_file)
             return 1
 
         debug('init complete')

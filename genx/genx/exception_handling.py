@@ -48,28 +48,31 @@ class CatchModelError:
         if self.step:
             message+=f", could not {self.step}."
         ext_message=f"{exc_val}"
-        style=wx.OK|wx.HELP
 
         if isinstance(exc_val, GenxError):
             self.status_update(f'Error in {self.step}, {type(exc_val).__name__}')
-            dlg=wx.MessageDialog(self.parent, message,
-                                 'Warning',
-                                 style | wx.ICON_WARNING
-                                 )
+            title='Warning'
+            icon_style=wx.ICON_WARNING
         else:
             self.status_update(f'Fatal error in {self.step}, {type(exc_val).__name__}')
             ext_message+='\n\nPython Error last calls:\n    '
             ext_message+='\n    '.join(traceback.format_tb(exc_tb, limit=3)[::-1])
-            dlg=wx.MessageDialog(self.parent, message,
-                                 'FATAL ERROR',
-                                 style | wx.ICON_ERROR
-                                 )
-        dlg.SetExtendedMessage(ext_message)
-        dlg.SetHelpLabel('Copy to Clipboard')
+            title='Warning'
+            icon_style=wx.ICON_ERROR
         full_trace = message+':\n\n'
         full_trace += ''.join(traceback.format_tb(exc_tb)[::-1])
         full_trace += f'{type(exc_val).__name__}: {exc_val}'
         debug(full_trace)
+
+        # make sure the dialog is shown from main thread and after any queued actions
+        wx.CallAfter(self.display_message, title, message, ext_message, full_trace, icon_style)
+        return True # exception is not raised in main context
+
+    def display_message(self, title, message, ext_message, full_trace, icon_style=wx.ICON_ERROR):
+        style=wx.OK|wx.HELP
+        dlg = wx.MessageDialog(self.parent, message, title, style|icon_style)
+        dlg.SetExtendedMessage(ext_message)
+        dlg.SetHelpLabel('Copy to Clipboard')
 
         result=dlg.ShowModal()
         while result==wx.ID_HELP:
@@ -79,4 +82,3 @@ class CatchModelError:
             result=dlg.ShowModal()
         dlg.Destroy()
 
-        return True # exception is not raised in main context

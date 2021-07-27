@@ -72,6 +72,7 @@ class Model:
     ''' A class that holds the model i.e. the script that defines
         the model and the data + various other attributes.
     '''
+    saved: bool=False
     fom: float=None
     fom_mask_func=None
     fom_func:callable
