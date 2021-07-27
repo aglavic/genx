@@ -21,7 +21,8 @@ import wx.stc
 from wx.lib.wordwrap import wordwrap
 
 from genx.plugins import add_on_framework as add_on
-from . import datalist, filehandling as io, images as img, model, parametergrid, plotpanel, solvergui, help
+from . import datalist, filehandling as io, images as img, parametergrid, plotpanel, solvergui, help
+from .lib.colors import COLOR_CYCLES
 from .version import __version__ as program_version
 from .exception_handling import CatchModelError
 from .gui_logging import iprint
@@ -374,6 +375,10 @@ class GenxMainWindow(wx.Frame, io.Configurable):
                                                                 "Control the grid value as a slider", wx.ITEM_CHECK)
         self.mb_checkables[MenuId.ZOOM]=mb_view.Append(MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK)
         mb_view.Append(MenuId.ZOOM_ALL, "Zoom All\tCtrl+A", "Zoom to fit all data points")
+        mb_view_colors=wx.Menu()
+        for key in COLOR_CYCLES.keys():
+            self.mb_checkables[key] = mb_view_colors.Append(wx.ID_ANY, key, key, wx.ITEM_RADIO)
+        mb_view.Append(wx.ID_ANY, "data auto colors", mb_view_colors, "")
         mb_view_yscale=wx.Menu()
         self.mb_checkables[MenuId.Y_SCALE_LOG]=mb_view_yscale.Append(MenuId.Y_SCALE_LOG, "log",
                                                                      "Set y-scale logarithmic", wx.ITEM_RADIO)
@@ -460,6 +465,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_view_grid_slider, id=MenuId.TOGGLE_SLIDER)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_zoom, id=MenuId.ZOOM)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_zoomall, id=MenuId.ZOOM_ALL)
+        for key in COLOR_CYCLES.keys():
+            self.Bind(wx.EVT_MENU, self.eh_mb_view_color_cycle, id=self.mb_checkables[key].GetId())
         self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_log, id=MenuId.Y_SCALE_LOG)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_linear, id=MenuId.Y_SCALE_LIN)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_log, id=MenuId.X_SCALE_LOG)
@@ -540,8 +547,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=ToolId.ZOOM)
 
     def scan_parameter(self, row):
-        ''' scan_parameter(frame, row) --> None
-
+        '''
         Scans the parameter in row row [int] from max to min in the number
         of steps given by dialog input.
         '''
@@ -843,6 +849,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         with self.catch_error(action='open_model', step=f'processing plugins'):
             self.plugin_control.OnOpenModel(None)
         self.main_frame_statusbar.SetStatusText('Model loaded from file', 1)
+        self.mb_checkables['none'].Check() # reset color cycle to None
 
         # Post an event to update everything else
         debug('open_model: post new model event')
@@ -1343,6 +1350,10 @@ class GenxMainWindow(wx.Frame, io.Configurable):
                     io.save_file(fname, self.model, self.solver_control.optimizer)
                 self.update_title()
         dlg.Destroy()
+
+    def eh_mb_view_color_cycle(self, event):
+        id2colors=dict(((self.mb_checkables[key].GetId(), value) for key, value in COLOR_CYCLES.items()))
+        self.data_list.list_ctrl.update_color_cycle(id2colors[event.GetId()])
 
     def eh_mb_view_yscale_log(self, event):
         self.view_yscale('log')

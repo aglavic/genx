@@ -13,6 +13,7 @@ from typing import List
 
 from .exceptions import GenxIOError
 from .gui_logging import iprint
+from .lib.colors import CyclicList
 
 # ==============================================================================
 # BEGIN: Class DataSet
@@ -773,15 +774,14 @@ def html2c(colors):
         )
     return tuple(out)
 
-# END: Class DataSet
-# ==============================================================================
-# BEGIN: Class DataList
 class DataList:
     ''' Class to store a list of DataSets'''
     items: List[DataSet]
+    color_source: CyclicList
 
     def __init__(self, items=None):
         ''' init function - creates a list with one DataSet'''
+        self.color_source=None
         if items is None:
             self.items=[DataSet(name='Data 0')]
             self._counter=1
@@ -830,15 +830,13 @@ class DataList:
         return self.items.__iter__()
 
     def __len__(self):
-        '''__len__(self) --> length (integer)
-        
+        '''
         Returns the nmber of datasers in the list.
         '''
         return self.items.__len__()
 
     def safe_copy(self, new_data):
-        '''safe_copy(self, new_data) --> None
-        
+        '''
         Conduct a safe copy of a data set into this data set.
         This is intended to produce version safe import of data sets.
         '''
@@ -848,8 +846,7 @@ class DataList:
             self.items[-1].safe_copy(new_set)
 
     def add_new(self, name=''):
-        ''' add_new(self,name='') --> None
-        
+        '''
         Adds a new DataSet with the optional name. If name not sets it 
         will be given an automatic name
         '''
@@ -859,11 +856,12 @@ class DataList:
             self._counter+=1
         else:
             self.items.append(DataSet(name, copy_from=self.items[-1]))
-        # print "An empty dataset is appended at postition %i."%(len(self.items)-1)
+        if self.color_source:
+            self.items[-1].data_color=self.color_source[len(self)-1][0]
+            self.items[-1].sim_color=self.color_source[len(self)-1][1]
 
     def delete_item(self, pos):
-        '''delete_item(self,pos) --> None        
-        
+        '''
         Deletes the item at position pos. Only deletes if the pos is an 
         element and the number of datasets are more than one.
         '''
@@ -876,8 +874,7 @@ class DataList:
             return False
 
     def move_up(self, pos):
-        '''move_up(self, pos) --> None
-        
+        '''
         Move the data set at position pos up one step. If it is at the top
         it will not be moved.
         '''
@@ -887,8 +884,6 @@ class DataList:
 
     def move_down(self, pos):
         '''
-        move_down(self,pos) --> None
-        
         Move the dataset at postion pos down one step. If it is at the bottom
         it will not be moved.
         '''
@@ -897,11 +892,18 @@ class DataList:
             self.items.insert(pos+1, tmp)
 
     def update_data(self):
-        ''' update_data(self) --> None
-        
+        '''
         Calcultes all the values for the current items. 
         '''
         [item.run_command() for item in self.items]
+
+    def update_color_cycle(self, source):
+        self.color_source=source
+        if source is None:
+            return
+        for i, item in enumerate(self.items):
+            item.data_color=self.color_source[i][0]
+            item.sim_color=self.color_source[i][1]
 
     def set_simulated_data(self, sim_data):
         '''
@@ -915,8 +917,6 @@ class DataList:
 
     def set_fom_data(self, fom_data):
         '''
-        set_fom_data(self, fom_data) --> None
-        
         Sets the point by point fom data in the data. Note this will depend on the
         flag use in the data.
         '''
@@ -928,8 +928,6 @@ class DataList:
 
     def get_name(self, pos):
         '''
-        get_name(self,pos) --> name (string)
-        
         Yields the name(string) of the dataset at position pos(int). 
         '''
         return self.items[pos].name
@@ -938,37 +936,37 @@ class DataList:
         return self.items[pos].cols
 
     def get_use(self, pos):
-        '''get_use_error(self, pos) --> bool
+        '''
         returns the flag use for dataset at pos [int].
         '''
         return self.items[pos].use
 
     def get_use_error(self, pos):
-        '''get_use_error(self, pos) --> bool
+        '''
         returns the flag use_error for dataset at pos [int].
         '''
         return self.items[pos].use_error
 
     def toggle_use_error(self, pos):
-        '''toggle_use_error(self, pos) --> None
+        '''
         Toggles the use_error flag for dataset at position pos.
         '''
         self.items[pos].use_error=not self.items[pos].use_error
 
     def toggle_use(self, pos):
-        '''toggle_use(self, pos) --> None
+        '''
         Toggles the use flag for dataset at position pos.
         '''
         self.items[pos].use=not self.items[pos].use
 
     def toggle_show(self, pos):
-        '''toggle_show(self, pos) --> None
+        '''
         Toggles the show flag for dataset at position pos.
         '''
         self.items[pos].show=not self.items[pos].show
 
     def show_items(self, positions):
-        '''show_items(self, positions) --> None
+        '''
         Will put the datasets at positions [list] to show all 
         other of no show, hide.
         '''
@@ -976,15 +974,12 @@ class DataList:
 
     def set_name(self, pos, name):
         '''
-        set_name(self,pos,name) --> None
-        
         Sets the name of the data set at position pos (int) to name (string)
         '''
         self.items[pos].name=name
 
     def export_data_to_files(self, basename, indices=None):
-        '''export_data_to_files(self, basename, indices = None) --> None
-        
+        '''
         saves the data to files with base name basename and extentions .dat
         If indices are used only the data given in the list indices are 
         exported.
@@ -1004,8 +999,7 @@ class DataList:
             self.items[index].save_file(base+'%03d'%index+ext)
 
     def get_data_as_asciitable(self, indices=None):
-        ''' get_data_as_table(self, indices = None) --> string
-        
+        '''
         Yields the data sets as a ascii table with tab seperated values.
         This makes it possible to export the data to for example spreadsheets.
         Each data set will be four columns with x, Meas, Meas error and Calc.
