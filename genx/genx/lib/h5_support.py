@@ -143,7 +143,12 @@ class H5HintedExport(H5Savable):
 
             if typ is dict:
                 opt = {}
-                self.h5_read_free_dict(opt, group[attr], [])
+                try:
+                    subgroup=group[attr]
+                except KeyError:
+                    warning(f'Did not find hdf5 group for {attr} in {group.name}')
+                    continue
+                self.h5_read_free_dict(opt, subgroup, [])
                 write_attr=opt
             elif get_origin(typ) is dict:
                 try:
