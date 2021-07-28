@@ -16,7 +16,7 @@ import wx
 import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE
 
-from .filehandling import BaseConfig, Configurable
+from .config import BaseConfig, Configurable
 from .exceptions import GenxOptionError
 from .gui_logging import iprint
 from logging import debug, getLogger, ERROR

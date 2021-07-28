@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-
 import sys, os, appdirs, argparse
 import os.path
 from logging import debug
 
-from . import version, model
-from .exceptions import GenxIOError
+from . import version
 from .gui_logging import setup_system, iprint, activate_logging, activate_excepthook
 
 def start_interactive(args):
@@ -50,7 +48,7 @@ def create_simulated_data(args):
     """Function to create simulated data from the model and add it to data.y"""
     from genx.diffev import DiffEv
     from genx.model_control import ModelController
-    from genx import filehandling as io
+    from genx import config as io
 
     from scipy.stats import poisson
 
@@ -81,7 +79,7 @@ def extract_parameters(args):
 
     from genx.diffev import DiffEv
     from genx.model_control import ModelController
-    from genx import filehandling as io
+    from genx import config as io
 
     # Open the genx file
     io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
@@ -111,7 +109,7 @@ def modify_file(args):
     """Modify a GenX file given command line arguments"""
     from genx.diffev import DiffEv
     from genx.model_control import ModelController
-    from genx import filehandling as io
+    from genx import config as io
 
     # Open the genx file
     io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
@@ -151,7 +149,7 @@ def start_fitting(args, rank=0):
     import time
     from genx.diffev import DiffEv
     from genx.model_control import ModelController
-    from genx import filehandling as io
+    from genx import config as io
 
     # Open the genx file
     io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
@@ -318,7 +316,7 @@ def main():
     args.outfile=os.path.abspath(args.outfile)
     if args.infile:
         args.infile=os.path.abspath(args.infile)
-    path=os.path.split(model.__file__)[0]
+    path=os.path.split(__file__)[0]
     if os.path.abspath(path).endswith('.zip'):
         os.chdir(os.path.split(path)[0])
     else:

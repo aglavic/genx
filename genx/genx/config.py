@@ -1,6 +1,5 @@
-'''I/O functions for GenX. 
-These include loading of initilazation files.
-Also included is the config object.
+'''
+Configuration and config file handling.
 '''
 import dataclasses
 import io
@@ -46,14 +45,14 @@ class Config:
             iprint(e)
             raise GenxIOError(f'Could not write default config file:\n {e}', filename)
 
-    def load_string(self, input: str):
+    def load_string(self, string: str):
         '''
         Loads a config from a string input.  Raises an IOError if the string can not be
         read.
         '''
         self.model_config=ConfigParser()
         try:
-            self.model_config.read_string(input)
+            self.model_config.read_string(string)
         except Exception as e:
             raise GenxIOError(f'Could not load model config file:\n {e}')
 
@@ -123,9 +122,9 @@ class Config:
         '''
         buffer=io.StringIO()
         self.model_config.write(buffer)
-        str=buffer.getvalue()
+        string=buffer.getvalue()
         buffer.close()
-        return str
+        return string
 
 # create the global GenX config object used by the program, it does not depend on anything else
 config=Config()

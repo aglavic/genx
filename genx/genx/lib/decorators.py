@@ -1,5 +1,5 @@
 '''
-  Module for usefull decorators e.g. for logging function calls, input and output.
+Module for usefull decorators e.g. for logging function calls, input and output.
 '''
 
 import sys
@@ -8,11 +8,7 @@ import logging
 import threading
 from time import time
 from io import StringIO
-
-#
-# Help functions adopted from Michele Simionato's decorator module 
-# http://www.phyast.pitt.edu/~micheles/python/decorator.zip
-#
+from functools import update_wrapper
 
 def getinfo(func):
     """
@@ -27,39 +23,12 @@ def getinfo(func):
     """
     assert inspect.ismethod(func) or inspect.isfunction(func)
     signature=inspect.signature(func)
-    output=dict(name=func.__name__, argnames=signature.parameters.keys(), signature=str(signature),
+    output=dict(name=func.__name__, argnames=list(signature.parameters.keys()),
+                signature=str(signature).lstrip('(').rstrip(')'),
                 defaults=func.__defaults__, doc=func.__doc__,
                 module=func.__module__, dict=func.__dict__,
                 globals=func.__globals__, closure=func.__closure__)
     return output
-
-def update_wrapper(wrapper, wrapped, create=False):
-    """
-      An improvement over functools.update_wrapper. By default it works the
-      same, but if the 'create' flag is set, generates a copy of the wrapper
-      with the right signature and update the copy, not the original.
-      Moreovoer, 'wrapped' can be a dictionary with keys 'name', 'doc', 'module',
-      'dict', 'defaults'.
-    """
-    if isinstance(wrapped, dict):
-        infodict=wrapped
-    else:  # assume wrapped is a function
-        infodict=getinfo(wrapped)
-    assert not '_wrapper_' in infodict["argnames"], \
-        '"_wrapper_" is a reserved argument name!'
-    if create:  # create a brand new wrapper with the right signature
-        src="lambda %(signature)s: _wrapper_(%(signature)s)"%infodict
-        # import sys; print >> sys.stderr, src # for debugging purposes
-        wrapper=eval(src, dict(_wrapper_=wrapper))
-    try:
-        wrapper.__name__=infodict['name']
-    except:  # Python version < 2.4
-        pass
-    wrapper.__doc__=infodict['doc']
-    wrapper.__module__=infodict['module']
-    wrapper.__dict__.update(infodict['dict'])
-    wrapper.__defaults__=infodict['defaults']
-    return wrapper
 
 # the real meat is here
 def _decorator(caller, func):

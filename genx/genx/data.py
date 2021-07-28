@@ -1,8 +1,6 @@
 '''
 Library for the classes to store the data. The class DataSet stores 
 on set and the class DataList stores multiple DataSets.
-Programmer Matts Bjorck
-Last changed: 2008 08 22
 '''
 
 import time
@@ -105,8 +103,7 @@ class DataSet(H5HintedExport):
         return cpy
 
     def safe_copy(self, new_set):
-        '''safe_copy(self, new_set) --> None
-        
+        '''
         A safe copy from one dataset to another. 
         Note, not totally safe since references are not broken
         '''
@@ -162,32 +159,23 @@ class DataSet(H5HintedExport):
 
     def __getattr__(self, attr):
         """Overloading __getattr__ for using direct access to extra data"""
-        # This is protection for an infinite recursion bug in python 2.X!
-        # See: http://nedbatchelder.com/blog/201010/surprising_getattr_recursion.html
         if attr in ["extra_data", "extra_data_raw"]:
             raise AttributeError()
         if attr in self.extra_data:
             return self.extra_data[attr]
         elif attr.rstrip('_raw') in self.extra_data_raw:
             return self.extra_data_raw[attr.rstrip('_raw')]
-
-        raise AttributeError("%r object has no attribute %r"%
-                             (self.__class__, attr))
+        raise AttributeError("%r object has no attribute %r"% (self.__class__, attr))
 
     def has_data(self):
         return len(self.x_raw)>0
 
     def get_extra_data_names(self):
-        '''get_extra_data_names(self) --> names [list]
-        
-        returns the names of the extra data
-        '''
         return list(self.extra_data.keys())
 
     def set_extra_data(self, name, value, command=None):
-        '''set_extra_data_names(self, name, value, command = None)
-        
-        sets extra data name, if it does not exist a new entry is created.
+        '''
+        Sets extra data name, if it does not exist a new entry is created.
         name should be a string and value can be any object.
         If command is set, this means that the data set can be operated upon
         with commands just as the x,y and e data members.
@@ -203,15 +191,15 @@ class DataSet(H5HintedExport):
             self.extra_commands[name]=str(name)
 
     def get_extra_data(self, name):
-        '''get_extra_data(self, name) --> object
-        
+        '''
         returns the extra_data object with name name [string] if does not
-        exist an LookupError is yielded.
+        exist an LookupError is raised.
         '''
         if name not in self.extra_data:
             raise LookupError('Can not find extra data with name %s'%name)
         return self.extra_data[name]
 
+    # TODO: Remove load and save methods from dataset, should be handled soley by data loaders
     def loadfile(self, filename, sep='\t', pos=0):
         '''
         Function to load data from a file.
@@ -222,7 +210,6 @@ class DataSet(H5HintedExport):
         delimeter - chars that are spacers between values default None
             all whitespaces 
         skiprows - number of rows to skip before starting to read the data
-        
         '''
         if not os.path.exists(filename):
             iprint("Can't open file: %s does not exist"%filename)
@@ -254,8 +241,7 @@ class DataSet(H5HintedExport):
             return False
 
     def save_file(self, filename):
-        '''save_file(self, filename) --> None
-        
+        '''
         saves the dataset to a file with filename.
         '''
         if self.x.shape==self.y_sim.shape and \
@@ -350,7 +336,6 @@ class DataSet(H5HintedExport):
             self.res=self.extra_data['res']
 
     def set_simulation(self):
-        '''if no data is loaded we set a generic simulation dataset'''
         self.x=linspace(*self.simulation_params)
         self.y=nan*self.x
         self.error=nan*self.x
@@ -369,7 +354,7 @@ class DataSet(H5HintedExport):
             self.run_extra_commands()
 
     def try_commands(self, command_dict):
-        ''' try_commands(self, command_dict) --> tuple of bool
+        '''
         Evals the commands to locate any errors. Used to 
         test the commands before doing the actual setting of x,y and z
         '''
@@ -448,7 +433,7 @@ class DataSet(H5HintedExport):
         return result
 
     def get_commands(self):
-        ''' get_commands(self) --> list of dicts
+        '''
         Returns the commnds as a dictonary with items x, y, z
         '''
         cmds={'x': self.x_command, 'y': self.y_command, 'e': self.error_command}
@@ -457,7 +442,7 @@ class DataSet(H5HintedExport):
         return cmds
 
     def set_commands(self, command_dict):
-        ''' set_commands(self, command_dict) --> None
+        '''
         Sets the commands in the data accroding to values in command dict
         See get_commands for more details
         '''
@@ -480,7 +465,7 @@ class DataSet(H5HintedExport):
         self.y_fom=fom_data
 
     def get_sim_plot_items(self):
-        '''get_sim_plot_items(self) --> dict
+        '''
         Returns a dictonary of color [tuple], symbol [string], 
         sybolsize [float], linetype [string], linethickness [float].
         Used for plotting the simulation.
@@ -494,7 +479,7 @@ class DataSet(H5HintedExport):
                 }
 
     def get_data_plot_items(self):
-        '''get_data_plot_items(self) --> dict
+        '''
         Returns a dictonary of color [tuple], symbol [string], 
         sybolsize [float], linetype [string], linethickness [float].
         Used for plotting the data.
@@ -508,7 +493,7 @@ class DataSet(H5HintedExport):
                 }
 
     def set_data_plot_items(self, pars):
-        ''' set_data_plot_items(self, pars) --> None
+        '''
         Sets the plotting parameters for the data by a dictonary of the
         same structure as in get_data_plot_items(). If one of items in the 
         pars [dictonary] is None that item will be skipped, i.e. keep its old
@@ -528,7 +513,7 @@ class DataSet(H5HintedExport):
                     exec('self.data_'+name+' = '+pars[name].__str__())
 
     def set_sim_plot_items(self, pars):
-        ''' set_data_plot_items(self, pars) --> None
+        '''
         Sets the plotting parameters for the data by a dictonary of the
         same structure as in get_data_plot_items(). If one of items in the 
         pars [dictonary] is None that item will be skipped, i.e. keep its old
@@ -548,8 +533,6 @@ class DataSet(H5HintedExport):
                     exec('self.sim_'+name+' = '+pars[name].__str__())
 
     def set_show(self, val):
-        '''Set show true - show data set in plots
-        '''
         self.show=bool(val)
 
     @property

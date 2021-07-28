@@ -2,8 +2,6 @@
 Controller class for the differnetial evolution class diffev
 Takes care of stopping and starting - output to the gui as well
 as some input from dialog boxes.
-Programmer Matts Bjorck
-Last Changed 2009 05 12
 '''
 import numpy as np
 import time

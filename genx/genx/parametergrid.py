@@ -2,8 +2,6 @@
 Library for the GUI components of the Parameter grid which is used to 
 define which parameters to fit. The library parameters contains the class
 definition of the parameters. 
-Programmer: Matts Bjorck
-Last Changed: 2014 07 17
 '''
 
 import os
@@ -20,7 +18,7 @@ from dataclasses import dataclass
 
 from . import parameters
 from . import images as img
-from .filehandling import BaseConfig, Configurable
+from .config import BaseConfig, Configurable
 from .lib import controls as ctrls
 from .gui_logging import iprint
 
@@ -78,9 +76,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         except IndexError as e:
             # add a new row
             self.pars.append()
-            # print 'Value:', value
 
-            # self.SetValue(row, col, value)
             # tell the grid we've added a row
             msg=gridlib.GridTableMessage(self,  # The table
                                          gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,  # what we did to it
@@ -102,7 +98,6 @@ class ParameterDataTable(gridlib.GridTableBase):
                                      delete_count)
         self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed()
-        # print self.data
 
     def InsertRow(self, row):
         self.pars.insert_row(row)
@@ -115,7 +110,8 @@ class ParameterDataTable(gridlib.GridTableBase):
         return True
 
     def MoveRowUp(self, row):
-        """ Move row up one row.
+        """
+        Move row up one row.
 
         :param row: Integer row number to move up
         :return: Boolean
@@ -128,7 +124,8 @@ class ParameterDataTable(gridlib.GridTableBase):
         return success
 
     def MoveRowDown(self, row):
-        """ Move row down one row.
+        """
+        Move row down one row.
 
         :param row: Integer row number to move down
         :return: Boolean
@@ -141,7 +138,8 @@ class ParameterDataTable(gridlib.GridTableBase):
         return success
 
     def SortRows(self):
-        """ Sort the rows in the table
+        """
+        Sort the rows in the table
 
         :return: Boolean to indicate success
         """
@@ -152,7 +150,6 @@ class ParameterDataTable(gridlib.GridTableBase):
         return success
 
     def AppendRows(self, num_rows=1):
-        # print num_rows
         [self.pars.append() for i in range(num_rows)]
 
         msg=gridlib.GridTableMessage(self,
@@ -162,39 +159,23 @@ class ParameterDataTable(gridlib.GridTableBase):
         self.parent._grid_changed()
         return True
 
-    # def GetAttr(self, row, col, kind):
-    #    '''Called by the grid to find the attributes of the cell,
-    #    bkg color, text colour, font and so on.
-    #    '''
-    #    attr = super(ParameterDataTable, self).GetAttr(row, col, kind)
-
-    #    if col == 1 and row < self.pars.get_len_rows():
-    #        if attr is None:
-    #            attr = gridlib.GridCellAttr()
-    #        attr = attr.Clone()
-    #        val = self.pars.get_value(row,1)
-    #        max_val = self.pars.get_value(row,4)
-    #        min_val = self.pars.get_value(row,3)
-    #        if val > max_val or val < min_val:
-    #            attr.SetBackgroundColour(wx.Colour(204, 0, 0))
-    #            attr.SetTextColour(wx.Colour(255, 255, 255))
-
-    #    return attr
-
     def GetColLabelValue(self, col):
-        '''Called when the grid needs to display labels
+        '''
+        Called when the grid needs to display labels
         '''
         return self.pars.get_col_headers()[col]
 
     def GetTypeName(self, row, col):
-        '''Called to determine the kind of editor/renderer to use by
+        '''
+        Called to determine the kind of editor/renderer to use by
         default, doesn't necessarily have to be the same type used
         natively by the editor/renderer if they know how to convert.
         '''
         return self.data_types[col]
 
     def CanGetValueAs(self, row, col, type_name):
-        '''Called to determine how the data can be fetched and stored by the
+        '''
+        Called to determine how the data can be fetched and stored by the
         editor and renderer.  This allows you to enforce some type-safety
         in the grid.
         '''
@@ -209,8 +190,7 @@ class ParameterDataTable(gridlib.GridTableBase):
 
     def SetParameters(self, pars, clear=True, permanent_change=True):
         '''
-        SetParameters(self, pars) --> None
-        
+
         Set the parameters in the table to pars. 
         pars has to an instance of Parameters.
         '''

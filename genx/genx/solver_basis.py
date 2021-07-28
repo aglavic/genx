@@ -5,7 +5,7 @@ from numpy.typing import ArrayLike
 
 from .data import DataList
 from .model import Model
-from .filehandling import Configurable
+from .config import Configurable
 from .lib.h5_support import H5HintedExport
 
 class GenxOptimizer(Configurable, H5HintedExport, metaclass=ABCMeta):

@@ -1,14 +1,8 @@
-#!/usr/bin/env python
 '''
 Library for GUI+interface layer for the data class. 
 Implements one Controller and a customiized ListController
 for data. The class that should be used for the outside world
 is the DataListController. This has a small toolbar ontop.
-File started by: Matts Bjorck
-
-$Rev::                                  $:  Revision of last commit
-$Author::                               $:  Author of last commit
-$Date::                                 $:  Date of last commit
 '''
 
 import wx, os
@@ -24,8 +18,8 @@ except ImportError:
     from wx import adv as wizard
 
 from . import data
-from . import filehandling as io
-from .filehandling import BaseConfig, Configurable
+from . import config as io
+from .config import BaseConfig, Configurable
 from .exceptions import GenxOptionError
 from . import images as img
 from .plugins import data_loader_wx as dlf
@@ -98,9 +92,6 @@ class DataController:
             colors.append(((int(dc[0]*255), int(dc[1]*255), int(dc[2]*255)),
                            (int(sc[0]*255), int(sc[1]*255), int(sc[2]*255))))
         return colors
-
-    def load(self, pos, path):
-        self.data[pos].loadfile(path)
 
     def get_items_plotsettings(self, pos):
         ''' get_items_plotsettings(self, pos) --> (sim_list, data_list)
@@ -548,31 +539,6 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
     def update_color_cycle(self, source):
         self.data_cont.get_data().update_color_cycle(source)
         self._UpdateImageList()
-
-    def Old_LoadData(self):
-        # Keep this one if I need to go back...
-        # check so only one item is checked
-        n_selected=len(self._GetSelectedItems())
-        if n_selected==1:
-            dlg=wx.FileDialog(self, message="Choose your Datafile"
-                              , defaultFile="", wildcard="All files (*.*)|*.*"
-                              , style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
-
-            if dlg.ShowModal()==wx.ID_OK:
-                self.data_cont.load(self.GetFirstSelected(), dlg.GetPath())
-                self._UpdateData('New data added')
-            dlg.Destroy()
-        else:
-            if n_selected>1:
-                dlg=wx.MessageDialog(self, 'Please select only one dataset'
-                                     , caption='Too many selections'
-                                     , style=wx.OK | wx.ICON_INFORMATION)
-            else:
-                dlg=wx.MessageDialog(self, 'Please select a dataset'
-                                     , caption='No active dataset'
-                                     , style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
 
     def LoadData(self):
         '''LoadData(self, evt) --> None

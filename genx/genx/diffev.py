@@ -6,7 +6,7 @@ from numpy import *
 from logging import debug
 
 from .exceptions import ErrorBarError
-from .filehandling import BaseConfig
+from .config import BaseConfig
 from .gui_logging import iprint
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverUpdateInfo, SolverResultInfo
 import _thread

@@ -1,5 +1,5 @@
-''' help.py - A module that includes various help functionality 
-for genx. 
+'''
+A module that includes various help functionality for genx.
 
 First is the ModelsHelpDialog which displays the doc strings of each module
 in the models directory.

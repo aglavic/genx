@@ -21,7 +21,7 @@ import wx.stc
 from wx.lib.wordwrap import wordwrap
 
 from genx.plugins import add_on_framework as add_on
-from . import datalist, filehandling as io, images as img, parametergrid, plotpanel, solvergui, help
+from . import datalist, config as io, images as img, parametergrid, plotpanel, solvergui, help
 from .lib.colors import COLOR_CYCLES
 from .version import __version__ as program_version
 from .exception_handling import CatchModelError
@@ -938,9 +938,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         neutron_refl.Refl = neutron_numba.Refl
 
     def simulation_loop(self):
-        """ Simulation loop for threading to increase the speed of the interactive simulations
-        :param self:
-        :return:
+        """
+        Simulation loop for threading to increase the speed of the interactive simulations
         """
         self.flag_simulating = True
         while self.simulation_queue_counter>0:

@@ -1,8 +1,8 @@
 '''
-  Module used to setup the default GUI logging and messaging system.
-  The system contains on a python logging based approach with logfile,
-  console output and GUI output dependent on startup options and
-  message logLevel.
+Module used to setup the default GUI logging and messaging system.
+The system contains on a python logging based approach with logfile,
+console output and GUI output dependent on startup options and
+message logLevel.
 '''
 
 import sys

@@ -7,7 +7,7 @@ import h5py
 
 from .exceptions import GenxIOError, ErrorBarError
 from .model import Model
-from .filehandling import config
+from .config import config
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
 class ModelController:
