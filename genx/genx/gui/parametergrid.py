@@ -13,11 +13,10 @@ import string
 from numpy import *
 from dataclasses import dataclass
 
-from . import parameters
-from . import images as img
-from .config import BaseConfig, Configurable
-from .core import controls as ctrls
-from genx.core.custom_logging import iprint
+from . import controls as ctrls, images as img
+from .. import parameters
+from ..core.config import BaseConfig, Configurable
+from ..core.custom_logging import iprint
 
 
 class ParameterDataTable(gridlib.GridTableBase):

@@ -3,7 +3,6 @@ Main GenX window and functionality.
 '''
 
 import appdirs
-import io
 import os
 import shutil
 import webbrowser
@@ -20,12 +19,13 @@ import wx.py
 import wx.stc
 from wx.lib.wordwrap import wordwrap
 
-from genx.plugins import add_on_framework as add_on
-from . import datalist, config as io, images as img, parametergrid, plotpanel, solvergui, help
-from .core.colors import COLOR_CYCLES
-from .version import __version__ as program_version
+from . import datalist, help, images as img, parametergrid, plotpanel, solvergui
 from .exception_handling import CatchModelError
-from genx.core.custom_logging import iprint
+from ..plugins import add_on_framework as add_on
+from ..core import config as conf_mod
+from ..core.colors import COLOR_CYCLES
+from ..core.custom_logging import iprint
+from ..version import __version__ as program_version
 
 _path, _file=os.path.split(__file__)
 if _path[-4:]=='.zip':
@@ -38,10 +38,10 @@ version_file=os.path.join(config_path, 'genx.version')
 if not os.path.exists(config_path):
     info('Creating path: %s'%config_path)
     os.makedirs(config_path)
-if not os.path.exists(os.path.join(config_path, 'profiles')):
-    info('Creating path: %s'%os.path.join(config_path, 'profiles'))
-    shutil.copytree(os.path.join(_path, 'profiles'),
-                    os.path.join(config_path, 'profiles'))
+if not os.path.exists(os.path.join(config_path, '../profiles')):
+    info('Creating path: %s'%os.path.join(config_path, '../profiles'))
+    shutil.copytree(os.path.join(_path, '../profiles'),
+                    os.path.join(config_path, '../profiles'))
     open(version_file, 'w').write(program_version+'\n')
 elif not os.path.exists(version_file) or \
         open(version_file, 'r').read().rsplit('.', 1)[0]!=program_version.rsplit('.', 1)[0]:
@@ -49,14 +49,14 @@ elif not os.path.exists(version_file) or \
     info('Update profiles to default for GenX '+program_version)
     from glob import glob
 
-    for fi in glob(os.path.join(_path, 'profiles', '*.conf')):
-        shutil.copy2(fi, os.path.join(config_path, 'profiles'))
+    for fi in glob(os.path.join(_path, '../profiles', '*.conf')):
+        shutil.copy2(fi, os.path.join(config_path, '../profiles'))
     open(version_file, 'w').write(program_version+'\n')
-if not os.path.exists(os.path.join(config_path, 'genx.conf')):
+if not os.path.exists(os.path.join(config_path, '../genx.conf')):
     info('Creating genx.conf at %s by copying config from %s'%(config_path,
-                                                               os.path.join(_path, 'genx.conf')))
-    shutil.copyfile(os.path.join(_path, 'genx.conf'),
-                    os.path.join(config_path, 'genx.conf'))
+                                                               os.path.join(_path, '../genx.conf')))
+    shutil.copyfile(os.path.join(_path, '../genx.conf'),
+                    os.path.join(config_path, '../genx.conf'))
 
 manual_url='https://aglavic.github.io/genx/doc/'
 homepage_url='https://aglavic.github.io/genx/'
@@ -144,7 +144,7 @@ class MenuId(int, Enum):
 
 
 @dataclass
-class GUIConfig(io.BaseConfig):
+class GUIConfig(conf_mod.BaseConfig):
     section='gui'
     hsize: int=None # stores the width of the window
     vsize: int=None # stores the height of the window
@@ -153,26 +153,26 @@ class GUIConfig(io.BaseConfig):
     psplit: int=None
 
 @dataclass
-class WindowStartup(io.BaseConfig):
+class WindowStartup(conf_mod.BaseConfig):
     section='startup'
     show_profiles: bool=True
     widescreen: bool=False
 
-class GenxMainWindow(wx.Frame, io.Configurable):
+class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     opt: GUIConfig
 
     def __init__(self, parent: wx.App):
         self._init_phase=True
         self.parent=parent
         debug('starting setup of MainFrame')
-        io.Configurable.__init__(self)
+        conf_mod.Configurable.__init__(self)
         self.wstartup=WindowStartup()
 
         self.flag_simulating=False
         self.simulation_queue_counter=0
 
         debug('setup of MainFrame - config')
-        io.config.load_default(os.path.join(config_path, 'genx.conf'))
+        conf_mod.config.load_default(os.path.join(config_path, '../genx.conf'))
         self.ReadConfig()
         self.wstartup.load_config()
 
@@ -202,7 +202,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.data_panel=wx.Panel(self.ver_splitter, wx.ID_ANY)
         self.data_notebook=wx.Notebook(self.data_panel, wx.ID_ANY)
         self.data_notebook_data=wx.Panel(self.data_notebook, wx.ID_ANY)
-        self.data_list=datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.eh_ex_status_text)
+        self.data_list= datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.eh_ex_status_text)
         self.data_notebook_pane_2=wx.Panel(self.data_notebook, wx.ID_ANY)
         self.label_2=wx.StaticText(self.data_notebook_pane_2, wx.ID_ANY, "  Data set: ")
         self.data_grid_choice=wx.Choice(self.data_notebook_pane_2, wx.ID_ANY, choices=["test2", "test1"])
@@ -215,19 +215,19 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.plot_splitter=wx.SplitterWindow(self.plot_panel, wx.ID_ANY)
         self.plot_notebook=wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.plot_notebook_data=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_data=plotpanel.DataPlotPanel(self.plot_notebook_data)
+        self.plot_data= plotpanel.DataPlotPanel(self.plot_notebook_data)
         self.plot_notebook_fom=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_fom=plotpanel.ErrorPlotPanel(self.plot_notebook_fom)
+        self.plot_fom= plotpanel.ErrorPlotPanel(self.plot_notebook_fom)
         self.plot_notebook_Pars=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_pars=plotpanel.ParsPlotPanel(self.plot_notebook_Pars)
+        self.plot_pars= plotpanel.ParsPlotPanel(self.plot_notebook_Pars)
         self.plot_notebook_foms=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_fomscan=plotpanel.FomScanPlotPanel(self.plot_notebook_foms)
+        self.plot_fomscan= plotpanel.FomScanPlotPanel(self.plot_notebook_foms)
         self.wide_plugin_notebook=wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.panel_1=wx.Panel(self.wide_plugin_notebook, wx.ID_ANY)
         self.input_panel=wx.Panel(self.hor_splitter, wx.ID_ANY)
         self.input_notebook=wx.Notebook(self.input_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.input_notebook_grid=wx.Panel(self.input_notebook, wx.ID_ANY)
-        self.paramter_grid=parametergrid.ParameterGrid(self.input_notebook_grid, self)
+        self.paramter_grid= parametergrid.ParameterGrid(self.input_notebook_grid, self)
         self.input_notebook_script=wx.Panel(self.input_notebook, wx.ID_ANY)
         self.script_editor=wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
         self.script_editor.SetBackSpaceUnIndents(True)
@@ -246,7 +246,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         debug('setup of MainFrame - manual config')
 
         # GenX objects
-        self.solver_control=solvergui.ModelControlGUI(self)
+        self.solver_control= solvergui.ModelControlGUI(self)
         self.model=self.solver_control.controller.model
         self.model.data=self.data_list.data_cont.data
         self.paramter_grid.SetParameters(self.model.parameters)
@@ -738,12 +738,12 @@ class GenxMainWindow(wx.Frame, io.Configurable):
             startup_dialog.ShowModal()
             config_file=startup_dialog.GetConfigFile()
             if config_file:
-                io.config.load_default(profile_path+'profiles/'+config_file, reset=True)
+                conf_mod.config.load_default(profile_path+'profiles/'+config_file, reset=True)
                 self.wstartup.show_profiles=startup_dialog.GetShowAtStartup()
                 self.wstartup.widescreen=startup_dialog.GetWidescreen()
                 self.wstartup.safe_config(default=True)
-                io.config.write_default(os.path.join(config_path, 'genx.conf'))
-                debug('Changed profile, plugins to load=%s'%io.config.get('plugins', 'loaded plugins'))
+                conf_mod.config.write_default(os.path.join(config_path, '../genx.conf'))
+                debug('Changed profile, plugins to load=%s'%conf_mod.config.get('plugins', 'loaded plugins'))
                 with self.catch_error(action='startup_dialog', step=f'open model'):
                     self.plugin_control.OnOpenModel(None)
 
@@ -906,16 +906,16 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         dlg.Show()
 
         dlg.Update(1)
-        from genx.models.lib import paratt_cuda
+        from ..models.lib import paratt_cuda
         dlg.Update(2)
-        from genx.models.lib import neutron_cuda
+        from ..models.lib import neutron_cuda
         dlg.Update(3)
-        from models.lib import paratt, neutron_refl
+        from ..models.lib import paratt, neutron_refl
         paratt.Refl = paratt_cuda.Refl
         paratt.ReflQ = paratt_cuda.ReflQ
         paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
         neutron_refl.Refl = neutron_cuda.Refl
-        from genx.models.lib import paratt, neutron_refl
+        from ..models.lib import paratt, neutron_refl
         paratt.Refl = paratt_cuda.Refl
         paratt.ReflQ = paratt_cuda.ReflQ
         paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
@@ -925,13 +925,13 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
     @staticmethod
     def deactivate_cuda():
-        from genx.models.lib import paratt_numba, neutron_numba
-        from models.lib import paratt, neutron_refl
+        from ..models.lib import paratt_numba, neutron_numba
+        from ..models.lib import paratt, neutron_refl
         paratt.Refl = paratt_numba.Refl
         paratt.ReflQ = paratt_numba.ReflQ
         paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
         neutron_refl.Refl = neutron_numba.Refl
-        from genx.models.lib import paratt, neutron_refl
+        from ..models.lib import paratt, neutron_refl
         paratt.Refl = paratt_numba.Refl
         paratt.ReflQ = paratt_numba.ReflQ
         paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
@@ -1160,7 +1160,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         self.opt.psplit=self.plot_splitter.GetSashPosition()
         self.opt.safe_config(default=True)
 
-        io.config.write_default(os.path.join(config_path, 'genx.conf'))
+        conf_mod.config.write_default(os.path.join(config_path, '../genx.conf'))
 
         self.findreplace_dlg.Destroy()
         self.findreplace_dlg = None
@@ -1288,10 +1288,10 @@ class GenxMainWindow(wx.Frame, io.Configurable):
             pass
 
         info_dilog = wx.adv.AboutDialogInfo()
-        info_dilog.Name ="GenX"
-        info_dilog.Version = program_version
-        info_dilog.Copyright ="(C) 2008 Matts Bjorck; 2020 Artur Glavic"
-        info_dilog.Description = wordwrap(
+        info_dilog.SetName("GenX")
+        info_dilog.SetVersion(program_version)
+        info_dilog.SetCopyright("(C) 2008 Matts Bjorck; 2020 Artur Glavic")
+        info_dilog.SetDescription(wordwrap(
             "GenX is a multipurpose refinement program using the differential "
             "evolution algorithm. It is developed  mainly for refining x-ray reflectivity "
             "and neutron reflectivity data."
@@ -1302,11 +1302,11 @@ class GenxMainWindow(wx.Frame, io.Configurable):
             ""%(platform.python_version(), wx.__version__,
                 numpy.__version__, scipy.__version__,
                 matplotlib.__version__, useful),
-            500, wx.ClientDC(self))
+            500, wx.ClientDC(self)))
         info_dilog.WebSite = (homepage_url, "GenX homepage")
         # No developers yet
-        info_dilog.Developers = ['Artur Glavic <artur.glavic@psi.ch>']
-        info_dilog.Licence = wordwrap('This program is free software: you can redistribute it and/or modify '
+        info_dilog.SetDevelopers(['Artur Glavic <artur.glavic@psi.ch>'])
+        info_dilog.SetLicence(wordwrap('This program is free software: you can redistribute it and/or modify '
                                 'it under the terms of the GNU General Public License as published by '
                                 'the Free Software Foundation, either version 3 of the License, or '
                                 '(at your option) any later version. '
@@ -1316,7 +1316,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
                                 'GNU General Public License for more details. '
                                 '\n\nYou should have received a copy of the GNU General Public License '
                                 'along with this program.  If not, see <http://www.gnu.org/licenses/>. '
-                                      , 400, wx.ClientDC(self))
+                                      , 400, wx.ClientDC(self)))
 
         wx.adv.AboutBox(info_dilog)
 

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-# -*- Mode: python -*-
 #
 # $Id: Simplex.py,v 1.2 2004/05/31 14:01:06 vivake Exp $
 # 
@@ -44,7 +41,7 @@ depending on the initial guess used as a starting point.
 
 import math
 import copy
-from genx.core.custom_logging import iprint
+from .custom_logging import iprint
 
 class Simplex:
     def __init__(self, testfunc, guess, increments, kR=-1, kE=2, kC=0.5):

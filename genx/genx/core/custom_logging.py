@@ -11,7 +11,7 @@ import logging
 import inspect
 from numpy import seterr, seterrcall
 from io import StringIO
-from genx.version import __version__ as str_version
+from ..version import __version__ as str_version
 
 # default options used if nothing is set in the configuration
 CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.WARNING, logging.DEBUG, logging.INFO

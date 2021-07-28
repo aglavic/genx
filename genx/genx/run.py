@@ -1,10 +1,14 @@
 #!/usr/bin/env python
-import sys, os, appdirs, argparse
+import appdirs
+import argparse
+import os
 import os.path
+import sys
 from logging import debug
 
 from . import version
-from .core.custom_logging import setup_system, iprint, activate_logging, activate_excepthook
+from .core.custom_logging import activate_excepthook, activate_logging, iprint, setup_system
+
 
 def start_interactive(args):
     ''' Start genx in interactive mode (with the gui)
@@ -21,14 +25,14 @@ def start_interactive(args):
     except:
         pass
 
-    from genx import genx_gui
+    from .gui import main_window
     if args.infile!='':
         debug('start GUI setup with file to load')
         filename=args.infile
     else:
         filename=None
     debug('start GUI setup')
-    app=genx_gui.GenxApp(filename=filename)
+    app= main_window.GenxApp(filename=filename)
     debug('setup complete, start WX MainLoop')
     app.MainLoop()
     debug('leave start_interactive')
@@ -46,9 +50,9 @@ def calc_errorbars(config, mod, opt):
 
 def create_simulated_data(args):
     """Function to create simulated data from the model and add it to data.y"""
-    from genx.diffev import DiffEv
-    from genx.model_control import ModelController
-    from genx import config as io
+    from .diffev import DiffEv
+    from .model_control import ModelController
+    from .core import config as io
 
     from scipy.stats import poisson
 
@@ -77,9 +81,9 @@ def create_simulated_data(args):
 def extract_parameters(args):
     """Extracts the parameters to outfile"""
 
-    from genx.diffev import DiffEv
-    from genx.model_control import ModelController
-    from genx import config as io
+    from .diffev import DiffEv
+    from .model_control import ModelController
+    from .core import config as io
 
     # Open the genx file
     io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
@@ -107,9 +111,9 @@ def extract_parameters(args):
 
 def modify_file(args):
     """Modify a GenX file given command line arguments"""
-    from genx.diffev import DiffEv
-    from genx.model_control import ModelController
-    from genx import config as io
+    from .diffev import DiffEv
+    from .model_control import ModelController
+    from .core import config as io
 
     # Open the genx file
     io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
@@ -147,9 +151,9 @@ def start_fitting(args, rank=0):
     """
     # TODO: fix implementation of this
     import time
-    from genx.diffev import DiffEv
-    from genx.model_control import ModelController
-    from genx import config as io
+    from .diffev import DiffEv
+    from .model_control import ModelController
+    from .core import config as io
 
     # Open the genx file
     io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')

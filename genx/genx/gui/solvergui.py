@@ -13,9 +13,9 @@ import wx.lib.newevent
 from wx.lib.masked import NumCtrl
 
 from .exception_handling import CatchModelError
-from . import diffev, fom_funcs, model_control
-from genx.core.custom_logging import iprint
-from .solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
+from .. import diffev, fom_funcs, model_control
+from ..core.custom_logging import iprint
+from ..solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
 
 
 # Custom events needed for updating and message parsing between the different

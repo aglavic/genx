@@ -1,18 +1,21 @@
 '''
 An implementation of the differential evolution algorithm for fitting.
 '''
-from dataclasses import dataclass
-from numpy import *
-from logging import debug
-
-from .exceptions import ErrorBarError
-from .config import BaseConfig
-from genx.core.custom_logging import iprint
-from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverUpdateInfo, SolverResultInfo
 import _thread
-import time
+import pickle
 import random as random_mod
-import sys, pickle
+import time
+from dataclasses import dataclass
+from logging import debug
+from numpy import *
+
+from .core.config import BaseConfig
+from .core.custom_logging import iprint
+from .core.Simplex import Simplex
+from .exceptions import ErrorBarError
+from .model import Model
+from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
+
 
 __mpi_loaded__=False
 __parallel_loaded__=False
@@ -39,8 +42,6 @@ else:
     size=comm.Get_size()
     rank=comm.Get_rank()
 
-from .model import Model
-from .core.Simplex import Simplex
 
 class DiffEvDefaultCallbacks(GenxOptimizerCallback):
 
@@ -722,7 +723,7 @@ class DiffEv(GenxOptimizer):
         as many cpus there is available
         '''
         # check if CUDA has been activated
-        from genx.models.lib import paratt
+        from .models.lib import paratt
         use_cuda=paratt.Refl.__module__.rsplit('.',1)[1]=='paratt_cuda'
         self.pool=processing.Pool(processes=self.opt.parallel_processes,
                                   initializer=parallel_init,
@@ -1358,14 +1359,14 @@ def parallel_init(model_copy: Model, use_cuda: bool):
     '''
     if use_cuda:
         # activate cuda in subprocesses
-        from genx.models.lib import paratt_cuda
-        from genx.models.lib import neutron_cuda
+        from .models.lib import paratt_cuda
+        from .models.lib import neutron_cuda
         from models.lib import paratt, neutron_refl
         paratt.Refl=paratt_cuda.Refl
         paratt.ReflQ=paratt_cuda.ReflQ
         paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
         neutron_refl.Refl=neutron_cuda.Refl
-        from genx.models.lib import paratt, neutron_refl
+        from .models.lib import paratt, neutron_refl
         paratt.Refl=paratt_cuda.Refl
         paratt.ReflQ=paratt_cuda.ReflQ
         paratt.Refl_nvary2=paratt_cuda.Refl_nvary2

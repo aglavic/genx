@@ -1,10 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 r"""
 .. module:: parameters
    :synopsis: Classes to work with differnt materials in scattering experiments
-
-.. moduleauthor:: Matts Björck <matts.bjorck@gmail.com>
 
 """
 
@@ -168,16 +164,3 @@ class Material(HasParameters):
         else:
             count=float(count_str)
         return count*multiplier
-
-if __name__=="__main__":
-    test=Material("Ag1.1(NO0.01)2", density=7.87)
-    print(_atomic_weights['fe'])
-    # print test.Ag.help
-    print(test._formula_density(), 2/2.88**3)
-    print(test.sld_x(wl=1.54))
-    test.Fe=2
-    print(test.sld_x(wl=1.54))
-    test.Fe=1
-    print(test.sld_x(wl=1.54))
-    print(test.sld_x(wl=15.4))
-    print(test.sld_x(wl=15.4))

@@ -6,7 +6,7 @@ takes care of the use of the DataLoaders.
 import wx, os, io, traceback
 
 from .utils import PluginHandler
-from genx.config import config
+from genx.core.config import config
 from genx.core.custom_logging import iprint
 
 head, tail=os.path.split(__file__)

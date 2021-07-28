@@ -11,7 +11,7 @@ Written by Artur Glavic
 
 import wx
 from numpy import isnan
-from genx.plotpanel import PlotPanel, BasePlotConfig
+from genx.gui.plotpanel import PlotPanel, BasePlotConfig
 from .. import add_on_framework as framework
 
 class SAPlotConfig(BasePlotConfig):

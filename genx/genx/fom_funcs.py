@@ -167,13 +167,13 @@ http://apps.sourceforge.net/trac/genx/wiki/DocPages/WriteFom </a>
 # ==============================================================================
 
 import numpy as np
+from .core.custom_logging import iprint
 
 # import also the custom FOM functions defined in fom_funcs_custom.py
 # (do nothing if file does not exist)
 try:
     # noinspection PyUnresolvedReferences
     from fom_funcs_custom import *
-    from genx.core.custom_logging import iprint
     iprint("Imported custom-defined FOM functions from fom_funcs_custom.py")
 except:
     pass

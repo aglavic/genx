@@ -9,8 +9,8 @@ from abc import ABC, abstractmethod
 from typing import Type, get_type_hints
 from logging import debug
 
-from genx.core.custom_logging import iprint
-from .exceptions import GenxIOError, GenxOptionError
+from .custom_logging import iprint
+from ..exceptions import GenxIOError, GenxOptionError
 
 # ==============================================================================
 class Config:

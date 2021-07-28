@@ -1,10 +1,10 @@
-# File: plotpanel.py a extension of panel that implements matplotlib plotting
-# libary.
-# Programmed by: Matts Bjorck
-# Last changed: 2009 03 10
+"""
+A extension of panel that implements matplotlib plotting libary.
+"""
 
 from dataclasses import dataclass
 from typing import Type
+from logging import debug, getLogger, ERROR
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_agg import RendererAgg
 from matplotlib.figure import Figure
@@ -14,8 +14,7 @@ import wx
 import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE
 
-from .config import BaseConfig, Configurable
-from logging import debug, getLogger, ERROR
+from ..core.config import BaseConfig, Configurable
 
 # deactivate matplotlib logging that we are not interested in
 getLogger('matplotlib.ticker').setLevel(ERROR)

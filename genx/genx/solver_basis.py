@@ -1,12 +1,17 @@
-from abc import ABC, abstractmethod, ABCMeta
+"""
+Define abstract base classes for solvers to be used in DiffEv and any future solvers.
+"""
+from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import List, Union
+
 from numpy.typing import ArrayLike
 
+from .core.config import Configurable
+from .core.h5_support import H5HintedExport
 from .data import DataList
 from .model import Model
-from .config import Configurable
-from .core.h5_support import H5HintedExport
+
 
 class GenxOptimizer(Configurable, H5HintedExport, metaclass=ABCMeta):
     """

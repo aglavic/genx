@@ -3,12 +3,14 @@ GenX model and optimizer control classes. All functional aspects should be cover
 """
 import os
 import sys
+
 import h5py
 
-from .exceptions import GenxIOError, ErrorBarError
+from .core.config import config
+from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
-from .config import config
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
+
 
 class ModelController:
     def __init__(self, optimizer: GenxOptimizer):

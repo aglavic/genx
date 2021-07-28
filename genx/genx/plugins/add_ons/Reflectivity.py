@@ -52,7 +52,7 @@ is to the right. This is updated when the simulation button is pressed.
 
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
-from genx.plotpanel import PlotPanel, BasePlotConfig
+from genx.gui.plotpanel import PlotPanel, BasePlotConfig
 import wx.html
 
 import numpy as np

@@ -16,7 +16,7 @@ from copy import deepcopy
 import wx
 from .. import add_on_framework as framework
 from genx.parameters import Parameters
-import genx.images as img
+import genx.gui.images as img
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
 class Plugin(framework.Template):

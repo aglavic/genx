@@ -2,16 +2,19 @@
 Classes to interface with the bumps module for fitting and statistical analysis.
 """
 
-import wx
-from wx.grid import Grid, EVT_GRID_CELL_LEFT_DCLICK
 import threading
 from numpy import newaxis, maximum
 from matplotlib.colors import LogNorm
+
+import wx
+from wx.grid import Grid, EVT_GRID_CELL_LEFT_DCLICK
+
 from bumps import __version__ as bumps_version
 from bumps.monitor import TimedUpdate
 from bumps.fitproblem import nllf_scale
 from bumps.formatnum import format_uncertainty
-from bumps.dream.corrplot import _hists, _plot
+from bumps.dream.corrplot import _hists
+
 from .plotpanel import PlotPanel
 
 class ProgressMonitor(TimedUpdate):

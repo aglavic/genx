@@ -4,8 +4,9 @@ in GenX.
 '''
 from typing import Union
 
-from genx.core.custom_logging import iprint
+from .core.custom_logging import iprint
 from .core.h5_support import H5Savable
+
 
 # ==============================================================================
 

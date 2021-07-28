@@ -1,15 +1,13 @@
-''' Module to handle plugins including a template class for writing 
+'''
+Module to handle plugins including a template class for writing
 plugins. 
-
-Programmer: Matts Bjorck
-Last changed: 2008 07 23
 '''
 
 import os
 import wx, io, traceback
 from dataclasses import dataclass
 
-from genx.config import BaseConfig, Configurable
+from genx.core.config import BaseConfig, Configurable
 from .utils import PluginHandler
 
 head, tail=os.path.split(__file__)

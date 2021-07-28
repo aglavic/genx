@@ -5,9 +5,6 @@ and see which one works better for you.
 
 Find wxPython info at http://wxPython.org
 
-Created by David Gobbi, December 2001
-Modified by Matts Bjorck, September 2015
-
 Based on vtkTkRenderWindget.py
 """
 

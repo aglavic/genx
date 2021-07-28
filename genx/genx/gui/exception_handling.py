@@ -7,7 +7,7 @@ from logging import debug, error
 
 import wx
 
-from .exceptions import GenxError
+from ..exceptions import GenxError
 
 class CatchModelError:
     """

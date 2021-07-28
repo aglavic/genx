@@ -4,24 +4,24 @@ Implements one Controller and a customiized ListController
 for data. The class that should be used for the outside world
 is the DataListController. This has a small toolbar ontop.
 '''
+from dataclasses import dataclass
 
 import wx
 import wx.lib.colourselect as csel
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.intctrl as intctrl
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
-from dataclasses import dataclass
 
 try:
     from wx import wizard
 except ImportError:
     from wx import adv as wizard
 
-from . import data
-from .config import BaseConfig, Configurable
 from . import images as img
-from .plugins import data_loader_wx as dlf
-from genx.core.custom_logging import iprint
+from .. import data
+from ..plugins import data_loader_wx as dlf
+from ..core.config import BaseConfig, Configurable
+from ..core.custom_logging import iprint
 
 # ==============================================================================
 

@@ -11,11 +11,11 @@ import sys
 if sys.platform=='win32':
     os.environ['FOR_DISABLE_CONSOLE_CTRL_HANDLER']='1'
 
-from genx.model import Model
-from genx.diffev import DiffEv
-from genx.model_control import ModelController
-from genx.plugins.add_ons.help_modules.reflectivity_utils import avail_models, SampleHandler, SampleBuilder
-from genx.plugins.utils import PluginHandler
+from .model import Model
+from .diffev import DiffEv
+from .model_control import ModelController
+from .plugins.add_ons.help_modules.reflectivity_utils import avail_models, SampleHandler, SampleBuilder
+from .plugins.utils import PluginHandler
 
 _fit_output=[]
 

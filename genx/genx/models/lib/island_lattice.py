@@ -4,8 +4,6 @@ r"""
 .. module:: island_lattice.py
    :synopsis: Models to calcualte the reflectivity from a 2D island array
 
-.. moduleauthor:: Matts Björck <matts.bjorck@gmail.com>
-
 This module provide functions to calculate the reflectivity from gratings using the distorted wave Born approximation
 (DWBA) and the kinematical theory.
 """

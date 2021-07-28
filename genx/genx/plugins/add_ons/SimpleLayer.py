@@ -22,7 +22,7 @@ import os
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from math import cos, pi, sqrt
-from genx import images as img
+from ...gui import images as img
 from .. import add_on_framework as framework
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 
