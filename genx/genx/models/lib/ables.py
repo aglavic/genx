@@ -1,7 +1,6 @@
 import numpy as np
 from . import math_utils as mu
 from . import int_lay_xmean
-from genx.gui_logging import iprint
 from functools import reduce
 
 _ctype=np.complex128

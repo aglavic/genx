@@ -1,7 +1,6 @@
 import string
 
 import wx
-from .standard_colours import colours
 
 class SliderControl(wx.Slider):
     """ A custom slider control."""

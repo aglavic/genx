@@ -186,7 +186,6 @@ Instrument
     spin flip.
 '''
 
-from genx.gui_logging import iprint
 from .lib import refl
 from .lib import xrmr
 from .lib import edm_slicing as edm
@@ -195,8 +194,6 @@ from .lib import paratt as Paratt
 from .lib import ables as ables
 from .lib import neutron_refl as neutron_refl
 from .lib.physical_constants import muB_to_SL
-from numpy import *
-from scipy.special import erf
 from .lib.instrument import *
 
 mag_limit=1e-8

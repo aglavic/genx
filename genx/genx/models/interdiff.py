@@ -111,12 +111,9 @@ Instrument
     fourier integral of the correlation function. More terms more accurate
     calculation but also much slower.
 '''
-from genx.gui_logging import iprint
 from .lib import paratt as Paratt
 from .lib import offspec
 
-from numpy import *
-from scipy.special import erf
 from .lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:

@@ -3,10 +3,8 @@
 # Programmed by: Matts Bjorck
 # Last changed: 2009 03 10
 
-import warnings
 from dataclasses import dataclass
 from typing import Type
-import matplotlib
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_agg import RendererAgg
 from matplotlib.figure import Figure
@@ -17,8 +15,6 @@ import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE
 
 from .config import BaseConfig, Configurable
-from .exceptions import GenxOptionError
-from .gui_logging import iprint
 from logging import debug, getLogger, ERROR
 
 # deactivate matplotlib logging that we are not interested in

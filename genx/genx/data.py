@@ -9,7 +9,7 @@ from numpy import *
 from typing import List, Dict, Tuple, Union
 
 from .exceptions import GenxIOError
-from .gui_logging import iprint
+from genx.lib.custom_logging import iprint
 from .lib.colors import CyclicList
 from .lib.h5_support import H5Savable, H5HintedExport
 

@@ -7,7 +7,7 @@ from logging import debug
 
 from .exceptions import ErrorBarError
 from .config import BaseConfig
-from .gui_logging import iprint
+from genx.lib.custom_logging import iprint
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverUpdateInfo, SolverResultInfo
 import _thread
 import time

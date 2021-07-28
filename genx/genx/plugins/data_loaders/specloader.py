@@ -6,7 +6,7 @@ import numpy as np
 
 from ..data_loader_framework import Template
 from ..utils import ShowErrorDialog, ShowWarningDialog
-from genx.gui_logging import iprint
+from genx.lib.custom_logging import iprint
 
 _maxWidth=450
 

@@ -13,8 +13,7 @@ This module provide functions to calculate the reflectivity from gratings using 
 import numpy as np
 from scipy.special import j1
 from functools import reduce
-from .physical_constants import r_e
-from genx.gui_logging import iprint
+from genx.lib.custom_logging import iprint
 
 _ctype=np.complex128
 

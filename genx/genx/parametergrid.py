@@ -4,12 +4,9 @@ define which parameters to fit. The library parameters contains the class
 definition of the parameters. 
 '''
 
-import os
 import wx
 import wx.grid as gridlib
 import wx.lib.printout as printout
-import wx.lib.agw.floatspin as fs
-from wx.lib.masked import NumCtrl
 import wx.lib.newevent
 import string
 
@@ -20,7 +17,7 @@ from . import parameters
 from . import images as img
 from .config import BaseConfig, Configurable
 from .lib import controls as ctrls
-from .gui_logging import iprint
+from genx.lib.custom_logging import iprint
 
 
 class ParameterDataTable(gridlib.GridTableBase):

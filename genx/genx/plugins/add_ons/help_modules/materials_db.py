@@ -7,8 +7,8 @@ import os
 import re
 import json
 
-from genx.models.utils import UserVars, fw, fp, bc, __bc_dict__  # @UnusedImport
-from genx.gui_logging import iprint
+from genx.models.utils import fw, __bc_dict__  # @UnusedImport
+from genx.lib.custom_logging import iprint
 
 # configuration file to store the known materials
 try:

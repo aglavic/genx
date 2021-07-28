@@ -7,7 +7,7 @@ from wx.lib.intctrl import IntCtrl
 import string
 
 from . import reflectivity_images as images
-from genx.gui_logging import iprint
+from genx.lib.custom_logging import iprint
 
 def is_reflfunction(obj):
     ''' Convenience function to determine whether obj belongs to the ReflFunction class.

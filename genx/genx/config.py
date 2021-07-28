@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Type, get_type_hints
 from logging import debug
 
-from .gui_logging import iprint
+from genx.lib.custom_logging import iprint
 from .exceptions import GenxIOError, GenxOptionError
 
 # ==============================================================================

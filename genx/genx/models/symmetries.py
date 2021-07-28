@@ -1,7 +1,6 @@
-""" Package to handle symmetries in surface structures.
-
 """
-__author__='Matts Bjorck'
+Package to handle symmetries in surface structures.
+"""
 
 import numpy as np
 

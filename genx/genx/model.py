@@ -26,7 +26,7 @@ from .parameters import Parameters
 from .data import DataList
 from .exceptions import FomError, GenxIOError, ModelError, ParameterError
 from .config import BaseConfig
-from .gui_logging import iprint
+from genx.lib.custom_logging import iprint
 from .models.lib.parameters import get_parameters, NumericParameter
 from .lib.h5_support import H5HintedExport
 

@@ -8,12 +8,10 @@ message logLevel.
 import sys
 import atexit
 import logging
-import traceback
 import inspect
-import warnings
-from numpy import seterr, seterrcall, ComplexWarning
+from numpy import seterr, seterrcall
 from io import StringIO
-from .version import __version__ as str_version
+from genx.version import __version__ as str_version
 
 # default options used if nothing is set in the configuration
 CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.WARNING, logging.DEBUG, logging.INFO
@@ -25,9 +23,6 @@ if 'pdb' in list(sys.modules.keys()) or 'pydevd' in list(sys.modules.keys()):
 elif '--debug' in sys.argv:
     sys.argv.remove('--debug')
     CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.DEBUG, logging.DEBUG, logging.INFO
-
-def ip_excepthook_overwrite(self, etype, value, tb, tb_offset=None):
-    logging.critical('python error', exc_info=(etype, value, tb))
 
 def genx_exit_message():
     logging.info('*** GenX %s Logging ended ***'%str_version)
@@ -53,8 +48,9 @@ class NumpyLogger(logging.getLoggerClass()):
             curframe=inspect.currentframe()
             calframes=inspect.getouterframes(curframe, 2)
             # stack starts with:
-            # (this method, debug call, debug call rootlogger, numpy_logger, actual function, ...)
+            # (this method, debug call, debug call root logger, numpy_logger, actual function, ...)
             ignore, fname, lineno, func, ignore, ignore=calframes[4]
+            # noinspection PyUnresolvedReferences
             return logging.getLoggerClass().makeRecord(self, name, lvl, fname, lineno,
                                                        msg, args, exc_info, func=func, extra=extra, sinfo=sinfo)
     else:
@@ -62,19 +58,17 @@ class NumpyLogger(logging.getLoggerClass()):
             curframe=inspect.currentframe()
             calframes=inspect.getouterframes(curframe, 2)
             # stack starts with:
-            # (this method, debug call, debug call rootlogger, numpy_logger, actual function, ...)
+            # (this method, debug call, debug call root logger, numpy_logger, actual function, ...)
             ignore, fname, lineno, func, ignore, ignore=calframes[4]
+            # noinspection PyUnresolvedReferences
             return logging.getLoggerClass().makeRecord(self, name, lvl, fname, lineno,
                                                        msg, args, exc_info, func=func, extra=extra)
 
 nplogger=None
 
-def numpy_logger(err, flag):
-    nplogger.debug('numpy floating point error encountered (%s)'%err)
-
 def setup_system():
     logger=logging.getLogger()
-    logger.setLevel(min(FILE_LEVEL, CONSOLE_LEVEL, GUI_LEVEL))
+    logger.setLevel(min(CONSOLE_LEVEL, GUI_LEVEL))
 
     # no console logger for windows (win32gui)
     console=logging.StreamHandler(sys.__stdout__)
@@ -84,7 +78,7 @@ def setup_system():
     logger.addHandler(console)
 
     logging.getLogger('matplotlib').setLevel(logging.WARNING)
-    if min(FILE_LEVEL, CONSOLE_LEVEL, GUI_LEVEL)>logging.DEBUG:
+    if min(CONSOLE_LEVEL, GUI_LEVEL)>logging.DEBUG:
         logging.getLogger('numba').setLevel(logging.WARNING)
     logging.info('*** GenX %s Logging started ***'%str_version)
 
@@ -99,17 +93,20 @@ def setup_system():
     nplogger.addHandler(null_handler)
     logging.setLoggerClass(old_class)
     seterr(divide='call', over='call', under='ignore', invalid='call')
-    # warnings.filterwarnings(action="error", category=ComplexWarning)
     logging.captureWarnings(True)
+
+    def numpy_logger(err, flag):
+        nplogger.debug('numpy floating point error encountered (%s)'%err)
+
     seterrcall(numpy_logger)
 
     # write information on program exit
-    # sys.excepthook=excepthook_overwrite
     atexit.register(genx_exit_message)
 
 def activate_logging(logfile):
     logger=logging.getLogger()
     logfile=logging.FileHandler(logfile, 'w')
+    logger.setLevel(min(logger.getEffectiveLevel(), FILE_LEVEL))
     formatter=logging.Formatter('[%(levelname)s] - %(asctime)s - %(filename)s:%(lineno)i:%(funcName)s %(message)s', '')
     logfile.setFormatter(formatter)
     logfile.setLevel(FILE_LEVEL)
@@ -119,7 +116,9 @@ def activate_logging(logfile):
 _prev_excepthook=None
 def excepthook_overwrite(*exc_info):
     # making sure all exceptions are displayed on GUI and logged
+    # noinspection PyTypeChecker
     logging.critical('uncought python error', exc_info=exc_info)
+    # noinspection PyCallingNonCallable
     return _prev_excepthook(*exc_info)
 
 def activate_excepthook():

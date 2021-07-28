@@ -2,7 +2,6 @@ __author__='Matts Bjorck'
 
 import inspect
 import math
-import os
 
 import wx
 import wx.html
@@ -13,7 +12,7 @@ from . import reflectivity_images as icons
 from . import sxrd_images
 
 from genx.models import utils
-from genx.gui_logging import iprint
+from genx.lib.custom_logging import iprint
 
 class ModelScriptInteractor:
     _begin_string="# BEGIN %s"

@@ -14,23 +14,19 @@ is to the right. This is updated when the simulation button is pressed.
 
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
-from genx.plotpanel import PlotPanel
 from genx.solvergui import EVT_UPDATE_PARAMETERS
 from genx.parametergrid import EVT_PARAMETER_GRID_CHANGE
-import wx
 import wx.grid as gridlib
-from wx.adv import Wizard, WizardPage, WizardPageSimple
+from wx.adv import Wizard, WizardPageSimple
 
-import numpy as np
-import sys, os, re, time, io, traceback
+import io, traceback
 
 from .Reflectivity import SamplePlotPanel, find_code_segment
 from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from genx.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
-from genx.gui_logging import iprint
-from genx.help import PluginHelpDialog
+from genx.lib.custom_logging import iprint
 from genx.parametergrid import ValueCellRenderer
 
 _set_func_prefix='set'

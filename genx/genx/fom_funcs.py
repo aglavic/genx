@@ -173,7 +173,7 @@ import numpy as np
 try:
     # noinspection PyUnresolvedReferences
     from fom_funcs_custom import *
-    from .gui_logging import iprint
+    from genx.lib.custom_logging import iprint
     iprint("Imported custom-defined FOM functions from fom_funcs_custom.py")
 except:
     pass

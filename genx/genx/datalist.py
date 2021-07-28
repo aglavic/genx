@@ -5,7 +5,7 @@ for data. The class that should be used for the outside world
 is the DataListController. This has a small toolbar ontop.
 '''
 
-import wx, os
+import wx
 import wx.lib.colourselect as csel
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.intctrl as intctrl
@@ -18,12 +18,10 @@ except ImportError:
     from wx import adv as wizard
 
 from . import data
-from . import config as io
 from .config import BaseConfig, Configurable
-from .exceptions import GenxOptionError
 from . import images as img
 from .plugins import data_loader_wx as dlf
-from .gui_logging import iprint
+from genx.lib.custom_logging import iprint
 
 # ==============================================================================
 
