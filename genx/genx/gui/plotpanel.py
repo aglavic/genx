@@ -1,7 +1,7 @@
 """
 A extension of panel that implements matplotlib plotting libary.
 """
-
+import warnings
 from dataclasses import dataclass
 from typing import Type
 from logging import debug, getLogger, ERROR

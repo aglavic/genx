@@ -56,7 +56,7 @@ def create_simulated_data(args):
 
     from scipy.stats import poisson
 
-    io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
+    io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
     ctrl=ModelController(DiffEv())
     mod=ctrl.model
 
@@ -86,7 +86,7 @@ def extract_parameters(args):
     from .core import config as io
 
     # Open the genx file
-    io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
+    io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
     ctrl=ModelController(DiffEv())
     mod=ctrl.model
 
@@ -116,7 +116,7 @@ def modify_file(args):
     from .core import config as io
 
     # Open the genx file
-    io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
+    io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
     ctrl=ModelController(DiffEv())
     mod=ctrl.model
 
@@ -156,7 +156,7 @@ def start_fitting(args, rank=0):
     from .core import config as io
 
     # Open the genx file
-    io.config.load_default(os.path.split(os.path.abspath(__file__))[0]+'genx.conf')
+    io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
     ctrl=ModelController(DiffEv())
     mod=ctrl.model
     opt=ctrl.optimizer

@@ -27,21 +27,22 @@ from ..core.colors import COLOR_CYCLES
 from ..core.custom_logging import iprint
 from ..version import __version__ as program_version
 
-_path, _file=os.path.split(__file__)
+_path=os.path.dirname(__file__)
 if _path[-4:]=='.zip':
     _path, ending=os.path.split(_path)
 
 # Get the configuration path, create if it not exists
-config_path=appdirs.user_data_dir('GenX3', 'ArturGlavic')+'/'
-info(config_path)
+config_path=os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+profile_dest=os.path.abspath(os.path.join(config_path, 'profiles'))
+profile_src=os.path.abspath(os.path.join(_path, '..', 'profiles'))
+info(f'Paths are:\n        {config_path=}\n        {profile_dest=}\n        {profile_src=}')
 version_file=os.path.join(config_path, 'genx.version')
 if not os.path.exists(config_path):
-    info('Creating path: %s'%config_path)
+    info(f'Creating path: {config_path}')
     os.makedirs(config_path)
-if not os.path.exists(os.path.join(config_path, '../profiles')):
-    info('Creating path: %s'%os.path.join(config_path, '../profiles'))
-    shutil.copytree(os.path.join(_path, '../profiles'),
-                    os.path.join(config_path, '../profiles'))
+if not os.path.exists(profile_dest):
+    info(f'Creating path: {profile_dest}')
+    shutil.copytree(profile_src, profile_dest)
     open(version_file, 'w').write(program_version+'\n')
 elif not os.path.exists(version_file) or \
         open(version_file, 'r').read().rsplit('.', 1)[0]!=program_version.rsplit('.', 1)[0]:
@@ -49,14 +50,14 @@ elif not os.path.exists(version_file) or \
     info('Update profiles to default for GenX '+program_version)
     from glob import glob
 
-    for fi in glob(os.path.join(_path, '../profiles', '*.conf')):
-        shutil.copy2(fi, os.path.join(config_path, '../profiles'))
+    for fi in glob(os.path.join(profile_src, '*.conf')):
+        info(f'    copy {fi} to {profile_dest}')
+        shutil.copy2(fi, profile_dest)
     open(version_file, 'w').write(program_version+'\n')
-if not os.path.exists(os.path.join(config_path, '../genx.conf')):
-    info('Creating genx.conf at %s by copying config from %s'%(config_path,
-                                                               os.path.join(_path, '../genx.conf')))
-    shutil.copyfile(os.path.join(_path, '../genx.conf'),
-                    os.path.join(config_path, '../genx.conf'))
+if not os.path.exists(os.path.join(config_path, 'genx.conf')):
+    info(f'Creating genx.conf at {config_path} from default.profile in {profile_src}')
+    shutil.copyfile(os.path.join(profile_src, 'default.profile'),
+                    os.path.join(config_path, 'genx.conf'))
 
 manual_url='https://aglavic.github.io/genx/doc/'
 homepage_url='https://aglavic.github.io/genx/'
@@ -172,7 +173,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.simulation_queue_counter=0
 
         debug('setup of MainFrame - config')
-        conf_mod.config.load_default(os.path.join(config_path, '../genx.conf'))
+        conf_mod.config.load_default(os.path.join(config_path, 'genx.conf'))
         self.ReadConfig()
         self.wstartup.load_config()
 
@@ -742,7 +743,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.wstartup.show_profiles=startup_dialog.GetShowAtStartup()
                 self.wstartup.widescreen=startup_dialog.GetWidescreen()
                 self.wstartup.safe_config(default=True)
-                conf_mod.config.write_default(os.path.join(config_path, '../genx.conf'))
+                conf_mod.config.write_default(os.path.join(config_path, 'genx.conf'))
                 debug('Changed profile, plugins to load=%s'%conf_mod.config.get('plugins', 'loaded plugins'))
                 with self.catch_error(action='startup_dialog', step=f'open model'):
                     self.plugin_control.OnOpenModel(None)
@@ -1160,7 +1161,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.opt.psplit=self.plot_splitter.GetSashPosition()
         self.opt.safe_config(default=True)
 
-        conf_mod.config.write_default(os.path.join(config_path, '../genx.conf'))
+        conf_mod.config.write_default(os.path.join(config_path, 'genx.conf'))
 
         self.findreplace_dlg.Destroy()
         self.findreplace_dlg = None
