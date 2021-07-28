@@ -5,7 +5,7 @@ import os
 import sys
 import h5py
 
-from .exceptions import GenxIOError, GenxOptionError, ErrorBarError
+from .exceptions import GenxIOError, ErrorBarError
 from .model import Model
 from .filehandling import config
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
@@ -131,24 +131,27 @@ class ModelController:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')
         self.model.filename=os.path.abspath(fname)
 
-    def save_hgx(self, fname: str, group='current'):
+    def save_hgx(self, fname: str):
         f=h5py.File(fname, 'w')
-        g=f.create_group(group)
+        g=f.create_group(self.model.h5group_name)
         self.model.write_h5group(g)
-        try:
-            clear_evals=not config.getboolean('solver', 'save all evals')
-        except GenxOptionError:
-            clear_evals=True
-        self.optimizer.write_h5group(g.create_group('optimizer'), clear_evals=clear_evals)
+        self.optimizer.write_h5group(g.create_group(self.optimizer.h5group_name))
+        self.optimizer.WriteConfig()
         g['config']=config.model_dump().encode('utf-8')
         f.close()
 
-    def load_hgx(self, fname: str, group='current'):
+    def load_hgx(self, fname: str):
         f=h5py.File(fname, 'r')
-        g=f[group]
+        g=f[self.model.h5group_name]
         self.model.read_h5group(g)
-        self.optimizer.read_h5group(g['optimizer'])
-        config.load_string(g['config'][()].decode('utf-8'))
+        self.optimizer.read_h5group(g[self.optimizer.h5group_name])
+        try:
+            config.load_string(g['config'][()].decode('utf-8'))
+            self.optimizer.ReadConfig()
+        except KeyError:
+            pass
+        except AttributeError:
+            pass
         f.close()
 
     def save_gx(self, fname: str):

@@ -3,7 +3,7 @@ Module to handle different cases of exceptions in the user interface.
 """
 
 import traceback
-from logging import debug
+from logging import debug, error
 
 import wx
 
@@ -28,12 +28,14 @@ class CatchModelError:
             self._status_update(text)
 
     def __enter__(self):
+        debug(f'enter {self.action}/{self.step}')
         if self.step:
             self.status_update(f'Start {self.step}.')
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
+            debug(f'exit {self.action}/{self.step} w/o error')
             self.successful=True
             self.status_update(f'Success in {self.step}.')
             return True
@@ -60,9 +62,9 @@ class CatchModelError:
             title='Warning'
             icon_style=wx.ICON_ERROR
         full_trace = message+':\n\n'
-        full_trace += ''.join(traceback.format_tb(exc_tb)[::-1])
+        full_trace += ''.join(traceback.format_tb(exc_tb))
         full_trace += f'{type(exc_val).__name__}: {exc_val}'
-        debug(full_trace)
+        error(full_trace)
 
         # make sure the dialog is shown from main thread and after any queued actions
         wx.CallAfter(self.display_message, title, message, ext_message, full_trace, icon_style)

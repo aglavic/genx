@@ -15,18 +15,20 @@ import traceback
 import types
 import zipfile
 from dataclasses import dataclass, field
+from typing import Dict
 from logging import debug
 
-import h5py
 import numpy as np
 
 # GenX libraries
-from . import fom_funcs, parameters
+from . import fom_funcs
+from .parameters import Parameters
 from .data import DataList
 from .exceptions import FomError, GenxIOError, ModelError, ParameterError
 from .filehandling import BaseConfig
 from .gui_logging import iprint
 from .models.lib.parameters import get_parameters, NumericParameter
+from .lib.h5_support import H5HintedExport
 
 
 sys.modules['models'] = sys.modules['genx.models']
@@ -68,18 +70,52 @@ class GenxScriptModule(types.ModuleType):
         # default implementation of Sim function, will be overwritten by user.
         return [di.y*0 for di in data]
 
-class Model:
+class Model(H5HintedExport):
     ''' A class that holds the model i.e. the script that defines
         the model and the data + various other attributes.
     '''
-    saved: bool=False
-    fom: float=None
+    h5group_name='current'
+
+    saved=True
+    fom=None
     fom_mask_func=None
-    fom_func:callable
+
+    # parameters stored to file
+    script:str
+    fomfunction:str
+    solver_pars:Dict[str, bool]
+    data:DataList
+    parameters:Parameters
+
+    @property
+    def solver_pars(self):
+        return {'fom_ignore_nan': self.solver_parameters.ignore_fom_nan,
+                'fom_ignore_inf': self.solver_parameters.ignore_fom_inf}
+    @solver_pars.setter
+    def solver_pars(self, value):
+        try:
+            self.solver_parameters.ignore_fom_nan = value['fom_ignore_nan']
+        except KeyError:
+            iprint("Could not load parameter fom_ignore_nan from file")
+        try:
+            self.solver_parameters.ignore_fom_inf = value['fom_ignore_inf']
+        except KeyError:
+            iprint("Could not load parameter fom_ignore_inf from file")
+
+    @property
+    def fomfunction(self):
+        return self.fom_func.__name__
+    @fomfunction.setter
+    def fomfunction(self, value):
+        if value in fom_funcs.func_names:
+            self.set_fom_func(eval('fom_funcs.'+value))
+        else:
+            iprint("Can not find fom function name %s"%value)
+
 
     def __init__(self):
         '''
-        Create a instance and init all the varaibles.
+        Create a instance and init all the variables.
         '''
         self.opt = ModelParameters()
         self.startup_script = StartupScript()
@@ -93,15 +129,13 @@ class Model:
             self.script = "\n".join(eval(self.startup_script.script))
         except:
             debug('Issue when loading script from config:', exc_info=True)
-        self.parameters = parameters.Parameters(model=self)
-
-        self.fom_func = fom_funcs.log  # The function that evaluates the fom
+        self.parameters = Parameters(model=self)
+        self.fom_func = fom_funcs.log
 
         self._reset_module()
 
         # Temporary stuff that needs to keep track on
         self.filename = ''
-        self.saved = True
         self.compiled = False
 
         self.limit_fit_range = False
@@ -188,58 +222,19 @@ class Model:
         self.filename = os.path.abspath(filename)
         self.saved = True
 
-    def write_h5group(self, group, **kwargs):
-        """
-        Write the current parameters into a hdf5 group
-        """
-        self.data.write_h5group(group.create_group('data'))
-        group['script'] = self.script
-        self.parameters.write_h5group(group.create_group('parameters'))
-        group['fomfunction'] = self.fom_func.__name__.encode('utf-8')
-        sgrp = group.create_group('solver_pars')
-        sgrp['fom_ignore_nan'] = self.solver_parameters.ignore_fom_nan
-        sgrp['fom_ignore_inf'] = self.solver_parameters.ignore_fom_inf
-
-        for kw in kwargs:
-            kwargs[kw].write_h5group(group.create_group(kw))
-
-    def read_h5group(self, group, **kwargs):
+    def read_h5group(self, group):
         """
         Read the parameters from a hdf5 group
         """
-        self.data.read_h5group(group['data'])
-        if int(h5py.__version__[0])>2:
-            self.script = group['script'][()].decode('utf-8')
-        else:
-            self.script = group['script'][()]
-        self.parameters.read_h5group(group['parameters'])
-        fom_func_name = group['fomfunction'][()].decode('utf-8')
-        if fom_func_name in fom_funcs.func_names:
-            self.set_fom_func(eval('fom_funcs.'+fom_func_name))
-        else:
-            iprint("Can not find fom function name %s"%fom_func_name[()])
-
-        try:
-            self.solver_parameters.ignore_fom_nan = bool(group['solver_pars']['fom_ignore_nan'][()])
-        except Exception as e:
-            iprint("Could not load parameter fom_ignore_nan from file")
-        try:
-            self.solver_parameters.ignore_fom_inf = bool(group['solver_pars']['fom_ignore_inf'][()])
-        except Exception as e:
-            iprint("Could not load parameter fom_ignore_inf from file")
+        H5HintedExport.read_h5group(self, group)
         self.create_fom_mask_func()
-
+        # TODO: Get rid of the interdependence model-optimizer here
         try:
             self.limit_fit_range, self.fit_xmin, self.fit_xmax = (
                 bool(group['optimizer']['limit_fit_range'][()]),
                 float(group['optimizer']['fit_xmin'][()]), float(group['optimizer']['fit_xmax'][()]))
-        except Exception as e:
+        except Exception:
             iprint("Could not load limite_fit_range from file")
-
-        for kw in kwargs:
-            kwargs[kw].read_h5group(group[kw])
-
-        self.compiled = False
         self.saved = True
         self.script_module = GenxScriptModule(self.data)
         self.compiled = False
@@ -273,12 +268,12 @@ class Model:
             raise GenxIOError('File must be loaded before additional information is read', '')
         try:
             loadfile = zipfile.ZipFile(self.filename, 'r')
-        except Exception as e:
+        except Exception:
             raise GenxIOError('Could not open the file', self.filename)
 
         try:
             text = loadfile.read(name).decode('utf-8')
-        except Exception as e:
+        except Exception:
             raise GenxIOError('Could not read the section named: %s'%name, self.filename)
         loadfile.close()
         return text
@@ -303,7 +298,7 @@ class Model:
         self.script = '\n'.join(self.script.splitlines())
         try:
             exec(self.script, self.script_module.__dict__)
-        except Exception as e:
+        except Exception:
             outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
@@ -363,7 +358,7 @@ class Model:
         fom_indiv = [np.sum(np.abs(self.fom_mask_func(fom_set))) for fom_set in fom_raw]
         fom = np.sum([f for f, d in zip(fom_indiv, self.data) if d.use])
 
-        # Lets extract the number of datapoints as well:
+        # Lets extract the number of data points as well:
         N = np.sum([len(self.fom_mask_func(fom_set)) for fom_set, d in zip(fom_raw, self.data) if d.use])
         # And the number of fit parameters
         p = self.parameters.get_len_fit_pars()
@@ -400,7 +395,7 @@ class Model:
         self.script_module._sim = True
         try:
             simulated_data = self.script_module.Sim(self.data)
-        except Exception as e:
+        except Exception:
             outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
@@ -425,7 +420,7 @@ class Model:
         try:
             fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
             self.fom = fom
-        except Exception as e:
+        except Exception:
             outp = io.StringIO()
             traceback.print_exc(200, outp)
             val = outp.getvalue()
@@ -440,12 +435,12 @@ class Model:
         returned if string represents anything else a function that sets that 
         object will be returned.
         '''
-        object = self.eval_in_model(identifier)
+        obj = self.eval_in_model(identifier)
         # Is it a function or a method!
-        if callable(object):
-            return object
+        if callable(obj):
+            return obj
         # Make a function to set the object
-        elif isinstance(object, NumericParameter):
+        elif isinstance(obj, NumericParameter):
             # We have a NumericParameter that should be set
             exec('def __tempfunc__(val):\n'
                  '    %s.value = val'%identifier, self.script_module.__dict__)
@@ -488,6 +483,7 @@ class Model:
     def get_par_penalty(self):
         for var in self.script_module.__dict__.values():
             if var.__class__.__name__=='UserVars':
+                # noinspection PyProtectedMember
                 return var._penalty_funcs
         return []
 
@@ -517,6 +513,7 @@ class Model:
 
         return funcs, vals
 
+    # noinspection PyShadowingBuiltins
     def simulate(self, compile=True):
         '''
         Simulates the data sets using the values given in parameters...
@@ -545,7 +542,7 @@ class Model:
         iprint("class Model: new_model")
         self.data = DataList()
         self.script = ''
-        self.parameters = parameters.Parameters(self)
+        self.parameters = Parameters(self)
 
         self.fom_func = fom_funcs.log
         self._reset_module()
@@ -566,7 +563,7 @@ class Model:
         model_copy.script = self.script
         model_copy.parameters = self.parameters.copy()
         model_copy.fom_func = self.fom_func
-        # The most important stuff - a module is not pickable
+        # The most important stuff - a module is not pickleable
         model_copy.script_module = None
         model_copy.filename = self.filename
         model_copy.compiled = self.compiled
@@ -729,7 +726,7 @@ class Model:
 
         return read_string
 
-    def get_parameters(self)->parameters.Parameters:
+    def get_parameters(self)->Parameters:
         return self.parameters
 
     def get_data(self)->DataList:
@@ -757,7 +754,7 @@ class Model:
         # Start by updating the config file
         self.read_config()
         # First we should see if any of the 
-        # classes is defnined in model.__pars__
+        # classes is defined in model.__pars__
         # or in __pars__
         pars = []
         try:
@@ -799,7 +796,7 @@ class Model:
             # Create a tuple of the classes we defined above
             tuple_of_classes = tuple(classes)
             # Creating a dictionary that holds the name of the classes
-            # eaxh item for a classes is a new dictonary that holds the
+            # each item for a classes is a new dictionary that holds the
             # object name and then a list of the methods.
             par_dict = {}
             [par_dict.__setitem__(clas.__name__, {}) for clas in classes]

@@ -1,5 +1,4 @@
-import h5py
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 from dataclasses import dataclass
 from typing import List, Union
 from numpy.typing import ArrayLike
@@ -7,12 +6,16 @@ from numpy.typing import ArrayLike
 from .data import DataList
 from .model import Model
 from .filehandling import Configurable
+from .lib.h5_support import H5HintedExport
 
-class GenxOptimizer(ABC, Configurable):
+class GenxOptimizer(Configurable, H5HintedExport, metaclass=ABCMeta):
     """
     Defines an abstract base class for a optimizer for GenX models.
     DiffEv is implementing this abstraction.
     """
+    h5group_name='optimizer'
+    _export_ignore = ['opt', 'model']
+
     @property
     @abstractmethod
     def n_fom_evals(self)->int:
@@ -25,14 +28,6 @@ class GenxOptimizer(ABC, Configurable):
     @abstractmethod
     def pickle_load(self, pickled_string: str):
         """ Configure object from pickled copy """
-
-    @abstractmethod
-    def write_h5group(self, group: h5py.Group, clear_evals: bool=False):
-        """ Save configuration to hdf5 group """
-
-    @abstractmethod
-    def read_h5group(self, group: h5py.Group):
-        """ Configure object from hdf5 group """
 
     @abstractmethod
     def is_running(self)->bool:

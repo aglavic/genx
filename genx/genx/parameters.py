@@ -4,19 +4,17 @@ in GenX.
 Programmer: Matts Bjorck
 '''
 
-import numpy as np
-import string
 from genx.gui_logging import iprint
+from .lib.h5_support import H5Savable
 
 # ==============================================================================
 
 
-class Parameters:
+class Parameters(H5Savable):
     """
     Class for storing the fitting parameters in GenX
     """
-    # Parameters used for saving the object state
-    export_parameters={'data_labels': list, 'init_data': list, 'data': list}
+    h5group_name='parameters'
 
     def __init__(self, model=None):
         self.data_labels=['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
@@ -26,12 +24,10 @@ class Parameters:
         self.string_dtype="S100"
 
     def write_h5group(self, group):
-        """ Export the members in the object to a h5py group.
-        :param group: h5py Group to export to
-        :return:
+        """
+        Export the members in the object to a h5py group.
         """
         group['data_labels']=[label.encode('utf-8') for label in self.data_labels]
-        # print np.array([r[0] for r in self.data], dtype='S50')
         group['data col 0']=[r[0].encode('utf-8') for r in self.data]
         group['data col 1']=[r[1] for r in self.data]
         group['data col 2']=[r[2] for r in self.data]
@@ -214,7 +210,7 @@ class Parameters:
                 obj=self.model.eval_in_model(obj_name)
                 class_name=obj.__class__.__name__
 
-        return string.lower(class_name), string.lower(pname), string.lower(obj_name)
+        return class_name.lower(), pname.lower(), obj_name.lower()
 
     def sort_rows(self):
         """ Sort the rows in the table

@@ -228,7 +228,7 @@ class ModelControlGUI:
 
         # Update the parameter plot ...
         if self.controller.is_configured():
-            # remeber to add a check
+            # remember to add a check
             res=self.controller.get_result_info()
             try:
                 evt=update_parameters(values=res.values,
@@ -389,12 +389,12 @@ class SettingsDialog(wx.Dialog):
         self.fom_ignore_nan_control=wx.CheckBox(self, -1, "Ignore Nan")
         cb_sizer.Add(self.fom_ignore_nan_control, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         self.fom_ignore_nan_control.SetValue(self.model.solver_parameters.ignore_fom_nan)
-        # Check box for ignoring infs
+        # Check box for ignoring infinities
         self.fom_ignore_inf_control=wx.CheckBox(self, -1, "Ignore +/-Inf")
         cb_sizer.Add(self.fom_ignore_inf_control, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         self.fom_ignore_inf_control.SetValue(self.model.solver_parameters.ignore_fom_inf)
 
-        # Errorbar level 
+        # Errorbar level
         errorbar_sizer=wx.BoxSizer(wx.HORIZONTAL)
         errorbar_text=wx.StaticText(self, -1, 'Error bar level ')
         self.errorbar_control=NumCtrl(self, value=
@@ -653,7 +653,7 @@ class SettingsDialog(wx.Dialog):
         button_sizer.AddButton(apply_button)
         button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
         button_sizer.Realize()
-        # Add some eventhandlers
+        # Add some event handlers
         self.Bind(wx.EVT_BUTTON, self.on_apply_change, okay_button)
         self.Bind(wx.EVT_BUTTON, self.on_apply_change, apply_button)
 

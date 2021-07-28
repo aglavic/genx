@@ -30,7 +30,7 @@ def start_interactive(args):
     else:
         filename=None
     debug('start GUI setup')
-    app=genx_gui.MyApp(filename=filename)
+    app=genx_gui.GenxApp(filename=filename)
     debug('setup complete, start WX MainLoop')
     app.MainLoop()
     debug('leave start_interactive')

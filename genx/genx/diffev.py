@@ -4,7 +4,6 @@ An implementation of the differential evolution algorithm for fitting.
 from dataclasses import dataclass
 from numpy import *
 from logging import debug
-from typing import Union
 
 from .exceptions import ErrorBarError
 from .filehandling import BaseConfig
@@ -99,12 +98,14 @@ class DiffEvConfig(BaseConfig):
 
 class DiffEv(GenxOptimizer):
     '''
-    Contains the implemenetation of the differential evolution algorithm.
+    Contains the implementation of the differential evolution algorithm.
     It also contains thread support which is activated by the start_fit 
     function.
     '''
     opt: DiffEvConfig
     model: Model
+    fom_log: ndarray
+    start_guess: ndarray
 
     pf=0.5 # probability for mutation
     c=0.07
@@ -113,11 +114,8 @@ class DiffEv(GenxOptimizer):
     simplex_n = 0.0  # Number of individuals that will be optimized by simplex
     simplex_rel_epsilon = 1000  # The relative epsilon - convergence criteria
     simplex_max_iter = 100  # THe maximum number of simplex runs
-    error: Union[str,None] = None
 
     _callbacks: GenxOptimizerCallback=DiffEvDefaultCallbacks()
-
-    export_parameters={'fom_log': array, 'start_guess': array}
 
     parameter_groups=[
         ['Fitting', ['use_start_guess', 'use_boundaries', 'use_autosave', 'autosave_interval']],
@@ -148,7 +146,7 @@ class DiffEv(GenxOptimizer):
         self.running=False  # true if optimization is running
         self.stop=False  # true if the optimization should stop
         self.setup_ok=False  # True if the optimization have been setup
-        self.error=None  # True/string if an error ahs occurred
+        self.error=None  # None/string if an error ahs occurred
 
         # Logging variables
         self.fom_log=array([[0, 0]])[0:0]
@@ -179,17 +177,15 @@ class DiffEv(GenxOptimizer):
     def methods(self):
         return [f.__name__ for f in self.mutation_schemes]
 
-    def write_h5group(self, group, clear_evals=False):
+    def write_h5group(self, group):
         """
         Write parameters into hdf5 group
         """
-        for par in self.export_parameters:
-            obj=getattr(self, par)
-            group[par]=obj
+        super().write_h5group(group)
 
-        if clear_evals:
-            group['par_evals']=self.par_evals.array()[0:0]
-            group['fom_evals']=self.fom_evals.array()[0:0]
+        if not self.opt.save_all_evals:
+            group['par_evals']=array([])
+            group['fom_evals']=array([])
         else:
             group['par_evals']=self.par_evals.array()
             group['fom_evals']=self.fom_evals.array()
@@ -199,15 +195,7 @@ class DiffEv(GenxOptimizer):
         Read parameters from a hdf5 group
         """
         self.setup_ok=False
-        for par in self.export_parameters:
-            if self.export_parameters[par] is array:
-                setattr(self, par, group[par][()])
-            else:
-                try:
-                    setattr(self, par, self.export_parameters[par](group[par][()]))
-                except KeyError:
-                    iprint("No value found for %s"%par)
-                    continue
+        super().read_h5group(group)
 
         self.par_evals.copy_from(group['par_evals'][()])
         self.fom_evals.copy_from(group['fom_evals'][()])
@@ -256,7 +244,7 @@ class DiffEv(GenxOptimizer):
 
             self.fom_vec=other.fom_vec
             self.best_fom=other.best_fom
-            # Not all implementaions have these copied within their files
+            # Not all implementations have these copied within their files
             # Just ignore if an error occur
             try:
                 self.n_dim=other.n_dim
@@ -267,8 +255,6 @@ class DiffEv(GenxOptimizer):
 
     def pickle_string(self, clear_evals=False):
         '''
-        Pickle the object.
-
         Saves a copy into a pickled string note that the dynamic
         functions will not be saved. For normal use this is taken care of
         outside this class with the config object.
@@ -297,20 +283,18 @@ class DiffEv(GenxOptimizer):
         self.safe_copy(obj)
 
     def reset(self):
-        ''' reset(self) --> None
-        
+        '''
         Resets the optimizer. Note this has to be run if the optimizer is to
         be restarted.
         '''
         self.setup_ok=False
 
     def connect_model(self, model_obj):
-        '''connect_model(self, model) --> None
-        
+        '''
         Connects the model [model] to this object. Retrives the function
         that sets the variables  and stores a reference to the model.
         '''
-        # Retrive parameters from the model
+        # Retrieve parameters from the model
         (param_funcs, start_guess, par_min, par_max)=model_obj.get_fit_pars()
 
         # Control parameter setup
@@ -359,25 +343,21 @@ class DiffEv(GenxOptimizer):
         self.km_vec=ones(self.n_dim)*self.opt.km
         self.kr_vec=ones(self.n_dim)*self.opt.kr
 
-        # Logging varaibles
+        # Logging variables
         self.fom_log=array([[0, 1]])[0:0]
         self.par_evals=CircBuffer(self.opt.max_log_elements, buffer=array([self.par_min])[0:0])
-        # self.fom_evals = array([])
         self.fom_evals=CircBuffer(self.opt.max_log_elements)
         # Number of FOM evaluations
         self.n_fom=0
-        # self.par_evals.reset(array([self.par_min])[0:0])
-        # self.fom_evals.reset()
 
         if rank==0:
             self.text_output('DE initilized')
 
-        # Remeber that everything has been setup ok
+        # Remember that everything has been setup ok
         self.setup_ok=True
 
     def init_fom_eval(self):
-        '''init_fom_eval(self) --> None
-        
+        '''
         Makes the eval_fom function
         '''
         # Setting up for parallel processing
@@ -395,9 +375,8 @@ class DiffEv(GenxOptimizer):
         '''
         Starts fitting in a seperate thred.
         '''
-        # If it is not already running
         if not self.running:
-            # Initilize the parameters to fit
+            # Initialize the parameters to fit
             self.reset()
             self.init_fitting(model_obj)
             self.init_fom_eval()
@@ -418,7 +397,6 @@ class DiffEv(GenxOptimizer):
         Stops the fit if it has been started in a seperate theres 
         by start_fit.
         '''
-        # If not running stop
         if self.running:
             self.stop=True
             self.text_output('Trying to stop the fit...')
@@ -469,28 +447,20 @@ class DiffEv(GenxOptimizer):
         self.running=True
         self.error=None
         self.n_fom=0
-        ## Old leftovers before going parallel
-        # self.fom_vec = [self.calc_fom(vec) for vec in self.pop_vec]
-        # [self.par_evals.append(vec, axis = 0) for vec in self.pop_vec]
-        # [self.fom_evals.append(vec) for vec in self.fom_vec]
-        # New parallel calcualtions
+
         self.trial_vec=self.pop_vec[:]
         self.eval_fom()
         [self.par_evals.append(vec, axis=0) for vec in self.pop_vec]
         [self.fom_evals.append(vec) for vec in self.trial_fom]
         self.fom_vec=self.trial_fom[:]
-        # print self.fom_vec
+
         best_index=argmin(self.fom_vec)
-        # print self.fom_vec
-        # print best_index
         self.best_vec=copy(self.pop_vec[best_index])
-        # print self.best_vec
         self.best_fom=self.fom_vec[best_index]
-        # print self.best_fom
         if len(self.fom_log)==0:
             self.fom_log=r_[self.fom_log, \
                             [[len(self.fom_log), self.best_fom]]]
-        # Flag to keep track if there has been any improvemnts
+        # Flag to keep track if there has been any improvements
         # in the fit - used for updates
         self.new_best=True
 
@@ -527,7 +497,7 @@ class DiffEv(GenxOptimizer):
             # Let the model calculate the simulation of the best.
             sim_fom=self.calc_sim(self.best_vec)
 
-            # Sanity of the model does the simualtions fom agree with
+            # Sanity of the model does the simulations fom agree with
             # the best fom
             if abs(sim_fom-self.best_fom)>self.opt.allowed_fom_discrepancy:
                 self.text_output('Disagrement between two different fom'
@@ -542,7 +512,7 @@ class DiffEv(GenxOptimizer):
             self.plot_output()
             self.parameter_output()
 
-            # Time measurent to track the speed
+            # Time measurement to track the speed
             t=time.time()-t_start
             if t>0:
                 speed=self.n_pop/t
@@ -552,7 +522,7 @@ class DiffEv(GenxOptimizer):
                              (self.best_fom, gen, speed))
 
             self.new_best=False
-            # Do an autosave if activated and the interval is coorect
+            # Do an autosave if activated and the interval is correct
             if gen%self.opt.autosave_interval==0 and self.opt.use_autosave:
                 self.autosave()
 
@@ -587,18 +557,14 @@ class DiffEv(GenxOptimizer):
         [self.par_evals.append(vec, axis=0) \
          for vec in self.pop_vec]
         [self.fom_evals.append(vec) for vec in self.fom_vec]
-        # print self.fom_vec
+
         best_index=argmin(self.fom_vec)
-        # print self.fom_vec
-        # print best_index
         self.best_vec=copy(self.pop_vec[best_index])
-        # print self.best_vec
         self.best_fom=self.fom_vec[best_index]
-        # print self.best_fom
         if len(self.fom_log)==0:
             self.fom_log=r_[self.fom_log, \
                             [[len(self.fom_log), self.best_fom]]]
-        # Flag to keep track if there has been any improvemnts
+        # Flag to keep track if there has been any improvements
         # in the fit - used for updates
         self.new_best=True
 
@@ -632,7 +598,7 @@ class DiffEv(GenxOptimizer):
             tmp_fom=self.trial_fom
             comm.Barrier()
 
-            # collect foms and reshape them and set the completed tmp_fom to trial_fom
+            # collect forms and reshape them and set the completed tmp_fom to trial_fom
             tmp_fom=comm.gather(tmp_fom, root=0)
             if rank==0:
                 tmp_fom_list=[]
@@ -657,7 +623,7 @@ class DiffEv(GenxOptimizer):
                 # Let the model calculate the simulation of the best.
                 sim_fom=self.calc_sim(self.best_vec)
 
-                # Sanity of the model does the simualtions fom agree with
+                # Sanity of the model does the simulations fom agree with
                 # the best fom
                 if abs(sim_fom-self.best_fom)>self.opt.allowed_fom_discrepancy and rank==0:
                     self.text_output('Disagrement between two different fom'
@@ -675,7 +641,7 @@ class DiffEv(GenxOptimizer):
                 # Let the optimization sleep for a while
                 # time.sleep(self.opt.sleep_time)
 
-                # Time measurent to track the speed
+                # Time measurement to track the speed
                 t=time.time()-t_start
                 if t>0:
                     speed=self.n_pop/t
@@ -686,7 +652,7 @@ class DiffEv(GenxOptimizer):
                                      (self.best_fom, gen, speed))
 
                 self.new_best=False
-                # Do an autosave if activated and the interval is coorect
+                # Do an autosave if activated and the interval is correct
                 if gen%self.opt.autosave_interval==0 and self.opt.use_autosave:
                     self.autosave()
 
@@ -743,7 +709,7 @@ class DiffEv(GenxOptimizer):
             self.opt.limit_fit_range,
             self.opt.fit_xmin,
             self.opt.fit_xmax)
-        # Set the paraemter values
+        # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
 
         self.model.evaluate_sim_func()
@@ -880,9 +846,9 @@ class DiffEv(GenxOptimizer):
             iprint('FOM improvement: ', self.best_fom-err)
 
             if self.opt.use_boundaries:
-                # Check so that the parameters lie indside the bounds
+                # Check so that the parameters lie inside the bounds
                 ok=bitwise_and(self.par_max>new_vec, self.par_min<new_vec)
-                # If not inside make a random re-initilazation of that parameter
+                # If not inside make a random re-initialization of that parameter
                 new_vec=where(ok, new_vec, random.rand(self.n_dim)* \
                               (self.par_max-self.par_min)+self.par_min)
 
@@ -894,7 +860,7 @@ class DiffEv(GenxOptimizer):
                 self.fom_vec[0]=self.best_fom
                 self.new_best=True
 
-            # Apply the simplex to a simplex_n memebers (0-1)
+            # Apply the simplex to a simplex_n members (0-1)
             for index1 in random_mod.sample(range(len(self.pop_vec)),
                                             int(len(self.pop_vec)*self.simplex_n)):
                 iprint('Starting simplex run for member: ', index1)
@@ -904,9 +870,9 @@ class DiffEv(GenxOptimizer):
                 new_vec, err, _iter=simp.minimize(epsilon=self.best_fom/self.simplex_rel_epsilon,
                                                   maxiters=self.simplex_max_iter)
                 if self.opt.use_boundaries:
-                    # Check so that the parameters lie indside the bounds
+                    # Check so that the parameters lie inside the bounds
                     ok=bitwise_and(self.par_max>new_vec, self.par_min<new_vec)
-                    # If not inside make a random re-initilazation of that parameter
+                    # If not inside make a random re-initialization of that parameter
                     new_vec=where(ok, new_vec, random.rand(self.n_dim)* \
                                   (self.par_max-self.par_min)+self.par_min)
 
@@ -980,7 +946,6 @@ class DiffEv(GenxOptimizer):
         '''
         A modified generation update for jade
         '''
-        # print 'inits generation: ', gen, self.n_pop
         if gen>1:
             updated_kms=array(self.updated_km)
             updated_krs=array(self.updated_kr)
@@ -1012,7 +977,7 @@ class DiffEv(GenxOptimizer):
         mut_vec=vec+self.km_vec[index]*(self.best_vec-vec)+self.km_vec[index]*(
                 self.pop_vec[index1]-self.par_evals[index2])
 
-        # Binomial test to detemine which parameters to change
+        # Binomial test to determine which parameters to change
         # given by the recombination constant kr
         recombine=random.rand(self.n_dim)<self.kr_vec[index]
         # Make sure at least one parameter is changed
@@ -1022,9 +987,9 @@ class DiffEv(GenxOptimizer):
 
         # Implementation of constrained optimization
         if self.opt.use_boundaries:
-            # Check so that the parameters lie indside the bounds
+            # Check so that the parameters lie inside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
-            # If not inside make a random re-initilazation of that parameter
+            # If not inside make a random re-initialization of that parameter
             trial=where(ok, trial, random.rand(self.n_dim)* \
                         (self.par_max-self.par_min)+self.par_min)
         self.trial_vec[index]=trial
@@ -1048,7 +1013,7 @@ class DiffEv(GenxOptimizer):
         mut_vec=self.best_vec+self.opt.km*(
                 self.pop_vec[index1]-self.pop_vec[index2])
 
-        # Binomial test to detemine which parameters to change
+        # Binomial test to determine which parameters to change
         # given by the recombination constant kr
         recombine=random.rand(self.n_dim)<self.opt.kr
         # Make sure at least one parameter is changed
@@ -1058,9 +1023,9 @@ class DiffEv(GenxOptimizer):
 
         # Implementation of constrained optimization
         if self.opt.use_boundaries:
-            # Check so that the parameters lie indside the bounds
+            # Check so that the parameters lie inside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
-            # If not inside make a random re-initilazation of that parameter
+            # If not inside make a random re-initialization of that parameter
             trial=where(ok, trial, random.rand(self.n_dim)* \
                         (self.par_max-self.par_min)+self.par_min)
 
@@ -1092,9 +1057,9 @@ class DiffEv(GenxOptimizer):
 
         # Implementation of constrained optimization
         if self.opt.use_boundaries:
-            # Check so that the parameters lie indside the bounds
+            # Check so that the parameters lie inside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
-            # If not inside make a random re-initilazation of that parameter
+            # If not inside make a random re-initialization of that parameter
             trial=where(ok, trial, random.rand(self.n_dim)* \
                         (self.par_max-self.par_min)+self.par_min)
         self.trial_vec[index]=trial
@@ -1121,7 +1086,7 @@ class DiffEv(GenxOptimizer):
         mut_vec=self.pop_vec[index3]+self.opt.km*(
                 self.pop_vec[index1]-self.pop_vec[index2])
 
-        # Binomial test to detemine which parameters to change
+        # Binomial test to determine which parameters to change
         # given by the recombination constant kr
         recombine=random.rand(self.n_dim)<self.opt.kr
         # Make sure at least one parameter is changed
@@ -1131,9 +1096,9 @@ class DiffEv(GenxOptimizer):
 
         # Implementation of constrained optimization
         if self.opt.use_boundaries:
-            # Check so that the parameters lie indside the bounds
+            # Check so that the parameters lie inside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
-            # If not inside make a random re-initilazation of that parameter
+            # If not inside make a random re-initialization of that parameter
             trial=where(ok, trial, random.rand(self.n_dim)* \
                         (self.par_max-self.par_min)+self.par_min)
         self.trial_vec[index]=trial
@@ -1159,22 +1124,22 @@ class DiffEv(GenxOptimizer):
             trial=self.pop_vec[index0]+self.opt.km*(
                     self.pop_vec[index1]-self.pop_vec[index2])
         else:
-            # Calculate a continous recomibination
+            # Calculate a continuous recombination
             # Trying something else out more like normal recombination
             trial=self.pop_vec[index0]+self.opt.kr*(
                     self.pop_vec[index1]+self.pop_vec[index2]-2*self.pop_vec[index0])
 
         # Implementation of constrained optimization
         if self.opt.use_boundaries:
-            # Check so that the parameters lie indside the bounds
+            # Check so that the parameters lie inside the bounds
             ok=bitwise_and(self.par_max>trial, self.par_min<trial)
-            # If not inside make a random re-initilazation of that parameter
+            # If not inside make a random re-initialization of that parameter
             trial=where(ok, trial, random.rand(self.n_dim)* \
                         (self.par_max-self.par_min)+self.par_min)
         self.trial_vec[index]=trial
         # return trial
 
-    # Different function for acessing and setting parameters that
+    # Different function for accessing and setting parameters that
     # the user should have control over.
     def plot_output(self):
         data=SolverUpdateInfo(
@@ -1230,7 +1195,7 @@ class DiffEv(GenxOptimizer):
         return self.model
 
     def get_fom_log(self):
-        '''get_fom_log(self) -->  fom [array]
+        '''
         Returns the fom as a fcn of iteration in an array. 
         Last element last fom value
         '''
@@ -1262,7 +1227,7 @@ class DiffEv(GenxOptimizer):
         '''
         # Get the names of the available functions
         names=[f.__name__ for f in self.mutation_schemes]
-        # Find the postion of val
+        # Find the position of val
 
         pos=names.index(val)
         self.create_trial=self.mutation_schemes[pos]
@@ -1429,7 +1394,7 @@ def _calc_fom(model_obj: Model, vec, param_funcs):
     Function to calcuate the figure of merit for parameter vector
     vec.
     '''
-    # Set the paraemter values
+    # Set the parameter values
     list(map(lambda func, value: func(value), param_funcs, vec))
 
     return model_obj.evaluate_fit_func()

@@ -295,7 +295,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         # Event for when a value of a parameter in the parameter grid has been updated
         self.Bind(parametergrid.EVT_PARAMETER_VALUE_CHANGE, self.eh_external_parameter_value_changed)
 
-        # Stuff for the find and replace functionallity
+        # Stuff for the find and replace functionality
         self.findreplace_data=wx.FindReplaceData()
         # Make search down as default
         self.findreplace_data.SetFlags(1)
@@ -309,7 +309,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
         self.paramter_grid.SetFOMFunctions(self.project_fom_parameter, self.scan_parameter)
 
-        # Initiializations..
+        # Initializations..
         # To force an update of the menubar...
         self.plot_data.SetZoom(False)
 
@@ -569,7 +569,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
                 self.plot_fomscan.SetPlottype('scan')
                 self.plot_fomscan.Plot((x, y, bestx, besty,
-                                        self.solver_control.fom_error_bars_level),
+                                        self.solver_control.controller.optimizer.opt.fom_error_bars_level),
                                        self.model.parameters.get_names()[row],
                                        'FOM')
                 self.sep_plot_notebook.SetSelection(3)
@@ -732,7 +732,6 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
     def startup_dialog(self, profile_path, force_show=False):
         if self.wstartup.show_profiles or force_show:
-            prev_widescreen=self.wstartup.widescreen
             startup_dialog=StartUpConfigDialog(self, profile_path+'profiles/',
                                                show_cb=self.wstartup.show_profiles,
                                                wide=self.wstartup.widescreen)
@@ -790,7 +789,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
             besty = self.model.fom
             self.plot_fomscan.SetPlottype('project')
             self.plot_fomscan.Plot((x, y, bestx, besty,
-                                    self.solver_control.fom_error_bars_level),
+                                    self.solver_control.controller.optimizer.opt.fom_error_bars_level),
                                    self.model.parameters.get_names()[row],
                                    'FOM')
             self.sep_plot_notebook.SetSelection(3)
@@ -815,9 +814,6 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         if self.sep_plot_notebook is not self.plot_notebook:
             for page in self.sep_plot_notebook.GetChildren():
                 pages += page.GetChildren()
-
-        # pages = [frame.plot_data, frame.plot_fom, frame.plot_pars,\
-        #             frame.plot_fomscan]
         return pages
 
     def catch_error(self, action='execution', step=None, verbose=True):
@@ -982,12 +978,12 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         '''
         # Set the string in the script_editor
         self.script_editor.SetText(event.GetModel().get_script())
-        # Let the solvergui do its loading and updating:
+        # Let the solver gui do its loading and updating:
         self.solver_control.ModelLoaded()
         # Lets update the mb_use_toggle_show Menu item
         self.mb_checkables[MenuId.USE_TOGGLE_SHOW].Check(self.data_list.list_ctrl.opt.toggle_show)
         self.mb_checkables[MenuId.AUTO_SIM].Check(self.paramter_grid.opt.auto_sim)
-        # Let other event handlers recieve the event as well
+        # Let other event handlers receive the event as well
         event.Skip()
 
     def eh_mb_new(self, event):
@@ -1045,7 +1041,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
             self.eh_mb_saveas(event)
         else:
             with self.catch_error(action='save_model', step=f'save file {os.path.basename(fname)}'):
-                io.save_file(fname, self.model, self.solver_control.optimizer)
+                self.solver_control.controller.save_file(fname)
                 self.update_title()
 
     def eh_mb_print_plot(self, event):
@@ -1347,7 +1343,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
                                             'Overwrite?')
             if result:
                 with self.catch_error(action='saveas', step=f'saveing file as {os.path.basename(fname)}'):
-                    io.save_file(fname, self.model, self.solver_control.optimizer)
+                    self.solver_control.controller.save_file(fname)
                 self.update_title()
         dlg.Destroy()
 
@@ -1548,7 +1544,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
                 dlg.Destroy()
                 return
         dlg.Destroy()
-        # Post event to tell that the model has cahnged
+        # Post event to tell that the model has changed
         _post_new_model_event(self, self.model)
         self.main_frame_statusbar.SetStatusText('Table imported from file', 1)
 
@@ -1585,8 +1581,8 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         else:
             self.main_frame_fom_text.SetLabel('        FOM %s: None'%fom_name)
         event.Skip()
-        # Hard code the events for the plugins so that they can be run syncrously.
-        # This is important since the Refelctevity model, for example, relies on the
+        # Hard code the events for the plugins so that they can be run synchronously.
+        # This is important since the Reflectivity model, for example, relies on the
         # current state of the model.
         try:
             self.plugin_control.OnFittingUpdate(event)
@@ -1602,7 +1598,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         '''
         self.flag_simulating = True
         self.main_frame_statusbar.SetStatusText('Simulating...', 1)
-        # Compile is not necessary when using simualate...
+        # Compile is not necessary when using simulate...
         with self.catch_error(action='fit_evaluate', step=f'simulating model'):
             self.model.simulate(compile=False)
             _post_sim_plot_event(self, self.model, 'Simulation')
@@ -1694,7 +1690,6 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
         def find():
             find_str = event.GetFindString()
-            ##print frame.findreplace_data.GetFlags()
             flags = event.GetFlags()
             if flags & 1:
                 ##print "Searching down"
@@ -1718,11 +1713,9 @@ class GenxMainWindow(wx.Frame, io.Configurable):
 
         elif evtype==wx.wxEVT_COMMAND_FIND_NEXT:
             pnew = self.script_editor.GetSelectionEnd()
-            ##print pnew
             self.script_editor.GotoPos(pnew)
             self.script_editor.SetAnchor(pnew)
             self.script_editor.SearchAnchor()
-            ##print 'Finding next'
             find()
 
         elif evtype==wx.wxEVT_COMMAND_FIND_REPLACE:
@@ -1783,7 +1776,7 @@ class GenxMainWindow(wx.Frame, io.Configurable):
         event.Skip()
 
 
-class MyApp(wx.App):
+class GenxApp(wx.App):
     def __init__(self, filename=None):
         debug('App init started')
         self.open_file=filename
@@ -1879,14 +1872,14 @@ class StartUpConfigDialog(wx.Dialog):
         sizer.Add(wx.StaticText(self, label='These settings can be changed at the menu:\n Options/Startup Profile'),
                   0, wx.ALIGN_LEFT, 5)
 
-        # Add the Dilaog buttons
+        # Add the Dialog buttons
         button_sizer=wx.StdDialogButtonSizer()
         okay_button=wx.Button(self, wx.ID_OK)
         okay_button.SetDefault()
         button_sizer.AddButton(okay_button)
         button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
         button_sizer.Realize()
-        # Add some eventhandlers
+        # Add some event handlers
         self.Bind(wx.EVT_BUTTON, self.OnClickOkay, okay_button)
 
         line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
@@ -1962,8 +1955,8 @@ class GenericModelEvent(wx.CommandEvent):
     of the paramters, plots and script.
     '''
 
-    def __init__(self, evt_type, id, model):
-        wx.CommandEvent.__init__(self, evt_type, id)
+    def __init__(self, evt_type, evt_id, model):
+        wx.CommandEvent.__init__(self, evt_type, evt_id)
         self.model=model
         self.description=''
 
@@ -2002,8 +1995,3 @@ def _post_sim_plot_event(parent, model, desc=''):
     evt.SetDescription(desc)
     # Process the event!
     parent.GetEventHandler().ProcessEvent(evt)
-
-
-if __name__=="__main__":
-    app=MyApp(True, 0)
-    app.MainLoop()
