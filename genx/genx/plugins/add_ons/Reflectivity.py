@@ -61,7 +61,7 @@ import time, io, traceback
 from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from .help_modules.reflectivity_utils import SampleHandler, SampleBuilder, avail_models, find_code_segment
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 _set_func_prefix='set'
 

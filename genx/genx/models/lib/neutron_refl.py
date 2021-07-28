@@ -6,7 +6,7 @@ from numpy import *
 from . import math_utils as mu
 from . import int_lay_xmean
 from functools import reduce
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 
 CTYPE=complex128

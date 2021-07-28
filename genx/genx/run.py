@@ -4,7 +4,7 @@ import os.path
 from logging import debug
 
 from . import version
-from genx.lib.custom_logging import setup_system, iprint, activate_logging, activate_excepthook
+from .core.custom_logging import setup_system, iprint, activate_logging, activate_excepthook
 
 def start_interactive(args):
     ''' Start genx in interactive mode (with the gui)

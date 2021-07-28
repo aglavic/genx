@@ -117,7 +117,7 @@ from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
 from .lib import refl as refl
-# from .lib.physical_constants import muB_to_SL
+# from .core.physical_constants import muB_to_SL
 
 # Preamble to define the parameters needed for the models outlined below:
 

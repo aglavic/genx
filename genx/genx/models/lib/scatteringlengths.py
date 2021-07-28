@@ -10,7 +10,7 @@ import string
 # Imports needed for the dispersive table implementation
 from scipy import interpolate
 from . import refl
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 # ==============================================================================
 class Func(object):

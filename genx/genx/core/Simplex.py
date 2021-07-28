@@ -44,7 +44,7 @@ depending on the initial guess used as a starting point.
 
 import math
 import copy
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 class Simplex:
     def __init__(self, testfunc, guess, increments, kR=-1, kE=2, kC=0.5):

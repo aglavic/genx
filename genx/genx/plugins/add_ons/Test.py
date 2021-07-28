@@ -4,7 +4,7 @@ Opens three new tabs, one in each area of the main window.
 It also adds a a custom menu.
 '''
 from .. import add_on_framework as framework
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 class Plugin(framework.Template):
     def __init__(self, parent):

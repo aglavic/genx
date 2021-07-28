@@ -129,7 +129,7 @@ from .lib.physical_constants import r_e, muB_to_SL
 
 # Preamble to define the parameters needed for the models outlined below:
 
-# import lib.paratt as slow_paratt
+# import core.paratt as slow_paratt
 
 ModelID='SpecNX'
 # InstrumentParameters={'Wavelength':1.54, 'Coordinates':1, 'I0':1.0, 'Sim': 0,

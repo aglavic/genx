@@ -76,7 +76,7 @@ from matplotlib import pylab
 # from fit import fit
 # from ccd.transformations import FileProcessor
 from copy import copy
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 __version__="$Revision$"
 __author__="Stuart B. Wilkins <swilkins@bnl.gov>"

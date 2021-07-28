@@ -16,8 +16,8 @@ from dataclasses import dataclass
 from . import parameters
 from . import images as img
 from .config import BaseConfig, Configurable
-from .lib import controls as ctrls
-from genx.lib.custom_logging import iprint
+from .core import controls as ctrls
+from genx.core.custom_logging import iprint
 
 
 class ParameterDataTable(gridlib.GridTableBase):

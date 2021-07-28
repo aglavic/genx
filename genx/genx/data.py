@@ -9,9 +9,9 @@ from numpy import *
 from typing import List, Dict, Tuple, Union
 
 from .exceptions import GenxIOError
-from genx.lib.custom_logging import iprint
-from .lib.colors import CyclicList
-from .lib.h5_support import H5Savable, H5HintedExport
+from genx.core.custom_logging import iprint
+from .core.colors import CyclicList
+from .core.h5_support import H5Savable, H5HintedExport
 
 _e='unspecified'
 META_DEFAULT={'creator': {'name': _e, 'system': platform, 'affiliation': _e, 'time': _e},

@@ -12,7 +12,7 @@ from . import reflectivity_images as icons
 from . import sxrd_images
 
 from genx.models import utils
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 class ModelScriptInteractor:
     _begin_string="# BEGIN %s"

@@ -15,7 +15,7 @@ else:
     CUDA=True
 
 class TestInstrumentModule(unittest.TestCase):
-    # Test the models.lib.instruments functions implemented in models.lib.instruments_numba
+    # Test the models.core.instruments functions implemented in models.core.instruments_numba
 
     def test_gauss_symmetric(self):
         x=np.linspace(0., 5., 1000)
@@ -91,7 +91,7 @@ class TestInstrumentModule(unittest.TestCase):
         np.testing.assert_array_almost_equal(weight1, weight2)
 
 class TestParattModule(unittest.TestCase):
-    # Test the models.lib.paratt functions implemented in models.lib.paratt_numba
+    # Test the models.core.paratt functions implemented in models.core.paratt_numba
 
     def test_refl_int_no_roughness(self):
         theta=np.linspace(0., 5., 1000, dtype=np.float64)
@@ -236,7 +236,7 @@ class TestParattModule(unittest.TestCase):
             np.testing.assert_array_almost_equal(G1, G2)
 
 class TestNeutronModule(unittest.TestCase):
-    # Test the models.lib.neutron_refl functions implemented in models.lib.neutron_numba
+    # Test the models.core.neutron_refl functions implemented in models.core.neutron_numba
 
     def test_refl_roughness(self):
         Q=np.linspace(0.001, 0.5, 1000, dtype=np.float64)

@@ -84,7 +84,7 @@ g/cm\ :sup:`3\ .`
 '''
 from .lib import scatteringlengths as sl
 import os
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 _head, _tail=os.path.split(__file__)
 # Look only after the file name and not the ending since

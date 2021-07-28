@@ -13,7 +13,7 @@ index: Meaning
 from .math_utils import *
 from .int_lay_xmean import calc_xrmr_Xmean
 from functools import reduce
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 # mpy_limit = 1e-9 corresponds to an angle of 89.998 deg.
 def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit=1e-8, mpy_limit=1e-9):

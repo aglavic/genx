@@ -1,6 +1,6 @@
 """
 A simple VTK widget for wxPython.  Note that wxPython comes
-with its own wxVTKRenderWindow in wxPython.lib.vtk.  Try both
+with its own wxVTKRenderWindow in wxPython.core.vtk.  Try both
 and see which one works better for you.
 
 Find wxPython info at http://wxPython.org

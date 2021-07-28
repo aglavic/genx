@@ -7,7 +7,7 @@ import wx, os, io, traceback
 
 from .utils import PluginHandler
 from genx.config import config
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 head, tail=os.path.split(__file__)
 # Look only after the file name and not the ending since

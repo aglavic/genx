@@ -1,6 +1,6 @@
 from numpy import *
 from functools import reduce
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 # "Ordinary" implementaion of Parrats recursion formula
 # theta-vector, lamda- can be a vector,n-1Dvector, d-1Dvector, sigma-1Dvector

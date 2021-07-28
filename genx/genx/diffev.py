@@ -7,7 +7,7 @@ from logging import debug
 
 from .exceptions import ErrorBarError
 from .config import BaseConfig
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverUpdateInfo, SolverResultInfo
 import _thread
 import time
@@ -40,7 +40,7 @@ else:
     rank=comm.Get_rank()
 
 from .model import Model
-from .lib.Simplex import Simplex
+from .core.Simplex import Simplex
 
 class DiffEvDefaultCallbacks(GenxOptimizerCallback):
 

@@ -106,7 +106,7 @@ Sample
 import numpy as np
 from . import utils
 from .lib.physical_constants import r_e
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 from .lib import USE_NUMBA
 if USE_NUMBA:

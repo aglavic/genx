@@ -21,7 +21,7 @@ from . import data
 from .config import BaseConfig, Configurable
 from . import images as img
 from .plugins import data_loader_wx as dlf
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 # ==============================================================================
 

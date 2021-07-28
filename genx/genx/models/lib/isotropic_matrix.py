@@ -1,5 +1,5 @@
 import numpy as np
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 _ctype=np.complex128
 

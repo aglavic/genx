@@ -22,10 +22,10 @@ from wx.lib.wordwrap import wordwrap
 
 from genx.plugins import add_on_framework as add_on
 from . import datalist, config as io, images as img, parametergrid, plotpanel, solvergui, help
-from .lib.colors import COLOR_CYCLES
+from .core.colors import COLOR_CYCLES
 from .version import __version__ as program_version
 from .exception_handling import CatchModelError
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 _path, _file=os.path.split(__file__)
 if _path[-4:]=='.zip':

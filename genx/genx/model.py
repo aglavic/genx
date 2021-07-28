@@ -26,9 +26,9 @@ from .parameters import Parameters
 from .data import DataList
 from .exceptions import FomError, GenxIOError, ModelError, ParameterError
 from .config import BaseConfig
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 from .models.lib.parameters import get_parameters, NumericParameter
-from .lib.h5_support import H5HintedExport
+from .core.h5_support import H5HintedExport
 
 
 sys.modules['models'] = sys.modules['genx.models']
@@ -605,7 +605,7 @@ class Model(H5HintedExport):
         The fileending will be .ort
         '''
         self.simulate(True)
-        from genx.lib.orso_io import ort, data as odata
+        from genx.core.orso_io import ort, data as odata
         from genx.version import __version__ as version
         para_list = [dict([(nj, tpj(pij)) for nj, pij, tpj in zip(self.parameters.data_labels, pi,
                                                                   [str, float, bool, float, float, str])])

@@ -26,7 +26,7 @@ from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from genx.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 from genx.parametergrid import ValueCellRenderer
 
 _set_func_prefix='set'

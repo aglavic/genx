@@ -15,7 +15,7 @@ from .materials import Material
 import numpy as np
 
 from . import grating
-from genx.lib.custom_logging import iprint
+from genx.core.custom_logging import iprint
 
 q=Var('q', np.array([0, 0, 0]), help="The scattering vector.")
 e=Var('wl', 1.54, help="The wavelength of the radiation.")
