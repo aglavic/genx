@@ -582,6 +582,7 @@ class MaterialDialog(wx.Dialog):
                   'authors,title,journal,year,'
                   'formula,calcformula'
                   ' from data where formula like "- %s -"'
+                  ' and method != "theoretical"'
                   ' and status is NULL order by file'%formula)
         res=c.fetchall()
         if len(res)>0:
