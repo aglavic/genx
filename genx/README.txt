@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.3.6
+=============
+ * Fix bug in hgx save/load models with non-ascii characters
+
 Changes 3.3.5
 =============
  * Fix bug in file export that could lead to missing lines at the end of the file due to caching
