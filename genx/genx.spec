@@ -15,6 +15,7 @@ a = Analysis(['scripts\\genx'],
                        (os.path.join(dll_path, 'nvvm64*.dll'), 'DLLs'), # For CUDA toolkit
                        (os.path.join(dll_path, 'libdevice*'), 'DLLs'),
                        (os.path.join(dll_path, 'nvvm64*.dll'), 'Library/bin'),
+                       (os.path.join(dll_path, 'cudart64*.dll'), 'Library/bin'),
                        ],
              datas=[('genx', 'genx')],
              hiddenimports=['pymysql', 'numba', 'numba.cuda', 
