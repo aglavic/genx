@@ -7,7 +7,6 @@ classes that is part of model parameters, such as data and parameters.
 import inspect
 import os
 import pickle as pickle
-import sys
 import traceback
 import types
 import zipfile
@@ -27,10 +26,6 @@ from .data import DataList
 from .exceptions import FomError, GenxIOError, ModelError, ParameterError
 from .models.lib.parameters import get_parameters, NumericParameter
 from .parameters import Parameters
-
-
-sys.modules['models'] = sys.modules['genx.models']
-
 
 @dataclass
 class StartupScript(BaseConfig):
@@ -60,6 +55,7 @@ class GenxScriptModule(types.ModuleType):
 
     def __init__(self, data: DataList):
         types.ModuleType.__init__(self, 'genx_script_module')
+        self.__package__=fom_funcs.__package__
         self.data=data
         self._sim=False
 

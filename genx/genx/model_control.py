@@ -163,14 +163,6 @@ class ModelController:
                                         not config.getboolean('solver', 'save all evals')))
 
     def load_gx(self, fname: str):
-        if not 'diffev' in sys.modules:
-            # for compatibility define genx standard modules as base modules
-            import genx.diffev
-            import genx.data
-            import genx.model
-            sys.modules['model']=genx.model
-            sys.modules['diffev']=genx.diffev
-            sys.modules['data']=genx.data
         self.model.load(fname)
         config.load_string(self.model.load_addition('config'))
         self.optimizer.pickle_load(self.model.load_addition('optimizer'))
