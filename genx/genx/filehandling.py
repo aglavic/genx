@@ -69,7 +69,7 @@ def save_hgx(fname, model, optimizer, config, group='current'):
     :param group: name of the group, default current
     :return:
     """
-    f=h5py.File(fname, 'w')
+    f=h5py.File(fname.encode('utf-8'), 'w')
     g=f.create_group(group)
     model.write_h5group(g)
     try:
@@ -90,7 +90,7 @@ def load_hgx(fname, model, optimizer, config, group='current'):
     :param group: name of the group, default current
     :return:
     """
-    f=h5py.File(fname, 'r')
+    f=h5py.File(fname.encode('utf-8'), 'r')
     g=f[group]
     model.read_h5group(g)
     optimizer.read_h5group(g['optimizer'])
