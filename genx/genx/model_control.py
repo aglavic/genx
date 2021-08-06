@@ -134,7 +134,7 @@ class ModelController:
         self.model.filename=os.path.abspath(fname)
 
     def save_hgx(self, fname: str):
-        f=h5py.File(fname, 'w')
+        f=h5py.File(fname.encode('utf-8'), 'w')
         g=f.create_group(self.model.h5group_name)
         self.model.write_h5group(g)
         self.optimizer.write_h5group(g.create_group(self.optimizer.h5group_name))
@@ -143,7 +143,7 @@ class ModelController:
         f.close()
 
     def load_hgx(self, fname: str):
-        f=h5py.File(fname, 'r')
+        f=h5py.File(fname.encode('utf-8'), 'r')
         g=f[self.model.h5group_name]
         self.model.read_h5group(g)
         self.optimizer.read_h5group(g[self.optimizer.h5group_name])
