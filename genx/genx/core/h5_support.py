@@ -106,8 +106,12 @@ class H5HintedExport(H5Savable):
                 self.h5_write_free_dict(group.create_group(attr), value)
             elif get_origin(typ) is dict:
                 sub_group=group.create_group(attr)
+                styp=get_args(sub_group)[1]
                 for key, subval in value.items():
-                    sub_group[key] = subval
+                    if styp is str:
+                        sub_group[key] = subval.encode('utf-8')
+                    else:
+                        sub_group[key] = subval
             elif isclass(typ) and issubclass(typ, H5Savable):
                 # the attribute is savable, create a sub-group
                 sub_group = group.create_group(value.h5group_name)
@@ -161,8 +165,18 @@ class H5HintedExport(H5Savable):
                 for key in subgroup:
                     if vtyp is ndarray:
                         opt[key]=subgroup[key][()]
+                    elif vtyp is str:
+                        try:
+                            opt[key] = subgroup[key][()].decode('utf-8')
+                        except ValueError:
+                            warning(f'Could not convert {attr}/{key} in {group.name} to string')
+                            continue
                     else:
-                        opt[key]=vtyp(subgroup[key][()])
+                        try:
+                            opt[key]=vtyp(subgroup[key][()])
+                        except ValueError:
+                            warning(f'Could not convert {attr}/{key} in {group.name} to {vtyp.__name__}')
+                            continue
                 write_attr=opt
             elif isclass(typ) and issubclass(typ, H5Savable):
                 # the attribute is loadable from sub-group
