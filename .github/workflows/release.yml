@@ -145,6 +145,7 @@ jobs:
         sudo apt update
         sudo apt install python3 sshpass
     - name: Upload files
+      run: |
         GENX_MVERSION=$(python3 -c "from genx.version import __version__;print(__version__.rsplit('.',1)[0])")
         DEST="GenX $MV.x test"
         mkdir "$DEST"
