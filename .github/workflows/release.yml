@@ -173,4 +173,4 @@ jobs:
         DEST="GenX $MV.x test"
         mkdir "$DEST"
         mv GenX*.deb GenX*.tar.gz "$DEST"
-         rsync --progress -urz "$DEST" sftp://${{secrets.SF_USER}}@frs.sourceforge.net/home/pfs/project/genx/3.x.y/
+         rsync --progress -urz "$DEST" ${{secrets.SF_USER}}@frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
