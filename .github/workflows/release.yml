@@ -104,6 +104,7 @@ jobs:
         mv dist/*.deb $DEST_PATH
         mv dist/*.tar.gz "dist/GenX-$GENX_VERSION.tar.gz"
     - name: Upload to PyPI
+      if: github.event_name != 'workflow_dispatch'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
