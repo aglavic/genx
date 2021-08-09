@@ -14,11 +14,11 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-#  build-windows:
-#    runs-on: windows-latest
-#
-#    steps:
-#    - uses: actions/checkout@v2
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
 #    - name: Set up Python
 #      uses: actions/setup-python@v2
 #      with:
