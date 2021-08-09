@@ -19,33 +19,33 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-#    - name: Set up Python
-#      uses: actions/setup-python@v2
-#      with:
-#        python-version: 3.7
-#    - name: Install dependencies
-#      run: |
-#        C:\Miniconda\condabin\conda.bat env update --file genx\windows_build\conda_build.yml --name base
-#        C:\Miniconda\condabin\conda.bat init powershell
-#    - name: Build with pyinstaller
-#      run: |
-#        cd genx
-#        pyinstaller genx.spec
-#    - name: Download and Install Inno Setup installer
-#      run: |
-#        curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-6.1.2.exe
-#        ./installer.exe /verysilent /allusers /dir=inst
-#    - name: Build setup file
-#      run: |
-#        cd genx\windows_build
-#        python update_version.py
-#        iscc genx.iss
-#    - name: Archive distribution
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: windows-dist
-#        path: |
-#          genx\windows_build\Output\GenX-*_win64_setup.exe
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        C:\Miniconda\condabin\conda.bat env update --file genx\windows_build\conda_build.yml --name base
+        C:\Miniconda\condabin\conda.bat init powershell
+    - name: Build with pyinstaller
+      run: |
+        cd genx
+        pyinstaller genx.spec
+    - name: Download and Install Inno Setup installer
+      run: |
+        curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-6.1.2.exe
+        ./installer.exe /verysilent /allusers /dir=inst
+    - name: Build setup file
+      run: |
+        cd genx\windows_build
+        python update_version.py
+        iscc genx.iss
+    - name: Archive distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-dist
+        path: |
+          genx\windows_build\Output\GenX-*_win64_setup.exe
         
   build-ubuntu-18:
     runs-on: ubuntu-18.04
@@ -140,7 +140,6 @@ jobs:
         allowUpdates: true
 
   release-sourceforge:
-    #if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: [build-ubuntu-18, build-ubuntu-20, build-windows]
 
@@ -152,9 +151,9 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: ubuntu-20-dist
-#    - uses: actions/download-artifact@v2
-#      with:
-#        name: windows-dist
+    - uses: actions/download-artifact@v2
+      with:
+        name: windows-dist
     - name: Install dependencies
       run: |
         sudo apt update
@@ -170,7 +169,7 @@ jobs:
         cd genx
         GENX_MVERSION=$(python3 -c "from genx.version import __version__;print(__version__.rsplit('.',1)[0])")
         cd ..
-        DEST="GenX $MV.x test"
+        DEST="GenX $GENX_MVERSION.x"
         mkdir "$DEST"
-        mv GenX*.deb GenX*.tar.gz "$DEST"
+        mv GenX*.deb GenX*.tar.gz GenX-*_win64_setup.exe "$DEST"
          rsync --progress -urz "$DEST" ${{secrets.SF_USER}}@frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
