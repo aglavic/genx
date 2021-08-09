@@ -60,6 +60,12 @@ jobs:
       run: |
         cd genx
         bash debian_build/make_deb.sh
+    - name: Rename distribution files
+      run: |
+        cd genx
+        GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
+        DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
+        mv dist/*.deb $DEST_PATH
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
@@ -90,6 +96,14 @@ jobs:
         mkdir dist
         mv genx/dist/genx*.whl dist/
         cp genx/dist/genx*.tar.gz dist/
+    - name: Rename distribution files
+      run: |
+        cd genx
+        GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
+        DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
+        mv dist/*.deb $DEST_PATH
+        DEST_PATH=$(ls dist/*.tar.gz | sed -e "s/genx/GenX-$GENX_VERSION/g")
+        mv dist/*.tar.gz $DEST_PATH
     - name: Upload to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -112,16 +126,27 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/download-artifact@v2
-      with:
-        name: ubuntu-18-dist
-    - uses: actions/download-artifact@v2
-      with:
-        name: ubuntu-20-dist
-    - uses: actions/download-artifact@v2
-      with:
-        name: windows-dist
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "genx*.deb,genx*.tar.gz,GenX-*_win64_setup.exe"
+        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
+
+  release-sourceforge:
+    #if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: [build-ubuntu-18, build-ubuntu-20] #, build-windows]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v2
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install python3 sshpass
+    - name: Upload files
+        GENX_MVERSION=$(python3 -c "from genx.version import __version__;print(__version__.rsplit('.',1)[0])")
+        DEST="GenX $MV.x test"
+        mkdir "$DEST"
+        mv GenX*.deb GenX*.tar.gz GenX-*_win64_setup.exe  "$DEST"
+         sshpass  -p "${{secrets.SF_PW}}" rsync -urz "$DEST" sftp://${{secrets.SF_USER}}@frs.sourceforge.net/home/pfs/project/genx/3.x.y/
