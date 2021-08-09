@@ -169,8 +169,10 @@ jobs:
       run: |
         cd genx
         GENX_MVERSION=$(python3 -c "from genx.version import __version__;print(__version__.rsplit('.',1)[0])")
+        python3 create_subreadme.py
         cd ..
         DEST="GenX $GENX_MVERSION.x"
         mkdir "$DEST"
+        mv genx/README_latest.txt "$DEST/README.txt"
         mv GenX*.deb GenX*.tar.gz GenX-*_win64_setup.exe "$DEST"
          rsync --progress -urz "$DEST" ${{secrets.SF_USER}}@frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
