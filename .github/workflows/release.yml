@@ -167,4 +167,4 @@ jobs:
         DEST="GenX $MV.x test"
         mkdir "$DEST"
         mv GenX*.deb GenX*.tar.gz "$DEST"
-         sshpass  -p "${{secrets.SF_PW}}" rsync -urz -e ssh "$DEST" sftp://${{secrets.SF_USER}}@frs.sourceforge.net/home/pfs/project/genx/3.x.y/
+         rsync --progress -urz --rsh="sshpass -p ${{secrets.SF_PW}} ssh -l ${{secrets.SF_USER}}" "$DEST" frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
