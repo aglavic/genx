@@ -74,7 +74,7 @@ class Config:
             if fallback is None:
                 raise GenxOptionError(section, option)
             else:
-                debug(f'Return fallback due to ValueError in _getf, {section=}/{option=}')
+                debug(f'Return fallback due to ValueError in _getf, section={section}/option={option}')
                 return fallback
 
     def getlist(self, section: str, option: str, fallback=None):

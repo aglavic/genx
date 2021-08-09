@@ -35,7 +35,7 @@ if _path[-4:]=='.zip':
 config_path=os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
 profile_dest=os.path.abspath(os.path.join(config_path, 'profiles'))
 profile_src=os.path.abspath(os.path.join(_path, '..', 'profiles'))
-info(f'Paths are:\n        {config_path=}\n        {profile_dest=}\n        {profile_src=}')
+info(f'Paths are:\n        config_path={config_path}\n       profile_dest={profile_dest}\n        profile_src{profile_src}')
 version_file=os.path.join(config_path, 'genx.version')
 if not os.path.exists(config_path):
     info(f'Creating path: {config_path}')

@@ -47,31 +47,31 @@ jobs:
 #        path: |
 #          genx\windows_build\Output\GenX-*_win64_setup.exe
         
-#  build-ubuntu-18:
-#    runs-on: ubuntu-18.04
-#
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: Install dependencies
-#      run: |
-#        sudo apt update
-#        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential python3-setuptools
-#    - name: Build binary package
-#      run: |
-#        cd genx
-#        bash debian_build/make_deb.sh
-#    - name: Rename distribution files
-#      run: |
-#        cd genx
-#        GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
-#        DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
-#        mv dist/*.deb $DEST_PATH
-#    - name: Archive distribution
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: ubuntu-18-dist
-#        path: |
-#          genx/dist/*.deb
+  build-ubuntu-18:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential python3-setuptools
+    - name: Build binary package
+      run: |
+        cd genx
+        bash debian_build/make_deb.sh
+    - name: Rename distribution files
+      run: |
+        cd genx
+        GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
+        DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
+        mv dist/*.deb $DEST_PATH
+    - name: Archive distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: ubuntu-18-dist
+        path: |
+          genx/dist/*.deb
 
   build-ubuntu-20:
     runs-on: ubuntu-20.04
@@ -124,9 +124,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-#    - uses: actions/download-artifact@v2
-#      with:
-#        name: ubuntu-18-dist
+    - uses: actions/download-artifact@v2
+      with:
+        name: ubuntu-18-dist
     - uses: actions/download-artifact@v2
       with:
         name: ubuntu-20-dist
@@ -146,9 +146,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-#    - uses: actions/download-artifact@v2
-#      with:
-#        name: ubuntu-18-dist
+    - uses: actions/download-artifact@v2
+      with:
+        name: ubuntu-18-dist
     - uses: actions/download-artifact@v2
       with:
         name: ubuntu-20-dist
@@ -167,4 +167,4 @@ jobs:
         DEST="GenX $MV.x test"
         mkdir "$DEST"
         mv GenX*.deb GenX*.tar.gz "$DEST"
-         rsync --progress -urz --rsh="sshpass -p ${{secrets.SF_PW}} ssh -l ${{secrets.SF_USER}}" "$DEST" frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
+         rsync --progress -urz --rsh="sshpass -p ${{secrets.SF_PW}} ssh -l ${{secrets.SF_USER}}" -o StrictHostKeyChecking=no "$DEST" frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
