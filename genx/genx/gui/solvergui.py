@@ -210,8 +210,6 @@ class ModelControlGUI:
         dlg.set_apply_change_func(applyfunc)
 
         dlg.ShowModal()
-        # if dlg.ShowModal() == wx.ID_OK:
-        #    pass
         dlg.Destroy()
 
     def ModelLoaded(self):
@@ -712,8 +710,8 @@ class SettingsDialog(wx.Dialog):
         self.solver.opt.use_boundaries=self.bound_control.GetValue()
         self.solver.set_create_trial(self.method_choice.GetStringSelection())
         self.solver.opt.use_parallel_processing=self.use_parallel_control.GetValue()
-        self.solver.opt.processes=self.processes_sc.GetValue()
-        self.solver.opt.chunksize=self.chunk_size_sc.GetValue()
+        self.solver.opt.parallel_processes=self.processes_sc.GetValue()
+        self.solver.opt.parallel_chunksize=self.chunk_size_sc.GetValue()
         model.set_fom_ignore_inf(self.fom_ignore_inf_control.GetValue())
         model.set_fom_ignore_nan(self.fom_ignore_nan_control.GetValue())
         self.solver.opt.errorbar_level=self.errorbar_control.GetValue()
