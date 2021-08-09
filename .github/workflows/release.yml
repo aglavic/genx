@@ -120,7 +120,7 @@ jobs:
   release:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs: [build-ubuntu-20, build-windows]
+    needs: [ubuntu-18.04, build-ubuntu-20, build-windows]
     
     steps:
     - uses: actions/checkout@v2
@@ -142,7 +142,7 @@ jobs:
   release-sourceforge:
     #if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs: [build-ubuntu-20] #, build-windows]
+    needs: [ubuntu-18.04, build-ubuntu-20, build-windows]
 
     steps:
     - uses: actions/checkout@v2
@@ -159,6 +159,12 @@ jobs:
       run: |
         sudo apt update
         sudo apt install python3 sshpass
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_KEY }}
+        known_hosts: ${{ secrets.KNOWN_HOSTS }}
+        if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
     - name: Upload files
       run: |
         cd genx
@@ -167,4 +173,4 @@ jobs:
         DEST="GenX $MV.x test"
         mkdir "$DEST"
         mv GenX*.deb GenX*.tar.gz "$DEST"
-         rsync --progress -urz --rsh="sshpass -p ${{secrets.SF_PW}} ssh -l ${{secrets.SF_USER}}" -o StrictHostKeyChecking=no "$DEST" frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
+         rsync --progress -urz "$DEST" sftp://${{secrets.SF_USER}}@frs.sourceforge.net/home/pfs/project/genx/3.x.y/
