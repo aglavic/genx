@@ -2,6 +2,7 @@
 An implementation of the differential evolution algorithm for fitting.
 '''
 import _thread
+import multiprocessing as processing
 import pickle
 import random as random_mod
 import time
@@ -18,17 +19,8 @@ from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterI
 
 
 __mpi_loaded__=False
-__parallel_loaded__=False
-_cpu_count=1
-
-try:
-    import multiprocessing as processing
-
-    __parallel_loaded__=True
-    _cpu_count=processing.cpu_count()
-except ImportError:
-    debug('processing not installed no parallel processing possible')
-    processing=None
+__parallel_loaded__=True
+_cpu_count=processing.cpu_count()
 
 try:
     from mpi4py import MPI as mpi
@@ -84,7 +76,7 @@ class DiffEvConfig(BaseConfig):
     max_log_elements:int=100000
     use_parallel_processing:bool=False
     use_mpi:bool=False
-    parallel_processes:int=2
+    parallel_processes:int=_cpu_count
     parallel_chunksize:int=25
 
     use_autosave:bool=False
@@ -723,12 +715,19 @@ class DiffEv(GenxOptimizer):
         as many cpus there is available
         '''
         # check if CUDA has been activated
-        from .models.lib import paratt
+        from .models.lib import paratt, USE_NUMBA
         use_cuda=paratt.Refl.__module__.rsplit('.',1)[1]=='paratt_cuda'
+        # reduce numba thread count for numba functions
+        if USE_NUMBA:
+            numba_procs=max(1, _cpu_count//self.opt.parallel_processes)
+        else:
+            numba_procs=None
+        self.text_output("Starting a pool with %i workers ..."%(self.opt.parallel_processes,))
         self.pool=processing.Pool(processes=self.opt.parallel_processes,
                                   initializer=parallel_init,
-                                  initargs=(self.model.pickable_copy(), use_cuda))
-        self.text_output("Starting a pool with %i workers ..."%(self.opt.parallel_processes,))
+                                  initargs=(self.model.pickable_copy(), numba_procs))
+        if use_cuda:
+            self.pool.apply_async(init_cuda)
         time.sleep(1.0)
         # print "Starting a pool with ", self.opt.parallel_processes, " workers ..."
 
@@ -1351,31 +1350,39 @@ class DiffEv(GenxOptimizer):
 # Functions that is needed for parallel processing!
 model=Model(); par_funcs=() # global variables set in functions below
 
-def parallel_init(model_copy: Model, use_cuda: bool):
+def parallel_init(model_copy: Model, numba_procs=None):
     '''
     parallel initialization of a pool of processes. The function takes a
     pickle safe copy of the model and resets the script module and the compiles
     the script and creates function to set the variables.
     '''
-    if use_cuda:
-        # activate cuda in subprocesses
-        from .models.lib import paratt_cuda
-        from .models.lib import neutron_cuda
-        from models.lib import paratt, neutron_refl
-        paratt.Refl=paratt_cuda.Refl
-        paratt.ReflQ=paratt_cuda.ReflQ
-        paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
-        neutron_refl.Refl=neutron_cuda.Refl
-        from .models.lib import paratt, neutron_refl
-        paratt.Refl=paratt_cuda.Refl
-        paratt.ReflQ=paratt_cuda.ReflQ
-        paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
-        neutron_refl.Refl=neutron_cuda.Refl
+    if numba_procs is not None:
+        import numba
+        iprint(f"Setting numba threads to {numba_procs}")
+        numba.set_num_threads(numba_procs)
     global model, par_funcs
     model=model_copy
     model.reset()
     model.simulate()
     (par_funcs, start_guess, par_min, par_max)=model.get_fit_pars()
+
+def init_cuda():
+    iprint("Init CUDA in one worker")
+    # activate cuda in subprocesses
+    from .models.lib import paratt_cuda
+    from .models.lib import neutron_cuda
+    from models.lib import paratt, neutron_refl
+    paratt.Refl=paratt_cuda.Refl
+    paratt.ReflQ=paratt_cuda.ReflQ
+    paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
+    neutron_refl.Refl=neutron_cuda.Refl
+    from .models.lib import paratt, neutron_refl
+    paratt.Refl=paratt_cuda.Refl
+    paratt.ReflQ=paratt_cuda.ReflQ
+    paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
+    neutron_refl.Refl=neutron_cuda.Refl
+    iprint("CUDA init done, go to work")
+
 
 def parallel_calc_fom(vec):
     '''
