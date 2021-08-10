@@ -114,7 +114,7 @@ class Model(H5HintedExport):
         self.opt = ModelParameters()
         self.startup_script = StartupScript()
         self.solver_parameters = SolverParameters()
-        self.read_config()
+        self.ReadConfig()
 
         self.data = DataList()
         self.script = ''
@@ -138,11 +138,16 @@ class Model(H5HintedExport):
 
         self.extra_analysis = {}
 
-    def read_config(self):
+    def ReadConfig(self):
         self.opt.load_config()
         self.startup_script.load_config()
         self.solver_parameters.load_config()
         self.create_fom_mask_func()
+
+    def WriteConfig(self):
+        self.opt.safe_config()
+        self.startup_script.safe_config()
+        self.solver_parameters.safe_config()
 
     def load(self, filename):
         ''' 
@@ -746,7 +751,7 @@ class Model(H5HintedExport):
         Returns all the parameters that can be fitted given by the old style of defining parameters GenX2.4.X
         """
         # Start by updating the config file
-        self.read_config()
+        self.ReadConfig()
         # First we should see if any of the 
         # classes is defined in model.__pars__
         # or in __pars__
