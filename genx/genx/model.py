@@ -374,7 +374,7 @@ class Model(H5HintedExport):
             fom += sum([pf() for pf in penalty_funcs])
         return fom_raw, fom_indiv, fom
 
-    def evaluate_fit_func(self):
+    def evaluate_fit_func(self, get_elements=False):
         '''
         Evalute the Simulation fucntion and returns the fom. Use this one
         for fitting. Use evaluate_sim_func(self) for updating of plots
@@ -383,7 +383,10 @@ class Model(H5HintedExport):
         self.script_module._sim = False
         simulated_data = self.script_module.Sim(self.data)
         fom_raw, fom_inidv, fom = self.calc_fom(simulated_data)
-        return fom
+        if get_elements:
+            return np.hstack([self.fom_mask_func(fom_set) for fom_set in fom_raw])
+        else:
+            return fom
 
     def evaluate_sim_func(self):
         '''

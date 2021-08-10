@@ -1392,34 +1392,3 @@ class FomScanPlotPanel(PlotPanel):
         self.ax.set_ylabel(l2)
 
         self.flush_plot()
-
-# =============================================================================
-# Test code for the class to be able to independly test the code
-if __name__=='__main__':
-    class DemoPlotPanel(PlotPanel):
-
-        def draw(self):
-            if not hasattr(self, 'subplot'):
-                self.subplot=self.figure.add_subplot(111)
-            theta=arange(0, 45*2*pi, 0.02)
-            rad=(0.8*theta/2/pi+1)
-            r=rad*(8+sin(theta*7+rad/1.8))
-            x=r*cos(theta)
-            y=r*sin(theta)
-
-            self.subplot.plot(x, y, '-r')
-
-            self.subplot.set_xlim([-400, 400])
-            self.subplot.set_ylim([-400, 400])
-
-    app=wx.SimpleApp(0)
-    frame=wx.Frame(None, -1, 'WxPython and Matplotlib')
-    panel=DemoPlotPanel(frame)
-    sizer=wx.BoxSizer(wx.HORIZONTAL)
-    panel.SetSizer(sizer)
-    sizer.SetItemMinSize(panel, 300, 300)
-    panel.Fit()
-    panel._SetSize()
-
-    frame.Show()
-    app.MainLoop()

@@ -15,7 +15,7 @@ from bumps.fitproblem import nllf_scale
 from bumps.formatnum import format_uncertainty
 from bumps.dream.corrplot import _hists
 
-from .plotpanel import PlotPanel
+from .plotpanel import PlotPanel, BasePlotConfig
 
 class ProgressMonitor(TimedUpdate):
     """
@@ -103,6 +103,9 @@ class NBMonitor(TimedUpdate):
             display(fig)
             close()
 
+class StatisticsPanelConfig(BasePlotConfig):
+    section='statistics plot'
+
 class StatisticalAnalysisDialog(wx.Dialog):
     rel_cov=None
 
@@ -146,7 +149,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.grid.DisableCellEditControl()
         self.grid.SetMinSize((int(dpi_scale_factor*200),int(dpi_scale_factor*200)))
         self.grid.Bind(EVT_GRID_CELL_LEFT_DCLICK, self.OnSelectCell)
-        rpanel=PlotPanel(self)
+        rpanel=PlotPanel(self, config_class=StatisticsPanelConfig)
         rpanel.SetMinSize((int(dpi_scale_factor*200),int(dpi_scale_factor*200)))
         self.plot_panel=rpanel
         self.ax=rpanel.figure.add_subplot(111)
