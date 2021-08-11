@@ -99,18 +99,10 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
             X[0, 1]=-costd*(k_pi-k_pj)/2./k_pj
             X[0, 2]=sintd*(k_pj+k_mi)/2./k_pj
             X[0, 3]=sintd*(k_pj-k_mi)/2./k_pj
-            #X[1, 0]=X[0, 1]  # -(costd*(k_pj1 - k_pj))/(2*k_pj)
-            #X[1, 1]=X[0, 0]  # (costd*(k_pj1 + k_pj))/(2*k_pj)
-            #X[1, 2]=X[0, 3]  # (sintd*(k_pj - k_mj1))/(2*k_pj)
-            #X[1, 3]=X[0, 2]  # (sintd*(k_pj + k_mj1))/(2*k_pj)
             X[2, 0]=-(sintd*(k_pi+k_mj))/(2.*k_mj)
             X[2, 1]=(sintd*(k_pi-k_mj))/(2.*k_mj)
             X[2, 2]=(costd*(k_mi+k_mj))/(2.*k_mj)
             X[2, 3]=-(costd*(k_mi-k_mj))/(2.*k_mj)
-            #X[3, 0]=X[2, 1]  # (sintd*(k_pj1 - k_mj))/(2*k_mj)
-            #X[3, 1]=X[2, 0]  # -(sintd*(k_pj1 + k_mj))/(2*k_mj)
-            #X[3, 2]=X[2, 3]  # -(costd*(k_mj1 - k_mj))/(2*k_mj)
-            #X[3, 3]=X[2, 2]  # (costd*(k_mj1 + k_mj))/(2*k_mj)
 
             ##### include_sigma #####
             sigma2=sigma[lj-1]**2/2.0
