@@ -196,7 +196,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         pop=self.entries['pop'].GetValue()
         burn=self.entries['burn'].GetValue()
         samples=self.entries['samples'].GetValue()
-        self.pbar.SetRange(int(samples/(len(self.bproblem.opt())*pop))+burn)
+        self.pbar.SetRange(int(samples/(len(self.bproblem.model_parameters())*pop))+burn)
 
         res=self.model.bumps_fit(method='dream',
                                  pop=pop, samples=samples, burn=burn,
