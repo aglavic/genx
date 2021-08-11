@@ -841,41 +841,8 @@ class Model(H5HintedExport):
 
         from bumps.fitproblem import FitProblem
         from bumps.curve import Curve
-        from numpy import hstack
 
-        namespace = {
-            'script_module': indep_module, 'data': data,
-            'model_data': None, 'bmodel': None,
-            'Curve': Curve, 'hstack': hstack
-            }
-
-        # build function for full model parameters out of parameter grid
-        mstring = 'def model_data(ignore'
-        fstring = ''
-        pstart = []
-        for p in self.parameters:
-            if p.name.strip()=='':
-                continue
-            name = p.name.replace('.set', '_')
-            fstring += 'script_module.%s(%s)\n'%(p.name, name)
-            mstring += ', '+name
-            pstart.append((name, p.value, p.min, p.max, p.fit))
-        mstring += '):'
-        fstring += 'res=script_module.Sim(data)\nreturn hstack(res)'
-        namespace['pstart'] = pstart
-        exec(mstring+'\n    '+fstring.replace('\n', '\n    '), namespace)
-        exec('''bmodel=Curve(model_data, hstack([di.x for di in data]), 
-                       hstack([di.y for di in data]), 
-                       hstack([di.error for di in data]), 
-                       '''+
-             ', \n                   '.join(['%s=%s'%(pi[0], pi[1]) for pi in pstart])+')',
-             namespace)
-        for pname, pval, pmin, pmax, pfit in pstart:
-            exec('bmodel.%s.range(%s, %s)'%(pname, pmin, pmax), namespace)
-            if not pfit:
-                exec('bmodel.%s.fixed=True'%pname, namespace)
-        bproblem = FitProblem(namespace['bmodel'])
-        return bproblem
+        return FitProblem(GenxCurve(self))
 
     def bumps_fit(self, method='dream',
                   pop=15, samples=1e5, burn=100, steps=0,
@@ -1104,3 +1071,171 @@ class Model(H5HintedExport):
 
     def _ipyw_script(self, change):
         self.script = change.new
+
+class GenxCurve:
+    """
+    Bumps Curve object for a GenX model.
+    """
+    model: Model
+
+    def __init__(self, model: Model):
+        self._num_curves = 1
+
+        self.labels = ['x', 'I']
+
+        self.model = model
+
+        if not self.model.compiled:
+            self.model.compile_script()
+        self.model_script=self.model.script_module
+
+        self.name = "GenX model"
+        self.plot_x = None
+
+        pars, state, funcs = self._parse_pars()
+
+        self._pnames = list(pars.keys())
+        self._pars=pars
+        self._state = state
+        self._set_funcs=funcs
+        self._cached_theory = None
+
+    @property
+    def x(self):
+        return [self._pars[name].value for name in self._pnames]
+
+    def _parse_pars(self):
+        from bumps.parameter import Parameter
+        pars={}
+        state={}
+        funcs={}
+        for p in self.model.parameters:
+            if p.name.strip()=='':
+                continue
+            name = p.name.replace('.set', '_')
+            if p.fit:
+                pars[name]=Parameter.default(p.value, name=name, bounds=(p.min, p.max))
+            else:
+                state[name]=p.value
+            funcs[name]=self.model.create_fit_func(p.name)
+        return pars, state, funcs
+
+    def update(self):
+        self._cached_theory = None
+
+    def parameters(self):
+        return self._pars
+
+    def numpoints(self):
+        return np.sum([di.x.shape[0] for di in self.model.data if di.use])
+
+    def theory(self, x=None):
+        # Use cache if x is None, otherwise compute theory with x.
+        if x is None:
+            if self._cached_theory is None:
+                self._cached_theory = self._compute_theory(self.x)
+            return self._cached_theory
+        return self._compute_theory(x)
+
+
+    def _compute_theory(self, x):
+        self._apply_par(x)
+        return np.hstack(self.model_script.Sim(self.model.data))
+
+    def _apply_par(self, x):
+        for ni, si in self._state.items():
+            self._set_funcs[ni](si)
+        for ni, xi in zip(self._pnames, x):
+            self._set_funcs[ni](xi)
+
+    def simulate_data(self, noise=None):
+        theory = self.theory()
+        if noise is not None:
+            if noise == 'data':
+                pass
+            elif noise < 0:
+                self.dy = -0.01*noise*theory
+            else:
+                self.dy = noise
+        self.y = theory + np.random.randn(*theory.shape)*self.dy
+
+
+    def residuals(self):
+        self._apply_par(self.x)
+        fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
+        fom_clean=[self.model.fom_mask_func(fom_set) for fom_set in fom_raw]
+        return np.hstack([np.sign(fom_set)*np.sqrt(np.absolute(fom_set)) for fom_set in fom_clean])
+
+    def nllf(self):
+        self._apply_par(self.x)
+        fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
+        return 0.5 * fom # sum(residuals**2) for Chi2Bars fom function and no penalty
+
+
+    # def save(self, basename):
+    #     # TODO: need header line with state vars as json
+    #     # TODO: need to support nD x,y,dy
+    #     if len(self.x.shape) > 1:
+    #         warnings.warn("Save not supported for nD x values")
+    #         return
+    #
+    #     theory = self.theory()
+    #     if self._num_curves > 1:
+    #         # Multivalued y, dy for single valued x.
+    #         columns = [self.x]
+    #         headers = ["x"]
+    #         for k, (y, dy, fx) in enumerate(zip(self.y, self.dy, theory)):
+    #             columns.extend((y, dy, fx))
+    #             headers.extend(("y[%d]"%(k+1), "dy[%d]"%(k+1), "fx[%d]"%(k+1)))
+    #     else:
+    #         # Single-valued y, dy for single valued x.
+    #         headers = ["x", "y", "dy", "fy"]
+    #         columns = [self.x, self.y, self.dy, theory]
+    #     data = np.vstack(columns)
+    #     outfile = basename + '.dat'
+    #     with open(outfile, "w") as fd:
+    #         fd.write("# " + "\t ".join(headers) + "\n")
+    #         np.savetxt(fd, data.T)
+    #
+    #
+    # def plot(self, view=None):
+    #     if self._plot is not None:
+    #         kw = self._fetch_pars()
+    #         self._plot(self.x, self.y, self.dy, self.theory(), view=view, **kw)
+    #         return
+    #
+    #     import pylab
+    #     from .plotutil import coordinated_colors
+    #
+    #     x = self.x
+    #     if self.plot_x is not None:
+    #         theory_x, theory_y = self.plot_x, self.theory(self.plot_x)
+    #     else:
+    #         theory_x, theory_y = x, self.theory()
+    #     resid = self.residuals()
+    #
+    #     if self._num_curves > 1:
+    #         y, dy, theory_y, resid = self.y.T, self.dy.T, theory_y.T, resid.T
+    #     else:
+    #         y, dy, theory_y, resid = (v[:, None]
+    #                                   for v in (self.y, self.dy, theory_y, resid))
+    #
+    #     colors = tuple(coordinated_colors() for _ in range(self._num_curves))
+    #     labels = self.labels
+    #
+    #     #print "kw_plot",kw
+    #     if view == 'residual':
+    #         _plot_resids(x, resid, colors, labels=labels, view=view)
+    #     else:
+    #         plot_ratio = 4
+    #         h = pylab.subplot2grid((plot_ratio, 1), (0, 0), rowspan=plot_ratio-1)
+    #         for tick_label in h.get_xticklabels():
+    #             tick_label.set_visible(False)
+    #         _plot_fits(data=(x, y, dy), theory=(theory_x, theory_y),
+    #                    colors=colors, labels=labels, view=view)
+    #         #pylab.gca().xaxis.set_visible(False)
+    #         #pylab.gca().spines['bottom'].set_visible(False)
+    #         #pylab.gca().set_xticks([])
+    #
+    #         pylab.subplot2grid((plot_ratio, 1), (plot_ratio-1, 0), sharex=h)
+    #         _plot_resids(x, resid, colors=colors, labels=labels, view=view)

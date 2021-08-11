@@ -126,7 +126,8 @@ class LMOptimizer(GenxOptimizer):
 
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
-        fom=self.model.evaluate_fit_func(get_elements=True)
+        fom=self.model.evaluate_fit_func(get_elements=True) # fom is squared in leastsq
+        chi=sign(fom)*sqrt(abs(fom))
         self.n_fom_evals+=1
         return fom
 

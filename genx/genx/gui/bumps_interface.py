@@ -212,6 +212,9 @@ class StatisticalAnalysisDialog(wx.Dialog):
 
         res=self._res
         self.draw=res.state.draw()
+        pnames=list(self.bproblem.model_parameters().keys())
+        sort_indices=[pnames.index(ni) for ni in self.draw.labels]
+
         self.abs_cov=res.cov
         self.rel_cov=res.cov/res.dx[:,newaxis]/res.dx[newaxis,:]
         rel_max=[0, 1, abs(self.rel_cov[0,1])]
@@ -223,24 +226,24 @@ class StatisticalAnalysisDialog(wx.Dialog):
             fmt="%.4g"
         self.grid.SetRowLabelValue(0, 'Value/Error:')
         for i, ci in enumerate(self.rel_cov):
-            self.grid.SetColLabelValue(i, self.draw.labels[i])
-            self.grid.SetRowLabelValue(i+1, self.draw.labels[i])
-            self.grid.SetCellValue(0, i, "%.8g\n%.4g"%(res.x[i], res.dx[i]))
-            self.grid.SetCellAlignment(0, i, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
-            self.grid.SetReadOnly(0, i)
-            self.grid.SetCellBackgroundColour(0, i, "#cccccc")
+            self.grid.SetColLabelValue(sort_indices[i], self.draw.labels[i])
+            self.grid.SetRowLabelValue(sort_indices[i]+1, self.draw.labels[i])
+            self.grid.SetCellValue(0, sort_indices[i], "%.8g\n%.4g"%(res.x[i], res.dx[i]))
+            self.grid.SetCellAlignment(0, sort_indices[i], wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+            self.grid.SetReadOnly(0, sort_indices[i])
+            self.grid.SetCellBackgroundColour(0, sort_indices[i], "#cccccc")
             for j, cj in enumerate(ci):
-                self.grid.SetCellValue(i+1, j, fmt%display_cov[i,j])
-                self.grid.SetReadOnly(i+1, j)
-                self.grid.SetCellAlignment(i+1, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+                self.grid.SetCellValue(sort_indices[i]+1, sort_indices[j], fmt%display_cov[i,j])
+                self.grid.SetReadOnly(sort_indices[i]+1, sort_indices[j])
+                self.grid.SetCellAlignment(sort_indices[i]+1, sort_indices[j], wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
                 if i==j:
-                    self.grid.SetCellBackgroundColour(i+1, j, "#888888")
+                    self.grid.SetCellBackgroundColour(sort_indices[i]+1, sort_indices[j], "#888888")
                 elif abs(cj)>0.4:
-                    self.grid.SetCellBackgroundColour(i+1, j, "#ffcccc")
+                    self.grid.SetCellBackgroundColour(sort_indices[i]+1, sort_indices[j], "#ffcccc")
                 elif abs(cj)>0.3:
-                    self.grid.SetCellBackgroundColour(i+1, j, "#ffdddd")
+                    self.grid.SetCellBackgroundColour(sort_indices[i]+1, sort_indices[j], "#ffdddd")
                 elif abs(cj)>0.2:
-                    self.grid.SetCellBackgroundColour(i+1, j, "#ffeeee")
+                    self.grid.SetCellBackgroundColour(sort_indices[i]+1, sort_indices[j], "#ffeeee")
                 if i!=j and abs(cj)>rel_max[2]:
                     rel_max=[min(i, j), max(i, j), abs(cj)]
         self.hists=_hists(self.draw.points.T, bins=50)
@@ -280,12 +283,18 @@ class StatisticalAnalysisDialog(wx.Dialog):
         else:
             display_cov=self.abs_cov
             fmt="%.4g"
+        pnames=list(self.bproblem.model_parameters().keys())
+        sort_indices=[pnames.index(ni) for ni in self.draw.labels]
         for i, ci in enumerate(self.rel_cov):
             for j, cj in enumerate(ci):
-                self.grid.SetCellValue(i+1, j, fmt%display_cov[i,j])
+                self.grid.SetCellValue(sort_indices[i]+1, sort_indices[j], fmt%display_cov[i,j])
 
     def OnSelectCell(self, evt):
-        i, j=evt.GetCol(), evt.GetRow()-1
+        ri, rj=evt.GetCol(), evt.GetRow()-1
+        pnames=list(self.bproblem.model_parameters().keys())
+        reverse_indices=[self.draw.labels.index(ni) for ni in pnames]
+        i=reverse_indices[ri]
+        j=reverse_indices[rj]
         if i==j or j==-1:
             return
         elif i>j:
