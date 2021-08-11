@@ -6,7 +6,7 @@ import io
 from configparser import ConfigParser
 from functools import lru_cache
 from abc import ABC, abstractmethod
-from typing import Type, get_type_hints
+from typing import Type, get_type_hints, Dict, List
 from logging import debug
 
 from .custom_logging import iprint
@@ -192,6 +192,57 @@ class BaseConfig(ABC):
     def copy(self):
         # noinspection PyDataclass
         return dataclasses.replace(self)
+
+    @property
+    def groups(self)->Dict[str,List[str]]:
+        """
+        Can be replaced by dictionary in sub-classes to define how to group parameters in display and
+        configuration dialog entries.
+        """
+        res=list(self.asdict().keys())
+        return {'': res}
+
+    def get_fields(self, fltr=None)->List[dataclasses.Field]:
+        """
+        Return the fields for the dataclass.
+        If fltr is supplied the results will be filtered by field names given in this list.
+        """
+        fields=dataclasses.fields(self)
+        if fltr is None:
+            return list(fields)
+        else:
+            out=[]
+            for fi in fields:
+                if fi.name in fltr:
+                    out.append(fi)
+            return out
+
+    @staticmethod
+    def GParam(default, pmin=None, pmax=None, label=None, descriptoin=None):
+        # allow to add some metadata to the parameter to use in dialog generation
+        gmeta={}
+        if pmin is not None:
+            gmeta['min']=pmin
+        if pmax is not None:
+            gmeta['max']=pmax
+        if label is not None:
+            gmeta['label']=label
+        if descriptoin is not None:
+            gmeta['descriptoin']=descriptoin
+        return dataclasses.field(default=default, metadata={'genx': gmeta})
+
+    @staticmethod
+    def GChoice(default, selection, label=None, descriptoin=None):
+        """
+        Allow to add some metadata to the parameter to use in dialog generation,
+        selection is a list of alloweed string values for this parameter.
+        """
+        gmeta={'selection': selection}
+        if label is not None:
+            gmeta['label']=label
+        if descriptoin is not None:
+            gmeta['descriptoin']=descriptoin
+        return dataclasses.field(default=default, metadata={'genx': gmeta})
 
 class Configurable:
     """

@@ -61,10 +61,12 @@ class DiffEvConfig(BaseConfig):
     kr:float=0.7
     allowed_fom_discrepancy:float= 1e-10
 
-    use_pop_mult: bool=False
+    use_pop_mult:bool=False
     pop_mult:int=3
     pop_size:int=50
-    create_trial:str='best_1_bin'
+    create_trial:str=BaseConfig.GChoice('best_1_bin', ['best_1_bin', 'rand_1_bin', 'best_either_or',
+                                                       'rand_either_or', 'jade_best', 'simplex_best_1_bin'],
+                                        label='Method')
 
     use_max_generations:bool=False
     max_generations:int=500
@@ -88,6 +90,16 @@ class DiffEvConfig(BaseConfig):
 
     save_all_evals:bool=False
     errorbar_level:float=1.05
+
+    groups={
+        'FOM': [],
+        'Fitting': ['use_start_guess', 'use_boundaries', 'use_autosave', 'autosave_interval',
+                    'save_all_evals', 'max_log_elements'],
+        'Differential Evolution': ['km', 'kr', 'create_trial'],
+        'Population size': ['use_pop_mult', 'pop_mult', 'pop_size'],
+        'Max. Generations': ['use_max_generations', 'max_generation_mult', 'max_generations'],
+        'Parallel processing': ['use_parallel_processing', 'parallel_processes', 'parallel_chunksize']
+        }
 
 class DiffEv(GenxOptimizer):
     '''
