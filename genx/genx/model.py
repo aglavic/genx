@@ -23,7 +23,7 @@ from .core.config import BaseConfig
 from .core.custom_logging import iprint
 from .core.h5_support import H5HintedExport
 from .data import DataList
-from .exceptions import FomError, GenxIOError, ModelError, ParameterError
+from .exceptions import FomError, GenxIOError, ModelError, ParameterError, OptimizerInterrupted
 from .models.lib.parameters import get_parameters, NumericParameter
 from .parameters import Parameters
 
@@ -864,6 +864,8 @@ class Model(H5HintedExport):
 
         if problem is None:
             problem = self.bumps_problem()
+        problem.fitness.stop_fit=False
+        options['abort_test']=lambda: problem.fitness.stop_fit
 
         # verbose = True
         if method not in FIT_AVAILABLE_IDS:
@@ -1099,6 +1101,7 @@ class GenxCurve:
         self._state = state
         self._set_funcs=funcs
         self._cached_theory = None
+        self.stop_fit=False
 
     @property
     def x(self):
@@ -1137,7 +1140,6 @@ class GenxCurve:
             return self._cached_theory
         return self._compute_theory(x)
 
-
     def _compute_theory(self, x):
         self._apply_par(x)
         return np.hstack(self.model_script.Sim(self.model.data))
@@ -1170,72 +1172,3 @@ class GenxCurve:
         self._apply_par(self.x)
         fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
         return 0.5 * fom # sum(residuals**2) for Chi2Bars fom function and no penalty
-
-
-    # def save(self, basename):
-    #     # TODO: need header line with state vars as json
-    #     # TODO: need to support nD x,y,dy
-    #     if len(self.x.shape) > 1:
-    #         warnings.warn("Save not supported for nD x values")
-    #         return
-    #
-    #     theory = self.theory()
-    #     if self._num_curves > 1:
-    #         # Multivalued y, dy for single valued x.
-    #         columns = [self.x]
-    #         headers = ["x"]
-    #         for k, (y, dy, fx) in enumerate(zip(self.y, self.dy, theory)):
-    #             columns.extend((y, dy, fx))
-    #             headers.extend(("y[%d]"%(k+1), "dy[%d]"%(k+1), "fx[%d]"%(k+1)))
-    #     else:
-    #         # Single-valued y, dy for single valued x.
-    #         headers = ["x", "y", "dy", "fy"]
-    #         columns = [self.x, self.y, self.dy, theory]
-    #     data = np.vstack(columns)
-    #     outfile = basename + '.dat'
-    #     with open(outfile, "w") as fd:
-    #         fd.write("# " + "\t ".join(headers) + "\n")
-    #         np.savetxt(fd, data.T)
-    #
-    #
-    # def plot(self, view=None):
-    #     if self._plot is not None:
-    #         kw = self._fetch_pars()
-    #         self._plot(self.x, self.y, self.dy, self.theory(), view=view, **kw)
-    #         return
-    #
-    #     import pylab
-    #     from .plotutil import coordinated_colors
-    #
-    #     x = self.x
-    #     if self.plot_x is not None:
-    #         theory_x, theory_y = self.plot_x, self.theory(self.plot_x)
-    #     else:
-    #         theory_x, theory_y = x, self.theory()
-    #     resid = self.residuals()
-    #
-    #     if self._num_curves > 1:
-    #         y, dy, theory_y, resid = self.y.T, self.dy.T, theory_y.T, resid.T
-    #     else:
-    #         y, dy, theory_y, resid = (v[:, None]
-    #                                   for v in (self.y, self.dy, theory_y, resid))
-    #
-    #     colors = tuple(coordinated_colors() for _ in range(self._num_curves))
-    #     labels = self.labels
-    #
-    #     #print "kw_plot",kw
-    #     if view == 'residual':
-    #         _plot_resids(x, resid, colors, labels=labels, view=view)
-    #     else:
-    #         plot_ratio = 4
-    #         h = pylab.subplot2grid((plot_ratio, 1), (0, 0), rowspan=plot_ratio-1)
-    #         for tick_label in h.get_xticklabels():
-    #             tick_label.set_visible(False)
-    #         _plot_fits(data=(x, y, dy), theory=(theory_x, theory_y),
-    #                    colors=colors, labels=labels, view=view)
-    #         #pylab.gca().xaxis.set_visible(False)
-    #         #pylab.gca().spines['bottom'].set_visible(False)
-    #         #pylab.gca().set_xticks([])
-    #
-    #         pylab.subplot2grid((plot_ratio, 1), (plot_ratio-1, 0), sharex=h)
-    #         _plot_resids(x, resid, colors=colors, labels=labels, view=view)

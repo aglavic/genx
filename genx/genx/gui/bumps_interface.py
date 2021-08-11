@@ -16,6 +16,7 @@ from bumps.formatnum import format_uncertainty
 from bumps.dream.corrplot import _hists
 
 from .plotpanel import PlotPanel, BasePlotConfig
+from .exception_handling import CatchModelError
 
 class ProgressMonitor(TimedUpdate):
     """
@@ -33,7 +34,7 @@ class ProgressMonitor(TimedUpdate):
     def show_progress(self, history):
         scale, err=nllf_scale(self.problem)
         chisq=format_uncertainty(scale*history.value[0], err)
-        self.ptxt.SetLabel('step: %s/%s\tcost: %s'%(history.step[0], self.pbar.GetRange(), chisq))
+        self.ptxt.SetLabel('step: %s/%s  cost: %s'%(history.step[0], self.pbar.GetRange(), chisq))
         self.pbar.SetValue(history.step[0])
         self.steps.append(history.step[0])
         self.chis.append(scale*history.value[0])
@@ -108,6 +109,7 @@ class StatisticsPanelConfig(BasePlotConfig):
 
 class StatisticalAnalysisDialog(wx.Dialog):
     rel_cov=None
+    thread: threading.Thread
 
     def __init__(self, parent, model):
         wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
@@ -170,12 +172,12 @@ class StatisticalAnalysisDialog(wx.Dialog):
             lsizer.Add(self.entries[key], flag=wx.FIXED_MINSIZE)
 
         lsizer.AddStretchSpacer(10)
-        but=wx.Button(self, label='Run Analysis...')
-        vbox.Add(but)
+        self.run_button=wx.Button(self, label='Run Analysis...')
+        vbox.Add(self.run_button)
         vbox.Add(self.ptxt, proportion=0, flag=wx.EXPAND)
         vbox.Add(self.pbar, proportion=0, flag=wx.EXPAND)
 
-        self.Bind(wx.EVT_BUTTON, self.OnRunAnalysis, but)
+        self.Bind(wx.EVT_BUTTON, self.OnRunAnalysis, self.run_button)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
         self.model=model
@@ -186,9 +188,12 @@ class StatisticalAnalysisDialog(wx.Dialog):
 
     def OnRunAnalysis(self, event):
         if self.thread is not None:
+            self.run_button.SetLabel('Run Analysis...')
+            self.bproblem.fitness.stop_fit = True
             return
         self.thread=threading.Thread(target=self.run_bumps)
         self.thread.start()
+        self.run_button.SetLabel('Stop Run')
 
     def run_bumps(self):
         self.bproblem=self.model.bumps_problem()
@@ -198,12 +203,16 @@ class StatisticalAnalysisDialog(wx.Dialog):
         samples=self.entries['samples'].GetValue()
         self.pbar.SetRange(int(samples/(len(self.bproblem.model_parameters())*pop))+burn)
 
-        res=self.model.bumps_fit(method='dream',
-                                 pop=pop, samples=samples, burn=burn,
-                                 thin=1, alpha=0, outliers='none', trim=False,
-                                 monitors=[mon], problem=self.bproblem)
-        self._res=res
-        wx.CallAfter(self.display_bumps)
+        with CatchModelError(self, 'bumps_modeling') as mgr:
+            res=self.model.bumps_fit(method='dream',
+                                     pop=pop, samples=samples, burn=burn,
+                                     thin=1, alpha=0, outliers='none', trim=False,
+                                     monitors=[mon], problem=self.bproblem)
+
+        self.run_button.SetLabel('Run Analysis...')
+        if mgr.successful:
+            self._res=res
+            wx.CallAfter(self.display_bumps)
 
     def display_bumps(self):
         self.thread.join(timeout=5.0)
@@ -226,8 +235,9 @@ class StatisticalAnalysisDialog(wx.Dialog):
             fmt="%.4g"
         self.grid.SetRowLabelValue(0, 'Value/Error:')
         for i, ci in enumerate(self.rel_cov):
-            self.grid.SetColLabelValue(sort_indices[i], self.draw.labels[i])
-            self.grid.SetRowLabelValue(sort_indices[i]+1, self.draw.labels[i])
+            plabel='\n'.join(self.draw.labels[i].rsplit('_', 1))
+            self.grid.SetColLabelValue(sort_indices[i], plabel)
+            self.grid.SetRowLabelValue(sort_indices[i]+1, plabel)
             self.grid.SetCellValue(0, sort_indices[i], "%.8g\n%.4g"%(res.x[i], res.dx[i]))
             self.grid.SetCellAlignment(0, sort_indices[i], wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
             self.grid.SetReadOnly(0, sort_indices[i])
@@ -316,6 +326,6 @@ class StatisticalAnalysisDialog(wx.Dialog):
         if self.thread is not None and self.thread.is_alive():
             # a running bumps simulation can't be interrupted from other thread, stop window from closing
             self.ptxt.SetLabel("Simulation running")
-            event.Veto()
-            return
+            self.bproblem.fitness.stop_fit=True
+            self.thread.join(timeout=5.0)
         event.Skip()

@@ -1371,7 +1371,7 @@ def init_cuda():
     # activate cuda in subprocesses
     from .models.lib import paratt_cuda
     from .models.lib import neutron_cuda
-    from models.lib import paratt, neutron_refl
+    from .models.lib import paratt, neutron_refl
     paratt.Refl=paratt_cuda.Refl
     paratt.ReflQ=paratt_cuda.ReflQ
     paratt.Refl_nvary2=paratt_cuda.Refl_nvary2
