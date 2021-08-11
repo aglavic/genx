@@ -110,3 +110,5 @@ class FomError(RuntimeError, GenxError):
              +'\n'+error_message
         RuntimeError(self, text)
 
+class OptimizerInterrupted(RuntimeError, GenxError):
+    '''Error raised to stop a running refinement function from within a thread'''

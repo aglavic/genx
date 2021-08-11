@@ -2,11 +2,13 @@
 Use Levenberg-Marquardt as minimizer to estimate errors and for fast decent to next local minimum.
 '''
 import pickle
+import _thread
 from dataclasses import dataclass
 
 from numpy import *
 from scipy.optimize import leastsq
 
+from .exceptions import ErrorBarError, OptimizerInterrupted
 from .core.config import BaseConfig
 from .core.custom_logging import iprint
 from .model import Model
@@ -58,7 +60,7 @@ class LMOptimizer(GenxOptimizer):
         GenxOptimizer.__init__(self)
         self.model=Model()
         self.fom_log=array([[0, 0]])[0:0]
-        self.covar=array([[0, 0]])[0:0]
+        self.covar=None
 
     def pickle_string(self, clear_evals: bool = False):
         return pickle.dumps(self)
@@ -93,11 +95,29 @@ class LMOptimizer(GenxOptimizer):
             self.opt.fit_xmax)
         self.start_guess=start_guess
 
+    def calc_sim(self, vec):
+        ''' calc_sim(self, vec) --> None
+        Function that will evaluate the the data points for
+        parameters in vec.
+        '''
+        model_obj=self.model
+        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
+            self.opt.limit_fit_range,
+            self.opt.fit_xmin,
+            self.opt.fit_xmax)
+        # Set the parameter values
+        list(map(lambda func, value: func(value), self.par_funcs, vec))
+
+        self.model.evaluate_sim_func()
+        return self.model.fom
+
     def calc_fom(self, vec):
         '''
         Function to calcuate the figure of merit for parameter vector
         vec.
         '''
+        if self._stop_fit:
+            raise OptimizerInterrupted("interrupted")
         model_obj=self.model
         model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
             self.opt.limit_fit_range,
@@ -111,7 +131,9 @@ class LMOptimizer(GenxOptimizer):
         return fom
 
     def calc_error_bar(self, index: int) -> (float, float):
-        err=self.covar[index, index]
+        if self.covar is None:
+            raise ErrorBarError()
+        err=sqrt(self.covar[index, index])
         return err, err
 
     def project_evals(self, index: int):
@@ -121,15 +143,28 @@ class LMOptimizer(GenxOptimizer):
     def start_fit(self, model: Model):
         self.n_fom_evals=0
         self.connect_model(model)
-        res=leastsq(self.calc_fom, self.start_guess, full_output=True)
-        self.best_vec=res[0]
-        self.covar=res[1]
+        self._stop_fit=False
+        _thread.start_new_thread(self.optimize, ())
 
-        result = self.get_result_info()
-        self._callbacks.fitting_ended(result)
+    def optimize(self):
+        try:
+            res=leastsq(self.calc_fom, self.start_guess, full_output=True)
+        except OptimizerInterrupted:
+            self._callbacks.fitting_ended(self.get_result_info(interrupted=True))
+            return
+        self.best_vec=res[0]
+        if res[1] is None:
+            self.covar=None
+        else:
+            Chi2Res = self.calc_fom(self.best_vec)**2
+            s_sq = Chi2Res.sum()/(len(Chi2Res)-len(res[0]))  # variance of the residuals
+            self.covar=res[1]*s_sq
+
+        self.plot_output()
+        self._callbacks.fitting_ended(self.get_result_info())
 
     def stop_fit(self):
-        pass
+        self._stop_fit=True
 
     def resume_fit(self, model: Model):
         pass
@@ -143,13 +178,23 @@ class LMOptimizer(GenxOptimizer):
     def set_callbacks(self, callbacks: GenxOptimizerCallback):
         self._callbacks=callbacks
 
+    def plot_output(self):
+        self.calc_sim(self.best_vec)
+        data=SolverUpdateInfo(
+            fom_value=self.model.fom,
+            fom_name=self.model.fom_func.__name__,
+            fom_log=self.get_fom_log(),
+            new_best=True,
+            data=self.model.data
+            )
+        self._callbacks.plot_output(data)
 
-    def get_result_info(self):
+    def get_result_info(self, interrupted=False):
         result = SolverResultInfo(
             start_guess=self.start_guess.copy(),
             error_message="",
             values=self.best_vec.copy(),
-            new_best=True,
+            new_best=not interrupted,
             population=[],
             max_val=[],
             min_val=[],

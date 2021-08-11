@@ -71,6 +71,7 @@ class ToolId(int, Enum):
     STOP_FIT=wx.Window.NewControlId()
     RESTART_FIT=wx.Window.NewControlId()
     CALC_ERROR=wx.Window.NewControlId()
+    SOLVER_SELECT=wx.Window.NewControlId()
     ZOOM=wx.Window.NewControlId()
     ERROR_STATS=wx.Window.NewControlId()
 
@@ -191,6 +192,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.dpi_scale_factor=dpi_scale_factor
         wx.GetApp().dpi_scale_factor=dpi_scale_factor
 
+        # GenX objects
+        self.solver_control=solvergui.ModelControlGUI(self)
+
         self.create_menu()
 
         self.main_frame_statusbar=self.CreateStatusBar(3)
@@ -247,7 +251,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         debug('setup of MainFrame - manual config')
 
         # GenX objects
-        self.solver_control= solvergui.ModelControlGUI(self)
         self.model=self.solver_control.controller.model
         self.model.data=self.data_list.data_cont.data
         self.paramter_grid.SetParameters(self.model.parameters)
@@ -514,6 +517,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.main_frame_toolbar.AddTool(ToolId.SIM_MODEL, "tb_simulate",
                                         wx.Bitmap(img.getsimulateImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
+        self.main_frame_toolbar.AddSeparator()
+        sselect=self.solver_control.get_solvers()
+        solver_select=wx.ComboBox(self.main_frame_toolbar, id=ToolId.SOLVER_SELECT, value=sselect[0],
+                                       choices=sselect, style=wx.CB_READONLY)
+        self.main_frame_toolbar.AddControl(solver_select, 'solver')
         self.main_frame_toolbar.AddTool(ToolId.START_FIT, "tb_start_fit",
                                         wx.Bitmap(img.getstart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Start fit | Ctrl+F", "Start fitting | Ctrl+F")
@@ -539,6 +547,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=ToolId.NEW_MODEL)
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=ToolId.OPEN_MODEL)
         self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=ToolId.SAVE_MODEL)
+        self.Bind(wx.EVT_COMBOBOX, self.eh_tb_select_solver, id=ToolId.SOLVER_SELECT)
         self.Bind(wx.EVT_TOOL, self.eh_tb_simulate, id=ToolId.SIM_MODEL)
         self.Bind(wx.EVT_TOOL, self.eh_tb_start_fit, id=ToolId.START_FIT)
         self.Bind(wx.EVT_TOOL, self.eh_tb_stop_fit, id=ToolId.STOP_FIT)
@@ -1418,6 +1427,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.do_simulation()
         self.set_possible_parameters_in_grid()
         self.flag_simulating = False
+
+    def eh_tb_select_solver(self, event):
+        self.solver_control.set_solver(event.GetString())
 
     def eh_tb_start_fit(self, event):
         self.eh_mb_fit_start(event)

@@ -13,7 +13,7 @@ import wx.lib.newevent
 from wx.lib.masked import NumCtrl
 
 from .exception_handling import CatchModelError
-from .. import diffev, fom_funcs, model_control
+from .. import diffev, fom_funcs, model_control, levenberg_marquardt
 from ..core.custom_logging import iprint
 from ..solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
 
@@ -159,8 +159,12 @@ class ModelControlGUI:
 
     def __init__(self, parent):
         self.parent=parent
+        self.solvers={
+            'Differential Evolution': diffev.DiffEv(),
+            'Levenberg-Marquardt': levenberg_marquardt.LMOptimizer()
+            }
 
-        self.controller=model_control.ModelController(diffev.DiffEv())
+        self.controller=model_control.ModelController(self.solvers['Differential Evolution'])
         self.callback_controller=DelayedCallbacks(parent)
         self.callback_controller.start()
         self.controller.set_callbacks(self.callback_controller)
@@ -169,6 +173,13 @@ class ModelControlGUI:
 
         # Now load the default configuration
         self.ReadConfig()
+
+    def get_solvers(self):
+        return list(self.solvers.keys())
+
+    def set_solver(self, name):
+        self.controller.optimizer=self.solvers[name]
+        self.controller.set_callbacks(self.callback_controller)
 
     def ReadConfig(self):
         '''
