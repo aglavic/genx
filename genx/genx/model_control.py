@@ -37,12 +37,14 @@ class ModelController:
         Reads the parameter that should be read from the config file.
         And set the parameters in both the optimizer and this class.
         '''
+        self.model.ReadConfig()
         self.optimizer.ReadConfig()
 
     def WriteConfig(self):
         '''
         Writes the current configuration of the solver to file.
         '''
+        self.model.WriteConfig()
         self.optimizer.WriteConfig()
 
     def CalcErrorBars(self):
