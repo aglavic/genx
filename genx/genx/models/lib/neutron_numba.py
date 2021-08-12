@@ -4,8 +4,8 @@ import math, cmath
 
 ##################### not yet correct ###############################
 
-@numba.jit(numba.complex128[:, :](numba.complex128[:, :], numba.complex128[:, :]),
-           nopython=True, cache=True)
+@numba.jit(numba.complex128[:, ::1](numba.complex128[:, ::1], numba.complex128[:, ::1]),
+           nopython=True, cache=True, inline='always')
 def dot4(A, B):
     D=empty((4, 4), dtype=complex128)
     D[0, 0]=(A[0, 0]*B[0, 0]+A[0, 1]*B[1, 0]+A[0, 2]*B[2, 0]+
@@ -46,8 +46,8 @@ def dot4(A, B):
 
     return D
 
-@numba.jit(numba.float64[:, :](numba.float64[:], numba.complex128[:], numba.complex128[:],
-                               numba.float64[:], numba.float64[:], numba.float64[:]),
+@numba.jit(numba.float64[:, ::1](numba.float64[:], numba.complex128[:], numba.complex128[:],
+                                 numba.float64[:], numba.float64[:], numba.float64[:]),
            nopython=True, parallel=True, cache=True)
 def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
     '''A quicker implementation than the ordinary slow implementaion in Refl
@@ -156,8 +156,8 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma):
         Rout[3, qi]=abs(Rdu)**2
     return Rout
 
-@numba.jit(numba.float64[:, :](numba.float64[:], numba.complex128[:], numba.complex128[:],
-                               numba.float64[:], numba.float64[:]),
+@numba.jit(numba.float64[:, ::1](numba.float64[:], numba.complex128[:], numba.complex128[:],
+                                 numba.float64[:], numba.float64[:]),
            nopython=True, parallel=True, cache=True)
 def ReflNB(Q, Vp, Vm, d, M_ang):
     '''A quicker implementation than the ordinary slow implementaion in Refl

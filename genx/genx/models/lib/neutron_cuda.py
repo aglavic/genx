@@ -5,7 +5,7 @@ import math, cmath
 
 ##################### not yet correct ###############################
 
-@cuda.jit(numba.void(numba.complex128[:, :], numba.complex128[:, :], numba.complex128[:, :]),
+@cuda.jit(numba.void(numba.complex128[:, ::1], numba.complex128[:, ::1], numba.complex128[:, ::1]),
           device=True)
 def dot4(A, B, D):
     D[0, 0]=(A[0, 0]*B[0, 0]+A[0, 1]*B[1, 0]+A[0, 2]*B[2, 0]+
@@ -46,7 +46,7 @@ def dot4(A, B, D):
 
 @cuda.jit(numba.void(numba.float64[:], numba.complex128[:], numba.complex128[:],
                      numba.float64[:], numba.float64[:], numba.float64[:],
-                     numba.float64[:, :], numba.complex128[:, :, :, :]))
+                     numba.float64[:, ::1], numba.complex128[:, :, :, ::1]))
 def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
@@ -179,7 +179,7 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
 
 @cuda.jit(numba.void(numba.float64[:], numba.complex128[:], numba.complex128[:],
                      numba.float64[:], numba.float64[:],
-                     numba.float64[:, :], numba.complex128[:, :, :, :]))
+                     numba.float64[:, ::1], numba.complex128[:, :, :, ::1]))
 def ReflNB(Q, Vp, Vm, d, M_ang, Rout, PX):
     '''A quicker implementation than the ordinary slow implementaion in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
