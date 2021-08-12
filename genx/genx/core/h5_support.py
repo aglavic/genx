@@ -166,11 +166,15 @@ class H5HintedExport(H5Savable):
                     if vtyp is ndarray:
                         opt[key]=subgroup[key][()]
                     elif vtyp is str:
-                        try:
-                            opt[key] = subgroup[key][()].decode('utf-8')
-                        except ValueError:
-                            warning(f'Could not convert {attr}/{key} in {group.name} to string')
-                            continue
+                        value= subgroup[key][()]
+                        if type(value) is str:
+                            opt[key]=value
+                        else:
+                            try:
+                                opt[key] =value.decode('utf-8')
+                            except ValueError:
+                                warning(f'Could not convert {attr}/{key} in {group.name} to string')
+                                continue
                     else:
                         try:
                             opt[key]=vtyp(subgroup[key][()])

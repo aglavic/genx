@@ -57,8 +57,8 @@ class CatchModelError:
             icon_style=wx.ICON_WARNING
         else:
             self.status_update(f'Fatal error in {self.step}, {type(exc_val).__name__}')
-            ext_message+='\n\nPython Error last calls:\n    '
-            ext_message+='\n    '.join(traceback.format_tb(exc_tb, limit=3)[::-1])
+            ext_message+='\n\nPython Error (last calls first):\n    '
+            ext_message+='\n    '.join(traceback.format_tb(exc_tb)[:2:-1])
             title='Warning'
             icon_style=wx.ICON_ERROR
         full_trace = message+':\n\n'
