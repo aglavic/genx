@@ -6,7 +6,7 @@ import _thread
 from dataclasses import dataclass
 
 from numpy import *
-from scipy.optimize import leastsq
+from bumps.fitters import FitDriver, FIT_AVAILABLE_IDS, FITTERS, FIT_ACTIVE_IDS
 
 from .exceptions import ErrorBarError, OptimizerInterrupted
 from .core.config import BaseConfig
@@ -14,7 +14,7 @@ from .core.custom_logging import iprint
 from .model import Model
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
 
-class LMDefaultCallbacks(GenxOptimizerCallback):
+class BumpsDefaultCallbacks(GenxOptimizerCallback):
 
     def text_output(self, text):
         iprint(text)
@@ -33,22 +33,31 @@ class LMDefaultCallbacks(GenxOptimizerCallback):
         pass
 
 @dataclass
-class LMConfig(BaseConfig):
+class BumpsConfig(BaseConfig):
     section='solver'
 
-    groups={}
+    population: int = 12
+    samples: int = 10000
+    steps:int = 0
+    thin: int = 1
+    alpha: int = 0
+    outliers: str='none'
+    trim: bool = False
 
-class LMOptimizer(GenxOptimizer):
+    method=BaseConfig.GChoice(FIT_AVAILABLE_IDS[0], selection=FIT_AVAILABLE_IDS)
+
+
+class BumpsOptimizer(GenxOptimizer):
     '''
     Optimizer based on Levenberg-Marquardt algorithm.
     '''
-    opt: LMConfig
+    opt: BumpsConfig
     model: Model
     fom_log: ndarray
     start_guess: ndarray
     cover: ndarray
 
-    _callbacks: GenxOptimizerCallback=LMDefaultCallbacks()
+    _callbacks: GenxOptimizerCallback=BumpsDefaultCallbacks()
 
     n_fom_evals=0
 
@@ -90,13 +99,13 @@ class LMOptimizer(GenxOptimizer):
         self.model=model_obj
         self.n_dim=len(param_funcs)
         self.start_guess=start_guess
+        self.bproblem=self.model.bumps_problem()
 
     def calc_sim(self, vec):
         ''' calc_sim(self, vec) --> None
         Function that will evaluate the the data points for
         parameters in vec.
         '''
-        model_obj=self.model
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
 
@@ -112,10 +121,9 @@ class LMOptimizer(GenxOptimizer):
             raise OptimizerInterrupted("interrupted")
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
-        fom=self.model.evaluate_fit_func(get_elements=True) # fom is squared in leastsq
-        chi=sign(fom)*sqrt(abs(fom))
+        fom=self.model.evaluate_fit_func() # fom is squared in leastsq
         self.n_fom_evals+=1
-        return chi
+        return fom
 
     def calc_error_bar(self, index: int) -> (float, float):
         if self.covar is None:
@@ -134,18 +142,46 @@ class LMOptimizer(GenxOptimizer):
         _thread.start_new_thread(self.optimize, ())
 
     def optimize(self):
-        try:
-            res=leastsq(self.calc_fom, self.start_guess, full_output=True)
-        except OptimizerInterrupted:
-            self._callbacks.fitting_ended(self.get_result_info(interrupted=True))
-            return
-        self.best_vec=res[0]
-        if res[1] is None:
-            self.covar=None
-        else:
-            Chi2Res = self.calc_fom(self.best_vec)**2
-            s_sq = Chi2Res.sum()/(len(Chi2Res)-len(res[0]))  # variance of the residuals
-            self.covar=res[1]*s_sq
+        options={}
+        options['pop'] = self.opt.population
+        options['samples'] = self.opt.samples
+        options['steps'] = self.opt.steps
+        options['thin'] = self.opt.thin
+        options['alpha'] = self.opt.alpha
+        options['outliers'] = self.opt.outliers
+        options['trim'] = self.opt.trim
+
+        problem = self.bproblem
+        problem.fitness.stop_fit=False
+        options['abort_test']=lambda: problem.fitness.stop_fit
+
+        # verbose = True
+        if self.opt.method not in FIT_AVAILABLE_IDS:
+            raise ValueError("unknown method %r not one of %s"
+                             %(self.opt.method, ", ".join(sorted(FIT_ACTIVE_IDS))))
+        for fitclass in FITTERS:
+            if fitclass.id==self.opt.method:
+                break
+        # noinspection PyUnboundLocalVariable
+        monitors=None
+        driver = FitDriver(fitclass=fitclass, problem=problem, monitors=monitors, **options)
+        driver.clip()  # make sure fit starts within domain
+        x0 = problem.getp()
+        x, fx = driver.fit()
+        problem.setp(x)
+        dx = driver.stderr()
+        # result = OptimizeResult(x=x, dx=driver.stderr(), fun=fx, cov=driver.cov(),
+        #                         success=True, status=0, message="successful termination")
+        # if hasattr(driver.fitter, 'state'):
+        #     result.state = driver.fitter.state
+
+        # self.best_vec=res[0]
+        # if res[1] is None:
+        #     self.covar=None
+        # else:
+        #     Chi2Res = self.calc_fom(self.best_vec)**2
+        #     s_sq = Chi2Res.sum()/(len(Chi2Res)-len(res[0]))  # variance of the residuals
+        #     self.covar=res[1]*s_sq
 
         self.plot_output()
         self._callbacks.fitting_ended(self.get_result_info())
