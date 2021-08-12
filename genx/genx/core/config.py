@@ -198,6 +198,9 @@ class BaseConfig(ABC):
         """
         Can be replaced by dictionary in sub-classes to define how to group parameters in display and
         configuration dialog entries.
+        If a list entry contains a list of strings it is used to group the values horizontally.
+        A list of 4 items with the second beeing a boolean is interpreted as a choice between two parameters:
+            [{Choice Group Label}, bool-first is active, first value, second value]
         """
         res=list(self.asdict().keys())
         return {'': res}
@@ -222,9 +225,9 @@ class BaseConfig(ABC):
         # allow to add some metadata to the parameter to use in dialog generation
         gmeta={}
         if pmin is not None:
-            gmeta['min']=pmin
+            gmeta['pmin']=pmin
         if pmax is not None:
-            gmeta['max']=pmax
+            gmeta['pmax']=pmax
         if label is not None:
             gmeta['label']=label
         if descriptoin is not None:
@@ -243,6 +246,61 @@ class BaseConfig(ABC):
         if descriptoin is not None:
             gmeta['descriptoin']=descriptoin
         return dataclasses.field(default=default, metadata={'genx': gmeta})
+
+    def __or__(self, other):
+        return MergedConfig(self, other)
+
+class MergedConfig(BaseConfig):
+    """
+    A config-like object that combines two or more config objects.
+
+    Attribut access is passed to the child objects.
+    """
+    section = None
+    _children: List[BaseConfig]
+
+    def __init__(self, *children):
+        self._children=list(children)
+
+    def __or__(self, other):
+        all_children=self._children+[other]
+        return MergedConfig(*all_children)
+
+    def get_fields(self, fltr=None) ->List[dataclasses.Field]:
+        fout=[]
+        for c in self._children:
+            fout+=c.get_fields(fltr)
+        return fout
+
+    def copy(self):
+        clist=[c.copy() for c in self._children]
+        return MergedConfig(*clist)
+
+    @property
+    def groups(self) ->Dict[str,List[str]]:
+        dout={}
+        for c in self._children:
+            dout.update(c.groups)
+        return dout
+
+    def __getattr__(self, name):
+        # search through the child configuration fields if name is in there and return value
+        for c in self._children:
+            fnames=[fi.name for fi in c.get_fields()]
+            if name in fnames:
+                return getattr(c, name)
+        raise AttributeError("{item} not found in any child configuration")
+
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            BaseConfig.__setattr__(self, name, value)
+        # search through the child configuration fields if name is in there, otherwise set own attribute
+        for c in self._children:
+            fnames=[fi.name for fi in c.get_fields()]
+            if name in fnames:
+                return setattr(c, name, value)
+        BaseConfig.__setattr__(self, name, value)
+
 
 class Configurable:
     """

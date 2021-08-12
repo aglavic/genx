@@ -57,47 +57,48 @@ class DiffEvDefaultCallbacks(GenxOptimizerCallback):
 @dataclass
 class DiffEvConfig(BaseConfig):
     section='solver'
-    km:float=0.7
-    kr:float=0.7
+    km:float=BaseConfig.GParam(0.7, pmin=0.0, pmax=1.0)
+    kr:float=BaseConfig.GParam(0.7, pmin=0.0, pmax=1.0)
     allowed_fom_discrepancy:float= 1e-10
 
-    use_pop_mult:bool=False
-    pop_mult:int=3
-    pop_size:int=50
+    use_pop_mult:bool=True
+    pop_size:int=BaseConfig.GParam(50, pmin=5, pmax=10000, label='Fixed size')
+    pop_mult:int=BaseConfig.GParam(3, pmin=1, pmax=100, label='Relative size')
     create_trial:str=BaseConfig.GChoice('best_1_bin', ['best_1_bin', 'rand_1_bin', 'best_either_or',
                                                        'rand_either_or', 'jade_best', 'simplex_best_1_bin'],
                                         label='Method')
 
     use_max_generations:bool=False
-    max_generations:int=500
-    max_generation_mult:int=6
+    max_generations:int=BaseConfig.GParam(500, pmin=10, pmax=10000, label='Fixed size')
+    max_generation_mult:int=BaseConfig.GParam(6, pmin=1, pmax=100, label='Relative size')
 
     use_start_guess:bool=True
     use_boundaries:bool=True
 
-    max_log_elements:int=100000
+    max_log_elements:int=BaseConfig.GParam(100000, pmin=1000, pmax=1000000, label=', # elements')
     use_parallel_processing:bool=False
     use_mpi:bool=False
     parallel_processes:int=_cpu_count
-    parallel_chunksize:int=25
+    parallel_chunksize:int=10
 
     use_autosave:bool=False
-    autosave_interval:int=10
+    autosave_interval:int=BaseConfig.GParam(10, pmin=1, pmax=1000, label=', interval')
 
     limit_fit_range:bool=False
-    fit_xmin:float=0.0
-    fit_xmax:float=180.0
+    fit_xmin:float=BaseConfig.GParam(0.0, pmin=-1000., pmax=1000.)
+    fit_xmax:float=BaseConfig.GParam(180.0, pmin=-1000., pmax=1000.)
 
     save_all_evals:bool=False
-    errorbar_level:float=1.05
+    errorbar_level:float=BaseConfig.GParam(1.05, pmin=1.001, pmax=2.0)
 
-    groups={
-        'FOM': [],
-        'Fitting': ['use_start_guess', 'use_boundaries', 'use_autosave', 'autosave_interval',
-                    'save_all_evals', 'max_log_elements'],
-        'Differential Evolution': ['km', 'kr', 'create_trial'],
-        'Population size': ['use_pop_mult', 'pop_mult', 'pop_size'],
-        'Max. Generations': ['use_max_generations', 'max_generation_mult', 'max_generations'],
+    groups={ # for building config dialogs
+        'Fitting': [['use_start_guess', 'use_boundaries'], ['use_autosave', 'autosave_interval'],
+                    ['save_all_evals', 'max_log_elements']],
+        'Differential Evolution':
+            ['km', 'kr', 'create_trial',
+             ['Population size:', 'use_pop_mult', 'pop_mult', 'pop_size'],
+             ['Max. Generations:', 'use_max_generations', 'max_generation_mult', 'max_generations']
+             ],
         'Parallel processing': ['use_parallel_processing', 'parallel_processes', 'parallel_chunksize']
         }
 

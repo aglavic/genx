@@ -43,12 +43,16 @@ class ModelParameters(BaseConfig):
 @dataclass
 class SolverParameters(BaseConfig):
     section = 'solver'
+    figure_of_merit: str = 'log'
     ignore_fom_nan: bool = True
     ignore_fom_inf: bool = True
 
     limit_fit_range:bool=False
     fit_xmin:float=0.0
     fit_xmax:float=180.0
+
+    groups={'FOM': ['figure_of_merit', ['ignore_fom_nan', 'ignore_fom_inf'],
+                    'limit_fit_range', ['fit_xmin', 'fit_xmax']]}
 
 class GenxScriptModule(types.ModuleType):
     data: DataList
@@ -103,6 +107,7 @@ class Model(H5HintedExport):
     def fomfunction(self, value):
         if value in fom_funcs.func_names:
             self.set_fom_func(eval('fom_funcs.'+value))
+            self.solver_parameters.figure_of_merit=value
         else:
             iprint("Can not find fom function name %s"%value)
 
@@ -143,11 +148,16 @@ class Model(H5HintedExport):
         self.startup_script.load_config()
         self.solver_parameters.load_config()
         self.create_fom_mask_func()
+        self.set_fom_from_config()
 
     def WriteConfig(self):
         self.opt.safe_config()
         self.startup_script.safe_config()
         self.solver_parameters.safe_config()
+        self.set_fom_from_config()
+
+    def set_fom_from_config(self):
+        self.fomfunction=self.solver_parameters.figure_of_merit
 
     def load(self, filename):
         ''' 
