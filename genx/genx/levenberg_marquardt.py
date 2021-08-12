@@ -118,7 +118,7 @@ class LMOptimizer(GenxOptimizer):
 
     def calc_error_bar(self, index: int) -> (float, float):
         if self.covar is None:
-            raise ErrorBarError()
+            raise ErrorBarError("Could not get covariance matrix from fit, maybe the parameters are coupled/have no influence?")
         err=sqrt(self.covar[index, index])
         return err, err
 
