@@ -318,7 +318,7 @@ obj_list=dir()[:]
 
 # find all functions
 all_func_names=[s for s in obj_list if type(eval(s)).__name__=='function']
-func_names=[s for s in all_func_names if all_func_names[0]!='_']
+func_names=[s for s in all_func_names if not s.startswith('_')]
 
 # End of file
 # ==============================================================================

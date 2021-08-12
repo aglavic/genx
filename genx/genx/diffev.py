@@ -84,10 +84,6 @@ class DiffEvConfig(BaseConfig):
     use_autosave:bool=False
     autosave_interval:int=BaseConfig.GParam(10, pmin=1, pmax=1000, label=', interval')
 
-    limit_fit_range:bool=False
-    fit_xmin:float=BaseConfig.GParam(0.0, pmin=-1000., pmax=1000.)
-    fit_xmax:float=BaseConfig.GParam(180.0, pmin=-1000., pmax=1000.)
-
     save_all_evals:bool=False
     errorbar_level:float=BaseConfig.GParam(1.05, pmin=1.001, pmax=2.0)
 
@@ -309,10 +305,7 @@ class DiffEv(GenxOptimizer):
         self.par_funcs=param_funcs
         self.model=model_obj
         self.n_dim=len(param_funcs)
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
+
         if not self.setup_ok:
             self.start_guess=start_guess
 
@@ -682,10 +675,6 @@ class DiffEv(GenxOptimizer):
         vec.
         '''
         model_obj=self.model
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
 
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
@@ -697,12 +686,6 @@ class DiffEv(GenxOptimizer):
         '''
         Function to calculate the fom values for the trial vectors
         '''
-        model_obj=self.model
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
-
         self.trial_fom=[self.calc_fom(vec) for vec in self.trial_vec]
 
     def calc_sim(self, vec):
@@ -710,11 +693,6 @@ class DiffEv(GenxOptimizer):
         Function that will evaluate the the data points for
         parameters in vec.
         '''
-        model_obj=self.model
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
 
@@ -747,14 +725,22 @@ class DiffEv(GenxOptimizer):
     def setup_parallel_mpi(self):
         """Inits the number or process used for mpi.
         """
+        # check if CUDA has been activated
+        from .models.lib import paratt, USE_NUMBA
+        use_cuda=paratt.Refl.__module__.rsplit('.',1)[1]=='paratt_cuda'
+        # reduce numba thread count for numba functions
+        if USE_NUMBA:
+            numba_procs=max(1, _cpu_count//self.opt.parallel_processes)
+        else:
+            numba_procs=None
 
         if rank==0:
             self.text_output("Inits mpi with %i processes ..."%(size,))
-        parallel_init(self.model.pickable_copy(), use_cuda=False)
+        parallel_init(self.model.pickable_copy(), numba_procs)
         time.sleep(0.1)
 
     def dismount_parallel(self):
-        ''' dismount_parallel(self) --> None
+        '''
         Used to close the pool and all its processes
         '''
         self.pool.close()
@@ -763,27 +749,14 @@ class DiffEv(GenxOptimizer):
         # del self.pool
 
     def calc_trial_fom_parallel(self):
-        '''calc_trial_fom_parallel(self) --> None
-        
+        '''
         Function to calculate the fom in parallel using the pool
         '''
-        model_obj=self.model
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
-
         self.trial_fom=self.pool.map(parallel_calc_fom, self.trial_vec, chunksize=self.opt.parallel_chunksize)
 
     def calc_trial_fom_parallel_mpi(self):
         """ Function to calculate the fom in parallel using mpi
         """
-        model_obj=self.model
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
-
         step_len=int(len(self.trial_vec)/size)
         remain=int(len(self.trial_vec)%size)
         left, right=0, 0

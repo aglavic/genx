@@ -23,7 +23,7 @@ from .core.config import BaseConfig
 from .core.custom_logging import iprint
 from .core.h5_support import H5HintedExport
 from .data import DataList
-from .exceptions import FomError, GenxIOError, ModelError, ParameterError, OptimizerInterrupted
+from .exceptions import FomError, GenxIOError, ModelError, ParameterError
 from .models.lib.parameters import get_parameters, NumericParameter
 from .parameters import Parameters
 
@@ -43,13 +43,13 @@ class ModelParameters(BaseConfig):
 @dataclass
 class SolverParameters(BaseConfig):
     section = 'solver'
-    figure_of_merit: str = 'log'
+    figure_of_merit: str = BaseConfig.GChoice('log', selection=fom_funcs.func_names)
     ignore_fom_nan: bool = True
     ignore_fom_inf: bool = True
 
     limit_fit_range:bool=False
-    fit_xmin:float=0.0
-    fit_xmax:float=180.0
+    fit_xmin:float=BaseConfig.GParam(0.0, pmin=-1000., pmax=1000.)
+    fit_xmax:float=BaseConfig.GParam(180.0, pmin=-1000., pmax=1000.)
 
     groups={'FOM': ['figure_of_merit', ['ignore_fom_nan', 'ignore_fom_inf'],
                     'limit_fit_range', ['fit_xmin', 'fit_xmax']]}
@@ -136,10 +136,6 @@ class Model(H5HintedExport):
         # Temporary stuff that needs to keep track on
         self.filename = ''
         self.compiled = False
-
-        self.limit_fit_range = False
-        self.fit_xmin = 0.01
-        self.fit_xmax = 0.1
 
         self.extra_analysis = {}
 
@@ -238,8 +234,9 @@ class Model(H5HintedExport):
         H5HintedExport.read_h5group(self, group)
         self.create_fom_mask_func()
         # TODO: Get rid of the interdependence model-optimizer here
+        sopt=self.solver_parameters
         try:
-            self.limit_fit_range, self.fit_xmin, self.fit_xmax = (
+            sopt.limit_fit_range, sopt.fit_xmin, sopt.fit_xmax = (
                 bool(group['optimizer']['limit_fit_range'][()]),
                 float(group['optimizer']['fit_xmin'][()]), float(group['optimizer']['fit_xmax'][()]))
         except Exception:
@@ -359,9 +356,9 @@ class Model(H5HintedExport):
         '''
         fom_raw = self.fom_func(simulated_data, self.data)
         # limit the x-range of fitting
-        if self.limit_fit_range:
+        if self.solver_parameters.limit_fit_range:
             for i, di in enumerate(self.data):
-                fltr = (di.x<self.fit_xmin) | (di.x>self.fit_xmax)
+                fltr = (di.x<self.solver_parameters.fit_xmin) | (di.x>self.solver_parameters.fit_xmax)
                 fom_raw[i][fltr] = 0.
         # Sum up a unique fom for each data set in use
         fom_indiv = [np.sum(np.abs(self.fom_mask_func(fom_set))) for fom_set in fom_raw]
@@ -587,10 +584,6 @@ class Model(H5HintedExport):
         # Needs to reset the fom_mask_func since this fails under windows.
         model_copy.fom_mask_func = None
         #
-        model_copy.limit_fit_range = self.limit_fit_range
-        model_copy.fit_xmin = self.fit_xmin
-        model_copy.fit_xmax = self.fit_xmax
-
         return model_copy
 
     def get_table_as_ascii(self):

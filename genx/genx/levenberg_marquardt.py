@@ -35,9 +35,8 @@ class LMDefaultCallbacks(GenxOptimizerCallback):
 @dataclass
 class LMConfig(BaseConfig):
     section='solver'
-    limit_fit_range:bool=False
-    fit_xmin:float=0.0
-    fit_xmax:float=180.0
+
+    groups={}
 
 class LMOptimizer(GenxOptimizer):
     '''
@@ -89,10 +88,6 @@ class LMOptimizer(GenxOptimizer):
         self.par_funcs=param_funcs
         self.model=model_obj
         self.n_dim=len(param_funcs)
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
         self.start_guess=start_guess
 
     def calc_sim(self, vec):
@@ -101,10 +96,6 @@ class LMOptimizer(GenxOptimizer):
         parameters in vec.
         '''
         model_obj=self.model
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
 
@@ -118,18 +109,12 @@ class LMOptimizer(GenxOptimizer):
         '''
         if self._stop_fit:
             raise OptimizerInterrupted("interrupted")
-        model_obj=self.model
-        model_obj.opt.limit_fit_range, model_obj.opt.fit_xmin, model_obj.opt.fit_xmax=(
-            self.opt.limit_fit_range,
-            self.opt.fit_xmin,
-            self.opt.fit_xmax)
-
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
         fom=self.model.evaluate_fit_func(get_elements=True) # fom is squared in leastsq
         chi=sign(fom)*sqrt(abs(fom))
         self.n_fom_evals+=1
-        return fom
+        return chi
 
     def calc_error_bar(self, index: int) -> (float, float):
         if self.covar is None:
