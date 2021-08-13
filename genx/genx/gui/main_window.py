@@ -1581,6 +1581,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         Callback to update the fom_value displayed by the gui
         '''
+        event.Skip()
         if hasattr(event, 'fom_value'):
             fom_value = event.fom_value
             fom_name = event.fom_name
@@ -1592,7 +1593,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.main_frame_fom_text.SetLabel('        FOM %s: %.4e'%(fom_name, fom_value))
         else:
             self.main_frame_fom_text.SetLabel('        FOM %s: None'%fom_name)
-        event.Skip()
         # Hard code the events for the plugins so that they can be run synchronously.
         # This is important since the Reflectivity model, for example, relies on the
         # current state of the model.

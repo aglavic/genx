@@ -1219,15 +1219,12 @@ class DataPlotPanel(PlotPanel):
         Event handler function to connect to solver update events i.e.
         update the plot with the simulation
         '''
-        # print 'plotting'
-
+        event.Skip()
         if event.update_fit:
             if self.update!=self.plot_data_fit:
                 self.update=self.plot_data_fit
                 self.SetAutoScale(False)
             self.update(event.data)
-        # Do not forget - pass the event on
-        event.Skip()
 
 class ErrorPanelConfig(BasePlotConfig):
     section='fom plot'
@@ -1275,11 +1272,9 @@ class ErrorPlotPanel(PlotPanel):
         Event handler function to connect to solver update events i.e.
         update the plot with the simulation
         '''
-        # print 'error plot'
+        event.Skip()
         fom_log=event.fom_log
         self.update(fom_log)
-        # Do not forget - pass the event on
-        event.Skip()
 
 class ParsPanelConfig(BasePlotConfig):
     section='pars plot'

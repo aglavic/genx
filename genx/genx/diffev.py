@@ -76,10 +76,10 @@ class DiffEvConfig(BaseConfig):
     use_boundaries:bool=True
 
     max_log_elements:int=BaseConfig.GParam(100000, pmin=1000, pmax=1000000, label=', # elements')
-    use_parallel_processing:bool=False
     use_mpi:bool=False
-    parallel_processes:int=_cpu_count
-    parallel_chunksize:int=10
+    use_parallel_processing:bool=False
+    parallel_processes:int=BaseConfig.GParam(_cpu_count, pmin=2, pmax=_cpu_count, label='# processes')
+    parallel_chunksize:int=BaseConfig.GParam(10, pmin=1, pmax=1000, label='items/chunk')
 
     use_autosave:bool=False
     autosave_interval:int=BaseConfig.GParam(10, pmin=1, pmax=1000, label=', interval')

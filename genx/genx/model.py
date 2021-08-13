@@ -227,6 +227,19 @@ class Model(H5HintedExport):
         self.filename = os.path.abspath(filename)
         self.saved = True
 
+    def __getstate__(self):
+        # generate a pickleable object for thie model, it cannot contain dynamically generated functions
+        state=self.__dict__.copy()
+        del state['fom_mask_func']
+        del state['script_module']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.create_fom_mask_func()
+        if self.compiled: # if the model was compiled before pickling, do it now
+            self.compile_script()
+
     def read_h5group(self, group):
         """
         Read the parameters from a hdf5 group
@@ -1081,6 +1094,7 @@ class GenxCurve:
     Bumps Curve object for a GenX model.
     """
     model: Model
+    n_fev: int
 
     def __init__(self, model: Model):
         self._num_curves = 1
@@ -1104,10 +1118,19 @@ class GenxCurve:
         self._set_funcs=funcs
         self._cached_theory = None
         self.stop_fit=False
+        self.n_fev=0
 
     @property
     def x(self):
         return [self._pars[name].value for name in self._pnames]
+
+    @property
+    def y(self):
+        return np.hstack([di.y for di in self.model.data if di.use])
+
+    @property
+    def dy(self):
+        return np.hstack([di.error for di in self.model.data if di.use])
 
     def _parse_pars(self):
         from bumps.parameter import Parameter
@@ -1127,6 +1150,7 @@ class GenxCurve:
 
     def update(self):
         self._cached_theory = None
+        self.n_fev=0
 
     def parameters(self):
         return self._pars
@@ -1144,7 +1168,9 @@ class GenxCurve:
 
     def _compute_theory(self, x):
         self._apply_par(x)
-        return np.hstack(self.model_script.Sim(self.model.data))
+        sim=self.model_script.Sim(self.model.data)
+        self.n_fev+=1
+        return np.hstack([si for si, di in zip(sim, self.model.data) if di.use])
 
     def _apply_par(self, x):
         for ni, si in self._state.items():
@@ -1163,14 +1189,38 @@ class GenxCurve:
                 self.dy = noise
         self.y = theory + np.random.randn(*theory.shape)*self.dy
 
-
     def residuals(self):
-        self._apply_par(self.x)
-        fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
-        fom_clean=[self.model.fom_mask_func(fom_set) for fom_set in fom_raw]
-        return np.hstack([np.sign(fom_set)*np.sqrt(np.absolute(fom_set)) for fom_set in fom_clean])
+        return (self.theory()-self.y)/self.dy
 
     def nllf(self):
-        self._apply_par(self.x)
-        fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
-        return 0.5 * fom # sum(residuals**2) for Chi2Bars fom function and no penalty
+        r = self.residuals()
+        return 0.5*np.sum(r**2)
+
+    def __getstate__(self):
+        state=self.__dict__.copy()
+        del state['model_script']
+        del state['_set_funcs']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        if not self.model.compiled:
+            self.model.compile_script()
+        self.model_script=self.model.script_module
+
+        pars, state, funcs = self._parse_pars()
+        self._pnames = list(pars.keys())
+        self._pars=pars
+        self._state = state
+        self._set_funcs=funcs
+
+    # def residuals(self):
+    #     self._apply_par(self.x)
+    #     fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
+    #     fom_clean=[self.model.fom_mask_func(fom_set) for fom_set in fom_raw]
+    #     return np.hstack([np.sign(fom_set)*np.sqrt(np.absolute(fom_set)) for fom_set in fom_clean])
+    #
+    # def nllf(self):
+    #     self._apply_par(self.x)
+    #     fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
+    #     return 0.5 * fom # sum(residuals**2) for Chi2Bars fom function and no penalty
