@@ -46,7 +46,7 @@ class LMOptimizer(GenxOptimizer):
     model: Model
     fom_log: ndarray
     start_guess: ndarray
-    cover: ndarray
+    covar: ndarray
 
     _callbacks: GenxOptimizerCallback=LMDefaultCallbacks()
 

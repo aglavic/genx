@@ -4,14 +4,18 @@ Use Levenberg-Marquardt as minimizer to estimate errors and for fast decent to n
 import pickle
 import _thread
 from dataclasses import dataclass
+from typing import Dict
 
 from numpy import *
 from bumps.fitters import FitDriver, FIT_AVAILABLE_IDS, FITTERS, FIT_ACTIVE_IDS
+from bumps.monitor import TimedUpdate
+from bumps.fitproblem import FitProblem, nllf_scale, BaseFitProblem
+from bumps.formatnum import format_uncertainty
 
 from .exceptions import ErrorBarError, OptimizerInterrupted
 from .core.config import BaseConfig
 from .core.custom_logging import iprint
-from .model import Model
+from .model import Model, GenxCurve
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
 
 class BumpsDefaultCallbacks(GenxOptimizerCallback):
@@ -32,6 +36,29 @@ class BumpsDefaultCallbacks(GenxOptimizerCallback):
     def autosave(self):
         pass
 
+class FitterMonitor(TimedUpdate):
+    def __init__(self, problem: FitProblem, parent: 'BumpsOptimizer', progress=0.25, improvement=5.0,
+                 max_steps=1000):
+        TimedUpdate.__init__(self, progress=progress, improvement=improvement)
+        self.problem=problem
+        self.parent=parent
+        self.max_stepst=max_steps
+        self.chis=[]
+        self.steps=[]
+
+    def show_progress(self, history):
+        scale, err=nllf_scale(self.problem)
+        chisq=format_uncertainty(scale*history.value[0], err)
+        self.parent.text_output('step: %s/%s  cost: %s'%(history.step[0], self.max_stepst, chisq))
+        self.steps.append(history.step[0])
+        self.chis.append(scale*history.value[0])
+
+    def show_improvement(self, history):
+        self.show_progress(history)
+        self.value=history.value[0]
+        p=self.problem.getp()
+        self.parent.new_beest(p, array([self.steps, self.chis]).T)
+
 @dataclass
 class BumpsConfig(BaseConfig):
     section='solver'
@@ -41,10 +68,11 @@ class BumpsConfig(BaseConfig):
     steps:int = 0
     thin: int = 1
     alpha: int = 0
+    burn: int = 1000
     outliers: str='none'
     trim: bool = False
 
-    method=BaseConfig.GChoice(FIT_AVAILABLE_IDS[0], selection=FIT_AVAILABLE_IDS)
+    method:str=BaseConfig.GChoice(FIT_AVAILABLE_IDS[0], selection=FIT_AVAILABLE_IDS)
 
 
 class BumpsOptimizer(GenxOptimizer):
@@ -55,9 +83,10 @@ class BumpsOptimizer(GenxOptimizer):
     model: Model
     fom_log: ndarray
     start_guess: ndarray
-    cover: ndarray
+    covar: ndarray
 
     _callbacks: GenxOptimizerCallback=BumpsDefaultCallbacks()
+    _map_indices: Dict[int, int]
 
     n_fom_evals=0
 
@@ -86,6 +115,21 @@ class BumpsOptimizer(GenxOptimizer):
     def get_fom_log(self):
         return self.fom_log
 
+    def text_output(self, text: str):
+        self._callbacks.text_output(text)
+
+    def new_beest(self, p, fom_log):
+        self.best_vec=self.p_to_vec(p)
+        self.fom_log=fom_log
+        self.plot_output()
+
+    def p_to_vec(self, p):
+        # convert Bumps parameter array p to vector expected by GenX (reorder indices)
+        out=list(range(len(p)))
+        for i, pi in enumerate(p):
+            out[self._map_indices[i]]=pi
+        return out
+
     def connect_model(self, model_obj: Model):
         '''
         Connects the model [model] to this object. Retrives the function
@@ -99,7 +143,7 @@ class BumpsOptimizer(GenxOptimizer):
         self.model=model_obj
         self.n_dim=len(param_funcs)
         self.start_guess=start_guess
-        self.bproblem=self.model.bumps_problem()
+        self.bproblem:BaseFitProblem=self.model.bumps_problem()
 
     def calc_sim(self, vec):
         ''' calc_sim(self, vec) --> None
@@ -150,44 +194,41 @@ class BumpsOptimizer(GenxOptimizer):
         options['alpha'] = self.opt.alpha
         options['outliers'] = self.opt.outliers
         options['trim'] = self.opt.trim
+        options['burn'] = self.opt.burn
 
         problem = self.bproblem
         problem.fitness.stop_fit=False
         options['abort_test']=lambda: problem.fitness.stop_fit
+        pnames=list(problem.model_parameters().keys())
+        mnames=problem.labels()
+        self._map_indices=dict(((i, pnames.index(ni)) for i,ni in enumerate(mnames)))
 
         # verbose = True
         if self.opt.method not in FIT_AVAILABLE_IDS:
             raise ValueError("unknown method %r not one of %s"
                              %(self.opt.method, ", ".join(sorted(FIT_ACTIVE_IDS))))
+        fitclass=None
         for fitclass in FITTERS:
             if fitclass.id==self.opt.method:
                 break
         # noinspection PyUnboundLocalVariable
-        monitors=None
+        monitors=[FitterMonitor(problem, self)]
         driver = FitDriver(fitclass=fitclass, problem=problem, monitors=monitors, **options)
         driver.clip()  # make sure fit starts within domain
         x0 = problem.getp()
         x, fx = driver.fit()
         problem.setp(x)
         dx = driver.stderr()
-        # result = OptimizeResult(x=x, dx=driver.stderr(), fun=fx, cov=driver.cov(),
-        #                         success=True, status=0, message="successful termination")
-        # if hasattr(driver.fitter, 'state'):
-        #     result.state = driver.fitter.state
 
-        # self.best_vec=res[0]
-        # if res[1] is None:
-        #     self.covar=None
-        # else:
-        #     Chi2Res = self.calc_fom(self.best_vec)**2
-        #     s_sq = Chi2Res.sum()/(len(Chi2Res)-len(res[0]))  # variance of the residuals
-        #     self.covar=res[1]*s_sq
+        self.best_vec=self.p_to_vec(x)
+        #self.covar=driver.cov()
 
         self.plot_output()
         self._callbacks.fitting_ended(self.get_result_info())
 
     def stop_fit(self):
         self._stop_fit=True
+        self.bproblem.fitness.stop_fit=True
 
     def resume_fit(self, model: Model):
         pass

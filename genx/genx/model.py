@@ -843,7 +843,6 @@ class Model(H5HintedExport):
         self.compile_script()
 
         from bumps.fitproblem import FitProblem
-        from bumps.curve import Curve
 
         return FitProblem(GenxCurve(self))
 

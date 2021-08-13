@@ -163,6 +163,12 @@ class ModelControlGUI:
             'Differential Evolution': diffev.DiffEv(),
             'Levenberg-Marquardt': levenberg_marquardt.LMOptimizer()
             }
+        try:
+            from ..bumps_optimizer import BumpsOptimizer
+        except ImportError:
+            pass
+        else:
+            self.solvers['Bumps']=BumpsOptimizer()
 
         self.controller=model_control.ModelController(self.solvers['Differential Evolution'])
         self.callback_controller=DelayedCallbacks(parent)
