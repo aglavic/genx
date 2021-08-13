@@ -2,7 +2,7 @@
 Use Levenberg-Marquardt as minimizer to estimate errors and for fast decent to next local minimum.
 '''
 import pickle
-import _thread
+from threading import Thread
 from dataclasses import dataclass
 from typing import Dict
 
@@ -59,6 +59,10 @@ class FitterMonitor(TimedUpdate):
         p=self.problem.getp()
         self.parent.new_beest(p, array([self.steps, self.chis]).T)
 
+if 'DREAM' in [fi.name for fi in FITTERS]:
+    fitter_default_name='DREAM'
+else:
+    fitter_default_name = FITTERS[0].name
 @dataclass
 class BumpsConfig(BaseConfig):
     section='solver'
@@ -72,7 +76,7 @@ class BumpsConfig(BaseConfig):
     outliers: str='none'
     trim: bool = False
 
-    method:str=BaseConfig.GChoice(FIT_AVAILABLE_IDS[0], selection=FIT_AVAILABLE_IDS)
+    method:str=BaseConfig.GChoice(fitter_default_name, selection=[fi.name for fi in FITTERS])
 
 
 class BumpsOptimizer(GenxOptimizer):
@@ -183,7 +187,8 @@ class BumpsOptimizer(GenxOptimizer):
         self.n_fom_evals=0
         self.connect_model(model)
         self._stop_fit=False
-        _thread.start_new_thread(self.optimize, ())
+        self._thread=Thread(target=self.optimize, daemon=True)
+        self._thread.start()
 
     def optimize(self):
         options={}
@@ -203,13 +208,9 @@ class BumpsOptimizer(GenxOptimizer):
         mnames=problem.labels()
         self._map_indices=dict(((i, pnames.index(ni)) for i,ni in enumerate(mnames)))
 
-        # verbose = True
-        if self.opt.method not in FIT_AVAILABLE_IDS:
-            raise ValueError("unknown method %r not one of %s"
-                             %(self.opt.method, ", ".join(sorted(FIT_ACTIVE_IDS))))
         fitclass=None
         for fitclass in FITTERS:
-            if fitclass.id==self.opt.method:
+            if fitclass.name==self.opt.method:
                 break
         # noinspection PyUnboundLocalVariable
         monitors=[FitterMonitor(problem, self)]
@@ -229,6 +230,7 @@ class BumpsOptimizer(GenxOptimizer):
     def stop_fit(self):
         self._stop_fit=True
         self.bproblem.fitness.stop_fit=True
+        self._thread.join(1.0)
 
     def resume_fit(self, model: Model):
         pass
