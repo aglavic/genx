@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+import logging
+import multiprocessing
+import threading
+
 import appdirs
 import argparse
 import os
@@ -7,6 +11,7 @@ import sys
 from logging import debug
 
 from . import version
+from .core import custom_logging
 from .core.custom_logging import activate_excepthook, activate_logging, iprint, setup_system
 
 
@@ -151,7 +156,7 @@ def start_fitting(args, rank=0):
     """
     # TODO: fix implementation of this
     import time
-    from .diffev import DiffEv
+    from .diffev import DiffEv, DiffEvDefaultCallbacks
     from .model_control import ModelController
     from .core import config as io
 
@@ -159,26 +164,26 @@ def start_fitting(args, rank=0):
     io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
     ctrl=ModelController(DiffEv())
     mod=ctrl.model
-    opt=ctrl.optimizer
+    opt:DiffEv=ctrl.optimizer
     config=io.config
 
     if rank==0:
-        def autosave():
-            # print 'Updating the parameters'
-            mod.parameters.set_value_pars(opt.best_vec)
-            if args.error:
-                iprint("Calculating error bars")
-                calc_errorbars(io.config, mod, ctrl.optimizer)
-            if args.outfile:
-                iprint("Saving to %s"%args.outfile)
-                ctrl.save_file(args.outfile)
+        class CB(DiffEvDefaultCallbacks):
+            def autosave(self):
+                # print 'Updating the parameters'
+                mod.parameters.set_value_pars(opt.best_vec)
+                if args.error:
+                    iprint("Calculating error bars")
+                    calc_errorbars(io.config, mod, ctrl.optimizer)
+                if args.outfile:
+                    iprint("Saving to %s"%args.outfile)
+                    ctrl.save_file(args.outfile)
 
-        ctrl.set_autosave_func(autosave)
+        ctrl.set_callbacks(CB())
 
     if rank==0:
         iprint('Loading model %s...'%args.infile)
     ctrl.load_file(args.infile)
-    ctrl.load_opt_config(opt, config)
     # has to be used in order to save everything....
     if args.esave:
         io.config.set('solver', 'save all evals', True)
@@ -190,22 +195,25 @@ def start_fitting(args, rank=0):
     # Sets up the fitting ...
     if rank==0:
         iprint('Setting up the optimizer...')
+        iprint(opt)
     set_optimiser_pars(opt, args)
-    opt.reset()
-    opt.init_fitting(mod)
-    opt.init_fom_eval()
-    opt.set_sleep_time(0.0)
 
     if args.outfile and rank==0:
         iprint('Saving the initial model to %s'%args.outfile)
-        io.save_file(args.outfile, mod, opt, config)
+        ctrl.save_file(args.outfile)
 
     # To start the fitting
     if rank==0:
         iprint('Fitting starting...')
         t1=time.time()
     # print opt.use_mpi, opt.use_parallel_processing
-    opt.optimize()
+    opt.start_fit(mod)
+    while opt.is_running():
+        try:
+            time.sleep(0.1)
+        except KeyboardInterrupt:
+            iprint('KeyboardInterrupt, trying to stop fit.')
+            opt.stop=True
     if rank==0:
         t2=time.time()
         iprint('Fitting finished!')
@@ -221,7 +229,7 @@ def start_fitting(args, rank=0):
             calc_errorbars(config, mod, opt)
         iprint('Saving the fit to %s'%args.outfile)
         opt.set_use_mpi(False)
-        io.save_file(args.outfile, mod, opt, config)
+        ctrl.save_file(args.outfile)
 
     if rank==0:
         iprint('Fitting successfully completed')
@@ -262,9 +270,6 @@ def set_optimiser_pars(optimiser, args):
     #    print "kr not set has to be bigger than 0"
 
 def main():
-    setup_system()
-    import multiprocessing
-
     multiprocessing.freeze_support()
     # Attempt to load mpi:
     __mpi__=False
@@ -312,6 +317,13 @@ def main():
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
 
     args=parser.parse_args()
+    if not __mpi__:
+        args.mpi=False
+
+    if args.run or args.mpi:
+        custom_logging.CONSOLE_LEVEL=logging.INFO
+    setup_system()
+
     if args.logfile:
         activate_logging(args.logfile)
     debug("Arguments from parser: %s"%args)
@@ -325,9 +337,6 @@ def main():
         os.chdir(os.path.split(path)[0])
     else:
         os.chdir(path)
-
-    if not __mpi__:
-        args.mpi=False
 
     if args.run:
         start_fitting(args)

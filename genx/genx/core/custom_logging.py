@@ -36,7 +36,7 @@ def iprint(*objects, sep=None, end=None, file=None, flush=False):
     if sep is None:
         sep=' '
     if end is None:
-        end='\n'
+        end=''#'\n'
     logging.info(sep.join(map(str, objects))+end)
 
 class NumpyLogger(logging.getLoggerClass()):

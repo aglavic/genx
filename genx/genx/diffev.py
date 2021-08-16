@@ -1,7 +1,7 @@
 '''
 An implementation of the differential evolution algorithm for fitting.
 '''
-import _thread
+import threading
 import multiprocessing as processing
 import pickle
 import random as random_mod
@@ -38,8 +38,7 @@ else:
 class DiffEvDefaultCallbacks(GenxOptimizerCallback):
 
     def text_output(self, text):
-        iprint(text)
-        sys.stdout.flush()
+        iprint(text, flush=True)
 
     def plot_output(self, update_data):
         pass
@@ -93,7 +92,7 @@ class DiffEvConfig(BaseConfig):
         'Differential Evolution':
             ['km', 'kr', 'create_trial',
              ['Population size:', 'use_pop_mult', 'pop_mult', 'pop_size'],
-             ['Max. Generations:', 'use_max_generations', 'max_generation_mult', 'max_generations']
+             ['Max. Generations:', 'use_max_generations', 'max_generations', 'max_generation_mult']
              ],
         'Parallel processing': ['use_parallel_processing', 'parallel_processes', 'parallel_chunksize']
         }
@@ -376,11 +375,9 @@ class DiffEv(GenxOptimizer):
             self.init_fitting(model_obj)
             self.stop=False
             # Start fitting in a new thread
-            _thread.start_new_thread(self.optimize, ())
-            # For debugging
-            # self.optimize()
+            threading.Thread(target=self.optimize, daemon=True).start()
+            self.running=True
             self.text_output('Starting the fit...')
-            # self.running = True
             return True
         else:
             self.text_output('Fit is already running, stop and then start')
@@ -407,7 +404,7 @@ class DiffEv(GenxOptimizer):
             self.init_fom_eval()
             n_dim_old=self.n_dim
             if self.n_dim==n_dim_old:
-                _thread.start_new_thread(self.optimize, ())
+                threading.Thread(target=self.optimize, daemon=True).start()
                 self.text_output('Restarting the fit...')
                 self.running=True
                 return True
@@ -436,10 +433,10 @@ class DiffEv(GenxOptimizer):
         algorithm. Note that this method does not run in a separate thread.
         For threading use start_fit, stop_fit and resume_fit instead.
         '''
+        self.running=True
         self.init_fom_eval()
 
         self.text_output('Calculating start FOM ...')
-        self.running=True
         self.error=None
         self.n_fom=0
 
