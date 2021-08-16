@@ -3,14 +3,13 @@ GenX model and optimizer control classes. All functional aspects should be cover
 """
 import os
 import sys
-
 import h5py
+from logging import warning
 
 from .core.config import config
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
-
 
 class ModelController:
     def __init__(self, optimizer: GenxOptimizer):
@@ -139,7 +138,10 @@ class ModelController:
         f=h5py.File(fname.encode('utf-8'), 'w')
         g=f.create_group(self.model.h5group_name)
         self.model.write_h5group(g)
-        self.optimizer.write_h5group(g.create_group(self.optimizer.h5group_name))
+        opt_group=g.create_group(self.optimizer.h5group_name)
+        opt_group['solver']=self.optimizer.__class__.__name__
+        opt_group['solver_module']=self.optimizer.__class__.__module__
+        self.optimizer.write_h5group(opt_group)
         self.optimizer.WriteConfig()
         g['config']=config.model_dump().encode('utf-8')
         f.close()
@@ -148,7 +150,27 @@ class ModelController:
         f=h5py.File(fname.encode('utf-8'), 'r')
         g=f[self.model.h5group_name]
         self.model.read_h5group(g)
-        self.optimizer.read_h5group(g[self.optimizer.h5group_name])
+        opt_group=g[self.optimizer.h5group_name]
+        try:
+            solver_class=opt_group.get('solver')[()]
+            solver_module=opt_group.get('solver_module')[()]
+        except KeyError:
+            solver_class='DiffEv'
+            solver_module='genx.diffev'
+        else:
+            if type(solver_class) is bytes:
+                solver_class = solver_class.decode('utf-8')
+                solver_module = solver_module.decode('utf-8')
+        if solver_class!=self.optimizer.__class__.__name__:
+            try:
+                exec(f'from {solver_module} import {solver_class}')
+            except ImportError:
+                warning(f'Could not import solver {solver_class} from moudle {solver_module}')
+            else:
+                prev_optimizer=self.optimizer
+                exec(f'self.optimizer={solver_class}()')
+                self.optimizer.set_callbacks(prev_optimizer.get_callbacks())
+        self.optimizer.read_h5group(opt_group)
         try:
             config.load_string(g['config'][()].decode('utf-8'))
             self.optimizer.ReadConfig()

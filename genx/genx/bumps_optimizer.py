@@ -110,13 +110,20 @@ class BumpsConfig(BaseConfig):
     parallel_chunksize:int=BaseConfig.GParam(10, pmin=1, pmax=1000, label='items/chunk')
 
     groups={ # for building config dialogs
-        'Bumps Fitting': ['method', ['outliers', 'steps']],
+        'Bumps Fitting': ['method', 'steps'],
         'Statistic Solvers': ['population', ],
         'Tolerances': [['ftol', 'xtol']],
         'DREAM': [['burn', 'samples'], ['trim', 'thin'], 'alpha', 'outliers'],
         'Parallel processing': ['use_parallel_processing', 'parallel_processes', 'parallel_chunksize']
         }
 
+@dataclass
+class BumpsResult:
+    x:ndarray
+    dx:ndarray
+    cov:ndarray
+    bproblem:'Any'
+    state:'Any'=None
 
 class BumpsOptimizer(GenxOptimizer):
     '''
@@ -141,8 +148,10 @@ class BumpsOptimizer(GenxOptimizer):
         GenxOptimizer.__init__(self)
         self.model=Model()
         self.fom_log=array([[0, 0]])[0:0]
-        self.covar=None
-        self.errors=None
+        self.start_guess=array([[0, 0]])[0:0]
+        self.covar=array([[0, 0]])[0:0]
+        self.errors=array([[0, 0]])[0:0]
+        self.last_result=None
 
     def pickle_string(self, clear_evals: bool = False):
         return pickle.dumps(self)
@@ -198,6 +207,7 @@ class BumpsOptimizer(GenxOptimizer):
         self.n_dim=len(param_funcs)
         self.start_guess=start_guess
         self.bproblem:BaseFitProblem=self.model.bumps_problem()
+        self.last_result=None
 
     def calc_sim(self, vec):
         ''' calc_sim(self, vec) --> None
@@ -298,6 +308,11 @@ class BumpsOptimizer(GenxOptimizer):
             self.pool.join()
             self.pool=None
 
+        result=BumpsResult(x=x, dx=dx, cov=cov, bproblem=self.bproblem)
+        if hasattr(driver.fitter, 'state'):
+            result.state = driver.fitter.state
+        self.last_result=result
+
         self.best_vec=self.map_bumps2genx(x)
         self.errors=self.map_bumps2genx(dx)
         self.covar=self.covar_bumps2genx(cov)
@@ -321,6 +336,9 @@ class BumpsOptimizer(GenxOptimizer):
 
     def set_callbacks(self, callbacks: GenxOptimizerCallback):
         self._callbacks=callbacks
+
+    def get_callbacks(self) -> 'GenxOptimizerCallback':
+        return self._callbacks
 
     def plot_output(self):
         self.calc_sim(self.best_vec)

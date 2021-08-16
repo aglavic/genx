@@ -866,7 +866,7 @@ class Model(H5HintedExport):
         # create a fitter similar to the bumps.fitters.fit function but with option for GUI monitoring
         if monitors is None:
             monitors = []
-        from scipy.optimize import OptimizeResult
+        from genx.bumps_optimizer import BumpsResult
         from bumps.fitters import FitDriver, FIT_AVAILABLE_IDS, FITTERS, FIT_ACTIVE_IDS
         options['pop'] = pop
         options['samples'] = samples
@@ -896,8 +896,7 @@ class Model(H5HintedExport):
         x, fx = driver.fit()
         problem.setp(x)
         dx = driver.stderr()
-        result = OptimizeResult(x=x, dx=driver.stderr(), fun=fx, cov=driver.cov(),
-                                success=True, status=0, message="successful termination")
+        result = BumpsResult(x=x, dx=dx, cov=driver.cov())
         if hasattr(driver.fitter, 'state'):
             result.state = driver.fitter.state
         return result

@@ -349,6 +349,15 @@ class ModelControlGUI:
 
     def load_file(self, fname):
         self.controller.load_file(fname)
+        solver_classes=[si.__class__ for si in self.solvers.values()]
+        loaded_solver=self.controller.optimizer.__class__
+        if loaded_solver in solver_classes:
+            current_solver=list(self.solvers.keys())[solver_classes.index(loaded_solver)]
+        else:
+            self.solvers[loaded_solver.__name__]=self.controller.optimizer
+            current_solver=loaded_solver.__name__
+            self.parent.eh_ex_add_solver_selection(current_solver)
+        self.parent.eh_ex_set_solver_selection(current_solver)
 
     def set_error_bars_level(self, value):
         '''

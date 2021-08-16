@@ -1443,6 +1443,14 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def eh_tb_zoom(self, event):
         self.eh_mb_view_zoom(event)
 
+    def eh_ex_set_solver_selection(self, selection):
+        select:wx.ComboBox=self.FindWindowById(ToolId.SOLVER_SELECT, self.main_frame_toolbar)
+        select.SetValue(selection)
+
+    def eh_ex_add_solver_selection(self, selection):
+        select:wx.ComboBox=self.FindWindowById(ToolId.SOLVER_SELECT, self.main_frame_toolbar)
+        select.Append(selection)
+
     def eh_ex_status_text(self, event):
         self.main_frame_statusbar.SetStatusText(event.text, 1)
 
@@ -1480,7 +1488,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def eh_tb_error_stats(self, event):
         with self.catch_error(action='error_stats', step=f'opening Bumps analysis dialog'):
             from .bumps_interface import StatisticalAnalysisDialog
-            dia = StatisticalAnalysisDialog(self, self.model)
+            prev_result=getattr(self.solver_control.controller.optimizer, 'last_result', None)
+            dia = StatisticalAnalysisDialog(self, self.model, prev_result=prev_result)
             dia.ShowModal()
 
     def eh_plot_page_changed(self, event):

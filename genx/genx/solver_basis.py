@@ -83,6 +83,10 @@ class GenxOptimizer(Configurable, H5HintedExport, metaclass=ABCMeta):
         """Setup the callback mechanism"""
 
     @abstractmethod
+    def get_callbacks(self)-> 'GenxOptimizerCallback':
+        """return the callback mechanism object"""
+
+    @abstractmethod
     def get_result_info(self)->'SolverResultInfo':
         """Return the result info of a previous run"""
 

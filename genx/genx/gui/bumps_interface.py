@@ -17,6 +17,7 @@ from bumps.dream.corrplot import _hists
 
 from .plotpanel import PlotPanel, BasePlotConfig
 from .exception_handling import CatchModelError
+from ..bumps_optimizer import BumpsResult
 
 class ProgressMonitor(TimedUpdate):
     """
@@ -110,8 +111,9 @@ class StatisticsPanelConfig(BasePlotConfig):
 class StatisticalAnalysisDialog(wx.Dialog):
     rel_cov=None
     thread: threading.Thread
+    _res: BumpsResult
 
-    def __init__(self, parent, model):
+    def __init__(self, parent, model, prev_result: BumpsResult=None):
         wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
         vbox=wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
@@ -186,6 +188,11 @@ class StatisticalAnalysisDialog(wx.Dialog):
         psize=parent.GetSize()
         self.SetSize(int(psize.GetWidth()*0.75), int(psize.GetHeight()*0.75))
 
+        if prev_result is not None:
+            self._res=prev_result
+            self.bproblem=prev_result.bproblem
+            self.display_bumps()
+
     def OnRunAnalysis(self, event):
         if self.thread is not None:
             self.run_button.SetLabel('Run Analysis...')
@@ -215,8 +222,9 @@ class StatisticalAnalysisDialog(wx.Dialog):
             wx.CallAfter(self.display_bumps)
 
     def display_bumps(self):
-        self.thread.join(timeout=5.0)
-        self.thread=None
+        if self.thread is not None:
+            self.thread.join(timeout=5.0)
+            self.thread=None
         self.pbar.SetValue(0)
 
         res=self._res

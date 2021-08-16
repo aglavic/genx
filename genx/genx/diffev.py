@@ -119,14 +119,6 @@ class DiffEv(GenxOptimizer):
 
     _callbacks: GenxOptimizerCallback=DiffEvDefaultCallbacks()
 
-    parameter_groups=[
-        ['Fitting', ['use_start_guess', 'use_boundaries', 'use_autosave', 'autosave_interval']],
-        ['Diff. Ev.', ['km', 'kr', 'method']],
-        ['Population size', ['use_pop_mult', 'pop_mult', 'pop_size']],
-        ['Max. Generatrions', ['use_max_generations', 'max_generations', 'max_generation_mult']],
-        ['Parallel processing', ['use_parallel_processing', 'processes', 'chunksize']],
-        ]
-
     def create_mutation_table(self):
         # Mutation schemes implemented
         self.mutation_schemes=[self.best_1_bin, self.rand_1_bin,
@@ -1172,7 +1164,8 @@ class DiffEv(GenxOptimizer):
     def set_callbacks(self, callbacks: GenxOptimizerCallback):
         self._callbacks=callbacks
 
-    # Some get functions
+    def get_callbacks(self) -> 'GenxOptimizerCallback':
+        return self._callbacks
 
     def get_model(self):
         '''
@@ -1290,10 +1283,17 @@ class DiffEv(GenxOptimizer):
 
     def __repr__(self):
         output="Differential Evolution Optimizer:\n"
-        for gname, group in self.parameter_groups:
+        for gname, group in self.opt.groups.items():
             output+='    %s:\n'%gname
             for attr in group:
-                output+='        %-30s %s\n'%(attr, getattr(self.opt, attr))
+                if type(attr) is list:
+                    for ati in attr:
+                        try:
+                            output += '        %-30s %s\n'%(ati, getattr(self.opt, ati))
+                        except AttributeError:
+                            continue
+                else:
+                    output+='        %-30s %s\n'%(attr, getattr(self.opt, attr))
         return output
 
     @property
@@ -1303,7 +1303,7 @@ class DiffEv(GenxOptimizer):
     def _repr_ipyw_(self):
         import ipywidgets as ipw
         entries=[]
-        for gname, group in self.parameter_groups:
+        for gname, group in self.opt.groups.items():
             gentries=[ipw.HTML("<b>%s:</b>"%gname)]
             for attr in group:
                 val=eval('self.opt.%s'%attr, globals(), locals())

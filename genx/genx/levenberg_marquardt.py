@@ -165,6 +165,9 @@ class LMOptimizer(GenxOptimizer):
     def set_callbacks(self, callbacks: GenxOptimizerCallback):
         self._callbacks=callbacks
 
+    def get_callbacks(self) -> 'GenxOptimizerCallback':
+        return self._callbacks
+
     def plot_output(self):
         self.calc_sim(self.best_vec)
         data=SolverUpdateInfo(

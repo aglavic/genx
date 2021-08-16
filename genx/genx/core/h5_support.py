@@ -106,7 +106,7 @@ class H5HintedExport(H5Savable):
                 self.h5_write_free_dict(group.create_group(attr), value)
             elif get_origin(typ) is dict:
                 sub_group=group.create_group(attr)
-                styp=get_args(sub_group)[1]
+                styp=get_args(typ)[1]
                 for key, subval in value.items():
                     if styp is str:
                         sub_group[key] = subval.encode('utf-8')
