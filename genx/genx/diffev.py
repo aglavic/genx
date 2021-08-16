@@ -149,6 +149,8 @@ class DiffEv(GenxOptimizer):
         self.fom_evals=CircBuffer(self.opt.max_log_elements)
 
         self.start_guess=array([])
+        self.updated_kr=[]
+        self.updated_km=[]
 
 
     @property
@@ -372,7 +374,6 @@ class DiffEv(GenxOptimizer):
             # Initialize the parameters to fit
             self.reset()
             self.init_fitting(model_obj)
-            self.init_fom_eval()
             self.stop=False
             # Start fitting in a new thread
             _thread.start_new_thread(self.optimize, ())
@@ -435,6 +436,7 @@ class DiffEv(GenxOptimizer):
         algorithm. Note that this method does not run in a separate thread.
         For threading use start_fit, stop_fit and resume_fit instead.
         '''
+        self.init_fom_eval()
 
         self.text_output('Calculating start FOM ...')
         self.running=True
@@ -668,8 +670,6 @@ class DiffEv(GenxOptimizer):
         Function to calcuate the figure of merit for parameter vector 
         vec.
         '''
-        model_obj=self.model
-
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
         fom=self.model.evaluate_fit_func()
