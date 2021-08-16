@@ -40,4 +40,5 @@ Other tutorials
 .. toctree::
    :maxdepth: 2
 
+   /tutorials/performance
    /tutorials/mpi
