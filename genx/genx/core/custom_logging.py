@@ -27,6 +27,8 @@ elif '--debug' in sys.argv:
 def genx_exit_message():
     logging.info('*** GenX %s Logging ended ***'%str_version)
 
+
+# noinspection PyUnusedLocal
 def iprint(*objects, sep=None, end=None, file=None, flush=False):
     """
     A logging function that behaves like print but uses logging.info.
@@ -43,26 +45,15 @@ class NumpyLogger(logging.getLoggerClass()):
       is used for logging numpy floating point errors, not the numpy_logger function.
     '''
 
-    if sys.version_info[0:2]>=(3, 2):  # sinfo was introduced in python 3.2
-        def makeRecord(self, name, lvl, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
-            curframe=inspect.currentframe()
-            calframes=inspect.getouterframes(curframe, 2)
-            # stack starts with:
-            # (this method, debug call, debug call root logger, numpy_logger, actual function, ...)
-            ignore, fname, lineno, func, ignore, ignore=calframes[4]
-            # noinspection PyUnresolvedReferences
-            return logging.getLoggerClass().makeRecord(self, name, lvl, fname, lineno,
-                                                       msg, args, exc_info, func=func, extra=extra, sinfo=sinfo)
-    else:
-        def makeRecord(self, name, lvl, fn, lno, msg, args, exc_info, func=None, extra=None):
-            curframe=inspect.currentframe()
-            calframes=inspect.getouterframes(curframe, 2)
-            # stack starts with:
-            # (this method, debug call, debug call root logger, numpy_logger, actual function, ...)
-            ignore, fname, lineno, func, ignore, ignore=calframes[4]
-            # noinspection PyUnresolvedReferences
-            return logging.getLoggerClass().makeRecord(self, name, lvl, fname, lineno,
-                                                       msg, args, exc_info, func=func, extra=extra)
+    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
+        curframe=inspect.currentframe()
+        calframes=inspect.getouterframes(curframe, 2)
+        # stack starts with:
+        # (this method, debug call, debug call root logger, numpy_logger, actual function, ...)
+        ignore, fname, lineno, func, ignore, ignore=calframes[4]
+        # noinspection PyUnresolvedReferences
+        return logging.getLoggerClass().makeRecord(self, name, level, fn, lno,
+                                                   msg, args, exc_info, func=func, extra=extra)
 
 nplogger=None
 
@@ -95,7 +86,7 @@ def setup_system():
     seterr(divide='call', over='call', under='ignore', invalid='call')
     logging.captureWarnings(True)
 
-    def numpy_logger(err, flag):
+    def numpy_logger(err, _flag):
         nplogger.debug('numpy floating point error encountered (%s)'%err)
 
     seterrcall(numpy_logger)

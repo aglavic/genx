@@ -2,7 +2,6 @@
 Module for usefull decorators e.g. for logging function calls, input and output.
 '''
 
-import sys
 import inspect
 import logging
 import threading
@@ -63,23 +62,13 @@ class DecoratorLogger(logging.getLoggerClass()):
       is used for logging.
     '''
 
-    if sys.version_info[0:2]>=(3, 2):  # sinfo was introduced in python 3.2
-        def makeRecord(self, name, lvl, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
-            if extra is None:
-                return logging.getLoggerClass().makeRecord(self, name, lvl, fn, lno,
-                                                           msg, args, exc_info, func=func, extra=None, sinfo=sinfo)
-            else:
-                return logging.getLoggerClass().makeRecord(self, name, lvl, extra['name'], extra['lno'],
-                                                           msg, args, exc_info, func=extra['func'], extra=None,
-                                                           sinfo=sinfo)
-    else:
-        def makeRecord(self, name, lvl, fn, lno, msg, args, exc_info, func=None, extra=None):
-            if extra is None:
-                return logging.getLoggerClass().makeRecord(self, name, lvl, fn, lno,
-                                                           msg, args, exc_info, func=func, extra=None)
-            else:
-                return logging.getLoggerClass().makeRecord(self, name, lvl, extra['name'], extra['lno'],
-                                                           msg, args, exc_info, func=extra['func'], extra=None)
+    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
+        if extra is None:
+            return logging.getLoggerClass().makeRecord(self, name, level, fn, lno,
+                                                       msg, args, exc_info, func=func, extra=None)
+        else:
+            return logging.getLoggerClass().makeRecord(self, name, level, extra['name'], extra['lno'],
+                                                       msg, args, exc_info, func=extra['func'], extra=None)
 
 # only use the debug decorators in debugging runs.
 old_class=logging.getLoggerClass()

@@ -210,7 +210,8 @@ class BaseConfig(ABC):
         Return the fields for the dataclass.
         If fltr is supplied the results will be filtered by field names given in this list.
         """
-        fields=dataclasses.fields(self)
+        # noinspection PyDataclass
+        fields=dataclasses.fields(self) # child classes will be dataclass objects
         if fltr is None:
             return list(fields)
         else:
