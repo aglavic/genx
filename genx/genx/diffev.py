@@ -1281,57 +1281,6 @@ class DiffEv(GenxOptimizer):
     def set_fom_allowed_dis(self, val):
         self.opt.allowed_fom_discrepancy=float(val)
 
-    def __repr__(self):
-        output="Differential Evolution Optimizer:\n"
-        for gname, group in self.opt.groups.items():
-            output+='    %s:\n'%gname
-            for attr in group:
-                if type(attr) is list:
-                    for ati in attr:
-                        try:
-                            output += '        %-30s %s\n'%(ati, getattr(self.opt, ati))
-                        except AttributeError:
-                            continue
-                else:
-                    output+='        %-30s %s\n'%(attr, getattr(self.opt, attr))
-        return output
-
-    @property
-    def widget(self):
-        return self._repr_ipyw_()
-
-    def _repr_ipyw_(self):
-        import ipywidgets as ipw
-        entries=[]
-        for gname, group in self.opt.groups.items():
-            gentries=[ipw.HTML("<b>%s:</b>"%gname)]
-            for attr in group:
-                val=eval('self.opt.%s'%attr, globals(), locals())
-                if type(val) is bool:
-                    item=ipw.Checkbox(value=val, indent=False, description=attr, layout=ipw.Layout(width='24ex'))
-                    entry=item
-                elif type(val) is int:
-                    entry=ipw.IntText(value=val, layout=ipw.Layout(width='18ex'))
-                    item=ipw.VBox([ipw.Label(attr), entry])
-                elif type(val) is float:
-                    entry=ipw.FloatText(value=val, layout=ipw.Layout(width='18ex'))
-                    item=ipw.VBox([ipw.Label(attr), entry])
-                elif attr=='method':
-                    entry=ipw.Dropdown(value=val, options=self.methods, layout=ipw.Layout(width='18ex'))
-                    item=ipw.VBox([ipw.Label(attr), entry])
-                else:
-                    entry=ipw.Text(value=val, layout=ipw.Layout(width='14ex'))
-                    item=ipw.VBox([ipw.Label(attr), entry])
-                entry.change_item=attr
-                entry.observe(self._ipyw_change, names='value')
-                gentries.append(item)
-            entries.append(ipw.VBox(gentries, layout=ipw.Layout(width='26ex')))
-        return ipw.VBox([ipw.HTML("<h3>Optimizer Settings:</h3>"), ipw.HBox(entries)])
-
-    @staticmethod
-    def _ipyw_change(change):
-        exec('self.%s=change.new'%change.owner.change_item)
-
 # ==============================================================================
 # Functions that is needed for parallel processing!
 model=Model(); par_funcs=() # global variables set in functions below
