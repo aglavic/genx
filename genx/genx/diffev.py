@@ -268,12 +268,14 @@ class DiffEv(GenxOptimizer):
 
         return pickle.dumps(cpy)
 
-    def pickle_load(self, pickled_string):
+    def pickle_load(self, pickled_string: bytes):
         '''
         Loads the pickled string into the this object. See pickle_string.
         '''
-        obj=pickle.loads(pickled_string.encode('latin1', errors='ignore'))
+        obj=pickle.loads(pickled_string, encoding='latin1', errors='ignore')
         obj.create_mutation_table()
+        if not hasattr(obj, 'opt'):
+            obj.opt=self.opt.copy()
         self.safe_copy(obj)
 
     def reset(self):

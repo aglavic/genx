@@ -187,6 +187,12 @@ class ModelController:
                                         not config.getboolean('solver', 'save all evals')))
 
     def load_gx(self, fname: str):
+        self._patch_modules() # for compatibility with old files
         self.model.load(fname)
-        config.load_string(self.model.load_addition('config'))
+        config.load_string(self.model.load_addition('config').decode('utf-8'))
         self.optimizer.pickle_load(self.model.load_addition('optimizer'))
+
+    def _patch_modules(self):
+        # add legacy items to genx for loading of pickled strings from old program
+        from genx import diffev
+        diffev.defualt_autosave=diffev.DiffEv._callbacks.autosave

@@ -156,8 +156,8 @@ class BumpsOptimizer(GenxOptimizer):
     def pickle_string(self, clear_evals: bool = False):
         return pickle.dumps(self)
 
-    def pickle_load(self, pickled_string: str):
-        obj=pickle.loads(pickled_string)
+    def pickle_load(self, pickled_string: bytes):
+        obj=pickle.loads(pickled_string, encoding='latin1', errors='ignore')
         # TODO: set own options from object
 
     def get_start_guess(self):

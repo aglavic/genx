@@ -31,7 +31,7 @@ class GenxOptimizer(Configurable, H5HintedExport, metaclass=ABCMeta):
         """ Return a pickle string for the object """
 
     @abstractmethod
-    def pickle_load(self, pickled_string: str):
+    def pickle_load(self, pickled_string: bytes):
         """ Configure object from pickled copy """
 
     @abstractmethod

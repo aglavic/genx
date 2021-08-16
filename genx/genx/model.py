@@ -255,7 +255,7 @@ class Model(H5HintedExport):
             raise GenxIOError(str(e), self.filename)
         savefile.close()
 
-    def load_addition(self, name)->str:
+    def load_addition(self, name)->bytes:
         '''
         Load additional text from sub-file
         '''
@@ -267,11 +267,11 @@ class Model(H5HintedExport):
             raise GenxIOError('Could not open the file', self.filename)
 
         try:
-            text = loadfile.read(name).decode('utf-8')
+            raw_string = loadfile.read(name)
         except Exception:
             raise GenxIOError('Could not read the section named: %s'%name, self.filename)
         loadfile.close()
-        return text
+        return raw_string
 
     def reset(self):
         self._reset_module()
