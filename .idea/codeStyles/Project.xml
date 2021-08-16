@@ -1,0 +1,30 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="true" />
+    <Python>
+      <option name="SPACE_AROUND_POWER_OPERATOR" value="false" />
+      <option name="BLANK_LINES_BEFORE_FIRST_METHOD" value="1" />
+      <option name="NEW_LINE_AFTER_COLON_MULTI_CLAUSE" value="false" />
+      <option name="DICT_WRAPPING" value="5" />
+      <option name="DICT_NEW_LINE_AFTER_LEFT_BRACE" value="true" />
+      <option name="DICT_NEW_LINE_BEFORE_RIGHT_BRACE" value="true" />
+      <option name="OPTIMIZE_IMPORTS_SORT_NAMES_IN_FROM_IMPORTS" value="true" />
+      <option name="OPTIMIZE_IMPORTS_JOIN_FROM_IMPORTS_WITH_SAME_SOURCE" value="true" />
+      <option name="OPTIMIZE_IMPORTS_CASE_INSENSITIVE_ORDER" value="true" />
+      <option name="FROM_IMPORT_TRAILING_COMMA_IF_MULTILINE" value="true" />
+      <option name="HANG_CLOSING_BRACKETS" value="true" />
+    </Python>
+    <codeStyleSettings language="EditorConfig">
+      <option name="ALIGN_GROUP_FIELD_DECLARATIONS" value="true" />
+      <option name="SPACE_AROUND_ASSIGNMENT_OPERATORS" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="Python">
+      <option name="BLANK_LINES_AFTER_IMPORTS" value="2" />
+      <option name="SPACE_AROUND_EQUALITY_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_RELATIONAL_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_ADDITIVE_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_MULTIPLICATIVE_OPERATORS" value="false" />
+      <option name="SPACE_AROUND_SHIFT_OPERATORS" value="false" />
+    </codeStyleSettings>
+  </code_scheme>
+</component>

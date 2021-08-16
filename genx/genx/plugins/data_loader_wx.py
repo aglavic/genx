@@ -6,7 +6,8 @@ takes care of the use of the DataLoaders.
 import wx, os, io, traceback
 
 from .utils import PluginHandler
-from genx.gui_logging import iprint
+from genx.core.config import config
+from genx.core.custom_logging import iprint
 
 head, tail=os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -27,7 +28,7 @@ class PluginController:
 
     def load_default(self):
         try:
-            plugin_name=self.parent.config.get('data handling', 'data loader')
+            plugin_name=config.get('data handling', 'data loader')
             self.LoadPlugin(plugin_name)
         except Exception as S:
             iprint('Could not locate the data loader parameter or the data loader. Error:')

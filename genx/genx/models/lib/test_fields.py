@@ -6,7 +6,7 @@ from . import grating_diffuse
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import erf
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 def test_calc_fields_single_interface():
     qz=np.linspace(0.0001, 0.5, 500)

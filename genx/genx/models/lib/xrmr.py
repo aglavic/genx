@@ -10,11 +10,10 @@ index: Meaning
 
 '''
 
-import numpy as np
 from .math_utils import *
 from .int_lay_xmean import calc_xrmr_Xmean
 from functools import reduce
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 # mpy_limit = 1e-9 corresponds to an angle of 89.998 deg.
 def calc_refl(g_0, lamda, chi0, A, B, C, M, d, mag_limit=1e-8, mpy_limit=1e-9):
@@ -495,7 +494,8 @@ if __name__=='__main__':
     # show()
 
     # try to do some profiling
-    import pstats, cProfile
+    import pstats
+
 
     calc_refl_int_lay(g_0, l_array, chi0, A, B, C, M, d, d*0, d*0, d*0, d*0, d*0, d*0, d*0)
     # cProfile.runctx("calc_refl(g_0, l_array, chi0, A, B, C, M, d)", globals(), locals(), "Profile.prof")

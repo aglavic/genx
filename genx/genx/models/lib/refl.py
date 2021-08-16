@@ -13,7 +13,7 @@ MakeClasses - Function that creates the classes (backward comparability).
 '''
 
 import numpy as np
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 class ReflFunction:
     def __init__(self, function, validation_args, validation_kwargs, id=None):

@@ -51,17 +51,17 @@ is to the right. This is updated when the simulation button is pressed.
 '''
 
 from .. import add_on_framework as framework
-from genx.plotpanel import PlotPanel
-import genx.model as modellib
+from genx.exceptions import GenxError
+from genx.gui.plotpanel import PlotPanel, BasePlotConfig
 import wx.html
 
 import numpy as np
-import sys, os, re, time, io, traceback
+import time, io, traceback
 
 from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from .help_modules.reflectivity_utils import SampleHandler, SampleBuilder, avail_models, find_code_segment
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 _set_func_prefix='set'
 
@@ -1388,6 +1388,9 @@ class ParameterExpressionDialog(wx.Dialog):
 
         return evalstring
 
+class SamplePlotConfig(BasePlotConfig):
+    section='sample plot'
+
 class SamplePlotPanel(wx.Panel):
     ''' Widget for plotting the scattering length density of 
     a sample.
@@ -1395,10 +1398,8 @@ class SamplePlotPanel(wx.Panel):
 
     def __init__(self, parent, plugin, id=-1, color=None, dpi=None
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
-        ''' Inits the plotpanel
-        '''
         wx.Panel.__init__(self, parent)
-        self.plot=PlotPanel(self, -1, color, dpi, style, **kwargs)
+        self.plot=PlotPanel(self, -1, color, dpi, SamplePlotConfig, style, **kwargs)
         self.plugin=plugin
 
         sizer=wx.BoxSizer(wx.VERTICAL)
@@ -1879,7 +1880,7 @@ class Plugin(framework.Template, SampleBuilder):
         self.StatusMessage('Compiling the script...')
         try:
             self.CompileScript()
-        except modellib.GenericError as e:
+        except GenxError as e:
             self.ShowErrorDialog(str(e))
             self.StatusMessage('Error when compiling the script')
             return

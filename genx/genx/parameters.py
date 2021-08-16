@@ -1,22 +1,21 @@
 '''
 Definition for the class Parameters. Used for storing the fitting parameters
 in GenX.
-Programmer: Matts Bjorck
 '''
+from typing import Union
 
-import numpy as np
-import string
-from genx.gui_logging import iprint
+from .core.custom_logging import iprint
+from .core.h5_support import H5Savable
+
 
 # ==============================================================================
 
 
-class Parameters:
+class Parameters(H5Savable):
     """
     Class for storing the fitting parameters in GenX
     """
-    # Parameters used for saving the object state
-    export_parameters={'data_labels': list, 'init_data': list, 'data': list}
+    h5group_name='parameters'
 
     def __init__(self, model=None):
         self.data_labels=['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
@@ -26,12 +25,10 @@ class Parameters:
         self.string_dtype="S100"
 
     def write_h5group(self, group):
-        """ Export the members in the object to a h5py group.
-        :param group: h5py Group to export to
-        :return:
+        """
+        Export the members in the object to a h5py group.
         """
         group['data_labels']=[label.encode('utf-8') for label in self.data_labels]
-        # print np.array([r[0] for r in self.data], dtype='S50')
         group['data col 0']=[r[0].encode('utf-8') for r in self.data]
         group['data col 1']=[r[1] for r in self.data]
         group['data col 2']=[r[2] for r in self.data]
@@ -162,10 +159,10 @@ class Parameters:
         rows.sort()
 
         for i in rows:
-            # Note index changes as we delete values. thats why rows has to be sorted
+            # Note that index changes as we delete values, that's why rows has to be sorted
             try:
                 self.data.pop(i-delete_count)
-            except:
+            except IndexError:
                 pass
             else:
                 delete_count+=1
@@ -214,13 +211,9 @@ class Parameters:
                 obj=self.model.eval_in_model(obj_name)
                 class_name=obj.__class__.__name__
 
-        return string.lower(class_name), string.lower(pname), string.lower(obj_name)
+        return class_name.lower(), pname.lower(), obj_name.lower()
 
     def sort_rows(self):
-        """ Sort the rows in the table
-
-        :return: Boolean to indicate success (True)
-        """
         self.data.sort(key=self._sort_key_func)
         return True
 
@@ -240,9 +233,9 @@ class Parameters:
                  not self.data[nmb][0]=='']
         funcs=[row[0] for row in self.data if row[2] and not row[0]=='']
         mytest=[row[1] for row in self.data if row[2] and not row[0]=='']
-        min=[row[3] for row in self.data if row[2] and not row[0]=='']
-        max=[row[4] for row in self.data if row[2] and not row[0]=='']
-        return row_nmb, funcs, mytest, min, max
+        min_=[row[3] for row in self.data if row[2] and not row[0]=='']
+        max_=[row[4] for row in self.data if row[2] and not row[0]=='']
+        return row_nmb, funcs, mytest, min_, max_
 
     def get_pos_from_row(self, row):
         '''get_pos_from_row(self) --> pos [int]
@@ -303,12 +296,11 @@ class Parameters:
         return self.data[:]
 
     def get_ascii_output(self):
-        '''get_ascii_output(self) --> text [string]
-
+        '''
         Returns the parameters grid as an ascii string.
         '''
         text='#'
-        # Show the data labels but with a preceeding # to denote a comment
+        # Show the data labels but with a preceding # to denote a comment
         for label in self.data_labels:
             text+=label+'\t'
         text+='\n'
@@ -323,14 +315,13 @@ class Parameters:
             text+='\n'
         return text
 
-    def _parse_ascii_input(self, text):
-        '''parse_ascii_input(self, text) --> list table
-
+    @staticmethod
+    def _parse_ascii_input(text:str)->Union[list, None]:
+        '''
         Parses an ascii string to a parameter table. returns a list table if
         sucessful otherwise it returns None
         '''
         table=[]
-        sucess=True
         lines=text.split('\n')
         for line in lines[:-1]:
             # If line not commented
@@ -341,49 +332,42 @@ class Parameters:
                     if len(line_strs)==1:
                         break
                     else:
-                        sucess=False
-                        break
+                        return None
+                # noinspection PyBroadException
                 try:
                     par=line_strs[0]
                     val=float(line_strs[1])
                     fitted=line_strs[2].strip()=='True' \
                            or line_strs[2].strip()=='1'
-                    min=float(line_strs[3])
-                    max=float(line_strs[4])
+                    min_=float(line_strs[3])
+                    max_=float(line_strs[4])
                     error=line_strs[5]
-                except Exception as e:
-                    sucess=False
-                    break
+                except:
+                    return None
                 else:
-                    table.append([par, val, fitted, min, max, error])
-        if sucess:
-            return table
-        else:
-            return None
+                    table.append([par, val, fitted, min_, max_, error])
+        return table
 
     def set_ascii_input(self, text):
-        '''set_ascii_input(self, text) --> None
-
+        '''
         If possible parse the text source and set the current parameters table
         to the one given in text.
         '''
         table=self._parse_ascii_input(text)
-        if table:
+        if table is not None:
             self.data=table
             return True
         else:
             return False
 
-    def safe_copy(self, object):
-        '''safe_copy(self, object) --> None
-
+    def safe_copy(self, obj):
+        '''
         Does a safe copy from object into this object.
         '''
-        self.data=object.data[:]
+        self.data= obj.data[:]
 
     def copy(self):
-        '''get_copy(self) --> copy of Parameters
-
+        '''
         Does a copy of the current object.
         '''
         new_pars=Parameters()
@@ -429,6 +413,7 @@ class Parameters:
                           ('min', '20%'), ('max', '20%')]])
         vlist.append(header)
         for par in self:
+            # noinspection PyProtectedMember
             vlist.append(par._repr_ipyw_())
 
         add_button=ipw.Button(description='Add Parameter')
@@ -442,9 +427,10 @@ class Parameters:
         self.append()
 
         prev_box=button.vbox.children
+        # noinspection PyProtectedMember
         button.vbox.children=prev_box[:-1]+(self[-1]._repr_ipyw_(), prev_box[-1])
 
-class ConnectedParameter():
+class ConnectedParameter:
     """
     A representation of a single fittable parameter for use in api access to GenX.
     """
@@ -525,7 +511,6 @@ class ConnectedParameter():
 
     def _repr_ipyw_(self):
         import ipywidgets as ipw
-        wname=ipw.Text(value=self.name, layout=ipw.Layout(width='35%'))
         wname=ipw.Combobox(value=self.name,
                            options=[ni for ni, oi in self._parent.model.script_module.__dict__.items()
                                     if type(oi).__name__ in ['Layer', 'Stack', 'Instrument']])
@@ -547,6 +532,7 @@ class ConnectedParameter():
     def _ipyw_change(self, change):
         if change.owner.change_item=='name':
             if '.' in change.new:
+                # noinspection PyBroadException
                 try:
                     name=change.new.split('.')[0]
                     change.owner.options=tuple("%s.%s"%(name, si)
@@ -563,9 +549,10 @@ class ConnectedParameter():
                 change.owner.description=''
                 return
             prev=self.name
+            # noinspection PyBroadException
             try:
                 self.name=change.new
-            except Exception as err:
+            except Exception:
                 self.data[0]=prev
                 change.owner.description='ERR'
             else:

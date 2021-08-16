@@ -1,17 +1,12 @@
-#!/usr/bin/env python
 '''
 Library for GUI+interface layer for the data class. 
 Implements one Controller and a customiized ListController
 for data. The class that should be used for the outside world
 is the DataListController. This has a small toolbar ontop.
-File started by: Matts Bjorck
-
-$Rev::                                  $:  Revision of last commit
-$Author::                               $:  Author of last commit
-$Date::                                 $:  Date of last commit
 '''
+from dataclasses import dataclass
 
-import wx, os
+import wx
 import wx.lib.colourselect as csel
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.intctrl as intctrl
@@ -22,11 +17,11 @@ try:
 except ImportError:
     from wx import adv as wizard
 
-from . import data
-from . import filehandling as io
 from . import images as img
-from .plugins import data_loader_wx as dlf
-from .gui_logging import iprint
+from .. import data
+from ..plugins import data_loader_wx as dlf
+from ..core.config import BaseConfig, Configurable
+from ..core.custom_logging import iprint
 
 # ==============================================================================
 
@@ -34,6 +29,7 @@ class DataController:
     '''
     Interface layer class between the VirtualDataList and the Data class
     '''
+    data: data.DataList
 
     def __init__(self, data_list):
         self.data=data_list
@@ -46,6 +42,11 @@ class DataController:
 
     def get_count(self):
         return self.data.get_len()
+
+    def has_data(self, index):
+        if index<0 or index>=self.get_count():
+            return False
+        return self.data[index].has_data()
 
     def get_item_text(self, item, col):
         bool_output={True: 'Yes', False: 'No'}
@@ -89,9 +90,6 @@ class DataController:
             colors.append(((int(dc[0]*255), int(dc[1]*255), int(dc[2]*255)),
                            (int(sc[0]*255), int(sc[1]*255), int(sc[2]*255))))
         return colors
-
-    def load(self, pos, path):
-        self.data[pos].loadfile(path)
 
     def get_items_plotsettings(self, pos):
         ''' get_items_plotsettings(self, pos) --> (sim_list, data_list)
@@ -264,21 +262,43 @@ myEVT_DATA_LIST=wx.NewEventType()
 # Creating an event binder object
 EVT_DATA_LIST=wx.PyEventBinder(myEVT_DATA_LIST)
 
-# END: DataListEvent
-# ==============================================================================
+@dataclass
+class VDataListConfig(BaseConfig):
+    section='data handling'
+    toggle_show: bool=True
 
-class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
-    '''
-    The listcontrol for the data
-    '''
+@dataclass
+class DataCommandConfig(BaseConfig):
+    section='data commands'
+    names: str = 'A Example;Default;Simulation;Sustematic Errors'
+    x_commands: str = 'x+33;x;arange(0.01, 6, 0.01);x'
+    y_commands: str = 'y/1e5;y;arange(0.01, 6, 0.01)*0;y'
+    e_commands: str = 'e/2.;e;arange(0.01, 6, 0.01)*0;rms(e, fpe(1.0, 0.02), 0.01*dydx())'
 
-    def __init__(self, parent, data_controller, config=None, status_text=None):
+class DataFileDropTarget(wx.FileDropTarget):
+    def __init__(self, parent):
+        self.parent=parent
+        wx.FileDropTarget.__init__(self)
+
+    def OnDropFiles(self, x, y, filenames):
+        return self.parent.load_from_files(filenames)
+
+class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
+    '''
+    The ListCtrl for the data
+    '''
+    opt: VDataListConfig
+
+    def __init__(self, parent, data_controller: DataController, status_text:str=None):
         wx.ListCtrl.__init__(self, parent, -1,
                              style=wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_EDIT_LABELS)
         ListCtrlAutoWidthMixin.__init__(self)
+        Configurable.__init__(self)
+
+        self.drop_target=DataFileDropTarget(self)
+        self.SetDropTarget(self.drop_target)
 
         self.data_cont=data_controller
-        self.config=config
         self.parent=parent
         self.status_text=status_text
         # This will set by the register function in the
@@ -307,19 +327,18 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
         # For binding selction showing data sets
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelectionChanged)
-        self.toggleshow=self.config.get_boolean('data handling',
-                                                'toggle show')
+        self.ReadConfig()
 
     def SetShowToggle(self, toggle):
         '''Sets the selction type of the show. If toggle is true
         then the selection is via toggle if false via selection of
         data set only.
         '''
-        self.toggleshow=bool(toggle)
-        self.config.set('data handling', 'toggle show', toggle)
+        self.opt.toggle_show=bool(toggle)
+        self.WriteConfig()
 
     def OnSelectionChanged(self, evt):
-        if not self.toggleshow:
+        if not self.opt.toggle_show:
             indices=self._GetSelectedItems()
             indices.sort()
             if not indices==self.show_indices:
@@ -515,30 +534,9 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             dlg.ShowModal()
             dlg.Destroy()
 
-    def Old_LoadData(self):
-        # Keep this one if I need to go back...
-        # check so only one item is checked
-        n_selected=len(self._GetSelectedItems())
-        if n_selected==1:
-            dlg=wx.FileDialog(self, message="Choose your Datafile"
-                              , defaultFile="", wildcard="All files (*.*)|*.*"
-                              , style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
-
-            if dlg.ShowModal()==wx.ID_OK:
-                self.data_cont.load(self.GetFirstSelected(), dlg.GetPath())
-                self._UpdateData('New data added')
-            dlg.Destroy()
-        else:
-            if n_selected>1:
-                dlg=wx.MessageDialog(self, 'Please select only one dataset'
-                                     , caption='Too many selections'
-                                     , style=wx.OK | wx.ICON_INFORMATION)
-            else:
-                dlg=wx.MessageDialog(self, 'Please select a dataset'
-                                     , caption='No active dataset'
-                                     , style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+    def update_color_cycle(self, source):
+        self.data_cont.get_data().update_color_cycle(source)
+        self._UpdateImageList()
 
     def LoadData(self):
         '''LoadData(self, evt) --> None
@@ -548,6 +546,16 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.data_loader.SetData(self.data_cont.get_data())
         if self.data_loader.LoadDataFile(self._GetSelectedItems()):
             self._UpdateData('New data added', new_data=True)
+
+    def load_from_files(self, files):
+        offset=self.data_cont.get_count()
+        while offset>0 and not self.data_cont.has_data(offset-1):
+            offset-=1
+        for i, fi in enumerate(files):
+            if self.data_cont.get_count()<(i+offset+1):
+                self.AddItem()
+            self.data_loader.LoadData(self.data_cont.get_data()[i+offset], fi)
+        return True
 
     def ShowInfo(self):
         """
@@ -635,14 +643,11 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         self.SetItemCount(self.data_cont.get_count())
         self._UpdateData('Data from model loaded', data_changed=True,
                          new_data=True, new_model=True)
-        self.toggleshow=self.config.get_boolean('data handling',
-                                                'toggle show')
+        self.ReadConfig()
         self.data_loader_cont.load_default()
         # print "new data from model loaded"
 
     def OnBeginEdit(self, evt):
-        # print (evt.GetIndex(),evt.GetColumn())
-        # print evt.GetText()
         evt.Skip()
 
     def OnEndEdit(self, evt):
@@ -759,25 +764,16 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                     # Add a new key and set it to ''
                     command_par[key]=''
 
-        # Check if we have a config file:
-        if self.config:
-            try:
-                predef_names=self.config.get('data commands', 'names').split(';')
-                cmds_x=self.config.get('data commands', 'x commands').split(';')
-                cmds_y=self.config.get('data commands', 'y commands').split(';')
-                cmds_e=self.config.get('data commands', 'e commands').split(';')
-            except io.OptionError as e:
-                ShowWarningDialog(self.parent, str(e), 'datalist.OnCalcEdit')
-                predef_names=None
-                predef_commands=None
-            else:
-                predef_commands=[]
-                for cmd_x, cmd_y, cmd_e in zip(cmds_x, cmds_y, cmds_e):
-                    command={'x': cmd_x, 'y': cmd_y, 'e': cmd_e}
-                    predef_commands.append(command)
-        else:
-            predef_names=None
-            predef_commands=None
+        # Read commands from config
+        dcfg=DataCommandConfig()
+        dcfg.load_config()
+        predef_names=dcfg.names.split(';')
+        cmds_x=dcfg.x_commands.split(';')
+        cmds_y=dcfg.y_commands.split(';')
+        cmds_e=dcfg.e_commands.split(';')
+
+        predef_commands=[{'x': cmd_x, 'y': cmd_y, 'e': cmd_e}
+                         for cmd_x, cmd_y, cmd_e in zip(cmds_x, cmds_y, cmds_e)]
 
         # Dialog business start here
         dlg=CalcDialog(self, command_par, all_names, all_commands,
@@ -843,13 +839,13 @@ class DataListControl(wx.Panel):
     The Control window for the whole Data list including a small toolbar
     '''
 
-    def __init__(self, parent, id=-1, config=None, status_text=None):
+    def __init__(self, parent, id=-1, status_text=None):
         wx.Panel.__init__(self, parent)
         # The two major windows:
         self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_HORIZONTAL)
         mydata=data.DataList()
         self.data_cont=DataController(mydata)
-        self.list_ctrl=VirtualDataList(self, self.data_cont, config=config, status_text=status_text)
+        self.list_ctrl=VirtualDataList(self, self.data_cont, status_text=status_text)
 
         self.sizer_vert=wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer_vert)
@@ -1555,27 +1551,3 @@ def ShowWarningDialog(frame, message, position=''):
     dlg.Destroy()
 
 # ==============================================================================
-
-# Test code for the class to be able to independly test the code
-if __name__=='__main__':
-    from . import data
-
-    class MainFrame(wx.Frame):
-        def __init__(self, *args, **kwds):
-            kwds["style"]=wx.DEFAULT_FRAME_STYLE
-            wx.Frame.__init__(self, *args, **kwds)
-            mydata=data.DataList()
-            mydata.add_new()
-            data_cont=DataController(mydata)
-            datalist=DataListControl(self, data_cont)
-
-    class MyApp(wx.App):
-        def OnInit(self):
-            wx.InitAllImageHandlers()
-            main_frame=MainFrame(None, -1, "")
-            self.SetTopWindow(main_frame)
-            main_frame.Show()
-            return 1
-
-    app=MyApp(0)
-    app.MainLoop()

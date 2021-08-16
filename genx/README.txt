@@ -11,6 +11,20 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.0
+=============
+ * Add additional optimizers to be used for refinement (fast Levenberg-Marquardt or Bumps library)
+ * Improved simulation performance for simple models and better stability of GUI for fast updates.
+   If CUDA calculation and parallel is selected, one process will run on GPU and the rest on CPU.
+ * Add option to automatically color datasets according to pre-defined cycle (2, 4 states or rainbow)
+ * Allow drag&drop of data files onto GenX data table
+ * Show a startup splash screen to give user feedback, especially when delayed by JIT compilation during first run
+ * Major refactoring of core code and configuration system for better maintenance and expandibility
+   (Be aware that this may lead to new Bugs compred to 3.3.x versions. Please submit bug-reports
+    if you find any!)
+ * Reduce number of threads used by numba when running in multiprocessing mode, large increase in performance.
+ * Some minor bug fixes
+
 Changes 3.3.6
 =============
  * Fix bug in hgx save/load models with non-ascii characters

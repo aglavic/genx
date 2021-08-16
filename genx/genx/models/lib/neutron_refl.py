@@ -1,12 +1,11 @@
-''' Library for reflectivity calculations with neutrons.
-Programmed by Matts Bjorck
-Last changed 2017-09-02
+'''
+Library for reflectivity calculations with neutrons.
 '''
 from numpy import *
 from . import math_utils as mu
 from . import int_lay_xmean
 from functools import reduce
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 
 CTYPE=complex128

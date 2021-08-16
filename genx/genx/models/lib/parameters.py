@@ -8,9 +8,8 @@ r"""
 
 """
 
-import numpy as np
 from collections import MutableSequence
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 class Parameter(object):
     """Base class for all Parameters"""

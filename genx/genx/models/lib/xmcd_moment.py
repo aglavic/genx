@@ -4,8 +4,6 @@ r"""
 .. module:: xmcd_moment
    :synopsis: A physical model for the 2p edges in x-ray magnetic resonant reflectivity.
 
-.. moduleauthor:: Matts Björck <matts.bjorck@gmail.com>
-
 This module provides he framework to model the spectroscopic response of the scattering lengths
 around an 2p absorption edge. The approach was first presented by van der Laan [Laan97]_ for modelling the line shape
 of the XMCD (x-ray magnetic circular dichrosim) spectrum of the 3d metals and later used experimentally by
@@ -182,7 +180,7 @@ from scipy import special
 from scipy import integrate
 
 from . import refl
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 _head, _tail=os.path.split(__file__)
 # Look only after the file name and not the ending since

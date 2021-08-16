@@ -1,4 +1,4 @@
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 from numpy import sqrt, pi, sin, cos, newaxis, ones, array, exp, r_, rollaxis, append, c_, arange, log10
 
 def IntElfield(theta, lamda, n, d):

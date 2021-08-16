@@ -82,10 +82,9 @@ bw
 Same thing as bc but scaled so that is can be used with a density in
 g/cm\ :sup:`3\ .`
 '''
-import numpy as np
 from .lib import scatteringlengths as sl
 import os
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 _head, _tail=os.path.split(__file__)
 # Look only after the file name and not the ending since

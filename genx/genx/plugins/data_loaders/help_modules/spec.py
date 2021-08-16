@@ -69,19 +69,14 @@ for more information.
 
 """
 
-import time
-import sys
-import os
 import numpy
 
-from numpy import *
-from scipy import *
 from pylab import *
 from matplotlib import pylab
 # from fit import fit
 # from ccd.transformations import FileProcessor
-from copy import deepcopy, copy
-from genx.gui_logging import iprint
+from copy import copy
+from genx.core.custom_logging import iprint
 
 __version__="$Revision$"
 __author__="Stuart B. Wilkins <swilkins@bnl.gov>"

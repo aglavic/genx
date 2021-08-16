@@ -6,7 +6,7 @@
 # THis one really needs scipy
 from numpy import *
 from scipy.special import erf
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 rad=pi/180.
 sqrt2=sqrt(2.)

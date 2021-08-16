@@ -113,13 +113,11 @@ Instrument
     The measured polarization of the instrument. Valid options are:
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
 '''
-from numpy import *
-from genx.gui_logging import iprint
 from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
 from .lib import refl as refl
-# from .lib.physical_constants import muB_to_SL
+# from .core.physical_constants import muB_to_SL
 
 # Preamble to define the parameters needed for the models outlined below:
 

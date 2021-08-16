@@ -2,28 +2,23 @@
 Library for the GUI components of the Parameter grid which is used to 
 define which parameters to fit. The library parameters contains the class
 definition of the parameters. 
-Programmer: Matts Bjorck
-Last Changed: 2014 07 17
 '''
 
-import os
 import wx
 import wx.grid as gridlib
 import wx.lib.printout as printout
-import wx.lib.agw.floatspin as fs
-from wx.lib.masked import NumCtrl
+import wx.lib.newevent
 import string
 
 from numpy import *
+from dataclasses import dataclass
 
-from . import parameters
-from . import images as img
-from .lib import controls as ctrls
-from . import filehandling
-from .gui_logging import iprint
+from . import controls as ctrls, images as img
+from .. import parameters
+from ..core.config import BaseConfig, Configurable
+from ..core.custom_logging import iprint
 
-# =============================================================================
-# class ParameterDataTable
+
 class ParameterDataTable(gridlib.GridTableBase):
     '''
     Class for the datatable which is used by the grid. 
@@ -77,9 +72,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         except IndexError as e:
             # add a new row
             self.pars.append()
-            # print 'Value:', value
 
-            # self.SetValue(row, col, value)
             # tell the grid we've added a row
             msg=gridlib.GridTableMessage(self,  # The table
                                          gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,  # what we did to it
@@ -101,7 +94,6 @@ class ParameterDataTable(gridlib.GridTableBase):
                                      delete_count)
         self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed()
-        # print self.data
 
     def InsertRow(self, row):
         self.pars.insert_row(row)
@@ -114,7 +106,8 @@ class ParameterDataTable(gridlib.GridTableBase):
         return True
 
     def MoveRowUp(self, row):
-        """ Move row up one row.
+        """
+        Move row up one row.
 
         :param row: Integer row number to move up
         :return: Boolean
@@ -127,7 +120,8 @@ class ParameterDataTable(gridlib.GridTableBase):
         return success
 
     def MoveRowDown(self, row):
-        """ Move row down one row.
+        """
+        Move row down one row.
 
         :param row: Integer row number to move down
         :return: Boolean
@@ -140,7 +134,8 @@ class ParameterDataTable(gridlib.GridTableBase):
         return success
 
     def SortRows(self):
-        """ Sort the rows in the table
+        """
+        Sort the rows in the table
 
         :return: Boolean to indicate success
         """
@@ -151,7 +146,6 @@ class ParameterDataTable(gridlib.GridTableBase):
         return success
 
     def AppendRows(self, num_rows=1):
-        # print num_rows
         [self.pars.append() for i in range(num_rows)]
 
         msg=gridlib.GridTableMessage(self,
@@ -161,39 +155,23 @@ class ParameterDataTable(gridlib.GridTableBase):
         self.parent._grid_changed()
         return True
 
-    # def GetAttr(self, row, col, kind):
-    #    '''Called by the grid to find the attributes of the cell,
-    #    bkg color, text colour, font and so on.
-    #    '''
-    #    attr = super(ParameterDataTable, self).GetAttr(row, col, kind)
-
-    #    if col == 1 and row < self.pars.get_len_rows():
-    #        if attr is None:
-    #            attr = gridlib.GridCellAttr()
-    #        attr = attr.Clone()
-    #        val = self.pars.get_value(row,1)
-    #        max_val = self.pars.get_value(row,4)
-    #        min_val = self.pars.get_value(row,3)
-    #        if val > max_val or val < min_val:
-    #            attr.SetBackgroundColour(wx.Colour(204, 0, 0))
-    #            attr.SetTextColour(wx.Colour(255, 255, 255))
-
-    #    return attr
-
     def GetColLabelValue(self, col):
-        '''Called when the grid needs to display labels
+        '''
+        Called when the grid needs to display labels
         '''
         return self.pars.get_col_headers()[col]
 
     def GetTypeName(self, row, col):
-        '''Called to determine the kind of editor/renderer to use by
+        '''
+        Called to determine the kind of editor/renderer to use by
         default, doesn't necessarily have to be the same type used
         natively by the editor/renderer if they know how to convert.
         '''
         return self.data_types[col]
 
     def CanGetValueAs(self, row, col, type_name):
-        '''Called to determine how the data can be fetched and stored by the
+        '''
+        Called to determine how the data can be fetched and stored by the
         editor and renderer.  This allows you to enforce some type-safety
         in the grid.
         '''
@@ -208,8 +186,7 @@ class ParameterDataTable(gridlib.GridTableBase):
 
     def SetParameters(self, pars, clear=True, permanent_change=True):
         '''
-        SetParameters(self, pars) --> None
-        
+
         Set the parameters in the table to pars. 
         pars has to an instance of Parameters.
         '''
@@ -252,8 +229,6 @@ class ParameterDataTable(gridlib.GridTableBase):
         self.SetValue(row, 1, value)
         self.parent.PostValueChangedEvent()
 
-# Class ParameterDataTable ends here
-# ------------------------------------------------------------------------------
 class SliderCellEditor(gridlib.GridCellEditor):
 
     def __init__(self, value=0.0, min_value=0.0, max_value=100.0):
@@ -366,7 +341,6 @@ class SliderCellEditor(gridlib.GridCellEditor):
         """final cleanup"""
         self._tc.Destroy()
         super(SliderCellEditor, self).Destroy()
-
 
 class ValueLimitCellEditor(gridlib.GridCellEditor):
     """Editor for the parameter values with a spin control"""
@@ -720,17 +694,21 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
         width, height = dc.GetTextExtent("0.1234567e10")
         return wx.Size(width, height)
 
-# ------------------------------------------------------------------------------
-class ParameterGrid(wx.Panel):
+@dataclass
+class ParameterGridConfig(BaseConfig):
+    section='parameter grid'
+    value_slider: bool=False
+    auto_sim: bool=False
+
+class ParameterGrid(wx.Panel, Configurable):
     '''
     The GUI component itself. This is the thing to use in a GUI.
     '''
+    opt: ParameterGridConfig
 
-    def __init__(self, parent, frame, config=None):
+    def __init__(self, parent, frame):
         wx.Panel.__init__(self, parent)
-
-        self.config=config
-        self.config_name='parameter grid'
+        Configurable.__init__(self)
 
         # The two main widgets
         self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_VERTICAL)
@@ -791,8 +769,7 @@ class ParameterGrid(wx.Panel):
         self.grid.Bind(wx.EVT_CHAR, self.OnKey)
 
         self.toolbar.Realize()
-        self.show_slider=False
-        self.SetValueEditorSlider(slider=False)
+        self.SetValueEditorSlider(slider=self.opt.value_slider)
         attr=gridlib.GridCellAttr()
         attr.SetEditor(ValueCellEditor())
         attr.SetRenderer(ValueCellRenderer())
@@ -809,20 +786,9 @@ class ParameterGrid(wx.Panel):
         self.grid.SetGridCursor(0, 3)
         self.grid.SetGridCursor(0, 4)
 
-    def ReadConfig(self):
-        """ Reads the variables stored in the config file."""
-        try:
-            val=self.config.get_boolean(self.config_name, 'value slider')
-        except filehandling.OptionError:
-            iprint('Could not locate option %s.%s'%(self.config_name, 'y scale'))
-            self.SetValueEditorSlider(False)
-        else:
-            self.SetValueEditorSlider(val)
-
-    def WriteConfig(self, show_slider=None):
-        """Writes the varaibles to be stored to the config"""
-        if show_slider is not None:
-            self.config.set(self.config_name, 'value slider', show_slider)
+    def UpdateConfigValues(self):
+        self.SetValueEditorSlider(slider=self.opt.value_slider)
+        self.toggle_slider_tool(self.opt.value_slider)
 
     def OnKey(self, event):
         if event.ControlDown() and event.GetKeyCode() == 22:
@@ -898,12 +864,12 @@ class ParameterGrid(wx.Panel):
             attr.SetRenderer(ValueLimitCellRenderer())
         self.grid.SetColAttr(1, attr)
         self.grid.SetGridCursor(row, col)
-        self.show_slider=slider
-        self.WriteConfig(show_slider=slider)
+        self.opt.value_slider=slider
+        self.WriteConfig()
 
     def GetValueEditorSlider(self):
         """Returns True if the slider editor is active"""
-        return self.show_slider
+        return self.opt.value_slider
 
     def PostValueChangedEvent(self):
         evt=value_change()
@@ -1210,7 +1176,7 @@ class ParameterGrid(wx.Panel):
             else:
                 evt.Skip()
         # elif col==1 and row>-1:
-        #     if self.show_slider:
+        #     if self.opt.value_slider:
         #         self.grid.SetGridCursor(row, col)
         #         self.grid.EnableCellEditControl()
         #     else:

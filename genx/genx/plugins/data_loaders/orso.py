@@ -12,7 +12,7 @@ import os
 
 from ..data_loader_framework import Template
 from ..utils import ShowWarningDialog
-from genx.lib.orso_io.ort import read_file
+from genx.core.orso_io.ort import read_file
 
 class Plugin(Template):
     wildcard='*.ort'

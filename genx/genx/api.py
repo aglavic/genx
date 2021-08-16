@@ -11,29 +11,32 @@ import sys
 if sys.platform=='win32':
     os.environ['FOR_DISABLE_CONSOLE_CTRL_HANDLER']='1'
 
-from genx.model import Model
-from genx.diffev import DiffEv
-from genx import filehandling as io
-from genx.plugins.add_ons.help_modules.reflectivity_utils import avail_models, SampleHandler, SampleBuilder
-from genx.plugins.utils import PluginHandler
+from .model import Model
+from .diffev import DiffEv
+from .model_control import ModelController
+from .plugins.add_ons.help_modules.reflectivity_utils import avail_models, SampleHandler, SampleBuilder
+from .plugins.utils import PluginHandler
 
-_config=io.Config()
 _fit_output=[]
+
+controller=ModelController(DiffEv())
 
 def text_output_api(text):
     _fit_output.append(text)
 
 def load(fname, compile=True):
-    model=Model()
-    optimizer=DiffEv()
-    io.load_file(fname, model, optimizer, _config)
+    controller.load_file(fname)
     if compile:
-        model.compile_script()
-    optimizer.model=model
-    return model, optimizer
+        controller.model.compile_script()
+    controller.optimizer.model=controller.model
+    return controller.model, controller.optimizer
 
-def save(fname, model, optimizer):
-    io.save_file(fname, model, optimizer, _config)
+def save(fname, model=None, optimizer=None):
+    if model is not None:
+        controller.model=model
+    if optimizer is not None:
+        controller.optimizer=optimizer
+    controller.save_file(fname)
 
 def fit_notebook(model, optimizer):
     """

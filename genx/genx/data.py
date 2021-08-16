@@ -1,87 +1,78 @@
 '''
 Library for the classes to store the data. The class DataSet stores 
 on set and the class DataList stores multiple DataSets.
-Programmer Matts Bjorck
-Last changed: 2008 08 22
 '''
 
-from numpy import *
-import os
-import sys
 import time
-from .gui_logging import iprint
+from sys import platform
+from numpy import *
+from typing import List, Dict, Tuple, Union
 
-# ==============================================================================
-# BEGIN: Class DataSet
-
-def to_str(item):
-    # convert to string but decode byte str
-    if type(item) is bytes:
-        return item.decode('utf-8')
-    else:
-        return str(item)
+from .exceptions import GenxIOError
+from .core.custom_logging import iprint
+from .core.colors import CyclicList
+from .core.h5_support import H5Savable, H5HintedExport
 
 _e='unspecified'
-META_DEFAULT={'creator': {'name': _e, 'system': sys.platform, 'affiliation': _e, 'time': _e},
+META_DEFAULT={'creator': {'name': _e, 'system': platform, 'affiliation': _e, 'time': _e},
               'data_source': {'owner': _e, 'facility': _e, 'experimentID': _e, 'experimentDate': _e, 'title': _e,
                               'experiment': {'instrument': _e, 'probe': 'neutron', 'sample': {'name': _e}},
                               'measurement': {'scheme': _e, 'omega': {'magnitude': 0.0},
                                               'wavelength': {'magnitude': 0.0}}},
               }
 
-class DataSet:
-    ''' Class to store each dataset to fit. To fit several items instead the.
-        Contains x,y,error values and xraw,yraw,errorraw for the data.
+class DataSet(H5HintedExport):
     '''
+    Class to store each dataset to fit. To fit several items instead the.
+    Contains x,y,error values and xraw,yraw,errorraw for the data.
+    '''
+    h5group_name='datasets'
     # Parameters used for saving the object state
-    export_parameters={'x': array, 'y': array, 'y_sim': array, 'y_fom': array, 'error': array, 'x_raw': array,
-                       'y_raw': array, 'error_raw': array, 'extra_data': array,
-                       'extra_data_raw': array, 'extra_commands': to_str, 'x_command': to_str, 'y_command': to_str,
-                       'error_command': to_str, 'show': bool, 'name': to_str, 'use': bool, 'use_error': bool,
-                       'cols': tuple,
-                       'data_color': tuple, 'sim_color': tuple, 'data_symbol': to_str,
-                       'data_symbolsize': int, 'data_linetype': to_str, 'data_linethickness': int, 'sim_symbol': to_str,
-                       'sim_linetype': to_str, 'sim_linethickness': int, 'meta': dict,
-                       }
+    x:ndarray = array([])
+    x_raw:ndarray = array([])
+    y:ndarray = array([])
+    y_raw:ndarray = array([])
+    error:ndarray = array([])
+    error_raw: ndarray = array([])
+    x_command:str = 'x'
+    y_command:str = 'y'
+    error_command:str = 'e'
+
+    extra_commands:Dict[str, str]={}
+    extra_data:Dict[str, ndarray]={}
+    extra_data_raw:Dict[str, ndarray]={}
+
+    y_sim:ndarray = array([])
+    y_fom:ndarray = array([])
+    show:bool = True # Should we display the dataset, ie plot it
+    name:str = 'New Data'
+    use:bool = True # Should the dataset be used for fitting?
+    use_error:bool = False # Should the error be used
+    cols:Tuple[int,int,int] = (0, 1, 1) # The columns to load
+
+    data_color:Tuple[float, float, float] = (0.0, 0.0, 1.0)
+    data_symbol:str = 'o'
+    data_symbolsize:int = 4
+    data_linetype:str = '-'
+    data_linethickness:int = 2
+
+    sim_color:Tuple[float, float, float] = (1.0, 0.0, 0.0)
+    sim_symbol:str = ''
+    sim_symbolsize:int = 1
+    sim_linetype:str = '-'
+    sim_linethickness:int = 2
+
+    meta:dict=META_DEFAULT
 
     simulation_params=[0.01, 6.01, 600]
 
     def __init__(self, name='', copy_from=None):
-        # Processed data
-        self.x=array([])
-        self.y=array([])
-        self.y_sim=array([])
-        self.y_fom=array([])
-        self.error=array([])
-        # The raw data
-        self.x_raw=array([])
-        self.y_raw=array([])
-        self.error_raw=array([])
-
-        self.extra_data={}
-        self.extra_data_raw={}
-        # This is to add datasets that can be oprated upon as x,y and z
-        self.extra_commands={}
-
-        # The different commands to transform raw data to normal data
-        self.x_command='x'
-        self.y_command='y'
-        self.error_command='e'
-
-        # Meta data dictionary
-        self.meta=dict(META_DEFAULT)
-
-        # Should we display the dataset, ie plot it
-        # This should be default for ALL datasets..
-        self.show=True
+        self.init_defaults()
 
         # Special list for settings when setting the plotting properties
         self.plot_setting_names=['color', 'symbol', 'symbolsize', 'linetype',
                                  'linethickness']
-        # Name of the data set
-        if name=='':
-            self.name='New Data'
-        else:
+        if name!='':
             self.name=name
 
         if copy_from:
@@ -103,98 +94,7 @@ class DataSet:
             self.sim_symbolsize=copy_from.sim_symbolsize
             self.sim_linetype=copy_from.sim_linetype
             self.sim_linethickness=copy_from.sim_linethickness
-        else:
-            # Should the dataset be used for fitting?
-            self.use=True
-            # Should the error be used
-            self.use_error=False
-            # The columns to load
-            self.cols=(0, 1, 1)  # Columns to load (xcol,ycol)
-            # The different colors for the data and simulation
-            self.data_color=(0.0, 0.0, 1.0)
-            self.sim_color=(1.0, 0.0, 0.0)
-            # The different linetypes and symbols incl. sizes
-            self.data_symbol='o'
-            self.data_symbolsize=4
-            self.data_linetype='-'
-            self.data_linethickness=2
-            self.sim_symbol=''
-            self.sim_symbolsize=1
-            self.sim_linetype='-'
-            self.sim_linethickness=2
         self.run_command()
-
-    def _write_dict(self, group, obj):
-        for key, value in obj.items():
-            if type(value) is dict:
-                sub_group=group.create_group(key)
-                self._write_dict(sub_group, value)
-            elif type(value) in [float, int, str, ndarray, array,
-                                 float16, float32, float64, int8, int16, int32]:
-                group[key]=value
-
-    def write_h5group(self, group):
-        """ Write the parameters to a hdf group
-
-        :param group: h5py Group to write to
-        :return:
-        """
-        for par in self.export_parameters:
-            obj=getattr(self, par)
-            if type(obj) is dict:
-                sub_group=group.create_group(par)
-                self._write_dict(sub_group, obj)
-            else:
-                group[par]=obj
-
-    def _read_meta(self, group, path):
-        import h5py
-
-        node=self.meta
-        for pi in path[:-1]:
-            if pi in node:
-                node=node[pi]
-            else:
-                node[pi]={}
-                node=node[pi]
-        if type(group) is h5py.Dataset:
-            value=group[()]
-            if type(value) in [float16, float32, float64]:
-                value=float(value)
-            elif type(value) in [int8, int16, int32]:
-                value=int(value)
-            node[path[-1]]=value
-            return
-        for key in group:
-            self._read_meta(group[key], path+[key])
-
-    def read_h5group(self, group):
-        """ Read parameters from a hdf group
-
-        :param group: h5py Group to read from
-        :return:
-        """
-        for par in self.export_parameters:
-            obj=getattr(self, par)
-            if type(obj) is dict:
-                try:
-                    sub_group=group[par]
-                except KeyError:
-                    iprint("Did not find group in file: %s"%par)
-                    continue
-                if par=='meta':
-                    self._read_meta(sub_group, [])
-                    continue
-                for key in sub_group:
-                    if self.export_parameters[par] is array:
-                        obj[key]=sub_group[key][()]
-                    else:
-                        obj[key]=self.export_parameters[par](sub_group[key][()])
-            else:
-                if self.export_parameters[par] is array:
-                    setattr(self, par, group[par][()])
-                else:
-                    setattr(self, par, self.export_parameters[par](group[par][()]))
 
     def copy(self):
         ''' Make a copy of the current Data Set'''
@@ -203,8 +103,7 @@ class DataSet:
         return cpy
 
     def safe_copy(self, new_set):
-        '''safe_copy(self, new_set) --> None
-        
+        '''
         A safe copy from one dataset to another. 
         Note, not totally safe since references are not broken
         '''
@@ -260,29 +159,23 @@ class DataSet:
 
     def __getattr__(self, attr):
         """Overloading __getattr__ for using direct access to extra data"""
-        # This is protection for an infinite recursion bug in python 2.X!
-        # See: http://nedbatchelder.com/blog/201010/surprising_getattr_recursion.html
         if attr in ["extra_data", "extra_data_raw"]:
             raise AttributeError()
         if attr in self.extra_data:
             return self.extra_data[attr]
         elif attr.rstrip('_raw') in self.extra_data_raw:
             return self.extra_data_raw[attr.rstrip('_raw')]
+        raise AttributeError("%r object has no attribute %r"% (self.__class__, attr))
 
-        raise AttributeError("%r object has no attribute %r"%
-                             (self.__class__, attr))
+    def has_data(self):
+        return len(self.x_raw)>0
 
     def get_extra_data_names(self):
-        '''get_extra_data_names(self) --> names [list]
-        
-        returns the names of the extra data
-        '''
         return list(self.extra_data.keys())
 
     def set_extra_data(self, name, value, command=None):
-        '''set_extra_data_names(self, name, value, command = None)
-        
-        sets extra data name, if it does not exist a new entry is created.
+        '''
+        Sets extra data name, if it does not exist a new entry is created.
         name should be a string and value can be any object.
         If command is set, this means that the data set can be operated upon
         with commands just as the x,y and e data members.
@@ -298,15 +191,15 @@ class DataSet:
             self.extra_commands[name]=str(name)
 
     def get_extra_data(self, name):
-        '''get_extra_data(self, name) --> object
-        
+        '''
         returns the extra_data object with name name [string] if does not
-        exist an LookupError is yielded.
+        exist an LookupError is raised.
         '''
         if name not in self.extra_data:
             raise LookupError('Can not find extra data with name %s'%name)
         return self.extra_data[name]
 
+    # TODO: Remove load and save methods from dataset, should be handled soley by data loaders
     def loadfile(self, filename, sep='\t', pos=0):
         '''
         Function to load data from a file.
@@ -317,7 +210,6 @@ class DataSet:
         delimeter - chars that are spacers between values default None
             all whitespaces 
         skiprows - number of rows to skip before starting to read the data
-        
         '''
         if not os.path.exists(filename):
             iprint("Can't open file: %s does not exist"%filename)
@@ -349,8 +241,7 @@ class DataSet:
             return False
 
     def save_file(self, filename):
-        '''save_file(self, filename) --> None
-        
+        '''
         saves the dataset to a file with filename.
         '''
         if self.x.shape==self.y_sim.shape and \
@@ -364,7 +255,7 @@ class DataSet:
             debug='y_sim.shape: '+str(self.y_sim.shape)+'\ny.shape: '+ \
                   str(self.y.shape)+'\nx.shape: '+str(self.x.shape)+ \
                   '\nerror.shape: '+str(self.error.shape)
-            raise IOError('The data is not in the correct format all the'+ \
+            raise GenxIOError('The data is not in the correct format all the'+ \
                           'arrays have to have the same shape:\n'+debug, filename)
 
     @staticmethod
@@ -445,7 +336,6 @@ class DataSet:
             self.res=self.extra_data['res']
 
     def set_simulation(self):
-        '''if no data is loaded we set a generic simulation dataset'''
         self.x=linspace(*self.simulation_params)
         self.y=nan*self.x
         self.error=nan*self.x
@@ -464,7 +354,7 @@ class DataSet:
             self.run_extra_commands()
 
     def try_commands(self, command_dict):
-        ''' try_commands(self, command_dict) --> tuple of bool
+        '''
         Evals the commands to locate any errors. Used to 
         test the commands before doing the actual setting of x,y and z
         '''
@@ -474,6 +364,7 @@ class DataSet:
         y=self.y_raw
         e=self.error_raw
         rms=self.rms
+        xt, yt, et=x,y,e # make sure values are always defined
 
         # Know we have to do this with the extra data
         for key in self.extra_data_raw:
@@ -542,7 +433,7 @@ class DataSet:
         return result
 
     def get_commands(self):
-        ''' get_commands(self) --> list of dicts
+        '''
         Returns the commnds as a dictonary with items x, y, z
         '''
         cmds={'x': self.x_command, 'y': self.y_command, 'e': self.error_command}
@@ -551,7 +442,7 @@ class DataSet:
         return cmds
 
     def set_commands(self, command_dict):
-        ''' set_commands(self, command_dict) --> None
+        '''
         Sets the commands in the data accroding to values in command dict
         See get_commands for more details
         '''
@@ -574,7 +465,7 @@ class DataSet:
         self.y_fom=fom_data
 
     def get_sim_plot_items(self):
-        '''get_sim_plot_items(self) --> dict
+        '''
         Returns a dictonary of color [tuple], symbol [string], 
         sybolsize [float], linetype [string], linethickness [float].
         Used for plotting the simulation.
@@ -588,7 +479,7 @@ class DataSet:
                 }
 
     def get_data_plot_items(self):
-        '''get_data_plot_items(self) --> dict
+        '''
         Returns a dictonary of color [tuple], symbol [string], 
         sybolsize [float], linetype [string], linethickness [float].
         Used for plotting the data.
@@ -602,7 +493,7 @@ class DataSet:
                 }
 
     def set_data_plot_items(self, pars):
-        ''' set_data_plot_items(self, pars) --> None
+        '''
         Sets the plotting parameters for the data by a dictonary of the
         same structure as in get_data_plot_items(). If one of items in the 
         pars [dictonary] is None that item will be skipped, i.e. keep its old
@@ -622,7 +513,7 @@ class DataSet:
                     exec('self.data_'+name+' = '+pars[name].__str__())
 
     def set_sim_plot_items(self, pars):
-        ''' set_data_plot_items(self, pars) --> None
+        '''
         Sets the plotting parameters for the data by a dictonary of the
         same structure as in get_data_plot_items(). If one of items in the 
         pars [dictonary] is None that item will be skipped, i.e. keep its old
@@ -642,8 +533,6 @@ class DataSet:
                     exec('self.sim_'+name+' = '+pars[name].__str__())
 
     def set_show(self, val):
-        '''Set show true - show data set in plots
-        '''
         self.show=bool(val)
 
     @property
@@ -767,14 +656,15 @@ def html2c(colors):
         )
     return tuple(out)
 
-# END: Class DataSet
-# ==============================================================================
-# BEGIN: Class DataList
-class DataList:
+class DataList(H5Savable):
     ''' Class to store a list of DataSets'''
+    h5group_name='data'
+    items: List[DataSet]
+    color_source: Union[CyclicList, None]
 
     def __init__(self, items=None):
         ''' init function - creates a list with one DataSet'''
+        self.color_source=None
         if items is None:
             self.items=[DataSet(name='Data 0')]
             self._counter=1
@@ -783,23 +673,19 @@ class DataList:
             self._counter=len(items)
 
     def write_h5group(self, group):
-        """ Write parameters to a hdf group
-
-        :param group: h5py Group to write to
-        :return:
         """
-        data_group=group.create_group('datasets')
+        Write parameters to a hdf group
+        """
+        data_group=group.create_group(DataSet.h5group_name)
         for index, data in enumerate(self.items):
             data.write_h5group(data_group.create_group('%d'%index))
         group['_counter']=self._counter
 
     def read_h5group(self, group):
-        """ Read parameters from a hdf group
-
-        :param group: h5py Group to read from
-        :return:
         """
-        data_group=group['datasets']
+        Read parameters from a hdf group
+        """
+        data_group=group[DataSet.h5group_name]
         self.items=[]
         for index in range(len(data_group)):
             self.items.append(DataSet())
@@ -807,10 +693,6 @@ class DataList:
         self._counter=int(group['_counter'][()])
 
     def __getitem__(self, key):
-        '''__getitem__(self,key) --> DataSet
-        
-        returns item at position key
-        '''
         return self.items[key]
 
     def __setitem__(self, key, value):
@@ -827,15 +709,13 @@ class DataList:
         return self.items.__iter__()
 
     def __len__(self):
-        '''__len__(self) --> length (integer)
-        
+        '''
         Returns the nmber of datasers in the list.
         '''
         return self.items.__len__()
 
     def safe_copy(self, new_data):
-        '''safe_copy(self, new_data) --> None
-        
+        '''
         Conduct a safe copy of a data set into this data set.
         This is intended to produce version safe import of data sets.
         '''
@@ -845,8 +725,7 @@ class DataList:
             self.items[-1].safe_copy(new_set)
 
     def add_new(self, name=''):
-        ''' add_new(self,name='') --> None
-        
+        '''
         Adds a new DataSet with the optional name. If name not sets it 
         will be given an automatic name
         '''
@@ -856,11 +735,12 @@ class DataList:
             self._counter+=1
         else:
             self.items.append(DataSet(name, copy_from=self.items[-1]))
-        # print "An empty dataset is appended at postition %i."%(len(self.items)-1)
+        if self.color_source:
+            self.items[-1].data_color=self.color_source[len(self)-1][0]
+            self.items[-1].sim_color=self.color_source[len(self)-1][1]
 
     def delete_item(self, pos):
-        '''delete_item(self,pos) --> None        
-        
+        '''
         Deletes the item at position pos. Only deletes if the pos is an 
         element and the number of datasets are more than one.
         '''
@@ -873,8 +753,7 @@ class DataList:
             return False
 
     def move_up(self, pos):
-        '''move_up(self, pos) --> None
-        
+        '''
         Move the data set at position pos up one step. If it is at the top
         it will not be moved.
         '''
@@ -884,8 +763,6 @@ class DataList:
 
     def move_down(self, pos):
         '''
-        move_down(self,pos) --> None
-        
         Move the dataset at postion pos down one step. If it is at the bottom
         it will not be moved.
         '''
@@ -894,11 +771,18 @@ class DataList:
             self.items.insert(pos+1, tmp)
 
     def update_data(self):
-        ''' update_data(self) --> None
-        
+        '''
         Calcultes all the values for the current items. 
         '''
         [item.run_command() for item in self.items]
+
+    def update_color_cycle(self, source):
+        self.color_source=source
+        if source is None:
+            return
+        for i, item in enumerate(self.items):
+            item.data_color=self.color_source[i][0]
+            item.sim_color=self.color_source[i][1]
 
     def set_simulated_data(self, sim_data):
         '''
@@ -912,8 +796,6 @@ class DataList:
 
     def set_fom_data(self, fom_data):
         '''
-        set_fom_data(self, fom_data) --> None
-        
         Sets the point by point fom data in the data. Note this will depend on the
         flag use in the data.
         '''
@@ -925,8 +807,6 @@ class DataList:
 
     def get_name(self, pos):
         '''
-        get_name(self,pos) --> name (string)
-        
         Yields the name(string) of the dataset at position pos(int). 
         '''
         return self.items[pos].name
@@ -935,37 +815,37 @@ class DataList:
         return self.items[pos].cols
 
     def get_use(self, pos):
-        '''get_use_error(self, pos) --> bool
+        '''
         returns the flag use for dataset at pos [int].
         '''
         return self.items[pos].use
 
     def get_use_error(self, pos):
-        '''get_use_error(self, pos) --> bool
+        '''
         returns the flag use_error for dataset at pos [int].
         '''
         return self.items[pos].use_error
 
     def toggle_use_error(self, pos):
-        '''toggle_use_error(self, pos) --> None
+        '''
         Toggles the use_error flag for dataset at position pos.
         '''
         self.items[pos].use_error=not self.items[pos].use_error
 
     def toggle_use(self, pos):
-        '''toggle_use(self, pos) --> None
+        '''
         Toggles the use flag for dataset at position pos.
         '''
         self.items[pos].use=not self.items[pos].use
 
     def toggle_show(self, pos):
-        '''toggle_show(self, pos) --> None
+        '''
         Toggles the show flag for dataset at position pos.
         '''
         self.items[pos].show=not self.items[pos].show
 
     def show_items(self, positions):
-        '''show_items(self, positions) --> None
+        '''
         Will put the datasets at positions [list] to show all 
         other of no show, hide.
         '''
@@ -973,15 +853,12 @@ class DataList:
 
     def set_name(self, pos, name):
         '''
-        set_name(self,pos,name) --> None
-        
         Sets the name of the data set at position pos (int) to name (string)
         '''
         self.items[pos].name=name
 
     def export_data_to_files(self, basename, indices=None):
-        '''export_data_to_files(self, basename, indices = None) --> None
-        
+        '''
         saves the data to files with base name basename and extentions .dat
         If indices are used only the data given in the list indices are 
         exported.
@@ -990,7 +867,7 @@ class DataList:
 
         if indices:
             if not sum([i<len(self.items) for i in indices])==len(indices):
-                raise IOError('Error in export_data_to_files')
+                raise GenxIOError('Error in export_data_to_files')
         else:
             indices=list(range(len(self.items)))
         # print 'Output: ', indices, len(self.items)
@@ -1001,8 +878,7 @@ class DataList:
             self.items[index].save_file(base+'%03d'%index+ext)
 
     def get_data_as_asciitable(self, indices=None):
-        ''' get_data_as_table(self, indices = None) --> string
-        
+        '''
         Yields the data sets as a ascii table with tab seperated values.
         This makes it possible to export the data to for example spreadsheets.
         Each data set will be four columns with x, Meas, Meas error and Calc.
@@ -1133,47 +1009,3 @@ class DataList:
             if ds.y_sim.shape==ds.y.shape:
                 plt.semilogy(ds.x, ds.y_sim, label=sl, **ds.sim_kwds)
         plt.legend()
-
-# ==============================================================================
-# Some Exception definition for errorpassing
-class GenericError(Exception):
-    ''' Just a empty class used for inheritance. Only useful
-    to check if the errors are originating from the model library.
-    All these errors are controllable. If they not originate from
-    this class something has passed trough and that should be impossible '''
-    pass
-
-class IOError(GenericError):
-    ''' Error class for input output, mostly concerning files'''
-
-    def __init__(self, error_message, file=''):
-        '''__init__(self, error_message)'''
-        self.error_message=error_message
-        self.file=file
-
-    def __str__(self):
-        text='Input/Output error for file:\n'+self.file+ \
-             '\n\n Python error:\n '+self.error_message
-        return text
-
-if __name__=='__main__':
-    import h5py
-
-    d=DataList()
-    d[0].x=arange(0, 10)
-    f=h5py.File('myfile.hdf5', 'w')
-    dic=f.create_group('data')
-    d.write_h5group(dic)
-    f.close()
-
-    d=DataList()
-    iprint('x ', d[0].x)
-    f=h5py.File('myfile.hdf5', 'r')
-    dic=f['data']
-    d.read_h5group(dic)
-    iprint('x ', d[0].x)
-    f.close()
-    iprint('x ', d[0].x)
-    iprint(type(d[0].data_color), d[0].data_color)
-    iprint(d[0].extra_data)
-    iprint(type(d[0].data_symbolsize))

@@ -60,6 +60,12 @@ jobs:
       run: |
         cd genx
         bash debian_build/make_deb.sh
+    - name: Rename distribution files
+      run: |
+        cd genx
+        GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
+        DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
+        mv dist/*.deb $DEST_PATH
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
@@ -90,7 +96,15 @@ jobs:
         mkdir dist
         mv genx/dist/genx*.whl dist/
         cp genx/dist/genx*.tar.gz dist/
+    - name: Rename distribution files
+      run: |
+        cd genx
+        GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
+        DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
+        mv dist/*.deb $DEST_PATH
+        mv dist/*.tar.gz "dist/GenX-$GENX_VERSION.tar.gz"
     - name: Upload to PyPI
+      if: github.event_name != 'workflow_dispatch'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
@@ -105,6 +119,7 @@ jobs:
           genx/dist/*.tar.gz
 
   release:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: [build-ubuntu-18, build-ubuntu-20, build-windows]
     
@@ -121,6 +136,43 @@ jobs:
         name: windows-dist
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "genx*.deb,genx*.tar.gz,GenX-*_win64_setup.exe"
+        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
+
+  release-sourceforge:
+    runs-on: ubuntu-latest
+    needs: [build-ubuntu-18, build-ubuntu-20, build-windows]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v2
+      with:
+        name: ubuntu-18-dist
+    - uses: actions/download-artifact@v2
+      with:
+        name: ubuntu-20-dist
+    - uses: actions/download-artifact@v2
+      with:
+        name: windows-dist
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install python3 sshpass
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_KEY }}
+        known_hosts: ${{ secrets.KNOWN_HOSTS }}
+        if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
+    - name: Upload files
+      run: |
+        cd genx
+        GENX_MVERSION=$(python3 -c "from genx.version import __version__;print(__version__.rsplit('.',1)[0])")
+        python3 create_subreadme.py
+        cd ..
+        DEST="GenX $GENX_MVERSION.x"
+        mkdir "$DEST"
+        mv genx/README_latest.txt "$DEST/README.txt"
+        mv GenX*.deb GenX*.tar.gz GenX-*_win64_setup.exe "$DEST"
+         rsync --progress -urz "$DEST" ${{secrets.SF_USER}}@frs.sourceforge.net:/home/pfs/project/genx/3.x.y/

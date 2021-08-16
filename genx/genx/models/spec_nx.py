@@ -121,8 +121,6 @@ Instrument
     The measured polarization of the instrument. Valid options are:
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
 '''
-from numpy import *
-from genx.gui_logging import iprint
 from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
@@ -131,7 +129,7 @@ from .lib.physical_constants import r_e, muB_to_SL
 
 # Preamble to define the parameters needed for the models outlined below:
 
-# import lib.paratt as slow_paratt
+# import core.paratt as slow_paratt
 
 ModelID='SpecNX'
 # InstrumentParameters={'Wavelength':1.54, 'Coordinates':1, 'I0':1.0, 'Sim': 0,
@@ -651,7 +649,7 @@ SimulationFunctions={'Specular': Specular,
                                                     ModelID)
 
 if __name__=='__main__':
-    from .utils import UserVars, fp, fw, bc, bw
+    from .utils import UserVars, fp, fw
     import numpy as np
 
     # BEGIN Instrument DO NOT CHANGE

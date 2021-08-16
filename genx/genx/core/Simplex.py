@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-# -*- Mode: python -*-
 #
 # $Id: Simplex.py,v 1.2 2004/05/31 14:01:06 vivake Exp $
 # 
@@ -44,7 +41,7 @@ depending on the initial guess used as a starting point.
 
 import math
 import copy
-from genx.gui_logging import iprint
+from .custom_logging import iprint
 
 class Simplex:
     def __init__(self, testfunc, guess, increments, kR=-1, kE=2, kC=0.5):
@@ -99,8 +96,8 @@ class Simplex:
         lowest value of the error function
         number of iterations taken to get here
         """
-        iter=0
-        for iter in range(0, maxiters):
+        i=0
+        for i in range(maxiters):
             # Identify highest, second highest, and lowest vertices
             self.highest=0
             self.lowest=0
@@ -128,7 +125,7 @@ class Simplex:
             # Optionally, print progress information
             if monitor:
                 iprint('Iteration = %d   Best = %f   Worst = %f'%(
-                iter, self.errors[self.lowest], self.errors[self.highest]))
+                i, self.errors[self.lowest], self.errors[self.highest]))
 
             if T<=epsilon:  # We converged!  Break out of loop!
                 break
@@ -182,7 +179,7 @@ class Simplex:
         for x in range(0, self.numvars):
             self.guess[x]=self.simplex[self.lowest][x]
         self.currenterror=self.errors[self.lowest]
-        return self.guess, self.currenterror, iter
+        return self.guess, self.currenterror, i
 
     def contract_simplex(self):
         for x in range(0, self.numvars):
@@ -239,13 +236,3 @@ class Simplex:
 
 def objective_function(args):
     return abs(args[0]*args[0]*args[0]*5-args[1]*args[1]*7+math.sqrt(abs(args[0]))-118)
-
-def main():
-    s=Simplex(objective_function, [1, 1, 1], [2, 4, 6])
-    values, err, iter=s.minimize(maxiters=60, monitor=0)
-    iprint('args = ', values)
-    iprint('error = ', err)
-    iprint('iterations = ', iter)
-
-if __name__=='__main__':
-    main()

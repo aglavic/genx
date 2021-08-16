@@ -10,7 +10,7 @@ from vtk import vtkRenderer, vtkActor, vtkTextMapper, vtkActor2D, vtkSphereSourc
 # noinspection PyUnresolvedReferences
 import vtk.util.colors as vtkc
 
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 from .wxVTKRenderWindow import wxVTKRenderWindow
 from . import atom_colors as atom_colors
 from . import custom_dialog

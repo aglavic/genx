@@ -1,5 +1,5 @@
-''' help.py - A module that includes various help functionality 
-for genx. 
+'''
+A module that includes various help functionality for genx.
 
 First is the ModelsHelpDialog which displays the doc strings of each module
 in the models directory.
@@ -7,7 +7,6 @@ in the models directory.
 
 import wx, os
 import wx.html as  html
-from . import event_handlers as eh
 
 try:
     from docutils.core import publish_doctree, publish_from_doctree
@@ -67,7 +66,7 @@ class ExampleHandler:
         menuitem=self.menu.FindItemById(event.GetId())
         example=menuitem.GetLabel()
         path=self.path+example+'.gx'
-        eh.open_model(self.parent, path)
+        # eh.open_model(self.parent, path)
 
 class PluginHelpDialog(wx.Frame):
     def __init__(self, parent, module, title='Models help'):
@@ -122,7 +121,7 @@ class PluginHelpDialog(wx.Frame):
         '''
         # Load the package, note the non-empty fromlist that 
         # makes subpackages being loaded
-        mod=__import__(module, globals(), locals(), [''])
+        mod=__import__('genx.'+module, globals(), locals(), [''])
         try:
             modules=[s[:-3] for s in os.listdir(mod.__path__[0]) \
                      if s[0]!='_' and s[-3:]=='.py']
@@ -139,10 +138,10 @@ class PluginHelpDialog(wx.Frame):
         docs=''
         try:
             if sub_module is not None:
-                mod=__import__('%s.%s'%(module, sub_module),
+                mod=__import__('genx.%s.%s'%(module, sub_module),
                                globals(), locals(), [''])
             else:
-                mod=__import__('%s'%module,
+                mod=__import__('genx.%s'%module,
                                globals(), locals(), [''])
         except Exception as e:
             docs='Could not load docstring for %s.'%sub_module

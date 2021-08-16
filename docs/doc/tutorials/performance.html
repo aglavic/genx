@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Optimizer and model performance &#8212; GenX 3.4.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Using GenX from the command line (with mpi)" href="mpi.html" />
+    <link rel="prev" title="Beta Roughness Model" href="beta_rough.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="mpi.html" title="Using GenX from the command line (with mpi)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="beta_rough.html" title="Beta Roughness Model"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.4.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Optimizer and model performance</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="optimizer-and-model-performance">
+<span id="tutorial-performance"></span><h1>Optimizer and model performance<a class="headerlink" href="#optimizer-and-model-performance" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This page is still under development. Questions and comments are welcome to improve usability.</p>
+</div>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Computing performance is a complex topic and in a modeling set like GenX,
+where the user has a large amount of flexibilit within the model definition,
+on generic one-size-fits-all solution is possible.</p>
+<p>In this chapter I will therefore explain what has been implemented in GenX to try to
+optimize the general model performance (mostly for reflectivity) and the different
+options in the optimizer settings you can use to tune the calculation to your
+sepcific model.</p>
+</section>
+<section id="main-factors-determining-performance">
+<h2>Main factors determining performance<a class="headerlink" href="#main-factors-determining-performance" title="Permalink to this headline">¶</a></h2>
+<section id="single-model-execution">
+<h3>Single model execution<a class="headerlink" href="#single-model-execution" title="Permalink to this headline">¶</a></h3>
+<p>When simulating a single model, no generic solution for parallel processing can be applied.
+Especially in Python with the so-called “Global Interpreter Lock” (GIL) there is no shared
+state between threads running on different cores.</p>
+<p>While GenX tries to optimize the time consuming parts of a model execution using
+algorithms optimized for numpy and scipy functions, the resuling speed of models
+are typically 5-10x slower than implmentation in compiled languages like C++.</p>
+<p>Since version 3.0.2, the core functions for reflectivity have been ported to the
+just-in-time (JIT) compiler package numba, which lead to single thread speedups
+of 2-5x. In addition, it allows parallelization of these functions, which can
+circumvent the GIL. Depending on the used CPU, complex models can gain another
+2-10x speed improvement.</p>
+<p>For the single calculations used during simulation, GenX does not provide any
+further flexibility to alter the computation. The only exception is the
+use of CUDA (NVidia GPU computation framework) that can be activated
+in the GUI “Fit” menu.
+The impact of this setting is strongly model dependant. With many
+datapoints (resolution convolution included) and large amount of layers
+the speed can be comparible with strong multicore CPUs while requiring less system resources.
+Because of several caveats and the need to re-compile the JIT code every time GenX
+is started I would not recommand this in most cases, at the moment.</p>
+</section>
+<section id="fitting-the-model">
+<h3>Fitting the model<a class="headerlink" href="#fitting-the-model" title="Permalink to this headline">¶</a></h3>
+<p>One advantage of the Differential Evolution algorithm is,
+that a large number of parameter sets are being calculated for every
+generation without any interdependance. This allows a relatively simple
+way of parallelizing computations as a pool of processes can be used
+with model parameters being passed to them every generation.</p>
+<p>Any parallel computing solutions have overhead involved in setting up
+and communication between parallel threads. The optimizal settings will
+therefore depend on the complexity of the model.</p>
+<p>A general rule of thumb is that the more complex a computation within a
+thread the lower the influence of the overhead of setting it up. At the
+same time, the more data is needed for a computation the more overhead
+is produced.</p>
+<p>In GenX this means, that the parallel computation provided by the
+numba JIT functions is less effective is the model is a small number of
+layers and if the number of datapoints is small. So in the case of
+simple and fast models the multiprocessing of the differential evolution
+optimizer can lead to much higher preformance.
+GenX does automatically reduce the number of cores used by numba functions
+when the process number in the optimizer settings is increased (simulations
+still use the maximum available cores). Transfer to the processes also has
+its overhead, that can be influenced by the “items/chunk” parameter as well
+as the population size.</p>
+</section>
+</section>
+<section id="tips-to-optimize-your-model-performance">
+<h2>Tips to optimize your model performance<a class="headerlink" href="#tips-to-optimize-your-model-performance" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Always use the “Speed” indication in the status bar at the bottom of the window. It shows, how many
+function evaluations per second are being calculated during the fit</p></li>
+<li><p>If you do not need it, you can disable “ignore fom nan” and “ignore fom inf”, which can slightly improve performance</p></li>
+<li><p>Try out different settings of population size, items/chunk, parallel on/off and number of processes</p></li>
+</ul>
+</div></blockquote>
+<section id="simple-models">
+<h3>Simple models<a class="headerlink" href="#simple-models" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Models with &lt;20 layers and a few 100 datapoints</p></li>
+<li><p>Expected computation speed &gt;300 (can reach &gt;10000 if optimized)</p></li>
+<li><p>Use parallel processing with process=cores/threads.</p></li>
+<li><p>Use large population size 100-1000</p></li>
+<li><p>Adapt chunk/item to be =(population size)/(processes)</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="complex-models">
+<h3>Complex models<a class="headerlink" href="#complex-models" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>These can have 100 or more layers and resolution convolution that leads to &gt;1000 datapoints</p></li>
+<li><p>Expected computation speed &lt;150</p></li>
+<li><p>Try without parallel processing or small number of parallel threads (2-4)</p></li>
+<li><p>If CUDA is available, especially for neutron spin-flip calculations, try using CUDA in conjunction with
+2-8 parallel threads. In this case one of the threads will run on GPU. In tests this could lead
+to 1.5x to 2.0x improvement, even on a system with powerful 16-core CPU.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Optimizer and model performance</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#main-factors-determining-performance">Main factors determining performance</a><ul>
+<li><a class="reference internal" href="#single-model-execution">Single model execution</a></li>
+<li><a class="reference internal" href="#fitting-the-model">Fitting the model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tips-to-optimize-your-model-performance">Tips to optimize your model performance</a><ul>
+<li><a class="reference internal" href="#simple-models">Simple models</a></li>
+<li><a class="reference internal" href="#complex-models">Complex models</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="beta_rough.html"
+                        title="previous chapter">Beta Roughness Model</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="mpi.html"
+                        title="next chapter">Using GenX from the command line (with mpi)</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/performance.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="mpi.html" title="Using GenX from the command line (with mpi)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="beta_rough.html" title="Beta Roughness Model"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.4.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Optimizer and model performance</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

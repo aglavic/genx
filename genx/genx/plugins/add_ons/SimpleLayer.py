@@ -18,16 +18,12 @@ Written by Artur Glavic
 Last Changes 10/11/16
 '''
 
-import os, sys
-import re
-import json
+import os
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from math import cos, pi, sqrt
-from genx.models.utils import UserVars, fp, fw, bc, bw, __bc_dict__  # @UnusedImport
-from genx import images as img
+from ...gui import images as img
 from .. import add_on_framework as framework
-from genx.gui_logging import iprint
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 
 mg=None
@@ -586,6 +582,7 @@ class MaterialDialog(wx.Dialog):
                   'authors,title,journal,year,'
                   'formula,calcformula'
                   ' from data where formula like "- %s -"'
+                  ' and method != "theoretical"'
                   ' and status is NULL order by file'%formula)
         res=c.fetchall()
         if len(res)>0:

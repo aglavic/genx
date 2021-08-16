@@ -4,8 +4,6 @@ r"""
 .. module:: island_lattice.py
    :synopsis: Models to calcualte the reflectivity from a 2D island array
 
-.. moduleauthor:: Matts Björck <matts.bjorck@gmail.com>
-
 This module provide functions to calculate the reflectivity from gratings using the distorted wave Born approximation
 (DWBA) and the kinematical theory.
 """
@@ -15,7 +13,7 @@ from .materials import Material
 import numpy as np
 
 from . import grating
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 q=Var('q', np.array([0, 0, 0]), help="The scattering vector.")
 e=Var('wl', 1.54, help="The wavelength of the radiation.")

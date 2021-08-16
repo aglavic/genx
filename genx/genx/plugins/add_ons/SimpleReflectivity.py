@@ -13,25 +13,21 @@ is to the right. This is updated when the simulation button is pressed.
 '''
 
 from .. import add_on_framework as framework
-from genx.plotpanel import PlotPanel
-from genx.solvergui import EVT_UPDATE_PARAMETERS
-from genx.parametergrid import EVT_PARAMETER_GRID_CHANGE
-import genx.model as modellib
-import wx
+from genx.exceptions import GenxError
+from genx.gui.solvergui import EVT_UPDATE_PARAMETERS
+from genx.gui.parametergrid import EVT_PARAMETER_GRID_CHANGE
 import wx.grid as gridlib
-from wx.adv import Wizard, WizardPage, WizardPageSimple
+from wx.adv import Wizard, WizardPageSimple
 
-import numpy as np
-import sys, os, re, time, io, traceback
+import io, traceback
 
 from .Reflectivity import SamplePlotPanel, find_code_segment
 from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
-from genx.images import getopenBitmap, getplottingBitmap
+from genx.gui.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
-from genx.gui_logging import iprint
-from genx.help import PluginHelpDialog
-from genx.parametergrid import ValueCellRenderer
+from genx.core.custom_logging import iprint
+from genx.gui.parametergrid import ValueCellRenderer
 
 _set_func_prefix='set'
 
@@ -1414,28 +1410,25 @@ class Plugin(framework.Template):
         self.sample_widget.UpdateModel()
 
     def OnOpenModel(self, event):
-        '''OnOpenModel(self, event) --> None
-
+        '''
         Loads the sample into the plugin...
         '''
         pass  # self.ReadModel()
 
     def OnSimulate(self, event):
-        '''OnSimulate(self, event) --> None
-
+        '''
         Updates stuff after simulation
         '''
         # Calculate and update the sld plot
         self.sld_plot.Plot()
 
     def OnFittingUpdate(self, event):
-        '''OnFittingUpdate(self, event) --> None
-
+        '''
         Updates stuff during fitting
         '''
         # Calculate and update the sld plot
         if self.mb_autoupdate_sld.IsChecked():
-            wx.CallAfter(self.sld_plot)
+            wx.CallAfter(self.sld_plot.Plot)
 
     def OnGridChange(self, event):
         self.sample_widget.CheckGridUpdate()
@@ -1550,7 +1543,7 @@ class Plugin(framework.Template):
         self.StatusMessage('Compiling the script...')
         try:
             self.CompileScript()
-        except modellib.GenericError as e:
+        except GenxError as e:
             self.ShowErrorDialog(str(e))
             self.StatusMessage('Error when compiling the script')
             return

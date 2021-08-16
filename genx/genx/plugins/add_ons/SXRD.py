@@ -13,7 +13,7 @@ import wx
 from .. import add_on_framework as framework
 from .help_modules import model_interactors as mi
 from .help_modules import atom_viewer
-from genx.gui_logging import iprint
+from genx.core.custom_logging import iprint
 
 code="""
         # BEGIN Instruments
