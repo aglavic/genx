@@ -142,7 +142,7 @@ class ModelController:
         opt_group['solver']=self.optimizer.__class__.__name__
         opt_group['solver_module']=self.optimizer.__class__.__module__
         self.optimizer.write_h5group(opt_group)
-        self.optimizer.WriteConfig()
+        self.WriteConfig()
         g['config']=config.model_dump().encode('utf-8')
         f.close()
 
@@ -154,7 +154,7 @@ class ModelController:
         try:
             solver_class=opt_group.get('solver')[()]
             solver_module=opt_group.get('solver_module')[()]
-        except KeyError:
+        except (KeyError, TypeError):
             solver_class='DiffEv'
             solver_module='genx.diffev'
         else:
@@ -173,7 +173,7 @@ class ModelController:
         self.optimizer.read_h5group(opt_group)
         try:
             config.load_string(g['config'][()].decode('utf-8'))
-            self.optimizer.ReadConfig()
+            self.ReadConfig()
         except KeyError:
             pass
         except AttributeError:

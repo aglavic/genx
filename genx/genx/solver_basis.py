@@ -121,7 +121,7 @@ class GenxOptimizer(Configurable, H5HintedExport, metaclass=ABCMeta):
                 except AttributeError:
                     continue
                 sublist.append(subentry)
-            item = ipw.HBox(sublist)
+            item = ipw.VBox(sublist)
             return item
 
         val = getattr(self.opt, attr)

@@ -81,24 +81,8 @@ class Model(H5HintedExport):
     # parameters stored to file
     script:str
     fomfunction:str
-    solver_pars:Dict[str, bool]
     data:DataList
     parameters:Parameters
-
-    @property
-    def solver_pars(self):
-        return {'fom_ignore_nan': self.solver_parameters.ignore_fom_nan,
-                'fom_ignore_inf': self.solver_parameters.ignore_fom_inf}
-    @solver_pars.setter
-    def solver_pars(self, value):
-        try:
-            self.solver_parameters.ignore_fom_nan = value['fom_ignore_nan']
-        except KeyError:
-            iprint("Could not load parameter fom_ignore_nan from file")
-        try:
-            self.solver_parameters.ignore_fom_inf = value['fom_ignore_inf']
-        except KeyError:
-            iprint("Could not load parameter fom_ignore_inf from file")
 
     @property
     def fomfunction(self):
@@ -246,14 +230,6 @@ class Model(H5HintedExport):
         """
         H5HintedExport.read_h5group(self, group)
         self.create_fom_mask_func()
-        # TODO: Get rid of the interdependence model-optimizer here
-        sopt=self.solver_parameters
-        try:
-            sopt.limit_fit_range, sopt.fit_xmin, sopt.fit_xmax = (
-                bool(group['optimizer']['limit_fit_range'][()]),
-                float(group['optimizer']['fit_xmin'][()]), float(group['optimizer']['fit_xmax'][()]))
-        except Exception:
-            iprint("Could not load limite_fit_range from file")
         self.saved = True
         self.script_module = GenxScriptModule(self.data)
         self.compiled = False
@@ -896,7 +872,7 @@ class Model(H5HintedExport):
         x, fx = driver.fit()
         problem.setp(x)
         dx = driver.stderr()
-        result = BumpsResult(x=x, dx=dx, cov=driver.cov())
+        result = BumpsResult(x=x, dx=dx, cov=driver.cov(), bproblem=problem)
         if hasattr(driver.fitter, 'state'):
             result.state = driver.fitter.state
         return result
@@ -958,8 +934,8 @@ class Model(H5HintedExport):
         Update the GenX model from a bumps fit result.
         """
         x = res.x
-        bproblem = self.bumps_problem()
-        names = list(bproblem.opt().keys())
+        bproblem = res.bproblem
+        names = list(bproblem.labels())
         if len(names)!=len(x):
             raise ValueError('The number of parameters does not fit the model parameters, was the model changed?')
 

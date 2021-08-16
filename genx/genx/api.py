@@ -31,9 +31,11 @@ def load(fname, compile=True):
     controller.optimizer.model=controller.model
     return controller.model, controller.optimizer
 
-def save(fname, model, optimizer):
-    controller.model=model
-    controller.optimizer=optimizer
+def save(fname, model=None, optimizer=None):
+    if model is not None:
+        controller.model=model
+    if optimizer is not None:
+        controller.optimizer=optimizer
     controller.save_file(fname)
 
 def fit_notebook(model, optimizer):
