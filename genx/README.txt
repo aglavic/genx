@@ -1,4 +1,4 @@
-This package contain GenX 3.3 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contains GenX 3.4 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -21,7 +21,7 @@ Changes 3.4.0
  * Show a startup splash screen to give user feedback, especially when delayed by JIT compilation during first run
  * Major refactoring of core code and configuration system for better maintenance and expandibility
    (Be aware that this may lead to new Bugs compred to 3.3.x versions. Please submit bug-reports
-    if you find any!)
+   if you find any!)
  * Reduce number of threads used by numba when running in multiprocessing mode, large increase in performance.
  * Some minor bug fixes
 
