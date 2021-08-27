@@ -19,7 +19,7 @@ import wx.py
 import wx.stc
 from wx.lib.wordwrap import wordwrap
 
-from . import datalist, help, images as img, parametergrid, plotpanel, solvergui
+from . import datalist, help, images as img, parametergrid, plotpanel, solvergui, pubgraph_dialog
 from .exception_handling import CatchModelError
 from ..plugins import add_on_framework as add_on
 from ..core import config as conf_mod
@@ -90,6 +90,7 @@ class MenuId(int, Enum):
     EXPORT_TABLE=wx.Window.NewControlId()
     EXPORT_SCRIPT=wx.Window.NewControlId()
 
+    PUBLISH_PLOT=wx.Window.NewControlId()
     PRINT_PLOT=wx.Window.NewControlId()
     PRINT_GRID=wx.Window.NewControlId()
     PRINT_SCRIPT=wx.Window.NewControlId()
@@ -349,6 +350,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.Append(wx.ID_ANY, "Export", mb_export, "")
         mb_file.AppendSeparator()
         mb_print=wx.Menu()
+        mb_print.Append(MenuId.PUBLISH_PLOT, "Publish Plot...\tCtrl+Shift+P", "Generate publication quality graph")
         mb_print.Append(MenuId.PRINT_PLOT, "Print Plot...\tCtrl+P", "Print the current plot")
         mb_print.Append(MenuId.PRINT_GRID, "Print Grid...", "Prints the grid")
         mb_print.Append(MenuId.PRINT_SCRIPT, "Print Script...", "Prints the model script")
@@ -450,6 +452,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_export_data, id=MenuId.EXPORT_DATA)
         self.Bind(wx.EVT_MENU, self.eh_mb_export_table, id=MenuId.EXPORT_TABLE)
         self.Bind(wx.EVT_MENU, self.eh_mb_export_script, id=MenuId.EXPORT_SCRIPT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_publish_plot, id=MenuId.PUBLISH_PLOT)
         self.Bind(wx.EVT_MENU, self.eh_mb_print_plot, id=MenuId.PRINT_PLOT)
         self.Bind(wx.EVT_MENU, self.eh_mb_print_grid, id=MenuId.PRINT_GRID)
         self.Bind(wx.EVT_MENU, self.eh_mb_print_script, id=MenuId.PRINT_SCRIPT)
@@ -1052,6 +1055,28 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             with self.catch_error(action='save_model', step=f'save file {os.path.basename(fname)}'):
                 self.solver_control.controller.save_file(fname)
                 self.update_title()
+
+    def eh_mb_publish_plot(self, event):
+        start_text='''fig.set_facecolor('white')
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.size'] = font_size # dialog entry
+rcParams['font.sans-serif'] = font_face # dialog entry
+rcParams['font.weight'] = font_weight # dialog entry
+rcParams['mathtext.fontset'] = 'dejavusans' # 'dejavuserif'|'cm'|'stix'|'stixsans'
+clear()
+
+for di in data:
+    if not di.show:
+        continue
+    errorbar(di.x, di.y, yerr=di.error, label="data-"+di.name, **di.data_kwds)
+    semilogy(di.x, di.y_sim, label="sim-"+di.name, **di.sim_kwds)
+xlabel("q (Å$^{-1}$)")
+ylabel("Reflectivity")
+legend()
+show()
+#savefig(r"your_file_name.png", dpi=300)'''
+        dia=pubgraph_dialog.PublicationDialog(self, data=self.model.data, text=start_text)
+        dia.ShowModal()
 
     def eh_mb_print_plot(self, event):
         '''
