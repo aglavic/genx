@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.1
+=============
+ * Fix bugs #183 and  #184 causing crashes on new installs due to configuration default and path issues.
+
 Changes 3.4.0
 =============
  * Add additional optimizers to be used for refinement (fast Levenberg-Marquardt or Bumps library)
