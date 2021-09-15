@@ -745,7 +745,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def startup_dialog(self, profile_path, force_show=False):
         if self.wstartup.show_profiles or force_show:
-            startup_dialog=StartUpConfigDialog(self, profile_path+'profiles/',
+            startup_dialog=StartUpConfigDialog(self, os.path.join(profile_path, 'profiles'),
                                                show_cb=self.wstartup.show_profiles,
                                                wide=self.wstartup.widescreen)
             startup_dialog.ShowModal()
