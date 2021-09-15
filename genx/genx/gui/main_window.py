@@ -149,11 +149,11 @@ class MenuId(int, Enum):
 @dataclass
 class GUIConfig(conf_mod.BaseConfig):
     section='gui'
-    hsize: int=None # stores the width of the window
-    vsize: int=None # stores the height of the window
-    vsplit: int=None
-    hsplit: int=None
-    psplit: int=None
+    hsize: int=1200 # stores the width of the window
+    vsize: int=800 # stores the height of the window
+    vsplit: int=300
+    hsplit: int=400
+    psplit: int=550
 
 @dataclass
 class WindowStartup(conf_mod.BaseConfig):
