@@ -581,8 +581,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 besty = self.model.fom
 
                 self.plot_fomscan.SetPlottype('scan')
-                self.plot_fomscan.Plot((x, y, bestx, besty,
-                                        self.solver_control.controller.optimizer.opt.fom_error_bars_level),
+                e_scale=getattr(self.solver_control.controller.optimizer.opt, 'errorbar_level', 0)
+                self.plot_fomscan.Plot((x, y, bestx, besty, e_scale),
                                        self.model.parameters.get_names()[row],
                                        'FOM')
                 self.sep_plot_notebook.SetSelection(3)
@@ -788,6 +788,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         self.main_frame_statusbar.SetStatusText('Trying to project fom', 1)
         with self.catch_error(action='project_fom_parameters', step=f'projecting fom parameters'):
+            e_scale = getattr(self.solver_control.controller.optimizer.opt, 'errorbar_level', None)
+            if e_scale is None:
+                ShowNotificationDialog(self, 'This feature requires a fit with Differential Evolution, '
+                                             'consider using fom scan instead.')
+                return
             x, y = self.solver_control.ProjectEvals(row)
             if len(x)==0 or len(y)==0:
                 ShowNotificationDialog(self, 'Please conduct a fit before'+
@@ -801,8 +806,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             bestx = pars[row]
             besty = self.model.fom
             self.plot_fomscan.SetPlottype('project')
-            self.plot_fomscan.Plot((x, y, bestx, besty,
-                                    self.solver_control.controller.optimizer.opt.fom_error_bars_level),
+            self.plot_fomscan.Plot((x, y, bestx, besty, e_scale),
                                    self.model.parameters.get_names()[row],
                                    'FOM')
             self.sep_plot_notebook.SetSelection(3)

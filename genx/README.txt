@@ -13,7 +13,10 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
 Changes 3.4.1
 =============
+ * First preview of a publication graph dialog that allows precise definition of plot attributes through
+   small script. A user defined graph size can be chosen and the plot exported to an image file.
  * Fix bugs #183 and  #184 causing crashes on new installs due to configuration default and path issues.
+ * Fix bug in parameter scan using wrong configuration option (#182) and project fom with non-DE fits.
 
 Changes 3.4.0
 =============
