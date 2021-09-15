@@ -751,7 +751,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             startup_dialog.ShowModal()
             config_file=startup_dialog.GetConfigFile()
             if config_file:
-                conf_mod.config.load_default(profile_path+'profiles/'+config_file, reset=True)
+                conf_mod.config.load_default(os.path.join(profile_path, 'profiles', config_file), reset=True)
                 self.wstartup.show_profiles=startup_dialog.GetShowAtStartup()
                 self.wstartup.widescreen=startup_dialog.GetWidescreen()
                 self.wstartup.safe_config(default=True)
