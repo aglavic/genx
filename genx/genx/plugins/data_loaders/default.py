@@ -22,8 +22,8 @@ from ..utils import ShowWarningDialog
 
 try:
     import wx
-    from wx.lib.masked import NumCtrl
 except ImportError:
+    # in case of console usinge withou wx beeing installed put a mock class/module
     class void():
         pass
 

@@ -27,7 +27,6 @@ from ..utils import ShowWarningDialog
 
 try:
     import wx
-    from wx.lib.masked import NumCtrl
 except ImportError:
     class void():
         pass
