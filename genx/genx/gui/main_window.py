@@ -154,6 +154,7 @@ class GUIConfig(conf_mod.BaseConfig):
     vsplit: int=300
     hsplit: int=400
     psplit: int=550
+    solver_update_time: float=0.5
 
 @dataclass
 class WindowStartup(conf_mod.BaseConfig):
@@ -195,6 +196,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         # GenX objects
         self.solver_control=solvergui.ModelControlGUI(self)
+        self.solver_control.callback_controller.min_time=self.opt.solver_update_time # update time from configuration
 
         self.create_menu()
 

@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.2
+=============
+ * Fix bug #185 of broken import settings dialog in windows .exe
+ * Add config file option "gui/solver update time" that can be used on slower computers
+   to reduce GUI load during fitting
+
 Changes 3.4.1
 =============
  * First preview of a publication graph dialog that allows precise definition of plot attributes through
