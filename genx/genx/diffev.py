@@ -538,6 +538,8 @@ class DiffEv(GenxOptimizer):
         algorithm using mpi. This should only be used from the command line.
         The gui can not handle to use mpi.
         '''
+        self.running=True
+        self.init_fom_eval()
 
         if rank==0:
             self.text_output('Calculating start FOM ...')
