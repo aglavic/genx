@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.4
+=============
+ * Fix fitting using MPI (command line on cluster)
+ * Fix stopping a command line fit with multiprocessing using ctrl+c
+
 Changes 3.4.3
 =============
  * Fix backward compatibility issue with older numpy and numba libraries

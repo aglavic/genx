@@ -729,7 +729,7 @@ class DiffEv(GenxOptimizer):
 
         if rank==0:
             self.text_output("Inits mpi with %i processes ..."%(size,))
-        parallel_init(self.model.pickable_copy(), numba_procs)
+        parallel_init(self.model.pickable_copy(), numba_procs, use_mpi=True)
         time.sleep(0.1)
 
     def dismount_parallel(self):
@@ -1286,12 +1286,17 @@ class DiffEv(GenxOptimizer):
 # Functions that is needed for parallel processing!
 model=Model(); par_funcs=() # global variables set in functions below
 
-def parallel_init(model_copy: Model, numba_procs=None):
+def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False):
     '''
     parallel initialization of a pool of processes. The function takes a
     pickle safe copy of the model and resets the script module and the compiles
     the script and creates function to set the variables.
     '''
+    if not use_mpi:
+        # ignore KeyboardInterrupt so that master process can handle it
+        import signal
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+
     if numba_procs is not None:
         import numba
         if hasattr(numba, 'set_num_threads'):
