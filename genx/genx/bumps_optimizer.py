@@ -373,8 +373,9 @@ def parallel_init(numba_procs=None):
     '''
     if numba_procs is not None:
         import numba
-        iprint(f"Setting numba threads to {numba_procs}")
-        numba.set_num_threads(numba_procs)
+        if hasattr(numba, 'set_num_threads'):
+            iprint(f"Setting numba threads to {numba_procs}")
+            numba.set_num_threads(numba_procs)
 
 def init_cuda():
     iprint("Init CUDA in one worker")

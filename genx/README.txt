@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.3
+=============
+ * Fix backward compatibility issue with older numpy and numba libraries
+
 Changes 3.4.2
 =============
  * Fix bug #185 of broken import settings dialog in windows .exe

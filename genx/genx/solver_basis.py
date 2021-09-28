@@ -5,13 +5,15 @@ from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import List, Union
 
-from numpy.typing import ArrayLike
-
 from .core.config import Configurable
 from .core.h5_support import H5HintedExport
 from .data import DataList
 from .model import Model
 
+try:
+    from numpy.typing import ArrayLike
+except ImportError:
+    from numpy import ndarray as ArrayLike
 
 class GenxOptimizer(Configurable, H5HintedExport, metaclass=ABCMeta):
     """
