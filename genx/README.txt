@@ -15,6 +15,8 @@ Changes 3.4.4
 =============
  * Fix fitting using MPI (command line on cluster)
  * Fix stopping a command line fit with multiprocessing using ctrl+c
+ * Improvements to the publication graph dialog
+ * Some small bug fixes for fitting from command line
 
 Changes 3.4.3
 =============

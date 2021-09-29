@@ -1063,25 +1063,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.update_title()
 
     def eh_mb_publish_plot(self, event):
-        start_text='''fig.set_facecolor('white')
-rcParams['font.family'] = 'sans-serif'
-rcParams['font.size'] = font_size # dialog entry
-rcParams['font.sans-serif'] = font_face # dialog entry
-rcParams['font.weight'] = font_weight # dialog entry
-rcParams['mathtext.fontset'] = 'dejavusans' # 'dejavuserif'|'cm'|'stix'|'stixsans'
-clear()
-
-for di in data:
-    if not di.show:
-        continue
-    errorbar(di.x, di.y, yerr=di.error, label="data-"+di.name, **di.data_kwds)
-    semilogy(di.x, di.y_sim, label="sim-"+di.name, **di.sim_kwds)
-xlabel("q (Å$^{-1}$)")
-ylabel("Reflectivity")
-legend()
-show()
-#savefig(r"your_file_name.png", dpi=300)'''
-        dia=pubgraph_dialog.PublicationDialog(self, data=self.model.data, text=start_text)
+        dia=pubgraph_dialog.PublicationDialog(self, data=self.model.data)
         dia.ShowModal()
 
     def eh_mb_print_plot(self, event):

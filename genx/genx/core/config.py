@@ -329,9 +329,9 @@ class Configurable:
         self.opt.load_config()
         self.UpdateConfigValues()
 
-    def WriteConfig(self):
+    def WriteConfig(self, default=False):
         """Writes the varaibles to be stored to the config"""
-        self.opt.safe_config()
+        self.opt.safe_config(default=default)
 
     def UpdateConfigValues(self):
         """
