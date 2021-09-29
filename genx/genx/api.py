@@ -83,6 +83,8 @@ def fit_notebook(model, optimizer):
 
     plt.draw()
 
+    display(fig)
+
     last=2
     while optimizer.running:
         try:
@@ -96,22 +98,37 @@ def fit_notebook(model, optimizer):
             # vec=optimizer.best_vec
             # list(map(lambda func, value: func(value), model.get_fit_pars()[0], vec))
             # model.evaluate_sim_func()
-            j=0
+            ax2.clear()
+            t2 = plt.title('Data display')
+            refls = []
             for i, ds in enumerate(model.data.items):
-                refls[j].set_ydata(ds.y)
+                refls.append(plt.semilogy(ds.x, ds.y,
+                                          color=ds.data_color,
+                                          lw=ds.data_linethickness, ls=ds.data_linetype,
+                                          marker=ds.data_symbol, ms=ds.data_symbolsize,
+                                          label='data-%i: %s'%(i, ds.name))[0])
                 if ds.y_sim.shape==ds.y.shape:
-                    j=+1
-                    refls[j].set_ydata(ds.y_sim)
-                j+=1
+                    refls.append(plt.semilogy(ds.x, ds.y_sim,
+                                              color=ds.sim_color,
+                                              lw=ds.sim_linethickness, ls=ds.sim_linetype,
+                                              marker=ds.sim_symbol, ms=ds.sim_symbolsize,
+                                              label='model-%i: %s'%(i, ds.name))[0])
+
+            plt.xlabel('x')
+            plt.ylabel('I')
 
             line.set_xdata(x)
             line.set_ydata(y)
 
             ax1.set_xlim(0, x[-1])
             ax1.set_ylim(y.min()*0.9, y.max()*1.1)
-            plt.draw()
-            clear_output(wait=True)
-            display(fig)
+            try:
+                plt.draw()
+            except Exception as e:
+                print(e)
+            else:
+                clear_output(wait=True)
+                display(fig)
         except KeyboardInterrupt:
             optimizer.stop_fit()
     plt.close()
