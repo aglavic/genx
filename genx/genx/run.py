@@ -243,6 +243,8 @@ def set_optimiser_pars(optimiser, args):
 
     if args.mpi:
         optimiser.set_use_mpi(True)
+    else:
+        optimiser.set_use_mpi(False)
 
     if args.cs:
         optimiser.set_chunksize(args.cs)
