@@ -30,8 +30,8 @@ from ..utils import ShowWarningDialog
 
 try:
     import wx
-    from wx.lib.masked import NumCtrl
 except ImportError:
+    # in case of console usinge withou wx beeing installed put a mock class/module
     class void():
         pass
 
@@ -46,6 +46,8 @@ class Plugin(Template):
         self.l_col=2
         self.I_col=3
         self.eI_col=4
+        self.LB_col=5
+        self.dL_col=6
         self.comment='#'
         self.skip_rows=0
         self.delimiter=None
@@ -79,13 +81,27 @@ class Plugin(Template):
             # changed by the transforms
 
             # Create an record array so we can sort the data properly
-            data=np.rec.fromarrays([
-                load_array[:, self.h_col].round().astype(type(1)),
-                load_array[:, self.k_col].round().astype(type(1)),
-                load_array[:, self.l_col], load_array[:, self.I_col],
-                load_array[:, self.eI_col]
-                ],
-                names='h, k, l, I, eI')
+            if load_array.shape[1]-1>=max(self.h_col, self.k_col, self.l_col,
+                                         self.I_col, self.eI_col, self.LB_col, self.dL_col):
+                # dataset with LB and dL columns
+                data=np.rec.fromarrays([
+                    load_array[:, self.h_col].round().astype(type(1)),
+                    load_array[:, self.k_col].round().astype(type(1)),
+                    load_array[:, self.l_col], load_array[:, self.I_col],
+                    load_array[:, self.eI_col],
+                    load_array[:, self.LB_col], load_array[:, self.dL_col],
+                    ],
+                    names='h, k, l, I, eI, LB, dL')
+                has_LB=True
+            else:
+                data=np.rec.fromarrays([
+                    load_array[:, self.h_col].round().astype(type(1)),
+                    load_array[:, self.k_col].round().astype(type(1)),
+                    load_array[:, self.l_col], load_array[:, self.I_col],
+                    load_array[:, self.eI_col]
+                    ],
+                    names='h, k, l, I, eI')
+                has_LB=False
             # Sort the data
             data.sort(order=('h', 'k', 'l'))
             i=0
@@ -102,6 +118,9 @@ class Plugin(Template):
                 self.data[-1].run_command()
                 self.data[-1].set_extra_data('h', tmp['h'], 'h')
                 self.data[-1].set_extra_data('k', tmp['k'], 'k')
+                if has_LB:
+                    self.data[-1].set_extra_data('LB', tmp['LB'], 'LB')
+                    self.data[-1].set_extra_data('dL', tmp['dL'], 'dL')
                 # Increase the index
                 i+=len(tmp)
 
@@ -117,7 +136,8 @@ class Plugin(Template):
         that allows the user set import settings for example.
         '''
         col_values={'I': self.I_col, 'h': self.h_col, 'k': self.k_col,
-                    'l': self.l_col, 'I error': self.eI_col}
+                    'l': self.l_col, 'I error': self.eI_col,
+                    'LB': self.LB_col, 'dL': self.dL_col}
         misc_values={'Comment': str(self.comment), 'Skip rows': self.skip_rows,
                      'Delimiter': str(self.delimiter)}
         dlg=SettingsDialog(self.parent, col_values, misc_values)
