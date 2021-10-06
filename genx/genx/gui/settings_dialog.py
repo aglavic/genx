@@ -130,7 +130,8 @@ class SettingsDialog(wx.Dialog):
                 spin = wx.SpinCtrlDouble(parent, -1, min=gmeta['pmin'], max=gmeta['pmax'], inc=inc)
                 spin.SetDigits(4)
             spin.SetValue(getattr(self.settings, field.name, gmeta['pmin']))
-            spin.SetMinSize(spin.GetSizeFromText("%.4f"%gmeta['pmax']+" "))
+
+            spin.SetMinSize(spin.GetSizeFromTextSize(spin.GetTextExtent("%.4f"%gmeta['pmax']+" ")))
             self.value_entries[field.name]=spin
             if add_label:
                 entry = self.label_entry(parent, spin, name)
@@ -139,7 +140,7 @@ class SettingsDialog(wx.Dialog):
         else:
             txt=wx.TextCtrl(parent, -1, style=0)
             txt.SetValue(str(getattr(self.settings, field.name, '')))
-            txt.SetMinSize(txt.GetSizeFromText(10*' '))
+            txt.SetMinSize(txt.GetSizeFromTextSize(txt.GetTextExtent(10*' ')))
             self.value_entries[field.name]=txt
             if add_label:
                 entry = self.label_entry(parent, txt, name)
