@@ -106,6 +106,7 @@ Sample
 import numpy as np
 from . import utils
 from .lib.physical_constants import r_e
+from .symmetries import SymTrans
 from genx.core.custom_logging import iprint
 
 from .lib import USE_NUMBA
@@ -1004,31 +1005,6 @@ class Instrument:
         '''Set the rho library (electron density shape of the atoms)
         '''
         self.rholib=rholib
-
-class SymTrans:
-    def __init__(self, P=None, t=None):
-        # TODO: Check size of arrays!
-        if P is None:
-            P=[[1, 0], [0, 1]]
-        if t is None:
-            t=[0, 0]
-        self.P=np.array(P, dtype=np.float64)
-        self.t=np.array(t, dtype=np.float64)
-
-    def trans_x(self, x, y):
-        '''transformed x coord
-        '''
-        # print self.P[0][0]*x + self.P[0][1]*y + self.t[0]
-        return self.P[0][0]*x+self.P[0][1]*y+self.t[0]
-
-    def trans_y(self, x, y):
-        '''transformed x coord
-        '''
-        # print self.P[1][0]*x + self.P[1][1]*y + self.t[1]
-        return self.P[1][0]*x+self.P[1][1]*y+self.t[1]
-
-    def apply_symmetry(self, x, y):
-        return np.dot(self.P, np.c_[x, y])+self.t
 
 # ==============================================================================
 # Utillity functions

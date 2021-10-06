@@ -243,7 +243,7 @@ class Domain:
         if not sym_list:
             sym_list=[SymTrans()]
 
-        if min([type(sym)==type(SymTrans()) for sym in sym_list])==0:
+        if min([sym.__class__.__name__=="SymTrans" for sym in sym_list])==0:
             raise TypeError("All members in the symmetry list has to be a memeber of class SymTrans")
 
         self.surface_sym=sym_list
@@ -261,7 +261,7 @@ class Domain:
         if not sym_list:
             sym_list=[SymTrans()]
 
-        if min([type(sym)==type(SymTrans()) for sym in sym_list])==0:
+        if min([sym.__class__.__name__=="SymTrans" for sym in sym_list])==0:
             raise TypeError("All members in the symmetry list has to be a memeber of class SymTrans")
 
         self.bulk_sym=sym_list
