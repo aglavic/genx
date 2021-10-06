@@ -3,10 +3,16 @@ Items used to support saving classes to HDF 5 files.
 """
 import h5py
 from abc import ABC, abstractmethod
-from typing import get_type_hints, get_args, get_origin, List, Union
+from typing import get_type_hints, List, Union
 from inspect import isclass
 from numpy import ndarray
 from logging import debug, warning
+
+try:
+    from typing import get_args, get_origin
+except ImportError:
+    def get_args(tp): return getattr(tp, '__args__', ())
+    def get_origin(tp): return getattr(tp, '__extra__', None)
 
 class H5Savable(ABC):
     # Defines minimum required methods for a class to be used upon saving
