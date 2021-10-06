@@ -600,6 +600,16 @@ class ScriptInteractor:
 
         return new_parameter_values
 
+    def parse_value_string(self, code):
+        output=[]
+        for par_str in code.split(','):
+            par_val=par_str.strip()
+            if len(par_val)>0:
+                output.append(par_val.strip("'").strip('"'))
+            else:
+                raise ValueError('Could not parse the parameter value string: %s'%par_str)
+        return output
+
     def parse_name_method(self, code, method_name):
         """ Parses the name and the method
 
@@ -1055,7 +1065,15 @@ class SlabInteractor(ObjectScriptInteractor):
             raise ValueError('Could not parse the code, add_atom method')
         code=code[parameter_start_ind:-1]
 
-        new_parameter_dict=ObjectScriptInteractor.parse_parameter_string(self, code)
+        try:
+            new_parameter_dict=ObjectScriptInteractor.parse_parameter_string(self, code)
+        except ValueError:
+            # in case add_atom is given without keyword arguments, try to parse into dict
+            new_parameter_dict=dict(id='', el='Al', x=0.0, y=0.0, z=0.0, u=0.0, oc=1.0, m=1.)
+            keys=list(new_parameter_dict.keys())
+            new_parameter_list = ObjectScriptInteractor.parse_value_string(self, code)
+            for i, val in enumerate(new_parameter_list):
+                new_parameter_dict[keys[i]]=val
 
         return new_parameter_dict
 

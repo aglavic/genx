@@ -121,7 +121,7 @@ if USE_NUMBA:
 else:
     numba_ss=False
 
-__pars__=['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
+__pars__=['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument', 'Domain']
 
 class SimMethodInfo:
     def __init__(self, name, args, def_args):
@@ -178,7 +178,7 @@ class Sample:
         return inst.inten*self.calc_f(inst, h, k, l)**2
 
     def calc_f(self, inst, h, k, l):
-        f_list=np.array([domain.calc_f(inst, h, k, l) for domain in self.domains])
+        f_list=np.array([np.sqrt(domain.occ)*domain.calc_f(inst, h, k, l) for domain in self.domains])
         return self._assemble_f_tot(f_list, h, k, l)
 
     def turbo_calc_f(self, inst, h, k, l):

@@ -500,6 +500,14 @@ class Slab:
             cpy.dy[-1]=self.dy[i]
         return cpy
 
+    def __str__(self):
+        out=f'Slab(c={self.c}, slab_oc={self.slab_oc})'
+        for i in range(len(self.id)):
+            out+=f'\n  atom {i+1}: {self.id[i]}= {self.el[i]} at '
+            out+=f'({self.x[i]}, {self.y[i]}, self.z[i]) '
+            out+=f'u={self.u[i]}, oc={self.oc[i]}, m={self.m[i]}'
+        return out
+
     def add_atom(self, id, element, x, y, z, u=0.0, oc=1.0, m=1.0):
         '''Add an atom to the slab.
 
@@ -528,7 +536,6 @@ class Slab:
         item=len(self.id)-1
         # Create the set and get functions dynamically
         for par in self.par_names:
-            p=par
             setattr(self, 'set'+id+par, self._make_set_func(par, item))
             setattr(self, 'get'+id+par, self._make_get_func(par, item))
         return AtomGroup(self, id)
