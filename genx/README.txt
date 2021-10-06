@@ -14,6 +14,7 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 Changes 3.4.6
 =============
  * Some fixes to the sxrd2 model
+ * Fix backwards compatibility issues with wx and python 3.6. (The latter needs to "pip install dataclasses".)
 
 Changes 3.4.5
 =============
