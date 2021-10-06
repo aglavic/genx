@@ -33,6 +33,7 @@ Surface x-ray diffraction
    :maxdepth: 2
 
    /tutorials/sxrd
+   /tutorials/sxrd2
    /tutorials/beta_rough
 
 Other tutorials

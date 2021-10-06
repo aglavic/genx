@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.6
+=============
+ * Some fixes to the sxrd2 model
+
 Changes 3.4.5
 =============
  * Fix sls_sxrd plugin to work with additional LB/dL columns as explained in the documentation example
