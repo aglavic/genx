@@ -180,6 +180,7 @@ def start_fitting(args, rank=0):
             _, width = stdscr.getmaxyx()
             stdscr.addstr(9, width//2-22, 'Relative value and spread of fit parameters:')
             stdscr.addstr(9, width-11, 'best/width')
+            stdscr.nodelay(True)
             stdscr.refresh()
             rl = logging.getLogger()
             rl.handlers[0].setLevel(logging.ERROR+1)
@@ -192,6 +193,10 @@ def start_fitting(args, rank=0):
                     try:
                         msg = self.format(record)
                         self.message_history+=msg.strip().splitlines()
+                        lkey = stdscr.getch()
+                        if lkey==ord('q'):
+                            self.message_history.append('"q" pressed, trying to stop fit.')
+                            opt.stop = True
                         self.message_history = self.message_history[-self.max_messages:]
                         for i, msg in enumerate(self.message_history):
                             _, width = stdscr.getmaxyx()
@@ -228,7 +233,7 @@ def start_fitting(args, rank=0):
                     pmin=(population.min(axis=0)-param_info.min_val)/pwidth
                     pmax=(population.max(axis=0)-param_info.min_val)/pwidth
                     pwidth=pmax-pmin
-                    maxpar=height-14
+                    maxpar=height-10
                     if maxpar<param_info.values.shape[0]:
                         order=pwidth.argsort()[::-1]
                     else:
@@ -245,6 +250,7 @@ def start_fitting(args, rank=0):
                         wwidth=max(0.0, min(1.0-wstart, pwidth[param_id]))
                         stdscr.hline(10+i, 16+int(full_width*wstart), '=', int(full_width*wwidth))
                         stdscr.addstr(10+i, 16+int(full_width*ppos), '#')
+
                     stdscr.refresh()
 
         ctrl.set_callbacks(CB())
