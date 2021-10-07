@@ -406,7 +406,7 @@ class Domain:
 
         return x, y, z, u, oc, el
 
-    def create_uc_output(self, use_sym=True, x_uc=1, y_uc=1, fold_sym=True):
+    def create_uc_output(self, use_sym=True, x_uc=1, y_uc=1, fold_sym=True, use_bulk=True):
         ''' Create atomic positions and such for output
 
         Parameters:
@@ -449,19 +449,26 @@ class Domain:
                 oc_sym=np.r_[oc_sym, oc]
                 el_sym=np.r_[el_sym, el]
                 ids_sym.extend(ids)
+        else:
+            x_sym, y_sym, z_sym, u_sym, oc_sym, el_sym, ids_sym=x, y, z, u, oc, el, ids
 
-            for sym_op in self.bulk_sym:
-                if fold_sym:
-                    xb_sym=np.r_[xb_sym, sym_op.trans_x(xb, yb)%1.0]
-                    yb_sym=np.r_[yb_sym, sym_op.trans_y(xb, yb)%1.0]
-                else:
-                    xb_sym=np.r_[xb_sym, sym_op.trans_x(xb, yb)]
-                    yb_sym=np.r_[yb_sym, sym_op.trans_y(xb, yb)]
-                zb_sym=np.r_[zb_sym, zb]
-                ub_sym=np.r_[ub_sym, ub]
-                ocb_sym=np.r_[ocb_sym, ocb]
-                elb_sym=np.r_[elb_sym, elb]
-                idsb_sym.extend(idsb)
+
+        if use_bulk:
+            if use_sym:
+                for sym_op in self.bulk_sym:
+                    if fold_sym:
+                        xb_sym=np.r_[xb_sym, sym_op.trans_x(xb, yb)%1.0]
+                        yb_sym=np.r_[yb_sym, sym_op.trans_y(xb, yb)%1.0]
+                    else:
+                        xb_sym=np.r_[xb_sym, sym_op.trans_x(xb, yb)]
+                        yb_sym=np.r_[yb_sym, sym_op.trans_y(xb, yb)]
+                    zb_sym=np.r_[zb_sym, zb]
+                    ub_sym=np.r_[ub_sym, ub]
+                    ocb_sym=np.r_[ocb_sym, ocb]
+                    elb_sym=np.r_[elb_sym, elb]
+                    idsb_sym.extend(idsb)
+            else:
+                xb_sym, yb_sym, zb_sym, ub_sym, ocb_sym, elb_sym, idsb_sym = xb, yb, zb, ub, ocb, elb, idsb
 
         xout=np.array([])
         yout=np.array([])
@@ -484,6 +491,21 @@ class Domain:
         xout, yout, zout=self.unit_cell.cart_coords(xout, yout, zout)
 
         return xout, yout, zout, uout, ocout, elout, idsout
+
+    def export_xyz(self, fname, x_uc=1, y_uc=1, use_bulk=False):
+        from genx.version import __version__ as version
+        if not fname.endswith('.xyz'):
+            fname+='.xyz'
+        x, y, z, u, oc, el, ids = self.create_uc_output(x_uc=x_uc, y_uc=y_uc, use_bulk=use_bulk)
+        uc_a=self.unit_cell.a
+        uc_b=self.unit_cell.b
+        uc_c=self.unit_cell.c
+        c_total=uc_c*sum([sl.c for sl in self.slabs])
+        with open(fname, 'w') as fh:
+            fh.write(f'{len(x)}\n')
+            fh.write(f'# structure exported by GenX {version}, UC: a={uc_a} b={uc_b} c={c_total}\n')
+            for xi, yi, zi, eli in zip(x,y,z,el):
+                fh.write(f'{eli:3s} {xi:-12.7f} {yi:-12.7f} {zi:-12.7f}\n')
 
     def _get_f(self, inst, el, dinv):
         '''from the elements extract an array with atomic structure factors
