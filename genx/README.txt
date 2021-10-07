@@ -11,7 +11,7 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
-Changes 3.4.6
+Changes 3.4.7
 =============
  * Add export as XYZ file option to sxrd/sxrd2 models ( sample.export_xyz / domain.export_xyz )
  * SXRD plugin option to hide bulk and display arrows for the dx,dy,dz movement of atoms
