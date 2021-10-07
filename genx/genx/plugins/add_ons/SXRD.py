@@ -3,8 +3,7 @@ This plugin auto generates the sample definition and simulations of a surface x-
 
 '''
 
-__author__='Matts Bjorck'
-
+import os
 import io
 import traceback
 
@@ -84,7 +83,6 @@ class Plugin(framework.Template):
         self.update_data_names()
         self.simulation_edit_widget.Update()
         self.update_widgets()
-        # print "end __init__ SXRD Plugin"
 
     def setup_script_interactor(self, model_name='sxrd2'):
         """Setup the script interactor"""
@@ -195,9 +193,16 @@ class Plugin(framework.Template):
     def create_main_window_menu(self):
         """Creates the window menu"""
         self.menu=self.NewMenu('SXRD')
-        menu_item=wx.MenuItem(self.menu, wx.NewId(), "Domain Viewer Settings...", "Edit Viewer settings",
+        menu_item=wx.MenuItem(self.menu, wx.NewId(), "Domain Viewer/Export Settings...", "Edit Viewer settings",
                               wx.ITEM_NORMAL)
         self.menu.AppendItem(menu_item)
+        mb_export_xyz=wx.MenuItem(self.menu, wx.NewId(),
+                                       "Export XYZ...",
+                                       "Export the SLD to a XYZ ASCII file",
+                                       wx.ITEM_NORMAL)
+        self.menu.Append(mb_export_xyz)
+
+        self.parent.Bind(wx.EVT_MENU, self.OnExportXYZ, mb_export_xyz)
         self.parent.Bind(wx.EVT_MENU, self.OnDomainViewerSettings, menu_item)
 
     def update_script(self):
@@ -324,3 +329,35 @@ class Plugin(framework.Template):
     def OnSimulate(self, event):
         """Callback called after simulation"""
         pass
+
+    def OnExportXYZ(self, event):
+        domain=self.sample_edit_widget.get_selected_domain_name()
+        if domain:
+            try:
+                domain_obj=self.GetModel().eval_in_model(domain)
+            except Exception:
+                iprint("Could not load domain ", domain)
+                return
+        else:
+            iprint("No domain selected.")
+            return
+
+        dlg=wx.FileDialog(self.parent, message="Export Domain to XYZ file ...",
+                          defaultFile=f"{self.GetModel().filename.rsplit('.',1)[0]}_{domain}.xyz",
+                          wildcard="XYZ File (*.xyz)|*.xyz",
+                          style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                          )
+        if dlg.ShowModal()==wx.ID_OK:
+            fname=dlg.GetPath()
+            result=True
+            if os.path.exists(fname):
+                filepath, filename=os.path.split(fname)
+                result=self.ShowQuestionDialog('The file %s already exists.'
+                                               ' Do'
+                                               ' you wish to overwrite it?'
+                                               %filename)
+            if result:
+                sv=self.sample_view
+                domain_obj.export_xyz(fname, use_sym=sv.use_sym,
+                                      x_uc=sv.x_uc, y_uc=sv.y_uc,
+                                      fold_sym=sv.fold_sym, use_bulk=sv.show_bulk)

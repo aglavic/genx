@@ -492,11 +492,12 @@ class Domain:
 
         return xout, yout, zout, uout, ocout, elout, idsout
 
-    def export_xyz(self, fname, x_uc=1, y_uc=1, use_bulk=False):
+    def export_xyz(self, fname, use_sym=True, x_uc=1, y_uc=1, fold_sym=True, use_bulk=False):
         from genx.version import __version__ as version
         if not fname.endswith('.xyz'):
             fname+='.xyz'
-        x, y, z, u, oc, el, ids = self.create_uc_output(x_uc=x_uc, y_uc=y_uc, use_bulk=use_bulk)
+        x, y, z, u, oc, el, ids = self.create_uc_output(use_sym=use_sym, x_uc=x_uc, y_uc=y_uc,
+                                                        fold_sym=fold_sym, use_bulk=use_bulk)
         uc_a=self.unit_cell.a
         uc_b=self.unit_cell.b
         uc_c=self.unit_cell.c

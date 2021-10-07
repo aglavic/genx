@@ -30,6 +30,7 @@ class VTKview(wxVTKRenderWindow):
         self.y_uc=1
         self.use_sym=True
         self.fold_sym=True
+        self.show_bulk=True
 
         # Some defualts
         self.radius=1.0
@@ -319,7 +320,7 @@ class VTKview(wxVTKRenderWindow):
         '''
         self.clear_view()
         x, y, z, u, oc, el, ids=sample.create_uc_output(x_uc=self.x_uc, y_uc=self.y_uc, use_sym=self.use_sym,
-                                                        fold_sym=self.fold_sym)
+                                                        fold_sym=self.fold_sym, use_bulk=self.show_bulk)
         self.atom_x=x
         self.atom_y=y
         self.atom_z=z
@@ -342,15 +343,19 @@ class VTKview(wxVTKRenderWindow):
 
     def ShowSettingDialog(self):
         """Shows a settings dialog to change the settings"""
-        parameters=['Use symmetry', 'Fold symmetry op', 'a unit cell rep.', 'b unit cell rep.', 'Atom radius']
-        values={'Use symmetry': self.use_sym, 'Fold symmetry op': self.fold_sym, 'a unit cell rep.': self.x_uc,
-                'b unit cell rep.': self.y_uc, 'Atom radius': self.radius}
-        units={'Use symmetry': '', 'Fold symmetry op': '', 'a unit cell rep.': 'uc',
-               'b unit cell rep.': 'uc', 'Atom radius': 'AA'}
-        validators={'Use symmetry': True, 'Fold symmetry op': True, 'a unit cell rep.': 1,
-                    'b unit cell rep.': 1, 'Atom radius': custom_dialog.FloatObjectValidator()}
-        groups=[['Unit cell', ('Use symmetry', 'Fold symmetry op', 'a unit cell rep.',
-                               'b unit cell rep.')], ['Rendering', ('Atom radius',)]]
+        parameters=['Use symmetry', 'Fold symmetry op', 'Show Bulk', 'a unit cell rep.', 'b unit cell rep.', 'Atom radius']
+        values={'Use symmetry': self.use_sym, 'Fold symmetry op': self.fold_sym, 'Show Bulk': self.show_bulk,
+                'a unit cell rep.': self.x_uc, 'b unit cell rep.': self.y_uc,
+                'Atom radius': self.radius}
+        units={'Use symmetry': '', 'Fold symmetry op': '', 'Show Bulk': '',
+               'a unit cell rep.': 'uc', 'b unit cell rep.': 'uc',
+               'Atom radius': 'AA'}
+        validators={'Use symmetry': True, 'Fold symmetry op': True, 'Show Bulk': True,
+                    'a unit cell rep.': 1, 'b unit cell rep.': 1,
+                    'Atom radius': custom_dialog.FloatObjectValidator()}
+        groups=[['Unit cell', ('Use symmetry', 'Fold symmetry op', 'Show Bulk',
+                               'a unit cell rep.', 'b unit cell rep.')],
+                ['Rendering', ('Atom radius',)]]
 
         dlg=custom_dialog.ValidateDialog(self, parameters, values, validators, units=units, groups=groups,
                                          title="Domain Viewer Settings")
@@ -358,6 +363,7 @@ class VTKview(wxVTKRenderWindow):
             new_values=dlg.GetValues()
             self.use_sym=bool(new_values['Use symmetry'])
             self.fold_sym=bool(new_values['Fold symmetry op'])
+            self.show_bulk=bool(new_values['Show Bulk'])
             self.x_uc=int(new_values['a unit cell rep.'])
             self.y_uc=int(new_values['b unit cell rep.'])
             self.radius=float(new_values['Atom radius'])
