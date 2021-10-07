@@ -6,9 +6,11 @@ import wx
 
 # inspection does not work as vtk mangles with the python miport system
 # noinspection PyUnresolvedReferences
-from vtk import vtkRenderer, vtkActor, vtkTextMapper, vtkActor2D, vtkSphereSource, vtkPolyDataMapper, vtkAxesActor
+from vtk import vtkRenderer, vtkActor, vtkTextMapper, vtkActor2D, vtkSphereSource, vtkPolyDataMapper, \
+    vtkAxesActor, vtkTransform, vtkArrowSource, vtkRenderWindow, vtkRenderWindowInteractor
 # noinspection PyUnresolvedReferences
 import vtk.util.colors as vtkc
+from numpy import sign, sqrt, arctan2, pi
 
 from genx.core.custom_logging import iprint
 from .wxVTKRenderWindow import wxVTKRenderWindow
@@ -31,6 +33,7 @@ class VTKview(wxVTKRenderWindow):
         self.use_sym=True
         self.fold_sym=True
         self.show_bulk=True
+        self.arrows_for_atoms=0.0 # if >0, add arrows for dx,dy,dz
 
         # Some defualts
         self.radius=1.0
@@ -279,7 +282,7 @@ class VTKview(wxVTKRenderWindow):
 
     def create_axes(self, a=2.0, b=2.0, c=2.0):
         axesActor=vtkAxesActor()
-        # axesActor.SetShaftTypeToCylinder()
+        axesActor.SetShaftTypeToCylinder()
         # axesActor.SetXAxisLabelText('x')
         # axesActor.SetYAxisLabelText('y')
         # axesActor.SetZAxisLabelText('z')
@@ -314,6 +317,56 @@ class VTKview(wxVTKRenderWindow):
         sphere_actor=self._create_sphere(x, y, z, col, opacity)
         self.ren.AddActor(sphere_actor)
 
+    def add_atom_shifts(self, x, y, z, dx, dy, dz, element):
+        col=self._get_col(element)
+        # scale shift to make it more visible
+        dx*=self.arrows_for_atoms
+        dy*=self.arrows_for_atoms
+        dz*=self.arrows_for_atoms
+        length=sqrt(dx**2+dy**2+dz**2)
+        if length==0:
+            return
+
+        arrowSource = vtkArrowSource()
+        arrowSource.SetShaftRadius(0.15/length)
+        arrowSource.SetTipRadius(0.3/length)
+        arrowSource.SetShaftResolution(16)
+        arrowSource.SetTipResolution(16)
+        #arrowSource.SetTipLength(0.2/length)
+
+        # Create a mapper and actor
+        mapper = vtkPolyDataMapper()
+        mapper.SetInputConnection(arrowSource.GetOutputPort())
+        actor = vtkActor()
+        actor.SetMapper(mapper)
+
+        transform=vtkTransform()
+        transform.Translate(x,y,z)
+        transform.RotateY(180./pi*arctan2(dz, sqrt(dx**2+dy**2)))
+        transform.RotateZ(180./pi*arctan2(dy, dx))
+        transform.Scale(length, length, length)
+        actor.SetUserTransform(transform)
+        actor.GetProperty().SetColor(col)
+
+        self.ren.AddActor(actor)
+        return
+
+        arrowActor=vtkAxesActor()
+        arrowActor.SetShaftTypeToCylinder()
+        arrowActor.AxisLabelsOff()
+
+        arrowActor.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(*col)
+        arrowActor.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(*col)
+        arrowActor.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(*col)
+
+        arrowActor.SetTotalLength(abs(dx), abs(dy), abs(dz))
+
+        transform=vtkTransform()
+        transform.Translate(x,y,z)
+        transform.Scale(sign(dx), sign(dy), sign(dz))
+        arrowActor.SetUserTransform(transform)
+        self.ren.AddActor(arrowActor)
+
     def build_sample(self, sample, use_opacity=False):
         '''Builds an sample view from the object sample that has to
         have the method _surf_pars that yields the x, y, z, u, oc, el
@@ -329,6 +382,10 @@ class VTKview(wxVTKRenderWindow):
             [self.add_atom(x[i], y[i], z[i], 'None', el[i], oc[i]) for i in range(len(x))]
         else:
             [self.add_atom(x[i], y[i], z[i], 'None', el[i], 1.0) for i in range(len(x))]
+        if self.arrows_for_atoms>0:
+            dx, dy, dz=sample.create_shift_output(x_uc=self.x_uc, y_uc=self.y_uc, use_sym=self.use_sym,
+                                                  fold_sym=self.fold_sym, use_bulk=self.show_bulk)
+            [self.add_atom_shifts(x[i], y[i], z[i], dx[i], dy[i], dz[i], el[i]) for i in range(len(x))]
         self.create_axes()
 
         self.ren.ResetCamera()
@@ -343,19 +400,21 @@ class VTKview(wxVTKRenderWindow):
 
     def ShowSettingDialog(self):
         """Shows a settings dialog to change the settings"""
-        parameters=['Use symmetry', 'Fold symmetry op', 'Show Bulk', 'a unit cell rep.', 'b unit cell rep.', 'Atom radius']
+        parameters=['Use symmetry', 'Fold symmetry op', 'Show Bulk', 'a unit cell rep.', 'b unit cell rep.',
+                    'Atom radius', 'Delta Arrow Scale']
         values={'Use symmetry': self.use_sym, 'Fold symmetry op': self.fold_sym, 'Show Bulk': self.show_bulk,
                 'a unit cell rep.': self.x_uc, 'b unit cell rep.': self.y_uc,
-                'Atom radius': self.radius}
+                'Atom radius': self.radius, 'Delta Arrow Scale': self.arrows_for_atoms}
         units={'Use symmetry': '', 'Fold symmetry op': '', 'Show Bulk': '',
                'a unit cell rep.': 'uc', 'b unit cell rep.': 'uc',
-               'Atom radius': 'AA'}
+               'Atom radius': 'AA', 'Delta Arrow Scale': '0=off'}
         validators={'Use symmetry': True, 'Fold symmetry op': True, 'Show Bulk': True,
                     'a unit cell rep.': 1, 'b unit cell rep.': 1,
-                    'Atom radius': custom_dialog.FloatObjectValidator()}
+                    'Atom radius': custom_dialog.FloatObjectValidator(),
+                    'Delta Arrow Scale': custom_dialog.FloatObjectValidator()}
         groups=[['Unit cell', ('Use symmetry', 'Fold symmetry op', 'Show Bulk',
                                'a unit cell rep.', 'b unit cell rep.')],
-                ['Rendering', ('Atom radius',)]]
+                ['Rendering', ('Atom radius', 'Delta Arrow Scale')]]
 
         dlg=custom_dialog.ValidateDialog(self, parameters, values, validators, units=units, groups=groups,
                                          title="Domain Viewer Settings")
@@ -367,3 +426,4 @@ class VTKview(wxVTKRenderWindow):
             self.x_uc=int(new_values['a unit cell rep.'])
             self.y_uc=int(new_values['b unit cell rep.'])
             self.radius=float(new_values['Atom radius'])
+            self.arrows_for_atoms=float(new_values['Delta Arrow Scale'])

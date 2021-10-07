@@ -406,6 +406,13 @@ class Domain:
 
         return x, y, z, u, oc, el
 
+    def _bulk_shifts(self):
+        return self.bulk_slab.dx, self.bulk_slab.dy, self.bulk_slab.dz
+
+    def _surf_shifts(self):
+        dx, dy, dz, c=list(zip(*[(slab.dx, slab.dy, slab.dz, np.ones(len(slab.x))*slab.c) for slab in self.slabs]))
+        return np.r_[dx], np.r_[dy], np.r_[dz]*np.r_[c]
+
     def create_uc_output(self, use_sym=True, x_uc=1, y_uc=1, fold_sym=True, use_bulk=True):
         ''' Create atomic positions and such for output
 
@@ -491,6 +498,65 @@ class Domain:
         xout, yout, zout=self.unit_cell.cart_coords(xout, yout, zout)
 
         return xout, yout, zout, uout, ocout, elout, idsout
+
+    def create_shift_output(self, use_sym=True, x_uc=1, y_uc=1, fold_sym=True, use_bulk=True):
+        ''' Create atomic shifts (dx,dy,dz) for output similar to create_uc_output '''
+        xb, yb, zb, ub, ocb, elb=self._bulk_pars()
+        dxb, dyb, dzb=self._bulk_shifts()
+        xb0, yb0, zb0=xb-dxb, yb-dyb, zb-dzb
+
+        x, y, z, u, oc, el=self._surf_pars()
+        dx, dy, dz=self._surf_shifts()
+        x0, y0, z0=x-dx, y-dy, z-dz
+
+        dx_sym=np.array([])
+        dy_sym=np.array([])
+        dz_sym=np.array([])
+        dxb_sym=np.array([])
+        dyb_sym=np.array([])
+        dzb_sym=np.array([])
+
+        if use_sym:
+            for sym_op in self.surface_sym:
+                # calculate difference between symmetry atoms and shifted symmetry atoms
+                xt=sym_op.trans_x(x, y)
+                x0t=sym_op.trans_x(x0, y0)
+                yt=sym_op.trans_y(x, y)
+                y0t=sym_op.trans_y(x0, y0)
+
+                dx_sym = np.r_[dx_sym, xt-x0t]
+                dy_sym = np.r_[dy_sym, yt-y0t]
+                dz_sym = np.r_[dz_sym, dz]
+        else:
+            dx_sym, dy_sym, dz_sym=dx, dy, dz
+
+        if use_bulk:
+            if use_sym:
+                for sym_op in self.bulk_sym:
+                    # calculate difference between symmetry atoms and shifted symmetry atoms
+                    xt = sym_op.trans_x(xb, yb)
+                    x0t = sym_op.trans_x(xb0, yb0)
+                    yt = sym_op.trans_y(xb, yb)
+                    y0t = sym_op.trans_y(xb0, yb0)
+
+                    dxb_sym = np.r_[dxb_sym, xt-x0t]
+                    dyb_sym = np.r_[dyb_sym, yt-y0t]
+                    dzb_sym = np.r_[dzb_sym, dzb]
+            else:
+                dxb_sym, dyb_sym, dzb_sym = dxb, dyb, dzb
+
+        dxout=np.array([])
+        dyout=np.array([])
+        dzout=np.array([])
+        for i in range(x_uc):
+            for j in range(y_uc):
+                dxout=np.r_[dxout, dx_sym, dxb_sym]
+                dyout=np.r_[dyout, dy_sym, dyb_sym]
+                dzout=np.r_[dzout, dz_sym, dzb_sym]
+        # Create output in cartesian coordinates:
+        dxout, dyout, dzout=self.unit_cell.cart_coords(dxout, dyout, dzout)
+
+        return dxout, dyout, dzout
 
     def export_xyz(self, fname, use_sym=True, x_uc=1, y_uc=1, fold_sym=True, use_bulk=False):
         from genx.version import __version__ as version

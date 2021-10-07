@@ -13,6 +13,11 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
 Changes 3.4.6
 =============
+ * Add export as XYZ file option to sxrd/sxrd2 models ( sample.export_xyz / domain.export_xyz )
+ * SXRD plugin option to hide bulk and display arrows for the dx,dy,dz movement of atoms
+
+Changes 3.4.6
+=============
  * Some fixes to the sxrd2 model
  * Fix backwards compatibility issues with wx and python 3.6. (The latter needs to "pip install dataclasses".)
 
