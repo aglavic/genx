@@ -190,7 +190,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             debug("Detected DPI scale factor %s from GetDPIScaleFactor"%dpi_scale_factor)
         except AttributeError:
             dpi_scale_factor=self.GetContentScaleFactor()
-        debug("Detected DPI scale factor %s from GetContentScaleFactor"%dpi_scale_factor)
+            debug("Detected DPI scale factor %s from GetContentScaleFactor"%dpi_scale_factor)
         self.dpi_scale_factor=dpi_scale_factor
         wx.GetApp().dpi_scale_factor=dpi_scale_factor
 

@@ -362,6 +362,22 @@ class Sample:
         '''
         return _fatom_eval(inst, f, element, s)
 
+    def export_xyz(self, fname):
+        from genx.version import __version__ as version
+        if not fname.endswith('.xyz'):
+            fname+='.xyz'
+        x, y, z, u, oc, el, ids = self.create_uc_output()
+        uc_a=self.unit_cell.a
+        uc_b=self.unit_cell.b
+        uc_c=self.unit_cell.c
+        c_total=uc_c*sum([sl.c for sl in self.slabs])
+        with open(fname, 'w') as fh:
+            fh.write(f'{len(x)}\n')
+            fh.write(f'# structure exported by GenX {version}, UC: a={uc_a} b={uc_b} c={c_total}\n')
+            for xi, yi, zi, eli in zip(x,y,z,el):
+                fh.write(f'{eli:3s} {uc_a*xi:-12.7f} {uc_b*yi:-12.7f} {uc_c*zi:-12.7f}\n')
+
+
 class UnitCell:
     '''Class containing the  unitcell.
     This also allows for simple crystalloraphic computing of different
