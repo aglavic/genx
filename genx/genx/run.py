@@ -168,6 +168,45 @@ def start_fitting(args, rank=0):
     config=io.config
 
     if rank==0:
+        try:
+            import curses
+        except ImportError:
+            stdscr = None
+        else:
+            stdscr = curses.initscr()
+            curses.noecho()
+            curses.cbreak()
+            stdscr.clear()
+            _, width = stdscr.getmaxyx()
+            stdscr.addstr(9, width//2-22, 'Relative value and spread of fit parameters:')
+            stdscr.addstr(9, width-11, 'best/width')
+            stdscr.refresh()
+            rl = logging.getLogger()
+            rl.handlers[0].setLevel(logging.ERROR+1)
+
+            class CursesHandler(logging.Handler):
+                message_history = []
+                max_messages = 8
+
+                def emit(self, record):
+                    try:
+                        msg = self.format(record)
+                        self.message_history+=msg.strip().splitlines()
+                        self.message_history = self.message_history[-self.max_messages:]
+                        for i, msg in enumerate(self.message_history):
+                            _, width = stdscr.getmaxyx()
+                            stdscr.addstr(i, 4, msg+' '*(width-4-len(msg)))
+                        stdscr.refresh()
+                    except (KeyboardInterrupt, SystemExit):
+                        raise
+                    except:
+                        self.handleError(record)
+
+            chandler = CursesHandler()
+            chandler.setLevel(logging.INFO)
+            rl.addHandler(chandler)
+        from numpy import array, arange
+
         class CB(DiffEvDefaultCallbacks):
             def autosave(self):
                 # print 'Updating the parameters'
@@ -178,6 +217,35 @@ def start_fitting(args, rank=0):
                 if args.outfile:
                     iprint("Saving to %s"%args.outfile)
                     ctrl.save_file(args.outfile)
+
+            def parameter_output(self, param_info):
+                if stdscr and param_info.new_best:
+                    height, width = stdscr.getmaxyx()
+                    full_width=(width-16-12+1)
+                    pwidth=param_info.max_val-param_info.min_val
+                    pres=(param_info.values-param_info.min_val)/pwidth
+                    population=array(param_info.population)
+                    pmin=(population.min(axis=0)-param_info.min_val)/pwidth
+                    pmax=(population.max(axis=0)-param_info.min_val)/pwidth
+                    pwidth=pmax-pmin
+                    maxpar=height-14
+                    if maxpar<param_info.values.shape[0]:
+                        order=pwidth.argsort()[::-1]
+                    else:
+                        order=arange(param_info.values.shape[0])
+
+                    for i in range(min(param_info.values.shape[0], maxpar)):
+                        param_id=order[i]
+                        stdscr.hline(10+i, 16, ' ', full_width)
+                        stdscr.addstr(10+i, 1, 'Parameter %02i: ['%param_id)
+                        stdscr.addstr(10+i, width-12, '] %.2f/%.2f'%(pres[param_id], pwidth[param_id]))
+
+                        ppos=max(0.0, min(1.0, pres[param_id]))
+                        wstart=max(0.0, min(1.0, pmin[param_id]))
+                        wwidth=max(0.0, min(1.0-wstart, pwidth[param_id]))
+                        stdscr.hline(10+i, 16+int(full_width*wstart), '=', int(full_width*wwidth))
+                        stdscr.addstr(10+i, 16+int(full_width*ppos), '#')
+                    stdscr.refresh()
 
         ctrl.set_callbacks(CB())
 
@@ -214,6 +282,7 @@ def start_fitting(args, rank=0):
         except KeyboardInterrupt:
             iprint('KeyboardInterrupt, trying to stop fit.')
             opt.stop=True
+
     if rank==0:
         t2=time.time()
         iprint('Fitting finished!')
@@ -233,6 +302,14 @@ def start_fitting(args, rank=0):
 
     if rank==0:
         iprint('Fitting successfully completed')
+
+    if stdscr:
+        chandler.setLevel(logging.ERROR+1)
+        curses.nocbreak()
+        curses.echo()
+        curses.endwin()
+        rl.handlers[0].setLevel(logging.INFO)
+        print('\n'.join(chandler.message_history))
 
 def set_optimiser_pars(optimiser, args):
     """ Sets the optimiser parameters from args

@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.8
+=============
+ * Fitting from command line on unix systems now displays the parameter values and spread on the console
+
 Changes 3.4.7
 =============
  * Add export as XYZ file option to sxrd/sxrd2 models ( sample.export_xyz / domain.export_xyz )
