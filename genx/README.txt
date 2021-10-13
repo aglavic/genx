@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.9
+=============
+ * Add --dpi-scale option to overwrite the automatic detection.
+   Use --dpi-scale 1.0 on OS X if you encounter large icons overrunning the toolbar.
+
 Changes 3.4.8
 =============
  * Fitting from command line on unix systems now displays the parameter values and spread on the console

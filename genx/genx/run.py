@@ -37,7 +37,7 @@ def start_interactive(args):
     else:
         filename=None
     debug('start GUI setup')
-    app= main_window.GenxApp(filename=filename)
+    app= main_window.GenxApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
     debug('setup complete, start WX MainLoop')
     app.MainLoop()
     debug('leave start_interactive')
@@ -393,10 +393,13 @@ def main():
                             help='Load file into active data set. Index starting at 0.')
     data_group.add_argument('--export', dest='save_datafile',
                             help='Save active data set to file. Index starting at 0.')
+    data_group=parser.add_argument_group('startup options')
     data_group.add_argument('-l', '--logfile', dest='logfile', default=None, type=str,
                             help='Output debug information to logfile.')
     data_group.add_argument('--debug', dest='debug', default=False, action="store_true",
                             help='Show additional debug information on console/logfile')
+    data_group.add_argument('--dpi-scale', dest='dpi_overwrite', default=None, type=float,
+                            help='Overwrite the detection of screen dpi scaling factor (=72/dpi)')
 
     parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')

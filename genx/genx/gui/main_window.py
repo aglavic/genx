@@ -165,7 +165,7 @@ class WindowStartup(conf_mod.BaseConfig):
 class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     opt: GUIConfig
 
-    def __init__(self, parent: wx.App):
+    def __init__(self, parent: wx.App, dpi_overwrite=None):
         self._init_phase=True
         self.parent=parent
         debug('starting setup of MainFrame')
@@ -185,12 +185,16 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                           size=wx.Size(self.opt.hsize, self.opt.vsize),
                           style=wx.DEFAULT_FRAME_STYLE)
 
-        try:
-            dpi_scale_factor=self.GetDPIScaleFactor()
-            debug("Detected DPI scale factor %s from GetDPIScaleFactor"%dpi_scale_factor)
-        except AttributeError:
-            dpi_scale_factor=self.GetContentScaleFactor()
-            debug("Detected DPI scale factor %s from GetContentScaleFactor"%dpi_scale_factor)
+        if dpi_overwrite:
+            dpi_scale_factor=float(dpi_overwrite)
+            debug("Overwrite DPI scale factor as %s"%dpi_scale_factor)
+        else:
+            try:
+                dpi_scale_factor=self.GetDPIScaleFactor()
+                debug("Detected DPI scale factor %s from GetDPIScaleFactor"%dpi_scale_factor)
+            except AttributeError:
+                dpi_scale_factor=self.GetContentScaleFactor()
+                debug("Detected DPI scale factor %s from GetContentScaleFactor"%dpi_scale_factor)
         self.dpi_scale_factor=dpi_scale_factor
         wx.GetApp().dpi_scale_factor=dpi_scale_factor
 
@@ -1811,9 +1815,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
 
 class GenxApp(wx.App):
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, dpi_overwrite=None):
         debug('App init started')
         self.open_file=filename
+        self.dpi_overwrite=dpi_overwrite
         wx.App.__init__(self, redirect=False)
         debug('App init complete')
 
@@ -1851,7 +1856,7 @@ class GenxApp(wx.App):
         self.locale=locale
 
         self.WriteSplash('initializeing main window...')
-        main_frame=GenxMainWindow(self)
+        main_frame=GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
         self.SetTopWindow(main_frame)
 
         if self.open_file is None:
