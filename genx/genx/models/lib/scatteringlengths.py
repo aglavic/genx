@@ -379,7 +379,15 @@ def create_bl_lookup(path, b_dict):
         '''
         energy=(0.28601435/wavelength)**2 # convert wavelength in Å to energy in eV
 
-        e, xs_s, xs_a = np.loadtxt(path+'%s.txt'%name.capitalize(), unpack=True)
+        if len(name)>1 and name[0].lower()=='i' and name[1].isdigit():
+            if name[-2].isdigit():
+                ele=name[-1]+name[1:-1]
+            else:
+                ele=name[-2:]+name[1:-2]
+        else:
+            ele=name.capitalize()
+
+        e, xs_s, xs_a = np.loadtxt(path+'%s.txt'%ele, unpack=True)
 
         if energy>=e[-2] or energy<=e[1]:
             raise ValueError('The energy/wavelength is outside the databse' \
