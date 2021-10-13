@@ -74,12 +74,12 @@ non-dispersive (without resonant contribution).
 
 fw
 ^^
-Same thing as f but scaled so that is can be used with a density in
+Same thing as f but scaled so that it can be used with a density in
 g/cm\ :sup:`3\ .`
 
 bw
 ^^
-Same thing as bc but scaled so that is can be used with a density in
+Same thing as bc but scaled so that it can be used with a density in
 g/cm\ :sup:`3\ .`
 '''
 from .lib import scatteringlengths as sl
@@ -157,6 +157,12 @@ __w_dict__=sl.load_atomic_weights_dabax(__MODULE_DIR__+ \
 __bw_dict__=sl.create_scatt_weight(__bc_dict__, __w_dict__)
 # print 'Making bw scattering lengths'
 bw=sl.ScatteringLength(__bw_dict__)
+
+__lookup_bl__=sl.create_bl_lookup(__MODULE_DIR__+'/databases/geant4/g4xs_', __bc_dict__)
+def create_bl(wavelength):
+    return sl.FormFactor(wavelength, __lookup_bl__)
+bl=create_bl(1.79819)
+
 # print 'Making fw scattering lengths'
 __lookup_fw__=sl.create_fw_lookup(__lookup_fp__, __w_dict__)
 

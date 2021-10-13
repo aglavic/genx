@@ -387,7 +387,7 @@ class SampleBuilder:
     def GetNewModelScript(self, modelname='models.spec_nx', nb_data_sets=1):
         script='from numpy import *\n'
         script+='import %s as model\n'%modelname
-        script+='from models.utils import UserVars, fp, fw, bc, bw\n\n'
+        script+='from models.utils import UserVars, fp, fw, bc, bw, bl\n\n'
         for item in self.defs:
             script+='# BEGIN %s DO NOT CHANGE\n'%item
             script+='# END %s\n\n'%item
@@ -529,7 +529,7 @@ class SampleBuilder:
             code+='%s_fp = create_fp(%s.wavelength);'%(inst_name, inst_name)
             code+=' %s_fw = create_fw(%s.wavelength)\n\n'%(inst_name, inst_name)
         code+=('fp.set_wavelength(inst.wavelength); '
-               +'fw.set_wavelength(inst.wavelength)\n')
+               +'fw.set_wavelength(inst.wavelength);bl.set_wavelength(inst.wavelength)\n')
         script=self.insert_code_segment(script, 'Instrument', code)
         # Sample script creation
         layer_code, stack_code, sample_code=self.sampleh.getCode()
