@@ -4,6 +4,7 @@ on set and the class DataList stores multiple DataSets.
 '''
 
 import time
+import os
 from sys import platform
 from numpy import *
 from typing import List, Dict, Tuple, Union

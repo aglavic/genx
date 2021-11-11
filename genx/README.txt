@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.10
+=============
+ * Fix bug with missing os import in genx/data.py to allow export
+
 Changes 3.4.9
 =============
  * Add --dpi-scale option to overwrite the automatic detection.
