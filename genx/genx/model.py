@@ -599,7 +599,7 @@ class Model(H5HintedExport):
         The fileending will be .ort
         '''
         self.simulate(True)
-        from .core.orso_io import ort, data as odata
+        from orsopy.fileio import save_orso, OrsoDataset, Orso, Column
         from .version import __version__ as version
         para_list = [dict([(nj, tpj(pij)) for nj, pij, tpj in zip(self.parameters.data_labels, pi,
                                                                   [str, float, bool, float, float, str])])
@@ -615,36 +615,40 @@ class Model(H5HintedExport):
         add_header['analysis'].update(self.extra_analysis)
         ds = []
         for di in self.data:
-            header = dict(di.meta)
+            header = Orso.empty().to_dict()
+            header.update(di.meta)
             try:
                 import getpass
                 # noinspection PyTypeChecker
-                header['creator']['name'] = getpass.getuser()
+                add_header['analysis']['operator'] = {'name': getpass.getuser()}
             except Exception:
                 pass
             import datetime
             # noinspection PyTypeChecker
-            header['creator']['time'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+            add_header['analysis']['timestamp'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
             header.update(add_header)
             header['data_set'] = di.name
             columns = [di.x, di.y, di.error]
-            column_names = ['Qz', 'R', 'sR']
+            if hasattr(self.script_module, 'inst') and self.script_module.inst.coords in ['tth', '2θ']:
+                column_names = [Column('TTh', 'deg'), Column('R'), Column('sR')]
+            else:
+                column_names = [Column('Qz', '1/angstrom'), Column('R'), Column('sR')]
             if 'res' in di.extra_data:
                 columns.append(di.extra_data['res'])
-                column_names.append('sQz')
+                column_names.append(Column('s'+column_names[0].name, column_names[0].unit))
             columns.append(di.y_sim)
-            column_names.append('Rsim')
+            column_names.append(Column('Rsim'))
             columns.append(di.y_fom)
-            column_names.append('FOM')
+            column_names.append(Column('FOM'))
             for name, col in sorted(di.extra_data.items()):
                 if name=='res':
                     continue
                 columns.append(col)
-                column_names.append(name)
-            header['columns'] = [{'name': cn} for cn in column_names]
-            ds.append(odata.ORSOData(header, columns))
+                column_names.append(Column(name))
+            header['columns'] = column_names
+            ds.append(OrsoDataset(Orso(**header), np.array(columns).T))
         try:
-            ort.write_file(basename, ds)
+            save_orso(ds, basename, data_separator='\n')
         except GenxIOError as e:
             raise GenxIOError(e.error_message, e.file)
 

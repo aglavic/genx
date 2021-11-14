@@ -14,13 +14,23 @@ from .core.custom_logging import iprint
 from .core.colors import CyclicList
 from .core.h5_support import H5Savable, H5HintedExport
 
-_e='unspecified'
-META_DEFAULT={'creator': {'name': _e, 'system': platform, 'affiliation': _e, 'time': _e},
-              'data_source': {'owner': _e, 'facility': _e, 'experimentID': _e, 'experimentDate': _e, 'title': _e,
-                              'experiment': {'instrument': _e, 'probe': 'neutron', 'sample': {'name': _e}},
-                              'measurement': {'scheme': _e, 'omega': {'magnitude': 0.0},
-                                              'wavelength': {'magnitude': 0.0}}},
-              }
+try:
+    from orsopy.fileio import Orso
+    META_DEFAULT=Orso.empty().to_dict()
+    del(META_DEFAULT['columns'])
+except ImportError:
+    META_DEFAULT={'data_source': {'owner': {'name': None, 'affiliation': None},
+                      'experiment': {'title': None,
+                                    'instrument': None,
+                                    'start_date': None,
+                                    'probe': None},
+                      'sample': {'name': None},
+                     'measurement': {'instrument_settings': {'incident_angle': {'magnitude': None},
+                                    'wavelength': {'magnitude': None},
+                                    'polarization': 'unpolarized'},
+                                    'data_files': None}},
+                 'reduction': {'software': {'name': None}},
+        }
 
 class DataSet(H5HintedExport):
     '''
