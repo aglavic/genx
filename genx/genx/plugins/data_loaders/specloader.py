@@ -19,7 +19,7 @@ class Plugin(Template):
         # self.dataset = data.DataSet()
         self.datalist=self.data
 
-    def LoadDataFile(self, selected_items):
+    def LoadDataFile(self, selected_items, data_id=0):
         ''' Called when GenX wants to load data'''
 
         if len(selected_items)==0:

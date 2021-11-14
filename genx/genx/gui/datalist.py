@@ -551,10 +551,22 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         offset=self.data_cont.get_count()
         while offset>0 and not self.data_cont.has_data(offset-1):
             offset-=1
-        for i, fi in enumerate(files):
-            if self.data_cont.get_count()<(i+offset+1):
-                self.AddItem()
-            self.data_loader.LoadData(self.data_cont.get_data()[i+offset], fi)
+        i=0
+        for  fi in files:
+            # load all datasets in file, but limit to 25 to prohibit accidental load of huge datasets
+            for di in range(min(self.data_loader.CountDatasets(fi), 25)):
+                if self.data_cont.get_count()<(i+offset+1):
+                    self.data_cont.add_item()
+                    self._UpdateImageList()
+                    self.SetItemCount(self.data_cont.get_count())
+                self.data_loader.LoadData(self.data_cont.get_data()[i+offset], fi, data_id=di)
+                i+=1
+
+        # In case the dataset name has changed
+        self.data_loader.UpdateDataList()
+        # Send an update that new data has been loaded
+        self.data_loader.SendUpdateDataEvent()
+        self._UpdateData('Item added', data_changed=True, new_data=True)
         return True
 
     def ShowInfo(self):

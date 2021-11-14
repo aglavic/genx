@@ -221,11 +221,9 @@ class DataSet(H5HintedExport):
         except:
             iprint("Can't read the file %s, check the format"%filename)
         else:
-            # print A
             xcol=self.cols[0]
             ycol=self.cols[1]
             ecol=self.cols[2]
-            # print xcol,ycol
             if xcol<A.shape[1] and ycol<A.shape[1] and ecol<A.shape[1]:
                 self.x_raw=A[:, xcol].copy()
                 self.y_raw=A[:, ycol].copy()
@@ -274,10 +272,9 @@ class DataSet(H5HintedExport):
         rms=self.rms
 
         for key in self.extra_data:
-            exec('%s = self.%s_raw'%(key, key))
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
 
         self.x=eval(self.x_command)
-        # print self.x
 
     def run_y_command(self):
         x=self.x_raw
@@ -286,11 +283,9 @@ class DataSet(H5HintedExport):
         rms=self.rms
 
         for key in self.extra_data:
-            exec('%s = self.%s_raw'%(key, key))
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
 
         self.y=eval(self.y_command)
-        # print self.y
-        # print self.y_command
 
     def run_error_command(self):
         x=self.x_raw
@@ -299,7 +294,7 @@ class DataSet(H5HintedExport):
         rms=self.rms
 
         for key in self.extra_data:
-            exec('%s = self.%s_raw'%(key, key))
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
 
         def fpe(xmax=0.05, relerr=0.01):
             '''
@@ -500,8 +495,6 @@ class DataSet(H5HintedExport):
         pars [dictonary] is None that item will be skipped, i.e. keep its old
         value.
         '''
-        # print 'data set_data_plot_items: '
-        # print pars
         for name in self.plot_setting_names:
             if pars[name] is not None:
                 if type(pars[name])==type(''):
@@ -520,8 +513,6 @@ class DataSet(H5HintedExport):
         pars [dictonary] is None that item will be skipped, i.e. keep its old
         value.
         '''
-        # print 'data set_sim_plot_items: '
-        # print pars
         for name in self.plot_setting_names:
             if pars[name] is not None:
                 if type(pars[name])==type(''):
@@ -747,10 +738,8 @@ class DataList(H5Savable):
         '''
         if pos<len(self.items) and len(self.items)>1:
             self.items.pop(pos)
-            # print "Data set number %i have been removed."%pos
             return True
         else:
-            # print 'Can not remove dataset number %i.'%pos
             return False
 
     def move_up(self, pos):
@@ -871,7 +860,6 @@ class DataList(H5Savable):
                 raise GenxIOError('Error in export_data_to_files')
         else:
             indices=list(range(len(self.items)))
-        # print 'Output: ', indices, len(self.items)
         for index in indices:
             base, ext=os.path.splitext(basename)
             if ext=='':

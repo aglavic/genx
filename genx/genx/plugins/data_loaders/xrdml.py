@@ -35,7 +35,7 @@ class Plugin(Template):
         self.skip_rows=0
         self.delimiter=None
 
-    def LoadData(self, dataset, filename):
+    def LoadData(self, dataset, filename, data_id=0):
         '''
         Loads the data from filename into the data_item_number.
         '''
