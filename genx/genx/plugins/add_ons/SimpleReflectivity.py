@@ -881,14 +881,14 @@ class SamplePanel(wx.Panel):
             self.last_sample_script=sample_script
         script='from numpy import *\n' \
                'import models.spec_nx as model\n' \
-               'from models.utils import UserVars, fp, fw, bc, bw, bl\n\n' \
+               'from models.utils import UserVars, fp, fw, bc, bw\n\n' \
                '# BEGIN Instrument DO NOT CHANGE\n' \
                'from models.utils import create_fp, create_fw\n'
         insts, inst_str=self.instrumentCode()
         script+=inst_str
 
         script+="inst_fp = create_fp(inst.wavelength); inst_fw = create_fw(inst.wavelength)\n" \
-                "fp.set_wavelength(inst.wavelength); fw.set_wavelength(inst.wavelength); bl.set_wavelength(inst.wavelength)\n" \
+                "fp.set_wavelength(inst.wavelength); fw.set_wavelength(inst.wavelength)\n" \
                 "# END Instrument\n\n"
         # add sample description code
         script+=sample_script
