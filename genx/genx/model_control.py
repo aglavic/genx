@@ -7,6 +7,7 @@ import h5py
 from logging import warning
 
 from .core.config import config
+from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
@@ -15,6 +16,7 @@ class ModelController:
     def __init__(self, optimizer: GenxOptimizer):
         self.model=Model()
         self.optimizer=optimizer
+        self.model.saved=True
 
     def set_callbacks(self, callbacks: GenxOptimizerCallback):
         self.optimizer.set_callbacks(callbacks)
@@ -45,6 +47,113 @@ class ModelController:
         '''
         self.model.WriteConfig()
         self.optimizer.WriteConfig()
+
+    def new_model(self):
+        self.model.new_model()
+
+    def set_model(self, model: Model):
+        raise NotImplemented("Can't set model, might be unsafe")
+
+    def get_model(self) -> Model:
+        return self.model
+
+    def set_model_script(self, text):
+        self.model.set_script(text)
+
+    def get_model_script(self):
+        return self.model.get_script()
+
+    def set_model_params(self, params):
+        self.model.parameters=params
+
+    def get_model_params(self):
+        return self.model.parameters
+
+    def set_data(self, data: DataList):
+        self.model.data=data
+
+    def get_data(self) -> DataList:
+        return self.model.data
+
+    def get_parameters(self):
+        return self.model.parameters
+
+    def get_sim_pars(self):
+        return self.model.get_sim_pars()
+
+    def get_parameter_data(self, row):
+        return self.model.parameters.get_data()[row]
+
+    def get_parameter_name(self, row):
+        return self.model.parameters.get_names()[row]
+
+    def get_possible_parameters(self):
+        return self.model.get_possible_parameters()
+
+    def set_error_pars(self, error_values):
+        self.model.parameters.set_error_pars(error_values)
+
+    def get_fom(self):
+        return self.model.fom
+
+    def get_fom_name(self):
+        return self.model.fom_func.__name__
+
+    def set_filename(self, filename):
+        self.model.filename=filename
+
+    def get_filename(self):
+        return self.model.filename
+
+    def get_model_name(self):
+        module=self.script_module
+        name=module.model.__name__.rsplit('.', 1)[1]
+        return name
+
+    def compile_if_needed(self):
+        if not self.model.compiled:
+            self.model.compile_script()
+
+    def simulate(self, recompile=False):
+        self.model.simulate(compile=(recompile or not self.model.compiled))
+
+    def export_data(self, basename):
+        self.model.export_data(basename)
+
+    def export_table(self, basename):
+        self.model.export_table(basename)
+
+    def export_script(self, basename):
+        self.model.export_script(basename)
+
+    def export_orso(self, basename):
+        self.model.export_orso(basename)
+
+    def import_table(self, filename):
+        self.model.import_table(filename)
+
+    def import_script(self, filename):
+        self.model.import_script(filename)
+
+    def get_data_as_asciitable(self, indices=None):
+        return self.model.get_data_as_asciitable(indices=indices)
+
+    @property
+    def saved(self):
+        return self.model.saved
+
+    @saved.setter
+    def saved(self, value):
+        self.model.saved=value
+
+    @property
+    def eval_in_model(self):
+        return self.model.eval_in_model
+
+    @property
+    def script_module(self):
+        self.compile_if_needed()
+        return self.model.script_module
 
     def CalcErrorBars(self):
         '''
@@ -81,6 +190,7 @@ class ModelController:
         '''
         Function to start running the fit
         '''
+        self.compile_if_needed()
         # Make sure that the config of the solver is updated..
         self.optimizer.ReadConfig()
         # Reset all the errorbars
@@ -97,6 +207,7 @@ class ModelController:
         '''
         Function to resume the fitting after it has been stopped
         '''
+        self.compile_if_needed()
         self.optimizer.ReadConfig()
         self.optimizer.resume_fit(self.model)
 
@@ -133,6 +244,7 @@ class ModelController:
         else:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')
         self.model.filename=os.path.abspath(fname)
+        self.model.saved=True
 
     def save_hgx(self, fname: str):
         f=h5py.File(fname.encode('utf-8'), 'w')

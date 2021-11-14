@@ -180,6 +180,109 @@ class ModelControlGUI:
         # Now load the default configuration
         self.ReadConfig()
 
+    def new_model(self):
+        self.controller.new_model()
+
+    def get_model(self):
+        return self.controller.get_model()
+
+    def set_model_script(self, text):
+        self.controller.set_model_script(text)
+
+    def set_model_params(self, params):
+        self.controller.set_model_params(params)
+
+    def get_model_params(self):
+        return self.controller.get_model_params()
+
+    def get_model_script(self):
+        return self.controller.get_model_script()
+
+    def set_data(self, data):
+        self.controller.set_data(data)
+
+    def get_data(self):
+        return self.controller.get_data()
+
+    def get_parameters(self):
+        return self.controller.get_parameters()
+
+    def get_sim_pars(self):
+        return self.controller.get_sim_pars()
+
+    def get_parameter_data(self, row):
+        return self.controller.get_parameter_data(row)
+
+    def get_parameter_name(self, row):
+        return self.controller.get_parameter_name(row)
+
+    def get_possible_parameters(self):
+        return self.controller.get_possible_parameters()
+
+    def get_fom(self):
+        return self.controller.get_fom()
+
+    def get_fom_name(self):
+        return self.controller.get_fom_name()
+
+    def set_filename(self, filename):
+        self.controller.set_filename(filename)
+
+    def get_filename(self):
+        return self.controller.get_filename()
+
+    def get_model_name(self):
+        return self.controller.get_model_name()
+
+    def compile_if_needed(self):
+        self.controller.compile_if_needed()
+
+    def simulate(self, recompile=False):
+        self.controller.simulate(recompile=recompile)
+
+    def set_error_pars(self, error_values):
+        self.controller.set_error_pars(error_values)
+
+    def export_data(self, basename):
+        self.controller.export_data(basename)
+
+    def export_table(self, basename):
+        self.controller.export_script(basename)
+
+    def export_script(self, basename):
+        self.controller.export_script(basename)
+
+    def export_orso(self, basename):
+        self.controller.export_orso(basename)
+
+    def import_table(self, filename):
+        self.controller.import_table(filename)
+
+    def import_script(self, filename):
+        self.controller.import_script(filename)
+
+    def get_data_as_asciitable(self, indices=None):
+        return self.controller.get_data_as_asciitable(indices=indices)
+
+    def set_update_min_time(self, new_time):
+        self.callback_controller.min_time=new_time
+
+    @property
+    def saved(self):
+        return self.controller.saved
+
+    @saved.setter
+    def saved(self, value):
+        self.controller.saved=value
+
+    @property
+    def eval_in_model(self):
+        return self.controller.eval_in_model
+
+    @property
+    def script_module(self):
+        return self.controller.script_module
+
     def get_solvers(self):
         return list(self.solvers.keys())
 

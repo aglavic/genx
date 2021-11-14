@@ -144,7 +144,7 @@ class Template:
         Returns the model currently in use. This is a pointer to the model
         object thus it will automatically always conatin the newest information.        
         '''
-        return self.parent.model
+        return self.parent.model_control.get_model()
 
     def GetSolverControl(self):
         '''GetSolverControl(self) --> solver_control
@@ -152,7 +152,7 @@ class Template:
         Returns the solver_control object that controls all aspects of
         the calculational part of the fitting.
         '''
-        return self.parent.solver_control
+        return self.parent.model_control
 
     def SetModelScript(self, script):
         '''SetModelScript(self, script) --> None
@@ -162,22 +162,22 @@ class Template:
         '''
 
         self.parent.script_editor.SetText(script)
-        self.parent.model.set_script(script)
+        self.parent.model_control.set_model_script(script)
 
     def GetModelScript(self):
         """Returns the model script"""
-        return self.parent.model.get_script()
+        return self.parent.model_control.get_model_script()
 
     def CompileScript(self):
         '''CompileScript(self) --> None
         
         Compiles the model script
         '''
-        self.parent.model.compile_script()
+        self.parent.model_control.compile_if_needed()
 
     def GetScriptModule(self):
         """Returns the script module"""
-        return self.parent.model.script_module
+        return self.parent.model_control.script_module
 
     def OnNewModel(self, event):
         '''OnNewModel(self) --> None
@@ -466,6 +466,9 @@ class PluginController(Configurable):
         """
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnGridChange(event)
+
+    def GetPlugin(self, plugin_name):
+        return self.plugin_handler.loaded_plugins[plugin_name]
 
 # ==============================================================================
 # Utility Dialog functions..

@@ -37,8 +37,7 @@ class PluginController:
             self.LoadPlugin('default')
 
     def LoadPlugin(self, plugin):
-        '''LoadPlugin(self, plugin) --> None
-
+        '''
         Loads a data handler note that there is no UnLoad function
         since only one DataHandler can be plugged in at a time.
         '''

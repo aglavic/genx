@@ -106,10 +106,10 @@ class Model(H5HintedExport):
         self.ReadConfig()
 
         self.data = DataList()
-        self.script = ''
+        self.set_script('')
         # noinspection PyBroadException
         try:
-            self.script = "\n".join(eval(self.startup_script.script))
+            self.set_script("\n".join(eval(self.startup_script.script)))
         except:
             debug('Issue when loading script from config:', exc_info=True)
         self.parameters = Parameters(model=self)
@@ -119,7 +119,6 @@ class Model(H5HintedExport):
 
         # Temporary stuff that needs to keep track on
         self.filename = ''
-        self.compiled = False
 
         self.extra_analysis = {}
 
@@ -154,7 +153,7 @@ class Model(H5HintedExport):
             iprint('Data section loading (gx file) error:\n ', e, '\n')
             raise GenxIOError('Could not locate the data section.', filename)
         try:
-            self.script = pickle.loads(loadfile.read('script'), encoding='latin1', errors='ignore')
+            self.set_script(pickle.loads(loadfile.read('script'), encoding='latin1', errors='ignore'))
         except Exception as e:
             iprint('Script section loading (gx file) error:\n ', e, '\n')
             raise GenxIOError('Could not locate the script.', filename)
@@ -173,10 +172,8 @@ class Model(H5HintedExport):
         loadfile.close()
 
         self.filename = os.path.abspath(filename)
-        self.compiled = False
         self.saved = True
         self.script_module = GenxScriptModule(self.data)
-        self.compiled = False
 
     def save(self, filename):
         '''
@@ -290,7 +287,7 @@ class Model(H5HintedExport):
         '''
         self._reset_module()
         # Testing to see if this works under windows
-        self.script = '\n'.join(self.script.splitlines())
+        self.set_script('\n'.join(self.script.splitlines()))
         try:
             exec(self.script, self.script_module.__dict__)
         except Exception:
@@ -539,7 +536,7 @@ class Model(H5HintedExport):
         '''
         iprint("class Model: new_model")
         self.data = DataList()
-        self.script = ''
+        self.set_script('')
         self.parameters = Parameters(self)
 
         self.fom_func = fom_funcs.log
@@ -1066,7 +1063,7 @@ class Model(H5HintedExport):
             plt.close()
 
     def _ipyw_script(self, change):
-        self.script = change.new
+        self.set_script(change.new)
 
 class GenxCurve:
     """

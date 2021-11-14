@@ -547,7 +547,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         if self.data_loader.LoadDataFile(self._GetSelectedItems()):
             self._UpdateData('New data added', new_data=True)
 
-    def load_from_files(self, files):
+    def load_from_files(self, files, do_update=True):
         offset=self.data_cont.get_count()
         while offset>0 and not self.data_cont.has_data(offset-1):
             offset-=1
@@ -562,11 +562,12 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
                 self.data_loader.LoadData(self.data_cont.get_data()[i+offset], fi, data_id=di)
                 i+=1
 
-        # In case the dataset name has changed
-        self.data_loader.UpdateDataList()
-        # Send an update that new data has been loaded
-        self.data_loader.SendUpdateDataEvent()
-        self._UpdateData('Item added', data_changed=True, new_data=True)
+        if do_update:
+            # In case the dataset name has changed
+            self.data_loader.UpdateDataList()
+            # Send an update that new data has been loaded
+            self.data_loader.SendUpdateDataEvent()
+            self._UpdateData('Item added', data_changed=True, new_data=True)
         return True
 
     def ShowInfo(self):

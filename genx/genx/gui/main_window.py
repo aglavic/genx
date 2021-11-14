@@ -199,8 +199,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         wx.GetApp().dpi_scale_factor=dpi_scale_factor
 
         # GenX objects
-        self.solver_control=solvergui.ModelControlGUI(self)
-        self.solver_control.callback_controller.min_time=self.opt.solver_update_time # update time from configuration
+        self.model_control=solvergui.ModelControlGUI(self)
+        self.model_control.set_update_min_time(self.opt.solver_update_time) # update time from configuration
 
         self.create_menu()
 
@@ -258,12 +258,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         debug('setup of MainFrame - manual config')
 
         # GenX objects
-        self.model=self.solver_control.controller.model
-        self.model.data=self.data_list.data_cont.data
-        self.paramter_grid.SetParameters(self.model.parameters)
-
-        if self.model.script!='':
-            self.script_editor.SetText(self.model.script)
+        self.model_control.set_data(self.data_list.data_cont.data)
+        self.paramter_grid.SetParameters(self.model_control.get_model_params())
+        self.script_editor.SetText(self.model_control.get_model_script())
 
         # Bind all the events that are needed to occur when a new model has
         # been loaded
@@ -328,7 +325,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             for p in [self.plot_data, self.plot_fom, self.plot_pars, self.plot_fomscan]:
                 p.ReadConfig()
 
-        self.model.saved=True
         debug('finished setup of MainFrame')
 
     def create_menu(self):
@@ -527,7 +523,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                         wx.Bitmap(img.getsimulateImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
         self.main_frame_toolbar.AddSeparator()
-        sselect=self.solver_control.get_solvers()
+        sselect=self.model_control.get_solvers()
         solver_select=wx.ComboBox(self.main_frame_toolbar, id=ToolId.SOLVER_SELECT, value=sselect[0],
                                        choices=sselect, style=wx.CB_READONLY)
         self.main_frame_toolbar.AddControl(solver_select, 'solver')
@@ -570,10 +566,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Scans the parameter in row row [int] from max to min in the number
         of steps given by dialog input.
         '''
-        if not self.model.is_compiled():
-            ShowNotificationDialog(self, 'Please conduct a simulation before'+ \
-                                   ' scanning a parameter. The script needs to be compiled.')
-            return
+        self.model_control.compile_if_needed()
 
         dlg = wx.NumberEntryDialog(self,
                                    'Input the number of evaluation points for the scan',
@@ -581,15 +574,15 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if dlg.ShowModal()==wx.ID_OK:
             self.main_frame_statusbar.SetStatusText('Scanning parameter', 1)
             with self.catch_error(action='scan_parameters', step=f'scanning parameters'):
-                x, y = self.solver_control.ScanParameter(row, dlg.GetValue())
-                self.model.get_sim_pars()
-                bestx = self.model.parameters.get_data()[row][1]
-                besty = self.model.fom
+                x, y = self.model_control.ScanParameter(row, dlg.GetValue())
+
+                bestx = self.model_control.get_parameter_data(row)[1]
+                besty = self.model_control.get_fom()
 
                 self.plot_fomscan.SetPlottype('scan')
-                e_scale=getattr(self.solver_control.controller.optimizer.opt, 'errorbar_level', 0)
+                e_scale=getattr(self.model_control.controller.optimizer.opt, 'errorbar_level', 0)
                 self.plot_fomscan.Plot((x, y, bestx, besty, e_scale),
-                                       self.model.parameters.get_names()[row],
+                                       self.model_control.get_parameter_name(row),
                                        'FOM')
                 self.sep_plot_notebook.SetSelection(3)
 
@@ -786,7 +779,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Plots the project fom given by the row row [int]
         '''
         import numpy as np
-        if not self.solver_control.IsFitted():
+        if not self.model_control.IsFitted():
             ShowNotificationDialog(self, 'Please conduct a fit before'+
                                    ' scanning a parameter. The script needs to be compiled and foms have'
                                    +' to be collected.')
@@ -794,33 +787,33 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         self.main_frame_statusbar.SetStatusText('Trying to project fom', 1)
         with self.catch_error(action='project_fom_parameters', step=f'projecting fom parameters'):
-            e_scale = getattr(self.solver_control.controller.optimizer.opt, 'errorbar_level', None)
+            e_scale = getattr(self.model_control.controller.optimizer.opt, 'errorbar_level', None)
             if e_scale is None:
                 ShowNotificationDialog(self, 'This feature requires a fit with Differential Evolution, '
                                              'consider using fom scan instead.')
                 return
-            x, y = self.solver_control.ProjectEvals(row)
+            x, y = self.model_control.ProjectEvals(row)
             if len(x)==0 or len(y)==0:
                 ShowNotificationDialog(self, 'Please conduct a fit before'+
                                        ' projecting a parameter. The script needs to be compiled and foms have'
                                        +' to be collected.')
                 return
-            elif self.model.fom is None or np.isnan(self.model.fom):
+            elif self.model_control.get_fom() is None or np.isnan(self.model_control.get_fom()):
                 ShowNotificationDialog(self, 'The model must be simulated (FOM is not a valid number)')
                 return
-            fs, pars = self.model.get_sim_pars()
+            fs, pars = self.model_control.get_sim_pars()
             bestx = pars[row]
-            besty = self.model.fom
+            besty = self.model_control.get_fom()
             self.plot_fomscan.SetPlottype('project')
             self.plot_fomscan.Plot((x, y, bestx, besty, e_scale),
-                                   self.model.parameters.get_names()[row],
+                                   self.model_control.get_parameter_name(row),
                                    'FOM')
             self.sep_plot_notebook.SetSelection(3)
 
     def update_title(self):
-        filepath, filename = os.path.split(self.model.filename)
+        filepath, filename = os.path.split(self.model_control.get_filename())
         if filename!='':
-            if self.model.saved:
+            if self.model_control.saved:
                 self.SetTitle(filename+' - '+filepath+' - GenX ' \
                               +program_version)
             else:
@@ -849,13 +842,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def open_model(self, path):
         debug('open_model: clear model')
-        self.model.new_model()
+        self.model_control.new_model()
         self.paramter_grid.PrepareNewModel()
         # Update all components so all the traces are gone.
         # _post_new_model_event(frame, frame.model)
         debug('open_model: load_file')
         with self.catch_error(action='open_model', step=f'open file {os.path.basename(path)}') as mng:
-            self.solver_control.load_file(path)
+            self.model_control.load_file(path)
         if not mng.successful: return # don't continue after error
 
         debug('open_model: read config')
@@ -872,26 +865,27 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         # Post an event to update everything else
         debug('open_model: post new model event')
-        _post_new_model_event(self, self.model)
+        _post_new_model_event(self, self.model_control.get_model())
         # Needs to put it to saved since all the widgets will have
         # been updated
-        self.model.saved = True
         self.update_title()
 
     def update_for_save(self):
         """Updates the various objects for a save"""
-        self.model.set_script(self.script_editor.GetText())
+        self.model_control.set_model_script(self.script_editor.GetText())
         self.paramter_grid.opt.auto_sim=self.mb_checkables[MenuId.AUTO_SIM].IsChecked()
         self.paramter_grid.WriteConfig()
 
     def do_simulation(self, from_thread=False):
         if not from_thread: self.main_frame_statusbar.SetStatusText('Simulating...', 1)
-        self.model.set_script(self.script_editor.GetText())
+        currecnt_script=self.script_editor.GetText()
+        if currecnt_script!=self.model_control.get_model_script():
+            self.model_control.set_model_script(currecnt_script)
         with self.catch_error(action='do_simulation', step=f'simulating the model') as mgr:
-            self.model.simulate(compile=not (from_thread and self.model.is_compiled()))
+            self.model_control.simulate()
 
         if mgr.successful:
-            wx.CallAfter(_post_sim_plot_event, self, self.model, 'Simulation')
+            wx.CallAfter(_post_sim_plot_event, self, self.model_control.get_model(), 'Simulation')
             wx.CallAfter(self.plugin_control.OnSimulate, None)
             if not from_thread: self.main_frame_statusbar.SetStatusText('Simulation Sucessful', 1)
 
@@ -900,14 +894,14 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         # in the grid
         with self.catch_error(action='set_possible_parameters_in_grid', step=f'getting possible parameters',
                               verbose=False) as mgr:
-            pardict = self.model.get_possible_parameters()
+            pardict = self.model_control.get_possible_parameters()
         if not mgr.successful: return
 
         with self.catch_error(action='set_possible_parameters_in_grid', step=f'setting parameter selections',
                               verbose=False):
             self.paramter_grid.SetParameterSelections(pardict)
             # Set the function for which the parameter can be evaluated with
-            self.paramter_grid.SetEvalFunc(self.model.eval_in_model)
+            self.paramter_grid.SetEvalFunc(self.model_control.eval_in_model)
 
     def view_yscale(self, value):
         sel = self.sep_plot_notebook.GetSelection()
@@ -1001,7 +995,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         # Set the string in the script_editor
         self.script_editor.SetText(event.GetModel().get_script())
         # Let the solver gui do its loading and updating:
-        self.solver_control.ModelLoaded()
+        self.model_control.ModelLoaded()
         # Lets update the mb_use_toggle_show Menu item
         self.mb_checkables[MenuId.USE_TOGGLE_SHOW].Check(self.data_list.list_ctrl.opt.toggle_show)
         self.mb_checkables[MenuId.AUTO_SIM].Check(self.paramter_grid.opt.auto_sim)
@@ -1012,7 +1006,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         Event handler for creating a new model
         '''
-        if not self.model.saved:
+        if not self.model_control.saved:
             ans = ShowQuestionDialog(self, 'If you continue any changes in'
                                            ' your model will not be saved.',
                                      'Model not saved')
@@ -1020,9 +1014,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 return
 
         # Reset the model - remove everything from the previous model
-        self.model.new_model()
+        self.model_control.new_model()
         # Update all components so all the traces are gone.
-        _post_new_model_event(self, self.model, desc='Fresh model')
+        _post_new_model_event(self, self.model_control.get_model(), desc='Fresh model')
         self.plugin_control.OnNewModel(None)
         self.main_frame_statusbar.SetStatusText('New model created', 1)
         self.update_title()
@@ -1033,7 +1027,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Event handler for opening a model file...
         '''
         # Check so the model is saved before quitting
-        if not self.model.saved:
+        if not self.model_control.saved:
             ans = ShowQuestionDialog(self, 'If you continue any changes in'
                                            ' your model will not be saved.',
                                      'Model not saved')
@@ -1056,18 +1050,18 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Event handler for saving a model file ...
         '''
         self.update_for_save()
-        fname = self.model.get_filename()
+        fname = self.model_control.get_filename()
         # If model hasn't been saved
         if fname=='':
             # Proceed with calling save as
             self.eh_mb_saveas(event)
         else:
             with self.catch_error(action='save_model', step=f'save file {os.path.basename(fname)}'):
-                self.solver_control.controller.save_file(fname)
+                self.model_control.controller.save_file(fname)
                 self.update_title()
 
     def eh_mb_publish_plot(self, event):
-        dia=pubgraph_dialog.PublicationDialog(self, data=self.model.data)
+        dia=pubgraph_dialog.PublicationDialog(self, data=self.model_control.get_data())
         dia.ShowModal()
 
     def eh_mb_print_plot(self, event):
@@ -1098,7 +1092,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if dlg.ShowModal()==wx.ID_OK:
             path=dlg.GetPath()
             with self.catch_error(action='export_orso', step=f'export file {os.path.basename(path)}'):
-                self.model.export_orso(path)
+                self.model_control.export_orso(path)
         dlg.Destroy()
 
     def eh_mb_export_data(self, event):
@@ -1113,7 +1107,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if dlg.ShowModal()==wx.ID_OK:
             path=dlg.GetPath()
             with self.catch_error(action='export_data', step=f'data file {os.path.basename(path)}'):
-                self.model.export_data(path)
+                self.model_control.export_data(path)
 
         dlg.Destroy()
 
@@ -1139,7 +1133,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                             , 'Overwrite?')
             if result:
                 with self.catch_error(action='export_table', step=f'table file {os.path.basename(fname)}'):
-                    self.model.export_table(fname)
+                    self.model_control.export_table(fname)
 
         dlg.Destroy()
 
@@ -1165,7 +1159,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                             , 'Overwrite?')
             if result:
                 with self.catch_error(action='export_orso', step=f'export file {os.path.basename(fname)}'):
-                    self.model.export_script(fname)
+                    self.model_control.export_script(fname)
 
         dlg.Destroy()
 
@@ -1174,7 +1168,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Quit the program
         '''
         # Check so the model is saved before quitting
-        if not self.model.saved:
+        if not self.model_control.saved:
             ans = ShowQuestionDialog(self, 'If you continue any changes in'
                                            ' your model will not be saved.',
                                      'Model not saved')
@@ -1210,7 +1204,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Copies the simulation and the data to the clipboard. Note that this
         copies ALL data.
         '''
-        text_string = self.model.get_data_as_asciitable()
+        text_string = self.model_control.get_data_as_asciitable()
         text = wx.TextDataObject(text_string)
         if wx.TheClipboard.Open():
             wx.TheClipboard.SetData(text)
@@ -1257,29 +1251,21 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         Event handler to start fitting
         '''
-        if self.model.compiled:
-            with self.catch_error(action='fit_start', step=f'starting fit'):
-                self.solver_control.StartFit()
-        else:
-            ShowNotificationDialog(self, 'The script is not compiled, do a'
-                                         ' simulation before you start fitting.')
+        with self.catch_error(action='fit_start', step=f'starting fit'):
+            self.model_control.StartFit()
 
     def eh_mb_fit_stop(self, event):
         '''
         Event handler to stop the fitting routine
         '''
-        self.solver_control.StopFit()
+        self.model_control.StopFit()
 
     def eh_mb_fit_resume(self, event):
         '''
         Event handler to resume the fitting routine. No initilization.
         '''
-        if self.model.compiled:
-            with self.catch_error(action='fit_resume', step=f'resume fit'):
-                self.solver_control.ResumeFit()
-        else:
-            ShowNotificationDialog(self, 'The script is not compiled, do a'
-                                         ' simulation before you start fitting.')
+        with self.catch_error(action='fit_resume', step=f'resume fit'):
+            self.model_control.ResumeFit()
 
     def eh_mb_fit_analyze(self, event):
         warning("Event handler `eh_mb_fit_analyze' not implemented")
@@ -1369,7 +1355,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                             'Overwrite?')
             if result:
                 with self.catch_error(action='saveas', step=f'saveing file as {os.path.basename(fname)}'):
-                    self.solver_control.controller.save_file(fname)
+                    self.model_control.controller.save_file(fname)
                 self.update_title()
         dlg.Destroy()
 
@@ -1406,7 +1392,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         change the data displayed in the grid...
         '''
-        dataset = self.model.data[event.GetSelection()]
+        dataset = self.model_control.get_data()[event.GetSelection()]
         rows = self.data_grid.GetNumberRows()
         new_rows = max(len(dataset.x), len(dataset.y),
                        len(dataset.x_raw), len(dataset.y_raw))
@@ -1446,7 +1432,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.flag_simulating = False
 
     def eh_tb_select_solver(self, event):
-        self.solver_control.set_solver(event.GetString())
+        self.model_control.set_solver(event.GetString())
 
     def eh_tb_start_fit(self, event):
         self.eh_mb_fit_start(event)
@@ -1497,16 +1483,16 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         callback to calculate the error bars on the data.
         '''
         with self.catch_error(action='calc_error_bars', step=f'calculating errorbars'):
-            error_values = self.solver_control.CalcErrorBars()
-            self.model.parameters.set_error_pars(error_values)
-            self.paramter_grid.SetParameters(self.model.parameters)
+            error_values = self.model_control.CalcErrorBars()
+            self.model_control.set_error_pars(error_values)
+            self.paramter_grid.SetParameters(self.model_control.get_parameters())
             self.main_frame_statusbar.SetStatusText('Errorbars calculated', 1)
 
     def eh_tb_error_stats(self, event):
         with self.catch_error(action='error_stats', step=f'opening Bumps analysis dialog'):
             from .bumps_interface import StatisticalAnalysisDialog
-            prev_result=getattr(self.solver_control.controller.optimizer, 'last_result', None)
-            dia = StatisticalAnalysisDialog(self, self.model, prev_result=prev_result)
+            prev_result=getattr(self.model_control.controller.optimizer, 'last_result', None)
+            dia = StatisticalAnalysisDialog(self, self.model_control.get_model(), prev_result=prev_result)
             dia.ShowModal()
 
     def eh_plot_page_changed(self, event):
@@ -1557,7 +1543,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.deactivate_cuda()
 
     def eh_mb_set_opt(self, event):
-        self.solver_control.ParametersDialog(self)
+        self.model_control.ParametersDialog(self)
 
     def eh_mb_import_data(self, event):
         '''
@@ -1577,13 +1563,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if dlg.ShowModal()==wx.ID_OK:
             path=dlg.GetPath()
             with self.catch_error(action='import_table', step=f'importing table {os.path.basename(path)}') as mgr:
-                self.model.import_table(path)
+                self.model_control.import_table(path)
             if not mgr.successful:
                 dlg.Destroy()
                 return
         dlg.Destroy()
         # Post event to tell that the model has changed
-        _post_new_model_event(self, self.model)
+        _post_new_model_event(self, self.model_control.get_model())
         self.main_frame_statusbar.SetStatusText('Table imported from file', 1)
 
     def eh_mb_import_script(self, event):
@@ -1597,11 +1583,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if dlg.ShowModal()==wx.ID_OK:
             path=dlg.GetPath()
             with self.catch_error(action='import_script', step=f'importing file {os.path.basename(path)}'):
-                self.model.import_script(path)
+                self.model_control.import_script(path)
                 self.plugin_control.OnOpenModel(None)
         dlg.Destroy()
         # Post event to tell that the model has changed
-        _post_new_model_event(self, self.model)
+        _post_new_model_event(self, self.model_control.get_model())
 
     def eh_external_fom_value(self, event):
         '''
@@ -1613,8 +1599,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             fom_name = event.fom_name
         else:
             # workaround for GenericModelEvent, TODO: fix this in the future with better event
-            fom_value=self.model.fom
-            fom_name=self.model.fom_func.__name__
+            fom_value=self.model_control.get_fom()
+            fom_name=self.model_control.get_fom_name()
         if fom_value:
             self.main_frame_fom_text.SetLabel('        FOM %s: %.4e'%(fom_name, fom_value))
         else:
@@ -1638,8 +1624,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.main_frame_statusbar.SetStatusText('Simulating...', 1)
         # Compile is not necessary when using simulate...
         with self.catch_error(action='fit_evaluate', step=f'simulating model'):
-            self.model.simulate(compile=False)
-            _post_sim_plot_event(self, self.model, 'Simulation')
+            self.model_control.simulate()
+            _post_sim_plot_event(self, self.model_control.get_model(), 'Simulation')
             self.plugin_control.OnSimulate(None)
         self.flag_simulating = False
 
@@ -1681,11 +1667,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Show a help dialog for information about the different models.
         '''
         dlg = help.PluginHelpDialog(self, 'models', title="Models help")
-        if self.model.is_compiled():
-            current_model = self.model.script_module.model.__name__.rsplit('.', 1)[1]
-            if current_model in dlg.choice.GetStrings():
-                dlg.choice.SetStringSelection(current_model)
-                dlg.on_choice(None)
+        current_model = self.model_control.get_model_name()
+        if current_model in dlg.choice.GetStrings():
+            dlg.choice.SetStringSelection(current_model)
+            dlg.on_choice(None)
         dlg.Show()
 
     def eh_external_model_changed(self, event):
@@ -1696,9 +1681,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if self._init_phase:
             return
         try:
-            self.model.saved = not event.permanent_change
+            self.model_control.saved = not event.permanent_change
         except AttributeError:
-            self.model.saved = False
+            self.model_control.saved = False
         else:
             self.plugin_control.OnGridChanged(event)
         self.update_title()
