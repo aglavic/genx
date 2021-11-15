@@ -35,6 +35,14 @@ class Plugin(Template):
         self.skip_rows=0
         self.delimiter=None
 
+    def CountDatasets(self, file_path):
+        try:
+            orso_datasets=self.ReadXpert(file_path)
+        except Exception as e:
+            return 1
+        else:
+            return len(orso_datasets)
+
     def LoadData(self, dataset, filename, data_id=0):
         '''
         Loads the data from filename into the data_item_number.
@@ -47,7 +55,7 @@ class Plugin(Template):
                               filename+' \nPlease check the format.\n\n Error in ReadXpert:\n'+
                               traceback.format_exc())
         else:
-            ds=datasets[0]
+            ds=datasets[data_id]
             dataset.x_raw=ds[0]
             dataset.y_raw=ds[1]
             dataset.error_raw=ds[2]
