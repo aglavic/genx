@@ -51,6 +51,9 @@ class ModelAction(ABC):
     def redo(self):
         ...
 
+    def __str__(self):
+        return self.name
+
 class NoOp(ModelAction):
     influence = ModelInfluence.NONE
     name = 'no action'
@@ -97,14 +100,25 @@ class SetModelScript(ModelAction):
 
     def __init__(self, model, text):
         self.model=model
-        self.text=text
+        self.new_text=text
+        self.old_text=None
 
     def execute(self):
         # Replace model script with new text, store previous script as new text (toggles)
-        old_text=self.model.get_script()
-        self.model.set_script(self.text)
-        self.text=old_text
+        self.old_text=self.model.get_script()
+        self.model.set_script(self.new_text)
 
-    undo=execute
-    redo=execute
+    def undo(self):
+        self.model.set_script(self.old_text)
 
+    def redo(self):
+        self.model.set_script(self.new_text)
+
+    def __str__(self):
+        import difflib
+        old=self.old_text or self.model.get_script()
+        new=self.new_text
+        diff=''.join(difflib.unified_diff(old.splitlines(keepends=True),
+                                          new.splitlines(keepends=True),
+                                          fromfile='old script', tofile='new script',n=1))
+        return diff

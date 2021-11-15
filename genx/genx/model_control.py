@@ -90,7 +90,7 @@ class ModelController:
 
     def set_model_script(self, text):
         old_script=self.model.get_script()
-        if text==old_script:
+        if text.strip()==old_script.strip():
             # nothing to do, same script
             return
         self.perform_action(SetModelScript, text)

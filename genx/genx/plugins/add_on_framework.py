@@ -38,15 +38,6 @@ class Template:
         self.input_pages=[]
         self.data_pages=[]
         self.menus=[]
-        self.parent.input_notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnInputPageChanged)
-
-    def OnInputPageChanged(self, evt):
-        tpage, fpage=evt.GetSelection(), evt.GetOldSelection()
-        if fpage!=tpage:
-            tpanel=self.parent.input_notebook.GetPage(tpage)
-            if tpanel in self.input_pages:
-                self.InputPageChanged(self.parent.input_notebook.GetPageText(tpage))
-        evt.Skip()
 
     def InputPageChanged(self, pname):
         # Can be used to react to own plugin pages being selected
@@ -160,8 +151,6 @@ class Template:
         Sets the script of the current model. This overwrite the current 
         script.
         '''
-
-        self.parent.script_editor.SetText(script)
         self.parent.model_control.set_model_script(script)
 
     def GetModelScript(self):

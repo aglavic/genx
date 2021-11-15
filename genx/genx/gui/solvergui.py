@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 # Custom events needed for updating and message parsing between the different
 # modules.
+(update_script, EVT_UPDATE_SCRIPT)=wx.lib.newevent.NewEvent()
 (update_plot, EVT_UPDATE_PLOT)=wx.lib.newevent.NewEvent()
 (update_text, EVT_SOLVER_UPDATE_TEXT)=wx.lib.newevent.NewEvent()
 (update_parameters, EVT_UPDATE_PARAMETERS)=wx.lib.newevent.NewEvent()
@@ -152,7 +153,7 @@ class DelayedCallbacks(Thread, GuiCallbacks):
         self.last_update=update_data
         self.wait_lock.set()
 
-class ModelControlGUI:
+class ModelControlGUI(wx.EvtHandler):
     '''
     Class to take care of the GUI - solver interaction.
     Implements dialogboxes for setting parameters and controls
@@ -161,6 +162,7 @@ class ModelControlGUI:
     '''
 
     def __init__(self, parent: 'main_window.GenxMainWindow'):
+        wx.EvtHandler.__init__(self)
         self.parent=parent
         self.solvers={
             'Differential Evolution': diffev.DiffEv(),
@@ -197,6 +199,8 @@ class ModelControlGUI:
             editor.SetCurrentPos(current_cursor)
             editor.SetFirstVisibleLine(current_view)
             editor.SetSelection(*current_selection)
+            evt=update_script(new_script=self.get_model_script())
+            wx.PostEvent(self, evt)
 
     def OnUndo(self, event):
         self.controller.undo_action()

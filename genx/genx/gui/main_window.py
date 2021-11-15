@@ -319,6 +319,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_FIND_CLOSE, self.eh_external_find)
         self.Bind(wx.EVT_CLOSE, self.eh_mb_quit)
 
+        self.input_notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnInputPageChanged)
         self.paramter_grid.SetFOMFunctions(self.project_fom_parameter, self.scan_parameter)
 
         # Initializations..
@@ -577,6 +578,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_TOOL, self.eh_tb_calc_error_bars, id=ToolId.CALC_ERROR)
         self.Bind(wx.EVT_TOOL, self.eh_tb_error_stats, id=ToolId.ERROR_STATS)
         self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=ToolId.ZOOM)
+
+    def OnInputPageChanged(self, evt):
+        tpage, fpage=evt.GetSelection(), evt.GetOldSelection()
+        if fpage!=tpage and self.input_notebook.GetPageText(fpage)=='Script':
+            self.model_control.set_model_script(self.script_editor.GetText())
 
     def scan_parameter(self, row):
         '''
