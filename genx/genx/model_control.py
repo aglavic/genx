@@ -10,16 +10,47 @@ from .core.config import config
 from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
+from .model_actions import ActionHistory, ModelAction, SetModelScript
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
 class ModelController:
+    model:Model
+    optimizer:GenxOptimizer
+    history: ActionHistory
+
     def __init__(self, optimizer: GenxOptimizer):
         self.model=Model()
         self.optimizer=optimizer
+        self.history=ActionHistory()
         self.model.saved=True
+
+    def action_callback(self, action: ModelAction):
+        pass
 
     def set_callbacks(self, callbacks: GenxOptimizerCallback):
         self.optimizer.set_callbacks(callbacks)
+
+    def set_action_callback(self, func):
+        # sets a function to be called when aver an action is applied.
+        self.action_callback=func
+
+    def perform_action(self, action_class: type(ModelAction), *params):
+        action=action_class(self.model, *params)
+        self.history.execute(action)
+        self.action_callback(action)
+
+    def undo_action(self):
+        action=self.history.undo()
+        self.action_callback(action)
+        return action
+
+    def redo_action(self):
+        action=self.history.redo()
+        self.action_callback(action)
+        return action
+
+    def history_range(self):
+        return len(self.history.undo_stack), len(self.history.redo_stack)
 
     def is_configured(self):
         return self.optimizer.is_configured()
@@ -58,7 +89,11 @@ class ModelController:
         return self.model
 
     def set_model_script(self, text):
-        self.model.set_script(text)
+        old_script=self.model.get_script()
+        if text==old_script:
+            # nothing to do, same script
+            return
+        self.perform_action(SetModelScript, text)
 
     def get_model_script(self):
         return self.model.get_script()

@@ -5,7 +5,7 @@ as some input from dialog boxes.
 '''
 import numpy as np
 import time
-from typing import Union
+from typing import Union, TYPE_CHECKING
 from threading import Thread, Event
 
 import wx
@@ -15,7 +15,10 @@ from .exception_handling import CatchModelError
 from .settings_dialog import SettingsDialog
 from .. import diffev, fom_funcs, model_control, levenberg_marquardt
 from ..core.custom_logging import iprint
+from ..model_actions import ModelInfluence, ModelAction
 from ..solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
+if TYPE_CHECKING:
+    from . import main_window
 
 
 # Custom events needed for updating and message parsing between the different
@@ -157,7 +160,7 @@ class ModelControlGUI:
     code are used i.e. interfacing the optimization code to the GUI.
     '''
 
-    def __init__(self, parent):
+    def __init__(self, parent: 'main_window.GenxMainWindow'):
         self.parent=parent
         self.solvers={
             'Differential Evolution': diffev.DiffEv(),
@@ -174,11 +177,32 @@ class ModelControlGUI:
         self.callback_controller=DelayedCallbacks(parent)
         self.callback_controller.start()
         self.controller.set_callbacks(self.callback_controller)
+        self.controller.set_action_callback(self.OnActionCallback)
         self.parent.Bind(EVT_FITTING_ENDED, self.OnFittingEnded)
         self.parent.Bind(EVT_AUTOSAVE, self.AutoSave)
 
         # Now load the default configuration
         self.ReadConfig()
+
+    def OnActionCallback(self, action: ModelAction):
+        undos, redos=self.controller.history_range()
+        self.parent.undo_menu.Enable(undos!=0)
+        self.parent.redo_menu.Enable(redos!=0)
+        if ModelInfluence.SCRIPT in action.influences:
+            editor=self.parent.script_editor
+            current_view=editor.GetFirstVisibleLine()
+            current_cursor=editor.GetCurrentPos()
+            current_selection=editor.GetSelection()
+            editor.SetText(self.get_model_script())
+            editor.SetCurrentPos(current_cursor)
+            editor.SetFirstVisibleLine(current_view)
+            editor.SetSelection(*current_selection)
+
+    def OnUndo(self, event):
+        self.controller.undo_action()
+
+    def OnRedo(self, event):
+        self.controller.redo_action()
 
     def new_model(self):
         self.controller.new_model()

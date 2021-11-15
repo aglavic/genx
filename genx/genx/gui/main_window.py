@@ -64,6 +64,7 @@ homepage_url='https://aglavic.github.io/genx/'
 
 class ToolId(int, Enum):
     NEW_MODEL=wx.Window.NewControlId()
+    NEW_FROM_FILE=wx.Window.NewControlId()
     OPEN_MODEL=wx.Window.NewControlId()
     SAVE_MODEL=wx.Window.NewControlId()
     SIM_MODEL=wx.Window.NewControlId()
@@ -77,6 +78,7 @@ class ToolId(int, Enum):
 
 class MenuId(int, Enum):
     NEW_MODEL=wx.Window.NewControlId()
+    NEW_FROM_FILE=wx.Window.NewControlId()
     OPEN_MODEL=wx.Window.NewControlId()
     SAVE_MODEL=wx.Window.NewControlId()
     SAVE_MODEL_AS=wx.Window.NewControlId()
@@ -97,6 +99,8 @@ class MenuId(int, Enum):
 
     QUIT=wx.Window.NewControlId()
 
+    UNDO=wx.Window.NewControlId()
+    REDO=wx.Window.NewControlId()
     COPY_GRAPH=wx.Window.NewControlId()
     COPY_SIM=wx.Window.NewControlId()
     COPY_TABLE=wx.Window.NewControlId()
@@ -335,6 +339,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mfmb=self.main_frame_menubar
         mb_file=wx.Menu()
         mb_file.Append(MenuId.NEW_MODEL, "New...\tCtrl+N", "Creates a new model")
+        mb_file.Append(MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N", "Creates a new reflectivity model based on datafile")
         mb_file.Append(MenuId.OPEN_MODEL, "Open...\tCtrl+O", "Opens an existing model")
         mb_file.Append(MenuId.SAVE_MODEL, "Save...\tCtrl+S", "Saves the current model")
         mb_file.Append(MenuId.SAVE_MODEL_AS, "Save As...", "Saves the active model with a new name")
@@ -361,6 +366,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.Append(MenuId.QUIT, "&Quit\tAlt+Q", "Quit the program")
         mfmb.Append(mb_file, "File")
         mb_edit=wx.Menu()
+        self.undo_menu=mb_edit.Append(MenuId.UNDO, "Undo\tCtrl+Z", "Undo last action on model, not all changes supported")
+        self.redo_menu=mb_edit.Append(MenuId.REDO, "Redo\tCtrl+Shift+Z", "Redo last undone model change")
+        self.undo_menu.Enable(False);self.redo_menu.Enable(False)
+        mb_edit.AppendSeparator()
         mb_edit.Append(MenuId.COPY_GRAPH, "Copy Graph", "Copy the current graph to the clipboard as a bitmap")
         mb_edit.Append(MenuId.COPY_SIM, "Copy Simulation", "Copy the current simulation and data as ASCII text")
         mb_edit.Append(MenuId.COPY_TABLE, "Copy Table", "Copy the parameter grid")
@@ -444,6 +453,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def bind_menu(self):
         self.Bind(wx.EVT_MENU, self.eh_mb_new, id=MenuId.NEW_MODEL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_new_from_file, id=MenuId.NEW_FROM_FILE)
         self.Bind(wx.EVT_MENU, self.eh_mb_open, id=MenuId.OPEN_MODEL)
         self.Bind(wx.EVT_MENU, self.eh_mb_save, id=MenuId.SAVE_MODEL)
         self.Bind(wx.EVT_MENU, self.eh_mb_saveas, id=MenuId.SAVE_MODEL_AS)
@@ -459,6 +469,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_print_grid, id=MenuId.PRINT_GRID)
         self.Bind(wx.EVT_MENU, self.eh_mb_print_script, id=MenuId.PRINT_SCRIPT)
         self.Bind(wx.EVT_MENU, self.eh_mb_quit, id=MenuId.QUIT)
+        self.Bind(wx.EVT_MENU, self.model_control.OnUndo, id=MenuId.UNDO)
+        self.Bind(wx.EVT_MENU, self.model_control.OnRedo, id=MenuId.REDO)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_graph, id=MenuId.COPY_GRAPH)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_sim, id=MenuId.COPY_SIM)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, id=MenuId.COPY_TABLE)
@@ -511,6 +523,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                         wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N",
                                         "Create a new model | Ctrl+N")
+        self.main_frame_toolbar.AddTool(ToolId.NEW_FROM_FILE, "tb_new_from_file",
+                                        wx.Bitmap(img.getnew_from_fileImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "New from file | Ctrl+Shift+N",
+                                        "Create a new reflectivity model based on datafile | Ctrl+Shift+N")
         self.main_frame_toolbar.AddTool(ToolId.OPEN_MODEL, "tb_open",
                                         wx.Bitmap(img.getopenImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O",
@@ -550,6 +566,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def bind_toolbar(self):
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=ToolId.NEW_MODEL)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_new_from_file, id=ToolId.NEW_FROM_FILE)
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=ToolId.OPEN_MODEL)
         self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=ToolId.SAVE_MODEL)
         self.Bind(wx.EVT_COMBOBOX, self.eh_tb_select_solver, id=ToolId.SOLVER_SELECT)
@@ -840,6 +857,31 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             return CatchModelError(self, action=action, step=step,
                                    status_update=None)
 
+    def new_from_file(self, path):
+        debug('new_from_file: clear model')
+        self.model_control.new_model()
+        self.paramter_grid.PrepareNewModel()
+
+        # read data from file
+        debug('new_from_file: load datafile')
+        with self.catch_error(action='read_data', step=f'read file {os.path.basename(path)}') as mng:
+            self.data_list.list_ctrl.data_loader_cont.LoadPlugin('orso')
+            self.data_list.list_ctrl.load_from_files([path], do_update=False)
+
+        debug('new_from_file: build model script')
+        # if this was exported from genx, use the embedded script
+        ana_meta=self.data_list.data_cont.data[0].meta.get('analysis', {})
+        if ana_meta.get('software', {}).get('name', '')=='GenX':
+            self.model_control.set_model_script(ana_meta['script'])
+            self.script_editor.SetText(self.model_control.get_model_script())
+        else:
+            # create a new script with the reflectivity plugin
+            refl=self.plugin_control.GetPlugin('Reflectivity')
+            refl.CreateNewModel('models.spec_nx')
+
+        self.plugin_control.OnOpenModel(None)
+
+
     def open_model(self, path):
         debug('open_model: clear model')
         self.model_control.new_model()
@@ -1020,7 +1062,29 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.plugin_control.OnNewModel(None)
         self.main_frame_statusbar.SetStatusText('New model created', 1)
         self.update_title()
-        self.model.saved = True
+
+    def eh_mb_new_from_file(self, event):
+        '''
+        Event handler for opening a model file...
+        '''
+        # Check so the model is saved before quitting
+        if not self.model_control.saved:
+            ans = ShowQuestionDialog(self, 'If you continue any changes in'
+                                           ' your model will not be saved.',
+                                     'Model not saved')
+            if not ans:
+                return
+
+        dlg = wx.FileDialog(self, message="New from file", defaultFile="",
+                            wildcard="Suppoerted types (*.ort)|*.ort",
+                            style=wx.FD_OPEN  # | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            path = dlg.GetPath()
+            debug('new_from_file: path retrieved')
+            self.new_from_file(path)
+
+        dlg.Destroy()
 
     def eh_mb_open(self, event):
         '''
@@ -1415,6 +1479,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def eh_tb_new(self, event):
         self.eh_mb_new(event)
+
+    def eh_tb_new_from_file(self, event):
+        self.eh_mb_new_from_file(event)
 
     def eh_tb_open(self, event):
         self.eh_mb_open(event)
