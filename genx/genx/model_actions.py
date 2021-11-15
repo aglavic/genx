@@ -55,7 +55,7 @@ class ModelAction(ABC):
         return self.name
 
 class NoOp(ModelAction):
-    influence = ModelInfluence.NONE
+    influences = ModelInfluence.NONE
     name = 'no action'
     def __init__(self, model): self.model = model
     def execute(self): pass
@@ -66,10 +66,13 @@ class NoOp(ModelAction):
 class ActionHistory:
     undo_stack: List[ModelAction] = field(default_factory=list)
     redo_stack: List[ModelAction] = field(default_factory=list)
+    max_stack=25
 
     def execute(self, action: ModelAction):
         action.execute()
         self.undo_stack.append(action)
+        if len(self.undo_stack)>self.max_stack:
+            self.undo_stack.pop(0)
         self.redo_stack=[]
 
     def undo(self) -> ModelAction:

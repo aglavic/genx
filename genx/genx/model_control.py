@@ -10,7 +10,7 @@ from .core.config import config
 from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
-from .model_actions import ActionHistory, ModelAction, SetModelScript
+from .model_actions import ActionHistory, ModelAction, NoOp, SetModelScript
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
 class ModelController:
@@ -52,6 +52,10 @@ class ModelController:
     def history_range(self):
         return len(self.history.undo_stack), len(self.history.redo_stack)
 
+    def history_clear(self):
+        self.history.clear()
+        self.action_callback(NoOp(None))
+
     def is_configured(self):
         return self.optimizer.is_configured()
 
@@ -81,6 +85,7 @@ class ModelController:
 
     def new_model(self):
         self.model.new_model()
+        self.history_clear()
 
     def set_model(self, model: Model):
         raise NotImplemented("Can't set model, might be unsafe")
@@ -280,6 +285,7 @@ class ModelController:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')
         self.model.filename=os.path.abspath(fname)
         self.model.saved=True
+        self.history_clear()
 
     def save_hgx(self, fname: str):
         f=h5py.File(fname.encode('utf-8'), 'w')
