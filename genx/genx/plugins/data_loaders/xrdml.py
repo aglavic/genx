@@ -47,12 +47,10 @@ class Plugin(Template):
                               filename+' \nPlease check the format.\n\n Error in ReadXpert:\n'+
                               traceback.format_exc())
         else:
-            dataset=datasets[0]
-            dataset.x_raw=dataset[0]
-            dataset.y_raw=dataset[1]
-            dataset.error_raw=dataset[2]
-            # no xerror values
-            dataset.xerror_raw=dataset[0]*0.+0.001
+            ds=datasets[0]
+            dataset.x_raw=ds[0]
+            dataset.y_raw=ds[1]
+            dataset.error_raw=ds[2]
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
             dataset.run_command()
@@ -211,7 +209,8 @@ def ReadXpert(file_name):
         except IndexError:
             atten=1.0
         time=float(scan.getElementsByTagName('commonCountingTime')[0].firstChild.nodeValue)
-        data=scan.getElementsByTagName('intensities')[0].firstChild.nodeValue
+        data_tags=scan.getElementsByTagName('intensities')+scan.getElementsByTagName('counts')
+        data=data_tags[0].firstChild.nodeValue
         data=list(map(float, data.split()))
         I=np.array(data)
         dI=np.sqrt(I*atten)/atten

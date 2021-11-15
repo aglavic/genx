@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.11
+==============
+ * Fix missing library in windows distribution
+ * Fix xrdml loader for newer version where tag has changed
+ * Add xrdml file format to auto data loader
+
 Changes 3.4.10
 ==============
  * Fix bug with missing os import in genx/data.py to allow export
