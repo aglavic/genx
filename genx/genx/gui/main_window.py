@@ -376,6 +376,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_edit.Append(MenuId.COPY_GRAPH, "Copy Graph", "Copy the current graph to the clipboard as a bitmap")
         mb_edit.Append(MenuId.COPY_SIM, "Copy Simulation", "Copy the current simulation and data as ASCII text")
         mb_edit.Append(MenuId.COPY_TABLE, "Copy Table", "Copy the parameter grid")
+        mb_edit.AppendSeparator()
         mb_edit.Append(MenuId.FIND_REPLACE, "&Find/Replace...\tCtrl+F", "Find and replace in the script")
         mb_edit_sub=wx.Menu()
         mb_edit_sub.Append(MenuId.NEW_DATA, "&New data set\tAlt+N", "Appends a new data set")
@@ -393,12 +394,20 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_view=wx.Menu()
         self.mb_checkables[MenuId.TOGGLE_SLIDER]=mb_view.Append(MenuId.TOGGLE_SLIDER, "Value as slider",
                                                                 "Control the grid value as a slider", wx.ITEM_CHECK)
-        self.mb_checkables[MenuId.ZOOM]=mb_view.Append(MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK)
-        mb_view.Append(MenuId.ZOOM_ALL, "Zoom All\tCtrl+A", "Zoom to fit all data points")
+        mb_view.AppendSeparator()
         mb_view_colors=wx.Menu()
         for key in COLOR_CYCLES.keys():
             self.mb_checkables[key] = mb_view_colors.Append(wx.ID_ANY, key, key, wx.ITEM_RADIO)
-        mb_view.Append(wx.ID_ANY, "data auto colors", mb_view_colors, "")
+        mb_view.Append(MenuId.SET_PLOT, "Plot Markers\tShift+Ctrl+P", "Set the symbols and lines of data and simulations")
+        mb_view.Append(wx.ID_ANY, "Auto Color", mb_view_colors, "")
+        mb_view.AppendSeparator()
+        self.mb_checkables[MenuId.ZOOM]=mb_view.Append(MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK)
+        mb_view.Append(MenuId.ZOOM_ALL, "Zoom All\tCtrl+A", "Zoom to fit all data points")
+        self.mb_checkables[MenuId.AUTO_SCALE]=mb_view.Append(MenuId.AUTO_SCALE, "Autoscale",
+                                                             "Sets autoscale on when plotting", wx.ITEM_CHECK)
+        self.mb_checkables[MenuId.USE_TOGGLE_SHOW]=mb_view.Append(MenuId.USE_TOGGLE_SHOW, "Use Toggle Show",
+                            "Set if the plotted data shold be toggled or selected by the mouse", wx.ITEM_CHECK)
+        mb_view.AppendSeparator()
         mb_view_yscale=wx.Menu()
         self.mb_checkables[MenuId.Y_SCALE_LOG]=mb_view_yscale.Append(MenuId.Y_SCALE_LOG, "log",
                                                                      "Set y-scale logarithmic", wx.ITEM_RADIO)
@@ -411,33 +420,31 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.mb_checkables[MenuId.X_SCALE_LIN]=mb_view_xscale.Append(MenuId.X_SCALE_LIN, "lin",
                                                                      "Set x-scale linear", wx.ITEM_RADIO)
         mb_view.Append(wx.ID_ANY, "x scale", mb_view_xscale, "")
-        self.mb_checkables[MenuId.AUTO_SCALE]=mb_view.Append(MenuId.AUTO_SCALE, "Autoscale",
-                                                             "Sets autoscale on when plotting", wx.ITEM_CHECK)
-        self.mb_checkables[MenuId.USE_TOGGLE_SHOW]=mb_view.Append(MenuId.USE_TOGGLE_SHOW, "Use Toggle Show",
-                            "Set if the plotted data shold be toggled or selected by the mouse", wx.ITEM_CHECK)
         mfmb.Append(mb_view, "View")
         mb_fit=wx.Menu()
+        self.mb_checkables[MenuId.AUTO_SIM]=mb_fit.Append(MenuId.AUTO_SIM, "Simulate Automatically",
+                           "Update simulation on model changes automatically", wx.ITEM_CHECK)
+        mb_fit.AppendSeparator()
         mb_fit.Append(MenuId.SIM_MODEL, "&Simulate\tF9", "Compile the script and run the Sim function")
-        mb_fit.Append(MenuId.EVAL_MODEL, "&Evaluate\tF5", "Evaluate the Sim function only - no recompiling")
+        mb_fit.Append(MenuId.EVAL_MODEL, "&Evaluate\tF5",
+                      "Evaluate the Sim function twice and compre result to find inconsitancy")
         self.mb_checkables[MenuId.TOGGLE_CUDA]=mb_fit.Append(MenuId.TOGGLE_CUDA, "Use CUDA",
                              "Make use of Nvidia GPU computing with CUDA", wx.ITEM_CHECK)
         mb_fit.AppendSeparator()
         mb_fit.Append(MenuId.START_FIT, "Start &Fit\tCtrl+F", "Start fitting")
         mb_fit.Append(MenuId.STOP_FIT, "&Halt Fit\tCtrl+H", "Stop fitting")
         mb_fit.Append(MenuId.RESTART_FIT, "&Resume Fit\tCtrl+R", "Resumes fitting without reinitilazation of the optimizer")
-        mb_fit.Append(MenuId.ANALYZE, "Analyze fit", "Analyze the fit")
         mb_fit.AppendSeparator()
-        self.mb_checkables[MenuId.AUTO_SIM]=mb_fit.Append(MenuId.AUTO_SIM, "Simulate Automatically",
-                           "Update simulation on model changes automatically", wx.ITEM_CHECK)
-        mfmb.Append(mb_fit, "Fit")
+        mb_fit.Append(MenuId.ANALYZE, "Analyze fit", "Analyze the fit")
+        mfmb.Append(mb_fit, "Model")
         mb_set=wx.Menu()
         mb_set_plugins=wx.Menu()
         mb_set_plugins.AppendSeparator()
         mb_set.Append(wx.ID_ANY, "Plugins", mb_set_plugins, "")
+        mb_set.AppendSeparator()
         mb_set.Append(MenuId.SET_OPTIMIZER, "Optimizer\tShift+Ctrl+O", "")
         mb_set.Append(MenuId.SET_DATA_LOADER, "Data Loader\tShift+Ctrl+D", "")
         mb_set.Append(MenuId.SET_IMPORT, "Import\tShift+Ctrl+I", "Import settings for the data sets")
-        mb_set.Append(MenuId.SET_PLOT, "Plot Markers\tShift+Ctrl+P", "Set the symbols and lines of data and simulations")
         mb_set.Append(MenuId.SET_PROFILE, "Startup Profile...", "")
         mfmb.Append(mb_set, "Settings")
         wxglade_tmp_menu=wx.Menu()
@@ -1756,8 +1763,23 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.main_frame_statusbar.SetStatusText('Simulating...', 1)
         # Compile is not necessary when using simulate...
         with self.catch_error(action='fit_evaluate', step=f'simulating model'):
-            self.model_control.simulate()
-            _post_sim_plot_event(self, self.model_control.get_model(), 'Simulation')
+            self.do_simulation()
+            self.set_possible_parameters_in_grid()
+            data=self.model_control.get_data()
+            sims1=[di.y_sim for di in data]
+            self.model_control.simulate(recompile=False)
+            data=self.model_control.get_data()
+            sims2=[di.y_sim for di in data]
+            _post_sim_plot_event(self, self.model_control.get_model(), 'Evaluation')
+            diffs=[(si1!=si2).any() for si1, si2 in zip(sims1, sims2)]
+            if any(diffs):
+                ShowNotificationDialog(self, f'Issue in simulation, there were differences in the '
+                                             f'first and second evaluation\n of the model for datasets '
+                                             f'{[i for i, diff in enumerate(diffs) if diff]}\n'
+                                             f'This is often caused by changing a parameter'
+                                             f'in the Sim function\nwithout resetting it at the '
+                                             f'bottom/top.\n\n'
+                                             f'If you try to fit this will lead to unpredictable results.')
             self.plugin_control.OnSimulate(None)
         self.flag_simulating = False
 
