@@ -7,6 +7,12 @@ class CyclicList(list):
     def __getitem__(self, item):
         return list.__getitem__(self, item%len(self))
 
+    def __eq__(self, other):
+        return list.__eq__(self, other)
+
+    def __hash__(self):
+        return hash(tuple(self))
+
 COLOR_CYCLES={
     'none': None,
     'red/blue': CyclicList([

@@ -1489,7 +1489,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def eh_mb_view_color_cycle(self, event):
         id2colors=dict(((self.mb_checkables[key].GetId(), value) for key, value in COLOR_CYCLES.items()))
-        self.data_list.list_ctrl.update_color_cycle(id2colors[event.GetId()])
+        self.model_control.update_color_cycle(id2colors[event.GetId()])
 
     def eh_mb_view_yscale_log(self, event):
         self.view_yscale('log')

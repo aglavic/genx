@@ -180,3 +180,29 @@ class UpdateDataPlotSettings(ModelAction):
             di=self.model.data[index]
             di.set_sim_plot_items(self.old_sim_pars[index])
             di.set_data_plot_items(self.old_data_pars[index])
+
+class UpdateColorCycle(ModelAction):
+    influences = ModelInfluence.DATA
+    name = 'color cycle'
+
+    def __init__(self, model, source):
+        self.model=model
+        self.new_source=source
+        self.old_source=None
+        self.old_sim_colors={}
+        self.old_data_colors={}
+
+    def execute(self):
+        # Update colors from each dataset index
+        for i, di in enumerate(self.model.data):
+            self.old_sim_colors[i]=di.sim_color
+            self.old_data_colors[i]=di.data_color
+        self.old_source=self.model.data.color_source
+        self.model.data.update_color_cycle(self.new_source)
+
+    def undo(self):
+        # Reset previous settings and colors
+        self.model.data.update_color_cycle(self.old_source)
+        for i, di in enumerate(self.model.data):
+            di.sim_color=self.old_sim_colors[i]
+            di.data_color=self.old_data_colors[i]

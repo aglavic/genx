@@ -530,10 +530,6 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
             dlg.ShowModal()
             dlg.Destroy()
 
-    def update_color_cycle(self, source):
-        self.data_cont.get_data().update_color_cycle(source)
-        self._UpdateImageList()
-
     def LoadData(self):
         '''LoadData(self, evt) --> None
         

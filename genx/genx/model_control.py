@@ -10,7 +10,8 @@ from .core.config import config
 from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
-from .model_actions import ActionHistory, ModelAction, NoOp, SetModelScript, UpdateSolverOptoins, UpdateDataPlotSettings
+from .model_actions import ActionHistory, ModelAction, NoOp, SetModelScript, UpdateColorCycle, UpdateSolverOptoins, \
+    UpdateDataPlotSettings
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
 class ModelController:
@@ -117,6 +118,13 @@ class ModelController:
 
     def set_data_plotsettings(self, indices, sim_par, data_par):
         self.perform_action(UpdateDataPlotSettings, indices, sim_par, data_par)
+
+    def update_color_cycle(self, source):
+        if source!=self.model.data.color_source:
+            self.perform_action(UpdateColorCycle, source)
+
+    def get_color_cycle(self):
+        return self.model.data.color_source
 
     def get_parameters(self):
         return self.model.parameters

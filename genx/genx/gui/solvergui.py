@@ -16,6 +16,7 @@ from .settings_dialog import SettingsDialog
 from .custom_events import *
 from .. import diffev, fom_funcs, model_control, levenberg_marquardt
 from ..core.custom_logging import iprint
+from ..core.colors import COLOR_CYCLES
 from ..model_actions import ModelInfluence, ModelAction
 from ..solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
 if TYPE_CHECKING:
@@ -192,6 +193,13 @@ class ModelControlGUI(wx.EvtHandler):
             evt=update_script(new_script=self.get_model_script())
             wx.PostEvent(self, evt)
         if ModelInfluence.DATA in action.influences:
+            cs = self.controller.get_color_cycle()
+            colors2keys = dict((value, key) for key, value in COLOR_CYCLES.items())
+            if cs in colors2keys:
+                print(cs, colors2keys[cs])
+                self.parent.mb_checkables[colors2keys[cs]].Check()
+            else:
+                self.parent.mb_checkables[colors2keys[None]].Check()
             dl = self.parent.data_list.list_ctrl
             dl._UpdateImageList()
             dl._UpdateData('Plot settings changed', data_changed=True)
@@ -244,6 +252,9 @@ class ModelControlGUI(wx.EvtHandler):
     @skips_event
     def update_plotsettings(self, event):
         self.controller.set_data_plotsettings(event.indices, event.sim_par, event.data_par)
+
+    def update_color_cycle(self, source):
+        self.controller.update_color_cycle(source)
 
     def get_parameters(self):
         return self.controller.get_parameters()
