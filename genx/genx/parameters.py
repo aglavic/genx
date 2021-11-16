@@ -3,13 +3,17 @@ Definition for the class Parameters. Used for storing the fitting parameters
 in GenX.
 '''
 from typing import Union
+from enum import Enum, auto
 
 from .core.custom_logging import iprint
 from .core.h5_support import H5Savable
 
 
 # ==============================================================================
-
+class SortSplitItem(Enum):
+    ATTRIBUTE=auto()
+    OBJ_NAME=auto()
+    CLASS=auto()
 
 class Parameters(H5Savable):
     """
@@ -199,23 +203,56 @@ class Parameters(H5Savable):
         else:
             return False
 
-    def _sort_key_func(self, item):
-        class_name=''
-        pname=item[0]
-        obj_name=item[0]
-        if self.model is not None:
-            if item[0].count('.')>0 and self.model.compiled:
-                pieces=item[0].split('.')
-                obj_name=pieces[0]
-                pname=pieces[1]
-                obj=self.model.eval_in_model(obj_name)
-                class_name=obj.__class__.__name__
+    def sort_rows(self, model=None, sort_params: SortSplitItem=SortSplitItem.ATTRIBUTE):
+        def _sort_key_func(item):
+            class_name = ''
+            pname = item[0]
+            obj_name = item[0]
+            if model is not None:
+                if item[0].count('.')>0 and model.compiled:
+                    pieces = item[0].split('.')
+                    obj_name = pieces[0]
+                    pname = pieces[1]
+                    obj = model.eval_in_model(obj_name)
+                    class_name = obj.__class__.__name__
+                    if sort_params is SortSplitItem.OBJ_NAME:
+                        return class_name.lower(), obj_name.lower(), pname.lower()
+            return class_name.lower(), pname.lower(), obj_name.lower()
 
-        return class_name.lower(), pname.lower(), obj_name.lower()
-
-    def sort_rows(self):
-        self.data.sort(key=self._sort_key_func)
+        self.data.sort(key=_sort_key_func)
         return True
+
+    def group_rows(self, model, split_params: SortSplitItem=SortSplitItem.ATTRIBUTE):
+        # generate empty lines between blocks of same class objects
+        def get_cls(item):
+            if item[0].count('.')>0:
+                pieces = item[0].split('.')
+                obj_name = pieces[0]
+                pname = pieces[1]
+                obj = model.eval_in_model(obj_name)
+                if split_params is SortSplitItem.ATTRIBUTE:
+                    return obj.__class__.__name__+'->'+pname
+                elif split_params is SortSplitItem.OBJ_NAME:
+                    return obj.__class__.__name__+'->'+obj_name
+                elif split_params is SortSplitItem.CLASS:
+                    return obj.__class__.__name__
+            return None
+        inserts=[]
+        cls=None
+        for i, row in enumerate(self.data):
+            next_obj=get_cls(row)
+            if cls is not None and next_obj!=cls:
+                inserts.append(i)
+            cls=next_obj
+        for i in reversed(inserts):
+            self.data.insert(i, self.init_data[:])
+
+    def strip(self):
+        # remove empty parameters at beginning and end
+        while self.data[0][0].strip()=='':
+            self.data.pop(0)
+        while self.data[-1][0].strip()=='':
+            self.data.pop()
 
     def append(self, parameter=None):
         data=list(self.init_data)

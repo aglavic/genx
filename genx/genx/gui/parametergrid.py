@@ -91,7 +91,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         delete_count=self.pars.delete_rows(rows)
 
         msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.GetNumberRows(),
+                                     gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.GetNumberRows()-delete_count,
                                      delete_count)
         self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed()
@@ -106,6 +106,20 @@ class ParameterDataTable(gridlib.GridTableBase):
         self.parent._grid_changed()
         return True
 
+    def UpdateView(self):
+        delta_length=1+self.GetNumberRows()-self.parent.GetNumberRows()
+        if delta_length>0:
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1, delta_length)
+            self.GetView().ProcessTableMessage(msg)
+        elif delta_length<0:
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1,
+                                           -delta_length)
+            self.GetView().ProcessTableMessage(msg)
+        self.GetView().ForceRefresh()
+        self.parent._grid_changed()
+
     def MoveRowUp(self, row):
         """
         Move row up one row.
@@ -115,9 +129,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         """
 
         success=self.pars.move_row_up(row)
-
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
+        self.UpdateView()
         return success
 
     def MoveRowDown(self, row):
@@ -129,21 +141,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         """
 
         success=self.pars.move_row_down(row)
-
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
-        return success
-
-    def SortRows(self):
-        """
-        Sort the rows in the table
-
-        :return: Boolean to indicate success
-        """
-        success=self.pars.sort_rows()
-
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
+        self.UpdateView()
         return success
 
     def AppendRows(self, num_rows=1):
@@ -152,8 +150,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, num_rows)
         self.GetView().ProcessTableMessage(msg)
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
+        self.UpdateView()
         return True
 
     def GetColLabelValue(self, col):
@@ -912,8 +909,13 @@ class ParameterGrid(wx.Panel, Configurable):
         newid=wx.NewId()
         self.toolbar.AddTool(newid, label='Sort parameters',
                              bitmap=wx.Bitmap(img.sort.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
-                             shortHelp='Sort the rows by class, object and name')
+                             shortHelp='Sort the rows by class, attribute and name')
         self.Bind(wx.EVT_TOOL, self.eh_sort, id=newid)
+        newid=wx.NewId()
+        self.toolbar.AddTool(newid, label='Sort parameters',
+                             bitmap=wx.Bitmap(img.sort2.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                             shortHelp='Sort the rows by class, name and attribute')
+        self.Bind(wx.EVT_TOOL, self.eh_sort_name, id=newid)
 
         self.toolbar.AddSeparator()
 
@@ -1016,7 +1018,29 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        self.table.SortRows()
+        model=self.parent.model_control.get_model()
+        parameters=self.table.pars
+        if not model.compiled: model.compile_script()
+
+        parameters.sort_rows(model=model)
+        parameters.group_rows(model)
+        parameters.strip()
+        self.table.UpdateView()
+
+    def eh_sort_name(self, event):
+        """Event handler for the sorting
+
+        :param event:
+        :return:
+        """
+        model=self.parent.model_control.get_model()
+        params=self.table.pars
+        if not model.compiled: model.compile_script()
+
+        params.sort_rows(model=model, sort_params=parameters.SortSplitItem.OBJ_NAME)
+        params.group_rows(model, split_params=parameters.SortSplitItem.OBJ_NAME)
+        params.strip()
+        self.table.UpdateView()
 
     def OnSelectCell(self, evt):
         # row=evt.GetRow()

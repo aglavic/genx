@@ -306,20 +306,6 @@ class Model(H5HintedExport):
         result = eval(codestring, self.script_module.__dict__)
         return result
 
-    def set_fom_ignore_inf(self, flag):
-        """
-        Sets if the fom calculation should ignore infs
-        """
-        self.solver_parameters.ignore_fom_inf = bool(flag)
-        self.create_fom_mask_func()
-
-    def set_fom_ignore_nan(self, flag):
-        """
-        Sets if fom calculations should ignore nan's
-        """
-        self.solver_parameters.ignore_fom_nan = bool(flag)
-        self.create_fom_mask_func()
-
     def create_fom_mask_func(self):
         """
         Create a mask func for fom to take care of unallowed values.
@@ -481,15 +467,6 @@ class Model(H5HintedExport):
                 # noinspection PyProtectedMember
                 return var._penalty_funcs
         return []
-
-    def get_fit_values(self):
-        '''
-        Returns the current parameters values that the user has ticked as
-        fittable.
-        '''
-        (row_numbers, sfuncs, vals, minvals, maxvals) = \
-            self.parameters.get_fit_pars()
-        return vals
 
     def get_sim_pars(self):
         '''
