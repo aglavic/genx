@@ -1069,6 +1069,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.simulation_queue_counter = min(1, self.simulation_queue_counter-1)
         self.flag_simulating = False
 
+    @skips_event
     def eh_external_parameter_value_changed(self, event):
         """
         Event handler for when a value of a parameter in the grid has been updated.
@@ -1077,6 +1078,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if self.mb_checkables[MenuId.AUTO_SIM].IsChecked() and not self.flag_simulating:
             _thread.start_new_thread(self.simulation_loop, ())
 
+    @skips_event
     def eh_external_update_data_grid_choice(self, event):
         '''
         Updates the choices of the grids to display from the data.
@@ -1085,12 +1087,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         names = [data_set.name for data_set in data]
         self.data_grid_choice.Clear()
         self.data_grid_choice.AppendItems(names)
-        event.Skip()
 
+    @skips_event
     def eh_external_update_data(self, event):
         self.plugin_control.OnDataChanged(event)
-        event.Skip()
 
+    @skips_event
     def eh_new_model(self, event):
         '''
         Callback for NEW_MODEL event. Used to update the script for
@@ -1104,7 +1106,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.mb_checkables[MenuId.USE_TOGGLE_SHOW].Check(self.data_list.list_ctrl.opt.toggle_show)
         self.mb_checkables[MenuId.AUTO_SIM].Check(self.paramter_grid.opt.auto_sim)
         # Let other event handlers receive the event as well
-        event.Skip()
 
     def eh_mb_new(self, event):
         '''
@@ -1202,9 +1203,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def eh_mb_print_grid(self, event):
         self.paramter_grid.Print()
 
+    @skips_event
     def eh_mb_print_script(self, event):
         warning("Event handler `eh_mb_print_script' not implemented")
-        event.Skip()
 
     def eh_mb_export_orso(self, event):
         '''
@@ -1346,6 +1347,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             wx.TheClipboard.SetData(text_table)
             wx.TheClipboard.Close()
 
+    @skips_event
     def eh_mb_view_zoom(self, event):
         '''
         Takes care of clicks on the toolbar zoom button and the menu item zoom.
@@ -1361,8 +1363,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         pages = self.get_pages()
         for page in pages:
             page.SetZoom(zoom_state)
-        event.Skip()
 
+    @skips_event
     def eh_mb_view_grid_slider(self, event):
         """
         Change the state of the grid value input, either as slider or as a number.
@@ -1371,7 +1373,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.paramter_grid.SetValueEditorSlider(val)
         self.paramter_grid.toggle_slider_tool(val)
         self.paramter_grid.Refresh()
-        event.Skip()
 
     def eh_mb_fit_start(self, event):
         '''
@@ -1393,9 +1394,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         with self.catch_error(action='fit_resume', step=f'resume fit'):
             self.model_control.ResumeFit()
 
+    @skips_event
     def eh_mb_fit_analyze(self, event):
         warning("Event handler `eh_mb_fit_analyze' not implemented")
-        event.Skip()
 
     def eh_mb_misc_showman(self, event):
         webbrowser.open_new(manual_url)
@@ -1583,12 +1584,14 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         select:wx.ComboBox=self.FindWindowById(ToolId.SOLVER_SELECT, self.main_frame_toolbar)
         select.Append(selection)
 
+    @skips_event
     def eh_ex_status_text(self, event):
         self.main_frame_statusbar.SetStatusText(event.text, 1)
 
     def eh_ex_point_pick(self, event):
         self.main_frame_statusbar.SetStatusText(event.text, 2)
 
+    @skips_event
     def eh_ex_plot_settings_changed(self, event):
         '''
         Callback for the settings change event for the current plot
@@ -1605,7 +1608,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         elif event.xscale=='linear':
             self.mb_checkables[MenuId.X_SCALE_LIN].Check(True)
         self.mb_checkables[MenuId.AUTO_SCALE].Check(event.autoscale)
-        event.Skip()
 
     def eh_tb_calc_error_bars(self, event):
         '''
@@ -1624,6 +1626,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             dia = StatisticalAnalysisDialog(self, self.model_control.get_model(), prev_result=prev_result)
             dia.ShowModal()
 
+    @skips_event
     def eh_plot_page_changed(self, event):
         '''plot_page_changed(frame, event) --> None
 
@@ -1648,8 +1651,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.mb_checkables[MenuId.X_SCALE_LOG].Check(True)
             elif xscale=='linear':
                 self.mb_checkables[MenuId.X_SCALE_LIN].Check(True)
-        event.Skip()
 
+    @skips_event
     def eh_mb_view_zoomall(self, event):
         '''zoomall(self, event) --> None
 
@@ -1663,7 +1666,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             pages[sel].AutoScale()
             pages[sel].SetAutoScale(tmp)
             pages[sel].AutoScale()
-        event.Skip()
 
     def eh_mb_use_cuda(self, event):
         if self.mb_checkables[MenuId.TOGGLE_CUDA].IsChecked():
@@ -1718,11 +1720,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         # Post event to tell that the model has changed
         _post_new_model_event(self, self.model_control.get_model())
 
+    @skips_event
     def eh_external_fom_value(self, event):
         '''
         Callback to update the fom_value displayed by the gui
         '''
-        event.Skip()
         if hasattr(event, 'fom_value'):
             fom_value = event.fom_value
             fom_name = event.fom_name
@@ -1802,6 +1804,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             dlg.on_choice(None)
         dlg.Show()
 
+    @skips_event
     def eh_external_model_changed(self, event):
         '''
         callback when something has changed in the model so that the
@@ -1816,7 +1819,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         else:
             self.plugin_control.OnGridChanged(event)
         self.update_title()
-        event.Skip()
 
     def eh_mb_plugins_help(self, event):
         '''
@@ -2083,11 +2085,11 @@ class StartUpConfigDialog(wx.Dialog):
         self.Layout()
         self.CentreOnScreen()
 
+    @skips_event
     def OnClickOkay(self, event):
         self.selected_config=self.profiles[self.config_list.GetSelection()]
         self.show_at_startup=self.startup_cb.GetValue()
         self.widescreen=self.wide_cb.GetValue()
-        event.Skip()
 
     def GetConfigFile(self):
         if self.selected_config:

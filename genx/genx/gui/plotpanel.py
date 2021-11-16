@@ -14,7 +14,7 @@ import wx
 import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE
 
-from .custom_events import plot_position, state_changed
+from .custom_events import plot_position, state_changed, skips_event
 from ..core.config import BaseConfig, Configurable
 
 # deactivate matplotlib logging that we are not interested in
@@ -459,7 +459,8 @@ class PlotPanel(wx.Panel, Configurable):
                           abs(self.cur_pos[1]-self.start_pos[1]))
                 self._DrawAndErase(new_rect, self.cur_rect)
                 self.cur_rect=new_rect
-        # event.Skip()
+        else:
+            event.Skip()
 
     def OnLeftMouseButtonUp(self, event):
         if self.canvas.HasCapture():
@@ -1174,6 +1175,7 @@ class DataPlotPanel(PlotPanel):
         # Force an update of the plot
         self.flush_plot()
 
+    @skips_event
     def OnDataListEvent(self, event):
         '''OnDataListEvent(self, event) --> None
         
@@ -1197,8 +1199,8 @@ class DataPlotPanel(PlotPanel):
         else:
             # self.update(data_list)
             pass
-        event.Skip()
 
+    @skips_event
     def OnSimPlotEvent(self, event):
         '''OnSimPlotEvent(self, event) --> None
         
@@ -1209,13 +1211,13 @@ class DataPlotPanel(PlotPanel):
         self.update=self.plot_data_sim
         self.update(data_list)
 
+    @skips_event
     def OnSolverPlotEvent(self, event):
         ''' OnSolverPlotEvent(self,event) --> None
         
         Event handler function to connect to solver update events i.e.
         update the plot with the simulation
         '''
-        event.Skip()
         if event.update_fit:
             if self.update!=self.plot_data_fit:
                 self.update=self.plot_data_fit
@@ -1263,12 +1265,12 @@ class ErrorPlotPanel(PlotPanel):
             pass
         self.flush_plot()
 
+    @skips_event
     def OnSolverPlotEvent(self, event):
         ''' OnSolverPlotEvent(self,event) --> None
         Event handler function to connect to solver update events i.e.
         update the plot with the simulation
         '''
-        event.Skip()
         fom_log=event.fom_log
         self.update(fom_log)
 
@@ -1295,6 +1297,7 @@ class ParsPlotPanel(PlotPanel):
         '''
 
         if data.fitting:
+            print('update param', data)
             pop=array(data.population)
             norm=1.0/(data.max_val-data.min_val)
             best=(array(data.values)-data.min_val)*norm
@@ -1315,6 +1318,7 @@ class ParsPlotPanel(PlotPanel):
         self.figure.tight_layout(h_pad=0)
         self.flush_plot()
 
+    @skips_event
     def OnSolverParameterEvent(self, event):
         ''' OnSolverParameterEvent(self,event) --> None
         Event handler function to connect to solver update events i.e.
@@ -1322,7 +1326,6 @@ class ParsPlotPanel(PlotPanel):
         '''
         self.update(event)
         # Do not forget - pass the event on
-        event.Skip()
 
 class FomPanelConfig(BasePlotConfig):
     section='fom scan plot'

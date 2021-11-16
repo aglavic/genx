@@ -27,7 +27,7 @@ from genx.gui.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
-from genx.gui.custom_events import EVT_UPDATE_SCRIPT
+from genx.gui.custom_events import EVT_UPDATE_SCRIPT, skips_event
 
 _set_func_prefix='set'
 
@@ -1434,6 +1434,7 @@ class Plugin(framework.Template):
         self.sample_widget.CheckGridUpdate()
         self.sample_widget.Update(update_script=False)
 
+    @skips_event
     def OnGridMayHaveErrors(self, event):
         errors=[pi.error for pi in self.model_obj.parameters if pi.fit]
         if len(errors)>0 and not '-' in errors:
@@ -1505,8 +1506,8 @@ class Plugin(framework.Template):
             dia.SetSize(wx.Size(w, h))
 
             dia.ShowModal()
-        event.Skip()
 
+    @skips_event
     def OnFitParametersUpdated(self, event):
         grid_parameters=self.GetModel().get_parameters()
         keys=grid_parameters.get_fit_pars()[1]

@@ -378,6 +378,7 @@ class ModelControlGUI(wx.EvtHandler):
             else:
                 wx.PostEvent(self.parent, evt)
 
+    @skips_event
     def OnFittingEnded(self, evt):
         '''
         Callback when fitting has ended. Takes care of cleaning up after
@@ -467,6 +468,7 @@ class ModelControlGUI(wx.EvtHandler):
     def IsFitted(self):
         return self.controller.IsFitted()
 
+    @skips_event
     def AutoSave(self, _event):
         self.controller.save()
 

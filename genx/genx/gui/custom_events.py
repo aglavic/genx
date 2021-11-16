@@ -3,6 +3,14 @@ All custom events used in GenX to be directly imported.
 '''
 import wx
 from wx.lib.newevent import NewEvent
+from ..core.decorators import decorator
+
+# a decorator to make sure events processed by a method are skiped first
+@decorator
+def skips_event(function, *args, **kwargs):
+    event=args[1]
+    event.Skip()
+    return function(*args, **kwargs)
 
 ## main_window
 # Generating an event type:

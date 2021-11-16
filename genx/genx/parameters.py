@@ -20,12 +20,11 @@ class Parameters(H5Savable):
     Class for storing the fitting parameters in GenX
     """
     h5group_name='parameters'
+    data_labels = ['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
+    init_data = ['', 0.0, False, 0.0, 0.0, 'None']
 
-    def __init__(self, model=None):
-        self.data_labels=['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
-        self.init_data=['', 0.0, False, 0.0, 0.0, 'None']
+    def __init__(self):
         self.data=[self.init_data[:]]
-        self.model=model
         self.string_dtype="S100"
 
     def write_h5group(self, group):
@@ -420,7 +419,7 @@ class Parameters(H5Savable):
 
     def __repr__(self):
         """
-        Display information about the model.
+        Display information about the fit parameters.
         """
         output="Parameters:\n"
         output+="           "+" ".join(["%-16s"%label for label in self.data_labels])+"\n"
@@ -475,6 +474,7 @@ class ConnectedParameter:
     def __init__(self, parent, data):
         self.data=data
         self._parent=parent
+        self._model=None
 
     @property
     def name(self):
@@ -482,7 +482,12 @@ class ConnectedParameter:
 
     @name.setter
     def name(self, value):
-        model=self._parent.model
+        if self._model is None:
+            raise ValueError("Name can't be set directly, use set_name(value, model)")
+        else:
+            self.set_name(value, self._model)
+
+    def set_name(self, value, model):
         if not model.is_compiled():
             model.compile_script()
         par_value=eval('self._parent.model.script_module.'+value.replace('.set', '.get')+'()',

@@ -14,7 +14,7 @@ from numpy import *
 from dataclasses import dataclass
 
 from . import controls as ctrls, images as img
-from .custom_events import grid_change, value_change
+from .custom_events import grid_change, value_change, skips_event
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
@@ -1138,6 +1138,7 @@ class ParameterGrid(wx.Panel, Configurable):
     def SetParameters(self, pars):
         self.table.SetParameters(pars)
 
+    @skips_event
     def OnSolverUpdateEvent(self, evt):
         '''OnSolverUpdateEvent(self, evt) --> None
         
@@ -1153,7 +1154,6 @@ class ParameterGrid(wx.Panel, Configurable):
             self.table.SetParameters(self.table.pars, clear=False,
                                      permanent_change=evt.permanent_change)
 
-        evt.Skip()
 
     def OnLeftDClick(self, evt):
         """ Event handler that starts editing the cells on a double click and not

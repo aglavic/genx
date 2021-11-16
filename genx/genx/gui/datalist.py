@@ -376,7 +376,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         '''
 
         class event:
-            pass
+            Skip = lambda: None
 
         event.text=text
         self.status_text(event)

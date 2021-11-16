@@ -112,7 +112,7 @@ class Model(H5HintedExport):
             self.set_script("\n".join(eval(self.startup_script.script)))
         except:
             debug('Issue when loading script from config:', exc_info=True)
-        self.parameters = Parameters(model=self)
+        self.parameters = Parameters()
         self.fom_func = fom_funcs.log
 
         self._reset_module()
@@ -514,7 +514,7 @@ class Model(H5HintedExport):
         iprint("class Model: new_model")
         self.data = DataList()
         self.set_script('')
-        self.parameters = Parameters(self)
+        self.parameters = Parameters()
 
         self.fom_func = fom_funcs.log
         self._reset_module()
