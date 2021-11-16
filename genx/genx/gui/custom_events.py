@@ -35,7 +35,8 @@ value_change, EVT_PARAMETER_VALUE_CHANGE=NewEvent()
 data_list_type=wx.NewEventType()
 # Creating an event binder object
 EVT_DATA_LIST=wx.PyEventBinder(data_list_type)
-
+# Send when plot setting is to be changed
+update_plotsettings, EVT_UPDATE_PLOTSETTINGS=NewEvent()
 
 ## plotpanel
 # Event for a click inside an plot which yields a number

@@ -179,9 +179,7 @@ class ModelControlGUI(wx.EvtHandler):
         self.ReadConfig()
 
     def OnActionCallback(self, action: ModelAction):
-        undos, redos=self.controller.history_range()
-        self.parent.undo_menu.Enable(undos!=0)
-        self.parent.redo_menu.Enable(redos!=0)
+        self.SetUndoRedoLabels()
         if ModelInfluence.SCRIPT in action.influences:
             editor=self.parent.script_editor
             current_view=editor.GetFirstVisibleLine()
@@ -193,12 +191,31 @@ class ModelControlGUI(wx.EvtHandler):
             editor.SetSelection(*current_selection)
             evt=update_script(new_script=self.get_model_script())
             wx.PostEvent(self, evt)
+        if ModelInfluence.DATA in action.influences:
+            dl = self.parent.data_list.list_ctrl
+            dl._UpdateImageList()
+            dl._UpdateData('Plot settings changed', data_changed=True)
 
     def OnUndo(self, event):
         self.controller.undo_action()
 
     def OnRedo(self, event):
         self.controller.redo_action()
+
+    def SetUndoRedoLabels(self):
+        undos, redos=self.controller.history_stacks()
+        if len(undos)!=0:
+            self.parent.undo_menu.Enable(True)
+            self.parent.undo_menu.SetItemLabel(f"Undo ({undos[-1].name})\tCtrl+Z")
+        else:
+            self.parent.undo_menu.Enable(False)
+            self.parent.undo_menu.SetItemLabel("Undo\tCtrl+Z")
+        if len(redos)!=0:
+            self.parent.redo_menu.Enable(True)
+            self.parent.redo_menu.SetItemLabel(f"Redo ({redos[-1].name})\tCtrl+Shift+Z")
+        else:
+            self.parent.redo_menu.Enable(False)
+            self.parent.redo_menu.SetItemLabel("Redo\tCtrl+Shift+Z")
 
     def new_model(self):
         self.controller.new_model()
@@ -223,6 +240,10 @@ class ModelControlGUI(wx.EvtHandler):
 
     def get_data(self):
         return self.controller.get_data()
+
+    @skips_event
+    def update_plotsettings(self, event):
+        self.controller.set_data_plotsettings(event.indices, event.sim_par, event.data_par)
 
     def get_parameters(self):
         return self.controller.get_parameters()
@@ -330,7 +351,7 @@ class ModelControlGUI(wx.EvtHandler):
         # Update the configuration if a model has been loaded after
         # the object have been created..
         self.ReadConfig()
-        fom_func_name=self.controller.model.fom_func.__name__
+        fom_func_name=self.controller.get_fom_name()
         if not fom_func_name in fom_funcs.func_names:
             ShowWarningDialog(self.parent, 'The loaded fom function, ' \
                               +fom_func_name+', does not exist '+ \
@@ -341,13 +362,15 @@ class ModelControlGUI(wx.EvtHandler):
                      ' = self.parent.model.fom_func'
             exec(exectext, locals(), globals())
 
-        combined_options=self.controller.model.solver_parameters|self.controller.optimizer.opt
-        dlg=SettingsDialog(frame, combined_options, title='Optimizer Settings')
+        combined_options=self.controller.get_combined_options()
+        dlg=SettingsDialog(frame, combined_options,
+                           apply_callback=lambda options: False,
+                           title='Optimizer Settings')
 
         res=dlg.ShowModal()
         if res==wx.ID_OK:
-            self.controller.model.WriteConfig()
-            self.controller.optimizer.WriteConfig()
+            updates=dlg.collect_results()
+            self.controller.update_combined_options(updates)
         dlg.Destroy()
 
     def ModelLoaded(self):

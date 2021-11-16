@@ -18,7 +18,7 @@ except ImportError:
     from wx import adv as wizard
 
 from . import images as img
-from .custom_events import data_list_type
+from .custom_events import data_list_type, update_plotsettings
 from .. import data
 from ..plugins import data_loader_wx as dlf
 from ..core.config import BaseConfig, Configurable
@@ -28,7 +28,7 @@ from ..core.custom_logging import iprint
 
 class DataController:
     '''
-    Interface layer class between the VirtualDataList and the Data class
+    Interface layer class between the VirtualDataList and the DataList class
     '''
     data: data.DataList
 
@@ -693,10 +693,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
                     data_par[key]=None
 
         def apply_plotsettings(sim_par, data_par):
-            self.data_cont.set_items_plotsettings(indices,
-                                                  [sim_par]*len(indices), [data_par]*len(indices))
-            self._UpdateImageList()
-            self._UpdateData('Plot settings changed', data_changed=True)
+            evt=update_plotsettings(indices=indices, sim_par=sim_par, data_par=data_par)
+            wx.PostEvent(self.parent, evt)
 
         # Dialog business start here
         dlg=PlotSettingsDialog(self, sim_par, data_par)

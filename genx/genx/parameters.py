@@ -2,7 +2,7 @@
 Definition for the class Parameters. Used for storing the fitting parameters
 in GenX.
 '''
-from typing import Union
+from typing import Union, List, Tuple
 from enum import Enum, auto
 
 from .core.custom_logging import iprint
@@ -20,12 +20,22 @@ class Parameters(H5Savable):
     Class for storing the fitting parameters in GenX
     """
     h5group_name='parameters'
-    data_labels = ['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
-    init_data = ['', 0.0, False, 0.0, 0.0, 'None']
+    data_labels: Tuple[str]  = ('Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error')
+    init_data: Tuple[str, float, bool, float, float, str] = ('', 0.0, False, 0.0, 0.0, 'None')
 
     def __init__(self):
-        self.data=[self.init_data[:]]
-        self.string_dtype="S100"
+        self._data=[list(self.init_data)]
+
+    @property
+    def data(self) -> list:
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        plen=len(self.init_data)
+        if not all([len(item)==plen for item in value]):
+            raise ValueError(f'All parameter rows must have {plen} items')
+        self._data=list(value)
 
     def write_h5group(self, group):
         """
@@ -45,7 +55,7 @@ class Parameters(H5Savable):
         :param group: h5py Group to import from
         :return:
         """
-        self.data_labels=[item.decode('utf-8') for item in list(group['data_labels'][()])]
+        self.data_labels=tuple(str(item.decode('utf-8')) for item in list(group['data_labels'][()]))
         self.data=[[c0.decode('utf-8'), float(c1), bool(c2), float(c3), float(c4), c5.decode('utf-8')]
                    for (c0, c1, c2, c3, c4, c5) in
                    zip(group['data col 0'][()], group['data col 1'][()],
@@ -67,30 +77,13 @@ class Parameters(H5Savable):
         """ Get the value in the grid """
         return self.data[row][col]
 
-    def name_in_grid(self, name):
-        """ Checks if name is a parameter in the grid
-
-        :param name: string representation of a parameter
-        :return:
-        """
-        par_names=[row[0] for row in self.data]
-        return name in par_names
-
     def get_names(self):
-        """ Returns the parameter names
-
-        :return:
-        """
+        """ Returns the parameter names """
         par_names=[row[0] for row in self.data]
-
         return par_names
 
     def get_value_by_name(self, name):
-        """Get the value for parameter name. Returns None if name can not be found.
-
-        :param name:
-        :return: Value or None
-        """
+        """Get the value for parameter name. Returns None if name can not be found."""
         par_names=[row[0] for row in self.data]
         if name in par_names:
             value=self.data[par_names.index(name)][1]
@@ -99,9 +92,9 @@ class Parameters(H5Savable):
         return value
 
     def get_fit_state_by_name(self, name):
-        """Get the fitting state for parameter name. Returns None if name can not be found.
+        """
+        Get the fitting state for parameter name. Returns None if name can not be found.
 
-        :param name:
         :return: int 0 - not found, 1 - fitted, 2 - defined but constant
         """
         par_names=[row[0] for row in self.data]
@@ -174,7 +167,7 @@ class Parameters(H5Savable):
 
     def insert_row(self, row):
         ''' Insert a new row at row(int). '''
-        self.data.insert(row, self.init_data[:])
+        self.data.insert(row, list(self.init_data))
 
     def move_row_up(self, row):
         """ Move row up.
@@ -244,7 +237,7 @@ class Parameters(H5Savable):
                 inserts.append(i)
             cls=next_obj
         for i in reversed(inserts):
-            self.data.insert(i, self.init_data[:])
+            self.data.insert(i, list(self.init_data))
 
     def strip(self):
         # remove empty parameters at beginning and end

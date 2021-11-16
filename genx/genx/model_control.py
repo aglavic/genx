@@ -10,7 +10,7 @@ from .core.config import config
 from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
-from .model_actions import ActionHistory, ModelAction, NoOp, SetModelScript
+from .model_actions import ActionHistory, ModelAction, NoOp, SetModelScript, UpdateSolverOptoins, UpdateDataPlotSettings
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
 class ModelController:
@@ -49,8 +49,8 @@ class ModelController:
         self.action_callback(action)
         return action
 
-    def history_range(self):
-        return len(self.history.undo_stack), len(self.history.redo_stack)
+    def history_stacks(self):
+        return self.history.undo_stack, self.history.redo_stack
 
     def history_clear(self):
         self.history.clear()
@@ -115,6 +115,9 @@ class ModelController:
     def get_data(self) -> DataList:
         return self.model.data
 
+    def set_data_plotsettings(self, indices, sim_par, data_par):
+        self.perform_action(UpdateDataPlotSettings, indices, sim_par, data_par)
+
     def get_parameters(self):
         return self.model.parameters
 
@@ -177,6 +180,18 @@ class ModelController:
 
     def get_data_as_asciitable(self, indices=None):
         return self.model.get_data_as_asciitable(indices=indices)
+
+    def get_combined_options(self):
+        # Return a configuration object with all parameters relevant for fitting
+        return self.model.solver_parameters|self.optimizer.opt
+
+    def update_combined_options(self, new_values: dict):
+        combined_options = self.get_combined_options()
+        difference={}
+        for key, value in new_values.items():
+            if getattr(combined_options, key, None)!=value:
+                difference[key]=value
+        self.perform_action(UpdateSolverOptoins, self.optimizer, difference)
 
     @property
     def saved(self):

@@ -219,7 +219,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.data_panel=wx.Panel(self.ver_splitter, wx.ID_ANY)
         self.data_notebook=wx.Notebook(self.data_panel, wx.ID_ANY)
         self.data_notebook_data=wx.Panel(self.data_notebook, wx.ID_ANY)
-        self.data_list= datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.eh_ex_status_text)
+        self.data_list=datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.eh_ex_status_text)
         self.data_notebook_pane_2=wx.Panel(self.data_notebook, wx.ID_ANY)
         self.label_2=wx.StaticText(self.data_notebook_pane_2, wx.ID_ANY, "  Data set: ")
         self.data_grid_choice=wx.Choice(self.data_notebook_pane_2, wx.ID_ANY, choices=["test2", "test1"])
@@ -272,6 +272,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         # Update the parameter grid
         self.Bind(EVT_NEW_MODEL, self.paramter_grid.OnNewModel, self)
         self.Bind(EVT_NEW_MODEL, self.data_list.eh_external_new_model, self)
+        self.data_list.Bind(EVT_UPDATE_PLOTSETTINGS, self.model_control.update_plotsettings)
         # Update the script
         self.Bind(EVT_NEW_MODEL, self.eh_new_model, self)
         # Event that the plot should respond to

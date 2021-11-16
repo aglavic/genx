@@ -10,6 +10,7 @@ from enum import Flag, auto
 from typing import List
 
 from .model import Model
+from .solver_basis import GenxOptimizer
 
 class ModelInfluence(Flag):
     # The part of the model that gets altered by n action
@@ -47,9 +48,8 @@ class ModelAction(ABC):
     def undo(self):
         ...
 
-    @abstractmethod
     def redo(self):
-        ...
+        self.execute()
 
     def __str__(self):
         return self.name
@@ -125,3 +125,58 @@ class SetModelScript(ModelAction):
                                           new.splitlines(keepends=True),
                                           fromfile='old script', tofile='new script',n=1))
         return diff
+
+class UpdateSolverOptoins(ModelAction):
+    influences = ModelInfluence.OPTIONS
+    name = 'optimizer options'
+
+    def __init__(self, model, optimizer: GenxOptimizer, new_values: dict):
+        self.model=model
+        self.optimizer=optimizer
+        self.new_values=new_values.copy()
+        self.old_values={}
+        self.combined_options=self.model.solver_parameters|self.optimizer.opt
+        for key in new_values.keys():
+            self.old_values[key]=getattr(self.combined_options, key, None)
+
+    def execute(self):
+        # Update parameters and write to config
+        for key, value in self.new_values.items():
+            setattr(self.combined_options, key, value)
+        self.model.WriteConfig()
+        self.optimizer.WriteConfig()
+
+    def undo(self):
+        # Reset previous settings
+        for key, value in self.old_values.items():
+            setattr(self.combined_options, key, value)
+        self.model.WriteConfig()
+        self.optimizer.WriteConfig()
+
+class UpdateDataPlotSettings(ModelAction):
+    influences = ModelInfluence.DATA
+    name = 'plot settings'
+
+    def __init__(self, model, indices: List[int], sim_par: dict, data_par: dict):
+        self.model=model
+        self.indices=indices
+        self.new_sim_par=sim_par.copy()
+        self.new_data_par=data_par.copy()
+        self.old_sim_pars={}
+        self.old_data_pars={}
+
+    def execute(self):
+        # Update parameters for each dataset index
+        for index in self.indices:
+            di=self.model.data[index]
+            self.old_sim_pars[index]=di.get_sim_plot_items()
+            self.old_data_pars[index]=di.get_data_plot_items()
+            di.set_sim_plot_items(self.new_sim_par)
+            di.set_data_plot_items(self.new_data_par)
+
+    def undo(self):
+        # Reset previous settings
+        for index in self.indices:
+            di=self.model.data[index]
+            di.set_sim_plot_items(self.old_sim_pars[index])
+            di.set_data_plot_items(self.old_data_pars[index])
