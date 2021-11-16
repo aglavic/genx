@@ -196,13 +196,16 @@ class ModelControlGUI(wx.EvtHandler):
             cs = self.controller.get_color_cycle()
             colors2keys = dict((value, key) for key, value in COLOR_CYCLES.items())
             if cs in colors2keys:
-                print(cs, colors2keys[cs])
                 self.parent.mb_checkables[colors2keys[cs]].Check()
             else:
                 self.parent.mb_checkables[colors2keys[None]].Check()
             dl = self.parent.data_list.list_ctrl
             dl._UpdateImageList()
             dl._UpdateData('Plot settings changed', data_changed=True)
+        if ModelInfluence.PARAM in action.influences:
+            self.parent.paramter_grid.table.SetParameters(self.controller.get_parameters(),
+                                                          clear=False, permanent_change=True)
+
 
     def OnUndo(self, event):
         self.controller.undo_action()
@@ -425,6 +428,7 @@ class ModelControlGUI(wx.EvtHandler):
         message='Do you want to keep the parameter values from the fit?'
         dlg=wx.MessageDialog(self.parent, message, 'Keep the fit?', wx.YES_NO | wx.ICON_QUESTION)
         if dlg.ShowModal()==wx.ID_YES:
+            self.controller.set_value_pars(evt.values)
             evt = update_parameters(values=evt.values,
                                     new_best=True,
                                     population=evt.population,
@@ -444,6 +448,10 @@ class ModelControlGUI(wx.EvtHandler):
                                     desc='Parameter Update', update_errors=False,
                                     permanent_change=False)
             wx.PostEvent(self.parent, evt)
+
+    @skips_event
+    def OnSetParameterValue(self, evt):
+        self.controller.set_parameter_value(evt.row, evt.col, evt.value)
 
     def CalcErrorBars(self):
         return self.controller.CalcErrorBars()

@@ -10,8 +10,8 @@ from .core.config import config
 from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
-from .model_actions import ActionHistory, ModelAction, NoOp, SetModelScript, UpdateColorCycle, UpdateSolverOptoins, \
-    UpdateDataPlotSettings
+from .model_actions import ActionHistory, ModelAction, NoOp, SetModelScript, UpdateColorCycle, UpdateParams, \
+    UpdateParamValue, UpdateSolverOptoins, UpdateDataPlotSettings
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
 class ModelController:
@@ -143,6 +143,17 @@ class ModelController:
 
     def set_error_pars(self, error_values):
         self.model.parameters.set_error_pars(error_values)
+
+    def set_value_pars(self, new_values):
+        pars=self.model.parameters.get_value_pars()
+        if all([pi==pj for pi, pj in zip(new_values, pars)]):
+            return
+        self.perform_action(UpdateParams, new_values)
+
+    def set_parameter_value(self, row, col, value):
+        if value==self.model.parameters.get_value(row, col):
+            return
+        self.perform_action(UpdateParamValue, row, col, value)
 
     def get_fom(self):
         return self.model.fom

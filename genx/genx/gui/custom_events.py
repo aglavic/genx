@@ -29,6 +29,7 @@ grid_change, EVT_PARAMETER_GRID_CHANGE=NewEvent()
 # Event for then the value of a parameter has changed. Should be used to do
 # simulations interactively.
 value_change, EVT_PARAMETER_VALUE_CHANGE=NewEvent()
+set_parameter_value, EVT_PARAMETER_SET_VALUE=NewEvent()
 
 ## datalist
 # Generating an event type:

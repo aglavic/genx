@@ -14,7 +14,7 @@ from numpy import *
 from dataclasses import dataclass
 
 from . import controls as ctrls, images as img
-from .custom_events import grid_change, value_change, skips_event
+from .custom_events import grid_change, set_parameter_value, value_change, skips_event
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
@@ -68,9 +68,8 @@ class ParameterDataTable(gridlib.GridTableBase):
             return ''
 
     def SetValue(self, row, col, value):
-        try:
-            self.pars.set_value(row, col, value)
-        except IndexError as e:
+        par_len=self.pars.get_len_rows()
+        if row>=par_len:
             # add a new row
             self.pars.append()
 
@@ -81,7 +80,8 @@ class ParameterDataTable(gridlib.GridTableBase):
                                          )
 
             self.GetView().ProcessTableMessage(msg)
-            self.pars.set_value(row, col, value)
+        evt=set_parameter_value(row=row, col=col, value=value)
+        wx.PostEvent(self.parent, evt)
         # For updating the column labels according to the number of fitted parameters
         if col==2 or col==3 or col==4:
             self.GetView().ForceRefresh()
@@ -1121,6 +1121,7 @@ class ParameterGrid(wx.Panel, Configurable):
         '''
         self.prt.Preview()
 
+    @skips_event
     def OnNewModel(self, evt):
         '''
         OnNewModel(self, evt) --> None
@@ -1132,28 +1133,9 @@ class ParameterGrid(wx.Panel, Configurable):
         # this also updates the grid. 
         self.table.SetParameters(evt.GetModel().get_parameters(),
                                  permanent_change=False)
-        # Let the event proceed to other fucntions that have signed up.
-        evt.Skip()
 
     def SetParameters(self, pars):
         self.table.SetParameters(pars)
-
-    @skips_event
-    def OnSolverUpdateEvent(self, evt):
-        '''OnSolverUpdateEvent(self, evt) --> None
-        
-        Callback to update the values in the grid from the optimizer
-        Assumes that evt holds the following members:
-        values: An array of the appropriate length (same as the number of 
-                checked parameters to fit)
-        new_best: A boolean indicating if there are a new best.
-        '''
-        if evt.new_best:
-            # print evt.fitting
-            self.table.pars.set_value_pars(evt.values)
-            self.table.SetParameters(self.table.pars, clear=False,
-                                     permanent_change=evt.permanent_change)
-
 
     def OnLeftDClick(self, evt):
         """ Event handler that starts editing the cells on a double click and not

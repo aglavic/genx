@@ -206,3 +206,35 @@ class UpdateColorCycle(ModelAction):
         for i, di in enumerate(self.model.data):
             di.sim_color=self.old_sim_colors[i]
             di.data_color=self.old_data_colors[i]
+
+class UpdateParams(ModelAction):
+    influences = ModelInfluence.PARAM
+    name = 'parameter values'
+
+    def __init__(self, model, new_values):
+        self.model=model
+        self.new_values=new_values
+        self.old_values=self.model.parameters.get_value_pars()
+
+    def execute(self):
+        self.model.parameters.set_value_pars(self.new_values)
+
+    def undo(self):
+        self.model.parameters.set_value_pars(self.old_values)
+
+class UpdateParamValue(ModelAction):
+    influences = ModelInfluence.PARAM
+    name = 'update parameter'
+
+    def __init__(self, model, row, col, new_value):
+        self.model=model
+        self.row=row
+        self.col=col
+        self.new_value=new_value
+        self.old_value=self.model.parameters.get_value(row, col)
+
+    def execute(self):
+        self.model.parameters.set_value(self.row, self.col, self.new_value)
+
+    def undo(self):
+        self.model.parameters.set_value(self.row, self.col, self.old_value)

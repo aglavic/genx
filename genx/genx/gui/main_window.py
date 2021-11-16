@@ -244,7 +244,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.input_panel=wx.Panel(self.hor_splitter, wx.ID_ANY)
         self.input_notebook=wx.Notebook(self.input_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.input_notebook_grid=wx.Panel(self.input_notebook, wx.ID_ANY)
-        self.paramter_grid= parametergrid.ParameterGrid(self.input_notebook_grid, self)
+        self.paramter_grid=parametergrid.ParameterGrid(self.input_notebook_grid, self)
         self.input_notebook_script=wx.Panel(self.input_notebook, wx.ID_ANY)
         self.script_editor=wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
         self.script_editor.SetBackSpaceUnIndents(True)
@@ -259,6 +259,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.bind_toolbar()
         self.Bind(wx.EVT_CHOICE, self.eh_data_grid_choice, self.data_grid_choice)
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.eh_plot_page_changed, self.plot_notebook)
+        self.paramter_grid.grid.Bind(EVT_PARAMETER_SET_VALUE, self.model_control.OnSetParameterValue)
 
         debug('setup of MainFrame - manual config')
 
@@ -288,7 +289,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_fom.OnSolverPlotEvent)
 
         self.Bind(solvergui.EVT_SOLVER_UPDATE_TEXT, self.eh_ex_status_text)
-        self.Bind(solvergui.EVT_UPDATE_PARAMETERS, self.paramter_grid.OnSolverUpdateEvent)
+        # self.Bind(solvergui.EVT_UPDATE_PARAMETERS, self.paramter_grid.OnSolverUpdateEvent)
         self.Bind(solvergui.EVT_UPDATE_PARAMETERS, self.plot_pars.OnSolverParameterEvent)
 
         # For picking a point in a plot

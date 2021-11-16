@@ -298,6 +298,13 @@ class Parameters(H5Savable):
                 row[1]=value[valueindex]
                 valueindex=valueindex+1
 
+    def get_value_pars(self):
+        output=[]
+        for row in self.data:
+            if row[2] and not row[0]=='':
+                output.append(row[1])
+        return output
+
     def set_error_pars(self, value):
         ''' Set the errors on the parameters '''
         valueindex=0
