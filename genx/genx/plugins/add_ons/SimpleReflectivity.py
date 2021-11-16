@@ -873,7 +873,7 @@ class SamplePanel(wx.Panel):
             insts=['inst']
         return insts, output
 
-    def UpdateModel(self, evt=None, first=False):
+    def UpdateModel(self, evt=None, first=False, re_color=False):
         coords=self.inst_params['coords']
         if evt in [None, 'inst']:
             sample_script=self.last_sample_script
@@ -918,13 +918,30 @@ class SamplePanel(wx.Panel):
                 script+="    inst.setRes(data[%i].res)\n"%i
             elif res_set:
                 script+="    inst.setRes(0.001)\n"
+            inst_id=i%len(insts)
+            try:
+                # extract polarization channel from ORSO metadata
+                pol=di.meta['data_source']['measurement']['instrument_settings']['polarization']
+                if pol in ['m', 'mm']:
+                    inst_id=1%len(insts)
+                else:
+                    inst_id=0
+            except KeyError:
+                pass
             script+="    I.append(sample.SimSpecular(d.x, %s))\n" \
                     "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
-                    "    # END Dataset %i\n"%(insts[i%len(insts)], i)
-            if di.name.startswith('Data') and len(insts)>1:
-                prefix=['Spin Up', 'Spin Down'][i%2]
+                    "    # END Dataset %i\n"%(insts[inst_id], i)
+            if re_color and len(insts)>1:
+                if inst_id==0:
+                    di.data_color = (0.7, 0.0, 0.0)
+                    di.sim_color = (1.0, 0.0, 0.0)
+                else:
+                    di.data_color = (0.0, 0.0, 0.7)
+                    di.sim_color = (0.0, 0.0, 1.0)
+            elif di.name.startswith('Data') and len(insts)>1:
+                prefix=['Spin Up', 'Spin Down'][inst_id]
                 di.name=prefix+' %i'%(i//2+1)
-                if i%2==0:
+                if inst_id==0:
                     di.data_color=(0.7, 0.0, 0.0)
                     di.sim_color=(1.0, 0.0, 0.0)
                 else:
@@ -1521,7 +1538,10 @@ class Plugin(framework.Template):
         return
 
     def ReadUpdateModel(self, evt):
-        self.ReadModel(verbose=False)
+        try:
+            self.ReadModel(verbose=False)
+        except Exception as e:
+            self.StatusMessage(f'could not analyze script: {e}')
 
     def ReadModel(self, verbose=True):
         '''
@@ -1541,7 +1561,7 @@ class Plugin(framework.Template):
             val=outp.getvalue()
             outp.close()
             self.ShowErrorDialog(val)
-            self.Statusmessage('Fatal Error - compling, SimpleReflectivity')
+            self.StatusMessage('Fatal Error - compling, SimpleReflectivity')
             return
 
         if verbose: self.StatusMessage('Trying to interpret the script...')
@@ -1570,7 +1590,11 @@ class Plugin(framework.Template):
         for li in sampletxt.splitlines():
             if 'model.Layer' in li:
                 name, ltxt=map(str.strip, li.split('=', 1))
-                layers[name]=analyze_layer_txt(name, ltxt)
+                try:
+                    layers[name]=analyze_layer_txt(name, ltxt)
+                except Exception as e:
+                    self.StatusMessage('Script read failed, SimpleReflectivity')
+                    return
                 layer_order.append(name)
             if 'model.Stack' in li:
                 name, stxt=map(str.strip, li.split('=', 1))

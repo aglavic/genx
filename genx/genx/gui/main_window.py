@@ -581,6 +581,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def OnInputPageChanged(self, evt):
         tpage, fpage=evt.GetSelection(), evt.GetOldSelection()
+        # check for odd case, that either page does not exist anymore
+        if self.input_notebook.GetPageCount()>=max(tpage, fpage):
+            return
         if fpage!=tpage and self.input_notebook.GetPageText(fpage)=='Script':
             self.model_control.set_model_script(self.script_editor.GetText())
 
@@ -863,8 +866,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             return CatchModelError(self, action=action, step=step,
                                    status_update=None)
 
-    def new_from_file(self, path):
-        from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
+    def new_from_file(self, paths):
         debug('new_from_file: clear model')
         self.model_control.new_model()
         self.paramter_grid.PrepareNewModel()
@@ -872,9 +874,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         # read data from file
         debug('new_from_file: load datafile')
-        with self.catch_error(action='read_data', step=f'read file {os.path.basename(path)}') as mng:
+        with self.catch_error(action='read_data', step=f'read file {os.path.basename(paths[0])}') as mng:
             self.data_list.list_ctrl.data_loader_cont.LoadPlugin('orso')
-            self.data_list.list_ctrl.load_from_files([path], do_update=False)
+            self.data_list.list_ctrl.load_from_files(paths, do_update=False)
 
         debug('new_from_file: build model script')
         # if this was exported from genx, use the embedded script
@@ -884,41 +886,59 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.model_control.set_model_script(ana_meta['script'])
         else:
             ds=meta['data_source']
-            # create a new script with the reflectivity plugin
-            refl: ReflPlugin=self.plugin_control.GetPlugin('Reflectivity')
-            refl.CreateNewModel('models.spec_nx')
             # detect source radiation
-            probe=ds['experiment']['probe']
-            inst=refl.sample_widget.instruments['inst']
+            probe = ds['experiment']['probe']
             if probe=='neutrons':
-                pol=ds['measurement']['instrument_settings'].get('polarization', 'unpolarized')
+                pol = ds['measurement']['instrument_settings'].get('polarization', 'unpolarized')
                 if pol=='unpolarized':
-                    inst.probe='neutron'
+                    probe = 'neutron'
                 else:
-                    inst.probe = 'neutron pol'
+                    probe = 'neutron pol'
             else:
-                inst.probe='x-ray'
+                probe = 'x-ray'
             # detect x-axis unit
             if meta['columns'][0].get('unit', '1/angstrom')=='1/angstrom':
-                inst.coords='q'
+                coords = 'q'
+                wavelength = 1.54
             else:
-                inst.coords = '2θ'
-                inst.wavelength = float(ds['measurement']['instrument_settings']
-                                          ['incident_angle'].get('magnitude', 1.54))
-            # set resolution column
-            if len(meta['columns'])>3 and (meta['columns'][3]['name']==('s'+meta['columns'][0]['name'])):
-                inst.restype = 'full conv and varying res.'
-                inst.respoints = 7
-                inst.resintrange = 2.5
-                el=refl.simulation_widget.GetExpressionList()
-                for i, data_item in enumerate(self.data_list.data_cont.data):
-                    if len(data_item.meta['columns'])>3 and (
-                            data_item.meta['columns'][3]['name']==
-                            ('s'+data_item.meta['columns'][0]['name'])):
-                        el[i].append(f'inst.setRes(data[{i}].res)')
-                    else:
-                        el[i].append(f'inst.setRes(0.001)')
-            refl.WriteModel()
+                coords = '2θ'
+                wavelength = float(ds['measurement']['instrument_settings']
+                                        ['incident_angle'].get('magnitude', 1.54))
+
+            if 'SimpleReflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
+                from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
+                refl: SRPlugin=self.plugin_control.GetPlugin('SimpleReflectivity')
+                refl.sample_widget.sample_table.ResetModel()
+                refl.sample_widget.inst_params['probe']=probe
+                refl.sample_widget.inst_params['wavelength']=wavelength
+                refl.sample_widget.inst_params['coords']=coords
+                refl.sample_widget.UpdateModel(re_color=True)
+            else:
+                from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
+                if not 'Reflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
+                    self.plugin_control.plugin_handler.load_plugin('Reflectivity')
+                # create a new script with the reflectivity plugin
+                refl: ReflPlugin=self.plugin_control.GetPlugin('Reflectivity')
+                refl.CreateNewModel('models.spec_nx')
+                # detect source radiation
+                inst=refl.sample_widget.instruments['inst']
+                inst.probe=probe
+                inst.coords=coords
+                inst.wavelength=wavelength
+                # set resolution column
+                if len(meta['columns'])>3 and (meta['columns'][3]['name']==('s'+meta['columns'][0]['name'])):
+                    inst.restype = 'full conv and varying res.'
+                    inst.respoints = 7
+                    inst.resintrange = 2.5
+                    el=refl.simulation_widget.GetExpressionList()
+                    for i, data_item in enumerate(self.data_list.data_cont.data):
+                        if len(data_item.meta['columns'])>3 and (
+                                data_item.meta['columns'][3]['name']==
+                                ('s'+data_item.meta['columns'][0]['name'])):
+                            el[i].append(f'inst.setRes(data[{i}].res)')
+                        else:
+                            el[i].append(f'inst.setRes(0.001)')
+                refl.WriteModel()
 
         debug('open_model: post new model event')
         _post_new_model_event(self, self.model_control.get_model())
@@ -1118,12 +1138,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         dlg = wx.FileDialog(self, message="New from file", defaultFile="",
                             wildcard="Suppoerted types (*.ort)|*.ort",
-                            style=wx.FD_OPEN  # | wx.FD_CHANGE_DIR
+                            style=wx.FD_OPEN|wx.FD_MULTIPLE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            path = dlg.GetPath()
+            paths = dlg.GetPaths()
             debug('new_from_file: path retrieved')
-            self.new_from_file(path)
+            self.new_from_file(paths)
 
         dlg.Destroy()
 
