@@ -63,7 +63,7 @@ from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from .help_modules.reflectivity_utils import SampleHandler, SampleBuilder, avail_models, find_code_segment
 from genx.core.custom_logging import iprint
-from genx.gui.solvergui import EVT_UPDATE_SCRIPT
+from genx.gui.custom_events import EVT_UPDATE_SCRIPT
 
 _set_func_prefix='set'
 

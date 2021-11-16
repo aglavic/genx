@@ -224,9 +224,9 @@ def start_fitting(args, rank=0):
                     ctrl.save_file(args.outfile)
 
             def parameter_output(self, param_info):
-                if stdscr and param_info.new_best:
+                if stdscr:
                     height, width = stdscr.getmaxyx()
-                    full_width=(width-16-12+1)
+                    full_width=(width-16-12)
                     pwidth=param_info.max_val-param_info.min_val
                     pres=(param_info.values-param_info.min_val)/pwidth
                     population=array(param_info.population)

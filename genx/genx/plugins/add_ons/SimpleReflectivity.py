@@ -27,7 +27,7 @@ from genx.gui.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
-from genx.gui.solvergui import EVT_UPDATE_SCRIPT
+from genx.gui.custom_events import EVT_UPDATE_SCRIPT
 
 _set_func_prefix='set'
 
