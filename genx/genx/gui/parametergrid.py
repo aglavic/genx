@@ -14,6 +14,7 @@ from numpy import *
 from dataclasses import dataclass
 
 from . import controls as ctrls, images as img
+from .custom_events import grid_change, value_change
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
@@ -1024,13 +1025,11 @@ class ParameterGrid(wx.Panel, Configurable):
         evt.Skip()
 
     def _grid_changed(self, permanent_change=True):
-        '''_grid_changed(self) --> None
-        
+        '''
         internal function to yield a EVT_PARAMETER_GRID_CHANGE
         '''
         self.grid.ForceRefresh()
-        evt=grid_change()
-        evt.permanent_change=permanent_change
+        evt=grid_change(permanent_change=permanent_change)
         wx.PostEvent(self.parent, evt)
 
     def _update_printer(self):
@@ -1419,13 +1418,3 @@ class ParameterGrid(wx.Panel, Configurable):
         Function that returns the parameters - Is this needed anymore?
         '''
         return self.table.pars
-
-# ==============================================================================
-# Custom events needed for updating and message parsing between the different
-# modules.
-
-# Event for when the grid has new values
-(grid_change, EVT_PARAMETER_GRID_CHANGE)=wx.lib.newevent.NewEvent()
-# Event for then the value of a parameter has changed. Should be used to do
-# simulations interactively.
-(value_change, EVT_PARAMETER_VALUE_CHANGE)=wx.lib.newevent.NewEvent()

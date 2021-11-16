@@ -13,6 +13,7 @@ import wx.lib.newevent
 
 from .exception_handling import CatchModelError
 from .settings_dialog import SettingsDialog
+from .custom_events import *
 from .. import diffev, fom_funcs, model_control, levenberg_marquardt
 from ..core.custom_logging import iprint
 from ..model_actions import ModelInfluence, ModelAction
@@ -20,15 +21,6 @@ from ..solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateIn
 if TYPE_CHECKING:
     from . import main_window
 
-
-# Custom events needed for updating and message parsing between the different
-# modules.
-(update_script, EVT_UPDATE_SCRIPT)=wx.lib.newevent.NewEvent()
-(update_plot, EVT_UPDATE_PLOT)=wx.lib.newevent.NewEvent()
-(update_text, EVT_SOLVER_UPDATE_TEXT)=wx.lib.newevent.NewEvent()
-(update_parameters, EVT_UPDATE_PARAMETERS)=wx.lib.newevent.NewEvent()
-(fitting_ended, EVT_FITTING_ENDED)=wx.lib.newevent.NewEvent()
-(autosave, EVT_AUTOSAVE)=wx.lib.newevent.NewEvent()
 
 class GuiCallbacks(GenxOptimizerCallback):
     def __init__(self, parent: wx.Window):

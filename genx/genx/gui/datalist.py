@@ -18,6 +18,7 @@ except ImportError:
     from wx import adv as wizard
 
 from . import images as img
+from .custom_events import data_list_type
 from .. import data
 from ..plugins import data_loader_wx as dlf
 from ..core.config import BaseConfig, Configurable
@@ -257,11 +258,6 @@ class DataListEvent(wx.CommandEvent):
         '''
         self.name_change=True
 
-# Generating an event type:
-myEVT_DATA_LIST=wx.NewEventType()
-# Creating an event binder object
-EVT_DATA_LIST=wx.PyEventBinder(myEVT_DATA_LIST)
-
 @dataclass
 class VDataListConfig(BaseConfig):
     section='data handling'
@@ -416,7 +412,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         Internal funciton to send an event to update data
         '''
         # Send an event that a new data set ahs been loaded
-        evt=DataListEvent(myEVT_DATA_LIST, self.GetId(), self.data_cont.get_data())
+        evt=DataListEvent(data_list_type, self.GetId(), self.data_cont.get_data())
         evt.SetDataChanged(data_changed)
         evt.SetNewData(new_data)
         evt.SetNewModel(new_model)

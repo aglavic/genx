@@ -19,6 +19,7 @@ import wx.py
 import wx.stc
 from wx.lib.wordwrap import wordwrap
 
+from .custom_events import *
 from . import datalist, help, images as img, parametergrid, plotpanel, solvergui, pubgraph_dialog
 from .exception_handling import CatchModelError
 from ..plugins import add_on_framework as add_on
@@ -274,9 +275,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         # Update the script
         self.Bind(EVT_NEW_MODEL, self.eh_new_model, self)
         # Event that the plot should respond to
-        self.Bind(datalist.EVT_DATA_LIST, self.plot_data.OnDataListEvent, self.data_list.list_ctrl)
-        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data_grid_choice, self.data_list.list_ctrl)
-        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_update_data, self.data_list.list_ctrl)
+        self.Bind(EVT_DATA_LIST, self.plot_data.OnDataListEvent, self.data_list.list_ctrl)
+        self.Bind(EVT_DATA_LIST, self.eh_external_update_data_grid_choice, self.data_list.list_ctrl)
+        self.Bind(EVT_DATA_LIST, self.eh_external_update_data, self.data_list.list_ctrl)
 
         self.Bind(EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent, self)
         self.Bind(EVT_SIM_PLOT, self.eh_external_fom_value, self)
@@ -290,22 +291,22 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(solvergui.EVT_UPDATE_PARAMETERS, self.plot_pars.OnSolverParameterEvent)
 
         # For picking a point in a plot
-        self.Bind(plotpanel.EVT_PLOT_POSITION,
+        self.Bind(EVT_PLOT_POSITION,
                   self.eh_ex_point_pick)
         # This is needed to be able to create the events
         self.plot_data.SetCallbackWindow(self)
         self.plot_fom.SetCallbackWindow(self)
         self.plot_pars.SetCallbackWindow(self)
         self.plot_fomscan.SetCallbackWindow(self)
-        self.Bind(plotpanel.EVT_PLOT_SETTINGS_CHANGE, self.eh_ex_plot_settings_changed)
+        self.Bind(EVT_PLOT_SETTINGS_CHANGE, self.eh_ex_plot_settings_changed)
 
         # Binding events which means model changes
-        self.Bind(parametergrid.EVT_PARAMETER_GRID_CHANGE, self.eh_external_model_changed)
+        self.Bind(EVT_PARAMETER_GRID_CHANGE, self.eh_external_model_changed)
         self.Bind(wx.stc.EVT_STC_MODIFIED, self.eh_external_model_changed, self.script_editor)
-        self.Bind(datalist.EVT_DATA_LIST, self.eh_external_model_changed, self.data_list.list_ctrl)
+        self.Bind(EVT_DATA_LIST, self.eh_external_model_changed, self.data_list.list_ctrl)
 
         # Event for when a value of a parameter in the parameter grid has been updated
-        self.Bind(parametergrid.EVT_PARAMETER_VALUE_CHANGE, self.eh_external_parameter_value_changed)
+        self.Bind(EVT_PARAMETER_VALUE_CHANGE, self.eh_external_parameter_value_changed)
 
         # Stuff for the find and replace functionality
         self.findreplace_data=wx.FindReplaceData()
@@ -2154,26 +2155,17 @@ class GenericModelEvent(wx.CommandEvent):
         '''
         self.description=desc
 
-# Generating an event type:
-myEVT_NEW_MODEL=wx.NewEventType()
-# Creating an event binder object
-EVT_NEW_MODEL=wx.PyEventBinder(myEVT_NEW_MODEL)
 
 def _post_new_model_event(parent, model, desc=''):
     # Send an event that a new data set has been loaded
-    evt=GenericModelEvent(myEVT_NEW_MODEL, parent.GetId(), model)
+    evt=GenericModelEvent(new_model_type, parent.GetId(), model)
     evt.SetDescription(desc)
     # Process the event!
     parent.GetEventHandler().ProcessEvent(evt)
 
-# Generating an event type:
-myEVT_SIM_PLOT=wx.NewEventType()
-# Creating an event binder object
-EVT_SIM_PLOT=wx.PyEventBinder(myEVT_SIM_PLOT)
-
 def _post_sim_plot_event(parent, model, desc=''):
     # Send an event that a new data set ahs been loaded
-    evt=GenericModelEvent(myEVT_SIM_PLOT, parent.GetId(), model)
+    evt=GenericModelEvent(sim_plot_type, parent.GetId(), model)
     evt.SetDescription(desc)
     # Process the event!
     parent.GetEventHandler().ProcessEvent(evt)

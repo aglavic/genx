@@ -14,16 +14,12 @@ import wx
 import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE
 
+from .custom_events import plot_position, state_changed
 from ..core.config import BaseConfig, Configurable
 
 # deactivate matplotlib logging that we are not interested in
 getLogger('matplotlib.ticker').setLevel(ERROR)
 getLogger('matplotlib.font_manager').setLevel(ERROR)
-
-# Event for a click inside an plot which yields a number
-(plot_position, EVT_PLOT_POSITION)=wx.lib.newevent.NewEvent()
-# Event to tell the main window that the zoom state has changed
-(state_changed, EVT_PLOT_SETTINGS_CHANGE)=wx.lib.newevent.NewEvent()
 
 zoom_state=False
 

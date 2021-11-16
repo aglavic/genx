@@ -14,8 +14,7 @@ is to the right. This is updated when the simulation button is pressed.
 
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
-from genx.gui.solvergui import EVT_UPDATE_PARAMETERS
-from genx.gui.parametergrid import EVT_PARAMETER_GRID_CHANGE
+from genx.gui.custom_events import EVT_UPDATE_PARAMETERS, EVT_PARAMETER_GRID_CHANGE, update_model_event, EVT_UPDATE_MODEL
 import wx.grid as gridlib
 from wx.adv import Wizard, WizardPageSimple
 
@@ -97,8 +96,6 @@ class SampleGrid(gridlib.Grid):
                 txt+='\n\nFound in DB:\n%g g/cm³'%mdb.dens_mass(frm)
             self.info_text.SetLabel(txt)
 
-# new model is ready with a script as value.
-(update_model_event, EVT_UPDATE_MODEL)=wx.lib.newevent.NewEvent()
 TOP_LAYER=0
 ML_LAYER=1
 BOT_LAYER=2
