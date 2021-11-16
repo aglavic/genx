@@ -13,6 +13,7 @@ from .. import add_on_framework as framework
 from .help_modules import model_interactors as mi
 from .help_modules import atom_viewer
 from genx.core.custom_logging import iprint
+from genx.gui.solvergui import EVT_UPDATE_SCRIPT
 
 code="""
         # BEGIN Instruments
@@ -69,7 +70,7 @@ class Plugin(framework.Template):
             try:
                 self.script_interactor.parse_code(self.GetModelScript())
             except Exception as e:
-                iprint("Reflectivity plugin model could not be read.")
+                iprint("SXRD plugin model could not be read.")
                 self.script_interactor.parse_code(code)
                 self.SetModelScript(self.script_interactor.get_code())
 
@@ -79,6 +80,16 @@ class Plugin(framework.Template):
         self.layout_domain_viewer()
         self.create_main_window_menu()
 
+        self.OnInteractorChanged(None)
+        self.update_data_names()
+        self.simulation_edit_widget.Update()
+        self.update_widgets()
+
+        parent.model_control.Bind(EVT_UPDATE_SCRIPT, self.ReadUpdateModel)
+
+
+    def ReadUpdateModel(self, evt):
+        self.script_interactor.parse_code(self.GetModelScript())
         self.OnInteractorChanged(None)
         self.update_data_names()
         self.simulation_edit_widget.Update()

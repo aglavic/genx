@@ -762,7 +762,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.plot_splitter.SetSashPosition(psplit)
 
     def EndInit(self):
-        wx.Yield() # make sure that all GUI layout is performed before _init_phase is unset
+        wx.YieldIfNeeded() # make sure that all GUI layout is performed before _init_phase is unset
         self._init_phase=False
 
     def startup_dialog(self, profile_path, force_show=False):
@@ -864,9 +864,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                    status_update=None)
 
     def new_from_file(self, path):
+        from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
         debug('new_from_file: clear model')
         self.model_control.new_model()
         self.paramter_grid.PrepareNewModel()
+        self.data_list.data_cont.set_data(self.model_control.get_data())
 
         # read data from file
         debug('new_from_file: load datafile')
@@ -876,16 +878,50 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         debug('new_from_file: build model script')
         # if this was exported from genx, use the embedded script
-        ana_meta=self.data_list.data_cont.data[0].meta.get('analysis', {})
+        meta=self.data_list.data_cont.data[0].meta
+        ana_meta=meta.get('analysis', {})
         if ana_meta.get('software', {}).get('name', '')=='GenX':
             self.model_control.set_model_script(ana_meta['script'])
-            self.script_editor.SetText(self.model_control.get_model_script())
         else:
+            ds=meta['data_source']
             # create a new script with the reflectivity plugin
-            refl=self.plugin_control.GetPlugin('Reflectivity')
+            refl: ReflPlugin=self.plugin_control.GetPlugin('Reflectivity')
             refl.CreateNewModel('models.spec_nx')
+            # detect source radiation
+            probe=ds['experiment']['probe']
+            inst=refl.sample_widget.instruments['inst']
+            if probe=='neutrons':
+                pol=ds['measurement']['instrument_settings'].get('polarization', 'unpolarized')
+                if pol=='unpolarized':
+                    inst.probe='neutron'
+                else:
+                    inst.probe = 'neutron pol'
+            else:
+                inst.probe='x-ray'
+            # detect x-axis unit
+            if meta['columns'][0].get('unit', '1/angstrom')=='1/angstrom':
+                inst.coords='q'
+            else:
+                inst.coords = '2θ'
+                inst.wavelength = float(ds['measurement']['instrument_settings']
+                                          ['incident_angle'].get('magnitude', 1.54))
+            # set resolution column
+            if len(meta['columns'])>3 and (meta['columns'][3]['name']==('s'+meta['columns'][0]['name'])):
+                inst.restype = 'full conv and varying res.'
+                inst.respoints = 7
+                inst.resintrange = 2.5
+                el=refl.simulation_widget.GetExpressionList()
+                for i, data_item in enumerate(self.data_list.data_cont.data):
+                    if len(data_item.meta['columns'])>3 and (
+                            data_item.meta['columns'][3]['name']==
+                            ('s'+data_item.meta['columns'][0]['name'])):
+                        el[i].append(f'inst.setRes(data[{i}].res)')
+                    else:
+                        el[i].append(f'inst.setRes(0.001)')
+            refl.WriteModel()
 
-        self.plugin_control.OnOpenModel(None)
+        debug('open_model: post new model event')
+        _post_new_model_event(self, self.model_control.get_model())
 
 
     def open_model(self, path):
@@ -927,10 +963,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def do_simulation(self, from_thread=False):
         if not from_thread: self.main_frame_statusbar.SetStatusText('Simulating...', 1)
         currecnt_script=self.script_editor.GetText()
-        if currecnt_script!=self.model_control.get_model_script():
-            self.model_control.set_model_script(currecnt_script)
+        self.model_control.set_model_script(currecnt_script)
         with self.catch_error(action='do_simulation', step=f'simulating the model') as mgr:
-            self.model_control.simulate()
+            self.model_control.simulate(recompile=not from_thread)
 
         if mgr.successful:
             wx.CallAfter(_post_sim_plot_event, self, self.model_control.get_model(), 'Simulation')
@@ -1883,18 +1918,18 @@ class GenxApp(wx.App):
     def ShowSplash(self):
         debug('Display Splash Screen')
         image=wx.Bitmap(img.getgenxImage().Scale(400,400))
-        self.splash = wx.adv.SplashScreen(image, wx.adv.SPLASH_CENTER_ON_SCREEN, 30_000, None)
-        wx.Yield()
+        self.splash = wx.adv.SplashScreen(image, wx.adv.SPLASH_CENTER_ON_SCREEN, wx.adv.SPLASH_NO_TIMEOUT, None)
+        wx.YieldIfNeeded()
 
-    def WriteSplash(self, text):
+    def WriteSplash(self, text, progress=0.):
         image=self.splash.GetBitmap()
-        self._draw_bmp(image, text)
+        self._draw_bmp(image, text, progress=progress)
         self.splash.Refresh()
         self.splash.Update()
-        wx.Yield()
+        wx.YieldIfNeeded()
 
     @staticmethod
-    def _draw_bmp(bmp, txt):
+    def _draw_bmp(bmp, txt, progress=0.):
         w,h=400,400
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
@@ -1903,6 +1938,9 @@ class GenxApp(wx.App):
         gc.SetFont(font, wx.Colour(0,0,0))
         gc.SetBrush(wx.Brush(wx.Colour(255,255,255)))
         gc.DrawRectangle(30, 0, 370, font.GetPixelSize().height+4)
+        if progress>0:
+            gc.SetBrush(wx.Brush(wx.Colour(252, 175, 62)))
+            gc.DrawRectangle(30, 0, int(progress*370), font.GetPixelSize().height+4)
         tw, th = gc.GetTextExtent(txt)
         gc.DrawText(txt, (w-tw)/2, 0)
         dc.SelectObject(wx.NullBitmap)
@@ -1917,22 +1955,49 @@ class GenxApp(wx.App):
         main_frame=GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
         self.SetTopWindow(main_frame)
 
+        try:
+            import numba
+        except ImportError:
+            pass
+        else:
+            # load numba modules, show progress as in case they aren't cached it takes some seconds
+            self.WriteSplash('compiling numba functions...', progress=0.25)
+            real_jit=numba.jit
+            class UpdateJit:
+                update_counter=1
+                WriteSplash=self.WriteSplash
+                def __call__(self, *args, **opts):
+                    self.WriteSplash(f'compiling numba functions {self.update_counter}/21',
+                                     progress=0.25+0.5*(self.update_counter-1)/21.)
+                    self.update_counter+=1
+                    wx.YieldIfNeeded()
+                    return real_jit(*args, **opts)
+            numba.jit=UpdateJit()
+            from ..models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
+            numba.jit=real_jit
+
         if self.open_file is None:
             self.splash.Destroy()
             main_frame.startup_dialog(config_path)
             self.ShowSplash()
         else:
-            wx.CallAfter(self.WriteSplash, f'loading file {os.path.basename(self.open_file)}...')
-            wx.CallAfter(main_frame.open_model, self.open_file)
-            wx.CallAfter(self.WriteSplash, 'display main window...')
+            wx.CallAfter(self.WriteSplash, f'loading file {os.path.basename(self.open_file)}...',
+                         progress=0.8)
+            if self.open_file.endswith('.ort'):
+                wx.CallAfter(self.WriteSplash, 'load default plugins...', progress=0.9)
+                wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
+                wx.CallAfter(main_frame.new_from_file, self.open_file)
+            else:
+                wx.CallAfter(main_frame.open_model, self.open_file)
+            wx.CallAfter(self.WriteSplash, 'display main window...', progress=0.9)
             wx.CallAfter(main_frame.Show)
             wx.CallAfter(self.splash.Destroy)
             return 1
 
         debug('init complete')
-        wx.CallAfter(self.WriteSplash, 'load default plugins...')
+        wx.CallAfter(self.WriteSplash, 'load default plugins...', progress=0.8)
         wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
-        wx.CallAfter(self.WriteSplash, 'display main window...')
+        wx.CallAfter(self.WriteSplash, 'display main window...', progress=0.9)
         wx.CallAfter(main_frame.Show)
         wx.CallAfter(self.splash.Destroy)
         return 1

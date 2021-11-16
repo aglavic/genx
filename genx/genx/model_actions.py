@@ -66,7 +66,7 @@ class NoOp(ModelAction):
 class ActionHistory:
     undo_stack: List[ModelAction] = field(default_factory=list)
     redo_stack: List[ModelAction] = field(default_factory=list)
-    max_stack=25
+    max_stack=100
 
     def execute(self, action: ModelAction):
         action.execute()

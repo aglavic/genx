@@ -91,6 +91,5 @@ class Plugin(Template):
 
             # insert metadata into ORSO compatible fields
             dataset.meta=orso_dataset.info.to_dict()
-            del(dataset.meta['columns'])
             if 'data_set' in dataset.meta:
                 del(dataset.meta['data_set'])

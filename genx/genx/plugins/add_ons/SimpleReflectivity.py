@@ -28,6 +28,7 @@ from genx.gui.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
+from genx.gui.solvergui import EVT_UPDATE_SCRIPT
 
 _set_func_prefix='set'
 
@@ -1099,7 +1100,7 @@ class WizarSelectionPage(WizardPageSimple):
 
         self.ctrl={}
 
-        box=wx.StaticBox(self, label=choice_label)
+        box=wx.Window(self)
         out_layout=wx.BoxSizer(wx.VERTICAL)
         box.SetSizer(out_layout)
         box_layout=wx.GridSizer(min(4, len(choices)//4+1), 2, 2)
@@ -1108,23 +1109,7 @@ class WizarSelectionPage(WizardPageSimple):
             self.ctrl[choice]=wx.RadioButton(box, label=choice,
                                              size=wx.Size(-1, 16*dpi_scale_factor))
             box_layout.Add(self.ctrl[choice], 0, wx.FIXED_MINSIZE, 2)
-        sz=box_layout.GetMinSize()
-        sa=box.GetBordersForSizer()
-        box.SetMinSize(wx.Size(sz.width+sa[0]+sa[1]+12*dpi_scale_factor, sz.height+sa[1]*2+12*dpi_scale_factor))
-
-        #box.SetMinSize(wx.Size(500, 300))
-
-        #wx.RadioBox(self, label=choice_label, choices=choices,
-        #                      style=wx.RA_SPECIFY_ROWS, majorDimension=4)
-
-        # dc=wx.ScreenDC()
-        # dc.SetFont(self.ctrl.GetFont())
-        # txt_height=dc.GetTextExtent("A").height
-        # txt_lengths=[dc.GetTextExtent(ti).width for ti in choices]
-        # total_txt_width=max(txt_lengths[:4])
-        # for i in range(len(choices)//4):
-        #     total_txt_width+=max(txt_lengths[i*4:(i+1)*4])
-        # self.ctrl.SetMinSize(self.ctrl.GetBestSize())#wx.Size(total_txt_width, 50))
+        self.ctrl[choices[0]].SetValue(True)
 
         vbox.Add(box, 0, 0)
         if choices_help:
@@ -1263,6 +1248,7 @@ class Plugin(framework.Template):
 
         self.parent.Bind(EVT_UPDATE_PARAMETERS, self.OnFitParametersUpdated)
         self.parent.Bind(EVT_PARAMETER_GRID_CHANGE, self.OnGridMayHaveErrors)
+        self.parent.model_control.Bind(EVT_UPDATE_SCRIPT, self.ReadUpdateModel)
 
     def OnHideAdvanced(self, evt):
         if self.mb_hide_advanced.IsChecked():
@@ -1534,13 +1520,15 @@ class Plugin(framework.Template):
     def WriteModel(self):
         return
 
-    def ReadModel(self):
-        '''ReadModel(self)  --> None
+    def ReadUpdateModel(self, evt):
+        self.ReadModel(verbose=False)
 
+    def ReadModel(self, verbose=True):
+        '''
         Reads in the current model and locates layers and stacks
         and sample defined inside BEGIN Sample section.
         '''
-        self.StatusMessage('Compiling the script...')
+        if verbose: self.StatusMessage('Compiling the script...')
         try:
             self.CompileScript()
         except GenxError as e:
@@ -1555,9 +1543,8 @@ class Plugin(framework.Template):
             self.ShowErrorDialog(val)
             self.Statusmessage('Fatal Error - compling, SimpleReflectivity')
             return
-        self.StatusMessage('Script compiled!')
 
-        self.StatusMessage('Trying to interpret the script...')
+        if verbose: self.StatusMessage('Trying to interpret the script...')
 
         txt=self.GetModel().script
         grid_parameters=self.GetModel().get_parameters()
@@ -1624,7 +1611,7 @@ class Plugin(framework.Template):
 
         table.RebuildTable(layers)
 
-        self.StatusMessage('New sample loaded to plugin!')
+        if verbose: self.StatusMessage('New sample loaded to plugin!')
 
 def analyze_layer_txt(name, txt):
     # ['Iron', 'Formula', Formula([['Fe', 1.0]]), False, '7.87422', False, '3.0', True, '100.0', False, '5.0']
