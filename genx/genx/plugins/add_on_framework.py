@@ -6,9 +6,10 @@ plugins.
 import os
 import wx, io, traceback
 from dataclasses import dataclass
+from logging import debug, info, warn, error
 
 from genx.core.config import BaseConfig, Configurable
-from .utils import PluginHandler
+from .utils import PluginHandler, ShowInfoDialog, ShowErrorDialog, ShowWarningDialog, ShowQuestionDialog
 
 head, tail=os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -27,10 +28,8 @@ class Template:
     have to take care of the deletion of objects.
     '''
 
-    # TODO: Implement an Bind/Unbind mehtods.
-    # TODO: Add a Load data function Needs change in data as well.
     def __init__(self, parent):
-        '''__init__(self, parent)
+        '''
         This method should be overloaded.
         '''
         self.parent=parent
@@ -44,8 +43,7 @@ class Template:
         pass
 
     def NewPlotFolder(self, name, pos=-1):
-        '''NewPlotFolder(self, name) --> wx.Panel
-        
+        '''
         Creates a new Folder in the Plot part of the panels. Returns
         a wx.Panel which can be used to create custom controls. 
         o not forget to use RemovePlotfolder in the Destroy method.
@@ -57,8 +55,7 @@ class Template:
         return panel
 
     def NewInputFolder(self, name, pos=-1):
-        '''NewInputFolder(self, name, pos = -1) --> wx.Panel
-        
+        '''
         Creates a new Folder in the Input part of the panels. Returns
         a wx.Panel which can be used to create custom controls. 
         o not forget to use RemoveInputfolder in the Destroy method.
@@ -70,8 +67,7 @@ class Template:
         return panel
 
     def NewDataFolder(self, name, pos=-1):
-        '''NewDataFolder(self, name, pos = -1) --> wx.Panel
-        
+        '''
         Creates a new Folder in the data part of the panels. Returns
         a wx.Panel which can be used to create custom controls. 
         o not forget to use RemoveInputfolder in the Destroy method.
@@ -83,8 +79,7 @@ class Template:
         return panel
 
     def NewMenu(self, name):
-        '''NewMenu(self, name) --> wx.Menu
-        
+        '''
         Creates an top menu that can be used to control the plugin. Remeber
         to also implement RemoveMenu in the Destroy method.
         '''
@@ -95,59 +90,55 @@ class Template:
         return menu
 
     def StatusMessage(self, text):
-        '''StatusMessage(self, text) --> None
-        
+        '''
         Method that sets the staustext in the main window
         '''
+        debug(text)
         self.parent.main_frame_statusbar.SetStatusText(text, 1)
 
     def ShowErrorDialog(self, message):
-        '''ShowErrorDialog(self, message) --> None
-        
+        '''
         Shows an error dialog with message [string]
         '''
+        error(message)
         ShowErrorDialog(self.parent, message)
 
     def ShowInfoDialog(self, message):
-        '''ShowInfoDialog(self, message) --> None
-        
+        '''
         Shows an info dialog with message [string]
         '''
+        info(message)
         ShowInfoDialog(self.parent, message)
 
     def ShowWarningDialog(self, message):
-        '''ShowWarningDialog(self, message) --> None
-        
+        '''
         Shows an warning dialog with message [string]
         '''
+        warn(message)
         ShowWarningDialog(self.parent, message)
 
     def ShowQuestionDialog(self, message):
-        '''ShowWarningDialog(self, message) --> None
-        
+        '''
         Shows an warning dialog with message [string]
         '''
         return ShowQuestionDialog(self.parent, message)
 
     def GetModel(self):
-        '''GetModel(self) --> model 
-        
+        '''
         Returns the model currently in use. This is a pointer to the model
         object thus it will automatically always conatin the newest information.        
         '''
         return self.parent.model_control.get_model()
 
     def GetSolverControl(self):
-        '''GetSolverControl(self) --> solver_control
-        
+        '''
         Returns the solver_control object that controls all aspects of
         the calculational part of the fitting.
         '''
         return self.parent.model_control
 
     def SetModelScript(self, script):
-        '''SetModelScript(self, script) --> None
-        
+        '''
         Sets the script of the current model. This overwrite the current 
         script.
         '''
@@ -158,8 +149,7 @@ class Template:
         return self.parent.model_control.get_model_script()
 
     def CompileScript(self):
-        '''CompileScript(self) --> None
-        
+        '''
         Compiles the model script
         '''
         self.parent.model_control.compile_if_needed()
@@ -169,8 +159,7 @@ class Template:
         return self.parent.model_control.script_module
 
     def OnNewModel(self, event):
-        '''OnNewModel(self) --> None
-        
+        '''
         Function to be overridden. Called when a new model is being created.
         '''
         pass
@@ -216,7 +205,7 @@ class Template:
         pass
 
     def Remove(self):
-        '''Remove(self) --> None
+        '''
         Removes all components.
         '''
         pnb=self.parent.plot_notebook
@@ -461,34 +450,4 @@ class PluginController(Configurable):
 
 # ==============================================================================
 # Utility Dialog functions..
-def ShowInfoDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message,
-                         'Information',
-                         wx.OK | wx.ICON_INFORMATION
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
 
-def ShowErrorDialog(frame, message, position=''):
-    dlg=wx.MessageDialog(frame, message,
-                         'ERROR',
-                         wx.OK | wx.ICON_ERROR
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowWarningDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message, 'Warning',
-                         wx.OK | wx.ICON_ERROR
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowQuestionDialog(frame, message, title='Question'):
-    dlg=wx.MessageDialog(frame, message,
-                         title,
-                         wx.YES_NO | wx.ICON_QUESTION
-                         )
-    result=dlg.ShowModal()==wx.ID_YES
-    dlg.Destroy()
-    return result

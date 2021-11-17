@@ -1538,6 +1538,8 @@ class Plugin(framework.Template):
     def ReadUpdateModel(self, evt):
         try:
             self.ReadModel(verbose=False)
+        except GenxError:
+            pass
         except Exception as e:
             self.StatusMessage(f'could not analyze script: {e}')
 
@@ -1547,20 +1549,7 @@ class Plugin(framework.Template):
         and sample defined inside BEGIN Sample section.
         '''
         if verbose: self.StatusMessage('Compiling the script...')
-        try:
-            self.CompileScript()
-        except GenxError as e:
-            self.ShowErrorDialog(str(e))
-            self.StatusMessage('Error when compiling the script')
-            return
-        except Exception as e:
-            outp=io.StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            self.ShowErrorDialog(val)
-            self.StatusMessage('Fatal Error - compling, SimpleReflectivity')
-            return
+        self.CompileScript()
 
         if verbose: self.StatusMessage('Trying to interpret the script...')
 

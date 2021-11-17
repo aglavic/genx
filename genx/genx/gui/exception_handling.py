@@ -3,7 +3,7 @@ Module to handle different cases of exceptions in the user interface.
 """
 
 import traceback
-from logging import debug, error
+from logging import debug, warning, error
 
 import wx
 
@@ -52,10 +52,12 @@ class CatchModelError:
         ext_message=f"{exc_val}"
 
         if isinstance(exc_val, GenxError):
+            warning(f'{message}', exc_info=(exc_type, exc_val, exc_tb), stack_info=True)
             self.status_update(f'Error in {self.step}, {type(exc_val).__name__}')
             title='Warning'
             icon_style=wx.ICON_WARNING
         else:
+            error(message, exc_info=(exc_type, exc_val, exc_tb), stack_info=True)
             self.status_update(f'Fatal error in {self.step}, {type(exc_val).__name__}')
             ext_message+='\n\nPython Error (last calls first):\n    '
             ext_message+='\n    '.join(traceback.format_tb(exc_tb)[:2:-1])
@@ -64,7 +66,6 @@ class CatchModelError:
         full_trace = message+':\n\n'
         full_trace += ''.join(traceback.format_tb(exc_tb))
         full_trace += f'{type(exc_val).__name__}: {exc_val}'
-        error(full_trace)
 
         # make sure the dialog is shown from main thread and after any queued actions
         wx.CallAfter(self.display_message, title, message, ext_message, full_trace, icon_style)

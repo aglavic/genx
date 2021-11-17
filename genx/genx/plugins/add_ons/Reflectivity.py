@@ -49,7 +49,7 @@ This shows the real and imaginary part of the scattering length as a function
 of depth for the sample. The substrate is to the left and the ambient material
 is to the right. This is updated when the simulation button is pressed.
 '''
-
+from genx.plugins.utils import ShowInfoDialog, ShowWarningDialog
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
 from genx.gui.plotpanel import PlotPanel, BasePlotConfig
@@ -1051,10 +1051,7 @@ class EditCustomParameters(wx.Dialog):
         except Exception as e:
             result='Could not evaluate the expression. The python error'+ \
                    'is: \n'+e.__repr__()
-            dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                 wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, result, 'Error in expression')
         else:
             self.lines.append(line)
             self.listbox.SetItemList(self.lines)
@@ -1066,12 +1063,10 @@ class EditCustomParameters(wx.Dialog):
         '''
         result='Do you want to delete the expression?\n'+ \
                'Remember to check if parameter is used elsewhere!'
-        dlg=wx.MessageDialog(self, result, 'Delete expression?',
-                             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_INFORMATION)
-        if dlg.ShowModal()==wx.ID_YES:
+        result = ShowInfoDialog(self, result, 'Delete expression?')
+        if result:
             self.lines.pop(self.listbox.GetSelection())
             self.listbox.SetItemList(self.lines)
-        dlg.Destroy()
 
     def GetLines(self):
         '''GetLines(self) --> uservars lines [list]
@@ -1240,10 +1235,7 @@ class SimulationExpressionDialog(wx.Dialog):
             except Exception as e:
                 result=('Could not evaluate expression:\n%s.\n'%exp+
                         ' The python error is: \n'+e.__repr__())
-                dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                     wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
+                ShowWarningDialog(self, result, 'Error in expression')
             else:
                 event.Skip()
 
@@ -1371,10 +1363,7 @@ class ParameterExpressionDialog(wx.Dialog):
         except Exception as e:
             result='Could not evaluate the expression. The python'+ \
                    'is: \n'+e.__repr__()
-            dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                 wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, result, 'Error in expression')
         else:
             event.Skip()
 
@@ -1865,7 +1854,12 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         self.simulation_widget.AppendSim(sim_func, inst, args)
 
     def ReadUpdateModel(self, evt):
-        self.ReadModel(verbose=False)
+        try:
+            self.ReadModel(verbose=False)
+        except GenxError:
+            pass
+        except Exception as e:
+            self.StatusMessage(f'could not analyze script: {e}')
 
     def ReadModel(self, reevaluate=False, verbose=True):
         '''
@@ -1873,20 +1867,7 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         and sample defined inside BEGIN Sample section.
         '''
         if verbose: self.StatusMessage('Compiling the script...')
-        try:
-            self.CompileScript()
-        except GenxError as e:
-            self.ShowErrorDialog(str(e))
-            if verbose: self.StatusMessage('Error when compiling the script')
-            return
-        except Exception as e:
-            outp=io.StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            self.ShowErrorDialog(val)
-            if verbose: self.StatusMessage('Fatal Error - compling, Reflectivity')
-            return
+        self.CompileScript()
         if verbose: self.StatusMessage('Script compiled!')
 
         if verbose: self.StatusMessage('Trying to interpret the script...')

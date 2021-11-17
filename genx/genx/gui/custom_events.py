@@ -58,3 +58,6 @@ autosave, EVT_AUTOSAVE=NewEvent()
 ## plugins
 # new model is ready with a script as value.
 update_model_event, EVT_UPDATE_MODEL=wx.lib.newevent.NewEvent()
+
+## custom_logging
+log_message_event, EVT_LOG_MESSAGE=wx.lib.newevent.NewEvent()

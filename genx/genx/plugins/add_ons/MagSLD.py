@@ -49,11 +49,6 @@ class Plugin(framework.Template):
             # connect to the reflectivity plugin for layer creation
             self.refplugin=ph.loaded_plugins['SimpleReflectivity']
         else:
-            # dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
-            #                  caption='Information',
-            #                  style=wx.OK|wx.ICON_WARNING)
-            # dlg.ShowModal()
-            # dlg.Destroy()
             raise RuntimeError("Can't load plugin without Reflectivity plugin present.")
 
         self._orgi_call=self.refplugin.OnSimulate

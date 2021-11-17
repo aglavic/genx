@@ -3,7 +3,9 @@ Command classes that perform actions on a model. Allows
 to implement undo/redo functionality and tracking of
 actions in logs.
 """
+import difflib
 
+from logging import debug
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from enum import Flag, auto
@@ -39,6 +41,15 @@ class ModelAction(ABC):
     @abstractmethod
     def __init__(self, model: Model, *params):
         ...
+
+    def __new__(cls, model: Model, *params):
+        # log any action that is created
+        output=super().__new__(cls)
+        output.__init__(model, *params)
+        action_string=str(output)
+        action_string=action_string.replace('\n', '\n    ')
+        debug(f'New Action - {cls.__name__}: {action_string}')
+        return output
 
     @abstractmethod
     def execute(self):
@@ -104,21 +115,16 @@ class SetModelScript(ModelAction):
     def __init__(self, model, text):
         self.model=model
         self.new_text=text
-        self.old_text=None
+        self.old_text=self.model.get_script()
 
     def execute(self):
-        # Replace model script with new text, store previous script as new text (toggles)
-        self.old_text=self.model.get_script()
+        # Replace model script with new text, script as new text (toggles)
         self.model.set_script(self.new_text)
 
     def undo(self):
         self.model.set_script(self.old_text)
 
-    def redo(self):
-        self.model.set_script(self.new_text)
-
     def __str__(self):
-        import difflib
         old=self.old_text or self.model.get_script()
         new=self.new_text
         diff=''.join(difflib.unified_diff(old.splitlines(keepends=True),
@@ -238,3 +244,6 @@ class UpdateParamValue(ModelAction):
 
     def undo(self):
         self.model.parameters.set_value(self.row, self.col, self.old_value)
+
+    def __str__(self):
+        return f'parameter[{self.row},{self.col}]: {self.old_value!r} -> {self.new_value!r}'

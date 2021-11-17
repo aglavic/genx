@@ -22,6 +22,7 @@ from wx.lib.wordwrap import wordwrap
 from .custom_events import *
 from . import datalist, help, images as img, parametergrid, plotpanel, solvergui, pubgraph_dialog
 from .exception_handling import CatchModelError
+from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
 from ..plugins import add_on_framework as add_on
 from ..core import config as conf_mod
 from ..core.colors import COLOR_CYCLES
@@ -149,6 +150,7 @@ class MenuId(int, Enum):
     HELP_MANUAL=wx.Window.NewControlId()
     HELP_HOMEPAGE=wx.Window.NewControlId()
     HELP_ABOUT=wx.Window.NewControlId()
+    HELP_DEBUG=wx.Window.NewControlId()
 
 
 @dataclass
@@ -448,16 +450,18 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_set.Append(MenuId.SET_IMPORT, "Import\tShift+Ctrl+I", "Import settings for the data sets")
         mb_set.Append(MenuId.SET_PROFILE, "Startup Profile...", "")
         mfmb.Append(mb_set, "Settings")
-        wxglade_tmp_menu=wx.Menu()
-        wxglade_tmp_menu.Append(MenuId.HELP_MODEL, "Models Help...", "Show help for the models")
-        wxglade_tmp_menu.Append(MenuId.HELP_FOM, "FOM Help", "Show help about the fom")
-        wxglade_tmp_menu.Append(MenuId.HELP_PLUGINS, "Plugins Helps...", "Show help for the plugins")
-        wxglade_tmp_menu.Append(MenuId.HELP_DATA_LOADERS, "Data loaders Help...", "Show help for the data loaders")
-        wxglade_tmp_menu.AppendSeparator()
-        wxglade_tmp_menu.Append(MenuId.HELP_MANUAL, "Open Manual...", "Show the manual")
-        wxglade_tmp_menu.Append(MenuId.HELP_HOMEPAGE, "Open Homepage...", "Open the homepage")
-        wxglade_tmp_menu.Append(MenuId.HELP_ABOUT, "About...", "Shows information about GenX")
-        mfmb.Append(wxglade_tmp_menu, "Help")
+        help_menu=wx.Menu()
+        help_menu.Append(MenuId.HELP_MODEL, "Models Help...", "Show help for the models")
+        help_menu.Append(MenuId.HELP_FOM, "FOM Help", "Show help about the fom")
+        help_menu.Append(MenuId.HELP_PLUGINS, "Plugins Helps...", "Show help for the plugins")
+        help_menu.Append(MenuId.HELP_DATA_LOADERS, "Data loaders Help...", "Show help for the data loaders")
+        help_menu.AppendSeparator()
+        help_menu.Append(MenuId.HELP_MANUAL, "Open Manual...", "Show the manual")
+        help_menu.Append(MenuId.HELP_HOMEPAGE, "Open Homepage...", "Open the homepage")
+        help_menu.Append(MenuId.HELP_ABOUT, "About...", "Shows information about GenX")
+        help_menu.AppendSeparator()
+        help_menu.Append(MenuId.HELP_DEBUG, "Collect Debug Info...\tCtrl+L", "Record debug information to file and show console")
+        mfmb.Append(help_menu, "Help")
         self.SetMenuBar(mfmb)
         # Plugin controller builds own menu entries
         self.plugin_control=add_on.PluginController(self, mb_set_plugins)
@@ -525,6 +529,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, id=MenuId.HELP_MANUAL)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_openhomepage, id=MenuId.HELP_HOMEPAGE)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, id=MenuId.HELP_ABOUT)
+        self.Bind(wx.EVT_MENU, self.eh_mb_debug_dialog, id=MenuId.HELP_DEBUG)
+
 
     def create_toolbar(self):
         tb_bmp_size=int(32*self.dpi_scale_factor)
@@ -902,6 +908,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 pol = ds['measurement']['instrument_settings'].get('polarization', 'unpolarized')
                 if pol=='unpolarized':
                     probe = 'neutron'
+                elif pol in ['pp', 'mm', 'pm', 'mp']:
+                    probe = 'neutron pol spin flip'
                 else:
                     probe = 'neutron pol'
             else:
@@ -935,6 +943,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 inst.probe=probe
                 inst.coords=coords
                 inst.wavelength=wavelength
+                pol_names={'p': 'uu', 'm': 'dd',
+                           'pp': 'uu', 'mm': 'dd', 'pm': 'ud', 'mp': 'du'}
                 # set resolution column
                 if len(meta['columns'])>3 and (meta['columns'][3]['name']==('s'+meta['columns'][0]['name'])):
                     inst.restype = 'full conv and varying res.'
@@ -948,6 +958,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                             el[i].append(f'inst.setRes(data[{i}].res)')
                         else:
                             el[i].append(f'inst.setRes(0.001)')
+                        # set polarization channel
+                        pol = data_item.meta['data_source']['measurement']['instrument_settings'].get('polarization', 'unpolarized')
+                        if pol in pol_names:
+                            el[i].append(f'inst.setPol("{pol_names[pol]}")')
                 refl.WriteModel()
 
         debug('open_model: post new model event')
@@ -1469,6 +1483,26 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         wx.adv.AboutBox(info_dilog)
 
+    def eh_mb_debug_dialog(self, event):
+        import logging
+        from ..core import custom_logging
+        logger=logging.getLogger()
+        level=logger.getEffectiveLevel()
+        logger.setLevel(logging.DEBUG)
+        if level!=custom_logging.FILE_LEVEL:
+            dlg = wx.FileDialog(self, message="Save Logfile As", defaultFile="genx.log",
+                                wildcard="GenX logfile (*.log)|*.log",
+                                style=wx.FD_SAVE  # | wx.FD_CHANGE_DIR
+                                )
+            if dlg.ShowModal()==wx.ID_OK:
+                fname = dlg.GetPath()
+                dlg.Destroy()
+                custom_logging.activate_logging(fname)
+        # open logging console dialog
+        from .log_dialog import LoggingDialog
+        dlg=LoggingDialog(self)
+        dlg.Show()
+
     def eh_mb_saveas(self, event):
         '''
         Event handler for save as ...
@@ -1948,7 +1982,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def eh_show_startup_dialog(self, event):
         pre_dia=self.wstartup.copy()
         self.startup_dialog(config_path, force_show=True)
-        print(pre_dia==self.wstartup)
+        # print(pre_dia==self.wstartup)
 
     def eh_mb_fit_autosim(self, event):
         event.Skip()
@@ -2033,7 +2067,7 @@ class GenxApp(wx.App):
             if self.open_file.endswith('.ort'):
                 wx.CallAfter(self.WriteSplash, 'load default plugins...', progress=0.9)
                 wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
-                wx.CallAfter(main_frame.new_from_file, self.open_file)
+                wx.CallAfter(main_frame.new_from_file, [self.open_file])
             else:
                 wx.CallAfter(main_frame.open_model, self.open_file)
             wx.CallAfter(self.WriteSplash, 'display main window...', progress=0.9)
@@ -2136,23 +2170,6 @@ class StartUpConfigDialog(wx.Dialog):
         plugins=[s[:-5] for s in os.listdir(self.config_folder) if '.conf'==s[-5:]
                  and s[:2]!='__']
         return plugins
-
-def ShowQuestionDialog(frame, message, title='Question?'):
-    dlg=wx.MessageDialog(frame, message,
-                         title,
-                         wx.OK | wx.CANCEL | wx.OK_DEFAULT | wx.ICON_QUESTION
-                         )
-    result=dlg.ShowModal()==wx.ID_OK
-    dlg.Destroy()
-    return result
-
-def ShowNotificationDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message,
-                         'Information',
-                         wx.OK | wx.ICON_INFORMATION
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
 
 # =============================================================================
 # Custom events needed for updating and message parsing between the different

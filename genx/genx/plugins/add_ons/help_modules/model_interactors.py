@@ -13,6 +13,8 @@ from . import sxrd_images
 
 from genx.models import utils
 from genx.core.custom_logging import iprint
+from ...utils import ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
+
 
 class ModelScriptInteractor:
     _begin_string="# BEGIN %s"
@@ -1471,18 +1473,10 @@ class EditList(wx.Panel):
                 self.object_list.pop(ind)
                 self.listbox.Delete(ind)
             else:
-                dlg=wx.MessageDialog(self.parent, 'Object %s is not allowed to delete'%
-                                     self.object_list[ind].name, 'Information',
-                                     wx.OK | wx.ICON_INFORMATION
-                                     )
-                dlg.ShowModal()
-                dlg.Destroy()
+                ShowInfoDialog(self.parent, 'Object %s is not allowed to delete'%
+                                     self.object_list[ind].name)
         else:
-            dlg=wx.MessageDialog(self.parent, 'At least one item has to be left', 'Information',
-                                 wx.OK | wx.ICON_INFORMATION
-                                 )
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowInfoDialog(self.parent, 'At least one item has to be left')
         self._send_change_event()
 
     def OnMoveUp(self, event):
@@ -1888,17 +1882,16 @@ class DomainWidget(wx.ScrolledWindow):
                             name_exist=True
                             break
                     if not name_exist:
-                        dlg=wx.MessageDialog(self.parent,
-                                             'The slab %s is no longer in use, do you want to delete it?'%name,
-                                             'Delete', wx.YES_NO | wx.ICON_QUESTION)
-                        if dlg.ShowModal()==wx.ID_YES:
+                        result=ShowQuestionDialog(self.parent,
+                                                  'The slab %s is no longer in use, do you want to delete it?'%name,
+                                                  'Delete')
+                        if result:
                             index=None
                             for i, s in enumerate(self.slab_list):
                                 if s.name==name:
                                     index=i
                                     break
                             self.slab_list.pop(index)
-                        dlg.Destroy()
                     self.selected_item=(self.selected_item[0], self.selected_item[1]-1)
                     self._send_change_event()
             else:
@@ -2840,9 +2833,7 @@ class ParameterExpressionDialog(wx.Dialog):
             self.model.eval_in_model(expression.expression)
         except Exception as e:
             result='Could not evaluate the expression. The python error is: \n'+e.__repr__()
-            dlg=wx.MessageDialog(self, result, 'Error in expression', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, result, 'Error in expression')
         else:
             event.Skip()
 
@@ -3026,10 +3017,7 @@ class SimulationExpressionDialog(wx.Dialog):
             except Exception as e:
                 result=('Could not evaluate expression:\n%s.\n'%exp+
                         ' The python error is: \n'+e.__repr__())
-                dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                     wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
+                ShowWarningDialog(self, result, 'Error in expression')
             else:
                 event.Skip()
 
@@ -3114,9 +3102,7 @@ class CustomParametersDialog(wx.Dialog):
             self.model.eval_in_model(new_inter.get_code())
         except Exception as e:
             result='Could not evaluate the expression. The python error is: \n'+e.__repr__()
-            dlg=wx.MessageDialog(self, result, 'Error in expression', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, result, 'Error in expression')
         else:
             self.interactors.append(new_inter)
             self.listbox.SetItemList([inter.get_code() for inter in self.interactors])
@@ -3124,11 +3110,10 @@ class CustomParametersDialog(wx.Dialog):
     def OnDelete(self, event):
         '''Callback for deleting an entry'''
         result='Do you want to delete the expression?\nRemember to check if parameter is used elsewhere!'
-        dlg=wx.MessageDialog(self, result, 'Delete expression?', wx.YES_NO | wx.NO_DEFAULT | wx.ICON_INFORMATION)
-        if dlg.ShowModal()==wx.ID_YES:
+        result=ShowQuestionDialog(self, result, 'Delete expression?')
+        if result:
             self.interactors.pop(self.listbox.GetSelection())
             self.listbox.SetItemList([inter.get_code() for inter in self.interactors])
-        dlg.Destroy()
 
     def GetObjectList(self):
         '''Returns the custom parameters list.'''

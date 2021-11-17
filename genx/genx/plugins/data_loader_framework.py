@@ -3,7 +3,9 @@
 Library that implements a template (Template) class for classes that
 loads data into GenX.
 '''
-from genx.data import DataSet
+from ..data import DataSet
+from .utils import ShowInfoDialog
+
 
 class Template:
     wildcard=None
@@ -79,10 +81,8 @@ class Template:
                 dlg.Destroy()
                 dcount=self.CountDatasets(file_path)
                 if n_selected>dcount:
-                    dlg = wx.MessageDialog(self.parent,
-                                           f'You can only load {dcount} dataset(s) from this file'
-                                           , caption='Too many selections'
-                                           , style=wx.OK | wx.ICON_INFORMATION)
+                    ShowInfoDialog(self.parent, f'You can only load {dcount} dataset(s) from this file',
+                                   'Too many selections')
                     dlg.ShowModal()
                     dlg.Destroy()
                 else:
@@ -109,12 +109,7 @@ class Template:
             else:
                 dlg.Destroy()
         else:
-            dlg = wx.MessageDialog(self.parent, 'Please select a dataset'
-                                   , caption='No active dataset'
-                                   , style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-
+            ShowInfoDialog(self.parent, 'Please select a dataset', 'No active dataset')
         return False
 
     def LoadData(self, dataset, file_path, data_id=0):

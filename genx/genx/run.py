@@ -401,7 +401,7 @@ def main():
     data_group.add_argument('--dpi-scale', dest='dpi_overwrite', default=None, type=float,
                             help='Overwrite the detection of screen dpi scaling factor (=72/dpi)')
 
-    parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load')
+    parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load or .ort file to use as basis for model')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
 
     args=parser.parse_args()

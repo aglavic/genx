@@ -1297,7 +1297,6 @@ class ParsPlotPanel(PlotPanel):
         '''
 
         if data.fitting:
-            print('update param', data)
             pop=array(data.population)
             norm=1.0/(data.max_val-data.min_val)
             best=(array(data.values)-data.min_val)*norm

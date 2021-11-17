@@ -8,10 +8,10 @@ import time
 from typing import Union, TYPE_CHECKING
 from threading import Thread, Event
 
-import wx
 import wx.lib.newevent
 
 from .exception_handling import CatchModelError
+from .message_dialogs import ShowErrorDialog, ShowQuestionDialog, ShowWarningDialog
 from .settings_dialog import SettingsDialog
 from .custom_events import *
 from .. import diffev, fom_funcs, model_control, levenberg_marquardt
@@ -426,8 +426,8 @@ class ModelControlGUI(wx.EvtHandler):
             return
 
         message='Do you want to keep the parameter values from the fit?'
-        dlg=wx.MessageDialog(self.parent, message, 'Keep the fit?', wx.YES_NO | wx.ICON_QUESTION)
-        if dlg.ShowModal()==wx.ID_YES:
+        result=ShowQuestionDialog(self.parent, message, 'Keep the fit?', yes_no=True)
+        if result:
             self.controller.set_value_pars(evt.values)
             evt = update_parameters(values=evt.values,
                                     new_best=True,
@@ -540,27 +540,3 @@ class ModelControlGUI(wx.EvtHandler):
         Sets the boolean value to save all evals to file
         '''
         self.controller.optimizer.opt.save_all_evals=bool(value)
-
-
-def ShowWarningDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message,
-                         'Warning',
-                         wx.OK | wx.ICON_WARNING
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowErrorDialog(frame, message, position=''):
-    if position!='':
-        dlg=wx.MessageDialog(frame, message+'\n'+'Position: '+position,
-                             'ERROR',
-                             wx.OK | wx.ICON_ERROR
-                             )
-    else:
-        dlg=wx.MessageDialog(frame, message,
-                             'ERROR',
-                             wx.OK | wx.ICON_ERROR
-                             )
-    dlg.ShowModal()
-    dlg.Destroy()
-
