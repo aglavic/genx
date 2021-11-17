@@ -5,10 +5,10 @@ An interface to show output messages from python logging with convenient fielter
 import wx
 from traceback import format_exception
 from typing import List, Tuple
-from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import logging
 
 from.custom_events import log_message_event, EVT_LOG_MESSAGE
+
 
 class GuiHandler(logging.Handler, wx.EvtHandler):
     def __init__(self, level=logging.DEBUG):

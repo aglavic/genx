@@ -18,8 +18,8 @@ import numpy as np
 import wx
 from wx.lib.masked import NumCtrl
 
-from plugins.data_loader_framework import Template
-from plugins.utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
+from genx.plugins.data_loader_framework import Template
+from genx.plugins.utils import ShowErrorDialog, ShowWarningDialog, ShowInfoDialog
 
 class Plugin(Template):
     def __init__(self, parent):
@@ -43,7 +43,7 @@ class Plugin(Template):
         try:
             load_array = np.loadtxt(filename, delimiter = self.delimiter, 
                 comments = self.comment, skiprows = self.skip_rows)
-        except Exception, e:
+        except Exception as e:
             ShowWarningDialog(self.parent, 'Could not load the file: ' +\
                     filename + ' \nPlease check the format.\n\n numpy.loadtxt'\
                     + ' gave the following error:\n'  +  str(e))
