@@ -36,7 +36,7 @@ class RecordDisplayDialog(wx.Dialog):
         vbox.Add(wx.StaticText(self, label=f'Module: {record.module}'))
         vbox.Add(wx.StaticText(self, label=f'Line: {record.lineno}'))
         vbox.Add(wx.StaticText(self, label=f'\nMessage:'))
-        msg=wx.TextCtrl(self, value=record.msg, style=wx.TE_READONLY|wx.TE_MULTILINE|wx.TE_DONTWRAP)
+        msg=wx.TextCtrl(self, value=record.message, style=wx.TE_READONLY|wx.TE_MULTILINE|wx.TE_DONTWRAP)
         font=msg.GetFont()
         font.SetFamily(wx.FONTFAMILY_TELETYPE)
         msg.SetFont(font)
@@ -53,7 +53,7 @@ class RecordDisplayDialog(wx.Dialog):
             vbox.Add(msg, 1, wx.EXPAND)
 
 class LoggingDialog(wx.Dialog):
-    looged_events: List[Tuple[logging.LogRecord, str]]
+    logged_events: List[logging.LogRecord]
 
     def __init__(self, parent=None):
         wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE|wx.STAY_ON_TOP|wx.RESIZE_BORDER,
@@ -62,7 +62,7 @@ class LoggingDialog(wx.Dialog):
         self.handler = GuiHandler()
         logging.getLogger().addHandler(self.handler)
         self.build_layout()
-        self.looged_events=[]
+        self.logged_events=[]
         self.log_level=logging.INFO
 
         self.Bind(wx.EVT_CLOSE, self.close_window)
@@ -73,23 +73,6 @@ class LoggingDialog(wx.Dialog):
         size=parent.GetSize()
         self.SetSize(400, size.height)
         self.SetPosition(wx.Point(pos.x+size.width, pos.y))
-
-    def close_window(self, event):
-        # make sure the handler is removed on close of dialog
-        event.Skip()
-        logging.getLogger().removeHandler(self.handler)
-
-    def update_loglevel(self, level):
-        self.log_level=level
-        self.log_list.DeleteAllItems()
-        for record, message in self.looged_events:
-            self.append_event(record)
-        self.resize_columns()
-
-    def show_event_message(self, event):
-        records=[ri for ri,mi in self.looged_events if ri.levelno>=self.log_level]
-        record=records[event.GetIndex()]
-        RecordDisplayDialog(self, record).Show()
 
     def build_layout(self):
         vbox=wx.BoxSizer(wx.VERTICAL)
@@ -117,9 +100,37 @@ class LoggingDialog(wx.Dialog):
         # self.log_list.setResizeColumn(3)
         vbox.Add(self.log_list, 1, wx.EXPAND)
 
-    def append_event(self, record: logging.LogRecord):
+    def close_window(self, event):
+        # make sure the handler is removed on close of dialog
+        event.Skip()
+        logging.getLogger().removeHandler(self.handler)
+
+    def update_loglevel(self, level):
+        self.log_level=level
+        self.log_list.DeleteAllItems()
+        for i, record in enumerate(self.logged_events):
+            if (i+1)<len(self.logged_events) and \
+                    self.logged_events[i+1].message==record.message and \
+                    self.logged_events[i+1].lineno==record.lineno:
+                continue
+            self.append_event(record)
+        self.resize_columns()
+
+    def show_event_message(self, event):
+        records=[ri for ri in self.logged_events if ri.levelno>=self.log_level]
+        record=records[event.GetIndex()]
+        RecordDisplayDialog(self, record).Show()
+
+    def append_event(self, record: logging.LogRecord, new=False):
         if record.levelno>=self.log_level:
-            self.log_list.Append((record.asctime, record.levelname, record.msg.splitlines()[0]))
+            if new:
+                prev_event_evts=[ri for ri in self.logged_events if ri.levelno>=self.log_level]
+                if len(prev_event_evts)>1 and \
+                    prev_event_evts[-2].message==record.message and \
+                    prev_event_evts[-2].lineno==record.lineno:
+                    # don't repeat the same error to speed up diaplsy
+                    return
+            self.log_list.Append((record.asctime, record.levelname, record.message.splitlines()[0]))
 
     def resize_columns(self):
         self.log_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
@@ -128,6 +139,6 @@ class LoggingDialog(wx.Dialog):
         self.log_list.EnsureVisible(self.log_list.GetItemCount()-1)
 
     def OnMessage(self, evt):
-        self.looged_events.append((evt.record, evt.fmt_message))
-        self.append_event(evt.record)
+        self.logged_events.append(evt.record)
+        self.append_event(evt.record, new=True)
         self.resize_columns()

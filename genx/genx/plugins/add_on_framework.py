@@ -6,7 +6,7 @@ plugins.
 import os
 import wx, io, traceback
 from dataclasses import dataclass
-from logging import debug, info, warn, error
+from logging import debug, info, error, warning
 
 from genx.core.config import BaseConfig, Configurable
 from .utils import PluginHandler, ShowInfoDialog, ShowErrorDialog, ShowWarningDialog, ShowQuestionDialog
@@ -114,7 +114,7 @@ class Template:
         '''
         Shows an warning dialog with message [string]
         '''
-        warn(message)
+        warning(message)
         ShowWarningDialog(self.parent, message)
 
     def ShowQuestionDialog(self, message):

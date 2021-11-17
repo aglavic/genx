@@ -26,7 +26,7 @@ from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
 from ..plugins import add_on_framework as add_on
 from ..core import config as conf_mod
 from ..core.colors import COLOR_CYCLES
-from ..core.custom_logging import iprint
+from ..core.custom_logging import iprint, numpy_set_options
 from ..version import __version__ as program_version
 
 _path=os.path.dirname(__file__)
@@ -1086,6 +1086,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Simulation loop for threading to increase the speed of the interactive simulations
         """
         self.flag_simulating = True
+        numpy_set_options() # has to be set, as options are thread dependent
         while self.simulation_queue_counter>0:
             self.do_simulation(from_thread=True)
             time.sleep(0.1)

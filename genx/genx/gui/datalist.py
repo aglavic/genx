@@ -424,7 +424,6 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
             evt.SetDataMoved(position, direction_up)
         if deleted:
             evt.SetDataDeleted(position)
-        iprint(evt.new_data)
         # Process the event!
         self.GetEventHandler().ProcessEvent(evt)
 

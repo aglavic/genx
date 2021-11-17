@@ -11,7 +11,7 @@ from logging import debug
 from numpy import *
 
 from .core.config import BaseConfig
-from .core.custom_logging import iprint
+from .core.custom_logging import iprint, numpy_set_options
 from .core.Simplex import Simplex
 from .exceptions import ErrorBarError
 from .model import Model
@@ -375,7 +375,7 @@ class DiffEv(GenxOptimizer):
             self.init_fitting(model_obj)
             self.stop=False
             # Start fitting in a new thread
-            threading.Thread(target=self.optimize, daemon=True).start()
+            threading.Thread(target=self.optimize_thread, daemon=True).start()
             self.running=True
             self.text_output('Starting the fit...')
             return True
@@ -404,7 +404,7 @@ class DiffEv(GenxOptimizer):
             self.init_fom_eval()
             n_dim_old=self.n_dim
             if self.n_dim==n_dim_old:
-                threading.Thread(target=self.optimize, daemon=True).start()
+                threading.Thread(target=self.optimize_thread, daemon=True).start()
                 self.text_output('Restarting the fit...')
                 self.running=True
                 return True
@@ -415,6 +415,10 @@ class DiffEv(GenxOptimizer):
         else:
             self.text_output('Fit is already running, stop and then start')
             return False
+
+    def optimize_thread(self):
+        numpy_set_options()
+        self.optimize()
 
     def optimize(self):
         """Method that does the optimization.
@@ -1296,6 +1300,7 @@ def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False):
         # ignore KeyboardInterrupt so that master process can handle it
         import signal
         signal.signal(signal.SIGINT, signal.SIG_IGN)
+    seterr(divide='ignore', over='ignore', under='ignore', invalid='ignore')
 
     if numba_procs is not None:
         import numba

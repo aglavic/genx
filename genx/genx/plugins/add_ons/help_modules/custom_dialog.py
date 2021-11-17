@@ -1,3 +1,5 @@
+from logging import debug, info
+
 import wx
 import math
 import os
@@ -39,6 +41,7 @@ class TextObjectValidator(wx.Validator):
         text=textCtrl.GetValue()
 
         if len(text)==0:
+            debug('A text object must contain some text')
             wx.MessageBox("A text object must contain some text!", "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -95,6 +98,7 @@ class MatchTextObjectValidator(wx.Validator):
             textCtrl.Refresh()
             return True
         else:
+            debug('The name is not defined')
             wx.MessageBox("The name is not defined!", "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -139,12 +143,14 @@ class NoMatchTextObjectValidator(wx.Validator):
         textCtrl=self.GetWindow()
         text=textCtrl.GetValue()
         if len(text)==0:
+            debug('A text object must contain some text')
             wx.MessageBox("A text object must contain some text!", "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
             textCtrl.Refresh()
             return False
         elif self.stringlist.__contains__(text):
+            debug('Duplicates are not allowed')
             wx.MessageBox("Duplicates are not allowed!", "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -206,18 +212,21 @@ class NoMatchValidTextObjectValidator(wx.Validator):
         # print text, len(text)
         # print sum([char in self.allowed_chars for char in text])
         if len(text)==0:
+            debug('A text object must contain some text')
             wx.MessageBox("A text object must contain some text!", "Bad Input")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
             textCtrl.Refresh()
             return False
         elif self.stringlist.__contains__(text):
+            debug('Duplicates are not allowed')
             wx.MessageBox("Duplicates are not allowed!", "Bad Input")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
             textCtrl.Refresh()
             return False
         elif text in self.reserved_words:
+            debug('Python keywords are not allowed')
             wx.MessageBox("Python keywords are not allowed!", "Bad Input")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -225,6 +234,7 @@ class NoMatchValidTextObjectValidator(wx.Validator):
             return False
         elif sum([char in self.allowed_chars for char in text])!=len(text) \
                 or text[0] in string.digits:
+            debug('Not a valid name')
             wx.MessageBox("Not a vaild name. Names can only contain letters"
                           ", digits and underscores(_) and not start with a digit.",
                           "Bad Input")
@@ -280,12 +290,14 @@ class NoMatchTextCtrlValidator(wx.Validator):
         stringlist=[ctrl.GetValue() for ctrl in self.textctrls]
         iprint(text, stringlist)
         if len(text)==0:
+            debug("A text object must contain some text")
             wx.MessageBox("A text object must contain some text!", "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
             textCtrl.Refresh()
             return False
         elif text in stringlist:
+            debug("Duplicates are not allowed")
             wx.MessageBox("Duplicates are not allowed!", "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -342,6 +354,7 @@ class FloatObjectValidator(wx.Validator):
             if is_reflfunction(val):
                 val=val.validate()
         except Exception as S:
+            info("Can't evaluate the expression", exc_info=True)
             wx.MessageBox("Can't evaluate the expression!!\nERROR:\n%s"%S.__str__(), "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -353,7 +366,8 @@ class FloatObjectValidator(wx.Validator):
             except Exception as S:
                 # print type(val), self.alt_types
                 if not any([isinstance(val, typ) for typ in self.alt_types]):
-                    wx.MessageBox("Wrong type of parameter\nERROR:\n%s"%S.__str__(), "Error")
+                    info("Wrong type of parameter", exc_info=True)
+                    wx.MessageBox("\nERROR:\n%s"%S.__str__(), "Error")
                     textCtrl.SetBackgroundColour("pink")
                     textCtrl.SetFocus()
                     textCtrl.Refresh()
@@ -406,6 +420,7 @@ class ComplexObjectValidator(wx.Validator):
         try:
             val=self.eval_func(text)
         except Exception as S:
+            info("Can't evaluate the expression", exc_info=True)
             wx.MessageBox("Can't compile the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
             textCtrl.SetBackgroundColour("pink")
             textCtrl.SetFocus()
@@ -422,6 +437,7 @@ class ComplexObjectValidator(wx.Validator):
                 self.value=complex(val)
             except Exception as S:
                 if not any([isinstance(val, typ) for typ in self.alt_types]):
+                    info("Can't evaluate the complex expression, wrong type", exc_info=True)
                     wx.MessageBox(
                         "Can't evaluate the complex expression, not the correct type!!\nERROR:\n%s"%S.__str__(),
                         "Error")
@@ -435,6 +451,7 @@ class ComplexObjectValidator(wx.Validator):
                     return True
         except Exception as S:
             if not any([isinstance(val, typ) for typ in self.alt_types]):
+                info("Can't evaluate the complex expression", exc_info=True)
                 wx.MessageBox("Can't evaluate the complex expression!!\nERROR:\n%s"%S.__str__(), "Error")
                 textCtrl.SetBackgroundColour("pink")
                 textCtrl.SetFocus()
@@ -781,8 +798,9 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         pos=self.main_sizer.GetSelection()
         current_name=self.main_sizer.GetPageText(pos)
         if current_name in self.fixed_pages:
-            wx.MessageBox('It is forbidden to change the' \
-                          'name of %s.'%current_name)
+            msg=f'It is forbidden to change the name of {current_name}'
+            debug(msg)
+            wx.MessageBox(msg)
         else:
             unallowed_names=[]
             for name in self.vals:

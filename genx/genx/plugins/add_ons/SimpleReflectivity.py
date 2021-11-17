@@ -177,7 +177,6 @@ class SampleTable(gridlib.GridTableBase):
 
         if not first:
             diff=old_len-len(self.layers)
-            iprint(diff, 'reset table')
             for i in range(abs(diff)):
                 if diff<0:
                     msg=gridlib.GridTableMessage(self,

@@ -511,7 +511,7 @@ class Model(H5HintedExport):
         Reinitilizes the model. Thus, removes all the traces of the
         previous model. 
         '''
-        iprint("class Model: new_model")
+        debug("create new model")
         self.data = DataList()
         self.set_script('')
         self.parameters = Parameters()

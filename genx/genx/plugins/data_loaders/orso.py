@@ -54,8 +54,7 @@ class Plugin(Template):
             return len(orso_datasets)
 
     def LoadData(self, dataset, filename, data_id=0):
-        '''LoadData(self, data_item_number, filename) --> none
-
+        '''
         Loads the data from filename into the data_item_number.
         '''
         try:

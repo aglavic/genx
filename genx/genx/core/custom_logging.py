@@ -57,6 +57,13 @@ class NumpyLogger(logging.getLoggerClass()):
 
 nplogger=None
 
+def numpy_logger(err, _flag):
+    nplogger.debug('numpy floating point error encountered (%s)'%err)
+
+def numpy_set_options():
+    seterr(divide='call', over='call', under='ignore', invalid='call')
+    seterrcall(numpy_logger)
+
 def setup_system():
     logger=logging.getLogger()
     logger.setLevel(min(CONSOLE_LEVEL, GUI_LEVEL))
@@ -83,13 +90,8 @@ def setup_system():
     null_handler.setLevel(logging.CRITICAL)
     nplogger.addHandler(null_handler)
     logging.setLoggerClass(old_class)
-    seterr(divide='call', over='call', under='ignore', invalid='call')
     logging.captureWarnings(True)
-
-    def numpy_logger(err, _flag):
-        nplogger.debug('numpy floating point error encountered (%s)'%err)
-
-    seterrcall(numpy_logger)
+    numpy_set_options()
 
     # write information on program exit
     atexit.register(genx_exit_message)
@@ -102,6 +104,7 @@ def activate_logging(logfile):
     logfile.setFormatter(formatter)
     logfile.setLevel(FILE_LEVEL)
     logger.addHandler(logfile)
+    nplogger.addHandler(logfile)
     logger.info('*** GenX %s Logging started to file ***'%str_version)
 
 _prev_excepthook=None
