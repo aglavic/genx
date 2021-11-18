@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.4.12
+==============
+ * Limit matplotlib version for PyPI to <3.5.0 as this breaks some code within GenX
+
 Changes 3.4.11
 ==============
  * Fix missing library in windows distribution
