@@ -1,9 +1,9 @@
 name: genx
 channels:
   - defaults
-  - conda-forge
 dependencies:
   - python=3.9
+  - pip
   - wxpython
   - matplotlib
   - appdirs
@@ -14,3 +14,7 @@ dependencies:
   - numba
   - cudatoolkit
   - vtk
+  - pyinstaller
+  - pip:
+    - bumps
+    - orsopy
