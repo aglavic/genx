@@ -1010,7 +1010,7 @@ class DataPlotPanel(PlotPanel):
         if self.y_scale=='linear':
             [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
                           lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                          marker=data_set.data_symbol, ms=data_set.data_symbolsize, zorder=1) \
              for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
             [self.ax.errorbar(data_set.x, data_set.y,
@@ -1018,13 +1018,13 @@ class DataPlotPanel(PlotPanel):
                                       data_set.error].transpose(),
                               color=data_set.data_color, lw=data_set.data_linethickness,
                               ls=data_set.data_linetype, marker=data_set.data_symbol,
-                              ms=data_set.data_symbolsize) \
+                              ms=data_set.data_symbolsize, zorder=2) \
              for data_set in data if data_set.use_error and data_set.show]
         if self.y_scale=='log':
             [self.ax.plot(data_set.x.compress(data_set.y>0),
                           data_set.y.compress(data_set.y>0), color=data_set.data_color,
                           lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                          marker=data_set.data_symbol, ms=data_set.data_symbolsize, zorder=1) \
              for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
             [self.ax.errorbar(data_set.x.compress(data_set.y
@@ -1035,7 +1035,7 @@ class DataPlotPanel(PlotPanel):
                                                                            data_set.error>0),
                               color=data_set.data_color, lw=data_set.data_linethickness,
                               ls=data_set.data_linetype, marker=data_set.data_symbol,
-                              ms=data_set.data_symbolsize) \
+                              ms=data_set.data_symbolsize, zorder=2) \
              for data_set in data if data_set.use_error and data_set.show]
         self.AutoScale()
         # Force an update of the plot
@@ -1066,17 +1066,18 @@ class DataPlotPanel(PlotPanel):
             # ,data_set.x, data_set.y_sim) for data_set in data]
             [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
                           lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                          marker=data_set.data_symbol, ms=data_set.data_symbolsize,
+                          zorder=1) \
              for data_set in shown_data]
             # The same thing for the simulation
             [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
                           lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize, zorder=5) \
              for data_set in shown_data]
             # Plot the point by point error:
             [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
                                 lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                                marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+                                marker=data_set.sim_symbol, ms=data_set.sim_symbolsize, zorder=2) \
              for data_set in shown_data]
         # Force an update of the plot
         self.autoscale_error_ax()
@@ -1141,7 +1142,7 @@ class DataPlotPanel(PlotPanel):
             if self.y_scale=='linear':
                 [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
                               lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                              marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                              marker=data_set.data_symbol, ms=data_set.data_symbolsize, zorder=1) \
                  for data_set in p_datasets if not data_set.use_error]
                 # With errorbars
                 [self.ax.errorbar(data_set.x, data_set.y,
@@ -1149,13 +1150,13 @@ class DataPlotPanel(PlotPanel):
                                           data_set.error].transpose(),
                                   color=data_set.data_color, lw=data_set.data_linethickness,
                                   ls=data_set.data_linetype, marker=data_set.data_symbol,
-                                  ms=data_set.data_symbolsize) \
+                                  ms=data_set.data_symbolsize, zorder=2) \
                  for data_set in pe_datasets]
             if self.y_scale=='log':
                 [self.ax.plot(data_set.x.compress(data_set.y>0),
                               data_set.y.compress(data_set.y>0), color=data_set.data_color,
                               lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                              marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                              marker=data_set.data_symbol, ms=data_set.data_symbolsize, zorder=1) \
                  for data_set in p_datasets if not data_set.use_error]
                 # With errorbars
                 [self.ax.errorbar(data_set.x.compress(data_set.y
@@ -1166,12 +1167,12 @@ class DataPlotPanel(PlotPanel):
                                                                                data_set.error>0),
                                   color=data_set.data_color, lw=data_set.data_linethickness,
                                   ls=data_set.data_linetype, marker=data_set.data_symbol,
-                                  ms=data_set.data_symbolsize) \
+                                  ms=data_set.data_symbolsize, zorder=2) \
                  for data_set in pe_datasets]
             # The same thing for the simulation
             [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
                           lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize, zorder=5) \
              for data_set in s_datasets]
             [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
                                 lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
