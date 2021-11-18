@@ -900,6 +900,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         ana_meta=meta.get('analysis', {})
         if ana_meta.get('software', {}).get('name', '')=='GenX':
             self.model_control.set_model_script(ana_meta['script'])
+            params = ana_meta['parameters']
+            pdata=[[pi['Parameter'], pi['Value'], pi['Fit'], pi['Min'], pi['Max'], pi['Error']]
+                    for pi in params]
+            self.model_control.get_model_params().data=pdata
+            self.paramter_grid.table.UpdateView()
+            for di in self.data_list.data_cont.data:
+                del(di.meta['analysis'])
         else:
             ds=meta['data_source']
             # detect source radiation
