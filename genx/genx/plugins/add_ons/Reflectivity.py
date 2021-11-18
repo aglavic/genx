@@ -1418,8 +1418,8 @@ class SamplePlotPanel(wx.Panel):
         model=self.plugin.GetModel().script_module
         # self.plot_dict = model.sample.SimSLD(None, model.inst)
         self.plot_dicts=[]
-        self.plot.ax.lines=[]
-        self.plot.ax.clear()
+        while len(self.plot.ax.lines)>0:
+            self.plot.ax.lines[0].remove()
         i=0
         data=self.plugin.GetModel().get_data()
         sld_units=[]

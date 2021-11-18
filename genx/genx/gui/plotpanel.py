@@ -1001,8 +1001,10 @@ class DataPlotPanel(PlotPanel):
         # This will be somewhat inefficent since everything is updated
         # at once would be better to update the things that has changed...
 
-        self.ax.lines=[]
-        self.ax.collections=[]
+        while len(self.ax.lines)>0:
+            self.ax.lines[0].remove()
+        while len(self.ax.collections)>0:
+            self.ax.collections[0].remove()
         # plot the data
         # [self.ax.semilogy(data_set.x,data_set.y) for data_set in data]
         if self.y_scale=='linear':
@@ -1051,10 +1053,14 @@ class DataPlotPanel(PlotPanel):
                 self.ax.lines[i+len(shown_data)].set_data(data_set.x, data_set.y_sim)
                 self.error_ax.lines[i].set_data(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0))
         else:
-            self.ax.lines=[]
-            self.ax.collections=[]
-            self.error_ax.lines=[]
-            self.error_ax.collections=[]
+            while len(self.ax.lines)>0:
+                self.ax.lines[0].remove()
+            while len(self.ax.collections)>0:
+                self.ax.collections[0].remove()
+            while len(self.error_ax.lines)>0:
+                self.error_ax.lines[0].remove()
+            while len(self.error_ax.collections)>0:
+                self.error_ax.collections[0].remove()
             # plot the data
             # [self.ax.semilogy(data_set.x, data_set.y, '.'\
             # ,data_set.x, data_set.y_sim) for data_set in data]
@@ -1119,10 +1125,14 @@ class DataPlotPanel(PlotPanel):
                     segment_data=segment_data[fltr, :,:]
                 self.ax.collections[k].set_segments(segment_data)
         else:
-            self.ax.lines=[]
-            self.ax.collections=[]
-            self.error_ax.lines=[]
-            self.error_ax.collections=[]
+            while len(self.ax.lines)>0:
+                self.ax.lines[0].remove()
+            while len(self.ax.collections)>0:
+                self.ax.collections[0].remove()
+            while len(self.error_ax.lines)>0:
+                self.error_ax.lines[0].remove()
+            while len(self.error_ax.collections)>0:
+                self.error_ax.collections[0].remove()
             # plot the data
             # [self.ax.semilogy(data_set.x, data_set.y, '.'\
             # ,data_set.x, data_set.y_sim) for data_set in data]
@@ -1245,7 +1255,8 @@ class ErrorPlotPanel(PlotPanel):
         # self.ax.cla()
         self.ax.set_autoscale_on(False)
 
-        self.ax.lines=[]
+        while len(self.ax.lines)>0:
+            self.ax.lines[0].remove()
         if data is None:
             theta=arange(0.1, 10, 0.001)
             self.ax.plot(theta, floor(15-theta), '-r')
