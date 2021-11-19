@@ -30,6 +30,9 @@ grid_change, EVT_PARAMETER_GRID_CHANGE=NewEvent()
 # simulations interactively.
 value_change, EVT_PARAMETER_VALUE_CHANGE=NewEvent()
 set_parameter_value, EVT_PARAMETER_SET_VALUE=NewEvent()
+move_parameter, EVT_MOVE_PARAMETER=NewEvent()
+inset_parameter, EVT_INSERT_PARAMETER=NewEvent()
+delete_parameters, EVT_DELETE_PARAMETERS=NewEvent()
 
 ## datalist
 # Generating an event type:

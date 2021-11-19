@@ -10,7 +10,9 @@ from .core.config import config
 from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
-from .model_actions import ActionHistory, ModelAction, NoOp, SetModelScript, UpdateColorCycle, UpdateParams, \
+from .model_actions import ActionHistory, DeleteParams, InsertParam, ModelAction, MoveParam, NoOp, SetModelScript, \
+    UpdateColorCycle, \
+    UpdateParams, \
     UpdateParamValue, UpdateSolverOptoins, UpdateDataPlotSettings
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
@@ -154,6 +156,15 @@ class ModelController:
         if value==self.model.parameters.get_value(row, col):
             return
         self.perform_action(UpdateParamValue, row, col, value)
+
+    def move_parameter(self, row, step):
+        self.perform_action(MoveParam, row, step)
+
+    def insert_parameter(self, row):
+        self.perform_action(InsertParam, row)
+
+    def delete_parameter(self, rows):
+        self.perform_action(DeleteParams, rows)
 
     def get_fom(self):
         return self.model.fom

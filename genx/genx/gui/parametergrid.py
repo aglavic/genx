@@ -14,7 +14,9 @@ from numpy import *
 from dataclasses import dataclass
 
 from . import controls as ctrls, images as img
-from .custom_events import grid_change, set_parameter_value, value_change, skips_event
+from .custom_events import delete_parameters, grid_change, inset_parameter, move_parameter, set_parameter_value, \
+    value_change, \
+    skips_event
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
@@ -88,23 +90,12 @@ class ParameterDataTable(gridlib.GridTableBase):
         self.parent._grid_changed()
 
     def DeleteRows(self, rows):
-        delete_count=self.pars.delete_rows(rows)
-
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.GetNumberRows()-delete_count,
-                                     delete_count)
-        self.GetView().ProcessTableMessage(msg)
-        self.parent._grid_changed()
+        evt = delete_parameters(rows=rows)
+        wx.PostEvent(self.parent, evt)
 
     def InsertRow(self, row):
-        self.pars.insert_row(row)
-
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
-        self.GetView().ProcessTableMessage(msg)
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
-        return True
+        evt = inset_parameter(row=row)
+        wx.PostEvent(self.parent, evt)
 
     def UpdateView(self):
         delta_length=1+self.GetNumberRows()-self.parent.GetNumberRows()
@@ -127,10 +118,12 @@ class ParameterDataTable(gridlib.GridTableBase):
         :param row: Integer row number to move up
         :return: Boolean
         """
-
-        success=self.pars.move_row_up(row)
-        self.UpdateView()
-        return success
+        if self.pars.can_move_row(row, -1):
+            evt=move_parameter(row=row, step=-1)
+            wx.PostEvent(self.parent, evt)
+            return True
+        else:
+            return False
 
     def MoveRowDown(self, row):
         """
@@ -139,10 +132,12 @@ class ParameterDataTable(gridlib.GridTableBase):
         :param row: Integer row number to move down
         :return: Boolean
         """
-
-        success=self.pars.move_row_down(row)
-        self.UpdateView()
-        return success
+        if self.pars.can_move_row(row, 1):
+            evt=move_parameter(row=row, step=1)
+            wx.PostEvent(self.parent, evt)
+            return True
+        else:
+            return False
 
     def AppendRows(self, num_rows=1):
         [self.pars.append() for i in range(num_rows)]

@@ -242,7 +242,7 @@ class UpdateParamValue(ModelAction):
         self.col=col
         self.new_value=new_value
         if col!=0:
-            self.param_name=self.model.parameters.get_names(row)
+            self.param_name=self.model.parameters.get_names()[row]
         else:
             self.param_name=row
         self.old_value=self.model.parameters.get_value(row, col)
@@ -264,3 +264,58 @@ class UpdateParamValue(ModelAction):
 
     def __str__(self):
         return f'parameter[{self.param_name},{self.col}]: {self.old_value!r} -> {self.new_value!r}'
+
+class MoveParam(ModelAction):
+    influences = ModelInfluence.PARAM
+    name = 'move parameter'
+
+    def __init__(self, model, row, step):
+        self.model=model
+        self.step=step
+        self.param_name=self.model.parameters.get_names()[row]
+
+    def execute(self):
+        row=self.model.parameters.get_names().index(self.param_name)
+        self.model.parameters.move_row(row, self.step)
+
+    def undo(self):
+        row=self.model.parameters.get_names().index(self.param_name)
+        self.model.parameters.move_row(row, -self.step)
+
+class DeleteParams(ModelAction):
+    influences = ModelInfluence.PARAM
+    name = 'delete parameters'
+
+    def __init__(self, model, rows):
+        self.model=model
+        names=self.model.parameters.get_names()
+        self.param_names=[names[ri] for ri in rows]
+        self.old_data=[]
+
+    def execute(self):
+        names=self.model.parameters.get_names()
+        rows=[names.index(ni) for ni in self.param_names]
+        old_rows=self.model.parameters.data
+        self.old_data=[(ri, old_rows[ri]) for ri in rows]
+        self.model.parameters.delete_rows(rows)
+
+    def undo(self):
+        for ri, di in self.old_data:
+            self.model.parameters.data.insert(ri, di)
+
+class InsertParam(ModelAction):
+    influences = ModelInfluence.PARAM
+    name = 'insert parameter'
+
+    def __init__(self, model, row):
+        self.model=model
+        self.param_name=self.model.parameters.get_names()[row]
+
+    def execute(self):
+        row=self.model.parameters.get_names().index(self.param_name)
+        self.insert_index=row
+        self.model.parameters.insert_row(row)
+
+    def undo(self):
+        self.model.parameters.delete_rows([self.insert_index])
+

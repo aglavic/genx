@@ -453,6 +453,18 @@ class ModelControlGUI(wx.EvtHandler):
     def OnSetParameterValue(self, evt):
         self.controller.set_parameter_value(evt.row, evt.col, evt.value)
 
+    @skips_event
+    def OnMoveParameter(self, evt):
+        self.controller.move_parameter(evt.row, evt.step)
+
+    @skips_event
+    def OnInsertParameter(self, evt):
+        self.controller.insert_parameter(evt.row)
+
+    @skips_event
+    def OnDeleteParameter(self, evt):
+        self.controller.delete_parameter(evt.rows)
+
     def CalcErrorBars(self):
         return self.controller.CalcErrorBars()
 

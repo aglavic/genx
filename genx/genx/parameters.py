@@ -170,27 +170,17 @@ class Parameters(H5Savable):
         self.data.insert(row, list(self.init_data))
 
     def move_row_up(self, row):
-        """ Move row up.
-
-        :param row: Move row up one row.
-        :return: Boolean True if the row was moved, otherwise False.
-        """
-
-        if row!=0 and row<self.get_len_rows():
-            self.data.insert(row-1, self.data.pop(row))
-            return True
-        else:
-            return False
+        self.move_row(row, -1)
 
     def move_row_down(self, row):
-        """ Move row up.
+        self.move_row(row, 1)
 
-        :param row: Move row down one row.
-        :return: Boolean True if the row was moved, otherwise False.
-        """
+    def move_row(self, row, step):
+        if self.can_move_row(row, step):
+            self.data.insert(row+step, self.data.pop(row))
 
-        if row<self.get_len_rows()-1:
-            self.data.insert(row+1, self.data.pop(row))
+    def can_move_row(self, row, step=1):
+        if 0 <= row+step < self.get_len_rows():
             return True
         else:
             return False

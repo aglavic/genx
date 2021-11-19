@@ -262,6 +262,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_CHOICE, self.eh_data_grid_choice, self.data_grid_choice)
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.eh_plot_page_changed, self.plot_notebook)
         self.paramter_grid.grid.Bind(EVT_PARAMETER_SET_VALUE, self.model_control.OnSetParameterValue)
+        self.paramter_grid.grid.Bind(EVT_MOVE_PARAMETER, self.model_control.OnMoveParameter)
+        self.paramter_grid.grid.Bind(EVT_INSERT_PARAMETER, self.model_control.OnInsertParameter)
+        self.paramter_grid.grid.Bind(EVT_DELETE_PARAMETERS, self.model_control.OnDeleteParameter)
 
         debug('setup of MainFrame - manual config')
 
