@@ -937,6 +937,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 refl.sample_widget.inst_params['probe']=probe
                 refl.sample_widget.inst_params['wavelength']=wavelength
                 refl.sample_widget.inst_params['coords']=coords
+                refl.sample_widget.inst_params['res'] = 0.01
                 refl.sample_widget.UpdateModel(re_color=True)
             else:
                 from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
