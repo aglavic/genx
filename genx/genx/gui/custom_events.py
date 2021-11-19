@@ -33,6 +33,7 @@ set_parameter_value, EVT_PARAMETER_SET_VALUE=NewEvent()
 move_parameter, EVT_MOVE_PARAMETER=NewEvent()
 inset_parameter, EVT_INSERT_PARAMETER=NewEvent()
 delete_parameters, EVT_DELETE_PARAMETERS=NewEvent()
+sort_and_group_parameters, EVT_SORT_AND_GROUP_PARAMETERS=NewEvent()
 
 ## datalist
 # Generating an event type:

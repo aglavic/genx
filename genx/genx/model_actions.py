@@ -12,6 +12,7 @@ from enum import Flag, auto
 from typing import List
 
 from .model import Model
+from .parameters import SortSplitItem
 from .solver_basis import GenxOptimizer
 
 class ModelInfluence(Flag):
@@ -42,15 +43,6 @@ class ModelAction(ABC):
     def __init__(self, model: Model, *params):
         ...
 
-    def __new__(cls, model: Model, *params):
-        # log any action that is created
-        output=super().__new__(cls)
-        output.__init__(model, *params)
-        action_string=str(output)
-        action_string=action_string.replace('\n', '\n    ')
-        debug(f'New Action - {cls.__name__}: {action_string}')
-        return output
-
     @abstractmethod
     def execute(self):
         ...
@@ -63,7 +55,18 @@ class ModelAction(ABC):
         self.execute()
 
     def __str__(self):
+        # generate string representation replacing format string items interactively
+        obj_items=self.__dict__.copy()
+        obj_items.update(self.__class__.__dict__)
+        return self.description.format(**obj_items)
+
+    @property
+    def description(self):
         return self.name
+
+    @property
+    def action_name(self):
+        return self.name.format(**self.__dict__)
 
 class NoOp(ModelAction):
     influences = ModelInfluence.NONE
@@ -81,6 +84,9 @@ class ActionHistory:
 
     def execute(self, action: ModelAction):
         action.execute()
+        action_string=str(action)
+        action_string=action_string.replace('\n', '\n    ')
+        debug(f'Action Executed - {action.__class__.__name__}: {action_string}')
         self.undo_stack.append(action)
         if len(self.undo_stack)>self.max_stack:
             self.undo_stack.pop(0)
@@ -125,17 +131,19 @@ class SetModelScript(ModelAction):
     def undo(self):
         self.model.set_script(self.old_text)
 
-    def __str__(self):
+    @property
+    def description(self):
         old=self.old_text or self.model.get_script()
         new=self.new_text
         diff=''.join(difflib.unified_diff(old.splitlines(keepends=True),
                                           new.splitlines(keepends=True),
                                           fromfile='old script', tofile='new script',n=1))
-        return diff
+        return self.name+': '+diff
 
 class UpdateSolverOptoins(ModelAction):
     influences = ModelInfluence.OPTIONS
     name = 'optimizer options'
+    description = 'set optimizer parameters: {new_values}'
 
     def __init__(self, model, optimizer: GenxOptimizer, new_values: dict):
         self.model=model
@@ -220,6 +228,7 @@ class UpdateColorCycle(ModelAction):
 class UpdateParams(ModelAction):
     influences = ModelInfluence.PARAM
     name = 'parameter values'
+    description = 'set parameter values from {old_values} to {new_values}'
 
     def __init__(self, model, new_values):
         self.model=model
@@ -235,7 +244,8 @@ class UpdateParams(ModelAction):
 
 class UpdateParamValue(ModelAction):
     influences = ModelInfluence.PARAM
-    name = 'update parameter'
+    name = 'update parameter [{param_name}]'
+    description = 'parameter[{param_name},{col}]: {old_value!r} -> {new_value!r}'
 
     def __init__(self, model, row, col, new_value):
         self.model=model
@@ -262,9 +272,6 @@ class UpdateParamValue(ModelAction):
             row=self.param_name
         self.model.parameters.set_value(row, self.col, self.old_value)
 
-    def __str__(self):
-        return f'parameter[{self.param_name},{self.col}]: {self.old_value!r} -> {self.new_value!r}'
-
 class MoveParam(ModelAction):
     influences = ModelInfluence.PARAM
     name = 'move parameter'
@@ -285,6 +292,7 @@ class MoveParam(ModelAction):
 class DeleteParams(ModelAction):
     influences = ModelInfluence.PARAM
     name = 'delete parameters'
+    description = 'deleted {parameter_names}'
 
     def __init__(self, model, rows):
         self.model=model
@@ -319,3 +327,23 @@ class InsertParam(ModelAction):
     def undo(self):
         self.model.parameters.delete_rows([self.insert_index])
 
+class SortAndGroupParams(ModelAction):
+    influences = ModelInfluence.PARAM
+    name = 'sort parameters'
+    description = 'sort by {sort_params}'
+
+    def __init__(self, model, sort_params: SortSplitItem):
+        self.model=model
+        self.sort_params=sort_params
+        self.old_parameters=[]
+
+    def execute(self):
+        self.old_parameters=self.model.parameters.data.copy()
+        if not self.model.compiled: self.model.compile_script()
+        self.model.parameters.sort_rows(self.model, self.sort_params)
+        self.model.parameters.group_rows(self.model, self.sort_params)
+        self.model.parameters.strip()
+
+    def undo(self):
+        self.model.parameters.data=self.old_parameters
+        self.old_parameters=[]

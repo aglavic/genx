@@ -265,6 +265,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.paramter_grid.grid.Bind(EVT_MOVE_PARAMETER, self.model_control.OnMoveParameter)
         self.paramter_grid.grid.Bind(EVT_INSERT_PARAMETER, self.model_control.OnInsertParameter)
         self.paramter_grid.grid.Bind(EVT_DELETE_PARAMETERS, self.model_control.OnDeleteParameter)
+        self.paramter_grid.Bind(EVT_SORT_AND_GROUP_PARAMETERS, self.model_control.OnSortAndGroupParameters)
 
         debug('setup of MainFrame - manual config')
 

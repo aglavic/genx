@@ -217,13 +217,13 @@ class ModelControlGUI(wx.EvtHandler):
         undos, redos=self.controller.history_stacks()
         if len(undos)!=0:
             self.parent.undo_menu.Enable(True)
-            self.parent.undo_menu.SetItemLabel(f"Undo ({undos[-1].name})\tCtrl+Z")
+            self.parent.undo_menu.SetItemLabel(f"Undo ({undos[-1].action_name})\tCtrl+Z")
         else:
             self.parent.undo_menu.Enable(False)
             self.parent.undo_menu.SetItemLabel("Undo\tCtrl+Z")
         if len(redos)!=0:
             self.parent.redo_menu.Enable(True)
-            self.parent.redo_menu.SetItemLabel(f"Redo ({redos[-1].name})\tCtrl+Shift+Z")
+            self.parent.redo_menu.SetItemLabel(f"Redo ({redos[-1].action_name})\tCtrl+Shift+Z")
         else:
             self.parent.redo_menu.Enable(False)
             self.parent.redo_menu.SetItemLabel("Redo\tCtrl+Shift+Z")
@@ -464,6 +464,10 @@ class ModelControlGUI(wx.EvtHandler):
     @skips_event
     def OnDeleteParameter(self, evt):
         self.controller.delete_parameter(evt.rows)
+
+    @skips_event
+    def OnSortAndGroupParameters(self, evt):
+        self.controller.sort_and_group_parameters(evt.sort_params)
 
     def CalcErrorBars(self):
         return self.controller.CalcErrorBars()

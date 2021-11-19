@@ -15,7 +15,7 @@ from dataclasses import dataclass
 
 from . import controls as ctrls, images as img
 from .custom_events import delete_parameters, grid_change, inset_parameter, move_parameter, set_parameter_value, \
-    value_change, \
+    sort_and_group_parameters, value_change, \
     skips_event
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
@@ -1013,29 +1013,12 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        model=self.parent.model_control.get_model()
-        parameters=self.table.pars
-        if not model.compiled: model.compile_script()
-
-        parameters.sort_rows(model=model)
-        parameters.group_rows(model)
-        parameters.strip()
-        self.table.UpdateView()
+        evt=sort_and_group_parameters(sort_params=parameters.SortSplitItem.ATTRIBUTE)
+        wx.PostEvent(self, evt)
 
     def eh_sort_name(self, event):
-        """Event handler for the sorting
-
-        :param event:
-        :return:
-        """
-        model=self.parent.model_control.get_model()
-        params=self.table.pars
-        if not model.compiled: model.compile_script()
-
-        params.sort_rows(model=model, sort_params=parameters.SortSplitItem.OBJ_NAME)
-        params.group_rows(model, split_params=parameters.SortSplitItem.OBJ_NAME)
-        params.strip()
-        self.table.UpdateView()
+        evt=sort_and_group_parameters(sort_params=parameters.SortSplitItem.OBJ_NAME)
+        wx.PostEvent(self, evt)
 
     def OnSelectCell(self, evt):
         # row=evt.GetRow()

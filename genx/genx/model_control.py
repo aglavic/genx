@@ -11,7 +11,7 @@ from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
 from .model_actions import ActionHistory, DeleteParams, InsertParam, ModelAction, MoveParam, NoOp, SetModelScript, \
-    UpdateColorCycle, \
+    SortAndGroupParams, UpdateColorCycle, \
     UpdateParams, \
     UpdateParamValue, UpdateSolverOptoins, UpdateDataPlotSettings
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
@@ -165,6 +165,9 @@ class ModelController:
 
     def delete_parameter(self, rows):
         self.perform_action(DeleteParams, rows)
+
+    def sort_and_group_parameters(self, sort_params):
+        self.perform_action(SortAndGroupParams, sort_params)
 
     def get_fom(self):
         return self.model.fom
