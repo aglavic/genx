@@ -119,6 +119,7 @@ class SetModelScript(ModelAction):
 
     def execute(self):
         # Replace model script with new text, script as new text (toggles)
+        self.old_text=self.model.get_script()
         self.model.set_script(self.new_text)
 
     def undo(self):
@@ -146,6 +147,9 @@ class UpdateSolverOptoins(ModelAction):
             self.old_values[key]=getattr(self.combined_options, key, None)
 
     def execute(self):
+        self.combined_options=self.model.solver_parameters|self.optimizer.opt
+        for key in self.new_values.keys():
+            self.old_values[key]=getattr(self.combined_options, key, None)
         # Update parameters and write to config
         for key, value in self.new_values.items():
             setattr(self.combined_options, key, value)
@@ -223,6 +227,7 @@ class UpdateParams(ModelAction):
         self.old_values=self.model.parameters.get_value_pars()
 
     def execute(self):
+        self.old_values=self.model.parameters.get_value_pars()
         self.model.parameters.set_value_pars(self.new_values)
 
     def undo(self):
@@ -234,16 +239,28 @@ class UpdateParamValue(ModelAction):
 
     def __init__(self, model, row, col, new_value):
         self.model=model
-        self.row=row
         self.col=col
         self.new_value=new_value
+        if col!=0:
+            self.param_name=self.model.parameters.get_names(row)
+        else:
+            self.param_name=row
         self.old_value=self.model.parameters.get_value(row, col)
 
     def execute(self):
-        self.model.parameters.set_value(self.row, self.col, self.new_value)
+        if self.col!=0:
+            row=self.model.parameters.get_names().index(self.param_name)
+        else:
+            row=self.param_name
+        self.old_value=self.model.parameters.get_value(row, self.col)
+        self.model.parameters.set_value(row, self.col, self.new_value)
 
     def undo(self):
-        self.model.parameters.set_value(self.row, self.col, self.old_value)
+        if self.col!=0:
+            row=self.model.parameters.get_names().index(self.param_name)
+        else:
+            row=self.param_name
+        self.model.parameters.set_value(row, self.col, self.old_value)
 
     def __str__(self):
-        return f'parameter[{self.row},{self.col}]: {self.old_value!r} -> {self.new_value!r}'
+        return f'parameter[{self.param_name},{self.col}]: {self.old_value!r} -> {self.new_value!r}'
