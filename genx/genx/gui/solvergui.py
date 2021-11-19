@@ -11,6 +11,7 @@ from threading import Thread, Event
 import wx.lib.newevent
 
 from .exception_handling import CatchModelError
+from .history_dialog import HistoryDialog
 from .message_dialogs import ShowErrorDialog, ShowQuestionDialog, ShowWarningDialog
 from .settings_dialog import SettingsDialog
 from .custom_events import *
@@ -468,6 +469,13 @@ class ModelControlGUI(wx.EvtHandler):
     @skips_event
     def OnSortAndGroupParameters(self, evt):
         self.controller.sort_and_group_parameters(evt.sort_params)
+
+    def OnShowHistory(self, evt):
+        dia=HistoryDialog(self.parent, self.controller.history)
+        res=dia.ShowModal()
+        if res==wx.OK:
+            self.OnActionCallback(dia.changed_actions)
+        dia.Destroy()
 
     def CalcErrorBars(self):
         return self.controller.CalcErrorBars()

@@ -110,9 +110,55 @@ class ActionHistory:
         else:
             return NoOp(None)
 
+    def remove_actions(self, start, length=1):
+        """
+        Undo the last 'start' actions, skipe 'length'
+        redo actions and then redo the residual actions.
+        """
+        current_undo=len(self.redo_stack)
+        changed_actions=[]
+        if len(self.undo_stack)<start:
+            raise ValueError(f"Only {len(self.undo_stack)} items on the stack to undo.")
+        for i in range(start):
+            changed_actions.append(self.undo())
+        for i in range(length):
+            self.redo_stack.pop()
+        while len(self.redo_stack)>current_undo:
+            # don't redo action the where on the redo stack before the start
+            changed_actions.append(self.redo())
+        return ActionBlock(changed_actions[-1].model, changed_actions)
+
     def clear(self):
         self.undo_stack=[]
         self.redo_stack=[]
+
+class ActionBlock(ModelAction):
+    influences = ModelInfluence.NONE
+    name = 'action block'
+
+    def __init__(self, model, actions: List[ModelAction]):
+        self.model=model
+        for action in actions:
+            self.influences=self.influences|action.influences
+        self.actions=actions
+
+    def execute(self):
+        for i, action in enumerate(self.actions):
+            try:
+                action.execute()
+            except Exception as e:
+                for rev in reversed(self.actions[:i]):
+                    rev.undo()
+                raise e
+
+    def undo(self):
+        for action in reversed(self.actions):
+            action.undo()
+
+    @property
+    def description(self):
+        return '|'.join(map(str, self.actions))
+
 
 class SetModelScript(ModelAction):
     influences = ModelInfluence.SCRIPT

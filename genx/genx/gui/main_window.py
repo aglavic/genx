@@ -103,6 +103,7 @@ class MenuId(int, Enum):
 
     UNDO=wx.Window.NewControlId()
     REDO=wx.Window.NewControlId()
+    HISTORY=wx.Window.NewControlId()
     COPY_GRAPH=wx.Window.NewControlId()
     COPY_SIM=wx.Window.NewControlId()
     COPY_TABLE=wx.Window.NewControlId()
@@ -378,6 +379,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_edit=wx.Menu()
         self.undo_menu=mb_edit.Append(MenuId.UNDO, "Undo\tCtrl+Z", "Undo last action on model, not all changes supported")
         self.redo_menu=mb_edit.Append(MenuId.REDO, "Redo\tCtrl+Shift+Z", "Redo last undone model change")
+        mb_edit.Append(MenuId.HISTORY, "History...", "Show list of possible undo actions")
         self.undo_menu.Enable(False);self.redo_menu.Enable(False)
         mb_edit.AppendSeparator()
         mb_edit.Append(MenuId.COPY_GRAPH, "Copy Graph", "Copy the current graph to the clipboard as a bitmap")
@@ -490,6 +492,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_quit, id=MenuId.QUIT)
         self.Bind(wx.EVT_MENU, self.model_control.OnUndo, id=MenuId.UNDO)
         self.Bind(wx.EVT_MENU, self.model_control.OnRedo, id=MenuId.REDO)
+        self.Bind(wx.EVT_MENU, self.model_control.OnShowHistory, id=MenuId.HISTORY)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_graph, id=MenuId.COPY_GRAPH)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_sim, id=MenuId.COPY_SIM)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, id=MenuId.COPY_TABLE)

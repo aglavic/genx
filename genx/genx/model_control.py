@@ -59,6 +59,10 @@ class ModelController:
         self.history.clear()
         self.action_callback(NoOp(None))
 
+    def history_remove(self, start, length=1):
+        actions=self.history.remove_actions(start, length)
+        self.action_callback(actions)
+
     def is_configured(self):
         return self.optimizer.is_configured()
 
