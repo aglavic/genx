@@ -17,6 +17,7 @@ from . import controls as ctrls, images as img
 from .custom_events import delete_parameters, grid_change, inset_parameter, move_parameter, set_parameter_value, \
     sort_and_group_parameters, value_change, \
     skips_event
+from .custom_ids import MenuId
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
@@ -979,7 +980,7 @@ class ParameterGrid(wx.Panel, Configurable):
         """
         new_state=not self.GetValueEditorSlider()
         self.SetValueEditorSlider(new_state)
-        self.parent.main_frame_menubar.mb_view_grid_slider.Check(new_state)
+        self.parent.mb_checkables[MenuId.TOGGLE_SLIDER].Check(new_state)
         self.Refresh()
 
     def toggle_slider_tool(self, state):
