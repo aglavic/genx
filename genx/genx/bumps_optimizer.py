@@ -59,6 +59,7 @@ class FitterMonitor(TimedUpdate):
         self.last_time=history.time[0]
         self.parent.n_fom_evals=len(history.population_values[0])*history.step[0]
         self.parent.text_output(f'FOM: {chisq:.3f} Iteration: {history.step[0]} Speed: {n_fev/dt:.1f}')
+        self.parent.parameter_output(self.chis, history.population_values[0], history.population_points[0])
 
     def show_improvement(self, history):
         self.parent.new_beest(self.p, array([self.steps, self.chis]).T)
@@ -172,6 +173,24 @@ class BumpsOptimizer(GenxOptimizer):
     def text_output(self, text: str):
         self._callbacks.text_output(text)
 
+    def parameter_output(self, fom_history, chis, population):
+        if len(population)==0:
+            return
+        best=chis.argmin()
+        population=array(list(map(self.map_bumps2genx, population)))
+        new_best=chis[best]<=min(fom_history)
+        if new_best:
+            best_pop=population[best]
+        else:
+            best_pop=self.best_vec
+        param_info=SolverParameterInfo(values=best_pop,
+                                       new_best=new_best,
+                                       population=[pi for pi in population],
+                                       max_val=self.par_max.copy(),
+                                       min_val=self.par_min.copy(),
+                                       fitting=True)
+        self._callbacks.parameter_output(param_info)
+
     def new_beest(self, p, fom_log):
         self.best_vec=self.map_bumps2genx(p)
         self.fom_log=fom_log
@@ -202,10 +221,13 @@ class BumpsOptimizer(GenxOptimizer):
         (param_funcs, start_guess, par_min, par_max)=model_obj.get_fit_pars()
 
         # Control parameter setup
+        self.par_min=array(par_min)
+        self.par_max=array(par_max)
         self.par_funcs=param_funcs
         self.model=model_obj
         self.n_dim=len(param_funcs)
         self.start_guess=start_guess
+        self.best_vec=start_guess
         self.bproblem:BaseFitProblem=self.model.bumps_problem()
         self.last_result=None
 
