@@ -125,22 +125,27 @@ class ActionHistory:
         """
         current_undo=len(self.redo_stack)
         changed_actions=[]
+        skipped_action=[]
+        redone_action=[]
         if len(self.undo_stack)<start:
             raise ValueError(f"Only {len(self.undo_stack)} items on the stack to undo.")
         for i in range(start):
             changed_actions.append(self.undo())
-        skipped_action=[]
         for i in range(length):
             skipped_action.append(self.redo_stack.pop())
         while len(self.redo_stack)>current_undo:
             # redo actions that where not on the redo stack before the start
             try:
-                changed_actions.append(self.redo())
+                redone_action.append(self.redo())
             except Exception as e:
-                # the was an error during a redo, halt the process and put
-                # skipped actions on the redo stack
+                # there was an error during a redo, hald the process and
+                # revert to previous state
+                for _ in reversed(redone_action):
+                    self.undo()
                 skipped_action.reverse()
                 self.redo_stack+=skipped_action
+                while len(self.redo_stack)>current_undo:
+                    self.redo()
                 raise e
         return ActionBlock(changed_actions[-1].model, changed_actions)
 
@@ -208,30 +213,29 @@ class UpdateModelScript(ModelAction):
             ndiff=diff.pop(0)
             if ndiff.startswith(' '):
                 old_indx += 1
-                if ndiff[0][0] == '+':
+                if len(diff)>0 and diff[0][0] == '+':
                     nextcdiff=[old_indx, [], []]
-                    ndiff=diff.pop(0)
-                    while ndiff.startswith('+'):
-                        nextcdiff[2].append(ndiff[2:])
-                        if len(diff)>0:
-                            ndiff = diff.pop(0)
+                    while len(diff)>0 and diff[0][0] == '+':
+                        nextcdiff[2].append(diff.pop(0)[2:])
                     cdiff.append(nextcdiff)
             elif ndiff.startswith('-'):
                 nextcdiff = [old_indx, [ndiff[2:]], []]
-                ndiff = diff.pop(0)
                 old_indx+=1
                 # collect old lines to remove
-                while ndiff.startswith('-'):
+                while len(diff)>0 and diff[0][0] == '-':
                     nextcdiff[1].append(ndiff[2:])
+                    ndiff = diff.pop(0)
                     old_indx+=1
-                    if len(diff)>0:
-                        ndiff = diff.pop(0)
-                old_indx+=1
+                while len(diff)>0 and diff[0][0] == '?':
+                    ndiff = diff.pop(0)
                 # collect new lines to insert
-                while ndiff.startswith('+'):
-                    nextcdiff[2].append(ndiff[2:])
-                    if len(diff)>0:
-                        ndiff = diff.pop(0)
+                while len(diff)>0 and diff[0][0] == '+':
+                    nextcdiff[2].append(diff.pop(0)[2:])
+                cdiff.append(nextcdiff)
+            elif old_indx==0 and ndiff.startswith('+'):
+                nextcdiff = [old_indx, [], [ndiff[2:]]]
+                while len(diff)>0 and diff[0][0] == '+':
+                    nextcdiff[2].append(diff.pop(0)[2:])
                 cdiff.append(nextcdiff)
         return cdiff
 
@@ -255,9 +259,9 @@ class UpdateModelScript(ModelAction):
         output='\n'
         for idx, diff_from, diff_to in self.diff:
             output += f'line {idx}:\n    '
-            output += '\n    '.join(['-'+ln for ln in diff_from])
+            output += '    '.join(['-'+ln for ln in diff_from])
             output += '    '
-            output += '\n    '.join(['+'+ln for ln in diff_to])
+            output += '    '.join(['+'+ln for ln in diff_to])
         return output[:-1].replace('\n', '\n    ')
 
     def undo(self):

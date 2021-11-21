@@ -88,8 +88,8 @@ class HistoryDialog(wx.Dialog):
                     changed+=self.history.remove_actions(self.current_index-start, length).actions
                 except Exception as e:
                     ShowErrorDialog(self, f'The actions could not be re-applied:\n{e}\n\n'
-                                          f'The history was reset to the last successful '
-                                          f'action with deleted actions on the redo stack.')
+                                          f'The history was reset to the previous state. '
+                                          f'You might need to analyze your stepts in detail to revert these actions')
                     self.actions = self.history.undo_stack+list(reversed(self.history.redo_stack))
                     self.current_index = len(self.history.undo_stack)
                     changed+=self.history.redo_stack[-length:]
