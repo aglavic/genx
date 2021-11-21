@@ -1631,12 +1631,15 @@ def analyze_layer_txt(name, txt):
     items=layeroptions.strip(',').split(',')
     items=dict([tuple(map(str.strip, i.split('=', 1))) for i in items])
 
-    if 'bc.' in items['b']:
+    if 'bc.' in items['b'] or 'bw.' in items['b']:
         output.append('Formula')
         output.append(Formula.from_bstr(items['b']))
         # density
         output.append(False)
-        dens=float(items['dens'])*output[2].mFU()/MASS_DENSITY_CONVERSION
+        if 'bc.' in items['b']:
+            dens=float(items['dens'])*output[2].mFU()/MASS_DENSITY_CONVERSION
+        else:
+            dens=float(items['dens'])
         output.append(str(dens))
         # magnetization
         output.append(False)

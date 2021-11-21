@@ -117,7 +117,7 @@ class Formula(list):
         items=map(str.strip, bstr.split('+'))
         extracted_elements=[]
         for item in items:
-            if not item.startswith('bc.'):
+            if not item[:3] in ['bc.', 'bw.']:
                 continue
             else:
                 element, count=item[3:].split('*', 1)
@@ -267,6 +267,19 @@ class Formula(list):
             elements+='+fp.%s*%g'%(element, count)
         return elements[1:]
 
+    def fw(self):
+        '''Return string to be used in models to calculate scattering power f'''
+        if len(self)==0:
+            return '0.j'
+        fw.set_wavelength(1.54)
+        elements=''
+        total=sum(self.amounts())
+        for element, count in self:
+            if element in isotopes:
+                element=isotopes[element][1]
+            elements+='+fw.%s*%g'%(element, count/total)
+        return elements[1:]
+
     def b(self):
         '''Return string to be used in models to calculate scattering length b'''
         if len(self)==0:
@@ -276,6 +289,18 @@ class Formula(list):
             if element in isotopes:
                 element=isotopes[element][0]
             elements+='+bc.%s*%g'%(element, count)
+        return elements[1:]
+
+    def bw(self):
+        '''Return string to be used in models to calculate scattering length b'''
+        if len(self)==0:
+            return '0.j'
+        elements=''
+        total=sum(self.amounts())
+        for element, count in self:
+            if element in isotopes:
+                element=isotopes[element][0]
+            elements+='+bw.%s*%g'%(element, count/total)
         return elements[1:]
 
 class MaterialsDatabase(list):
