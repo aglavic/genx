@@ -5,7 +5,9 @@ An interface to show output messages from python logging with convenient fielter
 import wx
 from typing import List
 
+from .message_dialogs import ShowErrorDialog, ShowNotificationDialog
 from ..model_actions import ModelAction, ActionHistory, ActionBlock
+
 
 class ActionDisplayDialog(wx.Dialog):
     def __init__(self, parent, action: ModelAction):
@@ -31,8 +33,9 @@ class HistoryDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE|wx.STAY_ON_TOP|wx.RESIZE_BORDER,
                            name='ActionHistory')
         self.SetTitle('GenX Action History')
+        self.changed_actions=None
         self.history = history
-        self.actions=history.undo_stack+history.redo_stack
+        self.actions=history.undo_stack+list(reversed(history.redo_stack))
         self.current_index=len(history.undo_stack)
         self.build_layout()
 
@@ -69,7 +72,8 @@ class HistoryDialog(wx.Dialog):
 
     def OnRevert(self, evt):
         start=self.action_list.GetFirstSelected()
-        if 0<=start<=self.current_index:
+        if 0<=start<self.current_index:
+            success = True
             items=[[start, 1]]
             nitem=self.action_list.GetNextSelected(start)
             while 0<=nitem<=self.current_index:
@@ -78,13 +82,26 @@ class HistoryDialog(wx.Dialog):
                 else:
                     items.append([nitem, 1])
                 nitem = self.action_list.GetNextSelected(nitem)
-
             changed: List[ModelAction]=[]
             for start, length in items:
-                changed+=self.history.remove_actions(self.current_index-start, length).actions
-
+                try:
+                    changed+=self.history.remove_actions(self.current_index-start, length).actions
+                except Exception as e:
+                    ShowErrorDialog(self, f'The actions could not be re-applied:\n{e}\n\n'
+                                          f'The history was reset to the last successful '
+                                          f'action with deleted actions on the redo stack.')
+                    self.actions = self.history.undo_stack+list(reversed(self.history.redo_stack))
+                    self.current_index = len(self.history.undo_stack)
+                    changed+=self.history.redo_stack[-length:]
+                    self.action_list.DeleteAllItems()
+                    self.append_actions()
+                    success=False
+                    break
             self.changed_actions=ActionBlock(self.actions[-1].model, changed)
-        self.EndModal(wx.ID_OK)
+            if success:
+                self.EndModal(wx.ID_OK)
+        else:
+            ShowNotificationDialog(self, 'You have to select at least one action to be removed from the undo stack')
 
     def append_actions(self):
         for i, action in enumerate(self.actions):

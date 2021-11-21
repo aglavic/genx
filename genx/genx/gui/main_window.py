@@ -202,12 +202,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(EVT_SIM_PLOT, self.plot_data.OnSimPlotEvent, self)
         self.Bind(EVT_SIM_PLOT, self.eh_external_fom_value, self)
         # Update events from the solver
-        self.Bind(solvergui.EVT_UPDATE_PLOT, self.eh_external_fom_value)
-        self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_data.OnSolverPlotEvent)
-        self.Bind(solvergui.EVT_UPDATE_PLOT, self.plot_fom.OnSolverPlotEvent)
+        self.Bind(EVT_UPDATE_PLOT, self.eh_external_fom_value)
+        self.Bind(EVT_UPDATE_PLOT, self.plot_data.OnSolverPlotEvent)
+        self.Bind(EVT_UPDATE_PLOT, self.plot_fom.OnSolverPlotEvent)
 
-        self.Bind(solvergui.EVT_SOLVER_UPDATE_TEXT, self.eh_ex_status_text)
-        self.Bind(solvergui.EVT_UPDATE_PARAMETERS, self.plot_pars.OnSolverParameterEvent)
+        self.Bind(EVT_SOLVER_UPDATE_TEXT, self.eh_ex_status_text)
+        self.Bind(EVT_UPDATE_PARAMETERS, self.plot_pars.OnSolverParameterEvent)
 
         # For picking a point in a plot
         self.Bind(EVT_PLOT_POSITION,

@@ -100,8 +100,9 @@ class ActionHistory:
 
     def undo(self) -> ModelAction:
         if len(self.undo_stack)>0:
-            action=self.undo_stack.pop()
+            action=self.undo_stack[-1]
             action.undo()
+            self.undo_stack.pop()
             self.redo_stack.append(action)
             return action
         else:
@@ -109,8 +110,9 @@ class ActionHistory:
 
     def redo(self) -> ModelAction:
         if len(self.redo_stack)>0:
-            action=self.redo_stack.pop()
+            action=self.redo_stack[-1]
             action.redo()
+            self.redo_stack.pop()
             self.undo_stack.append(action)
             return action
         else:
@@ -127,11 +129,19 @@ class ActionHistory:
             raise ValueError(f"Only {len(self.undo_stack)} items on the stack to undo.")
         for i in range(start):
             changed_actions.append(self.undo())
+        skipped_action=[]
         for i in range(length):
-            self.redo_stack.pop()
+            skipped_action.append(self.redo_stack.pop())
         while len(self.redo_stack)>current_undo:
-            # don't redo action the where on the redo stack before the start
-            changed_actions.append(self.redo())
+            # redo actions that where not on the redo stack before the start
+            try:
+                changed_actions.append(self.redo())
+            except Exception as e:
+                # the was an error during a redo, halt the process and put
+                # skipped actions on the redo stack
+                skipped_action.reverse()
+                self.redo_stack+=skipped_action
+                raise e
         return ActionBlock(changed_actions[-1].model, changed_actions)
 
     def clear(self):
@@ -166,31 +176,104 @@ class ActionBlock(ModelAction):
         return '|'.join(map(str, self.actions))
 
 
-class SetModelScript(ModelAction):
+class UpdateModelScript(ModelAction):
     influences = ModelInfluence.SCRIPT
-    name = 'edit script'
 
     def __init__(self, model, text):
+        """
+        Generate a diff that can be applied to the current script
+        to get the new one. This allows the action to be performed
+        even if a previous change is undone.
+        """
         self.model=model
-        self.new_text=text
         self.old_text=self.model.get_script()
+        self.diff=self.generate_diff(self.old_text, text)
 
     def execute(self):
         # Replace model script with new text, script as new text (toggles)
         self.old_text=self.model.get_script()
-        self.model.set_script(self.new_text)
+        new_text=self.apply_diff(self.old_text)
+        self.model.set_script(new_text)
+
+    def generate_diff(self, old, new):
+        """
+        Generate a list of changes with their line numbers
+        as it is not clear how to change a script if more
+        """
+        d=difflib.Differ()
+        diff=list(d.compare(old.splitlines(keepends=True), new.splitlines(keepends=True)))
+        cdiff=[]
+        old_indx=0
+        while len(diff)>0:
+            ndiff=diff.pop(0)
+            if ndiff.startswith(' '):
+                old_indx += 1
+                if ndiff[0][0] == '+':
+                    nextcdiff=[old_indx, [], []]
+                    ndiff=diff.pop(0)
+                    while ndiff.startswith('+'):
+                        nextcdiff[2].append(ndiff[2:])
+                        if len(diff)>0:
+                            ndiff = diff.pop(0)
+                    cdiff.append(nextcdiff)
+            elif ndiff.startswith('-'):
+                nextcdiff = [old_indx, [ndiff[2:]], []]
+                ndiff = diff.pop(0)
+                old_indx+=1
+                # collect old lines to remove
+                while ndiff.startswith('-'):
+                    nextcdiff[1].append(ndiff[2:])
+                    old_indx+=1
+                    if len(diff)>0:
+                        ndiff = diff.pop(0)
+                old_indx+=1
+                # collect new lines to insert
+                while ndiff.startswith('+'):
+                    nextcdiff[2].append(ndiff[2:])
+                    if len(diff)>0:
+                        ndiff = diff.pop(0)
+                cdiff.append(nextcdiff)
+        return cdiff
+
+    def apply_diff(self, old):
+        old_list=old.splitlines(keepends=True)
+        new_list=[]
+        current_index=0
+        for idx, diff_from, diff_to in self.diff:
+            if old_list[idx:idx+len(diff_from)]==diff_from:
+                new_list+=old_list[current_index:idx]
+                new_list+=diff_to
+                current_index=idx+len(diff_from)
+            else:
+                raise ValueError(f"The script hase been modefined in a way "
+                                 f"that this change can no longer be applied: "
+                                 f"line {idx} was {diff_from} but now is {old_list[idx:idx+len(diff_from)]}.")
+        new_list+=old_list[current_index:]
+        return ''.join(new_list)
+
+    def format_diff(self):
+        output='\n'
+        for idx, diff_from, diff_to in self.diff:
+            output += f'line {idx}:\n    '
+            output += '\n    '.join(['-'+ln for ln in diff_from])
+            output += '    '
+            output += '\n    '.join(['+'+ln for ln in diff_to])
+        return output[:-1].replace('\n', '\n    ')
 
     def undo(self):
         self.model.set_script(self.old_text)
 
     @property
+    def name(self):
+        name = 'edit script ('
+        name += '|'.join([str(d[0]) for d in self.diff])
+        name += ')'
+        return name
+
+    @property
     def description(self):
         old=self.old_text or self.model.get_script()
-        new=self.new_text
-        diff=''.join(difflib.unified_diff(old.splitlines(keepends=True),
-                                          new.splitlines(keepends=True),
-                                          fromfile='old script', tofile='new script',n=1))
-        return self.name+': '+diff
+        return self.name+': '+self.format_diff()
 
 class UpdateSolverOptoins(ModelAction):
     influences = ModelInfluence.OPTIONS

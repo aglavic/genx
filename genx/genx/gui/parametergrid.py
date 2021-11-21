@@ -692,7 +692,7 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
 class ParameterGridConfig(BaseConfig):
     section='parameter grid'
     value_slider: bool=False
-    auto_sim: bool=False
+    auto_sim: bool=True
 
 class ParameterGrid(wx.Panel, Configurable):
     '''

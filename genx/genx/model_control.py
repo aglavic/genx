@@ -10,7 +10,7 @@ from .core.config import config
 from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
-from .model_actions import ActionHistory, DeleteParams, InsertParam, ModelAction, MoveParam, NoOp, SetModelScript, \
+from .model_actions import ActionHistory, DeleteParams, InsertParam, ModelAction, MoveParam, NoOp, UpdateModelScript, \
     SortAndGroupParams, UpdateColorCycle, \
     UpdateParams, \
     UpdateParamValue, UpdateSolverOptoins, UpdateDataPlotSettings
@@ -105,7 +105,7 @@ class ModelController:
         if text.strip()==old_script.strip():
             # nothing to do, same script
             return
-        self.perform_action(SetModelScript, text)
+        self.perform_action(UpdateModelScript, text)
 
     def get_model_script(self):
         return self.model.get_script()

@@ -475,7 +475,7 @@ class ModelControlGUI(wx.EvtHandler):
     def OnShowHistory(self, evt):
         dia=HistoryDialog(self.parent, self.controller.history)
         res=dia.ShowModal()
-        if res==wx.ID_OK:
+        if dia.changed_actions:
             self.OnActionCallback(dia.changed_actions)
         dia.Destroy()
 
