@@ -216,9 +216,9 @@ class ParameterDataTable(gridlib.GridTableBase):
         self.parent._grid_changed(permanent_change=permanent_change)
 
     def ChangeValueInteractively(self, row, value):
-        """ Callback for a change of the value. Used to interactively set the value and notify other parts
+        """
+        Callback for a change of the value. Used to interactively set the value and notify other parts
         of GenX by posting a EVT_PARAMETER_VALUE_CHANGE event.
-
         """
         self.SetValue(row, 1, value)
         self.parent.PostValueChangedEvent()
@@ -866,8 +866,9 @@ class ParameterGrid(wx.Panel, Configurable):
         return self.opt.value_slider
 
     def PostValueChangedEvent(self):
-        evt=value_change()
-        wx.PostEvent(self.parent, evt)
+        pass
+        # evt=value_change()
+        # wx.PostEvent(self.parent, evt)
 
     def do_toolbar(self):
         # self.toolbar.SetToolBitmapSize((21,21))

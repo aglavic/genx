@@ -20,7 +20,7 @@ import wx.stc
 from wx.lib.wordwrap import wordwrap
 
 from .custom_events import *
-from .custom_ids import *
+from .custom_ids import MenuId, ToolId
 from . import datalist, help, images as img, parametergrid, plotpanel, solvergui, pubgraph_dialog
 from .exception_handling import CatchModelError
 from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
@@ -890,8 +890,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                             el[i].append(f'inst.setPol("{pol_names[pol]}")')
                 refl.WriteModel()
 
+        with self.catch_error(action='open_model', step=f'processing plugins'):
+            self.plugin_control.OnOpenModel(None)
         debug('open_model: post new model event')
         _post_new_model_event(self, self.model_control.get_model())
+        self.update_title()
 
 
     def open_model(self, path):

@@ -206,7 +206,8 @@ class ModelControlGUI(wx.EvtHandler):
         if ModelInfluence.PARAM in action.influences:
             self.parent.paramter_grid.table.SetParameters(self.controller.get_parameters(),
                                                           clear=False, permanent_change=True)
-
+            evt = value_change()
+            wx.PostEvent(self.parent, evt)
 
     def OnUndo(self, event):
         self.controller.undo_action()
@@ -397,6 +398,7 @@ class ModelControlGUI(wx.EvtHandler):
                         fom_log=self.controller.get_fom_log(), update_fit=False,
                         desc='Model loaded')
         wx.PostEvent(self.parent, evt)
+        self.controller.history.clear()
 
         # Update the parameter plot ...
         if self.controller.is_configured():

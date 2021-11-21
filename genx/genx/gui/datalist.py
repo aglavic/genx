@@ -1374,7 +1374,7 @@ class CreateSimDataWizard(wizard.Wizard):
         page3=TitledPage(self, "Data set names")
 
         dataSizer=wx.FlexGridSizer(rows=5, cols=2,
-                                   vgap=10, hgap=10)
+                                   vgap=0, hgap=10)
 
         dataSizer.Add(wx.StaticText(page1, -1, "Start "), 0, wx.EXPAND | wx.ALL, 5)
         minCtrl=wx.TextCtrl(page1, -1, value='0.0')
@@ -1384,14 +1384,15 @@ class CreateSimDataWizard(wizard.Wizard):
         dataSizer.Add(maxCtrl, 0, wx.EXPAND | wx.ALL, 5)
         dataSizer.Add(wx.StaticText(page1, -1, "Step type"), 0, wx.EXPAND | wx.ALL, 5)
         stepChoice=wx.Choice(page1, -1, (-1, -1), choices=step_types)
+        stepChoice.SetSelection(0)
         dataSizer.Add(stepChoice, 0, wx.EXPAND | wx.ALL, 5)
         dataSizer.Add(wx.StaticText(page1, -1, "Num steps"), 0, wx.EXPAND | wx.ALL, 5)
-        stepCtrl=intctrl.IntCtrl(page1, value=10)
+        stepCtrl=intctrl.IntCtrl(page1, value=100)
         dataSizer.Add(stepCtrl, 0, wx.EXPAND | wx.ALL, 5)
         page1.sizer.Add(dataSizer)
 
         dataSizer=wx.FlexGridSizer(rows=1, cols=2,
-                                   vgap=10, hgap=10)
+                                   vgap=0, hgap=10)
         dataSizer.Add(wx.StaticText(page2, -1, "Data sets "), 0, wx.EXPAND | wx.ALL, 5)
         setsCtrl=intctrl.IntCtrl(page2, value=1)
         dataSizer.Add(setsCtrl, 0, wx.EXPAND | wx.ALL, 5)
@@ -1399,9 +1400,9 @@ class CreateSimDataWizard(wizard.Wizard):
 
         page3.sizer.Add(wx.StaticText(page3, -1, "Change the name of the data sets"), 0, wx.EXPAND | wx.ALL, 5)
         self.scrollPanel=scrolled.ScrolledPanel(page3, -1, size=(150, 200), style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER)
-        self.nameSizer=wx.FlexGridSizer(cols=1, vgap=4, hgap=4)
+        self.nameSizer=wx.FlexGridSizer(cols=1, vgap=4, hgap=0)
         self.nameCtrls=[]
-        page3.sizer.Add(self.scrollPanel, 0, wx.CENTER | wx.ALL, 5)
+        page3.sizer.Add(self.scrollPanel, 0, wx.CENTER | wx.ALL | wx.EXPAND, 5)
 
         self.maxCtrl=maxCtrl
         self.minCtrl=minCtrl
@@ -1412,8 +1413,6 @@ class CreateSimDataWizard(wizard.Wizard):
         self.add_page(page1)
         self.add_page(page2)
         self.add_page(page3)
-
-        iprint(len(self.pages))
 
         self.Bind(wizard.EVT_WIZARD_PAGE_CHANGING, self.on_page_changing)
 

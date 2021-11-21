@@ -68,6 +68,10 @@ class ModelAction(ABC):
     def action_name(self):
         return self.name.format(**self.__dict__)
 
+    def should_update(self, other: 'ModelAction'):
+        # some actions prefer an update over keeping all changes in the todo
+        return False
+
 class NoOp(ModelAction):
     influences = ModelInfluence.NONE
     name = 'no action'
@@ -87,6 +91,8 @@ class ActionHistory:
         action_string=str(action)
         action_string=action_string.replace('\n', '\n    ')
         debug(f'Action Executed - {action.__class__.__name__}: {action_string}')
+        if len(self.undo_stack)>0 and action.should_update(self.undo_stack[-1]):
+            self.undo_stack.pop()
         self.undo_stack.append(action)
         if len(self.undo_stack)>self.max_stack:
             self.undo_stack.pop(0)
@@ -317,6 +323,14 @@ class UpdateParamValue(ModelAction):
         else:
             row=self.param_name
         self.model.parameters.set_value(row, self.col, self.old_value)
+
+    def should_update(self, other):
+        # if the same parameter is changed multiple time, just keep one change
+        if type(other)!=type(self) or self.param_name!=getattr(other, 'param_name', None):
+            return False
+        else:
+            self.old_value=other.old_value
+            return True
 
 class MoveParam(ModelAction):
     influences = ModelInfluence.PARAM
