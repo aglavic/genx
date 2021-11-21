@@ -667,7 +667,15 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
             dc.SetTextBackground(bkg_colour)
             dc.SetFont(attr.GetFont())
             width, height=dc.GetTextExtent(text)
-            dc.DrawText(text, rect.x+rect.width-width-1, rect.y+1)
+            halign, valign=attr.GetAlignment()
+            x_options={wx.ALIGN_LEFT: 1,
+                       wx.ALIGN_CENTER: rect.width//2-width//2,
+                       wx.ALIGN_RIGHT: rect.width-width-1}
+            y_options={wx.ALIGN_TOP: 1,
+                       wx.ALIGN_CENTER: rect.height//2-height//2,
+                       wx.ALIGN_BOTTOM: rect.height-height-1}
+            dc.DrawText(text, rect.x+x_options[halign],
+                        rect.y+y_options[valign])
 
             dc.DestroyClippingRegion()
         else:
@@ -766,6 +774,7 @@ class ParameterGrid(wx.Panel, Configurable):
         self.SetValueEditorSlider(slider=self.opt.value_slider)
         attr=gridlib.GridCellAttr()
         attr.SetEditor(ValueCellEditor())
+        attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
         attr.SetRenderer(ValueCellRenderer())
         self.grid.SetColAttr(3, attr.Clone())
         self.grid.SetColAttr(4, attr)

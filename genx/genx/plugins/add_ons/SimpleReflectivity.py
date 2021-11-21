@@ -216,7 +216,7 @@ class SampleTable(gridlib.GridTableBase):
     def GetValue(self, row, col):
         if row==self.repeatedInfo():
             if col==0:
-                return 'Repeated layer structure'
+                return 'Repeated layer structure (white background)'
             if col==8:
                 return 'Repetitions:'
             if col==10:
@@ -354,6 +354,7 @@ class SampleTable(gridlib.GridTableBase):
         '''
         attr=gridlib.GridCellAttr()
         if row==self.repeatedInfo():
+            attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
             if col!=10:
                 attr.SetReadOnly()
             if col==0:
@@ -378,9 +379,9 @@ class SampleTable(gridlib.GridTableBase):
         if row in [0, (self.GetRowsCount()-2)]:
             if row==0:
                 if col==1:
-                    attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_TOP)
+                    attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
                 elif col in [3, 5, 7, 9]:
-                    attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_TOP)
+                    attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
                     # If layer is defined as fraction, only allow fitting of either
                     # density 2 or fraction.
                     if self.ambient[1]=='Mixure' and col==3 and self.ambient[5]:
@@ -388,7 +389,7 @@ class SampleTable(gridlib.GridTableBase):
                     elif self.ambient[1]=='Mixure' and col==5 and self.ambient[3]:
                         attr.SetReadOnly()
                 else:
-                    attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
+                    attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
                 attr.SetBackgroundColour('#dddddd')
                 if col in [9, 10]:
                     attr.SetReadOnly()
