@@ -280,14 +280,18 @@ class UpdateColorCycle(ModelAction):
 class UpdateParams(ModelAction):
     influences = ModelInfluence.PARAM
     name = 'parameter values'
-    description = 'set parameter values from {old_values} to {new_values}'
+    description = 'set parameter values\n{param_names}\nfrom\n{old_values}\nto\n{new_values}'
 
     def __init__(self, model, new_values):
         self.model=model
-        self.new_values=new_values
+        self.new_values=list(new_values)
+        self.param_names=self.model.parameters.get_fit_pars()[1]
         self.old_values=self.model.parameters.get_value_pars()
 
     def execute(self):
+        param_names=self.model.parameters.get_fit_pars()[1]
+        if self.param_names!=param_names:
+            raise ValueError("Current fit parameters do not correspond to setting during action init")
         self.old_values=self.model.parameters.get_value_pars()
         self.model.parameters.set_value_pars(self.new_values)
 

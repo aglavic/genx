@@ -11,7 +11,7 @@ def ShowQuestionDialog(frame, message, title='Question?', yes_no=False):
     else:
         flags = wx.OK | wx.CANCEL | wx.OK_DEFAULT | wx.ICON_QUESTION
     dlg=wx.MessageDialog(frame, message, title, flags)
-    result=dlg.ShowModal()==wx.ID_OK
+    result=dlg.ShowModal() in [wx.ID_OK, wx.ID_YES]
     dlg.Destroy()
     return result
 

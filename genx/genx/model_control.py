@@ -282,7 +282,8 @@ class ModelController:
         '''
         Function to start running the fit
         '''
-        self.compile_if_needed()
+        if not self.model.compiled:
+            self.simulate(recompile=True)
         # Make sure that the config of the solver is updated..
         self.optimizer.ReadConfig()
         # Reset all the errorbars

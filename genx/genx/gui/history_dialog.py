@@ -65,7 +65,7 @@ class HistoryDialog(wx.Dialog):
         hbox.Add(ubutton)
 
     def OnDestroy(self, evt):
-        self.EndModal(wx.CANCEL)
+        self.EndModal(wx.ID_CANCEL)
 
     def OnRevert(self, evt):
         start=self.action_list.GetFirstSelected()
@@ -84,7 +84,7 @@ class HistoryDialog(wx.Dialog):
                 changed+=self.history.remove_actions(self.current_index-start, length).actions
 
             self.changed_actions=ActionBlock(self.actions[-1].model, changed)
-        self.EndModal(wx.OK)
+        self.EndModal(wx.ID_OK)
 
     def append_actions(self):
         for i, action in enumerate(self.actions):
