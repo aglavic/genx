@@ -223,8 +223,8 @@ class UpdateModelScript(ModelAction):
                 old_indx+=1
                 # collect old lines to remove
                 while len(diff)>0 and diff[0][0] == '-':
-                    nextcdiff[1].append(ndiff[2:])
                     ndiff = diff.pop(0)
+                    nextcdiff[1].append(ndiff[2:])
                     old_indx+=1
                 while len(diff)>0 and diff[0][0] == '?':
                     ndiff = diff.pop(0)
@@ -260,7 +260,7 @@ class UpdateModelScript(ModelAction):
         for idx, diff_from, diff_to in self.diff:
             output += f'line {idx}:\n    '
             output += '    '.join(['-'+ln for ln in diff_from])
-            output += '    '
+            if len(diff_from)>0: output += '    '
             output += '    '.join(['+'+ln for ln in diff_to])
         return output[:-1].replace('\n', '\n    ')
 

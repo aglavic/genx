@@ -18,11 +18,11 @@ class ActionDisplayDialog(wx.Dialog):
         self.SetSizer(vbox)
         vbox.Add(wx.StaticText(self, label=f'Name: {action.action_name}'))
         vbox.Add(wx.StaticText(self, label=f'\nDescription:'))
-        msg=wx.TextCtrl(self, value=str(action), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        msg=wx.TextCtrl(self, value=str(action), style=wx.TE_READONLY|wx.TE_MULTILINE|wx.TE_DONTWRAP)
         font=msg.GetFont()
         font.SetFamily(wx.FONTFAMILY_TELETYPE)
         msg.SetFont(font)
-        vbox.Add(msg, 0, wx.EXPAND)
+        vbox.Add(msg, 1, wx.EXPAND)
 
 class HistoryDialog(wx.Dialog):
     actions: List[ModelAction]

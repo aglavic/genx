@@ -398,7 +398,7 @@ class ModelControlGUI(wx.EvtHandler):
                         fom_log=self.controller.get_fom_log(), update_fit=False,
                         desc='Model loaded')
         wx.PostEvent(self.parent, evt)
-        self.controller.history.clear()
+        self.controller.history_clear()
 
         # Update the parameter plot ...
         if self.controller.is_configured():
