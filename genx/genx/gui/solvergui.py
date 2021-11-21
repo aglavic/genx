@@ -411,7 +411,7 @@ class ModelControlGUI(wx.EvtHandler):
                                       max_val=res.par_max,
                                       min_val=res.par_min,
                                       fitting=True,
-                                      desc='Parameter Update', update_errors=False,
+                                      desc='Parameter Loaded', update_errors=False,
                                       permanent_change=False)
             except AttributeError:
                 iprint('Could not create data for parameters')
@@ -438,7 +438,7 @@ class ModelControlGUI(wx.EvtHandler):
                                     max_val=evt.max_val,
                                     min_val=evt.min_val,
                                     fitting=False,
-                                    desc='Parameter Update', update_errors=False,
+                                    desc='Parameter Improved', update_errors=False,
                                     permanent_change=True)
             wx.PostEvent(self.parent, evt)
         else:
@@ -448,7 +448,7 @@ class ModelControlGUI(wx.EvtHandler):
                                     max_val=evt.max_val,
                                     min_val=evt.min_val,
                                     fitting=False,
-                                    desc='Parameter Update', update_errors=False,
+                                    desc='Parameter Reset', update_errors=False,
                                     permanent_change=False)
             wx.PostEvent(self.parent, evt)
 
@@ -471,6 +471,12 @@ class ModelControlGUI(wx.EvtHandler):
     @skips_event
     def OnSortAndGroupParameters(self, evt):
         self.controller.sort_and_group_parameters(evt.sort_params)
+
+    @skips_event
+    def OnUpdateParameters(self, evt):
+        if evt.desc not in ['Parameter Update', 'Parameter Reset']:
+            return
+        #self.parent.paramter_grid.table.ShowParameters(evt.values)
 
     def OnShowHistory(self, evt):
         dia=HistoryDialog(self.parent, self.controller.history)

@@ -215,6 +215,16 @@ class ParameterDataTable(gridlib.GridTableBase):
             self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed(permanent_change=permanent_change)
 
+    def ShowParameters(self, values):
+        prev_pars=self.pars
+        self.pars=prev_pars.copy()
+        self.pars.set_value_pars(values)
+        msg=gridlib.GridTableMessage(self,
+                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.parent._grid_changed(permanent_change=False)
+        self.pars=prev_pars
+
     def ChangeValueInteractively(self, row, value):
         """
         Callback for a change of the value. Used to interactively set the value and notify other parts

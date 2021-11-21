@@ -208,6 +208,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         self.Bind(EVT_SOLVER_UPDATE_TEXT, self.eh_ex_status_text)
         self.Bind(EVT_UPDATE_PARAMETERS, self.plot_pars.OnSolverParameterEvent)
+        self.Bind(EVT_UPDATE_PARAMETERS, self.model_control.OnUpdateParameters)
 
         # For picking a point in a plot
         self.Bind(EVT_PLOT_POSITION,
