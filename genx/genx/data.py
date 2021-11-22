@@ -303,10 +303,13 @@ class DataSet(H5HintedExport):
         e=self.error_raw
         rms=self.rms
 
+        xt=self.x
+        yt=self.y
+
         for key in self.extra_data:
             exec('%s = self.extra_data_raw["%s"]'%(key, key))
 
-        def fpe(xmax=0.05, relerr=0.01):
+        def fpe(xmax=0.05, relerr=0.01, x=xt, y=yt):
             '''
             Estimate intensity error due to beam crossection deviating from model foot print
             xmax: the full beam hits the sample at locations larger than this x-value
@@ -314,7 +317,7 @@ class DataSet(H5HintedExport):
             '''
             return where(x<xmax, y*relerr, 0.0)
 
-        def dydx():
+        def dydx(x=xt, y=yt):
             # numerical calculation of local derivative from data
             return hstack([
                 (y[1]-y[0])/(x[1]-x[0]),
@@ -392,7 +395,7 @@ class DataSet(H5HintedExport):
                         +e.__str__()+'\n'
 
         if command_dict['e']!='':
-            def fpe(xmax=0.05, relerr=0.01):
+            def fpe(xmax=0.05, relerr=0.01, x=xt, y=yt):
                 '''
                 Estimate intensity error due to beam crossection deviating from model foot print
                 xmax: the full beam hits the sample at locations larger than this x-value
@@ -400,7 +403,7 @@ class DataSet(H5HintedExport):
                 '''
                 return where(x < xmax, y*relerr, 0.0)
 
-            def dydx():
+            def dydx(x=xt, y=yt):
                 # numerical calculation of local derivative from data
                 return hstack([
                     (y[1]-y[0])/(x[1]-x[0]),

@@ -1146,8 +1146,12 @@ class GenxCurve:
         return (self.theory()-self.y)/self.dy
 
     def nllf(self):
-        r = self.residuals()
-        return 0.5*np.sum(r**2)
+        r=self.residuals()
+        fom = np.sum(r**2)
+        penalty_funcs = self.model.get_par_penalty()
+        if len(penalty_funcs)>0 and fom is not np.NAN:
+            fom += sum([pf() for pf in penalty_funcs])*(len(r)-len(self._pars))
+        return 0.5*fom
 
     def __getstate__(self):
         state=self.__dict__.copy()
