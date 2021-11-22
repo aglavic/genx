@@ -698,6 +698,7 @@ class SampleTable(gridlib.GridTableBase):
 
     def update_layer_parameters(self, layer, dens=None, magn=None,
                                 d=None, sigma=None):
+        print('update_layer_parameters', layer, dens, magn, d, sigma)
         # update the table during/after a fit, layer can be index or name
         if type(layer) is not int:
             layer=self.get_name_list().index(layer)
@@ -1431,8 +1432,9 @@ class Plugin(framework.Template):
             wx.CallAfter(self.sld_plot.Plot)
 
     def OnGridChange(self, event):
-        self.sample_widget.CheckGridUpdate()
-        self.sample_widget.Update(update_script=False)
+        pass
+        #self.sample_widget.CheckGridUpdate()
+        #self.sample_widget.Update(update_script=False)
 
     @skips_event
     def OnGridMayHaveErrors(self, event):
