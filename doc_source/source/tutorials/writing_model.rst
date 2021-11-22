@@ -202,4 +202,4 @@ The methods shown with the examples in this section also apply to the libraries 
 The classes are different but the general use is the same.
 
 An application of multi-peak fitting with a similar implementation of a gaussian is in cluded in the GenX
-distribution under *genx/examples/Peakfit_Gauss.hgx*.
+distribution or on `github <https://github.com/aglavic/genx/tree/master/genx/genx/examples>`_ under *genx/examples/Peakfit_Gauss.hgx*.

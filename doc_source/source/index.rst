@@ -26,7 +26,8 @@ through e-mail to artur.glavic@psi.ch.
    might exist. Please report these via the issue tracker.
 
 You just want to do **simple reflectometry fits** and don't care to read a large documentation,
-just jump to :ref:`tutorial-simple-reflectivity`
+just jump to :ref:`tutorial-simple-reflectivity`, :ref:`tutorial-neutron-fit` or load one of the
+`example GenX models <https://github.com/aglavic/genx/tree/master/genx/genx/examples>`_.
 
 Contents
 ========
