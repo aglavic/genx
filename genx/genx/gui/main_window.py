@@ -1596,6 +1596,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         with self.catch_error(action='error_stats', step=f'opening Bumps analysis dialog'):
             from .bumps_interface import StatisticalAnalysisDialog
             prev_result=getattr(self.model_control.controller.optimizer, 'last_result', None)
+            if len(prev_result.dx)!=len(self.model_control.get_parameters().get_fit_pars()[0]):
+                # fit parameters were changed since result was computed
+                prev_result=None
             dia = StatisticalAnalysisDialog(self, self.model_control.get_model(), prev_result=prev_result)
             dia.ShowModal()
 

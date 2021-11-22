@@ -1170,14 +1170,3 @@ class GenxCurve:
         self._pars=pars
         self._state = state
         self._set_funcs=funcs
-
-    # def residuals(self):
-    #     self._apply_par(self.x)
-    #     fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
-    #     fom_clean=[self.model.fom_mask_func(fom_set) for fom_set in fom_raw]
-    #     return np.hstack([np.sign(fom_set)*np.sqrt(np.absolute(fom_set)) for fom_set in fom_clean])
-    #
-    # def nllf(self):
-    #     self._apply_par(self.x)
-    #     fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
-    #     return 0.5 * fom # sum(residuals**2) for Chi2Bars fom function and no penalty
