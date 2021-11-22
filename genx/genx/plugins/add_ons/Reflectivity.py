@@ -49,7 +49,7 @@ This shows the real and imaginary part of the scattering length as a function
 of depth for the sample. The substrate is to the left and the ambient material
 is to the right. This is updated when the simulation button is pressed.
 '''
-from genx.plugins.utils import ShowInfoDialog, ShowWarningDialog
+from genx.plugins.utils import ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
 from genx.gui.plotpanel import PlotPanel, BasePlotConfig
@@ -1063,7 +1063,7 @@ class EditCustomParameters(wx.Dialog):
         '''
         result='Do you want to delete the expression?\n'+ \
                'Remember to check if parameter is used elsewhere!'
-        result = ShowInfoDialog(self, result, 'Delete expression?')
+        result = ShowQuestionDialog(self, result, 'Delete expression?')
         if result:
             self.lines.pop(self.listbox.GetSelection())
             self.listbox.SetItemList(self.lines)

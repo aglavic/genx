@@ -70,6 +70,7 @@ class DiffEvConfig(BaseConfig):
     use_max_generations:bool=False
     max_generations:int=BaseConfig.GParam(500, pmin=10, pmax=10000, label='Fixed size')
     max_generation_mult:int=BaseConfig.GParam(6, pmin=1, pmax=100, label='Relative size')
+    min_parameter_spread:float=BaseConfig.GParam(0.0, pmin=0.0, pmax=100.0, label='parameter spread to stop (%)')
 
     use_start_guess:bool=True
     use_boundaries:bool=True
@@ -92,7 +93,8 @@ class DiffEvConfig(BaseConfig):
         'Differential Evolution':
             ['km', 'kr', 'create_trial',
              ['Population size:', 'use_pop_mult', 'pop_mult', 'pop_size'],
-             ['Max. Generations:', 'use_max_generations', 'max_generations', 'max_generation_mult']
+             ['Max. Generations:', 'use_max_generations', 'max_generations', 'max_generation_mult'],
+              'min_parameter_spread',
              ],
         'Parallel processing': ['use_parallel_processing', 'parallel_processes', 'parallel_chunksize']
         }
@@ -517,6 +519,14 @@ class DiffEv(GenxOptimizer):
             self.text_output('FOM: %.3f Generation: %d Speed: %.1f'% \
                              (self.best_fom, gen, speed))
 
+            # Check if largest relative spread of a parameter is below the break threshold
+            pop=array(self.pop_vec)
+            norm=(self.par_max-self.par_min)
+            spread=(pop.max(axis=0)-pop.min(axis=0))/norm
+            if spread.max()<(0.01*self.opt.min_parameter_spread):
+                self.text_output('Stopping fit as min_parameter_spread was reached')
+                break
+
             self.new_best=False
             # Do an autosave if activated and the interval is correct
             if gen%self.opt.autosave_interval==0 and self.opt.use_autosave:
@@ -648,6 +658,14 @@ class DiffEv(GenxOptimizer):
                 if rank==0:
                     self.text_output('FOM: %.3f Generation: %d Speed: %.1f'%
                                      (self.best_fom, gen, speed))
+
+                # Check if largest relative spread of a parameter is below the break threshold
+                pop = array(self.pop_vec)
+                norm = (self.par_max-self.par_min)
+                spread = (pop.max(axis=0)-pop.min(axis=0))/norm
+                if spread.max()<(0.01*self.opt.min_parameter_spread):
+                    self.text_output('Stopping fit as min_parameter_spread was reached')
+                    break
 
                 self.new_best=False
                 # Do an autosave if activated and the interval is correct

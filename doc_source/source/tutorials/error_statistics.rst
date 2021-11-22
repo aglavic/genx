@@ -4,6 +4,8 @@
 Error Statistics from bumps library
 ***********************************
 
+Performing Statistical Uncertainty Calculation
+==============================================
 GenX includes an interface to the `bumps <https://bumps.readthedocs.io/en/latest/>`_ library
 for data fitting and uncertainty estimation. The library can be used as optimizer alternative
 to the Differential Evolution but also to analyze the parameter statistics after a successful fit
@@ -60,3 +62,21 @@ graph can be changed to any pair of different parameters by double clicking on t
 After the evaluation you can copy-paste the table into e.g. Excel and the error values are stored
 in the GenX paramter table for export. If you export to the new ORSO *.ort* format the full
 error estimation, including covariance matrix, will be written to the file header information.
+
+Including Systematic Errors in XRR/NR Modls
+===========================================
+Will be discussed in new GenX publication and added here once I find the time do write it. A common
+feature of such treatment is the advantage of making Chi² a valid FOM again and allowing statistically
+correct treatment of parameter uncertainties.
+
+XRR
+^^^
+
+
+Monochromatic NR
+^^^^^^^^^^^^^^^^
+
+
+Time-of-Flight NR
+^^^^^^^^^^^^^^^^^
+
