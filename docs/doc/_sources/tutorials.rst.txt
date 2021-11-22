@@ -7,7 +7,7 @@ Tutorials
 Introduction
 ============
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    /tutorials/gui
    /tutorials/plugin
@@ -19,7 +19,7 @@ Introduction
 Reflectivity
 ============
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    /tutorials/simple_reflectivity
    /tutorials/xrr_fitting
@@ -30,7 +30,7 @@ Reflectivity
 Surface x-ray diffraction
 =========================
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    /tutorials/sxrd
    /tutorials/sxrd2
@@ -39,7 +39,8 @@ Surface x-ray diffraction
 Other tutorials
 ===============
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   /tutorials/error_statistics
    /tutorials/performance
    /tutorials/mpi

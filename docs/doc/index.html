@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Welcome to GenX’s documentation! &#8212; GenX 3.4.6 documentation</title>
+    <title>Welcome to GenX’s documentation! &#8212; GenX 3.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="install.html" title="Installation"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">GenX 3.4.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="#">GenX 3.5.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Welcome to GenX’s documentation!</a></li> 
       </ul>
     </div>  
@@ -56,8 +56,12 @@ it should be added.</p>
 through e-mail to <a class="reference external" href="mailto:artur&#46;glavic&#37;&#52;&#48;psi&#46;ch">artur<span>&#46;</span>glavic<span>&#64;</span>psi<span>&#46;</span>ch</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The current status of the documentation is still primarily based on the GenX 2 version, so some details may be outdated.</p>
+<p>The documentation is not updated as frequently as the software so some variation in functionality
+might exist. Please report these via the issue tracker.</p>
 </div>
+<p>You just want to do <strong>simple reflectometry fits</strong> and don’t care to read a large documentation,
+just jump to <a class="reference internal" href="tutorials/simple_reflectivity.html#tutorial-simple-reflectivity"><span class="std std-ref">Simple Reflectivity Model (XRR/NR)</span></a>, <a class="reference internal" href="tutorials/neutron_fit.html#tutorial-neutron-fit"><span class="std std-ref">Neutron reflectivity video tutorials</span></a> or load one of the
+<a class="reference external" href="https://github.com/aglavic/genx/tree/master/genx/genx/examples">example GenX models</a>.</p>
 <section id="contents">
 <h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -66,29 +70,101 @@ through e-mail to <a class="reference external" href="mailto:artur&#46;glavic&#3
 <li class="toctree-l2"><a class="reference internal" href="install.html#windows">Windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#mac-os-x">Mac OS-X</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#linux">Linux</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#from-source">From source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#from-source">From source</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#anaconda">Anaconda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#reflectivity">Reflectivity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#surface-x-ray-diffraction">Surface x-ray diffraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#other-tutorials">Other tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/gui.html">Overview of the  user interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/plugin.html">Plugins: an introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/data_handling.html">Data handling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/diffev.html">Fitting with Differential Evolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/writing_model.html">Writing a custom model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#reflectivity">Reflectivity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/simple_reflectivity.html">Simple Reflectivity Model (XRR/NR)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/xrr_fitting.html">Fitting of x-ray reflectivity data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/neutron_sim.html">Neutron reflectivity tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/neutron_fit.html">Neutron reflectivity video tutorials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/slicing.html">Slicing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#surface-x-ray-diffraction">Surface x-ray diffraction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/sxrd.html">Surface X-diffraction tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/sxrd2.html">Surface X-diffraction Model 2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/beta_rough.html">Beta Roughness Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#other-tutorials">Other tutorials</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/error_statistics.html">Error Statistics from bumps library</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/performance.html">Optimizer and model performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/mpi.html">Using GenX from the command line (with mpi)</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="faq.html#general">General</a></li>
-<li class="toctree-l2"><a class="reference internal" href="faq.html#fitting">Fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="faq.html#reflectivity">Reflectivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#general">General</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#how-should-i-cite-genx">How should I cite GenX?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#issue-with-editing-the-grid-on-mac">Issue with editing the grid on Mac</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#fitting">Fitting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#can-t-fit-and-fom-shows-inf-or-nan">Can’t fit and FOM shows inf or Nan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#an-error-message-appears-when-i-start-fitting-or-the-fom-plot-and-the-fom-message-in-the-toolbar-differ">An error message appears when I start fitting or the FOM plot and the FOM message in the toolbar differ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#reflectivity">Reflectivity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#how-do-i-add-a-2theta-offset">How do I add a 2Theta offset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#what-about-different-scattering-length-databases">What about different scattering length databases?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#what-happens-if-i-fit-the-scattering-length">What happens if I fit the scattering length?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#could-you-explain-how-the-density-is-defined-works-with-an-example">Could you explain how the density is defined/works with an example?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#how-do-i-transform-from-g-cm3-to-formula-unit-a3">How do I transform from g/cm<sup>3</sup> to formula unit/Å<sup>3</sup> ?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#error-when-simulating-spin-flip-reflectivity">Error when simulating spin flip reflectivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#is-it-possible-to-automatically-normalise-the-fitted-function-to-the-data">Is it possible to automatically normalise the fitted function to the data?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html#i-want-to-use-different-instruments-instances-to-fit-data-sets-collected-of-different-instruments">I want to use different instruments instances to fit data sets collected of different instruments</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">Development documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="development/data.html">Data classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/write_data_loader.html">How to write a Data Loader</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/write_fom.html">Writing a FOM function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/packaging.html">How to package GenX</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/mag_refl.html">A model for magnetic reflectivity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="development/genx_package.html">GenX Python Package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/data.html">Data classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="development/data.html#datalist">DataList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/data.html#dataset">DataSet</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="development/write_data_loader.html">How to write a Data Loader</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="development/write_data_loader.html#the-template">The template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/write_data_loader.html#the-default-as-example">The default as example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="development/write_fom.html">Writing a FOM function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="development/write_fom.html#making-a-custom-fom-available-in-genx">Making a custom FOM available in GenX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/write_fom.html#example-of-a-fom-function">Example of a FOM function</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="development/packaging.html">How to package GenX</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="development/packaging.html#pypi-distribution">PyPI distribution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="development/mag_refl.html">A model for magnetic reflectivity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="development/mag_refl.html#changes-necessary">Changes necessary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/mag_refl.html#changes-done">Changes done</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/mag_refl.html#layer-parameters">Layer Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/mag_refl.html#stack-parameters">Stack Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/mag_refl.html#sample-parameters">Sample Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="development/genx_package.html">GenX Python Package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="development/api/data_loaders.html">Data Loader Plugins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/api/moment_analysis.html">A model for fitting the spectral response</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -150,7 +226,7 @@ through e-mail to <a class="reference external" href="mailto:artur&#46;glavic&#3
         <li class="right" >
           <a href="install.html" title="Installation"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">GenX 3.4.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="#">GenX 3.5.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Welcome to GenX’s documentation!</a></li> 
       </ul>
     </div>
