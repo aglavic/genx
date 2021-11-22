@@ -390,15 +390,14 @@ class Parameters(H5Savable):
         '''
         Does a safe copy from object into this object.
         '''
-        self.data= obj.data[:]
+        self.data=[di.copy() for di in obj.data]
 
     def copy(self):
         '''
         Does a copy of the current object.
         '''
         new_pars=Parameters()
-        new_pars.data=self.data[:]
-
+        new_pars.data=[di.copy() for di in self.data]
         return new_pars
 
     def __len__(self):

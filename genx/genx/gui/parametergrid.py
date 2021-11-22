@@ -223,7 +223,6 @@ class ParameterDataTable(gridlib.GridTableBase):
                                      gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed(permanent_change=False)
-        self.pars=prev_pars
 
     def ChangeValueInteractively(self, row, value):
         """

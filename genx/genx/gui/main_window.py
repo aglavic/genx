@@ -1801,7 +1801,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if self._init_phase:
             return
         try:
-            self.model_control.saved = not event.permanent_change
+            self.model_control.saved = (not event.permanent_change) and self.model_control.saved
         except AttributeError:
             self.model_control.saved = False
         else:

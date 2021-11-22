@@ -476,7 +476,7 @@ class ModelControlGUI(wx.EvtHandler):
     def OnUpdateParameters(self, evt):
         if evt.desc not in ['Parameter Update', 'Parameter Reset']:
             return
-        #self.parent.paramter_grid.table.ShowParameters(evt.values)
+        self.parent.paramter_grid.table.ShowParameters(evt.values)
 
     def OnShowHistory(self, evt):
         dia=HistoryDialog(self.parent, self.controller.history)
