@@ -3,13 +3,15 @@
 **********************************
 Simple Reflectivity Model (XRR/NR)
 **********************************
+This tutorial will show you the general use of the SimpleReflectivity plugin (see :ref:`tutorial-plugin`) to
+build a neutron or x-ray reflectivity model and fit it to your data.
 
 Getting started
 ===============
 Start by opening GenX and selecting the SimpleProfile. (Or load the simple reflectivity
-plugin by going to the menu :menuselection:`Settings-->Plugins-->Load-->Reflectivity`.)
+plugin by going to the menu :menuselection:`Settings-->Plugins-->Load-->SimpleReflectivity`.)
 
-The GUI will show a wizard to guide you through the initial model setup:
+When creating a new model the GUI will show a wizard to guide you through the initial model setup:
 
 .. image:: _attachments/simple_reflectivity/wizard1.JPG
     :width: 32 %
@@ -18,7 +20,8 @@ The GUI will show a wizard to guide you through the initial model setup:
 .. image:: _attachments/simple_reflectivity/wizard3.JPG
     :width: 32 %
 
-Afterwards the GUI will show the initial interface with a preset model of a 3-Layer system:
+Afterwards the GUI will show the initial interface with a preset model of a 3-Layer system with air above
+and silicon as a substrate:
 
 .. image:: _attachments/simple_reflectivity/InitialInterface.JPG
     :width: 100 %
@@ -38,58 +41,76 @@ These parameters are:
 
 * Formula
 
-    1. **Layer** User defined name for each layer, has to be unique
-    2. **Chem. Formula** Define the elemental composition for the layer as sum formula (e.g. Fe2O3).
-       In case that you would prefer to enter the scattering length density directly set this to "SLD"
-    3. **Density [g/cm³]** Material mass density for the layer. If *Chem. Formula* is SLD this is the SLD in units
-       of 10⁻⁶ Å².
-    4. **Moment [µB/FU]** Magnetic moment, if any, within the layer in units of 1 Bohr-Magneton per given Chemical
-       formula unit (FU).
-    5. **d [Å]** Thickness of this layer.
-    6. **σ [Å]** Roughness of this layer.
+    * :Layer:
+        User defined name for each layer, has to be unique
+    * :Chem. Formula:
+        Define the elemental composition for the layer as sum formula (e.g. Fe2O3).
+        In case that you would prefer to enter the scattering length density directly set this to *SLD*
+    * :Density [g/cm³]:
+        Material mass density for the layer. If *Chem. Formula* is *SLD* this is the
+        scattering length density in units of 10⁻⁶ Å².
+    * :Moment [µB/FU]:
+        Magnetic moment, if any, within the layer in units of 1 Bohr-Magneton per given Chemical
+        formula unit (FU). This value has no obvious meaning for *Chem. Formula* set to *SLD*.
+    * :d [Å]:
+        Thickness of this layer.
+    * :σ [Å]:
+        Roughness of this layer.
 
 * Mixure (of two materials)
 
-    1. **Layer** User defined name for each layer, has to be unique
-    2. **SLD-1 [10⁻⁶ Å²]** Scattering length density (SLD) for the first material
-    3. **SLD-2 [10⁻⁶ Å²]** SLD for the second material
-    4. **Fraction [% SLD-1]** Amount of first material in the mixture (e.g. H2O vs. D2O)
-    5. **d [Å]** Thickness of this layer.
-    6. **σ [Å]** Roughness of this layer.
+    * :Layer:
+        User defined name for each layer, has to be unique
+    * :SLD-1 [10⁻⁶ Å²]:
+        Scattering length density (SLD) for the first material
+    * :SLD-2 [10⁻⁶ Å²]:
+        SLD for the second material
+    * :Fraction [% SLD-1]:
+        Amount of first material in the mixture (e.g. H2O vs. D2O)
+    * :d [Å]:
+        Thickness of this layer.
+    * :σ [Å]:
+        Roughness of this layer.
 
 Layers can be added, deleted and moved within their *block* with the
 toolbar buttons above after selecting a layer in the grid:
 
 .. image:: _attachments/simple_reflectivity/SampleToolbar.JPG
 
+If all layers of a top or bottom *block* have been removed, they can be added by selecting
+the *Ambient* or *Substrate* lines.
+The *to Advanced Model* button on the right of the toolbar allows to quickly convert the
+model to the *Reflectivity* plugin for more advanced modeling options.
+(see :ref:`tutorial-xrr-fitting` and :ref:`tutorial-neutron-sim`.)
+
 Instrument Parameters
 =====================
 For parameters that concern the experiment itself a dialog can be opened with the **Instrument Settings** button
 in the toolbar. The dialog allows to choose:
 
-``probe``
+* :probe:
     The radiation type used
-``wavelength``
+* :wavelength:
     The wavelength used, if not measureing time of flight neutrons
-``I0``
+* :I0:
     Initial intensity, for nomalized data this should be 1.0
-``coords``
+* :coords:
     Coordinats of the x-axes, angle 2-Theta or wavevector transfer q
-``Ibkg``
+* :Ibkg:
     Constant experimental background (value at high q)
-``res``
+* :res:
     Instrumental resolution in the same coordinates as x
-``footype``
+* :footype:
     Function used for footprint correction. *no corr* for no correction, *square-* or *gaussian beam* profile
-``samplelen``
+* :samplelen:
     Length of the sample along the beam, ignored if *no corr* was selected
-``beamw``
+* :beamw:
     Width of the beam in scattering direction, for *gaussian* beam this is the sigma value
 
 .. image:: _attachments/simple_reflectivity/InstrumentEditor.JPG
 
 .. note::
-    If a data loader was selected that supports a resolution column (*resolution*, *d17_cosmos*, *sns_mr* etc.)
+    If a data loader was selected that supports a resolution column (*orso*, *resolution*, *d17_cosmos*, *sns_mr* etc.)
     the SimpleReflectivity plugin automatically uses this column for the resolution if the *res* parameter is
     not zero. If there are issues with the resolution column the *Calculation on selected dataset(s)* dialog
     has to be used to modify the *res* column.
@@ -99,12 +120,14 @@ Reading the data
 To load the data select the dataset in the list on the right and click the small *Open* icon above it to import
 a dataset. For multiple datasets you can add more entries by pushing the *plus* button in the same toolbar.
 
-If you are using the generic *default* or *resolution* data loader you may have to first select the data file
+If you are using the generic *auto*, *default* or *resolution* data loader you may have to first select the data file
 columns that correspond to x, y, dy (and maybe resolution). This can be done with the
-:menuselection:`Settings --> Import` menu option.
+:menuselection:`Settings-->Import` menu option.
 
 For an example dataset you can create a new model and choose *neutron*, *d17_legacy* and *q* from the wizard. Then
-select the dataset and open D17_SiO.out from the GenX examples folder. Remove green and purple layers from top and
+select the dataset and open D17_SiO.out from the GenX examples folder
+(found also on `github <https://github.com/aglavic/genx/tree/master/genx/genx/examples>`_).
+Remove green and purple layers from top and
 bottom and choose "Si" with density 2.32998 for the substrate and "SiO" with density 2.5 and thickness around
 1200 Å for the layer. The Interface should now look like this:
 
@@ -125,7 +148,7 @@ number of generations to be computed. At the end your result should look like th
 
 .. image:: _attachments/simple_reflectivity/ModelFitted.JPG
 
-Thei FOM for refinement can be chosen from the dialog accessed through :menuselection:`Settings --> Optimizer`.
+Thei FOM for refinement can be chosen from the dialog accessed through :menuselection:`Settings-->Optimizer`.
 Most of the settings in this dialog are for advanced users to optimize the fitting performance and can be ignored.
 
 .. image:: _attachments/simple_reflectivity/OptimizerSettings.JPG
@@ -140,5 +163,7 @@ an estimate on errors in negative and positive direction.
 .. image:: _attachments/simple_reflectivity/ParameterErrors.JPG
 
 .. note::
-    These values are only meaningful if the FOM **chi2bars** was chosen. For other FOM they can give a general estimat
-    about more or less certain parameters but no quantitative values that are statistically rigourusly treated.
+    These values are only a generic estimat about more or less certain parameters
+    and not quantitative values that are statistically rigourusly treated.
+    For statistically accurate errors you need to use the chi³ FOM and the *Error Statistics* calculation
+    based on the *bumps* library. (Button **P** next to the one described above, see :ref:`tutorial-error-statistics`.)

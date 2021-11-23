@@ -22,13 +22,18 @@ Support is given through the issue tracker on `Source Forge <https://sourceforge
 through e-mail to artur.glavic@psi.ch.
 
 .. note::
-   The current status of the documentation is still primarily based on the GenX 2 version, so some details may be outdated.
+   The documentation is not updated as frequently as the software so some variation in functionality
+   might exist. Please report these via the issue tracker.
+
+You just want to do **simple reflectometry fits** and don't care to read a large documentation,
+just jump to :ref:`tutorial-simple-reflectivity`, :ref:`tutorial-neutron-fit` or load one of the
+`example GenX models <https://github.com/aglavic/genx/tree/master/genx/genx/examples>`_.
 
 Contents
 ========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    install
    tutorials

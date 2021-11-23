@@ -14,13 +14,23 @@ from .core.custom_logging import iprint
 from .core.colors import CyclicList
 from .core.h5_support import H5Savable, H5HintedExport
 
-_e='unspecified'
-META_DEFAULT={'creator': {'name': _e, 'system': platform, 'affiliation': _e, 'time': _e},
-              'data_source': {'owner': _e, 'facility': _e, 'experimentID': _e, 'experimentDate': _e, 'title': _e,
-                              'experiment': {'instrument': _e, 'probe': 'neutron', 'sample': {'name': _e}},
-                              'measurement': {'scheme': _e, 'omega': {'magnitude': 0.0},
-                                              'wavelength': {'magnitude': 0.0}}},
-              }
+try:
+    from orsopy.fileio import Orso
+    META_DEFAULT=Orso.empty().to_dict()
+    del(META_DEFAULT['columns'])
+except ImportError:
+    META_DEFAULT={'data_source': {'owner': {'name': None, 'affiliation': None},
+                      'experiment': {'title': None,
+                                    'instrument': None,
+                                    'start_date': None,
+                                    'probe': None},
+                      'sample': {'name': None},
+                     'measurement': {'instrument_settings': {'incident_angle': {'magnitude': None},
+                                    'wavelength': {'magnitude': None},
+                                    'polarization': 'unpolarized'},
+                                    'data_files': None}},
+                 'reduction': {'software': {'name': None}},
+        }
 
 class DataSet(H5HintedExport):
     '''
@@ -221,11 +231,9 @@ class DataSet(H5HintedExport):
         except:
             iprint("Can't read the file %s, check the format"%filename)
         else:
-            # print A
             xcol=self.cols[0]
             ycol=self.cols[1]
             ecol=self.cols[2]
-            # print xcol,ycol
             if xcol<A.shape[1] and ycol<A.shape[1] and ecol<A.shape[1]:
                 self.x_raw=A[:, xcol].copy()
                 self.y_raw=A[:, ycol].copy()
@@ -274,10 +282,9 @@ class DataSet(H5HintedExport):
         rms=self.rms
 
         for key in self.extra_data:
-            exec('%s = self.%s_raw'%(key, key))
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
 
         self.x=eval(self.x_command)
-        # print self.x
 
     def run_y_command(self):
         x=self.x_raw
@@ -286,11 +293,9 @@ class DataSet(H5HintedExport):
         rms=self.rms
 
         for key in self.extra_data:
-            exec('%s = self.%s_raw'%(key, key))
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
 
         self.y=eval(self.y_command)
-        # print self.y
-        # print self.y_command
 
     def run_error_command(self):
         x=self.x_raw
@@ -298,10 +303,13 @@ class DataSet(H5HintedExport):
         e=self.error_raw
         rms=self.rms
 
-        for key in self.extra_data:
-            exec('%s = self.%s_raw'%(key, key))
+        xt=self.x
+        yt=self.y
 
-        def fpe(xmax=0.05, relerr=0.01):
+        for key in self.extra_data:
+            exec('%s = self.extra_data_raw["%s"]'%(key, key))
+
+        def fpe(xmax=0.05, relerr=0.01, x=xt, y=yt):
             '''
             Estimate intensity error due to beam crossection deviating from model foot print
             xmax: the full beam hits the sample at locations larger than this x-value
@@ -309,7 +317,7 @@ class DataSet(H5HintedExport):
             '''
             return where(x<xmax, y*relerr, 0.0)
 
-        def dydx():
+        def dydx(x=xt, y=yt):
             # numerical calculation of local derivative from data
             return hstack([
                 (y[1]-y[0])/(x[1]-x[0]),
@@ -387,7 +395,7 @@ class DataSet(H5HintedExport):
                         +e.__str__()+'\n'
 
         if command_dict['e']!='':
-            def fpe(xmax=0.05, relerr=0.01):
+            def fpe(xmax=0.05, relerr=0.01, x=xt, y=yt):
                 '''
                 Estimate intensity error due to beam crossection deviating from model foot print
                 xmax: the full beam hits the sample at locations larger than this x-value
@@ -395,7 +403,7 @@ class DataSet(H5HintedExport):
                 '''
                 return where(x < xmax, y*relerr, 0.0)
 
-            def dydx():
+            def dydx(x=xt, y=yt):
                 # numerical calculation of local derivative from data
                 return hstack([
                     (y[1]-y[0])/(x[1]-x[0]),
@@ -500,8 +508,6 @@ class DataSet(H5HintedExport):
         pars [dictonary] is None that item will be skipped, i.e. keep its old
         value.
         '''
-        # print 'data set_data_plot_items: '
-        # print pars
         for name in self.plot_setting_names:
             if pars[name] is not None:
                 if type(pars[name])==type(''):
@@ -520,8 +526,6 @@ class DataSet(H5HintedExport):
         pars [dictonary] is None that item will be skipped, i.e. keep its old
         value.
         '''
-        # print 'data set_sim_plot_items: '
-        # print pars
         for name in self.plot_setting_names:
             if pars[name] is not None:
                 if type(pars[name])==type(''):
@@ -747,10 +751,8 @@ class DataList(H5Savable):
         '''
         if pos<len(self.items) and len(self.items)>1:
             self.items.pop(pos)
-            # print "Data set number %i have been removed."%pos
             return True
         else:
-            # print 'Can not remove dataset number %i.'%pos
             return False
 
     def move_up(self, pos):
@@ -871,7 +873,6 @@ class DataList(H5Savable):
                 raise GenxIOError('Error in export_data_to_files')
         else:
             indices=list(range(len(self.items)))
-        # print 'Output: ', indices, len(self.items)
         for index in indices:
             base, ext=os.path.splitext(basename)
             if ext=='':

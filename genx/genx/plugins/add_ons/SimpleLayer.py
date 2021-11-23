@@ -25,6 +25,8 @@ from math import cos, pi, sqrt
 from ...gui import images as img
 from .. import add_on_framework as framework
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
+from ..utils import ShowInfoDialog, ShowQuestionDialog
+
 
 mg=None
 pymysql=None
@@ -69,12 +71,7 @@ class RefPluginInterface(PluginInterface):
         try:
             layer=self.get_selected_layer()
         except:
-            dlg=wx.MessageDialog(panel,
-                                 'You have to select a layer or stack before applying material',
-                                 caption='Information',
-                                 style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowInfoDialog(panel, 'You have to select a layer or stack before applying material')
             return
         if layer:
             layer.f=formula.f()
@@ -106,24 +103,14 @@ class SimplePluginInterface(PluginInterface):
         formula, density=mdb[index]
         row, layer_type=self.get_selected_layer()
         if layer_type is None:
-            dlg=wx.MessageDialog(panel,
-                                 'You have to select a layer to apply the material to',
-                                 caption='Information',
-                                 style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowInfoDialog(panel, 'You have to select a layer to apply the material to')
             return
         g=self._plugin.sample_widget.grid
         t=self._plugin.sample_widget.sample_table
         if layer_type=='Mixure':
             col=g.GetGridCursorCol()
             if not col in [2, 4]:
-                dlg=wx.MessageDialog(panel,
-                                     'Select SLD cell to apply material to',
-                                     caption='Information',
-                                     style=wx.OK | wx.ICON_INFORMATION)
-                dlg.ShowModal()
-                dlg.Destroy()
+                ShowInfoDialog(panel, 'Select SLD cell to apply material to')
                 return
             if self._plugin.sample_widget.inst_params['probe']=='x-ray':
                 SLD=mdb.SLDx(index).real
@@ -169,12 +156,8 @@ class Plugin(framework.Template):
             self._refplugin=SimplePluginInterface(
                 ph.loaded_plugins['SimpleReflectivity'])
         else:
-            dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
-                                 caption='Information',
-                                 style=wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
             self._refplugin=None
+            ShowInfoDialog(self.materials_panel, 'Reflectivity plugin must be loaded')
 
     def create_materials_list(self):
         '''
@@ -315,14 +298,11 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         '''
         # Check so that one dataset is selected
         if len(indices)==0:
-            dlg=wx.MessageDialog(self, 'At least one data set has to be selected', caption='Information',
-                                 style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowInfoDialog(self, 'At least one data set has to be selected', 'Information')
             return False
         return True
 
-    def DeleteItem(self):
+    def DeleteItem(self, index):
         index=self.GetFirstSelected()
         item=self.materials_list[index]
         item_formula=''
@@ -335,17 +315,14 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
                 item_formula+="%s(%f)"%(element, count)
 
         # Create the dialog box
-        dlg=wx.MessageDialog(self, 'Remove material %s?'%item_formula,
-                             caption='Remove?', style=wx.YES_NO | wx.ICON_QUESTION)
+        result=ShowQuestionDialog(self, 'Remove material %s?'%item_formula, 'Remove?')
 
         # Show the dialog box
-        if dlg.ShowModal()==wx.ID_YES:
+        if result:
             self.materials_list.pop(index)
             # Update the list
             self.SetItemCount(len(self.materials_list))
             self.RefreshItems(index, len(self.materials_list))
-
-        dlg.Destroy()
 
     def AddItem(self, item):
         index=0

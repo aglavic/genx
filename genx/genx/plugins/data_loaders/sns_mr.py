@@ -34,7 +34,7 @@ class Plugin(Template):
         l1=open(file_path, 'r', encoding='utf-8').readline()
         return l1.startswith('# Datafile created by QuickNXS')
 
-    def LoadData(self, dataset, filename):
+    def LoadData(self, dataset, filename, data_id=0):
         '''LoadData(self, data_item_number, filename) --> none
 
         Loads the data from filename into the data_item_number.

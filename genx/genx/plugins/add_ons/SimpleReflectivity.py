@@ -14,8 +14,7 @@ is to the right. This is updated when the simulation button is pressed.
 
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
-from genx.gui.solvergui import EVT_UPDATE_PARAMETERS
-from genx.gui.parametergrid import EVT_PARAMETER_GRID_CHANGE
+from genx.gui.custom_events import EVT_UPDATE_PARAMETERS, EVT_PARAMETER_GRID_CHANGE, update_model_event, EVT_UPDATE_MODEL
 import wx.grid as gridlib
 from wx.adv import Wizard, WizardPageSimple
 
@@ -28,6 +27,7 @@ from genx.gui.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
+from genx.gui.custom_events import EVT_UPDATE_SCRIPT, skips_event
 
 _set_func_prefix='set'
 
@@ -96,8 +96,6 @@ class SampleGrid(gridlib.Grid):
                 txt+='\n\nFound in DB:\n%g g/cm³'%mdb.dens_mass(frm)
             self.info_text.SetLabel(txt)
 
-# new model is ready with a script as value.
-(update_model_event, EVT_UPDATE_MODEL)=wx.lib.newevent.NewEvent()
 TOP_LAYER=0
 ML_LAYER=1
 BOT_LAYER=2
@@ -179,7 +177,6 @@ class SampleTable(gridlib.GridTableBase):
 
         if not first:
             diff=old_len-len(self.layers)
-            iprint(diff, 'reset table')
             for i in range(abs(diff)):
                 if diff<0:
                     msg=gridlib.GridTableMessage(self,
@@ -219,7 +216,7 @@ class SampleTable(gridlib.GridTableBase):
     def GetValue(self, row, col):
         if row==self.repeatedInfo():
             if col==0:
-                return 'Repeated layer structure'
+                return 'Repeated layer structure (white background)'
             if col==8:
                 return 'Repetitions:'
             if col==10:
@@ -357,6 +354,7 @@ class SampleTable(gridlib.GridTableBase):
         '''
         attr=gridlib.GridCellAttr()
         if row==self.repeatedInfo():
+            attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
             if col!=10:
                 attr.SetReadOnly()
             if col==0:
@@ -381,9 +379,9 @@ class SampleTable(gridlib.GridTableBase):
         if row in [0, (self.GetRowsCount()-2)]:
             if row==0:
                 if col==1:
-                    attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_TOP)
+                    attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
                 elif col in [3, 5, 7, 9]:
-                    attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_TOP)
+                    attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
                     # If layer is defined as fraction, only allow fitting of either
                     # density 2 or fraction.
                     if self.ambient[1]=='Mixure' and col==3 and self.ambient[5]:
@@ -391,7 +389,7 @@ class SampleTable(gridlib.GridTableBase):
                     elif self.ambient[1]=='Mixure' and col==5 and self.ambient[3]:
                         attr.SetReadOnly()
                 else:
-                    attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
+                    attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
                 attr.SetBackgroundColour('#dddddd')
                 if col in [9, 10]:
                     attr.SetReadOnly()
@@ -872,7 +870,7 @@ class SamplePanel(wx.Panel):
             insts=['inst']
         return insts, output
 
-    def UpdateModel(self, evt=None, first=False):
+    def UpdateModel(self, evt=None, first=False, re_color=False):
         coords=self.inst_params['coords']
         if evt in [None, 'inst']:
             sample_script=self.last_sample_script
@@ -917,13 +915,30 @@ class SamplePanel(wx.Panel):
                 script+="    inst.setRes(data[%i].res)\n"%i
             elif res_set:
                 script+="    inst.setRes(0.001)\n"
+            inst_id=i%len(insts)
+            try:
+                # extract polarization channel from ORSO metadata
+                pol=di.meta['data_source']['measurement']['instrument_settings']['polarization']
+                if pol in ['m', 'mm']:
+                    inst_id=1%len(insts)
+                else:
+                    inst_id=0
+            except KeyError:
+                pass
             script+="    I.append(sample.SimSpecular(d.x, %s))\n" \
                     "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
-                    "    # END Dataset %i\n"%(insts[i%len(insts)], i)
-            if di.name.startswith('Data') and len(insts)>1:
-                prefix=['Spin Up', 'Spin Down'][i%2]
+                    "    # END Dataset %i\n"%(insts[inst_id], i)
+            if re_color and len(insts)>1:
+                if inst_id==0:
+                    di.data_color = (0.7, 0.0, 0.0)
+                    di.sim_color = (1.0, 0.0, 0.0)
+                else:
+                    di.data_color = (0.0, 0.0, 0.7)
+                    di.sim_color = (0.0, 0.0, 1.0)
+            elif di.name.startswith('Data') and len(insts)>1:
+                prefix=['Spin Up', 'Spin Down'][inst_id]
                 di.name=prefix+' %i'%(i//2+1)
-                if i%2==0:
+                if inst_id==0:
                     di.data_color=(0.7, 0.0, 0.0)
                     di.sim_color=(1.0, 0.0, 0.0)
                 else:
@@ -1099,7 +1114,7 @@ class WizarSelectionPage(WizardPageSimple):
 
         self.ctrl={}
 
-        box=wx.StaticBox(self, label=choice_label)
+        box=wx.Window(self)
         out_layout=wx.BoxSizer(wx.VERTICAL)
         box.SetSizer(out_layout)
         box_layout=wx.GridSizer(min(4, len(choices)//4+1), 2, 2)
@@ -1108,23 +1123,7 @@ class WizarSelectionPage(WizardPageSimple):
             self.ctrl[choice]=wx.RadioButton(box, label=choice,
                                              size=wx.Size(-1, 16*dpi_scale_factor))
             box_layout.Add(self.ctrl[choice], 0, wx.FIXED_MINSIZE, 2)
-        sz=box_layout.GetMinSize()
-        sa=box.GetBordersForSizer()
-        box.SetMinSize(wx.Size(sz.width+sa[0]+sa[1]+12*dpi_scale_factor, sz.height+sa[1]*2+12*dpi_scale_factor))
-
-        #box.SetMinSize(wx.Size(500, 300))
-
-        #wx.RadioBox(self, label=choice_label, choices=choices,
-        #                      style=wx.RA_SPECIFY_ROWS, majorDimension=4)
-
-        # dc=wx.ScreenDC()
-        # dc.SetFont(self.ctrl.GetFont())
-        # txt_height=dc.GetTextExtent("A").height
-        # txt_lengths=[dc.GetTextExtent(ti).width for ti in choices]
-        # total_txt_width=max(txt_lengths[:4])
-        # for i in range(len(choices)//4):
-        #     total_txt_width+=max(txt_lengths[i*4:(i+1)*4])
-        # self.ctrl.SetMinSize(self.ctrl.GetBestSize())#wx.Size(total_txt_width, 50))
+        self.ctrl[choices[0]].SetValue(True)
 
         vbox.Add(box, 0, 0)
         if choices_help:
@@ -1263,6 +1262,7 @@ class Plugin(framework.Template):
 
         self.parent.Bind(EVT_UPDATE_PARAMETERS, self.OnFitParametersUpdated)
         self.parent.Bind(EVT_PARAMETER_GRID_CHANGE, self.OnGridMayHaveErrors)
+        self.parent.model_control.Bind(EVT_UPDATE_SCRIPT, self.ReadUpdateModel)
 
     def OnHideAdvanced(self, evt):
         if self.mb_hide_advanced.IsChecked():
@@ -1431,9 +1431,11 @@ class Plugin(framework.Template):
             wx.CallAfter(self.sld_plot.Plot)
 
     def OnGridChange(self, event):
-        self.sample_widget.CheckGridUpdate()
-        self.sample_widget.Update(update_script=False)
+        pass
+        #self.sample_widget.CheckGridUpdate()
+        #self.sample_widget.Update(update_script=False)
 
+    @skips_event
     def OnGridMayHaveErrors(self, event):
         errors=[pi.error for pi in self.model_obj.parameters if pi.fit]
         if len(errors)>0 and not '-' in errors:
@@ -1505,8 +1507,8 @@ class Plugin(framework.Template):
             dia.SetSize(wx.Size(w, h))
 
             dia.ShowModal()
-        event.Skip()
 
+    @skips_event
     def OnFitParametersUpdated(self, event):
         grid_parameters=self.GetModel().get_parameters()
         keys=grid_parameters.get_fit_pars()[1]
@@ -1534,30 +1536,23 @@ class Plugin(framework.Template):
     def WriteModel(self):
         return
 
-    def ReadModel(self):
-        '''ReadModel(self)  --> None
+    def ReadUpdateModel(self, evt):
+        try:
+            self.ReadModel(verbose=False)
+        except GenxError:
+            pass
+        except Exception as e:
+            self.StatusMessage(f'could not analyze script: {e}')
 
+    def ReadModel(self, verbose=True):
+        '''
         Reads in the current model and locates layers and stacks
         and sample defined inside BEGIN Sample section.
         '''
-        self.StatusMessage('Compiling the script...')
-        try:
-            self.CompileScript()
-        except GenxError as e:
-            self.ShowErrorDialog(str(e))
-            self.StatusMessage('Error when compiling the script')
-            return
-        except Exception as e:
-            outp=io.StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            self.ShowErrorDialog(val)
-            self.Statusmessage('Fatal Error - compling, SimpleReflectivity')
-            return
-        self.StatusMessage('Script compiled!')
+        if verbose: self.StatusMessage('Compiling the script...')
+        self.CompileScript()
 
-        self.StatusMessage('Trying to interpret the script...')
+        if verbose: self.StatusMessage('Trying to interpret the script...')
 
         txt=self.GetModel().script
         grid_parameters=self.GetModel().get_parameters()
@@ -1583,7 +1578,11 @@ class Plugin(framework.Template):
         for li in sampletxt.splitlines():
             if 'model.Layer' in li:
                 name, ltxt=map(str.strip, li.split('=', 1))
-                layers[name]=analyze_layer_txt(name, ltxt)
+                try:
+                    layers[name]=analyze_layer_txt(name, ltxt)
+                except Exception as e:
+                    self.StatusMessage('Script read failed, SimpleReflectivity')
+                    return
                 layer_order.append(name)
             if 'model.Stack' in li:
                 name, stxt=map(str.strip, li.split('=', 1))
@@ -1624,7 +1623,7 @@ class Plugin(framework.Template):
 
         table.RebuildTable(layers)
 
-        self.StatusMessage('New sample loaded to plugin!')
+        if verbose: self.StatusMessage('New sample loaded to plugin!')
 
 def analyze_layer_txt(name, txt):
     # ['Iron', 'Formula', Formula([['Fe', 1.0]]), False, '7.87422', False, '3.0', True, '100.0', False, '5.0']
@@ -1633,12 +1632,15 @@ def analyze_layer_txt(name, txt):
     items=layeroptions.strip(',').split(',')
     items=dict([tuple(map(str.strip, i.split('=', 1))) for i in items])
 
-    if 'bc.' in items['b']:
+    if 'bc.' in items['b'] or 'bw.' in items['b']:
         output.append('Formula')
         output.append(Formula.from_bstr(items['b']))
         # density
         output.append(False)
-        dens=float(items['dens'])*output[2].mFU()/MASS_DENSITY_CONVERSION
+        if 'bc.' in items['b']:
+            dens=float(items['dens'])*output[2].mFU()/MASS_DENSITY_CONVERSION
+        else:
+            dens=float(items['dens'])
         output.append(str(dens))
         # magnetization
         output.append(False)

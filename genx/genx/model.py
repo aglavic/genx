@@ -106,20 +106,19 @@ class Model(H5HintedExport):
         self.ReadConfig()
 
         self.data = DataList()
-        self.script = ''
+        self.set_script('')
         # noinspection PyBroadException
         try:
-            self.script = "\n".join(eval(self.startup_script.script))
+            self.set_script("\n".join(eval(self.startup_script.script)))
         except:
             debug('Issue when loading script from config:', exc_info=True)
-        self.parameters = Parameters(model=self)
+        self.parameters = Parameters()
         self.fom_func = fom_funcs.log
 
         self._reset_module()
 
         # Temporary stuff that needs to keep track on
         self.filename = ''
-        self.compiled = False
 
         self.extra_analysis = {}
 
@@ -154,7 +153,7 @@ class Model(H5HintedExport):
             iprint('Data section loading (gx file) error:\n ', e, '\n')
             raise GenxIOError('Could not locate the data section.', filename)
         try:
-            self.script = pickle.loads(loadfile.read('script'), encoding='latin1', errors='ignore')
+            self.set_script(pickle.loads(loadfile.read('script'), encoding='latin1', errors='ignore'))
         except Exception as e:
             iprint('Script section loading (gx file) error:\n ', e, '\n')
             raise GenxIOError('Could not locate the script.', filename)
@@ -173,10 +172,8 @@ class Model(H5HintedExport):
         loadfile.close()
 
         self.filename = os.path.abspath(filename)
-        self.compiled = False
         self.saved = True
         self.script_module = GenxScriptModule(self.data)
-        self.compiled = False
 
     def save(self, filename):
         '''
@@ -290,7 +287,7 @@ class Model(H5HintedExport):
         '''
         self._reset_module()
         # Testing to see if this works under windows
-        self.script = '\n'.join(self.script.splitlines())
+        self.set_script('\n'.join(self.script.splitlines()))
         try:
             exec(self.script, self.script_module.__dict__)
         except Exception:
@@ -308,20 +305,6 @@ class Model(H5HintedExport):
         '''
         result = eval(codestring, self.script_module.__dict__)
         return result
-
-    def set_fom_ignore_inf(self, flag):
-        """
-        Sets if the fom calculation should ignore infs
-        """
-        self.solver_parameters.ignore_fom_inf = bool(flag)
-        self.create_fom_mask_func()
-
-    def set_fom_ignore_nan(self, flag):
-        """
-        Sets if fom calculations should ignore nan's
-        """
-        self.solver_parameters.ignore_fom_nan = bool(flag)
-        self.create_fom_mask_func()
 
     def create_fom_mask_func(self):
         """
@@ -485,15 +468,6 @@ class Model(H5HintedExport):
                 return var._penalty_funcs
         return []
 
-    def get_fit_values(self):
-        '''
-        Returns the current parameters values that the user has ticked as
-        fittable.
-        '''
-        (row_numbers, sfuncs, vals, minvals, maxvals) = \
-            self.parameters.get_fit_pars()
-        return vals
-
     def get_sim_pars(self):
         '''
         Returns the parameters used with simulations. i.e. the function to 
@@ -537,10 +511,10 @@ class Model(H5HintedExport):
         Reinitilizes the model. Thus, removes all the traces of the
         previous model. 
         '''
-        iprint("class Model: new_model")
+        debug("create new model")
         self.data = DataList()
-        self.script = ''
-        self.parameters = Parameters(self)
+        self.set_script('')
+        self.parameters = Parameters()
 
         self.fom_func = fom_funcs.log
         self._reset_module()
@@ -599,7 +573,7 @@ class Model(H5HintedExport):
         The fileending will be .ort
         '''
         self.simulate(True)
-        from .core.orso_io import ort, data as odata
+        from orsopy.fileio import save_orso, OrsoDataset, Orso, Column
         from .version import __version__ as version
         para_list = [dict([(nj, tpj(pij)) for nj, pij, tpj in zip(self.parameters.data_labels, pi,
                                                                   [str, float, bool, float, float, str])])
@@ -615,36 +589,40 @@ class Model(H5HintedExport):
         add_header['analysis'].update(self.extra_analysis)
         ds = []
         for di in self.data:
-            header = dict(di.meta)
+            header = Orso.empty().to_dict()
+            header.update(di.meta)
             try:
                 import getpass
                 # noinspection PyTypeChecker
-                header['creator']['name'] = getpass.getuser()
+                add_header['analysis']['operator'] = {'name': getpass.getuser()}
             except Exception:
                 pass
             import datetime
             # noinspection PyTypeChecker
-            header['creator']['time'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+            add_header['analysis']['timestamp'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
             header.update(add_header)
             header['data_set'] = di.name
             columns = [di.x, di.y, di.error]
-            column_names = ['Qz', 'R', 'sR']
+            if hasattr(self.script_module, 'inst') and self.script_module.inst.coords in ['tth', '2θ']:
+                column_names = [Column('TTh', 'deg'), Column('R'), Column('sR')]
+            else:
+                column_names = [Column('Qz', '1/angstrom'), Column('R'), Column('sR')]
             if 'res' in di.extra_data:
                 columns.append(di.extra_data['res'])
-                column_names.append('sQz')
+                column_names.append(Column('s'+column_names[0].name, column_names[0].unit))
             columns.append(di.y_sim)
-            column_names.append('Rsim')
+            column_names.append(Column('Rsim'))
             columns.append(di.y_fom)
-            column_names.append('FOM')
+            column_names.append(Column('FOM'))
             for name, col in sorted(di.extra_data.items()):
                 if name=='res':
                     continue
                 columns.append(col)
-                column_names.append(name)
-            header['columns'] = [{'name': cn} for cn in column_names]
-            ds.append(odata.ORSOData(header, columns))
+                column_names.append(Column(name))
+            header['columns'] = column_names
+            ds.append(OrsoDataset(Orso(**header), np.array(columns).T))
         try:
-            ort.write_file(basename, ds)
+            save_orso(ds, basename, data_separator='\n')
         except GenxIOError as e:
             raise GenxIOError(e.error_message, e.file)
 
@@ -1062,7 +1040,7 @@ class Model(H5HintedExport):
             plt.close()
 
     def _ipyw_script(self, change):
-        self.script = change.new
+        self.set_script(change.new)
 
 class GenxCurve:
     """
@@ -1168,8 +1146,12 @@ class GenxCurve:
         return (self.theory()-self.y)/self.dy
 
     def nllf(self):
-        r = self.residuals()
-        return 0.5*np.sum(r**2)
+        r=self.residuals()
+        fom = np.sum(r**2)
+        penalty_funcs = self.model.get_par_penalty()
+        if len(penalty_funcs)>0 and fom is not np.NAN:
+            fom += sum([pf() for pf in penalty_funcs])*(len(r)-len(self._pars))
+        return 0.5*fom
 
     def __getstate__(self):
         state=self.__dict__.copy()
@@ -1188,14 +1170,3 @@ class GenxCurve:
         self._pars=pars
         self._state = state
         self._set_funcs=funcs
-
-    # def residuals(self):
-    #     self._apply_par(self.x)
-    #     fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
-    #     fom_clean=[self.model.fom_mask_func(fom_set) for fom_set in fom_raw]
-    #     return np.hstack([np.sign(fom_set)*np.sqrt(np.absolute(fom_set)) for fom_set in fom_clean])
-    #
-    # def nllf(self):
-    #     self._apply_par(self.x)
-    #     fom_raw, fom_indiv, fom=self.model.calc_fom(self.model_script.Sim(self.model.data))
-    #     return 0.5 * fom # sum(residuals**2) for Chi2Bars fom function and no penalty

@@ -8,7 +8,9 @@ Main window
 ===========
 The main window in GenX is the main work area. It consists of three notebooks separated by resizeable
 boundaries. The leftmost is the Data notebook. The upper right one is the Plot notebook and the lower right
-is the Model/Fit notebook. The following sections will briefly go through the different notebooks to give a
+is the Model/Fit notebook. If you choose the *wide screen* option when selecting the startup profile, an addditional
+second plotting area will appear on the right and a nostbook for plugins below the Data notebook.
+The following sections will briefly go through the different notebooks to give a
 quick tour of the program.
 
 .. image:: _attachments/gui/main_gui.png
@@ -31,11 +33,13 @@ top gives shortcuts to the most used functions. From the left this is
 
 .. image:: _attachments/gui/data_toolbar.png
 
-* Loading data.
 * Insert new data set.
-* Remove marked data set(s).
+* Loading data.
+* Insert new simulation set.
+* Show dialog with meta-data inormation read from a file
 * Move current data set(s) up.
 * Move current data set(s) down.
+* Remove marked data set(s).
 * Change the plotting preferences of the marked data set(s). Brings up a dialog box. Not unique parameters will
   be displayed as blank (white for colors) and if not set in the dialog will remain unchanged and unique for multiple
   data sets if not changed.
@@ -82,18 +86,25 @@ FOM scans
 
 Model/Fit notebook
 ------------------
-The Model/Fit notebook has two tabs.
+The Model/Fit notebook in its basic form has two tabs. These may be modified when loading plugins.
+(E.g. the SimpleReflectivity will hide Grid and Script and only show the Sample table,
+the Reflectivity plugin will add Sample and Simulations tabs.)
 
 Grid
-     Used to define which parameters of the model to fit. The Grid is a spreadsheet containing 6 columns.
-     They are named Parameter, Value, Fit, Min, Max, Error. Parameter is the name of the parameter. For most
-     models one can choose the parameter by right clicking on a marked cell that is not in edit mode (no cursor
-     should be blinking in the cell) a pop-up menu will appear with a hierarchy of choices. Value is the Value of
-     the parameter - this represents both the start guess and the result, during fitting it is used to show the current
-     best value. Min and Max is the boundaries within which the parameter has to stay during fitting and initialization.
-     The Error column is used to output calculated error bars.
-     .. image:: _attachments/gui/grid.png
-Model
+    Used to define which parameters of the model to fit. The Grid is a spreadsheet containing 6 columns.
+    They are named Parameter, Value, Fit, Min, Max, Error. Parameter is the name of the parameter. For most
+    models one can choose the parameter by right clicking on a marked cell that is not in edit mode (no cursor
+    should be blinking in the cell) a pop-up menu will appear with a hierarchy of choices. The parameter name
+    is the same as in the model with the prefix 'set' and first letter capitalized.
+    Value is the Value of the parameter - this represents both the start guess and the result, during fitting it is
+    used to show the current best value. Min and Max is the boundaries within which the parameter has to stay during
+    fitting and initialization. The gray area below the Value represent the relative value within the Min-Max range.
+    The Error column is used to output calculated error bars.
+
+    .. image:: _attachments/gui/grid.png
+
+    The toolbar can be used to add, remove and sort the table as well as running FOM scans.
+Script
      A script editor to edit the python script that defines the model. See for example the tutorial about writing
      your own model :ref:`tutorial-writing-model` or just go ahead to the tutorials for your specific
-     problem :ref:`tutorial-xrr-fitting`, :ref:`tutorial-neutron-sim` or :ref:`tutorial-sxrd`.
+     problem :ref:`tutorial-simple-reflectivity`, :ref:`tutorial-xrr-fitting`, :ref:`tutorial-neutron-sim` or :ref:`tutorial-sxrd`.

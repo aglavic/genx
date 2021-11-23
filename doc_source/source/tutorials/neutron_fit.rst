@@ -1,12 +1,14 @@
 .. _tutorial-neutron-fit:
 
-***********************************
-Neutron reflectivity video tutorial
-***********************************
+************************************
+Neutron reflectivity video tutorials
+************************************
 
 I gave a presentation on the ORSO general assembly 2021 that show cases GenX model building for a simple non-magnetic examples:
 
 * `GenX@ORSO <https://www.youtube.com/watch?v=lNpGE7aYut0>`__
+
+For GenX 2 there are more resources, that mostly should be valid for version 3, too:
 
 There is also a tutorial series I made for polarized neutrons that was published through ORNL, some parts are specific to the MagRef instrument:
 

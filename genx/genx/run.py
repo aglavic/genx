@@ -224,9 +224,9 @@ def start_fitting(args, rank=0):
                     ctrl.save_file(args.outfile)
 
             def parameter_output(self, param_info):
-                if stdscr and param_info.new_best:
+                if stdscr:
                     height, width = stdscr.getmaxyx()
-                    full_width=(width-16-12+1)
+                    full_width=(width-16-12)
                     pwidth=param_info.max_val-param_info.min_val
                     pres=(param_info.values-param_info.min_val)/pwidth
                     population=array(param_info.population)
@@ -401,7 +401,7 @@ def main():
     data_group.add_argument('--dpi-scale', dest='dpi_overwrite', default=None, type=float,
                             help='Overwrite the detection of screen dpi scaling factor (=72/dpi)')
 
-    parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load')
+    parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load or .ort file to use as basis for model')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
 
     args=parser.parse_args()

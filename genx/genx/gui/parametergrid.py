@@ -14,6 +14,10 @@ from numpy import *
 from dataclasses import dataclass
 
 from . import controls as ctrls, images as img
+from .custom_events import delete_parameters, grid_change, inset_parameter, move_parameter, set_parameter_value, \
+    sort_and_group_parameters, value_change, \
+    skips_event
+from .custom_ids import MenuId
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
@@ -67,9 +71,8 @@ class ParameterDataTable(gridlib.GridTableBase):
             return ''
 
     def SetValue(self, row, col, value):
-        try:
-            self.pars.set_value(row, col, value)
-        except IndexError as e:
+        par_len=self.pars.get_len_rows()
+        if row>=par_len:
             # add a new row
             self.pars.append()
 
@@ -80,30 +83,34 @@ class ParameterDataTable(gridlib.GridTableBase):
                                          )
 
             self.GetView().ProcessTableMessage(msg)
-            self.pars.set_value(row, col, value)
+        evt=set_parameter_value(row=row, col=col, value=value)
+        wx.PostEvent(self.parent, evt)
         # For updating the column labels according to the number of fitted parameters
         if col==2 or col==3 or col==4:
             self.GetView().ForceRefresh()
         self.parent._grid_changed()
 
     def DeleteRows(self, rows):
-        delete_count=self.pars.delete_rows(rows)
-
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.GetNumberRows(),
-                                     delete_count)
-        self.GetView().ProcessTableMessage(msg)
-        self.parent._grid_changed()
+        evt = delete_parameters(rows=rows)
+        wx.PostEvent(self.parent, evt)
 
     def InsertRow(self, row):
-        self.pars.insert_row(row)
+        evt = inset_parameter(row=row)
+        wx.PostEvent(self.parent, evt)
 
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
-        self.GetView().ProcessTableMessage(msg)
+    def UpdateView(self):
+        delta_length=1+self.GetNumberRows()-self.parent.GetNumberRows()
+        if delta_length>0:
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1, delta_length)
+            self.GetView().ProcessTableMessage(msg)
+        elif delta_length<0:
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1,
+                                           -delta_length)
+            self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
-        return True
 
     def MoveRowUp(self, row):
         """
@@ -112,12 +119,12 @@ class ParameterDataTable(gridlib.GridTableBase):
         :param row: Integer row number to move up
         :return: Boolean
         """
-
-        success=self.pars.move_row_up(row)
-
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
-        return success
+        if self.pars.can_move_row(row, -1):
+            evt=move_parameter(row=row, step=-1)
+            wx.PostEvent(self.parent, evt)
+            return True
+        else:
+            return False
 
     def MoveRowDown(self, row):
         """
@@ -126,24 +133,12 @@ class ParameterDataTable(gridlib.GridTableBase):
         :param row: Integer row number to move down
         :return: Boolean
         """
-
-        success=self.pars.move_row_down(row)
-
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
-        return success
-
-    def SortRows(self):
-        """
-        Sort the rows in the table
-
-        :return: Boolean to indicate success
-        """
-        success=self.pars.sort_rows()
-
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
-        return success
+        if self.pars.can_move_row(row, 1):
+            evt=move_parameter(row=row, step=1)
+            wx.PostEvent(self.parent, evt)
+            return True
+        else:
+            return False
 
     def AppendRows(self, num_rows=1):
         [self.pars.append() for i in range(num_rows)]
@@ -151,8 +146,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         msg=gridlib.GridTableMessage(self,
                                      gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, num_rows)
         self.GetView().ProcessTableMessage(msg)
-        self.GetView().ForceRefresh()
-        self.parent._grid_changed()
+        self.UpdateView()
         return True
 
     def GetColLabelValue(self, col):
@@ -221,10 +215,19 @@ class ParameterDataTable(gridlib.GridTableBase):
             self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed(permanent_change=permanent_change)
 
-    def ChangeValueInteractively(self, row, value):
-        """ Callback for a change of the value. Used to interactively set the value and notify other parts
-        of GenX by posting a EVT_PARAMETER_VALUE_CHANGE event.
+    def ShowParameters(self, values):
+        prev_pars=self.pars
+        self.pars=prev_pars.copy()
+        self.pars.set_value_pars(values)
+        msg=gridlib.GridTableMessage(self,
+                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        self.GetView().ProcessTableMessage(msg)
+        self.parent._grid_changed(permanent_change=False)
 
+    def ChangeValueInteractively(self, row, value):
+        """
+        Callback for a change of the value. Used to interactively set the value and notify other parts
+        of GenX by posting a EVT_PARAMETER_VALUE_CHANGE event.
         """
         self.SetValue(row, 1, value)
         self.parent.PostValueChangedEvent()
@@ -673,7 +676,15 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
             dc.SetTextBackground(bkg_colour)
             dc.SetFont(attr.GetFont())
             width, height=dc.GetTextExtent(text)
-            dc.DrawText(text, rect.x+rect.width-width-1, rect.y+1)
+            halign, valign=attr.GetAlignment()
+            x_options={wx.ALIGN_LEFT: 1,
+                       wx.ALIGN_CENTER: rect.width//2-width//2,
+                       wx.ALIGN_RIGHT: rect.width-width-1}
+            y_options={wx.ALIGN_TOP: 1,
+                       wx.ALIGN_CENTER: rect.height//2-height//2,
+                       wx.ALIGN_BOTTOM: rect.height-height-1}
+            dc.DrawText(text, rect.x+x_options[halign],
+                        rect.y+y_options[valign])
 
             dc.DestroyClippingRegion()
         else:
@@ -698,7 +709,7 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
 class ParameterGridConfig(BaseConfig):
     section='parameter grid'
     value_slider: bool=False
-    auto_sim: bool=False
+    auto_sim: bool=True
 
 class ParameterGrid(wx.Panel, Configurable):
     '''
@@ -772,6 +783,7 @@ class ParameterGrid(wx.Panel, Configurable):
         self.SetValueEditorSlider(slider=self.opt.value_slider)
         attr=gridlib.GridCellAttr()
         attr.SetEditor(ValueCellEditor())
+        attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
         attr.SetRenderer(ValueCellRenderer())
         self.grid.SetColAttr(3, attr.Clone())
         self.grid.SetColAttr(4, attr)
@@ -872,8 +884,9 @@ class ParameterGrid(wx.Panel, Configurable):
         return self.opt.value_slider
 
     def PostValueChangedEvent(self):
-        evt=value_change()
-        wx.PostEvent(self.parent, evt)
+        pass
+        # evt=value_change()
+        # wx.PostEvent(self.parent, evt)
 
     def do_toolbar(self):
         # self.toolbar.SetToolBitmapSize((21,21))
@@ -911,8 +924,13 @@ class ParameterGrid(wx.Panel, Configurable):
         newid=wx.NewId()
         self.toolbar.AddTool(newid, label='Sort parameters',
                              bitmap=wx.Bitmap(img.sort.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
-                             shortHelp='Sort the rows by class, object and name')
+                             shortHelp='Sort the rows by class, attribute and name')
         self.Bind(wx.EVT_TOOL, self.eh_sort, id=newid)
+        newid=wx.NewId()
+        self.toolbar.AddTool(newid, label='Sort parameters',
+                             bitmap=wx.Bitmap(img.sort2.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                             shortHelp='Sort the rows by class, name and attribute')
+        self.Bind(wx.EVT_TOOL, self.eh_sort_name, id=newid)
 
         self.toolbar.AddSeparator()
 
@@ -981,7 +999,7 @@ class ParameterGrid(wx.Panel, Configurable):
         """
         new_state=not self.GetValueEditorSlider()
         self.SetValueEditorSlider(new_state)
-        self.parent.main_frame_menubar.mb_view_grid_slider.Check(new_state)
+        self.parent.mb_checkables[MenuId.TOGGLE_SLIDER].Check(new_state)
         self.Refresh()
 
     def toggle_slider_tool(self, state):
@@ -1015,7 +1033,12 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        self.table.SortRows()
+        evt=sort_and_group_parameters(sort_params=parameters.SortSplitItem.ATTRIBUTE)
+        wx.PostEvent(self, evt)
+
+    def eh_sort_name(self, event):
+        evt=sort_and_group_parameters(sort_params=parameters.SortSplitItem.OBJ_NAME)
+        wx.PostEvent(self, evt)
 
     def OnSelectCell(self, evt):
         # row=evt.GetRow()
@@ -1024,13 +1047,11 @@ class ParameterGrid(wx.Panel, Configurable):
         evt.Skip()
 
     def _grid_changed(self, permanent_change=True):
-        '''_grid_changed(self) --> None
-        
+        '''
         internal function to yield a EVT_PARAMETER_GRID_CHANGE
         '''
         self.grid.ForceRefresh()
-        evt=grid_change()
-        evt.permanent_change=permanent_change
+        evt=grid_change(permanent_change=permanent_change)
         wx.PostEvent(self.parent, evt)
 
     def _update_printer(self):
@@ -1098,6 +1119,7 @@ class ParameterGrid(wx.Panel, Configurable):
         '''
         self.prt.Preview()
 
+    @skips_event
     def OnNewModel(self, evt):
         '''
         OnNewModel(self, evt) --> None
@@ -1109,28 +1131,9 @@ class ParameterGrid(wx.Panel, Configurable):
         # this also updates the grid. 
         self.table.SetParameters(evt.GetModel().get_parameters(),
                                  permanent_change=False)
-        # Let the event proceed to other fucntions that have signed up.
-        evt.Skip()
 
     def SetParameters(self, pars):
         self.table.SetParameters(pars)
-
-    def OnSolverUpdateEvent(self, evt):
-        '''OnSolverUpdateEvent(self, evt) --> None
-        
-        Callback to update the values in the grid from the optimizer
-        Assumes that evt holds the following members:
-        values: An array of the appropriate length (same as the number of 
-                checked parameters to fit)
-        new_best: A boolean indicating if there are a new best.
-        '''
-        if evt.new_best:
-            # print evt.fitting
-            self.table.pars.set_value_pars(evt.values)
-            self.table.SetParameters(self.table.pars, clear=False,
-                                     permanent_change=evt.permanent_change)
-
-        evt.Skip()
 
     def OnLeftDClick(self, evt):
         """ Event handler that starts editing the cells on a double click and not
@@ -1419,13 +1422,3 @@ class ParameterGrid(wx.Panel, Configurable):
         Function that returns the parameters - Is this needed anymore?
         '''
         return self.table.pars
-
-# ==============================================================================
-# Custom events needed for updating and message parsing between the different
-# modules.
-
-# Event for when the grid has new values
-(grid_change, EVT_PARAMETER_GRID_CHANGE)=wx.lib.newevent.NewEvent()
-# Event for then the value of a parameter has changed. Should be used to do
-# simulations interactively.
-(value_change, EVT_PARAMETER_VALUE_CHANGE)=wx.lib.newevent.NewEvent()

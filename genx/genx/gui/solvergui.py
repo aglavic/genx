@@ -5,26 +5,24 @@ as some input from dialog boxes.
 '''
 import numpy as np
 import time
-from typing import Union
+from typing import Union, TYPE_CHECKING
 from threading import Thread, Event
 
-import wx
 import wx.lib.newevent
 
 from .exception_handling import CatchModelError
+from .history_dialog import HistoryDialog
+from .message_dialogs import ShowErrorDialog, ShowQuestionDialog, ShowWarningDialog
 from .settings_dialog import SettingsDialog
+from .custom_events import *
 from .. import diffev, fom_funcs, model_control, levenberg_marquardt
 from ..core.custom_logging import iprint
+from ..core.colors import COLOR_CYCLES
+from ..model_actions import ModelInfluence, ModelAction
 from ..solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
+if TYPE_CHECKING:
+    from . import main_window
 
-
-# Custom events needed for updating and message parsing between the different
-# modules.
-(update_plot, EVT_UPDATE_PLOT)=wx.lib.newevent.NewEvent()
-(update_text, EVT_SOLVER_UPDATE_TEXT)=wx.lib.newevent.NewEvent()
-(update_parameters, EVT_UPDATE_PARAMETERS)=wx.lib.newevent.NewEvent()
-(fitting_ended, EVT_FITTING_ENDED)=wx.lib.newevent.NewEvent()
-(autosave, EVT_AUTOSAVE)=wx.lib.newevent.NewEvent()
 
 class GuiCallbacks(GenxOptimizerCallback):
     def __init__(self, parent: wx.Window):
@@ -149,7 +147,7 @@ class DelayedCallbacks(Thread, GuiCallbacks):
         self.last_update=update_data
         self.wait_lock.set()
 
-class ModelControlGUI:
+class ModelControlGUI(wx.EvtHandler):
     '''
     Class to take care of the GUI - solver interaction.
     Implements dialogboxes for setting parameters and controls
@@ -157,7 +155,8 @@ class ModelControlGUI:
     code are used i.e. interfacing the optimization code to the GUI.
     '''
 
-    def __init__(self, parent):
+    def __init__(self, parent: 'main_window.GenxMainWindow'):
+        wx.EvtHandler.__init__(self)
         self.parent=parent
         self.solvers={
             'Differential Evolution': diffev.DiffEv(),
@@ -174,11 +173,172 @@ class ModelControlGUI:
         self.callback_controller=DelayedCallbacks(parent)
         self.callback_controller.start()
         self.controller.set_callbacks(self.callback_controller)
+        self.controller.set_action_callback(self.OnActionCallback)
         self.parent.Bind(EVT_FITTING_ENDED, self.OnFittingEnded)
         self.parent.Bind(EVT_AUTOSAVE, self.AutoSave)
 
         # Now load the default configuration
         self.ReadConfig()
+
+    def OnActionCallback(self, action: ModelAction):
+        self.SetUndoRedoLabels()
+        if ModelInfluence.SCRIPT in action.influences:
+            editor=self.parent.script_editor
+            current_view=editor.GetFirstVisibleLine()
+            current_cursor=editor.GetCurrentPos()
+            current_selection=editor.GetSelection()
+            editor.SetText(self.get_model_script())
+            editor.SetCurrentPos(current_cursor)
+            editor.SetFirstVisibleLine(current_view)
+            editor.SetSelection(*current_selection)
+            evt=update_script(new_script=self.get_model_script())
+            wx.PostEvent(self, evt)
+        if ModelInfluence.DATA in action.influences:
+            cs = self.controller.get_color_cycle()
+            colors2keys = dict((value, key) for key, value in COLOR_CYCLES.items())
+            if cs in colors2keys:
+                self.parent.mb_checkables[colors2keys[cs]].Check()
+            else:
+                self.parent.mb_checkables[colors2keys[None]].Check()
+            dl = self.parent.data_list.list_ctrl
+            dl._UpdateImageList()
+            dl._UpdateData('Plot settings changed', data_changed=True)
+        if ModelInfluence.PARAM in action.influences:
+            self.parent.paramter_grid.table.SetParameters(self.controller.get_parameters(),
+                                                          clear=False, permanent_change=True)
+            evt = value_change()
+            wx.PostEvent(self.parent, evt)
+
+    def OnUndo(self, event):
+        self.controller.undo_action()
+
+    def OnRedo(self, event):
+        self.controller.redo_action()
+
+    def SetUndoRedoLabels(self):
+        undos, redos=self.controller.history_stacks()
+        if len(undos)!=0:
+            self.parent.undo_menu.Enable(True)
+            self.parent.undo_menu.SetItemLabel(f"Undo ({undos[-1].action_name})\tCtrl+Z")
+        else:
+            self.parent.undo_menu.Enable(False)
+            self.parent.undo_menu.SetItemLabel("Undo\tCtrl+Z")
+        if len(redos)!=0:
+            self.parent.redo_menu.Enable(True)
+            self.parent.redo_menu.SetItemLabel(f"Redo ({redos[-1].action_name})\tCtrl+Shift+Z")
+        else:
+            self.parent.redo_menu.Enable(False)
+            self.parent.redo_menu.SetItemLabel("Redo\tCtrl+Shift+Z")
+
+    def new_model(self):
+        self.controller.new_model()
+
+    def get_model(self):
+        return self.controller.get_model()
+
+    def set_model_script(self, text):
+        self.controller.set_model_script(text)
+
+    def set_model_params(self, params):
+        self.controller.set_model_params(params)
+
+    def get_model_params(self):
+        return self.controller.get_model_params()
+
+    def get_model_script(self):
+        return self.controller.get_model_script()
+
+    def set_data(self, data):
+        self.controller.set_data(data)
+
+    def get_data(self):
+        return self.controller.get_data()
+
+    @skips_event
+    def update_plotsettings(self, event):
+        self.controller.set_data_plotsettings(event.indices, event.sim_par, event.data_par)
+
+    def update_color_cycle(self, source):
+        self.controller.update_color_cycle(source)
+
+    def get_parameters(self):
+        return self.controller.get_parameters()
+
+    def get_sim_pars(self):
+        return self.controller.get_sim_pars()
+
+    def get_parameter_data(self, row):
+        return self.controller.get_parameter_data(row)
+
+    def get_parameter_name(self, row):
+        return self.controller.get_parameter_name(row)
+
+    def get_possible_parameters(self):
+        return self.controller.get_possible_parameters()
+
+    def get_fom(self):
+        return self.controller.get_fom()
+
+    def get_fom_name(self):
+        return self.controller.get_fom_name()
+
+    def set_filename(self, filename):
+        self.controller.set_filename(filename)
+
+    def get_filename(self):
+        return self.controller.get_filename()
+
+    def get_model_name(self):
+        return self.controller.get_model_name()
+
+    def compile_if_needed(self):
+        self.controller.compile_if_needed()
+
+    def simulate(self, recompile=False):
+        self.controller.simulate(recompile=recompile)
+
+    def set_error_pars(self, error_values):
+        self.controller.set_error_pars(error_values)
+
+    def export_data(self, basename):
+        self.controller.export_data(basename)
+
+    def export_table(self, basename):
+        self.controller.export_script(basename)
+
+    def export_script(self, basename):
+        self.controller.export_script(basename)
+
+    def export_orso(self, basename):
+        self.controller.export_orso(basename)
+
+    def import_table(self, filename):
+        self.controller.import_table(filename)
+
+    def import_script(self, filename):
+        self.controller.import_script(filename)
+
+    def get_data_as_asciitable(self, indices=None):
+        return self.controller.get_data_as_asciitable(indices=indices)
+
+    def set_update_min_time(self, new_time):
+        self.callback_controller.min_time=new_time
+
+    @property
+    def saved(self):
+        return self.controller.saved
+
+    @saved.setter
+    def saved(self, value):
+        self.controller.saved=value
+
+    @property
+    def eval_in_model(self):
+        return self.controller.eval_in_model
+
+    @property
+    def script_module(self):
+        return self.controller.script_module
 
     def get_solvers(self):
         return list(self.solvers.keys())
@@ -207,7 +367,7 @@ class ModelControlGUI:
         # Update the configuration if a model has been loaded after
         # the object have been created..
         self.ReadConfig()
-        fom_func_name=self.controller.model.fom_func.__name__
+        fom_func_name=self.controller.get_fom_name()
         if not fom_func_name in fom_funcs.func_names:
             ShowWarningDialog(self.parent, 'The loaded fom function, ' \
                               +fom_func_name+', does not exist '+ \
@@ -218,13 +378,15 @@ class ModelControlGUI:
                      ' = self.parent.model.fom_func'
             exec(exectext, locals(), globals())
 
-        combined_options=self.controller.model.solver_parameters|self.controller.optimizer.opt
-        dlg=SettingsDialog(frame, combined_options, title='Optimizer Settings')
+        combined_options=self.controller.get_combined_options()
+        dlg=SettingsDialog(frame, combined_options,
+                           apply_callback=lambda options: False,
+                           title='Optimizer Settings')
 
         res=dlg.ShowModal()
         if res==wx.ID_OK:
-            self.controller.model.WriteConfig()
-            self.controller.optimizer.WriteConfig()
+            updates=dlg.collect_results()
+            self.controller.update_combined_options(updates)
         dlg.Destroy()
 
     def ModelLoaded(self):
@@ -236,6 +398,7 @@ class ModelControlGUI:
                         fom_log=self.controller.get_fom_log(), update_fit=False,
                         desc='Model loaded')
         wx.PostEvent(self.parent, evt)
+        self.controller.history_clear()
 
         # Update the parameter plot ...
         if self.controller.is_configured():
@@ -248,13 +411,14 @@ class ModelControlGUI:
                                       max_val=res.par_max,
                                       min_val=res.par_min,
                                       fitting=True,
-                                      desc='Parameter Update', update_errors=False,
+                                      desc='Parameter Loaded', update_errors=False,
                                       permanent_change=False)
             except AttributeError:
                 iprint('Could not create data for parameters')
             else:
                 wx.PostEvent(self.parent, evt)
 
+    @skips_event
     def OnFittingEnded(self, evt):
         '''
         Callback when fitting has ended. Takes care of cleaning up after
@@ -265,15 +429,16 @@ class ModelControlGUI:
             return
 
         message='Do you want to keep the parameter values from the fit?'
-        dlg=wx.MessageDialog(self.parent, message, 'Keep the fit?', wx.YES_NO | wx.ICON_QUESTION)
-        if dlg.ShowModal()==wx.ID_YES:
+        result=ShowQuestionDialog(self.parent, message, 'Keep the fit?', yes_no=True)
+        if result:
+            self.controller.set_value_pars(evt.values)
             evt = update_parameters(values=evt.values,
                                     new_best=True,
                                     population=evt.population,
                                     max_val=evt.max_val,
                                     min_val=evt.min_val,
                                     fitting=False,
-                                    desc='Parameter Update', update_errors=False,
+                                    desc='Parameter Improved', update_errors=False,
                                     permanent_change=True)
             wx.PostEvent(self.parent, evt)
         else:
@@ -283,9 +448,42 @@ class ModelControlGUI:
                                     max_val=evt.max_val,
                                     min_val=evt.min_val,
                                     fitting=False,
-                                    desc='Parameter Update', update_errors=False,
+                                    desc='Parameter Reset', update_errors=False,
                                     permanent_change=False)
             wx.PostEvent(self.parent, evt)
+
+    @skips_event
+    def OnSetParameterValue(self, evt):
+        self.controller.set_parameter_value(evt.row, evt.col, evt.value)
+
+    @skips_event
+    def OnMoveParameter(self, evt):
+        self.controller.move_parameter(evt.row, evt.step)
+
+    @skips_event
+    def OnInsertParameter(self, evt):
+        self.controller.insert_parameter(evt.row)
+
+    @skips_event
+    def OnDeleteParameter(self, evt):
+        self.controller.delete_parameter(evt.rows)
+
+    @skips_event
+    def OnSortAndGroupParameters(self, evt):
+        self.controller.sort_and_group_parameters(evt.sort_params)
+
+    @skips_event
+    def OnUpdateParameters(self, evt):
+        if evt.desc not in ['Parameter Update', 'Parameter Reset']:
+            return
+        self.parent.paramter_grid.table.ShowParameters(evt.values)
+
+    def OnShowHistory(self, evt):
+        dia=HistoryDialog(self.parent, self.controller.history)
+        res=dia.ShowModal()
+        if dia.changed_actions:
+            self.OnActionCallback(dia.changed_actions)
+        dia.Destroy()
 
     def CalcErrorBars(self):
         return self.controller.CalcErrorBars()
@@ -344,6 +542,7 @@ class ModelControlGUI:
     def IsFitted(self):
         return self.controller.IsFitted()
 
+    @skips_event
     def AutoSave(self, _event):
         self.controller.save()
 
@@ -373,27 +572,3 @@ class ModelControlGUI:
         Sets the boolean value to save all evals to file
         '''
         self.controller.optimizer.opt.save_all_evals=bool(value)
-
-
-def ShowWarningDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message,
-                         'Warning',
-                         wx.OK | wx.ICON_WARNING
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowErrorDialog(frame, message, position=''):
-    if position!='':
-        dlg=wx.MessageDialog(frame, message+'\n'+'Position: '+position,
-                             'ERROR',
-                             wx.OK | wx.ICON_ERROR
-                             )
-    else:
-        dlg=wx.MessageDialog(frame, message,
-                             'ERROR',
-                             wx.OK | wx.ICON_ERROR
-                             )
-    dlg.ShowModal()
-    dlg.Destroy()
-

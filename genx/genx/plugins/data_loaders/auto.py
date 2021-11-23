@@ -33,10 +33,16 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
         self.loaders=[AmorPlugin(None), SNSPlugin(None), D17Plugin(None), ORSOPlugin(None), XRDMLPlugin(None)]
         self.wildcard=";".join([li.wildcard for li in self.loaders])
 
-    def LoadData(self, dataset, filename):
+    def CountDatasets(self, file_path):
+        for li in self.loaders:
+            if li.CanOpen(file_path):
+                return li.CountDatasets(file_path)
+        return 1
+
+    def LoadData(self, dataset, filename, data_id=0):
         for li in self.loaders:
             if li.CanOpen(filename):
-                return li.LoadData(dataset, filename)
+                return li.LoadData(dataset, filename, data_id=data_id)
         if self.res_col<0:
             self.x_col=self.q_col
             self.y_col=self.I_col

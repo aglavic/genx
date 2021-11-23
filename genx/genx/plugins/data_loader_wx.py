@@ -8,6 +8,7 @@ import wx, os, io, traceback
 from .utils import PluginHandler
 from genx.core.config import config
 from genx.core.custom_logging import iprint
+from .utils import ShowErrorDialog
 
 head, tail=os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -37,8 +38,7 @@ class PluginController:
             self.LoadPlugin('default')
 
     def LoadPlugin(self, plugin):
-        '''LoadPlugin(self, plugin) --> None
-
+        '''
         Loads a data handler note that there is no UnLoad function
         since only one DataHandler can be plugged in at a time.
         '''
@@ -122,27 +122,3 @@ class PluginDialog(wx.Dialog):
         if self.load_plugin_func is not None:
             self.load_plugin_func(self.choice_control.GetStringSelection())
         event.Skip()
-
-# Utility Dialog functions..
-def ShowInfoDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message,
-                         'Information',
-                         wx.OK | wx.ICON_INFORMATION
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowErrorDialog(frame, message, position=''):
-    dlg=wx.MessageDialog(frame, message,
-                         'ERROR',
-                         wx.OK | wx.ICON_ERROR
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowWarningDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message, 'Warning',
-                         wx.OK | wx.ICON_ERROR
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()

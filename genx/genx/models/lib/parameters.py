@@ -7,6 +7,7 @@ r"""
 .. moduleauthor:: Matts Björck <matts.bjorck@gmail.com>
 
 """
+import numpy as np
 
 from collections import MutableSequence
 from genx.core.custom_logging import iprint
@@ -551,39 +552,3 @@ def get_parameters(obj, numeric_types_only=False, group_parameters=True):
      if isinstance(members[name], HasParameters)
      ]
     return par_dict
-
-if __name__=='__main__':
-    import numpy as np
-
-    exp=Wrap(np.exp)
-
-    p=Int(10)
-    r=FloatArray(33.333)
-    q=p**2+r
-    iprint(p.has_coupled_parameter())
-    iprint(p())
-    r.value=0.0
-    iprint(q())
-    c=Complex(1+1.0J)
-    c.real=q
-    phase=exp(c+10)
-    iprint(phase())
-    r.value=1.0
-    c.imag=0.1
-    c.real=5.0
-    iprint(c(), phase())
-    l=List(Int, [], help="Testing")
-    l[:]=[p, p]
-    iprint(type(l))
-    iprint([item() for item in l])
-    obj=object()
-    import new
-
-    test=new.module('test')
-    test.__dict__['c']=c
-    test.__dict__['q']=q
-    test.__dict__['p']=p
-    test.__dict__['l']=l
-    iprint(get_parameters(test, True))
-    iprint(c.get_parameter_list())
-    iprint(dir())

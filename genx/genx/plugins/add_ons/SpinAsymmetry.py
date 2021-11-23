@@ -52,8 +52,8 @@ class SAPlotPanel(wx.Panel):
         '''
         colors=['b', 'r', 'g', 'c', 'm', 'y', 'k']
         # self.plot_dict = model.sample.SimSLD(None, model.inst)
-        self.plot.ax.lines=[]
-        self.plot.ax.clear()
+        while len(self.plot.ax.lines)>0:
+            self.plot.ax.lines[0].remove()
         i=0
         data=self.plugin.GetModel().get_data()
         sld_units=[]

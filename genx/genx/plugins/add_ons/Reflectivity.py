@@ -49,10 +49,11 @@ This shows the real and imaginary part of the scattering length as a function
 of depth for the sample. The substrate is to the left and the ambient material
 is to the right. This is updated when the simulation button is pressed.
 '''
-
+from genx.plugins.utils import ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
 from genx.gui.plotpanel import PlotPanel, BasePlotConfig
+import wx
 import wx.html
 
 import numpy as np
@@ -62,6 +63,7 @@ from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from .help_modules.reflectivity_utils import SampleHandler, SampleBuilder, avail_models, find_code_segment
 from genx.core.custom_logging import iprint
+from genx.gui.custom_events import EVT_UPDATE_SCRIPT
 
 _set_func_prefix='set'
 
@@ -1049,10 +1051,7 @@ class EditCustomParameters(wx.Dialog):
         except Exception as e:
             result='Could not evaluate the expression. The python error'+ \
                    'is: \n'+e.__repr__()
-            dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                 wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, result, 'Error in expression')
         else:
             self.lines.append(line)
             self.listbox.SetItemList(self.lines)
@@ -1064,12 +1063,10 @@ class EditCustomParameters(wx.Dialog):
         '''
         result='Do you want to delete the expression?\n'+ \
                'Remember to check if parameter is used elsewhere!'
-        dlg=wx.MessageDialog(self, result, 'Delete expression?',
-                             wx.YES_NO | wx.NO_DEFAULT | wx.ICON_INFORMATION)
-        if dlg.ShowModal()==wx.ID_YES:
+        result = ShowQuestionDialog(self, result, 'Delete expression?')
+        if result:
             self.lines.pop(self.listbox.GetSelection())
             self.listbox.SetItemList(self.lines)
-        dlg.Destroy()
 
     def GetLines(self):
         '''GetLines(self) --> uservars lines [list]
@@ -1238,10 +1235,7 @@ class SimulationExpressionDialog(wx.Dialog):
             except Exception as e:
                 result=('Could not evaluate expression:\n%s.\n'%exp+
                         ' The python error is: \n'+e.__repr__())
-                dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                     wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
+                ShowWarningDialog(self, result, 'Error in expression')
             else:
                 event.Skip()
 
@@ -1369,10 +1363,7 @@ class ParameterExpressionDialog(wx.Dialog):
         except Exception as e:
             result='Could not evaluate the expression. The python'+ \
                    'is: \n'+e.__repr__()
-            dlg=wx.MessageDialog(self, result, 'Error in expression',
-                                 wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, result, 'Error in expression')
         else:
             event.Skip()
 
@@ -1427,8 +1418,8 @@ class SamplePlotPanel(wx.Panel):
         model=self.plugin.GetModel().script_module
         # self.plot_dict = model.sample.SimSLD(None, model.inst)
         self.plot_dicts=[]
-        self.plot.ax.lines=[]
-        self.plot.ax.clear()
+        while len(self.plot.ax.lines)>0:
+            self.plot.ax.lines[0].remove()
         i=0
         data=self.plugin.GetModel().get_data()
         sld_units=[]
@@ -1554,7 +1545,7 @@ class SamplePlotPanel(wx.Panel):
         else:
             return None
 
-class Plugin(framework.Template, SampleBuilder):
+class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
     previous_xaxis=None
     _last_script=None
 
@@ -1562,6 +1553,7 @@ class Plugin(framework.Template, SampleBuilder):
         if 'SimpleReflectivity' in parent.plugin_control.plugin_handler.get_loaded_plugins():
             parent.plugin_control.UnLoadPlugin_by_Name('SimpleReflectivity')
         framework.Template.__init__(self, parent)
+        wx.EvtHandler.__init__(self)
         # self.parent = parent
         self.model_obj=self.GetModel()
         sample_panel=self.NewInputFolder('Sample')
@@ -1632,22 +1624,12 @@ class Plugin(framework.Template, SampleBuilder):
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnShowImagSLD, self.mb_show_imag_sld)
-
+        self.parent.model_control.Bind(EVT_UPDATE_SCRIPT, self.ReadUpdateModel)
         self.StatusMessage('Reflectivity plugin loaded')
 
     def SetModelScript(self, script):
         framework.Template.SetModelScript(self, script)
         self._last_script=script
-
-    def InputPageChanged(self, pname):
-        # check if the script was changed and in that case update the model
-        if self.parent.script_editor.GetText()!=self._last_script:
-            # update the script, this is done automatically when simulating by user
-            self.model_obj.set_script(self.parent.script_editor.GetText())
-            try:
-                self.ReadModel(reevaluate=True)
-            except Exception as e:
-                self.ShowErrorDialog("Error in evaluation of model script, old model retained!")
 
     def UpdateScript(self, event):
         self.WriteModel()
@@ -1871,30 +1853,24 @@ class Plugin(framework.Template, SampleBuilder):
     def AppendSim(self, sim_func, inst, args):
         self.simulation_widget.AppendSim(sim_func, inst, args)
 
-    def ReadModel(self, reevaluate=False):
-        '''ReadModel(self)  --> None
-        
+    def ReadUpdateModel(self, evt):
+        try:
+            self.ReadModel(verbose=False)
+        except GenxError:
+            pass
+        except Exception as e:
+            self.StatusMessage(f'could not analyze script: {e}')
+
+    def ReadModel(self, reevaluate=False, verbose=True):
+        '''
         Reads in the current model and locates layers and stacks
         and sample defined inside BEGIN Sample section.
         '''
-        self.StatusMessage('Compiling the script...')
-        try:
-            self.CompileScript()
-        except GenxError as e:
-            self.ShowErrorDialog(str(e))
-            self.StatusMessage('Error when compiling the script')
-            return
-        except Exception as e:
-            outp=io.StringIO()
-            traceback.print_exc(200, outp)
-            val=outp.getvalue()
-            outp.close()
-            self.ShowErrorDialog(val)
-            self.StatusMessage('Fatal Error - compling, Reflectivity')
-            return
-        self.StatusMessage('Script compiled!')
+        if verbose: self.StatusMessage('Compiling the script...')
+        self.CompileScript()
+        if verbose: self.StatusMessage('Script compiled!')
 
-        self.StatusMessage('Trying to interpret the script...')
+        if verbose: self.StatusMessage('Trying to interpret the script...')
 
         instrument_names=self.find_instrument_names()
 
@@ -1967,9 +1943,9 @@ class Plugin(framework.Template, SampleBuilder):
         # to the module therefore reset the compiled flag so that the model has to be recompiled before fitting.
         self.GetModel().compiled=False
         if reevaluate:
-            self.StatusMessage('Model analyzed and plugin updated!')
+            if verbose: self.StatusMessage('Model analyzed and plugin updated!')
         else:
-            self.StatusMessage('New sample loaded to plugin!')
+            if verbose: self.StatusMessage('New sample loaded to plugin!')
         self._last_script=self.model_obj.script
 
         # Setup the plot x-axis and simulation standard

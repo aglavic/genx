@@ -14,16 +14,12 @@ import wx
 import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE
 
+from .custom_events import plot_position, state_changed, skips_event
 from ..core.config import BaseConfig, Configurable
 
 # deactivate matplotlib logging that we are not interested in
 getLogger('matplotlib.ticker').setLevel(ERROR)
 getLogger('matplotlib.font_manager').setLevel(ERROR)
-
-# Event for a click inside an plot which yields a number
-(plot_position, EVT_PLOT_POSITION)=wx.lib.newevent.NewEvent()
-# Event to tell the main window that the zoom state has changed
-(state_changed, EVT_PLOT_SETTINGS_CHANGE)=wx.lib.newevent.NewEvent()
 
 zoom_state=False
 
@@ -463,7 +459,8 @@ class PlotPanel(wx.Panel, Configurable):
                           abs(self.cur_pos[1]-self.start_pos[1]))
                 self._DrawAndErase(new_rect, self.cur_rect)
                 self.cur_rect=new_rect
-        # event.Skip()
+        else:
+            event.Skip()
 
     def OnLeftMouseButtonUp(self, event):
         if self.canvas.HasCapture():
@@ -1004,14 +1001,16 @@ class DataPlotPanel(PlotPanel):
         # This will be somewhat inefficent since everything is updated
         # at once would be better to update the things that has changed...
 
-        self.ax.lines=[]
-        self.ax.collections=[]
+        while len(self.ax.lines)>0:
+            self.ax.lines[0].remove()
+        while len(self.ax.collections)>0:
+            self.ax.collections[0].remove()
         # plot the data
         # [self.ax.semilogy(data_set.x,data_set.y) for data_set in data]
         if self.y_scale=='linear':
             [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
                           lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                          marker=data_set.data_symbol, ms=data_set.data_symbolsize, zorder=1) \
              for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
             [self.ax.errorbar(data_set.x, data_set.y,
@@ -1019,13 +1018,13 @@ class DataPlotPanel(PlotPanel):
                                       data_set.error].transpose(),
                               color=data_set.data_color, lw=data_set.data_linethickness,
                               ls=data_set.data_linetype, marker=data_set.data_symbol,
-                              ms=data_set.data_symbolsize) \
+                              ms=data_set.data_symbolsize, zorder=2) \
              for data_set in data if data_set.use_error and data_set.show]
         if self.y_scale=='log':
             [self.ax.plot(data_set.x.compress(data_set.y>0),
                           data_set.y.compress(data_set.y>0), color=data_set.data_color,
                           lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                          marker=data_set.data_symbol, ms=data_set.data_symbolsize, zorder=1) \
              for data_set in data if not data_set.use_error and data_set.show]
             # With errorbars
             [self.ax.errorbar(data_set.x.compress(data_set.y
@@ -1036,7 +1035,7 @@ class DataPlotPanel(PlotPanel):
                                                                            data_set.error>0),
                               color=data_set.data_color, lw=data_set.data_linethickness,
                               ls=data_set.data_linetype, marker=data_set.data_symbol,
-                              ms=data_set.data_symbolsize) \
+                              ms=data_set.data_symbolsize, zorder=2) \
              for data_set in data if data_set.use_error and data_set.show]
         self.AutoScale()
         # Force an update of the plot
@@ -1054,26 +1053,31 @@ class DataPlotPanel(PlotPanel):
                 self.ax.lines[i+len(shown_data)].set_data(data_set.x, data_set.y_sim)
                 self.error_ax.lines[i].set_data(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0))
         else:
-            self.ax.lines=[]
-            self.ax.collections=[]
-            self.error_ax.lines=[]
-            self.error_ax.collections=[]
+            while len(self.ax.lines)>0:
+                self.ax.lines[0].remove()
+            while len(self.ax.collections)>0:
+                self.ax.collections[0].remove()
+            while len(self.error_ax.lines)>0:
+                self.error_ax.lines[0].remove()
+            while len(self.error_ax.collections)>0:
+                self.error_ax.collections[0].remove()
             # plot the data
             # [self.ax.semilogy(data_set.x, data_set.y, '.'\
             # ,data_set.x, data_set.y_sim) for data_set in data]
             [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
                           lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                          marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                          marker=data_set.data_symbol, ms=data_set.data_symbolsize,
+                          zorder=1) \
              for data_set in shown_data]
             # The same thing for the simulation
             [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
                           lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize, zorder=5) \
              for data_set in shown_data]
             # Plot the point by point error:
             [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
                                 lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                                marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+                                marker=data_set.sim_symbol, ms=data_set.sim_symbolsize, zorder=2) \
              for data_set in shown_data]
         # Force an update of the plot
         self.autoscale_error_ax()
@@ -1122,10 +1126,14 @@ class DataPlotPanel(PlotPanel):
                     segment_data=segment_data[fltr, :,:]
                 self.ax.collections[k].set_segments(segment_data)
         else:
-            self.ax.lines=[]
-            self.ax.collections=[]
-            self.error_ax.lines=[]
-            self.error_ax.collections=[]
+            while len(self.ax.lines)>0:
+                self.ax.lines[0].remove()
+            while len(self.ax.collections)>0:
+                self.ax.collections[0].remove()
+            while len(self.error_ax.lines)>0:
+                self.error_ax.lines[0].remove()
+            while len(self.error_ax.collections)>0:
+                self.error_ax.collections[0].remove()
             # plot the data
             # [self.ax.semilogy(data_set.x, data_set.y, '.'\
             # ,data_set.x, data_set.y_sim) for data_set in data]
@@ -1134,7 +1142,7 @@ class DataPlotPanel(PlotPanel):
             if self.y_scale=='linear':
                 [self.ax.plot(data_set.x, data_set.y, color=data_set.data_color,
                               lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                              marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                              marker=data_set.data_symbol, ms=data_set.data_symbolsize, zorder=1) \
                  for data_set in p_datasets if not data_set.use_error]
                 # With errorbars
                 [self.ax.errorbar(data_set.x, data_set.y,
@@ -1142,13 +1150,13 @@ class DataPlotPanel(PlotPanel):
                                           data_set.error].transpose(),
                                   color=data_set.data_color, lw=data_set.data_linethickness,
                                   ls=data_set.data_linetype, marker=data_set.data_symbol,
-                                  ms=data_set.data_symbolsize) \
+                                  ms=data_set.data_symbolsize, zorder=2) \
                  for data_set in pe_datasets]
             if self.y_scale=='log':
                 [self.ax.plot(data_set.x.compress(data_set.y>0),
                               data_set.y.compress(data_set.y>0), color=data_set.data_color,
                               lw=data_set.data_linethickness, ls=data_set.data_linetype,
-                              marker=data_set.data_symbol, ms=data_set.data_symbolsize) \
+                              marker=data_set.data_symbol, ms=data_set.data_symbolsize, zorder=1) \
                  for data_set in p_datasets if not data_set.use_error]
                 # With errorbars
                 [self.ax.errorbar(data_set.x.compress(data_set.y
@@ -1159,12 +1167,12 @@ class DataPlotPanel(PlotPanel):
                                                                                data_set.error>0),
                                   color=data_set.data_color, lw=data_set.data_linethickness,
                                   ls=data_set.data_linetype, marker=data_set.data_symbol,
-                                  ms=data_set.data_symbolsize) \
+                                  ms=data_set.data_symbolsize, zorder=2) \
                  for data_set in pe_datasets]
             # The same thing for the simulation
             [self.ax.plot(data_set.x, data_set.y_sim, color=data_set.sim_color,
                           lw=data_set.sim_linethickness, ls=data_set.sim_linetype,
-                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize) \
+                          marker=data_set.sim_symbol, ms=data_set.sim_symbolsize, zorder=5) \
              for data_set in s_datasets]
             [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
                                 lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
@@ -1178,6 +1186,7 @@ class DataPlotPanel(PlotPanel):
         # Force an update of the plot
         self.flush_plot()
 
+    @skips_event
     def OnDataListEvent(self, event):
         '''OnDataListEvent(self, event) --> None
         
@@ -1201,8 +1210,8 @@ class DataPlotPanel(PlotPanel):
         else:
             # self.update(data_list)
             pass
-        event.Skip()
 
+    @skips_event
     def OnSimPlotEvent(self, event):
         '''OnSimPlotEvent(self, event) --> None
         
@@ -1213,13 +1222,13 @@ class DataPlotPanel(PlotPanel):
         self.update=self.plot_data_sim
         self.update(data_list)
 
+    @skips_event
     def OnSolverPlotEvent(self, event):
         ''' OnSolverPlotEvent(self,event) --> None
         
         Event handler function to connect to solver update events i.e.
         update the plot with the simulation
         '''
-        event.Skip()
         if event.update_fit:
             if self.update!=self.plot_data_fit:
                 self.update=self.plot_data_fit
@@ -1247,7 +1256,8 @@ class ErrorPlotPanel(PlotPanel):
         # self.ax.cla()
         self.ax.set_autoscale_on(False)
 
-        self.ax.lines=[]
+        while len(self.ax.lines)>0:
+            self.ax.lines[0].remove()
         if data is None:
             theta=arange(0.1, 10, 0.001)
             self.ax.plot(theta, floor(15-theta), '-r')
@@ -1267,12 +1277,12 @@ class ErrorPlotPanel(PlotPanel):
             pass
         self.flush_plot()
 
+    @skips_event
     def OnSolverPlotEvent(self, event):
         ''' OnSolverPlotEvent(self,event) --> None
         Event handler function to connect to solver update events i.e.
         update the plot with the simulation
         '''
-        event.Skip()
         fom_log=event.fom_log
         self.update(fom_log)
 
@@ -1319,6 +1329,7 @@ class ParsPlotPanel(PlotPanel):
         self.figure.tight_layout(h_pad=0)
         self.flush_plot()
 
+    @skips_event
     def OnSolverParameterEvent(self, event):
         ''' OnSolverParameterEvent(self,event) --> None
         Event handler function to connect to solver update events i.e.
@@ -1326,7 +1337,6 @@ class ParsPlotPanel(PlotPanel):
         '''
         self.update(event)
         # Do not forget - pass the event on
-        event.Skip()
 
 class FomPanelConfig(BasePlotConfig):
     section='fom scan plot'

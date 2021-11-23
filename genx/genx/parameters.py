@@ -2,27 +2,40 @@
 Definition for the class Parameters. Used for storing the fitting parameters
 in GenX.
 '''
-from typing import Union
+from typing import Union, List, Tuple
+from enum import Enum, auto
 
 from .core.custom_logging import iprint
 from .core.h5_support import H5Savable
 
 
 # ==============================================================================
-
+class SortSplitItem(Enum):
+    ATTRIBUTE=auto()
+    OBJ_NAME=auto()
+    CLASS=auto()
 
 class Parameters(H5Savable):
     """
     Class for storing the fitting parameters in GenX
     """
     h5group_name='parameters'
+    data_labels: Tuple[str]  = ('Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error')
+    init_data: Tuple[str, float, bool, float, float, str] = ('', 0.0, False, 0.0, 0.0, 'None')
 
-    def __init__(self, model=None):
-        self.data_labels=['Parameter', 'Value', 'Fit', 'Min', 'Max', 'Error']
-        self.init_data=['', 0.0, False, 0.0, 0.0, 'None']
-        self.data=[self.init_data[:]]
-        self.model=model
-        self.string_dtype="S100"
+    def __init__(self):
+        self._data=[list(self.init_data)]
+
+    @property
+    def data(self) -> list:
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        plen=len(self.init_data)
+        if not all([len(item)==plen for item in value]):
+            raise ValueError(f'All parameter rows must have {plen} items')
+        self._data=list(value)
 
     def write_h5group(self, group):
         """
@@ -42,7 +55,7 @@ class Parameters(H5Savable):
         :param group: h5py Group to import from
         :return:
         """
-        self.data_labels=[item.decode('utf-8') for item in list(group['data_labels'][()])]
+        self.data_labels=tuple(str(item.decode('utf-8')) for item in list(group['data_labels'][()]))
         self.data=[[c0.decode('utf-8'), float(c1), bool(c2), float(c3), float(c4), c5.decode('utf-8')]
                    for (c0, c1, c2, c3, c4, c5) in
                    zip(group['data col 0'][()], group['data col 1'][()],
@@ -64,30 +77,13 @@ class Parameters(H5Savable):
         """ Get the value in the grid """
         return self.data[row][col]
 
-    def name_in_grid(self, name):
-        """ Checks if name is a parameter in the grid
-
-        :param name: string representation of a parameter
-        :return:
-        """
-        par_names=[row[0] for row in self.data]
-        return name in par_names
-
     def get_names(self):
-        """ Returns the parameter names
-
-        :return:
-        """
+        """ Returns the parameter names """
         par_names=[row[0] for row in self.data]
-
         return par_names
 
     def get_value_by_name(self, name):
-        """Get the value for parameter name. Returns None if name can not be found.
-
-        :param name:
-        :return: Value or None
-        """
+        """Get the value for parameter name. Returns None if name can not be found."""
         par_names=[row[0] for row in self.data]
         if name in par_names:
             value=self.data[par_names.index(name)][1]
@@ -96,9 +92,9 @@ class Parameters(H5Savable):
         return value
 
     def get_fit_state_by_name(self, name):
-        """Get the fitting state for parameter name. Returns None if name can not be found.
+        """
+        Get the fitting state for parameter name. Returns None if name can not be found.
 
-        :param name:
         :return: int 0 - not found, 1 - fitted, 2 - defined but constant
         """
         par_names=[row[0] for row in self.data]
@@ -171,51 +167,74 @@ class Parameters(H5Savable):
 
     def insert_row(self, row):
         ''' Insert a new row at row(int). '''
-        self.data.insert(row, self.init_data[:])
+        self.data.insert(row, list(self.init_data))
 
     def move_row_up(self, row):
-        """ Move row up.
-
-        :param row: Move row up one row.
-        :return: Boolean True if the row was moved, otherwise False.
-        """
-
-        if row!=0 and row<self.get_len_rows():
-            self.data.insert(row-1, self.data.pop(row))
-            return True
-        else:
-            return False
+        self.move_row(row, -1)
 
     def move_row_down(self, row):
-        """ Move row up.
+        self.move_row(row, 1)
 
-        :param row: Move row down one row.
-        :return: Boolean True if the row was moved, otherwise False.
-        """
+    def move_row(self, row, step):
+        if self.can_move_row(row, step):
+            self.data.insert(row+step, self.data.pop(row))
 
-        if row<self.get_len_rows()-1:
-            self.data.insert(row+1, self.data.pop(row))
+    def can_move_row(self, row, step=1):
+        if 0 <= row+step < self.get_len_rows():
             return True
         else:
             return False
 
-    def _sort_key_func(self, item):
-        class_name=''
-        pname=item[0]
-        obj_name=item[0]
-        if self.model is not None:
-            if item[0].count('.')>0 and self.model.compiled:
-                pieces=item[0].split('.')
-                obj_name=pieces[0]
-                pname=pieces[1]
-                obj=self.model.eval_in_model(obj_name)
-                class_name=obj.__class__.__name__
+    def sort_rows(self, model=None, sort_params: SortSplitItem=SortSplitItem.ATTRIBUTE):
+        def _sort_key_func(item):
+            class_name = ''
+            pname = item[0]
+            obj_name = item[0]
+            if model is not None:
+                if item[0].count('.')>0 and model.compiled:
+                    pieces = item[0].split('.')
+                    obj_name = pieces[0]
+                    pname = pieces[1]
+                    obj = model.eval_in_model(obj_name)
+                    class_name = obj.__class__.__name__
+                    if sort_params is SortSplitItem.OBJ_NAME:
+                        return class_name.lower(), obj_name.lower(), pname.lower()
+            return class_name.lower(), pname.lower(), obj_name.lower()
 
-        return class_name.lower(), pname.lower(), obj_name.lower()
-
-    def sort_rows(self):
-        self.data.sort(key=self._sort_key_func)
+        self.data.sort(key=_sort_key_func)
         return True
+
+    def group_rows(self, model, split_params: SortSplitItem=SortSplitItem.ATTRIBUTE):
+        # generate empty lines between blocks of same class objects
+        def get_cls(item):
+            if item[0].count('.')>0:
+                pieces = item[0].split('.')
+                obj_name = pieces[0]
+                pname = pieces[1]
+                obj = model.eval_in_model(obj_name)
+                if split_params is SortSplitItem.ATTRIBUTE:
+                    return obj.__class__.__name__+'->'+pname
+                elif split_params is SortSplitItem.OBJ_NAME:
+                    return obj.__class__.__name__+'->'+obj_name
+                elif split_params is SortSplitItem.CLASS:
+                    return obj.__class__.__name__
+            return None
+        inserts=[]
+        cls=None
+        for i, row in enumerate(self.data):
+            next_obj=get_cls(row)
+            if cls is not None and next_obj!=cls:
+                inserts.append(i)
+            cls=next_obj
+        for i in reversed(inserts):
+            self.data.insert(i, list(self.init_data))
+
+    def strip(self):
+        # remove empty parameters at beginning and end
+        while self.data[0][0].strip()=='':
+            self.data.pop(0)
+        while self.data[-1][0].strip()=='':
+            self.data.pop()
 
     def append(self, parameter=None):
         data=list(self.init_data)
@@ -268,6 +287,13 @@ class Parameters(H5Savable):
             if row[2] and not row[0]=='':
                 row[1]=value[valueindex]
                 valueindex=valueindex+1
+
+    def get_value_pars(self):
+        output=[]
+        for row in self.data:
+            if row[2] and not row[0]=='':
+                output.append(row[1])
+        return output
 
     def set_error_pars(self, value):
         ''' Set the errors on the parameters '''
@@ -364,15 +390,14 @@ class Parameters(H5Savable):
         '''
         Does a safe copy from object into this object.
         '''
-        self.data= obj.data[:]
+        self.data=[di.copy() for di in obj.data]
 
     def copy(self):
         '''
         Does a copy of the current object.
         '''
         new_pars=Parameters()
-        new_pars.data=self.data[:]
-
+        new_pars.data=[di.copy() for di in self.data]
         return new_pars
 
     def __len__(self):
@@ -383,7 +408,7 @@ class Parameters(H5Savable):
 
     def __repr__(self):
         """
-        Display information about the model.
+        Display information about the fit parameters.
         """
         output="Parameters:\n"
         output+="           "+" ".join(["%-16s"%label for label in self.data_labels])+"\n"
@@ -438,6 +463,7 @@ class ConnectedParameter:
     def __init__(self, parent, data):
         self.data=data
         self._parent=parent
+        self._model=None
 
     @property
     def name(self):
@@ -445,7 +471,12 @@ class ConnectedParameter:
 
     @name.setter
     def name(self, value):
-        model=self._parent.model
+        if self._model is None:
+            raise ValueError("Name can't be set directly, use set_name(value, model)")
+        else:
+            self.set_name(value, self._model)
+
+    def set_name(self, value, model):
         if not model.is_compiled():
             model.compile_script()
         par_value=eval('self._parent.model.script_module.'+value.replace('.set', '.get')+'()',

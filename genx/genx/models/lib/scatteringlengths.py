@@ -366,6 +366,53 @@ def create_fp_lookup(path):
 
     return lookup_func
 
+
+def create_bl_lookup(path, b_dict):
+    '''
+    '''
+
+    def lookup_func(name, wavelength):
+        '''lookup_func(name, wavelength) --> b = b_s - 1.0J*b_a
+
+        looksup the energy dependent absorption cross sections
+        and calculated the complex scattering length from it.
+        '''
+        energy=(0.28601435/wavelength)**2 # convert wavelength in Å to energy in eV
+
+        if len(name)>1 and name[0].lower()=='i' and name[1].isdigit():
+            if name[-2].isdigit():
+                ele=name[-1]+name[1:-1]
+            else:
+                ele=name[-2:]+name[1:-2]
+        else:
+            ele=name.capitalize()
+
+        e, xs_s, xs_a = np.loadtxt(path+'%s.txt'%ele, unpack=True)
+
+        if energy>=e[-2] or energy<=e[1]:
+            raise ValueError('The energy/wavelength is outside the databse' \
+                             +'range, the energy should be inside [%f,%f] '%(e[1], e[-2]))
+        pos1 = np.argmin(abs(e-energy))
+        # Is the energy point to the right or left of the current point
+        # If it is ontop it doesn't matter since the interpolation will be exact at
+        # the endpoints
+        if (e[pos1]-energy)>0:
+            pos2 = pos1-1
+        else:
+            pos2 = pos1+1
+        # A quick linear interpolation:
+        xs_si = (energy-e[pos1])*(xs_s[pos2]-xs_s[pos1])/(e[pos2]-e[pos1]) \
+               +xs_s[pos1]
+        xs_ai = (energy-e[pos1])*(xs_a[pos2]-xs_a[pos1])/(e[pos2]-e[pos1]) \
+               +xs_a[pos1]
+
+        breal=b_dict[name.lower()].real
+        bimag=xs_ai/wavelength/2.*1e-3
+        return breal-1j*bimag
+
+    return lookup_func
+
+
 def create_fpdisp_lookup(path):
     '''create_f_lookup(filename) --> lookup_func(name)
 

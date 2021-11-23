@@ -12,12 +12,15 @@ Last Changes 04/22/15
 '''
 
 import os, sys
-from copy import deepcopy
 import wx
+
+from copy import deepcopy
+from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
+
 from .. import add_on_framework as framework
+from ..utils import ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
 from genx.parameters import Parameters
 import genx.gui.images as img
-from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
 class Plugin(framework.Template):
     _refplugin=None
@@ -69,11 +72,7 @@ class Plugin(framework.Template):
             # connect to the reflectivity plugin for layer creation
             self._refplugin=ph.loaded_plugins['Reflectivity']
         else:
-            dlg=wx.MessageDialog(self.materials_panel, 'Reflectivity plugin must be loaded',
-                                 caption='Information',
-                                 style=wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self.materials_panel, 'Reflectivity plugin must be loaded', 'Information')
             self._refplugin=None
 
     def create_toolbar(self):
@@ -333,11 +332,7 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         '''
         # Check so that one dataset is selected
         if len(indices)==0:
-            dlg=wx.MessageDialog(self,
-                                 'At least one data set has to be selected'
-                                 , caption='Information', style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowInfoDialog(self, 'At least one data set has to be selected')
             return False
         return True
 
@@ -369,9 +364,8 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
         if not was_stored:
             message='Do you want to store the current parameters in the Vault'+ \
                     ' before applying the selected ones?'
-            dlg=wx.MessageDialog(self, message, 'Store current parameters?',
-                                 wx.YES_NO | wx.ICON_QUESTION)
-            if dlg.ShowModal()==wx.ID_YES:
+            result=ShowQuestionDialog(self, message, 'Store current parameters?')
+            if result:
                 self.AddItem(None)
         model.parameters.data=deepcopy(self.parameter_list[index][2])
         self.plugin.parent.paramter_grid._grid_changed()

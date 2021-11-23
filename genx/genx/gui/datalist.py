@@ -18,6 +18,8 @@ except ImportError:
     from wx import adv as wizard
 
 from . import images as img
+from .custom_events import data_list_type, update_plotsettings
+from .message_dialogs import ShowErrorDialog, ShowNotificationDialog, ShowQuestionDialog, ShowWarningDialog
 from .. import data
 from ..plugins import data_loader_wx as dlf
 from ..core.config import BaseConfig, Configurable
@@ -27,7 +29,7 @@ from ..core.custom_logging import iprint
 
 class DataController:
     '''
-    Interface layer class between the VirtualDataList and the Data class
+    Interface layer class between the VirtualDataList and the DataList class
     '''
     data: data.DataList
 
@@ -257,11 +259,6 @@ class DataListEvent(wx.CommandEvent):
         '''
         self.name_change=True
 
-# Generating an event type:
-myEVT_DATA_LIST=wx.NewEventType()
-# Creating an event binder object
-EVT_DATA_LIST=wx.PyEventBinder(myEVT_DATA_LIST)
-
 @dataclass
 class VDataListConfig(BaseConfig):
     section='data handling'
@@ -380,7 +377,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         '''
 
         class event:
-            pass
+            Skip = lambda: None
 
         event.text=text
         self.status_text(event)
@@ -416,7 +413,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         Internal funciton to send an event to update data
         '''
         # Send an event that a new data set ahs been loaded
-        evt=DataListEvent(myEVT_DATA_LIST, self.GetId(), self.data_cont.get_data())
+        evt=DataListEvent(data_list_type, self.GetId(), self.data_cont.get_data())
         evt.SetDataChanged(data_changed)
         evt.SetNewData(new_data)
         evt.SetNewModel(new_model)
@@ -427,7 +424,6 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
             evt.SetDataMoved(position, direction_up)
         if deleted:
             evt.SetDataDeleted(position)
-        iprint(evt.new_data)
         # Process the event!
         self.GetEventHandler().ProcessEvent(evt)
 
@@ -438,11 +434,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         '''
         # Check so that one dataset is selected
         if len(indices)==0:
-            dlg=wx.MessageDialog(self,
-                                 'At least one data set has to be selected'
-                                 , caption='Information', style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowNotificationDialog(self, 'At least one data set has to be selected')
             return False
         return True
 
@@ -455,11 +447,10 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
             index=self.GetNextSelected(index)
 
         # Create the dialog box        
-        dlg=wx.MessageDialog(self, 'Remove %d dataset(s) ?'%count,
-                             caption='Remove?', style=wx.YES_NO | wx.ICON_QUESTION)
+        result=ShowQuestionDialog(self, 'Remove %d dataset(s) ?'%count, title='Remove?')
 
         # Show the dialog box
-        if dlg.ShowModal()==wx.ID_YES:
+        if result:
             # Get selected items
             indices=self._GetSelectedItems()
             # Sort the list in descending order, this maintains the
@@ -472,8 +463,6 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
             self.SetItemCount(self.data_cont.get_count())
             # Send update event
             self._UpdateData('Data Deleted', deleted=True, position=indices)
-
-        dlg.Destroy()
 
     def AddItem(self):
         self.data_cont.add_item()
@@ -501,11 +490,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
                              direction_up=True, position=indices)
 
         else:
-            dlg=wx.MessageDialog(self,
-                                 'The first dataset can not be moved up'
-                                 , caption='Information', style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowNotificationDialog(self, 'The first dataset can not be moved up')
 
     def MoveItemDown(self):
         # Get selected items
@@ -528,15 +513,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
                              direction_up=False, position=indices)
 
         else:
-            dlg=wx.MessageDialog(self,
-                                 'The last dataset can not be moved down',
-                                 caption='Information', style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-
-    def update_color_cycle(self, source):
-        self.data_cont.get_data().update_color_cycle(source)
-        self._UpdateImageList()
+            ShowNotificationDialog(self, 'The last dataset can not be moved down',)
 
     def LoadData(self):
         '''LoadData(self, evt) --> None
@@ -547,14 +524,27 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         if self.data_loader.LoadDataFile(self._GetSelectedItems()):
             self._UpdateData('New data added', new_data=True)
 
-    def load_from_files(self, files):
+    def load_from_files(self, files, do_update=True):
         offset=self.data_cont.get_count()
         while offset>0 and not self.data_cont.has_data(offset-1):
             offset-=1
-        for i, fi in enumerate(files):
-            if self.data_cont.get_count()<(i+offset+1):
-                self.AddItem()
-            self.data_loader.LoadData(self.data_cont.get_data()[i+offset], fi)
+        i=0
+        for  fi in files:
+            # load all datasets in file, but limit to 25 to prohibit accidental load of huge datasets
+            for di in range(min(self.data_loader.CountDatasets(fi), 25)):
+                if self.data_cont.get_count()<(i+offset+1):
+                    self.data_cont.add_item()
+                    self._UpdateImageList()
+                    self.SetItemCount(self.data_cont.get_count())
+                self.data_loader.LoadData(self.data_cont.get_data()[i+offset], fi, data_id=di)
+                i+=1
+
+        if do_update:
+            # In case the dataset name has changed
+            self.data_loader.UpdateDataList()
+            # Send an update that new data has been loaded
+            self.data_loader.SendUpdateDataEvent()
+            self._UpdateData('Item added', data_changed=True, new_data=True)
         return True
 
     def ShowInfo(self):
@@ -563,11 +553,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         """
         sel=self._GetSelectedItems()
         if len(sel)==0:
-            dlg=wx.MessageDialog(self, 'Please select a dataset'
-                                 , caption='No active dataset'
-                                 , style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowNotificationDialog(self, 'Please select a dataset')
             return
         ds=self.data_cont.get_data()[sel[0]]
 
@@ -684,10 +670,8 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
                     data_par[key]=None
 
         def apply_plotsettings(sim_par, data_par):
-            self.data_cont.set_items_plotsettings(indices,
-                                                  [sim_par]*len(indices), [data_par]*len(indices))
-            self._UpdateImageList()
-            self._UpdateData('Plot settings changed', data_changed=True)
+            evt=update_plotsettings(indices=indices, sim_par=sim_par, data_par=data_par)
+            wx.PostEvent(self.parent, evt)
 
         # Dialog business start here
         dlg=PlotSettingsDialog(self, sim_par, data_par)
@@ -1337,22 +1321,12 @@ class CalcDialog(wx.Dialog):
                 failed.append(name)
             self.command_ctrl[name].SetValue(val)
         if len(failed)>0:
-            dlg=wx.MessageDialog(self, 'The data operations for the'+ \
+            ShowWarningDialog(self, 'The data operations for the'+ \
                                  'following memebers of the data set could not be copied: '+
-                                 ' ,'.join(failed),
-                                 'Copy failed',
-                                 wx.OK | wx.ICON_WARNING
-                                 )
-            dlg.ShowModal()
-            dlg.Destroy()
-        # self.command_ctrl['x'].SetValue(self.data_commands[item]['x'])
-        # self.command_ctrl['y'].SetValue(self.data_commands[item]['y'])
-        # self.command_ctrl['e'].SetValue(self.data_commands[item]['e'])
+                                 ' ,'.join(failed), 'Copy failed')
 
     def OnClickExecute(self, event):
-        # current_command = {'x':  self.xcommand_ctrl.GetValue(),\
-        #                    'y':  self.ycommand_ctrl.GetValue(), \
-        #                    'e':  self.ecommand_ctrl.GetValue() }
+        event.Skip()
         current_command={}
         for name in self.command_ctrl:
             current_command[name]=self.command_ctrl[name].GetValue()
@@ -1365,19 +1339,11 @@ class CalcDialog(wx.Dialog):
                     result='There is an error that the command tester did'+ \
                            ' not catch please give the following information to'+ \
                            ' the developer:\n\n'+result
-                    dlg=wx.MessageDialog(self, result, 'Error in GenX',
-                                         wx.OK | wx.ICON_ERROR)
-                    dlg.ShowModal()
-                    dlg.Destroy()
+                    ShowErrorDialog(self, result, 'Error in GenX')
             else:
                 result='There is an error in the typed expression.\n'+ \
                        result
-                dlg=wx.MessageDialog(self, result, 'Expression not correct',
-                                     wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
-
-        event.Skip()
+                ShowWarningDialog(self, result, 'Expression not correct')
 
 # END: CalcDialog
 # ==============================================================================
@@ -1408,7 +1374,7 @@ class CreateSimDataWizard(wizard.Wizard):
         page3=TitledPage(self, "Data set names")
 
         dataSizer=wx.FlexGridSizer(rows=5, cols=2,
-                                   vgap=10, hgap=10)
+                                   vgap=0, hgap=10)
 
         dataSizer.Add(wx.StaticText(page1, -1, "Start "), 0, wx.EXPAND | wx.ALL, 5)
         minCtrl=wx.TextCtrl(page1, -1, value='0.0')
@@ -1418,14 +1384,15 @@ class CreateSimDataWizard(wizard.Wizard):
         dataSizer.Add(maxCtrl, 0, wx.EXPAND | wx.ALL, 5)
         dataSizer.Add(wx.StaticText(page1, -1, "Step type"), 0, wx.EXPAND | wx.ALL, 5)
         stepChoice=wx.Choice(page1, -1, (-1, -1), choices=step_types)
+        stepChoice.SetSelection(0)
         dataSizer.Add(stepChoice, 0, wx.EXPAND | wx.ALL, 5)
         dataSizer.Add(wx.StaticText(page1, -1, "Num steps"), 0, wx.EXPAND | wx.ALL, 5)
-        stepCtrl=intctrl.IntCtrl(page1, value=10)
+        stepCtrl=intctrl.IntCtrl(page1, value=100)
         dataSizer.Add(stepCtrl, 0, wx.EXPAND | wx.ALL, 5)
         page1.sizer.Add(dataSizer)
 
         dataSizer=wx.FlexGridSizer(rows=1, cols=2,
-                                   vgap=10, hgap=10)
+                                   vgap=0, hgap=10)
         dataSizer.Add(wx.StaticText(page2, -1, "Data sets "), 0, wx.EXPAND | wx.ALL, 5)
         setsCtrl=intctrl.IntCtrl(page2, value=1)
         dataSizer.Add(setsCtrl, 0, wx.EXPAND | wx.ALL, 5)
@@ -1433,9 +1400,9 @@ class CreateSimDataWizard(wizard.Wizard):
 
         page3.sizer.Add(wx.StaticText(page3, -1, "Change the name of the data sets"), 0, wx.EXPAND | wx.ALL, 5)
         self.scrollPanel=scrolled.ScrolledPanel(page3, -1, size=(150, 200), style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER)
-        self.nameSizer=wx.FlexGridSizer(cols=1, vgap=4, hgap=4)
+        self.nameSizer=wx.FlexGridSizer(cols=1, vgap=4, hgap=0)
         self.nameCtrls=[]
-        page3.sizer.Add(self.scrollPanel, 0, wx.CENTER | wx.ALL, 5)
+        page3.sizer.Add(self.scrollPanel, 0, wx.CENTER | wx.ALL | wx.EXPAND, 5)
 
         self.maxCtrl=maxCtrl
         self.minCtrl=minCtrl
@@ -1446,8 +1413,6 @@ class CreateSimDataWizard(wizard.Wizard):
         self.add_page(page1)
         self.add_page(page2)
         self.add_page(page3)
-
-        iprint(len(self.pages))
 
         self.Bind(wizard.EVT_WIZARD_PAGE_CHANGING, self.on_page_changing)
 
@@ -1484,26 +1449,17 @@ class CreateSimDataWizard(wizard.Wizard):
             self.min_val=float(eval(self.minCtrl.GetValue()))
         except Exception:
             self.min_val=None
-            dlg=wx.MessageDialog(self, "The minimum value can not be evaluated to a numerical value", 'WARNING',
-                                 wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, "The minimum value can not be evaluated to a numerical value")
             return False
         try:
             self.max_val=float(eval(self.maxCtrl.GetValue()))
         except Exception:
             self.max_val=None
-            dlg=wx.MessageDialog(self, "The minimum value can not be evaluated to a numerical value", 'WARNING',
-                                 wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, "The minimum value can not be evaluated to a numerical value")
             return False
 
         if self.min_val<1e-20 and self.stepChoice.GetStringSelection()=='log':
-            dlg=wx.MessageDialog(self, "The minimum value have to be larger than 1e-20 when using log step size",
-                                 'WARNING', wx.OK | wx.ICON_WARNING)
-            dlg.ShowModal()
-            dlg.Destroy()
+            ShowWarningDialog(self, "The minimum value have to be larger than 1e-20 when using log step size")
             return False
 
         return True
@@ -1538,16 +1494,3 @@ class CreateSimDataWizard(wizard.Wizard):
 
         return xstr, ystr, namestrs
 
-# END: Sim data Wizard
-# ==============================================================================
-
-
-def ShowWarningDialog(frame, message, position=''):
-    dlg=wx.MessageDialog(frame, message+'\n'+'Position: '+position,
-                         'WARNING',
-                         wx.OK | wx.ICON_WARNING
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-# ==============================================================================

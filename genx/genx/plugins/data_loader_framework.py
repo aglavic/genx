@@ -3,7 +3,9 @@
 Library that implements a template (Template) class for classes that
 loads data into GenX.
 '''
-from genx.data import DataSet
+from ..data import DataSet
+from .utils import ShowInfoDialog
+
 
 class Template:
     wildcard=None
@@ -17,22 +19,19 @@ class Template:
             self.Register()
 
     def Register(self):
-        '''Register(self) --> None
-        
+        '''
         Register the data loader with the parent
         '''
         self.parent.data_loader=self
 
     def SetData(self, data):
-        '''SetData(self, data) --> None
-        
+        '''
         Sets the data connection to the plugin.
         '''
         self.data=data
 
     def UpdateDataList(self):
-        '''UpdateDataList(self) --> None
-        
+        '''
         Forces the data list to update. This is only necessary if new
         data sets have been added when the data has been loaded
         '''
@@ -43,15 +42,20 @@ class Template:
         self.parent._UpdateImageList()
 
     def SetStatusText(self, text):
-        '''SetStatusText(self, text) --> None
-        
-        Set a status text in the main frame for user information 
+        '''
+        Set a status text in the main frame for user information
         '''
         self.parent.SetStatusText(text)
 
+    def CountDatasets(self, file_path):
+        '''
+        Count the number of dataset in a file. Default implementation of
+        dataloader allows for only one item.
+        '''
+        return 1
+
     def LoadDataFile(self, selected_items):
-        '''LoadDataFile(self, seleceted_items) --> None
-        
+        '''
         Selected items is the selcted items in the items in the current DataList
         into which data from file(s) should be loaded. Note that the default
         implementation only allows the loading of a single file! 
@@ -62,7 +66,7 @@ class Template:
         '''
         import wx
         n_selected=len(selected_items)
-        if n_selected==1:
+        if n_selected>0:
             if self.wildcard is None:
                 wc="All files (*.*)|*.*"
             else:
@@ -73,44 +77,43 @@ class Template:
                               , style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
 
             if dlg.ShowModal()==wx.ID_OK:
-                self.SetData(self.parent.data_cont.get_data())
-                dataset=DataSet(copy_from=self.data[selected_items[0]])
-                # in case the data loader does not define any metadata
-                # at least set the instrument to data loader name
-                dataset.meta['data_source']['experiment']['instrument']=self.__module__.rsplit('.', 1)[1]
-                self.LoadData(dataset, dlg.GetPath())
-                dataset.meta['data_source']['file_name']=dlg.GetPath()
+                file_path=dlg.GetPath()
+                dlg.Destroy()
+                dcount=self.CountDatasets(file_path)
+                if n_selected>dcount:
+                    ShowInfoDialog(self.parent, f'You can only load {dcount} dataset(s) from this file',
+                                   'Too many selections')
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                else:
+                    self.SetData(self.parent.data_cont.get_data())
+                    for di in range(n_selected):
+                        dataset=DataSet(copy_from=self.data[selected_items[di]])
+                        # in case the data loader does not define any metadata
+                        # at least set the instrument to data loader name
+                        dataset.meta['data_source']['experiment']['instrument']=self.__module__.rsplit('.', 1)[1]
+                        self.LoadData(dataset, file_path, data_id=di)
+                        dataset.meta['data_source']['file_name']=file_path
 
-                if len(dataset.x)==0:
-                    return
+                        if len(dataset.x)==0:
+                            continue
 
-                self.data[selected_items[0]]=dataset
-                # In case the dataset name has changed
-                self.UpdateDataList()
+                        self.data[selected_items[di]]=dataset
+                    # In case the dataset name has changed
+                    self.UpdateDataList()
 
-                # Send an update that new data has been loaded
-                self.SendUpdateDataEvent()
+                    # Send an update that new data has been loaded
+                    self.SendUpdateDataEvent()
 
-                return True
-            dlg.Destroy()
-        else:
-            if n_selected>1:
-                dlg=wx.MessageDialog(self.parent,
-                                     'Please select only one dataset'
-                                     , caption='Too many selections'
-                                     , style=wx.OK | wx.ICON_INFORMATION)
+                    return True
             else:
-                dlg=wx.MessageDialog(self.parent, 'Please select a dataset'
-                                     , caption='No active dataset'
-                                     , style=wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-
+                dlg.Destroy()
+        else:
+            ShowInfoDialog(self.parent, 'Please select a dataset', 'No active dataset')
         return False
 
-    def LoadData(self, dataset, file_path):
-        '''LoadData(self, dataset, file_path) --> None
-        
+    def LoadData(self, dataset, file_path, data_id=0):
+        '''
         This file should load a single data file into data object of
         the model. Please overide this function. It is called by the 
         LoadFile function.
@@ -118,24 +121,21 @@ class Template:
         pass
 
     def SettingsDialog(self):
-        '''SettingsDialog(self) --> None
-        
+        '''
         This function should - if necessary implement a dialog box
         that allows the user set import settings for example.
         '''
         pass
 
     def SendUpdateDataEvent(self):
-        '''SendUpdateDataEvent(self) --> None
-        
+        '''
         Sends an event that new data has been loaded and 
         things such as plotting should be updated.
         '''
         self.parent._UpdateData('New data added')
 
     def Remove(self):
-        '''Remove(self) --> None
-        
+        '''
         Removes the plugin from knowledge of the parent.
         '''
         self.parent.data_loader=None

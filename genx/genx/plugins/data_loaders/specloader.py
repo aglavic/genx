@@ -19,7 +19,7 @@ class Plugin(Template):
         # self.dataset = data.DataSet()
         self.datalist=self.data
 
-    def LoadDataFile(self, selected_items):
+    def LoadDataFile(self, selected_items, data_id=0):
         ''' Called when GenX wants to load data'''
 
         if len(selected_items)==0:
@@ -465,29 +465,6 @@ class SetNamePage(wx.adv.WizardPageSimple):
 
         self.plugin.dataset.name=self.xCtrl.GetValue()
 
-# Utility Dialog functions..
-def ShowInfoDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message,
-                         'Information',
-                         wx.OK | wx.ICON_INFORMATION
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowErrorDialog(frame, message, position=''):
-    dlg=wx.MessageDialog(frame, message,
-                         'ERROR',
-                         wx.OK | wx.ICON_ERROR
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
-
-def ShowWarningDialog(frame, message):
-    dlg=wx.MessageDialog(frame, message, 'Warning',
-                         wx.OK | wx.ICON_ERROR
-                         )
-    dlg.ShowModal()
-    dlg.Destroy()
 
 def automerge(xval, yvals, rel_cond=100.0):
     ''' Merges the values according to rel_cond where the 
