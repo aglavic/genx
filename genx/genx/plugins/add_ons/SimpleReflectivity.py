@@ -698,7 +698,6 @@ class SampleTable(gridlib.GridTableBase):
 
     def update_layer_parameters(self, layer, dens=None, magn=None,
                                 d=None, sigma=None):
-        print('update_layer_parameters', layer, dens, magn, d, sigma)
         # update the table during/after a fit, layer can be index or name
         if type(layer) is not int:
             layer=self.get_name_list().index(layer)

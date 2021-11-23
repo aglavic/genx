@@ -261,12 +261,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mfmb=self.main_frame_menubar
         mb_file=wx.Menu()
         mb_file.Append(MenuId.NEW_MODEL, "New...\tCtrl+N", "Creates a new model")
-        mb_file.Append(MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N", "Creates a new reflectivity model based on datafile")
         mb_file.Append(MenuId.OPEN_MODEL, "Open...\tCtrl+O", "Opens an existing model")
         mb_file.Append(MenuId.SAVE_MODEL, "Save...\tCtrl+S", "Saves the current model")
         mb_file.Append(MenuId.SAVE_MODEL_AS, "Save As...", "Saves the active model with a new name")
         mb_file.AppendSeparator()
         mb_import=wx.Menu()
+        mb_import.Append(MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N", "Creates a new reflectivity model based on datafile")
         mb_import.Append(MenuId.IMPORT_DATA, "Import Data...\tCtrl+D", "Import data to the active data set")
         mb_import.Append(MenuId.IMPORT_TABLE, "Import Table...", "Import a table from an ASCII file")
         mb_import.Append(MenuId.IMPORT_SCRIPT, "Import Script...", "Import a python model script")
@@ -458,10 +458,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                         wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N",
                                         "Create a new model | Ctrl+N")
-        self.main_frame_toolbar.AddTool(ToolId.NEW_FROM_FILE, "tb_new_from_file",
-                                        wx.Bitmap(img.getnew_from_fileImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                        wx.NullBitmap, wx.ITEM_NORMAL, "New from file | Ctrl+Shift+N",
-                                        "Create a new reflectivity model based on datafile | Ctrl+Shift+N")
+        # self.main_frame_toolbar.AddTool(ToolId.NEW_FROM_FILE, "tb_new_from_file",
+        #                                 wx.Bitmap(img.getnew_from_fileImage().Scale(tb_bmp_size, tb_bmp_size)),
+        #                                 wx.NullBitmap, wx.ITEM_NORMAL, "New from file | Ctrl+Shift+N",
+        #                                 "Create a new reflectivity model based on datafile | Ctrl+Shift+N")
         self.main_frame_toolbar.AddTool(ToolId.OPEN_MODEL, "tb_open",
                                         wx.Bitmap(img.getopenImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O",
@@ -501,7 +501,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def bind_toolbar(self):
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=ToolId.NEW_MODEL)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_new_from_file, id=ToolId.NEW_FROM_FILE)
+        # self.Bind(wx.EVT_TOOL, self.eh_tb_new_from_file, id=ToolId.NEW_FROM_FILE)
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=ToolId.OPEN_MODEL)
         self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=ToolId.SAVE_MODEL)
         self.Bind(wx.EVT_COMBOBOX, self.eh_tb_select_solver, id=ToolId.SOLVER_SELECT)

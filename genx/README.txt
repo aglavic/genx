@@ -1,4 +1,4 @@
-This package contains GenX 3.4 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contains GenX 3.5 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -10,6 +10,29 @@ References
 ==========
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
+
+Changes 3.5.0
+=============
+ * Add undo/redo functionality for most user actions as for changing the script or parameter values
+ * History dialog that shows the undo actions and allows removal of previous steps while keeping later ones
+ * Reorganize menus to make it more accessible
+ * Improved sorting of parameters by object or parameter with grouping
+ * Start logfile from GUI and show dialog with logged messages (Help menu)
+ * Load multiple datasets from suitable data loaders (orso+xrdml)
+ * Configure new reflectivity model from metadata read from .ort files (radiation, resolution etc.)
+ * New option to automatically stop a fit when relative parameter spreads a reduced below a threashold value.
+   Setting the parameter to e.g. 1% will stop once the parameter that varies the largest fraction of its fit
+   range has a spread of less than 1% within the population. Seems very stable and is helpful for long-running
+   fits with MPI that can't be stopped manually, well. (Thanks to Larry Anovitz for the idea.)
+ * Major updates to the main tutorails in the documentation
+ * Update orso .ort file format to use the new orsopy package with the updated specification
+ * Fix update of Pars plot during fit when SimpleReflectivity plugin is loaded
+ * Fix bumps fitting functionality and add update of Pars plot for this solver
+ * Fix bug where fitting with multiprocessing without numba would fail
+ * Fix in plotting of error bars to be below simulation
+ * Fix incompatibility with matplotlib >=3.5.0
+ * General refactoring for the GUI code to allow undo/redo functionality. May have introduced new bugs. As always
+   All feedback is welcome.
 
 Changes 3.4.11
 ==============
