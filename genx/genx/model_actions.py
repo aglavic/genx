@@ -427,23 +427,33 @@ class MoveParam(ModelAction):
     influences = ModelInfluence.PARAM
     name = 'move parameter'
 
-    def __init__(self, model, row, step):
+    def __init__(self, model, row:int, step:int):
         self.model=model
         self.step=step
-        self.param_name=self.model.parameters.get_names()[row]
+        name=self.model.parameters.get_names()[row]
+        if name.strip()=='':
+            self.param_name=row
+        else:
+            self.param_name=name
 
     def execute(self):
-        row=self.model.parameters.get_names().index(self.param_name)
+        if type(self.param_name) is int:
+            row=self.param_name
+        else:
+            row=self.model.parameters.get_names().index(self.param_name)
         self.model.parameters.move_row(row, self.step)
 
     def undo(self):
-        row=self.model.parameters.get_names().index(self.param_name)
+        if type(self.param_name) is int:
+            row=self.param_name+self.step
+        else:
+            row=self.model.parameters.get_names().index(self.param_name)
         self.model.parameters.move_row(row, -self.step)
 
 class DeleteParams(ModelAction):
     influences = ModelInfluence.PARAM
     name = 'delete parameters'
-    description = 'deleted {parameter_names}'
+    description = 'deleted {param_names}'
 
     def __init__(self, model, rows):
         self.model=model

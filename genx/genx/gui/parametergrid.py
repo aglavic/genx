@@ -210,6 +210,18 @@ class ParameterDataTable(gridlib.GridTableBase):
             # print 'In parametergrid ', self.pars.data
         else:
             self.pars=pars
+            diff_rows=self.GetNumberRows()-self.parent.GetNumberRows()
+            if diff_rows<0:
+                # rows were deleted
+                msg = gridlib.GridTableMessage(self,
+                                               gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                                               1, abs(diff_rows))
+                self.GetView().ProcessTableMessage(msg)
+            elif diff_rows>0:
+                # rows were added
+                msg = gridlib.GridTableMessage(self,
+                                               gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, diff_rows)
+                self.GetView().ProcessTableMessage(msg)
             msg=gridlib.GridTableMessage(self,
                                          gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
