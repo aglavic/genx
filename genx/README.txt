@@ -11,6 +11,13 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.1
+=============
+ * Fix some issues with deleting and moving parameters in the grid that
+   were caused by changes for undo/redo functionality.
+ * Add (beta) support for ORSO SLD database for SimpleLayer and SimpleReflectivity
+ * Some fixes in SimpleLayer plugin
+
 Changes 3.5.0
 =============
  * Add undo/redo functionality for most user actions as for changing the script or parameter values
