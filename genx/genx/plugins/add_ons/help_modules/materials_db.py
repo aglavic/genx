@@ -51,7 +51,7 @@ class Formula(list):
             if len(di)!=2:
                 raise ValueError('Formula has to consist of [Element, fraction] entries')
             if not self.check_atom(di[0]):
-                raise ValueError('Element/Isotope %s no in database'%di[0])
+                raise ValueError('Element/Isotope %s not in database'%di[0])
             di[1]=float(di[1])
         list.__init__(self, data)
 

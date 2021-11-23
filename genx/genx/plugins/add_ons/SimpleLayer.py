@@ -20,20 +20,27 @@ Last Changes 10/11/16
 
 import os
 import wx
+from abc import ABC, abstractmethod
+
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from math import cos, pi, sqrt
 from ...gui import images as img
 from .. import add_on_framework as framework
-from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
+from .help_modules.materials_db import mdb, MaterialsDatabase, Formula, MASS_DENSITY_CONVERSION
+from .help_modules.slddb import api
 from ..utils import ShowInfoDialog, ShowQuestionDialog
+from ...gui.custom_choice_dialog import SCDialog
 
 
-mg=None
 pymysql=None
 
-class PluginInterface:
+class PluginInterface(ABC):
     def __init__(self, plugin):
         self._plugin=plugin
+
+    @abstractmethod
+    def material_apply(self, index, panel: wx.Panel=None):
+        ...
 
 class RefPluginInterface(PluginInterface):
     def Update(self):
@@ -124,7 +131,7 @@ class SimplePluginInterface(PluginInterface):
             t.SetValue(row, 4, '%g'%mdb.dens_mass(index))
 
 class Plugin(framework.Template):
-    _refplugin=None
+    _refplugin: PluginInterface=None
 
     @property
     def refplugin(self):
@@ -223,7 +230,7 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     The ListCtrl for the materials data.
     '''
 
-    def __init__(self, parent, materials_list):
+    def __init__(self, parent: wx.Panel, materials_list: MaterialsDatabase):
         wx.ListCtrl.__init__(self, parent, -1,
                              style=wx.LC_REPORT | wx.LC_VIRTUAL)
         ListCtrlAutoWidthMixin.__init__(self)
@@ -302,7 +309,7 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             return False
         return True
 
-    def DeleteItem(self, index):
+    def DeleteItem(self, index=None):
         index=self.GetFirstSelected()
         item=self.materials_list[index]
         item_formula=''
@@ -394,22 +401,11 @@ class MaterialDialog(wx.Dialog):
         cif_button.Bind(wx.EVT_BUTTON, self.OnLoadCif)
         table.Add(cif_button, (8, 1), span=(2, 2), flag=wx.ALIGN_CENTER)
 
-        global mg, pymysql
-        if mg is None:
-            try:
-                global MPRester
-                from pymatgen.ext.matproj import MPRester
-                import pymatgen as mg
-            except ImportError:
-                pass
-        if mg is None:
-            mg_txt=wx.StaticText(self, label="Install PyMatGen for Materials Project Query")
-            table.Add(mg_txt, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
-        else:
-            mg_button=wx.Button(self, label="Query The Materials Project")
-            mg_button.Bind(wx.EVT_BUTTON, self.OnQuery)
-            table.Add(mg_button, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+        mg_button = wx.Button(self, label="Query ORSO SLD db")
+        mg_button.Bind(wx.EVT_BUTTON, self.OnSLDDBQuery)
+        table.Add(mg_button, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
 
+        global pymysql
         if pymysql is None:
             try:
                 import pymysql
@@ -454,20 +450,24 @@ class MaterialDialog(wx.Dialog):
             self.extracted_elements=Formula([])
             self.formula_display.SetValue('')
             return
-        formula=Formula.from_str(text)
-        self.extracted_elements=formula
-        self.formula_display.SetValue(formula.describe())
+        try:
+            formula=Formula.from_str(text)
+        except ValueError:
+            self.formula_display.SetValue(f"?{text}?")
+        else:
+            self.extracted_elements = formula
+            self.formula_display.SetValue(formula.describe())
         self.OnMassDensityChange(None)
 
     def OnUnitCellChanged(self, event):
         params=[]
-        for entry in [self.a_entry, self.b_entry, self.c_entry,
+        try:
+            for entry in [self.a_entry, self.b_entry, self.c_entry,
                       self.alpha_entry, self.beta_entry, self.gamma_entry,
                       self.FUs_entry]:
-            try:
                 params.append(float(entry.GetValue()))
-            except ValueError:
-                return
+        except ValueError:
+            return
         if params[3]==90 and params[4]==90 and params[5]==90:
             if params[0]==params[1] and params[0]==params[2]:
                 self.density='%s/(%g**3)'%(params[6], params[0])
@@ -503,48 +503,7 @@ class MaterialDialog(wx.Dialog):
             self.extract_cif(filename)
         fd.Destroy()
 
-    def OnQuery(self, event):
-        key='NdHi2bTnJ9WDS1sU'
-        a=MPRester(key)
-        formula=''
-        for element, number in self.extracted_elements:
-            if element.startswith('^'):
-                element=element.split('}')[-1]
-            formula+='%s%g'%(element, number)
-        res=a.get_data(formula)
-        if type(res) is not list:
-            return
-        if len(res)>1:
-            # more then one structure available, ask for user input to select appropriate
-            items=[]
-            for i, ri in enumerate(res):
-                cs=ri['spacegroup']['crystal_system']
-                sgs=ri['spacegroup']['symbol']
-                frm=ri['full_formula']
-                v=ri['volume']
-                dens=ri['density']
-                items.append(
-                    '%i: %s (%s) | UC Formula: %s\n     Density: %s g/cm³ | UC Volume: %s'%
-                    (i+1, sgs, cs, frm, dens, v))
-                if ri['tags'] is not None:
-                    items[-1]+='\n     '+';'.join(ri['tags'][:3])
-            dia=wx.SingleChoiceDialog(self,
-                                      'Several entries have been found, please select appropriate:',
-                                      'Select correct database entry',
-                                      items)
-            if not dia.ShowModal()==wx.ID_OK:
-                return None
-            res=res[dia.GetSelection()]
-        else:
-            res=res[0]
-        return self.analyze_cif(res['cif'])
-
-    def OnCODQuery(self, event):
-        db=pymysql.connect(host='sql.crystallography.net',
-                           user='cod_reader',
-                           password=None,
-                           database='cod')
-        c=db.cursor()
+    def format_formula(self):
         formula=[]
         for element, number in self.extracted_elements:
             if element.startswith('^'):
@@ -554,6 +513,54 @@ class MaterialDialog(wx.Dialog):
             else:
                 formula.append('%s'%element)
         formula=' '.join(sorted(formula))
+        return formula
+
+    def OnSLDDBQuery(self, event):
+        api.check()
+        formula=self.format_formula()
+        results=api.search(formula=formula)
+        if len(results)>0:
+            items=[]
+            bg_colors=[]
+            for ri in results:
+                ID=ri['ID']
+                name=ri['name']
+                description=ri['description']
+                txt=f'ORSO {ID}: {name} '
+                if description:
+                    txt+=f'({description}) '
+                for key, value in ri.items():
+                    if key in ['ID', 'name', 'description', 'tags'] or value is None:
+                        continue
+                    txt+=f'| {key}: {value} '
+                items.append(txt)
+                if ri['validated']:
+                    bg_colors.append(wx.Colour(180, 255, 180))
+                else:
+                    bg_colors.append(wx.Colour(255, 255, 255))
+
+            dia=SCDialog(self, 'Several entries have been found, please select appropriate:',
+                         'Select correct database entry', items, background_colors=bg_colors)
+            if not dia.ShowModal()==wx.ID_OK:
+                return None
+            material_ID=results[dia.GetSelection()]['ID']
+            material=api.material(material_ID)
+            self.FUs_entry.SetValue('1')
+            for  entry in [self.a_entry, self.b_entry, self.c_entry,
+                    self.alpha_entry, self.beta_entry, self.gamma_entry]:
+                entry.SetValue('')
+            self.mass_density.SetValue(str(material.dens))
+            self.OnMassDensityChange(None)
+        else:
+            ShowInfoDialog(self, f'No results found in database for formula {formula}')
+
+    def OnCODQuery(self, event):
+        db=pymysql.connect(host='sql.crystallography.net',
+                           user='cod_reader',
+                           password=None,
+                           database='cod')
+        c=db.cursor()
+        formula=self.format_formula()
         c.execute('select a,b,c,alpha,beta,gamma,'
                   'Z,vol,sg,chemname,mineral,commonname,'
                   'authors,title,journal,year,'
@@ -589,18 +596,17 @@ class MaterialDialog(wx.Dialog):
                 dens=self.extracted_elements.mFU()*Z/V/MASS_DENSITY_CONVERSION
                 name=ri[10] or ri[11] or ri[9] or ""
                 text='%s\n%s\n%s (%s)'%tuple(ri[12:16])
-                items.append(
-                    '%i: %s (%s) |  Density: %.3g g/cm³ | UC Volume: %s\n%s'%
-                    (i+1, name, sgs, dens, V, text))
-            dia=wx.SingleChoiceDialog(self,
-                                      'Several entries have been found, please select appropriate:',
-                                      'Select correct database entry',
-                                      items)
+                items.append(f'{i+1}: {name} ({sgs}) |'
+                             f' Density: {dens:.3g} g/cm³ |'
+                             f' UC Volume: {V}\n{text}')
+            dia=wx.SCDialog(self,
+                          'Several entries have been found, please select appropriate:',
+                          'Select correct database entry', items)
             if not dia.ShowModal()==wx.ID_OK:
                 return None
             res=res[dia.GetSelection()]
         else:
-            return None
+            ShowInfoDialog(self, f'No results found in database for formula {formula}')
         for value, entry in zip(res,
                                 [self.a_entry,
                                  self.b_entry,
