@@ -25,11 +25,31 @@ from .help_modules.custom_dialog import *
 from .help_modules import reflectivity_images as images
 from genx.gui.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
+from .help_modules.slddb import api
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
 from genx.gui.custom_events import EVT_UPDATE_SCRIPT, skips_event
 
 _set_func_prefix='set'
+
+try:
+    # set locale to prevent some issues with data format
+    import locale
+    locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+    # initialize and potentially update local version of ORSO SLD db
+    api.check()
+except:
+    api = None
+
+def get_mat_api(frm):
+    # Use ORSO SLD db to query for a material by formula
+    if not api:
+        return None
+    res = api.localquery(dict(formula=frm.estr()))
+    if len(res):
+        mat = api.localmaterial(res[0]['ID'])
+        return mat.dens, res[0]['ID'], res[0]['validated']
+
 
 class SampleGrid(gridlib.Grid):
     def __init__(self, parent, *args, **kw):
@@ -74,6 +94,7 @@ class SampleGrid(gridlib.Grid):
         evt.Skip()
 
     def onEditorShown(self, evt):
+        self.dens=None
         if evt.Col==2 and self.GetTable().GetValue(evt.Row, 1)=='Formula':
             # Show tooltip on formula entry to give feedback on input
             self.info_text.Show()
@@ -82,10 +103,14 @@ class SampleGrid(gridlib.Grid):
         evt.Skip()
 
     def onFormula(self, evt):
+        self.dens = None
         if not self.info_text.IsShown():
             evt.Skip()
             return
         txt=evt.GetString()
+        if txt.strip()=='':
+            self.info_text.SetLabel('')
+            return
         try:
             frm=Formula.from_str(txt)
         except Exception as e:
@@ -93,7 +118,16 @@ class SampleGrid(gridlib.Grid):
         else:
             txt='Analyzed Formula:\n'+frm.describe()
             if frm in mdb:
-                txt+='\n\nFound in DB:\n%g g/cm³'%mdb.dens_mass(frm)
+                self.dens=mdb.dens_mass(frm)
+                txt+='\n\nFound in Materials:\n%g g/cm³'%self.dens
+            else:
+                res=get_mat_api(frm)
+                if res:
+                    txt+='\n\nFound in ORSO DB:\n%g g/cm³'%res[0]
+                    if res[2]:
+                        txt+=f'\nORSO validated\nID: {res[1]}'
+                    else:
+                        txt += f'\n!!NOT validated!!\nID: {res[1]}\n'
             self.info_text.SetLabel(txt)
 
 TOP_LAYER=0
@@ -299,6 +333,10 @@ class SampleTable(gridlib.GridTableBase):
                         # a new formula was set, if in DB, set its density
                         if formula in mdb:
                             to_edit[4]='%g'%mdb.dens_mass(formula)
+                        else:
+                            res=get_mat_api(formula)
+                            if res:
+                                to_edit[4]='%g'%res[0]
             else:
                 try:
                     val=float(eval('%s'%value))

@@ -6,3 +6,4 @@ recursive-include genx/examples *
 recursive-include genx/profiles *
 recursive-include genx/models/databases *
 recursive-include genx/core/orso_io *
+recursive-include genx/plugins/add_ons/help_modules/slddb/element_table/nabs_geant4 *.npz
