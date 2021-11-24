@@ -15,6 +15,7 @@ Changes 3.5.2
 =============
  * Add a new modeling option to spec_inhom model that allows automatic generation
    of neutron super-mirror structures from user defined Stack parameters.
+ * Captuer model errors during fit that did not occure on first evaluation.
 
 Changes 3.5.1
 =============

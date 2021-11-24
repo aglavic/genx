@@ -19,7 +19,8 @@ def delta_tau(tau, delta_sign, rho_fraction, zeta):
 
     nu = log(1 - zeta) / (2*log(kappa))
 
-    if nu<1: raise ValueError("nu should be below 1, check input parameters")
+    if nu<1: raise ValueError("Nu should be below 1, check input parameters. "
+                              "This can be cause by a zeta value that is too smale, try e.g. 0.95.")
 
     rho_bar = (1 - abs(kappa)**(1/nu)) / (1 + abs(kappa)**(1/nu))
     arg = rho_bar * SCALE_CONSTANT

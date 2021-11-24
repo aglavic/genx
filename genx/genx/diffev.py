@@ -419,8 +419,15 @@ class DiffEv(GenxOptimizer):
             return False
 
     def optimize_thread(self):
-        numpy_set_options()
-        self.optimize()
+        try:
+            numpy_set_options()
+            self.optimize()
+        except Exception as e:
+            self.running=False
+            self.error=f'An error occured in the model while executing:\n{e!r}'
+            debug('An error occured in the model while executing', exc_info=True)
+            self.new_best=self.start_guess
+            self.fitting_ended()
 
     def optimize(self):
         """Method that does the optimization.
