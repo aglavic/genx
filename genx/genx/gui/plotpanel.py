@@ -5,6 +5,8 @@ import warnings
 from dataclasses import dataclass
 from typing import Type
 from logging import debug, getLogger, ERROR
+
+import matplotlib
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_agg import RendererAgg
 from matplotlib.figure import Figure
@@ -711,7 +713,6 @@ class FigurePrinter:
         pdData.SetPrintData(self.pData)
         printer=wx.Printer(pdData)
         fpo=FigurePrintout(figure, title)
-        fpo.SetPPIPrinter(300, 300)
         self.pData=pdData.GetPrintData()
         if printer.Print(self.view, fpo, True):
             self.pData=pdData.GetPrintData()
@@ -868,25 +869,25 @@ class FigurePrintout(wx.Printout):
         in a C{wx.Image}.  The arguments C{wFig} and {hFig} are the width and
         height of the figure, and C{dpi} is the dots-per-inch to render at.
         """
-        figure=self.figure
+        figure:matplotlib.figure.Figure=self.figure
 
-        old_dpi=figure.dpi.get()
-        figure.dpi.set(dpi)
-        old_width=figure.figwidth.get()
-        figure.figwidth.set(wFig)
-        old_height=figure.figheight.get()
-        figure.figheight.set(hFig)
+        old_dpi=figure.dpi
+        figure.dpi=dpi
+        old_width=figure.get_figwidth()
+        figure.set_figwidth(wFig)
+        old_height=figure.get_figheight()
+        figure.set_figwidth(hFig)
 
-        wFig_Px=int(figure.bbox.width())
-        hFig_Px=int(figure.bbox.height())
+        wFig_Px=int(figure.bbox.width)
+        hFig_Px=int(figure.bbox.height)
 
         agg=RendererAgg(wFig_Px, hFig_Px, dpi)
 
         figure.draw(agg)
 
-        figure.dpi.set(old_dpi)
-        figure.figwidth.set(old_width)
-        figure.figheight.set(old_height)
+        figure.dpi=old_dpi
+        figure.set_figwidth(old_width)
+        figure.set_figheight(old_height)
 
         image=wx.EmptyImage(wFig_Px, hFig_Px)
         image.SetData(agg.tostring_rgb())

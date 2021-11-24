@@ -785,11 +785,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def get_pages(self):
         # Get all plot panel objects in GUI
         pages = []
-        for page in self.plot_notebook.GetChildren():
-            pages += page.GetChildren()
         if self.sep_plot_notebook is not self.plot_notebook:
             for page in self.sep_plot_notebook.GetChildren():
                 pages += page.GetChildren()
+        for page in self.plot_notebook.GetChildren():
+            pages += page.GetChildren()
         return pages
 
     def catch_error(self, action='execution', step=None, verbose=True):
