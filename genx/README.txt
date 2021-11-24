@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.2
+=============
+ * Add a new modeling option to spec_inhom model that allows automatic generation
+   of neutron super-mirror structures from user defined Stack parameters.
+
 Changes 3.5.1
 =============
  * Fix some issues with deleting and moving parameters in the grid that
