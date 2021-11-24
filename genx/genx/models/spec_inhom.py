@@ -55,6 +55,32 @@ Stack
    model for this increase in roughness (0: relative linlinea, 1: relative sqrt, 2:absolute linear, 3: absolute sqrt)
 ``d_gradient``
    thickness increase from bottom to top
+``beta_sm``
+   Parameter used to model neutron super-mirror coatings. There are two models implemented.
+   If *beta_sm* is positive, a simplified analystical model from J. Schelten and K. Mika (Nuc. Inst. Metho. 160 (1979))
+   is used and the parameter represents the quality paramter for super-mirror sequences.
+   A super-mirror sequence is generated and Repetitions is interpreted as the m-value for
+   the sequence to calculate actual repetitions automatically.
+
+   If *beta_sm* is negative it is interpretated as the zeta parameter of an iterative build-up of super-mirror
+   layers using the method described by J.B. Hayter and H.A. Mook (J. Appl. Cryst. (1989), 22, 35-41). Here,
+   the actual given number of repetitions are used to build up a super-mirror from the critical edge
+   upowards. The m-value follows from the number of repetitions, material parameters and zeta.
+
+   This method only works acuratly with two layers in the Stack, as the maximum and
+   minimum SLD layers are used for the SLD calculation needed to get the layer sequences.
+   (Other layers are simulated but their SLDs are ignored for the
+   number of repetitions and super-lattice repetition period).
+
+   For the Schelten/Mika method, all layers are scaled to the relative size needed to produce the
+   right super-lattice period. In Hayter/Mook only the two min/max components are set to the
+   optimal thickness values while the rest of the stack stays with constant width.
+
+   The value of d_gradient is interpreted as a relative change from bottom to top in this case. Together
+   with the *sm_scale*, that is applied to all layers.
+``sm_scale``
+   A scaling parameter applied to all thicknesses in a supermirror. This can account for thickness
+   differences introduced by the manufacturing process due to imperfect calibration.
 ``dens_gradient``
    density increase from bottom to top
 
@@ -83,6 +109,11 @@ Sample
 ``type_inhom``
    Function for the thickness probability. Either symmetric gaussian, semi-gaussian which does not have any probability
    for a higher thickness and an empirical model developed from PLD samples.
+``crop_sld``
+   Useful for multilayers with a very large number of repetitions. Only keeps crop_sld number of layers
+   on top and bottom and removes all in the center for the SLD plot. The removed layers are replace with
+   one layer of empty space. If the parameter is negative this gap can be replaced by a "peak" that
+   separates top and bottom, this does invalidate the x-axis of the SLD plot, though.
 
 The empricial PLD model is base of simulations from x-ray line focus plume shapes to get thickness
 distribution probabilities and reduced to a smaller number of parameters.
@@ -154,6 +185,7 @@ from copy import deepcopy
 from numpy import *
 from scipy.special import wofz
 from . import spec_nx
+from .lib.sm_hayter_mook import sm_layers
 from .spec_nx import refl
 from .lib.instrument import *
 
@@ -177,11 +209,14 @@ LayerGroups=[('Standard', ['f', 'dens', 'd', 'sigma']),
 StackParameters={'Layers': [], 'Repetitions': 1,
                  'sigma_gradient': 0.,  # amount of increase in roughness from bottom to top
                  'sigma_gtype': 3,  # model for this increas (rel lin, rel sqrt, abs lin, abs sqrt)
-                 'd_gradient': 0., 'dens_gradient': 0.,  # change in thickness or density bottom to top
+                 'd_gradient': 0.,  # change in thickness bottom to top
+                 'beta_sm' : 0.0, # function applied to change thickness (linear,  super-mirror (d=beta SM))
+                 'sm_scale': 1.0, # scaling factor for thicknesses in super-mirror
+                 'dens_gradient': 0.,  # change in density bottom to top
                  }
 SampleParameters=spec_nx.SampleParameters.copy()
 SampleParameters.update({'sigma_inhom': 0.0, 'lscale_inhom': 0.9, 'flatwidth_inhom': 0.3,
-                         'steps_inhom': 20, 'type_inhom': 'empiric PLD'})
+                         'steps_inhom': 20, 'type_inhom': 'empiric PLD', 'crop_sld': 200})
 sample_string_choices={
     'type_inhom': ['gauss', 'semi-gauss', 'empiric PLD'],
     }
@@ -291,47 +326,111 @@ SimulationFunctions={'Specular': Specular,
 
 # Add gradient for sigma and thickness to multilayers
 def resolveLayerParameter(self, parameter):
+    if self.beta_sm>0:
+        # user has selected super-mirror coating sequence
+        m = self.Repetitions
+        beta = self.beta_sm
+        rho_all = [refl.resolve_par(L, 'dens')*(refl.resolve_par(L, 'b').real+refl.resolve_par(L, 'magn'))*1e-5
+                   for L in self.Layers]
+        rhoA = max(rho_all)*1e-5
+        rhoB = min(rho_all)*1e-5
+        # critical wave vector values (in paper this is includes an addition factor of 1/2)
+        QcA = 4.*pi*sqrt(rhoA/pi+0j)
+        QcB = 4.*pi*sqrt(rhoB/pi+0j)
+        Qcm = 0.022*m # critical q for given m-value
+        g=Qcm/QcA
+        QAB = QcA / sqrt(QcA**2-QcB**2)
+        b = beta*QAB**4 + 2.*beta*QAB**2 - 1
+        N = int(abs(beta*((g**2*QAB**2+1)**2-1)-b))
+    elif self.beta_sm<0:
+        # super-mirror from Hayter and Mook iterative method was selected, fixed number of layers
+        N = int(abs(self.Repetitions))
+    else:
+        N = int(self.Repetitions)
     if parameter=='sigma':
         sigma_gradient=self.sigma_gradient
         # parameters for layers with roughness gradient
         par=[refl.resolve_par(lay, parameter) for lay in self.Layers]
-        for i in range(1, self.Repetitions):
+        for i in range(1, N):
             if self.sigma_gtype==0:
                 # linear increase of roughness to (1+sigma_gradient) times bottom roughness)
-                par+=[refl.resolve_par(lay, parameter)*(1.+(sigma_gradient+lay.sigma_gradient)*i/(self.Repetitions-1))
+                par+=[refl.resolve_par(lay, parameter)*(1.+(sigma_gradient+lay.sigma_gradient)*i/(N-1))
                       for lay in self.Layers]
             elif self.sigma_gtype==1:
                 # add roughness using rms
                 par+=[refl.resolve_par(lay, parameter)*sqrt(
-                    1.+((sigma_gradient+lay.sigma_gradient)*i/(self.Repetitions-1))**2)
+                    1.+((sigma_gradient+lay.sigma_gradient)*i/(N-1))**2)
                       for lay in self.Layers]
             elif self.sigma_gtype==2:
                 # linear increase of roughness to bottom roughness + sigma_gradient)
-                par+=[refl.resolve_par(lay, parameter)+(sigma_gradient+lay.sigma_gradient)*i/(self.Repetitions-1)
+                par+=[refl.resolve_par(lay, parameter)+(sigma_gradient+lay.sigma_gradient)*i/(N-1)
                       for lay in self.Layers]
             elif self.sigma_gtype==3:
                 # add roughness using rms
                 par+=[sqrt(
-                    refl.resolve_par(lay, parameter)**2+((sigma_gradient+lay.sigma_gradient)*i/(self.Repetitions-1))**2)
+                    refl.resolve_par(lay, parameter)**2+((sigma_gradient+lay.sigma_gradient)*i/(N-1))**2)
                       for lay in self.Layers]
             else:
                 raise NotImplementedError('sigma_gtype must be between 0 and 3')
     elif parameter=='d':
-        d_gradient=self.d_gradient
-        # parameters for layers with roughness gradient
-        par=[]
-        for i in range(self.Repetitions):
-            par+=[refl.resolve_par(lay, parameter)*(1.-(d_gradient+lay.d_gradient)*(1./2.-float(i)/self.Repetitions))
-                  for lay in self.Layers]
+        d_gradient = self.d_gradient
+        if self.beta_sm>0:
+            # layer thickness sequence based on calculated bi-layer thicknesses for super-mirror
+            L_thicknesses = [refl.resolve_par(lay, 'd')+0.0 for lay in self.Layers]
+            D_start = sum(L_thicknesses)
+            rel_thickness = [di/D_start for di in L_thicknesses]
+            sm_scale=self.sm_scale
+            idx=arange(N)
+            D_SL=abs((2.*QAB*pi/QcA) / sqrt(sqrt(1+(N-idx+b)/beta)-1))*(1.0+d_gradient*idx/(N-1))*sm_scale
+            par = []
+            for i in range(N):
+                par += [di*D_SL[i] for di in rel_thickness]
+        elif self.beta_sm<0:
+            zeta = -self.beta_sm
+            rho_all = [refl.resolve_par(L, 'dens')*(refl.resolve_par(L, 'b').real+refl.resolve_par(L, 'magn'))*1e-5
+                       for L in self.Layers]
+            rho1 = max(rho_all) # in paper, SLD is called alpha
+            rho2 = min(rho_all)
+            # if two layers are chosen, use scale from olgorithm, else only change main 2 layers size
+            L_thicknesses = [refl.resolve_par(lay, 'd')+0.0 for lay in self.Layers]
+            D_start = sum(L_thicknesses)
+            idx1,idx2=rho_all.index(rho1),rho_all.index(rho2)
+            rest_size=D_start-L_thicknesses[idx1]-L_thicknesses[idx2]
+            # layer thicknesses according to Hayter+Mook algorithm
+            D_SL=sm_layers(rho1, rho2, N, zeta)
+            # sign on repetitions defines direction of multilayer
+            if self.Repetitions>0:
+                D_SL.reverse()
+            par=[]
+            sm_scale=self.sm_scale
+            for i, (d1, d2) in enumerate(D_SL):
+                # variation from user parameters
+                var_scale=(1.0+d_gradient*i/(N-1))*sm_scale
+                # scale the size of main two layer but remove residual layer thicknesses
+                total_bilayer=d1+d2
+                scaled_bilayer=(total_bilayer-rest_size)/total_bilayer
+                for i, di in enumerate(L_thicknesses):
+                    if i==idx1:
+                        par.append(d1*scaled_bilayer*var_scale)
+                    elif i==idx2:
+                        par.append(d2*scaled_bilayer*var_scale)
+                    else:
+                        par.append(di*var_scale)
+        else:
+            # parameters for layers with thickness gradient
+            par=[]
+            for i in range(N):
+                par+=[refl.resolve_par(lay, parameter)*(1.-(d_gradient+lay.d_gradient)*(1./2.-float(i)/N))
+                      for lay in self.Layers]
     elif parameter in ['dens']:
         dens_gradient=self.dens_gradient
         # parameters for layers with roughness gradient
         par=[]
-        for i in range(self.Repetitions):
+        for i in range(N):
             par+=[refl.resolve_par(lay, parameter)*(1.-dens_gradient*(1./2.-float(i)/self.Repetitions)) for lay in
                   self.Layers]
     else:
-        par=[refl.resolve_par(lay, parameter)+0.0 for lay in self.Layers]*self.Repetitions
+        par=[refl.resolve_par(lay, parameter)+0.0 for lay in self.Layers]*N
     return par
 
 Stack.resolveLayerParameter=resolveLayerParameter

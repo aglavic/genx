@@ -570,6 +570,21 @@ def SLD_calculations(z, item, sample, inst):
     # END Parameters
     '''
     parameters=sample.resolveLayerParameters()
+    if hasattr(sample, 'crop_sld') and sample.crop_sld!=0:
+        crop_top_bottom = abs(sample.crop_sld)
+        inter=dict([(key, 0.) for key in parameters])
+        if sample.crop_sld>0:
+            inter['d']=sum(parameters['d'][crop_top_bottom:-crop_top_bottom])
+        else:
+            inter['d'] = 5.0
+            inter['dens'] = 0.1
+            inter['b'] = 12.0+0j
+            inter['f'] = 100.0+0j
+        if len(parameters['dens'])>2*crop_top_bottom:
+            for key, value in parameters.items():
+                val_start=value[:crop_top_bottom]
+                val_end=value[-crop_top_bottom:]
+                parameters[key]=val_start+[inter[key]]+val_end
     dens=array(parameters['dens'], dtype=float32)
     # f = array(parameters['f'], dtype = complex64)
     e=AA_to_eV/inst.getWavelength()
