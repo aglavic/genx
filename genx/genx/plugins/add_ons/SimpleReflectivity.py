@@ -45,10 +45,14 @@ def get_mat_api(frm):
     # Use ORSO SLD db to query for a material by formula
     if not api:
         return None
-    res = api.localquery(dict(formula=frm.estr()))
-    if len(res):
-        mat = api.localmaterial(res[0]['ID'])
-        return mat.dens, res[0]['ID'], res[0]['validated']
+    try:
+        res = api.localquery(dict(formula=frm.estr()))
+        if len(res):
+            mat = api.localmaterial(res[0]['ID'])
+            return mat.dens, res[0]['ID'], res[0]['validated']
+    except Exception:
+        debug("Error in SLD DB query", exc_info=True)
+        return None
 
 
 class SampleGrid(gridlib.Grid):

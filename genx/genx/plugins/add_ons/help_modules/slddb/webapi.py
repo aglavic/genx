@@ -67,7 +67,6 @@ class SLD_API:
                         self.download_db()
                     except URLError as err:
                         warnings.warn("Can't download new version of databse; "+str(err))
-                        return
             self.db = SLDDB(DB_FILE)  # after potential update, make connection with local database
             self.first_access = False
         else:
