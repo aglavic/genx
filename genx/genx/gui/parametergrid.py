@@ -210,7 +210,7 @@ class ParameterDataTable(gridlib.GridTableBase):
             # print 'In parametergrid ', self.pars.data
         else:
             self.pars=pars
-            diff_rows=self.GetNumberRows()-self.parent.GetNumberRows()
+            diff_rows=self.GetNumberRows()-self.parent.GetNumberRows()+1
             if diff_rows<0:
                 # rows were deleted
                 msg = gridlib.GridTableMessage(self,
@@ -1233,10 +1233,12 @@ class ParameterGrid(wx.Panel, Configurable):
 
         def insert(event, self=self, row=row):
             self.table.InsertRow(row)
+            self.grid.ClearSelection()
 
         def delete(event, self=self, row=row):
             rows=self.grid.GetSelectedRows()
             self.table.DeleteRows(rows)
+            self.grid.ClearSelection()
 
         def projectfom(event, self=self, row=row):
             if self.project_func:

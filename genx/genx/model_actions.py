@@ -458,12 +458,15 @@ class DeleteParams(ModelAction):
     def __init__(self, model, rows):
         self.model=model
         names=self.model.parameters.get_names()
-        self.param_names=[names[ri] for ri in rows]
+        self.param_names=[names[ri] for ri in rows if names[ri].strip()!='']
+        self.empty_rows=[ri for ri in rows if names[ri].strip()=='']
         self.old_data=[]
 
     def execute(self):
         names=self.model.parameters.get_names()
         rows=[names.index(ni) for ni in self.param_names]
+        # make sure we only delete empty rows if they are still empty
+        rows+=[row for row in self.empty_rows if names[row].strip()=='']
         old_rows=self.model.parameters.data
         self.old_data=[(ri, old_rows[ri]) for ri in rows]
         self.model.parameters.delete_rows(rows)
@@ -478,10 +481,20 @@ class InsertParam(ModelAction):
 
     def __init__(self, model, row):
         self.model=model
-        self.param_name=self.model.parameters.get_names()[row]
+        if row>=self.model.parameters.get_len_rows():
+            self.param_name=self.model.parameters.get_len_rows()
+        else:
+            name=self.model.parameters.get_names()[row]
+            if name.strip()=='':
+                self.param_name=row
+            else:
+                self.param_name=name
 
     def execute(self):
-        row=self.model.parameters.get_names().index(self.param_name)
+        if type(self.param_name) is int:
+            row=self.param_name
+        else:
+            row=self.model.parameters.get_names().index(self.param_name)
         self.insert_index=row
         self.model.parameters.insert_row(row)
 
