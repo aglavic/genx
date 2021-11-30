@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.3
+=============
+ * Fix bugs in handling of insertion/deletion of parameters
+ * Fix bug in printing of plots and table
+ * Fix query of ORSO database in SimpleReflectivity in some circumstances
+
 Changes 3.5.2
 =============
  * Add a new modeling option to spec_inhom model that allows automatic generation
