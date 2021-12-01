@@ -17,6 +17,7 @@ from .sns_mr import Plugin as SNSPlugin
 from .d17_cosmos import Plugin as D17Plugin
 from .orso import Plugin as ORSOPlugin
 from .xrdml import Plugin as XRDMLPlugin
+from .sinq_six import Plugin as SIXPlugin
 
 class Plugin(ResolutionPlugin, DefaultPlugin):
     """
@@ -30,7 +31,8 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
     def __init__(self, parent):
         ResolutionPlugin.__init__(self, parent)
         self.res_col=-1
-        self.loaders=[AmorPlugin(None), SNSPlugin(None), D17Plugin(None), ORSOPlugin(None), XRDMLPlugin(None)]
+        self.loaders=[AmorPlugin(None), SNSPlugin(None), D17Plugin(None), ORSOPlugin(None),
+                      SIXPlugin(None), XRDMLPlugin(None)]
         self.wildcard=";".join([li.wildcard for li in self.loaders])
 
     def CountDatasets(self, file_path):

@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.4
+=============
+ * Add data loader for SINQ six text file format
+
 Changes 3.5.3
 =============
  * Fix bugs in handling of insertion/deletion of parameters
