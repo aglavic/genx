@@ -35,13 +35,15 @@ class Plugin(Template):
                               ' \nPlease check the format.\n\n ORSO reader gave the following error:\n'+str(e))
             return
         else:
-            header=''
+            header=[]
             while len(lines)>0:
                 ln=lines.pop(0)
                 if '******* DATA ********' in ln:
                     lines.pop(0);lines.pop(0)
                     cols=[c.strip().lower() for c in lines.pop(0).split()]
                     break
+                else:
+                    header.append(ln.strip())
             while len(lines)>0:
                 le=lines.pop(-1)
                 if 'END-OF-DATA' in le:
