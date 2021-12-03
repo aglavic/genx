@@ -291,6 +291,9 @@ class ModelControlGUI(wx.EvtHandler):
     def get_model_name(self):
         return self.controller.get_model_name()
 
+    def force_compile(self):
+        self.controller.force_compile()
+
     def compile_if_needed(self):
         self.controller.compile_if_needed()
 

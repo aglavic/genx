@@ -396,7 +396,11 @@ class SamplePanel(wx.Panel):
                 for par in self.model.InstrumentParameters:
                     if not states[inst_name][par]:
                         old_type=type(old_vals[inst_name][par])
-                        setattr(self.instruments[inst_name], par, old_type(vals[inst_name][par]))
+                        if old_type is str:
+                            e_value=vals[inst_name][par]
+                        else:
+                            e_value=eval_func(vals[inst_name][par])
+                        setattr(self.instruments[inst_name], par, old_type(e_value))
                     else:
                         setattr(self.instruments[inst_name], par, old_vals[inst_name][par])
                     if new_instrument and states[inst_name][par]>0:

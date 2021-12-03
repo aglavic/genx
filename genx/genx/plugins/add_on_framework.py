@@ -152,7 +152,7 @@ class Template:
         '''
         Compiles the model script
         '''
-        self.parent.model_control.compile_if_needed()
+        self.parent.model_control.force_compile()
 
     def GetScriptModule(self):
         """Returns the script module"""

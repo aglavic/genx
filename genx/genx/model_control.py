@@ -190,6 +190,9 @@ class ModelController:
         name=module.model.__name__.rsplit('.', 1)[1]
         return name
 
+    def force_compile(self):
+        self.model.compile_script()
+
     def compile_if_needed(self):
         if not self.model.compiled:
             self.model.compile_script()
