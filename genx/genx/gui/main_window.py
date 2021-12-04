@@ -1962,7 +1962,7 @@ class GenxApp(wx.App):
     def OnInit(self):
         self.ShowSplash()
         debug('entering init phase')
-        locale=wx.Locale(wx.LANGUAGE_ENGLISH)
+        locale=wx.Locale(wx.LANGUAGE_ENGLISH_US)
         self.locale=locale
 
         self.WriteSplash('initializeing main window...')
