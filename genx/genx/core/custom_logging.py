@@ -98,7 +98,7 @@ def setup_system():
 
 def activate_logging(logfile):
     logger=logging.getLogger()
-    logfile=logging.FileHandler(logfile, 'w')
+    logfile=logging.FileHandler(logfile, 'w', encoding='utf-8')
     logger.setLevel(min(logger.getEffectiveLevel(), FILE_LEVEL))
     formatter=logging.Formatter('[%(levelname)s] - %(asctime)s - %(filename)s:%(lineno)i:%(funcName)s %(message)s', '')
     logfile.setFormatter(formatter)
