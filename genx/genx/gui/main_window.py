@@ -987,6 +987,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             return
 
         self.script_editor.SetReadOnly(True)
+        self.script_editor.StyleSetBackground(wx.stc.STC_STYLE_DEFAULT, wx.Colour(210,210,210))
         self._editor_proc=proc
         self._script_watcher=wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.check_script_file, self._script_watcher)
@@ -996,13 +997,24 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         txt=open(self.script_file, 'r', encoding='utf-8').read()
         if txt.strip()!=self.script_editor.GetText().strip():
             self.eh_tb_simulate(None)
-        if self._editor_proc.poll() is not None:
-            self.script_editor.SetReadOnly(False)
-            self._script_watcher.Stop()
-            self._script_watcher=None
+        if self._editor_proc and self._editor_proc.poll() is not None:
             self._editor_proc=None
-            os.remove(self.script_file)
-            self.script_file=None
+            self._script_watcher.Stop()
+            res=ShowQuestionDialog(self, 'Editor process exited, reactivate internal editor?',
+                                   'Editor Closed')
+            if res:
+                self.deactivate_external_editing()
+            else:
+                self._script_watcher.Start(1000)
+
+    def deactivate_external_editing(self):
+        self.script_editor.SetReadOnly(False)
+        self.script_editor.StyleSetBackground(wx.stc.STC_STYLE_DEFAULT, wx.Colour(255, 255, 255))
+        self._script_watcher.Stop()
+        self._script_watcher = None
+        self._editor_proc = None
+        os.remove(self.script_file)
+        self.script_file = None
 
     def update_for_save(self):
         """Updates the various objects for a save"""
@@ -1500,14 +1512,20 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         logger=logging.getLogger()
         level=logger.getEffectiveLevel()
         logger.setLevel(logging.DEBUG)
-        if level!=custom_logging.FILE_LEVEL:
-            dlg = wx.FileDialog(self, message="Save Logfile As", defaultFile="genx.log",
-                                wildcard="GenX logfile (*.log)|*.log",
-                                style=wx.FD_SAVE  # | wx.FD_CHANGE_DIR
-                                )
-            if dlg.ShowModal()==wx.ID_OK:
-                fname = dlg.GetPath()
-                dlg.Destroy()
+
+        dlg = wx.FileDialog(self, message="Save Logfile As", defaultFile="genx.log",
+                            wildcard="GenX logfile (*.log)|*.log",
+                            style=wx.FD_SAVE
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            fname = dlg.GetPath()
+            dlg.Destroy()
+            if os.path.exists(fname):
+                res=ShowQuestionDialog(self, f'File {os.path.basename(fname)} exists, overwrite?',
+                                       'Overwrite file?')
+                if res:
+                    custom_logging.activate_logging(fname)
+            else:
                 custom_logging.activate_logging(fname)
         # open logging console dialog
         from .log_dialog import LoggingDialog
@@ -1911,6 +1929,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def eh_mb_open_editor(self, event):
         if self.script_file is not None:
+            self.deactivate_external_editing()
             return
         self.open_external_editor()
 

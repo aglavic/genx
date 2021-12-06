@@ -191,12 +191,13 @@ class UpdateModelScript(ModelAction):
         even if a previous change is undone.
         """
         self.model=model
-        self.old_text=self.model.get_script()
-        self.diff=self.generate_diff(self.old_text, text)
+        self.old_text=self.model.get_script().replace('\r\n', '\n').replace('\r', '\n')
+        debug(f'UpdateModelScript Init\nold text:\n    {self.old_text!r}\nnew text:\n    {text!r}')
+        self.diff=self.generate_diff(self.old_text, text.replace('\r\n', '\n').replace('\r', '\n'))
 
     def execute(self):
         # Replace model script with new text, script as new text (toggles)
-        self.old_text=self.model.get_script()
+        self.old_text=self.model.get_script().replace('\r\n', '\n').replace('\r', '\n')
         new_text=self.apply_diff(self.old_text)
         self.model.set_script(new_text)
 
@@ -207,6 +208,7 @@ class UpdateModelScript(ModelAction):
         """
         d=difflib.Differ()
         diff=list(d.compare(old.splitlines(keepends=True), new.splitlines(keepends=True)))
+        debug(f'generate_diff:\n{diff}')
         cdiff=[]
         old_indx=0
         while len(diff)>0:
@@ -237,6 +239,8 @@ class UpdateModelScript(ModelAction):
                 while len(diff)>0 and diff[0][0] == '+':
                     nextcdiff[2].append(diff.pop(0)[2:])
                 cdiff.append(nextcdiff)
+            else:
+                debug(f'ignored diff line {old_indx}: {ndiff}')
         return cdiff
 
     def apply_diff(self, old):
@@ -276,7 +280,6 @@ class UpdateModelScript(ModelAction):
 
     @property
     def description(self):
-        old=self.old_text or self.model.get_script()
         return self.name+': '+self.format_diff()
 
 class UpdateSolverOptoins(ModelAction):

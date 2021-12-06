@@ -101,8 +101,8 @@ class ModelController:
         return self.model
 
     def set_model_script(self, text):
-        old_script=self.model.get_script()
-        if text.strip()==old_script.strip():
+        old_script=self.model.get_script().replace('\r\n', '\n').replace('\r', '\n').strip()
+        if text.strip().replace('\r\n', '\n').replace('\r', '\n')==old_script:
             # nothing to do, same script
             return
         self.perform_action(UpdateModelScript, text)
