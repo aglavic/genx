@@ -1960,10 +1960,10 @@ class GenxApp(wx.App):
         dc.SelectObject(wx.NullBitmap)
 
     def OnInit(self):
-        self.ShowSplash()
-        debug('entering init phase')
         locale=wx.Locale(wx.LANGUAGE_ENGLISH_US)
         self.locale=locale
+        self.ShowSplash()
+        debug('entering init phase')
 
         self.WriteSplash('initializeing main window...')
         main_frame=GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
