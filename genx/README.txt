@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.6
+=============
+ * Add option to edit the script in an external editor
+ * Fix issue of GenX crashing if incompatible locals are specified in system configuration #187
+
 Changes 3.5.5
 =============
  * Fix an issue with Reflectivity plugin instrument dialog causing
