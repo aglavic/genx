@@ -6,7 +6,10 @@ import appdirs
 import os
 import shutil
 import webbrowser
-import _thread, time
+import _thread
+import time
+import tempfile
+import subprocess
 from logging import debug, info, warning
 from dataclasses import dataclass
 from enum import Enum
@@ -74,6 +77,7 @@ class GUIConfig(conf_mod.BaseConfig):
     hsplit: int=400
     psplit: int=550
     solver_update_time: float=0.5
+    editor: str=None
 
 @dataclass
 class WindowStartup(conf_mod.BaseConfig):
@@ -83,6 +87,7 @@ class WindowStartup(conf_mod.BaseConfig):
 
 class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     opt: GUIConfig
+    script_file: str = None
 
     def __init__(self, parent: wx.App, dpi_overwrite=None):
         self._init_phase=True
@@ -184,7 +189,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         # GenX objects
         self.model_control.set_data(self.data_list.data_cont.data)
         self.paramter_grid.SetParameters(self.model_control.get_model_params())
-        self.script_editor.SetText(self.model_control.get_model_script())
+        self.set_script_text(self.model_control.get_model_script())
 
         # Bind all the events that are needed to occur when a new model has
         # been loaded
@@ -298,6 +303,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_edit.Append(MenuId.COPY_TABLE, "Copy Table", "Copy the parameter grid")
         mb_edit.AppendSeparator()
         mb_edit.Append(MenuId.FIND_REPLACE, "&Find/Replace...\tCtrl+F", "Find and replace in the script")
+        mb_edit.Append(MenuId.OPEN_IN_EDITOR, "Open in Editor\tCtrl+E", "Opens the current script in an external editor")
         mb_edit_sub=wx.Menu()
         mb_edit_sub.Append(MenuId.NEW_DATA, "&New data set\tAlt+N", "Appends a new data set")
         mb_edit_sub.Append(MenuId.DELETE_DATA, "&Delete\tAlt+D", "Deletes the selected data sets")
@@ -408,6 +414,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_sim, id=MenuId.COPY_SIM)
         self.Bind(wx.EVT_MENU, self.eh_mb_copy_table, id=MenuId.COPY_TABLE)
         self.Bind(wx.EVT_MENU, self.eh_mb_findreplace, id=MenuId.FIND_REPLACE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_open_editor, id=MenuId.OPEN_IN_EDITOR)
         self.Bind(wx.EVT_MENU, self.eh_data_new_set, id=MenuId.NEW_DATA)
         self.Bind(wx.EVT_MENU, self.eh_data_delete, id=MenuId.DELETE_DATA)
         self.Bind(wx.EVT_MENU, self.eh_data_move_down, id=MenuId.RAISE_DATA)
@@ -657,7 +664,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if self.wstartup.widescreen:
             # test adding new notebooks for plugins in wide screen layout
             self.plot_notebook=self.wide_plugin_notebook
-            self.plot_notebook.RemovePage(0)
+            self.plot_notebook.DeletePage(0)
             self.plot_splitter.SetSashGravity(0.75)
             self.sep_data_notebook=self.data_notebook
             self.data_notebook=wx.Notebook(self.data_panel, wx.ID_ANY,
@@ -927,15 +934,85 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         # been updated
         self.update_title()
 
+    def get_script_text(self):
+        if self.script_file is None:
+            return self.script_editor.GetText()
+        else:
+            text=open(self.script_file, 'r', encoding='utf-8').read()
+            self.set_script_text(text, from_script=True)
+            return text
+
+    def set_script_text(self, text, from_script=False):
+        if not from_script and self.script_file is not None:
+            open(self.script_file, 'w', encoding='utf-8').write(text)
+
+        was_editable=self.script_editor.IsEditable()
+        self.script_editor.SetReadOnly(False)
+
+        current_view=self.script_editor.GetFirstVisibleLine()
+        current_cursor=self.script_editor.GetCurrentPos()
+        current_selection=self.script_editor.GetSelection()
+        self.script_editor.SetText(text)
+        self.script_editor.SetCurrentPos(current_cursor)
+        self.script_editor.SetFirstVisibleLine(current_view)
+        self.script_editor.SetSelection(*current_selection)
+
+        self.script_editor.SetReadOnly(not was_editable)
+
+    def open_external_editor(self):
+        """
+        Save the script as temporary file and open it in an external editor.
+        This will block entry in the GUI script editor and read the file on simulate.
+        """
+        with tempfile.NamedTemporaryFile(mode='w', prefix='genx',suffix='.py',
+                                         encoding='utf-8', delete=False) as sfile:
+            sfile.write(self.get_script_text())
+            self.script_file=sfile.name
+        if not self.opt.editor:
+            dlg = wx.FileDialog(self, message="Select Editor Executable", defaultFile="", style=wx.FD_OPEN)
+            if dlg.ShowModal()==wx.ID_OK:
+                path = dlg.GetPath()
+                debug('open_external_editor: path retrieved')
+                self.opt.editor=path
+            else:
+                os.remove(self.script_file)
+                self.script_file=None
+                return
+        try:
+            proc=subprocess.Popen([self.opt.editor, self.script_file])
+        except subprocess.SubprocessError:
+            os.remove(self.script_file)
+            self.script_file = None
+            warning('Could not open editor', exc_info=True)
+            return
+
+        self.script_editor.SetReadOnly(True)
+        self._editor_proc=proc
+        self._script_watcher=wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.check_script_file, self._script_watcher)
+        self._script_watcher.Start(1000)
+
+    def check_script_file(self, evt):
+        txt=open(self.script_file, 'r', encoding='utf-8').read()
+        if txt.strip()!=self.script_editor.GetText().strip():
+            self.eh_tb_simulate(None)
+        if self._editor_proc.poll() is not None:
+            self.script_editor.SetReadOnly(False)
+            self._script_watcher.Stop()
+            self._script_watcher=None
+            self._editor_proc=None
+            os.remove(self.script_file)
+            self.script_file=None
+
     def update_for_save(self):
         """Updates the various objects for a save"""
-        self.model_control.set_model_script(self.script_editor.GetText())
+        self.model_control.set_model_script(self.get_script_text())
         self.paramter_grid.opt.auto_sim=self.mb_checkables[MenuId.AUTO_SIM].IsChecked()
         self.paramter_grid.WriteConfig()
 
     def do_simulation(self, from_thread=False):
         if not from_thread: self.main_frame_statusbar.SetStatusText('Simulating...', 1)
-        currecnt_script=self.script_editor.GetText()
+        currecnt_script=self.get_script_text()
         self.model_control.set_model_script(currecnt_script)
         with self.catch_error(action='do_simulation', step=f'simulating the model') as mgr:
             self.model_control.simulate(recompile=not from_thread)
@@ -1052,7 +1129,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         a new model i.e. put the string to the correct value.
         '''
         # Set the string in the script_editor
-        self.script_editor.SetText(event.GetModel().get_script())
+        self.set_script_text(event.GetModel().get_script())
         # Let the solver gui do its loading and updating:
         self.model_control.ModelLoaded()
         # Lets update the mb_use_toggle_show Menu item
@@ -1265,6 +1342,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         self.findreplace_dlg.Destroy()
         self.findreplace_dlg = None
+
+        if self.script_file:
+            os.remove(self.script_file)
+            self.script_file=None
 
         event.Skip()
         self.Destroy()
@@ -1827,6 +1908,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def eh_mb_findreplace(self, event):
         self.findreplace_dlg.Show(True)
+
+    def eh_mb_open_editor(self, event):
+        if self.script_file is not None:
+            return
+        self.open_external_editor()
 
     def eh_external_find(self, event):
         '''callback for find events - coupled to the script

@@ -48,6 +48,7 @@ class MenuId(int, Enum):
     COPY_SIM=wx.Window.NewControlId()
     COPY_TABLE=wx.Window.NewControlId()
     FIND_REPLACE=wx.Window.NewControlId()
+    OPEN_IN_EDITOR=wx.Window.NewControlId()
 
     NEW_DATA=wx.Window.NewControlId()
     DELETE_DATA=wx.Window.NewControlId()

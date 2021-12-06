@@ -1224,31 +1224,3 @@ class ZoomFrame(wx.MiniFrame):
         self.panel.SetSizerAndFit(border)
         self.SetClientSize(self.panel.GetSize())
         # self.Layout()
-
-if __name__=='__main__':
-    class MyApp(wx.App):
-        def OnInit(self):
-            # wx.InitAllImageHandlers()
-            frame=ZoomFrame(None)
-            # frame.Show(True)
-            # self.SetTopWindow(frame)
-            pars=['test1', 'test2']
-            vals={'inst': {'test1': 3, 'test2': 5.0J}, 'x-ray': {'test1': 3, 'test2': 5.0+9J}}
-            vals_old={'test1': 3, 'test2': 7.0J}
-            validators={'test1': FloatObjectValidator(), 'test2': ComplexObjectValidator()}
-            units={'test1': 'barn', 'test2': 'm/s'}
-            dlg=ValidateNotebookDialog(frame, pars, vals, validators,
-                                       title='Instrument Editor', units=units,
-                                       fixed_pages=['inst'])
-            dlg.AddPage('test', vals_old, {})
-            dlg.RemovePage('inst')
-            # dlg = ValidateDialog(frame, pars, vals_old, validators,
-            #                 title = 'Instrument Editor', units = units)
-            if dlg.ShowModal()==wx.ID_OK:
-                # print 'Pressed OK'
-                vals=dlg.GetValues()
-                iprint(vals)
-            return True
-
-    app=MyApp(0)
-    # app.MainLoop()

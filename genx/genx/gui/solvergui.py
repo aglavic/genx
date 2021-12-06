@@ -183,14 +183,7 @@ class ModelControlGUI(wx.EvtHandler):
     def OnActionCallback(self, action: ModelAction):
         self.SetUndoRedoLabels()
         if ModelInfluence.SCRIPT in action.influences:
-            editor=self.parent.script_editor
-            current_view=editor.GetFirstVisibleLine()
-            current_cursor=editor.GetCurrentPos()
-            current_selection=editor.GetSelection()
-            editor.SetText(self.get_model_script())
-            editor.SetCurrentPos(current_cursor)
-            editor.SetFirstVisibleLine(current_view)
-            editor.SetSelection(*current_selection)
+            self.parent.set_script_text(self.get_model_script())
             evt=update_script(new_script=self.get_model_script())
             wx.PostEvent(self, evt)
         if ModelInfluence.DATA in action.influences:
