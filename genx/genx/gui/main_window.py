@@ -371,7 +371,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_set.Append(MenuId.SET_OPTIMIZER, "Optimizer\tShift+Ctrl+O", "")
         mb_set.Append(MenuId.SET_DATA_LOADER, "Data Loader\tShift+Ctrl+D", "")
         mb_set.Append(MenuId.SET_IMPORT, "Import\tShift+Ctrl+I", "Import settings for the data sets")
+        mb_set.AppendSeparator()
         mb_set.Append(MenuId.SET_PROFILE, "Startup Profile...", "")
+        mb_set.Append(MenuId.SET_EDITOR, "Select External Editor...", "")
         mfmb.Append(mb_set, "Settings")
         help_menu=wx.Menu()
         help_menu.Append(MenuId.HELP_MODEL, "Models Help...", "Show help for the models")
@@ -447,6 +449,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_data_import, id=MenuId.SET_IMPORT)
         self.Bind(wx.EVT_MENU, self.eh_data_plots, id=MenuId.SET_PLOT)
         self.Bind(wx.EVT_MENU, self.eh_show_startup_dialog, id=MenuId.SET_PROFILE)
+        self.Bind(wx.EVT_MENU, self.eh_mb_select_editor, id=MenuId.SET_EDITOR)
         self.Bind(wx.EVT_MENU, self.eh_mb_models_help, id=MenuId.HELP_MODEL)
         self.Bind(wx.EVT_MENU, self.eh_mb_fom_help, id=MenuId.HELP_FOM)
         self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, id=MenuId.HELP_PLUGINS)
@@ -969,12 +972,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             sfile.write(self.get_script_text())
             self.script_file=sfile.name
         if not self.opt.editor:
-            dlg = wx.FileDialog(self, message="Select Editor Executable", defaultFile="", style=wx.FD_OPEN)
-            if dlg.ShowModal()==wx.ID_OK:
-                path = dlg.GetPath()
-                debug('open_external_editor: path retrieved')
-                self.opt.editor=path
-            else:
+            if not self.eh_mb_select_editor(None):
                 os.remove(self.script_file)
                 self.script_file=None
                 return
@@ -2024,6 +2022,16 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         pre_dia=self.wstartup.copy()
         self.startup_dialog(config_path, force_show=True)
         # print(pre_dia==self.wstartup)
+
+    def eh_mb_select_editor(self, event):
+        dlg = wx.FileDialog(self, message="Select Editor Executable", defaultFile="", style=wx.FD_OPEN)
+        if dlg.ShowModal()==wx.ID_OK:
+            path = dlg.GetPath()
+            debug('open_external_editor: path retrieved')
+            self.opt.editor = path
+            return True
+        else:
+            return False
 
     def eh_mb_fit_autosim(self, event):
         event.Skip()

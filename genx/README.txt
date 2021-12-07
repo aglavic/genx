@@ -15,6 +15,7 @@ Changes 3.5.6
 =============
  * Add option to edit the script in an external editor
  * Fix issue of GenX crashing if incompatible locals are specified in system configuration #187
+ * Fix bug that caused script editing issues on some platforms #188
 
 Changes 3.5.5
 =============
