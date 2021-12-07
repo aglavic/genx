@@ -303,7 +303,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_edit.Append(MenuId.COPY_TABLE, "Copy Table", "Copy the parameter grid")
         mb_edit.AppendSeparator()
         mb_edit.Append(MenuId.FIND_REPLACE, "&Find/Replace...\tCtrl+F", "Find and replace in the script")
-        mb_edit.Append(MenuId.OPEN_IN_EDITOR, "Open in Editor\tCtrl+E", "Opens the current script in an external editor")
+        self.mb_editor=mb_edit.Append(MenuId.OPEN_IN_EDITOR, "Open in Editor\tCtrl+E", "Opens the current script in an external editor")
         mb_edit_sub=wx.Menu()
         mb_edit_sub.Append(MenuId.NEW_DATA, "&New data set\tAlt+N", "Appends a new data set")
         mb_edit_sub.Append(MenuId.DELETE_DATA, "&Delete\tAlt+D", "Deletes the selected data sets")
@@ -980,14 +980,16 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 return
         try:
             proc=subprocess.Popen([self.opt.editor, self.script_file])
-        except subprocess.SubprocessError:
+        except (subprocess.SubprocessError, OSError):
             os.remove(self.script_file)
             self.script_file = None
+            self.opt.editor=None
             warning('Could not open editor', exc_info=True)
             return
 
         self.script_editor.SetReadOnly(True)
         self.script_editor.StyleSetBackground(wx.stc.STC_STYLE_DEFAULT, wx.Colour(210,210,210))
+        self.mb_editor.SetItemLabel("Reactivate internal editor\tCtrl+E")
         self._editor_proc=proc
         self._script_watcher=wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.check_script_file, self._script_watcher)
@@ -1010,6 +1012,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def deactivate_external_editing(self):
         self.script_editor.SetReadOnly(False)
         self.script_editor.StyleSetBackground(wx.stc.STC_STYLE_DEFAULT, wx.Colour(255, 255, 255))
+        self.mb_editor.SetItemLabel("Open in Editor\tCtrl+E")
         self._script_watcher.Stop()
         self._script_watcher = None
         self._editor_proc = None
