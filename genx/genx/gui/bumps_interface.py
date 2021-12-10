@@ -58,6 +58,46 @@ class ProgressMonitor(TimedUpdate):
             display(fig)
             close()
 
+class HeaderCopyGrid(wx.grid.Grid):
+    """ Grid calss that copies the column and row headers together with the data. """
+    def __init__(self, *args, **opts):
+        wx.grid.Grid.__init__(self, *args, **opts)
+        wx.EVT_KEY_DOWN(self, self.OnKey)
+
+    def OnKey(self, event):
+        # If Ctrl+C is pressed...
+        if event.ControlDown() and event.GetKeyCode() == 67:
+            self.copy()
+        else:
+            event.Skip()
+            return
+
+    def copy(self):
+        output=''
+        for block in self.GetSelectedBlocks():
+            top, left=block.GetTopLeft()
+            bottom, right=block.GetBottomRight()
+            output+='\t'
+            for col in range(left, right+1):
+                name=self.GetColLabelValue(col).replace("\n", ".")
+                output+=f'{name}\t'
+            output=output[:-1]+'\n'
+            for row in range(top, bottom+1):
+                name=self.GetRowLabelValue(row).replace("\n", ".")
+                output+=f'{name}\t'
+                for col in range(left, right+1):
+                    output+=f'{self.GetCellValue(row, col)}\t'
+                output=output[:-1]+'\n'
+            output+='\n\n'
+
+        clipboard = wx.TextDataObject()
+        clipboard.SetText(output)
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.SetData(clipboard)
+            wx.TheClipboard.Close()
+        else:
+            wx.MessageBox("Can't open the clipboard", "Error")
+
 class StatisticsPanelConfig(BasePlotConfig):
     section='statistics plot'
 
@@ -84,7 +124,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         gpanel=wx.Panel(self)
         gbox=wx.BoxSizer(wx.VERTICAL)
         gpanel.SetSizer(gbox)
-        self.grid=Grid(gpanel)
+        self.grid=HeaderCopyGrid(gpanel)
         gbox.Add(wx.StaticText(gpanel, label='Estimated covariance matrix:'),
                  proportion=0, flag=wx.FIXED_MINSIZE)
         gbox.Add(self.grid, proportion=1, flag=wx.EXPAND)
@@ -94,15 +134,16 @@ class StatisticalAnalysisDialog(wx.Dialog):
         gbox.Add(self.normalize_checkbox, proportion=0, flag=wx.FIXED_MINSIZE)
 
         nfparams=len([pi for pi in model.parameters if pi.fit])
-        self.grid.CreateGrid(nfparams+1, nfparams)
+        self.grid.CreateGrid(nfparams+2, nfparams)
         self.grid.SetColLabelTextOrientation(wx.VERTICAL)
         self.grid.SetColLabelSize(int(dpi_scale_factor*80))
         for i in range(nfparams):
-            self.grid.SetRowSize(i, int(dpi_scale_factor*80))
+            self.grid.SetRowSize(i+2, int(dpi_scale_factor*80))
             self.grid.SetColSize(i, int(dpi_scale_factor*80))
             self.grid.SetColLabelValue(i, '%i'%i)
-            self.grid.SetRowLabelValue(i+1, '%i'%i)
-        self.grid.SetRowSize(nfparams, int(dpi_scale_factor*80))
+            self.grid.SetRowLabelValue(i+2, '%i'%i)
+        self.grid.SetRowSize(0, int(dpi_scale_factor*80/2))
+        self.grid.SetRowSize(1, int(dpi_scale_factor*80/2))
         self.grid.DisableCellEditControl()
         self.grid.SetMinSize((int(dpi_scale_factor*200),int(dpi_scale_factor*200)))
         self.grid.Bind(EVT_GRID_CELL_LEFT_DCLICK, self.OnSelectCell)
@@ -194,27 +235,32 @@ class StatisticalAnalysisDialog(wx.Dialog):
         else:
             display_cov=self.abs_cov
             fmt="%.4g"
-        self.grid.SetRowLabelValue(0, 'Value/Error:')
+        self.grid.SetRowLabelValue(0, 'Value:')
+        self.grid.SetRowLabelValue(1, 'Error:')
         for i, ci in enumerate(self.rel_cov):
             plabel='\n'.join(self.draw.labels[i].rsplit('_', 1))
             self.grid.SetColLabelValue(sort_indices[i], plabel)
-            self.grid.SetRowLabelValue(sort_indices[i]+1, plabel)
-            self.grid.SetCellValue(0, sort_indices[i], "%.8g\n%.4g"%(res.x[i], res.dx[i]))
+            self.grid.SetRowLabelValue(sort_indices[i]+2, plabel)
+            self.grid.SetCellValue(0, sort_indices[i], "%.8g"%res.x[i])
             self.grid.SetCellAlignment(0, sort_indices[i], wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+            self.grid.SetCellValue(1, sort_indices[i], "%.4g"% res.dx[i])
+            self.grid.SetCellAlignment(1, sort_indices[i], wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
             self.grid.SetReadOnly(0, sort_indices[i])
+            self.grid.SetReadOnly(1, sort_indices[i])
             self.grid.SetCellBackgroundColour(0, sort_indices[i], "#cccccc")
+            self.grid.SetCellBackgroundColour(1, sort_indices[i], "#cccccc")
             for j, cj in enumerate(ci):
-                self.grid.SetCellValue(sort_indices[i]+1, sort_indices[j], fmt%display_cov[i,j])
-                self.grid.SetReadOnly(sort_indices[i]+1, sort_indices[j])
-                self.grid.SetCellAlignment(sort_indices[i]+1, sort_indices[j], wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+                self.grid.SetCellValue(sort_indices[i]+2, sort_indices[j], fmt%display_cov[i,j])
+                self.grid.SetReadOnly(sort_indices[i]+2, sort_indices[j])
+                self.grid.SetCellAlignment(sort_indices[i]+2, sort_indices[j], wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
                 if i==j:
-                    self.grid.SetCellBackgroundColour(sort_indices[i]+1, sort_indices[j], "#888888")
+                    self.grid.SetCellBackgroundColour(sort_indices[i]+2, sort_indices[j], "#888888")
                 elif abs(cj)>0.4:
-                    self.grid.SetCellBackgroundColour(sort_indices[i]+1, sort_indices[j], "#ffcccc")
+                    self.grid.SetCellBackgroundColour(sort_indices[i]+2, sort_indices[j], "#ffcccc")
                 elif abs(cj)>0.3:
-                    self.grid.SetCellBackgroundColour(sort_indices[i]+1, sort_indices[j], "#ffdddd")
+                    self.grid.SetCellBackgroundColour(sort_indices[i]+2, sort_indices[j], "#ffdddd")
                 elif abs(cj)>0.2:
-                    self.grid.SetCellBackgroundColour(sort_indices[i]+1, sort_indices[j], "#ffeeee")
+                    self.grid.SetCellBackgroundColour(sort_indices[i]+2, sort_indices[j], "#ffeeee")
                 if i!=j and abs(cj)>rel_max[2]:
                     rel_max=[min(i, j), max(i, j), abs(cj)]
         self.hists=_hists(self.draw.points.T, bins=50)
@@ -258,15 +304,15 @@ class StatisticalAnalysisDialog(wx.Dialog):
         sort_indices=[pnames.index(ni) for ni in self.draw.labels]
         for i, ci in enumerate(self.rel_cov):
             for j, cj in enumerate(ci):
-                self.grid.SetCellValue(sort_indices[i]+1, sort_indices[j], fmt%display_cov[i,j])
+                self.grid.SetCellValue(sort_indices[i]+2, sort_indices[j], fmt%display_cov[i,j])
 
     def OnSelectCell(self, evt):
-        ri, rj=evt.GetCol(), evt.GetRow()-1
+        ri, rj=evt.GetCol(), evt.GetRow()-2
         pnames=list(self.bproblem.model_parameters().keys())
         reverse_indices=[self.draw.labels.index(ni) for ni in pnames]
         i=reverse_indices[ri]
         j=reverse_indices[rj]
-        if i==j or j==-1:
+        if i==j or j<0:
             return
         elif i>j:
             itmp=i
