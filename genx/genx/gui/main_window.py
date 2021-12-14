@@ -27,6 +27,7 @@ from .custom_ids import MenuId, ToolId
 from . import datalist, help, images as img, parametergrid, plotpanel, solvergui, pubgraph_dialog
 from .exception_handling import CatchModelError
 from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
+from .online_update import check_version, VersionInfoDialog
 from ..plugins import add_on_framework as add_on
 from ..core import config as conf_mod
 from ..core.colors import COLOR_CYCLES
@@ -78,6 +79,7 @@ class GUIConfig(conf_mod.BaseConfig):
     psplit: int=550
     solver_update_time: float=1.5
     editor: str=None
+    last_update_check: float=0.
 
 @dataclass
 class WindowStartup(conf_mod.BaseConfig):
@@ -2036,6 +2038,18 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def eh_mb_fit_autosim(self, event):
         event.Skip()
 
+    def check_for_update(self):
+        same_version=True
+        with self.catch_error(action='update_check', step=f'check_version'):
+            same_version=check_version()
+            self.opt.last_update_check=time.time()
+        if same_version:
+            return
+        with self.catch_error(action='update_check', step=f'show_dialog'):
+            dia=VersionInfoDialog(self)
+            res=dia.ShowModal()
+            if res==wx.ID_OK:
+                ShowNotificationDialog(self, 'You need to restart GenX for the changes to take effect.')
 
 class GenxApp(wx.App):
     def __init__(self, filename=None, dpi_overwrite=None):
@@ -2129,6 +2143,9 @@ class GenxApp(wx.App):
         wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
         wx.CallAfter(self.WriteSplash, 'display main window...', progress=0.9)
         wx.CallAfter(main_frame.Show)
+        if time.time()-main_frame.opt.last_update_check>(7*24*3600):
+            wx.CallAfter(self.WriteSplash, 'checking for update...', progress=0.95)
+            wx.CallAfter(main_frame.check_for_update)
         wx.CallAfter(self.splash.Destroy)
         return 1
 

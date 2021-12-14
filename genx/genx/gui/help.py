@@ -6,7 +6,7 @@ in the models directory.
 '''
 
 import wx, os
-import wx.html as  html
+import wx.html as html
 
 try:
     from docutils.core import publish_doctree, publish_from_doctree
