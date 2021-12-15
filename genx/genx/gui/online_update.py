@@ -106,10 +106,9 @@ class VersionInfoDialog(wx.Dialog):
                     tmp.write(chunk)
         debug(f'Calling setup file f{tmp.name}')
         dia.Destroy()
-        subprocess.run(tmp.name)
-        debug(f'Setup finished f{tmp.name}')
-        os.remove(tmp.name)
-        self.EndModal(wx.ID_OK)
+        subprocess.Popen(tmp.name)
+        debug(f'Started process f{tmp.name}')
+        self.EndModal(wx.ID_DELETE)
 
     def update_pip(self, evt):
         dia=TextOutputDialog(self)

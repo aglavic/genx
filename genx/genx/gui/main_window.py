@@ -2050,6 +2050,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             res=dia.ShowModal()
             if res==wx.ID_OK:
                 ShowNotificationDialog(self, 'You need to restart GenX for the changes to take effect.')
+            elif res==wx.ID_DELETE:
+                self.Destroy()
 
     def restart(self):
         import sys
