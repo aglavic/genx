@@ -76,7 +76,7 @@ class GUIConfig(conf_mod.BaseConfig):
     vsplit: int=300
     hsplit: int=400
     psplit: int=550
-    solver_update_time: float=0.5
+    solver_update_time: float=1.5
     editor: str=None
 
 @dataclass
