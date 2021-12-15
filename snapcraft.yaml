@@ -1,0 +1,74 @@
+name: genx
+version: git
+summary: GenX 3 - Reflectometry and surface diffraction refinement
+description: |
+  TBD later
+base: core20
+confinement: devmode
+grade: stable
+
+architectures: 
+  - build-on: amd64
+
+parts:
+  genx:
+    plugin: python
+    source: ./genx
+    python-packages:
+      - bumps
+      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.1.1-cp38-cp38-linux_x86_64.whl
+    #build-packages:
+      #- python3-pip
+      #- python3-wheel
+    stage-packages:
+      - libsdl2-2.0-0
+      - libegl1
+      - libxtst6
+      - libgstreamer1.0-0
+      - libgstreamer-plugins-base1.0-0
+      - libjavascriptcoregtk-4.0-18
+      - libwebkit2gtk-4.0-37
+      - libpsm2-2-compat
+      - libgomp1-amd64-cross
+      - libsm6
+      - libtbb2
+    after: [desktop-gnome-platform]
+  
+  desktop-gnome-platform:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: gtk
+    plugin: make
+    make-parameters: ["FLAVOR=gtk3"]
+    build-packages:
+      - gcc
+    override-build: |
+      snapcraftctl build
+      mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
+    
+
+apps:
+  genx:
+    command: bin/desktop-launch $SNAP/bin/genx
+    plugs: [desktop, x11, audio-playback, desktop-legacy, unity7, network]
+    #extensions: [gnome-3-38]
+    #environment:
+      #PYTHONPATH: $PYTHONPATH:$SNAP/usr/lib/python3/dist-packages
+
+plugs:
+  gnome-3-38-2004:
+    interface: content
+    target: $SNAP/gnome-platform
+    default-provider: gnome-3-38-2004
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes
+      
