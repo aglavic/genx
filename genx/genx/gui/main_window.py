@@ -712,6 +712,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def EndInit(self):
         wx.YieldIfNeeded() # make sure that all GUI layout is performed before _init_phase is unset
+        self.SetMinSize(wx.Size(600,400))
         self._init_phase=False
 
     def startup_dialog(self, profile_path, force_show=False):
