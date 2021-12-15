@@ -121,6 +121,7 @@ class VersionInfoDialog(wx.Dialog):
             while proc.poll() is None:
                 dia.write(proc.stdout.readline().decode('utf-8'))
         dia.write(f'\n\nProcess finished with exit code {proc.poll()}')
+        wx.Yield()
         dia.ShowModal()
         dia.Destroy()
         if proc.poll()==0:

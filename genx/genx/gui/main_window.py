@@ -2051,6 +2051,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             if res==wx.ID_OK:
                 ShowNotificationDialog(self, 'You need to restart GenX for the changes to take effect.')
 
+    def restart(self):
+        import sys
+        import subprocess
+        subprocess.Popen([sys.executable, '-m', 'genx.run'])
+        self.Destroy()
+
 class GenxApp(wx.App):
     def __init__(self, filename=None, dpi_overwrite=None):
         debug('App init started')

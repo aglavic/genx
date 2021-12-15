@@ -13,7 +13,7 @@ try:
     from docutils.parsers.rst import roles
 except ImportError:
     def rst_html(text):
-        return "For proper display install docutils.<\br>\n"+text
+        return "For proper display install docutils.<br>\n"+text.replace('\n', '<br>\n')
 else:
     def _role_fn(name, rawtext, text, lineno, inliner, options=None, content=None):
         if options is None:
