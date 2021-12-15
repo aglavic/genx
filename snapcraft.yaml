@@ -73,7 +73,7 @@ parts:
 apps:
   genx:
     command: bin/desktop-launch $SNAP/bin/genx
-    plugs: [desktop, x11, audio-playback, desktop-legacy, unity7, network, home]
+    plugs: [desktop, x11, audio-playback, desktop-legacy, unity7, network, home, gsettings]
     environment:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
