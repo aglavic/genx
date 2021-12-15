@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.7
+=============
+ * Online check for new GenX versions and option to download new setup file/in-place pip update
+ * First version of snap binary distribution for Linux systems other than Ubuntu 18.04/20.04
+ * Better copy to clipboard of selected parameters in error statistics dialog 
+
 Changes 3.5.6
 =============
  * Add option to edit the script in an external editor

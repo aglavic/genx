@@ -2106,6 +2106,7 @@ class GenxApp(wx.App):
         self.WriteSplash('initializeing main window...')
         main_frame=GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
         self.SetTopWindow(main_frame)
+        main_frame.SetMinSize(wx.Size(600,400))
 
         try:
             import numba
