@@ -20,5 +20,6 @@ If you found a bug or want to have something included in the program submit a [t
 
 ## Releases
 The project is released as binary packages for Ubuntu and Windows as well as source distribution here on GitHub. 
-Additional release is available on PyPI and can thus be installed via "pip"
+Additionally a package is available on PyPI and can thus be installed via "pip".
+For other linux distributions try the pre-build snap [package](https://snapcraft.io/genx).
 See the package [project readme](genx/README.txt) for details on changes for the released versions.
