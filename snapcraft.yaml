@@ -68,11 +68,18 @@ parts:
     override-build: |
       snapcraftctl build
       mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
-    
+
+  snapcraft-preload:
+      source: https://github.com/sergiusens/snapcraft-preload.git
+      plugin: cmake
+      build-packages:
+        - gcc-multilib
+        - g++-multilib
+
 
 apps:
   genx:
-    command: bin/desktop-launch $SNAP/bin/genx
+    command: bin/desktop-launch $SNAP/bin/snapcraft-preload $SNAP/bin/genx
     plugs: [desktop, x11, audio-playback, desktop-legacy, unity7, network, home, gsettings]
     environment:
       LANG: en_US.UTF-8
