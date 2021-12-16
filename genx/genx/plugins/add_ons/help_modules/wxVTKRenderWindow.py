@@ -214,31 +214,31 @@ class wxVTKRenderWindow(baseClass):
             self._RenderWindow.SetWindowInfo(str(self.GetHandle()))
 
         # refresh window by doing a Render
-        wx.EVT_PAINT(self, self.OnPaint)
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
         # turn off background erase to reduce flicker
-        wx.EVT_ERASE_BACKGROUND(self, lambda e: None)
+        self.Bind(wx.EVT_ERASE_BACKGROUND, lambda e: None)
 
         # Bind the events to the event converters
-        wx.EVT_RIGHT_DOWN(self, self._OnButtonDown)
-        wx.EVT_LEFT_DOWN(self, self._OnButtonDown)
-        wx.EVT_MIDDLE_DOWN(self, self._OnButtonDown)
-        wx.EVT_RIGHT_UP(self, self._OnButtonUp)
-        wx.EVT_LEFT_UP(self, self._OnButtonUp)
-        wx.EVT_MIDDLE_UP(self, self._OnButtonUp)
-        wx.EVT_MOTION(self, self.OnMotion)
+        self.Bind(wx.EVT_RIGHT_DOWN, self._OnButtonDown)
+        self.Bind(wx.EVT_LEFT_DOWN, self._OnButtonDown)
+        self.Bind(wx.EVT_MIDDLE_DOWN, self._OnButtonDown)
+        self.Bind(wx.EVT_RIGHT_UP, self._OnButtonUp)
+        self.Bind(wx.EVT_LEFT_UP, self._OnButtonUp)
+        self.Bind(wx.EVT_MIDDLE_UP, self._OnButtonUp)
+        self.Bind(wx.EVT_MOTION, self.OnMotion)
 
-        wx.EVT_ENTER_WINDOW(self, self._OnEnterWindow)
-        wx.EVT_LEAVE_WINDOW(self, self._OnLeaveWindow)
+        self.Bind(wx.EVT_ENTER_WINDOW, self._OnEnterWindow)
+        self.Bind(wx.EVT_LEAVE_WINDOW, self._OnLeaveWindow)
 
-        wx.EVT_CHAR(self, self.OnChar)
-        wx.EVT_KEY_DOWN(self, self.OnKeyDown)
-        wx.EVT_KEY_UP(self, self.OnKeyUp)
+        self.Bind(wx.EVT_CHAR, self.OnChar)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        self.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
-        wx.EVT_SIZE(self, self._OnSize)
-        wx.EVT_MOVE(self, self.OnMove)
+        self.Bind(wx.EVT_SIZE, self._OnSize)
+        self.Bind(wx.EVT_MOVE, self.OnMove)
 
-        wx.EVT_SET_FOCUS(self, self.OnSetFocus)
-        wx.EVT_KILL_FOCUS(self, self.OnKillFocus)
+        self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
+        self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
 
     def SetDesiredUpdateRate(self, rate):
         """Mirrors the method with the same name in

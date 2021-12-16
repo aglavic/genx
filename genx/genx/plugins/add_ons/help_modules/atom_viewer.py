@@ -94,7 +94,6 @@ class VTKview(wxVTKRenderWindow):
         for i in range(len(button_names)):
             new_id=wx.NewId()
             self.cursor_ids.append(new_id)
-            # print button_images[i].GetBitmap()
             toolbar.AddCheckTool(new_id, button_names[i],
                                  wx.Bitmap(button_images[i].GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                                  shortHelp=tooltips[i])
@@ -145,7 +144,6 @@ class VTKview(wxVTKRenderWindow):
 
     def OnChangeCursorState(self, event):
         """Callback when changing the cursor state between select, orbit, zoom and pan"""
-        iprint(self.toolbar)
         if self.toolbar:
             [self.toolbar.ToggleTool(cid, False) for cid in self.cursor_ids]
             self.toolbar.ToggleTool(event.GetId(), True)
@@ -164,12 +162,9 @@ class VTKview(wxVTKRenderWindow):
                 self.cursor_mode='pan'
             else:
                 iprint('VTKView.OnChangeCursorState: Button name ', name, 'is not a known button')
-            # print name, self.cursor_mode
 
     def highlight(self, actor):
         # outline = vtk.vtkOutlineFilter()
-        # print dir(actor)
-        # print dir(actor.GetProperty())
 
         sphere=vtkSphereSource()
         sphere.SetRadius(self.radius*1.1)
@@ -223,7 +218,6 @@ class VTKview(wxVTKRenderWindow):
                 self.textActor.VisibilityOff()
                 self.sphereActor.VisibilityOff()
                 self.Render()
-                # print 'Could not locate an atom'
             else:
                 selPt=picker.GetSelectionPoint()
                 pickPos=picker.GetPickPosition()
@@ -266,10 +260,8 @@ class VTKview(wxVTKRenderWindow):
             if element[-2] in string.digits:
                 element=element[:-2]
         if element in self.element_col:
-            # print 'Found: ', element
             col=self.element_col[element]
         else:
-            # print 'Missing: ', element
             col=self.default_col
         return col
 

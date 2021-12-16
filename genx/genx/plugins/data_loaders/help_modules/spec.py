@@ -1082,7 +1082,7 @@ class SpecPlot:
 ##             ax2 = axes([0.35, 0.1, 0.6, 0.1])
 ##             ax3 = axes([0.1, 0.35, 0.1, 0.6])
 
-##             data = images.getImage(imagen[0])
+##             data = images.GetImage(imagen[0])
 ##             if log:
 ##                 data = numpy.ma.array(data, mask = data <= 0)
 ##                 data = log10(data)
@@ -1110,7 +1110,7 @@ class SpecPlot:
 ##                     f = figure()
 ##                 subplot(size[0], size[1], x)
 
-##                 data = images.getImage(i)
+##                 data = images.GetImage(i)
 ##                 if log:
 ##                     data = numpy.ma.array(data, mask = data <= 0)
 ##                     data = log10(data)

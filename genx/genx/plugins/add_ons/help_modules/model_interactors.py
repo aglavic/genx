@@ -1539,15 +1539,15 @@ class DomainListCtrl(wx.Panel):
                       'Domain Editor', 'Sample Editor']
         button_images=[wx.Bitmap(sxrd_images.insert_layer.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                        wx.Bitmap(sxrd_images.insert_domain.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
-                       wx.Bitmap(icons.delete.getImage().Scale(tb_bmp_size, tb_bmp_size)),
-                       wx.Bitmap(icons.move_up.getImage().Scale(tb_bmp_size, tb_bmp_size)),
-                       wx.Bitmap(icons.move_down.getImage().Scale(tb_bmp_size, tb_bmp_size)),
+                       wx.Bitmap(icons.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                       wx.Bitmap(icons.move_up.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                       wx.Bitmap(icons.move_down.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                        wx.Bitmap(sxrd_images.copy.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                        wx.Bitmap(sxrd_images.cut.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                        wx.Bitmap(sxrd_images.paste.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                        wx.Bitmap(sxrd_images.paste_new.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
-                       wx.Bitmap(sxrd_images.domain.getImage().Scale(tb_bmp_size, tb_bmp_size)),
-                       wx.Bitmap(sxrd_images.sample.getImage().Scale(tb_bmp_size, tb_bmp_size))]
+                       wx.Bitmap(sxrd_images.domain.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+                       wx.Bitmap(sxrd_images.sample.GetImage().Scale(tb_bmp_size, tb_bmp_size))]
         callbacks=[self.OnNewSlab, self.OnNewDomain, self.OnDelete, self.listbox.OnMoveUp, self.listbox.OnMoveDown,
                    self.listbox.OnCopy, self.listbox.OnCut, self.listbox.OnPaste, self.listbox.OnPasteClone,
                    self.OnDomainEdit, self.OnSampleEdit, ]
@@ -2073,7 +2073,6 @@ class DomainWidget(wx.ScrolledWindow):
         max_slabs=0
         for domain in self.domain_list:
             for name in [domain.name, domain.bulk_slab]+domain.slabs:
-                # print name
                 size=self.GetTextExtent(str(name))
                 if size[0]>col_width:
                     col_width=size[0]
@@ -2094,7 +2093,6 @@ class DomainWidget(wx.ScrolledWindow):
         rgn=self.GetUpdateRegion()
         rgn.Offset(-x_orig, -y_orig)
         r=rgn.GetBox()
-        # print r.X, r.Y, r.Width, r.Height
         # draw to the dc using the calculated clipping rect
         dc.SetClippingRegion(x_start, y_start, x_start+max_width, y_start+max_height)
 
@@ -2127,7 +2125,6 @@ class DomainWidget(wx.ScrolledWindow):
                 sel_rect=wx.Rect(x_pos, y_pos-y_padding/4.0,
                                  col_width, col_height+y_padding)
                 if self.selected_item[0]==i and self.selected_item[1]==j:
-                    # print self.selected_item, i, j
                     # render.DrawItemSelectionRect(self, dc, sel_rect, wx.CONTROL_SELECTED)
                     dc.SetBrush(sel_brush)
                     dc.SetPen(sel_pen)
@@ -2140,7 +2137,6 @@ class DomainWidget(wx.ScrolledWindow):
                 y_pos+=col_height+y_padding
                 j-=1
             if self.selected_item[0]==i and self.selected_item[1]==-1:
-                # print "Selected"
                 flag=wx.CONTROL_SELECTED
             else:
                 flag=wx.CONTROL_CURRENT
@@ -2247,7 +2243,6 @@ class ObjectDialog(wx.Dialog):
         sizer=wx.FlexGridSizer(len(parameters)+1, layout_cols,
                                vgap=self.vertical_buffer, hgap=self.border)
         tc={}
-        # print parameters
         for par in parameters:
             label=wx.StaticText(parent, -1, par+': ')
             validator=object_interactor.validators[par]
@@ -2284,12 +2279,10 @@ class ObjectDialog(wx.Dialog):
             ctrl=wx.Choice(parent, -1, choices=choices)
             # Set the position that matches cal
             pos=0
-            # print type(val)
             if isinstance(val, str) or isinstance(val, str):
                 pos=choices.index(val)
             elif isinstance(val, int):
                 pos=par
-            # print pos
             ctrl.SetSelection(pos)
         else:
             # The object is a validator
@@ -2322,7 +2315,6 @@ class DomainDialog(wx.Dialog):
             label=wx.StaticText(self, -1, par+': ')
             self.parameter_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT)
             val=getattr(self.domain, par)
-            # print par, val
             if par!='name':
                 ctrl=wx.TextCtrl(self, -1, str(val), validator=detemine_validator(val),
                                  style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
@@ -2417,12 +2409,10 @@ class DomainDialog(wx.Dialog):
         for r, par in enumerate(names):
             ctrl=self.parameter_sizer.FindItemAtPosition((r, 1)).GetWindow()
             setattr(new_domain, par, str(ctrl.GetValue()))
-            # print par, type(str(ctrl.GetValue()))
         names=['unitcell', 'surface_sym', 'bulk_sym']
         for r, par in enumerate(names):
             ctrl=self.parameter_sizer.FindItemAtPosition((r, 3)).GetWindow()
             setattr(new_domain, par, str(ctrl.GetStringSelection()))
-            # print par, str(ctrl.GetStringSelection())
         return new_domain
 
 class SlabDialog(wx.Dialog):
@@ -2477,7 +2467,6 @@ class SlabDialog(wx.Dialog):
             label=wx.StaticText(self, -1, par+': ')
             self.slab_sizer.Add(label, (row, col), flag=wx.ALIGN_RIGHT)
             val=getattr(self.slab, par)
-            # print par, val
             if par!='name':
                 ctrl=wx.TextCtrl(self, -1, str(val), validator=detemine_validator(val),
                                  style=wx.TE_RIGHT | wx.TE_RICH, size=(-1, -1))
@@ -2625,7 +2614,6 @@ class SlabDialog(wx.Dialog):
             for c in range(len(self.parameters)):
                 item=self.atom_sizer.FindItemAtPosition((r, c))
                 obj=item.GetWindow()
-                # print obj
                 self.atom_sizer.Detach(obj)
                 self.atom_sizer.Add(obj, (r+1, c))
 
@@ -2653,10 +2641,8 @@ class SlabDialog(wx.Dialog):
         # Move everything except the buttons and buffer for the slider
         for r in rows_to_move:
             for c in range(len(self.parameters)):
-                # print r, c
                 item=self.atom_sizer.FindItemAtPosition((r, c))
                 obj=item.GetWindow()
-                # print obj
                 self.atom_sizer.Detach(obj)
                 self.atom_sizer.Add(obj, (r-1, c))
 
