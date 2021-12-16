@@ -6,6 +6,7 @@ This plugin auto generates the sample definition and simulations of a surface x-
 import os
 import io
 import traceback
+from logging import debug
 
 import wx
 
@@ -13,6 +14,7 @@ from .. import add_on_framework as framework
 from .help_modules import model_interactors as mi
 from .help_modules import atom_viewer
 from genx.core.custom_logging import iprint
+from genx.core.decorators import log_call
 from genx.gui.solvergui import EVT_UPDATE_SCRIPT
 
 code="""
@@ -87,6 +89,7 @@ class Plugin(framework.Template):
         parent.model_control.Bind(EVT_UPDATE_SCRIPT, self.ReadUpdateModel)
 
 
+    @log_call
     def ReadUpdateModel(self, evt):
         self.script_interactor.parse_code(self.GetModelScript())
         self.OnInteractorChanged(None)
@@ -112,6 +115,7 @@ class Plugin(framework.Template):
 
         self.script_interactor=script_interactor
 
+    @log_call
     def layout_sample_view(self):
         """Layouts the sample_view_panel"""
         panel=self.NewPlotFolder('Test')
@@ -124,6 +128,7 @@ class Plugin(framework.Template):
         sizer.Add(self.sample_edit_widget, 1, wx.EXPAND)
         panel.Layout()
 
+    @log_call
     def layout_sample_edit(self):
         """Layouts the sample_edit_panel"""
         panel=self.NewInputFolder('Sample')
@@ -139,6 +144,7 @@ class Plugin(framework.Template):
         sizer.Add(self.sample_edit_widget, 1, wx.EXPAND)
         panel.Layout()
 
+    @log_call
     def layout_simulation_edit(self):
         """Layouts the simulation_edit_panel"""
         panel=self.NewInputFolder('Simulations')
@@ -149,6 +155,7 @@ class Plugin(framework.Template):
         sizer.Add(self.simulation_edit_widget, 1, wx.EXPAND)
         panel.Layout()
 
+    @log_call
     def layout_misc_edit(self):
         """Layouts the misc_edit_panel"""
         panel=self.NewDataFolder('Misc')
@@ -174,6 +181,7 @@ class Plugin(framework.Template):
         col_box_sizer.Add(self.instrument_edit_widget, 1, wx.EXPAND)
         panel.Layout()
 
+    @log_call
     def layout_domain_viewer(self):
         """Creates a 3D view of the sample."""
         panel=self.NewPlotFolder('Sample view')
@@ -188,16 +196,14 @@ class Plugin(framework.Template):
         sample_view_sizer.Add(self.sample_view, 1, wx.EXPAND | wx.GROW | wx.ALL)
 
         toolbar.Realize()
-        toolbar.ReadConfig=lambda: None
-        panel.Layout()
 
         # Just to init the view properly
         cur_page=self.parent.plot_notebook.Selection
         self.parent.plot_notebook.SetSelection(self.parent.plot_notebook.GetPageCount()-1)
         self.parent.plot_notebook.SetSelection(cur_page)
         self.sample_view.show()
-        panel.Layout()
 
+    @log_call
     def create_main_window_menu(self):
         """Creates the window menu"""
         self.menu=self.NewMenu('SXRD')
