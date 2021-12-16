@@ -805,10 +805,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             pages += page.GetChildren()
         return pages
 
+    def _set_status_text(self, text):
+        wx.CallAfter(self.main_frame_statusbar.SetStatusText, text)
+
     def catch_error(self, action='execution', step=None, verbose=True):
         if verbose:
             return CatchModelError(self, action=action, step=step,
-                                   status_update=self.main_frame_statusbar.SetStatusText)
+                                   status_update=self._set_status_text)
         else:
             return CatchModelError(self, action=action, step=step,
                                    status_update=None)
