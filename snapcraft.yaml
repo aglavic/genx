@@ -70,17 +70,18 @@ parts:
       mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
 
   snapcraft-preload:
-      source: https://github.com/sergiusens/snapcraft-preload.git
-      plugin: cmake
-      build-packages:
-        - gcc-multilib
-        - g++-multilib
+    source: https://github.com/diddledan/snapcraft-preload.git
+    source-branch: semaphore-support
+    plugin: cmake
+    build-packages:
+      - gcc-multilib
+      - g++-multilib
 
 
 apps:
   genx:
     command: bin/desktop-launch $SNAP/usr/local/bin/snapcraft-preload $SNAP/bin/genx
-    plugs: [desktop, x11, audio-playback, desktop-legacy, unity7, network, home, gsettings]
+    plugs: [desktop, x11, audio-playback, desktop-legacy, unity7, network, home, gsettings, opengl]
     environment:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
