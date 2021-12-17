@@ -14,7 +14,8 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 Changes 3.5.8
 =============
  * Fix crash on Linux systems when automatically simulating, bug #189
- * Fix some issues with the snap distribution package
+ * Fix some with the snap that prevented loading SXRD plugin with 3D view
+ * Snap now stable enough to use, but does not support multiprocessing due to access issues with confinement
 
 Changes 3.5.7
 =============
