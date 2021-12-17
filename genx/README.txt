@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.8
+=============
+ * Fix crash on Linux systems when automatically simulating, bug #189
+ * Fix some issues with the snap distribution package
+
 Changes 3.5.7
 =============
  * Online check for new GenX versions and option to download new setup file/in-place pip update

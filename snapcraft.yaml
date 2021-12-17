@@ -81,6 +81,7 @@ parts:
 apps:
   genx:
     command: bin/desktop-launch $SNAP/usr/local/bin/snapcraft-preload $SNAP/bin/genx
+    desktop: meta/gui/genx.desktop
     plugs: [desktop, x11, audio-playback, desktop-legacy, unity7, network, home, gsettings, opengl]
     environment:
       LANG: en_US.UTF-8
