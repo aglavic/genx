@@ -236,9 +236,10 @@ class Parameters(H5Savable):
         while self.data[-1][0].strip()=='':
             self.data.pop()
 
-    def append(self, parameter=None):
+    def append(self, parameter=None, model=None):
         data=list(self.init_data)
         out=ConnectedParameter(self, data)
+        out._model=model
         if parameter is not None:
             out.name=parameter
         self.data.append(data)
@@ -479,7 +480,7 @@ class ConnectedParameter:
     def set_name(self, value, model):
         if not model.is_compiled():
             model.compile_script()
-        par_value=eval('self._parent.model.script_module.'+value.replace('.set', '.get')+'()',
+        par_value=eval('self._model.script_module.'+value.replace('.set', '.get')+'()',
                        globals(), locals())
         self.data[0]=value
         self.value=par_value
