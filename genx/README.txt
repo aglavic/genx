@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.9
+=============
+ * Update sns_mr data loader to changes in reduced data format.
+
 Changes 3.5.8
 =============
  * Fix crash on Linux systems when automatically simulating, bug #189

@@ -78,13 +78,14 @@ class Plugin(Template):
             # The data is set by the default Template.__init__ function, neat hu
             # Know the loaded data goes into *_raw so that they are not
             # changed by the transforms
-            lamda=4.*np.pi/load_array[:, self.x_col]*np.sin(load_array[:, self.ai_col])
             dataset.x_raw=load_array[:, self.x_col]
             dataset.y_raw=load_array[:, self.y_col]
             dataset.error_raw=load_array[:, self.e_col]
             dataset.set_extra_data('res', load_array[:, self.xe_col], 'res')
-            dataset.set_extra_data('ai', load_array[:, self.ai_col], 'ai')
-            dataset.set_extra_data('wavelength', lamda, 'wavelength')
+            if load_array.shape[1]>4:
+                lamda = 4.*np.pi/load_array[:, self.x_col]*np.sin(load_array[:, self.ai_col])
+                dataset.set_extra_data('ai', load_array[:, self.ai_col], 'ai')
+                dataset.set_extra_data('wavelength', lamda, 'wavelength')
             # Name the dataset accordign to file name
             dataset.name=name
             # Run the commands on the data - this also sets the x,y, error memebers
@@ -97,12 +98,13 @@ class Plugin(Template):
             dataset.meta['data_source']['experiment']['instrument']='MagRef (4A)'
             dataset.meta['data_source']['experiment']['probe']='neutron'
             dataset.meta['data_source']['measurement']['scheme']='energy-dispersive'
-            dataset.meta['data_source']['measurement']['omega']={'min': float(load_array[:, self.ai_col].min()),
-                                                                 'max': float(load_array[:, self.ai_col].max()),
-                                                                 'unit': 'rad'}
-            dataset.meta['data_source']['measurement']['wavelength']={'min': float(lamda.min()),
-                                                                      'max': float(lamda.max()),
-                                                                      'unit': 'angstrom'}
+            if load_array.shape[1]>4:
+                dataset.meta['data_source']['measurement']['omega']={'min': float(load_array[:, self.ai_col].min()),
+                                                                     'max': float(load_array[:, self.ai_col].max()),
+                                                                     'unit': 'rad'}
+                dataset.meta['data_source']['measurement']['wavelength']={'min': float(lamda.min()),
+                                                                          'max': float(lamda.max()),
+                                                                          'unit': 'angstrom'}
             dataset.meta['reduction']={'software': {'name': 'QuickNXS',
                                                     'file_indices': header['Input file indices'],
                                                     'spin_states': header['Extracted states']}}
