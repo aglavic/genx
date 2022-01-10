@@ -344,6 +344,9 @@ def set_optimiser_pars(optimiser, args):
         optimiser.set_autosave_interval(args.asi)
         optimiser.set_use_autosave(True)
 
+    if args.var>=0:
+        optimiser.opt.min_parameter_spread=args.var
+
     if args.km>=0:
         optimiser.set_km(args.km)
     # else:
@@ -386,6 +389,7 @@ def main():
     opt_group.add_argument('--kr', type=float, default=-1, help='Cross over constant (float 0 < kr < 1)')
     opt_group.add_argument('-s', '--esave', action='store_true', help='Force save evals to gx file.')
     opt_group.add_argument('-e', '--error', action='store_true', help='Calculate error bars before saving to file.')
+    opt_group.add_argument('--var', type=float, default=-1, help='Minimum relative parameter variation to stop the fit (%%)')
     data_group=parser.add_argument_group('data arguments')
     data_group.add_argument('-d', dest='data_set', type=int, default=0,
                             help='Active data set to act upon. Index starting at 0.')
