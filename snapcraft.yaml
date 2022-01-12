@@ -19,7 +19,7 @@ description: |
   Naturally a program does not become better if I do not get feedback from you! 
   If you found a bug or want to have something included in the program submit a ticket on SourceForge at https://sourceforge.net/p/genx/tickets/ .
 base: core20
-confinement: strict
+confinement: classic
 grade: stable
 
 architectures: 
