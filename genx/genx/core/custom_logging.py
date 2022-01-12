@@ -21,7 +21,6 @@ if 'pdb' in list(sys.modules.keys()) or 'pydevd' in list(sys.modules.keys()):
     # if common debugger modules have been loaded, assume a debug run
     CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.INFO, logging.DEBUG, logging.INFO
 elif '--debug' in sys.argv:
-    sys.argv.remove('--debug')
     CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.DEBUG, logging.DEBUG, logging.INFO
 
 def genx_exit_message():

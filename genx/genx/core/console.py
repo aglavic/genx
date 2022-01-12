@@ -10,7 +10,6 @@ from numpy import array, arange
 
 from . import config as io
 from .custom_logging import iprint
-from ..model import Model
 from ..model_control import ModelController
 from ..solver_basis import GenxOptimizer, GenxOptimizerCallback
 
@@ -154,4 +153,3 @@ def setup_console(ctrl: ModelController, error=False, outfile=None):
 
     cb = ConsoleCallback(stdscr, ctrl, error, outfile)
     ctrl.set_callbacks(cb)
-
