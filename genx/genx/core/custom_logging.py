@@ -46,13 +46,17 @@ class NumpyLogger(logging.getLoggerClass()):
     '''
 
     def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
-        curframe=inspect.currentframe()
-        calframes=inspect.getouterframes(curframe, 2)
-        # stack starts with:
-        # (this method, debug call, debug call root logger, numpy_logger, actual function, ...)
-        ignore, fname, lineno, func, ignore, ignore=calframes[4]
-        # noinspection PyUnresolvedReferences
-        return logging.getLoggerClass().makeRecord(self, name, level, fn, lno,
+        try:
+            curframe=inspect.currentframe()
+            calframes=inspect.getouterframes(curframe, 2)
+            # stack starts with:
+            # (this method, debug call, debug call root logger, numpy_logger, actual function, ...)
+            ignore, fname, lineno, func, ignore, ignore=calframes[4]
+        except Exception:
+            fname='unknown'
+            lineno=-1
+            func='unknown'
+        return logging.getLoggerClass().makeRecord(self, name, level, fname, lineno,
                                                    msg, args, exc_info, func=func, extra=extra)
 
 nplogger=None

@@ -59,7 +59,8 @@ Slab
 ``expression``
     Either a list of the same length as the number of atoms or a string
     that will evaluate to true or false for each atom. Allowed variables
-    are: ``x, y, z, id, el, u, ov, m,/code>       [Slab].all_atoms()``
+    are: ``x, y, z, id, el, u, ov, m,``
+``[Slab].all_atoms()``
     Yields all atoms inside a slab as an AtomGroup. Returns an AtomGroup.
 ``[Slab][id]``
     Locates atom that has id ``id``. Returns an AtomGroup
@@ -196,7 +197,7 @@ class Sample:
         if type(unit_cell)!=type(UnitCell(1.0, 1.0, 1.0)):
             raise TypeError("The bulk slab has to be a member of class UnitCell")
         if unit_cell is None:
-            unit_cell=UnitCell(1.0, 1, .0, 1.0)
+            unit_cell=UnitCell(1.0, 1.0, 1.0)
         self.unit_cell=unit_cell
 
     def calc_f(self, h, k, l):
