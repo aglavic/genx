@@ -47,7 +47,7 @@ parts:
       - libpsm2-2-compat
       - libgomp1-amd64-cross
       - libsm6
-      - libtbb2
+      - libtbb-dev
     after: [desktop-gnome-platform]
     override-pull: |
       snapcraftctl pull
