@@ -19,7 +19,7 @@ description: |
   Naturally a program does not become better if I do not get feedback from you! 
   If you found a bug or want to have something included in the program submit a ticket on SourceForge at https://sourceforge.net/p/genx/tickets/ .
 base: core20
-confinement: classic
+confinement: strict
 grade: stable
 
 architectures: 
@@ -30,6 +30,7 @@ parts:
     plugin: python
     source: ./genx
     python-packages:
+      - numpy<1.21
       - bumps
       - vtk
       - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.1.1-cp38-cp38-linux_x86_64.whl
@@ -47,7 +48,7 @@ parts:
       - libpsm2-2-compat
       - libgomp1-amd64-cross
       - libsm6
-      - libtbb-dev
+      - libtbb2
     after: [desktop-gnome-platform]
     override-pull: |
       snapcraftctl pull
