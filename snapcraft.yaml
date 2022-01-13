@@ -30,6 +30,7 @@ parts:
     plugin: python
     source: ./genx
     python-packages:
+      - wheel
       - numpy<1.21
       - bumps
       - vtk
