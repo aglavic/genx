@@ -961,7 +961,9 @@ class SamplePanel(wx.Panel):
             try:
                 # extract polarization channel from ORSO metadata
                 pol=di.meta['data_source']['measurement']['instrument_settings']['polarization']
-                if pol in ['m', 'mm']:
+                if pol=='unpolarized':
+                    pass
+                elif pol in ['m', 'mm']:
                     inst_id=1%len(insts)
                 else:
                     inst_id=0
