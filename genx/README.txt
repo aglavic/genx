@@ -15,7 +15,7 @@ Changes 3.5.10
 ==============
  * Add command line option to set the relative parameter variation beak condition
  * Fix an error that can happen when a numpy floating point error is raised in the windows version
- * Fis parameter addition in python API module
+ * Fix parameter addition in python API module
 
 Changes 3.5.9
 =============
