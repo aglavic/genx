@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.5.11
+==============
+ * Fix export of Table
+ * Fix bumps statistics setting the error column of the parameter table
+ * Add documentation for Norm FOM
+
 Changes 3.5.10
 ==============
  * Add command line option to set the relative parameter variation beak condition
