@@ -31,6 +31,7 @@ from .help_modules.slddb import api
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
 from genx.gui.custom_events import EVT_UPDATE_SCRIPT, skips_event
+from ...gui.custom_ids import MenuId
 
 
 _set_func_prefix = 'set'
@@ -1277,11 +1278,7 @@ class Plugin(framework.Template):
         menu.Append(self.mb_show_imag_sld)
         self.mb_show_imag_sld.Check(False)
         self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
-        self.mb_autoupdate_sim = wx.MenuItem(menu, wx.NewId(),
-                                             "Simulate Autom.",
-                                             "Simulates the model automatically after manual changes",
-                                             wx.ITEM_CHECK)
-        menu.Append(self.mb_autoupdate_sim)
+        self.mb_autoupdate_sim = parent.mb_checkables[MenuId.AUTO_SIM]
         self.mb_autoupdate_sim.Check(True)
         self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(),
                                              "Autoupdate SLD",
