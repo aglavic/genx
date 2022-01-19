@@ -103,6 +103,13 @@ Gives the average of the absolute differences scaled with a sin(2&theta;)<sup>4<
     sin(<var>tth</var>)<sup>4</sup>
 </huge><br>
 
+<h4>Norm</h4>
+Gives the linear difference normalized by the absolute sum of data points<br>
+<br><huge>
+    FOM<sub>Norm</sub> = 1/(N-p) &times; &#8721;<sub><var>i</var></sub>
+        &#124;<var>Y<sub>i</sub></var> - <var>S<sub>i</sub></var>&#124;
+        /  &#8721;<sub><var>j</var></sub> |&#124;<var>Y<sub>j</sub></var>|
+</huge><br>
 
 <h3>Weighted FOM functions</h3>
 
@@ -257,9 +264,9 @@ def sintth4(simulations, data):
 
 @_div_dof
 def Norm(simulations, data):
-    '''  dataset normalized 1/3 scaling of the error
+    '''  linear difference normalized by absolute sum of values
     '''
-    return [1.0/np.sum(np.abs(dataset.y))*(np.sign(dataset.y)*np.abs(dataset.y)-np.sign(sim)*np.abs(sim)) \
+    return [1.0/np.sum(np.abs(dataset.y))*(dataset.y-sim) \
             for (dataset, sim) in zip(data, simulations)]
 
 # =======================
