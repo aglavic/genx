@@ -49,14 +49,14 @@ This shows the real and imaginary part of the scattering length as a function
 of depth for the sample. The substrate is to the left and the ambient material
 is to the right. This is updated when the simulation button is pressed.
 '''
-from genx.core.config import Configurable
 from genx.data import DataList
+from genx.model import Model
+from genx.models.lib.refl import InstrumentBase, LayerBase, SampleBase, StackBase
 from genx.plugins.utils import ShowQuestionDialog, ShowWarningDialog
 from .. import add_on_framework as framework
 from genx.exceptions import GenxError
 from genx.gui.plotpanel import PlotPanel, BasePlotConfig
 import colorsys
-import wx
 import wx.html
 
 import numpy as np
@@ -67,6 +67,41 @@ from .help_modules import reflectivity_images as images
 from .help_modules.reflectivity_utils import SampleHandler, SampleBuilder, avail_models, find_code_segment
 from genx.core.custom_logging import iprint
 from genx.gui.custom_events import EVT_UPDATE_SCRIPT
+
+try:
+    # noinspection PyUnresolvedReferences
+    from typing import Protocol, Iterable, Dict, Any, Type
+except ImportError:
+    ReflectivityModule = object
+else:
+    class ReflectivityModule(Protocol):
+        """
+        Defines the attributes that are expected in a python module that defines a reflectivity model.
+        This is used to type check what the classes in this file use.
+        """
+        sample_string_choices: Dict[str, Iterable[str]]
+        SampleParameters: Dict[str, Any]
+        SampleGroups: Iterable
+        SampleUnits: Dict[str, str]
+
+        instrument_string_choices: Dict[str, Iterable[str]]
+        InstrumentParameters: Dict[str, Any]
+        InstrumentGroups: Iterable
+        InstrumentUnits: Dict[str, str]
+
+        LayerParameters: Dict[str, Any]
+        LayerGroups: Iterable
+        LayerUnits: Dict[str, str]
+
+        StackParameters: Dict[str, Any]
+        StackGroups: Iterable
+        StackUnits: Dict[str, str]
+
+        Instrument: Type[InstrumentBase]
+        Sample: Type[SampleBase]
+        Stack: Type[StackBase]
+        Layer: Type[LayerBase]
+
 
 _set_func_prefix='set'
 
@@ -87,6 +122,9 @@ class MyHtmlListBox(wx.html.HtmlListBox):
         return self.html_items[n]
 
 class SamplePanel(wx.Panel):
+    sampleh:SampleHandler
+    model:ReflectivityModule
+
     def __init__(self, parent, plugin, refindexlist=None):
         wx.Panel.__init__(self, parent)
         if refindexlist is None:
@@ -457,9 +495,8 @@ class SamplePanel(wx.Panel):
     def InsertStack(self, evt):
         # Create Dialog box
         items=[('Name', 'name')]
-        validators={}
+        validators={'Name': NoMatchValidTextObjectValidator(self.sampleh.names)}
         vals={}
-        validators['Name']=NoMatchValidTextObjectValidator(self.sampleh.names)
         pars=['Name']
         vals['Name']='name'
         dlg=ValidateDialog(self, pars, vals, validators,
@@ -488,6 +525,8 @@ class SamplePanel(wx.Panel):
         # Show the dialog
         if dlg.ShowModal()==wx.ID_OK:
             vals=dlg.GetValues()
+        else:
+            vals={'Name': 'name'}
         dlg.Destroy()
         # if not a value is selected operate on first
         pos=max(self.listbox.GetSelection(), 0)
@@ -973,6 +1012,8 @@ class DataParameterPanel(wx.Panel):
         self.UpdateListbox(update_script=False)
 
 class EditCustomParameters(wx.Dialog):
+    model:Model
+
     def __init__(self, parent, model, lines):
         wx.Dialog.__init__(self, parent, -1, 'Custom parameter editor')
         self.SetAutoLayout(True)
@@ -1083,6 +1124,7 @@ class EditCustomParameters(wx.Dialog):
 class SimulationExpressionDialog(wx.Dialog):
     '''A dialog to edit the Simulation expression
     '''
+    model:Model
 
     def __init__(self, parent, model, instruments, sim_func, arguments, inst_name,
                  data_index):
@@ -1260,6 +1302,7 @@ class SimulationExpressionDialog(wx.Dialog):
 class ParameterExpressionDialog(wx.Dialog):
     ''' A dialog for setting parameters for fitting
     '''
+    model:Model
 
     def __init__(self, parent, model, expression=None, sim_func=None):
         wx.Dialog.__init__(self, parent, -1, 'Parameter editor')
@@ -1394,6 +1437,7 @@ class SamplePlotPanel(PlotPanel):
     '''
     Widget for plotting the scattering length density of a sample.
     '''
+    opt: SamplePlotConfig
 
     def __init__(self, parent, plugin, id=-1, color=None, dpi=None
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
@@ -1593,6 +1637,7 @@ class SamplePlotPanel(PlotPanel):
 class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
     previous_xaxis=None
     _last_script=None
+    model:ReflectivityModule
 
     def __init__(self, parent):
         if 'SimpleReflectivity' in parent.plugin_control.plugin_handler.get_loaded_plugins():
@@ -2001,32 +2046,3 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
             self.SetXAxis(self.sample_widget.instruments[instrument_names[0]])
         except AttributeError:
             pass
-
-if __name__=='__main__':
-    import models.interdiff as Model
-
-    nSi=3.0
-    Fe=Model.Layer(d=10, sigmar=3.0, n=1-2.247e-5+2.891e-6j)
-    Si=Model.Layer(d=15, sigmar=3.0, n='nSi')
-    sub=Model.Layer(sigmar=3.0, n=1-7.577e-6+1.756e-7j)
-    amb=Model.Layer(n=1.0)
-    stack=Model.Stack(Layers=[Fe, Si], Repetitions=20)
-    stack2=Model.Stack(Layers=[Fe, Si])
-    sample=Model.Sample(Stacks=[stack, stack2], Ambient=amb, Substrate=sub, eta_z=500.0, eta_x=100.0)
-    iprint(sample)
-    inst=Model.Instrument(Wavelength=1.54, Coordinates=1)
-    s=['Amb', 'stack1', 'Fe1', 'Si1', 's2', 'Fe2', 'Si2', 'Sub']
-    sh=SampleHandler(sample, s)
-    sh.getStringList()
-
-    class MyApp(wx.App):
-        def OnInit(self):
-            # wx.InitAllImageHandlers()
-            frame=SamplePanel(None, -1, "Sample", sh)
-            frame.Show(True)
-            self.SetTopWindow(frame)
-            return True
-
-    iprint(Si.getN().__repr__())
-    app=MyApp(0)
-    app.MainLoop()
