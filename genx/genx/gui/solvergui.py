@@ -300,7 +300,7 @@ class ModelControlGUI(wx.EvtHandler):
         self.controller.export_data(basename)
 
     def export_table(self, basename):
-        self.controller.export_script(basename)
+        self.controller.export_table(basename)
 
     def export_script(self, basename):
         self.controller.export_script(basename)
