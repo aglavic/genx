@@ -9,6 +9,8 @@ from logging import debug, getLogger, ERROR
 import matplotlib
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_agg import RendererAgg
+from matplotlib.backends import backend_wx
+from matplotlib import backend_bases
 from matplotlib.figure import Figure
 
 from numpy import *
@@ -25,6 +27,16 @@ getLogger('matplotlib.font_manager').setLevel(ERROR)
 
 zoom_state=False
 
+# fix a but in wx/matplotlib where keeping a motion event reference breaks scrolling
+# see: https://github.com/wxWidgets/Phoenix/issues/2034
+def _onMotionFixed(self, event):
+    """Start measuring on an axis."""
+    x = event.GetX()
+    y = self.figure.bbox.height-event.GetY()
+    event.Skip()
+    backend_bases.FigureCanvasBase.motion_notify_event(self, x, y, guiEvent=event.__class__(event))
+backend_wx._FigureCanvasWxBase._onMotion=_onMotionFixed
+
 @dataclass
 class BasePlotConfig(BaseConfig):
     zoom: bool=False
@@ -34,10 +46,11 @@ class BasePlotConfig(BaseConfig):
 
 # ==============================================================================
 class PlotPanel(wx.Panel, Configurable):
-    ''' Base class for the plotting in GenX - all the basic functionallity
-        should be implemented in this class. The plots should be derived from
-        this class. These classes should implement an update method to update
-        the plots. 
+    '''
+    Base class for the plotting in GenX - all the basic functionallity
+    should be implemented in this class. The plots should be derived from
+    this class. These classes should implement an update method to update
+    the plots.
     '''
     opt: BasePlotConfig
 
@@ -75,7 +88,9 @@ class PlotPanel(wx.Panel, Configurable):
         self.canvas.Bind(wx.EVT_LEFT_UP, self.OnLeftMouseButtonUp)
         self.canvas.Bind(wx.EVT_MOTION, self.OnMouseMove)
         self.canvas.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDblClick)
+        self.canvas.Bind(wx.EVT_MIDDLE_DOWN, self.OnLeftDblClick)
         self.canvas.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseScroll)
 
         cursor=wx.Cursor(wx.CURSOR_CROSS)
         self.canvas.SetCursor(cursor)
@@ -114,8 +129,9 @@ class PlotPanel(wx.Panel, Configurable):
             # self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
 
     def _SetSize(self, pixels=None):
-        ''' This method can be called to force the Plot to be a desired 
-            size which defaults to the ClientSize of the Panel.
+        '''
+        This method can be called to force the Plot to be a desired
+        size which defaults to the ClientSize of the Panel.
         '''
         if not pixels:
             pixels=self.GetClientSize()
@@ -183,16 +199,13 @@ class PlotPanel(wx.Panel, Configurable):
         self.WriteConfig()
 
     def GetZoom(self):
-        '''GetZoom(self) --> state [bool]
+        '''
         Returns the zoom state of the plot panel. 
-        True = zoom active
-        False = zoom inactive
         '''
         return self.zoom
 
     def SetAutoScale(self, state):
-        '''SetAutoScale(self, state) --> None
-        
+        '''
         Sets autoscale of the main axes wheter or not it should autoscale
         when plotting
         '''
@@ -205,16 +218,14 @@ class PlotPanel(wx.Panel, Configurable):
         wx.PostEvent(self.callback_window, evt)
 
     def GetAutoScale(self):
-        '''GetAutoScale(self) --> state [bool]
-        
+        '''
         Returns the autoscale state, true if the plots is automatically
         scaled for each plot command.
         '''
         return self.autoscale
 
     def AutoScale(self, force=False):
-        '''AutoScale(self) --> None
-        
+        '''
         A log safe way to autoscale the plots - the ordinary axis tight 
         does not work for negative log data. This works!
         '''
@@ -270,8 +281,7 @@ class PlotPanel(wx.Panel, Configurable):
             pass
 
     def SetYScale(self, scalestring):
-        ''' SetYScale(self, scalestring) --> None
-        
+        '''
         Sets the y-scale of the main plotting axes. Currently accepts
         'log' or 'lin'.
         '''
@@ -305,8 +315,7 @@ class PlotPanel(wx.Panel, Configurable):
         wx.PostEvent(self.callback_window, evt)
 
     def SetXScale(self, scalestring):
-        ''' SetXScale(self, scalestring) --> None
-
+        '''
         Sets the x-scale of the main plotting axes. Currently accepts
         'log' or 'lin'.
         '''
@@ -338,8 +347,7 @@ class PlotPanel(wx.Panel, Configurable):
         wx.PostEvent(self.callback_window, evt)
 
     def GetYScale(self):
-        '''GetYScale(self) --> String
-        
+        '''
         Returns the current y-scale in use. Currently the string
         'log' or 'linear'. If the axes does not exist it returns None.
         '''
@@ -349,8 +357,7 @@ class PlotPanel(wx.Panel, Configurable):
             return None
 
     def GetXScale(self):
-        '''GetXScale(self) --> String
-
+        '''
         Returns the current x-scale in use. Currently the string
         'log' or 'linear'. If the axes does not exist it returns None.
         '''
@@ -360,8 +367,7 @@ class PlotPanel(wx.Panel, Configurable):
             return None
 
     def CopyToClipboard(self, event=None):
-        '''CopyToClipboard(self, event) --> None
-        
+        '''
         Copy the plot to the clipboard.
         '''
         self.SetColor((255, 255, 255))
@@ -371,37 +377,33 @@ class PlotPanel(wx.Panel, Configurable):
         self.canvas.draw()
 
     def PrintSetup(self, event=None):
-        '''PrintSetup(self) --> None
-        
+        '''
         Sets up the printer. Creates a dialog box
         '''
         self.fig_printer.pageSetup()
 
     def PrintPreview(self, event=None):
-        '''PrintPreview(self) --> None
-        
+        '''
         Prints a preview on screen.
         '''
         self.fig_printer.previewFigure(self.figure)
 
     def Print(self, event=None):
-        '''Print(self) --> None
-        
+        '''
         Print the figure.
         '''
         self.fig_printer.printFigure(self.figure)
 
     def SetCallbackWindow(self, window):
-        '''SetCallbackWindow(self, window) --> None
-        
+        '''
         Sets the callback window that should recieve the events from 
         picking.
         '''
 
         self.callback_window=window
 
-    def OnLeftDblClick(self, event):
-        if self.ax and self.zoom:
+    def OnLeftDblClick(self, event:wx.MouseEvent):
+        if self.ax and (self.zoom or event.MiddleDown()):
             tmp=self.GetAutoScale()
             self.SetAutoScale(True)
             self.AutoScale()
@@ -445,7 +447,6 @@ class PlotPanel(wx.Panel, Configurable):
         if self.zooming and event.Dragging() and event.LeftIsDown():
             self.cur_pos=event.Position
 
-            # print 'Mouse Move ', self.ax.transData.inverse_xy_tup(self.cur_pos)
             class Point:
                 pass
 
@@ -464,6 +465,56 @@ class PlotPanel(wx.Panel, Configurable):
         else:
             event.Skip()
 
+    def OnMouseScroll(self, event:wx.MouseEvent):
+        if event.GetWheelAxis() == wx.MOUSE_WHEEL_HORIZONTAL:
+            event.Skip()
+            return
+        self.SetAutoScale(False)
+        rot=event.GetWheelRotation()/120.
+        if event.ControlDown():
+            rot*=0.1
+        if event.AltDown():
+            # horizontal scaling
+            xmin, xmax = self.ax.get_xlim()
+            xrange = xmax-xmin
+            if event.ShiftDown():
+                if self.x_scale=='log':
+                    if rot>0:
+                        self.ax.set_xlim(xmin*(1+2.33333*rot), xmax)
+                    else:
+                        self.ax.set_xlim(xmin/(1-2.33333*rot), xmax)
+                else:
+                    self.ax.set_xlim(xmin+xrange*0.2*rot, xmax)
+            else:
+                if self.x_scale=='log':
+                    if rot>0:
+                        self.ax.set_xlim(xmin, xmax*(1+2.33333*rot))
+                    else:
+                        self.ax.set_xlim(xmin, xmax/(1-2.33333*rot))
+                else:
+                    self.ax.set_xlim(xmin, xmax+xrange*0.2*rot)
+        else:
+            # vertical scaling
+            ymin, ymax = self.ax.get_ylim()
+            yrange = ymax-ymin
+            if event.ShiftDown():
+                if self.y_scale=='log':
+                    if rot>0:
+                        self.ax.set_ylim(ymin*(1+2.33333*rot), ymax)
+                    else:
+                        self.ax.set_ylim(ymin/(1-2.33333*rot), ymax)
+                else:
+                    self.ax.set_ylim(ymin+yrange*0.2*rot, ymax)
+            else:
+                if self.y_scale=='log':
+                    if rot>0:
+                        self.ax.set_ylim(ymin, ymax*(1+2.33333*rot))
+                    else:
+                        self.ax.set_ylim(ymin, ymax/(1-2.33333*rot))
+                else:
+                    self.ax.set_ylim(ymin, ymax+yrange*0.2*rot)
+        self.flush_plot()
+
     def OnLeftMouseButtonUp(self, event):
         if self.canvas.HasCapture():
             # print 'Left Mouse button up'
@@ -480,16 +531,12 @@ class PlotPanel(wx.Panel, Configurable):
                 xend, yend=end[0, 0], end[0, 1]
                 xstart, ystart=start[0, 0], start[0, 1]
 
-                # print xstart, xend
-                # print ystart, yend
                 self.ax.set_xlim(min(xstart, xend), max(xstart, xend))
                 self.ax.set_ylim(min(ystart, yend), max(ystart, yend))
                 self.flush_plot()
             self.zooming=False
 
     def _DrawAndErase(self, box_to_draw, box_to_erase=None):
-        '''_DrawAndErase(self, box_to_draw, box_to_erase = None) --> None
-        '''
         rect=wx.Rect(*box_to_draw)
 
         # Draw the rubber-band rectangle using an overlay so it
@@ -505,14 +552,21 @@ class PlotPanel(wx.Panel, Configurable):
         dc.DrawRectangle(rect)
 
     def OnContextMenu(self, event):
-        '''OnContextMenu(self, event) --> None
-        
+        '''
         Callback to show the popmenu for the plot which allows various 
         settings to be made.
         '''
-        menu=wx.Menu()
+        menu = self.generate_context_menu()
 
-        zoomID=wx.NewId()
+        # Time to show the menu
+        self.PopupMenu(menu)
+
+        self.Unbind(wx.EVT_MENU)
+        menu.Destroy()
+
+    def generate_context_menu(self):
+        menu = wx.Menu()
+        zoomID = wx.NewId()
         menu.AppendCheckItem(zoomID, "Zoom")
         menu.Check(zoomID, self.GetZoom())
 
@@ -520,30 +574,29 @@ class PlotPanel(wx.Panel, Configurable):
             self.SetZoom(not self.GetZoom())
 
         self.Bind(wx.EVT_MENU, OnZoom, id=zoomID)
-
-        zoomallID=wx.NewId()
+        zoomallID = wx.NewId()
         menu.Append(zoomallID, 'Zoom All')
 
         def zoomall(event):
-            tmp=self.GetAutoScale()
+            tmp = self.GetAutoScale()
             self.SetAutoScale(True)
             self.AutoScale()
             self.SetAutoScale(tmp)
             # self.flush_plot()
 
         self.Bind(wx.EVT_MENU, zoomall, id=zoomallID)
-
-        copyID=wx.NewId()
+        copyID = wx.NewId()
         menu.Append(copyID, "Copy")
 
         def copy(event):
             self.CopyToClipboard()
 
-        self.Bind(wx.EVT_MENU, copy, id=copyID)
+        menu.AppendSeparator()
 
-        yscalemenu=wx.Menu()
-        logID=wx.NewId()
-        linID=wx.NewId()
+        self.Bind(wx.EVT_MENU, copy, id=copyID)
+        yscalemenu = wx.Menu()
+        logID = wx.NewId()
+        linID = wx.NewId()
         yscalemenu.AppendRadioItem(logID, "log")
         yscalemenu.AppendRadioItem(linID, "linear")
         menu.Append(-1, "y-scale", yscalemenu)
@@ -566,10 +619,9 @@ class PlotPanel(wx.Panel, Configurable):
 
         self.Bind(wx.EVT_MENU, yscale_log, id=logID)
         self.Bind(wx.EVT_MENU, yscale_lin, id=linID)
-
-        xscalemenu=wx.Menu()
-        logID=wx.NewId()
-        linID=wx.NewId()
+        xscalemenu = wx.Menu()
+        logID = wx.NewId()
+        linID = wx.NewId()
         xscalemenu.AppendRadioItem(logID, "log")
         xscalemenu.AppendRadioItem(linID, "linear")
         menu.Append(-1, "x-scale", xscalemenu)
@@ -592,8 +644,7 @@ class PlotPanel(wx.Panel, Configurable):
 
         self.Bind(wx.EVT_MENU, xscale_log, id=logID)
         self.Bind(wx.EVT_MENU, xscale_lin, id=linID)
-
-        autoscaleID=wx.NewId()
+        autoscaleID = wx.NewId()
         menu.AppendCheckItem(autoscaleID, "Autoscale")
         menu.Check(autoscaleID, self.GetAutoScale())
 
@@ -601,12 +652,7 @@ class PlotPanel(wx.Panel, Configurable):
             self.SetAutoScale(not self.GetAutoScale())
 
         self.Bind(wx.EVT_MENU, OnAutoScale, id=autoscaleID)
-
-        # Time to show the menu
-        self.PopupMenu(menu)
-
-        self.Unbind(wx.EVT_MENU)
-        menu.Destroy()
+        return menu
 
     def flush_plot(self):
         # self._SetSize()
