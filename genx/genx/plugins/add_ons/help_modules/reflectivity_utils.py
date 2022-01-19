@@ -362,6 +362,7 @@ class SampleHandler:
 
 class SampleBuilder:
     defs=['Instrument', 'Sample']
+    sim_returns_sld = False
 
     def __init__(self, model):
         self._model_object=model
