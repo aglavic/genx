@@ -289,6 +289,8 @@ class StatisticalAnalysisDialog(wx.Dialog):
             for i, (li, xi, dxi) in enumerate(zip(self.draw.labels, res.x, res.dx))
             ]
         self.model.extra_analysis['statistics_mcmc']=exdict
+        error_labels=['(%.3e, %.3e)'%(dxi, dxi) for dxi in res.dx]
+        self.model.parameters.set_error_pars(error_labels)
 
     def OnToggleNormalize(self, evt):
         if self.rel_cov is None:
