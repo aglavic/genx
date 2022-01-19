@@ -285,8 +285,9 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         '''
         Updates stuff after simulation
         '''
-        # Calculate and update the sld plot
-        wx.CallAfter(self.sld_plot.Plot)
+        if not self.mb_autoupdate_sld.IsChecked():
+            # Calculate and update the sld plot, don't repeat when OnFittingUpdate does the call already
+            wx.CallAfter(self.sld_plot.Plot)
 
     def OnFittingUpdate(self, event):
         '''
