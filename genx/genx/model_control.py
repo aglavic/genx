@@ -4,6 +4,7 @@ GenX model and optimizer control classes. All functional aspects should be cover
 import os
 import sys
 import h5py
+import numpy as np
 from logging import warning
 
 from .core.config import config
@@ -263,10 +264,8 @@ class ModelController:
             error_values=[]
             for index in range(n_elements):
                 # calculate the error, this is threshold based and not rigours
-                (error_low, error_high)=self.optimizer.calc_error_bar(index)
-                error_str='(%.3e, %.3e)'%(error_low, error_high)
-                error_values.append(error_str)
-            return error_values
+                error_values.append(self.optimizer.calc_error_bar(index))
+            return np.array(error_values)
         else:
             raise ErrorBarError('Wait for fit to finish or fit to changed model first.')
 

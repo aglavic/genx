@@ -3,7 +3,7 @@ Classes to interface with the bumps module for fitting and statistical analysis.
 """
 
 import threading
-from numpy import newaxis, maximum
+from numpy import array, newaxis, maximum
 from matplotlib.colors import LogNorm
 
 import wx
@@ -18,6 +18,8 @@ from bumps.dream.corrplot import _hists
 from .plotpanel import PlotPanel, BasePlotConfig
 from .exception_handling import CatchModelError
 from ..bumps_optimizer import BumpsResult
+from ..plugins.utils import ShowInfoDialog
+
 
 class ProgressMonitor(TimedUpdate):
     """
@@ -289,7 +291,17 @@ class StatisticalAnalysisDialog(wx.Dialog):
             for i, (li, xi, dxi) in enumerate(zip(self.draw.labels, res.x, res.dx))
             ]
         self.model.extra_analysis['statistics_mcmc']=exdict
-        error_labels=['(%.3e, %.3e)'%(dxi, dxi) for dxi in res.dx]
+        if (res.dxpm[:,0]>0.).any() or (res.dxpm[:,1]<0.).any():
+            ShowInfoDialog(self,
+               "There is something wrong in the error estimation, low/high values don't have the right sign.\n\n"
+               "This can be caused by non single-modal parameter statistics, closeness to bounds or too low value of"
+               "'burn' before stampling.\n\n"
+               "Using estimated sigma for grid, instead.",
+               title="Issue in uncertainty estimation")
+            dxpm=array([-res.dx, res.dx]).T
+        else:
+            dxpm=res.dxpm
+        error_labels=['(%.3e, %.3e)'%(dxup, dxdown) for dxup,dxdown in dxpm]
         self.model.parameters.set_error_pars(error_labels)
 
     def OnToggleNormalize(self, evt):

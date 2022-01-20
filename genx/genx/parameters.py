@@ -303,6 +303,8 @@ class Parameters(H5Savable):
             if row[2] and not row[0]=='':
                 row[5]=value[valueindex]
                 valueindex=valueindex+1
+            else:
+                row[5]='-'
 
     def clear_error_pars(self):
         ''' clears the errors in the parameters'''

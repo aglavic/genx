@@ -121,7 +121,7 @@ class LMOptimizer(GenxOptimizer):
         if self.covar is None:
             raise ErrorBarError("Could not get covariance matrix from fit, maybe the parameters are coupled/have no influence?")
         err=sqrt(self.covar[index, index])
-        return err, err
+        return -err, err
 
     def project_evals(self, index: int):
         # -> (ArrayLike, ArrayLike)

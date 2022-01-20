@@ -12,6 +12,7 @@ from bumps.fitters import FitDriver, FITTERS
 from bumps.monitor import TimedUpdate
 from bumps.fitproblem import FitProblem, nllf_scale, BaseFitProblem
 from bumps.formatnum import format_uncertainty
+from bumps.dream.stats import var_stats
 
 from .exceptions import ErrorBarError, OptimizerInterrupted
 from .core.config import BaseConfig
@@ -122,6 +123,7 @@ class BumpsConfig(BaseConfig):
 class BumpsResult:
     x:ndarray
     dx:ndarray
+    dxpm:ndarray
     cov:ndarray
     bproblem:'Any'
     state:'Any'=None
@@ -258,7 +260,7 @@ class BumpsOptimizer(GenxOptimizer):
     def calc_error_bar(self, index: int) -> (float, float):
         if self.errors is None:
             raise ErrorBarError("Could not get covariance matrix from fit, maybe the parameters are coupled/have no influence?")
-        return self.errors[index], self.errors[index]
+        return self.errors[index][0], self.errors[index][1]
 
     def project_evals(self, index: int):
         # -> (ArrayLike, ArrayLike)
@@ -323,6 +325,10 @@ class BumpsOptimizer(GenxOptimizer):
         x, fx = driver.fit()
         problem.setp(x)
         dx = driver.stderr()
+        if self.opt.method.lower()=='dream':
+            dxpm=self.model.asym_stderr(driver.fitter)
+        else:
+            dxpm=None
         cov=driver.cov()
 
         if self.opt.use_parallel_processing:
@@ -330,13 +336,19 @@ class BumpsOptimizer(GenxOptimizer):
             self.pool.join()
             self.pool=None
 
-        result=BumpsResult(x=x, dx=dx, cov=cov, bproblem=self.bproblem)
+        result=BumpsResult(x=x, dx=dx, dxpm=dxpm, cov=cov, bproblem=self.bproblem)
         if hasattr(driver.fitter, 'state'):
             result.state = driver.fitter.state
         self.last_result=result
 
         self.best_vec=self.map_bumps2genx(x)
-        self.errors=self.map_bumps2genx(dx)
+        if dxpm is not None:
+            dxm=self.map_bumps2genx(dxpm[:,0])
+            dxp=self.map_bumps2genx(dxpm[:,1])
+            self.errors = array([dxm, dxp]).T
+        else:
+            dxmap=self.map_bumps2genx(dx)
+            self.errors=array([-1, 1])[newaxis, :]*dxmap[:, newaxis]
         self.covar=self.covar_bumps2genx(cov)
 
         self.plot_output()

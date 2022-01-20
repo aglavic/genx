@@ -19,6 +19,7 @@ from .. import diffev, fom_funcs, model_control, levenberg_marquardt
 from ..core.custom_logging import iprint
 from ..core.colors import COLOR_CYCLES
 from ..model_actions import ModelInfluence, ModelAction
+from ..plugins.utils import ShowInfoDialog
 from ..solver_basis import SolverParameterInfo, SolverResultInfo, SolverUpdateInfo, GenxOptimizerCallback
 if TYPE_CHECKING:
     from . import main_window
@@ -482,7 +483,18 @@ class ModelControlGUI(wx.EvtHandler):
         dia.Destroy()
 
     def CalcErrorBars(self):
-        return self.controller.CalcErrorBars()
+        res=self.controller.CalcErrorBars()
+        if (res[:,0]>0.).any() or (res[:,1]<0.).any():
+            ShowInfoDialog(self.parent,
+               "There is something wrong in the error estimation, low/high values don't have the right sign.\n\n"
+               "This can be caused by non single-modal parameter statistics, closeness to bounds or too low value of"
+               "'burn' before stampling.",
+               title="Issue in uncertainty estimation")
+        error_strings=[]
+        for error_low, error_high in res:
+            error_str = '(%.3e, %.3e)'%(error_low, error_high)
+            error_strings.append(error_str)
+        return error_strings
 
     def ProjectEvals(self, parameter):
         return self.controller.ProjectEvals(parameter)
