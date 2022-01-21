@@ -54,14 +54,14 @@ import wx.html
 
 from .help_modules.reflectivity_misc import ReflectivityModule
 from .help_modules.reflectivity_sample_plot import SamplePlotPanel
-from .. import add_on_framework as framework
-from genx.exceptions import GenxError
-
 from .help_modules.custom_dialog import *
 from .help_modules.reflectivity_utils import SampleHandler, SampleBuilder, avail_models
 from .help_modules.reflectivity_gui import SamplePanel, DataParameterPanel
+from .. import add_on_framework as framework
+from genx.exceptions import GenxError
 from genx.core.custom_logging import iprint
 from genx.gui.custom_events import EVT_UPDATE_SCRIPT
+from genx.model import Model
 
 
 class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
@@ -137,6 +137,17 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
                                             "Toggles showing the imaginary part of the SLD",
                                             wx.ITEM_CHECK)
         menu.Append(self.mb_show_imag_sld)
+        self.mb_generate_uncertainty = wx.MenuItem(menu, wx.NewId(),
+                                                   "Uncertainty Profile...",
+                                                   "Generate a plot showing SLD uncertainty after a fit",
+                                                   wx.ITEM_NORMAL)
+        menu.Append(self.mb_generate_uncertainty)
+        self.mb_export_uncertainty = wx.MenuItem(menu, wx.NewId(),
+                                                 "Export Uncertainty...",
+                                                 "Export SLD uncertainty after a fit",
+                                                 wx.ITEM_NORMAL)
+        menu.Append(self.mb_export_uncertainty)
+        menu.AppendSeparator()
         self.mb_show_imag_sld.Check(False)
         self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
         self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(),
@@ -147,6 +158,8 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         self.mb_autoupdate_sld.Check(False)
         # self.mb_autoupdate_sld.SetCheckable(True)
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
+        self.parent.Bind(wx.EVT_MENU, self.OnGenerateUncertainty, self.mb_generate_uncertainty)
+        self.parent.Bind(wx.EVT_MENU, self.OnExportUncertainty, self.mb_export_uncertainty)
         self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnShowImagSLD, self.mb_show_imag_sld)
         self.parent.model_control.Bind(EVT_UPDATE_SCRIPT, self.ReadUpdateModel)
@@ -195,6 +208,79 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
                     self.ShowErrorDialog('Could not save the file.'
                                          ' Python Error:\n%s'%(val,))
         dlg.Destroy()
+
+    def OnGenerateUncertainty(self, evt):
+        validators = {
+            'Reference Surface': ValueValidator(int),
+            'Number of Samples': ValueValidator(int)
+            }
+        vals = {
+            'Reference Surface': 0,
+            'Number of Samples': 1000
+            }
+        pars = ['Reference Surface', 'Number of Samples']
+        dlg = ValidateDialog(self.parent, pars, vals, validators,
+                             title='Parameters for uncertainty graph')
+
+        # Show the dialog
+        if dlg.ShowModal()==wx.ID_OK:
+            vals = dlg.GetValues()
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return
+
+        model: Model = self.GetModel()
+        model.simulate()
+        self.sld_plot.PlotConfidence(int(vals['Reference Surface']), int(vals['Number of Samples']))
+
+    def OnExportUncertainty(self, evt):
+        dlg = wx.FileDialog(self.parent, message="Export SLD to ...",
+                            defaultFile="",
+                            wildcard="Dat File (*.dat)|*.dat",
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()!=wx.ID_OK:
+            dlg.Destroy()
+            return
+
+        fname = dlg.GetPath()
+        dlg.Destroy()
+
+        result = True
+        if os.path.exists(fname):
+            filepath, filename = os.path.split(fname)
+            result = self.ShowQuestionDialog('The file %s already exists.'
+                                             ' Do'
+                                             ' you wish to overwrite it?'
+                                             %filename)
+        if not result:
+            return
+
+        validators = {
+            'Reference Surface': ValueValidator(int),
+            'Number of Samples': ValueValidator(int)
+            }
+        vals = {
+            'Reference Surface': 0,
+            'Number of Samples': 1000
+            }
+        pars = ['Reference Surface', 'Number of Samples']
+        dlg = ValidateDialog(self.parent, pars, vals, validators,
+                             title='Parameters for uncertainty graph')
+
+        # Show the dialog
+        if dlg.ShowModal()==wx.ID_OK:
+            vals = dlg.GetValues()
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return
+
+        model: Model = self.GetModel()
+        model.simulate()
+        self.sld_plot.SaveConfidenceData(fname, int(vals['Reference Surface']), int(vals['Number of Samples']),
+                                         do_plot=True)
 
     def OnNewModel(self, event):
         ''' Create a new model

@@ -23,6 +23,32 @@ Install the requirements, at least wxPython, from your package manager (Ubuntu `
 Then either install from source or, if you are using Ubuntu or a derivative, you can use the pre build .deb packages
 for your system python version.
 
+Clusters
+--------
+
+GenX can make use of MPI to run models on cluster systems. In many cases the user does not have the rights
+to install libraries and there are various configuration that can be configured and make installation
+of own libraries pretty complicated.
+On the other hand, fitting with GenX from command line does not require the wx or matplotlib libraries to be present.
+
+Making use of the Miniconda distribution, all required software can be installed as a user without too much
+background knowladge of Linux configurations.
+
+    * Install Miniconda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
+    * Create genx environment and install packages:
+        * ``conda create -n genx python=3.9``
+        * ``conda activate genx``
+        * ``conda install pip appdirs h5py scipy psutil numba``
+        * Depending on configuration you might need to install other libraries like glib if the installed
+          libraries are too old.
+        * ``pip install orsopy bumps``
+        * I don't recommend to use the mpi version of anaconda but instead follow the instructions on how to install
+          mpi4py for the local mpi library using pip: https://mpi4py.readthedocs.io/en/stable/install.html
+    * Tip: You can configure conda environments to update environment variables when they are activated.
+      This can become handy if you need to selec specific library versions, PATH or LD_LIBRARY_PATH.
+      ``conda env config vars set NAME=value``.
+
+
 From source
 ===========
 

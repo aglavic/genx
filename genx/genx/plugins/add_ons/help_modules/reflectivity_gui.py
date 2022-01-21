@@ -411,7 +411,6 @@ class SamplePanel(wx.Panel):
 
     def InsertStack(self, evt):
         # Create Dialog box
-        items = [('Name', 'name')]
         validators = {'Name': NoMatchValidTextObjectValidator(self.sampleh.names)}
         vals = {}
         pars = ['Name']

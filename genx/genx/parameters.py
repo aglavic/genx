@@ -306,6 +306,19 @@ class Parameters(H5Savable):
             else:
                 row[5]='-'
 
+    def get_error_pars(self):
+        ''' Set the errors on the parameters '''
+        output = []
+        for row in self.data:
+            if row[2] and not row[0]=='':
+                value=row[5]
+                try:
+                    slow, shigh = map(float, value.lstrip('(').rstrip(')').split(','))
+                except Exception:
+                    slow, shigh = 0., 0.
+                output.append((slow, shigh))
+        return output
+
     def clear_error_pars(self):
         ''' clears the errors in the parameters'''
         for row in self.data:

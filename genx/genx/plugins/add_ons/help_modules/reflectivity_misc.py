@@ -2,16 +2,24 @@
 Typing support for reflectivity plugins.
 Could be extended with other small helpers.
 """
-
+from genx.data import DataList
 from genx.models.lib.refl import InstrumentBase, LayerBase, SampleBase, StackBase
 
 
 try:
     # noinspection PyUnresolvedReferences
-    from typing import Protocol, Iterable, Dict, Any, Type
+    from typing import Protocol, Iterable, List, Dict, Any, Type, Union
 except ImportError:
     ReflectivityModule = object
 else:
+    class Sample(Protocol):
+
+        def SimSLD(self, z, item: Union[str, None], inst: InstrumentBase) -> Dict[str, Any]:
+            ...
+
+    def Sim(data:DataList) -> List[Any]:
+        ...
+
     class ReflectivityModule(Protocol):
         """
         Defines the attributes that are expected in a python module that defines a reflectivity model.
@@ -39,3 +47,9 @@ else:
         Sample: Type[SampleBase]
         Stack: Type[StackBase]
         Layer: Type[LayerBase]
+
+        _sim: bool
+        SLD: List[Dict[str, Any]]
+        sample: Sample
+        Sim: Sim
+        inst: InstrumentBase
