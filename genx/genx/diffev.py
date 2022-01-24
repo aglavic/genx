@@ -1333,7 +1333,7 @@ def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False):
         except ImportError:
             pass
         else:
-            if hasattr(numba, 'set_num_threads'):
+            if hasattr(numba, 'set_num_threads') and numba.get_num_threads()>numba_procs:
                 iprint(f"Setting numba threads to {numba_procs}")
                 numba.set_num_threads(numba_procs)
     global model, par_funcs

@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+import os
+import sys
+
+try:
+    from genx.server import main
+except ImportError:
+    script_path=os.path.split(os.path.abspath(__file__))[0]
+    genx_path=os.path.split(script_path)[0]
+    sys.path.insert(0, genx_path)
+finally:
+    from genx.server import main
+
+if __name__ == "__main__":
+    main()
