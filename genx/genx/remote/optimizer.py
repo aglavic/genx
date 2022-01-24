@@ -5,6 +5,8 @@ Currently, only differential evolution is supported.
 """
 
 import asyncio
+import struct
+from threading import Thread
 from dataclasses import dataclass
 from hashlib import blake2b
 from logging import debug
@@ -15,7 +17,7 @@ from . import messaging
 from ..core import AUTH_SIZE, HANDSHAKE1, HANDSHAKE2
 from ..core.config import BaseConfig
 from ..model import Model
-from ..solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverResultInfo
+from ..solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
 from ..diffev import DiffEvConfig, DiffEvDefaultCallbacks
 
 
@@ -126,14 +128,9 @@ class RemoteOptimizer(GenxOptimizer):
         Starts fitting on a remote server.
         '''
         if not self.running:
-            self.stop = False
-            self.text_output('Trying to connect to server...')
-            asyncio.run(self.connect())
-            asyncio.run(self.send_message(self.model_message(model)))
-            self.text_output('Starting the fit...')
-            asyncio.run(self.send_message(messaging.ActionMessage(messaging.ActionType.START_FIT, 'Start fit', '')))
-            self.running = True
-            self._recv_task = asyncio.create_task(self.receive())
+            debug('Start asyncio task for fit')
+            thread=Thread(target=self._start_remote_fit, args=(model,))
+            thread.start()
             return True
         else:
             self.text_output('Fit is already running, stop and then start')
@@ -147,15 +144,36 @@ class RemoteOptimizer(GenxOptimizer):
         mm = messaging.ModelTransfer(model, opt)
         return mm
 
+    def _start_remote_fit(self, model: Model):
+        asyncio.run(self.start_remote_fit(model))
+
+    async def start_remote_fit(self, model: Model):
+        if not self.running:
+            self.stop = False
+            self.text_output('Trying to connect to server...')
+            await self.connect()
+            debug('Connection successful')
+            await self.send_message(self.model_message(model))
+            self.text_output('Starting the fit...')
+            await self.send_message(messaging.ActionMessage(messaging.ActionType.START_FIT, 'Start fit', ''))
+            self.running = True
+            await self.receive()
+        else:
+            raise RuntimeError('Trying to start new fit while remote fit should be running, '
+                               'this is unexpected behavior')
+
     async def connect(self):
         self.reader, self.writer = await asyncio.open_connection(self.opt.address, self.opt.port)
         key = b'empty'
         ref1 = blake2b(HANDSHAKE1, key=key, digest_size=AUTH_SIZE).hexdigest().encode('ascii')
         ref2 = blake2b(HANDSHAKE2, key=key, digest_size=AUTH_SIZE).hexdigest().encode('ascii')
+        debug(f'Sending handshake message to {self.opt.address}:{self.opt.port}')
         self.writer.write(ref1)
         await self.writer.drain()
+        debug('Receiving response message')
         fb = await self.reader.read(len(ref2))
-        if ref2 != fb:
+        if ref2!=fb:
+            debug('Response wrong, cancel connection')
             self.writer.close()
             await self.writer.wait_closed()
             self.reader = None
@@ -168,8 +186,28 @@ class RemoteOptimizer(GenxOptimizer):
 
     async def receive(self):
         while self.running:
-            obj = await messaging.GenXMessage.receive(self.reader)
-            print(repr(obj))
+            try:
+                obj = await messaging.GenXMessage.receive(self.reader)
+            except struct.error:
+                debug('strcut.error raised, connection interrupted')
+                self.running = False
+                return
+            debug(f'remote send message: {obj!r}')
+            if isinstance(obj, messaging.StingMessage):
+                self._callbacks.text_output(obj.text)
+            elif isinstance(obj, messaging.OptimizerUpdate):
+                if isinstance(obj.payload, SolverUpdateInfo):
+                    self._callbacks.plot_output(obj.payload)
+                elif isinstance(obj.payload, SolverParameterInfo):
+                    if isinstance(obj.payload, SolverResultInfo):
+                        debug('Fit ended on remote')
+                        self.running = False
+                        self.new_best = obj.payload.start_guess
+                        self._callbacks.fitting_ended(obj.payload)
+                    else:
+                        self._callbacks.parameter_output(obj.payload)
+            else:
+                raise NotImplemented(f'Unable to handle message; {obj!r}')
 
     def stop_fit(self):
         self.text_output('trying to stop the fit')

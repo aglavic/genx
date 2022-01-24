@@ -79,6 +79,9 @@ class GenXMessage(ABC):
         data_length = struct.unpack("I", await io.read(4))[0]
         debug(f'GenXMessage {data_length=}')
         data_string = await io.read(data_length)
+        debug(f'Length of data_string received: {len(data_string)}')
+        while len(data_string)<data_length:
+            data_string += await io.read(data_length-len(data_string))
         data_string = zlib.decompress(data_string)
         res = loads(data_string)
         debug(f'GenXMessage of type {type(res)} sucessfully unpacked')
@@ -117,3 +120,6 @@ class ModelTransfer(GenXMessage):
 @dataclass
 class OptimizerUpdate(GenXMessage):
     payload: Union[SolverUpdateInfo, SolverParameterInfo, SolverResultInfo]
+
+    def __repr__(self):
+        return f'OptimizerUpdate(payload={self.payload.__class__.__name__})'

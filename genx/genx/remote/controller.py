@@ -14,6 +14,7 @@ from ..solver_basis import GenxOptimizerCallback, SolverParameterInfo, SolverRes
 
 
 class RemotCallback(GenxOptimizerCallback):
+    loop: asyncio.AbstractEventLoop= None
 
     def __init__(self, parent):
         GenxOptimizerCallback.__init__(self)
@@ -23,21 +24,28 @@ class RemotCallback(GenxOptimizerCallback):
         self.parent.writer.write(message.message())
         await self.parent.writer.drain()
 
+    def _send_message(self, message: messaging.GenXMessage):
+        if self.loop is None:
+            raise RuntimeError('Could not send message, no asyncio event loop defined')
+        else:
+            debug(f'sending message {message}')
+            asyncio.run_coroutine_threadsafe(self.send_message(message), self.loop)
+
     def text_output(self, text):
         msg = messaging.StingMessage(text)
-        asyncio.create_task(self.send_message(msg))
+        self._send_message(msg)
 
     def plot_output(self, update_data: SolverUpdateInfo):
         msg = messaging.OptimizerUpdate(update_data)
-        asyncio.create_task(self.send_message(msg))
+        self._send_message(msg)
 
     def parameter_output(self, param_info: SolverParameterInfo):
         msg = messaging.OptimizerUpdate(param_info)
-        asyncio.create_task(self.send_message(msg))
+        self._send_message(msg)
 
     def fitting_ended(self, result_data: SolverResultInfo):
         msg = messaging.OptimizerUpdate(result_data)
-        asyncio.create_task(self.send_message(msg))
+        self._send_message(msg)
 
     def autosave(self):
         pass
@@ -52,11 +60,12 @@ class RemoteController(ModelController):
 
     def __init__(self):
         ModelController.__init__(self, DiffEv())
-        self.lock = asyncio.locks.Lock()
+        self.lock = None
         self.callbacks = RemotCallback(self)
         self.set_callbacks(self.callbacks)
 
     async def serve(self, address, port):
+        self.lock = asyncio.locks.Lock()
         server = await asyncio.start_server(
             self.handle_connection, address, port)
 
@@ -80,6 +89,7 @@ class RemoteController(ModelController):
         ref2 = blake2b(HANDSHAKE2, key=key, digest_size=AUTH_SIZE).hexdigest().encode('ascii')
         res = await self.reader.read(len(ref1))
         if res==ref1:
+            debug('Incoming message correct, sending response.')
             self.writer.write(ref2)
             await self.writer.drain()
         else:
@@ -102,10 +112,12 @@ class RemoteController(ModelController):
         elif isinstance(res, messaging.ActionMessage):
             if res.action_type is messaging.ActionType.START_FIT:
                 info('Start fit was triggered')
+                self.callbacks.loop = asyncio.get_running_loop()
                 self.StartFit()
             elif res.action_type is messaging.ActionType.STOP_FIT:
                 info('Stop fit was triggered')
                 await self.cleanup()
+                self.callbacks.loop = None
             else:
                 warning(f'Action not implemented {res!r}')
                 return
@@ -113,6 +125,7 @@ class RemoteController(ModelController):
             info('Setting a new model')
             self.model = res.model
             self.optimizer.opt = res.fitparams
+            self.optimizer.WriteConfig()
         elif isinstance(res, messaging.EchoMessage):
             info(f'Echoing message "{res.text}"')
             msg = messaging.StingMessage(res.text)
