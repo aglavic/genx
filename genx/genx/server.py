@@ -10,6 +10,20 @@ from logging import info, debug, INFO
 from . import version
 from .core import custom_logging
 
+def set_numba_single():
+    debug('Setting numba JIT compilation to single CPU')
+    import numba
+    old_jit = numba.jit
+    def jit(*args, **opts):
+        opts['parallel']=False
+        opts['cache']=False
+        return old_jit(*args, **opts)
+    numba.jit = jit
+    try:
+        numba.set_num_threads(1)
+    except AttributeError:
+        pass
+
 def main():
     parser=argparse.ArgumentParser(description="GenX %s, fits data to a model."%version.__version__,
                                    epilog="For support, manuals and bug reporting see http://genx.sf.net"
@@ -30,6 +44,11 @@ def main():
     if args.logfile:
         custom_logging.activate_logging(args.logfile)
     debug("Arguments from parser: %s"%args)
+
+    try:
+        set_numba_single()
+    except ImportError:
+        pass
 
     info('Starting RemoteController')
     from .remote import messaging, controller

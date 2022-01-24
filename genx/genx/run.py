@@ -146,6 +146,7 @@ def set_numba_single():
     old_jit = numba.jit
     def jit(*args, **opts):
         opts['parallel']=False
+        opts['cache']=False
         return old_jit(*args, **opts)
     numba.jit = jit
     try:
@@ -174,7 +175,10 @@ def start_fitting(args, rank=0):
         setup_console(ctrl, args.error, args.outfile)
 
     if args.mpi or args.pr>0:
-        set_numba_single()
+        try:
+            set_numba_single()
+        except ImportError:
+            pass
 
     if rank==0:
         iprint('Loading model %s...'%args.infile)
