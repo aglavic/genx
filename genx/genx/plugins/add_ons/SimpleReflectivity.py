@@ -1237,6 +1237,7 @@ def find_code_segment(code, descriptor):
 class Plugin(framework.Template):
     previous_xaxis = None
     sim_returns_sld = True
+    model_obj: Model
 
     def __init__(self, parent):
         if 'Reflectivity' in parent.plugin_control.plugin_handler.get_loaded_plugins():

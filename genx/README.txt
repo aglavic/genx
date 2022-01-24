@@ -11,6 +11,15 @@ References
 If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
+Changes 3.6.0
+=============
+ * Allow changing of plot scales with mouse scroll wheel and ctrl-/alt-/shift-modifier
+ * Improve SLD plot context menu, allowing to show only first dataset, 
+   external legend or coloring associated with datasets
+ * Slight improvement or SXRD model performance
+ * Do not show separate mag_x SLD for neutron magnetic reflectivity, if there is no mag_y component
+ * Fix some more minor bugs
+
 Changes 3.5.10
 ==============
  * Add command line option to set the relative parameter variation beak condition
