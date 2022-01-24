@@ -140,6 +140,19 @@ def modify_file(args):
         iprint('Exporting data set %d into ASCII file %s'%(args.data_set, save_datafile))
         mod.data[args.data_set].save_file(save_datafile)
 
+def set_numba_single():
+    debug('Setting numba JIT compilation to single CPU')
+    import numba
+    old_jit = numba.jit
+    def jit(*args, **opts):
+        opts['parallel']=False
+        return old_jit(*args, **opts)
+    numba.jit = jit
+    try:
+        numba.set_num_threads(1)
+    except AttributeError:
+        pass
+
 def start_fitting(args, rank=0):
     """ Function to start fitting from the command line.
     """
@@ -159,6 +172,9 @@ def start_fitting(args, rank=0):
 
     if rank==0:
         setup_console(ctrl, args.error, args.outfile)
+
+    if args.mpi or args.pr>0:
+        set_numba_single()
 
     if rank==0:
         iprint('Loading model %s...'%args.infile)
