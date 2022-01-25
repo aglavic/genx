@@ -870,7 +870,7 @@ class Model(H5HintedExport):
             dxpm = self.asym_stderr(driver.fitter)
         else:
             dxpm = None
-        result = BumpsResult(x=x, dx=dx, dxpm=dxpm, cov=driver.cov(), bproblem=problem)
+        result = BumpsResult(x=x, dx=dx, dxpm=dxpm, cov=driver.cov(), chisq=driver.chisq(), bproblem=problem)
         if hasattr(driver.fitter, 'state'):
             result.state = driver.fitter.state
         return result
