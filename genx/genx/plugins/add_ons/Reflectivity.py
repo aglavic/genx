@@ -148,8 +148,7 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
                                                  wx.ITEM_NORMAL)
         menu.Append(self.mb_export_uncertainty)
         menu.AppendSeparator()
-        self.mb_show_imag_sld.Check(False)
-        self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
+        self.mb_show_imag_sld.Check(self.sld_plot.opt.show_imag)
         self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(),
                                              "Autoupdate SLD",
                                              "Toggles autoupdating the SLD during fitting",
@@ -177,8 +176,13 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         pass
 
     def OnShowImagSLD(self, evt):
-        self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
+        self.sld_plot.opt.show_imag = self.mb_show_imag_sld.IsChecked()
+        self.sld_plot.WriteConfig()
         self.sld_plot.Plot()
+
+    @property
+    def show_imag_sld(self):
+        return self.sld_plot.opt.show_imag
 
     def OnExportSLD(self, evt):
         dlg = wx.FileDialog(self.parent, message="Export SLD to ...",
@@ -364,7 +368,7 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         '''
         Loads the sample into the plugin...
         '''
-
+        self.mb_show_imag_sld.Check(self.sld_plot.opt.show_imag)
         self.ReadModel()
 
     def OnSimulate(self, event):

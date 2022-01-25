@@ -1277,8 +1277,7 @@ class Plugin(framework.Template):
                                             "Toggles showing the imaginary part of the SLD",
                                             wx.ITEM_CHECK)
         menu.Append(self.mb_show_imag_sld)
-        self.mb_show_imag_sld.Check(False)
-        self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
+        self.mb_show_imag_sld.Check(self.sld_plot.opt.show_imag)
         self.mb_autoupdate_sim = parent.mb_checkables[MenuId.AUTO_SIM]
         self.mb_autoupdate_sim.Check(True)
         self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(),
@@ -1381,7 +1380,8 @@ class Plugin(framework.Template):
         pass
 
     def OnShowImagSLD(self, evt):
-        self.show_imag_sld = self.mb_show_imag_sld.IsChecked()
+        self.sld_plot.opt.show_imag = self.mb_show_imag_sld.IsChecked()
+        self.sld_plot.WriteConfig()
         self.sld_plot.Plot()
 
     def OnExportSLD(self, evt):
@@ -1476,7 +1476,8 @@ class Plugin(framework.Template):
         '''
         Loads the sample into the plugin...
         '''
-        pass  # self.ReadModel()
+        self.mb_show_imag_sld.Check(self.sld_plot.opt.show_imag)
+        # self.ReadModel()
 
     def OnSimulate(self, event):
         '''

@@ -25,6 +25,8 @@ class SamplePlotConfig(BasePlotConfig):
     show_single_model: bool = False
     legend_outside: bool = False
 
+    show_imag: bool = False
+
 
 class SamplePlotPanel(PlotPanel):
     '''
@@ -98,7 +100,7 @@ class SamplePlotPanel(PlotPanel):
                         except KeyError:
                             pass
                         is_imag = key[:2]=='Im' or key[:4]=='imag'
-                        if (is_imag and self.plugin.show_imag_sld) or not is_imag:
+                        if (is_imag and self.opt.show_imag) or not is_imag:
                             if self.opt.show_single_model:
                                 label = key
                             else:
@@ -127,7 +129,7 @@ class SamplePlotPanel(PlotPanel):
                         # skip lines that are all zero to keep legend cleaner
                         continue
                     is_imag = key[:2]=='Im' or key[:4]=='imag'
-                    if (is_imag and self.plugin.show_imag_sld) or not is_imag:
+                    if (is_imag and self.opt.show_imag) or not is_imag:
                         label = key
                         self.ax.plot(self.plot_dicts[0]['z'], self.plot_dicts[0][key],
                                      colors[-1][i%len(colors[-1])], label=label)
@@ -302,7 +304,7 @@ class SamplePlotPanel(PlotPanel):
                     except KeyError:
                         pass
                     is_imag = key[:2]=='Im' or key[:4]=='imag'
-                    if (is_imag and self.plugin.show_imag_sld) or not is_imag:
+                    if (is_imag and self.opt.show_imag) or not is_imag:
                         if self.opt.show_single_model:
                             label = key
                         else:
