@@ -28,7 +28,7 @@ def main():
     try:
         from mpi4py import MPI
     except ImportError:
-        pass
+        rank = 0
     else:
         __mpi__ = True
         rank = MPI.COMM_WORLD.Get_rank()
@@ -58,11 +58,11 @@ def main():
         custom_logging.activate_logging(args.logfile)
     debug("Arguments from parser: %s"%args)
 
-    if parser.disable_numba:
+    if args.disable_numba:
         from genx.models import lib as modellib
         modellib.USE_NUMBA=False
     else:
-        if parser.numba_single:
+        if args.numba_single:
             try:
                 set_numba_single()
             except ImportError:
