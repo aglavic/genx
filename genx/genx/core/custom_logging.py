@@ -13,6 +13,14 @@ from numpy import seterr, seterrcall
 from io import StringIO
 from ..version import __version__ as str_version
 
+
+try:
+    from mpi4py import MPI
+except ImportError:
+    rank = 0
+else:
+    rank = MPI.COMM_WORLD.Get_rank()
+
 # default options used if nothing is set in the configuration
 CONSOLE_LEVEL, FILE_LEVEL, GUI_LEVEL=logging.WARNING, logging.DEBUG, logging.INFO
 
@@ -81,7 +89,10 @@ def setup_system():
     logging.getLogger('matplotlib').setLevel(logging.WARNING)
     if min(CONSOLE_LEVEL, GUI_LEVEL)>logging.DEBUG:
         logging.getLogger('numba').setLevel(logging.WARNING)
-    logging.info('*** GenX %s Logging started ***'%str_version)
+    if rank==0:
+        logging.info('*** GenX %s Logging started ***'%str_version)
+    else:
+        logging.info('*** GenX %s on worker %s ***'%rank)
 
     # define numpy warning behavior
     global nplogger
@@ -96,8 +107,9 @@ def setup_system():
     logging.captureWarnings(True)
     numpy_set_options()
 
-    # write information on program exit
-    atexit.register(genx_exit_message)
+    if rank==0:
+        # write information on program exit
+        atexit.register(genx_exit_message)
 
 def activate_logging(logfile):
     logger=logging.getLogger()

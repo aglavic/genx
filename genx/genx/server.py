@@ -56,7 +56,8 @@ def main():
 
     if args.logfile:
         custom_logging.activate_logging(args.logfile)
-    debug("Arguments from parser: %s"%args)
+    if rank==0:
+        debug("Arguments from parser: %s"%args)
 
     if args.disable_numba:
         from genx.models import lib as modellib
@@ -67,9 +68,11 @@ def main():
                 set_numba_single()
             except ImportError:
                 pass
-        info('Importing numba based modules to pre-compile JIT functions, this can take some time')
+        if rank==0:
+            info('Importing numba based modules to pre-compile JIT functions, this can take some time')
         from genx.models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
-        info('Modules imported successfully')
+        if rank==0:
+            info('Modules imported successfully')
 
     if rank==0:
         info('Starting RemoteController')
