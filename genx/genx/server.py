@@ -42,6 +42,11 @@ def main():
                             help='Output debug information to logfile.')
     parser.add_argument('--debug', dest='debug', default=False, action="store_true",
                             help='Show additional debug information on console/logfile')
+    parser.add_argument('--disable-nb', dest='disable_numba', default=False, action="store_true",
+                            help='Disable the use of numba JIT compiler')
+    parser.add_argument('--nb1', dest='numba_single', default=False, action="store_true",
+                            help='Compile numba JIT functions without parallel computing support (use one core only). '
+                                 'This does disable caching to prevent parallel versions from being loaded.')
 
     args=parser.parse_args()
 
@@ -53,10 +58,18 @@ def main():
         custom_logging.activate_logging(args.logfile)
     debug("Arguments from parser: %s"%args)
 
-    try:
-        set_numba_single()
-    except ImportError:
-        pass
+    if parser.disable_numba:
+        from genx.models import lib as modellib
+        modellib.USE_NUMBA=False
+    else:
+        if parser.numba_single:
+            try:
+                set_numba_single()
+            except ImportError:
+                pass
+        info('Importing numba based modules to pre-compile JIT functions, this can take some time')
+        from genx.models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
+        info('Modules imported successfully')
 
     if rank==0:
         info('Starting RemoteController')
