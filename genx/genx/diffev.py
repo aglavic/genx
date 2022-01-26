@@ -1,11 +1,13 @@
 '''
 An implementation of the differential evolution algorithm for fitting.
 '''
+import os
 import threading
 import multiprocessing as processing
 import pickle
 import random as random_mod
 import time
+import appdirs
 from dataclasses import dataclass
 from logging import debug
 from numpy import *
@@ -1325,13 +1327,16 @@ par_funcs = ()  # global variables set in functions below
 
 
 def set_numba_single():
+    config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+    cache_dir = os.path.join(config_path, 'single_cpu_numba_cache')
+
     debug('Setting numba JIT compilation to single CPU')
     import numba
+    numba.config.CACHE_DIR = cache_dir
     old_jit = numba.jit
 
     def jit(*args, **opts):
         opts['parallel'] = False
-        opts['cache'] = False
         return old_jit(*args, **opts)
 
     numba.jit = jit

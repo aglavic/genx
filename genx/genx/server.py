@@ -2,22 +2,28 @@
 Executable module to start a server that can be used for
 remote refinement on a server.
 """
-
+import os
 import asyncio
 import argparse
+import appdirs
 from logging import info, debug, INFO
 
 from . import version
 from .core import custom_logging
 
 def set_numba_single():
+    config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+    cache_dir = os.path.join(config_path, 'single_cpu_numba_cache')
+
     debug('Setting numba JIT compilation to single CPU')
     import numba
+    numba.config.CACHE_DIR = cache_dir
     old_jit = numba.jit
+
     def jit(*args, **opts):
-        opts['parallel']=False
-        opts['cache']=False
+        opts['parallel'] = False
         return old_jit(*args, **opts)
+
     numba.jit = jit
     numba.GENX_OVERWRITE_SINGLE = True
     try:
