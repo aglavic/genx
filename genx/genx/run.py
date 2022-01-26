@@ -33,14 +33,15 @@ def start_interactive(args):
     from .gui import main_window
     if args.infile!='':
         debug('start GUI setup with file to load')
-        filename=args.infile
+        filename = args.infile
     else:
-        filename=None
+        filename = None
     debug('start GUI setup')
-    app= main_window.GenxApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
+    app = main_window.GenxApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
     debug('setup complete, start WX MainLoop')
     app.MainLoop()
     debug('leave start_interactive')
+
 
 def create_simulated_data(args):
     """Function to create simulated data from the model and add it to data.y"""
@@ -51,8 +52,8 @@ def create_simulated_data(args):
     from scipy.stats import poisson
 
     io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
-    ctrl=ModelController(DiffEv())
-    mod=ctrl.model
+    ctrl = ModelController(DiffEv())
+    mod = ctrl.model
 
     iprint("Loading file: %s "%args.infile)
     ctrl.load_file(args.infile)
@@ -63,14 +64,15 @@ def create_simulated_data(args):
     mod.simulate()
     iprint("Storing simualted data")
     for data_set in mod.data:
-        data_set.y_raw=poisson.rvs(data_set.y_sim)
-        data_set.y_command='y'
+        data_set.y_raw = poisson.rvs(data_set.y_sim)
+        data_set.y_command = 'y'
         data_set.run_y_command()
-        data_set.error_command='sqrt(where(y > 0, y, 1.0))'
+        data_set.error_command = 'sqrt(where(y > 0, y, 1.0))'
         data_set.run_error_command()
 
     iprint('Saving the model to %s'%args.outfile)
     ctrl.save_file(args.outfile)
+
 
 def extract_parameters(args):
     """Extracts the parameters to outfile"""
@@ -81,27 +83,28 @@ def extract_parameters(args):
 
     # Open the genx file
     io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
-    ctrl=ModelController(DiffEv())
-    mod=ctrl.model
+    ctrl = ModelController(DiffEv())
+    mod = ctrl.model
 
     iprint("Loading file: %s "%args.infile)
     ctrl.load_file(args.infile)
     iprint("File loaded")
 
-    names, values=mod.parameters.get_sim_pars()
+    names, values = mod.parameters.get_sim_pars()
 
     if args.outfile=='':
-        fout=sys.stdout
+        fout = sys.stdout
     else:
-        outfile=args.outfile
+        outfile = args.outfile
         if os.path.isfile(outfile):
-            fout=open(outfile, 'a')
+            fout = open(outfile, 'a')
         else:
-            fout=open(outfile, 'w')
+            fout = open(outfile, 'w')
             # Add header
             fout.write('\t'.join([name for name in names])+'\n')
     fout.write('\t'.join(['%f'%val for val in values])+'\n')
     fout.close()
+
 
 def modify_file(args):
     """Modify a GenX file given command line arguments"""
@@ -111,15 +114,15 @@ def modify_file(args):
 
     # Open the genx file
     io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
-    ctrl=ModelController(DiffEv())
-    mod=ctrl.model
+    ctrl = ModelController(DiffEv())
+    mod = ctrl.model
 
     iprint("Loading file: %s "%args.infile)
     ctrl.load_file(args.infile)
     iprint("File loaded")
 
     if args.datafile:
-        datafile=os.path.abspath(args.datafile)
+        datafile = os.path.abspath(args.datafile)
         if 0>args.data_set or args.data_set>=len(mod.data):
             iprint("The selected data set does not exist - select one between 0 and %d"%(len(mod.data)-1))
             return
@@ -131,7 +134,7 @@ def modify_file(args):
             ctrl.save_file(args.outfile)
 
     elif args.save_datafile:
-        save_datafile=os.path.abspath(args.save_datafile)
+        save_datafile = os.path.abspath(args.save_datafile)
         iprint("Simualting..")
         mod.simulate()
         if 0>args.data_set or args.data_set>=len(mod.data):
@@ -140,19 +143,23 @@ def modify_file(args):
         iprint('Exporting data set %d into ASCII file %s'%(args.data_set, save_datafile))
         mod.data[args.data_set].save_file(save_datafile)
 
+
 def set_numba_single():
     debug('Setting numba JIT compilation to single CPU')
     import numba
     old_jit = numba.jit
+
     def jit(*args, **opts):
-        opts['parallel']=False
-        opts['cache']=False
+        opts['parallel'] = False
+        opts['cache'] = False
         return old_jit(*args, **opts)
+
     numba.jit = jit
     try:
         numba.set_num_threads(1)
     except AttributeError:
         pass
+
 
 def start_fitting(args, rank=0):
     """ Function to start fitting from the command line.
@@ -166,10 +173,10 @@ def start_fitting(args, rank=0):
 
     # Open the genx file
     io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
-    ctrl=ModelController(DiffEv())
-    mod=ctrl.model
-    opt:DiffEv=ctrl.optimizer
-    config=io.config
+    ctrl = ModelController(DiffEv())
+    mod = ctrl.model
+    opt: DiffEv = ctrl.optimizer
+    config = io.config
 
     if rank==0:
         setup_console(ctrl, args.error, args.outfile)
@@ -204,7 +211,7 @@ def start_fitting(args, rank=0):
     # To start the fitting
     if rank==0:
         iprint('Fitting starting...')
-        t1=time.time()
+        t1 = time.time()
     # print opt.use_mpi, opt.use_parallel_processing
     opt.start_fit(mod)
     while opt.is_running():
@@ -212,10 +219,10 @@ def start_fitting(args, rank=0):
             time.sleep(0.1)
         except KeyboardInterrupt:
             iprint('KeyboardInterrupt, trying to stop fit.')
-            opt.stop=True
+            opt.stop = True
 
     if rank==0:
-        t2=time.time()
+        t2 = time.time()
         iprint('Fitting finished!')
         iprint('Time to fit: ', (t2-t1)/60., ' min')
 
@@ -263,7 +270,7 @@ def set_optimiser_pars(optimiser, args):
         optimiser.set_use_autosave(True)
 
     if args.var>=0:
-        optimiser.opt.min_parameter_spread=args.var
+        optimiser.opt.min_parameter_spread = args.var
 
     if args.km>=0:
         optimiser.set_km(args.km)
@@ -275,29 +282,30 @@ def set_optimiser_pars(optimiser, args):
     # else:
     #    print "kr not set has to be bigger than 0"
 
+
 def main():
     multiprocessing.freeze_support()
     # Attempt to load mpi:
-    __mpi__=False
+    __mpi__ = False
     try:
         from mpi4py import MPI
     except ImportError:
         pass
     else:
-        __mpi__=True
-        rank=MPI.COMM_WORLD.Get_rank()
+        __mpi__ = True
+        rank = MPI.COMM_WORLD.Get_rank()
 
-    parser=argparse.ArgumentParser(description="GenX %s, fits data to a model."%version.__version__,
-                                   epilog="For support, manuals and bug reporting see http://genx.sf.net"
-                                   )
-    run_group=parser.add_mutually_exclusive_group()
+    parser = argparse.ArgumentParser(description="GenX %s, fits data to a model."%version.__version__,
+                                     epilog="For support, manuals and bug reporting see http://genx.sf.net"
+                                     )
+    run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument('-r', '--run', action='store_true', help='run GenX fit (no gui)')
     if __mpi__:
         run_group.add_argument('--mpi', action='store_true', help='run GenX fit with mpi (no gui)')
     run_group.add_argument('-g', '--gen', action='store_true', help='generate data.y with poisson noise added')
     run_group.add_argument('--pars', action='store_true', help='extract the parameters from the infile')
     run_group.add_argument('--mod', action='store_true', help='modify the GenX file')
-    opt_group=parser.add_argument_group('optimization arguments')
+    opt_group = parser.add_argument_group('optimization arguments')
     opt_group.add_argument('--pr', type=int, default=0, help='Number of processes used in parallel fitting.')
     opt_group.add_argument('--cs', type=int, default=0, help='Chunk size used for parallel processing.')
     opt_group.add_argument('--mgen', type=int, default=0, help='Maximum number of generations that is used in a fit')
@@ -307,46 +315,61 @@ def main():
     opt_group.add_argument('--kr', type=float, default=-1, help='Cross over constant (float 0 < kr < 1)')
     opt_group.add_argument('-s', '--esave', action='store_true', help='Force save evals to gx file.')
     opt_group.add_argument('-e', '--error', action='store_true', help='Calculate error bars before saving to file.')
-    opt_group.add_argument('--var', type=float, default=-1, help='Minimum relative parameter variation to stop the fit (%%)')
-    data_group=parser.add_argument_group('data arguments')
+    opt_group.add_argument('--var', type=float, default=-1,
+                           help='Minimum relative parameter variation to stop the fit (%%)')
+    data_group = parser.add_argument_group('data arguments')
     data_group.add_argument('-d', dest='data_set', type=int, default=0,
                             help='Active data set to act upon. Index starting at 0.')
     data_group.add_argument('--load', dest='datafile',
                             help='Load file into active data set. Index starting at 0.')
     data_group.add_argument('--export', dest='save_datafile',
                             help='Save active data set to file. Index starting at 0.')
-    data_group=parser.add_argument_group('startup options')
+    data_group = parser.add_argument_group('startup options')
     data_group.add_argument('-l', '--logfile', dest='logfile', default=None, type=str,
                             help='Output debug information to logfile.')
     data_group.add_argument('--debug', dest='debug', default=False, action="store_true",
                             help='Show additional debug information on console/logfile')
     data_group.add_argument('--dpi-scale', dest='dpi_overwrite', default=None, type=float,
                             help='Overwrite the detection of screen dpi scaling factor (=72/dpi)')
+    data_group.add_argument('--disable-nb', dest='disable_numba', default=False, action="store_true",
+                            help='Disable the use of numba JIT compiler')
+    data_group.add_argument('--nb1', dest='numba_single', default=False, action="store_true",
+                            help='Compile numba JIT functions without parallel computing support (use one core only). '
+                                 'This does disable caching to prevent parallel versions from being loaded.')
 
-    parser.add_argument('infile', nargs='?', default='', help='The .gx or .hgx file to load or .ort file to use as basis for model')
+    parser.add_argument('infile', nargs='?', default='',
+                        help='The .gx or .hgx file to load or .ort file to use as basis for model')
     parser.add_argument('outfile', nargs='?', default='', help='The .gx  or hgx file to save into')
 
-    args=parser.parse_args()
+    args = parser.parse_args()
     if not __mpi__:
-        args.mpi=False
+        args.mpi = False
 
     if args.run or args.mpi:
-        custom_logging.CONSOLE_LEVEL=logging.INFO
+        custom_logging.CONSOLE_LEVEL = logging.INFO
     setup_system()
 
     if args.logfile:
         activate_logging(args.logfile)
     debug("Arguments from parser: %s"%args)
     if not args.outfile:
-        args.outfile=args.infile
-    args.outfile=os.path.abspath(args.outfile)
+        args.outfile = args.infile
+    args.outfile = os.path.abspath(args.outfile)
     if args.infile:
-        args.infile=os.path.abspath(args.infile)
-    path=os.path.split(__file__)[0]
+        args.infile = os.path.abspath(args.infile)
+    path = os.path.split(__file__)[0]
     if os.path.abspath(path).endswith('.zip'):
         os.chdir(os.path.split(path)[0])
     else:
         os.chdir(path)
+
+    if args.disable_numba:
+        debug('disable numba')
+        # set numba flag
+        from genx.models import lib as modellib
+        modellib.USE_NUMBA = False
+    if args.numba_single:
+        set_numba_single()
 
     if args.run:
         start_fitting(args)
@@ -362,15 +385,16 @@ def main():
         # Check if the application has been frozen
         if hasattr(sys, "frozen") and True:
             # Redirect all the output to log files
-            log_file_path=appdirs.user_log_dir('GenX3', 'ArturGlavic')
+            log_file_path = appdirs.user_log_dir('GenX3', 'ArturGlavic')
             # Create dir if not found
             if not os.path.exists(log_file_path):
                 os.makedirs(log_file_path)
             # print log_file_path
             # log_file_path = genx_gui._path + 'app_data/'
-            sys.stdout=open(log_file_path+'/genx.log', 'w')
-            sys.stderr=open(log_file_path+'/genx.log', 'w')
+            sys.stdout = open(log_file_path+'/genx.log', 'w')
+            sys.stderr = open(log_file_path+'/genx.log', 'w')
         start_interactive(args)
+
 
 if __name__=="__main__":
     main()
