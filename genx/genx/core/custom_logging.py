@@ -90,9 +90,9 @@ def setup_system():
     if min(CONSOLE_LEVEL, GUI_LEVEL)>logging.DEBUG:
         logging.getLogger('numba').setLevel(logging.WARNING)
     if rank==0:
-        logging.info('*** GenX %s Logging started ***'%str_version)
+        logging.info(f'*** GenX {str_version} Logging started ***')
     else:
-        logging.info('*** GenX %s on worker %s ***'%rank)
+        logging.info(f'*** GenX {str_version} on worker {rank} ***')
 
     # define numpy warning behavior
     global nplogger
