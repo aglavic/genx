@@ -25,6 +25,14 @@ def set_numba_single():
         pass
 
 def main():
+    try:
+        from mpi4py import MPI
+    except ImportError:
+        pass
+    else:
+        __mpi__ = True
+        rank = MPI.COMM_WORLD.Get_rank()
+
     parser=argparse.ArgumentParser(description="GenX %s, fits data to a model."%version.__version__,
                                    epilog="For support, manuals and bug reporting see http://genx.sf.net"
                                    )
@@ -50,10 +58,11 @@ def main():
     except ImportError:
         pass
 
-    info('Starting RemoteController')
-    from .remote import messaging, controller
-    ctrl=controller.RemoteController()
-    asyncio.run(ctrl.serve(args.address, args.port))
+    if rank==0:
+        info('Starting RemoteController')
+        from .remote import messaging, controller
+        ctrl=controller.RemoteController()
+        asyncio.run(ctrl.serve(args.address, args.port))
 
 if __name__ == '__main__':
     main()
