@@ -142,14 +142,17 @@ class ConsoleCallback(GenxOptimizerCallback):
         pass
 
 
-def setup_console(ctrl: ModelController, error=False, outfile=None):
-    try:
-        import curses
-    except ImportError:
-        stdscr = None
+def setup_console(ctrl: ModelController, error=False, outfile=None, use_curses=True):
+    if use_curses:
+        try:
+            import curses
+        except ImportError:
+            stdscr = None
+        else:
+            chandler = CursesHandler(ctrl.optimizer)
+            stdscr = chandler.stdscr
     else:
-        chandler = CursesHandler(ctrl.optimizer)
-        stdscr = chandler.stdscr
+        stdscr = None
 
     cb = ConsoleCallback(stdscr, ctrl, error, outfile)
     ctrl.set_callbacks(cb)

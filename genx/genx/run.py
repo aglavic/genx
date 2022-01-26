@@ -179,7 +179,7 @@ def start_fitting(args, rank=0):
     config = io.config
 
     if rank==0:
-        setup_console(ctrl, args.error, args.outfile)
+        setup_console(ctrl, args.error, args.outfile, use_curses=args.use_curses)
 
     if args.mpi or args.pr>0:
         try:
@@ -331,6 +331,9 @@ def main():
                             help='Show additional debug information on console/logfile')
     data_group.add_argument('--dpi-scale', dest='dpi_overwrite', default=None, type=float,
                             help='Overwrite the detection of screen dpi scaling factor (=72/dpi)')
+    data_group.add_argument('--no-curses', dest='use_curses', default=True, action="store_false",
+                            help='Disable Curses interactive console interface for command line '
+                                 'fitting on UNIX systems.')
     data_group.add_argument('--disable-nb', dest='disable_numba', default=False, action="store_true",
                             help='Disable the use of numba JIT compiler')
     data_group.add_argument('--nb1', dest='numba_single', default=False, action="store_true",
