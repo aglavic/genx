@@ -66,7 +66,7 @@ class HeaderCopyGrid(wx.grid.Grid):
 
     def __init__(self, *args, **opts):
         wx.grid.Grid.__init__(self, *args, **opts)
-        wx.EVT_KEY_DOWN(self, self.OnKey)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKey)
 
     def OnKey(self, event):
         # If Ctrl+C is pressed...
@@ -250,7 +250,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         res = self._res
         self.chisq = res.chisq
         if self.chicorrect_checkbox.IsChecked():
-            scl = 1./sqrt(self.chisq)
+            scl = sqrt(self.chisq)
         else:
             scl = 1.
 
@@ -345,7 +345,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         else:
             display_cov = self.abs_cov
             if self.chicorrect_checkbox.IsChecked():
-                display_cov = display_cov/self.chisq
+                display_cov = display_cov*self.chisq
             fmt = "%.4g"
         pnames = list(self.bproblem.model_parameters().keys())
         sort_indices = [pnames.index(ni) for ni in self.draw.labels]
@@ -358,7 +358,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
             evt.Skip()
             return
         if self.chicorrect_checkbox.IsChecked():
-            scl = 1./sqrt(self.chisq)
+            scl = sqrt(self.chisq)
         else:
             scl = 1.
         pnames = list(self.bproblem.model_parameters().keys())
@@ -379,7 +379,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         else:
             display_cov = self.abs_cov
             if self.chicorrect_checkbox.IsChecked():
-                display_cov = display_cov/self.chisq
+                display_cov = display_cov*self.chisq
             fmt = "%.4g"
         for i, ci in enumerate(self.rel_cov):
             for j, cj in enumerate(ci):
