@@ -92,7 +92,7 @@ def setup_system():
     if rank==0:
         logging.info(f'*** GenX {str_version} Logging started ***')
     else:
-        logging.info(f'*** GenX {str_version} on worker {rank} ***')
+        logging.debug(f'*** GenX {str_version} on worker {rank} ***')
 
     # define numpy warning behavior
     global nplogger

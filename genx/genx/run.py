@@ -155,6 +155,7 @@ def set_numba_single():
         return old_jit(*args, **opts)
 
     numba.jit = jit
+    numba.GENX_OVERWRITE_SINGLE = True
     try:
         numba.set_num_threads(1)
     except AttributeError:
