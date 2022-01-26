@@ -171,7 +171,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.fom_text = wx.StaticText(rpanel, label='FOM chi²/bars: -')
         font = wx.Font(wx.FontInfo(2.0*self.fom_text.GetFont().GetPointSize()))
         self.fom_text.SetFont(font)
-        rpbox.Add(self.fom_text, proportion=0, flag=wx.FIXED_MINSIZE)
+        rpbox.Add(self.fom_text, proportion=0, flag=wx.FIXED_MINSIZE|wx.EXPAND)
 
         plot_panel = PlotPanel(rpanel, config_class=StatisticsPanelConfig)
         plot_panel.SetMinSize((int(dpi_scale_factor*200), int(dpi_scale_factor*200)))
