@@ -179,9 +179,9 @@ def start_fitting(args, rank=0):
     config = io.config
 
     if rank==0:
-        setup_console(ctrl, args.error, args.outfile, use_curses=args.use_curses)
+        setup_console(ctrl, args.error, args.outfile, use_curses=(args.use_curses and not args.mpi))
 
-    if args.mpi or args.pr>0:
+    if (args.mpi or args.pr>0) and not args.disable_numba:
         try:
             set_numba_single()
         except ImportError:
@@ -371,7 +371,7 @@ def main():
         # set numba flag
         from genx.models import lib as modellib
         modellib.USE_NUMBA = False
-    if args.numba_single:
+    elif args.numba_single:
         set_numba_single()
 
     if args.run:
