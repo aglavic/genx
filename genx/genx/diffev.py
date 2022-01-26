@@ -752,7 +752,7 @@ class DiffEv(GenxOptimizer):
         use_cuda=paratt.Refl.__module__.rsplit('.',1)[1]=='paratt_cuda'
         # reduce numba thread count for numba functions
         if USE_NUMBA:
-            numba_procs=max(1, _cpu_count//self.opt.parallel_processes)
+            numba_procs=1
         else:
             numba_procs=None
 
