@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 import logging
 import multiprocessing
-import threading
 
 import appdirs
 import argparse
 import os
 import os.path
 import sys
-from logging import debug
+from logging import debug, getLogger
 
 from . import version
 from .core import custom_logging
@@ -16,12 +15,20 @@ from .core.custom_logging import activate_excepthook, activate_logging, iprint, 
 
 
 def start_interactive(args):
-    ''' Start genx in interactive mode (with the gui)
+    '''
+    Start genx in interactive mode (with the gui)
 
-    :param args:
-    :return:
+    :param args: command line arguments evaluated with argparse.
     '''
     debug('enter start_interactive')
+    if sys.platform=='darwin' and not sys.executable.endswith('MacOS/Python'):
+        debug('detected Mac OS run without pythonw, re-run with correct executable')
+        debug(' '.join(['pythonw', '-m', 'genx.run']+sys.argv[1:]))
+        logger = getLogger()
+        for hi in logger.handlers:
+            hi.flush()
+        os.execvp('pythonw', ['pythonw', '-m', 'genx.run']+sys.argv[1:])
+
     activate_excepthook()
     # Fix blurry text on Windows 10
     import ctypes
@@ -364,11 +371,6 @@ def main():
     args.outfile = os.path.abspath(args.outfile)
     if args.infile:
         args.infile = os.path.abspath(args.infile)
-    path = os.path.split(__file__)[0]
-    if os.path.abspath(path).endswith('.zip'):
-        os.chdir(os.path.split(path)[0])
-    else:
-        os.chdir(path)
 
     if args.disable_numba:
         debug('disable numba')
