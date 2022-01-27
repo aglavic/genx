@@ -8,6 +8,10 @@ except ImportError:
     script_path=os.path.split(os.path.abspath(__file__))[0]
     genx_path=os.path.split(script_path)[0]
     sys.path.insert(0, genx_path)
+    for mod in list(sys.modules.keys()):
+        # remove namespace that could be created when trying to import genx and this script is in path
+        if mod.startswith('genx'):
+            del(sys.modules[mod])
 finally:
     from genx.server import main
 
