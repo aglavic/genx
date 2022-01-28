@@ -281,3 +281,10 @@ The genx_server script takes two optional arguments ``address`` and ``port``. By
 connections from **localhost** on port **3000**.
 You can choose to listen on any incoming network interfaces by supplying **0.0.0.0** as ``address`` but this is
 not very secure as anyone on the local network would be able to connect to this client.
+The communication protocol does use a simple password authentication but communication is not encrypted so
+it is adviced to keep the port open only locally and using ssh tunnel (-L option) to connect from you machine.
+
+::
+
+    $ ssh -L 3000:localhost:3000 {server_with_genx}
+    $ mpiexec -np 32 genx_server

@@ -62,12 +62,13 @@ Using system python
 * Create python virtual environment
     .. code-block:: bash
 
-        python -m venv
+        python -m venv /path/to/new/virtual/environment
+        source /path/to/new/virtual/environment/bin/activate # script depends on your used shell
 
 * Install via pip with you local python, which should install all requirements automatically
     .. code-block:: bash
 
-        pip install genx3server
+        python -m pip install genx3server
 
 
 Using Minconda
