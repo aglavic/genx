@@ -65,25 +65,39 @@ jobs:
       run: |
         cd genx
         pip3 install build
+        cp setup_client.cfg setup.cfg
+        python3 -m build
+        cp setup_server.cfg setup.cfg
         python3 -m build
     - name: Move dist folder
       run: |
         mkdir dist
-        mv genx/dist/genx*.whl dist/
-        cp genx/dist/genx*.tar.gz dist/
+        mkdir dist_server
+        mv genx/dist/genx3-*.whl dist/
+        cp genx/dist/genx3-*.tar.gz dist/
+        mv genx/dist/genx3server-*.whl dist_server/
+        cp genx/dist/genx3server-*.tar.gz dist_server/
     - name: Rename distribution files
       run: |
         cd genx
         GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
         DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
         mv dist/*.deb $DEST_PATH
-        mv dist/*.tar.gz "dist/GenX-$GENX_VERSION.tar.gz"
+        mv dist/genx3-*.tar.gz "dist/GenX-$GENX_VERSION.tar.gz"
     - name: Upload to PyPI
       if: github.event_name != 'workflow_dispatch'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
+        skip_existing: true
+    - name: Upload server package to PyPI
+      if: github.event_name != 'workflow_dispatch'
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN_SERVER }}
+        packages_dir: dist_server/
         skip_existing: true
     - name: Archive distribution
       uses: actions/upload-artifact@v2
