@@ -173,21 +173,28 @@ def set_numba_single():
 
 
 def start_fitting(args, rank=0):
-    """ Function to start fitting from the command line.
     """
-    # TODO: fix implementation of this
+    Function to start fitting from the command line.
+    """
     import time
-    from .diffev import DiffEv
     from .model_control import ModelController
     from .core import config as io
     from .core.console import calc_errorbars, setup_console
 
     # Open the genx file
     io.config.load_default(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles', 'default.profile'))
-    ctrl = ModelController(DiffEv())
-    mod = ctrl.model
-    opt: DiffEv = ctrl.optimizer
-    config = io.config
+    if not args.bumps:
+        from .diffev import DiffEv
+        ctrl = ModelController(DiffEv())
+        mod = ctrl.model
+        opt: DiffEv = ctrl.optimizer
+        set_optimiser_pars = set_diffev_pars
+    else:
+        from .bumps_optimizer import BumpsOptimizer
+        ctrl = ModelController(BumpsOptimizer())
+        mod = ctrl.model
+        opt: BumpsOptimizer = ctrl.optimizer
+        set_optimiser_pars = set_bumps_pars
 
     if rank==0:
         setup_console(ctrl, args.error, args.outfile, use_curses=(args.use_curses and not args.mpi))
@@ -210,10 +217,10 @@ def start_fitting(args, rank=0):
     mod.simulate()
 
     # Sets up the fitting ...
+    set_optimiser_pars(opt, args)
     if rank==0:
         iprint('Setting up the optimizer...')
         iprint(opt)
-    set_optimiser_pars(opt, args)
 
     if args.outfile and rank==0:
         iprint('Saving the initial model to %s'%args.outfile)
@@ -244,17 +251,18 @@ def start_fitting(args, rank=0):
     if args.outfile and rank==0:
         if args.error:
             iprint('Calculating errorbars')
-            calc_errorbars(config, mod, opt)
+            calc_errorbars(mod, opt)
         iprint('Saving the fit to %s'%args.outfile)
-        opt.set_use_mpi(False)
+        # opt.set_use_mpi(False)
         ctrl.save_file(args.outfile)
 
     if rank==0:
         iprint('Fitting successfully completed')
 
 
-def set_optimiser_pars(optimiser, args):
-    """ Sets the optimiser parameters from args
+def set_diffev_pars(optimiser, args):
+    """
+    Sets the optimiser parameters from args
     """
     if args.pr:
         optimiser.set_processes(args.pr)
@@ -285,25 +293,25 @@ def set_optimiser_pars(optimiser, args):
 
     if args.km>=0:
         optimiser.set_km(args.km)
-    # else:
-    #    print "km not set has to be bigger than 0"
 
     if args.kr>=0:
         optimiser.set_kr(args.kr)
-    # else:
-    #    print "kr not set has to be bigger than 0"
 
+def set_bumps_pars(optimiser, args):
+    if args.pr:
+        optimiser.opt.use_parallel_processing = True
+        optimiser.opt.parallel_processes = args.pr
 
 def main():
     multiprocessing.freeze_support()
     # Attempt to load mpi:
-    __mpi__ = False
     try:
         from mpi4py import MPI
     except ImportError:
-        pass
+        rank = 0
+        __mpi__ = False
     else:
-        __mpi__ = True
+        __mpi__ = bool(MPI.COMM_WORLD.Get_size()>1)
         rank = MPI.COMM_WORLD.Get_rank()
 
     parser = argparse.ArgumentParser(description="GenX %s, fits data to a model."%version.__version__,
@@ -328,6 +336,8 @@ def main():
     opt_group.add_argument('-e', '--error', action='store_true', help='Calculate error bars before saving to file.')
     opt_group.add_argument('--var', type=float, default=-1,
                            help='Minimum relative parameter variation to stop the fit (%%)')
+    opt_group.add_argument('--bumps', action='store_true',
+                           help='Use Bumps DREAM optimizer instead of GenX Differential Evolution')
     data_group = parser.add_argument_group('data arguments')
     data_group.add_argument('-d', dest='data_set', type=int, default=0,
                             help='Active data set to act upon. Index starting at 0.')
@@ -360,11 +370,18 @@ def main():
         args.mpi = False
 
     if args.run or args.mpi:
-        custom_logging.CONSOLE_LEVEL = logging.INFO
+        # make sure at least info-messages are shown (default is warning)
+        custom_logging.CONSOLE_LEVEL = min(logging.INFO, custom_logging.CONSOLE_LEVEL)
+    if rank>0:
+        custom_logging.CONSOLE_LEVEL = logging.WARNING
     setup_system()
 
     if args.logfile:
-        activate_logging(args.logfile)
+        if __mpi__:
+            lfbase, lfend = args.logfile.rsplit('.', 1)
+            activate_logging(f'{lfbase}_{rank:02}.{lfend}')
+        else:
+            activate_logging(args.logfile)
     debug("Arguments from parser: %s"%args)
     if not args.outfile:
         args.outfile = args.infile

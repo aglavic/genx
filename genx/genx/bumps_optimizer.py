@@ -152,9 +152,10 @@ class BumpsOptimizer(GenxOptimizer):
     _map_indices: Dict[int, int]
 
     n_fom_evals = 0
+    _running = False
 
     def is_running(self):
-        return False
+        return self._running
 
     def __init__(self):
         GenxOptimizer.__init__(self)
@@ -280,8 +281,10 @@ class BumpsOptimizer(GenxOptimizer):
         self.n_fom_evals = 0
         self.connect_model(model)
         self._stop_fit = False
+
         self._thread = Thread(target=self.optimize, daemon=True)
         self._thread.start()
+        self._running = True
 
     def optimize(self):
         options = {}
@@ -346,7 +349,7 @@ class BumpsOptimizer(GenxOptimizer):
             self.pool.join()
             self.pool = None
 
-        result = BumpsResult(x=x, dx=dx, dxpm=dxpm, cov=cov, bproblem=self.bproblem)
+        result = BumpsResult(x=x, dx=dx, dxpm=dxpm, cov=cov, chisq=driver.chisq(), bproblem=self.bproblem)
         if hasattr(driver.fitter, 'state'):
             result.state = driver.fitter.state
         self.last_result = result
@@ -363,6 +366,7 @@ class BumpsOptimizer(GenxOptimizer):
 
         self.plot_output()
         self._callbacks.fitting_ended(self.get_result_info(interrupted=problem.fitness.stop_fit))
+        self._running = False
 
     def stop_fit(self):
         self._stop_fit = True

@@ -71,14 +71,12 @@ class CursesHandler(logging.Handler):
         print('\n'.join(self.message_history))
 
 
-def calc_errorbars(config, mod, opt):
+def calc_errorbars(mod, opt: GenxOptimizer):
     error_values = []
-    fom_error_bars_level = config.getfloat('solver', 'errorbar level')
     n_elements = len(opt.start_guess)
     for index in range(n_elements):
-        # calculate the error
-        # TODO: Check the error bar buisness again and how to treat Chi2
-        (error_low, error_high) = opt.calc_error_bar(index, fom_error_bars_level)
+        # calculate the error for given optimizer, accuracy depends on settings
+        (error_low, error_high) = opt.calc_error_bar(index)
         error_values.append('(%.3e, %.3e,)'%(error_low, error_high))
     mod.parameters.set_error_pars(error_values)
 
