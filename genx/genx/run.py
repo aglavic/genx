@@ -177,11 +177,11 @@ def set_numba_single():
 
 class InputThread(Thread):
     def __init__(self):
-        # Call the Thread class's init function
         Thread.__init__(self, daemon=True)
         self.stop_fit = False
 
     def run(self):
+        # concole input has to be queried differently for non-UNIX systems
         if sys.platform.startswith('win'):
             self.run_windows()
         else:
@@ -274,8 +274,12 @@ def start_fitting(args, rank=0):
         t1 = time.time()
     # print opt.use_mpi, opt.use_parallel_processing
     opt.start_fit(mod)
-    inp = InputThread()
-    inp.start()
+    if rank==0:
+        inp = InputThread()
+        inp.start()
+    else:
+        class Inp(): stop_fit = False
+        inp = Inp()
     while opt.is_running():
         try:
             time.sleep(0.1)

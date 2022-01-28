@@ -564,8 +564,8 @@ class DiffEv(GenxOptimizer):
         self.running = True
         self.init_fom_eval()
 
-        if rank==0:
-            self.text_output('Calculating start FOM ...')
+        self.text_output('Calculating start FOM ...')
+
         self.running = True
         self.error = None
         self.n_fom = 0
@@ -585,8 +585,7 @@ class DiffEv(GenxOptimizer):
         # in the fit - used for updates
         self.new_best = True
 
-        if rank==0:
-            self.text_output('Going into optimization ...')
+        self.text_output('Going into optimization ...')
 
         # Update the plot data for any gui or other output
         self.plot_output()
@@ -596,21 +595,20 @@ class DiffEv(GenxOptimizer):
         gen = self.fom_log[-1, 0]
         for gen in range(int(self.fom_log[-1, 0])+1, self.max_gen \
                                                      +int(self.fom_log[-1, 0])+1):
+            # synchronize stop parameter so all workers stop at the same time
+            self.stop = comm.bcast(self.stop, root=0)
             if self.stop:
                 break
+
             t_start = time.time()
 
             self.init_new_generation(gen)
 
-            # Create the vectors who will be compared to the
-            # population vectors
+            # Create the vectors wjocj will be compared to the
+            # population vectors and broadcast to all workers
             if rank==0:
                 [self.create_trial(index) for index in range(self.n_pop)]
-                tmp_trial_vec = self.trial_vec
-            else:
-                tmp_trial_vec = 0
-            tmp_trial_vec = comm.bcast(tmp_trial_vec, root=0)
-            self.trial_vec = tmp_trial_vec
+            self.trial_vec = comm.bcast(self.trial_vec, root=0)
             self.eval_fom()
             tmp_fom = self.trial_fom
             comm.Barrier()
@@ -1345,6 +1343,7 @@ def set_numba_single():
         numba.set_num_threads(1)
     except AttributeError:
         pass
+
 
 def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False, overwrite_single=False):
     '''
