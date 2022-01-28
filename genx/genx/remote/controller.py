@@ -13,8 +13,19 @@ from ..diffev import DiffEv
 from ..solver_basis import GenxOptimizerCallback, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
 
 
+try:
+    from mpi4py import MPI
+except ImportError:
+    rank = 0
+    __mpi__ = False
+else:
+    __mpi__ = bool(MPI.COMM_WORLD.Get_size()>1)
+    rank = MPI.COMM_WORLD.Get_rank()
+    comm = MPI.COMM_WORLD
+
+
 class RemotCallback(GenxOptimizerCallback):
-    loop: asyncio.AbstractEventLoop= None
+    loop: asyncio.AbstractEventLoop = None
 
     def __init__(self, parent):
         GenxOptimizerCallback.__init__(self)
@@ -61,17 +72,23 @@ class RemoteController(ModelController):
     def __init__(self):
         ModelController.__init__(self, DiffEv())
         self.lock = None
-        self.callbacks = RemotCallback(self)
-        self.set_callbacks(self.callbacks)
+        if rank==0:
+            self.callbacks = RemotCallback(self)
+            self.set_callbacks(self.callbacks)
 
     async def serve(self, address, port):
         self.lock = asyncio.locks.Lock()
-        server = await asyncio.start_server(
-            self.handle_connection, address, port)
 
-        async with server:
-            info(f"Starting listening on {address} with {port=}")
-            await server.serve_forever()
+        if rank==0:
+            server = await asyncio.start_server(
+                self.handle_connection, address, port)
+
+            async with server:
+                info(f"Starting listening on {address} with {port=}")
+                await server.serve_forever()
+        else:
+            debug(f'Starting MPI client process for server on {address} with {port=}')
+            await self.recive_mpi()
 
     async def handle_connection(self, reader, writer):
         debug('New connection')
@@ -113,6 +130,16 @@ class RemoteController(ModelController):
             if res.action_type is messaging.ActionType.START_FIT:
                 info('Start fit was triggered')
                 self.callbacks.loop = asyncio.get_running_loop()
+                if self.optimizer.opt.use_mpi:
+                    if __mpi__:
+                        # server is just run on rank=0 so send model to clients
+                        comm.Barrier()
+                        comm.bcast(self.model, root=0)
+                        comm.bcast(self.optimizer.opt, root=0)
+                    else:
+                        warning('Fit was started with use_mpi option selected, but server is started without MPI support')
+                        self.optimizer.opt.use_mpi = False
+                        self.optimizer.WriteConfig()
                 self.StartFit()
             elif res.action_type is messaging.ActionType.STOP_FIT:
                 info('Stop fit was triggered')
@@ -135,6 +162,16 @@ class RemoteController(ModelController):
         debug(f'Sending message {message}')
         self.writer.write(message.message())
         await self.writer.drain()
+
+    async def recive_mpi(self):
+        while True:
+            comm.Barrier()
+            self.model = comm.bcast(self.model, root=0)
+            self.optimizer.opt = comm.bcast(self.optimizer.opt, root=0)
+            self.optimizer.WriteConfig()
+            self.StartFit()
+            while self.optimizer.is_running():
+                await asyncio.sleep(0.1)
 
     async def cleanup(self):
         debug("Starting cleanup sequence")

@@ -411,7 +411,7 @@ def main():
                             help='Disable the use of numba JIT compiler')
     data_group.add_argument('--nb1', dest='numba_single', default=False, action="store_true",
                             help='Compile numba JIT functions without parallel computing support (use one core only). '
-                                 'This does disable caching to prevent parallel versions from being loaded.')
+                                 'Caching in this case is done in a different user directory.')
 
     parser.add_argument('infile', nargs='?', default='',
                         help='The .gx or .hgx file to load or .ort file to use as basis for model')
