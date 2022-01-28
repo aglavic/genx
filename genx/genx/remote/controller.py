@@ -133,6 +133,8 @@ class RemoteController(ModelController):
                 if self.optimizer.opt.use_mpi:
                     if __mpi__:
                         # server is just run on rank=0 so send model to clients
+                        self.optimizer.opt.use_parallel_processing = False
+                        self.optimizer.WriteConfig()
                         comm.Barrier()
                         comm.bcast(self.model, root=0)
                         comm.bcast(self.optimizer.opt, root=0)
