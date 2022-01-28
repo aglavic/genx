@@ -14,13 +14,22 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 Changes 3.6.0
 =============
  * Add new genx_server (python -m genx.server) script that allows to run a remote service
-   on a cluster that can be used to fit from a GUI on a different machine. 
- * Allow changing of plot scales with mouse scroll wheel and ctrl-/alt-/shift-modifier
+   on a cluster that can be used to fit from a GUI on a different machine.
+   See: https://aglavic.github.io/genx/doc/tutorials/mpi.html for more information.
+ * Implement asymmetric errors from bumps statistics, fix some bugs and add option to normalize parameter
+   uncertainties by sqrt(chi2) to eliminate scaling factors on error bars. (see ticket #190)
+ * New command line parameters for better control of refinement and performance
+ * Improve console and logging output on MPI runs, q+<enter> can now stop a fit started with MPI
+ * Fix some command line options
+ * Allow changing of plot scales with mouse scroll wheel and ctrl-/alt-/shift-modifier, 
+   always reset zoom with middle mouse button
  * Improve SLD plot context menu, allowing to show only first dataset, 
    external legend or coloring associated with datasets
  * Do not show separate mag_x SLD for neutron magnetic reflectivity, if there is no mag_y component
  * Slight improvement or SXRD model performance
  * Add a genx3server PyPI package without GUI package requirements
+ * Updates on documentation concerning use from command line
+ * Startup script to automatically select pythonw when run on Mac OS (untested)
  * Fix some more minor bugs
 
 Changes 3.5.10
