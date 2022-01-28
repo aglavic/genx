@@ -164,7 +164,7 @@ class RemoteOptimizer(GenxOptimizer):
 
     async def connect(self):
         self.reader, self.writer = await asyncio.open_connection(self.opt.address, self.opt.port)
-        key = b'empty'
+        key = self.opt.key.encode('utf-8')
         ref1 = blake2b(HANDSHAKE1, key=key, digest_size=AUTH_SIZE).hexdigest().encode('ascii')
         ref2 = blake2b(HANDSHAKE2, key=key, digest_size=AUTH_SIZE).hexdigest().encode('ascii')
         debug(f'Sending handshake message to {self.opt.address}:{self.opt.port}')

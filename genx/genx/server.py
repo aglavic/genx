@@ -50,6 +50,8 @@ def main():
     parser.add_argument('port', nargs='?', default=3000, help='Network port to listen on')
     parser.add_argument('-l', '--logfile', dest='logfile', default=None, type=str,
                         help='Output debug information to logfile.')
+    parser.add_argument('-p', '--password', dest='password', default='empty', type=str,
+                        help='Password used when establishing connection from client.')
     parser.add_argument('--debug', dest='debug', default=False, action="store_true",
                         help='Show additional debug information on console/logfile')
     parser.add_argument('--disable-nb', dest='disable_numba', default=False, action="store_true",
@@ -94,6 +96,7 @@ def main():
         logging.info('Starting RemoteController')
     from .remote import controller
     ctrl = controller.RemoteController()
+    ctrl.key = args.password.encode('utf-8')
     asyncio.run(ctrl.serve(args.address, args.port))
 
 

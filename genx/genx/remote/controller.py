@@ -69,6 +69,8 @@ class RemoteController(ModelController):
     reader = None
     writer = None
 
+    key = b'empty'
+
     def __init__(self):
         ModelController.__init__(self, DiffEv())
         self.lock = None
@@ -101,7 +103,7 @@ class RemoteController(ModelController):
                 await self.recv_messages()
 
     async def handshake(self):
-        key = b'empty'
+        key = self.key
         ref1 = blake2b(HANDSHAKE1, key=key, digest_size=AUTH_SIZE).hexdigest().encode('ascii')
         ref2 = blake2b(HANDSHAKE2, key=key, digest_size=AUTH_SIZE).hexdigest().encode('ascii')
         res = await self.reader.read(len(ref1))
