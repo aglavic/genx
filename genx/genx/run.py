@@ -207,7 +207,6 @@ class InputThread(Thread):
         m_selector.register(sys.stdin, selectors.EVENT_READ)
         while True:
             (k, evt)=m_selector.select()[0]
-            debug('Key event received')
             res = k.fileobj.read()
             if 'q' in res:
                 self.stop_fit = True

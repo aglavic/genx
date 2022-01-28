@@ -23,30 +23,83 @@ Install the requirements, at least wxPython, from your package manager (Ubuntu `
 Then either install from source or, if you are using Ubuntu or a derivative, you can use the pre build .deb packages
 for your system python version.
 
+Snap
+----
+
+The most convenient way to install GenX on Linux is the `new snap package <https://snapcraft.io/genx>`_.
+It ships all requirements and should work on any distribution where the snap package management tool is installed.
+(e.g. all Ubuntu derivatives have it pre-installed)
+See https://snapcraft.io/docs/installing-snapd for instructions how to install snapd on your distribution.
+
+To install via snap use:
+
+.. code-block:: bash
+
+    sudo snap install genx
+
+While convenient, the snap package currently has the limitation that using parallel processing during fit
+is not supported as the strict confinement does not work with the python multiprocessing library.
+The multi-core parallelization provided by numba JIT compilation is still available so that
+the impact on actual fit performance is relatively small for non-trivial models.
+
+.. _install_cluster:
+
 Clusters
 --------
 
 GenX can make use of MPI to run models on cluster systems. In many cases the user does not have the rights
-to install libraries and there are various configuration that can be configured and make installation
+to install libraries and there are various configurations that can be configured and make installation
 of own libraries pretty complicated.
 On the other hand, fitting with GenX from command line does not require the wx or matplotlib libraries to be present.
 
-Making use of the Miniconda distribution, all required software can be installed as a user without too much
+In case the cluster does not provide a python installation that is new enough (>=3.6), you can try to
+make use of the Miniconda distribution, all required software can be installed as a user without too much
 background knowladge of Linux configurations.
 
-    * Install Miniconda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
-    * Create genx environment and install packages:
-        * ``conda create -n genx python=3.9``
-        * ``conda activate genx``
-        * ``conda install pip appdirs h5py scipy psutil numba``
-        * Depending on configuration you might need to install other libraries like glib if the installed
-          libraries are too old.
-        * ``pip install orsopy bumps``
-        * I don't recommend to use the mpi version of anaconda but instead follow the instructions on how to install
-          mpi4py for the local mpi library using pip: https://mpi4py.readthedocs.io/en/stable/install.html
-    * Tip: You can configure conda environments to update environment variables when they are activated.
-      This can become handy if you need to selec specific library versions, PATH or LD_LIBRARY_PATH.
-      ``conda env config vars set NAME=value``.
+Using system python
+...................
+
+* Create python virtual environment
+    .. code-block:: bash
+
+        python -m venv
+
+* Install via pip with you local python, which should install all requirements automatically
+    .. code-block:: bash
+
+        pip install genx3server
+
+
+Using Minconda
+..............
+
+* Install Miniconda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
+* Prepare anaconda environment and required packages
+    .. code-block:: bash
+
+        conda create -n genx python=3.9
+        conda activate genx
+        conda install pip appdirs h5py scipy psutil numba
+        pip install orsopy bumps
+
+    * Depending on configuration you might need to install other libraries like glib if the installed
+      libraries are too old.
+
+    * I don't recommend to use the mpi version of anaconda but instead follow the instructions on how to install
+      mpi4py for the local mpi library using pip:
+
+      https://mpi4py.readthedocs.io/en/stable/install.html
+* Finally install the server package for GenX:
+    .. code-block:: bash
+
+        pip install genx3server
+
+* Tip: You can configure conda environments to update environment variables when they are activated.
+  This can become handy if you need to selec specific library versions, PATH or LD_LIBRARY_PATH.
+  ``conda env config vars set NAME=value``.
+
+
+
 
 
 From source
