@@ -43,7 +43,7 @@ def main():
         __mpi__ = bool(MPI.COMM_WORLD.Get_size()>1)
         rank = MPI.COMM_WORLD.Get_rank()
 
-    parser = argparse.ArgumentParser(description="GenX %s, fits data to a model."%version.__version__,
+    parser = argparse.ArgumentParser(description="GenX %s, fits data to a model. Server script for remote fitting."%version.__version__,
                                      epilog="For support, manuals and bug reporting see http://genx.sf.net"
                                      )
     parser.add_argument('address', nargs='?', default='localhost', help='Network address to listen on')
