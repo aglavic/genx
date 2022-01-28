@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import logging
 import multiprocessing
+from threading import Thread
 
 import appdirs
 import argparse
@@ -98,19 +99,21 @@ def extract_parameters(args):
     iprint("File loaded")
 
     names, values = mod.parameters.get_sim_pars()
+    index_names = mod.parameters.get_names()
+    errors = [mod.parameters[index_names.index(ni)].error if mod.parameters.get_fit_state_by_name(ni)==1
+              else '-' for ni in names]
+    names = [ni if mod.parameters.get_fit_state_by_name(ni)!=1 else ni+'*' for ni in names]
 
-    if args.outfile=='':
-        fout = sys.stdout
-    else:
-        outfile = args.outfile
-        if os.path.isfile(outfile):
-            fout = open(outfile, 'a')
-        else:
-            fout = open(outfile, 'w')
+    paramstr = '\t'.join([name for name in names])+'\n'+ \
+               '\t'.join(['%f'%val for val in values])+'\n'
+    if args.error:
+        paramstr += '\t'.join([err for err in errors])+'\n'
+    if args.outfile!='':
+        iprint(f'Appending parameter values to file {args.outfile}')
+        with open(args.outfile, 'a') as fout:
             # Add header
-            fout.write('\t'.join([name for name in names])+'\n')
-    fout.write('\t'.join(['%f'%val for val in values])+'\n')
-    fout.close()
+            fout.write(paramstr)
+    iprint('\n'+paramstr)
 
 
 def modify_file(args):
@@ -172,6 +175,45 @@ def set_numba_single():
         pass
 
 
+class InputThread(Thread):
+    def __init__(self):
+        # Call the Thread class's init function
+        Thread.__init__(self, daemon=True)
+        self.stop_fit = False
+
+    def run(self):
+        if sys.platform.startswith('win'):
+            self.run_windows()
+        else:
+            self.run_unix()
+
+    def run_windows(self):
+        import msvcrt, time
+        while not self.stop_fit:
+            if msvcrt.kbhit():
+                debug('Key event received')
+                key = msvcrt.getwch()
+                if 'q' in key:
+                    self.stop_fit = True
+            time.sleep(0.1)
+
+    def run_unix(self):
+        import fcntl, selectors, time
+        # set sys.stdin non-blocking
+        orig_fl = fcntl.fcntl(sys.stdin, fcntl.F_GETFL)
+        fcntl.fcntl(sys.stdin, fcntl.F_SETFL, orig_fl | os.O_NONBLOCK)
+
+        m_selector = selectors.DefaultSelector()
+        m_selector.register(sys.stdin, selectors.EVENT_READ)
+        while True:
+            (k, evt)=m_selector.select()[0]
+            debug('Key event received')
+            res = k.fileobj.read()
+            if 'q' in res:
+                self.stop_fit = True
+                break
+        m_selector.close()
+
 def start_fitting(args, rank=0):
     """
     Function to start fitting from the command line.
@@ -232,9 +274,13 @@ def start_fitting(args, rank=0):
         t1 = time.time()
     # print opt.use_mpi, opt.use_parallel_processing
     opt.start_fit(mod)
+    inp = InputThread()
+    inp.start()
     while opt.is_running():
         try:
             time.sleep(0.1)
+            if inp.stop_fit:
+                opt.stop = True
         except KeyboardInterrupt:
             iprint('KeyboardInterrupt, trying to stop fit.')
             opt.stop = True
@@ -297,10 +343,12 @@ def set_diffev_pars(optimiser, args):
     if args.kr>=0:
         optimiser.set_kr(args.kr)
 
+
 def set_bumps_pars(optimiser, args):
     if args.pr:
         optimiser.opt.use_parallel_processing = True
         optimiser.opt.parallel_processes = args.pr
+
 
 def main():
     multiprocessing.freeze_support()
@@ -333,7 +381,7 @@ def main():
     opt_group.add_argument('--km', type=float, default=-1, help='Mutation constant (float 0 < km < 1)')
     opt_group.add_argument('--kr', type=float, default=-1, help='Cross over constant (float 0 < kr < 1)')
     opt_group.add_argument('-s', '--esave', action='store_true', help='Force save evals to gx file.')
-    opt_group.add_argument('-e', '--error', action='store_true', help='Calculate error bars before saving to file.')
+    opt_group.add_argument('-e', '--error', action='store_true', help='Calculate/export error bars.')
     opt_group.add_argument('--var', type=float, default=-1,
                            help='Minimum relative parameter variation to stop the fit (%%)')
     opt_group.add_argument('--bumps', action='store_true',
@@ -369,7 +417,7 @@ def main():
     if not __mpi__:
         args.mpi = False
 
-    if args.run or args.mpi:
+    if args.run or args.mpi or args.pars or args.mod:
         # make sure at least info-messages are shown (default is warning)
         custom_logging.CONSOLE_LEVEL = min(logging.INFO, custom_logging.CONSOLE_LEVEL)
     if rank>0:
