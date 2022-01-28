@@ -3,7 +3,7 @@ import os
 import sys
 
 try:
-    from genx.run import main
+    from genx.server import main
 except ImportError:
     script_path=os.path.split(os.path.abspath(__file__))[0]
     genx_path=os.path.split(script_path)[0]
@@ -13,7 +13,7 @@ except ImportError:
         if mod.startswith('genx'):
             del(sys.modules[mod])
 finally:
-    from genx.run import main
+    from genx.server import main
 
 if __name__ == "__main__":
     main()

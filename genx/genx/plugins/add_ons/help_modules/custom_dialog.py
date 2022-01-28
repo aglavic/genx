@@ -17,6 +17,55 @@ def is_reflfunction(obj):
     '''
     return obj.__class__.__name__=='ReflFunction'
 
+class ValueValidator(wx.Validator):
+    """
+    Validate a value for a given type.
+    """
+
+    def __init__(self, cls):
+        wx.Validator.__init__(self)
+        self.valid_cls = cls
+
+    def Clone(self):
+        return ValueValidator(self.valid_cls)
+
+    def Validate(self, win):
+        """ Validate the contents of the given text control.
+        """
+        textCtrl=self.GetWindow()
+        text=textCtrl.GetValue()
+
+        if len(text)==0:
+            debug('Must contain a value')
+            wx.MessageBox("A text object must contain some text!", "Error")
+            textCtrl.SetBackgroundColour("pink")
+            textCtrl.SetFocus()
+            textCtrl.Refresh()
+            return False
+        else:
+            textCtrl.SetBackgroundColour(
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+            textCtrl.Refresh()
+            try:
+                self.valid_cls(text)
+            except ValueError:
+                textCtrl.SetBackgroundColour("pink")
+                textCtrl.SetFocus()
+                textCtrl.Refresh()
+                return False
+            else:
+                textCtrl.SetBackgroundColour(
+                    wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+                textCtrl.Refresh()
+                return True
+
+    def TransferToWindow(self):
+        return True
+
+    def TransferFromWindow(self):
+        return True
+
+
 class TextObjectValidator(wx.Validator):
     """ This validator is used to ensure that the user has entered something
         into the text object editor dialog's text field.

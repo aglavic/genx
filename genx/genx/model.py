@@ -27,6 +27,7 @@ from .exceptions import FomError, GenxIOError, ModelError, ParameterError
 from .models.lib.parameters import get_parameters, NumericParameter
 from .parameters import Parameters
 
+
 @dataclass
 class StartupScript(BaseConfig):
     section = 'startup'
@@ -47,54 +48,58 @@ class SolverParameters(BaseConfig):
     ignore_fom_nan: bool = True
     ignore_fom_inf: bool = True
 
-    limit_fit_range:bool=False
-    fit_xmin:float=BaseConfig.GParam(0.0, pmin=-1000., pmax=1000.)
-    fit_xmax:float=BaseConfig.GParam(180.0, pmin=-1000., pmax=1000.)
+    limit_fit_range: bool = False
+    fit_xmin: float = BaseConfig.GParam(0.0, pmin=-1000., pmax=1000.)
+    fit_xmax: float = BaseConfig.GParam(180.0, pmin=-1000., pmax=1000.)
 
-    groups={'FOM': ['figure_of_merit', ['ignore_fom_nan', 'ignore_fom_inf'],
-                    'limit_fit_range', ['fit_xmin', 'fit_xmax']]}
+    groups = {
+        'FOM': ['figure_of_merit', ['ignore_fom_nan', 'ignore_fom_inf'],
+                'limit_fit_range', ['fit_xmin', 'fit_xmax']]
+        }
+
 
 class GenxScriptModule(types.ModuleType):
     data: DataList
 
     def __init__(self, data: DataList):
         types.ModuleType.__init__(self, 'genx_script_module')
-        self.__package__=fom_funcs.__package__
-        self.data=data
-        self._sim=False
+        self.__package__ = fom_funcs.__package__
+        self.data = data
+        self._sim = False
 
     @staticmethod
     def Sim(data: DataList):
         # default implementation of Sim function, will be overwritten by user.
         return [di.y*0 for di in data]
 
+
 class Model(H5HintedExport):
     ''' A class that holds the model i.e. the script that defines
         the model and the data + various other attributes.
     '''
-    h5group_name='current'
+    h5group_name = 'current'
 
-    saved=True
-    fom=None
-    fom_mask_func=None
+    saved = True
+    fom = None
+    fom_mask_func = None
 
     # parameters stored to file
-    script:str
-    fomfunction:str
-    data:DataList
-    parameters:Parameters
+    script: str
+    fomfunction: str
+    data: DataList
+    parameters: Parameters
 
     @property
     def fomfunction(self):
         return self.fom_func.__name__
+
     @fomfunction.setter
     def fomfunction(self, value):
         if value in fom_funcs.func_names:
             self.set_fom_func(eval('fom_funcs.'+value))
-            self.solver_parameters.figure_of_merit=value
+            self.solver_parameters.figure_of_merit = value
         else:
             iprint("Can not find fom function name %s"%value)
-
 
     def __init__(self):
         '''
@@ -136,7 +141,7 @@ class Model(H5HintedExport):
         self.set_fom_from_config()
 
     def set_fom_from_config(self):
-        self.fomfunction=self.solver_parameters.figure_of_merit
+        self.fomfunction = self.solver_parameters.figure_of_merit
 
     def load(self, filename):
         ''' 
@@ -210,7 +215,7 @@ class Model(H5HintedExport):
 
     def __getstate__(self):
         # generate a pickleable object for thie model, it cannot contain dynamically generated functions
-        state=self.__dict__.copy()
+        state = self.__dict__.copy()
         del state['fom_mask_func']
         del state['script_module']
         return state
@@ -218,7 +223,7 @@ class Model(H5HintedExport):
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.create_fom_mask_func()
-        if self.compiled: # if the model was compiled before pickling, do it now
+        if self.compiled:  # if the model was compiled before pickling, do it now
             self.compile_script()
 
     def read_h5group(self, group):
@@ -252,7 +257,7 @@ class Model(H5HintedExport):
             raise GenxIOError(str(e), self.filename)
         savefile.close()
 
-    def load_addition(self, name)->bytes:
+    def load_addition(self, name) -> bytes:
         '''
         Load additional text from sub-file
         '''
@@ -541,7 +546,7 @@ class Model(H5HintedExport):
         model_copy.compiled = self.compiled
         model_copy.fom = self.fom
         model_copy.solver_parameters = self.solver_parameters.copy()
-        model_copy.startup_script=self.startup_script.copy()
+        model_copy.startup_script = self.startup_script.copy()
         model_copy.opt = self.opt.copy()
         model_copy.saved = self.saved
         # Needs to reset the fom_mask_func since this fails under windows.
@@ -698,19 +703,19 @@ class Model(H5HintedExport):
 
         return read_string
 
-    def get_parameters(self)->Parameters:
+    def get_parameters(self) -> Parameters:
         return self.parameters
 
-    def get_data(self)->DataList:
+    def get_data(self) -> DataList:
         return self.data
 
-    def get_script(self)->str:
+    def get_script(self) -> str:
         return self.script
 
-    def get_filename(self)->str:
+    def get_filename(self) -> str:
         return self.filename
 
-    def get_possible_parameters(self)->dict:
+    def get_possible_parameters(self) -> dict:
         """
         Returns all the parameters that can be fitted. Is used by the parameter grid.
         """
@@ -719,7 +724,7 @@ class Model(H5HintedExport):
             par_dict = self.get_possible_set_functions()
         return par_dict
 
-    def get_possible_set_functions(self)->dict:
+    def get_possible_set_functions(self) -> dict:
         """
         Returns all the parameters that can be fitted given by the old style of defining parameters GenX2.4.X
         """
@@ -782,9 +787,9 @@ class Model(H5HintedExport):
             # Add this to the right item in par_dict given
             # its class and name.
             [par_dict[obj.__class__.__name__].__setitem__(name,
-                                                        [member for member in dir(obj)
-                                                        if member.startswith(self.opt.set_func)])
-                                                        for name, obj in valid_objs]
+                                                          [member for member in dir(obj)
+                                                           if member.startswith(self.opt.set_func)])
+             for name, obj in valid_objs]
             return par_dict
         return {}
 
@@ -795,7 +800,7 @@ class Model(H5HintedExport):
     def set_fom_func(self, fom_func: callable):
         self.fom_func = fom_func
 
-    def is_compiled(self)->bool:
+    def is_compiled(self) -> bool:
         return self.compiled
 
     def bumps_problem(self):
@@ -812,6 +817,17 @@ class Model(H5HintedExport):
         from bumps.fitproblem import FitProblem
 
         return FitProblem(GenxCurve(self))
+
+    def asym_stderr(self, dream_fit):
+        """
+        Approximate standard error as distance to lower and upper bound of
+        the 68% interval for the sample.
+        Based on the stderr estimation from dream fit in bumps.
+        """
+        from bumps.dream.stats import var_stats
+
+        vstats = var_stats(dream_fit.state.draw(portion=dream_fit._trimmed))
+        return np.array([(v.p68[0]-v.best, v.p68[1]-v.best) for v in vstats], 'd')
 
     def bumps_fit(self, method='dream',
                   pop=15, samples=1e5, burn=100, steps=0,
@@ -833,8 +849,8 @@ class Model(H5HintedExport):
 
         if problem is None:
             problem = self.bumps_problem()
-        problem.fitness.stop_fit=False
-        options['abort_test']=lambda: problem.fitness.stop_fit
+        problem.fitness.stop_fit = False
+        options['abort_test'] = lambda: problem.fitness.stop_fit
 
         # verbose = True
         if method not in FIT_AVAILABLE_IDS:
@@ -850,7 +866,11 @@ class Model(H5HintedExport):
         x, fx = driver.fit()
         problem.setp(x)
         dx = driver.stderr()
-        result = BumpsResult(x=x, dx=dx, cov=driver.cov(), bproblem=problem)
+        if method=='dream':
+            dxpm = self.asym_stderr(driver.fitter)
+        else:
+            dxpm = None
+        result = BumpsResult(x=x, dx=dx, dxpm=dxpm, cov=driver.cov(), chisq=driver.chisq(), bproblem=problem)
         if hasattr(driver.fitter, 'state'):
             result.state = driver.fitter.state
         return result
@@ -1042,6 +1062,7 @@ class Model(H5HintedExport):
     def _ipyw_script(self, change):
         self.set_script(change.new)
 
+
 class GenxCurve:
     """
     Bumps Curve object for a GenX model.
@@ -1058,7 +1079,7 @@ class GenxCurve:
 
         if not self.model.compiled:
             self.model.compile_script()
-        self.model_script=self.model.script_module
+        self.model_script = self.model.script_module
 
         self.name = "GenX model"
         self.plot_x = None
@@ -1066,12 +1087,12 @@ class GenxCurve:
         pars, state, funcs = self._parse_pars()
 
         self._pnames = list(pars.keys())
-        self._pars=pars
+        self._pars = pars
         self._state = state
-        self._set_funcs=funcs
+        self._set_funcs = funcs
         self._cached_theory = None
-        self.stop_fit=False
-        self.n_fev=0
+        self.stop_fit = False
+        self.n_fev = 0
 
     @property
     def x(self):
@@ -1087,23 +1108,23 @@ class GenxCurve:
 
     def _parse_pars(self):
         from bumps.parameter import Parameter
-        pars={}
-        state={}
-        funcs={}
+        pars = {}
+        state = {}
+        funcs = {}
         for p in self.model.parameters:
             if p.name.strip()=='':
                 continue
             name = p.name.replace('.set', '_')
             if p.fit:
-                pars[name]=Parameter.default(p.value, name=name, bounds=(p.min, p.max))
+                pars[name] = Parameter.default(p.value, name=name, bounds=(p.min, p.max))
             else:
-                state[name]=p.value
-            funcs[name]=self.model.create_fit_func(p.name)
+                state[name] = p.value
+            funcs[name] = self.model.create_fit_func(p.name)
         return pars, state, funcs
 
     def update(self):
         self._cached_theory = None
-        self.n_fev=0
+        self.n_fev = 0
 
     def parameters(self):
         return self._pars
@@ -1121,8 +1142,8 @@ class GenxCurve:
 
     def _compute_theory(self, x):
         self._apply_par(x)
-        sim=self.model_script.Sim(self.model.data)
-        self.n_fev+=1
+        sim = self.model_script.Sim(self.model.data)
+        self.n_fev += 1
         return np.hstack([si for si, di in zip(sim, self.model.data) if di.use])
 
     def _apply_par(self, x):
@@ -1134,19 +1155,19 @@ class GenxCurve:
     def simulate_data(self, noise=None):
         theory = self.theory()
         if noise is not None:
-            if noise == 'data':
+            if noise=='data':
                 pass
-            elif noise < 0:
+            elif noise<0:
                 self.dy = -0.01*noise*theory
             else:
                 self.dy = noise
-        self.y = theory + np.random.randn(*theory.shape)*self.dy
+        self.y = theory+np.random.randn(*theory.shape)*self.dy
 
     def residuals(self):
         return (self.theory()-self.y)/self.dy
 
     def nllf(self):
-        r=self.residuals()
+        r = self.residuals()
         fom = np.sum(r**2)
         penalty_funcs = self.model.get_par_penalty()
         if len(penalty_funcs)>0 and fom is not np.NAN:
@@ -1154,7 +1175,7 @@ class GenxCurve:
         return 0.5*fom
 
     def __getstate__(self):
-        state=self.__dict__.copy()
+        state = self.__dict__.copy()
         del state['model_script']
         del state['_set_funcs']
         return state
@@ -1163,10 +1184,10 @@ class GenxCurve:
         self.__dict__.update(state)
         if not self.model.compiled:
             self.model.compile_script()
-        self.model_script=self.model.script_module
+        self.model_script = self.model.script_module
 
         pars, state, funcs = self._parse_pars()
         self._pnames = list(pars.keys())
-        self._pars=pars
+        self._pars = pars
         self._state = state
-        self._set_funcs=funcs
+        self._set_funcs = funcs

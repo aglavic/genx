@@ -2112,26 +2112,28 @@ class GenxApp(wx.App):
         self.SetTopWindow(main_frame)
         main_frame.SetMinSize(wx.Size(600,400))
 
-        try:
-            import numba
-        except ImportError:
-            pass
-        else:
-            # load numba modules, show progress as in case they aren't cached it takes some seconds
-            self.WriteSplash('compiling numba functions...', progress=0.25)
-            real_jit=numba.jit
-            class UpdateJit:
-                update_counter=1
-                WriteSplash=self.WriteSplash
-                def __call__(self, *args, **opts):
-                    self.WriteSplash(f'compiling numba functions {self.update_counter}/21',
-                                     progress=0.25+0.5*(self.update_counter-1)/21.)
-                    self.update_counter+=1
-                    wx.YieldIfNeeded()
-                    return real_jit(*args, **opts)
-            numba.jit=UpdateJit()
-            from ..models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
-            numba.jit=real_jit
+        from genx.models.lib import USE_NUMBA
+        if USE_NUMBA:
+            try:
+                import numba
+            except ImportError:
+                pass
+            else:
+                # load numba modules, show progress as in case they aren't cached it takes some seconds
+                self.WriteSplash('compiling numba functions...', progress=0.25)
+                real_jit=numba.jit
+                class UpdateJit:
+                    update_counter=1
+                    WriteSplash=self.WriteSplash
+                    def __call__(self, *args, **opts):
+                        self.WriteSplash(f'compiling numba functions {self.update_counter}/21',
+                                         progress=0.25+0.5*(self.update_counter-1)/21.)
+                        self.update_counter+=1
+                        wx.YieldIfNeeded()
+                        return real_jit(*args, **opts)
+                numba.jit=UpdateJit()
+                from ..models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
+                numba.jit=real_jit
 
         if self.open_file is None:
             self.splash.Destroy()
