@@ -193,6 +193,8 @@ class RemoteController(ModelController):
                 await asyncio.sleep(0.1)
 
     async def cleanup(self):
+        if self.cleanup_phase:
+            return
         debug("Starting cleanup sequence")
         self.cleanup_phase = True
         if self.optimizer.is_running():

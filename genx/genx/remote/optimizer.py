@@ -109,7 +109,7 @@ class RemoteOptimizer(GenxOptimizer):
         return self.running
 
     def get_start_guess(self):
-        pass
+        return self.start_guess
 
     def get_model(self) -> Model:
         pass
@@ -129,6 +129,8 @@ class RemoteOptimizer(GenxOptimizer):
         '''
         if not self.running:
             debug('Start asyncio task for fit')
+            self.n_fom_evals = 0
+            self.start_guess = array([])
             thread=Thread(target=self._start_remote_fit, args=(model,))
             thread.start()
             return True
@@ -203,6 +205,8 @@ class RemoteOptimizer(GenxOptimizer):
                         debug('Fit ended on remote')
                         self.running = False
                         self.new_best = obj.payload.start_guess
+                        self.start_guess = obj.payload.start_guess
+                        self.n_fom_evals = len(obj.payload.population)
                         self._callbacks.fitting_ended(obj.payload)
                     else:
                         self._callbacks.parameter_output(obj.payload)
