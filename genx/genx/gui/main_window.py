@@ -1237,7 +1237,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.update_title()
 
     def eh_mb_publish_plot(self, event):
-        dia=pubgraph_dialog.PublicationDialog(self, data=self.model_control.get_data())
+        dia=pubgraph_dialog.PublicationDialog(self, data=self.model_control.get_data(),
+                                      module=self.model_control.get_model().eval_in_model('globals().get("model")'))
         dia.ShowModal()
 
     def eh_mb_print_plot(self, event):
