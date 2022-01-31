@@ -16,6 +16,7 @@ Changes 3.6.1
 =============
  * Add generic definition for plot x- and y-labels. Building models define the values depending on last simulated
    scans and user can always overwrite in script with **__xlabel__** and **__ylabel__** special variables.
+ * Add detailed documentation about SLD plot configuration
 
 Changes 3.6.0
 =============

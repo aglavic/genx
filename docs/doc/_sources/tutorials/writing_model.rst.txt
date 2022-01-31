@@ -1,8 +1,7 @@
-.. _tutorial-writing-model:
-
 .. highlight:: default
     :linenothreshold: 10
 
+.. _tutorial-writing-model:
 
 **********************
 Writing a custom model
@@ -105,8 +104,14 @@ recommended to write a model library (python module). This is what has been done
 Instead of writing a lot of functions for each model, a class, or several, can be written to make the model
 simple to use. As a more elaborate solution for the previous simple example we can define a class::
 
+    from numpy import exp
+
     # Make GenX recognize the class as containing fittable parameters
     __pars__ = ['Gauss']
+
+    # Define user axes labels for plotting in the GUI
+    __xlabel__ = 'x-axis'
+    __ylabel__ = 'y-axis'
 
     # Definition of the class
     class Gauss:
@@ -118,18 +123,18 @@ simple to use. As a more elaborate solution for the previous simple example we c
             self.A=A
 
         # The set functions used in the parameters column
-        def setW(w):
-        self.w=w
+        def setW(self, w):
+            self.w=w
 
-        def setXc(xc):
+        def setXc(self, xc):
             self.xc=xc
 
-        def setA(A):
+        def setA(self, A):
             self.A=A
 
         # The function to calculate the model (A Gaussian)
-        def Simulate(x):
-            return A*exp((x-self.xc)**2/self.w**2)
+        def Simulate(self, x):
+            return self.A*exp((x-self.xc)**2/self.w**2)
 
     # Make a Gaussian:
     Peak1=Gauss(w=2.0,xc=1.5,A=2.0)
@@ -150,6 +155,9 @@ is defined as in the previous example but with the function call exchanged to ``
 to simulate the object ``Peak1``. The function names that should go into the parameter column in the
 parameter window will be: ``Peak1.setW``, ``Peak1.setXc`` and ``Peak1.setA`` and should be selecteble from the menu
 below ``Gauss`` as we defined the ``__pars__`` variable to tell the user interface about our new class.
+
+The main data plot will use the axes labels defined with the ``__xlabel__`` and ``__ylabel__`` variables.
+For pre-defined models these are set automatically but can always be overwritten by the user in the script.
 
 Multiple Gaussians
 ==================

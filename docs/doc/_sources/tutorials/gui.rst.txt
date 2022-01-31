@@ -49,6 +49,8 @@ top gives shortcuts to the most used functions. From the left this is
 
 For more information about how to handle the loading and transformation of data see :ref:`tutorial-data-handling`
 
+.. _tutorial-plot:
+
 Plot notebook
 -------------
 The plot notebook has four tabs.
@@ -83,6 +85,12 @@ FOM scans
 
      Both of these plots can be used to estimate error bars on the fitted parameters. The plots are made by right
      clicking on the row number in the grid and choose either :menuselection:`Scan FOM` or :menuselection:`Project FOM`.
+
+For any of the graphs the user can use the ``Zoom`` button and context menu to switch to a mode that allows
+zooming into a rectangle with the mouse. You can also change the plot range interactively by scrolling
+with the mouse wheel. This will change the upper y-limit of the graph.
+By pressing ``Shift`` you can change the lower limit, ``Ctrl`` changes to fine control and ``Alt`` changes
+to control the x-axis limits, instead.
 
 Model/Fit notebook
 ------------------

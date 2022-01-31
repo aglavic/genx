@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>The SLD graph &#8212; GenX 3.6.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Surface X-diffraction tutorial" href="sxrd.html" />
+    <link rel="prev" title="Model analystical functions by slicing" href="slicing.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sxrd.html" title="Surface X-diffraction tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="slicing.html" title="Model analystical functions by slicing"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The SLD graph</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="the-sld-graph">
+<span id="tutorial-sld-display"></span><h1>The SLD graph<a class="headerlink" href="#the-sld-graph" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">Reflectivity</span></code> and <code class="docutils literal notranslate"><span class="pre">SimpleReflectivity</span></code> plugins add a graph to display the sample profile as height
+from substrate vs. scattering length density (SLD) to the user interface. There are several curves
+when the model is based on more then one physical propserty (real and imaginary as well as magnetic parts).</p>
+<section id="context-menu-options">
+<h2>Context menu options<a class="headerlink" href="#context-menu-options" title="Permalink to this headline">¶</a></h2>
+<p>For the highest degree of flexibility, newer models are build to generate one set SLD profiles for each dataset
+as there might be changes to the model between each dataset simulation.
+An example would be a sample that changes thickness and density between reflectivity scans or a change in magnetization
+profile for different external fields or temperatures.
+On the other hand this feature can lead to a large number of curves that become hard to read.
+The context menu (right click on graph) therefore provides additional options to change the plot display:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="field-list simple">
+<dt class="field-odd">Legend Outside</dt>
+<dd class="field-odd"><p>Reduces the plot area and places the line legend on the right of the graph instead of
+in the top-right corner.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">Color from Data</dt>
+<dd class="field-odd"><p>Uses the simulation color of each dataset to define SLD graph colors. The possible items
+that make up each simulation are derived by changing the color saturation and value (HSV).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">Single Sample Mode</dt>
+<dd class="field-odd"><p>For simulations that do not change the sample model between datasets this can be activated
+to display just the SLD profile of the first simulation.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</section>
+<section id="sld-uncertainty">
+<h2>SLD uncertainty<a class="headerlink" href="#sld-uncertainty" title="Permalink to this headline">¶</a></h2>
+<p>With the <code class="docutils literal notranslate"><span class="pre">Reflectivity</span></code> plugin the SLD profile can also be used to visualize the parameter uncertainties from
+a fit. While this results in an intuitive display of real-space geometry one has to keep in mind that
+reflectometry does not measure the geometry directly but correlations between interfaces and the results are thus
+translation invariant.
+The user will therefore have to choose a reference interface that is kept fixed for this modeling.</p>
+<p>After fitting the model and caluculating the errors on parameters (see <a class="reference internal" href="error_statistics.html#tutorial-error-statistics"><span class="std std-ref">Error Statistics from bumps library</span></a>) activate
+the menu <span class="menuselection">Reflec‣Uncertainty Profile…</span>.
+A dialog will ask to enter the reference interface (python style index 0=Substrate, -1=Surface) and the number
+of samples.
+GenX will then simulate your model while choosing number of samples random parameter sets choosen from a gaussian
+distribution.
+The SLD will be calculated for the reference interface at z=0 and the SLD plot will show the fit result (line)
+together with two bands of uncertainty as partially transparent curves.
+The stronger curve is the 1-sigma (68.2%) and the more transparent the 2-sigma (95%) interval.</p>
+<p>The pictures below show the result for the x-ray reflectivity example close to the sample surface using
+a reference surface of -1 (left) and 0 (right):</p>
+<a class="reference internal image-reference" href="../_images/sld_uncertainty_top.png"><img alt="../_images/sld_uncertainty_top.png" src="../_images/sld_uncertainty_top.png" style="width: 48%;" /></a>
+<a class="reference internal image-reference" href="../_images/sld_uncertainty_bottom.png"><img alt="../_images/sld_uncertainty_bottom.png" src="../_images/sld_uncertainty_bottom.png" style="width: 48%;" /></a>
+</section>
+<section id="custom-filter">
+<h2>Custom filter<a class="headerlink" href="#custom-filter" title="Permalink to this headline">¶</a></h2>
+<p>If the buildin options to display the profiles do not fit your needs you can modify the displayed
+datasets and components within the model script.
+The recent reflectivity model <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function will start like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SLD</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">def</span> <span class="nf">Sim</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">SLD</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># BEGIN Dataset 0 DO NOT CHANGE</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">SimSpecular</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">inst</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">_sim</span><span class="p">:</span> <span class="n">SLD</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">SimSLD</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inst</span><span class="p">))</span>
+    <span class="c1"># END Dataset 0</span>
+</pre></div>
+</div>
+<p>If the model ist simulated (not fit) the <code class="docutils literal notranslate"><span class="pre">_sim</span></code> variable will be set to <strong>True</strong> resulting in the global list <code class="docutils literal notranslate"><span class="pre">SLD</span></code>
+to be populated. It will have one entry for each dataset in the model.
+Each entry (retuned by <code class="docutils literal notranslate"><span class="pre">sample.SimSLD</span></code>) is a dictionary containting each of the SLD lines as well as the <strong>z</strong>-values
+and the <strong>SLD unit</strong>.
+The dictionary keys are used in the plot legend, so you can see in the graph which items carry the information that
+is relevant.</p>
+<p>To remove certain datasets or SLD lines from the graph, add a filter at the end of the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">_sim</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">]:</span>
+        <span class="n">SLD</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">]:</span>
+        <span class="k">del</span><span class="p">(</span><span class="n">SLD</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;Re non-mag&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The example above is taken from a neutron reflectivity fit of 6 datasets, with even numbers being spin-up and
+odd numbers spin-down.
+The first for-loop removes any lines from the spin-down channels, as the model does not change between these
+datasets.
+The second for-loop removes the non-magnetic SLD part for dataset 2 and 4.
+The resulting graph is shown below:</p>
+<a class="reference internal image-reference" href="../_images/sld_filtered.png"><img alt="../_images/sld_filtered.png" src="../_images/sld_filtered.png" style="width: 90%;" /></a>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The SLD graph</a><ul>
+<li><a class="reference internal" href="#context-menu-options">Context menu options</a></li>
+<li><a class="reference internal" href="#sld-uncertainty">SLD uncertainty</a></li>
+<li><a class="reference internal" href="#custom-filter">Custom filter</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="slicing.html"
+                        title="previous chapter">Model analystical functions by slicing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sxrd.html"
+                        title="next chapter">Surface X-diffraction tutorial</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/sld_display.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sxrd.html" title="Surface X-diffraction tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="slicing.html" title="Model analystical functions by slicing"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The SLD graph</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

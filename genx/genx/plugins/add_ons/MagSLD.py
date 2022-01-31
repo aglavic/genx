@@ -55,10 +55,10 @@ class Plugin(framework.Template):
         self.refplugin.OnSimulate=self._OnSimulate
 
         sld_plot=self.refplugin.sld_plot
-        ax=sld_plot.plot.ax
+        ax=sld_plot.ax
         self._orig_position=ax.get_position()
         ax2=ax.twinx()
-        sld_plot.plot.ax2=ax2
+        sld_plot.ax2=ax2
         box=self._orig_position
         ax2.set_position([box.x0, box.y0, box.width, box.height])
         ax2.set_visible(False)
@@ -67,8 +67,8 @@ class Plugin(framework.Template):
     def Remove(self):
         self.refplugin.OnSimulate=self._orgi_call
         sld_plot=self.refplugin.sld_plot
-        sld_plot.plot.ax2.set_visible(False)
-        del sld_plot.plot.ax2
+        sld_plot.ax2.set_visible(False)
+        del sld_plot.ax2
         del self.refplugin
         framework.Template.Remove(self)
 
@@ -90,11 +90,13 @@ class Plugin(framework.Template):
         msld=None;
         z=None;
         unit=""
-        ax=sld_plot.plot.ax
-        ax2=sld_plot.plot.ax2
+        ax=sld_plot.ax
+        ax2=sld_plot.ax2
         for i, di in enumerate(model.data):
             if di.show and sld_items>i:
                 slds=sld_plot.plot_dicts[i]
+                if not 'z' in slds or not 'SLD unit' in slds:
+                    continue
                 z=slds['z']
                 unit=slds['SLD unit']
                 if unit in ["fm/\AA^{3}", "\\AA^{-2}", "", "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
@@ -121,7 +123,7 @@ class Plugin(framework.Template):
             else:
                 ax2.set_ylim((ymin*AAm2_to_emucc, ymax*AAm2_to_emucc))
                 ax2.yaxis.label.set_text('M [$emu/cm^3$]')
-            sld_plot.plot.ax.legend(loc='upper right',  # bbox_to_anchor=(1, 0.5),
+            sld_plot.ax.legend(loc='upper right',  # bbox_to_anchor=(1, 0.5),
                                     framealpha=0.5,
                                     fontsize="small", ncol=1)
         else:

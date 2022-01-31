@@ -26,6 +26,7 @@ Reflectivity
    /tutorials/neutron_sim
    /tutorials/neutron_fit
    /tutorials/slicing
+   /tutorials/sld_display
 
 Surface x-ray diffraction
 =========================

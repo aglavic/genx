@@ -1273,11 +1273,11 @@ class DataPlotPanel(PlotPanel):
         try:
             ylabel = model.eval_in_model('globals().get("__ylabel__", getattr(model, "__ylabel__", "y"))')
         except NameError:
-            ylabel = 'y'
+            ylabel = model.eval_in_model('globals().get("__ylabel__", "y")')
         try:
             xlabel = model.eval_in_model('globals().get("__xlabel__", getattr(model, "__xlabel__", "x"))')
         except NameError:
-            xlabel = 'x'
+            xlabel = model.eval_in_model('globals().get("__xlabel__", "x")')
         self.update_labels(xlabel, ylabel)
 
     @skips_event

@@ -63,6 +63,20 @@ After the evaluation you can copy-paste the table into e.g. Excel and the error 
 in the GenX paramter table for export. If you export to the new ORSO *.ort* format the full
 error estimation, including covariance matrix, will be written to the file header information.
 
+.. note::
+
+    Statistical evaluation of parameter uncertainties relies on Chi² being correctly defined.
+    This means that the error values of the dataset have to be correct.
+    Depending on the experiment this may be non-trivial but it is common practice and often a good assumption to
+    use the square root of the actual counts and propagate these errors when e.g. scaling the data.
+
+    If the errors are only known to a common factor (e.g. sqrt(I) where I has an unkown normalization) an established
+    approach is to scale the resulting parameter uncertainties by sqrt(Chi²) to correct for this common factor.
+    There is a check-box in the GenX dialog to apply this correction. It is up to the user to decide if this
+    correction is to be used.
+    (Deviations from the model at e.g. the total reflection region may increase the Chi² arbitrarily, leading to
+    significant overestimation of the parameter uncertainties.)
+
 Including Systematic Errors in XRR/NR Modls
 ===========================================
 Will be discussed in new GenX publication and added here once I find the time do write it. A common
