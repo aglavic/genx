@@ -3,6 +3,7 @@ The model controller and socket server for remote optimization.
 """
 
 import asyncio
+import struct
 from logging import debug, info, warning
 from hashlib import blake2b
 
@@ -42,6 +43,13 @@ class RemotCallback(GenxOptimizerCallback):
             debug(f'sending message {message}')
             asyncio.run_coroutine_threadsafe(self.send_message(message), self.loop)
 
+    def _end_fit(self):
+        if self.loop is None:
+            raise RuntimeError('Could not send message, no asyncio event loop defined')
+        else:
+            debug(f'cleanup fit locally')
+            asyncio.run_coroutine_threadsafe(self.parent.cleanup(), self.loop)
+
     def text_output(self, text):
         msg = messaging.StingMessage(text)
         self._send_message(msg)
@@ -57,6 +65,7 @@ class RemotCallback(GenxOptimizerCallback):
     def fitting_ended(self, result_data: SolverResultInfo):
         msg = messaging.OptimizerUpdate(result_data)
         self._send_message(msg)
+        self._end_fit()
 
     def autosave(self):
         pass
@@ -68,6 +77,7 @@ class RemoteController(ModelController):
     """
     reader = None
     writer = None
+    cleanup_phase = False
 
     key = b'empty'
 
@@ -99,7 +109,8 @@ class RemoteController(ModelController):
             self.reader = reader
             self.writer = writer
             await self.handshake()
-            while self.reader is not None:
+            self.cleanup_phase = False
+            while self.reader is not None and not self.cleanup_phase:
                 await self.recv_messages()
 
     async def handshake(self):
@@ -122,10 +133,13 @@ class RemoteController(ModelController):
     async def recv_messages(self):
         try:
             res = await messaging.GenXMessage.receive(self.reader)
-        except ConnectionResetError:
-            warning("Connection was reset")
-            await self.cleanup()
-            return
+        except (ConnectionResetError, struct.error):
+            if self.cleanup_phase:
+                return
+            else:
+                warning("Connection was reset")
+                await self.cleanup()
+                return
         if isinstance(res, messaging.StingMessage):
             info(f"Received text message: {res.text}")
         elif isinstance(res, messaging.ActionMessage):
@@ -141,7 +155,8 @@ class RemoteController(ModelController):
                         comm.bcast(self.model, root=0)
                         comm.bcast(self.optimizer.opt, root=0)
                     else:
-                        warning('Fit was started with use_mpi option selected, but server is started without MPI support')
+                        warning(
+                            'Fit was started with use_mpi option selected, but server is started without MPI support')
                         self.optimizer.opt.use_mpi = False
                         self.optimizer.WriteConfig()
                 self.StartFit()
@@ -179,6 +194,7 @@ class RemoteController(ModelController):
 
     async def cleanup(self):
         debug("Starting cleanup sequence")
+        self.cleanup_phase = True
         if self.optimizer.is_running():
             self.StopFit()
         while self.optimizer.is_running():
