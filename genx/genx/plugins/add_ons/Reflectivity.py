@@ -447,12 +447,6 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         if self.previous_xaxis==instrument.coords:
             return
         coords = instrument.coords
-        if coords in self.model.InstrumentUnits:
-            newx = '%s [%s]'%(coords,
-                              self.model.InstrumentUnits[coords])
-        else:
-            newx = coords
-        self.parent.plot_data.update_labels(newx)
         from genx import data
         if coords=='q':
             data.DataSet.simulation_params[0] = 0.001

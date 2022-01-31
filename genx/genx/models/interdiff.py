@@ -150,6 +150,9 @@ StackParameters={'Layers': [], 'Repetitions': 1}
 SampleParameters={'Stacks': [], 'Ambient': None, 'Substrate': None, 'h': 1.0,
                   'eta_z': 10.0, 'eta_x': 10.0}
 
+__xlabel__ = "q [Å$^{-1}$]"
+__ylabel__ = "Instnsity [a.u.]"
+
 def Specular(TwoThetaQz, sample, instrument):
     ''' Simulate the specular signal from sample when proped with instrument
     
@@ -159,6 +162,8 @@ def Specular(TwoThetaQz, sample, instrument):
     '''
     # preamble to get it working with my class interface
     restype=instrument.getRestype()
+    global __xlabel__
+    __xlabel__ = "q [Å$^{-1}$]"
 
     if restype==2 or restype==instrument_string_choices['restype'][2]:
         (TwoThetaQz, weight)=ResolutionVector(TwoThetaQz[:],
@@ -167,6 +172,7 @@ def Specular(TwoThetaQz, sample, instrument):
     if instrument.getCoords()==1 or \
             instrument.getCoords()==instrument_string_choices['coords'][1]:
         theta=TwoThetaQz/2
+        __xlabel__ = "2θ [°]"
     elif instrument.getCoords()==0 or \
             instrument.getCoords()==instrument_string_choices['coords'][0]:
         theta=arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi

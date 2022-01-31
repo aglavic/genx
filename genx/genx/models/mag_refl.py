@@ -300,6 +300,9 @@ sample_string_choices={'compress': ['yes', 'no'],
                        'slicing': ['yes', 'no'],
                        }
 
+__xlabel__ = "q [Å$^{-1}$]"
+__ylabel__ = "Instnsity [a.u.]"
+
 # A buffer to save previous calculations for XRMR calculations
 class XBuffer:
     W=None
@@ -341,6 +344,9 @@ def Specular(TwoThetaQz, sample, instrument):
     TwoThetaQz data.x
     # END Parameters
     '''
+    global __xlabel__
+    __xlabel__ = "q [Å$^{-1}$]"
+
     # preamble to get it working with my class interface
     restype=instrument.getRestype()
     xray_energy=AA_to_eV/instrument.getWavelength()
@@ -350,6 +356,7 @@ def Specular(TwoThetaQz, sample, instrument):
                                               range=instrument.getResintrange())
     if instrument.getCoords()==1 or instrument.getCoords()==instrument_string_choices['coords'][1]:
         theta=TwoThetaQz/2
+        __xlabel__ = "2θ [°]"
     elif instrument.getCoords()==0 or instrument.getCoords()==instrument_string_choices['coords'][0]:
         theta=arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     if any(theta<theta_limit):
@@ -371,9 +378,13 @@ def SpecularElectricField(TwoThetaQz, sample, instrument):
     TwoThetaQz data.x
     # END Parameters
     '''
+    global __xlabel__
+    __xlabel__ = "q [Å$^{-1}$]"
+
     xray_energy=AA_to_eV/instrument.getWavelength()
     if instrument.getCoords()==1 or instrument.getCoords()==instrument_string_choices['coords'][1]:
         theta=TwoThetaQz/2
+        __xlabel__ = "2θ [°]"
     elif instrument.getCoords()==0 or instrument.getCoords()==instrument_string_choices['coords'][0]:
         theta=arcsin(TwoThetaQz/4/pi*instrument.getWavelength())*180./pi
     if any(theta<theta_limit):
@@ -391,6 +402,8 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
     TwoThetaQz 3.0
     # END Parameters
     """
+    global __xlabel__
+    __xlabel__ = "E [eV]"
 
     restype=instrument.getRestype()
     # TODO: Fix so that resolution can be included.
@@ -434,6 +447,8 @@ def EnergySpecularField(Energy, TwoThetaQz, sample, instrument):
     TwoThetaQz 3.0
     # END Parameters
     """
+    global __xlabel__
+    __xlabel__ = "E [eV]"
 
     restype=instrument.getRestype()
     # TODO: Fix so that resolution can be included.

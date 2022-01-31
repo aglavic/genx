@@ -125,6 +125,8 @@ else:
 
 __pars__ = ['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument']
 
+__xlabel__ = "q-scan [r.l.u.]"
+__ylabel__ = "Instnsity [a.u.]"
 
 class Sample:
 

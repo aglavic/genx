@@ -957,11 +957,9 @@ class SamplePanel(wx.Panel):
         datasets = self.model.data
         from genx import data
         if coords=='q':
-            self.plugin.parent.plot_data.update_labels('q [Å$^{-1}$]')
             data.DataSet.simulation_params[0] = 0.001
             data.DataSet.simulation_params[1] = 0.601
         else:
-            self.plugin.parent.plot_data.update_labels('2θ [°]')
             data.DataSet.simulation_params[0] = 0.01
             data.DataSet.simulation_params[1] = 6.01
         res_set = False

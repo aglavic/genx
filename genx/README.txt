@@ -12,6 +12,11 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.1
+=============
+ * Add generic definition for plot x- and y-labels. Building models define the values depending on last simulated
+   scans and user can always overwrite in script with **__xlabel__** and **__ylabel__** special variables.
+
 Changes 3.6.0
 =============
  * Add new genx_server (python -m genx.server) script that allows to run a remote service
@@ -26,6 +31,7 @@ Changes 3.6.0
    always reset zoom with middle mouse button
  * Improve SLD plot context menu, allowing to show only first dataset, 
    external legend or coloring associated with datasets
+ * Option to generate a SLD uncertainty graph based on a user-defined reference interface
  * Do not show separate mag_x SLD for neutron magnetic reflectivity, if there is no mag_y component
  * Slight improvement or SXRD model performance
  * Add a genx3server PyPI package without GUI package requirements

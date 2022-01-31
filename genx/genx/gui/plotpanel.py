@@ -20,6 +20,7 @@ from wx import PAPER_A4, LANDSCAPE
 
 from .custom_events import plot_position, state_changed, skips_event
 from ..core.config import BaseConfig, Configurable
+from ..model import Model
 
 # deactivate matplotlib logging that we are not interested in
 getLogger('matplotlib.ticker').setLevel(ERROR)
@@ -1009,9 +1010,9 @@ class DataPlotPanel(PlotPanel):
         # self.error_ax = self.figure.add_axes(self.sub_ax_rect, sharex=self.ax)
         self.ax.set_autoscale_on(False)
         self.error_ax.set_autoscale_on(True)
-        self.ax.set_ylabel('Intensity [a.u.]')
+        self.ax.set_ylabel('y')
         self.error_ax.set_ylabel('FOM')
-        self.error_ax.set_xlabel('q [Å$^{-1}$]')
+        self.error_ax.set_xlabel('x')
 
     def update_labels(self, xlabel=None, ylabel=None, elabel=None):
         if xlabel is not None:
@@ -1265,9 +1266,19 @@ class DataPlotPanel(PlotPanel):
         Event handler funciton for connection to simulation events
         i.e. update the plot with the data + simulation
         '''
-        data_list=event.GetModel().get_data()
+        model: Model = event.GetModel()
+        data_list=model.get_data()
         self.update=self.plot_data_sim
         self.update(data_list)
+        try:
+            ylabel = model.eval_in_model('globals().get("__ylabel__", getattr(model, "__ylabel__", "y"))')
+        except NameError:
+            ylabel = 'y'
+        try:
+            xlabel = model.eval_in_model('globals().get("__xlabel__", getattr(model, "__xlabel__", "x"))')
+        except NameError:
+            xlabel = 'x'
+        self.update_labels(xlabel, ylabel)
 
     @skips_event
     def OnSolverPlotEvent(self, event):

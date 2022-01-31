@@ -201,6 +201,9 @@ AA_to_eV=12398.5
 q_limit=1e-10
 ''' Minimum allowed q-value '''
 
+__xlabel__ = "q [Å$^{-1}$]"
+__ylabel__ = "Instnsity [a.u.]"
+
 # A buffer to save previous calculations for spin-flip calculations
 class Buffer:
     Ruu=0
@@ -263,6 +266,9 @@ def resolutioncorr(R, TwoThetaQz, foocor, instrument, weight):
 
 def resolution_init(TwoThetaQz, instrument):
     ''' Inits the dependet variable with regards to coordinates and resolution.'''
+    global __xlabel__
+    __xlabel__ = "q [Å$^{-1}$]"
+
     restype=instrument.getRestype()
     weight=0
     if restype==2 or restype==instrument_string_choices['restype'][2]:
@@ -278,6 +284,7 @@ def resolution_init(TwoThetaQz, instrument):
                                   instrument_string_choices['coords'][2], 1, 2]:
         # Q = 4 * pi / instrument.getWavelength() * sin((TwoThetaQz + instrument.getTthoff()) * pi / 360.0)
         Q=TwoThetatoQ(instrument.getWavelength(), TwoThetaQz+instrument.getTthoff())
+        __xlabel__ = "2θ [°]"
     # Q vector given....
     elif instrument.getCoords() in [instrument_string_choices['coords'][0], 0]:
         # if there is no tth offset, nothing to be done for Q
@@ -501,6 +508,8 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
         raise ValueError('Only no resolution is allowed for energy scans.')
 
     wl=AA_to_eV/Energy
+    global __xlabel__
+    __xlabel__ = 'E [eV]'
 
     # TTH values given as x
     if instrument.getCoords()==instrument_string_choices['coords'][1] \

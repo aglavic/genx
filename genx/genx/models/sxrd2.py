@@ -123,6 +123,9 @@ else:
 
 __pars__=['Sample', 'UnitCell', 'Slab', 'AtomGroup', 'Instrument', 'Domain']
 
+__xlabel__ = "q-scan [r.l.u.]"
+__ylabel__ = "Instnsity [a.u.]"
+
 class SimMethodInfo:
     def __init__(self, name, args, def_args):
         """Container to hold the info about simulation methods

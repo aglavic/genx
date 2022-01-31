@@ -187,12 +187,21 @@ AA_to_eV=spec_nx.AA_to_eV
 q_limit=spec_nx.q_limit
 Buffer=spec_nx.Buffer
 
+__xlabel__ = "q [Å$^{-1}$]"
+__ylabel__ = "Instnsity [a.u.]"
+
 def SLD_calculations(z, item, sample, inst):
     res=spec_nx.SLD_calculations(z, item, sample, inst)
     res['z']-=5*refl.resolve_par(sample.Substrate, 'sigma')
     return res
 
-SimulationFunctions={'Specular': spec_nx.Specular,
+def Specular(TwoThetaQz, sample, instrument):
+    out = spec_nx.Specular(TwoThetaQz, sample, instrument)
+    global __xlabel__
+    __xlabel__ = spec_nx.__xlabel__
+    return out
+
+SimulationFunctions={'Specular': Specular,
                      'SLD': SLD_calculations
                      }
 

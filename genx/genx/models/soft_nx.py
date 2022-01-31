@@ -189,6 +189,9 @@ AA_to_eV=12398.5
 q_limit=1e-10
 ''' Minimum allowed q-value '''
 
+__xlabel__ = "q [Å$^{-1}$]"
+__ylabel__ = "Instnsity [a.u.]"
+
 # A buffer to save previous calculations for spin-flip calculations
 class Buffer:
     Ruu=0
@@ -239,6 +242,9 @@ def resolutioncorr(R, TwoThetaQz, foocor, instrument, weight):
 
 def resolution_init(TwoThetaQz, instrument):
     ''' Inits the dependet variable with regards to coordinates and resolution.'''
+    global __xlabel__
+    __xlabel__ = "q [Å$^{-1}$]"
+
     restype=instrument.getRestype()
     weight=0
     if restype==2 or restype==instrument_string_choices['restype'][2]:
@@ -253,6 +259,7 @@ def resolution_init(TwoThetaQz, instrument):
     if instrument.getCoords()==instrument_string_choices['coords'][1] \
             or instrument.getCoords()==1:
         Q=4*pi/instrument.getWavelength()*sin((TwoThetaQz+instrument.getTthoff())*pi/360.0)
+        __xlabel__ = "2θ [°]"
     # Q vector given....
     elif instrument.getCoords()==instrument_string_choices['coords'][0] \
             or instrument.getCoords()==0:

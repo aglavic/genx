@@ -18,6 +18,9 @@ from .sxrd import UnitCell, AtomGroup, Instrument, Slab, SymTrans
 __pars__=['SLSample', 'SLStandard', 'UnitCell', 'Slab', 'AtomGroup',
           'Instrument']
 
+__xlabel__ = "q-scan [r.l.u.]"
+__ylabel__ = "Instnsity [a.u.]"
+
 class SLSample:
     '''Class that models a multilayer sample on top of a 
     substrate according to Fullertons model as given in

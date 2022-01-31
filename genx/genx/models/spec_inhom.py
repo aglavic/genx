@@ -225,11 +225,15 @@ AA_to_eV=spec_nx.AA_to_eV
 q_limit=spec_nx.q_limit
 Buffer=spec_nx.Buffer
 
+__xlabel__ = "q [Å$^{-1}$]"
+__ylabel__ = "Instnsity [a.u.]"
+
 def Specular(TwoThetaQz, sample, instrument):
     '''
       The model function. Averadging the intensities for different
       layer thicknesses as found for e.g. large PLD samples.
     '''
+    global __xlabel__
 
     Q, TwoThetaQz, weight=spec_nx.resolution_init(TwoThetaQz, instrument)
     if any(Q<q_limit):
@@ -294,6 +298,8 @@ def Specular(TwoThetaQz, sample, instrument):
     foocor=spec_nx.footprintcorr(Q, instrument)
     # resolution correction
     R=spec_nx.resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
+
+    __xlabel__ = spec_nx.__xlabel__
     return R+instrument.getIbkg()
 
 def ResolutionVectorAsymetric(Q, dQ, points, dLambda, asymmetry, range_=3):
