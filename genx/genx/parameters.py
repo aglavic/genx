@@ -424,6 +424,11 @@ class Parameters(H5Savable):
     def __getitem__(self, item):
         return ConnectedParameter(self, self.data[item])
 
+    def __eq__(self, other):
+        if not isinstance(other, Parameters):
+            return False
+        return self.data==other.data
+
     def __repr__(self):
         """
         Display information about the fit parameters.
