@@ -3,6 +3,8 @@ GenX model and optimizer control classes. All functional aspects should be cover
 """
 import os
 import sys
+from typing import List
+
 import h5py
 import numpy as np
 from logging import warning
@@ -17,16 +19,19 @@ from .model_actions import ActionHistory, DeleteParams, InsertParam, ModelAction
     UpdateParamValue, UpdateSolverOptoins, UpdateDataPlotSettings
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
 
+
 class ModelController:
-    model:Model
-    optimizer:GenxOptimizer
+    model: Model
+    optimizer: GenxOptimizer
     history: ActionHistory
+    model_store: List[Model]
 
     def __init__(self, optimizer: GenxOptimizer):
-        self.model=Model()
-        self.optimizer=optimizer
-        self.history=ActionHistory()
-        self.model.saved=True
+        self.model = Model()
+        self.optimizer = optimizer
+        self.history = ActionHistory()
+        self.model.saved = True
+        self.model_store = []
 
     def action_callback(self, action: ModelAction):
         pass
@@ -36,20 +41,20 @@ class ModelController:
 
     def set_action_callback(self, func):
         # sets a function to be called when aver an action is applied.
-        self.action_callback=func
+        self.action_callback = func
 
     def perform_action(self, action_class: type(ModelAction), *params):
-        action=action_class(self.model, *params)
+        action = action_class(self.model, *params)
         self.history.execute(action)
         self.action_callback(action)
 
     def undo_action(self):
-        action=self.history.undo()
+        action = self.history.undo()
         self.action_callback(action)
         return action
 
     def redo_action(self):
-        action=self.history.redo()
+        action = self.history.redo()
         self.action_callback(action)
         return action
 
@@ -61,7 +66,7 @@ class ModelController:
         self.action_callback(NoOp(None))
 
     def history_remove(self, start, length=1):
-        actions=self.history.remove_actions(start, length)
+        actions = self.history.remove_actions(start, length)
         self.action_callback(actions)
 
     def is_configured(self):
@@ -102,7 +107,7 @@ class ModelController:
         return self.model
 
     def set_model_script(self, text):
-        old_script=self.model.get_script().replace('\r\n', '\n').replace('\r', '\n').strip()
+        old_script = self.model.get_script().replace('\r\n', '\n').replace('\r', '\n').strip()
         if text.strip().replace('\r\n', '\n').replace('\r', '\n')==old_script:
             # nothing to do, same script
             return
@@ -112,13 +117,13 @@ class ModelController:
         return self.model.get_script()
 
     def set_model_params(self, params):
-        self.model.parameters=params
+        self.model.parameters = params
 
     def get_model_params(self):
         return self.model.parameters
 
     def set_data(self, data: DataList):
-        self.model.data=data
+        self.model.data = data
 
     def get_data(self) -> DataList:
         return self.model.data
@@ -152,7 +157,7 @@ class ModelController:
         self.model.parameters.set_error_pars(error_values)
 
     def set_value_pars(self, new_values):
-        pars=self.model.parameters.get_value_pars()
+        pars = self.model.parameters.get_value_pars()
         if all([pi==pj for pi, pj in zip(new_values, pars)]):
             return
         self.perform_action(UpdateParams, new_values)
@@ -181,14 +186,14 @@ class ModelController:
         return self.model.fom_func.__name__
 
     def set_filename(self, filename):
-        self.model.filename=filename
+        self.model.filename = filename
 
     def get_filename(self):
         return self.model.filename
 
     def get_model_name(self):
-        module=self.script_module
-        name=module.model.__name__.rsplit('.', 1)[1]
+        module = self.script_module
+        name = module.model.__name__.rsplit('.', 1)[1]
         return name
 
     def force_compile(self):
@@ -224,14 +229,14 @@ class ModelController:
 
     def get_combined_options(self):
         # Return a configuration object with all parameters relevant for fitting
-        return self.model.solver_parameters|self.optimizer.opt
+        return self.model.solver_parameters | self.optimizer.opt
 
     def update_combined_options(self, new_values: dict):
         combined_options = self.get_combined_options()
-        difference={}
+        difference = {}
         for key, value in new_values.items():
             if getattr(combined_options, key, None)!=value:
-                difference[key]=value
+                difference[key] = value
         self.perform_action(UpdateSolverOptoins, self.optimizer, difference)
 
     @property
@@ -240,7 +245,7 @@ class ModelController:
 
     @saved.setter
     def saved(self, value):
-        self.model.saved=value
+        self.model.saved = value
 
     @property
     def eval_in_model(self):
@@ -260,8 +265,8 @@ class ModelController:
             raise ErrorBarError('Can not find any stored evaluations of the model in the optimizer.\n'
                                 'Run a fit before calculating the errorbars.')
         if self.optimizer.get_start_guess() is not None and not self.optimizer.is_running():
-            n_elements=len(self.optimizer.get_start_guess())
-            error_values=[]
+            n_elements = len(self.optimizer.get_start_guess())
+            error_values = []
             for index in range(n_elements):
                 # calculate the error, this is threshold based and not rigours
                 error_values.append(self.optimizer.calc_error_bar(index))
@@ -274,7 +279,7 @@ class ModelController:
         Projects the parameter number parameter on one axis and returns
         the fom values.
         '''
-        row=self.model.parameters.get_pos_from_row(parameter)
+        row = self.model.parameters.get_pos_from_row(parameter)
         if self.optimizer.get_start_guess() is not None and not self.optimizer.is_running():
             return self.optimizer.project_evals(row)
         else:
@@ -325,8 +330,8 @@ class ModelController:
             self.save_hgx(fname)
         else:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')
-        self.model.filename=os.path.abspath(fname)
-        self.model.saved=True
+        self.model.filename = os.path.abspath(fname)
+        self.model.saved = True
 
     def load_file(self, fname: str):
         """
@@ -338,33 +343,36 @@ class ModelController:
             self.load_hgx(fname)
         else:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')
-        self.model.filename=os.path.abspath(fname)
-        self.model.saved=True
+        self.model.filename = os.path.abspath(fname)
+        self.model.saved = True
         self.history_clear()
 
     def save_hgx(self, fname: str):
-        f=h5py.File(fname.encode('utf-8'), 'w')
-        g=f.create_group(self.model.h5group_name)
+        f = h5py.File(fname.encode('utf-8'), 'w')
+        g = f.create_group('current')
         self.model.write_h5group(g)
-        opt_group=g.create_group(self.optimizer.h5group_name)
-        opt_group['solver']=self.optimizer.__class__.__name__
-        opt_group['solver_module']=self.optimizer.__class__.__module__
+        opt_group = g.create_group(self.optimizer.h5group_name)
+        opt_group['solver'] = self.optimizer.__class__.__name__
+        opt_group['solver_module'] = self.optimizer.__class__.__module__
         self.optimizer.write_h5group(opt_group)
         self.WriteConfig()
-        g['config']=config.model_dump().encode('utf-8')
+        g['config'] = config.model_dump().encode('utf-8')
+        for modeli in self.model_store:
+            g = f.create_group(modeli.h5group_name)
+            modeli.write_h5group(g)
         f.close()
 
     def load_hgx(self, fname: str):
-        f=h5py.File(fname.encode('utf-8'), 'r')
-        g=f[self.model.h5group_name]
+        f = h5py.File(fname.encode('utf-8'), 'r')
+        g = f[self.model.h5group_name]
         self.model.read_h5group(g)
-        opt_group=g[self.optimizer.h5group_name]
+        opt_group = g[self.optimizer.h5group_name]
         try:
-            solver_class=opt_group.get('solver')[()]
-            solver_module=opt_group.get('solver_module')[()]
+            solver_class = opt_group.get('solver')[()]
+            solver_module = opt_group.get('solver_module')[()]
         except (KeyError, TypeError):
-            solver_class='DiffEv'
-            solver_module='genx.diffev'
+            solver_class = 'DiffEv'
+            solver_module = 'genx.diffev'
         else:
             if type(solver_class) is bytes:
                 solver_class = solver_class.decode('utf-8')
@@ -375,7 +383,7 @@ class ModelController:
             except ImportError:
                 warning(f'Could not import solver {solver_class} from moudle {solver_module}')
             else:
-                prev_optimizer=self.optimizer
+                prev_optimizer = self.optimizer
                 exec(f'self.optimizer={solver_class}()')
                 self.optimizer.set_callbacks(prev_optimizer.get_callbacks())
         self.optimizer.read_h5group(opt_group)
@@ -386,16 +394,27 @@ class ModelController:
             pass
         except AttributeError:
             pass
+        self.model_store = []
+        for gname in f.keys():
+            if gname=='current':
+                continue
+            else:
+                g = f[gname]
+                modeli=Model()
+                modeli.h5group_name=gname
+                modeli.read_h5group(g)
+                self.model_store.append(modeli)
         f.close()
 
     def save_gx(self, fname: str):
         self.model.save(fname)
         self.model.save_addition('config', config.model_dump())
         self.model.save_addition('optimizer', self.optimizer.pickle_string(clear_evals=
-                                        not config.getboolean('solver', 'save all evals')))
+                                                                           not config.getboolean('solver',
+                                                                                                 'save all evals')))
 
     def load_gx(self, fname: str):
-        self._patch_modules() # for compatibility with old files
+        self._patch_modules()  # for compatibility with old files
         self.model.load(fname)
         config.load_string(self.model.load_addition('config').decode('utf-8'))
         self.optimizer.pickle_load(self.model.load_addition('optimizer'))
@@ -403,4 +422,4 @@ class ModelController:
     def _patch_modules(self):
         # add legacy items to genx for loading of pickled strings from old program
         from genx import diffev
-        diffev.defualt_autosave=diffev.DiffEv._callbacks.autosave
+        diffev.defualt_autosave = diffev.DiffEv._callbacks.autosave
