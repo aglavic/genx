@@ -30,7 +30,8 @@ class Plugin(framework.Template):
         inputpanel.SetSizer(sizer)
         self.shell=wx.py.shell.Shell(inputpanel, -1,
                                      locals={'frame': parent, 'model': self.GetModel(),
-                                             'data': self.GetModel().get_data()})
+                                             'data': self.GetModel().get_data(),
+                                             'ctrl': parent.model_control.controller})
         sizer.Add(self.shell, 1, wx.EXPAND)
         inputpanel.Layout()
         self.StatusMessage('Shell plugin loaded')

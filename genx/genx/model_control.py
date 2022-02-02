@@ -13,11 +13,11 @@ from .core.config import config
 from .data import DataList
 from .exceptions import ErrorBarError, GenxIOError
 from .model import Model
-from .model_actions import ActionHistory, DeleteParams, InsertParam, ModelAction, MoveParam, NoOp, UpdateModelScript, \
-    SortAndGroupParams, UpdateColorCycle, \
-    UpdateParams, \
-    UpdateParamValue, UpdateSolverOptoins, UpdateDataPlotSettings
+from .model_actions import ActionHistory, DeleteParams, ExchangeModel, InsertParam, ModelAction, MoveParam, NoOp, \
+    UpdateModelScript, SortAndGroupParams, UpdateColorCycle, UpdateParams, UpdateParamValue, \
+    UpdateSolverOptoins, UpdateDataPlotSettings
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback
+from .plugins.data_loader_framework import Template as DataLoaderTemplate
 
 
 class ModelController:
@@ -101,10 +101,40 @@ class ModelController:
         self.history_clear()
 
     def set_model(self, model: Model):
-        raise NotImplemented("Can't set model, might be unsafe")
+        self.perform_action(ExchangeModel, model)
 
     def get_model(self) -> Model:
         return self.model
+
+    def activate_model(self, store_index):
+        '''
+        Takes a model from the model_store list and sets it as active model_store.
+        '''
+        self.set_model(self.model_store[store_index])
+
+    def put_in_store(self, store_index=None):
+        '''
+        Places a copy of the current model in
+        '''
+        if store_index is not None:
+            self.model_store.insert(store_index, self.model.copy())
+        else:
+            self.model_store.append(self.model.deepcopy())
+
+    def read_sequence(self, data_loader: DataLoaderTemplate, *file_lists):
+        data = self.get_data()
+        if len(data)!=len(file_lists):
+            raise ValueError("You have to provide a list of datafiles for each dataset in the model")
+        for i, fi in enumerate(zip(*file_lists)):
+            for j, dj in enumerate(data):
+                data_loader.LoadData(dj, fi[j])
+            self.model.h5group_name=f'sequence_{i}'
+            self.put_in_store()
+        # activate the first dataset
+        self.activate_model(0)
+
+    def active_index(self):
+        return self.model_store.index(self.model)
 
     def set_model_script(self, text):
         old_script = self.model.get_script().replace('\r\n', '\n').replace('\r', '\n').strip()
@@ -320,34 +350,34 @@ class ModelController:
     def save(self):
         self.save_file(self.model.get_filename())
 
-    def save_file(self, fname: str):
+    def save_file(self, fname: str, update_callback=None):
         """
         Saves objects model, optimiser and config into file fname
         """
         if fname.endswith('.gx'):
             self.save_gx(fname)
         elif fname.endswith('.hgx'):
-            self.save_hgx(fname)
+            self.save_hgx(fname, update_callback=update_callback)
         else:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')
         self.model.filename = os.path.abspath(fname)
         self.model.saved = True
 
-    def load_file(self, fname: str):
+    def load_file(self, fname: str, update_callback=None):
         """
         Loads parameters from fname into model, optimizer and config
         """
         if fname.endswith('.gx'):
             self.load_gx(fname)
         elif fname.endswith('.hgx'):
-            self.load_hgx(fname)
+            self.load_hgx(fname, update_callback=update_callback)
         else:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')
         self.model.filename = os.path.abspath(fname)
         self.model.saved = True
         self.history_clear()
 
-    def save_hgx(self, fname: str):
+    def save_hgx(self, fname: str, update_callback=None):
         f = h5py.File(fname.encode('utf-8'), 'w')
         g = f.create_group('current')
         self.model.write_h5group(g)
@@ -357,12 +387,15 @@ class ModelController:
         self.optimizer.write_h5group(opt_group)
         self.WriteConfig()
         g['config'] = config.model_dump().encode('utf-8')
-        for modeli in self.model_store:
+        N=len(self.model_store)+1
+        for i, modeli in enumerate(self.model_store):
+            if update_callback:
+                update_callback(i+1, N)
             g = f.create_group(modeli.h5group_name)
             modeli.write_h5group(g)
         f.close()
 
-    def load_hgx(self, fname: str):
+    def load_hgx(self, fname: str, update_callback=None):
         f = h5py.File(fname.encode('utf-8'), 'r')
         g = f[self.model.h5group_name]
         self.model.read_h5group(g)
@@ -395,13 +428,16 @@ class ModelController:
         except AttributeError:
             pass
         self.model_store = []
-        for gname in f.keys():
+        N=len(f)
+        for i, gname in enumerate(f.keys()):
             if gname=='current':
                 continue
             else:
+                if update_callback:
+                    update_callback(i, N)
                 g = f[gname]
-                modeli=Model()
-                modeli.h5group_name=gname
+                modeli = Model()
+                modeli.h5group_name = gname
                 modeli.read_h5group(g)
                 self.model_store.append(modeli)
         f.close()

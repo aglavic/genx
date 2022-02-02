@@ -254,10 +254,10 @@ class Parameters(H5Savable):
         row_nmb = [nmb for nmb in rows if self.data[nmb][2] and \
                    not self.data[nmb][0]=='']
         funcs = [row[0] for row in self.data if row[2] and not row[0]=='']
-        mytest = [row[1] for row in self.data if row[2] and not row[0]=='']
+        values = [row[1] for row in self.data if row[2] and not row[0]=='']
         min_ = [row[3] for row in self.data if row[2] and not row[0]=='']
         max_ = [row[4] for row in self.data if row[2] and not row[0]=='']
-        return row_nmb, funcs, mytest, min_, max_
+        return row_nmb, funcs, values, min_, max_
 
     def get_pos_from_row(self, row):
         '''get_pos_from_row(self) --> pos [int]

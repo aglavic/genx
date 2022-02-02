@@ -3,6 +3,8 @@ Controller class for the differnetial evolution class diffev
 Takes care of stopping and starting - output to the gui as well
 as some input from dialog boxes.
 '''
+from dataclasses import dataclass
+
 import numpy as np
 import time
 from typing import Union, TYPE_CHECKING
@@ -154,6 +156,12 @@ class DelayedCallbacks(Thread, GuiCallbacks):
         self.wait_lock.set()
 
 
+@dataclass
+class BatchOptions:
+    keep_last: bool = True
+    adjust_bounds: bool = True
+
+
 class ModelControlGUI(wx.EvtHandler):
     '''
     Class to take care of the GUI - solver interaction.
@@ -161,6 +169,8 @@ class ModelControlGUI(wx.EvtHandler):
     for the solver routine. This is where the application specific
     code are used i.e. interfacing the optimization code to the GUI.
     '''
+    batch_running: bool = False
+    batch_options: BatchOptions
 
     def __init__(self, parent: 'main_window.GenxMainWindow'):
         wx.EvtHandler.__init__(self)
@@ -184,6 +194,7 @@ class ModelControlGUI(wx.EvtHandler):
         self.controller.set_action_callback(self.OnActionCallback)
         self.parent.Bind(EVT_FITTING_ENDED, self.OnFittingEnded)
         self.parent.Bind(EVT_AUTOSAVE, self.AutoSave)
+        self.batch_options = BatchOptions()
 
         # Now load the default configuration
         self.ReadConfig()
@@ -202,6 +213,7 @@ class ModelControlGUI(wx.EvtHandler):
             else:
                 self.parent.mb_checkables[colors2keys[None]].Check()
             dl = self.parent.data_list.list_ctrl
+            dl.data_cont.data = self.get_data()
             dl._UpdateImageList()
             dl._UpdateData('Plot settings changed', data_changed=True)
         if ModelInfluence.PARAM in action.influences:
@@ -432,8 +444,11 @@ class ModelControlGUI(wx.EvtHandler):
             ShowErrorDialog(self.parent, evt.error_message)
             return
 
-        message = 'Do you want to keep the parameter values from the fit?'
-        result = ShowQuestionDialog(self.parent, message, 'Keep the fit?', yes_no=True)
+        if not self.batch_running:
+            message = 'Do you want to keep the parameter values from the fit?'
+            result = ShowQuestionDialog(self.parent, message, 'Keep the fit?', yes_no=True)
+        else:
+            result = True
         if result:
             self.controller.set_value_pars(evt.values)
             evt = update_parameters(values=evt.values,
@@ -445,6 +460,8 @@ class ModelControlGUI(wx.EvtHandler):
                                     desc='Parameter Improved', update_errors=False,
                                     permanent_change=True)
             wx.PostEvent(self.parent, evt)
+            if self.batch_running:
+                wx.CallAfter(self.batch_next)
         else:
             evt = update_parameters(values=evt.start_guess,
                                     new_best=True,
@@ -455,6 +472,28 @@ class ModelControlGUI(wx.EvtHandler):
                                     desc='Parameter Reset', update_errors=False,
                                     permanent_change=False)
             wx.PostEvent(self.parent, evt)
+
+    def batch_next(self):
+        # move to the next dataset in the batch and start fitting
+        idx = self.controller.active_index()
+        params = self.get_parameters()
+        if idx+1==len(self.controller.model_store):
+            self.batch_running = False
+            return
+        self.controller.activate_model(idx+1)
+        new_pars = self.get_parameters()
+        if self.batch_options.keep_last:
+            row_nmb, funcs, values, min_, max_ = params.get_fit_pars()
+            for ri, vi in zip(row_nmb, values):
+                new_pars.set_value(ri, 1, vi)
+        if self.batch_options.adjust_bounds:
+            row_nmb, funcs, values, min_, max_ = new_pars.get_fit_pars()
+            for ri, vi, mii, mai in zip(row_nmb, values, min_, max_):
+                val_range = (mai-mii)
+                new_pars.set_value(ri, 3, vi-val_range/2.)
+                new_pars.set_value(ri, 4, vi+val_range/2.)
+        # wait 1 second for other GUI updates to finish before starting next fit
+        wx.CallLater(1000, self.controller.StartFit)
 
     @skips_event
     def OnSetParameterValue(self, evt):
@@ -549,6 +588,10 @@ class ModelControlGUI(wx.EvtHandler):
         self.controller.StartFit()
 
     def StopFit(self):
+        if self.batch_running:
+            # if batch processing, finish last fit if not pushed a second time
+            self.batch_running = False
+            return
         self.controller.StopFit()
 
     def ResumeFit(self):
@@ -562,7 +605,14 @@ class ModelControlGUI(wx.EvtHandler):
         self.controller.save()
 
     def load_file(self, fname):
-        self.controller.load_file(fname)
+        prog = wx.ProgressDialog('Loading...', f'Reading from file\n{fname}\n',
+                                 maximum=100, parent=self.parent)
+
+        def update_callback(i, N):
+            prog.Update(int(i/N*100), f'Reading from file\n{fname}\ndataset {i} of {N}')
+
+        self.controller.load_file(fname, update_callback=update_callback)
+        prog.Destroy()
         solver_classes = [si.__class__ for si in self.solvers.values()]
         loaded_solver = self.controller.optimizer.__class__
         if loaded_solver in solver_classes:

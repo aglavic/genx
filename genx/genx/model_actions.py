@@ -524,3 +524,19 @@ class SortAndGroupParams(ModelAction):
     def undo(self):
         self.model.parameters.data=self.old_parameters
         self.old_parameters=[]
+
+class ExchangeModel(ModelAction):
+    influences = ModelInfluence.PARAM|ModelInfluence.DATA|ModelInfluence.SCRIPT
+    name = 'exchange model'
+    description = 'replace model, data and parameter grid from internal storage memory'
+
+    def __init__(self, model, new_model: Model):
+        self.model = model
+        self.new_state = new_model.__getstate__().copy()
+        self.old_state = model.__getstate__().copy()
+
+    def execute(self):
+        self.model.__setstate__(self.new_state)
+
+    def undo(self):
+        self.model.__setstate__(self.old_state)

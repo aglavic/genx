@@ -13,7 +13,7 @@ import zipfile
 from dataclasses import dataclass, field
 from io import StringIO
 from logging import debug
-from typing import Dict
+from copy import deepcopy
 
 import numpy as np
 
@@ -225,6 +225,15 @@ class Model(H5HintedExport):
         self.create_fom_mask_func()
         if self.compiled:  # if the model was compiled before pickling, do it now
             self.compile_script()
+
+    def copy(self) -> "Model":
+        state = self.__getstate__().copy()
+        output = Model()
+        output.__setstate__(state)
+        return output
+
+    def deepcopy(self) -> "Model":
+        return deepcopy(self)
 
     def read_h5group(self, group):
         """
@@ -949,6 +958,10 @@ class Model(H5HintedExport):
         """
         self.simulate()
         return self.data.plot(data_labels=data_labels, sim_labels=sim_labels)
+
+    def __eq__(self, other: "Model"):
+        # compare relevant parts of model object agains another
+        return self.data==other.data and self.script==other.script and self.parameters==other.parameters
 
     def __repr__(self):
         """

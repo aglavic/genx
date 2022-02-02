@@ -583,6 +583,7 @@ class DataSet(H5HintedExport):
         result &= (self.x_command==other.x_command)
         result &= (self.y_command==other.y_command)
         result &= (self.error_command==other.error_command)
+        result &= (self.name==other.name)
 
         return result
 

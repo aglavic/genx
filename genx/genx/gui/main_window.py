@@ -1233,7 +1233,17 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.eh_mb_saveas(event)
         else:
             with self.catch_error(action='save_model', step=f'save file {os.path.basename(fname)}'):
-                self.model_control.controller.save_file(fname)
+                if len(self.model_control.controller.model_store)>0:
+                    prog = wx.ProgressDialog('Saving...', f'Writing to file\n{fname}\n',
+                                             maximum=100, parent=self)
+
+                    def update_callback(i, N):
+                        prog.Update(int(i/N*100), f'Writing to file\n{fname}\ndataset {i} of {N}')
+
+                    self.model_control.controller.save_file(fname, update_callback=update_callback)
+                    prog.Destroy()
+                else:
+                    self.model_control.controller.save_file(fname)
                 self.update_title()
 
     def eh_mb_publish_plot(self, event):
@@ -1562,7 +1572,17 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                             'Overwrite?')
             if result:
                 with self.catch_error(action='saveas', step=f'saveing file as {os.path.basename(fname)}'):
-                    self.model_control.controller.save_file(fname)
+                    if len(self.model_control.controller.model_store)>0:
+                        prog = wx.ProgressDialog('Saving...', f'Writing to file\n{fname}\n',
+                                                 maximum=100, parent=self)
+
+                        def update_callback(i, N):
+                            prog.Update(int(i/N*100), f'Writing to file\n{fname}\ndataset {i} of {N}')
+
+                        self.model_control.controller.save_file(fname, update_callback=update_callback)
+                        prog.Destroy()
+                    else:
+                        self.model_control.controller.save_file(fname)
                 self.update_title()
         dlg.Destroy()
 
