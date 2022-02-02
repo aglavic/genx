@@ -58,6 +58,7 @@ update_text, EVT_SOLVER_UPDATE_TEXT=NewEvent()
 update_parameters, EVT_UPDATE_PARAMETERS=NewEvent()
 fitting_ended, EVT_FITTING_ENDED=NewEvent()
 autosave, EVT_AUTOSAVE=NewEvent()
+batch_next, EVT_BATCH_NEXT=NewEvent()
 
 ## plugins
 # new model is ready with a script as value.

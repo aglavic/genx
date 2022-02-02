@@ -130,6 +130,8 @@ class H5HintedExport(H5Savable):
             else:
                 if typ is str:
                     value = value.encode('utf-8')
+                elif typ in [int, float, complex]:
+                    value = [value]
                 if getattr(value, 'nbytes', 0)>1024*128:
                     # this is an array with significant size, use compression
                     group.create_dataset(attr, data=value, dtype=value.dtype, chunks=True,
@@ -229,6 +231,8 @@ class H5HintedExport(H5Savable):
                             write_attr = value.decode('utf-8')
                         except UnicodeDecodeError:
                             err_mesg = f'\n    Reason: Could not convert bytes to string using "utf-8" encoding.'
+                    elif typ in [int, float, complex]:
+                        write_attr = typ(value[0])
                     else:
                         try:
                             write_attr = typ(value)

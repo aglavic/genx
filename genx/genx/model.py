@@ -88,6 +88,7 @@ class Model(H5HintedExport):
     fomfunction: str
     data: DataList
     parameters: Parameters
+    sequence_value: float = 0.
 
     @property
     def fomfunction(self):

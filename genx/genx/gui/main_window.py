@@ -28,6 +28,7 @@ from . import datalist, help, images as img, parametergrid, plotpanel, solvergui
 from .exception_handling import CatchModelError
 from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
 from .online_update import check_version, VersionInfoDialog
+from .batch_dialog import BatchDialog
 from ..plugins import add_on_framework as add_on
 from ..core import config as conf_mod
 from ..core.colors import COLOR_CYCLES
@@ -272,6 +273,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.Append(MenuId.SAVE_MODEL, "Save...\tCtrl+S", "Saves the current model")
         mb_file.Append(MenuId.SAVE_MODEL_AS, "Save As...", "Saves the active model with a new name")
         mb_file.AppendSeparator()
+        mb_file.Append(MenuId.MODEL_BATCH, "Batch dialog...", "Run sequencial refinements of many datasets")
+        mb_file.AppendSeparator()
         mb_import=wx.Menu()
         mb_import.Append(MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N", "Creates a new reflectivity model based on datafile")
         mb_import.Append(MenuId.IMPORT_DATA, "Import Data...\tCtrl+D", "Import data to the active data set")
@@ -399,6 +402,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_open, id=MenuId.OPEN_MODEL)
         self.Bind(wx.EVT_MENU, self.eh_mb_save, id=MenuId.SAVE_MODEL)
         self.Bind(wx.EVT_MENU, self.eh_mb_saveas, id=MenuId.SAVE_MODEL_AS)
+        self.Bind(wx.EVT_MENU, self.eh_mb_batch, id=MenuId.MODEL_BATCH)
         self.Bind(wx.EVT_MENU, self.eh_mb_import_data, id=MenuId.IMPORT_DATA)
         self.Bind(wx.EVT_MENU, self.eh_mb_import_table, id=MenuId.IMPORT_TABLE)
         self.Bind(wx.EVT_MENU, self.eh_mb_import_script, id=MenuId.IMPORT_SCRIPT)
@@ -1585,6 +1589,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                         self.model_control.controller.save_file(fname)
                 self.update_title()
         dlg.Destroy()
+
+    def eh_mb_batch(self, event):
+        dia = BatchDialog(self, self.model_control)
+        ssize = self.GetSize()
+        dia.SetSize(wx.Size(ssize.width//3, int(ssize.height*0.8)))
+        dia.Show()
 
     def eh_mb_view_color_cycle(self, event):
         id2colors=dict(((self.mb_checkables[key].GetId(), value) for key, value in COLOR_CYCLES.items()))

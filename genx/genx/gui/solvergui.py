@@ -159,7 +159,7 @@ class DelayedCallbacks(Thread, GuiCallbacks):
 @dataclass
 class BatchOptions:
     keep_last: bool = True
-    adjust_bounds: bool = True
+    adjust_bounds: bool = False
 
 
 class ModelControlGUI(wx.EvtHandler):
@@ -479,6 +479,7 @@ class ModelControlGUI(wx.EvtHandler):
         params = self.get_parameters()
         if idx+1==len(self.controller.model_store):
             self.batch_running = False
+            evt = batch_next(last_index=idx, finished=True)
             return
         self.controller.activate_model(idx+1)
         new_pars = self.get_parameters()
@@ -493,6 +494,8 @@ class ModelControlGUI(wx.EvtHandler):
                 new_pars.set_value(ri, 3, vi-val_range/2.)
                 new_pars.set_value(ri, 4, vi+val_range/2.)
         # wait 1 second for other GUI updates to finish before starting next fit
+        evt=batch_next(last_index=idx, finished=False)
+        wx.QueueEvent(self, evt)
         wx.CallLater(1000, self.controller.StartFit)
 
     @skips_event

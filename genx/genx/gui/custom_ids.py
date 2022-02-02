@@ -24,6 +24,7 @@ class MenuId(int, Enum):
     OPEN_MODEL=wx.Window.NewControlId()
     SAVE_MODEL=wx.Window.NewControlId()
     SAVE_MODEL_AS=wx.Window.NewControlId()
+    MODEL_BATCH=wx.Window.NewControlId()
 
     IMPORT_DATA=wx.Window.NewControlId()
     IMPORT_TABLE=wx.Window.NewControlId()

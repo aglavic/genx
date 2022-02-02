@@ -128,13 +128,17 @@ class ModelController:
         for i, fi in enumerate(zip(*file_lists)):
             for j, dj in enumerate(data):
                 data_loader.LoadData(dj, fi[j])
-            self.model.h5group_name=f'sequence_{i}'
+            self.model.h5group_name = f'sequence_{i:05}'
+            self.model.sequence_value = float(i)
             self.put_in_store()
         # activate the first dataset
         self.activate_model(0)
 
     def active_index(self):
-        return self.model_store.index(self.model)
+        try:
+            return self.model_store.index(self.model)
+        except ValueError:
+            return -1
 
     def set_model_script(self, text):
         old_script = self.model.get_script().replace('\r\n', '\n').replace('\r', '\n').strip()
@@ -387,7 +391,7 @@ class ModelController:
         self.optimizer.write_h5group(opt_group)
         self.WriteConfig()
         g['config'] = config.model_dump().encode('utf-8')
-        N=len(self.model_store)+1
+        N = len(self.model_store)+1
         for i, modeli in enumerate(self.model_store):
             if update_callback:
                 update_callback(i+1, N)
@@ -428,7 +432,7 @@ class ModelController:
         except AttributeError:
             pass
         self.model_store = []
-        N=len(f)
+        N = len(f)
         for i, gname in enumerate(f.keys()):
             if gname=='current':
                 continue
