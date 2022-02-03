@@ -545,7 +545,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
                     self.data_cont.add_item()
                     self._UpdateImageList()
                     self.SetItemCount(self.data_cont.get_count())
-                self.data_loader.LoadData(self.data_cont.get_data()[i+offset], fi, data_id=di)
+                self.data_loader.LoadDataset(self.data_cont.get_data()[i+offset], fi, data_id=di)
                 i += 1
 
         if do_update:

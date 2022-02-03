@@ -3,7 +3,7 @@
 Library that implements a template (Template) class for classes that
 loads data into GenX.
 '''
-from ..data import DataSet
+from ..data import DataSet, META_DEFAULT
 from .utils import ShowInfoDialog
 
 
@@ -54,6 +54,14 @@ class Template:
         '''
         return 1
 
+    def GetWildcardString(self):
+        if self.wildcard is None:
+            wc = "All files (*.*)|*.*"
+        else:
+            wc = "%s (%s)|%s|All files (*.*)|*.*"%(self.__module__.rsplit('.', 1)[1].capitalize(),
+                                                   self.wildcard, self.wildcard)
+        return wc
+
     def LoadDataFile(self, selected_items):
         '''
         Selected items is the selcted items in the items in the current DataList
@@ -67,13 +75,8 @@ class Template:
         import wx
         n_selected=len(selected_items)
         if n_selected>0:
-            if self.wildcard is None:
-                wc="All files (*.*)|*.*"
-            else:
-                wc="%s (%s)|%s|All files (*.*)|*.*"%(self.__module__.rsplit('.', 1)[1].capitalize(),
-                                                     self.wildcard, self.wildcard)
             dlg=wx.FileDialog(self.parent, message="Choose your Datafile"
-                              , defaultFile="", wildcard=wc
+                              , defaultFile="", wildcard=self.GetWildcardString()
                               , style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
 
             if dlg.ShowModal()==wx.ID_OK:
@@ -89,11 +92,7 @@ class Template:
                     self.SetData(self.parent.data_cont.get_data())
                     for di in range(n_selected):
                         dataset=DataSet(copy_from=self.data[selected_items[di]])
-                        # in case the data loader does not define any metadata
-                        # at least set the instrument to data loader name
-                        dataset.meta['data_source']['experiment']['instrument']=self.__module__.rsplit('.', 1)[1]
-                        self.LoadData(dataset, file_path, data_id=di)
-                        dataset.meta['data_source']['file_name']=file_path
+                        self.LoadDataset(dataset, file_path, data_id=di)
 
                         if len(dataset.x)==0:
                             continue
@@ -111,6 +110,17 @@ class Template:
         else:
             ShowInfoDialog(self.parent, 'Please select a dataset', 'No active dataset')
         return False
+
+    def LoadDataset(self, dataset, file_path, data_id=0):
+        '''
+        A wrapper around LoadData that makes sure there is minimal metadata generated.
+        '''
+        dataset.meta = META_DEFAULT.copy()
+        # in case the data loader does not define any metadata
+        # at least set the instrument to data loader name
+        dataset.meta['data_source']['experiment']['instrument'] = self.__module__.rsplit('.', 1)[1]
+        self.LoadData(dataset, file_path, data_id=data_id)
+        dataset.meta['data_source']['file_name'] = file_path
 
     def LoadData(self, dataset, file_path, data_id=0):
         '''

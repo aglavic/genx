@@ -9,6 +9,7 @@ import wx.grid
 from .solvergui import ModelControlGUI
 from .custom_events import EVT_BATCH_NEXT
 from .metadata_dialog import MetaDataDialog
+from ..plugins.data_loader_framework import Template as DataLoaderTemplate
 
 
 def get_value_from_path(data, path):
@@ -35,7 +36,13 @@ class BatchDialog(wx.Dialog):
         self.model_control = model_control
         self.model_control.Bind(EVT_BATCH_NEXT, self.OnBatchNext)
 
+        vbox.Add(wx.StaticText(self, label='Below is the list of datasets for batch fitting.\n'
+                                           'If you want to activate one dataset, double-click the row label on the left.'),
+                 proportion=0, flag=wx.FIXED_MINSIZE|wx.ALL, border=4)
+
         self.grid = wx.grid.Grid(self)
+        self.grid.SetDefaultRowSize(int(self.grid.GetDefaultRowSize()*1.5))
+        self.grid.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTRE)
         vbox.Add(self.grid, proportion=1, flag=wx.EXPAND)
         self.build_grid()
 
@@ -44,14 +51,25 @@ class BatchDialog(wx.Dialog):
 
         self.keep_last = wx.CheckBox(self, label='Keep result values from last')
         self.keep_last.SetValue(self.model_control.batch_options.keep_last)
-        vbox.Add(self.keep_last, proportion=0, flag=wx.FIXED_MINSIZE)
+        vbox.Add(self.keep_last, proportion=0, flag=wx.FIXED_MINSIZE|wx.TOP|wx.LEFT, border=4)
 
         self.adjust_bounds = wx.CheckBox(self, label='Adjust boundaries around last values')
         self.adjust_bounds.SetValue(self.model_control.batch_options.adjust_bounds)
-        vbox.Add(self.adjust_bounds, proportion=0, flag=wx.FIXED_MINSIZE)
+        vbox.Add(self.adjust_bounds, proportion=0, flag=wx.FIXED_MINSIZE|wx.LEFT, border=4)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         vbox.Add(hbox, proportion=0, flag=wx.EXPAND)
+
+        btn = wx.Button(self, -1, label='Import Data...')
+        btn.SetToolTip('Use active dataset as template and load\na list of datasets to generate a batch.')
+        hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)
+        self.Bind(wx.EVT_BUTTON, self.OnImportData, btn)
+
+        btn = wx.Button(self, -1, label='Clear list')
+        hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)
+        self.Bind(wx.EVT_BUTTON, self.OnClearData, btn)
+
+        hbox.AddSpacer(20*self.dpi_scale_factor)
 
         btn = wx.Button(self, -1, label='Fit All')
         hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)
@@ -106,9 +124,10 @@ class BatchDialog(wx.Dialog):
         models = self.model_control.controller.model_store
         ci = self.model_control.controller.active_index()
         for i, mi in enumerate(models):
+
             g.SetRowLabelValue(i, f'{i}:')
             g.SetCellValue(i, 0, mi.h5group_name)
-            g.SetCellValue(i, 1, f'{mi.sequence_value:.3g}')
+            g.SetCellValue(i, 1, f'{mi.sequence_value:.7g}')
             g.DisableRowResize(i)
             if i==ci:
                 g.SetCellBackgroundColour(i, 0, "#ff8888")
@@ -116,6 +135,8 @@ class BatchDialog(wx.Dialog):
             else:
                 g.SetCellBackgroundColour(i, 0, "#ffffff")
                 g.SetCellBackgroundColour(i, 1, "#ffffff")
+
+        g.AutoSizeColumns(False)
 
     def OnUpdateCell(self, event: wx.grid.GridEvent):
         if event.GetCol()==0:
@@ -160,6 +181,40 @@ class BatchDialog(wx.Dialog):
         g.AppendCols(ncols)
         for i, ci in enumerate(funcs):
             g.SetColLabelValue(i+2, ci)
+
+    def OnImportData(self, evt):
+        origin = self.model_control.get_model().deepcopy()
+        # TODO: There needs to be better separation, data_loader should be accessible through ModelControlGUI
+        data_loader: DataLoaderTemplate = self.model_control.parent.data_list.list_ctrl.data_loader
+        flists = []
+        for i in range(len(origin.data)):
+            dia = wx.FileDialog(self, message=f"Select datafiles for dataset {i}",
+                                wildcard=data_loader.GetWildcardString(),
+                                style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_MULTIPLE)
+            res = dia.ShowModal()
+            if res!=wx.ID_OK:
+                return
+            flists.append(dia.GetPaths())
+
+        N = len(flists[0])
+        prog = wx.ProgressDialog('Importing...', f'Read from files...\n0/{N}',
+                                 maximum=100, parent=self)
+
+        def update_callback(i):
+            prog.Update(int(i/N*100), f'Read from files...\n{i}/{N}')
+
+        try:
+            self.model_control.controller.read_sequence(data_loader, flists, name_by_file=True,
+                                                        callback=update_callback)
+        finally:
+            prog.Destroy()
+
+        self.grid.AppendRows(len(self.model_control.controller.model_store)-self.grid.GetNumberRows())
+        self.fill_grid()
+
+    def OnClearData(self, evt):
+        self.model_control.controller.model_store = []
+        self.grid.DeleteRows(0, self.grid.GetNumberRows())
 
     def OnBatchFitModel(self, evt):
         evt.Skip()

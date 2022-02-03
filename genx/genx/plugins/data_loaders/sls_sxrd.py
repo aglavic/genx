@@ -58,7 +58,7 @@ class Plugin(Template):
         Loads the data from filename into the dataset.
         '''
         try:
-            load_array=np.loadtxt(filename, delimiter=self.delimiter,
+            load_array=np.loadtxt(filename, delimiter=self.delimiter, encoding='utf8',
                                   comments=self.comment, skiprows=self.skip_rows)
         except Exception as e:
             ShowWarningDialog(self.parent, 'Could not load the file: '+ \

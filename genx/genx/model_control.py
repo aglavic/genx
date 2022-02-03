@@ -121,15 +121,22 @@ class ModelController:
         else:
             self.model_store.append(self.model.deepcopy())
 
-    def read_sequence(self, data_loader: DataLoaderTemplate, *file_lists):
+    def read_sequence(self, data_loader: DataLoaderTemplate, file_lists,
+                      name_by_file=False, callback=None):
         data = self.get_data()
         if len(data)!=len(file_lists):
             raise ValueError("You have to provide a list of datafiles for each dataset in the model")
         for i, fi in enumerate(zip(*file_lists)):
+            if callback:
+                callback(i)
             for j, dj in enumerate(data):
-                data_loader.LoadData(dj, fi[j])
-            self.model.h5group_name = f'sequence_{i:05}'
-            self.model.sequence_value = float(i)
+                data_loader.LoadDataset(dj, fi[j])
+            if name_by_file:
+                fname = os.path.basename(fi[0])
+                self.model.h5group_name = fname
+            else:
+                self.model.h5group_name = f'sequence_{len(self.model_store):05}'
+            self.model.sequence_value = float(len(self.model_store))
             self.put_in_store()
         # activate the first dataset
         self.activate_model(0)
@@ -393,7 +400,7 @@ class ModelController:
         g['config'] = config.model_dump().encode('utf-8')
         N = len(self.model_store)+1
         lN = len(f'{N}')
-        fmt = '%%0%ii-%%s'%lN # put an index before the name to keep list order on load
+        fmt = '%%0%ii-%%s'%lN  # put an index before the name to keep list order on load
         for i, modeli in enumerate(self.model_store):
             if update_callback:
                 update_callback(i+1, N)
@@ -403,7 +410,7 @@ class ModelController:
 
     def load_hgx(self, fname: str, update_callback=None):
         f = h5py.File(fname.encode('utf-8'), 'r')
-        g = f[self.model.h5group_name]
+        g = f['current']
         self.model.read_h5group(g)
         opt_group = g[self.optimizer.h5group_name]
         try:
@@ -436,7 +443,7 @@ class ModelController:
         self.model_store = []
         N = len(f)
         names = [fi for fi in f.keys() if fi!='current']
-        names.sort() # make sure
+        names.sort()  # make sure
         for i, gname in enumerate(names):
             if update_callback:
                 update_callback(i, N)

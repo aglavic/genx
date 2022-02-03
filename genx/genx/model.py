@@ -217,8 +217,10 @@ class Model(H5HintedExport):
     def __getstate__(self):
         # generate a pickleable object for thie model, it cannot contain dynamically generated functions
         state = self.__dict__.copy()
-        del state['fom_mask_func']
-        del state['script_module']
+        if 'fom_mask_func' in state:
+            del state['fom_mask_func']
+        if 'script_module' in state:
+            del state['script_module']
         return state
 
     def __setstate__(self, state):

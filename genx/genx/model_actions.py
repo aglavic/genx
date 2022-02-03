@@ -533,6 +533,7 @@ class ExchangeModel(ModelAction):
     def __init__(self, model, new_model: Model):
         self.model = model
         self.new_state = new_model.__getstate__().copy()
+        self.new_state['filename'] = self.model.filename
         self.old_state = model.__getstate__().copy()
 
     def execute(self):

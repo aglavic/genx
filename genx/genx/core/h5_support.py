@@ -137,7 +137,10 @@ class H5HintedExport(H5Savable):
                     group.create_dataset(attr, data=value, dtype=value.dtype, chunks=True,
                                          compression="gzip", compression_opts=9, shuffle=True)
                 else:
-                    group[attr] = value
+                    try:
+                        group[attr] = value
+                    except Exception:
+                        warning(f'Error in writing {value=}', exc_info=True)
 
     def read_h5group(self, group: h5py.Group):
         """

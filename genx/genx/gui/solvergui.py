@@ -480,6 +480,7 @@ class ModelControlGUI(wx.EvtHandler):
         if idx+1==len(self.controller.model_store):
             self.batch_running = False
             evt = batch_next(last_index=idx, finished=True)
+            wx.QueueEvent(self, evt)
             return
         self.controller.activate_model(idx+1)
         new_pars = self.get_parameters()
