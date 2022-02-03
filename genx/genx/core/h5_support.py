@@ -45,7 +45,7 @@ class H5Savable(ABC):
             if vtyp is dict:
                 sub_group = group.create_group(key)
                 self.h5_write_free_dict(sub_group, value)
-            elif any([issubclass(vtyp, typ) for typ in [float, int, ndarray]]):
+            elif any([issubclass(vtyp, typ) for typ in [float, int, ndarray, complex]]):
                 group[key] = value
             elif issubclass(vtyp, str):
                 group[key] = value.encode('utf-8')
@@ -70,6 +70,8 @@ class H5Savable(ABC):
                 value = float(value)
             elif issubclass(vtyp, int):
                 value = int(value)
+            elif issubclass(vtyp, complex):
+                value = complex(value)
             elif vtyp is bytes:
                 value = value.decode('utf-8')
             node[item_path[-1]] = value
