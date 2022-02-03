@@ -98,3 +98,8 @@ The resulting graph is shown below:
 
 .. image:: _attachments/sld_display/sld_filtered.png
     :width: 90%
+
+.. note::
+    This user filtering is not supported by the SLD export facility that expects all information for
+    each of the datasets. Before exproting SLD you should thus comment out this section and
+    simulate the data again.
