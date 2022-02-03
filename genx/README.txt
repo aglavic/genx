@@ -14,9 +14,13 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
 Changes 3.6.1
 =============
- * Add generic definition for plot x- and y-labels. Building models define the values depending on last simulated
+ * Add a batch processing interface to the GUI. This can be accessed through the File dialog. See
+   new **Batch Fitting** section of the documentation.
+ * Add generic definition for plot x- and y-labels. Build-in models define the values depending on last simulated
    scans and user can always overwrite in script with **__xlabel__** and **__ylabel__** special variables.
- * Add detailed documentation about SLD plot configuration
+ * Add detailed documentation about SLD plot configuration and batch processing
+ * Add more unit tests for models and loading/saving
+ * Fix remote fit crashing server when ending normally instead of being stopped by the user
 
 Changes 3.6.0
 =============
