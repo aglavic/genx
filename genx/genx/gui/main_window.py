@@ -1213,10 +1213,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                      'Model not saved')
             if not ans:
                 return
-
         dlg = wx.FileDialog(self, message="Open", defaultFile="",
                             wildcard="GenX File (*.hgx;*.gx)|*.hgx;*.gx",
-                            style=wx.FD_OPEN  # | wx.FD_CHANGE_DIR
+                            style=wx.FD_OPEN  | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
             path = dlg.GetPath()
@@ -1560,7 +1559,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         dlg = wx.FileDialog(self, message="Save As", defaultFile="",
                             wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",
-                            style=wx.FD_SAVE  # | wx.FD_CHANGE_DIR
+                            style=wx.FD_SAVE  | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
             self.update_for_save()
