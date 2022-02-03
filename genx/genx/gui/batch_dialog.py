@@ -2,13 +2,14 @@
 A dialog to import batches of datafiles to create a model sequence and perform
 fitting to a common model.
 """
-from copy import copy, deepcopy
-
+import numpy as np
 import wx.grid
+from copy import copy, deepcopy
 
 from .solvergui import ModelControlGUI
 from .custom_events import EVT_BATCH_NEXT
 from .metadata_dialog import MetaDataDialog
+from .plot_dialog import PlotDialog
 from ..plugins.data_loader_framework import Template as DataLoaderTemplate
 
 
@@ -17,6 +18,41 @@ def get_value_from_path(data, path):
         return get_value_from_path(data[path[0]], path[1:])
     else:
         return data[path[0]]
+
+class CopyGrid(wx.grid.Grid):
+    """ Grid calss that copies all data on ctrl+C, no matter the selection. """
+
+    def __init__(self, *args, **opts):
+        wx.grid.Grid.__init__(self, *args, **opts)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKey)
+
+    def OnKey(self, event):
+        # If Ctrl+C is pressed...
+        if event.ControlDown() and event.GetKeyCode()==67:
+            self.copy()
+        else:
+            event.Skip()
+            return
+
+    def copy(self):
+        output = ''
+        for col in range(self.GetNumberCols()):
+            name = self.GetColLabelValue(col).replace("\n", ".")
+            output += f'{name}\t'
+        output += '\n'
+        for row in range(self.GetNumberRows()):
+            for col in range(self.GetNumberCols()):
+                value = self.GetCellValue(row, col)
+                output += f'{value}\t'
+            output += '\n'
+
+        clipboard = wx.TextDataObject()
+        clipboard.SetText(output)
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.SetData(clipboard)
+            wx.TheClipboard.Close()
+        else:
+            wx.MessageBox("Can't open the clipboard", "Error")
 
 
 class BatchDialog(wx.Dialog):
@@ -35,12 +71,13 @@ class BatchDialog(wx.Dialog):
         self.dpi_scale_factor = wx.GetApp().dpi_scale_factor
         self.model_control = model_control
         self.model_control.Bind(EVT_BATCH_NEXT, self.OnBatchNext)
+        self.plots = {}
 
         vbox.Add(wx.StaticText(self, label='Below is the list of datasets for batch fitting.\n'
                                            'If you want to activate one dataset, double-click the row label on the left.'),
-                 proportion=0, flag=wx.FIXED_MINSIZE|wx.ALL, border=4)
+                 proportion=0, flag=wx.FIXED_MINSIZE | wx.ALL, border=4)
 
-        self.grid = wx.grid.Grid(self)
+        self.grid = CopyGrid(self)
         self.grid.SetDefaultRowSize(int(self.grid.GetDefaultRowSize()*1.5))
         self.grid.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTRE)
         vbox.Add(self.grid, proportion=1, flag=wx.EXPAND)
@@ -51,11 +88,11 @@ class BatchDialog(wx.Dialog):
 
         self.keep_last = wx.CheckBox(self, label='Keep result values from last')
         self.keep_last.SetValue(self.model_control.batch_options.keep_last)
-        vbox.Add(self.keep_last, proportion=0, flag=wx.FIXED_MINSIZE|wx.TOP|wx.LEFT, border=4)
+        vbox.Add(self.keep_last, proportion=0, flag=wx.FIXED_MINSIZE | wx.TOP | wx.LEFT, border=4)
 
         self.adjust_bounds = wx.CheckBox(self, label='Adjust boundaries around last values')
         self.adjust_bounds.SetValue(self.model_control.batch_options.adjust_bounds)
-        vbox.Add(self.adjust_bounds, proportion=0, flag=wx.FIXED_MINSIZE|wx.LEFT, border=4)
+        vbox.Add(self.adjust_bounds, proportion=0, flag=wx.FIXED_MINSIZE | wx.LEFT, border=4)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         vbox.Add(hbox, proportion=0, flag=wx.EXPAND)
@@ -95,8 +132,19 @@ class BatchDialog(wx.Dialog):
         self.switch_line(evt.last_index, self.model_control.controller.active_index())
         g = self.grid
         prev_model = self.model_control.controller.model_store[evt.last_index]
-        for i, pi in enumerate(prev_model.parameters.get_fit_pars()[2]):
+        prev_models = self.model_control.controller.model_store[:evt.last_index+1]
+
+        row_nmb, funcs, values, min_, max_ = prev_model.parameters.get_fit_pars()
+        x = np.array([mi.sequence_value for mi in prev_models])
+
+        for i, (ni, fi, pi) in enumerate(zip(row_nmb, funcs, values)):
             g.SetCellValue(evt.last_index, i+2, f'{pi:.7g}')
+            if fi in self.plots:
+                vals = np.array([mi.parameters[ni].value for mi in prev_models])
+                plot = self.plots[fi]
+                plot.clear_data()
+                plot.plot(x, vals, marker='o', ms=2, lw=1, color=(0.0, 0.0, 1.0))
+                plot.draw()
 
     def switch_line(self, prev_row, row):
         g = self.grid
@@ -124,7 +172,6 @@ class BatchDialog(wx.Dialog):
         models = self.model_control.controller.model_store
         ci = self.model_control.controller.active_index()
         for i, mi in enumerate(models):
-
             g.SetRowLabelValue(i, f'{i}:')
             g.SetCellValue(i, 0, mi.h5group_name)
             g.SetCellValue(i, 1, f'{mi.sequence_value:.7g}')
@@ -160,7 +207,6 @@ class BatchDialog(wx.Dialog):
 
     def OnLabelDClick(self, event: wx.grid.GridEvent):
         if event.GetCol()<0:
-            g = self.grid
             ci = self.model_control.controller.active_index()
             row = event.GetRow()
             self.model_control.controller.activate_model(row)
@@ -181,6 +227,18 @@ class BatchDialog(wx.Dialog):
         g.AppendCols(ncols)
         for i, ci in enumerate(funcs):
             g.SetColLabelValue(i+2, ci)
+            self.create_graph(ci)
+
+    def create_graph(self, parameter):
+        if parameter in self.plots:
+            self.plots[parameter].Show()
+            return
+        plot = PlotDialog(self, title=f'Batch parameter {parameter} fit')
+        self.plots[parameter] = plot
+        plot.Show()
+        plot.set_xlabel('batch index/value')
+        plot.set_ylabel(parameter)
+        plot.draw()
 
     def OnImportData(self, evt):
         origin = self.model_control.get_model().deepcopy()

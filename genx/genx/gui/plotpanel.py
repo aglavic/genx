@@ -22,11 +22,13 @@ from .custom_events import plot_position, state_changed, skips_event
 from ..core.config import BaseConfig, Configurable
 from ..model import Model
 
+
 # deactivate matplotlib logging that we are not interested in
 getLogger('matplotlib.ticker').setLevel(ERROR)
 getLogger('matplotlib.font_manager').setLevel(ERROR)
 
-zoom_state=False
+zoom_state = False
+
 
 # fix a but in wx/matplotlib where keeping a motion event reference breaks scrolling
 # see: https://github.com/wxWidgets/Phoenix/issues/2034
@@ -36,14 +38,18 @@ def _onMotionFixed(self, event):
     y = self.figure.bbox.height-event.GetY()
     event.Skip()
     backend_bases.FigureCanvasBase.motion_notify_event(self, x, y, guiEvent=event.__class__(event))
-backend_wx._FigureCanvasWxBase._onMotion=_onMotionFixed
+
+
+backend_wx._FigureCanvasWxBase._onMotion = _onMotionFixed
+
 
 @dataclass
 class BasePlotConfig(BaseConfig):
-    zoom: bool=False
-    autoscale: bool=True
-    x_scale: str='linear'
-    y_scale: str='linear'
+    zoom: bool = False
+    autoscale: bool = True
+    x_scale: str = 'linear'
+    y_scale: str = 'linear'
+
 
 # ==============================================================================
 class PlotPanel(wx.Panel, Configurable):
@@ -55,32 +61,32 @@ class PlotPanel(wx.Panel, Configurable):
     '''
     opt: BasePlotConfig
 
-    def __init__(self, parent, id=-1, color=None, dpi=None, config_class: Type[BasePlotConfig]=None,
+    def __init__(self, parent, id=-1, color=None, dpi=None, config_class: Type[BasePlotConfig] = None,
                  style=wx.NO_FULL_REPAINT_ON_RESIZE | wx.EXPAND | wx.ALL, **kwargs):
         debug('start init PlotPanel')
         wx.Panel.__init__(self, parent, id=id, style=style, **kwargs)
         Configurable.__init__(self, config_class)
         if dpi is None:
-            dpi=wx.GetApp().dpi_scale_factor*96.  # wx.GetDisplayPPI()[0]
-        self.parent=parent
-        self.callback_window=self
+            dpi = wx.GetApp().dpi_scale_factor*96.  # wx.GetDisplayPPI()[0]
+        self.parent = parent
+        self.callback_window = self
         debug('init PlotPanel - setup figure')
-        self.figure=Figure(figsize=(1.0, 1.0), dpi=dpi)
+        self.figure = Figure(figsize=(1.0, 1.0), dpi=dpi)
         debug('init PlotPanel - setup canvas')
-        self.canvas=FigureCanvasWxAgg(self, -1, self.figure)
+        self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
         self.canvas.SetExtraStyle(wx.EXPAND)
         self.SetColor(color)
-        self._resizeflag=True
-        self.print_size=(15./2.54, 12./2.54)
+        self._resizeflag = True
+        self.print_size = (15./2.54, 12./2.54)
         # self._SetSize()
 
         # Flags and bindings for zooming
         self.opt.load_config()
-        self.zoom=self.opt.zoom
-        self.y_scale=self.opt.y_scale
-        self.x_scale=self.opt.x_scale
-        self.autoscale=self.opt.autoscale
-        self.zooming=False
+        self.zoom = self.opt.zoom
+        self.y_scale = self.opt.y_scale
+        self.x_scale = self.opt.x_scale
+        self.autoscale = self.opt.autoscale
+        self.zooming = False
 
         debug('init PlotPanel - bind events')
         self.Bind(wx.EVT_IDLE, self._onIdle)
@@ -93,39 +99,39 @@ class PlotPanel(wx.Panel, Configurable):
         self.canvas.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseScroll)
 
-        cursor=wx.Cursor(wx.CURSOR_CROSS)
+        cursor = wx.Cursor(wx.CURSOR_CROSS)
         self.canvas.SetCursor(cursor)
-        self.old_scale_state=True
-        self.ax=None
+        self.old_scale_state = True
+        self.ax = None
 
         debug('init PlotPanel - FigurePrinter and Bitmap')
         # Init printout stuff
-        self.fig_printer=FigurePrinter(self)
+        self.fig_printer = FigurePrinter(self)
 
         # Create the drawing bitmap
-        self.bitmap=wx.Bitmap(1, 1, depth=wx.BITMAP_SCREEN_DEPTH)
+        self.bitmap = wx.Bitmap(1, 1, depth=wx.BITMAP_SCREEN_DEPTH)
         #        DEBUG_MSG("__init__() - bitmap w:%d h:%d" % (w,h), 2, self)
-        self._isDrawn=False
+        self._isDrawn = False
         debug('end init PlotPanel')
 
     def SetColor(self, rgbtuple=None):
         ''' Set the figure and canvas color to be the same '''
         if not rgbtuple:
-            rgbtuple=self.parent.GetBackgroundColour()
+            rgbtuple = self.parent.GetBackgroundColour()
             # wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE).Get()
-        col=[c/255. for c in rgbtuple]
+        col = [c/255. for c in rgbtuple]
         self.figure.set_facecolor(col)
         self.figure.set_edgecolor(col)
         self.canvas.SetBackgroundColour(wx.Colour(*rgbtuple))
 
     def _onSize(self, evt):
-        self._resizeflag=True
+        self._resizeflag = True
         self._SetSize()
         # self.canvas.draw(repaint = False)
 
     def _onIdle(self, evt):
         if self._resizeflag:
-            self._resizeflag=False
+            self._resizeflag = False
             self._SetSize()
             # self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
 
@@ -135,7 +141,7 @@ class PlotPanel(wx.Panel, Configurable):
         size which defaults to the ClientSize of the Panel.
         '''
         if not pixels:
-            pixels=self.GetClientSize()
+            pixels = self.GetClientSize()
         if pixels[0]==0 or pixels[1]==0:
             return
 
@@ -156,10 +162,10 @@ class PlotPanel(wx.Panel, Configurable):
         self.SetAutoScale(self.opt.autoscale)
 
     def WriteConfig(self):
-        self.opt.x_scale=self.x_scale
-        self.opt.y_scale=self.y_scale
-        self.opt.autoscale=self.autoscale
-        self.opt.zoom=self.zoom
+        self.opt.x_scale = self.x_scale
+        self.opt.y_scale = self.y_scale
+        self.opt.autoscale = self.autoscale
+        self.opt.zoom = self.zoom
         Configurable.WriteConfig(self)
 
     def SetZoom(self, active=False):
@@ -173,26 +179,26 @@ class PlotPanel(wx.Panel, Configurable):
 
         if active:
             # self.zoom_sel.ignore = lambda x: False
-            self.zoom=True
-            cursor=wx.Cursor(wx.CURSOR_MAGNIFIER)
+            self.zoom = True
+            cursor = wx.Cursor(wx.CURSOR_MAGNIFIER)
             self.canvas.SetCursor(cursor)
             if self.callback_window:
-                evt=state_changed(zoomstate=True, yscale=self.GetYScale(), autoscale=self.autoscale,
-                                  xscale=self.GetXScale())
+                evt = state_changed(zoomstate=True, yscale=self.GetYScale(), autoscale=self.autoscale,
+                                    xscale=self.GetXScale())
                 wx.PostEvent(self.callback_window, evt)
             if self.ax:
                 # self.ax.set_autoscale_on(False)
-                self.old_scale_state=self.GetAutoScale()
+                self.old_scale_state = self.GetAutoScale()
                 self.SetAutoScale(False)
 
         else:
             # self.zoom_sel.ignore = lambda x: True
-            self.zoom=False
-            cursor=wx.Cursor(wx.CURSOR_CROSS)
+            self.zoom = False
+            cursor = wx.Cursor(wx.CURSOR_CROSS)
             self.canvas.SetCursor(cursor)
             if self.callback_window:
-                evt=state_changed(zoomstate=False, yscale=self.GetYScale(), autoscale=self.autoscale,
-                                  xscale=self.GetXScale())
+                evt = state_changed(zoomstate=False, yscale=self.GetYScale(), autoscale=self.autoscale,
+                                    xscale=self.GetXScale())
                 wx.PostEvent(self.callback_window, evt)
             if self.ax:
                 # self.ax.set_autoscale_on(self.autoscale)
@@ -211,11 +217,11 @@ class PlotPanel(wx.Panel, Configurable):
         when plotting
         '''
         # self.ax.set_autoscale_on(state)
-        self.autoscale=state
+        self.autoscale = state
         self.WriteConfig()
-        evt=state_changed(zoomstate=self.GetZoom(),
-                          yscale=self.GetYScale(), autoscale=self.autoscale,
-                          xscale=self.GetXScale())
+        evt = state_changed(zoomstate=self.GetZoom(),
+                            yscale=self.GetYScale(), autoscale=self.autoscale,
+                            xscale=self.GetXScale())
         wx.PostEvent(self.callback_window, evt)
 
     def GetAutoScale(self):
@@ -243,34 +249,34 @@ class PlotPanel(wx.Panel, Configurable):
             # Find the lowest possible value of all the y-values that are
             # greater than zero. check so that y data contain data before min
             # is applied
-            tmp=[line.get_ydata().compress(line.get_ydata()>0.0).min() \
-                 for line in self.ax.lines if array(line.get_ydata()>0.0).sum()>0]
+            tmp = [line.get_ydata().compress(line.get_ydata()>0.0).min() \
+                   for line in self.ax.lines if array(line.get_ydata()>0.0).sum()>0]
             if len(tmp)>0:
-                ymin=min(tmp)
+                ymin = min(tmp)
             else:
-                ymin=1e-3
-            tmp=[line.get_ydata().compress(line.get_ydata()>0.0).max() \
-                 for line in self.ax.lines if array(line.get_ydata()>0.0).sum()>0]
+                ymin = 1e-3
+            tmp = [line.get_ydata().compress(line.get_ydata()>0.0).max() \
+                   for line in self.ax.lines if array(line.get_ydata()>0.0).sum()>0]
             if len(tmp)>0:
-                ymax=max(tmp)
+                ymax = max(tmp)
             else:
-                ymax=1
+                ymax = 1
         else:
-            ymin=min([array(line.get_ydata()).compress(isfinite(line.get_ydata())).min()
-                      for line in self.ax.lines if len(line.get_ydata())>0 and any(isfinite(line.get_ydata()))])
-            ymax=max([array(line.get_ydata()).compress(isfinite(line.get_ydata())).max()
-                      for line in self.ax.lines if len(line.get_ydata())>0 and any(isfinite(line.get_ydata()))])
-        tmp=[array(line.get_xdata()).min() for line in self.ax.lines if len(line.get_ydata())>0]
+            ymin = min([array(line.get_ydata()).compress(isfinite(line.get_ydata())).min()
+                        for line in self.ax.lines if len(line.get_ydata())>0 and any(isfinite(line.get_ydata()))])
+            ymax = max([array(line.get_ydata()).compress(isfinite(line.get_ydata())).max()
+                        for line in self.ax.lines if len(line.get_ydata())>0 and any(isfinite(line.get_ydata()))])
+        tmp = [array(line.get_xdata()).min() for line in self.ax.lines if len(line.get_ydata())>0]
         if len(tmp)>0:
-            xmin=min(tmp)
+            xmin = min(tmp)
         else:
-            xmin=0
-        tmp=[array(line.get_xdata()).max() \
-             for line in self.ax.lines if len(line.get_ydata())>0]
+            xmin = 0
+        tmp = [array(line.get_xdata()).max() \
+               for line in self.ax.lines if len(line.get_ydata())>0]
         if len(tmp)>0:
-            xmax=max(tmp)
+            xmax = max(tmp)
         else:
-            xmax=1
+            xmax = 1
         # Set the limits
         try:
             if xmin!=xmax:
@@ -289,9 +295,9 @@ class PlotPanel(wx.Panel, Configurable):
         if not self.ax:
             return
         if scalestring=='log':
-            self.y_scale='log'
+            self.y_scale = 'log'
         elif scalestring in ['linear', 'lin']:
-            self.y_scale='linear'
+            self.y_scale = 'linear'
         else:
             raise ValueError('Not allowed scaling')
 
@@ -310,9 +316,9 @@ class PlotPanel(wx.Panel, Configurable):
         except UserWarning:
             pass
         self.WriteConfig()
-        evt=state_changed(zoomstate=self.GetZoom(),
-                          yscale=self.GetYScale(), autoscale=self.autoscale,
-                          xscale=self.GetXScale())
+        evt = state_changed(zoomstate=self.GetZoom(),
+                            yscale=self.GetYScale(), autoscale=self.autoscale,
+                            xscale=self.GetXScale())
         wx.PostEvent(self.callback_window, evt)
 
     def SetXScale(self, scalestring):
@@ -323,7 +329,7 @@ class PlotPanel(wx.Panel, Configurable):
         if not self.ax:
             return
         if scalestring=='log':
-            self.x_scale='log'
+            self.x_scale = 'log'
             self.AutoScale(force=True)
             try:
                 self.ax.set_xscale('log')
@@ -332,7 +338,7 @@ class PlotPanel(wx.Panel, Configurable):
             except UserWarning:
                 pass
         elif scalestring=='linear' or scalestring=='lin':
-            self.x_scale='linear'
+            self.x_scale = 'linear'
             self.ax.set_xscale('linear')
             self.AutoScale(force=True)
         else:
@@ -342,9 +348,9 @@ class PlotPanel(wx.Panel, Configurable):
         except UserWarning:
             pass
         self.WriteConfig()
-        evt=state_changed(zoomstate=self.GetZoom(),
-                          yscale=self.GetYScale(), autoscale=self.autoscale,
-                          xscale=self.GetXScale())
+        evt = state_changed(zoomstate=self.GetZoom(),
+                            yscale=self.GetYScale(), autoscale=self.autoscale,
+                            xscale=self.GetXScale())
         wx.PostEvent(self.callback_window, evt)
 
     def GetYScale(self):
@@ -401,11 +407,11 @@ class PlotPanel(wx.Panel, Configurable):
         picking.
         '''
 
-        self.callback_window=window
+        self.callback_window = window
 
-    def OnLeftDblClick(self, event:wx.MouseEvent):
+    def OnLeftDblClick(self, event: wx.MouseEvent):
         if self.ax and (self.zoom or event.MiddleDown()):
-            tmp=self.GetAutoScale()
+            tmp = self.GetAutoScale()
             self.SetAutoScale(True)
             self.AutoScale()
             self.SetAutoScale(tmp)
@@ -414,66 +420,66 @@ class PlotPanel(wx.Panel, Configurable):
             # self.ax.set_autoscale_on(False)
 
     def OnLeftMouseButtonDown(self, event):
-        self.start_pos=event.Position
+        self.start_pos = event.Position
 
         # print 'Left Mouse button pressed ', self.ax.transData.inverse_xy_tup(self.start_pos)
         class Point:
             pass
 
-        p=Point()
-        p.x, p.y=self.start_pos
-        size=self.canvas.GetClientSize()
-        p.y=(size.height-p.y)
+        p = Point()
+        p.x, p.y = self.start_pos
+        size = self.canvas.GetClientSize()
+        p.y = (size.height-p.y)
         if self.zoom and self.ax:
-            in_axes=self.ax.in_axes(p)
+            in_axes = self.ax.in_axes(p)
             if in_axes:
-                self.zooming=True
-                self.cur_rect=None
+                self.zooming = True
+                self.cur_rect = None
                 self.canvas.CaptureMouse()
-                self.overlay=wx.Overlay()
+                self.overlay = wx.Overlay()
             else:
-                self.zooming=False
+                self.zooming = False
         elif self.ax:
-            size=self.canvas.GetClientSize()
-            xy=self.ax.transData.inverted().transform(
+            size = self.canvas.GetClientSize()
+            xy = self.ax.transData.inverted().transform(
                 array([self.start_pos[0], size.height-self.start_pos[1]])
                 [newaxis, :])
-            x, y=xy[0, 0], xy[0, 1]
+            x, y = xy[0, 0], xy[0, 1]
             if self.callback_window:
-                evt=plot_position(text='(%.3e, %.3e)'%(x, y))
+                evt = plot_position(text='(%.3e, %.3e)'%(x, y))
                 wx.PostEvent(self.callback_window, evt)
             # print x,y
 
     def OnMouseMove(self, event):
         if self.zooming and event.Dragging() and event.LeftIsDown():
-            self.cur_pos=event.Position
+            self.cur_pos = event.Position
 
             class Point:
                 pass
 
-            p=Point()
-            p.x, p.y=self.cur_pos
-            size=self.canvas.GetClientSize()
-            p.y=(size.height-p.y)
-            in_axes=self.ax.in_axes(p)
+            p = Point()
+            p.x, p.y = self.cur_pos
+            size = self.canvas.GetClientSize()
+            p.y = (size.height-p.y)
+            in_axes = self.ax.in_axes(p)
             if in_axes:
-                new_rect=(min(self.start_pos[0], self.cur_pos[0]),
-                          min(self.start_pos[1], self.cur_pos[1]),
-                          abs(self.cur_pos[0]-self.start_pos[0]),
-                          abs(self.cur_pos[1]-self.start_pos[1]))
+                new_rect = (min(self.start_pos[0], self.cur_pos[0]),
+                            min(self.start_pos[1], self.cur_pos[1]),
+                            abs(self.cur_pos[0]-self.start_pos[0]),
+                            abs(self.cur_pos[1]-self.start_pos[1]))
                 self._DrawAndErase(new_rect, self.cur_rect)
-                self.cur_rect=new_rect
+                self.cur_rect = new_rect
         else:
             event.Skip()
 
-    def OnMouseScroll(self, event:wx.MouseEvent):
-        if event.GetWheelAxis() == wx.MOUSE_WHEEL_HORIZONTAL:
+    def OnMouseScroll(self, event: wx.MouseEvent):
+        if event.GetWheelAxis()==wx.MOUSE_WHEEL_HORIZONTAL:
             event.Skip()
             return
         self.SetAutoScale(False)
-        rot=event.GetWheelRotation()/120.
+        rot = event.GetWheelRotation()/120.
         if event.ControlDown():
-            rot*=0.1
+            rot *= 0.1
         if event.AltDown():
             # horizontal scaling
             xmin, xmax = self.ax.get_xlim()
@@ -524,28 +530,28 @@ class PlotPanel(wx.Panel, Configurable):
             if self.zooming and self.cur_rect:
                 # Note: The coordinte system for matplotlib have a different 
                 # direction of the y-axis and a different origin!
-                size=self.canvas.GetClientSize()
-                start=self.ax.transData.inverted().transform(
+                size = self.canvas.GetClientSize()
+                start = self.ax.transData.inverted().transform(
                     array([self.start_pos[0], size.height-self.start_pos[1]])[newaxis, :])
-                end=self.ax.transData.inverted().transform(
+                end = self.ax.transData.inverted().transform(
                     array([self.cur_pos[0], size.height-self.cur_pos[1]])[newaxis, :])
-                xend, yend=end[0, 0], end[0, 1]
-                xstart, ystart=start[0, 0], start[0, 1]
+                xend, yend = end[0, 0], end[0, 1]
+                xstart, ystart = start[0, 0], start[0, 1]
 
                 self.ax.set_xlim(min(xstart, xend), max(xstart, xend))
                 self.ax.set_ylim(min(ystart, yend), max(ystart, yend))
                 self.flush_plot()
-            self.zooming=False
+            self.zooming = False
 
     def _DrawAndErase(self, box_to_draw, box_to_erase=None):
-        rect=wx.Rect(*box_to_draw)
+        rect = wx.Rect(*box_to_draw)
 
         # Draw the rubber-band rectangle using an overlay so it
         # will manage keeping the rectangle and the former window
         # contents separate.
         # dc = wx.ClientDC(self)
-        dc=wx.ClientDC(self.canvas)
-        odc=wx.DCOverlay(self.overlay, dc)
+        dc = wx.ClientDC(self.canvas)
+        odc = wx.DCOverlay(self.overlay, dc)
         odc.Clear()
 
         dc.SetPen(wx.Pen("black", 2, style=wx.DOT_DASH))
@@ -667,10 +673,12 @@ class PlotPanel(wx.Panel, Configurable):
     def update(self, data):
         pass
 
+
 # ==============================================================================
 # Print out class borrowed from wxmpl
 if callable(getattr(wx, 'PostScriptDC_SetResolution', None)):
     wx.PostScriptDC_SetResolution(300)
+
 
 class FigurePrinter:
     """
@@ -684,12 +692,12 @@ class FigurePrinter:
         C{view}.  The keyword argument C{printData} supplies a C{wx.PrintData}
         object containing the default printer settings.
         """
-        self.view=view
+        self.view = view
 
         if printData is None:
-            self.pData=wx.PrintData()
+            self.pData = wx.PrintData()
         else:
-            self.pData=printData
+            self.pData = printData
 
         self.pData.SetPaperId(PAPER_A4)
         self.pData.SetOrientation(LANDSCAPE)
@@ -699,7 +707,7 @@ class FigurePrinter:
         """
         Sets this object's C{view} attribute to C{None}.
         """
-        self.view=None
+        self.view = None
 
     def getPrintData(self):
         """
@@ -711,16 +719,16 @@ class FigurePrinter:
         """
         Use the printer settings in C{printData}.
         """
-        self.pData=printData
+        self.pData = printData
 
     def pageSetup(self):
-        dlg=wx.PrintDialog(self.view)
-        pdData=dlg.GetPrintDialogData()
+        dlg = wx.PrintDialog(self.view)
+        pdData = dlg.GetPrintDialogData()
         pdData.SetPrintData(self.pData)
         # pdData.SetSetupDialog(True)
 
         if dlg.ShowModal()==wx.ID_OK:
-            self.pData=pdData.GetPrintData()
+            self.pData = pdData.GetPrintData()
         dlg.Destroy()
         self.copyPrintData()
 
@@ -730,15 +738,15 @@ class FigurePrinter:
         keyword argument C{title} provides the printing framework with a title
         for the print job.
         """
-        window=self.view
+        window = self.view
         while not isinstance(window, wx.Frame):
-            window=window.GetParent()
+            window = window.GetParent()
             assert window is not None
 
-        fpo=FigurePrintout(figure, title)
-        fpo4p=FigurePrintout(figure, title)
-        preview=wx.PrintPreview(fpo, fpo4p, self.pData)
-        frame=wx.PreviewFrame(preview, window, 'Print Preview')
+        fpo = FigurePrintout(figure, title)
+        fpo4p = FigurePrintout(figure, title)
+        preview = wx.PrintPreview(fpo, fpo4p, self.pData)
+        frame = wx.PreviewFrame(preview, window, 'Print Preview')
         if self.pData.GetOrientation()==wx.PORTRAIT:
             frame.SetSize(wx.Size(450, 625))
         else:
@@ -753,22 +761,22 @@ class FigurePrinter:
         keyword argument C{title} provides the printing framework with a title
         for the print job.
         """
-        pdData=wx.PrintDialogData()
+        pdData = wx.PrintDialogData()
         pdData.SetFromPage(1)
         pdData.SetToPage(1)
         pdData.SetPrintToFile(True)
         pdData.SetPrintData(self.pData)
-        printer=wx.Printer(pdData)
-        fpo=FigurePrintout(figure, title)
-        self.pData=pdData.GetPrintData()
+        printer = wx.Printer(pdData)
+        fpo = FigurePrintout(figure, title)
+        self.pData = pdData.GetPrintData()
         if printer.Print(self.view, fpo, True):
-            self.pData=pdData.GetPrintData()
+            self.pData = pdData.GetPrintData()
         self.copyPrintData()
 
     def copyPrintData(self):
         '''Create a copy of the print data to avoid seg faults
         '''
-        pData_new=wx.PrintData()
+        pData_new = wx.PrintData()
         pData_new.SetBin(self.pData.GetBin())
         pData_new.SetCollate(self.pData.GetCollate())
         pData_new.SetColour(self.pData.GetColour())
@@ -782,7 +790,8 @@ class FigurePrinter:
         pData_new.SetPrintMode(self.pData.GetPrintMode())
         pData_new.SetPrivData(self.pData.GetPrivData())
         pData_new.SetQuality(self.pData.GetQuality())
-        self.pData=pData_new
+        self.pData = pData_new
+
 
 class FigurePrintout(wx.Printout):
     """
@@ -790,8 +799,8 @@ class FigurePrintout(wx.Printout):
     framework.
     """
 
-    ASPECT_RECTANGULAR=1
-    ASPECT_SQUARE=2
+    ASPECT_RECTANGULAR = 1
+    ASPECT_SQUARE = 2
 
     def __init__(self, figure, title=None, size=None, aspectRatio=None):
         """
@@ -801,24 +810,24 @@ class FigurePrintout(wx.Printout):
         the figure, from 1 to 100 percent.  The keyword argument C{aspectRatio}
         determines whether the printed figure will be rectangular or square.
         """
-        self.figure=figure
+        self.figure = figure
 
-        figTitle=figure.gca().title.get_text()
+        figTitle = figure.gca().title.get_text()
         if not figTitle:
-            figTitle=title or 'GenX plot'
+            figTitle = title or 'GenX plot'
 
         if size is None:
-            size=100
+            size = 100
         elif size<0 or size>100:
             raise ValueError('invalid figure size')
-        self.size=size
+        self.size = size
 
         if aspectRatio is None:
-            aspectRatio=self.ASPECT_RECTANGULAR
+            aspectRatio = self.ASPECT_RECTANGULAR
         elif (aspectRatio!=self.ASPECT_RECTANGULAR
               and aspectRatio!=self.ASPECT_SQUARE):
             raise ValueError('invalid aspect ratio')
-        self.aspectRatio=aspectRatio
+        self.aspectRatio = aspectRatio
 
         wx.Printout.__init__(self, figTitle)
         # self.SetPPIPrinter(300, 300)
@@ -836,76 +845,76 @@ class FigurePrintout(wx.Printout):
         a printing device context.
         """
         # % of printable area to use
-        imgPercent=max(1, min(100, self.size))/100.0
+        imgPercent = max(1, min(100, self.size))/100.0
 
         # ratio of the figure's width to its height
         if self.aspectRatio==self.ASPECT_RECTANGULAR:
-            aspectRatio=1.61803399
+            aspectRatio = 1.61803399
         elif self.aspectRatio==self.ASPECT_SQUARE:
-            aspectRatio=1.0
+            aspectRatio = 1.0
         else:
             raise ValueError('invalid aspect ratio')
 
         # Device context to draw the page
-        dc=self.GetDC()
+        dc = self.GetDC()
 
         # PPI_P: Pixels Per Inch of the Printer
-        wPPI_P, hPPI_P=[float(x) for x in self.GetPPIPrinter()]
-        PPI_P=(wPPI_P+hPPI_P)/2.0
+        wPPI_P, hPPI_P = [float(x) for x in self.GetPPIPrinter()]
+        PPI_P = (wPPI_P+hPPI_P)/2.0
 
         # PPI: Pixels Per Inch of the DC
         if self.IsPreview():
-            wPPI, hPPI=[float(x) for x in self.GetPPIScreen()]
+            wPPI, hPPI = [float(x) for x in self.GetPPIScreen()]
         else:
-            wPPI, hPPI=wPPI_P, hPPI_P
-        PPI=(wPPI+hPPI)/2.0
+            wPPI, hPPI = wPPI_P, hPPI_P
+        PPI = (wPPI+hPPI)/2.0
 
         # Pg_Px: Size of the page (pixels)
-        wPg_Px, hPg_Px=[float(x) for x in self.GetPageSizePixels()]
+        wPg_Px, hPg_Px = [float(x) for x in self.GetPageSizePixels()]
 
         # Dev_Px: Size of the DC (pixels)
-        wDev_Px, hDev_Px=[float(x) for x in self.GetDC().GetSize()]
+        wDev_Px, hDev_Px = [float(x) for x in self.GetDC().GetSize()]
 
         # Pg: Size of the page (inches)
-        wPg=wPg_Px/PPI_P
-        hPg=hPg_Px/PPI_P
+        wPg = wPg_Px/PPI_P
+        hPg = hPg_Px/PPI_P
 
         # minimum margins (inches)
         # TODO: make these arguments to __init__()
-        wM=0.75
-        hM=0.75
+        wM = 0.75
+        hM = 0.75
 
         # Area: printable area within the margins (inches)
-        wArea=wPg-2*wM
-        hArea=hPg-2*hM
+        wArea = wPg-2*wM
+        hArea = hPg-2*hM
 
         # Fig: printing size of the figure
         # hFig is at a maximum when wFig == wArea
-        max_hFig=wArea/aspectRatio
-        hFig=min(imgPercent*hArea, max_hFig)
-        wFig=aspectRatio*hFig
+        max_hFig = wArea/aspectRatio
+        hFig = min(imgPercent*hArea, max_hFig)
+        wFig = aspectRatio*hFig
 
         # scale factor = device size / page size (equals 1.0 for real printing)
-        S=((wDev_Px/PPI)/wPg+(hDev_Px/PPI)/hPg)/2.0
+        S = ((wDev_Px/PPI)/wPg+(hDev_Px/PPI)/hPg)/2.0
 
         # Fig_S: scaled printing size of the figure (inches)
         # M_S: scaled minimum margins (inches)
-        wFig_S=S*wFig
-        hFig_S=S*hFig
-        wM_S=S*wM
-        hM_S=S*hM
+        wFig_S = S*wFig
+        hFig_S = S*hFig
+        wM_S = S*wM
+        hM_S = S*hM
 
         # Fig_Dx: scaled printing size of the figure (device pixels)
         # M_Dx: scaled minimum margins (device pixels)
-        wFig_Dx=int(S*PPI*wFig)
-        hFig_Dx=int(S*PPI*hFig)
-        wM_Dx=int(S*PPI*wM)
-        hM_Dx=int(S*PPI*hM)
+        wFig_Dx = int(S*PPI*wFig)
+        hFig_Dx = int(S*PPI*hFig)
+        wM_Dx = int(S*PPI*wM)
+        hM_Dx = int(S*PPI*hM)
 
-        image=self.render_figure_as_image(wFig, hFig, PPI)
+        image = self.render_figure_as_image(wFig, hFig, PPI)
 
         if self.IsPreview():
-            image=image.Scale(wFig_Dx, hFig_Dx)
+            image = image.Scale(wFig_Dx, hFig_Dx)
         self.GetDC().DrawBitmap(image.ConvertToBitmap(), wM_Dx, hM_Dx, False)
 
         return True
@@ -916,45 +925,47 @@ class FigurePrintout(wx.Printout):
         in a C{wx.Image}.  The arguments C{wFig} and {hFig} are the width and
         height of the figure, and C{dpi} is the dots-per-inch to render at.
         """
-        figure:matplotlib.figure.Figure=self.figure
+        figure: matplotlib.figure.Figure = self.figure
 
-        old_dpi=figure.dpi
-        figure.dpi=dpi
-        old_width=figure.get_figwidth()
+        old_dpi = figure.dpi
+        figure.dpi = dpi
+        old_width = figure.get_figwidth()
         figure.set_figwidth(wFig)
-        old_height=figure.get_figheight()
+        old_height = figure.get_figheight()
         figure.set_figwidth(hFig)
 
-        wFig_Px=int(figure.bbox.width)
-        hFig_Px=int(figure.bbox.height)
+        wFig_Px = int(figure.bbox.width)
+        hFig_Px = int(figure.bbox.height)
 
-        agg=RendererAgg(wFig_Px, hFig_Px, dpi)
+        agg = RendererAgg(wFig_Px, hFig_Px, dpi)
 
         figure.draw(agg)
 
-        figure.dpi=old_dpi
+        figure.dpi = old_dpi
         figure.set_figwidth(old_width)
         figure.set_figheight(old_height)
 
-        image=wx.EmptyImage(wFig_Px, hFig_Px)
+        image = wx.EmptyImage(wFig_Px, hFig_Px)
         image.SetData(agg.tostring_rgb())
         return image
 
+
 class DataPanelConfig(BasePlotConfig):
-    section='data plot'
+    section = 'data plot'
+
 
 class DataPlotPanel(PlotPanel):
     ''' Class for plotting the data and the fit
     '''
-    _last_poptions=None
+    _last_poptions = None
 
     def __init__(self, parent, id=-1, color=None, dpi=None
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
-        self.main_ax_rect=(0.125, 0.3, 0.8, 0.6)
-        self.sub_ax_rect=(0.125, 0.1, 0.8, 0.18)
+        self.main_ax_rect = (0.125, 0.3, 0.8, 0.6)
+        self.sub_ax_rect = (0.125, 0.1, 0.8, 0.18)
         PlotPanel.__init__(self, parent, id, color, dpi, DataPanelConfig, style, **kwargs)
         self.create_axes()
-        self.update=self.plot_data
+        self.update = self.plot_data
         self.SetAutoScale(True)
         # self.ax = self.figure.add_subplot(111)
         # self.ax.set_autoscale_on(False)
@@ -967,7 +978,7 @@ class DataPlotPanel(PlotPanel):
         '''
         if self.ax:
             if scalestring=='log':
-                self.x_scale='log'
+                self.x_scale = 'log'
                 self.AutoScale(force=True)
                 try:
                     self.ax.set_xscale('log')
@@ -977,7 +988,7 @@ class DataPlotPanel(PlotPanel):
                 except UserWarning:
                     pass
             elif scalestring=='linear' or scalestring=='lin':
-                self.x_scale='linear'
+                self.x_scale = 'linear'
                 self.ax.set_xscale('linear')
                 self.error_ax.set_xscale('linear')
                 self.AutoScale(force=True)
@@ -990,23 +1001,23 @@ class DataPlotPanel(PlotPanel):
                 pass
 
             self.WriteConfig()
-            evt=state_changed(zoomstate=self.GetZoom(),
-                              yscale=self.GetYScale(), autoscale=self.autoscale,
-                              xscale=self.GetXScale())
+            evt = state_changed(zoomstate=self.GetZoom(),
+                                yscale=self.GetYScale(), autoscale=self.autoscale,
+                                xscale=self.GetXScale())
             wx.PostEvent(self.callback_window, evt)
 
     def create_axes(self):
         # self.ax = self.figure.add_axes(self.main_ax_rect)#
         try:
-            gs=self.figure.add_gridspec(4, 1)
+            gs = self.figure.add_gridspec(4, 1)
         except AttributeError:
             from matplotlib.gridspec import GridSpec
-            gs=GridSpec(4, 1)
-        self.ax=self.figure.add_subplot(gs[:3, 0])
+            gs = GridSpec(4, 1)
+        self.ax = self.figure.add_subplot(gs[:3, 0])
         # self.ax.xaxis.set_visible(False)
         self.ax.get_xaxis().set_visible(False)
         # setp(self.ax.get_xticklabels(), visible=False)
-        self.error_ax=self.figure.add_subplot(gs[3, 0], sharex=self.ax)
+        self.error_ax = self.figure.add_subplot(gs[3, 0], sharex=self.ax)
         # self.error_ax = self.figure.add_axes(self.sub_ax_rect, sharex=self.ax)
         self.ax.set_autoscale_on(False)
         self.error_ax.set_autoscale_on(True)
@@ -1024,10 +1035,10 @@ class DataPlotPanel(PlotPanel):
         self.flush_plot()
 
     def autoscale_error_ax(self):
-        ymin=min([array(line.get_ydata()).min() \
-                  for line in self.error_ax.lines if len(line.get_ydata())>0])
-        ymax=max([array(line.get_ydata()).max() \
-                  for line in self.error_ax.lines if len(line.get_ydata())>0])
+        ymin = min([array(line.get_ydata()).min() \
+                    for line in self.error_ax.lines if len(line.get_ydata())>0])
+        ymax = max([array(line.get_ydata()).max() \
+                    for line in self.error_ax.lines if len(line.get_ydata())>0])
         # Set the limits
         if ymin>=ymax:
             return
@@ -1094,7 +1105,7 @@ class DataPlotPanel(PlotPanel):
             # self.ax = self.figure.add_subplot(111)
             self.create_axes()
 
-        shown_data=[data_set for data_set in data if data_set.show]
+        shown_data = [data_set for data_set in data if data_set.show]
         if len(self.ax.lines)==(2*len(shown_data)):
             for i, data_set in enumerate(shown_data):
                 self.ax.lines[i].set_data(data_set.x, data_set.y)
@@ -1136,42 +1147,42 @@ class DataPlotPanel(PlotPanel):
             # self.ax = self.figure.add_subplot(111)
             self.create_axes()
 
-        p_options=[self.y_scale]+[[data_set.data_color, data_set.data_linethickness,
-                                   data_set.data_linetype, data_set.data_symbol,
-                                   data_set.data_symbolsize,
-                                   data_set.sim_color, data_set.sim_linethickness,
-                                   data_set.sim_linetype, data_set.sim_symbol,
-                                   data_set.sim_symbolsize
-                                   ] for data_set in data]
-        p_datasets=[data_set for data_set in data if data_set.show]
-        pe_datasets=[data_set for data_set in data if data_set.use_error and data_set.show]
-        s_datasets=[data_set for data_set in data if data_set.show and data_set.use and
-                                                     data_set.x.shape==data_set.y_sim.shape]
-        if self._last_poptions == p_options and \
+        p_options = [self.y_scale]+[[data_set.data_color, data_set.data_linethickness,
+                                     data_set.data_linetype, data_set.data_symbol,
+                                     data_set.data_symbolsize,
+                                     data_set.sim_color, data_set.sim_linethickness,
+                                     data_set.sim_linetype, data_set.sim_symbol,
+                                     data_set.sim_symbolsize
+                                     ] for data_set in data]
+        p_datasets = [data_set for data_set in data if data_set.show]
+        pe_datasets = [data_set for data_set in data if data_set.use_error and data_set.show]
+        s_datasets = [data_set for data_set in data if data_set.show and data_set.use and
+                      data_set.x.shape==data_set.y_sim.shape]
+        if self._last_poptions==p_options and \
                 len(self.ax.lines)==(len(p_datasets)+len(s_datasets)) and \
                 len(self.ax.collections)==len(pe_datasets):
             for i, data_set in enumerate(p_datasets):
                 if self.y_scale=='linear':
                     self.ax.lines[i].set_data(data_set.x, data_set.y)
                 elif data_set.use_error:
-                    fltr=(data_set.y-data_set.error)>0
+                    fltr = (data_set.y-data_set.error)>0
                     self.ax.lines[i].set_data(data_set.x.compress(fltr), data_set.y.compress(fltr))
                 else:
-                    fltr=data_set.y>0
+                    fltr = data_set.y>0
                     self.ax.lines[i].set_data(data_set.x.compress(fltr), data_set.y.compress(fltr))
             for j, data_set in enumerate(s_datasets):
                 self.ax.lines[len(p_datasets)+j].set_data(data_set.x, data_set.y_sim)
                 self.error_ax.lines[j].set_data(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0))
             for k, data_set in enumerate(pe_datasets):
-                ybot=data_set.y-data_set.error
-                ytop=data_set.y+data_set.error
-                segment_data=hstack([data_set.x, ybot, data_set.x, ytop]).reshape(2, 2, -1).transpose(2, 0, 1)
+                ybot = data_set.y-data_set.error
+                ytop = data_set.y+data_set.error
+                segment_data = hstack([data_set.x, ybot, data_set.x, ytop]).reshape(2, 2, -1).transpose(2, 0, 1)
                 if self.y_scale=='log':
                     if data_set.use_error:
-                        fltr=(data_set.y-data_set.error)>0
+                        fltr = (data_set.y-data_set.error)>0
                     else:
-                        fltr=data_set.y>0
-                    segment_data=segment_data[fltr, :,:]
+                        fltr = data_set.y>0
+                    segment_data = segment_data[fltr, :, :]
                 self.ax.collections[k].set_segments(segment_data)
         else:
             while len(self.ax.lines)>0:
@@ -1225,7 +1236,7 @@ class DataPlotPanel(PlotPanel):
             [self.error_ax.plot(data_set.x, ma.fix_invalid(data_set.y_fom, fill_value=0), color=data_set.sim_color,
                                 lw=data_set.sim_linethickness, ls=data_set.sim_linetype, marker=data_set.sim_symbol,
                                 ms=data_set.sim_symbolsize) for data_set in s_datasets]
-            self._last_poptions=p_options
+            self._last_poptions = p_options
         try:
             self.autoscale_error_ax()
         except ValueError:
@@ -1243,13 +1254,13 @@ class DataPlotPanel(PlotPanel):
         '''
         # print 'OnDataListEvent runs'
         # print event.data_changed, event.new_data
-        data_list=event.GetData()
+        data_list = event.GetData()
         if event.data_changed:
             if event.new_data:
                 # print 'updating plot'
-                self.update=self.plot_data
+                self.update = self.plot_data
                 self.update(data_list)
-                tmp=self.GetAutoScale()
+                tmp = self.GetAutoScale()
                 self.SetAutoScale(True)
                 self.AutoScale()
                 self.SetAutoScale(tmp)
@@ -1267,8 +1278,8 @@ class DataPlotPanel(PlotPanel):
         i.e. update the plot with the data + simulation
         '''
         model: Model = event.GetModel()
-        data_list=model.get_data()
-        self.update=self.plot_data_sim
+        data_list = model.get_data()
+        self.update = self.plot_data_sim
         self.update(data_list)
         try:
             ylabel = model.eval_in_model('globals().get("__ylabel__", getattr(model, "__ylabel__", "y"))')
@@ -1289,12 +1300,14 @@ class DataPlotPanel(PlotPanel):
         '''
         if event.update_fit:
             if self.update!=self.plot_data_fit:
-                self.update=self.plot_data_fit
+                self.update = self.plot_data_fit
                 self.SetAutoScale(False)
             self.update(event.data)
 
+
 class ErrorPanelConfig(BasePlotConfig):
-    section='fom plot'
+    section = 'fom plot'
+
 
 class ErrorPlotPanel(PlotPanel):
     ''' Class for plotting evolution of the error as a function of the
@@ -1304,12 +1317,12 @@ class ErrorPlotPanel(PlotPanel):
     def __init__(self, parent, id=-1, color=None, dpi=None
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
         PlotPanel.__init__(self, parent, id, color, dpi, ErrorPanelConfig, style, **kwargs)
-        self.update=self.errorplot
+        self.update = self.errorplot
         self.update(None)
 
     def errorplot(self, data):
         if not self.ax:
-            self.ax=self.figure.add_subplot(111)
+            self.ax = self.figure.add_subplot(111)
 
         # self.ax.cla()
         self.ax.set_autoscale_on(False)
@@ -1317,7 +1330,7 @@ class ErrorPlotPanel(PlotPanel):
         while len(self.ax.lines)>0:
             self.ax.lines[0].remove()
         if data is None:
-            theta=arange(0.1, 10, 0.001)
+            theta = arange(0.1, 10, 0.001)
             self.ax.plot(theta, floor(15-theta), '-r')
         else:
             # print 'plotting ...', data
@@ -1341,11 +1354,13 @@ class ErrorPlotPanel(PlotPanel):
         Event handler function to connect to solver update events i.e.
         update the plot with the simulation
         '''
-        fom_log=event.fom_log
+        fom_log = event.fom_log
         self.update(fom_log)
 
+
 class ParsPanelConfig(BasePlotConfig):
-    section='pars plot'
+    section = 'pars plot'
+
 
 class ParsPlotPanel(PlotPanel):
     ''' ParsPlotPanel
@@ -1357,9 +1372,9 @@ class ParsPlotPanel(PlotPanel):
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
         PlotPanel.__init__(self, parent, id, color, dpi, ParsPanelConfig, style, **kwargs)
         self.update(None)
-        self.ax=self.figure.add_subplot(111)
+        self.ax = self.figure.add_subplot(111)
         # self.ax.set_autoscale_on(True)
-        self.update=self.Plot
+        self.update = self.Plot
 
     def Plot(self, data):
         ''' Plots each variable and its max and min value in the
@@ -1367,15 +1382,15 @@ class ParsPlotPanel(PlotPanel):
         '''
 
         if data.fitting:
-            pop=array(data.population)
-            norm=1.0/(data.max_val-data.min_val)
-            best=(array(data.values)-data.min_val)*norm
-            pop_min=(pop.min(0)-data.min_val)*norm
-            pop_max=(pop.max(0)-data.min_val)*norm
+            pop = array(data.population)
+            norm = 1.0/(data.max_val-data.min_val)
+            best = (array(data.values)-data.min_val)*norm
+            pop_min = (pop.min(0)-data.min_val)*norm
+            pop_max = (pop.max(0)-data.min_val)*norm
 
             self.ax.cla()
-            width=0.8
-            x=arange(len(best))
+            width = 0.8
+            x = arange(len(best))
             self.ax.set_autoscale_on(False)
             self.ax.bar(x, pop_max-pop_min, bottom=pop_min, color='b', width=width)
             self.ax.plot(x, best, 'ro')
@@ -1396,8 +1411,10 @@ class ParsPlotPanel(PlotPanel):
         self.update(event)
         # Do not forget - pass the event on
 
+
 class FomPanelConfig(BasePlotConfig):
-    section='fom scan plot'
+    section = 'fom scan plot'
+
 
 class FomScanPlotPanel(PlotPanel):
     '''FomScanPlotPanel
@@ -1409,11 +1426,11 @@ class FomScanPlotPanel(PlotPanel):
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
         PlotPanel.__init__(self, parent, id, color, dpi, FomPanelConfig, style, **kwargs)
         self.update(None)
-        self.ax=self.figure.add_subplot(111)
+        self.ax = self.figure.add_subplot(111)
         self.ax.set_autoscale_on(False)
-        self.update=self.Plot
+        self.update = self.Plot
 
-        self.type='project'
+        self.type = 'project'
 
     def SetPlottype(self, type):
         '''SetScantype(self, type) --> None
@@ -1421,21 +1438,21 @@ class FomScanPlotPanel(PlotPanel):
         Sets the type of the scan type = "project" or "scan"
         '''
         if type.lower()=='project':
-            self.type='project'
+            self.type = 'project'
             self.SetAutoScale(False)
             # self.ax.set_autoscale_on(False)
         elif type.lower()=='scan':
             self.SetAutoScale(True)
             # self.ax.set_autoscale_on(True)
-            self.type='scan'
+            self.type = 'scan'
 
     def Plot(self, data, l1='', l2=''):
         ''' Plots each variable and its max and min value in the
         population.
         '''
         self.ax.cla()
-        x, y, bestx, besty, e_scale=data[0], data[1], data[2], data[3], \
-                                    data[4]
+        x, y, bestx, besty, e_scale = data[0], data[1], data[2], data[3], \
+                                      data[4]
         if self.type.lower()=='project':
             self.ax.set_autoscale_on(False)
             self.ax.plot(x, y, 'ob')
