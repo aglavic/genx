@@ -8,6 +8,14 @@ import wx.grid
 
 from .solvergui import ModelControlGUI
 from .custom_events import EVT_BATCH_NEXT
+from .metadata_dialog import MetaDataDialog
+
+
+def get_value_from_path(data, path):
+    if len(path)>1:
+        return get_value_from_path(data[path[0]], path[1:])
+    else:
+        return data[path[0]]
 
 
 class BatchDialog(wx.Dialog):
@@ -59,6 +67,10 @@ class BatchDialog(wx.Dialog):
         hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)
         self.Bind(wx.EVT_BUTTON, self.OnSort, btn)
 
+        btn = wx.Button(self, -1, label='Extract Value')
+        btn.SetToolTip('Use metadata from datasets to extract a sequence value (e.g. temperature)')
+        hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)
+        self.Bind(wx.EVT_BUTTON, self.OnExtract, btn)
 
     def OnBatchNext(self, evt):
         # evt.finished
@@ -114,8 +126,16 @@ class BatchDialog(wx.Dialog):
                 return
             # change the name of a dataaset
             self.model_control.controller.model_store[event.GetRow()].h5group_name = new_name
+        elif event.GetCol()==1:
+            try:
+                value = float(event.GetString())
+            except ValueError:
+                event.Veto()
+                return
+            else:
+                self.model_control.controller.model_store[event.GetRow()].sequence_value = value
         else:
-            event.Skip()
+            event.Veto()
 
     def OnLabelDClick(self, event: wx.grid.GridEvent):
         if event.GetCol()<0:
@@ -177,7 +197,26 @@ class BatchDialog(wx.Dialog):
         wx.CallLater(1000, self.model_control.StartFit)
 
     def OnSort(self, evt):
-        sort_list = [(mi.sequence_value, mi) for mi in self.model_control.controller.model_store]
+        sort_list = [(mi.sequence_value, i, mi) for i, mi in enumerate(self.model_control.controller.model_store)]
         sort_list.sort()
-        self.model_control.controller.model_store = [si[1] for si in sort_list]
+        self.model_control.controller.model_store = [si[2] for si in sort_list]
+        self.fill_grid()
+
+    def OnExtract(self, evt):
+        dia = MetaDataDialog(self, self.model_control.controller.model_store[0].data,
+                             filter_leaf_types=[int, float], close_on_activate=True)
+        dia.SetTitle('Select key to use by double-click')
+        dia.ShowModal()
+        dia.Destroy()
+        if dia.activated_leaf is None:
+            return
+
+        didx = dia.activated_leaf[0]
+        dpath = dia.activated_leaf[1:]
+        for mi in self.model_control.controller.model_store:
+            try:
+                value = float(get_value_from_path(mi.data[didx].meta, dpath))
+            except Exception:
+                value = 0.
+            mi.sequence_value = value
         self.fill_grid()

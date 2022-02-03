@@ -614,8 +614,10 @@ class ModelControlGUI(wx.EvtHandler):
         def update_callback(i, N):
             prog.Update(int(i/N*100), f'Reading from file\n{fname}\ndataset {i} of {N}')
 
-        self.controller.load_file(fname, update_callback=update_callback)
-        prog.Destroy()
+        try:
+            self.controller.load_file(fname, update_callback=update_callback)
+        finally:
+            prog.Destroy()
         solver_classes = [si.__class__ for si in self.solvers.values()]
         loaded_solver = self.controller.optimizer.__class__
         if loaded_solver in solver_classes:

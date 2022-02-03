@@ -1243,8 +1243,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                     def update_callback(i, N):
                         prog.Update(int(i/N*100), f'Writing to file\n{fname}\ndataset {i} of {N}')
 
-                    self.model_control.controller.save_file(fname, update_callback=update_callback)
-                    prog.Destroy()
+                    try:
+                        self.model_control.controller.save_file(fname, update_callback=update_callback)
+                    finally:
+                        prog.Destroy()
                 else:
                     self.model_control.controller.save_file(fname)
                 self.update_title()
@@ -1582,8 +1584,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                         def update_callback(i, N):
                             prog.Update(int(i/N*100), f'Writing to file\n{fname}\ndataset {i} of {N}')
 
-                        self.model_control.controller.save_file(fname, update_callback=update_callback)
-                        prog.Destroy()
+                        try:
+                            self.model_control.controller.save_file(fname, update_callback=update_callback)
+                        finally:
+                            prog.Destroy()
                     else:
                         self.model_control.controller.save_file(fname)
                 self.update_title()

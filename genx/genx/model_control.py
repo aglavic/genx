@@ -392,10 +392,12 @@ class ModelController:
         self.WriteConfig()
         g['config'] = config.model_dump().encode('utf-8')
         N = len(self.model_store)+1
+        lN = len(f'{N}')
+        fmt = '%%0%ii-%%s'%lN # put an index before the name to keep list order on load
         for i, modeli in enumerate(self.model_store):
             if update_callback:
                 update_callback(i+1, N)
-            g = f.create_group(modeli.h5group_name)
+            g = f.create_group(fmt%(i, modeli.h5group_name))
             modeli.write_h5group(g)
         f.close()
 
@@ -433,17 +435,16 @@ class ModelController:
             pass
         self.model_store = []
         N = len(f)
-        for i, gname in enumerate(f.keys()):
-            if gname=='current':
-                continue
-            else:
-                if update_callback:
-                    update_callback(i, N)
-                g = f[gname]
-                modeli = Model()
-                modeli.h5group_name = gname
-                modeli.read_h5group(g)
-                self.model_store.append(modeli)
+        names = [fi for fi in f.keys() if fi!='current']
+        names.sort() # make sure
+        for i, gname in enumerate(names):
+            if update_callback:
+                update_callback(i, N)
+            g = f[gname]
+            modeli = Model()
+            modeli.h5group_name = gname.split('-', 1)[-1]
+            modeli.read_h5group(g)
+            self.model_store.append(modeli)
         f.close()
 
     def save_gx(self, fname: str):
