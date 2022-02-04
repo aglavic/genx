@@ -386,6 +386,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         help_menu.Append(MenuId.HELP_PLUGINS, "Plugins Helps...", "Show help for the plugins")
         help_menu.Append(MenuId.HELP_DATA_LOADERS, "Data loaders Help...", "Show help for the data loaders")
         help_menu.AppendSeparator()
+        help_menu.Append(MenuId.HELP_EXAMPLES, "Open Examples...", "Show load model dialog in examples folder")
         help_menu.Append(MenuId.HELP_MANUAL, "Open Manual...", "Show the manual")
         help_menu.Append(MenuId.HELP_HOMEPAGE, "Open Homepage...", "Open the homepage")
         help_menu.Append(MenuId.HELP_ABOUT, "About...", "Shows information about GenX")
@@ -461,6 +462,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, id=MenuId.HELP_PLUGINS)
         self.Bind(wx.EVT_MENU, self.eh_mb_data_loaders_help, id=MenuId.HELP_DATA_LOADERS)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_showman, id=MenuId.HELP_MANUAL)
+        self.Bind(wx.EVT_MENU, self.eh_mb_misc_examples, id=MenuId.HELP_EXAMPLES)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_openhomepage, id=MenuId.HELP_HOMEPAGE)
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, id=MenuId.HELP_ABOUT)
         self.Bind(wx.EVT_MENU, self.eh_mb_debug_dialog, id=MenuId.HELP_DEBUG)
@@ -1202,7 +1204,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         dlg.Destroy()
 
-    def eh_mb_open(self, event):
+    def eh_mb_open(self, event, directory=""):
         '''
         Event handler for opening a model file...
         '''
@@ -1213,7 +1215,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                      'Model not saved')
             if not ans:
                 return
-        dlg = wx.FileDialog(self, message="Open", defaultFile="",
+        dlg = wx.FileDialog(self, message="Open", defaultDir=directory,
                             wildcard="GenX File (*.hgx;*.gx)|*.hgx;*.gx",
                             style=wx.FD_OPEN  | wx.FD_CHANGE_DIR
                             )
@@ -1466,6 +1468,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     @skips_event
     def eh_mb_fit_analyze(self, event):
         warning("Event handler `eh_mb_fit_analyze' not implemented")
+
+    def eh_mb_misc_examples(self, event):
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'examples')
+        self.eh_mb_open(event, directory=path)
 
     def eh_mb_misc_showman(self, event):
         webbrowser.open_new(manual_url)

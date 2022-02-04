@@ -92,6 +92,7 @@ class MenuId(int, Enum):
     HELP_PLUGINS=wx.Window.NewControlId()
     HELP_DATA_LOADERS=wx.Window.NewControlId()
     HELP_MANUAL=wx.Window.NewControlId()
+    HELP_EXAMPLES=wx.Window.NewControlId()
     HELP_HOMEPAGE=wx.Window.NewControlId()
     HELP_ABOUT=wx.Window.NewControlId()
     HELP_DEBUG=wx.Window.NewControlId()
