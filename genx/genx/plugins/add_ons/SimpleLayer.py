@@ -24,10 +24,11 @@ from abc import ABC, abstractmethod
 
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from math import cos, pi, sqrt
+from orsopy.slddb import api
+
 from ...gui import images as img
 from .. import add_on_framework as framework
 from .help_modules.materials_db import mdb, MaterialsDatabase, Formula, MASS_DENSITY_CONVERSION
-from .help_modules.slddb import api
 from ..utils import ShowInfoDialog, ShowQuestionDialog
 from ...gui.custom_choice_dialog import SCDialog
 

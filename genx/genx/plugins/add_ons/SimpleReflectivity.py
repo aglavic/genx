@@ -15,6 +15,7 @@ import io, traceback
 
 import wx.grid as gridlib
 from wx.adv import Wizard, WizardPageSimple
+from orsopy.slddb import api
 
 from .. import add_on_framework as framework
 from genx.model import Model
@@ -27,7 +28,6 @@ from .help_modules.reflectivity_sample_plot import SamplePlotPanel
 from .help_modules import reflectivity_images as images
 from genx.gui.images import getopenBitmap, getplottingBitmap
 from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
-from .help_modules.slddb import api
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
 from genx.gui.custom_events import EVT_UPDATE_SCRIPT, skips_event
