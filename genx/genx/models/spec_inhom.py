@@ -319,9 +319,53 @@ def ResolutionVectorAsymetric(Q, dQ, points, dLambda, asymmetry, range_=3):
     Qret=Qres.flatten()
     return Qret, weight
 
+POL_CHANNELS = ['uu', 'ud', 'du', 'dd']
+
+def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
+    """
+    Specular reflectivity of polarized measurement with finite polarization.
+    The polarization parameters are in accordance to the definition used in
+    A.R. Wildes publication, Review of Scientific Instruments 70, 11 (1999)
+    https://doi.org/10.1063/1.1150060
+
+    pol_params = (p1, p2, f1, f2)
+    p1: polarizer efficiency, 0: 100% spin-up, 1: 100% spin-down, 0.5: unpolarized
+    p2: analyzer efficiency,  0: 100% spin-up, 1: 100% spin-down, 0.5: unpolairzed
+    F1/F2: Flipper efficienty, 0: 100% efficient, 1: no flipping
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    p1 0.
+    p2 0.
+    F1 0.
+    F2 0.
+    # END Parameters
+
+    """
+    inst_pol = instrument.pol
+    if not inst_pol in POL_CHANNELS:
+        raise ValueError(f"Instrument polarization as to be one of {POL_CHANNELS}.")
+    if instrument.probe not in [3, instrument_string_choices['probe'][3]]:
+        raise ValueError("Polarization corrected simulation requires probe to be 'neutron pol spin flip'")
+
+    instrument.pol = 'uu'
+    uu = Specular(TwoThetaQz, sample, instrument)
+    instrument.pol = 'dd'
+    dd = Specular(TwoThetaQz, sample, instrument)
+    instrument.pol = 'ud'
+    ud = Specular(TwoThetaQz, sample, instrument)
+    du = ud
+    instrument.pol = inst_pol
+
+    P = get_pol_matrix(p1, p2, F1, F2)
+    Pline = P[POL_CHANNELS.index(instrument.pol)]
+    I = Pline[:, newaxis] * vstack([uu, ud, du, dd])
+    return I.sum(axis=0)
+
 SLD_calculations=spec_nx.SLD_calculations
 
 SimulationFunctions={'Specular': Specular,
+                     'PolSpecular': PolSpecular,
                      'SLD': SLD_calculations
                      }
 

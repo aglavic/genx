@@ -201,7 +201,15 @@ def Specular(TwoThetaQz, sample, instrument):
     __xlabel__ = spec_nx.__xlabel__
     return out
 
+def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
+    out = spec_nx.PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument)
+    global __xlabel__
+    __xlabel__ = spec_nx.__xlabel__
+    return out
+
+
 SimulationFunctions={'Specular': Specular,
+                     'PolSpecular': PolSpecular,
                      'SLD': SLD_calculations
                      }
 

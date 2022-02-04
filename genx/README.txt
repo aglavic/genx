@@ -12,6 +12,13 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.2
+=============
+ * Add finite polarization effects for neutron reflectivity to spec_nx, spec_adaptive and spec_inhom models.
+   To use you have to select instrument probe as "neutron pol spin-flip" and change the simulation function
+   from "Specular" to "PolSpecular". This function has 4 additional parameters; p1, p2, F1, F2 for 
+   polarizer, analyzer and filpper efficiencies. For definition see https://doi.org/10.1063/1.1150060
+
 Changes 3.6.1
 =============
  * Add a batch processing interface to the GUI. This can be accessed through the File dialog. See
