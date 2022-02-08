@@ -121,8 +121,8 @@ dependencies:
   - zstd=1.4.9=h19a0ad4_0
   - pip:
     - altgraph==0.17
-    - bumps==0.8.0
-    - orsopy==0.0.3
+    - bumps==0.8.1
+    - orsopy==0.0.5
     - future==0.18.2
     - pefile==2021.5.24
     - pyinstaller==4.5
