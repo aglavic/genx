@@ -18,6 +18,7 @@ Changes 3.6.2
    To use you have to select instrument probe as "neutron pol spin-flip" and change the simulation function
    from "Specular" to "PolSpecular". This function has 4 additional parameters; p1, p2, F1, F2 for 
    polarizer, analyzer and filpper efficiencies. For definition see https://doi.org/10.1063/1.1150060
+ * Add entry to the **Help** menu to open example files, directly jumping to the right directory
 
 Changes 3.6.1
 =============

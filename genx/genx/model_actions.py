@@ -58,7 +58,10 @@ class ModelAction(ABC):
         # generate string representation replacing format string items interactively
         obj_items=self.__dict__.copy()
         obj_items.update(self.__class__.__dict__)
-        return self.description.format(**obj_items)
+        try:
+            return self.description.format(**obj_items)
+        except KeyError:
+            return self.description
 
     @property
     def description(self):
@@ -228,11 +231,12 @@ class UpdateModelScript(ModelAction):
                     ndiff = diff.pop(0)
                     nextcdiff[1].append(ndiff[2:])
                     old_indx+=1
-                while len(diff)>0 and diff[0][0] == '?':
-                    ndiff = diff.pop(0)
-                # collect new lines to insert
-                while len(diff)>0 and diff[0][0] == '+':
-                    nextcdiff[2].append(diff.pop(0)[2:])
+                while len(diff)>0 and diff[0][0] in ['?', '+']:
+                    if diff[0][0]=='?':
+                        ndiff = diff.pop(0)
+                    else:
+                        # collect new lines to insert
+                        nextcdiff[2].append(diff.pop(0)[2:])
                 cdiff.append(nextcdiff)
             elif old_indx==0 and ndiff.startswith('+'):
                 nextcdiff = [old_indx, [], [ndiff[2:]]]

@@ -9,6 +9,7 @@ import os
 import pickle as pickle
 import traceback
 import types
+import typing
 import zipfile
 from dataclasses import dataclass, field
 from io import StringIO
@@ -60,12 +61,14 @@ class SolverParameters(BaseConfig):
 
 class GenxScriptModule(types.ModuleType):
     data: DataList
+    _sim: bool
 
     def __init__(self, data: DataList):
         types.ModuleType.__init__(self, 'genx_script_module')
         self.__package__ = fom_funcs.__package__
         self.data = data
         self._sim = False
+        self.TextIO = typing.TextIO
 
     @staticmethod
     def Sim(data: DataList):
@@ -322,6 +325,12 @@ class Model(H5HintedExport):
         '''
         result = eval(codestring, self.script_module.__dict__)
         return result
+
+    def set_script_variable(self, name, value):
+        self.script_module.__dict__[name] = value
+
+    def unset_script_variable(self, name):
+        del(self.script_module.__dict__[name])
 
     def create_fom_mask_func(self):
         """
