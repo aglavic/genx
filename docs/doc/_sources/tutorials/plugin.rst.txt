@@ -123,9 +123,11 @@ debug script if you are proficient enough in python. See the help for more infor
 
 UserFuncs
 ^^^^^^^^^
-This little model creates a new menu item and searches the model for functions that takes no
-input arguments and makes it possible to call them from that menu. This can be used to create output ^
-from a physical model. For example export parameters or data. It is mainly for expert use, but very handy to have.
+This little plugin creates a new menu item and searches the model for functions that takes no
+input arguments or are type annotated and makes it possible to call them from that menu.
+This can be used to create output from a physical model.
+For example export parameters or data. It is mainly for expert use, but very handy to have.
+The usage to export XYZ files is shown in the SXRD.hgx example file.
 See the help in :menuselection:`Misc-->Plugin` help.
 
 Test

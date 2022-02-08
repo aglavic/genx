@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Neutron reflectivity tutorial &#8212; GenX 3.6.1 documentation</title>
+    <title>Neutron reflectivity tutorial &#8212; GenX 3.6.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="xrr_fitting.html" title="Fitting of x-ray reflectivity data"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Neutron reflectivity tutorial</a></li> 
       </ul>
@@ -165,6 +165,16 @@ call <em>spin_down</em>. Here we choose equal parameters but a polarization stat
 Simulate again and observe the change in the curve on the screen.</p>
 <img alt="../_images/neutrons1_7.jpg" src="../_images/neutrons1_7.jpg" />
 <p>To see both polarization states at the same time, we have to add a second simulation dataset, first.</p>
+<p>If an advanced polarization analysis experiment with determination of polarization parameters was
+carried out it is possible to include the non-perfect polarization in modeling with the spin-flip
+instrument probe parameter.
+You should create user parameters for the p1, p2, F1 and F2 polarization parameters as defined in
+<a class="reference external" href="https://doi.org/10.1063/1.1150060">https://doi.org/10.1063/1.1150060</a> . Then go to the <strong>Simulations</strong> tab and double click on the
+simulation line for a dataset.
+There you can select <strong>PolSpecular</strong> instead of <strong>Specular</strong> and enter the user parameters
+in the correct value columns.
+(You can also just enter the values directly, but this can be time consuming for multiple datasets.)</p>
+<img alt="../_images/neutrons1_7a.jpg" src="../_images/neutrons1_7a.jpg" />
 <section id="adding-a-new-data-set">
 <h3>Adding a new data set<a class="headerlink" href="#adding-a-new-data-set" title="Permalink to this headline">¶</a></h3>
 <p>Add a new data set by clicking on the Add data button, the green cross above the data list. Clicking on that gives a
@@ -270,7 +280,7 @@ alternative with a much simpler user interface.</p>
         <li class="right" >
           <a href="xrr_fitting.html" title="Fitting of x-ray reflectivity data"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Neutron reflectivity tutorial</a></li> 
       </ul>

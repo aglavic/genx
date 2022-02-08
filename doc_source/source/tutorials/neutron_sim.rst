@@ -103,6 +103,18 @@ Simulate again and observe the change in the curve on the screen.
 
 To see both polarization states at the same time, we have to add a second simulation dataset, first.
 
+If an advanced polarization analysis experiment with determination of polarization parameters was
+carried out it is possible to include the non-perfect polarization in modeling with the spin-flip
+instrument probe parameter.
+You should create user parameters for the p1, p2, F1 and F2 polarization parameters as defined in
+https://doi.org/10.1063/1.1150060 . Then go to the **Simulations** tab and double click on the
+simulation line for a dataset.
+There you can select **PolSpecular** instead of **Specular** and enter the user parameters
+in the correct value columns.
+(You can also just enter the values directly, but this can be time consuming for multiple datasets.)
+
+.. image:: _attachments/neutron_sim/neutrons1_7a.jpg
+
 Adding a new data set
 ----------------------
 Add a new data set by clicking on the Add data button, the green cross above the data list. Clicking on that gives a

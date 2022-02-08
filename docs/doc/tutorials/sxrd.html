@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Surface X-diffraction tutorial &#8212; GenX 3.6.1 documentation</title>
+    <title>Surface X-diffraction tutorial &#8212; GenX 3.6.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Surface X-diffraction Model 2" href="sxrd2.html" />
-    <link rel="prev" title="Model analystical functions by slicing" href="slicing.html" /> 
+    <link rel="prev" title="Batch Fitting" href="batch_fitting.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -35,9 +35,9 @@
           <a href="sxrd2.html" title="Surface X-diffraction Model 2"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="slicing.html" title="Model analystical functions by slicing"
+          <a href="batch_fitting.html" title="Batch Fitting"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Surface X-diffraction tutorial</a></li> 
       </ul>
@@ -499,6 +499,19 @@ also involve a lot of typing and long scripts. If you want to know more about th
 layout with <code class="docutils literal notranslate"><span class="pre">UserVars</span></code> and the simulation the tutorial about writing models might be good next step
 <a class="reference internal" href="writing_model.html#tutorial-writing-model"><span class="std std-ref">Writing a custom model</span></a>.</p>
 </section>
+<section id="exporting-results">
+<h2>Exporting Results<a class="headerlink" href="#exporting-results" title="Permalink to this headline">¶</a></h2>
+<p>The Sample class allows export of the resulting atom position in the XYZ format.
+The most convenient way to perform this export is to use the <strong>UserFuncs</strong> plugin with the following
+export function in your script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">export_xyz</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">):</span>
+    <span class="n">sample</span><span class="o">.</span><span class="n">export_xyz</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After simulating the “User funcs” menu should show the entry “export_xyz”.
+Activating this menu will open a file selection dialog and the selected file will
+be used to save the XYZ data to.</p>
+</section>
 </section>
 
 
@@ -526,13 +539,14 @@ layout with <code class="docutils literal notranslate"><span class="pre">UserVar
 </ul>
 </li>
 <li><a class="reference internal" href="#general-coupling">General coupling</a></li>
+<li><a class="reference internal" href="#exporting-results">Exporting Results</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="slicing.html"
-                        title="previous chapter">Model analystical functions by slicing</a></p>
+  <p class="topless"><a href="batch_fitting.html"
+                        title="previous chapter">Batch Fitting</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="sxrd2.html"
                         title="next chapter">Surface X-diffraction Model 2</a></p>
@@ -570,9 +584,9 @@ layout with <code class="docutils literal notranslate"><span class="pre">UserVar
           <a href="sxrd2.html" title="Surface X-diffraction Model 2"
              >next</a> |</li>
         <li class="right" >
-          <a href="slicing.html" title="Model analystical functions by slicing"
+          <a href="batch_fitting.html" title="Batch Fitting"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Surface X-diffraction tutorial</a></li> 
       </ul>

@@ -496,3 +496,17 @@ I hope you have understood that with ``UserVars`` you can do just about anything
 also involve a lot of typing and long scripts. If you want to know more about the general philosophy of the
 layout with ``UserVars`` and the simulation the tutorial about writing models might be good next step
 :ref:`tutorial-writing-model`.
+
+Exporting Results
+=================
+
+The Sample class allows export of the resulting atom position in the XYZ format.
+The most convenient way to perform this export is to use the **UserFuncs** plugin with the following
+export function in your script:
+::
+    def export_xyz(xyz_file: TextIO):
+        sample.export_xyz(xyz_file)
+
+After simulating the "User funcs" menu should show the entry "export_xyz".
+Activating this menu will open a file selection dialog and the selected file will
+be used to save the XYZ data to.
