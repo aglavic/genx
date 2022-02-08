@@ -12,6 +12,11 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.3
+=============
+ * Fix a bug that could lead to a strange error messages when editing items in the Simulations tab.
+ * Fix a crash on Linux when running the bumps dialog depending on wx version
+
 Changes 3.6.2
 =============
  * Add finite polarization effects for neutron reflectivity to spec_nx, spec_adaptive and spec_inhom models.

@@ -1056,6 +1056,8 @@ class SimulationExpressionDialog(wx.Dialog):
         inst_name - the name of the current instrument.
         data_index - an integer for the current data index.
         '''
+        if not model.compiled:
+            model.compile_script()
 
         self.model = model
         self.instruments = instruments
@@ -1229,6 +1231,8 @@ class ParameterExpressionDialog(wx.Dialog):
         self.SetAutoLayout(True)
         self.model = model
         self.sim_func = sim_func
+        if not model.compiled:
+            model.compile_script()
 
         gbs = wx.GridBagSizer(2, 3)
 
