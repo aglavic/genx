@@ -37,8 +37,8 @@ class ProgressMonitor(TimedUpdate):
     def show_progress(self, history):
         scale, err = nllf_scale(self.problem)
         chisq = format_uncertainty(scale*history.value[0], err)
-        self.ptxt.SetLabel('step: %s/%s  cost: %s'%(history.step[0], self.pbar.GetRange(), chisq))
-        self.pbar.SetValue(history.step[0])
+        wx.CallAfter(self.ptxt.SetLabel, 'step: %s/%s  cost: %s'%(history.step[0], self.pbar.GetRange(), chisq))
+        wx.CallAfter(self.pbar.SetValue, min(history.step[0], self.pbar.GetRange()))
         self.steps.append(history.step[0])
         self.chis.append(scale*history.value[0])
 
@@ -171,7 +171,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         self.fom_text = wx.StaticText(rpanel, label='FOM chi²/bars: -')
         font = wx.Font(wx.FontInfo(2.0*self.fom_text.GetFont().GetPointSize()))
         self.fom_text.SetFont(font)
-        rpbox.Add(self.fom_text, proportion=0, flag=wx.FIXED_MINSIZE|wx.EXPAND)
+        rpbox.Add(self.fom_text, proportion=0, flag=wx.FIXED_MINSIZE | wx.EXPAND)
 
         plot_panel = PlotPanel(rpanel, config_class=StatisticsPanelConfig)
         plot_panel.SetMinSize((int(dpi_scale_factor*200), int(dpi_scale_factor*200)))

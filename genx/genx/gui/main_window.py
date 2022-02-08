@@ -1748,6 +1748,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 prev_result=None
             dia = StatisticalAnalysisDialog(self, self.model_control.get_model(), prev_result=prev_result)
             dia.ShowModal()
+        self.paramter_grid.grid.ForceRefresh()
 
     @skips_event
     def eh_plot_page_changed(self, event):
