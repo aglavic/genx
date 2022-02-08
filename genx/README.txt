@@ -18,7 +18,11 @@ Changes 3.6.2
    To use you have to select instrument probe as "neutron pol spin-flip" and change the simulation function
    from "Specular" to "PolSpecular". This function has 4 additional parameters; p1, p2, F1, F2 for 
    polarizer, analyzer and filpper efficiencies. For definition see https://doi.org/10.1063/1.1150060
- * Add entry to the **Help** menu to open example files, directly jumping to the right directory
+ * Update UserFuncs pluging to work with type-annotated functions to generate user dialogs automatically.
+   The SXRD.hgx example shows a usage for storing XYZ files.
+ * Add entry to the **Help** menu to open example files, directly jumping to the right directory.
+   About dialog now shows the path where configuration files are stored.
+ * Fix a bug where editing the script in some circumstances would loose lines.
 
 Changes 3.6.1
 =============

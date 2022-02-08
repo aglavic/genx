@@ -1470,7 +1470,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         warning("Event handler `eh_mb_fit_analyze' not implemented")
 
     def eh_mb_misc_examples(self, event):
-        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'examples')
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'examples', '')
         self.eh_mb_open(event, directory=path)
 
     def eh_mb_misc_showman(self, event):
@@ -1510,8 +1510,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             "GenX is a multipurpose refinement program using the differential "
             "evolution algorithm. It is developed  mainly for refining x-ray reflectivity "
             "and neutron reflectivity data."
+            "\n\nConfiguration files stored in %s"%config_path
 
-            "\n\nThe versions of the mandatory libraries are:\n"
+            +"\n\nThe versions of the mandatory libraries are:\n"
             "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
             "\n\nThe non-mandatory but useful packages:\n%s"
             ""%(platform.python_version(), wx.__version__,
