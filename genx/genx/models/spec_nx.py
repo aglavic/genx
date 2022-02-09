@@ -122,11 +122,13 @@ Instrument
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
 '''
 import numpy as np
+from dataclasses import dataclass
+from enum import Enum
 
 from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
-from .lib import refl as refl
+from .lib import refl_new as refl
 from .lib.physical_constants import r_e, muB_to_SL
 
 
@@ -195,10 +197,6 @@ InstrumentUnits = {
 #            2 or 'square beam': Correction for square profile => Beaw given in full width mm
 # samlen= Samplelength in mm.
 
-LayerParameters = {
-    'sigma': 0.0, 'dens': 1.0, 'd': 0.0, 'f': (1.0+1.0j)*1e-20,
-    'b': 0.0+0.0J, 'xs_ai': 0.0, 'magn': 0.0, 'magn_ang': 0.0
-    }
 LayerUnits = {
     'sigma': 'AA', 'dens': 'at./AA', 'd': 'AA', 'f': 'el./at.',
     'b': 'fm/at.', 'xs_ai': 'barn/at.', 'magn': 'mu_B/at.', 'magn_ang': 'deg.'
@@ -217,6 +215,84 @@ q_limit = 1e-10
 __xlabel__ = "q [Å$^{-1}$]"
 __ylabel__ = "Instnsity [a.u.]"
 
+class Probe(str, Enum):
+    xray = 'x-ray'
+    neutron = 'neutron',
+    npol = 'neutron pol'
+    npolsf = 'neutron pol spin flip'
+    ntof = 'neutron tof'
+    ntofpol = 'neutron pol tof'
+
+
+class Coords(str, Enum):
+    q = 'q'
+    tth = 'tth'
+    tth2 = '2θ'
+
+
+class ResType(str, Enum):
+    none = 'no conv'
+    fast_conv = 'fast conv'
+    fast_conv_var = 'fast conv + varying res.'
+    fast_conv_rel = 'fast conv + varying res. (dx/x)'
+    full_conv_abs = 'full conv and varying res.'
+    full_conv_rel = 'full conv and varying res. (dx/x)'
+
+
+class FootType(str, Enum):
+    none = 'no corr'
+    gauss = 'gauss beam'
+    square = 'square beam'
+
+
+class Polarization(str, Enum):
+    up_up = 'uu'
+    down_down = 'dd'
+    up_down = 'ud'
+    down_up = 'du'
+    asymmetry = 'ass'
+
+
+@dataclass
+class Layer(refl.ReflBase):
+    sigma: float = 0.0
+    dens: float = 1.0
+    d: float = 0.0
+    f: complex = 1e-20j
+    b: complex = 0j
+    xs_ai: float = 0.0
+    magn: float = 0.0
+    magn_ang: float = 0.0
+
+@dataclass
+class Stack(refl.StackBase):
+    Layers: refl.ReflBase.List[Layer] = refl.ReflBase.field(default_factory=list)
+    Repetitions: int = 1
+
+@dataclass
+class Sample(refl.SampleBase):
+    Stacks: refl.ReflBase.List[Stack] = refl.ReflBase.field(default_factory=list)
+    Ambient: Layer = None
+    Substrate: Layer = None
+
+@dataclass
+class Instrument(refl.ReflBase):
+    probe: Probe = 'x-ray'
+    wavelength: float = 1.54
+    coords: Coords = '2θ'
+    I0: float = 1.0
+    res: float = 0.001
+    restype: ResType = 'no conv'
+    respoints: int = 5
+    resintrange: float = 2.
+    beamw: float = 0.01
+    footype: str = 'no corr'
+    samplelen: float = 10.0
+    incangle: float = 0.5
+    pol: Polarization = 'uu'
+    Ibkg: float = 0.0
+    tthoff: float = 0.0
+
 
 # A buffer to save previous calculations for spin-flip calculations
 class Buffer:
@@ -228,24 +304,21 @@ class Buffer:
     TwoThetaQz = None
 
 
-def footprintcorr(Q, instrument):
+def footprintcorr(Q, instrument:Instrument):
     foocor = 1.0
-    footype = instrument.getFootype()
-    beamw = instrument.getBeamw()
-    samlen = instrument.getSamplelen()
+    footype = instrument.footype
+    beamw = instrument.beamw
+    samlen = instrument.samplelen
 
-    if instrument.getProbe() in [instrument_string_choices['probe'][4],
-                                 instrument_string_choices['probe'][5], 4, 5]:
-        theta = instrument.getIncangle()
+    if instrument.probe in [Probe.ntof, Probe.ntofpol]:
+        theta = instrument.incangle
         # if ai is an array, make sure it gets repeated for every resolution point
-        if type(theta) is ndarray and instrument.getRestype() in [2, 4,
-                                                                  instrument_string_choices['restype'][2],
-                                                                  instrument_string_choices['restype'][4]]:
-            theta = (theta*ones(instrument.getRespoints())[:, newaxis]).flatten()
+        if type(theta) is ndarray and instrument.restype in [ResType.full_conv_rel, ResType.full_conv_abs]:
+            theta = (theta*ones(instrument.respoints)[:, newaxis]).flatten()
 
     else:
         # theta =  180./pi*arcsin(instrument.getWavelength() / 4.0 / pi * Q)
-        theta = QtoTheta(instrument.getWavelength(), Q)
+        theta = QtoTheta(instrument.wavelength, Q)
     if footype==1 or footype==instrument_string_choices['footype'][1]:
         foocor = GaussIntensity(theta, samlen/2.0, samlen/2.0, beamw)
     elif footype==2 or footype==instrument_string_choices['footype'][2]:
@@ -329,7 +402,7 @@ def neutron_sld(abs_xs, dens, fb, wl):
     return dens*(wl**2/2/pi*fb-1.0J*abs_xs*wl/4/pi)
 
 
-def Specular(TwoThetaQz, sample, instrument):
+def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
     """ Simulate the specular signal from sample when probed with instrument
 
     # BEGIN Parameters
@@ -692,7 +765,9 @@ def SLD_calculations(z, item, sample, inst):
         except:
             raise ValueError('The chosen item, %s, does not exist'%item)
 
+
 POL_CHANNELS = ['uu', 'ud', 'du', 'dd']
+
 
 def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
     """
@@ -732,8 +807,9 @@ def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
 
     P = get_pol_matrix(p1, p2, F1, F2)
     Pline = P[POL_CHANNELS.index(instrument.pol)]
-    I = Pline[:, newaxis] * np.vstack([uu, ud, du, dd])
+    I = Pline[:, newaxis]*np.vstack([uu, ud, du, dd])
     return I.sum(axis=0)
+
 
 SimulationFunctions = {
     'Specular': Specular,
@@ -743,11 +819,6 @@ SimulationFunctions = {
     'SLD': SLD_calculations,
     'EnergySpecular': EnergySpecular,
     }
-
-(Instrument, Layer, Stack, Sample) = refl.MakeClasses(InstrumentParameters,
-                                                      LayerParameters, StackParameters, SampleParameters,
-                                                      SimulationFunctions,
-                                                      ModelID)
 
 if __name__=='__main__':
     from .utils import UserVars, fp, fw
