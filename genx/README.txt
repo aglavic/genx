@@ -16,6 +16,7 @@ Changes 3.6.3
 =============
  * Fix a bug that could lead to a strange error messages when editing items in the Simulations tab.
  * Fix a crash on Linux when running the bumps dialog depending on wx version
+ * Fix an issue where genx would not start on macOS environments with python >=3.9 and anaconda
 
 Changes 3.6.2
 =============
