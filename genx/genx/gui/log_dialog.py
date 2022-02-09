@@ -105,10 +105,14 @@ class LoggingDialog(wx.Dialog):
         event.Skip()
         logging.getLogger().removeHandler(self.handler)
 
+    @property
+    def filtered_events(self):
+        return [ri for ri in self.logged_events if ri.levelno>=self.log_level]
+
     def update_loglevel(self, level):
         self.log_level=level
         self.log_list.DeleteAllItems()
-        for i, record in enumerate(self.logged_events):
+        for i, record in enumerate(self.filtered_events):
             if (i+1)<len(self.logged_events) and \
                     self.logged_events[i+1].message==record.message and \
                     self.logged_events[i+1].lineno==record.lineno:
@@ -116,9 +120,8 @@ class LoggingDialog(wx.Dialog):
             self.append_event(record)
         self.resize_columns()
 
-    def show_event_message(self, event):
-        records=[ri for ri in self.logged_events if ri.levelno>=self.log_level]
-        record=records[event.GetIndex()]
+    def show_event_message(self, event: wx.ListEvent):
+        record=self.logged_events[event.GetData()]
         RecordDisplayDialog(self, record).Show()
 
     def append_event(self, record: logging.LogRecord, new=False):
@@ -131,6 +134,8 @@ class LoggingDialog(wx.Dialog):
                     # don't repeat the same error to speed up diaplsy
                     return
             self.log_list.Append((record.asctime, record.levelname, record.message.splitlines()[0]))
+            last = self.log_list.GetItemCount()-1
+            self.log_list.SetItemData(last, self.logged_events.index(record))
 
     def resize_columns(self):
         self.log_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
