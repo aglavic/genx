@@ -25,6 +25,7 @@ from .core.custom_logging import iprint
 from .core.h5_support import H5HintedExport
 from .data import DataList
 from .exceptions import FomError, GenxIOError, ModelError, ParameterError
+from .models.lib.base import ModelParamBase
 from .models.lib.parameters import get_parameters, NumericParameter
 from .parameters import Parameters
 
@@ -310,6 +311,9 @@ class Model(H5HintedExport):
         self.set_script('\n'.join(self.script.splitlines()))
         try:
             exec(self.script, self.script_module.__dict__)
+            for obj in self.script_module.__dict__.values():
+                if isinstance(obj, ModelParamBase):
+                    obj._extract_callpars(self.script)
         except Exception:
             outp = StringIO()
             traceback.print_exc(200, outp)

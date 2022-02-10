@@ -1,5 +1,5 @@
 r"""
-.. module:: parameters
+.. module:: materials
    :synopsis: Classes to work with differnt materials in scattering experiments
 
 """
