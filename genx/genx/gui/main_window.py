@@ -333,7 +333,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_view.Append(wx.ID_ANY, "Auto Color", mb_view_colors, "")
         mb_view.AppendSeparator()
         self.mb_checkables[MenuId.ZOOM]=mb_view.Append(MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK)
-        mb_view.Append(MenuId.ZOOM_ALL, "Zoom All\tCtrl+A", "Zoom to fit all data points")
+        mb_view.Append(MenuId.ZOOM_ALL, "Zoom All\tCtrl+Shift+Z", "Zoom to fit all data points")
         self.mb_checkables[MenuId.AUTO_SCALE]=mb_view.Append(MenuId.AUTO_SCALE, "Autoscale",
                                                              "Sets autoscale on when plotting", wx.ITEM_CHECK)
         self.mb_checkables[MenuId.USE_TOGGLE_SHOW]=mb_view.Append(MenuId.USE_TOGGLE_SHOW, "Use Toggle Show",
@@ -738,19 +738,54 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 with self.catch_error(action='startup_dialog', step=f'open model'):
                     self.plugin_control.OnOpenModel(None)
 
-    def ScriptEditorKeyEvent(self, evt):
-        if evt.GetKeyCode()==13:
-            pos=self.script_editor.GetCurrentPos()
-            line=self.script_editor.GetCurrentLine()
-            idn=self.script_editor.GetLineIndentation(line)
-            txt=self.script_editor.GetLine(line).strip()
-            if txt.startswith('for ') or txt.startswith('if ') or \
-                    txt.startswith('elif ') or txt.startswith('else:'):
-                idn+=4
-            self.script_editor.InsertText(pos, '\n'+' '*idn)
-            self.script_editor.GotoPos(pos+idn+1)
+    def ScriptEditorKeyEvent(self, evt: wx.KeyEvent):
+        if evt.GetKeyCode() in [wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER]:
+            if self.script_editor.AutoCompActive():
+                self.script_editor.AutoCompComplete()
+                return
+            pos = self.script_editor.GetCurrentPos()
+            line = self.script_editor.GetCurrentLine()
+            idn = self.script_editor.GetLineIndentation(line)
+            txt = self.script_editor.GetLine(line).strip()
+            if evt.controlDown:
+                txt = txt.split(',')[-1].split('(')[-1]
+                if self.script_editor.AutoCompActive():
+                    self.script_editor.AutoCompCancel()
+                if '.' in txt:
+                    obj, subtxt = txt.rsplit('.', 1)
+                    self.script_editor.AutoCompShow(len(subtxt),
+                                                    self.build_autocomplete_items(obj=obj, start=subtxt))
+                else:
+                    self.script_editor.AutoCompShow(len(txt), self.build_autocomplete_items(start=txt))
+            else:
+                if txt.startswith('for ') or txt.startswith('if ') or \
+                        txt.startswith('elif ') or txt.startswith('else:'):
+                    idn+=4
+                if evt.shiftDown:
+                    pos+=len(self.script_editor.GetLine(line))-self.script_editor.GetColumn(pos)-1
+                self.script_editor.InsertText(pos, '\n'+' '*idn)
+                self.script_editor.GotoPos(pos+idn+1)
         else:
             evt.Skip()
+
+    def build_autocomplete_items(self, obj=None, start=''):
+        if obj is None:
+            output = []
+            for key in dir(self.model_control.get_model().script_module):
+                if key.startswith('_') or not key.startswith(start):
+                    continue
+                output.append(key)
+            output.sort()
+            return " ".join(output)
+        else:
+            objitem = self.model_control.get_model().eval_in_model(obj)
+            output = []
+            for key in dir(objitem):
+                if key.startswith('_') or not key.startswith(start):
+                    continue
+                output.append(key)
+            output.sort()
+            return " ".join(output)
 
     def project_fom_parameter(self, row):
         '''project_fom_parameter(frame, row) --> None
