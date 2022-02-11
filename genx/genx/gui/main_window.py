@@ -35,16 +35,18 @@ from ..core.colors import COLOR_CYCLES
 from ..core.custom_logging import iprint, numpy_set_options
 from ..version import __version__ as program_version
 
-_path=os.path.dirname(__file__)
+
+_path = os.path.dirname(__file__)
 if _path[-4:]=='.zip':
-    _path, ending=os.path.split(_path)
+    _path, ending = os.path.split(_path)
 
 # Get the configuration path, create if it not exists
-config_path=os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-profile_dest=os.path.abspath(os.path.join(config_path, 'profiles'))
-profile_src=os.path.abspath(os.path.join(_path, '..', 'profiles'))
-info(f'Paths are:\n        config_path={config_path}\n       profile_dest={profile_dest}\n        profile_src{profile_src}')
-version_file=os.path.join(config_path, 'genx.version')
+config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+profile_dest = os.path.abspath(os.path.join(config_path, 'profiles'))
+profile_src = os.path.abspath(os.path.join(_path, '..', 'profiles'))
+info(
+    f'Paths are:\n        config_path={config_path}\n       profile_dest={profile_dest}\n        profile_src{profile_src}')
+version_file = os.path.join(config_path, 'genx.version')
 if not os.path.exists(config_path):
     info(f'Creating path: {config_path}')
     os.makedirs(config_path)
@@ -58,6 +60,7 @@ elif not os.path.exists(version_file) or \
     info('Update profiles to default for GenX '+program_version)
     from glob import glob
 
+
     for fi in glob(os.path.join(profile_src, '*.conf')):
         info(f'    copy {fi} to {profile_dest}')
         shutil.copy2(fi, profile_dest)
@@ -67,40 +70,43 @@ if not os.path.exists(os.path.join(config_path, 'genx.conf')):
     shutil.copyfile(os.path.join(profile_src, 'default.profile'),
                     os.path.join(config_path, 'genx.conf'))
 
-manual_url='https://aglavic.github.io/genx/doc/'
-homepage_url='https://aglavic.github.io/genx/'
+manual_url = 'https://aglavic.github.io/genx/doc/'
+homepage_url = 'https://aglavic.github.io/genx/'
+
 
 @dataclass
 class GUIConfig(conf_mod.BaseConfig):
-    section='gui'
-    hsize: int=1200 # stores the width of the window
-    vsize: int=800 # stores the height of the window
-    vsplit: int=300
-    hsplit: int=400
-    psplit: int=550
-    solver_update_time: float=1.5
-    editor: str=None
-    last_update_check: float=0.
+    section = 'gui'
+    hsize: int = 1200  # stores the width of the window
+    vsize: int = 800  # stores the height of the window
+    vsplit: int = 300
+    hsplit: int = 400
+    psplit: int = 550
+    solver_update_time: float = 1.5
+    editor: str = None
+    last_update_check: float = 0.
+
 
 @dataclass
 class WindowStartup(conf_mod.BaseConfig):
-    section='startup'
-    show_profiles: bool=True
-    widescreen: bool=False
+    section = 'startup'
+    show_profiles: bool = True
+    widescreen: bool = False
+
 
 class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     opt: GUIConfig
     script_file: str = None
 
     def __init__(self, parent: wx.App, dpi_overwrite=None):
-        self._init_phase=True
-        self.parent=parent
+        self._init_phase = True
+        self.parent = parent
         debug('starting setup of MainFrame')
         conf_mod.Configurable.__init__(self)
-        self.wstartup=WindowStartup()
+        self.wstartup = WindowStartup()
 
-        self.flag_simulating=False
-        self.simulation_queue_counter=0
+        self.flag_simulating = False
+        self.simulation_queue_counter = 0
 
         debug('setup of MainFrame - config')
         conf_mod.config.load_default(os.path.join(config_path, 'genx.conf'))
@@ -113,63 +119,65 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                           style=wx.DEFAULT_FRAME_STYLE)
 
         if dpi_overwrite:
-            dpi_scale_factor=float(dpi_overwrite)
+            dpi_scale_factor = float(dpi_overwrite)
             debug("Overwrite DPI scale factor as %s"%dpi_scale_factor)
         else:
             try:
-                dpi_scale_factor=self.GetDPIScaleFactor()
+                dpi_scale_factor = self.GetDPIScaleFactor()
                 debug("Detected DPI scale factor %s from GetDPIScaleFactor"%dpi_scale_factor)
             except AttributeError:
-                dpi_scale_factor=self.GetContentScaleFactor()
+                dpi_scale_factor = self.GetContentScaleFactor()
                 debug("Detected DPI scale factor %s from GetContentScaleFactor"%dpi_scale_factor)
-        self.dpi_scale_factor=dpi_scale_factor
-        wx.GetApp().dpi_scale_factor=dpi_scale_factor
+        self.dpi_scale_factor = dpi_scale_factor
+        wx.GetApp().dpi_scale_factor = dpi_scale_factor
 
         # GenX objects
-        self.model_control=solvergui.ModelControlGUI(self)
-        self.model_control.set_update_min_time(self.opt.solver_update_time) # update time from configuration
+        self.model_control = solvergui.ModelControlGUI(self)
+        self.model_control.set_update_min_time(self.opt.solver_update_time)  # update time from configuration
 
         self.create_menu()
 
-        self.main_frame_statusbar=self.CreateStatusBar(3)
+        self.main_frame_statusbar = self.CreateStatusBar(3)
 
         debug('setup of MainFrame - tool bar')
         self.create_toolbar()
 
         debug('setup of MainFrame - splitters and panels')
-        self.ver_splitter=wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
-        self.data_panel=wx.Panel(self.ver_splitter, wx.ID_ANY)
-        self.data_notebook=wx.Notebook(self.data_panel, wx.ID_ANY)
-        self.data_notebook_data=wx.Panel(self.data_notebook, wx.ID_ANY)
-        self.data_list=datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.eh_ex_status_text)
-        self.data_notebook_pane_2=wx.Panel(self.data_notebook, wx.ID_ANY)
-        self.label_2=wx.StaticText(self.data_notebook_pane_2, wx.ID_ANY, "  Data set: ")
-        self.data_grid_choice=wx.Choice(self.data_notebook_pane_2, wx.ID_ANY, choices=["test2", "test1"])
-        self.static_line_1=wx.StaticLine(self.data_notebook_pane_2, wx.ID_ANY)
-        self.data_grid=wx.grid.Grid(self.data_notebook_pane_2, wx.ID_ANY, size=(1, 1))
-        self.main_panel=wx.Panel(self.ver_splitter, wx.ID_ANY)
-        self.hor_splitter=wx.SplitterWindow(self.main_panel, wx.ID_ANY,
-                                            style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
-        self.plot_panel=wx.Panel(self.hor_splitter, wx.ID_ANY)
-        self.plot_splitter=wx.SplitterWindow(self.plot_panel, wx.ID_ANY)
-        self.plot_notebook=wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
-        self.plot_notebook_data=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_data= plotpanel.DataPlotPanel(self.plot_notebook_data)
-        self.plot_notebook_fom=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_fom= plotpanel.ErrorPlotPanel(self.plot_notebook_fom)
-        self.plot_notebook_Pars=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_pars= plotpanel.ParsPlotPanel(self.plot_notebook_Pars)
-        self.plot_notebook_foms=wx.Panel(self.plot_notebook, wx.ID_ANY)
-        self.plot_fomscan= plotpanel.FomScanPlotPanel(self.plot_notebook_foms)
-        self.wide_plugin_notebook=wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
-        self.panel_1=wx.Panel(self.wide_plugin_notebook, wx.ID_ANY)
-        self.input_panel=wx.Panel(self.hor_splitter, wx.ID_ANY)
-        self.input_notebook=wx.Notebook(self.input_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
-        self.input_notebook_grid=wx.Panel(self.input_notebook, wx.ID_ANY)
-        self.paramter_grid=parametergrid.ParameterGrid(self.input_notebook_grid, self)
-        self.input_notebook_script=wx.Panel(self.input_notebook, wx.ID_ANY)
-        self.script_editor=wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
+        self.ver_splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
+        self.data_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
+        self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY)
+        self.data_notebook_data = wx.Panel(self.data_notebook, wx.ID_ANY)
+        self.data_list = datalist.DataListControl(self.data_notebook_data, wx.ID_ANY, self.eh_ex_status_text)
+        self.data_notebook_pane_2 = wx.Panel(self.data_notebook, wx.ID_ANY)
+        self.label_2 = wx.StaticText(self.data_notebook_pane_2, wx.ID_ANY, "  Data set: ")
+        self.data_grid_choice = wx.Choice(self.data_notebook_pane_2, wx.ID_ANY, choices=["test2", "test1"])
+        self.static_line_1 = wx.StaticLine(self.data_notebook_pane_2, wx.ID_ANY)
+        self.data_grid = wx.grid.Grid(self.data_notebook_pane_2, wx.ID_ANY, size=(1, 1))
+        self.main_panel = wx.Panel(self.ver_splitter, wx.ID_ANY)
+        self.hor_splitter = wx.SplitterWindow(self.main_panel, wx.ID_ANY,
+                                              style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
+        self.plot_panel = wx.Panel(self.hor_splitter, wx.ID_ANY)
+        self.plot_splitter = wx.SplitterWindow(self.plot_panel, wx.ID_ANY)
+        self.plot_notebook = wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
+        self.plot_notebook_data = wx.Panel(self.plot_notebook, wx.ID_ANY)
+        self.plot_data = plotpanel.DataPlotPanel(self.plot_notebook_data)
+        self.plot_notebook_fom = wx.Panel(self.plot_notebook, wx.ID_ANY)
+        self.plot_fom = plotpanel.ErrorPlotPanel(self.plot_notebook_fom)
+        self.plot_notebook_Pars = wx.Panel(self.plot_notebook, wx.ID_ANY)
+        self.plot_pars = plotpanel.ParsPlotPanel(self.plot_notebook_Pars)
+        self.plot_notebook_foms = wx.Panel(self.plot_notebook, wx.ID_ANY)
+        self.plot_fomscan = plotpanel.FomScanPlotPanel(self.plot_notebook_foms)
+        self.wide_plugin_notebook = wx.Notebook(self.plot_splitter, wx.ID_ANY, style=wx.NB_BOTTOM)
+        self.panel_1 = wx.Panel(self.wide_plugin_notebook, wx.ID_ANY)
+        self.input_panel = wx.Panel(self.hor_splitter, wx.ID_ANY)
+        self.input_notebook = wx.Notebook(self.input_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
+        self.input_notebook_grid = wx.Panel(self.input_notebook, wx.ID_ANY)
+        self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook_grid, self)
+        self.input_notebook_script = wx.Panel(self.input_notebook, wx.ID_ANY)
+        self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
         self.script_editor.SetBackSpaceUnIndents(True)
+        self.script_editor.AutoCompSetChooseSingle(True)
+        print(self.script_editor.AutoCompSetIgnoreCase(False))
         self.script_editor.Bind(wx.EVT_KEY_DOWN, self.ScriptEditorKeyEvent)
 
         debug('setup of MainFrame - properties and layout')
@@ -193,6 +201,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.model_control.set_data(self.data_list.data_cont.data)
         self.paramter_grid.SetParameters(self.model_control.get_model_params())
         self.set_script_text(self.model_control.get_model_script())
+        self.script_editor.EmptyUndoBuffer()
 
         # Bind all the events that are needed to occur when a new model has
         # been loaded
@@ -237,10 +246,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(EVT_PARAMETER_VALUE_CHANGE, self.eh_external_parameter_value_changed)
 
         # Stuff for the find and replace functionality
-        self.findreplace_data=wx.FindReplaceData()
+        self.findreplace_data = wx.FindReplaceData()
         # Make search down as default
         self.findreplace_data.SetFlags(1)
-        self.findreplace_dlg=wx.FindReplaceDialog(self, self.findreplace_data, "Find & replace", wx.FR_REPLACEDIALOG)
+        self.findreplace_dlg = wx.FindReplaceDialog(self, self.findreplace_data, "Find & replace", wx.FR_REPLACEDIALOG)
         self.Bind(wx.EVT_FIND, self.eh_external_find)
         self.Bind(wx.EVT_FIND_NEXT, self.eh_external_find)
         self.Bind(wx.EVT_FIND_REPLACE, self.eh_external_find)
@@ -264,10 +273,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def create_menu(self):
         debug('setup of MainFrame - menu bar')
         # Menu Bar
-        self.main_frame_menubar=wx.MenuBar()
-        self.mb_checkables={}
-        mfmb=self.main_frame_menubar
-        mb_file=wx.Menu()
+        self.main_frame_menubar = wx.MenuBar()
+        self.mb_checkables = {}
+        mfmb = self.main_frame_menubar
+        mb_file = wx.Menu()
         mb_file.Append(MenuId.NEW_MODEL, "New...\tCtrl+N", "Creates a new model")
         mb_file.Append(MenuId.OPEN_MODEL, "Open...\tCtrl+O", "Opens an existing model")
         mb_file.Append(MenuId.SAVE_MODEL, "Save...\tCtrl+S", "Saves the current model")
@@ -275,20 +284,22 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.AppendSeparator()
         mb_file.Append(MenuId.MODEL_BATCH, "Batch dialog...", "Run sequencial refinements of many datasets")
         mb_file.AppendSeparator()
-        mb_import=wx.Menu()
-        mb_import.Append(MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N", "Creates a new reflectivity model based on datafile")
+        mb_import = wx.Menu()
+        mb_import.Append(MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N",
+                         "Creates a new reflectivity model based on datafile")
         mb_import.Append(MenuId.IMPORT_DATA, "Import Data...\tCtrl+D", "Import data to the active data set")
         mb_import.Append(MenuId.IMPORT_TABLE, "Import Table...", "Import a table from an ASCII file")
         mb_import.Append(MenuId.IMPORT_SCRIPT, "Import Script...", "Import a python model script")
         mb_file.Append(wx.ID_ANY, "Import", mb_import, "")
-        mb_export=wx.Menu()
-        mb_export.Append(MenuId.EXPORT_ORSO, "Export ORT (alpha)...", "Export data and header in ORSO compatible ASCII format")
+        mb_export = wx.Menu()
+        mb_export.Append(MenuId.EXPORT_ORSO, "Export ORT (alpha)...",
+                         "Export data and header in ORSO compatible ASCII format")
         mb_export.Append(MenuId.EXPORT_DATA, "Export Data...", "Export data in ASCII format")
         mb_export.Append(MenuId.EXPORT_TABLE, "Export Table...", "Export table to an ASCII file")
         mb_export.Append(MenuId.EXPORT_SCRIPT, "Export Script...", "Export the script to a python file")
         mb_file.Append(wx.ID_ANY, "Export", mb_export, "")
         mb_file.AppendSeparator()
-        mb_print=wx.Menu()
+        mb_print = wx.Menu()
         mb_print.Append(MenuId.PUBLISH_PLOT, "Publish Plot...\tCtrl+Shift+P", "Generate publication quality graph")
         mb_print.Append(MenuId.PRINT_PLOT, "Print Plot...\tCtrl+P", "Print the current plot")
         mb_print.Append(MenuId.PRINT_GRID, "Print Grid...", "Prints the grid")
@@ -297,79 +308,89 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.AppendSeparator()
         mb_file.Append(MenuId.QUIT, "&Quit\tAlt+Q", "Quit the program")
         mfmb.Append(mb_file, "File")
-        mb_edit=wx.Menu()
-        self.undo_menu=mb_edit.Append(MenuId.UNDO, "Undo\tCtrl+Z", "Undo last action on model, not all changes supported")
-        self.redo_menu=mb_edit.Append(MenuId.REDO, "Redo\tCtrl+Shift+Z", "Redo last undone model change")
+        mb_edit = wx.Menu()
+        self.undo_menu = mb_edit.Append(MenuId.UNDO, "Undo\tCtrl+Z",
+                                        "Undo last action on model, not all changes supported")
+        self.redo_menu = mb_edit.Append(MenuId.REDO, "Redo\tCtrl+Shift+Z", "Redo last undone model change")
         mb_edit.Append(MenuId.HISTORY, "History...", "Show list of possible undo actions")
-        self.undo_menu.Enable(False);self.redo_menu.Enable(False)
+        self.undo_menu.Enable(False);
+        self.redo_menu.Enable(False)
         mb_edit.AppendSeparator()
         mb_edit.Append(MenuId.COPY_GRAPH, "Copy Graph", "Copy the current graph to the clipboard as a bitmap")
         mb_edit.Append(MenuId.COPY_SIM, "Copy Simulation", "Copy the current simulation and data as ASCII text")
         mb_edit.Append(MenuId.COPY_TABLE, "Copy Table", "Copy the parameter grid")
         mb_edit.AppendSeparator()
         mb_edit.Append(MenuId.FIND_REPLACE, "&Find/Replace...\tCtrl+F", "Find and replace in the script")
-        self.mb_editor=mb_edit.Append(MenuId.OPEN_IN_EDITOR, "Open in Editor\tCtrl+E", "Opens the current script in an external editor")
-        mb_edit_sub=wx.Menu()
+        self.mb_editor = mb_edit.Append(MenuId.OPEN_IN_EDITOR, "Open in Editor\tCtrl+E",
+                                        "Opens the current script in an external editor")
+        mb_edit_sub = wx.Menu()
         mb_edit_sub.Append(MenuId.NEW_DATA, "&New data set\tAlt+N", "Appends a new data set")
         mb_edit_sub.Append(MenuId.DELETE_DATA, "&Delete\tAlt+D", "Deletes the selected data sets")
         mb_edit_sub.Append(MenuId.LOWER_DATA, "&Lower item\tAlt+L", "Move selected item down")
         mb_edit_sub.Append(MenuId.RAISE_DATA, "&Raise item\tAlt+R", "Moves selected data sets up")
         mb_edit_sub.AppendSeparator()
-        mb_edit_sub.Append(MenuId.TOGGLE_SHOW, "Toggle &Show\tAlt+S", "Toggle show on and off for the selected data set")
+        mb_edit_sub.Append(MenuId.TOGGLE_SHOW, "Toggle &Show\tAlt+S",
+                           "Toggle show on and off for the selected data set")
         mb_edit_sub.Append(MenuId.TOGGLE_USE, "Toggle &Use\tAlt+U", "Toggle use on and off for the selected data sets")
         mb_edit_sub.Append(MenuId.TOGGLE_ERROR, "Toggle &Error\tAlt+E", "Turn the use of error on and off")
         mb_edit_sub.AppendSeparator()
         mb_edit_sub.Append(MenuId.CALCS_DATA, "&Calculations\tAlt+C", "Opens dialog box to define dataset calculations")
         mb_edit.Append(wx.ID_ANY, "Data", mb_edit_sub, "")
         mfmb.Append(mb_edit, "Edit")
-        mb_view=wx.Menu()
-        self.mb_checkables[MenuId.TOGGLE_SLIDER]=mb_view.Append(MenuId.TOGGLE_SLIDER, "Value as slider",
-                                                                "Control the grid value as a slider", wx.ITEM_CHECK)
+        mb_view = wx.Menu()
+        self.mb_checkables[MenuId.TOGGLE_SLIDER] = mb_view.Append(MenuId.TOGGLE_SLIDER, "Value as slider",
+                                                                  "Control the grid value as a slider", wx.ITEM_CHECK)
         mb_view.AppendSeparator()
-        mb_view_colors=wx.Menu()
+        mb_view_colors = wx.Menu()
         for key in COLOR_CYCLES.keys():
             self.mb_checkables[key] = mb_view_colors.Append(wx.ID_ANY, key, key, wx.ITEM_RADIO)
-        mb_view.Append(MenuId.SET_PLOT, "Plot Markers\tShift+Ctrl+P", "Set the symbols and lines of data and simulations")
+        mb_view.Append(MenuId.SET_PLOT, "Plot Markers\tShift+Ctrl+P",
+                       "Set the symbols and lines of data and simulations")
         mb_view.Append(wx.ID_ANY, "Auto Color", mb_view_colors, "")
         mb_view.AppendSeparator()
-        self.mb_checkables[MenuId.ZOOM]=mb_view.Append(MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK)
+        self.mb_checkables[MenuId.ZOOM] = mb_view.Append(MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off",
+                                                         wx.ITEM_CHECK)
         mb_view.Append(MenuId.ZOOM_ALL, "Zoom All\tCtrl+Shift+Z", "Zoom to fit all data points")
-        self.mb_checkables[MenuId.AUTO_SCALE]=mb_view.Append(MenuId.AUTO_SCALE, "Autoscale",
-                                                             "Sets autoscale on when plotting", wx.ITEM_CHECK)
-        self.mb_checkables[MenuId.USE_TOGGLE_SHOW]=mb_view.Append(MenuId.USE_TOGGLE_SHOW, "Use Toggle Show",
-                            "Set if the plotted data shold be toggled or selected by the mouse", wx.ITEM_CHECK)
+        self.mb_checkables[MenuId.AUTO_SCALE] = mb_view.Append(MenuId.AUTO_SCALE, "Autoscale",
+                                                               "Sets autoscale on when plotting", wx.ITEM_CHECK)
+        self.mb_checkables[MenuId.USE_TOGGLE_SHOW] = mb_view.Append(MenuId.USE_TOGGLE_SHOW, "Use Toggle Show",
+                                                                    "Set if the plotted data shold be toggled or selected by the mouse",
+                                                                    wx.ITEM_CHECK)
         mb_view.AppendSeparator()
-        mb_view_yscale=wx.Menu()
-        self.mb_checkables[MenuId.Y_SCALE_LOG]=mb_view_yscale.Append(MenuId.Y_SCALE_LOG, "log",
-                                                                     "Set y-scale logarithmic", wx.ITEM_RADIO)
-        self.mb_checkables[MenuId.Y_SCALE_LIN]=mb_view_yscale.Append(MenuId.Y_SCALE_LIN, "lin",
-                                                                     "Set y-scale linear", wx.ITEM_RADIO)
+        mb_view_yscale = wx.Menu()
+        self.mb_checkables[MenuId.Y_SCALE_LOG] = mb_view_yscale.Append(MenuId.Y_SCALE_LOG, "log",
+                                                                       "Set y-scale logarithmic", wx.ITEM_RADIO)
+        self.mb_checkables[MenuId.Y_SCALE_LIN] = mb_view_yscale.Append(MenuId.Y_SCALE_LIN, "lin",
+                                                                       "Set y-scale linear", wx.ITEM_RADIO)
         mb_view.Append(wx.ID_ANY, "y scale", mb_view_yscale, "")
-        mb_view_xscale=wx.Menu()
-        self.mb_checkables[MenuId.X_SCALE_LOG]=mb_view_xscale.Append(MenuId.X_SCALE_LOG, "log",
-                                                                     "Set x-scale logarithmic", wx.ITEM_RADIO)
-        self.mb_checkables[MenuId.X_SCALE_LIN]=mb_view_xscale.Append(MenuId.X_SCALE_LIN, "lin",
-                                                                     "Set x-scale linear", wx.ITEM_RADIO)
+        mb_view_xscale = wx.Menu()
+        self.mb_checkables[MenuId.X_SCALE_LOG] = mb_view_xscale.Append(MenuId.X_SCALE_LOG, "log",
+                                                                       "Set x-scale logarithmic", wx.ITEM_RADIO)
+        self.mb_checkables[MenuId.X_SCALE_LIN] = mb_view_xscale.Append(MenuId.X_SCALE_LIN, "lin",
+                                                                       "Set x-scale linear", wx.ITEM_RADIO)
         mb_view.Append(wx.ID_ANY, "x scale", mb_view_xscale, "")
         mfmb.Append(mb_view, "View")
-        mb_fit=wx.Menu()
-        self.mb_checkables[MenuId.AUTO_SIM]=mb_fit.Append(MenuId.AUTO_SIM, "Simulate Automatically",
-                           "Update simulation on model changes automatically", wx.ITEM_CHECK)
+        mb_fit = wx.Menu()
+        self.mb_checkables[MenuId.AUTO_SIM] = mb_fit.Append(MenuId.AUTO_SIM, "Simulate Automatically",
+                                                            "Update simulation on model changes automatically",
+                                                            wx.ITEM_CHECK)
         mb_fit.AppendSeparator()
         mb_fit.Append(MenuId.SIM_MODEL, "&Simulate\tF9", "Compile the script and run the Sim function")
         mb_fit.Append(MenuId.EVAL_MODEL, "&Evaluate\tF5",
                       "Evaluate the Sim function twice and compre result to find inconsitancy")
-        self.mb_checkables[MenuId.TOGGLE_CUDA]=mb_fit.Append(MenuId.TOGGLE_CUDA, "Use CUDA",
-                             "Make use of Nvidia GPU computing with CUDA", wx.ITEM_CHECK)
+        self.mb_checkables[MenuId.TOGGLE_CUDA] = mb_fit.Append(MenuId.TOGGLE_CUDA, "Use CUDA",
+                                                               "Make use of Nvidia GPU computing with CUDA",
+                                                               wx.ITEM_CHECK)
         mb_fit.AppendSeparator()
         mb_fit.Append(MenuId.START_FIT, "Start &Fit\tCtrl+F", "Start fitting")
         mb_fit.Append(MenuId.STOP_FIT, "&Halt Fit\tCtrl+H", "Stop fitting")
-        mb_fit.Append(MenuId.RESTART_FIT, "&Resume Fit\tCtrl+R", "Resumes fitting without reinitilazation of the optimizer")
+        mb_fit.Append(MenuId.RESTART_FIT, "&Resume Fit\tCtrl+R",
+                      "Resumes fitting without reinitilazation of the optimizer")
         mb_fit.AppendSeparator()
         mb_fit.Append(MenuId.ANALYZE, "Analyze fit", "Analyze the fit")
         mfmb.Append(mb_fit, "Model")
-        mb_set=wx.Menu()
-        mb_set_plugins=wx.Menu()
+        mb_set = wx.Menu()
+        mb_set_plugins = wx.Menu()
         mb_set_plugins.AppendSeparator()
         mb_set.Append(wx.ID_ANY, "Plugins", mb_set_plugins, "")
         mb_set.AppendSeparator()
@@ -380,7 +401,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_set.Append(MenuId.SET_PROFILE, "Startup Profile...", "")
         mb_set.Append(MenuId.SET_EDITOR, "Select External Editor...", "")
         mfmb.Append(mb_set, "Settings")
-        help_menu=wx.Menu()
+        help_menu = wx.Menu()
         help_menu.Append(MenuId.HELP_MODEL, "Models Help...", "Show help for the models")
         help_menu.Append(MenuId.HELP_FOM, "FOM Help", "Show help about the fom")
         help_menu.Append(MenuId.HELP_PLUGINS, "Plugins Helps...", "Show help for the plugins")
@@ -391,11 +412,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         help_menu.Append(MenuId.HELP_HOMEPAGE, "Open Homepage...", "Open the homepage")
         help_menu.Append(MenuId.HELP_ABOUT, "About...", "Shows information about GenX")
         help_menu.AppendSeparator()
-        help_menu.Append(MenuId.HELP_DEBUG, "Collect Debug Info...\tCtrl+L", "Record debug information to file and show console")
+        help_menu.Append(MenuId.HELP_DEBUG, "Collect Debug Info...\tCtrl+L",
+                         "Record debug information to file and show console")
         mfmb.Append(help_menu, "Help")
         self.SetMenuBar(mfmb)
         # Plugin controller builds own menu entries
-        self.plugin_control=add_on.PluginController(self, mb_set_plugins)
+        self.plugin_control = add_on.PluginController(self, mb_set_plugins)
 
     def bind_menu(self):
         self.Bind(wx.EVT_MENU, self.eh_mb_new, id=MenuId.NEW_MODEL)
@@ -467,10 +489,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_mb_misc_about, id=MenuId.HELP_ABOUT)
         self.Bind(wx.EVT_MENU, self.eh_mb_debug_dialog, id=MenuId.HELP_DEBUG)
 
-
     def create_toolbar(self):
-        tb_bmp_size=int(32*self.dpi_scale_factor)
-        self.main_frame_toolbar=wx.ToolBar(self, -1, style=wx.TB_DEFAULT_STYLE)
+        tb_bmp_size = int(32*self.dpi_scale_factor)
+        self.main_frame_toolbar = wx.ToolBar(self, -1, style=wx.TB_DEFAULT_STYLE)
         self.SetToolBar(self.main_frame_toolbar)
         self.main_frame_toolbar.AddTool(ToolId.NEW_MODEL, "tb_new",
                                         wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
@@ -492,9 +513,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                         wx.Bitmap(img.getsimulateImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Simulate | F9", "Simulate the model | F9")
         self.main_frame_toolbar.AddSeparator()
-        sselect=self.model_control.get_solvers()
-        solver_select=wx.ComboBox(self.main_frame_toolbar, id=ToolId.SOLVER_SELECT, value=sselect[0],
-                                       choices=sselect, style=wx.CB_READONLY)
+        sselect = self.model_control.get_solvers()
+        solver_select = wx.ComboBox(self.main_frame_toolbar, id=ToolId.SOLVER_SELECT, value=sselect[0],
+                                    choices=sselect, style=wx.CB_READONLY)
         self.main_frame_toolbar.AddControl(solver_select, 'solver')
         self.main_frame_toolbar.AddTool(ToolId.START_FIT, "tb_start_fit",
                                         wx.Bitmap(img.getstart_fitImage().Scale(tb_bmp_size, tb_bmp_size)),
@@ -532,7 +553,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=ToolId.ZOOM)
 
     def OnInputPageChanged(self, evt):
-        tpage, fpage=evt.GetSelection(), evt.GetOldSelection()
+        tpage, fpage = evt.GetSelection(), evt.GetOldSelection()
         # check for odd case, that either page does not exist anymore
         if self.input_notebook.GetPageCount()>=max(tpage, fpage):
             return
@@ -558,7 +579,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 besty = self.model_control.get_fom()
 
                 self.plot_fomscan.SetPlottype('scan')
-                e_scale=getattr(self.model_control.controller.optimizer.opt, 'errorbar_level', 0)
+                e_scale = getattr(self.model_control.controller.optimizer.opt, 'errorbar_level', 0)
                 self.plot_fomscan.Plot((x, y, bestx, besty, e_scale),
                                        self.model_control.get_parameter_name(row),
                                        'FOM')
@@ -567,9 +588,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         dlg.Destroy()
 
     def __set_properties(self):
-        self.main_frame_fom_text=wx.StaticText(self.main_frame_toolbar, -1,
-                                               '        FOM:                    ', size=(400, -1))
-        font=wx.Font(wx.FontInfo(15*self.dpi_scale_factor))
+        self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,
+                                                 '        FOM:                    ', size=(400, -1))
+        font = wx.Font(wx.FontInfo(15*self.dpi_scale_factor))
         self.main_frame_fom_text.SetFont(font)
         self.main_frame_fom_text.SetLabel('        FOM: None')
         # self.main_frame_fom_text.SetEditable(False)
@@ -577,13 +598,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.main_frame_toolbar.AddSeparator()
         self.main_frame_toolbar.AddControl(self.main_frame_fom_text)
 
-        _icon=wx.NullIcon
+        _icon = wx.NullIcon
         _icon.CopyFromBitmap(img.genx.GetBitmap())
         self.SetIcon(_icon)
         self.main_frame_statusbar.SetStatusWidths([-2, -3, -2])
 
         # statusbar fields
-        main_frame_statusbar_fields=["", "", "x,y"]
+        main_frame_statusbar_fields = ["", "", "x,y"]
         for i in range(len(main_frame_statusbar_fields)):
             self.main_frame_statusbar.SetStatusText(main_frame_statusbar_fields[i], i)
         self.main_frame_toolbar.Realize()
@@ -608,20 +629,20 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.hor_splitter.SetMinimumPaneSize(1)
 
     def __do_layout(self):
-        frame_sizer=wx.BoxSizer(wx.VERTICAL)
-        main_sizer=wx.BoxSizer(wx.HORIZONTAL)
-        input_sizer=wx.BoxSizer(wx.VERTICAL)
-        sizer_8=wx.BoxSizer(wx.HORIZONTAL)
-        sizer_7=wx.BoxSizer(wx.HORIZONTAL)
-        plot_sizer=wx.BoxSizer(wx.HORIZONTAL)
-        sizer_6=wx.BoxSizer(wx.HORIZONTAL)
-        sizer_5=wx.BoxSizer(wx.HORIZONTAL)
-        sizer_4=wx.BoxSizer(wx.HORIZONTAL)
-        sizer_3=wx.BoxSizer(wx.HORIZONTAL)
-        data_sizer=wx.BoxSizer(wx.VERTICAL)
-        sizer_1=wx.BoxSizer(wx.VERTICAL)
-        sizer_2=wx.BoxSizer(wx.HORIZONTAL)
-        data_list_sizer=wx.BoxSizer(wx.HORIZONTAL)
+        frame_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        input_sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer_8 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_7 = wx.BoxSizer(wx.HORIZONTAL)
+        plot_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_6 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_5 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_4 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
+        data_sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer_1 = wx.BoxSizer(wx.VERTICAL)
+        sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
+        data_list_sizer = wx.BoxSizer(wx.HORIZONTAL)
         data_list_sizer.Add(self.data_list, 1, wx.EXPAND, 0)
         self.data_notebook_data.SetSizer(data_list_sizer)
         sizer_1.Add((20, 5), 0, 0, 0)
@@ -671,15 +692,15 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Layout()
         self.Centre()
 
-        self.sep_plot_notebook=self.plot_notebook
+        self.sep_plot_notebook = self.plot_notebook
         if self.wstartup.widescreen:
             # test adding new notebooks for plugins in wide screen layout
-            self.plot_notebook=self.wide_plugin_notebook
+            self.plot_notebook = self.wide_plugin_notebook
             self.plot_notebook.DeletePage(0)
             self.plot_splitter.SetSashGravity(0.75)
-            self.sep_data_notebook=self.data_notebook
-            self.data_notebook=wx.Notebook(self.data_panel, wx.ID_ANY,
-                                           style=wx.NB_TOP | wx.BORDER_SUNKEN)
+            self.sep_data_notebook = self.data_notebook
+            self.data_notebook = wx.Notebook(self.data_panel, wx.ID_ANY,
+                                             style=wx.NB_TOP | wx.BORDER_SUNKEN)
             data_sizer.Add(self.data_notebook, 1, wx.EXPAND | wx.ALL, 4)
         else:
             self.plot_splitter.Unsplit()
@@ -689,9 +710,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Overiding the default method since any resizing has to come AFTER
         the calls to Show
         '''
-        display_size=wx.DisplaySize()
-        hsize=self.opt.hsize or int(display_size[0]*0.85)
-        vsize=self.opt.vsize or int(display_size[1]*0.9)
+        display_size = wx.DisplaySize()
+        hsize = self.opt.hsize or int(display_size[0]*0.85)
+        vsize = self.opt.vsize or int(display_size[1]*0.9)
         self.SetSize(hsize, vsize)
         self.CenterOnScreen()
         self.ver_splitter.SetSashPosition(200)
@@ -706,32 +727,32 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         wx.CallAfter(self.EndInit)
 
     def LayoutSplitters(self):
-        size=self.GetSize()
-        vsplit=self.opt.vsplit or size[0]/4
-        hsplit=self.opt.hsplit or size[1]-450
+        size = self.GetSize()
+        vsplit = self.opt.vsplit or size[0]/4
+        hsplit = self.opt.hsplit or size[1]-450
         self.ver_splitter.SetSashPosition(vsplit)
         self.hor_splitter.SetSashPosition(hsplit)
 
         if self.wstartup.widescreen:
-            psplit=self.opt.psplit or int(size[1]*0.6)
+            psplit = self.opt.psplit or int(size[1]*0.6)
             self.plot_splitter.SetSashPosition(psplit)
 
     def EndInit(self):
-        wx.YieldIfNeeded() # make sure that all GUI layout is performed before _init_phase is unset
-        self.SetMinSize(wx.Size(600,400))
-        self._init_phase=False
+        wx.YieldIfNeeded()  # make sure that all GUI layout is performed before _init_phase is unset
+        self.SetMinSize(wx.Size(600, 400))
+        self._init_phase = False
 
     def startup_dialog(self, profile_path, force_show=False):
         if self.wstartup.show_profiles or force_show:
-            startup_dialog=StartUpConfigDialog(self, os.path.join(profile_path, 'profiles'),
-                                               show_cb=self.wstartup.show_profiles,
-                                               wide=self.wstartup.widescreen)
+            startup_dialog = StartUpConfigDialog(self, os.path.join(profile_path, 'profiles'),
+                                                 show_cb=self.wstartup.show_profiles,
+                                                 wide=self.wstartup.widescreen)
             startup_dialog.ShowModal()
-            config_file=startup_dialog.GetConfigFile()
+            config_file = startup_dialog.GetConfigFile()
             if config_file:
                 conf_mod.config.load_default(os.path.join(profile_path, 'profiles', config_file), reset=True)
-                self.wstartup.show_profiles=startup_dialog.GetShowAtStartup()
-                self.wstartup.widescreen=startup_dialog.GetWidescreen()
+                self.wstartup.show_profiles = startup_dialog.GetShowAtStartup()
+                self.wstartup.widescreen = startup_dialog.GetWidescreen()
                 self.wstartup.safe_config(default=True)
                 conf_mod.config.write_default(os.path.join(config_path, 'genx.conf'))
                 debug('Changed profile, plugins to load=%s'%conf_mod.config.get('plugins', 'loaded plugins'))
@@ -748,25 +769,47 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             idn = self.script_editor.GetLineIndentation(line)
             txt = self.script_editor.GetLine(line).strip()
             if evt.controlDown:
-                txt = txt.split(',')[-1].split('(')[-1]
                 if self.script_editor.AutoCompActive():
                     self.script_editor.AutoCompCancel()
-                if '.' in txt:
-                    obj, subtxt = txt.rsplit('.', 1)
-                    self.script_editor.AutoCompShow(len(subtxt),
-                                                    self.build_autocomplete_items(obj=obj, start=subtxt))
+                if evt.shiftDown:
+                    # try to show context help for object on current line
+                    txt = txt.split('(', 1)[0]
+                    tt = self.get_tooltip(txt)
+                    tip = wx.adv.RichToolTip(f'Object help for {txt}', tt)
+                    tip.SetIcon(wx.ICON_INFORMATION)
+                    tip.ShowFor(self.script_editor)
                 else:
-                    self.script_editor.AutoCompShow(len(txt), self.build_autocomplete_items(start=txt))
+                    txt = txt.split(',')[-1].split('(')[-1]
+                    if '.' in txt:
+                        obj, subtxt = txt.rsplit('.', 1)
+                        self.script_editor.AutoCompShow(len(subtxt),
+                                                        self.build_autocomplete_items(obj=obj, start=subtxt))
+                    else:
+                        self.script_editor.AutoCompShow(len(txt), self.build_autocomplete_items(start=txt))
             else:
                 if txt.startswith('for ') or txt.startswith('if ') or \
                         txt.startswith('elif ') or txt.startswith('else:'):
-                    idn+=4
+                    idn += 4
                 if evt.shiftDown:
-                    pos+=len(self.script_editor.GetLine(line))-self.script_editor.GetColumn(pos)-1
+                    pos += len(self.script_editor.GetLine(line))-self.script_editor.GetColumn(pos)-1
                 self.script_editor.InsertText(pos, '\n'+' '*idn)
                 self.script_editor.GotoPos(pos+idn+1)
+        elif evt.controlDown and evt.GetUnicodeKey() in [ord('z'), ord('Z')]:
+            if evt.shiftDown:
+                self.script_editor.Redo()
+            else:
+                self.script_editor.Undo()
         else:
             evt.Skip()
+
+    def get_tooltip(self, obj):
+        try:
+            objitem = self.model_control.get_model().eval_in_model(obj)
+        except Exception:
+            return 'Error'
+        ds = getattr(objitem, '__doc__', None) or 'No documentation found'
+        ds = '\n'.join(ds.splitlines()[:20])
+        return ds
 
     def build_autocomplete_items(self, obj=None, start=''):
         if obj is None:
@@ -778,7 +821,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             output.sort()
             return " ".join(output)
         else:
-            objitem = self.model_control.get_model().eval_in_model(obj)
+            try:
+                objitem = self.model_control.get_model().eval_in_model(obj)
+            except NameError:
+                return ''
             output = []
             for key in dir(objitem):
                 if key.startswith('_') or not key.startswith(start):
@@ -871,19 +917,19 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         debug('new_from_file: build model script')
         # if this was exported from genx, use the embedded script
-        meta=self.data_list.data_cont.data[0].meta
-        ana_meta=meta.get('analysis', {})
+        meta = self.data_list.data_cont.data[0].meta
+        ana_meta = meta.get('analysis', {})
         if ana_meta.get('software', {}).get('name', '')=='GenX':
             self.model_control.set_model_script(ana_meta['script'])
             params = ana_meta['parameters']
-            pdata=[[pi['Parameter'], pi['Value'], pi['Fit'], pi['Min'], pi['Max'], pi['Error']]
-                    for pi in params]
-            self.model_control.get_model_params().data=pdata
+            pdata = [[pi['Parameter'], pi['Value'], pi['Fit'], pi['Min'], pi['Max'], pi['Error']]
+                     for pi in params]
+            self.model_control.get_model_params().data = pdata
             self.paramter_grid.table.UpdateView()
             for di in self.data_list.data_cont.data:
-                del(di.meta['analysis'])
+                del (di.meta['analysis'])
         else:
-            ds=meta['data_source']
+            ds = meta['data_source']
             # detect source radiation
             probe = ds['experiment']['probe']
             if probe=='neutrons':
@@ -903,15 +949,15 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             else:
                 coords = '2θ'
                 wavelength = float(ds['measurement']['instrument_settings']
-                                        ['incident_angle'].get('magnitude', 1.54))
+                                   ['incident_angle'].get('magnitude', 1.54))
 
             if 'SimpleReflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
                 from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
-                refl: SRPlugin=self.plugin_control.GetPlugin('SimpleReflectivity')
+                refl: SRPlugin = self.plugin_control.GetPlugin('SimpleReflectivity')
                 refl.sample_widget.sample_table.ResetModel()
-                refl.sample_widget.inst_params['probe']=probe
-                refl.sample_widget.inst_params['wavelength']=wavelength
-                refl.sample_widget.inst_params['coords']=coords
+                refl.sample_widget.inst_params['probe'] = probe
+                refl.sample_widget.inst_params['wavelength'] = wavelength
+                refl.sample_widget.inst_params['coords'] = coords
                 refl.sample_widget.inst_params['res'] = 0.01
                 refl.sample_widget.UpdateModel(re_color=True)
             else:
@@ -919,21 +965,23 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 if not 'Reflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
                     self.plugin_control.plugin_handler.load_plugin('Reflectivity')
                 # create a new script with the reflectivity plugin
-                refl: ReflPlugin=self.plugin_control.GetPlugin('Reflectivity')
+                refl: ReflPlugin = self.plugin_control.GetPlugin('Reflectivity')
                 refl.CreateNewModel('models.spec_nx')
                 # detect source radiation
-                inst=refl.sample_widget.instruments['inst']
-                inst.probe=probe
-                inst.coords=coords
-                inst.wavelength=wavelength
-                pol_names={'p': 'uu', 'm': 'dd',
-                           'pp': 'uu', 'mm': 'dd', 'pm': 'ud', 'mp': 'du'}
+                inst = refl.sample_widget.instruments['inst']
+                inst.probe = probe
+                inst.coords = coords
+                inst.wavelength = wavelength
+                pol_names = {
+                    'p': 'uu', 'm': 'dd',
+                    'pp': 'uu', 'mm': 'dd', 'pm': 'ud', 'mp': 'du'
+                    }
                 # set resolution column
                 if len(meta['columns'])>3 and (meta['columns'][3]['name']==('s'+meta['columns'][0]['name'])):
                     inst.restype = 'full conv and varying res.'
                     inst.respoints = 7
                     inst.resintrange = 2.5
-                    el=refl.simulation_widget.GetExpressionList()
+                    el = refl.simulation_widget.GetExpressionList()
                     for i, data_item in enumerate(self.data_list.data_cont.data):
                         if len(data_item.meta['columns'])>3 and (
                                 data_item.meta['columns'][3]['name']==
@@ -942,7 +990,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                         else:
                             el[i].append(f'inst.setRes(0.001)')
                         # set polarization channel
-                        pol = data_item.meta['data_source']['measurement']['instrument_settings'].get('polarization', 'unpolarized')
+                        pol = data_item.meta['data_source']['measurement']['instrument_settings'].get('polarization',
+                                                                                                      'unpolarized')
                         if pol in pol_names:
                             el[i].append(f'inst.setPol("{pol_names[pol]}")')
                 refl.WriteModel()
@@ -953,7 +1002,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         _post_new_model_event(self, self.model_control.get_model())
         self.update_title()
 
-
     def open_model(self, path):
         debug('open_model: clear model')
         self.model_control.new_model()
@@ -963,7 +1011,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         debug('open_model: load_file')
         with self.catch_error(action='open_model', step=f'open file {os.path.basename(path)}') as mng:
             self.model_control.load_file(path)
-        if not mng.successful: return # don't continue after error
+        if not mng.successful: return  # don't continue after error
 
         debug('open_model: read config')
         with self.catch_error(action='open_model', step=f'loading config for plots'):
@@ -975,7 +1023,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         with self.catch_error(action='open_model', step=f'processing plugins'):
             self.plugin_control.OnOpenModel(None)
         self.main_frame_statusbar.SetStatusText('Model loaded from file', 1)
-        self.mb_checkables['none'].Check() # reset color cycle to None
+        self.mb_checkables['none'].Check()  # reset color cycle to None
 
         # Post an event to update everything else
         debug('open_model: post new model event')
@@ -988,7 +1036,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if self.script_file is None:
             return self.script_editor.GetText()
         else:
-            text=open(self.script_file, 'r', encoding='utf-8').read()
+            text = open(self.script_file, 'r', encoding='utf-8').read()
             self.set_script_text(text, from_script=True)
             return text
 
@@ -996,12 +1044,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if not from_script and self.script_file is not None:
             open(self.script_file, 'w', encoding='utf-8').write(text)
 
-        was_editable=self.script_editor.IsEditable()
+        was_editable = self.script_editor.IsEditable()
         self.script_editor.SetReadOnly(False)
 
-        current_view=self.script_editor.GetFirstVisibleLine()
-        current_cursor=self.script_editor.GetCurrentPos()
-        current_selection=self.script_editor.GetSelection()
+        current_view = self.script_editor.GetFirstVisibleLine()
+        current_cursor = self.script_editor.GetCurrentPos()
+        current_selection = self.script_editor.GetSelection()
         self.script_editor.SetText(text)
         self.script_editor.SetCurrentPos(current_cursor)
         self.script_editor.SetFirstVisibleLine(current_view)
@@ -1014,41 +1062,41 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Save the script as temporary file and open it in an external editor.
         This will block entry in the GUI script editor and read the file on simulate.
         """
-        with tempfile.NamedTemporaryFile(mode='w', prefix='genx',suffix='.py',
+        with tempfile.NamedTemporaryFile(mode='w', prefix='genx', suffix='.py',
                                          encoding='utf-8', delete=False) as sfile:
             sfile.write(self.get_script_text())
-            self.script_file=sfile.name
+            self.script_file = sfile.name
         if not self.opt.editor:
             if not self.eh_mb_select_editor(None):
                 os.remove(self.script_file)
-                self.script_file=None
+                self.script_file = None
                 return
         try:
-            proc=subprocess.Popen([self.opt.editor, self.script_file])
+            proc = subprocess.Popen([self.opt.editor, self.script_file])
         except (subprocess.SubprocessError, OSError):
             os.remove(self.script_file)
             self.script_file = None
-            self.opt.editor=None
+            self.opt.editor = None
             warning('Could not open editor', exc_info=True)
             return
 
         self.script_editor.SetReadOnly(True)
-        self.script_editor.StyleSetBackground(wx.stc.STC_STYLE_DEFAULT, wx.Colour(210,210,210))
+        self.script_editor.StyleSetBackground(wx.stc.STC_STYLE_DEFAULT, wx.Colour(210, 210, 210))
         self.mb_editor.SetItemLabel("Reactivate internal editor\tCtrl+E")
-        self._editor_proc=proc
-        self._script_watcher=wx.Timer(self)
+        self._editor_proc = proc
+        self._script_watcher = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.check_script_file, self._script_watcher)
         self._script_watcher.Start(1000)
 
     def check_script_file(self, evt):
-        txt=open(self.script_file, 'r', encoding='utf-8').read()
+        txt = open(self.script_file, 'r', encoding='utf-8').read()
         if txt.strip()!=self.script_editor.GetText().strip():
             self.eh_tb_simulate(None)
         if self._editor_proc and self._editor_proc.poll() is not None:
-            self._editor_proc=None
+            self._editor_proc = None
             self._script_watcher.Stop()
-            res=ShowQuestionDialog(self, 'Editor process exited, reactivate internal editor?',
-                                   'Editor Closed')
+            res = ShowQuestionDialog(self, 'Editor process exited, reactivate internal editor?',
+                                     'Editor Closed')
             if res:
                 self.deactivate_external_editing()
             else:
@@ -1067,12 +1115,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def update_for_save(self):
         """Updates the various objects for a save"""
         self.model_control.set_model_script(self.get_script_text())
-        self.paramter_grid.opt.auto_sim=self.mb_checkables[MenuId.AUTO_SIM].IsChecked()
+        self.paramter_grid.opt.auto_sim = self.mb_checkables[MenuId.AUTO_SIM].IsChecked()
         self.paramter_grid.WriteConfig()
 
     def do_simulation(self, from_thread=False):
         if not from_thread: self.main_frame_statusbar.SetStatusText('Simulating...', 1)
-        currecnt_script=self.get_script_text()
+        currecnt_script = self.get_script_text()
         self.model_control.set_model_script(currecnt_script)
         with self.catch_error(action='do_simulation', step=f'simulating the model') as mgr:
             self.model_control.simulate(recompile=not from_thread)
@@ -1152,7 +1200,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Simulation loop for threading to increase the speed of the interactive simulations
         """
         self.flag_simulating = True
-        numpy_set_options() # has to be set, as options are thread dependent
+        numpy_set_options()  # has to be set, as options are thread dependent
         while self.simulation_queue_counter>0:
             self.do_simulation(from_thread=True)
             time.sleep(0.1)
@@ -1190,6 +1238,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         # Set the string in the script_editor
         self.set_script_text(event.GetModel().get_script())
+        self.script_editor.EmptyUndoBuffer()
         # Let the solver gui do its loading and updating:
         self.model_control.ModelLoaded()
         # Lets update the mb_use_toggle_show Menu item
@@ -1230,7 +1279,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         dlg = wx.FileDialog(self, message="New from file", defaultFile="",
                             wildcard="Suppoerted types (*.ort)|*.ort",
-                            style=wx.FD_OPEN|wx.FD_MULTIPLE | wx.FD_CHANGE_DIR
+                            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
             paths = dlg.GetPaths()
@@ -1252,7 +1301,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 return
         dlg = wx.FileDialog(self, message="Open", defaultDir=directory,
                             wildcard="GenX File (*.hgx;*.gx)|*.hgx;*.gx",
-                            style=wx.FD_OPEN  | wx.FD_CHANGE_DIR
+                            style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
             path = dlg.GetPath()
@@ -1289,8 +1338,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.update_title()
 
     def eh_mb_publish_plot(self, event):
-        dia=pubgraph_dialog.PublicationDialog(self, data=self.model_control.get_data(),
-                                      module=self.model_control.get_model().eval_in_model('globals().get("model")'))
+        dia = pubgraph_dialog.PublicationDialog(self, data=self.model_control.get_data(),
+                                                module=self.model_control.get_model().eval_in_model(
+                                                    'globals().get("model")'))
         dia.ShowModal()
 
     def eh_mb_print_plot(self, event):
@@ -1319,7 +1369,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                             style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            path=dlg.GetPath()
+            path = dlg.GetPath()
             with self.catch_error(action='export_orso', step=f'export file {os.path.basename(path)}'):
                 self.model_control.export_orso(path)
         dlg.Destroy()
@@ -1334,7 +1384,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                             style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            path=dlg.GetPath()
+            path = dlg.GetPath()
             with self.catch_error(action='export_data', step=f'data file {os.path.basename(path)}'):
                 self.model_control.export_data(path)
 
@@ -1405,9 +1455,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 return
 
         self.opt.hsize, self.opt.vsize = self.GetSize()
-        self.opt.vsplit=self.ver_splitter.GetSashPosition()
-        self.opt.hsplit=self.hor_splitter.GetSashPosition()
-        self.opt.psplit=self.plot_splitter.GetSashPosition()
+        self.opt.vsplit = self.ver_splitter.GetSashPosition()
+        self.opt.hsplit = self.hor_splitter.GetSashPosition()
+        self.opt.psplit = self.plot_splitter.GetSashPosition()
         self.opt.safe_config(default=True)
 
         conf_mod.config.write_default(os.path.join(config_path, 'genx.conf'))
@@ -1417,7 +1467,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         if self.script_file:
             os.remove(self.script_file)
-            self.script_file=None
+            self.script_file = None
 
         event.Skip()
         self.Destroy()
@@ -1475,7 +1525,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         """
         Change the state of the grid value input, either as slider or as a number.
         """
-        val=self.mb_checkables[MenuId.TOGGLE_SLIDER].IsChecked()
+        val = self.mb_checkables[MenuId.TOGGLE_SLIDER].IsChecked()
         self.paramter_grid.SetValueEditorSlider(val)
         self.paramter_grid.toggle_slider_tool(val)
         self.paramter_grid.Refresh()
@@ -1548,34 +1598,34 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             "\n\nConfiguration files stored in %s"%config_path
 
             +"\n\nThe versions of the mandatory libraries are:\n"
-            "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
-            "\n\nThe non-mandatory but useful packages:\n%s"
-            ""%(platform.python_version(), wx.__version__,
-                numpy.__version__, scipy.__version__,
-                matplotlib.__version__, useful),
+             "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
+             "\n\nThe non-mandatory but useful packages:\n%s"
+             ""%(platform.python_version(), wx.__version__,
+                 numpy.__version__, scipy.__version__,
+                 matplotlib.__version__, useful),
             500, wx.ClientDC(self)))
         info_dilog.WebSite = (homepage_url, "GenX homepage")
         # No developers yet
         info_dilog.SetDevelopers(['Artur Glavic <artur.glavic@psi.ch>'])
         info_dilog.SetLicence(wordwrap('This program is free software: you can redistribute it and/or modify '
-                                'it under the terms of the GNU General Public License as published by '
-                                'the Free Software Foundation, either version 3 of the License, or '
-                                '(at your option) any later version. '
-                                '\n\nThis program is distributed in the hope that it will be useful, '
-                                'but WITHOUT ANY WARRANTY; without even the implied warranty of '
-                                'MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the '
-                                'GNU General Public License for more details. '
-                                '\n\nYou should have received a copy of the GNU General Public License '
-                                'along with this program.  If not, see <http://www.gnu.org/licenses/>. '
-                                      , 400, wx.ClientDC(self)))
+                                       'it under the terms of the GNU General Public License as published by '
+                                       'the Free Software Foundation, either version 3 of the License, or '
+                                       '(at your option) any later version. '
+                                       '\n\nThis program is distributed in the hope that it will be useful, '
+                                       'but WITHOUT ANY WARRANTY; without even the implied warranty of '
+                                       'MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the '
+                                       'GNU General Public License for more details. '
+                                       '\n\nYou should have received a copy of the GNU General Public License '
+                                       'along with this program.  If not, see <http://www.gnu.org/licenses/>. '
+                                       , 400, wx.ClientDC(self)))
 
         wx.adv.AboutBox(info_dilog)
 
     def eh_mb_debug_dialog(self, event):
         import logging
         from ..core import custom_logging
-        logger=logging.getLogger()
-        level=logger.getEffectiveLevel()
+        logger = logging.getLogger()
+        level = logger.getEffectiveLevel()
         logger.setLevel(logging.DEBUG)
 
         dlg = wx.FileDialog(self, message="Save Logfile As", defaultFile="genx.log",
@@ -1586,15 +1636,15 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             fname = dlg.GetPath()
             dlg.Destroy()
             if os.path.exists(fname):
-                res=ShowQuestionDialog(self, f'File {os.path.basename(fname)} exists, overwrite?',
-                                       'Overwrite file?')
+                res = ShowQuestionDialog(self, f'File {os.path.basename(fname)} exists, overwrite?',
+                                         'Overwrite file?')
                 if res:
                     custom_logging.activate_logging(fname)
             else:
                 custom_logging.activate_logging(fname)
         # open logging console dialog
         from .log_dialog import LoggingDialog
-        dlg=LoggingDialog(self)
+        dlg = LoggingDialog(self)
         dlg.Show()
 
     def eh_mb_saveas(self, event):
@@ -1603,7 +1653,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         dlg = wx.FileDialog(self, message="Save As", defaultFile="",
                             wildcard="HDF5 GenX File (*.hgx)|*.hgx|GenX File (*.gx)|*.gx",
-                            style=wx.FD_SAVE  | wx.FD_CHANGE_DIR
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
             self.update_for_save()
@@ -1642,7 +1692,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         dia.Show()
 
     def eh_mb_view_color_cycle(self, event):
-        id2colors=dict(((self.mb_checkables[key].GetId(), value) for key, value in COLOR_CYCLES.items()))
+        id2colors = dict(((self.mb_checkables[key].GetId(), value) for key, value in COLOR_CYCLES.items()))
         self.model_control.update_color_cycle(id2colors[event.GetId()])
 
     def eh_mb_view_yscale_log(self, event):
@@ -1732,11 +1782,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.eh_mb_view_zoom(event)
 
     def eh_ex_set_solver_selection(self, selection):
-        select:wx.ComboBox=self.FindWindowById(ToolId.SOLVER_SELECT, self.main_frame_toolbar)
+        select: wx.ComboBox = self.FindWindowById(ToolId.SOLVER_SELECT, self.main_frame_toolbar)
         select.SetValue(selection)
 
     def eh_ex_add_solver_selection(self, selection):
-        select:wx.ComboBox=self.FindWindowById(ToolId.SOLVER_SELECT, self.main_frame_toolbar)
+        select: wx.ComboBox = self.FindWindowById(ToolId.SOLVER_SELECT, self.main_frame_toolbar)
         select.Append(selection)
 
     @skips_event
@@ -1777,10 +1827,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def eh_tb_error_stats(self, event):
         with self.catch_error(action='error_stats', step=f'opening Bumps analysis dialog'):
             from .bumps_interface import StatisticalAnalysisDialog
-            prev_result=getattr(self.model_control.controller.optimizer, 'last_result', None)
+            prev_result = getattr(self.model_control.controller.optimizer, 'last_result', None)
             if prev_result and len(prev_result.dx)!=len(self.model_control.get_parameters().get_fit_pars()[0]):
                 # fit parameters were changed since result was computed
-                prev_result=None
+                prev_result = None
             dia = StatisticalAnalysisDialog(self, self.model_control.get_model(), prev_result=prev_result)
             dia.ShowModal()
         self.paramter_grid.grid.ForceRefresh()
@@ -1851,7 +1901,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                             style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            path=dlg.GetPath()
+            path = dlg.GetPath()
             with self.catch_error(action='import_table', step=f'importing table {os.path.basename(path)}') as mgr:
                 self.model_control.import_table(path)
             if not mgr.successful:
@@ -1871,7 +1921,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                             style=wx.FD_OPEN | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
-            path=dlg.GetPath()
+            path = dlg.GetPath()
             with self.catch_error(action='import_script', step=f'importing file {os.path.basename(path)}'):
                 self.model_control.import_script(path)
                 self.plugin_control.OnOpenModel(None)
@@ -1889,8 +1939,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             fom_name = event.fom_name
         else:
             # workaround for GenericModelEvent, TODO: fix this in the future with better event
-            fom_value=self.model_control.get_fom()
-            fom_name=self.model_control.get_fom_name()
+            fom_value = self.model_control.get_fom()
+            fom_name = self.model_control.get_fom_name()
         if fom_value:
             self.main_frame_fom_text.SetLabel('        FOM %s: %.4e'%(fom_name, fom_value))
         else:
@@ -1916,13 +1966,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         with self.catch_error(action='fit_evaluate', step=f'simulating model'):
             self.do_simulation()
             self.set_possible_parameters_in_grid()
-            data=self.model_control.get_data()
-            sims1=[di.y_sim for di in data]
+            data = self.model_control.get_data()
+            sims1 = [di.y_sim for di in data]
             self.model_control.simulate(recompile=False)
-            data=self.model_control.get_data()
-            sims2=[di.y_sim for di in data]
+            data = self.model_control.get_data()
+            sims2 = [di.y_sim for di in data]
             _post_sim_plot_event(self, self.model_control.get_model(), 'Evaluation')
-            diffs=[(si1!=si2).any() for si1, si2 in zip(sims1, sims2)]
+            diffs = [(si1!=si2).any() for si1, si2 in zip(sims1, sims2)]
             if any(diffs):
                 ShowNotificationDialog(self, f'Issue in simulation, there were differences in the '
                                              f'first and second evaluation\n of the model for datasets '
@@ -2095,14 +2145,14 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         dlg.Show()
 
     def eh_mb_view_use_toggle_show(self, event):
-        new_val=self.mb_checkables[MenuId.USE_TOGGLE_SHOW].IsChecked()
+        new_val = self.mb_checkables[MenuId.USE_TOGGLE_SHOW].IsChecked()
         self.data_list.list_ctrl.SetShowToggle(new_val)
 
     def eh_mb_misc_openhomepage(self, event):
         webbrowser.open_new(homepage_url)
 
     def eh_show_startup_dialog(self, event):
-        pre_dia=self.wstartup.copy()
+        pre_dia = self.wstartup.copy()
         self.startup_dialog(config_path, force_show=True)
         # print(pre_dia==self.wstartup)
 
@@ -2120,15 +2170,15 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         event.Skip()
 
     def check_for_update(self):
-        same_version=True
+        same_version = True
         with self.catch_error(action='update_check', step=f'check_version'):
-            same_version=check_version()
-            self.opt.last_update_check=time.time()
+            same_version = check_version()
+            self.opt.last_update_check = time.time()
         if same_version:
             return
         with self.catch_error(action='update_check', step=f'show_dialog'):
-            dia=VersionInfoDialog(self)
-            res=dia.ShowModal()
+            dia = VersionInfoDialog(self)
+            res = dia.ShowModal()
             if res==wx.ID_OK:
                 ShowNotificationDialog(self, 'You need to restart GenX for the changes to take effect.')
             elif res==wx.ID_DELETE:
@@ -2140,22 +2190,24 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         subprocess.Popen([sys.executable, '-m', 'genx.run'])
         self.Destroy()
 
+
 class GenxApp(wx.App):
+
     def __init__(self, filename=None, dpi_overwrite=None):
         debug('App init started')
-        self.open_file=filename
-        self.dpi_overwrite=dpi_overwrite
+        self.open_file = filename
+        self.dpi_overwrite = dpi_overwrite
         wx.App.__init__(self, redirect=False)
         debug('App init complete')
 
     def ShowSplash(self):
         debug('Display Splash Screen')
-        image=wx.Bitmap(img.getgenxImage().Scale(400,400))
+        image = wx.Bitmap(img.getgenxImage().Scale(400, 400))
         self.splash = wx.adv.SplashScreen(image, wx.adv.SPLASH_CENTER_ON_SCREEN, wx.adv.SPLASH_NO_TIMEOUT, None)
         wx.YieldIfNeeded()
 
     def WriteSplash(self, text, progress=0.):
-        image=self.splash.GetBitmap()
+        image = self.splash.GetBitmap()
         self._draw_bmp(image, text, progress=progress)
         self.splash.Refresh()
         self.splash.Update()
@@ -2163,13 +2215,13 @@ class GenxApp(wx.App):
 
     @staticmethod
     def _draw_bmp(bmp, txt, progress=0.):
-        w,h=400,400
+        w, h = 400, 400
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
         gc = wx.GraphicsContext.Create(dc)
         font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-        gc.SetFont(font, wx.Colour(0,0,0))
-        gc.SetBrush(wx.Brush(wx.Colour(255,255,255)))
+        gc.SetFont(font, wx.Colour(0, 0, 0))
+        gc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
         gc.DrawRectangle(30, 0, 370, font.GetPixelSize().height+4)
         if progress>0:
             gc.SetBrush(wx.Brush(wx.Colour(252, 175, 62)))
@@ -2179,15 +2231,15 @@ class GenxApp(wx.App):
         dc.SelectObject(wx.NullBitmap)
 
     def OnInit(self):
-        locale=wx.Locale(wx.LANGUAGE_ENGLISH_US)
-        self.locale=locale
+        locale = wx.Locale(wx.LANGUAGE_ENGLISH_US)
+        self.locale = locale
         self.ShowSplash()
         debug('entering init phase')
 
         self.WriteSplash('initializeing main window...')
-        main_frame=GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
+        main_frame = GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
         self.SetTopWindow(main_frame)
-        main_frame.SetMinSize(wx.Size(600,400))
+        main_frame.SetMinSize(wx.Size(600, 400))
 
         from genx.models.lib import USE_NUMBA
         if USE_NUMBA:
@@ -2198,19 +2250,22 @@ class GenxApp(wx.App):
             else:
                 # load numba modules, show progress as in case they aren't cached it takes some seconds
                 self.WriteSplash('compiling numba functions...', progress=0.25)
-                real_jit=numba.jit
+                real_jit = numba.jit
+
                 class UpdateJit:
-                    update_counter=1
-                    WriteSplash=self.WriteSplash
+                    update_counter = 1
+                    WriteSplash = self.WriteSplash
+
                     def __call__(self, *args, **opts):
                         self.WriteSplash(f'compiling numba functions {self.update_counter}/21',
                                          progress=0.25+0.5*(self.update_counter-1)/21.)
-                        self.update_counter+=1
+                        self.update_counter += 1
                         wx.YieldIfNeeded()
                         return real_jit(*args, **opts)
-                numba.jit=UpdateJit()
+
+                numba.jit = UpdateJit()
                 from ..models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
-                numba.jit=real_jit
+                numba.jit = real_jit
 
         if self.open_file is None:
             self.splash.Destroy()
@@ -2243,30 +2298,31 @@ class GenxApp(wx.App):
 
 
 class StartUpConfigDialog(wx.Dialog):
+
     def __init__(self, parent, config_folder, show_cb=True, wide=False):
         wx.Dialog.__init__(self, parent, -1, 'Change Startup Configuration')
 
-        self.config_folder=config_folder
-        self.selected_config=None
+        self.config_folder = config_folder
+        self.selected_config = None
 
-        sizer=wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((-1, 10), 0, wx.EXPAND)
 
         sizer.Add(wx.StaticText(self, label='Choose the profile you want GenX to use:            '),
                   0, wx.ALIGN_LEFT, 5)
-        self.profiles=self.get_possible_configs()
-        self.config_list=wx.ListBox(self, size=(-1, 200), choices=self.profiles, style=wx.LB_SINGLE)
+        self.profiles = self.get_possible_configs()
+        self.config_list = wx.ListBox(self, size=(-1, 200), choices=self.profiles, style=wx.LB_SINGLE)
         self.config_list.SetSelection(self.profiles.index('SimpleReflectivity'))
         sizer.Add(self.config_list, 1, wx.GROW | wx.TOP, 5)
 
-        startup_cb=wx.CheckBox(self, -1, "Show at startup", style=wx.ALIGN_LEFT)
+        startup_cb = wx.CheckBox(self, -1, "Show at startup", style=wx.ALIGN_LEFT)
         startup_cb.SetValue(show_cb)
-        self.startup_cb=startup_cb
+        self.startup_cb = startup_cb
         sizer.Add((-1, 4), 0, wx.EXPAND)
         sizer.Add(startup_cb, 0, wx.EXPAND, 5)
-        wide_cb=wx.CheckBox(self, -1, "Widescreen (need restart)", style=wx.ALIGN_LEFT)
+        wide_cb = wx.CheckBox(self, -1, "Widescreen (need restart)", style=wx.ALIGN_LEFT)
         wide_cb.SetValue(wide)
-        self.wide_cb=wide_cb
+        self.wide_cb = wide_cb
         sizer.Add(wide_cb, 0, wx.EXPAND, 5)
 
         sizer.Add((-1, 4), 0, wx.EXPAND)
@@ -2274,8 +2330,8 @@ class StartUpConfigDialog(wx.Dialog):
                   0, wx.ALIGN_LEFT, 5)
 
         # Add the Dialog buttons
-        button_sizer=wx.StdDialogButtonSizer()
-        okay_button=wx.Button(self, wx.ID_OK)
+        button_sizer = wx.StdDialogButtonSizer()
+        okay_button = wx.Button(self, wx.ID_OK)
         okay_button.SetDefault()
         button_sizer.AddButton(okay_button)
         button_sizer.AddButton(wx.Button(self, wx.ID_CANCEL))
@@ -2283,7 +2339,7 @@ class StartUpConfigDialog(wx.Dialog):
         # Add some event handlers
         self.Bind(wx.EVT_BUTTON, self.OnClickOkay, okay_button)
 
-        line=wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
+        line = wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW | wx.TOP, 20)
 
         sizer.Add((-1, 4), 0, wx.EXPAND)
@@ -2291,7 +2347,7 @@ class StartUpConfigDialog(wx.Dialog):
                   flag=wx.ALIGN_RIGHT, border=20)
         sizer.Add((-1, 4), 0, wx.EXPAND)
 
-        main_sizer=wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.Add((10, -1), 0, wx.EXPAND)
         main_sizer.Add(sizer, 1, wx.EXPAND)
         main_sizer.Add((10, -1), 0, wx.EXPAND)
@@ -2303,9 +2359,9 @@ class StartUpConfigDialog(wx.Dialog):
 
     @skips_event
     def OnClickOkay(self, event):
-        self.selected_config=self.profiles[self.config_list.GetSelection()]
-        self.show_at_startup=self.startup_cb.GetValue()
-        self.widescreen=self.wide_cb.GetValue()
+        self.selected_config = self.profiles[self.config_list.GetSelection()]
+        self.show_at_startup = self.startup_cb.GetValue()
+        self.widescreen = self.wide_cb.GetValue()
 
     def GetConfigFile(self):
         if self.selected_config:
@@ -2319,15 +2375,16 @@ class StartUpConfigDialog(wx.Dialog):
     def GetWidescreen(self):
         return self.widescreen
 
-    def get_possible_configs(self)->List[str]:
+    def get_possible_configs(self) -> List[str]:
         '''
         search the plugin directory. 
         Checks the list for python scripts and returns a list of 
         module names that are loadable .
         '''
-        plugins=[s[:-5] for s in os.listdir(self.config_folder) if '.conf'==s[-5:]
-                 and s[:2]!='__']
+        plugins = [s[:-5] for s in os.listdir(self.config_folder) if '.conf'==s[-5:]
+                   and s[:2]!='__']
         return plugins
+
 
 # =============================================================================
 # Custom events needed for updating and message parsing between the different
@@ -2341,32 +2398,33 @@ class GenericModelEvent(wx.CommandEvent):
 
     def __init__(self, evt_type, evt_id, model):
         wx.CommandEvent.__init__(self, evt_type, evt_id)
-        self.model=model
-        self.description=''
+        self.model = model
+        self.description = ''
 
     def GetModel(self):
         return self.model
 
     def SetModel(self, model):
-        self.model=model
+        self.model = model
 
     def SetDescription(self, desc):
         '''
         Set a string that describes the event that has occurred
         '''
-        self.description=desc
+        self.description = desc
 
 
 def _post_new_model_event(parent, model, desc=''):
     # Send an event that a new data set has been loaded
-    evt=GenericModelEvent(new_model_type, parent.GetId(), model)
+    evt = GenericModelEvent(new_model_type, parent.GetId(), model)
     evt.SetDescription(desc)
     # Process the event!
     parent.GetEventHandler().ProcessEvent(evt)
 
+
 def _post_sim_plot_event(parent, model, desc=''):
     # Send an event that a new data set ahs been loaded
-    evt=GenericModelEvent(sim_plot_type, parent.GetId(), model)
+    evt = GenericModelEvent(sim_plot_type, parent.GetId(), model)
     evt.SetDescription(desc)
     # Process the event!
     parent.GetEventHandler().ProcessEvent(evt)
