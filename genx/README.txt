@@ -12,6 +12,11 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.4
+=============
+ * Add simple syntax completion, object help and undo/redo to script editor. To use
+   try ctrl+enter, shift+ctrl+enter, ctrl+alt+Z or shift+ctrl+alt+Z.
+
 Changes 3.6.3
 =============
  * Fix a bug that could lead to a strange error messages when editing items in the Simulations tab.
