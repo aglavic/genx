@@ -21,6 +21,7 @@ from .custom_ids import MenuId
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
+from ..model_control import ModelController
 
 
 class ParameterDataTable(gridlib.GridTableBase):
@@ -492,8 +493,9 @@ class ValueLimitCellRenderer(gridlib.GridCellRenderer):
     """ Renderer for the Parameter Values. Colours the Cell if the value is out of bounds.
     """
 
-    def __init__(self, value=0, max_value=100.0, min_value=100):
+    def __init__(self, model_ctrl:ModelController, value=0, max_value=100.0, min_value=100):
         gridlib.GridCellRenderer.__init__(self)
+        self.model_ctrl:ModelController = model_ctrl
 
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
         if grid.GetCellValue(row, col)!='':
@@ -501,7 +503,10 @@ class ValueLimitCellRenderer(gridlib.GridCellRenderer):
             min_val=float(grid.GetCellValue(row, col+2))
             max_val=float(grid.GetCellValue(row, col+3))
             if val>max_val or val<min_val:
-                bkg_colour=wx.Colour(204, 0, 0)
+                if getattr(self.model_ctrl.optimizer.opt, 'use_boundaries', False):
+                    bkg_colour=wx.Colour(204, 0, 0)
+                else:
+                    bkg_colour = wx.Colour(255, 150, 100)
                 txt_colour=wx.Colour(255, 255, 255)
             else:
                 if not isSelected:
@@ -545,7 +550,7 @@ class ValueLimitCellRenderer(gridlib.GridCellRenderer):
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
     def Clone(self):
-        return ValueLimitCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
+        return ValueLimitCellRenderer(self.model_ctrl, self.slider_drawer.value, max=self.slider_drawer.max_value,
                                   min=self.slider_drawer.min_value)
 
 class ValueCellEditor(gridlib.GridCellEditor):
@@ -664,14 +669,18 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
     """ Renderer for the Parameter Values. Colours the Cell if the value is out of bounds.
     """
 
-    def __init__(self, value=0, max_value=100.0, min_value=100):
+    def __init__(self, model_ctrl:ModelController=None):
         gridlib.GridCellRenderer.__init__(self)
+        self.model_ctrl = model_ctrl
 
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
         if grid.GetCellValue(row, col)!='':
             val=float(grid.GetCellValue(row, col))
             if not isSelected:
-                bkg_colour=attr.GetBackgroundColour()
+                if self.model_ctrl is None or getattr(self.model_ctrl.optimizer.opt, 'use_boundaries', False):
+                    bkg_colour=attr.GetBackgroundColour()
+                else:
+                    bkg_colour = wx.Colour(150, 150, 150)
             else:
                 bkg_colour=grid.GetSelectionBackground()
             txt_colour=wx.Colour(0, 0, 0)
@@ -729,7 +738,7 @@ class ParameterGrid(wx.Panel, Configurable):
     '''
     opt: ParameterGridConfig
 
-    def __init__(self, parent, frame):
+    def __init__(self, parent, frame, model_ctrl:ModelController):
         wx.Panel.__init__(self, parent)
         Configurable.__init__(self)
 
@@ -794,9 +803,12 @@ class ParameterGrid(wx.Panel, Configurable):
         self.toolbar.Realize()
         self.SetValueEditorSlider(slider=self.opt.value_slider)
         attr=gridlib.GridCellAttr()
+        attr.SetRenderer(ValueLimitCellRenderer(model_ctrl=model_ctrl))
+        self.grid.SetColAttr(1, attr)
+        attr=gridlib.GridCellAttr()
         attr.SetEditor(ValueCellEditor())
         attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
-        attr.SetRenderer(ValueCellRenderer())
+        attr.SetRenderer(ValueCellRenderer(model_ctrl=model_ctrl))
         self.grid.SetColAttr(3, attr.Clone())
         self.grid.SetColAttr(4, attr)
         self._paste_history=None
@@ -882,10 +894,8 @@ class ParameterGrid(wx.Panel, Configurable):
         attr=gridlib.GridCellAttr()
         if slider:
             attr.SetEditor(SliderCellEditor())
-            attr.SetRenderer(ValueLimitCellRenderer())
         else:
             attr.SetEditor(ValueLimitCellEditor())
-            attr.SetRenderer(ValueLimitCellRenderer())
         self.grid.SetColAttr(1, attr)
         self.grid.SetGridCursor(row, col)
         self.opt.value_slider=slider

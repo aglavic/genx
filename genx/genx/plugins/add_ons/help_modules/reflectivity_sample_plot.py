@@ -193,7 +193,7 @@ class SamplePlotPanel(PlotPanel):
         parameters = model_obj.parameters
         model_module: ReflectivityModule = self.plugin.GetModel().script_module
 
-        param_funcs, best_params, par_min, par_max = model_obj.get_fit_pars()
+        param_funcs, best_params, par_min, par_max = model_obj.get_fit_pars(use_bounds=False)
         param_edown, param_eup = np.array(parameters.get_error_pars()).T
         NP = len(param_funcs)
 

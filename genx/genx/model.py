@@ -460,7 +460,7 @@ class Model(H5HintedExport):
             # noinspection PyUnresolvedReferences
             return self.script_module.__tempfunc__
 
-    def get_fit_pars(self):
+    def get_fit_pars(self, use_bounds=True):
         '''
         Returns the parameters used with fitting. i.e. the function to 
         set the paraemters, the guess value (values), minimum allowed values
@@ -469,14 +469,15 @@ class Model(H5HintedExport):
         (row_numbers, sfuncs, vals, minvals, maxvals) = self.parameters.get_fit_pars()
         if len(sfuncs)==0:
             raise ParameterError(sfuncs, 0, None, 4)
-        # Check for min and max on all the values
-        for i in range(len(vals)):
-            # parameter less than min
-            if vals[i]<minvals[i]:
-                raise ParameterError(sfuncs[i], row_numbers[i], None, 3)
-            # parameter larger than max
-            if vals[i]>maxvals[i]:
-                raise ParameterError(sfuncs[i], row_numbers[i], None, 2)
+        if use_bounds:
+            # Check for min and max on all the values
+            for i in range(len(vals)):
+                # parameter less than min
+                if vals[i]<minvals[i]:
+                    raise ParameterError(sfuncs[i], row_numbers[i], None, 3)
+                # parameter larger than max
+                if vals[i]>maxvals[i]:
+                    raise ParameterError(sfuncs[i], row_numbers[i], None, 2)
 
         # Compile the strings to create the functions..
         funcs = []

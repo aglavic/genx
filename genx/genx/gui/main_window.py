@@ -172,7 +172,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.input_panel = wx.Panel(self.hor_splitter, wx.ID_ANY)
         self.input_notebook = wx.Notebook(self.input_panel, wx.ID_ANY, style=wx.NB_BOTTOM)
         self.input_notebook_grid = wx.Panel(self.input_notebook, wx.ID_ANY)
-        self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook_grid, self)
+        self.paramter_grid = parametergrid.ParameterGrid(self.input_notebook_grid, self, self.model_control.controller)
         self.input_notebook_script = wx.Panel(self.input_notebook, wx.ID_ANY)
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
         self.script_editor.SetBackSpaceUnIndents(True)
@@ -1768,6 +1768,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def eh_tb_select_solver(self, event):
         self.model_control.set_solver(event.GetString())
+        self.paramter_grid.Refresh()
 
     def eh_tb_start_fit(self, event):
         self.eh_mb_fit_start(event)

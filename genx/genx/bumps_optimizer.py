@@ -117,6 +117,8 @@ class BumpsConfig(BaseConfig):
     parallel_processes: int = BaseConfig.GParam(_cpu_count, pmin=2, pmax=_cpu_count, label='# processes')
     parallel_chunksize: int = BaseConfig.GParam(10, pmin=1, pmax=1000, label='items/chunk')
 
+    use_boundaries = True
+
     groups = {  # for building config dialogs
         'Bumps Fitting': ['method', 'steps'],
         'Statistic Solvers': ['population', ],
@@ -165,6 +167,7 @@ class BumpsOptimizer(GenxOptimizer):
         self.covar = array([[0, 0]])[0:0]
         self.errors = array([[0, 0]])[0:0]
         self.last_result = None
+        self.bproblem = None
 
     def pickle_string(self, clear_evals: bool = False):
         return pickle.dumps(self)
@@ -369,6 +372,8 @@ class BumpsOptimizer(GenxOptimizer):
         self._running = False
 
     def stop_fit(self):
+        if self.bproblem is None:
+            return
         self._stop_fit = True
         self.bproblem.fitness.stop_fit = True
         self._thread.join(1.0)

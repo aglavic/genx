@@ -83,7 +83,7 @@ class LMOptimizer(GenxOptimizer):
         that sets the variables  and stores a reference to the model.
         '''
         # Retrieve parameters from the model
-        (param_funcs, start_guess, par_min, par_max)=model_obj.get_fit_pars()
+        (param_funcs, start_guess, par_min, par_max)=model_obj.get_fit_pars(use_bounds=False)
 
         # Control parameter setup
         self.par_funcs=param_funcs
