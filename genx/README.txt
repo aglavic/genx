@@ -17,7 +17,7 @@ Changes 3.6.4
  * Add simple syntax completion, object help and undo/redo to script editor. To use
    try ctrl+enter, shift+ctrl+enter, ctrl+alt+Z or shift+ctrl+alt+Z.
  * Do not raise an error when starting a fit with parameters outside of min/max boundaries
-   if the optimizer does not use them.
+   if the optimizer does not use them. (ticket #175)
 
 Changes 3.6.3
 =============
