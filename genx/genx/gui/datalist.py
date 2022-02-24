@@ -367,13 +367,15 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         
         Creates an bmp icon for decorating the list
         '''
+        color_fit = wx.Colour(*color_fit)
+        color_data = wx.Colour(*color_data)
         bmp = wx.Bitmap(16, 16, depth=wx.BITMAP_SCREEN_DEPTH)
         dc = wx.MemoryDC()
         dc.SelectObject(bmp)
         dc.SetBackground(wx.Brush(color_fit))
         dc.Clear()
         dc.SetBrush(wx.Brush(color_data))
-        dc.SetPen(wx.Pen(color_data, 0.0))
+        dc.SetPen(wx.Pen(color_data))
         # dc.DrawRectangle(3,3,11,11)
         dc.DrawCircle(8, 8, 7)
         dc.SelectObject(wx.NullBitmap)

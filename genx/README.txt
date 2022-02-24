@@ -18,6 +18,7 @@ Changes 3.6.4
    try ctrl+enter, shift+ctrl+enter, ctrl+alt+Z or shift+ctrl+alt+Z.
  * Do not raise an error when starting a fit with parameters outside of min/max boundaries
    if the optimizer does not use them. (ticket #175)
+ * Fix compatibility issue with python 3.10, tested with wxPython 3.1.1 and 3.1.2a
 
 Changes 3.6.3
 =============

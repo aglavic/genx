@@ -1431,7 +1431,7 @@ class ParameterGrid(wx.Panel, Configurable):
         Function automatically set the cells width in the Grid to 
         reasonable values.
         '''
-        width=(self.grid.GetSize().GetWidth()-self.grid.GetColSize(2)-self.grid.GetRowLabelSize())/5-1
+        width=int((self.grid.GetSize().GetWidth()-self.grid.GetColSize(2)-self.grid.GetRowLabelSize())/5-1)
         # To avoid warnings relating to a width < 0. This can occur during startup
         if width<=0:
             width=1
