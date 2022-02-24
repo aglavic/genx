@@ -177,7 +177,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.script_editor = wx.py.editwindow.EditWindow(self.input_notebook_script, wx.ID_ANY)
         self.script_editor.SetBackSpaceUnIndents(True)
         self.script_editor.AutoCompSetChooseSingle(True)
-        print(self.script_editor.AutoCompSetIgnoreCase(False))
+        self.script_editor.AutoCompSetIgnoreCase(False)
         self.script_editor.Bind(wx.EVT_KEY_DOWN, self.ScriptEditorKeyEvent)
 
         debug('setup of MainFrame - properties and layout')

@@ -12,6 +12,10 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.5
+=============
+ * Fix parameter grid value cell out of bounds coloring lost after loading a new model
+
 Changes 3.6.4
 =============
  * Add simple syntax completion, object help and undo/redo to script editor. To use
