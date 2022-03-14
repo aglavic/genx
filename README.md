@@ -18,10 +18,9 @@ You can find a manual with examples at https://aglavic.github.io/genx/doc/, for 
 Naturally a program does not become better if I do not get feedback from you! 
 If you found a bug or want to have something included in the program submit a [ticket on SourceForge](https://sourceforge.net/p/genx/tickets/) or [drop me an e-mail](mailto:artur.glavic@psi.ch).
 
-## Releases  [![Unit Tests](https://github.com/aglavic/genx/actions/workflows/unittests.yml/badge.svg)](https://github.com/aglavic/genx/actions/workflows/unittests.yml) [![ORSO Validation](https://github.com/reflectivity/analysis/actions/workflows/validation.yml/badge.svg)](https://github.com/reflectivity/analysis/actions/workflows/validation.yml) [![Latest Release](https://img.shields.io/github/v/release/aglavic/genx?label=GitHub)](https://github.com/aglavic/genx/releases/latest) [![PyPI release](https://img.shields.io/pypi/v/genx3?label=PyPI)](https://pypi.org/project/genx3/) [![genx](https://snapcraft.io/genx/badge.svg)](https://snapcraft.io/genx)
+## Releases  [![Unit Tests](https://github.com/aglavic/genx/actions/workflows/unittests.yml/badge.svg)](https://github.com/aglavic/genx/actions/workflows/unittests.yml) [![ORSO Validation](https://github.com/reflectivity/analysis/actions/workflows/validate_genx.yml/badge.svg)](https://github.com/reflectivity/analysis/actions/workflows/validate_genx.yml) [![Latest Release](https://img.shields.io/github/v/release/aglavic/genx?label=GitHub)](https://github.com/aglavic/genx/releases/latest) [![PyPI release](https://img.shields.io/pypi/v/genx3?label=PyPI)](https://pypi.org/project/genx3/) [![genx](https://snapcraft.io/genx/badge.svg)](https://snapcraft.io/genx)
 
 <img src="https://sourceforge.net/cdn/syndication/badge_img/235219/oss-community-leader-white?achievement=oss-community-leader&r=https://sourceforge.net/p/genx/admin/files/badges/" width="125" alt="Sourcforge Badge" align="left" > 
-
 The project is released as binary packages for Ubuntu and Windows as well as source distribution here on GitHub. 
 Additionally a package is available on PyPI and can thus be installed via "pip".
 For other linux distributions try the pre-build snap [package](https://snapcraft.io/genx) .
