@@ -2228,7 +2228,7 @@ class GenxApp(wx.App):
             gc.SetBrush(wx.Brush(wx.Colour(252, 175, 62)))
             gc.DrawRectangle(30, 0, int(progress*370), font.GetPixelSize().height+4)
         tw, th = gc.GetTextExtent(txt)
-        gc.DrawText(txt, (w-tw)/2, 0)
+        gc.DrawText(txt, (w-tw)//2, 0)
         dc.SelectObject(wx.NullBitmap)
 
     def OnInit(self):
