@@ -96,10 +96,10 @@ class RemoteController(ModelController):
                 self.handle_connection, address, port)
 
             async with server:
-                info(f"Starting listening on {address} with {port=}")
+                info(f"Starting listening on {address} with port={port}")
                 await server.serve_forever()
         else:
-            debug(f'Starting MPI client process for server on {address} with {port=}')
+            debug(f'Starting MPI client process for server on {address} with port={port}')
             await self.recive_mpi()
 
     async def handle_connection(self, reader, writer):

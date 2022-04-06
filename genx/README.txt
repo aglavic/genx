@@ -12,6 +12,10 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.7
+=============
+ * Fix compatibility with python 3.6-3.7
+
 Changes 3.6.6
 =============
  * Fix wx dialog issue where instrument editor in advanced reflectivity would not work (thanks to Leon Lohse)

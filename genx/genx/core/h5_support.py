@@ -140,7 +140,7 @@ class H5HintedExport(H5Savable):
                     try:
                         group[attr] = value
                     except Exception:
-                        warning(f'Error in writing {value=}', exc_info=True)
+                        warning(f'Error in writing value={value}', exc_info=True)
 
     def read_h5group(self, group: h5py.Group):
         """

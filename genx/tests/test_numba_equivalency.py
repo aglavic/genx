@@ -421,7 +421,7 @@ class TestSXRD(unittest.TestCase):
 
         for h in range(5):
             for k in range(5):
-                with self.subTest(f'{h=}, {k=}'):
+                with self.subTest(f'h={h}, k={k}'):
                     res = sample.calc_f(o+h, o+k, l)
                     res_nb = sample.turbo_calc_f(o+h, o+k, l)
                     np.testing.assert_array_almost_equal(res, res_nb)
