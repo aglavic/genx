@@ -34,6 +34,8 @@ def set_numba_single():
 
 
 def main():
+    import multiprocessing
+    multiprocessing.set_start_method('spawn')
     try:
         from mpi4py import MPI
     except ImportError:
