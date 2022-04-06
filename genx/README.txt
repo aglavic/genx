@@ -12,10 +12,31 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.7
+=============
+ * Fix compatibility with python 3.6-3.7
+
+Changes 3.6.6
+=============
+ * Fix wx dialog issue where instrument editor in advanced reflectivity would not work (thanks to Leon Lohse)
+
+Changes 3.6.5
+=============
+ * Fix parameter grid value cell out of bounds coloring lost after loading a new model
+
+Changes 3.6.4
+=============
+ * Add simple syntax completion, object help and undo/redo to script editor. To use
+   try ctrl+enter, shift+ctrl+enter, ctrl+alt+Z or shift+ctrl+alt+Z.
+ * Do not raise an error when starting a fit with parameters outside of min/max boundaries
+   if the optimizer does not use them. (ticket #175)
+ * Fix compatibility issue with python 3.10, tested with wxPython 3.1.1 and 3.1.2a
+
 Changes 3.6.3
 =============
  * Fix a bug that could lead to a strange error messages when editing items in the Simulations tab.
  * Fix a crash on Linux when running the bumps dialog depending on wx version
+ * Fix an issue where genx would not start on macOS environments with python >=3.9 and anaconda
 
 Changes 3.6.2
 =============

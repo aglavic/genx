@@ -9,7 +9,7 @@ r"""
 """
 import numpy as np
 
-from collections import MutableSequence
+from collections.abc import MutableSequence
 from genx.core.custom_logging import iprint
 
 class Parameter(object):

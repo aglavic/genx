@@ -224,7 +224,7 @@ instrument_string_choices={'coords': ['q', 'tth'],
                            }
 
 InstrumentParameters={'wavelength': 1.54, 'coords': 'tth', 'I0': 1.0, 'res': 0.001,
-                      'restype': 'no conv', 'respoints': 5, 'resintrange': 2, 'beamw': 0.01, 'footype': 'no corr',
+                      'restype': 'no conv', 'respoints': 5, 'resintrange': 2.0, 'beamw': 0.01, 'footype': 'no corr',
                       'samplelen': 10.0, 'Ibkg': 0.0, 'xpol': 'circ+', 'npol': '++', 'theory': 'x-ray anis.',
                       'incang': 0.2}
 # Coordinates=1 => twothetainput

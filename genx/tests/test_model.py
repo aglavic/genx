@@ -55,7 +55,7 @@ class TestModelClass(unittest.TestCase):
         pstr = dumps(self.m)
         remodel = loads(pstr)
         for attr in ['opt', 'script', 'data', 'parameters']:
-            with self.subTest(f'{attr=}'):
+            with self.subTest(f'attr={attr}'):
                 old = getattr(self.m, attr)
                 new = getattr(remodel, attr)
                 self.assertEqual(old, new)

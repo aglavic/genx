@@ -21,6 +21,7 @@ from .custom_ids import MenuId
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
+from ..model_control import ModelController
 
 
 class ParameterDataTable(gridlib.GridTableBase):
@@ -32,16 +33,16 @@ class ParameterDataTable(gridlib.GridTableBase):
 
     def __init__(self, parent):
         gridlib.GridTableBase.__init__(self)
-        self.parent=parent
-        self.pars=parameters.Parameters()
+        self.parent = parent
+        self.pars = parameters.Parameters()
 
-        self.data_types=[gridlib.GRID_VALUE_STRING,
-                         gridlib.GRID_VALUE_FLOAT,
-                         gridlib.GRID_VALUE_BOOL,
-                         gridlib.GRID_VALUE_FLOAT,
-                         gridlib.GRID_VALUE_FLOAT,
-                         gridlib.GRID_VALUE_STRING,
-                         ]
+        self.data_types = [gridlib.GRID_VALUE_STRING,
+                           gridlib.GRID_VALUE_FLOAT,
+                           gridlib.GRID_VALUE_BOOL,
+                           gridlib.GRID_VALUE_FLOAT,
+                           gridlib.GRID_VALUE_FLOAT,
+                           gridlib.GRID_VALUE_STRING,
+                           ]
 
     # required methods for the wxGridTableBase interface
 
@@ -53,7 +54,7 @@ class ParameterDataTable(gridlib.GridTableBase):
 
     def GetRowLabelValue(self, row):
         if row<self.pars.get_len_rows() and self.pars.get_value(row, 2):
-            number=sum([self.pars.get_value(i, 2) for i in range(row)])
+            number = sum([self.pars.get_value(i, 2) for i in range(row)])
             return "%d"%int(number)
         else:
             return '-'
@@ -71,19 +72,19 @@ class ParameterDataTable(gridlib.GridTableBase):
             return ''
 
     def SetValue(self, row, col, value):
-        par_len=self.pars.get_len_rows()
+        par_len = self.pars.get_len_rows()
         if row>=par_len:
             # add a new row
             self.pars.append()
 
             # tell the grid we've added a row
-            msg=gridlib.GridTableMessage(self,  # The table
-                                         gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,  # what we did to it
-                                         1  # how many
-                                         )
+            msg = gridlib.GridTableMessage(self,  # The table
+                                           gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED,  # what we did to it
+                                           1  # how many
+                                           )
 
             self.GetView().ProcessTableMessage(msg)
-        evt=set_parameter_value(row=row, col=col, value=value)
+        evt = set_parameter_value(row=row, col=col, value=value)
         wx.PostEvent(self.parent, evt)
         # For updating the column labels according to the number of fitted parameters
         if col==2 or col==3 or col==4:
@@ -99,7 +100,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         wx.PostEvent(self.parent, evt)
 
     def UpdateView(self):
-        delta_length=1+self.GetNumberRows()-self.parent.GetNumberRows()
+        delta_length = 1+self.GetNumberRows()-self.parent.GetNumberRows()
         if delta_length>0:
             msg = gridlib.GridTableMessage(self,
                                            gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1, delta_length)
@@ -120,7 +121,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         :return: Boolean
         """
         if self.pars.can_move_row(row, -1):
-            evt=move_parameter(row=row, step=-1)
+            evt = move_parameter(row=row, step=-1)
             wx.PostEvent(self.parent, evt)
             return True
         else:
@@ -134,7 +135,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         :return: Boolean
         """
         if self.pars.can_move_row(row, 1):
-            evt=move_parameter(row=row, step=1)
+            evt = move_parameter(row=row, step=1)
             wx.PostEvent(self.parent, evt)
             return True
         else:
@@ -143,8 +144,8 @@ class ParameterDataTable(gridlib.GridTableBase):
     def AppendRows(self, num_rows=1):
         [self.pars.append() for i in range(num_rows)]
 
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, num_rows)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, num_rows)
         self.GetView().ProcessTableMessage(msg)
         self.UpdateView()
         return True
@@ -169,7 +170,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         editor and renderer.  This allows you to enforce some type-safety
         in the grid.
         '''
-        col_type=self.data_types[col].split(':')[0]
+        col_type = self.data_types[col].split(':')[0]
         if type_name==col_type:
             return True
         else:
@@ -186,31 +187,30 @@ class ParameterDataTable(gridlib.GridTableBase):
         '''
         if clear:
             # Start by deleting all rows:
-            msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,
-                                         self.parent.GetNumberRows(), self.parent.GetNumberRows())
-            self.pars=parameters.Parameters()
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                                           self.parent.GetNumberRows(), self.parent.GetNumberRows())
+            self.pars = parameters.Parameters()
             self.GetView().ProcessTableMessage(msg)
-            msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
-            self.GetView().ProcessTableMessage(msg)
-
-            self.GetView().ForceRefresh()
-
-            self.pars=pars
-            msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, self.pars.get_len_rows()+1)
-            self.GetView().ProcessTableMessage(msg)
-
-            msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
 
             self.GetView().ForceRefresh()
-            # print 'In parametergrid ', self.pars.data
+
+            self.pars = pars
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, self.pars.get_len_rows()+1)
+            self.GetView().ProcessTableMessage(msg)
+
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+            self.GetView().ProcessTableMessage(msg)
+
+            self.GetView().ForceRefresh()
         else:
-            self.pars=pars
-            diff_rows=self.GetNumberRows()-self.parent.GetNumberRows()+1
+            self.pars = pars
+            diff_rows = self.GetNumberRows()-self.parent.GetNumberRows()+1
             if diff_rows<0:
                 # rows were deleted
                 msg = gridlib.GridTableMessage(self,
@@ -222,17 +222,17 @@ class ParameterDataTable(gridlib.GridTableBase):
                 msg = gridlib.GridTableMessage(self,
                                                gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, diff_rows)
                 self.GetView().ProcessTableMessage(msg)
-            msg=gridlib.GridTableMessage(self,
-                                         gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+            msg = gridlib.GridTableMessage(self,
+                                           gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed(permanent_change=permanent_change)
 
     def ShowParameters(self, values):
-        prev_pars=self.pars
-        self.pars=prev_pars.copy()
+        prev_pars = self.pars
+        self.pars = prev_pars.copy()
         self.pars.set_value_pars(values)
-        msg=gridlib.GridTableMessage(self,
-                                     gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        msg = gridlib.GridTableMessage(self,
+                                       gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.parent._grid_changed(permanent_change=False)
 
@@ -244,18 +244,19 @@ class ParameterDataTable(gridlib.GridTableBase):
         self.SetValue(row, 1, value)
         self.parent.PostValueChangedEvent()
 
+
 class SliderCellEditor(gridlib.GridCellEditor):
 
     def __init__(self, value=0.0, min_value=0.0, max_value=100.0):
         gridlib.GridCellEditor.__init__(self)
-        self.value=value
-        self.startValue=value
-        self.min_value=min_value
-        self.max_value=max_value
+        self.value = value
+        self.startValue = value
+        self.min_value = min_value
+        self.max_value = max_value
 
     def Create(self, parent, id, evtHandler):
-        self._tc=ctrls.SliderControl(parent, id, value=self.value, max_value=self.max_value,
-                                     min_value=self.min_value, font=parent.GetFont())
+        self._tc = ctrls.SliderControl(parent, id, value=self.value, max_value=self.max_value,
+                                       min_value=self.min_value, font=parent.GetFont())
         self.SetControl(self._tc)
 
         if evtHandler:
@@ -284,24 +285,24 @@ class SliderCellEditor(gridlib.GridCellEditor):
         to begin editing.  Set the focus to the edit control.
         """
 
-        self.startValue=grid.GetTable().GetValue(row, col)
-        self.max_value=grid.GetTable().GetValue(row, col+3)
-        self.min_value=grid.GetTable().GetValue(row, col+2)
+        self.startValue = grid.GetTable().GetValue(row, col)
+        self.max_value = grid.GetTable().GetValue(row, col+3)
+        self.min_value = grid.GetTable().GetValue(row, col+2)
         if self.startValue!='':
-            self.startValue=float(self.startValue)
+            self.startValue = float(self.startValue)
         else:
-            self.startValue=0.0
+            self.startValue = 0.0
             grid.GetTable().SetValue(row, col, self.startValue)
 
         if self.max_value!='':
-            self.max_value=float(self.max_value)
+            self.max_value = float(self.max_value)
         else:
-            self.max_value=0.0
+            self.max_value = 0.0
             grid.GetTable().SetValue(row, col, self.max_value)
         if self.min_value!='':
-            self.min_value=float(self.min_value)
+            self.min_value = float(self.min_value)
         else:
-            self.min_value=0.0
+            self.min_value = 0.0
             grid.GetTable().SetValue(row, col, self.min_value)
 
         self._tc.SetValue(float(self.startValue))
@@ -322,7 +323,7 @@ class SliderCellEditor(gridlib.GridCellEditor):
         """
         # print "EndEdit"
         self._tc.unbind_handlers()
-        val=self._tc.GetValue()
+        val = self._tc.GetValue()
         self._tc.SetScrollCallback(None)
         if val!=oldVal:
             return val
@@ -334,10 +335,10 @@ class SliderCellEditor(gridlib.GridCellEditor):
         This function  saves the value of the control into the
         grid or grid table.
         """
-        val=self._tc.GetValue()
+        val = self._tc.GetValue()
         grid.GetTable().SetValue(row, col, val)  # update the table
 
-        self.startValue=float(val)
+        self.startValue = float(val)
         self._tc.SetValue(self.startValue)
 
     def Reset(self):
@@ -352,25 +353,21 @@ class SliderCellEditor(gridlib.GridCellEditor):
         """
         return SliderCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value)
 
-    def Destroy(self):
-        """final cleanup"""
-        self._tc.Destroy()
-        super(SliderCellEditor, self).Destroy()
 
 class ValueLimitCellEditor(gridlib.GridCellEditor):
     """Editor for the parameter values with a spin control"""
 
-    def __init__(self, value=0.0, min_value=0.0, max_value=100.0, ticks=20, digits=5):
+    def __init__(self, value=0.0, min_value=0.0, max_value=100.0, ticks=20.0, digits=5):
         gridlib.GridCellEditor.__init__(self)
-        self.value=value
-        self.startValue=value
-        self.min_value=min_value
-        self.max_value=max_value
-        self.ticks=float(ticks)
-        self.digits=digits
+        self.value = value
+        self.startValue = value
+        self.min_value = min_value
+        self.max_value = max_value
+        self.ticks = float(ticks)
+        self.digits = digits
 
     def Create(self, parent, id, evtHandler):
-        self._tc=ctrls.SpinCtrl(parent, id, value=self.value)
+        self._tc = ctrls.SpinCtrl(parent, id, value=self.value)
         self.SetControl(self._tc)
 
         if evtHandler:
@@ -391,24 +388,24 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         """ Fetch the value from the table and prepare the edit control to begin editing.  Set the focus to the
         edit control.
         """
-        self.startValue=grid.GetTable().GetValue(row, col)
-        self.max_value=grid.GetTable().GetValue(row, col+3)
-        self.min_value=grid.GetTable().GetValue(row, col+2)
+        self.startValue = grid.GetTable().GetValue(row, col)
+        self.max_value = grid.GetTable().GetValue(row, col+3)
+        self.min_value = grid.GetTable().GetValue(row, col+2)
         if self.startValue!='':
-            self.startValue=float(self.startValue)
+            self.startValue = float(self.startValue)
         else:
-            self.startValue=0.0
+            self.startValue = 0.0
             grid.GetTable().SetValue(row, col, self.startValue)
 
         if self.max_value!='':
-            self.max_value=float(self.max_value)
+            self.max_value = float(self.max_value)
         else:
-            self.max_value=0.0
+            self.max_value = 0.0
             grid.GetTable().SetValue(row, col, self.max_value)
         if self.min_value!='':
-            self.min_value=float(self.min_value)
+            self.min_value = float(self.min_value)
         else:
-            self.min_value=0.0
+            self.min_value = 0.0
             grid.GetTable().SetValue(row, col, self.min_value)
 
         # self._tc.SetValue('%.7g'%(self.startValue))
@@ -426,7 +423,7 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         it has not changed then simply return None, otherwise return
         the value in its string form.
         """
-        val=float(self._tc.GetValue())
+        val = float(self._tc.GetValue())
         # val = max(self.min_value, val)
         # val = min(self.max_value, val)
         # self._tc.SetValue('%.5g'%(val))
@@ -438,10 +435,10 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
 
     def ApplyEdit(self, row, col, grid):
         """ This function  saves the value of the control into the grid or grid table."""
-        val=self._tc.GetValue()
+        val = self._tc.GetValue()
         grid.GetTable().SetValue(row, col, float(val))  # update the table
 
-        self.startValue=float(val)
+        self.startValue = float(val)
         # self._tc.SetValue('%.5g' % self.startValue)
         self._tc.SetValue(self.startValue)
 
@@ -451,7 +448,7 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         version only checks that the event has no modifiers.  F2 is special
         and will always start the editor.
         """
-        key=evt.GetKeyCode()
+        key = evt.GetKeyCode()
         return chr(key) in (string.digits+'.- ')
 
     def StartingKey(self, evt):
@@ -459,16 +456,16 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         If the editor is enabled by pressing keys on the grid, this will be
         called to let the editor do something about that first key if desired.
         """
-        key=evt.GetKeyCode()
-        ch=None
+        key = evt.GetKeyCode()
+        ch = None
         if key in [wx.WXK_NUMPAD0, wx.WXK_NUMPAD1, wx.WXK_NUMPAD2, wx.WXK_NUMPAD3,
                    wx.WXK_NUMPAD4, wx.WXK_NUMPAD5, wx.WXK_NUMPAD6, wx.WXK_NUMPAD7,
                    wx.WXK_NUMPAD8, wx.WXK_NUMPAD9
                    ]:
-            ch=chr(ord('0')+key-wx.WXK_NUMPAD0)
+            ch = chr(ord('0')+key-wx.WXK_NUMPAD0)
 
         elif 256>key>=0 and chr(key) in string.printable:
-            ch=chr(key)
+            ch = chr(key)
 
         if ch in (string.digits+'.-'):
             # For this example, replace the text.  Normally we would append it.
@@ -476,7 +473,7 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
             self._tc.SetValue(ch)
             self._tc.SetInsertionPointEnd()
         else:
-           evt.Skip()
+            evt.Skip()
 
     def Reset(self):
         """Reset the value in the control back to its starting value."""
@@ -486,29 +483,35 @@ class ValueLimitCellEditor(gridlib.GridCellEditor):
         """
         Create a new object which is the copy of this one
         """
-        return ValueLimitCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value)
+        return ValueLimitCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value,
+                                    ticks=self.ticks, digits=self.digits)
+
 
 class ValueLimitCellRenderer(gridlib.GridCellRenderer):
     """ Renderer for the Parameter Values. Colours the Cell if the value is out of bounds.
     """
 
-    def __init__(self, value=0, max_value=100.0, min_value=100):
+    def __init__(self, model_ctrl: ModelController, value=0, max_value=100.0, min_value=100):
         gridlib.GridCellRenderer.__init__(self)
+        self.model_ctrl: ModelController = model_ctrl
 
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
         if grid.GetCellValue(row, col)!='':
-            val=float(grid.GetCellValue(row, col))
-            min_val=float(grid.GetCellValue(row, col+2))
-            max_val=float(grid.GetCellValue(row, col+3))
+            val = float(grid.GetCellValue(row, col))
+            min_val = float(grid.GetCellValue(row, col+2))
+            max_val = float(grid.GetCellValue(row, col+3))
             if val>max_val or val<min_val:
-                bkg_colour=wx.Colour(204, 0, 0)
-                txt_colour=wx.Colour(255, 255, 255)
+                if getattr(self.model_ctrl.optimizer.opt, 'use_boundaries', False):
+                    bkg_colour = wx.Colour(204, 0, 0)
+                else:
+                    bkg_colour = wx.Colour(255, 150, 100)
+                txt_colour = wx.Colour(255, 255, 255)
             else:
                 if not isSelected:
-                    bkg_colour=attr.GetBackgroundColour()
+                    bkg_colour = attr.GetBackgroundColour()
                 else:
-                    bkg_colour=grid.GetSelectionBackground()
-                txt_colour=wx.Colour(0, 0, 0)
+                    bkg_colour = grid.GetSelectionBackground()
+                txt_colour = wx.Colour(0, 0, 0)
 
             dc.SetBackgroundMode(wx.SOLID)
             dc.SetBrush(wx.Brush(bkg_colour, wx.SOLID))
@@ -516,22 +519,22 @@ class ValueLimitCellRenderer(gridlib.GridCellRenderer):
             dc.SetClippingRegion(rect.x, rect.y, rect.width, rect.height)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
-            text='%.7g'%val
+            text = '%.7g'%val
 
             if val<=max_val and val>=min_val:
                 # paint a slight indication of rlative value within range
                 dc.SetBrush(wx.Brush(wx.Colour(240, 240, 240), wx.SOLID))
                 if max_val!=min_val:
-                    rel_value_pix=int(rect.width*(val-min_val)/(max_val-min_val))
+                    rel_value_pix = int(rect.width*(val-min_val)/(max_val-min_val))
                 else:
-                    rel_value_pix=0
+                    rel_value_pix = 0
                 dc.DrawRectangle(rect.x, rect.y, rel_value_pix, rect.height)
 
             dc.SetBackgroundMode(wx.TRANSPARENT)
             dc.SetTextForeground(txt_colour)
             dc.SetTextBackground(bkg_colour)
             dc.SetFont(attr.GetFont())
-            width, height=dc.GetTextExtent(text)
+            width, height = dc.GetTextExtent(text)
             dc.DrawText(text, rect.x+rect.width-width-1, rect.y+1)
 
             dc.DestroyClippingRegion()
@@ -545,23 +548,24 @@ class ValueLimitCellRenderer(gridlib.GridCellRenderer):
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
     def Clone(self):
-        return ValueLimitCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
-                                  min=self.slider_drawer.min_value)
+        return ValueLimitCellRenderer(self.model_ctrl, self.slider_drawer.value, max=self.slider_drawer.max_value,
+                                      min=self.slider_drawer.min_value)
+
 
 class ValueCellEditor(gridlib.GridCellEditor):
     """Editor for the parameter values with a spin control"""
 
     def __init__(self, value=0.0, digits=5):
         gridlib.GridCellEditor.__init__(self)
-        self.value=value
-        self.startValue=value
+        self.value = value
+        self.startValue = value
         # self.min_value = min_value
         # self.max_value = max_value
         # self.ticks = float(ticks)
-        self.digits=digits
+        self.digits = digits
 
     def Create(self, parent, id, evtHandler):
-        self._tc=wx.TextCtrl(parent, id, style=wx.TE_RIGHT, validator=ctrls.NumberValidator())
+        self._tc = wx.TextCtrl(parent, id, style=wx.TE_RIGHT, validator=ctrls.NumberValidator())
         # self._tc = ctrls.SpinCtrl(parent, id, value=self.value)
         self.SetControl(self._tc)
 
@@ -579,11 +583,11 @@ class ValueCellEditor(gridlib.GridCellEditor):
         """ Fetch the value from the table and prepare the edit control to begin editing.  Set the focus to the
         edit control.
         """
-        self.startValue=grid.GetTable().GetValue(row, col)
+        self.startValue = grid.GetTable().GetValue(row, col)
         if self.startValue!='':
-            self.startValue=float(self.startValue)
+            self.startValue = float(self.startValue)
         else:
-            self.startValue=0.0
+            self.startValue = 0.0
             grid.GetTable().SetValue(row, col, self.startValue)
 
         self._tc.SetValue('%.7g'%self.startValue)
@@ -599,7 +603,7 @@ class ValueCellEditor(gridlib.GridCellEditor):
         it has not changed then simply return None, otherwise return
         the value in its string form.
         """
-        val=float(self._tc.GetValue())
+        val = float(self._tc.GetValue())
         # val = max(self.min_value, val)
         # val = min(self.max_value, val)
         # self._tc.SetValue('%.5g'%(val))
@@ -610,10 +614,10 @@ class ValueCellEditor(gridlib.GridCellEditor):
 
     def ApplyEdit(self, row, col, grid):
         """ This function  saves the value of the control into the grid or grid table."""
-        val=self._tc.GetValue()
+        val = self._tc.GetValue()
         grid.GetTable().SetValue(row, col, float(val))  # update the table
 
-        self.startValue=float(val)
+        self.startValue = float(val)
         self._tc.SetValue('%.7g'%self.startValue)
         # self._tc.SetValue(self.startValue)
 
@@ -623,7 +627,7 @@ class ValueCellEditor(gridlib.GridCellEditor):
         version only checks that the event has no modifiers.  F2 is special
         and will always start the editor.
         """
-        key=evt.GetKeyCode()
+        key = evt.GetKeyCode()
         return chr(key) in (string.digits+'.- ')
 
     def StartingKey(self, evt):
@@ -631,16 +635,16 @@ class ValueCellEditor(gridlib.GridCellEditor):
         If the editor is enabled by pressing keys on the grid, this will be
         called to let the editor do something about that first key if desired.
         """
-        key=evt.GetKeyCode()
-        ch=None
+        key = evt.GetKeyCode()
+        ch = None
         if key in [wx.WXK_NUMPAD0, wx.WXK_NUMPAD1, wx.WXK_NUMPAD2, wx.WXK_NUMPAD3,
                    wx.WXK_NUMPAD4, wx.WXK_NUMPAD5, wx.WXK_NUMPAD6, wx.WXK_NUMPAD7,
                    wx.WXK_NUMPAD8, wx.WXK_NUMPAD9
                    ]:
-            ch=chr(ord('0')+key-wx.WXK_NUMPAD0)
+            ch = chr(ord('0')+key-wx.WXK_NUMPAD0)
 
         elif 256>key>=0 and chr(key) in string.printable:
-            ch=chr(key)
+            ch = chr(key)
 
         if ch in (string.digits+'.-'):
             # For this example, replace the text.  Normally we would append it.
@@ -660,21 +664,26 @@ class ValueCellEditor(gridlib.GridCellEditor):
         """
         return ValueCellEditor(value=self.value, min_value=self.min_value, max_value=self.max_value)
 
+
 class ValueCellRenderer(gridlib.GridCellRenderer):
     """ Renderer for the Parameter Values. Colours the Cell if the value is out of bounds.
     """
 
-    def __init__(self, value=0, max_value=100.0, min_value=100):
+    def __init__(self, model_ctrl: ModelController = None):
         gridlib.GridCellRenderer.__init__(self)
+        self.model_ctrl = model_ctrl
 
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
         if grid.GetCellValue(row, col)!='':
-            val=float(grid.GetCellValue(row, col))
+            val = float(grid.GetCellValue(row, col))
             if not isSelected:
-                bkg_colour=attr.GetBackgroundColour()
+                if self.model_ctrl is None or getattr(self.model_ctrl.optimizer.opt, 'use_boundaries', False):
+                    bkg_colour = attr.GetBackgroundColour()
+                else:
+                    bkg_colour = wx.Colour(150, 150, 150)
             else:
-                bkg_colour=grid.GetSelectionBackground()
-            txt_colour=wx.Colour(0, 0, 0)
+                bkg_colour = grid.GetSelectionBackground()
+            txt_colour = wx.Colour(0, 0, 0)
 
             dc.SetBackgroundMode(wx.SOLID)
             dc.SetBrush(wx.Brush(bkg_colour, wx.SOLID))
@@ -682,19 +691,23 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
             dc.SetClippingRegion(rect.x, rect.y, rect.width, rect.height)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
-            text='%.7g'%val
+            text = '%.7g'%val
 
             dc.SetTextForeground(txt_colour)
             dc.SetTextBackground(bkg_colour)
             dc.SetFont(attr.GetFont())
-            width, height=dc.GetTextExtent(text)
-            halign, valign=attr.GetAlignment()
-            x_options={wx.ALIGN_LEFT: 1,
-                       wx.ALIGN_CENTER: rect.width//2-width//2,
-                       wx.ALIGN_RIGHT: rect.width-width-1}
-            y_options={wx.ALIGN_TOP: 1,
-                       wx.ALIGN_CENTER: rect.height//2-height//2,
-                       wx.ALIGN_BOTTOM: rect.height-height-1}
+            width, height = dc.GetTextExtent(text)
+            halign, valign = attr.GetAlignment()
+            x_options = {
+                wx.ALIGN_LEFT: 1,
+                wx.ALIGN_CENTER: rect.width//2-width//2,
+                wx.ALIGN_RIGHT: rect.width-width-1
+                }
+            y_options = {
+                wx.ALIGN_TOP: 1,
+                wx.ALIGN_CENTER: rect.height//2-height//2,
+                wx.ALIGN_BOTTOM: rect.height-height-1
+                }
             dc.DrawText(text, rect.x+x_options[halign],
                         rect.y+y_options[valign])
 
@@ -709,19 +722,20 @@ class ValueCellRenderer(gridlib.GridCellRenderer):
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
     def Clone(self):
-        return ValueCellRenderer(self.slider_drawer.value, max=self.slider_drawer.max_value,
-                                  min=self.slider_drawer.min_value)
+        return ValueCellRenderer(self.model_ctrl)
 
     def GetBestSize(self, grid, attr, dc, row, col):
         dc.SetFont(attr.GetFont())
         width, height = dc.GetTextExtent("0.1234567e10")
         return wx.Size(width, height)
 
+
 @dataclass
 class ParameterGridConfig(BaseConfig):
-    section='parameter grid'
-    value_slider: bool=False
-    auto_sim: bool=True
+    section = 'parameter grid'
+    value_slider: bool = False
+    auto_sim: bool = True
+
 
 class ParameterGrid(wx.Panel, Configurable):
     '''
@@ -729,38 +743,38 @@ class ParameterGrid(wx.Panel, Configurable):
     '''
     opt: ParameterGridConfig
 
-    def __init__(self, parent, frame):
+    def __init__(self, parent, frame, model_ctrl: ModelController):
         wx.Panel.__init__(self, parent)
         Configurable.__init__(self)
 
         # The two main widgets
-        self.toolbar=wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_VERTICAL)
-        self.grid=gridlib.Grid(self, -1, style=wx.NO_BORDER)
-        self.grid._grid_changed=self._grid_changed
-        self.grid.PostValueChangedEvent=self.PostValueChangedEvent
+        self.toolbar = wx.ToolBar(self, style=wx.TB_FLAT | wx.TB_VERTICAL)
+        self.grid = gridlib.Grid(self, -1, style=wx.NO_BORDER)
+        self.grid._grid_changed = self._grid_changed
+        self.grid.PostValueChangedEvent = self.PostValueChangedEvent
         self.grid.DisableDragColSize()
         self.grid.DisableDragRowSize()
         # self.grid.SetForegroundColour('BLUE')
 
         self.do_toolbar()
 
-        self.sizer_hor=wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer_hor = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(self.sizer_hor)
         self.sizer_hor.Add(self.toolbar, proportion=0, flag=wx.EXPAND, border=0)
         self.sizer_hor.Add(self.grid, proportion=1, flag=wx.EXPAND, border=0)
 
-        self.parent=frame
-        self.prt=printout.PrintTable(parent)
+        self.parent = frame
+        self.prt = printout.PrintTable(parent)
 
-        self.project_func=None
-        self.scan_func=None
+        self.project_func = None
+        self.scan_func = None
 
-        self.table=ParameterDataTable(self.grid)
+        self.table = ParameterDataTable(self.grid)
 
-        self.variable_span=0.25
+        self.variable_span = 0.25
         # The functions has to begin with the following letters:
-        self.set_func='set'
-        self.get_func='get'
+        self.set_func = 'set'
+        self.get_func = 'get'
         # The second parameter means that the grid is to take ownership of the
         # table and will destroy it when done.  Otherwise you would need to keep
         # a reference to it and call it's Destroy method later.
@@ -780,7 +794,7 @@ class ParameterGrid(wx.Panel, Configurable):
         self.grid.AutoSizeColumn(4, False)
         self.grid.AutoSizeColumn(5, False)
 
-        self.par_dict={}
+        self.par_dict = {}
 
         self.grid.GetGridWindow().Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.grid.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
@@ -792,14 +806,16 @@ class ParameterGrid(wx.Panel, Configurable):
         self.grid.Bind(wx.EVT_CHAR, self.OnKey)
 
         self.toolbar.Realize()
+        self.col_attr = gridlib.GridCellAttr()
+        self.col_attr.SetRenderer(ValueLimitCellRenderer(model_ctrl=model_ctrl))
         self.SetValueEditorSlider(slider=self.opt.value_slider)
-        attr=gridlib.GridCellAttr()
+        attr = gridlib.GridCellAttr()
         attr.SetEditor(ValueCellEditor())
         attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
-        attr.SetRenderer(ValueCellRenderer())
+        attr.SetRenderer(ValueCellRenderer(model_ctrl=model_ctrl))
         self.grid.SetColAttr(3, attr.Clone())
         self.grid.SetColAttr(4, attr)
-        self._paste_history=None
+        self._paste_history = None
 
     def PrepareNewModel(self):
         """ Hack to prepare the grid for a new model.
@@ -815,50 +831,50 @@ class ParameterGrid(wx.Panel, Configurable):
         self.toggle_slider_tool(self.opt.value_slider)
 
     def OnKey(self, event):
-        if event.ControlDown() and event.GetKeyCode() == 22:
+        if event.ControlDown() and event.GetKeyCode()==22:
             self.OnPaste()
         else:
             event.Skip()
 
     def OnPaste(self):
-        clipboard=wx.TextDataObject()
+        clipboard = wx.TextDataObject()
         if wx.TheClipboard.Open():
             wx.TheClipboard.GetData(clipboard)
             wx.TheClipboard.Close()
         else:
             wx.MessageBox("Can't open the clipboard", "Error")
-        data=list(map(str.split, clipboard.Text.splitlines()))
-        sblocks=list(self.grid.GetSelectedBlocks())
+        data = list(map(str.split, clipboard.Text.splitlines()))
+        sblocks = list(self.grid.GetSelectedBlocks())
         if len(sblocks)==0:
-            start_row=self.grid.GetGridCursorRow()
-            start_col=self.grid.GetGridCursorCol()
-            srows=list(range(start_row, self.grid.GetNumberRows()))
-            scols=list(range(start_col, self.grid.GetNumberCols()))
+            start_row = self.grid.GetGridCursorRow()
+            start_col = self.grid.GetGridCursorCol()
+            srows = list(range(start_row, self.grid.GetNumberRows()))
+            scols = list(range(start_col, self.grid.GetNumberCols()))
         elif len(sblocks)>1:
             # don't paste if individual blocks have been selected
             return
         else:
-            sblock=sblocks[0]
-            start_row=sblock.TopRow
-            start_col=sblock.LeftCol
-            srows=list(range(start_row, sblock.BottomRow+1))
-            scols=list(range(start_col, sblock.RightCol+1))
+            sblock = sblocks[0]
+            start_row = sblock.TopRow
+            start_col = sblock.LeftCol
+            srows = list(range(start_row, sblock.BottomRow+1))
+            scols = list(range(start_col, sblock.RightCol+1))
 
-        self._paste_history=[start_row, start_col, []]
+        self._paste_history = [start_row, start_col, []]
         for i, di in enumerate(data):
             self._paste_history[-1].append([])
             for j, dj in enumerate(di):
-                row, col=i+start_row, j+start_col
+                row, col = i+start_row, j+start_col
                 if row in srows and col in scols:
                     self._paste_history[-1][-1].append(self.table.GetValue(row, col))
-                    if col in [1,3,4]:
+                    if col in [1, 3, 4]:
                         try:
-                            dj=float(dj)
+                            dj = float(dj)
                         except ValueError:
                             continue
                     elif col==2:
                         try:
-                            dj=bool(dj)
+                            dj = bool(dj)
                         except ValueError:
                             continue
                     self.table.SetValue(row, col, dj)
@@ -870,8 +886,8 @@ class ParameterGrid(wx.Panel, Configurable):
         :return:
         """
         # print "SetValueEditorSlider"
-        row=self.grid.GetGridCursorRow()
-        col=self.grid.GetGridCursorCol()
+        row = self.grid.GetGridCursorRow()
+        col = self.grid.GetGridCursorCol()
         # print row, col
         # print self.grid.GetSelectedCells()
         # This will disable the editor in the cell that currently is under editing.
@@ -879,16 +895,14 @@ class ParameterGrid(wx.Panel, Configurable):
         self.grid.SetGridCursor(0, 3)
         self.grid.SetGridCursor(0, 4)
         self.grid.EnableCellEditControl(False)
-        attr=gridlib.GridCellAttr()
+        attr = self.col_attr.Clone()
         if slider:
             attr.SetEditor(SliderCellEditor())
-            attr.SetRenderer(ValueLimitCellRenderer())
         else:
             attr.SetEditor(ValueLimitCellEditor())
-            attr.SetRenderer(ValueLimitCellRenderer())
         self.grid.SetColAttr(1, attr)
         self.grid.SetGridCursor(row, col)
-        self.opt.value_slider=slider
+        self.opt.value_slider = slider
         self.WriteConfig()
 
     def GetValueEditorSlider(self):
@@ -906,39 +920,39 @@ class ParameterGrid(wx.Panel, Configurable):
         # self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
         # self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
         # self.toolbar.SetBackgroundColour('BLUE')
-        dpi_scale_factor=wx.GetApp().dpi_scale_factor
-        tb_bmp_size=int(dpi_scale_factor*20)
+        dpi_scale_factor = wx.GetApp().dpi_scale_factor
+        tb_bmp_size = int(dpi_scale_factor*20)
 
-        newid=wx.NewId()
+        newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Add a new row',
                              bitmap=wx.Bitmap(img.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Insert new row')
         self.Bind(wx.EVT_TOOL, self.eh_add_row, id=newid)
 
-        newid=wx.NewId()
+        newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Delete row',
                              bitmap=wx.Bitmap(img.delete.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Delete row')
         self.Bind(wx.EVT_TOOL, self.eh_delete_row, id=newid)
 
-        newid=wx.NewId()
+        newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Move row up',
                              bitmap=wx.Bitmap(img.move_up.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Move row up')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_up, id=newid)
 
-        newid=wx.NewId()
+        newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Move row down',
                              bitmap=wx.Bitmap(img.move_down.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Move row down')
         self.Bind(wx.EVT_TOOL, self.eh_move_row_down, id=newid)
 
-        newid=wx.NewId()
+        newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Sort parameters',
                              bitmap=wx.Bitmap(img.sort.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Sort the rows by class, attribute and name')
         self.Bind(wx.EVT_TOOL, self.eh_sort, id=newid)
-        newid=wx.NewId()
+        newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Sort parameters',
                              bitmap=wx.Bitmap(img.sort2.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Sort the rows by class, name and attribute')
@@ -946,20 +960,20 @@ class ParameterGrid(wx.Panel, Configurable):
 
         self.toolbar.AddSeparator()
 
-        newid=wx.NewId()
-        self.slider_tool_id=newid
-        self.slider_tool=self.toolbar.AddCheckTool(newid, label='Show sliders', bitmap1=wx.Bitmap(
+        newid = wx.NewId()
+        self.slider_tool_id = newid
+        self.slider_tool = self.toolbar.AddCheckTool(newid, label='Show sliders', bitmap1=wx.Bitmap(
             img.slider.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
-                                                   shortHelp='Show the parameter values as sliders')
+                                                     shortHelp='Show the parameter values as sliders')
         self.Bind(wx.EVT_TOOL, self.eh_slider_toggle, id=newid)
 
-        newid=wx.NewId()
+        newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Project FOM evals',
                              bitmap=wx.Bitmap(img.par_proj.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Project FOM on parameter axis')
         self.Bind(wx.EVT_TOOL, self.eh_project_fom, id=newid)
 
-        newid=wx.NewId()
+        newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Scan parameter',
                              bitmap=wx.Bitmap(img.par_scan.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Scan FOM')
@@ -971,7 +985,7 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        row=self.grid.GetGridCursorRow()
+        row = self.grid.GetGridCursorRow()
         self.table.InsertRow(row)
 
     def eh_delete_row(self, event):
@@ -980,7 +994,7 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        row=self.grid.GetGridCursorRow()
+        row = self.grid.GetGridCursorRow()
         self.table.DeleteRows([row, ])
 
     def eh_move_row_up(self, event):
@@ -989,7 +1003,7 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        row=self.grid.GetGridCursorRow()
+        row = self.grid.GetGridCursorRow()
         if self.table.MoveRowUp(row):
             self.grid.SetGridCursor(row-1, self.grid.GetGridCursorCol())
 
@@ -999,7 +1013,7 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        row=self.grid.GetGridCursorRow()
+        row = self.grid.GetGridCursorRow()
         if self.table.MoveRowDown(row):
             self.grid.SetGridCursor(row+1, self.grid.GetGridCursorCol())
 
@@ -1009,7 +1023,7 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        new_state=not self.GetValueEditorSlider()
+        new_state = not self.GetValueEditorSlider()
         self.SetValueEditorSlider(new_state)
         self.parent.mb_checkables[MenuId.TOGGLE_SLIDER].Check(new_state)
         self.Refresh()
@@ -1018,14 +1032,14 @@ class ParameterGrid(wx.Panel, Configurable):
         self.toolbar.ToggleTool(self.slider_tool_id, state)
 
     def get_toggle_slider_tool_state(self):
-        self.toolbar.GetToolState(self.slider_tool_id)
+        return self.toolbar.GetToolState(self.slider_tool_id)
 
     def eh_project_fom(self, event):
         """ Event handler for toolbar project fom
         :param event:
         :return:
         """
-        row=self.grid.GetGridCursorRow()
+        row = self.grid.GetGridCursorRow()
         if self.project_func:
             self.project_func(row)
 
@@ -1035,7 +1049,7 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        row=self.grid.GetGridCursorRow()
+        row = self.grid.GetGridCursorRow()
         if self.scan_func:
             self.scan_func(row)
 
@@ -1045,11 +1059,11 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event:
         :return:
         """
-        evt=sort_and_group_parameters(sort_params=parameters.SortSplitItem.ATTRIBUTE)
+        evt = sort_and_group_parameters(sort_params=parameters.SortSplitItem.ATTRIBUTE)
         wx.PostEvent(self, evt)
 
     def eh_sort_name(self, event):
-        evt=sort_and_group_parameters(sort_params=parameters.SortSplitItem.OBJ_NAME)
+        evt = sort_and_group_parameters(sort_params=parameters.SortSplitItem.OBJ_NAME)
         wx.PostEvent(self, evt)
 
     def OnSelectCell(self, evt):
@@ -1063,7 +1077,7 @@ class ParameterGrid(wx.Panel, Configurable):
         internal function to yield a EVT_PARAMETER_GRID_CHANGE
         '''
         self.grid.ForceRefresh()
-        evt=grid_change(permanent_change=permanent_change)
+        evt = grid_change(permanent_change=permanent_change)
         wx.PostEvent(self.parent, evt)
 
     def _update_printer(self):
@@ -1071,25 +1085,25 @@ class ParameterGrid(wx.Panel, Configurable):
         
         Update the printer to have the same values as in the grid.
         '''
-        data=[]
+        data = []
         for row in self.GetParameters().get_data():
             # data.append([' %.30s'%row[0],' %.5f'%row[1],\
             # ' %d'%row[2],' %.5g'%row[3],' %.5g'%row[4],' '+row[5]])
             data.append([row[0], '%.5f'%row[1],
                          '%d'%row[2], '%.5f'%row[3], '%.5f'%row[4], row[5]])
-        self.prt.data=data
-        self.prt.label=self.GetParameters().get_col_headers()
+        self.prt.data = data
+        self.prt.label = self.GetParameters().get_col_headers()
         self.prt.SetPaperId(wx.PAPER_A4)
         self.prt.SetLandscape()
-        self.prt.page_width=11.69
-        self.prt.page_height=8.26
-        self.prt.cell_right_margin=0
-        self.prt.cell_left_margin=0.05
-        self.prt.text_font={"Name": 'Arial', "Size": 14, "Colour": [0, 0, 0], "Attr": [0, 0, 0]}
-        self.prt.label_font={"Name": 'Arial', "Size": 24, "Colour": [0, 0, 0], "Attr": [0, 0, 0]}
-        self.prt.set_column=[3, 1.8, 0.5, 1.5, 1.5, 1.5]
-        self.prt.vertical_offset=0
-        self.prt.horizontal_offset=0
+        self.prt.page_width = 11.69
+        self.prt.page_height = 8.26
+        self.prt.cell_right_margin = 0
+        self.prt.cell_left_margin = 0.05
+        self.prt.text_font = {"Name": 'Arial', "Size": 14, "Colour": [0, 0, 0], "Attr": [0, 0, 0]}
+        self.prt.label_font = {"Name": 'Arial', "Size": 24, "Colour": [0, 0, 0], "Attr": [0, 0, 0]}
+        self.prt.set_column = [3, 1.8, 0.5, 1.5, 1.5, 1.5]
+        self.prt.vertical_offset = 0
+        self.prt.horizontal_offset = 0
         # self.prt.SetRowSpacing(0,0)
         self.prt.SetCellText(4, 2, wx.NamedColour('RED'))
         self.prt.SetHeader("Fittting parameters", align=wx.ALIGN_CENTRE, colour=wx.NamedColour('RED'), size=14)
@@ -1101,7 +1115,7 @@ class ParameterGrid(wx.Panel, Configurable):
         
         Prints the values to the printer
         '''
-        pd=wx.PrintData()
+        pd = wx.PrintData()
         pd.SetPrinterName('')
         pd.SetOrientation(wx.LANDSCAPE)
         pd.SetPaperId(wx.PAPER_A4)
@@ -1110,7 +1124,7 @@ class ParameterGrid(wx.Panel, Configurable):
         pd.SetNoCopies(1)
         pd.SetCollate(True)
 
-        pdd=wx.PrintDialogData()
+        pdd = wx.PrintDialogData()
         pdd.SetPrintData(pd)
         pdd.SetMinPage(1)
         pdd.SetMaxPage(1)
@@ -1157,12 +1171,12 @@ class ParameterGrid(wx.Panel, Configurable):
         # if self.grid.CanEnableCellControl() and evt.GetCol() != 2:
         #    self.grid.EnableCellEditControl()
         ##self.grid.SelectRow(evt.GetRow())
-        col, row=evt.GetCol(), evt.GetRow()
+        col, row = evt.GetCol(), evt.GetRow()
         if col==0 and row>-1:
             if self.grid.GetGridCursorRow()==row:
-                self.CurSelection=(row, col)
+                self.CurSelection = (row, col)
                 self.grid.SetGridCursor(row, col)
-                pos=evt.GetPosition()
+                pos = evt.GetPosition()
                 self.show_parameter_menu(pos)
             else:
                 evt.Skip()
@@ -1177,16 +1191,16 @@ class ParameterGrid(wx.Panel, Configurable):
         :param evt: A Event from a Grid
         :return: Nothing
         """
-        col, row=evt.GetCol(), evt.GetRow()
+        col, row = evt.GetCol(), evt.GetRow()
         # self.grid.SelectRow(row)
         if col==2 and row>-1:
             self.table.SetValue(row, col, not self.table.GetValue(row, col))
 
         elif col==0 and row>-1:
             if self.grid.GetGridCursorRow()==row and self.table.GetValue(row, col)=='':
-                self.CurSelection=(row, col)
+                self.CurSelection = (row, col)
                 self.grid.SetGridCursor(row, col)
-                pos=evt.GetPosition()
+                pos = evt.GetPosition()
                 self.show_parameter_menu(pos)
             else:
                 evt.Skip()
@@ -1206,8 +1220,8 @@ class ParameterGrid(wx.Panel, Configurable):
         :return:
         """
         # print "Left Down"
-        x, y=self.grid.CalcUnscrolledPosition(event.GetX(), event.GetY())
-        row, col=self.grid.XYToCell(x, y)
+        x, y = self.grid.CalcUnscrolledPosition(event.GetX(), event.GetY())
+        row, col = self.grid.XYToCell(x, y)
         if col==1 and row>-1:
             # print "Activating editor"
             # self.grid.SetGridCursor(row, col)
@@ -1218,11 +1232,11 @@ class ParameterGrid(wx.Panel, Configurable):
             event.Skip()
 
     def show_label_menu(self, row):
-        insertID=wx.NewId()
-        deleteID=wx.NewId()
-        projectID=wx.NewId()
-        scanID=wx.NewId()
-        menu=wx.Menu()
+        insertID = wx.NewId()
+        deleteID = wx.NewId()
+        projectID = wx.NewId()
+        scanID = wx.NewId()
+        menu = wx.Menu()
         menu.Append(insertID, "Insert Row")
         menu.Append(deleteID, "Delete Row(s)")
         # Item is checked for fitting
@@ -1236,7 +1250,7 @@ class ParameterGrid(wx.Panel, Configurable):
             self.grid.ClearSelection()
 
         def delete(event, self=self, row=row):
-            rows=self.grid.GetSelectedRows()
+            rows = self.grid.GetSelectedRows()
             self.table.DeleteRows(rows)
             self.grid.ClearSelection()
 
@@ -1263,7 +1277,7 @@ class ParameterGrid(wx.Panel, Configurable):
         deleting rows in the grid.
         """
         # check so a row is selected
-        col, row=evt.GetCol(), evt.GetRow()
+        col, row = evt.GetCol(), evt.GetRow()
         if col==-1:
             if not self.grid.GetSelectedRows():
                 self.grid.SelectRow(row)
@@ -1275,48 +1289,48 @@ class ParameterGrid(wx.Panel, Configurable):
         
         Set the functions for executing the projection and scan function.
         '''
-        self.project_func=projectfunc
-        self.scan_func=scanfunc
+        self.project_func = projectfunc
+        self.scan_func = scanfunc
 
     def show_parameter_menu(self, pos):
-        self.pmenu=wx.Menu()
-        par_dict=self.par_dict
-        classes=list(par_dict.keys())
+        self.pmenu = wx.Menu()
+        par_dict = self.par_dict
+        classes = list(par_dict.keys())
         classes.sort(key=str.lower)
         for cl in classes:
             # Create a submenu for each class
-            clmenu=wx.Menu()
+            clmenu = wx.Menu()
             if isinstance(par_dict[cl], dict):
-                obj_dict=par_dict[cl]
-                objs=list(obj_dict.keys())
+                obj_dict = par_dict[cl]
+                objs = list(obj_dict.keys())
                 objs.sort(key=str.lower)
                 # Create a submenu for each object
                 for obj in objs:
-                    obj_menu=wx.Menu()
-                    funcs=obj_dict[obj]
+                    obj_menu = wx.Menu()
+                    funcs = obj_dict[obj]
                     funcs.sort(key=str.lower)
                     # Create an item for each method
                     for func in funcs:
-                        item=obj_menu.Append(-1, obj+'.'+func)
+                        item = obj_menu.Append(-1, obj+'.'+func)
                         self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
                     clmenu.Append(-1, obj, obj_menu)
                 # self.pmenu.Append(-1, cl, clmenu)
             elif isinstance(par_dict[cl], list):
-                objs=par_dict[cl]
+                objs = par_dict[cl]
                 objs.sort(key=str.lower)
                 # Create an item for each method
                 for obj in objs:
-                    item=clmenu.Append(-1, obj)
+                    item = clmenu.Append(-1, obj)
                     self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
             self.pmenu.Append(-1, cl, clmenu)
 
         # Check if there are no available classes
         if len(classes)==0:
             # Add an item to compile the model
-            item=self.pmenu.Append(-1, 'Simulate to see parameters')
+            item = self.pmenu.Append(-1, 'Simulate to see parameters')
             self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
         # Add an item for edit the cell manually
-        item=self.pmenu.Append(-1, 'Manual Edit')
+        item = self.pmenu.Append(-1, 'Manual Edit')
         self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
 
         self.PopupMenu(self.pmenu, pos)
@@ -1328,13 +1342,13 @@ class ParameterGrid(wx.Panel, Configurable):
         selectable and fitable. 
         '''
         # print dir(evt)
-        col=evt.GetCol()
-        row=evt.GetRow()
+        col = evt.GetCol()
+        row = evt.GetRow()
         # print row,col
         if col==0:
-            self.CurSelection=(row, col)
+            self.CurSelection = (row, col)
             self.grid.SetGridCursor(row, col)
-            pos=evt.GetPosition()
+            pos = evt.GetPosition()
             self.show_parameter_menu(pos)
 
     def OnPopUpItemSelected(self, event):
@@ -1348,7 +1362,7 @@ class ParameterGrid(wx.Panel, Configurable):
         :param event: event from the menu
         :return: Nothing
         """
-        item=self.pmenu.FindItemById(event.GetId())
+        item = self.pmenu.FindItemById(event.GetId())
         # Check if the item should be edit manually
         if item.GetItemLabel()=='Simulate to see parameters':
             self.parent.eh_tb_simulate(event)
@@ -1359,19 +1373,19 @@ class ParameterGrid(wx.Panel, Configurable):
             return
         # GetItemLabel seems to screw up underscores a bit replacing the with a
         # double one - this fixes it
-        text=item.GetItemLabel().replace('__', '_')
+        text = item.GetItemLabel().replace('__', '_')
         self.grid.SetCellValue(self.CurSelection[0], self.CurSelection[1], text)
         # Try to find out if the values also has an get function so that
         # we can init the value to the default!
-        lis=text.split('.'+self.set_func)
+        lis = text.split('.'+self.set_func)
         if len(lis)==2:
             try:
-                value=self.evalf(lis[0]+'.'+self.get_func+lis[1])().real
+                value = self.evalf(lis[0]+'.'+self.get_func+lis[1])().real
                 self.table.SetValue(self.CurSelection[0], 1, value)
                 # Takes care so that also negative numbers give the
                 # correct values in the min and max cells
-                minval=value*(1-self.variable_span)
-                maxval=value*(1+self.variable_span)
+                minval = value*(1-self.variable_span)
+                maxval = value*(1+self.variable_span)
                 self.table.SetValue(self.CurSelection[0], 3,
                                     min(minval, maxval))
                 self.table.SetValue(self.CurSelection[0], 4,
@@ -1382,12 +1396,12 @@ class ParameterGrid(wx.Panel, Configurable):
         else:
             # It could be a Parameter class
             try:
-                value=self.evalf(text+'.value')
+                value = self.evalf(text+'.value')
                 self.table.SetValue(self.CurSelection[0], 1, value)
                 # Takes care so that also negative numbers give the
                 # correct values in the min and max cells
-                minval=value*(1-self.variable_span)
-                maxval=value*(1+self.variable_span)
+                minval = value*(1-self.variable_span)
+                maxval = value*(1+self.variable_span)
                 self.table.SetValue(self.CurSelection[0], 3,
                                     min(minval, maxval))
                 self.table.SetValue(self.CurSelection[0], 4,
@@ -1407,24 +1421,24 @@ class ParameterGrid(wx.Panel, Configurable):
         in the popup menu. objlist and funclist are lists of strings which
         has to be of the same size
         '''
-        self.par_dict=par_dict
+        self.par_dict = par_dict
 
     def SetEvalFunc(self, func):
         '''
         Sets the fucntion that evaluates the expression that is exexuted in the
         model. The fucntion should take a string as input.
         '''
-        self.evalf=func
+        self.evalf = func
 
     def SetColWidths(self):
         '''
         Function automatically set the cells width in the Grid to 
         reasonable values.
         '''
-        width=(self.grid.GetSize().GetWidth()-self.grid.GetColSize(2)-self.grid.GetRowLabelSize())/5-1
+        width = int((self.grid.GetSize().GetWidth()-self.grid.GetColSize(2)-self.grid.GetRowLabelSize())/5-1)
         # To avoid warnings relating to a width < 0. This can occur during startup
         if width<=0:
-            width=1
+            width = 1
         self.grid.SetColSize(0, width)
         self.grid.SetColSize(1, width)
         self.grid.SetColSize(3, width)

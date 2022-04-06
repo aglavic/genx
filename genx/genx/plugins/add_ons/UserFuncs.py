@@ -28,7 +28,7 @@ selection dialog is shown to the user to select a file to save to.
 The open file object is then passed on to the function:
 ::
     def my_func_params(a: int, b: float, c: float=1.0, name: str="Name", file_handler: TextIO=None):
-        file_handler.write(f'{a=};{b=};{c=};{name=}')
+        file_handler.write(f'a={a};b={b};c={c};name={name}')
 
 This gives you the flexibility to perform complex tasks while still benefitting from
 a GUI integration. Any number of parameters or files can be defined for your funct.

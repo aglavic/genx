@@ -296,7 +296,7 @@ class DiffEv(GenxOptimizer):
         that sets the variables  and stores a reference to the model.
         '''
         # Retrieve parameters from the model
-        (param_funcs, start_guess, par_min, par_max) = model_obj.get_fit_pars()
+        (param_funcs, start_guess, par_min, par_max) = model_obj.get_fit_pars(use_bounds=self.opt.use_boundaries)
 
         # Control parameter setup
         self.par_min = array(par_min)
@@ -1372,7 +1372,7 @@ def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False, overwrite_
     model = model_copy
     model.reset()
     model.simulate()
-    (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars()
+    (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars(use_bounds=False)
 
 
 def init_cuda():

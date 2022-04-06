@@ -71,13 +71,13 @@ class GenXMessage(ABC):
         debug('GenXMessage receiving')
         header_length = struct.unpack("I", await io.read(4))[0]
         header_type = struct.unpack("I", await io.read(4))[0]
-        debug(f'GenXMessage {header_length=} ; {header_type=}')
+        debug(f'GenXMessage header_length={header_length} ; header_type={header_type}')
         if header_type!=0:
             header_string = await io.read(header_length)
             header_data = loads(header_string)
             header_types[header_type].use_header(header_data)
         data_length = struct.unpack("I", await io.read(4))[0]
-        debug(f'GenXMessage {data_length=}')
+        debug(f'GenXMessage data_length={data_length}')
         data_string = await io.read(data_length)
         debug(f'Length of data_string received: {len(data_string)}')
         while len(data_string)<data_length:

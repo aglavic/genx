@@ -1062,7 +1062,7 @@ class FitSelectorCombo(wx.ComboCtrl):
         font.SetWeight(wx.FONTWEIGHT_BOLD)
         dc.SetFont(font)
         tw, th=dc.GetTextExtent(label)
-        dc.DrawText(label, (bw-tw)/2, (bh-th)/2)
+        dc.DrawText(label, (bw-tw)//2, (bh-th)//2)
         del dc
         # now apply a mask using the bgcolor
         bmp.SetMaskColour(bgcolor)
@@ -1146,7 +1146,7 @@ class ParameterExpressionCombo(wx.ComboCtrl):
         font.SetWeight(wx.FONTWEIGHT_BOLD)
         dc.SetFont(font)
         tw, th=dc.GetTextExtent(label)
-        dc.DrawText(label, (bw-tw)/2, (bh-th)/2)
+        dc.DrawText(label, (bw-tw)//2, (bh-th)//2)
         del dc
         # now apply a mask using the bgcolor
         bmp.SetMaskColour(bgcolor)

@@ -2132,7 +2132,7 @@ class DomainWidget(wx.ScrolledWindow):
                 dc.SetPen(pen)
                 dc.SetBrush(brush)
                 dc.DrawRectangle(rect.X, rect.Y, rect.Width, rect.Height)
-                dc.DrawText(slab_name, x_pos+x_padding/2., y_pos)
+                dc.DrawText(slab_name, x_pos+x_padding//2, y_pos)
                 self.list_rects[-1].append(rect)
                 y_pos+=col_height+y_padding
                 j-=1
