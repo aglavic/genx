@@ -16,6 +16,7 @@ Changes 3.6.8
 =============
  * Fix a bug where values for the instrument parameters where parsed by int type if the script used integer values
  * Fix a compatibility issue with older wxPython/wxWidgets that would prevent genx from starting on fedora 35
+ * Fix issues when running numba together with multiprocessing on UNIX bases systems due to fork method
 
 Changes 3.6.7
 =============

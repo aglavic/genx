@@ -356,6 +356,7 @@ def set_bumps_pars(optimiser, args):
 
 def main():
     multiprocessing.freeze_support()
+    multiprocessing.set_start_method('spawn')
     # Attempt to load mpi:
     try:
         from mpi4py import MPI
