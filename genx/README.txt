@@ -12,6 +12,11 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.8
+=============
+ * Fix a bug where values for the instrument parameters where parsed by int type if the script used integer values
+ * Fix a compatibility issue with older wxPython/wxWidgets that would prevent genx from starting on fedora 35
+
 Changes 3.6.7
 =============
  * Fix compatibility with python 3.6-3.7
