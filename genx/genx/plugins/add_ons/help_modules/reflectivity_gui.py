@@ -304,7 +304,8 @@ class SamplePanel(wx.Panel):
             editable[inst_name] = {}
 
         pars = []
-        for item in self.model.InstrumentParameters:
+        model_inst_params = self.model.InstrumentParameters
+        for item in model_inst_params:
             if item in self.model.instrument_string_choices:
                 # validators.append(self.model.instrument_string_choices[item])
                 validators[item] = self.model.instrument_string_choices[item]
@@ -352,12 +353,12 @@ class SamplePanel(wx.Panel):
                     new_instrument = True
                 for par in self.model.InstrumentParameters:
                     if not states[inst_name][par]:
-                        old_type = type(old_vals[inst_name][par])
-                        if old_type is str:
+                        orig_type = type(model_inst_params[par])
+                        if orig_type is str:
                             e_value = vals[inst_name][par]
                         else:
                             e_value = eval_func(vals[inst_name][par])
-                        setattr(self.instruments[inst_name], par, old_type(e_value))
+                        setattr(self.instruments[inst_name], par, orig_type(e_value))
                     else:
                         setattr(self.instruments[inst_name], par, old_vals[inst_name][par])
                     if new_instrument and states[inst_name][par]>0:

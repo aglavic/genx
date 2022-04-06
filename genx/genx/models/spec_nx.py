@@ -153,7 +153,7 @@ instrument_string_choices = {
 InstrumentParameters = {
     'probe': 'x-ray', 'wavelength': 1.54, 'coords': '2θ',
     'I0': 1.0, 'res': 0.001,
-    'restype': 'no conv', 'respoints': 5, 'resintrange': 2, 'beamw': 0.01,
+    'restype': 'no conv', 'respoints': 5, 'resintrange': 2.0, 'beamw': 0.01,
     'footype': 'no corr', 'samplelen': 10.0, 'incangle': 0.5, 'pol': 'uu',
     'Ibkg': 0.0, 'tthoff': 0.0
     }
