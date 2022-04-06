@@ -590,8 +590,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def __set_properties(self):
         self.main_frame_fom_text = wx.StaticText(self.main_frame_toolbar, -1,
                                                  '        FOM:                    ', size=(400, -1))
-        font = wx.Font(wx.FontInfo(15*self.dpi_scale_factor))
-        self.main_frame_fom_text.SetFont(font)
+        try:
+            font = wx.Font(wx.FontInfo(15*self.dpi_scale_factor))
+        except TypeError:
+            pass
+        else:
+            self.main_frame_fom_text.SetFont(font)
         self.main_frame_fom_text.SetLabel('        FOM: None')
         # self.main_frame_fom_text.SetEditable(False)
         self.main_frame_toolbar.AddSeparator()
