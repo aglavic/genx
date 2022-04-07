@@ -1,6 +1,7 @@
 '''
 Main GenX window and functionality.
 '''
+import sys
 
 import appdirs
 import os
@@ -727,7 +728,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         wx.CallAfter(self.EndInit)
 
     def LayoutSplitters(self):
-        size = self.GetSize()
+        if not sys.platform.startswith('win'):
+            display_size = wx.DisplaySize()
+            hsize = self.opt.hsize or int(display_size[0]*0.85)
+            vsize = self.opt.vsize or int(display_size[1]*0.9)
+            self.SetSize(hsize, vsize)
+            self.CenterOnScreen()
+            size = self.GetSize()
         vsplit = self.opt.vsplit or size[0]/4
         hsplit = self.opt.hsplit or size[1]-450
         self.ver_splitter.SetSashPosition(vsplit)
