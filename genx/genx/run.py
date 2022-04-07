@@ -46,7 +46,17 @@ def start_interactive(args):
     else:
         filename = None
     debug('start GUI setup')
-    app = main_window.GenxApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
+    if args.debug:
+        debug('initialize wx Inspection App')
+        from wx.lib.mixins.inspection import InspectionMixin
+        class InspApp(main_window.GenxApp, InspectionMixin):
+            def OnInit(self):
+                # Initialize the inspection tool.
+                self.Init()
+                return main_window.GenxApp.OnInit(self)
+        app = InspApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
+    else:
+        app = main_window.GenxApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
     debug('setup complete, start WX MainLoop')
     app.MainLoop()
     debug('leave start_interactive')
