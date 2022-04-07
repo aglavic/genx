@@ -76,9 +76,7 @@ class PlotPanel(wx.Panel, Configurable):
         self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
         self.canvas.SetExtraStyle(wx.EXPAND)
         self.SetColor(color)
-        self._resizeflag = True
         self.print_size = (15./2.54, 12./2.54)
-        # self._SetSize()
 
         # Flags and bindings for zooming
         self.opt.load_config()
@@ -89,8 +87,6 @@ class PlotPanel(wx.Panel, Configurable):
         self.zooming = False
 
         debug('init PlotPanel - bind events')
-        self.Bind(wx.EVT_IDLE, self._onIdle)
-        self.Bind(wx.EVT_SIZE, self._onSize)
         self.canvas.Bind(wx.EVT_LEFT_DOWN, self.OnLeftMouseButtonDown)
         self.canvas.Bind(wx.EVT_LEFT_UP, self.OnLeftMouseButtonUp)
         self.canvas.Bind(wx.EVT_MOTION, self.OnMouseMove)
@@ -105,13 +101,12 @@ class PlotPanel(wx.Panel, Configurable):
         self.ax = None
 
         debug('init PlotPanel - FigurePrinter and Bitmap')
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.canvas, 1, wx.EXPAND)
+        self.SetSizer(sizer)
+
         # Init printout stuff
         self.fig_printer = FigurePrinter(self)
-
-        # Create the drawing bitmap
-        self.bitmap = wx.Bitmap(1, 1, depth=wx.BITMAP_SCREEN_DEPTH)
-        #        DEBUG_MSG("__init__() - bitmap w:%d h:%d" % (w,h), 2, self)
-        self._isDrawn = False
         debug('end init PlotPanel')
 
     def SetColor(self, rgbtuple=None):
@@ -123,37 +118,6 @@ class PlotPanel(wx.Panel, Configurable):
         self.figure.set_facecolor(col)
         self.figure.set_edgecolor(col)
         self.canvas.SetBackgroundColour(wx.Colour(*rgbtuple))
-
-    def _onSize(self, evt):
-        self._resizeflag = True
-        self._SetSize()
-        # self.canvas.draw(repaint = False)
-
-    def _onIdle(self, evt):
-        if self._resizeflag:
-            self._resizeflag = False
-            self._SetSize()
-            # self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
-
-    def _SetSize(self, pixels=None):
-        '''
-        This method can be called to force the Plot to be a desired
-        size which defaults to the ClientSize of the Panel.
-        '''
-        if not pixels:
-            pixels = self.GetClientSize()
-        if pixels[0]==0 or pixels[1]==0:
-            return
-
-        self.canvas.SetSize(pixels)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
-            try:
-                self.figure.tight_layout(h_pad=0)
-            except ValueError:
-                pass
-        # self.figure.set_size_inches(pixels[0]/self.figure.get_dpi()
-        # , pixels[1]/self.figure.get_dpi())
 
     def UpdateConfigValues(self):
         self.SetXScale(self.opt.x_scale)
