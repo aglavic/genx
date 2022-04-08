@@ -365,9 +365,9 @@ class ModelController:
         """
         Saves objects model, optimiser and config into file fname
         """
-        if fname.endswith('.gx'):
+        if fname.lower().endswith('.gx'):
             self.save_gx(fname)
-        elif fname.endswith('.hgx'):
+        elif fname.lower().endswith('.hgx'):
             self.save_hgx(fname, update_callback=update_callback)
         else:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')
@@ -378,9 +378,9 @@ class ModelController:
         """
         Loads parameters from fname into model, optimizer and config
         """
-        if fname.endswith('.gx'):
+        if fname.lower().endswith('.gx'):
             self.load_gx(fname)
-        elif fname.endswith('.hgx'):
+        elif fname.lower().endswith('.hgx'):
             self.load_hgx(fname, update_callback=update_callback)
         else:
             raise GenxIOError('Wrong file ending, should be .gx or .hgx')

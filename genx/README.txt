@@ -12,6 +12,10 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.9
+=============
+ * Allow file names with upper case endings (.GX/.HGX)
+
 Changes 3.6.8
 =============
  * Fix a bug where values for the instrument parameters where parsed by int type if the script used integer values
