@@ -30,7 +30,7 @@ getLogger('matplotlib.font_manager').setLevel(ERROR)
 zoom_state = False
 
 
-# fix a but in wx/matplotlib where keeping a motion event reference breaks scrolling
+# fix a bug in wx/matplotlib where keeping a motion event reference breaks scrolling
 # see: https://github.com/wxWidgets/Phoenix/issues/2034
 def _onMotionFixed(self, event):
     """Start measuring on an axis."""
@@ -626,13 +626,11 @@ class PlotPanel(wx.Panel, Configurable):
         return menu
 
     def flush_plot(self):
-        # self._SetSize()
-        # self.canvas.gui_repaint(drawDC = wx.PaintDC(self))
-        # self.ax.set_yscale(self.y_scale)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
             self.figure.tight_layout(h_pad=0)
         self.canvas.draw()
+        self.Refresh()
 
     def update(self, data):
         pass
