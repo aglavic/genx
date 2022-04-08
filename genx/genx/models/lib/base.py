@@ -140,7 +140,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
             kws = p.body[0].value.keywords
             for kw in kws:
                 if hasattr(ast, 'get_source_segment'):
-                    ca[kw.arg] = ast.get_source_segment(call_lines, kws.vaue)
+                    ca[kw.arg] = ast.get_source_segment(call_lines, kw.value)
                 else:
                     ca[kw.arg] = call_lines[kw.value.col_offset:kw.value.end_col_offset]
         except Exception:
