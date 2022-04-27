@@ -108,7 +108,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
     """
     Base class for all reflectometry dataclass objects. It uses the ReflMeta class to
     allow arbitrary ununsed keyword arguments (for switching models) and stores
-    the call strings used in when creating a class instance to allow re-creation
+    the call strings used when creating a class instance to allow re-creation
     within the GUI.
 
     In addition to the dataclass attributes a subclass can define a Units

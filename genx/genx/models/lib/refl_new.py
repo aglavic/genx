@@ -62,6 +62,9 @@ class SampleBase(ReflBase):
     Ambient: ReflBase = None
     Substrate: ReflBase = None
 
+    # following attribute can be used in sub-class to specify dataclass to return on resolveLayerParameters
+    _layer_parameter_class = None
+
     def _resolve_parameter(self, obj, key):
         return getattr(obj, key)
 
@@ -73,7 +76,10 @@ class SampleBase(ReflBase):
             for stack in self.Stacks:
                 par[fi.name]+=stack.resolveLayerParameter(fi.name)
             par[fi.name].append(self._resolve_parameter(self.Ambient, fi.name))
-        return par
+        if self._layer_parameter_class:
+            return self._layer_parameter_class(**par)
+        else:
+            return par
 
     @classmethod
     def _add_sim_method(cls, name, func):

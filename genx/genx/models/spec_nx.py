@@ -10,7 +10,7 @@ Classes
 '''
 import numpy as np
 from typing import List
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 
 from .lib import paratt as Paratt
 from .lib import neutron_refl as MatrixNeutron
@@ -122,6 +122,17 @@ class Layer(refl.ReflBase):
     Groups = [('Standard', ['f', 'dens', 'd', 'sigma']),
               ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang'])]
 
+@dataclass
+class LayerParameters:
+    sigma: List[float]
+    dens: List[float]
+    d: List[float]
+    f: List[complex]
+    b: List[complex]
+    xs_ai: List[float]
+    magn: List[float]
+    magn_ang: List[float]
+
 
 @dataclass
 class Stack(refl.StackBase):
@@ -129,7 +140,7 @@ class Stack(refl.StackBase):
     A collection of Layer objects that can be repeated.
 
     ``Layers``
-       A ``list`` consiting of ``Layer``s in the stack the first item is
+       A ``list`` consiting of ``Layers`` in the stack the first item is
        the layer closest to the bottom
     ``Repetitions``
        The number of repsetions of the stack
@@ -144,7 +155,7 @@ class Sample(refl.SampleBase):
     Describe global sample by listing ambient, substrate and layer parameters.
 
     ``Stacks``
-       A ``list`` consiting of ``Stack``s in the stacks the first item is
+       A ``list`` consiting of ``Stacks`` in the stacks the first item is
        the layer closest to the bottom
     ``Ambient``
        A ``Layer`` describing the Ambient (enviroment above the sample).
@@ -153,10 +164,17 @@ class Sample(refl.SampleBase):
        A ``Layer`` describing the substrate (enviroment below the sample).
        Only the scattering lengths, density and roughness of the layer is
        used.
+    ``crop_sld``
+       For samples with many layers this limits the number of layers that
+       are shown on SLD graphs. Negative values just remove these layers
+       and show a spike in SLD, instead, while postivie values exchange
+       them by one layer of same thickness.
     """
     Stacks: List[Stack] = field(default_factory=list)
-    Ambient: Layer = None
-    Substrate: Layer = None
+    Ambient: Layer = field(default_factory=Layer)
+    Substrate: Layer = field(default_factory=Layer)
+    crop_sld: int = 0
+    _layer_parameter_class = LayerParameters
 
 
 @dataclass
@@ -392,26 +410,24 @@ def specular_calcs(TwoThetaQz, sample: Sample, instrument: Instrument, return_in
     ptype = instrument.probe
     pol = instrument.pol
 
-    parameters = sample.resolveLayerParameters()
+    parameters:LayerParameters = sample.resolveLayerParameters()
+
+    dens = array(parameters.dens, dtype=float64)
+    d = array(parameters.d, dtype=float64)
+    magn = array(parameters.magn, dtype=float64)
+    # Transform to radians
+    magn_ang = array(parameters.magn_ang, dtype=float64)*pi/180.0
+
+    sigma = array(parameters.sigma, dtype=float64)
+
     if ptype==Probe.xray:
         # fb = array(parameters['f'], dtype = complex64)
         e = AA_to_eV/instrument.wavelength
-        fb = refl.cast_to_array(parameters['f'], e).astype(complex128)
-    else:
-        fb = array(parameters['b'], dtype=complex128)*1e-5
-        abs_xs = array(parameters['xs_ai'], dtype=complex128)*1e-4**2
-
-    dens = array(parameters['dens'], dtype=float64)
-    d = array(parameters['d'], dtype=float64)
-    magn = array(parameters['magn'], dtype=float64)
-    # Transform to radians
-    magn_ang = array(parameters['magn_ang'], dtype=float64)*pi/180.0
-
-    sigma = array(parameters['sigma'], dtype=float64)
-
-    if ptype==Probe.xray:
+        fb = refl.cast_to_array(parameters.f, e).astype(complex128)
         sld = dens*fb*instrument.wavelength**2/2/pi
     else:
+        fb = array(parameters.b, dtype=complex128)*1e-5
+        abs_xs = array(parameters.xs_ai, dtype=complex128)*1e-4**2
         wl = instrument.wavelength
         # sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
         #                       1.0J*abs_xs*wl/4/pi)
@@ -463,7 +479,7 @@ def specular_calcs(TwoThetaQz, sample: Sample, instrument: Instrument, return_in
             Buffer.Ruu = Ruu
             Buffer.Rdd = Rdd
             Buffer.Rud = Rud
-            Buffer.parameters = parameters.copy()
+            Buffer.parameters = parameters
             Buffer.TwoThetaQz = Q.copy()
         else:
             pass
@@ -565,16 +581,16 @@ def EnergySpecular(Energy, TwoThetaQz, sample: Sample, instrument: Instrument):
 
     ptype = instrument.probe
 
-    parameters = sample.resolveLayerParameters()
+    parameters:LayerParameters = sample.resolveLayerParameters()
     if ptype==Probe.xray:
-        fb = refl.cast_to_array(parameters['f'], Energy).astype(complex128)
+        fb = refl.cast_to_array(parameters.f, Energy).astype(complex128)
     else:
-        fb = array(parameters['b'], dtype=complex128)*1e-5
-        abs_xs = array(parameters['xs_ai'], dtype=complex128)*1e-4**2
+        fb = array(parameters.b, dtype=complex128)*1e-5
+        abs_xs = array(parameters.xs_ai, dtype=complex128)*1e-4**2
 
-    dens = array(parameters['dens'], dtype=float64)
-    d = array(parameters['d'], dtype=float64)
-    sigma = array(parameters['sigma'], dtype=float64)
+    dens = array(parameters.dens, dtype=float64)
+    d = array(parameters.d, dtype=float64)
+    sigma = array(parameters.sigma, dtype=float64)
 
     if ptype==Probe.xray:
         sld = dens[:, newaxis]*fb*wl**2/2/pi
@@ -617,28 +633,30 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     item 'Re'
     # END Parameters
     '''
-    parameters = sample.resolveLayerParameters()
+    parameters:LayerParameters = sample.resolveLayerParameters()
     if hasattr(sample, 'crop_sld') and sample.crop_sld!=0:
         crop_top_bottom = abs(sample.crop_sld)
-        inter = dict([(key, 0.) for key in parameters])
+        inter = Layer()
         if sample.crop_sld>0:
-            inter['d'] = sum(parameters['d'][crop_top_bottom:-crop_top_bottom])
+            inter.d = sum(parameters.d[crop_top_bottom:-crop_top_bottom])
         else:
-            inter['d'] = 5.0
-            inter['dens'] = 0.1
-            inter['b'] = 12.0+0j
-            inter['f'] = 100.0+0j
-        if len(parameters['dens'])>2*crop_top_bottom:
-            for key, value in parameters.items():
+            inter.d = 5.0
+            inter.dens = 0.1
+            inter.b = 12.0+0j
+            inter.f = 100.0+0j
+        if len(parameters.dens)>2*crop_top_bottom:
+            for fi in fields(Layer):
+                key = fi.name
+                value = getattr(parameters, key)
                 val_start = value[:crop_top_bottom]
                 val_end = value[-crop_top_bottom:]
-                parameters[key] = val_start+[inter[key]]+val_end
-    dens = array(parameters['dens'], dtype=float32)
+                setattr(parameters, key, val_start+[inter[key]]+val_end)
+    dens = array(parameters.dens, dtype=float32)
     # f = array(parameters['f'], dtype = complex64)
     e = AA_to_eV/inst.wavelength
-    f = refl.cast_to_array(parameters['f'], e).astype(complex64)
-    b = array(parameters['b'], dtype=complex64)*1e-5
-    abs_xs = array(parameters['xs_ai'], dtype=float32)*1e-4**2
+    f = refl.cast_to_array(parameters.f, e).astype(complex64)
+    b = array(parameters.b, dtype=complex64)*1e-5
+    abs_xs = array(parameters.xs_ai, dtype=float32)*1e-4**2
     wl = inst.wavelength
     ptype = inst.probe
     magnetic = False
@@ -652,19 +670,19 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     else:
         magnetic = True
         sld = dens*(wl**2/2/pi*b-1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
-        magn = array(parameters['magn'], dtype=float64)
+        magn = array(parameters.magn, dtype=float64)
         # Transform to radians
-        magn_ang = array(parameters['magn_ang'], dtype=float64)*pi/180.0
+        magn_ang = array(parameters.magn_ang, dtype=float64)*pi/180.0
         mag_sld = 2.645*magn*dens*10.
         mag_sld_x = mag_sld*cos(magn_ang)
         mag_sld_y = mag_sld*sin(magn_ang)
         sld_unit = r'10^{-6}\AA^{-2}'
 
-    d = array(parameters['d'], dtype=float64)
+    d = array(parameters.d, dtype=float64)
     d = d[1:-1]
     # Include one extra element - the zero pos (substrate/film interface)
     int_pos = cumsum(r_[0, d])
-    sigma = array(parameters['sigma'], dtype=float64)[:-1]+1e-7
+    sigma = array(parameters.sigma, dtype=float64)[:-1]+1e-7
     if z is None:
         z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
     if not magnetic:
