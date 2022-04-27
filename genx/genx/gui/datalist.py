@@ -286,7 +286,11 @@ class DataFileDropTarget(wx.FileDropTarget):
         wx.FileDropTarget.__init__(self)
 
     def OnDropFiles(self, x, y, filenames):
-        return self.parent.load_from_files(filenames)
+        first_name = filenames[0].lower()
+        if first_name.endswith('.hgx') or first_name.endswith('.gx'):
+            return False
+        else:
+            return self.parent.load_from_files(filenames)
 
 
 class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):

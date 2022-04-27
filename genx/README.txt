@@ -15,6 +15,9 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 Changes 3.6.9
 =============
  * Allow file names with upper case endings (.GX/.HGX)
+ * Try to fix some plot drawing issues on some Linux systems with Wayland backend.
+ * Open GenX model files on drag&drop to the window (if not above data list)
+ * Fix GUI not remembering a model is unchanged after loading from a file.
 
 Changes 3.6.8
 =============

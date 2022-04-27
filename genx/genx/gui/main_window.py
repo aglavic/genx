@@ -195,6 +195,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.paramter_grid.grid.Bind(EVT_DELETE_PARAMETERS, self.model_control.OnDeleteParameter)
         self.paramter_grid.Bind(EVT_SORT_AND_GROUP_PARAMETERS, self.model_control.OnSortAndGroupParameters)
 
+        self.SetDropTarget(GenxFileDropTarget(self))
         debug('setup of MainFrame - manual config')
 
         # GenX objects
@@ -2196,6 +2197,28 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Destroy()
 
 
+class GenxFileDropTarget(wx.FileDropTarget):
+    parent: GenxMainWindow
+
+    def __init__(self, parent):
+        self.parent = parent
+        wx.FileDropTarget.__init__(self)
+
+    def OnDropFiles(self, x, y, filenames):
+        model_file = filenames[0]
+        if model_file.lower().endswith('.hgx') or model_file.lower().endswith('.gx'):
+            # Check so the model is saved before quitting
+            if not self.parent.model_control.saved:
+                ans = ShowQuestionDialog(self.parent,
+                                         'If you continue any changes in your model will not be saved.',
+                                         'Model not saved')
+                if not ans:
+                    return False
+            self.parent.open_model(model_file)
+            return True
+        return False
+
+
 class GenxApp(wx.App):
 
     def __init__(self, filename=None, dpi_overwrite=None):
@@ -2299,6 +2322,7 @@ class GenxApp(wx.App):
             wx.CallAfter(self.WriteSplash, 'checking for update...', progress=0.95)
             wx.CallAfter(main_frame.check_for_update)
         wx.CallAfter(self.splash.Destroy)
+        wx.CallLater(100, main_frame.model_control.SetModelSaved)
         return 1
 
 
