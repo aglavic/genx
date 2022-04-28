@@ -119,11 +119,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                           size=wx.Size(self.opt.hsize, self.opt.vsize),
                           style=wx.DEFAULT_FRAME_STYLE)
 
-        if sys.platform == 'darwin':
-            dpi_scale_factor = 1.0
-        elif dpi_overwrite:
+        if dpi_overwrite:
             dpi_scale_factor = float(dpi_overwrite)
             debug("Overwrite DPI scale factor as %s"%dpi_scale_factor)
+        elif sys.platform == 'darwin':
+            dpi_scale_factor = 1.0
+            debug("Setting DPI scale to MacOS default of 1.0")
         else:
             try:
                 dpi_scale_factor = self.GetDPIScaleFactor()
@@ -497,7 +498,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         tb_bmp_size = int(32*self.dpi_scale_factor)
         self.main_frame_toolbar = wx.ToolBar(self, -1, style=wx.TB_DEFAULT_STYLE)
         self.SetToolBar(self.main_frame_toolbar)
-        self.main_frame_toolbar.SetToolSeparation(5)
         self.main_frame_toolbar.AddTool(ToolId.NEW_MODEL, "tb_new",
                                         wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N",
