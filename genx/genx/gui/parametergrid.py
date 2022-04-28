@@ -819,7 +819,6 @@ class ParameterGrid(wx.Panel, Configurable):
 
     def PrepareNewModel(self):
         """ Hack to prepare the grid for a new model.
-        :return:
         """
         self.grid.EnableEditing(False)
         self.grid.ClearSelection()

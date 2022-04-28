@@ -1009,8 +1009,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def open_model(self, path):
         debug('open_model: clear model')
-        self.model_control.new_model()
         self.paramter_grid.PrepareNewModel()
+        self.model_control.new_model()
         # Update all components so all the traces are gone.
         # _post_new_model_event(frame, frame.model)
         debug('open_model: load_file')
