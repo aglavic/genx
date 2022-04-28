@@ -1298,6 +1298,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Event handler for opening a model file...
         '''
         # Check so the model is saved before quitting
+        self.paramter_grid.ClearEditing()
         if not self.model_control.saved:
             ans = ShowQuestionDialog(self, 'If you continue any changes in'
                                            ' your model will not be saved.',

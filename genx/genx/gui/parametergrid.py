@@ -820,8 +820,10 @@ class ParameterGrid(wx.Panel, Configurable):
     def PrepareNewModel(self):
         """ Hack to prepare the grid for a new model.
         """
-        self.grid.EnableEditing(False)
         self.grid.ClearSelection()
+
+    def ClearEditing(self):
+        self.grid.EnableEditing(False)
         wx.CallAfter(self.grid.EnableEditing, True)
 
     def UpdateConfigValues(self):
