@@ -4,6 +4,7 @@ Main GenX window and functionality.
 
 import appdirs
 import os
+import sys
 import shutil
 import webbrowser
 import _thread
@@ -118,7 +119,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                           size=wx.Size(self.opt.hsize, self.opt.vsize),
                           style=wx.DEFAULT_FRAME_STYLE)
 
-        if os.platform == 'darwin':
+        if sys.platform == 'darwin':
             dpi_scale_factor = 1.0
         elif dpi_overwrite:
             dpi_scale_factor = float(dpi_overwrite)
