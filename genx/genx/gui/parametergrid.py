@@ -821,10 +821,9 @@ class ParameterGrid(wx.Panel, Configurable):
         """ Hack to prepare the grid for a new model.
         :return:
         """
-        # This hack is needed to deselect any current cell. Have not found a better way to solve it.
-        # If not called the program can cause an segmentation fault and crash.
-        self.grid.SetGridCursor(0, 3)
-        self.grid.SetGridCursor(0, 4)
+        self.grid.EnableEditing(False)
+        self.grid.ClearSelection()
+        self.grid.EnableEditing(True)
 
     def UpdateConfigValues(self):
         self.SetValueEditorSlider(slider=self.opt.value_slider)
