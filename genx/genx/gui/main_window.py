@@ -118,7 +118,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                           size=wx.Size(self.opt.hsize, self.opt.vsize),
                           style=wx.DEFAULT_FRAME_STYLE)
 
-        if dpi_overwrite:
+        if os.platform == 'darwin':
+            dpi_scale_factor = 1.0
+        elif dpi_overwrite:
             dpi_scale_factor = float(dpi_overwrite)
             debug("Overwrite DPI scale factor as %s"%dpi_scale_factor)
         else:

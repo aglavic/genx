@@ -68,7 +68,8 @@ class SamplePanel(wx.Panel):
         self.update_callback = lambda event: ''
 
     def do_toolbar(self):
-        tb_bmp_size = int(1.4*self.toolbar.GetToolBitmapSize().height)
+        dpi_scale_factor = wx.GetApp().dpi_scale_factor
+        tb_bmp_size = int(dpi_scale_factor*20)
 
         newid = wx.NewId()
         self.toolbar.AddTool(newid, 'Insert Layer',
@@ -658,7 +659,8 @@ class DataParameterPanel(wx.Panel):
         self.SetSizer(boxver)
 
     def do_toolbar(self):
-        tb_bmp_size = int(1.4*self.toolbar.GetToolBitmapSize().height)
+        dpi_scale_factor = wx.GetApp().dpi_scale_factor
+        tb_bmp_size = int(dpi_scale_factor*20)
 
         button_names = ['Insert', 'Delete', 'User Variables']
         button_images = [wx.Bitmap(images.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)),

@@ -824,7 +824,9 @@ class DataListControl(wx.Panel):
         self.toolbar.Realize()
 
     def do_toolbar(self):
-        tb_bmp_size = int(1.4*self.toolbar.GetToolBitmapSize().height)
+        dpi_scale_factor = wx.GetApp().dpi_scale_factor
+        tb_bmp_size = int(dpi_scale_factor*20)
+
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Add data set',
                              bitmap=wx.Bitmap(img.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)),

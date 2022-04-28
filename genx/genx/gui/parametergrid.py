@@ -915,7 +915,8 @@ class ParameterGrid(wx.Panel, Configurable):
         # wx.PostEvent(self.parent, evt)
 
     def do_toolbar(self):
-        tb_bmp_size = int(1.4*self.toolbar.GetToolBitmapSize().height)
+        dpi_scale_factor = wx.GetApp().dpi_scale_factor
+        tb_bmp_size = int(dpi_scale_factor*20)
 
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Add a new row',
