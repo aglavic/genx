@@ -822,7 +822,7 @@ class ParameterGrid(wx.Panel, Configurable):
         """
         self.grid.EnableEditing(False)
         self.grid.ClearSelection()
-        self.grid.EnableEditing(True)
+        wx.CallAfter(self.grid.EnableEditing, True)
 
     def UpdateConfigValues(self):
         self.SetValueEditorSlider(slider=self.opt.value_slider)
