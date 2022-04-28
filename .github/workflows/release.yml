@@ -107,6 +107,16 @@ jobs:
           genx/dist/*.deb
           genx/dist/*.tar.gz
 
+  build-macos:
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create environment
+      run: |
+        $CONDA/bin/conda env update --file genx\mac_build\conda_build.yml --name base
+        
+
   release:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest

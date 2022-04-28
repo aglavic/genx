@@ -17,7 +17,8 @@ Changes 3.6.9
  * Allow file names with upper case endings (.GX/.HGX)
  * Try to fix some plot drawing issues on some Linux systems with Wayland backend.
  * Open GenX model files on drag&drop to the window (if not above data list)
- * Fix GUI not remembering a model is unchanged after loading from a file.
+ * Fix GUI not remembering a model is unchanged after loading from a file
+ * Fix bug where the parametr grid could be wrong after loading a model while value editor was active
 
 Changes 3.6.8
 =============

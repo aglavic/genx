@@ -915,13 +915,7 @@ class ParameterGrid(wx.Panel, Configurable):
         # wx.PostEvent(self.parent, evt)
 
     def do_toolbar(self):
-        # self.toolbar.SetToolBitmapSize((21,21))
-        # self.toolbar.SetToolSeparation(5)
-        # self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
-        # self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
-        # self.toolbar.SetBackgroundColour('BLUE')
-        dpi_scale_factor = wx.GetApp().dpi_scale_factor
-        tb_bmp_size = int(dpi_scale_factor*20)
+        tb_bmp_size = int(1.4*self.toolbar.GetToolBitmapSize().height)
 
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Add a new row',
