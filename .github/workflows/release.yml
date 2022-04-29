@@ -33,7 +33,7 @@ jobs:
         pyinstaller genx.spec
     - name: Pre-compile numba functions
       run: |
-        cd genx\dist
+        cd genx\dist\genx
         genx.exe --compile-nb
     - name: Download and Install Inno Setup installer
       run: |
