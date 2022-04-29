@@ -449,7 +449,7 @@ def main():
         args.mpi = False
 
     if args.compile_nb:
-        exit(compile_numba())
+        sys.exit(compile_numba())
 
     if args.run or args.mpi or args.pars or args.mod:
         # make sure at least info-messages are shown (default is warning)
