@@ -847,7 +847,7 @@ class DataListControl(wx.Panel):
 
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Datset information',
-                             bitmap=wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, size=(tb_bmp_size, tb_bmp_size)),
+                             bitmap=wx.Bitmap(img.info.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Show the meta data information for the selected dataset')
         self.Bind(wx.EVT_TOOL, self.eh_tb_data_info, id=newid)
 
