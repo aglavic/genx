@@ -353,6 +353,30 @@ def set_bumps_pars(optimiser, args):
         optimiser.opt.use_parallel_processing = True
         optimiser.opt.parallel_processes = args.pr
 
+def compile_numba():
+    try:
+        # perform a compilation of numba functions with console feedback
+        import numba
+
+        real_jit = numba.jit
+
+        class UpdateJit:
+            update_counter = 1
+
+            def __call__(self, *args, **opts):
+                print(f'compiling numba functions {self.update_counter}/21')
+                self.update_counter += 1
+                return real_jit(*args, **opts)
+
+        print('Starting to compile numba functions..')
+        numba.jit = UpdateJit()
+        from .models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
+        numba.jit = real_jit
+    except Exception as e:
+        print('An exception occured when trying to compile the numba functions:')
+        print(e)
+        return 1
+    return 0
 
 def main():
     multiprocessing.freeze_support()
@@ -413,6 +437,8 @@ def main():
     data_group.add_argument('--nb1', dest='numba_single', default=False, action="store_true",
                             help='Compile numba JIT functions without parallel computing support (use one core only). '
                                  'Caching in this case is done in a different user directory.')
+    data_group.add_argument('--compile-nb', dest='compile_nb', default=False, action="store_true",
+                            help='Perform a first-/recompilation of the numba modules and exit')
 
     parser.add_argument('infile', nargs='?', default='',
                         help='The .gx or .hgx file to load or .ort file to use as basis for model')
@@ -421,6 +447,9 @@ def main():
     args = parser.parse_args()
     if not __mpi__:
         args.mpi = False
+
+    if args.compile_nb:
+        exit(compile_numba())
 
     if args.run or args.mpi or args.pars or args.mod:
         # make sure at least info-messages are shown (default is warning)
