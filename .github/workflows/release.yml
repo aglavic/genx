@@ -122,13 +122,11 @@ jobs:
     - name: Create environment
       run: |
         $CONDA/bin/conda env update --file genx/mac_build/conda_build.yml --name base
-        $CONDA/bin/conda activate base
-        python -m pip install bumps==0.9.0 orsopy==0.0.5 pyinstaller==5.0.1 pyinstaller-hooks-contrib==2022.4 pyyaml==6.0
+        $CONDA/bin/python -m pip install bumps==0.9.0 orsopy==0.0.5 pyinstaller==5.0.1 pyinstaller-hooks-contrib==2022.4 pyyaml==6.0
     - name: Build with pyinstaller
       run: |
-        $CONDA/bin/conda activate base
         cd genx
-        pyinstaller genx_mac.spec
+        $CONDA/bin/pyinstaller genx_mac.spec
     - name: Fix library symbolic link issue # see pyinstaller bug #5710
       run: |
         cd genx/dist/genx.app/Contents/MacOS
