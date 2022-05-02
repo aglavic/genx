@@ -133,17 +133,19 @@ jobs:
         rm -f libwx_osx_cocoau_core-3.1.5.0.0.dylib libwx_baseu-3.1.5.0.0.dylib
         ln -s libwx_osx_cocoau_core-3.1.dylib libwx_osx_cocoau_core-3.1.5.0.0.dylib
         ln -s libwx_baseu-3.1.dylib libwx_baseu-3.1.5.0.0.dylib
+        cd ../../..
+        zip -9r genx.app.zip genx.app
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
         name: mac-dist
         path: |
-          genx/dist/genx.app
+          genx/dist/genx.app.zip
 
   release:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs: [build-ubuntu-20, build-windows]
+    needs: [build-ubuntu-20, build-windows, build-macos]
     
     steps:
     - uses: actions/checkout@v2
@@ -153,9 +155,12 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: windows-dist
+    - uses: actions/download-artifact@v2
+      with:
+        name: mac-dist
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe"
+        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe,genx.app.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
 
