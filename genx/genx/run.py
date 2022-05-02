@@ -22,15 +22,6 @@ def start_interactive(args):
     :param args: command line arguments evaluated with argparse.
     '''
     debug('enter start_interactive')
-    if sys.version_info < (3, 9) and sys.platform=='darwin' and not sys.executable.endswith('MacOS/Python'):
-        # restart with pythonw, this should not be necessary for newer python versions
-        debug('detected Mac OS run without pythonw, re-run with correct executable')
-        debug(' '.join(['pythonw', '-m', 'genx.run']+sys.argv[1:]))
-        logger = getLogger()
-        for hi in logger.handlers:
-            hi.flush()
-        os.execvp('pythonw', ['pythonw', '-m', 'genx.run']+sys.argv[1:])
-
     activate_excepthook()
     # Fix blurry text on Windows 10
     import ctypes
