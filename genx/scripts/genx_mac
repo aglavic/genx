@@ -1,0 +1,49 @@
+#!/usr/bin/env pythonw
+import os
+import sys
+
+if getattr(sys, 'frozen', False):
+    src=os.path.abspath(os.path.join(sys._MEIPASS, 'genx_source'))
+    sys.path.insert(0, src)
+    #     print(f"actual genx source dir: {sys.path[0]}")
+    # import importlib.util
+    #     for mod in list(sys.modules.keys()):
+    #         # remove namespace that could be created when trying to import genx and this script is in path
+    #         if mod.startswith('genx'):
+    #             del(sys.modules[mod])
+    #     importlib.invalidate_caches()
+    # spec = importlib.util.spec_from_file_location('genx.models', os.path.join(src, 'genx', 'models', '__init__.py'),
+    #                   submodule_search_locations=[os.path.join(src, 'genx', 'models')])
+    # module = importlib.util.module_from_spec(spec)
+    # sys.modules['genx.models'] = module
+    # spec = importlib.util.spec_from_file_location('genx.plugins', os.path.join(src, 'genx', 'plugins', '__init__.py'),
+    #                                           submodule_search_locations=[os.path.join(src, 'genx', 'plugins')])
+    # module = importlib.util.module_from_spec(spec)
+    # sys.modules['genx.plugins'] = module
+    import genx.plugins
+    import genx.models
+    print(f"plugins {genx.plugins.__file__}, models {genx.models.__file__}")
+    #     spec.loader.exec_module(module)
+    #     spec = importlib.util.spec_from_file_location('genx.run', os.path.join(src, 'genx', 'run.py'))
+    #     module = importlib.util.module_from_spec(spec)
+    #     sys.modules['genx.run'] = module
+    #     spec.loader.exec_module(module)
+    #     import genx
+    #     import genx.run
+    #     print(f"genx imported from {genx.__file__}, run from {genx.run.__file__}")
+
+try:
+    from genx.run import main
+except ImportError:
+    script_path=os.path.split(os.path.abspath(__file__))[0]
+    genx_path=os.path.split(script_path)[0]
+    sys.path.insert(0, genx_path)
+    for mod in list(sys.modules.keys()):
+        # remove namespace that could be created when trying to import genx and this script is in path
+        if mod.startswith('genx'):
+            del(sys.modules[mod])
+finally:
+    from genx.run import main
+
+if __name__ == "__main__":
+    main()
