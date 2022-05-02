@@ -138,7 +138,7 @@ jobs:
       with:
         name: mac-dist
         path: |
-          genx\dist\genx.app
+          genx/dist/genx.app
 
   release:
     if: github.event_name != 'workflow_dispatch'
