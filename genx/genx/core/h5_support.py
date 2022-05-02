@@ -15,7 +15,7 @@ except ImportError:
     def get_args(tp): return getattr(tp, '__args__', ())
 
 
-    def get_origin(tp): return getattr(tp, '__extra__', None)
+    def get_origin(tp): return getattr(tp, '__extra__', None) or getattr(tp, '__origin__', None)
 
 
 class H5Savable(ABC):
