@@ -115,9 +115,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
     - name: Create environment
       run: |
         $CONDA/bin/conda env update --file genx/mac_build/conda_build.yml --name base
+        python -m pip install bumps==0.9.0 orsopy==0.0.5 pyinstaller==5.0.1 pyinstaller-hooks-contrib==2022.4 pyyaml==6.0
     - name: Build with pyinstaller
       run: |
         cd genx

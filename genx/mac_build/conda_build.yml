@@ -87,9 +87,3 @@ dependencies:
   - yaml=0.2.5=haf1e3a3_0
   - zlib=1.2.11=h6c3fc93_1014
   - zstd=1.4.9=h322a384_0
-  - pip:
-    - bumps==0.9.0
-    - orsopy==0.0.5
-    - pyinstaller==5.0.1
-    - pyinstaller-hooks-contrib==2022.4
-    - pyyaml==6.0
