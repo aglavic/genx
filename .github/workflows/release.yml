@@ -34,7 +34,7 @@ jobs:
     - name: Pre-compile numba functions
       run: |
         cd genx\dist\genx
-        genx.exe --compile-nb
+        .\genx.exe --compile-nb
     - name: Download and Install Inno Setup installer
       run: |
         curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-6.1.2.exe
@@ -111,21 +111,21 @@ jobs:
           genx/dist/*.deb
           genx/dist/*.tar.gz
 
-  build-macos:
-    runs-on: macos-10.15
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Create environment
-      run: |
-        $CONDA/bin/conda env update --file genx/mac_build/conda_build.yml --name base
-    - name: Build with pyinstaller
-      run: |
-        cd genx
-        pyinstaller genx_mac.spec
-    - name: Pre-compile numba functions
-      run: |
-        genx/dist/genx.app/Contents/MacOS/genx --compile-nb
+#  build-macos:
+#    runs-on: macos-10.15
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Create environment
+#      run: |
+#        $CONDA/bin/conda env update --file genx/mac_build/conda_build.yml --name base
+#    - name: Build with pyinstaller
+#      run: |
+#        cd genx
+#        pyinstaller genx_mac.spec
+#    - name: Pre-compile numba functions
+#      run: |
+#        genx/dist/genx.app/Contents/MacOS/genx --compile-nb
 
   release:
     if: github.event_name != 'workflow_dispatch'
