@@ -34,7 +34,7 @@ jobs:
     - name: Pre-compile numba functions
       run: |
         cd genx\dist\genx
-        .\genx.exe --compile-nb
+        .\genx.exe --compile-nb -l ..\compile_genx.log
     - name: Download and Install Inno Setup installer
       run: |
         curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-6.1.2.exe
@@ -50,6 +50,7 @@ jobs:
         name: windows-dist
         path: |
           genx\windows_build\Output\GenX-*_win64_setup.exe
+          genx\dist\compile_genx.log
         
   build-ubuntu-20:
     runs-on: ubuntu-20.04
