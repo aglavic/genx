@@ -137,15 +137,14 @@ jobs:
     - name: Package app
       run: |
         cd genx/dist
-        zip -9r --symlinks genx.app.zip genx.app
         create-dmg  --volname "GenX Installer" \
                     --volicon ../mac_build/genx.icns \
                     --background ../mac_build/GenXBkg.png \
                     --window-size 640 480 \
-                    --icon-size 100 \
-                    --icon genx.app 135 295 \
+                    --icon-size 90 \
+                    --icon genx.app 190 340 \
                     --hide-extension genx.app \
-                    --app-drop-link 395 295 \
+                    --app-drop-link 450 335 \
                     "GenX3-Installer.dmg" \
                     genx.app
     - name: Archive distribution
@@ -153,7 +152,7 @@ jobs:
       with:
         name: mac-dist
         path: |
-          genx/dist/genx.app.zip
+          genx/dist/GenX3-Installer.dmg
 
   release:
     if: github.event_name != 'workflow_dispatch'
@@ -173,7 +172,7 @@ jobs:
         name: mac-dist
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe,genx.app.zip"
+        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe,GenX3-Installer.dmg"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
 
