@@ -131,9 +131,13 @@ jobs:
     - name: Fix library symbolic link issue # see pyinstaller bug #5710
       run: |
         cd genx/dist/genx.app/Contents/MacOS
-        rm -f libwx_osx_cocoau_core-3.1.5.0.0.dylib libwx_baseu-3.1.5.0.0.dylib
-        ln -s libwx_osx_cocoau_core-3.1.dylib libwx_osx_cocoau_core-3.1.5.0.0.dylib
-        ln -s libwx_baseu-3.1.dylib libwx_baseu-3.1.5.0.0.dylib
+        rm -f libwx_osx_cocoau_core-3.1.dylib libwx_baseu-3.1.dylib
+        ln -s libwx_osx_cocoau_core-3.1.5.0.0.dylib libwx_osx_cocoau_core-3.1.dylib
+        ln -s libwx_baseu-3.1.5.0.0.dylib libwx_baseu-3.1.dylib
+    - name: Remove any library signatures
+      run: |
+        cd genx/dist
+        codesign --remove-signature genx.app
     - name: Package app
       run: |
         cd genx
