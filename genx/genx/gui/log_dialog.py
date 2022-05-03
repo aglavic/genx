@@ -141,7 +141,9 @@ class LoggingDialog(wx.Dialog):
         self.log_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
         self.log_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
         self.log_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
-        self.log_list.EnsureVisible(self.log_list.GetItemCount()-1)
+        items=self.log_list.GetItemCount()
+        if items>0:
+            self.log_list.EnsureVisible(items-1)
 
     def OnMessage(self, evt):
         self.logged_events.append(evt.record)
