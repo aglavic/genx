@@ -14,6 +14,8 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
 Changes 3.6.9
 =============
+ * First version of MacOS binary distribution
+ * Add new script "genx_mac" to PyPI package to start with framework build (pythonw)
  * Allow file names with upper case endings (.GX/.HGX)
  * Try to fix some plot drawing issues on some Linux systems with Wayland backend.
  * Open GenX model files on drag&drop to the window (if not above data list)
