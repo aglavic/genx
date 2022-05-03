@@ -134,7 +134,7 @@ jobs:
         ln -s libwx_osx_cocoau_core-3.1.dylib libwx_osx_cocoau_core-3.1.5.0.0.dylib
         ln -s libwx_baseu-3.1.dylib libwx_baseu-3.1.5.0.0.dylib
         cd ../../..
-        zip -9r genx.app.zip genx.app
+        zip -9r --symlinks genx.app.zip genx.app
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
