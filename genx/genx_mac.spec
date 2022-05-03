@@ -65,7 +65,8 @@ app = BUNDLE(coll,
                     'CFBundleTypeName': 'GenX Model File',
                     'CFBundleTypeIconFile': 'mac_build/genx.icns',
                      'CFBundleTypeExtensions': ['hgx', 'gx'],
-                    'LSHandlerRank': 'Owner'
+                    'LSHandlerRank': 'Owner',
+                    'CFBundleTypeRole' : 'Editor',
                     }
                 ]
             },
