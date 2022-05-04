@@ -64,6 +64,8 @@ class PlotPanel(wx.Panel, Configurable):
         self.autoscale = self.opt.autoscale
         self.zooming = False
         self.canvas = wxplot.PlotCanvas(self)
+        self.canvas.enableAntiAliasing = True
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.canvas, 1, wx.EXPAND)
         self.SetSizer(sizer)
