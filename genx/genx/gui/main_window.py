@@ -93,6 +93,7 @@ class WindowStartup(conf_mod.BaseConfig):
     section = 'startup'
     show_profiles: bool = True
     widescreen: bool = False
+    wx_plotting: bool = False
 
 
 class GenxMainWindow(wx.Frame, conf_mod.Configurable):
@@ -113,6 +114,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         conf_mod.config.load_default(os.path.join(config_path, 'genx.conf'))
         self.ReadConfig()
         self.wstartup.load_config()
+        if self.wstartup.wx_plotting:
+            global plotpanel
+            from . import plotpanel_wx
+            plotpanel = plotpanel_wx
 
         debug('setup of MainFrame - wx.Frame\n')
         wx.Frame.__init__(self, None, id=wx.ID_ANY, title='GenX '+program_version,

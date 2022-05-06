@@ -77,8 +77,21 @@ class PlotPanel(wx.Panel, Configurable):
     def SetCallbackWindow(self, window):
         self.callback_window = window
 
+    def SetAutoScale(self, do_autoscale):
+        pass
+
     def SetZoom(self, active=False):
         pass
+
+    def ExecuteAutoscale(self):
+        # Allows to overwrite the behavior when autoscale is active
+        self.canvas.xSpec = 'auto'
+        self.canvas.ySpec = 'auto'
+        if not self.opt.autoscale:
+            if self._x_range:
+                self.canvas.xSpec=self._x_range
+            if self._y_range:
+                self.canvas.ySpec=self._y_range
 
     def resetDefaults(self):
         """Just to reset the fonts back to the PlotCanvas defaults"""
@@ -90,13 +103,7 @@ class PlotPanel(wx.Panel, Configurable):
         self.canvas.fontSizeAxis = 10
         self.canvas.fontSizeLegend = 7
         self.canvas.logScale = (False, False)
-        self.canvas.xSpec = 'auto'
-        self.canvas.ySpec = 'auto'
-        if not self.opt.autoscale:
-            if self._x_range:
-                self.canvas.xSpec=self._x_range
-            if self._y_range:
-                self.canvas.ySpec=self._y_range
+        self.ExecuteAutoscale()
 
     def plot_result(self, graph):
         self._to_plot = graph
@@ -107,15 +114,10 @@ class PlotPanel(wx.Panel, Configurable):
             return
         graph = self._to_plot
         self._to_plot = None
+        # update plot configuration
         self.canvas.logScale = (self.opt.x_scale == 'log', self.opt.y_scale == 'log')
-        if self.opt.autoscale:
-            self.canvas.xSpec = 'auto'
-            self.canvas.ySpec = 'auto'
-        else:
-            if self._x_range:
-                self.canvas.xSpec=self._x_range
-            if self._y_range:
-                self.canvas.ySpec=self._y_range
+        self.ExecuteAutoscale()
+        # draw the new graph
         self.canvas.Draw(graph)
         self.Refresh()
 
@@ -263,8 +265,8 @@ class ErrorPanelConfig(BasePlotConfig):
 
 
 class ErrorPlotPanel(PlotPanel):
-    ''' Class for plotting evolution of the error as a function of the
-        generations.
+    '''
+    Class for plotting evolution of the error as a function of the generations.
     '''
 
     def __init__(self, parent, id=-1, color=None, dpi=None
@@ -290,7 +292,7 @@ class ErrorPlotPanel(PlotPanel):
 
     @skips_event
     def OnSolverPlotEvent(self, event):
-        ''' OnSolverPlotEvent(self,event) --> None
+        '''
         Event handler function to connect to solver update events i.e.
         update the plot with the simulation
         '''
@@ -303,23 +305,24 @@ class ParsPanelConfig(BasePlotConfig):
 
 
 class ParsPlotPanel(PlotPanel):
-    ''' ParsPlotPanel
-
+    '''
     Class to plot the diffrent parametervalus during a fit.
     '''
 
     def __init__(self, parent, id=-1, color=None, dpi=None
                  , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
+        self.auto_x_range = (-0.5, 1.5)
+        self.auto_y_range = (0., 1.)
         PlotPanel.__init__(self, parent, id, color, dpi, ParsPanelConfig, style, **kwargs)
         self.update = self.Plot
         self.update(None)
 
     def Plot(self, data):
-        ''' Plots each variable and its max and min value in the
-        population.
+        '''
+        Plots each variable and its max and min value in the population.
         '''
         if data is None or not data.fitting:
-            pars = np.arange(1,11,1)
+            pars = np.arange(10)
             pdata = np.vstack([pars, pars*0.01+0.4]).T
             pop_min = pdata[:, 1]-0.05
             pop_max = pdata[:, 1]+0.05
@@ -346,19 +349,107 @@ class ParsPlotPanel(PlotPanel):
             points1 = [(xi, mini), (xi, maxi)]
             bars.append(wxplot.PolyLine(points1, colour='blue', width=25))
 
-        self.opt.autoscale = False
-        self._x_range = (-0.5, pars[-1]+0.5)
-        self._y_range = (0., 1.)
+        self.auto_x_range = (-0.5, pars[-1]+0.5)
+        self.auto_y_range = (0., 1.)
         self.plot_result(wxplot.PlotGraphics(bars+[points], "",
                                              xLabel='Parameter Index (only fittable)',
                                              yLabel='Relative value in min/max range'))
 
+    def ExecuteAutoscale(self):
+        # Allows to overwrite the behavior when autoscale is active
+        self.canvas.xSpec = self.auto_x_range
+        self.canvas.ySpec = self.auto_y_range
+        if not self.opt.autoscale:
+            if self._x_range:
+                self.canvas.xSpec=self._x_range
+            if self._y_range:
+                self.canvas.ySpec=self._y_range
+
     @skips_event
     def OnSolverParameterEvent(self, event):
-        ''' OnSolverParameterEvent(self,event) --> None
+        '''
         Event handler function to connect to solver update events i.e.
         update the plot during the fitting
         '''
         self.update(event)
-        # Do not forget - pass the event on
 
+
+class FomPanelConfig(BasePlotConfig):
+    section = 'fom scan plot'
+
+
+class FomScanPlotPanel(PlotPanel):
+    '''
+    Class to take care of fom scans.
+    '''
+
+    def __init__(self, parent, id=-1, color=None, dpi=None
+                 , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
+        self.type = 'project'
+        PlotPanel.__init__(self, parent, id, color, dpi, FomPanelConfig, style, **kwargs)
+        self.update = self.Plot
+        self.update(None)
+
+    def SetPlottype(self, type):
+        '''SetScantype(self, type) --> None
+
+        Sets the type of the scan type = "project" or "scan"
+        '''
+        if type.lower()=='project':
+            self.type = 'project'
+            self.opt.autoscale = False
+        elif type.lower()=='scan':
+            self.type = 'scan'
+            self.opt.autoscale = True
+
+    def Plot(self, data, l1='Parameter', l2='FOM'):
+        '''
+        Plots each variable and its max and min value in the population.
+        '''
+        if data is None:
+            return self.plot_result(wxplot.PlotGraphics([wxplot.PolyLine([(-1, 0.1), (1, 0.1)])], "", xLabel=l1, yLabel=l2))
+        x, y, bestx, besty, e_scale = data[:5]
+        if self.type.lower()=='project':
+            pdata = np.vstack([x,y]).T
+            points = wxplot.PolyMarker(pdata,
+                                       colour='blue',
+                                       fillcolour='blue',
+                                       marker='circle',
+                                       width=2.0,
+                                       size=1.5,
+                                       fillstyle=wx.BRUSHSTYLE_SOLID,
+                                       )
+            bpoint = wxplot.PolyMarker([(bestx, besty)],
+                                       colour='red',
+                                       fillcolour='red',
+                                       marker='circle',
+                                       width=2.0,
+                                       size=1.5,
+                                       fillstyle=wx.BRUSHSTYLE_SOLID,
+                                       )
+            line = wxplot.PolyLine([(x.min(), besty*e_scale), (x.max(), besty*e_scale)], colour='red', width=1)
+            items = [points, line, bpoint]
+
+            self._x_range = (x.min(), x.max())
+            self._y_range = (min(y.min(), besty)*0.95, (besty*e_scale-min(y.min(), besty))*2.0+min(y.min(), besty))
+        elif self.type.lower()=='scan':
+            pdata = np.vstack([x,y]).T
+            points = wxplot.PolyLine(pdata, colour='blue', width=1)
+            bpoint = wxplot.PolyMarker([(bestx, besty)],
+                                       colour='red',
+                                       fillcolour='red',
+                                       marker='circle',
+                                       width=2.0,
+                                       size=1.5,
+                                       fillstyle=wx.BRUSHSTYLE_SOLID,
+                                       )
+            line = wxplot.PolyLine([(x.min(), besty*e_scale), (x.max(), besty*e_scale)], colour='red', width=1)
+            items = [points, line, bpoint]
+
+            self._x_range = (x.min(), x.max())
+            self._y_range = (min(y.min(), besty)*0.95, y.max()*1.05)
+
+        self.ax.set_xlabel(l1)
+        self.ax.set_ylabel(l2)
+
+        self.plot_result(wxplot.PlotGraphics(items, "", xLabel=l1, yLabel=l2))
