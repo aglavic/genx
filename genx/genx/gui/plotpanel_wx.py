@@ -3,6 +3,7 @@ Native WX replacement for the matplotlib plot panel.
 """
 import wx
 import numpy as np
+import threading
 from dataclasses import dataclass
 from typing import Type
 from logging import debug, getLogger, ERROR
@@ -105,9 +106,12 @@ class PlotPanel(wx.Panel, Configurable):
         self.canvas.logScale = (False, False)
         self.ExecuteAutoscale()
 
-    def plot_result(self, graph):
+    def plot_result(self, graph, delayed=False):
         self._to_plot = graph
-        wx.CallLater(10, self.do_plot_result)
+        if threading.main_thread() and not delayed:
+            self.do_plot_result()
+        else:
+            wx.CallLater(10, self.do_plot_result)
 
     def do_plot_result(self):
         if self._to_plot is None:
@@ -225,14 +229,15 @@ class DataPlotPanel(PlotPanel):
     def plot_data_fit(self, data: DataList, xlabel=None, ylabel=None):
         return self.plot_data_sim(data, xlabel, ylabel)
 
-    def plot_data_sim(self, data:DataList, xlabel=None, ylabel=None):
+    def plot_data_sim(self, data:DataList, xlabel=None, ylabel=None, delayed=False):
         if xlabel is not None:
             self._last_xlabel = xlabel
         if ylabel is not None:
             self._last_ylabel = ylabel
         ax1_lines = self.get_data_plots(data)+self.get_sim_lines(data)
         ax2_lines = []
-        self.plot_result(wxplot.PlotGraphics(ax1_lines, "", xLabel=self._last_xlabel, yLabel=self._last_ylabel))
+        self.plot_result(wxplot.PlotGraphics(ax1_lines, "", xLabel=self._last_xlabel, yLabel=self._last_ylabel),
+                         delayed=delayed)
 
     @skips_event
     def OnDataListEvent(self, event):
@@ -257,7 +262,7 @@ class DataPlotPanel(PlotPanel):
     @skips_event
     def OnSolverPlotEvent(self, event):
         if event.update_fit:
-            self.plot_data_sim(event.data)
+            self.plot_data_sim(event.data, delayed=True)
 
 
 class ErrorPanelConfig(BasePlotConfig):
@@ -288,7 +293,7 @@ class ErrorPlotPanel(PlotPanel):
                                style=wx.PENSTYLE_SOLID,
                                drawstyle='line',
                                )
-        self.plot_result(wxplot.PlotGraphics([item], "", xLabel='Iteration', yLabel='FOM'))
+        self.plot_result(wxplot.PlotGraphics([item], "", xLabel='Iteration', yLabel='FOM'), delayed=True)
 
     @skips_event
     def OnSolverPlotEvent(self, event):
@@ -353,7 +358,8 @@ class ParsPlotPanel(PlotPanel):
         self.auto_y_range = (0., 1.)
         self.plot_result(wxplot.PlotGraphics(bars+[points], "",
                                              xLabel='Parameter Index (only fittable)',
-                                             yLabel='Relative value in min/max range'))
+                                             yLabel='Relative value in min/max range'),
+                         delayed=True)
 
     def ExecuteAutoscale(self):
         # Allows to overwrite the behavior when autoscale is active
@@ -448,8 +454,5 @@ class FomScanPlotPanel(PlotPanel):
 
             self._x_range = (x.min(), x.max())
             self._y_range = (min(y.min(), besty)*0.95, y.max()*1.05)
-
-        self.ax.set_xlabel(l1)
-        self.ax.set_ylabel(l2)
 
         self.plot_result(wxplot.PlotGraphics(items, "", xLabel=l1, yLabel=l2))
