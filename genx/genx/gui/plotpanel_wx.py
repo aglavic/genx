@@ -70,6 +70,8 @@ class PlotPanel(wx.Panel, Configurable):
         self.SetSizer(sizer)
         self.OnPlotDraw(None)
 
+        self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseScroll)
+
     def OnPlotDraw(self, event):
         """ Sin, Cos, and Points """
         self.resetDefaults()
@@ -85,14 +87,21 @@ class PlotPanel(wx.Panel, Configurable):
         pass
 
     def ExecuteAutoscale(self):
+        self.canvas.logScale = (self.opt.x_scale == 'log', self.opt.y_scale == 'log')
         # Allows to overwrite the behavior when autoscale is active
         self.canvas.xSpec = 'auto'
         self.canvas.ySpec = 'auto'
         if not self.opt.autoscale:
             if self._x_range:
-                self.canvas.xSpec=self._x_range
+                if self.canvas.logScale[0]:
+                    self.canvas.xSpec=map(np.log10, self._x_range)
+                else:
+                    self.canvas.xSpec=self._x_range
             if self._y_range:
-                self.canvas.ySpec=self._y_range
+                if self.canvas.logScale[1]:
+                    self.canvas.ySpec=tuple(map(np.log10, self._y_range))
+                else:
+                    self.canvas.ySpec=self._y_range
 
     def resetDefaults(self):
         """Just to reset the fonts back to the PlotCanvas defaults"""
@@ -103,7 +112,6 @@ class PlotPanel(wx.Panel, Configurable):
                             )
         self.canvas.fontSizeAxis = 10
         self.canvas.fontSizeLegend = 7
-        self.canvas.logScale = (False, False)
         self.ExecuteAutoscale()
 
     def plot_result(self, graph, delayed=False):
@@ -116,13 +124,15 @@ class PlotPanel(wx.Panel, Configurable):
     def do_plot_result(self):
         if self._to_plot is None:
             return
-        graph = self._to_plot
+        self._last_graph = self._to_plot
         self._to_plot = None
+        self.do_replot()
+
+    def do_replot(self):
         # update plot configuration
-        self.canvas.logScale = (self.opt.x_scale == 'log', self.opt.y_scale == 'log')
         self.ExecuteAutoscale()
         # draw the new graph
-        self.canvas.Draw(graph)
+        self.canvas.Draw(self._last_graph)
         self.Refresh()
 
     def update(self, data=None):
@@ -131,6 +141,62 @@ class PlotPanel(wx.Panel, Configurable):
     def get_colour(self, float_colors):
         int_colors=[int(ci*255) for ci in float_colors]
         return wx.Colour(*int_colors)
+
+    def OnMouseScroll(self, event: wx.MouseEvent):
+        if event.GetWheelAxis()==wx.MOUSE_WHEEL_HORIZONTAL:
+            event.Skip()
+            return
+        self.opt.autoscale=False
+        rot = event.GetWheelRotation()/120.
+        if event.ControlDown():
+            rot *= 0.1
+        if event.AltDown():
+            # horizontal scaling
+            if self._x_range:
+                xmin, xmax = self._x_range
+            else:
+                xmin, xmax = self.canvas.xCurrentRange
+            xrange = xmax-xmin
+            if event.ShiftDown():
+                if self.opt.x_scale=='log':
+                    if rot>0:
+                        self._x_range=(xmin*(1+2.33333*rot), xmax)
+                    else:
+                        self._x_range=(xmin/(1-2.33333*rot), xmax)
+                else:
+                    self._x_range=(xmin+xrange*0.2*rot, xmax)
+            else:
+                if self.opt.x_scale=='log':
+                    if rot>0:
+                        self._x_range=(xmin, xmax*(1+2.33333*rot))
+                    else:
+                        self._x_range=(xmin, xmax/(1-2.33333*rot))
+                else:
+                    self._x_range=(xmin, xmax+xrange*0.2*rot)
+        else:
+            # vertical scaling
+            if self._y_range:
+                ymin, ymax = self._y_range
+            else:
+                ymin, ymax = self.canvas.yCurrentRange
+            yrange = ymax-ymin
+            if event.ShiftDown():
+                if self.opt.y_scale=='log':
+                    if rot>0:
+                        self._y_range=(ymin*(1+2.33333*rot), ymax)
+                    else:
+                        self._y_range=(ymin/(1-2.33333*rot), ymax)
+                else:
+                    self._y_range=(ymin+yrange*0.2*rot, ymax)
+            else:
+                if self.opt.y_scale=='log':
+                    if rot>0:
+                        self._y_range=(ymin, ymax*(1+2.33333*rot))
+                    else:
+                        self._y_range=(ymin, ymax/(1-2.33333*rot))
+                else:
+                    self._y_range=(ymin, ymax+yrange*0.2*rot)
+        self.do_replot()
 
 class DataPanelConfig(BasePlotConfig):
     section = 'data plot'
