@@ -8,6 +8,7 @@ from glob import glob
 genx_modules = [si[:-3].replace('/', '.') for si in glob('genx/plugins/*/*.py')]
 genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/plugins/*/help_modules/*.py')]
 genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/models/*.py')]
+genx_modules += ['genx.gui.plotpanel', 'genx.gui.plotpanel_wx']
 
 a = Analysis(['scripts/genx_mac'],
              pathex=[os.path.abspath(os.path.curdir)],

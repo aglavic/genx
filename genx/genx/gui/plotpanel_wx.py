@@ -147,8 +147,8 @@ class DataPlotPanel(PlotPanel):
         self.sub_ax_rect = (0.125, 0.1, 0.8, 0.18)
         PlotPanel.__init__(self, parent, id, color, dpi, DataPanelConfig, style, **kwargs)
         self.update = self.plot_data
-        self._last_xlabel = ''
-        self._last_ylabel = ''
+        self._last_xlabel = 'x'
+        self._last_ylabel = 'y'
 
     def get_data_plots(self, data:DataList):
         lines = []
@@ -219,9 +219,9 @@ class DataPlotPanel(PlotPanel):
 
     def plot_data(self, data: DataList, xlabel=None, ylabel=None):
         if xlabel is not None:
-            self._last_xlabel = xlabel
+            self._last_xlabel = xlabel.replace('$^{-1}$', '⁻¹')
         if ylabel is not None:
-            self._last_ylabel = ylabel
+            self._last_ylabel = ylabel.replace('$^{-1}$', '⁻¹')
         ax1_lines = self.get_data_plots(data)
         ax2_lines = []
         self.plot_result(wxplot.PlotGraphics(ax1_lines, "", xLabel=self._last_xlabel, yLabel=self._last_ylabel))
@@ -231,9 +231,9 @@ class DataPlotPanel(PlotPanel):
 
     def plot_data_sim(self, data:DataList, xlabel=None, ylabel=None, delayed=False):
         if xlabel is not None:
-            self._last_xlabel = xlabel
+            self._last_xlabel = xlabel.replace('$^{-1}$', '⁻¹')
         if ylabel is not None:
-            self._last_ylabel = ylabel
+            self._last_ylabel = ylabel.replace('$^{-1}$', '⁻¹')
         ax1_lines = self.get_data_plots(data)+self.get_sim_lines(data)
         ax2_lines = []
         self.plot_result(wxplot.PlotGraphics(ax1_lines, "", xLabel=self._last_xlabel, yLabel=self._last_ylabel),

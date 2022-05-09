@@ -31,7 +31,7 @@ from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
 from genx.gui.custom_events import EVT_UPDATE_SCRIPT, skips_event
-from ...gui.custom_ids import MenuId
+from ...gui import custom_ids
 
 
 _set_func_prefix = 'set'
@@ -1276,7 +1276,7 @@ class Plugin(framework.Template):
                                             wx.ITEM_CHECK)
         menu.Append(self.mb_show_imag_sld)
         self.mb_show_imag_sld.Check(self.sld_plot.opt.show_imag)
-        self.mb_autoupdate_sim = parent.mb_checkables[MenuId.AUTO_SIM]
+        self.mb_autoupdate_sim = parent.mb_checkables[custom_ids.MenuId.AUTO_SIM]
         self.mb_autoupdate_sim.Check(True)
         self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(),
                                              "Autoupdate SLD",
