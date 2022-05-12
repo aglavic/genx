@@ -106,6 +106,12 @@ class PlotPanel(wx.Panel, Configurable):
     def GetZoom(self):
         return self.opt.zoom
 
+    def GetYScale(self):
+        return self.opt.y_scale
+
+    def GetXScale(self):
+        return self.opt.x_scale
+
     def UpdateConfigValues(self):
         self.SetZoom(self.opt.zoom)
         self.SetAutoScale(self.opt.autoscale)
@@ -312,7 +318,23 @@ class PlotPanel(wx.Panel, Configurable):
         menu.Append(copyID, "Copy")
 
         def copy(event):
-            pass # self.CopyToClipboard()
+            context = wx.ClientDC(self.canvas.canvas)
+            memory = wx.MemoryDC()
+            x, y = self.canvas.canvas.ClientSize
+            bitmap = wx.Bitmap(x, y, -1)
+            memory.SelectObject(bitmap)
+            memory.Blit(0, 0, x, y, context, 0, 0)
+            memory.SelectObject(wx.NullBitmap)
+            bmp_obj = wx.BitmapDataObject()
+            bmp_obj.SetBitmap(bitmap)
+
+            if not wx.TheClipboard.IsOpened():
+                open_success = wx.TheClipboard.Open()
+                if open_success:
+                    wx.TheClipboard.SetData(bmp_obj)
+                    wx.TheClipboard.Close()
+                    wx.TheClipboard.Flush()
+
 
         menu.AppendSeparator()
 
