@@ -14,7 +14,7 @@ M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 
 Changes 3.6.10
 ==============
- * Implementg a tech-preview using alternative plotting backend with improved performance
+ * Implement a tech-preview using alternative plotting backend with improved performance
    (selected in Settings -> Startup Profile... menu.)
  * Automatically restart the window when switching from legacy to widescreen layout.
 

@@ -256,10 +256,15 @@ class PlotPanel(wx.Panel, Configurable):
             dlst = self.canvas.GetClosestPoint((px, py), pointScaled=True)
             if dlst != []:
                 curveNum, legend, pIndex, pointXY, scaledXY, distance = dlst
+                px, py = pointXY
+                if self.canvas.logScale[0]:
+                    px = 10**px
+                if self.canvas.logScale[1]:
+                    py = 10**py
                 mDataDict = {"curveNum": curveNum,
                              "legend": legend,
                              "pIndex": pIndex,
-                             "pointXY": pointXY,
+                             "pointXY": (px, py),
                              "scaledXY": scaledXY}
                 self.canvas.UpdatePointLabel(mDataDict)
         event.Skip()
