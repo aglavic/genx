@@ -56,6 +56,8 @@ class PlotPanel(wx.Panel, Configurable):
         if dpi is None:
             dpi = wx.GetApp().dpi_scale_factor*96.  # wx.GetDisplayPPI()[0]
         self.parent = parent
+        self._last_graph = None
+        self._initial_scale = True
 
         # Flags and bindings for zooming
         self.opt.load_config()
@@ -69,8 +71,12 @@ class PlotPanel(wx.Panel, Configurable):
         sizer.Add(self.canvas, 1, wx.EXPAND)
         self.SetSizer(sizer)
         self.OnPlotDraw(None)
+        self.canvas.pointLabelFunc = self.DrawPointLabel
 
         self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseScroll)
+        self.canvas.canvas.Bind(wx.EVT_MOTION, self.OnMouseMove)
+        self.canvas.canvas.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        self.canvas.enablePointLabel=True
 
     def OnPlotDraw(self, event):
         """ Sin, Cos, and Points """
@@ -81,27 +87,62 @@ class PlotPanel(wx.Panel, Configurable):
         self.callback_window = window
 
     def SetAutoScale(self, do_autoscale):
-        pass
+        self.opt.autoscale = do_autoscale
+        if self._last_graph:
+            self.do_replot()
+
+    def GetAutoScale(self):
+        return self.opt.autoscale
 
     def SetZoom(self, active=False):
-        pass
+        self.opt.zoom = active
+        if active:
+            self.canvas.enableZoom = True
+            self.canvas.enablePointLabel = False
+        else:
+            self.canvas.enableZoom = False
+            self.canvas.enablePointLabel = True
+
+    def GetZoom(self):
+        return self.opt.zoom
+
+    def UpdateConfigValues(self):
+        self.SetZoom(self.opt.zoom)
+        self.SetAutoScale(self.opt.autoscale)
+
+    def ReadConfig(self):
+        self._initial_scale = True
+        super().ReadConfig()
 
     def ExecuteAutoscale(self):
+        if not self.opt.autoscale and not self._initial_scale and self.opt.zoom:
+            try:
+                self._x_range = tuple(self.canvas.xCurrentRange)
+            except Exception as e:
+                pass
+            try:
+                self._y_range = tuple(self.canvas.yCurrentRange)
+            except Exception:
+                pass
+        elif self.opt.autoscale or self._initial_scale:
+            self._x_range = None
+            self._y_range = None
+            self._initial_scale = False
         self.canvas.logScale = (self.opt.x_scale == 'log', self.opt.y_scale == 'log')
-        # Allows to overwrite the behavior when autoscale is active
-        self.canvas.xSpec = 'auto'
-        self.canvas.ySpec = 'auto'
-        if not self.opt.autoscale:
-            if self._x_range:
-                if self.canvas.logScale[0]:
-                    self.canvas.xSpec=map(np.log10, self._x_range)
-                else:
-                    self.canvas.xSpec=self._x_range
-            if self._y_range:
-                if self.canvas.logScale[1]:
-                    self.canvas.ySpec=tuple(map(np.log10, self._y_range))
-                else:
-                    self.canvas.ySpec=self._y_range
+        if self._x_range:
+            if self.canvas.logScale[0]:
+                self.canvas.xSpec=map(np.log10, self._x_range)
+            else:
+                self.canvas.xSpec=self._x_range
+        else:
+            self.canvas.xSpec = 'auto'
+        if self._y_range:
+            if self.canvas.logScale[1]:
+                self.canvas.ySpec=tuple(map(np.log10, self._y_range))
+            else:
+                self.canvas.ySpec=self._y_range
+        else:
+            self.canvas.ySpec = 'auto'
 
     def resetDefaults(self):
         """Just to reset the fonts back to the PlotCanvas defaults"""
@@ -129,9 +170,7 @@ class PlotPanel(wx.Panel, Configurable):
         self.do_replot()
 
     def do_replot(self):
-        # update plot configuration
         self.ExecuteAutoscale()
-        # draw the new graph
         self.canvas.Draw(self._last_graph)
         self.Refresh()
 
@@ -146,7 +185,6 @@ class PlotPanel(wx.Panel, Configurable):
         if event.GetWheelAxis()==wx.MOUSE_WHEEL_HORIZONTAL:
             event.Skip()
             return
-        self.opt.autoscale=False
         rot = event.GetWheelRotation()/120.
         if event.ControlDown():
             rot *= 0.1
@@ -196,7 +234,140 @@ class PlotPanel(wx.Panel, Configurable):
                         self._y_range=(ymin, ymax/(1-2.33333*rot))
                 else:
                     self._y_range=(ymin, ymax+yrange*0.2*rot)
+        self.opt.autoscale = False
+        tmp = self.opt.zoom
+        self.opt.zoom = False
         self.do_replot()
+        self.opt.zoom = tmp
+
+    def OnMouseMove(self, event: wx.MouseEvent):
+        if self.canvas.enablePointLabel:
+            px, py = self.canvas.GetXY(event)
+            if self.canvas.logScale[0]:
+                px = np.log10(px)
+            if self.canvas.logScale[1]:
+                py = np.log10(py)
+            dlst = self.canvas.GetClosestPoint((px, py), pointScaled=True)
+            if dlst != []:
+                curveNum, legend, pIndex, pointXY, scaledXY, distance = dlst
+                mDataDict = {"curveNum": curveNum,
+                             "legend": legend,
+                             "pIndex": pIndex,
+                             "pointXY": pointXY,
+                             "scaledXY": scaledXY}
+                self.canvas.UpdatePointLabel(mDataDict)
+        event.Skip()
+
+    def DrawPointLabel(self, dc, mDataDict):
+        xmin, xmax = self.canvas.xCurrentRange
+        ymin, ymax = self.canvas.yCurrentRange
+
+        if self.canvas.logScale[0]:
+            xmax = np.log10(xmax)
+        if self.canvas.logScale[1]:
+            ymax = np.log10(ymax)
+        right, top = self.canvas.PositionUserToScreen((xmax, ymax))
+
+        dc.SetPen(wx.Pen(wx.BLACK))
+        dc.SetBrush(wx.Brush(wx.BLACK, wx.BRUSHSTYLE_SOLID))
+
+        sx, sy = mDataDict["scaledXY"]  # scaled x,y of closest point
+        # 10by10 square centered on point
+        dc.DrawRectangle(sx - 5, sy - 5, 10, 10)
+        px, py = mDataDict["pointXY"]
+        cNum = mDataDict["curveNum"]
+        pntIn = mDataDict["pIndex"]
+        legend = mDataDict["legend"]
+        # make a string to display
+        txt=f"x={px:.6g}\ny={py:.6g}"
+        txt_width = max([dc.GetTextExtent(ti)[0] for ti in txt.splitlines()])
+        dc.DrawText(txt, int(right)-10-txt_width, int(top)+10)
+
+    def OnContextMenu(self, event):
+        menu = self.generate_context_menu()
+        self.PopupMenu(menu)
+        self.Unbind(wx.EVT_MENU)
+        menu.Destroy()
+
+    def generate_context_menu(self):
+        menu = wx.Menu()
+        zoomID = wx.NewId()
+        menu.AppendCheckItem(zoomID, "Zoom")
+        menu.Check(zoomID, self.GetZoom())
+
+        def OnZoom(event):
+            self.SetZoom(not self.GetZoom())
+
+        self.Bind(wx.EVT_MENU, OnZoom, id=zoomID)
+        zoomallID = wx.NewId()
+        menu.Append(zoomallID, 'Zoom All')
+
+        def zoomall(event):
+            tmp = self.opt.autoscale
+            self.SetAutoScale(True)
+            self.opt.autoscale = tmp
+
+        self.Bind(wx.EVT_MENU, zoomall, id=zoomallID)
+        copyID = wx.NewId()
+        menu.Append(copyID, "Copy")
+
+        def copy(event):
+            pass # self.CopyToClipboard()
+
+        menu.AppendSeparator()
+
+        self.Bind(wx.EVT_MENU, copy, id=copyID)
+        yscalemenu = wx.Menu()
+        logID = wx.NewId()
+        linID = wx.NewId()
+        yscalemenu.AppendRadioItem(logID, "log")
+        yscalemenu.AppendRadioItem(linID, "linear")
+        menu.Append(-1, "y-scale", yscalemenu)
+        if self.opt.y_scale=='log':
+            yscalemenu.Check(logID, True)
+        else:
+            yscalemenu.Check(linID, True)
+
+        def yscale_log(event):
+            self.opt.y_scale = 'log'
+            self.do_replot()
+
+        def yscale_lin(event):
+            self.opt.y_scale = 'linear'
+            self.do_replot()
+
+        self.Bind(wx.EVT_MENU, yscale_log, id=logID)
+        self.Bind(wx.EVT_MENU, yscale_lin, id=linID)
+        xscalemenu = wx.Menu()
+        logID = wx.NewId()
+        linID = wx.NewId()
+        xscalemenu.AppendRadioItem(logID, "log")
+        xscalemenu.AppendRadioItem(linID, "linear")
+        menu.Append(-1, "x-scale", xscalemenu)
+        if self.opt.x_scale=='log':
+            xscalemenu.Check(logID, True)
+        else:
+            xscalemenu.Check(linID, True)
+
+        def xscale_log(event):
+            self.opt.x_scale = 'log'
+            self.do_replot()
+
+        def xscale_lin(event):
+            self.opt.x_scale = 'linear'
+            self.do_replot()
+
+        self.Bind(wx.EVT_MENU, xscale_log, id=logID)
+        self.Bind(wx.EVT_MENU, xscale_lin, id=linID)
+        autoscaleID = wx.NewId()
+        menu.AppendCheckItem(autoscaleID, "Autoscale")
+        menu.Check(autoscaleID, self.GetAutoScale())
+
+        def OnAutoScale(event):
+            self.SetAutoScale(not self.GetAutoScale())
+
+        self.Bind(wx.EVT_MENU, OnAutoScale, id=autoscaleID)
+        return menu
 
 class DataPanelConfig(BasePlotConfig):
     section = 'data plot'
@@ -212,9 +383,55 @@ class DataPlotPanel(PlotPanel):
         self.main_ax_rect = (0.125, 0.3, 0.8, 0.6)
         self.sub_ax_rect = (0.125, 0.1, 0.8, 0.18)
         PlotPanel.__init__(self, parent, id, color, dpi, DataPanelConfig, style, **kwargs)
+        sizer = self.GetSizer()
+        sizer.GetItem(0).SetProportion(3)
+
+        self.canvas_fom = wxplot.PlotCanvas(self)
+        self.canvas_fom.enableAntiAliasing = True
+        sizer.Add(self.canvas_fom, 1, wx.EXPAND)
+
         self.update = self.plot_data
         self._last_xlabel = 'x'
         self._last_ylabel = 'y'
+        self.resetDefaultsFOM()
+
+    def resetDefaultsFOM(self):
+        self.canvas_fom.SetFont(wx.Font(10,
+                                    wx.FONTFAMILY_SWISS,
+                                    wx.FONTSTYLE_NORMAL,
+                                    wx.FONTWEIGHT_NORMAL)
+                            )
+        self.canvas_fom.fontSizeAxis = 10
+        self.canvas_fom.fontSizeLegend = 7
+        self.canvas_fom.enableAxesValues = (False, True)
+
+    def ExecuteAutoscale(self):
+        if getattr(self, 'canvas_fom', None):
+            self.canvas_fom.logScale = (self.canvas.logScale[0], False)
+            self.canvas_fom.xSpec = tuple(self.canvas.xCurrentRange)
+            self.canvas_fom.ySpec = 'auto'
+            if not self.opt.autoscale and self._x_range and self.canvas.logScale[0]:
+                        self.canvas.xSpec=map(np.log10, self.canvas.xCurrentRange)
+
+    def plot_result(self, graph, fom_graph, delayed=False):
+        self._to_fom = fom_graph
+        super().plot_result(graph, delayed=delayed)
+
+    def do_plot_result(self):
+        if self._to_plot is None:
+            return
+        self._last_graph = (self._to_plot, self._to_fom)
+        self._to_plot = None
+        self._to_fom = None
+        self.do_replot()
+
+    def do_replot(self):
+        super().ExecuteAutoscale()
+        self.canvas.Draw(self._last_graph[0])
+        if self._last_graph[1]:
+            self.ExecuteAutoscale()
+            self.canvas_fom.Draw(self._last_graph[1])
+        self.Refresh()
 
     def get_data_plots(self, data:DataList):
         lines = []
@@ -283,14 +500,41 @@ class DataPlotPanel(PlotPanel):
                 lines.append(item)
         return lines
 
+    def get_fom_lines(self, data:DataList):
+        lines = []
+        p_datasets = [data_set for data_set in data if data_set.show]
+
+        for data_set in p_datasets:
+            data1 = np.vstack([data_set.x, np.nan_to_num(data_set.y_fom)]).T
+            if data_set.sim_linetype!='':
+                item = wxplot.PolyLine(data1,
+                            colour=self.get_colour(data_set.sim_color),
+                            width=data_set.sim_linethickness,
+                            style=LINE_STYLES[data_set.sim_linetype],
+                            drawstyle='line',
+                            )
+                lines.append(item)
+            if data_set.sim_symbol!='':
+                item = wxplot.PolyMarker(data1,
+                                       colour=self.get_colour(data_set.sim_color),
+                                       fillcolour=self.get_colour(data_set.sim_color),
+                                       marker=MARKER_STYLES[data_set.sim_symbol],
+                                       width=data_set.sim_linethickness,
+                                       size=data_set.sim_symbolsize*0.2,
+                                       fillstyle=wx.BRUSHSTYLE_SOLID,
+                                       )
+
+                lines.append(item)
+        return lines
+
     def plot_data(self, data: DataList, xlabel=None, ylabel=None):
         if xlabel is not None:
             self._last_xlabel = xlabel.replace('$^{-1}$', '⁻¹')
         if ylabel is not None:
             self._last_ylabel = ylabel.replace('$^{-1}$', '⁻¹')
         ax1_lines = self.get_data_plots(data)
-        ax2_lines = []
-        self.plot_result(wxplot.PlotGraphics(ax1_lines, "", xLabel=self._last_xlabel, yLabel=self._last_ylabel))
+        self.plot_result(wxplot.PlotGraphics(ax1_lines, "", xLabel=self._last_xlabel, yLabel=self._last_ylabel),
+                         None)
 
     def plot_data_fit(self, data: DataList, xlabel=None, ylabel=None):
         return self.plot_data_sim(data, xlabel, ylabel)
@@ -301,8 +545,9 @@ class DataPlotPanel(PlotPanel):
         if ylabel is not None:
             self._last_ylabel = ylabel.replace('$^{-1}$', '⁻¹')
         ax1_lines = self.get_data_plots(data)+self.get_sim_lines(data)
-        ax2_lines = []
+        ax2_lines = self.get_fom_lines(data)
         self.plot_result(wxplot.PlotGraphics(ax1_lines, "", xLabel=self._last_xlabel, yLabel=self._last_ylabel),
+                         wxplot.PlotGraphics(ax2_lines, "", xLabel="", yLabel="FOM"),
                          delayed=delayed)
 
     @skips_event
