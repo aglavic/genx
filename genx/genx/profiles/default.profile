@@ -41,7 +41,7 @@ set func = set
 loaded plugins = SimpleReflectivity;SimpleLayer
 
 [data plot]
-zoom = True
+zoom = False
 autoscale = True
 y scale = log
 x scale = lin
@@ -63,6 +63,16 @@ zoom = False
 autoscale = True
 y scale = lin
 x scale = lin
+
+[sample plot]
+zoom = False
+autoscale = True
+y scale = lin
+x scale = lin
+data derived color = False
+show single model = False
+legend outside = False
+show imag = False
 
 [startup]
 show profiles = True

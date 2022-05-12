@@ -12,6 +12,12 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.10
+==============
+ * Implementg a tech-preview using alternative plotting backend with improved performance
+   (selected in Settings -> Startup Profile... menu.)
+ * Automatically restart the window when switching from legacy to widescreen layout.
+
 Changes 3.6.9
 =============
  * First version of MacOS binary distribution

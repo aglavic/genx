@@ -775,7 +775,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                     # in case the GUI has to be re-build completely
                     app:GenxApp=wx.GetApp()
                     wx.CallAfter(app.OnRebuild)
-                    return
+                elif self.wstartup.wx_plotting!=prev_gui[0]:
+                    app:GenxApp=wx.GetApp()
+                    wx.CallLater(2000, app.OnRebuild)
                 else:
                     debug('Changed profile, plugins to load=%s'%conf_mod.config.get('plugins', 'loaded plugins'))
                     with self.catch_error(action='startup_dialog', step=f'open model'):
@@ -2275,7 +2277,8 @@ class GenxApp(wx.App):
         dc.SelectObject(wx.NullBitmap)
 
     def OnInit(self):
-        if self._first_init:
+        first_init = self._first_init
+        if first_init:
             locale = wx.Locale(wx.LANGUAGE_ENGLISH_US)
             self.locale = locale
             self._first_init = False
@@ -2315,7 +2318,8 @@ class GenxApp(wx.App):
 
         if self.open_file is None:
             self.splash.Destroy()
-            main_frame.startup_dialog(config_path)
+            if first_init:
+                main_frame.startup_dialog(config_path)
             self.ShowSplash()
         else:
             wx.CallAfter(self.WriteSplash, f'loading file {os.path.basename(self.open_file)}...',
