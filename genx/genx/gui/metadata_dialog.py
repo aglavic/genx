@@ -4,8 +4,10 @@ A simple dialog window to display meta data read from files to the user.
 
 import yaml
 import wx
+from logging import debug
 
 from genx.data import DataList
+from genx.model import Model
 
 
 class MetaDataDialog(wx.Dialog):
@@ -19,9 +21,17 @@ class MetaDataDialog(wx.Dialog):
 
         self.tree = wx.TreeCtrl(self)
         self.leaf_ids = []
-        sizer.Add(self.tree, proportion=1, flag=wx.EXPAND)
+
+        vsizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(vsizer, proportion=1, flag=wx.EXPAND)
+        vsizer.Add(self.tree, proportion=1, flag=wx.EXPAND)
+
+        btn = wx.Button(self, label='Make ORSO Conform')
+        vsizer.Add(btn, flag=wx.FIXED_MINSIZE)
+        btn.Bind(wx.EVT_BUTTON, self.make_orso_conform)
+
         self.text = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_MULTILINE | wx.TE_DONTWRAP)
-        sizer.Add(self.text, proportion=2, flag=wx.EXPAND)
+        sizer.Add(self.text, proportion=3, flag=wx.EXPAND)
 
         self.datasets = datasets
         self.filter_leaf_types = filter_leaf_types
@@ -56,7 +66,8 @@ class MetaDataDialog(wx.Dialog):
                 self.add_children(itm, value, path+[key])
             else:
                 itm = self.tree.AppendItem(node, key)
-                self.tree.SetItemData(itm, (key, f'{value} ({type(value).__name__})', path+[key]))
+                vtype=type(value)
+                self.tree.SetItemData(itm, (key, f'{value} ({vtype.__name__})', path+[key], vtype))
                 if self.filter_leaf_types is None or type(value) in self.filter_leaf_types:
                     self.leaf_ids.append(itm)
                     self.tree.SetItemBackgroundColour(itm, wx.Colour('aaaaff'))
@@ -74,6 +85,59 @@ class MetaDataDialog(wx.Dialog):
             event.Skip()
             return
         # a leaf item was activated
-        self.activated_leaf =self.tree.GetItemData(event.GetItem())[2]
+        name, data, self.activated_leaf, vtype=self.tree.GetItemData(event.GetItem())
         if self.close_on_activate:
             self.EndModal(wx.ID_OK)
+        else:
+            prev_dict = self.datasets[self.activated_leaf[0]].meta
+            if vtype is type(None):
+                from orsopy import fileio
+                from typing import Dict, List, Tuple, Union, Literal
+                item = fileio.Orso(**prev_dict)
+                for key in self.activated_leaf[1:-1]:
+                    item = getattr(item, key, None)
+                    if item is None:
+                        break
+                if item is None:
+                    vtype = str
+                else:
+                    vtype = item.__annotations__.get(self.activated_leaf[-1], str)
+                from orsopy.fileio.base import get_args, get_origin
+                if get_origin(vtype) == Union:
+                    vtype = get_args(vtype)[0]
+                if get_origin(vtype) == Literal:
+                    options = get_args(vtype)
+                    dia = wx.SingleChoiceDialog(self, message=f'Select new value for {name}',
+                                               caption='Select Value', choices=options)
+                    if dia.ShowModal()==wx.ID_OK and dia.GetSelection()>=0:
+                        value = options[dia.GetSelection()]
+                        for key in self.activated_leaf[1:-1]:
+                            prev_dict = prev_dict[key]
+                        prev_dict[self.activated_leaf[-1]] = value
+                        self.tree.SetItemData(event.GetItem(), (name, f'{value} ({type(None).__name__})',
+                                                                self.activated_leaf, type(None)))
+                        self.show_item(event)
+                        debug(f'updated {name} to {prev_dict[self.activated_leaf[-1]]}')
+                    return
+            if not vtype in [str, int, float]:
+                # can only edit simple leaf items that can be converted from a str up to now
+                print(vtype)
+                return
+            for key in self.activated_leaf[1:-1]:
+                prev_dict = prev_dict[key]
+            prev_value = prev_dict[self.activated_leaf[-1]]
+            dia = wx.TextEntryDialog(self, message=f'Enter new value for {name} with type {vtype}', caption='Enter Value',
+                                     value=str(prev_value))
+            if dia.ShowModal()==wx.ID_OK:
+                value = vtype(dia.GetValue())
+                prev_dict[self.activated_leaf[-1]] = value
+                self.tree.SetItemData(event.GetItem(), (name, f'{value} ({vtype.__name__})',
+                                                        self.activated_leaf, vtype))
+                self.show_item(event)
+                debug(f'updated {name} to {prev_dict[self.activated_leaf[-1]]}')
+
+    def make_orso_conform(self, evt):
+        Model.update_orso_meta(self.datasets)
+        self.tree.DeleteAllItems()
+        self.leaf_ids = []
+        self.build_tree(selected=0)

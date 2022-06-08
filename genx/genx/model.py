@@ -13,7 +13,7 @@ import typing
 import zipfile
 from dataclasses import dataclass, field
 from io import StringIO
-from logging import debug
+from logging import debug, info
 from copy import deepcopy
 
 import numpy as np
@@ -600,7 +600,7 @@ class Model(H5HintedExport):
         The fileending will be .ort
         '''
         self.simulate(True)
-        from orsopy.fileio import save_orso, OrsoDataset, Orso, Column
+        from orsopy.fileio import save_orso, OrsoDataset, Orso, Column, ErrorColumn
         from .version import __version__ as version
         para_list = [dict([(nj, tpj(pij)) for nj, pij, tpj in zip(self.parameters.data_labels, pi,
                                                                   [str, float, bool, float, float, str])])
@@ -617,7 +617,7 @@ class Model(H5HintedExport):
         ds = []
         for di in self.data:
             header = Orso.empty().to_dict()
-            header.update(di.meta)
+            self.update_dictionary(header, di.meta)
             try:
                 import getpass
                 # noinspection PyTypeChecker
@@ -631,12 +631,12 @@ class Model(H5HintedExport):
             header['data_set'] = di.name
             columns = [di.x, di.y, di.error]
             if hasattr(self.script_module, 'inst') and self.script_module.inst.coords in ['tth', '2θ']:
-                column_names = [Column('TTh', 'deg'), Column('R'), Column('sR')]
+                column_names = [Column('TTh', 'deg'), Column('R'), ErrorColumn('R')]
             else:
-                column_names = [Column('Qz', '1/angstrom'), Column('R'), Column('sR')]
+                column_names = [Column('Qz', '1/angstrom'), Column('R'), ErrorColumn('R')]
             if 'res' in di.extra_data:
                 columns.append(di.extra_data['res'])
-                column_names.append(Column('s'+column_names[0].name, column_names[0].unit))
+                column_names.append(ErrorColumn(column_names[0].name))
             columns.append(di.y_sim)
             column_names.append(Column('Rsim'))
             columns.append(di.y_fom)
@@ -652,6 +652,32 @@ class Model(H5HintedExport):
             save_orso(ds, basename, data_separator='\n')
         except GenxIOError as e:
             raise GenxIOError(e.error_message, e.file)
+
+    @staticmethod
+    def update_orso_meta(datasets: DataList):
+        from orsopy.fileio import Orso
+        for di in datasets:
+            defaults = Orso.empty().to_dict()
+            Model.update_dictionary(defaults, di.meta)
+            di.meta = defaults
+
+    def validate_orso_meta(self):
+        from orsopy.fileio import base
+        base._validate_header_data([di.meta for di in self.data])
+
+    @staticmethod
+    def update_dictionary(to_update, to_include):
+        """
+        Updates the entries in one dictrionary recursively to keep existing sub-keys.
+        """
+        for key, value in to_include.items():
+            if key in to_update and isinstance(to_update[key], dict):
+                if not isinstance(value, dict):
+                    info(f"Metadata for {key} according to specification should be dictionary, found {value}")
+                else:
+                    Model.update_dictionary(to_update, value)
+            else:
+                to_update[key]=value
 
     def export_data(self, basename):
         '''

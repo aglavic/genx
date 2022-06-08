@@ -301,7 +301,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_import.Append(custom_ids.MenuId.IMPORT_SCRIPT, "Import Script...", "Import a python model script")
         mb_file.Append(wx.ID_ANY, "Import", mb_import, "")
         mb_export = wx.Menu()
-        mb_export.Append(custom_ids.MenuId.EXPORT_ORSO, "Export ORT (alpha)...",
+        mb_export.Append(custom_ids.MenuId.EXPORT_ORSO, "Export ORT (beta)...",
                          "Export data and header in ORSO compatible ASCII format")
         mb_export.Append(custom_ids.MenuId.EXPORT_DATA, "Export Data...", "Export data in ASCII format")
         mb_export.Append(custom_ids.MenuId.EXPORT_TABLE, "Export Table...", "Export table to an ASCII file")
@@ -1593,7 +1593,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         Show an about box about GenX with some info...
         '''
-        import numpy, scipy, matplotlib, platform
+        import numpy, scipy, matplotlib, platform, orsopy
         useful = ''
         try:
             # noinspection PyUnresolvedReferences
@@ -1626,11 +1626,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             "\n\nConfiguration files stored in %s"%config_path
 
             +"\n\nThe versions of the mandatory libraries are:\n"
-             "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
+             "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s, orsopy: %s"
              "\n\nThe non-mandatory but useful packages:\n%s"
              ""%(platform.python_version(), wx.__version__,
                  numpy.__version__, scipy.__version__,
-                 matplotlib.__version__, useful),
+                 matplotlib.__version__, orsopy.__version__,
+                 useful),
             500, wx.ClientDC(self)))
         info_dilog.WebSite = (homepage_url, "GenX homepage")
         # No developers yet
