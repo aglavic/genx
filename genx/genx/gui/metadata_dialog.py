@@ -31,10 +31,16 @@ class MetaDataDialog(wx.Dialog):
         btn.Bind(wx.EVT_BUTTON, self.make_orso_conform)
 
         self.text = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_MULTILINE | wx.TE_DONTWRAP)
-        sizer.Add(self.text, proportion=3, flag=wx.EXPAND)
+        sizer.Add(self.text, proportion=2, flag=wx.EXPAND)
 
         self.datasets = datasets
         self.filter_leaf_types = filter_leaf_types
+        try:
+            from orsopy import fileio
+        except ImportError:
+            self.orso_repr = [None for di in self.datasets]
+        else:
+            self.orso_repr = [fileio.Orso(**di.meta) for di in self.datasets]
         self.build_tree(selected)
 
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.show_item)
@@ -52,18 +58,18 @@ class MetaDataDialog(wx.Dialog):
             self.tree.SetItemData(branch, (di.name,
                                            yaml.dump(di.meta, indent=4).replace('    ', '\t').replace('\n', '\n\t')))
 
-            self.add_children(branch, di.meta, [i])
+            self.add_children(branch, di.meta, [i], self.orso_repr[i])
             if i==selected:
                 self.tree.Expand(branch)
         self.tree.Expand(root)
 
-    def add_children(self, node, source, path):
+    def add_children(self, node, source, path, orso_repr):
         for key, value in source.items():
             if isinstance(value, dict):
                 itm = self.tree.AppendItem(node, key)
                 self.tree.SetItemData(itm,
                                       (key, yaml.dump(value, indent=4).replace('    ', '\t').replace('\n', '\n\t')))
-                self.add_children(itm, value, path+[key])
+                self.add_children(itm, value, path+[key], getattr(orso_repr, key, None))
             else:
                 itm = self.tree.AppendItem(node, key)
                 vtype=type(value)
@@ -73,6 +79,13 @@ class MetaDataDialog(wx.Dialog):
                     self.tree.SetItemBackgroundColour(itm, wx.Colour('aaaaff'))
                 else:
                     self.tree.SetItemTextColour(itm, wx.Colour('aaaaaa'))
+            if orso_repr:
+                if key in getattr(orso_repr, '_orso_optionals', {}):
+                    self.tree.SetItemBackgroundColour(itm, wx.Colour(255, 255, 150))
+                elif key in getattr(orso_repr, 'user_data', {}):
+                    self.tree.SetItemBackgroundColour(itm, wx.Colour(255, 150, 255))
+                else:
+                    self.tree.SetItemBackgroundColour(itm, wx.Colour(150, 255, 150))
 
     def show_item(self, event: wx.TreeEvent):
         item = event.GetItem()
