@@ -956,7 +956,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             ds = meta['data_source']
             # detect source radiation
             probe = ds['experiment']['probe']
-            if probe=='neutrons':
+            if probe=='neutron':
                 pol = ds['measurement']['instrument_settings'].get('polarization', 'unpolarized')
                 if pol=='unpolarized':
                     probe = 'neutron'
@@ -973,7 +973,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             else:
                 coords = '2θ'
                 wavelength = float(ds['measurement']['instrument_settings']
-                                   ['incident_angle'].get('magnitude', 1.54))
+                                   ['wavelength'].get('magnitude', 1.54))
 
             if 'SimpleReflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
                 from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
@@ -997,19 +997,19 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 inst.coords = coords
                 inst.wavelength = wavelength
                 pol_names = {
-                    'p': 'uu', 'm': 'dd',
+                    'po': 'uu', 'mo': 'dd', 'op': 'uu', 'om': 'dd',
                     'pp': 'uu', 'mm': 'dd', 'pm': 'ud', 'mp': 'du'
                     }
                 # set resolution column
-                if len(meta['columns'])>3 and (meta['columns'][3]['name']==('s'+meta['columns'][0]['name'])):
+                if len(meta['columns'])>3 and (meta['columns'][3].get('error_of', None)==meta['columns'][0]['name']):
                     inst.restype = 'full conv and varying res.'
                     inst.respoints = 7
                     inst.resintrange = 2.5
                     el = refl.simulation_widget.GetExpressionList()
                     for i, data_item in enumerate(self.data_list.data_cont.data):
                         if len(data_item.meta['columns'])>3 and (
-                                data_item.meta['columns'][3]['name']==
-                                ('s'+data_item.meta['columns'][0]['name'])):
+                                data_item.meta['columns'][3].get('error_of', None)==
+                                data_item.meta['columns'][0]['name']):
                             el[i].append(f'inst.setRes(data[{i}].res)')
                         else:
                             el[i].append(f'inst.setRes(0.001)')

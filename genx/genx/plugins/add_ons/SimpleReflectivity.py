@@ -977,7 +977,7 @@ class SamplePanel(wx.Panel):
                 pol = di.meta['data_source']['measurement']['instrument_settings']['polarization']
                 if pol=='unpolarized':
                     pass
-                elif pol in ['m', 'mm']:
+                elif pol in ['mo', 'om', 'mm']:
                     inst_id = 1%len(insts)
                 else:
                     inst_id = 0

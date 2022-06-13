@@ -630,7 +630,15 @@ class Model(H5HintedExport):
             header.update(add_header)
             header['data_set'] = di.name
             columns = [di.x, di.y, di.error]
-            if hasattr(self.script_module, 'inst') and self.script_module.inst.coords in ['tth', '2θ']:
+            if 'columns' in header:
+                prev_columns_list = [Column(**ci) if 'name' in ci else ErrorColumn(**ci) for ci in header['columns']]
+                prev_columns = dict([(ci.name, ci) for ci in prev_columns_list])
+            else:
+                prev_columns_list = None
+                prev_columns = {}
+            if prev_columns_list:
+                column_names = prev_columns_list[:3]
+            elif hasattr(self.script_module, 'inst') and self.script_module.inst.coords in ['tth', '2θ']:
                 column_names = [Column('TTh', 'deg'), Column('R'), ErrorColumn('R')]
             else:
                 column_names = [Column('Qz', '1/angstrom'), Column('R'), ErrorColumn('R')]
@@ -645,7 +653,10 @@ class Model(H5HintedExport):
                 if name=='res':
                     continue
                 columns.append(col)
-                column_names.append(Column(name))
+                if name in prev_columns:
+                    column_names.append(prev_columns[name])
+                else:
+                    column_names.append(Column(name))
             header['columns'] = column_names
             ds.append(OrsoDataset(Orso(**header), np.array(columns).T))
         try:
@@ -675,7 +686,7 @@ class Model(H5HintedExport):
                 if not isinstance(value, dict):
                     info(f"Metadata for {key} according to specification should be dictionary, found {value}")
                 else:
-                    Model.update_dictionary(to_update, value)
+                    Model.update_dictionary(to_update[key], value)
             else:
                 to_update[key]=value
 
