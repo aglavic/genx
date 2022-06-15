@@ -197,8 +197,8 @@ class SampleTable(gridlib.GridTableBase):
 
         dpi_scale_factor = wx.GetApp().dpi_scale_factor
 
-        self.grid.SetRowLabelSize(30*dpi_scale_factor)
-        self.grid.SetColLabelSize(50*dpi_scale_factor)
+        self.grid.SetRowLabelSize(int(30*dpi_scale_factor))
+        self.grid.SetColLabelSize(int(50*dpi_scale_factor))
         for i, colinfo in enumerate(self._columns):
             # self.parent.SetColSize(i, 50)
             self.grid.AutoSizeColumn(i, True)
@@ -881,7 +881,7 @@ class SamplePanel(wx.Panel):
 
         newid = wx.NewId()
         button = wx.Button(self.toolbar, newid, label='Instrument Settings',
-                           size=(132*dpi_scale_factor, 22*dpi_scale_factor))
+                           size=(int(132*dpi_scale_factor), int(22*dpi_scale_factor)))
         button.SetBitmap(wx.Bitmap(images.instrument.GetImage().Scale(tb_bmp_size, tb_bmp_size)), dir=wx.LEFT)
         self.toolbar.AddControl(button)
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, id=newid)
@@ -891,7 +891,7 @@ class SamplePanel(wx.Panel):
 
         newid = wx.NewId()
         button = wx.Button(self.toolbar, newid, label='to Advanced Modelling',
-                           size=(150*dpi_scale_factor, 22*dpi_scale_factor))
+                           size=(int(150*dpi_scale_factor), int(22*dpi_scale_factor)))
         button.SetBitmap(wx.Bitmap(images.custom_parameters.GetImage().Scale(tb_bmp_size, tb_bmp_size)), dir=wx.LEFT)
         button.SetToolTip("Switch to Reflectivity plugin for advanced modeling options.\n"
                           "This converts the model and can't be undone.")
@@ -1180,10 +1180,10 @@ class WizarSelectionPage(WizardPageSimple):
         out_layout = wx.BoxSizer(wx.VERTICAL)
         box.SetSizer(out_layout)
         box_layout = wx.GridSizer(min(4, len(choices)//4+1), 2, 2)
-        out_layout.Add(box_layout, 1, wx.EXPAND | wx.TOP | wx.LEFT, 12*dpi_scale_factor)
+        out_layout.Add(box_layout, 1, wx.EXPAND | wx.TOP | wx.LEFT, int(12*dpi_scale_factor))
         for choice in choices:
             self.ctrl[choice] = wx.RadioButton(box, label=choice,
-                                               size=wx.Size(-1, 16*dpi_scale_factor))
+                                               size=wx.Size(-1, int(16*dpi_scale_factor)))
             box_layout.Add(self.ctrl[choice], 0, wx.FIXED_MINSIZE, 2)
         self.ctrl[choices[0]].SetValue(True)
 
