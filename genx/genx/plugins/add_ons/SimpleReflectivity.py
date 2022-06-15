@@ -16,6 +16,7 @@ import io, traceback
 import wx.grid as gridlib
 from wx.adv import Wizard, WizardPageSimple
 from orsopy.slddb import api
+from orsopy.slddb.material import Formula as MatFormula
 
 from .. import add_on_framework as framework
 from genx.model import Model
@@ -48,12 +49,13 @@ except:
     api = None
 
 
-def get_mat_api(frm):
+def get_mat_api(frm: Formula):
     # Use ORSO SLD db to query for a material by formula
     if not api:
         return None
     try:
-        res = api.localquery(dict(formula=frm.estr()))
+        frm2 = MatFormula(frm.estr())
+        res = api.localquery(dict(formula=str(frm2)))
         if len(res):
             mat = api.localmaterial(res[0]['ID'])
             return mat.dens, res[0]['ID'], res[0]['validated']
