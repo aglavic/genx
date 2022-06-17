@@ -12,6 +12,13 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.11
+==============
+ * Update the ORSO file definition to version 1.0.0 released recently
+ * Modify the metadata dialog to allow adding and editing values
+ * Add a new data loader for the Rigaku .ras format
+ * Fix default and resolution loader to ignore non utf-8 encoded values
+
 Changes 3.6.10
 ==============
  * Implement a tech-preview using alternative plotting backend with improved performance
