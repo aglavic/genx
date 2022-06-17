@@ -46,6 +46,8 @@ class MetaDataDialog(wx.Dialog):
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.show_item)
         self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.item_activated)
 
+        self.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick)
+
         self.SetSize((800, 800))
         self.activated_leaf = None
         self.close_on_activate = close_on_activate
@@ -62,13 +64,16 @@ class MetaDataDialog(wx.Dialog):
             if i==selected:
                 self.tree.Expand(branch)
         self.tree.Expand(root)
+        self.add_coloring()
 
     def add_children(self, node, source, path, orso_repr):
         for key, value in source.items():
             if isinstance(value, dict):
+                obj = getattr(orso_repr, key, None)
                 itm = self.tree.AppendItem(node, key)
                 self.tree.SetItemData(itm,
-                                      (key, yaml.dump(value, indent=4).replace('    ', '\t').replace('\n', '\n\t')))
+                                      (key, yaml.dump(value, indent=4).replace('    ', '\t').replace('\n', '\n\t'),
+                                       path+[key], obj))
                 self.add_children(itm, value, path+[key], getattr(orso_repr, key, None))
             else:
                 itm = self.tree.AppendItem(node, key)
@@ -86,6 +91,17 @@ class MetaDataDialog(wx.Dialog):
                     self.tree.SetItemBackgroundColour(itm, wx.Colour(255, 150, 255))
                 else:
                     self.tree.SetItemBackgroundColour(itm, wx.Colour(150, 255, 150))
+
+    def add_coloring(self):
+        root = self.tree.GetRootItem()
+        node = self.tree.AppendItem(root, 'coloring')
+        self.tree.Expand(node)
+        itm = self.tree.AppendItem(node, 'orso required')
+        self.tree.SetItemBackgroundColour(itm, wx.Colour(150, 255, 150))
+        itm = self.tree.AppendItem(node, 'orso optional')
+        self.tree.SetItemBackgroundColour(itm, wx.Colour(255, 255, 150))
+        itm = self.tree.AppendItem(node, 'user defined')
+        self.tree.SetItemBackgroundColour(itm, wx.Colour(255, 150, 255))
 
     def show_item(self, event: wx.TreeEvent):
         item = event.GetItem()
@@ -131,6 +147,7 @@ class MetaDataDialog(wx.Dialog):
                                                                 self.activated_leaf, type(None)))
                         self.show_item(event)
                         debug(f'updated {name} to {prev_dict[self.activated_leaf[-1]]}')
+                        self.update_parents(event.GetItem(), self.activated_leaf)
                     return
             if not vtype in [str, int, float]:
                 # can only edit simple leaf items that can be converted from a str up to now
@@ -148,9 +165,68 @@ class MetaDataDialog(wx.Dialog):
                                                         self.activated_leaf, vtype))
                 self.show_item(event)
                 debug(f'updated {name} to {prev_dict[self.activated_leaf[-1]]}')
+                self.update_parents(event.GetItem(), self.activated_leaf)
+
+    def update_parents(self, item, path):
+        if len(path)==1:
+            return
+        parent = self.tree.GetItemParent(item)
+        mpath = list(path[:-1])
+        mdict = self.datasets[mpath.pop(0)].meta
+        while len(mpath)>0:
+            mpath = mpath[mdict.pop(0)]
+        vtype = type(value)
+        self.tree.SetItemData(parent, (path[-2], f'{value} ({vtype.__name__})', path+[key], vtype))
+        self.update_parents(parent, path[:-1])
 
     def make_orso_conform(self, evt):
         Model.update_orso_meta(self.datasets)
         self.tree.DeleteAllItems()
         self.leaf_ids = []
         self.build_tree(selected=0)
+
+    def OnRightClick(self, event: wx.TreeEvent):
+        item = event.GetItem()
+        if item in self.leaf_ids:
+            name, data, leaf, vtype = self.tree.GetItemData(event.GetItem())
+            print("leaf")
+        else:
+            key, text, path, obj = self.tree.GetItemData(item)
+            popupmenu = wx.Menu()
+            entries = list(obj.__annotations__.keys())
+            self._popup_tree_item = (item, path)
+            self._popup_menu_ids = {}
+            for entry in entries:
+                if entry in obj._orso_optionals:
+                    text = f"new {entry}*"
+                else:
+                    text = f"new {entry}"
+                menuItem = popupmenu.Append(-1, text)
+                wx.EVT_MENU(popupmenu, menuItem.GetId(), self.make_new_key)
+                self._popup_menu_ids[menuItem.GetId()] = entry
+            self.tree.PopupMenu(popupmenu, event.GetPoint())
+
+    def make_new_key(self, event: wx.CommandEvent):
+        from typing import Dict, List, Tuple, Union, Literal
+        key, text, path, obj = self.tree.GetItemData(self._popup_tree_item[0])
+        spath = list(path)
+        ktype=obj.__annotations__[self._popup_menu_ids[event.GetId()]]
+        mdict = self.datasets[spath.pop(0)].meta
+        while len(spath)>0:
+            mdict = mdict[spath.pop(0)]
+        from orsopy.fileio.base import get_args, get_origin
+        if get_origin(ktype)==Union:
+            args =  list(get_args(ktype))
+            if args[-1] is type(None):
+                args.pop(-1)
+            if len(args)==1:
+                ktype = args[0]
+        if hasattr(ktype, '_orso_optionals'):
+            new = ktype.empty()
+            setattr(obj, self._popup_menu_ids[event.GetId()], new)
+            mdict[self._popup_menu_ids[event.GetId()]] = new.to_dict()
+        else:
+            setattr(obj, self._popup_menu_ids[event.GetId()], None)
+            mdict[self._popup_menu_ids[event.GetId()]] = None
+        self.tree.DeleteChildren(self._popup_tree_item[0])
+        self.add_children(self._popup_tree_item[0], mdict, path, obj)
