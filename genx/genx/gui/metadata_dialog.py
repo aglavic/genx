@@ -5,6 +5,7 @@ A simple dialog window to display meta data read from files to the user.
 import yaml
 import wx
 from logging import debug
+from datetime import datetime
 
 from genx.data import DataList
 from genx.model import Model
@@ -175,6 +176,10 @@ class MetaDataDialog(wx.Dialog):
                     self.text.Clear()
                     self.text.AppendText('%s:\n\n\t%s'%(name, f'{prev_value} (list)'))
                 return
+            elif vtype is datetime:
+                #from wx.adv import TimePickerCtrl
+                print('date')
+                return
             elif not vtype in [str, int, float, None]:
                 # can only edit simple leaf items that can be converted from a str up to now
                 print(vtype)
@@ -316,12 +321,23 @@ class MetaDataDialog(wx.Dialog):
                     try:
                         ktype = pobj.__annotations__[key]
                         if get_origin(ktype)==Union:
-                            ktype = get_args(ktype)[0]
+                            ktype = [arg for arg in get_args(ktype) if get_origin(arg)==dict][0]
                         ktype = get_args(ktype)[1]
+                        ktype = self.resolve_type(ktype, key, 'item')
                     except (AttributeError, KeyError, IndexError):
                         ktype = None
                     if hasattr(ktype, '_orso_optionals'):
-                        obj[dia.GetValue()] = ktype.empty()
+                        new =  ktype.empty()
+                        for attr, atype in ktype.__annotations__.items():
+                            if get_origin(atype)==Union:
+                                atype = get_args(atype)[0]
+                            adia = wx.TextEntryDialog(self,
+                                                     message=f'Enter value for attribute {attr} ({atype.__name__}).'
+                                                             f'\nCancel for "None".',
+                                                     caption='Enter Attribute Value')
+                            if adia.ShowModal()==wx.ID_OK:
+                                setattr(new, attr, atype(adia.GetValue()))
+                        obj[dia.GetValue()] = new.to_dict()
                     else:
                         obj[dia.GetValue()] = None
             else:
