@@ -58,7 +58,8 @@ class MetaDataDialog(wx.Dialog):
         for i, di in enumerate(self.datasets):
             branch = self.tree.AppendItem(root, di.name)
             self.tree.SetItemData(branch, (di.name,
-                                           yaml.dump(di.meta, indent=4).replace('    ', '\t').replace('\n', '\n\t')))
+                                           yaml.dump(di.meta, indent=4).replace('    ', '\t').replace('\n', '\n\t'),
+                                           [i], self.orso_repr[i]))
 
             self.add_children(branch, di.meta, [i], self.orso_repr[i])
             if i==selected:
@@ -89,7 +90,7 @@ class MetaDataDialog(wx.Dialog):
                     self.tree.SetItemBackgroundColour(itm, wx.Colour(255, 255, 150))
                 elif key in getattr(orso_repr, 'user_data', {}):
                     self.tree.SetItemBackgroundColour(itm, wx.Colour(255, 150, 255))
-                else:
+                elif key in getattr(orso_repr, '__annotations__', {}):
                     self.tree.SetItemBackgroundColour(itm, wx.Colour(150, 255, 150))
 
     def add_coloring(self):
@@ -128,7 +129,7 @@ class MetaDataDialog(wx.Dialog):
                     if item is None:
                         break
                 if item is None:
-                    vtype = str
+                    vtype = None
                 else:
                     vtype = item.__annotations__.get(self.activated_leaf[-1], str)
                 from orsopy.fileio.base import get_args, get_origin
@@ -152,7 +153,29 @@ class MetaDataDialog(wx.Dialog):
                         debug(f'updated {name} to {prev_dict[self.activated_leaf[-1]]}')
                         self.update_parents(event.GetItem(), self.activated_leaf)
                     return
-            if not vtype in [str, int, float]:
+            if vtype is list:
+                for key in self.activated_leaf[1:-1]:
+                    prev_dict = prev_dict[key]
+                prev_value = prev_dict[self.activated_leaf[-1]]
+                options = [str(di) for di in prev_value]
+                dia = wx.SingleChoiceDialog(self, message=f'Select new value to edit in {name}',
+                                            caption='Select Value', choices=options)
+                if dia.ShowModal()==wx.ID_OK and dia.GetSelection()>=0:
+                    idx = dia.GetSelection()
+                    dia = wx.TextEntryDialog(self, message=f'Enter new value',
+                                             caption='Enter Value',
+                                             value=str(prev_value[idx]))
+                    if dia.ShowModal()==wx.ID_OK:
+                        if type(prev_value[idx]) is dict:
+                            prev_value[idx] = eval(dia.GetValue())
+                        else:
+                            prev_value[idx] = type(prev_value[idx])(dia.GetValue())
+                    self.tree.SetItemData(event.GetItem(), (name, f'{prev_value} (list)', self.activated_leaf, list))
+                    self.update_parents(event.GetItem(), self.activated_leaf)
+                    self.text.Clear()
+                    self.text.AppendText('%s:\n\n\t%s'%(name, f'{prev_value} (list)'))
+                return
+            elif not vtype in [str, int, float, None]:
                 # can only edit simple leaf items that can be converted from a str up to now
                 print(vtype)
                 return
@@ -162,7 +185,15 @@ class MetaDataDialog(wx.Dialog):
             dia = wx.TextEntryDialog(self, message=f'Enter new value for {name} with type {vtype}', caption='Enter Value',
                                      value=str(prev_value))
             if dia.ShowModal()==wx.ID_OK:
-                value = vtype(dia.GetValue())
+                if vtype is None:
+                    value = dia.GetValue()
+                    try:
+                        value = eval(value)
+                    except Exception:
+                        pass
+                    vtype = type(value)
+                else:
+                    value = vtype(dia.GetValue())
                 prev_dict[self.activated_leaf[-1]] = value
                 self.tree.SetItemData(event.GetItem(), (name, f'{value} ({vtype.__name__})',
                                                         self.activated_leaf, vtype))
@@ -199,17 +230,40 @@ class MetaDataDialog(wx.Dialog):
         item = event.GetItem()
         if item in self.leaf_ids:
             name, data, leaf, vtype = self.tree.GetItemData(event.GetItem())
+            if vtype is list:
+                entries = ['append item', 'move item']
+                callback = self.list_popup_action
+            else:
+                entries = ['no action implemented']
+                callback = lambda event: None
+            popupmenu = wx.Menu()
+            self._popup_tree_item = (item, leaf)
+            self._popup_menu_ids = {}
+            for entry in entries:
+                menuItem = popupmenu.Append(-1, entry)
+                self._popup_menu_ids[menuItem.GetId()] = entry
+            popupmenu.Bind(wx.EVT_MENU, callback)
+            self.tree.PopupMenu(popupmenu, event.GetPoint())
         else:
             try:
                 key, text, path, obj = self.tree.GetItemData(item)
-            except TypeError:
+            except (TypeError, ValueError):
                 return
             popupmenu = wx.Menu()
-            entries = list(obj.__annotations__.keys())
+            if type(obj) is dict:
+                entries = ['new key']
+                entries += list(obj.keys())
+            else:
+                entries = list(obj.__annotations__.keys())
             self._popup_tree_item = (item, path)
             self._popup_menu_ids = {}
             for entry in entries:
-                if entry in obj._orso_optionals:
+                if type(obj) is dict:
+                    if entry == 'new key':
+                        text = entry
+                    else:
+                        text = f'delete {entry}'
+                elif entry in obj._orso_optionals:
                     text = f"new {entry}*"
                 else:
                     text = f"new {entry}"
@@ -218,35 +272,116 @@ class MetaDataDialog(wx.Dialog):
             popupmenu.Bind(wx.EVT_MENU, self.make_new_key)
             self.tree.PopupMenu(popupmenu, event.GetPoint())
 
-    def make_new_key(self, event: wx.CommandEvent):
-        from typing import Union
-        key, text, path, obj = self.tree.GetItemData(self._popup_tree_item[0])
-        spath = list(path)
-        ktype=obj.__annotations__[self._popup_menu_ids[event.GetId()]]
-        mdict = self.datasets[spath.pop(0)].meta
-        while len(spath)>0:
-            mdict = mdict[spath.pop(0)]
+    def resolve_type(self, ktype, node, key):
         from orsopy.fileio.base import get_args, get_origin
+        from typing import Union
+        if get_origin(ktype) is dict:
+            return dict
+        if get_origin(ktype) is list:
+            return list
         if get_origin(ktype)==Union:
             args =  list(get_args(ktype))
             if args[-1] is type(None):
+                # this is an optional parameter, if only one other type this is not actually a Union
                 args.pop(-1)
             if len(args)==1:
-                ktype = args[0]
+                return self.resolve_type(args[0], node, key)
             else:
                 options = [ci.__name__ for ci in args]
                 dia = wx.SingleChoiceDialog(self,
-                                    message=f'Select object type for {key}.{self._popup_menu_ids[event.GetId()]}',
+                                    message=f'Select object type for {node}.{key}',
                                     caption='Select Item', choices=options)
                 if dia.ShowModal()==wx.ID_OK and dia.GetSelection()>=0:
                     ktype = args[dia.GetSelection()]
+                    return self.resolve_type(ktype, node, key)
+                else:
+                    return None
+        return ktype
+
+    def make_new_key(self, event: wx.CommandEvent):
+        key, text, path, obj = self.tree.GetItemData(self._popup_tree_item[0])
+        spath = list(path)
+        mdict = self.datasets[spath.pop(0)].meta
+        while len(spath)>0:
+            mdict = mdict[spath.pop(0)]
+        if type(obj) is dict:
+            dkey = self._popup_menu_ids[event.GetId()]
+            if dkey == 'new key':
+                dia = wx.TextEntryDialog(self, message=f'Enter new key name for {key}', caption='Enter Key Name')
+                if dia.ShowModal()==wx.ID_OK:
+                    parent = self.tree.GetItemParent(self._popup_tree_item[0])
+                    pkey, ptext, ppath, pobj = self.tree.GetItemData(parent)
+                    from typing import Union
+                    from orsopy.fileio.base import get_args, get_origin
+                    try:
+                        ktype = pobj.__annotations__[key]
+                        if get_origin(ktype)==Union:
+                            ktype = get_args(ktype)[0]
+                        ktype = get_args(ktype)[1]
+                    except (AttributeError, KeyError, IndexError):
+                        ktype = None
+                    if hasattr(ktype, '_orso_optionals'):
+                        obj[dia.GetValue()] = ktype.empty()
+                    else:
+                        obj[dia.GetValue()] = None
+            else:
+                del(obj[dkey])
+            self.tree.DeleteChildren(self._popup_tree_item[0])
+            self.add_children(self._popup_tree_item[0], mdict, path, obj)
+            self.update_parents(self._popup_tree_item[0], path+[key], initial=True)
+            return
+        ktype=obj.__annotations__[self._popup_menu_ids[event.GetId()]]
+        ktype = self.resolve_type(ktype, key, self._popup_menu_ids[event.GetId()])
         if hasattr(ktype, '_orso_optionals'):
             new = ktype.empty()
             setattr(obj, self._popup_menu_ids[event.GetId()], new)
             mdict[self._popup_menu_ids[event.GetId()]] = new.to_dict()
+        elif ktype is dict:
+            new = {}
+            setattr(obj, self._popup_menu_ids[event.GetId()], new)
+            mdict[self._popup_menu_ids[event.GetId()]] = new
+        elif ktype is list:
+            setattr(obj, self._popup_menu_ids[event.GetId()], [])
+            mdict[self._popup_menu_ids[event.GetId()]] = []
         else:
             setattr(obj, self._popup_menu_ids[event.GetId()], None)
             mdict[self._popup_menu_ids[event.GetId()]] = None
         self.tree.DeleteChildren(self._popup_tree_item[0])
         self.add_children(self._popup_tree_item[0], mdict, path, obj)
         self.update_parents(self._popup_tree_item[0], path+[key], initial=True)
+
+    def list_popup_action(self, event: wx.CommandEvent):
+        name, data, leaf, vtype = self.tree.GetItemData(self._popup_tree_item[0])
+        action = self._popup_menu_ids[event.GetId()]
+        if action == 'move item':
+            pass
+        elif action == 'append item':
+            parent = self.tree.GetItemParent(self._popup_tree_item[0])
+            pkey, ptext, ppath, pobj = self.tree.GetItemData(parent)
+            prev_dict = self.datasets[leaf[0]].meta
+            for key in leaf[1:-1]:
+                prev_dict = prev_dict[key]
+            lobj = prev_dict[leaf[-1]]
+            from typing import Union
+            from orsopy.fileio.base import get_args, get_origin
+            try:
+                ktype = pobj.__annotations__[name]
+                if get_origin(ktype)==Union:
+                    ktype = [arg for arg in get_args(ktype) if get_origin(arg)==list][0]
+                ktype = get_args(ktype)[0]
+            except (AttributeError, KeyError, IndexError):
+                ktype = None
+            ktype = self.resolve_type(ktype, name, 'item')
+            if hasattr(ktype, '_orso_optionals'):
+                new = ktype.empty()
+                lobj.append(new.to_dict())
+            else:
+                dia = wx.TextEntryDialog(self, message=f'Enter value for new {name} item', caption='Enter Value')
+                if dia.ShowModal()==wx.ID_OK:
+                    lobj.append(dia.GetValue())
+                else:
+                    return
+            self.tree.SetItemData(self._popup_tree_item[0], (name, f'{lobj} (list)', leaf, list))
+            self.update_parents(self._popup_tree_item[0], leaf)
+            self.text.Clear()
+            self.text.AppendText('%s:\n\n\t%s'%(name, f'{lobj} (list)'))
