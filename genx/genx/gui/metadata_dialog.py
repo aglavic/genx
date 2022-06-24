@@ -38,10 +38,9 @@ class MetaDataDialog(wx.Dialog):
         self.filter_leaf_types = filter_leaf_types
         try:
             from orsopy import fileio
-        except ImportError:
-            self.orso_repr = [None for di in self.datasets]
-        else:
             self.orso_repr = [fileio.Orso(**di.meta) for di in self.datasets]
+        except Exception:
+            self.orso_repr = [None for di in self.datasets]
         self.build_tree(selected)
 
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.show_item)
@@ -227,6 +226,11 @@ class MetaDataDialog(wx.Dialog):
 
     def make_orso_conform(self, evt):
         Model.update_orso_meta(self.datasets)
+        try:
+            from orsopy import fileio
+            self.orso_repr = [fileio.Orso(**di.meta) for di in self.datasets]
+        except Exception:
+            self.orso_repr = [None for di in self.datasets]
         self.tree.DeleteAllItems()
         self.leaf_ids = []
         self.build_tree(selected=0)
