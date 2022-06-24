@@ -12,6 +12,11 @@ If you use the program please give reference to the following publication:
 M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
 (New paper submitted to J. Appl. Cryst., stay tuned!)
 
+Changes 3.6.12
+==============
+ * Fix a bug where fitting from console with autosave and --error options stopped the fit after first autosave
+ * Improve the meta data editing capability
+
 Changes 3.6.11
 ==============
  * Update the ORSO file definition to version 1.0.0 released recently
