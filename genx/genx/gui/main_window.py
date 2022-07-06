@@ -2298,6 +2298,9 @@ class GenxApp(wx.App):
             except ImportError:
                 pass
             else:
+                if hasattr(numba.config, 'CACHE_DIR'):
+                    # make sure to use a user directory for numba cache
+                    numba.config.CACHE_DIR = os.path.join(config_path, 'numba_cache')
                 # load numba modules, show progress as in case they aren't cached it takes some seconds
                 self.WriteSplash('compiling numba functions...', progress=0.25)
                 real_jit = numba.jit

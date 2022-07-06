@@ -148,7 +148,7 @@ def modify_file(args):
 
 def set_numba_single():
     config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-    cache_dir = os.path.join(config_path, 'single_cpu_numba_cache')
+    cache_dir = os.path.join(config_path, 'numba_cache_single_cpu')
 
     debug('Setting numba JIT compilation to single CPU')
     import numba
@@ -344,10 +344,17 @@ def set_bumps_pars(optimiser, args):
         optimiser.opt.use_parallel_processing = True
         optimiser.opt.parallel_processes = args.pr
 
-def compile_numba():
+def compile_numba(cache_dir=None):
     try:
         # perform a compilation of numba functions with console feedback
         import numba
+        if cache_dir:
+            numba.config.CACHE_DIR = cache_dir
+        elif hasattr(numba.config, 'CACHE_DIR'):
+            import appdirs
+            config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+            # make sure to use a user directory for numba cache
+            numba.config.CACHE_DIR = os.path.join(config_path, 'numba_cache')
 
         real_jit = numba.jit
 
