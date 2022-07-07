@@ -953,11 +953,14 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             for di in self.data_list.data_cont.data:
                 del (di.meta['analysis'])
         else:
-            ds = meta['data_source']
+            from orsopy import fileio
+            h = fileio.Orso(**meta)
             # detect source radiation
-            probe = ds['experiment']['probe']
+            IS = h.data_source.measurement.instrument_settings
+            EX = h.data_source.experiment
+            probe = EX.probe
             if probe=='neutron':
-                pol = ds['measurement']['instrument_settings'].get('polarization', 'unpolarized')
+                pol = IS.polarization or 'unpolarized'
                 if pol=='unpolarized':
                     probe = 'neutron'
                 elif pol in ['pp', 'mm', 'pm', 'mp']:
@@ -967,22 +970,68 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             else:
                 probe = 'x-ray'
             # detect x-axis unit
-            if meta['columns'][0].get('unit', '1/angstrom')=='1/angstrom':
+            if h.columns[0].unit in [None, '1/angstrom']:
                 coords = 'q'
                 wavelength = 1.54
             else:
                 coords = '2θ'
-                wavelength = float(ds['measurement']['instrument_settings']
-                                   ['wavelength'].get('magnitude', 1.54))
+                wavelength = float(IS.wavelength.magnitude or 1.54)
 
             if 'SimpleReflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
-                from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
+                from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin, ML_LAYER, Formula, MASS_DENSITY_CONVERSION
                 refl: SRPlugin = self.plugin_control.GetPlugin('SimpleReflectivity')
                 refl.sample_widget.sample_table.ResetModel()
                 refl.sample_widget.inst_params['probe'] = probe
                 refl.sample_widget.inst_params['wavelength'] = wavelength
                 refl.sample_widget.inst_params['coords'] = coords
                 refl.sample_widget.inst_params['res'] = 0.01
+                if h.data_source.sample.model:
+                    from orsopy.fileio import model_language
+                    stack=h.data_source.sample.model.resolve_stack()
+                    repetitions = 1
+                    res_layers = h.data_source.sample.model.resolve_to_layers()
+                    if len(stack)==3 and hasattr(stack[1], 'repetitions') \
+                        and isinstance(stack[0], model_language.Layer) and isinstance(stack[-1], model_language.Layer):
+                        # simplest version of a multilayer, just one stack with ambient and substrate layer
+                        repetitions = int(stack[1].repetitions)
+                        mid_layers = []
+                        for stack_item in stack[1].sequence:
+                            if isinstance(stack_item, model_language.Layer):
+                                mid_layers.append(stack_item)
+                            else:
+                                mid_layers+=stack_item.resolve_to_layers()
+                        res_layers = [stack[0]]+mid_layers+[stack[-1]]
+                        for li in res_layers:
+                            li.material.generate_density()
+                        layers = []
+                    for i, li in enumerate(res_layers):
+                        if li.material.formula:
+                            formula = Formula.from_str(li.material.formula)
+                            if li.material.number_density:
+                                dens = formula.mFU()*li.material.number_density.as_unit('1/angstrom**3')/MASS_DENSITY_CONVERSION
+                            elif li.material.mass_density:
+                                dens = li.material.mass_density.as_unit('g/cm**3')
+                            else:
+                                from ..models.utils import bc
+                                try:
+                                    dens = li.material.get_sld().real/eval(formula.b).real
+                                except Exception:
+                                    dens = 1.0
+                            layers.append([f'Layer_{i:02}', "Formula", formula,
+                                           False, str(dens), False, '0.0',
+                                           False, str(li.thickness.as_unit('angstrom')),
+                                           False, str(li.roughness.as_unit('angstrom')), ML_LAYER])
+                        else:
+                            layers.append([f'Layer_{i:02}', "Formula", 'SLD',
+                                           False, str(li.material.get_sld()), False, '0.0',
+                                           False, str(li.thickness.as_unit('angstrom')),
+                                           False, str(li.roughness.as_unit('angstrom')), ML_LAYER])
+                    print(layers)
+                    refl.sample_widget.sample_table.ambient = [None] + layers[0][1:]
+                    refl.sample_widget.sample_table.substrate = [None] + layers[-1][1:]
+                    refl.sample_widget.sample_table.RebuildTable(layers[1:-1])
+                    refl.sample_widget.sample_table.repetitions = repetitions
+                refl.sample_widget.last_sample_script = refl.sample_widget.sample_table.getModelCode()
                 refl.sample_widget.UpdateModel(re_color=True)
             else:
                 from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
@@ -1001,7 +1050,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                     'pp': 'uu', 'mm': 'dd', 'pm': 'ud', 'mp': 'du'
                     }
                 # set resolution column
-                if len(meta['columns'])>3 and (meta['columns'][3].get('error_of', None)==meta['columns'][0]['name']):
+                if len(h.columns)>3 and h.columns[3].error_of==h.columns[0].name:
                     inst.restype = 'full conv and varying res.'
                     inst.respoints = 7
                     inst.resintrange = 2.5
