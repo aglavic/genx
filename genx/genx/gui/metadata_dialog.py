@@ -6,6 +6,7 @@ import yaml
 import wx
 from logging import debug
 from datetime import datetime
+from copy import deepcopy
 
 from genx.data import DataList
 from genx.model import Model
@@ -38,7 +39,7 @@ class MetaDataDialog(wx.Dialog):
         self.filter_leaf_types = filter_leaf_types
         try:
             from orsopy import fileio
-            self.orso_repr = [fileio.Orso(**di.meta) for di in self.datasets]
+            self.orso_repr = [fileio.Orso(**deepcopy(di.meta)) for di in self.datasets]
         except Exception:
             self.orso_repr = [None for di in self.datasets]
         self.build_tree(selected)

@@ -15,6 +15,7 @@ from logging import debug, info, warning
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
+from copy import deepcopy
 
 import wx
 import wx.adv
@@ -941,7 +942,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         debug('new_from_file: build model script')
         # if this was exported from genx, use the embedded script
-        meta = self.data_list.data_cont.data[0].meta
+        meta = deepcopy(self.data_list.data_cont.data[0].meta)
         ana_meta = meta.get('analysis', {})
         if ana_meta.get('software', {}).get('name', '')=='GenX':
             self.model_control.set_model_script(ana_meta['script'])
