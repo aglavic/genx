@@ -44,7 +44,7 @@ class H5Savable(ABC):
         for key, value in obj.items():
             vtyp = type(value)
             if vtyp is dict:
-                sub_group = group.create_group(key)
+                sub_group = group.create_group(key, track_order=True)
                 self.h5_write_free_dict(sub_group, value)
                 group[key].attrs['genx_type']='free_dict'.encode('ascii')
             elif any([issubclass(vtyp, typ) for typ in [float, int, ndarray, complex]]):
@@ -136,7 +136,7 @@ class H5HintedExport(H5Savable):
             value = getattr(self, attr)
             if typ is dict:
                 # free dictionary, save every str, int, float type values and ignore rest
-                self.h5_write_free_dict(group.create_group(attr), value)
+                self.h5_write_free_dict(group.create_group(attr, track_order=True), value)
             elif get_origin(typ) is dict:
                 sub_group = group.create_group(attr)
                 styp = get_args(typ)[1]
