@@ -977,8 +977,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 coords = '2θ'
                 wavelength = float(IS.wavelength.magnitude or 1.54)
 
+            from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin, ML_LAYER, Formula, \
+                MASS_DENSITY_CONVERSION
             if 'SimpleReflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
-                from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin, ML_LAYER, Formula, MASS_DENSITY_CONVERSION
                 refl: SRPlugin = self.plugin_control.GetPlugin('SimpleReflectivity')
                 refl.sample_widget.sample_table.ResetModel()
                 refl.sample_widget.inst_params['probe'] = probe
@@ -1003,7 +1004,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                         res_layers = [stack[0]]+mid_layers+[stack[-1]]
                         for li in res_layers:
                             li.material.generate_density()
-                        layers = []
+                    layers = []
                     for i, li in enumerate(res_layers):
                         if li.material.formula:
                             formula = Formula.from_str(li.material.formula)
@@ -1026,7 +1027,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                            False, str(li.material.get_sld()), False, '0.0',
                                            False, str(li.thickness.as_unit('angstrom')),
                                            False, str(li.roughness.as_unit('angstrom')), ML_LAYER])
-                    print(layers)
                     refl.sample_widget.sample_table.ambient = [None] + layers[0][1:]
                     refl.sample_widget.sample_table.substrate = [None] + layers[-1][1:]
                     refl.sample_widget.sample_table.RebuildTable(layers[1:-1])
@@ -1067,6 +1067,69 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                                                                                       'unpolarized')
                         if pol in pol_names:
                             el[i].append(f'inst.setPol("{pol_names[pol]}")')
+
+                if h.data_source.sample.model:
+                    from orsopy.fileio import model_language
+                    res_stack=h.data_source.sample.model.resolve_stack()
+                    stacks = []
+                    repetitions = []
+                    last_stack = True
+                    for si in res_stack:
+                        if hasattr(si, 'repetitions'):
+                            repetitions.append(si.repetitions)
+                            stack_layers = []
+                            for stack_item in si.sequence:
+                                if isinstance(stack_item, model_language.Layer):
+                                    stack_layers.append(stack_item)
+                                else:
+                                    stack_layers += stack_item.resolve_to_layers()
+                            stacks.append(stack_layers)
+                            last_stack = True
+                        elif last_stack:
+                            last_stack = False
+                            repetitions.append(1)
+                            stacks.append([si])
+                        else:
+                            stacks[-1].append(si)
+
+                    # make sure we remove ambient and substrate from a single repetition stack
+                    if repetitions[0] != 1:
+                        repetitions.insert(0,1)
+                        repetitions[1]-=1
+                        stacks.insert(stacks[0])
+                    if repetitions[-1] != 1:
+                        repetitions[-1]-=1
+                        repetitions.append(1)
+                        stacks.append(stacks[-1])
+                    ambient = stacks[0].pop(0)
+                    substrate = stacks[-1].pop(-1)
+                    stacks = [(repetitions[i], si) for i, si in enumerate(stacks) if len(si)>0]
+
+                    tmp = refl.sampleh.sample.Ambient
+                    tmp.b, tmp.f, tmp.dens = self.get_layer_bfdens(ambient)
+                    tmp = refl.sampleh.sample.Substrate
+                    tmp.b, tmp.f, tmp.dens = self.get_layer_bfdens(substrate)
+                    tmp.sigma = substrate.roughness.as_unit('angstrom')
+
+                    pos = 1
+                    for si, (rep, stack) in enumerate(stacks):
+                        refl.sampleh.insertItem(pos, 'Stack', f'ST_{si}')
+                        stack_obj = refl.sampleh.sample.Stacks[0]
+                        stack_obj.Repetitions = rep
+                        pos+=1
+                        for li, layer in enumerate(stack):
+                            refl.sampleh.insertItem(pos, 'Layer', f'L_{si}_{li:02}')
+                            pos+=1
+
+                            layer_obj = stack_obj.Layers[0]
+                            layer.material.generate_density()
+
+                            layer_obj.b, layer_obj.f, layer_obj.dens = self.get_layer_bfdens(layer)
+                            layer_obj.d = layer.thickness.as_unit('angstrom')
+                            layer_obj.sigma = layer.roughness.as_unit('angstrom')
+
+                    refl.sample_widget.Update()
+
                 refl.WriteModel()
 
         with self.catch_error(action='open_model', step=f'processing plugins'):
@@ -1074,6 +1137,30 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         debug('open_model: post new model event')
         _post_new_model_event(self, self.model_control.get_model())
         self.update_title()
+
+    @staticmethod
+    def get_layer_bfdens(layer):
+        from ..plugins.add_ons.SimpleReflectivity import Formula, MASS_DENSITY_CONVERSION
+        if layer.material.formula:
+            formula = Formula.from_str(layer.material.formula)
+            if layer.material.number_density:
+                dens = layer.material.number_density.as_unit('1/angstrom**3')
+            elif layer.material.mass_density:
+                dens = layer.material.mass_density.as_unit('g/cm**3')* \
+                                 MASS_DENSITY_CONVERSION/formula.mFU()
+            else:
+                from ..models.utils import bc
+                try:
+                    dens = layer.material.get_sld().real/eval(formula.b()).real
+                except Exception:
+                    dens = 0.1
+            b = formula.b()
+            f = formula.f()
+        else:
+            b = layer.material.get_sld()
+            f = layer.material.get_sld()
+            dens = 0.1
+        return b, f, dens
 
     def open_model(self, path):
         debug('open_model: clear model')

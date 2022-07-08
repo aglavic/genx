@@ -58,7 +58,8 @@ class MetaDataDialog(wx.Dialog):
         for i, di in enumerate(self.datasets):
             branch = self.tree.AppendItem(root, di.name)
             self.tree.SetItemData(branch, (di.name,
-                                           yaml.dump(di.meta, indent=4).replace('    ', '\t').replace('\n', '\n\t'),
+                                           yaml.dump(di.meta, indent=4, sort_keys=False
+                                                     ).replace('    ', '\t').replace('\n', '\n\t'),
                                            [i], self.orso_repr[i]))
 
             self.add_children(branch, di.meta, [i], self.orso_repr[i])
@@ -73,7 +74,8 @@ class MetaDataDialog(wx.Dialog):
                 obj = getattr(orso_repr, key, None)
                 itm = self.tree.AppendItem(node, key)
                 self.tree.SetItemData(itm,
-                                      (key, yaml.dump(value, indent=4).replace('    ', '\t').replace('\n', '\n\t'),
+                                      (key, yaml.dump(value, indent=4, sort_keys=False
+                                                      ).replace('    ', '\t').replace('\n', '\n\t'),
                                        path+[key], obj))
                 self.add_children(itm, value, path+[key], getattr(orso_repr, key, None))
             else:
@@ -220,7 +222,8 @@ class MetaDataDialog(wx.Dialog):
             mdict = mdict[mpath.pop(0)]
         value = mdict
         self.tree.SetItemData(parent,
-                              (path[-2], yaml.dump(value, indent=4).replace('    ', '\t').replace('\n', '\n\t'),
+                              (path[-2], yaml.dump(value, indent=4, sort_keys=False
+                                                   ).replace('    ', '\t').replace('\n', '\n\t'),
                                path[:-1], obj))
         self.update_parents(parent, path[:-1])
 
