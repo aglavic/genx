@@ -226,7 +226,7 @@ class OrsoHeaderAnalyzer:
             inst.respoints = 7
             inst.resintrange = 2.5
             el = refl.simulation_widget.GetExpressionList()
-            for i, data_item in enumerate(self.data_list.data_cont.data):
+            for i, data_item in enumerate(refl.GetModel().data):
                 if len(data_item.meta['columns'])>3 and (
                         data_item.meta['columns'][3].get('error_of', None)==
                         data_item.meta['columns'][0]['name']):
