@@ -954,214 +954,26 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             for di in self.data_list.data_cont.data:
                 del (di.meta['analysis'])
         else:
-            from orsopy import fileio
-            h = fileio.Orso(**meta)
-            # detect source radiation
-            IS = h.data_source.measurement.instrument_settings
-            EX = h.data_source.experiment
-            probe = EX.probe
-            if probe=='neutron':
-                pol = IS.polarization or 'unpolarized'
-                if pol=='unpolarized':
-                    probe = 'neutron'
-                elif pol in ['pp', 'mm', 'pm', 'mp']:
-                    probe = 'neutron pol spin flip'
-                else:
-                    probe = 'neutron pol'
-            else:
-                probe = 'x-ray'
-            # detect x-axis unit
-            if h.columns[0].unit in [None, '1/angstrom']:
-                coords = 'q'
-                wavelength = 1.54
-            else:
-                coords = '2θ'
-                wavelength = float(IS.wavelength.magnitude or 1.54)
+            from genx.plugins.data_loaders.help_modules.orso_analyzer import OrsoHeaderAnalyzer
+            header_analyzed = OrsoHeaderAnalyzer(meta)
 
-            from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin, ML_LAYER, Formula, \
-                MASS_DENSITY_CONVERSION
+            from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
             if 'SimpleReflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
                 refl: SRPlugin = self.plugin_control.GetPlugin('SimpleReflectivity')
-                refl.sample_widget.sample_table.ResetModel()
-                refl.sample_widget.inst_params['probe'] = probe
-                refl.sample_widget.inst_params['wavelength'] = wavelength
-                refl.sample_widget.inst_params['coords'] = coords
-                refl.sample_widget.inst_params['res'] = 0.01
-                if h.data_source.sample.model:
-                    from orsopy.fileio import model_language
-                    stack=h.data_source.sample.model.resolve_stack()
-                    repetitions = 1
-                    res_layers = h.data_source.sample.model.resolve_to_layers()
-                    if len(stack)==3 and hasattr(stack[1], 'repetitions') \
-                        and isinstance(stack[0], model_language.Layer) and isinstance(stack[-1], model_language.Layer):
-                        # simplest version of a multilayer, just one stack with ambient and substrate layer
-                        repetitions = int(stack[1].repetitions)
-                        mid_layers = []
-                        for stack_item in stack[1].sequence:
-                            if isinstance(stack_item, model_language.Layer):
-                                mid_layers.append(stack_item)
-                            else:
-                                mid_layers+=stack_item.resolve_to_layers()
-                        res_layers = [stack[0]]+mid_layers+[stack[-1]]
-                        for li in res_layers:
-                            li.material.generate_density()
-                    layers = []
-                    for i, li in enumerate(res_layers):
-                        if li.material.formula:
-                            formula = Formula.from_str(li.material.formula)
-                            if li.material.number_density:
-                                dens = formula.mFU()*li.material.number_density.as_unit('1/angstrom**3')/MASS_DENSITY_CONVERSION
-                            elif li.material.mass_density:
-                                dens = li.material.mass_density.as_unit('g/cm**3')
-                            else:
-                                from ..models.utils import bc
-                                try:
-                                    dens = li.material.get_sld().real/eval(formula.b).real
-                                except Exception:
-                                    dens = 1.0
-                            layers.append([f'Layer_{i:02}', "Formula", formula,
-                                           False, str(dens), False, '0.0',
-                                           False, str(li.thickness.as_unit('angstrom')),
-                                           False, str(li.roughness.as_unit('angstrom')), ML_LAYER])
-                        else:
-                            layers.append([f'Layer_{i:02}', "Formula", 'SLD',
-                                           False, str(li.material.get_sld()), False, '0.0',
-                                           False, str(li.thickness.as_unit('angstrom')),
-                                           False, str(li.roughness.as_unit('angstrom')), ML_LAYER])
-                    refl.sample_widget.sample_table.ambient = [None] + layers[0][1:]
-                    refl.sample_widget.sample_table.substrate = [None] + layers[-1][1:]
-                    refl.sample_widget.sample_table.RebuildTable(layers[1:-1])
-                    refl.sample_widget.sample_table.repetitions = repetitions
-                refl.sample_widget.last_sample_script = refl.sample_widget.sample_table.getModelCode()
-                refl.sample_widget.UpdateModel(re_color=True)
+                header_analyzed.build_simple_model(refl)
             else:
                 from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
                 if not 'Reflectivity' in self.plugin_control.plugin_handler.loaded_plugins:
                     self.plugin_control.plugin_handler.load_plugin('Reflectivity')
                 # create a new script with the reflectivity plugin
                 refl: ReflPlugin = self.plugin_control.GetPlugin('Reflectivity')
-                refl.CreateNewModel('models.spec_nx')
-                # detect source radiation
-                inst = refl.sample_widget.instruments['inst']
-                inst.probe = probe
-                inst.coords = coords
-                inst.wavelength = wavelength
-                pol_names = {
-                    'po': 'uu', 'mo': 'dd', 'op': 'uu', 'om': 'dd',
-                    'pp': 'uu', 'mm': 'dd', 'pm': 'ud', 'mp': 'du'
-                    }
-                # set resolution column
-                if len(h.columns)>3 and h.columns[3].error_of==h.columns[0].name:
-                    inst.restype = 'full conv and varying res.'
-                    inst.respoints = 7
-                    inst.resintrange = 2.5
-                    el = refl.simulation_widget.GetExpressionList()
-                    for i, data_item in enumerate(self.data_list.data_cont.data):
-                        if len(data_item.meta['columns'])>3 and (
-                                data_item.meta['columns'][3].get('error_of', None)==
-                                data_item.meta['columns'][0]['name']):
-                            el[i].append(f'inst.setRes(data[{i}].res)')
-                        else:
-                            el[i].append(f'inst.setRes(0.001)')
-                        # set polarization channel
-                        pol = data_item.meta['data_source']['measurement']['instrument_settings'].get('polarization',
-                                                                                                      'unpolarized')
-                        if pol in pol_names:
-                            el[i].append(f'inst.setPol("{pol_names[pol]}")')
-
-                if h.data_source.sample.model:
-                    from orsopy.fileio import model_language
-                    res_stack=h.data_source.sample.model.resolve_stack()
-                    stacks = []
-                    repetitions = []
-                    last_stack = True
-                    for si in res_stack:
-                        if hasattr(si, 'repetitions'):
-                            repetitions.append(si.repetitions)
-                            stack_layers = []
-                            for stack_item in si.sequence:
-                                if isinstance(stack_item, model_language.Layer):
-                                    stack_layers.append(stack_item)
-                                else:
-                                    stack_layers += stack_item.resolve_to_layers()
-                            stacks.append(stack_layers)
-                            last_stack = True
-                        elif last_stack:
-                            last_stack = False
-                            repetitions.append(1)
-                            stacks.append([si])
-                        else:
-                            stacks[-1].append(si)
-
-                    # make sure we remove ambient and substrate from a single repetition stack
-                    if repetitions[0] != 1:
-                        repetitions.insert(0,1)
-                        repetitions[1]-=1
-                        stacks.insert(stacks[0])
-                    if repetitions[-1] != 1:
-                        repetitions[-1]-=1
-                        repetitions.append(1)
-                        stacks.append(stacks[-1])
-                    ambient = stacks[0].pop(0)
-                    substrate = stacks[-1].pop(-1)
-                    stacks = [(repetitions[i], si) for i, si in enumerate(stacks) if len(si)>0]
-
-                    tmp = refl.sampleh.sample.Ambient
-                    tmp.b, tmp.f, tmp.dens = self.get_layer_bfdens(ambient)
-                    tmp = refl.sampleh.sample.Substrate
-                    tmp.b, tmp.f, tmp.dens = self.get_layer_bfdens(substrate)
-                    tmp.sigma = substrate.roughness.as_unit('angstrom')
-
-                    pos = 1
-                    for si, (rep, stack) in enumerate(stacks):
-                        refl.sampleh.insertItem(pos, 'Stack', f'ST_{si}')
-                        stack_obj = refl.sampleh.sample.Stacks[0]
-                        stack_obj.Repetitions = rep
-                        pos+=1
-                        for li, layer in enumerate(stack):
-                            refl.sampleh.insertItem(pos, 'Layer', f'L_{si}_{li:02}')
-                            pos+=1
-
-                            layer_obj = stack_obj.Layers[0]
-                            layer.material.generate_density()
-
-                            layer_obj.b, layer_obj.f, layer_obj.dens = self.get_layer_bfdens(layer)
-                            layer_obj.d = layer.thickness.as_unit('angstrom')
-                            layer_obj.sigma = layer.roughness.as_unit('angstrom')
-
-                    refl.sample_widget.Update()
-
-                refl.WriteModel()
+                header_analyzed.build_reflectivity(refl)
 
         with self.catch_error(action='open_model', step=f'processing plugins'):
             self.plugin_control.OnOpenModel(None)
         debug('open_model: post new model event')
         _post_new_model_event(self, self.model_control.get_model())
         self.update_title()
-
-    @staticmethod
-    def get_layer_bfdens(layer):
-        from ..plugins.add_ons.SimpleReflectivity import Formula, MASS_DENSITY_CONVERSION
-        if layer.material.formula:
-            formula = Formula.from_str(layer.material.formula)
-            if layer.material.number_density:
-                dens = layer.material.number_density.as_unit('1/angstrom**3')
-            elif layer.material.mass_density:
-                dens = layer.material.mass_density.as_unit('g/cm**3')* \
-                                 MASS_DENSITY_CONVERSION/formula.mFU()
-            else:
-                from ..models.utils import bc
-                try:
-                    dens = layer.material.get_sld().real/eval(formula.b()).real
-                except Exception:
-                    dens = 0.1
-            b = formula.b()
-            f = formula.f()
-        else:
-            b = layer.material.get_sld()
-            f = layer.material.get_sld()
-            dens = 0.1
-        return b, f, dens
 
     def open_model(self, path):
         debug('open_model: clear model')

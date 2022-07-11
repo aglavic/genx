@@ -71,6 +71,8 @@ class Plugin(Template):
 
             start_usercols=3
             dataset.x_raw=np.asarray(data[0])
+            if orso_dataset.info.columns[0].unit == '1/nm':
+                dataset.x_raw/=10.
             dataset.y_raw=np.asarray(data[1])
             dataset.error_raw=np.asarray(data[2])
             if data.shape[0] > 3 and getattr(cols[3], 'error_of')==cols[0].name:
