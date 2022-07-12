@@ -269,3 +269,31 @@ class OrsoHeaderAnalyzer:
             refl.sample_widget.Update()
 
         refl.WriteModel()
+
+# include GenX materials in density resolution
+try:
+    from orsopy.fileio import model_language
+except ImportError:
+    pass
+else:
+    from orsopy.utils.density_resolver import DensityResolver
+    from orsopy.utils.resolver_slddb import ResolverSLDDB
+    from orsopy.utils.chemical_formula import Formula as OrsoFormula
+    from ...add_ons.help_modules.materials_db import mdb
+
+    class ResolverGenX(DensityResolver):
+        comment = "from GenX "
+
+        def resolve_formula(self, formula: OrsoFormula) -> float:
+            frm = Formula.from_str(str(formula))
+            if frm not in mdb:
+                raise ValueError(f"Could not find material {formula}")
+            else:
+                res_formula, density = mdb[frm]
+                self.comment = f"density from GenX db {res_formula}"
+                return 1e3*eval(density)
+
+        def resolve_elemental(self, formula: OrsoFormula) -> float:
+            raise ValueError("GenX resolve only used for known materials.")
+
+    model_language.DENSITY_RESOLVERS = [ResolverGenX(), ResolverSLDDB()]
