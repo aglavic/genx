@@ -75,7 +75,7 @@ class Plugin(Template):
                 dataset.x_raw/=10.
             dataset.y_raw=np.asarray(data[1])
             dataset.error_raw=np.asarray(data[2])
-            if data.shape[0] > 3 and getattr(cols[3], 'error_of')==cols[0].name:
+            if data.shape[0] > 3 and getattr(cols[3], 'error_of', None)==cols[0].name:
                 start_usercols=4
                 dataset.set_extra_data('res', np.asarray(data[3])*cols[3].to_sigma, 'res')
             for i, col in enumerate(data[start_usercols:]):

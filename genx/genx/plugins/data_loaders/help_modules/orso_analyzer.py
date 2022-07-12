@@ -145,7 +145,7 @@ class OrsoHeaderAnalyzer:
         if repetitions[0]!=1:
             repetitions.insert(0, 1)
             repetitions[1] -= 1
-            stacks.insert(stacks[0])
+            stacks.insert(0, stacks[0])
         if repetitions[-1]!=1:
             repetitions[-1] -= 1
             repetitions.append(1)
@@ -167,7 +167,7 @@ class OrsoHeaderAnalyzer:
                     pos]
         else:
             return [None, "Formula", "SLD",
-                    False, str(layer.b if self.instrument.probe!='x-ray' else layer.f), False, '0.0',
+                    False, str(layer.b.real if self.instrument.probe!='x-ray' else layer.f.real), False, '0.0',
                     False, str(layer.d), False, str(layer.sigma),
                     pos]
 
@@ -181,7 +181,7 @@ class OrsoHeaderAnalyzer:
         if self.layer_model:
             # if any stack is repeated, use that as central one
             if any([ri>1 for ri in self.layer_model.repetitions]):
-                pos = BOT_LAYER
+                pos = TOP_LAYER
                 is_ML = True
             else:
                 pos = ML_LAYER
@@ -192,19 +192,21 @@ class OrsoHeaderAnalyzer:
             repetitions = 1
             for i, (ri, si) in enumerate(zip(self.layer_model.repetitions, self.layer_model.stacks)):
                 if is_ML and pos==ML_LAYER:
-                    pos = TOP_LAYER
-                if ri>1 and pos==BOT_LAYER:
+                    pos = BOT_LAYER
+                if ri>1 and pos==TOP_LAYER:
                     pos = ML_LAYER
                     repetitions = ri
                     for li in si:
                         nl = self.simple_refl_layer(li, pos=pos)
                         nl[0] = f'Layer_{ID:02}'
                         layers.append(nl)
+                        ID+=1
                 else:
                     for li in ri*si:
                         nl = self.simple_refl_layer(li, pos=pos)
                         nl[0] = f'Layer_{ID:02}'
                         layers.append(nl)
+                        ID+=1
             refl.sample_widget.sample_table.ambient = self.simple_refl_layer(self.layer_model.ambient)
             refl.sample_widget.sample_table.substrate = self.simple_refl_layer(self.layer_model.substrate)
             refl.sample_widget.sample_table.RebuildTable(layers)

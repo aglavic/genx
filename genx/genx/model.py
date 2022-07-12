@@ -636,9 +636,7 @@ class Model(H5HintedExport):
             else:
                 prev_columns_list = None
                 prev_columns = {}
-            if prev_columns_list:
-                column_names = prev_columns_list[:3]
-            elif hasattr(self.script_module, 'inst') and self.script_module.inst.coords in ['tth', '2θ']:
+            if hasattr(self.script_module, 'inst') and self.script_module.inst.coords in ['tth', '2θ']:
                 column_names = [Column('TTh', 'deg'), Column('R'), ErrorColumn('R')]
             else:
                 column_names = [Column('Qz', '1/angstrom'), Column('R'), ErrorColumn('R')]
