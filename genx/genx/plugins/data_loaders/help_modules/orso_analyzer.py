@@ -4,14 +4,16 @@ Helper module to support ORSO file header information to build reflectivity mode
 
 from dataclasses import dataclass
 from copy import deepcopy
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from orsopy import fileio
 
-from ...add_ons.SimpleReflectivity import Plugin as SRPlugin, TOP_LAYER, ML_LAYER, BOT_LAYER, \
-    Formula, MASS_DENSITY_CONVERSION
-from ...add_ons.Reflectivity import Plugin as ReflPlugin
+from ...add_ons.help_modules.materials_db import Formula, MASS_DENSITY_CONVERSION
 
+if TYPE_CHECKING:
+    # make sure the wx based plugins don't need to be imported at runtime
+    from ...add_ons.SimpleReflectivity import Plugin as SRPlugin
+    from ...add_ons.Reflectivity import Plugin as RPlugin
 
 @dataclass
 class InstrumentInformation:
@@ -156,7 +158,7 @@ class OrsoHeaderAnalyzer:
                 repetitions.pop(i)
         self.layer_model = LayerModel(ambient=ambient, substrate=substrate, stacks=stacks, repetitions=repetitions)
 
-    def simple_refl_layer(self, layer: LayerData, pos=ML_LAYER):
+    def simple_refl_layer(self, layer: LayerData, pos=1):
         if layer.formula:
             dens = layer.dens*layer.formula.mFU()/MASS_DENSITY_CONVERSION
             return [None, "Formula", layer.formula,
@@ -169,7 +171,8 @@ class OrsoHeaderAnalyzer:
                     False, str(layer.d), False, str(layer.sigma),
                     pos]
 
-    def build_simple_model(self, refl: SRPlugin):
+    def build_simple_model(self, refl: "SRPlugin"):
+        from ...add_ons.SimpleReflectivity import TOP_LAYER, ML_LAYER, BOT_LAYER
         refl.sample_widget.sample_table.ResetModel()
         refl.sample_widget.inst_params['probe'] = self.instrument.probe
         refl.sample_widget.inst_params['wavelength'] = self.instrument.wavelength
@@ -209,7 +212,7 @@ class OrsoHeaderAnalyzer:
         refl.sample_widget.last_sample_script = refl.sample_widget.sample_table.getModelCode()
         refl.sample_widget.UpdateModel(re_color=True)
 
-    def build_reflectivity(self, refl: ReflPlugin):
+    def build_reflectivity(self, refl: "RPlugin"):
         refl.CreateNewModel('models.spec_nx')
         # detect source radiation
         inst = refl.sample_widget.instruments['inst']
