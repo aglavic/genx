@@ -504,6 +504,7 @@ The Sample class allows export of the resulting atom position in the XYZ format.
 The most convenient way to perform this export is to use the **UserFuncs** plugin with the following
 export function in your script:
 ::
+
     def export_xyz(xyz_file: TextIO):
         sample.export_xyz(xyz_file)
 
