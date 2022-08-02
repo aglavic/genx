@@ -9,8 +9,7 @@ If you need more support send an e-mail to artur.glavic@psi.ch.
 References
 ==========
 If you use the program please give reference to the following publication:
-M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
-(New paper submitted to J. Appl. Cryst., stay tuned!)
+A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
 Changes 3.6.12
 ==============

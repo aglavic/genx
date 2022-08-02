@@ -8,7 +8,7 @@ A model to fit is defined either through a GUI plug-in or via a python script. T
 Clearly, GenX is extremely modular, making it possible to extend the program with models and plug-ins for most fitting problems. 
 
 At the present GenX is shipped with models for x-ray and neutron specular reflectivity, off-specular x-ray reflectivity and surface x-ray diffraction. 
-A detailed description, of a older version, has been published in [J. Appl. Cryst. 40, 1174 (2007)](https://www.iucr.org/cgi-bin/paper?aj5091).
+A detailed description, of a older version, has been published in [J. Appl. Cryst. 55, 1063-1071 (2022)](https://doi.org/10.1107/S1600576722006653).
 
 ## Feedback and Help
 You can find a manual with examples at https://aglavic.github.io/genx/doc/, for reflectometry a good start is with the 

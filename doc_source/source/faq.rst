@@ -9,8 +9,8 @@ General
 
 How should I cite GenX?
 -----------------------
-Give a reference to the paper describing GenX:
-M. Björck and G. Andersson J. Appl. Cryst. 40, 1174 (2007)
+Give a reference to the paper describing GenX 3:
+A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022)
 And if you want to give a link to the homepage: <http://genx.sf.net>
 
 Issue with editing the grid on Mac
