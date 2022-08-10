@@ -71,11 +71,13 @@ class Plugin(Template):
 
             start_usercols=3
             dataset.x_raw=np.asarray(data[0])
+            if orso_dataset.info.columns[0].unit == '1/nm':
+                dataset.x_raw/=10.
             dataset.y_raw=np.asarray(data[1])
             dataset.error_raw=np.asarray(data[2])
-            if data.shape[0] > 3 and cols[3].name==('s'+cols[0].name):
+            if data.shape[0] > 3 and getattr(cols[3], 'error_of', None)==cols[0].name:
                 start_usercols=4
-                dataset.set_extra_data('res', np.asarray(data[3]), 'res')
+                dataset.set_extra_data('res', np.asarray(data[3])*cols[3].to_sigma, 'res')
             for i, col in enumerate(data[start_usercols:]):
                 colname=cols[i+start_usercols].name
                 if not colname.isidentifier() or colname in ['lambda', 'x', 'y', 'error', 'res']:

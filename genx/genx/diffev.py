@@ -1320,7 +1320,7 @@ class DiffEv(GenxOptimizer):
 
 # ==============================================================================
 # Functions that is needed for parallel processing!
-model = Model();
+model = None
 par_funcs = ()  # global variables set in functions below
 
 

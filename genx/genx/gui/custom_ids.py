@@ -96,3 +96,11 @@ class MenuId(int, Enum):
     HELP_HOMEPAGE=wx.Window.NewControlId()
     HELP_ABOUT=wx.Window.NewControlId()
     HELP_DEBUG=wx.Window.NewControlId()
+
+def rebuild_IDs():
+    # re-generate above Enums with new IDs for e.g. window recreation
+    global ToolId, MenuId
+    new_vals = dict([(key, wx.Window.NewControlId()) for key in ToolId.__members__.keys()])
+    ToolId = Enum('ToolId', new_vals, type=int, module=__name__)
+    new_vals = dict([(key, wx.Window.NewControlId()) for key in MenuId.__members__.keys()])
+    MenuId = Enum('MenuId', new_vals, type=int, module=__name__)

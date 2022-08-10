@@ -8,6 +8,7 @@ import re
 import json
 
 from genx.models.utils import bc, fp, fw, __bc_dict__  # @UnusedImport
+from genx.models.lib.physical_constants import MASS_DENSITY_CONVERSION
 from genx.core.custom_logging import iprint
 
 # configuration file to store the known materials
@@ -36,7 +37,6 @@ default_materials=[
     [[["Ti", 1.0], ["O", 2.0]], "4.0/(4.5318*5.5019*4.9063)"],
     ]
 
-MASS_DENSITY_CONVERSION=0.60221415  # g/cm³-> u/Å³ : 1e-24 (1/cm³->1/Å³) * 6.0221415e23 (Na)
 
 class Formula(list):
     '''

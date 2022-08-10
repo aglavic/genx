@@ -286,7 +286,11 @@ class DataFileDropTarget(wx.FileDropTarget):
         wx.FileDropTarget.__init__(self)
 
     def OnDropFiles(self, x, y, filenames):
-        return self.parent.load_from_files(filenames)
+        first_name = filenames[0].lower()
+        if first_name.endswith('.hgx') or first_name.endswith('.gx'):
+            return False
+        else:
+            return self.parent.load_from_files(filenames)
 
 
 class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
@@ -822,6 +826,7 @@ class DataListControl(wx.Panel):
     def do_toolbar(self):
         dpi_scale_factor = wx.GetApp().dpi_scale_factor
         tb_bmp_size = int(dpi_scale_factor*20)
+
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Add data set',
                              bitmap=wx.Bitmap(img.add.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
@@ -842,7 +847,7 @@ class DataListControl(wx.Panel):
 
         newid = wx.NewId()
         self.toolbar.AddTool(newid, label='Datset information',
-                             bitmap=wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, size=(tb_bmp_size, tb_bmp_size)),
+                             bitmap=wx.Bitmap(img.info.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
                              shortHelp='Show the meta data information for the selected dataset')
         self.Bind(wx.EVT_TOOL, self.eh_tb_data_info, id=newid)
 

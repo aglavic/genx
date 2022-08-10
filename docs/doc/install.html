@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Installation &#8212; GenX 3.6.2 documentation</title>
+    <title>Installation &#8212; GenX 3.6.12 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to GenX’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.6.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.6.12 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
       </ul>
     </div>  
@@ -50,13 +50,18 @@
 <span id="install"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <section id="windows">
 <h2>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h2>
-<p>Download the windows installer GenX-3.X.X_win64_setup.exe from the home page and follow the instructions in the installation
+<p>Download the windows installer GenX-3.X.X_win64_setup.exe from the
+<a class="reference external" href="https://github.com/aglavic/genx/releases/latest">home page</a> and follow the instructions in the installation
 guide.</p>
 </section>
-<section id="mac-os-x">
-<h2>Mac OS-X<a class="headerlink" href="#mac-os-x" title="Permalink to this headline">¶</a></h2>
+<section id="mac-os">
+<h2>Mac OS<a class="headerlink" href="#mac-os" title="Permalink to this headline">¶</a></h2>
+<p>Binary packages for Mac OS are <a class="reference external" href="https://github.com/aglavic/genx/releases/latest">provided</a> as
+GenX-3.X.X_Installer.dmg images that can directly be installed. If you are having
+trouble with this distribution you can try installing from source. (And create a trouble ticket, please.)</p>
 <p>Install the required python 3 packages, especially wxPython. I would advice using a new Anaconda environment.
-Afterwards you can install GenX from source.</p>
+Afterwards you can install GenX from source. The anaconda environment packages that are known to work can be found in
+<a class="reference external" href="https://raw.githubusercontent.com/aglavic/genx/master/genx/mac_build/conda_build.yml">conda_build.yml</a></p>
 </section>
 <section id="linux">
 <h2>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
@@ -145,7 +150,8 @@ This can become handy if you need to selec specific library versions, PATH or LD
 </section>
 <section id="from-source">
 <h2>From source<a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h2>
-<p>Download the source distribution GenX-3.X.X.tar.gz and unpack it. Run the file scripts/genx directly:</p>
+<p><a class="reference external" href="https://github.com/aglavic/genx/releases/latest">Download</a> the source distribution GenX-3.X.X.tar.gz
+and unpack it. Run the file scripts/genx directly:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tar -xvzf GenX-3.X.X.tar.gz
 <span class="nb">cd</span> GenX-3.X.X
 python3 scripts/genx
@@ -169,7 +175,7 @@ genx
 python -m genx.run
 </pre></div>
 </div>
-<p>You can also try <a class="reference download internal" download="" href="_downloads/34da863ef3e1a937bc8feb9258203ec7/conda.yml"><code class="xref download docutils literal notranslate"><span class="pre">this</span></code></a> environment file with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">--file</span> <span class="pre">conda.yml</span></code>.</p>
+<p>You can also try <a class="reference external" href="_attachments/conda.yml">download this</a> environment file with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">--file</span> <span class="pre">conda.yml</span></code>.</p>
 </section>
 <section id="requirements">
 <h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
@@ -182,6 +188,7 @@ python -m genx.run
 <li><p>Matplotlib version &gt; 0.9</p></li>
 <li><p>appdirs version &gt; 1.2</p></li>
 <li><p>h5py</p></li>
+<li><p>orsopy</p></li>
 </ul>
 <p>The non-mandotary packages are</p>
 <ul class="simple">
@@ -209,7 +216,7 @@ anaconda distribution contains all packages.</p>
   <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#windows">Windows</a></li>
-<li><a class="reference internal" href="#mac-os-x">Mac OS-X</a></li>
+<li><a class="reference internal" href="#mac-os">Mac OS</a></li>
 <li><a class="reference internal" href="#linux">Linux</a><ul>
 <li><a class="reference internal" href="#snap">Snap</a></li>
 <li><a class="reference internal" href="#clusters">Clusters</a><ul>
@@ -270,7 +277,7 @@ anaconda distribution contains all packages.</p>
         <li class="right" >
           <a href="index.html" title="Welcome to GenX’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.6.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.6.12 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
       </ul>
     </div>

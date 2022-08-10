@@ -31,6 +31,9 @@ jobs:
       run: |
         cd genx
         pyinstaller genx.spec
+    - name: Pre-compile numba functions
+      run: |
+        genx\dist\genx\genx_console.exe --compile-nb
     - name: Download and Install Inno Setup installer
       run: |
         curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-6.1.2.exe
@@ -46,7 +49,7 @@ jobs:
         name: windows-dist
         path: |
           genx\windows_build\Output\GenX-*_win64_setup.exe
-        
+
   build-ubuntu-20:
     runs-on: ubuntu-20.04
 
@@ -107,10 +110,60 @@ jobs:
           genx/dist/*.deb
           genx/dist/*.tar.gz
 
+  build-macos:
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Create environment
+      run: |
+        $CONDA/bin/conda env update --file genx/mac_build/conda_build.yml --name base
+        $CONDA/bin/python -m pip install bumps orsopy pyinstaller==5.0.1 pyinstaller-hooks-contrib==2022.4 pyyaml==6.0
+        brew install create-dmg
+    - name: Build with pyinstaller
+      run: |
+        cd genx
+        $CONDA/bin/pyinstaller genx_mac.spec
+    - name: Fix library symbolic link issue # see pyinstaller bug #5710
+      run: |
+        cd genx/dist/genx.app/Contents/MacOS
+        rm -f libwx_osx_cocoau_core-3.1.dylib libwx_baseu-3.1.dylib
+        ln -s libwx_osx_cocoau_core-3.1.5.0.0.dylib libwx_osx_cocoau_core-3.1.dylib
+        ln -s libwx_baseu-3.1.5.0.0.dylib libwx_baseu-3.1.dylib
+    - name: Remove any library signatures
+      run: |
+        cd genx/dist
+        codesign --remove-signature genx.app
+    - name: Package app
+      run: |
+        cd genx
+        GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
+        cd dist
+        create-dmg  --volname "GenX Installer" \
+                    --volicon ../mac_build/genx.icns \
+                    --background ../mac_build/GenXBkg.png \
+                    --window-size 640 480 \
+                    --icon-size 90 \
+                    --icon genx.app 190 340 \
+                    --hide-extension genx.app \
+                    --app-drop-link 450 335 \
+                    "GenX3-$GENX_VERSION-Installer.dmg" \
+                    genx.app
+    - name: Archive distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: mac-dist
+        path: |
+          genx/dist/GenX3*.dmg
+
   release:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs: [build-ubuntu-20, build-windows]
+    needs: [build-ubuntu-20, build-windows, build-macos]
     
     steps:
     - uses: actions/checkout@v2
@@ -120,16 +173,19 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: windows-dist
+    - uses: actions/download-artifact@v2
+      with:
+        name: mac-dist
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe"
+        artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe,GenX3*.dmg"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
 
   release-sourceforge:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs: [build-ubuntu-20, build-windows]
+    needs: [build-ubuntu-20, build-windows, build-macos]
 
     steps:
     - uses: actions/checkout@v2
@@ -139,6 +195,9 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: windows-dist
+    - uses: actions/download-artifact@v2
+      with:
+        name: mac-dist
     - name: Install dependencies
       run: |
         sudo apt update
@@ -158,5 +217,5 @@ jobs:
         DEST="GenX $GENX_MVERSION.x"
         mkdir "$DEST"
         mv genx/README_latest.txt "$DEST/README.txt"
-        mv GenX*.deb GenX*.tar.gz GenX-*_win64_setup.exe "$DEST"
+        mv GenX*.deb GenX*.tar.gz GenX-*_win64_setup.exe GenX*.dmg "$DEST"
          rsync --progress -urz "$DEST" ${{secrets.SF_USER}}@frs.sourceforge.net:/home/pfs/project/genx/3.x.y/

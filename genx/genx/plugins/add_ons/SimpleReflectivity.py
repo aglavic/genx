@@ -16,6 +16,7 @@ import io, traceback
 import wx.grid as gridlib
 from wx.adv import Wizard, WizardPageSimple
 from orsopy.slddb import api
+from orsopy.slddb.material import Formula as MatFormula
 
 from .. import add_on_framework as framework
 from genx.model import Model
@@ -31,7 +32,7 @@ from .help_modules.materials_db import mdb, Formula, MASS_DENSITY_CONVERSION
 from genx.core.custom_logging import iprint
 from genx.gui.parametergrid import ValueCellRenderer
 from genx.gui.custom_events import EVT_UPDATE_SCRIPT, skips_event
-from ...gui.custom_ids import MenuId
+from ...gui import custom_ids
 
 
 _set_func_prefix = 'set'
@@ -48,12 +49,13 @@ except:
     api = None
 
 
-def get_mat_api(frm):
+def get_mat_api(frm: Formula):
     # Use ORSO SLD db to query for a material by formula
     if not api:
         return None
     try:
-        res = api.localquery(dict(formula=frm.estr()))
+        frm2 = MatFormula(frm.estr())
+        res = api.localquery(dict(formula=str(frm2)))
         if len(res):
             mat = api.localmaterial(res[0]['ID'])
             return mat.dens, res[0]['ID'], res[0]['validated']
@@ -197,8 +199,8 @@ class SampleTable(gridlib.GridTableBase):
 
         dpi_scale_factor = wx.GetApp().dpi_scale_factor
 
-        self.grid.SetRowLabelSize(30*dpi_scale_factor)
-        self.grid.SetColLabelSize(50*dpi_scale_factor)
+        self.grid.SetRowLabelSize(int(30*dpi_scale_factor))
+        self.grid.SetColLabelSize(int(50*dpi_scale_factor))
         for i, colinfo in enumerate(self._columns):
             # self.parent.SetColSize(i, 50)
             self.grid.AutoSizeColumn(i, True)
@@ -881,7 +883,7 @@ class SamplePanel(wx.Panel):
 
         newid = wx.NewId()
         button = wx.Button(self.toolbar, newid, label='Instrument Settings',
-                           size=(132*dpi_scale_factor, 22*dpi_scale_factor))
+                           size=(int(132*dpi_scale_factor), int(22*dpi_scale_factor)))
         button.SetBitmap(wx.Bitmap(images.instrument.GetImage().Scale(tb_bmp_size, tb_bmp_size)), dir=wx.LEFT)
         self.toolbar.AddControl(button)
         self.Bind(wx.EVT_BUTTON, self.EditInstrument, id=newid)
@@ -891,7 +893,7 @@ class SamplePanel(wx.Panel):
 
         newid = wx.NewId()
         button = wx.Button(self.toolbar, newid, label='to Advanced Modelling',
-                           size=(150*dpi_scale_factor, 22*dpi_scale_factor))
+                           size=(int(150*dpi_scale_factor), int(22*dpi_scale_factor)))
         button.SetBitmap(wx.Bitmap(images.custom_parameters.GetImage().Scale(tb_bmp_size, tb_bmp_size)), dir=wx.LEFT)
         button.SetToolTip("Switch to Reflectivity plugin for advanced modeling options.\n"
                           "This converts the model and can't be undone.")
@@ -977,7 +979,7 @@ class SamplePanel(wx.Panel):
                 pol = di.meta['data_source']['measurement']['instrument_settings']['polarization']
                 if pol=='unpolarized':
                     pass
-                elif pol in ['m', 'mm']:
+                elif pol in ['mo', 'om', 'mm']:
                     inst_id = 1%len(insts)
                 else:
                     inst_id = 0
@@ -1180,10 +1182,10 @@ class WizarSelectionPage(WizardPageSimple):
         out_layout = wx.BoxSizer(wx.VERTICAL)
         box.SetSizer(out_layout)
         box_layout = wx.GridSizer(min(4, len(choices)//4+1), 2, 2)
-        out_layout.Add(box_layout, 1, wx.EXPAND | wx.TOP | wx.LEFT, 12*dpi_scale_factor)
+        out_layout.Add(box_layout, 1, wx.EXPAND | wx.TOP | wx.LEFT, int(12*dpi_scale_factor))
         for choice in choices:
             self.ctrl[choice] = wx.RadioButton(box, label=choice,
-                                               size=wx.Size(-1, 16*dpi_scale_factor))
+                                               size=wx.Size(-1, int(16*dpi_scale_factor)))
             box_layout.Add(self.ctrl[choice], 0, wx.FIXED_MINSIZE, 2)
         self.ctrl[choices[0]].SetValue(True)
 
@@ -1276,7 +1278,7 @@ class Plugin(framework.Template):
                                             wx.ITEM_CHECK)
         menu.Append(self.mb_show_imag_sld)
         self.mb_show_imag_sld.Check(self.sld_plot.opt.show_imag)
-        self.mb_autoupdate_sim = parent.mb_checkables[MenuId.AUTO_SIM]
+        self.mb_autoupdate_sim = parent.mb_checkables[custom_ids.MenuId.AUTO_SIM]
         self.mb_autoupdate_sim.Check(True)
         self.mb_autoupdate_sld = wx.MenuItem(menu, wx.NewId(),
                                              "Autoupdate SLD",

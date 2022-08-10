@@ -1,0 +1,23 @@
+#!/usr/bin/env pythonw
+import os
+import sys
+
+if getattr(sys, 'frozen', False):
+    src=os.path.abspath(os.path.join(sys._MEIPASS, 'genx_source'))
+    sys.path.insert(0, src)
+
+try:
+    from genx.run import main
+except ImportError:
+    script_path=os.path.split(os.path.abspath(__file__))[0]
+    genx_path=os.path.split(script_path)[0]
+    sys.path.insert(0, genx_path)
+    for mod in list(sys.modules.keys()):
+        # remove namespace that could be created when trying to import genx and this script is in path
+        if mod.startswith('genx'):
+            del(sys.modules[mod])
+finally:
+    from genx.run import main
+
+if __name__ == "__main__":
+    main()

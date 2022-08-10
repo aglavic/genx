@@ -17,7 +17,7 @@ from . import controls as ctrls, images as img
 from .custom_events import delete_parameters, grid_change, inset_parameter, move_parameter, set_parameter_value, \
     sort_and_group_parameters, value_change, \
     skips_event
-from .custom_ids import MenuId
+from .import custom_ids
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from ..core.custom_logging import iprint
@@ -819,12 +819,12 @@ class ParameterGrid(wx.Panel, Configurable):
 
     def PrepareNewModel(self):
         """ Hack to prepare the grid for a new model.
-        :return:
         """
-        # This hack is needed to deselect any current cell. Have not found a better way to solve it.
-        # If not called the program can cause an segmentation fault and crash.
-        self.grid.SetGridCursor(0, 3)
-        self.grid.SetGridCursor(0, 4)
+        self.grid.ClearSelection()
+
+    def ClearEditing(self):
+        self.grid.EnableEditing(False)
+        wx.CallAfter(self.grid.EnableEditing, True)
 
     def UpdateConfigValues(self):
         self.SetValueEditorSlider(slider=self.opt.value_slider)
@@ -915,11 +915,6 @@ class ParameterGrid(wx.Panel, Configurable):
         # wx.PostEvent(self.parent, evt)
 
     def do_toolbar(self):
-        # self.toolbar.SetToolBitmapSize((21,21))
-        # self.toolbar.SetToolSeparation(5)
-        # self.toolbar.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
-        # self.toolbar.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUBAR))
-        # self.toolbar.SetBackgroundColour('BLUE')
         dpi_scale_factor = wx.GetApp().dpi_scale_factor
         tb_bmp_size = int(dpi_scale_factor*20)
 
@@ -1025,7 +1020,7 @@ class ParameterGrid(wx.Panel, Configurable):
         """
         new_state = not self.GetValueEditorSlider()
         self.SetValueEditorSlider(new_state)
-        self.parent.mb_checkables[MenuId.TOGGLE_SLIDER].Check(new_state)
+        self.parent.mb_checkables[custom_ids.MenuId.TOGGLE_SLIDER].Check(new_state)
         self.Refresh()
 
     def toggle_slider_tool(self, state):

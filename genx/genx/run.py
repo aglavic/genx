@@ -22,15 +22,6 @@ def start_interactive(args):
     :param args: command line arguments evaluated with argparse.
     '''
     debug('enter start_interactive')
-    if sys.version_info < (3, 9) and sys.platform=='darwin' and not sys.executable.endswith('MacOS/Python'):
-        # restart with pythonw, this should not be necessary for newer python versions
-        debug('detected Mac OS run without pythonw, re-run with correct executable')
-        debug(' '.join(['pythonw', '-m', 'genx.run']+sys.argv[1:]))
-        logger = getLogger()
-        for hi in logger.handlers:
-            hi.flush()
-        os.execvp('pythonw', ['pythonw', '-m', 'genx.run']+sys.argv[1:])
-
     activate_excepthook()
     # Fix blurry text on Windows 10
     import ctypes
@@ -167,7 +158,7 @@ def modify_file(args):
 
 def set_numba_single():
     config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-    cache_dir = os.path.join(config_path, 'single_cpu_numba_cache')
+    cache_dir = os.path.join(config_path, 'numba_cache_single_cpu')
 
     debug('Setting numba JIT compilation to single CPU')
     import numba
@@ -363,9 +354,41 @@ def set_bumps_pars(optimiser, args):
         optimiser.opt.use_parallel_processing = True
         optimiser.opt.parallel_processes = args.pr
 
+def compile_numba(cache_dir=None):
+    try:
+        # perform a compilation of numba functions with console feedback
+        import numba
+        if cache_dir:
+            numba.config.CACHE_DIR = cache_dir
+        elif hasattr(numba.config, 'CACHE_DIR'):
+            import appdirs
+            config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+            # make sure to use a user directory for numba cache
+            numba.config.CACHE_DIR = os.path.join(config_path, 'numba_cache')
+
+        real_jit = numba.jit
+
+        class UpdateJit:
+            update_counter = 1
+
+            def __call__(self, *args, **opts):
+                print(f'compiling numba functions {self.update_counter}/21')
+                self.update_counter += 1
+                return real_jit(*args, **opts)
+
+        print('Starting to compile numba functions..')
+        numba.jit = UpdateJit()
+        from .models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
+        numba.jit = real_jit
+    except Exception as e:
+        print('An exception occured when trying to compile the numba functions:')
+        print(e)
+        return 1
+    return 0
 
 def main():
     multiprocessing.freeze_support()
+    multiprocessing.set_start_method('spawn')
     # Attempt to load mpi:
     try:
         from mpi4py import MPI
@@ -422,6 +445,8 @@ def main():
     data_group.add_argument('--nb1', dest='numba_single', default=False, action="store_true",
                             help='Compile numba JIT functions without parallel computing support (use one core only). '
                                  'Caching in this case is done in a different user directory.')
+    data_group.add_argument('--compile-nb', dest='compile_nb', default=False, action="store_true",
+                            help='Perform a first-/recompilation of the numba modules and exit')
 
     parser.add_argument('infile', nargs='?', default='',
                         help='The .gx or .hgx file to load or .ort file to use as basis for model')
@@ -430,6 +455,9 @@ def main():
     args = parser.parse_args()
     if not __mpi__:
         args.mpi = False
+
+    if args.compile_nb:
+        sys.exit(compile_numba())
 
     if args.run or args.mpi or args.pars or args.mod:
         # make sure at least info-messages are shown (default is warning)

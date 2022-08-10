@@ -9,8 +9,41 @@ If you need more support send an e-mail to artur.glavic@psi.ch.
 References
 ==========
 If you use the program please give reference to the following publication:
-M. Bjorck and G. Andersson J. Appl. Cryst. 40, 1174 (2007).
-(New paper submitted to J. Appl. Cryst., stay tuned!)
+A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
+
+Changes 3.6.12
+==============
+ * Fix a bug where fitting from console with autosave and --error options stopped the fit after first autosave
+ * Improve the meta data editing capability
+
+Changes 3.6.11
+==============
+ * Update the ORSO file definition to version 1.0.0 released recently
+ * Modify the metadata dialog to allow adding and editing values
+ * Add a new data loader for the Rigaku .ras format
+ * Fix default and resolution loader to ignore non utf-8 encoded values
+
+Changes 3.6.10
+==============
+ * Implement a tech-preview using alternative plotting backend with improved performance
+   (selected in Settings -> Startup Profile... menu.)
+ * Automatically restart the window when switching from legacy to widescreen layout.
+
+Changes 3.6.9
+=============
+ * First version of MacOS binary distribution
+ * Add new script "genx_mac" to PyPI package to start with framework build (pythonw)
+ * Allow file names with upper case endings (.GX/.HGX)
+ * Try to fix some plot drawing issues on some Linux systems with Wayland backend.
+ * Open GenX model files on drag&drop to the window (if not above data list)
+ * Fix GUI not remembering a model is unchanged after loading from a file
+ * Fix bug where the parametr grid could be wrong after loading a model while value editor was active
+
+Changes 3.6.8
+=============
+ * Fix a bug where values for the instrument parameters where parsed by int type if the script used integer values
+ * Fix a compatibility issue with older wxPython/wxWidgets that would prevent genx from starting on fedora 35
+ * Fix issues when running numba together with multiprocessing on UNIX bases systems due to fork method
 
 Changes 3.6.7
 =============

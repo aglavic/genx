@@ -7,14 +7,20 @@ Installation
 Windows
 =======
 
-Download the windows installer GenX-3.X.X_win64_setup.exe from the home page and follow the instructions in the installation
+Download the windows installer GenX-3.X.X_win64_setup.exe from the
+`home page <https://github.com/aglavic/genx/releases/latest>`_ and follow the instructions in the installation
 guide.
 
-Mac OS-X
-========
+Mac OS
+======
+
+Binary packages for Mac OS are `provided <https://github.com/aglavic/genx/releases/latest>`_ as
+GenX-3.X.X_Installer.dmg images that can directly be installed. If you are having
+trouble with this distribution you can try installing from source. (And create a trouble ticket, please.)
 
 Install the required python 3 packages, especially wxPython. I would advice using a new Anaconda environment.
-Afterwards you can install GenX from source.
+Afterwards you can install GenX from source. The anaconda environment packages that are known to work can be found in
+`conda_build.yml <https://raw.githubusercontent.com/aglavic/genx/master/genx/mac_build/conda_build.yml>`_
 
 Linux
 =====
@@ -106,7 +112,8 @@ Using Minconda
 From source
 ===========
 
-Download the source distribution GenX-3.X.X.tar.gz and unpack it. Run the file scripts/genx directly:
+`Download <https://github.com/aglavic/genx/releases/latest>`_ the source distribution GenX-3.X.X.tar.gz
+and unpack it. Run the file scripts/genx directly:
 
 .. code-block:: bash
 
@@ -137,7 +144,7 @@ You can create a suitable anaconda environment using the following commands, i:
     # if the command is not recognized you can try instead
     python -m genx.run
 
-You can also try :download:`this <_attachments/conda.yml>` environment file with ``conda env create --file conda.yml``.
+You can also try `download this <_attachments/conda.yml>`_ environment file with ``conda env create --file conda.yml``.
 
 Requirements
 ------------
@@ -151,6 +158,7 @@ The needed dependencies are:
 * Matplotlib version > 0.9
 * appdirs version > 1.2
 * h5py
+* orsopy
 
 The non-mandotary packages are
 

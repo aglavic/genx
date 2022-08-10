@@ -95,7 +95,7 @@ class ConsoleCallback(GenxOptimizerCallback):
         model.parameters.set_value_pars(self.ctrl.optimizer.best_vec)
         if self.error:
             iprint("Calculating error bars")
-            calc_errorbars(io.config, self.model, self.ctrl.optimizer)
+            calc_errorbars(self.ctrl.model, self.ctrl.optimizer)
         if self.outfile:
             iprint("Saving to %s"%self.outfile)
             self.ctrl.save_file(self.outfile)

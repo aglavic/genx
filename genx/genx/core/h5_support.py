@@ -2,12 +2,13 @@
 Items used to support saving classes to HDF 5 files.
 """
 import h5py
+import pickle
 from abc import ABC, abstractmethod
 from typing import get_type_hints, List, Union
 from inspect import isclass
-from numpy import ndarray
+from numpy import ndarray, void
 from logging import debug, warning
-
+from datetime import datetime
 
 try:
     from typing import get_args, get_origin
@@ -15,7 +16,7 @@ except ImportError:
     def get_args(tp): return getattr(tp, '__args__', ())
 
 
-    def get_origin(tp): return getattr(tp, '__extra__', None)
+    def get_origin(tp): return getattr(tp, '__extra__', None) or getattr(tp, '__origin__', None)
 
 
 class H5Savable(ABC):
@@ -43,12 +44,22 @@ class H5Savable(ABC):
         for key, value in obj.items():
             vtyp = type(value)
             if vtyp is dict:
-                sub_group = group.create_group(key)
+                sub_group = group.create_group(key, track_order=True)
                 self.h5_write_free_dict(sub_group, value)
+                group[key].attrs['genx_type']='free_dict'.encode('ascii')
             elif any([issubclass(vtyp, typ) for typ in [float, int, ndarray, complex]]):
                 group[key] = value
+                group[key].attrs['genx_type']=vtyp.__name__.encode('ascii')
+            elif isinstance(value, datetime):
+                group[key] = value.isoformat().encode('ascii')
+                group[key].attrs['genx_type']=vtyp.__name__.encode('ascii')
             elif issubclass(vtyp, str):
                 group[key] = value.encode('utf-8')
+                group[key].attrs['genx_type']=vtyp.__name__.encode('ascii')
+            else:
+                # if the type can't be handled like this, create a pickle string
+                group[key] = void(pickle.dumps(value))
+                group[key].attrs['genx_type']='dump'.encode('ascii')
 
     def h5_read_free_dict(self, output: dict, group: Union[h5py.Group, h5py.Dataset], item_path: List[str]):
         """
@@ -64,16 +75,25 @@ class H5Savable(ABC):
                 node[pathi] = new_node
                 node = new_node
         if type(group) is h5py.Dataset:
+            prev_typ=group.attrs.get('genx_type', None)
             value = group[()]
             vtyp = type(value)
-            if issubclass(vtyp, float):
+            if issubclass(vtyp, float) or prev_typ=='float':
                 value = float(value)
-            elif issubclass(vtyp, int):
+            elif issubclass(vtyp, int) or prev_typ=='int':
                 value = int(value)
-            elif issubclass(vtyp, complex):
+            elif issubclass(vtyp, complex) or prev_typ=='complex':
                 value = complex(value)
+            elif issubclass(vtyp, void) or prev_typ=='dump':
+                value = pickle.loads(value.tobytes())
             elif vtyp is bytes:
-                value = value.decode('utf-8')
+                if prev_typ=='datetime':
+                    try:
+                        value = datetime.fromisoformat(value.decode('ascii'))
+                    except AttributeError:
+                        value = datetime.strptime(lue.decode('ascii'), "%Y-%m-%dT%H:%M:%S")
+                else:
+                    value = value.decode('utf-8')
             node[item_path[-1]] = value
             return
         for key in group:
@@ -116,7 +136,7 @@ class H5HintedExport(H5Savable):
             value = getattr(self, attr)
             if typ is dict:
                 # free dictionary, save every str, int, float type values and ignore rest
-                self.h5_write_free_dict(group.create_group(attr), value)
+                self.h5_write_free_dict(group.create_group(attr, track_order=True), value)
             elif get_origin(typ) is dict:
                 sub_group = group.create_group(attr)
                 styp = get_args(typ)[1]

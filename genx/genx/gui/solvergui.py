@@ -433,6 +433,10 @@ class ModelControlGUI(wx.EvtHandler):
                 iprint('Could not create data for parameters')
             else:
                 wx.PostEvent(self.parent, evt)
+        wx.CallLater(100, self.SetModelSaved)
+
+    def SetModelSaved(self):
+        self.saved = True
 
     @skips_event
     def OnFittingEnded(self, evt):

@@ -20,29 +20,16 @@ try:
 
 
     META_DEFAULT = Orso.empty().to_dict()
-    del (META_DEFAULT['columns'])
 except ImportError:
-    META_DEFAULT = {
-        'data_source': {
-            'owner': {'name': None, 'affiliation': None},
-            'experiment': {
-                'title': None,
-                'instrument': None,
-                'start_date': None,
-                'probe': None
-                },
-            'sample': {'name': None},
-            'measurement': {
-                'instrument_settings': {
-                    'incident_angle': {'magnitude': None},
-                    'wavelength': {'magnitude': None},
-                    'polarization': 'unpolarized'
-                    },
-                'data_files': None
-                }
-            },
-        'reduction': {'software': {'name': None}},
-        }
+    META_DEFAULT = {'data_source': {'owner': {'name': None, 'affiliation': None},
+                                    'experiment': {'title': None, 'instrument': None, 'start_date': None, 'probe': None},
+                                    'sample': {'name': None},
+                                    'measurement': {'instrument_settings': {
+                                        'incident_angle': {'magnitude': None},
+                                        'wavelength': {'magnitude': None}},
+                                        'data_files': []}},
+                    'reduction': {'software': {'name': None}},
+                    'columns': [{'name': 'Qz', 'unit': '1/angstrom'}, {'name': 'R'}]}
 
 
 class DataSet(H5HintedExport):
