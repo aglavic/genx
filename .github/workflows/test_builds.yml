@@ -1,0 +1,60 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Test Builds
+
+# Controls when the action will run. 
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build-macos:
+    runs-on: macos-12
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Create environment
+      run: |
+        $CONDA/bin/conda env update --file genx/mac_build/conda_build.yml --name base
+        $CONDA/bin/python -m pip install bumps orsopy pyinstaller==5.0.1 pyinstaller-hooks-contrib==2022.4 pyyaml==6.0
+        brew install create-dmg
+    - name: Build with pyinstaller
+      run: |
+        cd genx
+        $CONDA/bin/pyinstaller genx_mac.spec
+    - name: Fix library symbolic link issue # see pyinstaller bug #5710
+      run: |
+        cd genx/dist/genx.app/Contents/MacOS
+        rm -f libwx_osx_cocoau_core-3.1.dylib libwx_baseu-3.1.dylib
+        ln -s libwx_osx_cocoau_core-3.1.5.0.0.dylib libwx_osx_cocoau_core-3.1.dylib
+        ln -s libwx_baseu-3.1.5.0.0.dylib libwx_baseu-3.1.dylib
+    - name: Remove any library signatures
+      run: |
+        cd genx/dist
+        codesign --remove-signature genx.app
+    - name: Package app
+      run: |
+        cd genx
+        GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
+        cd dist
+        create-dmg  --volname "GenX Installer" \
+                    --volicon ../mac_build/genx.icns \
+                    --background ../mac_build/GenXBkg.png \
+                    --window-size 640 480 \
+                    --icon-size 90 \
+                    --icon genx.app 190 340 \
+                    --hide-extension genx.app \
+                    --app-drop-link 450 335 \
+                    "GenX3-$GENX_VERSION-Installer.dmg" \
+                    genx.app
+    - name: Archive distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: mac-dist
+        path: |
+          genx/dist/GenX3*.dmg
