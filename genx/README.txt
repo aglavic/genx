@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.13
+==============
+ * Fix a bug where exporting the script with special characters raised an error under windows (ticket #197)
+ * Fix some bugs in export and parsing of .ort files
+ * Some refactoring
+
 Changes 3.6.12
 ==============
  * Fix a bug where fitting from console with autosave and --error options stopped the fit after first autosave
