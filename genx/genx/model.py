@@ -729,34 +729,20 @@ class Model(H5HintedExport):
         Save the string to file with filename.
         '''
         try:
-            savefile = open(filename, 'w')
+            with open(filename, 'w', encoding='utf-8') as savefile:
+                savefile.write(save_string)
         except Exception as e:
             raise GenxIOError(e.__str__(), filename)
-
-        # Save the string to file
-        try:
-            savefile.write(save_string)
-        except Exception as e:
-            raise GenxIOError(e.__str__(), filename)
-
-        savefile.close()
 
     def _read_from_file(self, filename):
         '''
         Reads the entrie file into string and returns it.
         '''
         try:
-            loadfile = open(filename, 'r')
+            with open(filename, 'r', encoding='utf-8') as loadfile:
+                read_string = loadfile.read()
         except Exception as e:
             raise GenxIOError(e.__str__(), filename)
-
-        # Read the text from file
-        try:
-            read_string = loadfile.read()
-        except Exception as e:
-            raise GenxIOError(e.__str__(), filename)
-
-        loadfile.close()
 
         return read_string
 
