@@ -108,6 +108,7 @@ class H5HintedExport(H5Savable):
     This allows clean classes where parameters are automatically written correctly and type checked.
     """
     _export_ignore = []  # allows type hinted parameters that should not be exported
+    _group_attr = {} # hdf attributes to be added to the group on export
 
     def init_defaults(self):
         """Allows the class to automatically initialize the exported parameters from their defaults"""
@@ -161,6 +162,8 @@ class H5HintedExport(H5Savable):
                         group[attr] = value
                     except Exception:
                         warning(f'Error in writing value={value}', exc_info=True)
+        for key, value in self._group_attr.items():
+            group.attrs[key] = value
 
     def read_h5group(self, group: h5py.Group):
         """

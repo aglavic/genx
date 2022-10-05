@@ -38,6 +38,13 @@ class DataSet(H5HintedExport):
     Contains x,y,error values and xraw,yraw,errorraw for the data.
     '''
     h5group_name = 'datasets'
+    _group_attr = {
+        'NX_class': 'NXdata',
+        'signal':  'y',
+        'axes': 'x',
+        'auxiliary_signals': 'y_sim',
+        }
+
     # Parameters used for saving the object state
     x: ndarray = array([])
     x_raw: ndarray = array([])

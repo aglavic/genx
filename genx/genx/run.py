@@ -33,7 +33,12 @@ def start_interactive(args):
     from .gui import main_window
     if args.infile!='':
         debug('start GUI setup with file to load')
-        filename = args.infile
+        filename = os.path.abspath(args.infile)
+        if getattr(sys, 'frozen', False):
+            # make sure the path is set to the program executable in a frozen binary
+            # this fixes unnecessery re-compiles of numba functions on Windows
+            os.chdir(os.path.dirname(os.path.abspath(sys.executable)))
+            debug(f'changed curdir to {os.path.abspath(os.path.curdir)}')
     else:
         filename = None
     debug('start GUI setup')
@@ -489,7 +494,7 @@ def main():
         modify_file(args)
     elif not args.run and not args.mpi:
         # Check if the application has been frozen
-        if hasattr(sys, "frozen") and True:
+        if getattr(sys, 'frozen', False):
             # Redirect all the output to log files
             log_file_path = appdirs.user_log_dir('GenX3', 'ArturGlavic')
             # Create dir if not found
@@ -497,8 +502,8 @@ def main():
                 os.makedirs(log_file_path)
             # print log_file_path
             # log_file_path = genx_gui._path + 'app_data/'
-            sys.stdout = open(log_file_path+'/genx.log', 'w')
-            sys.stderr = open(log_file_path+'/genx.log', 'w')
+            sys.stdout = open(log_file_path+'/genx_out.log', 'w')
+            sys.stderr = open(log_file_path+'/genx_err.log', 'w')
         start_interactive(args)
 
 
