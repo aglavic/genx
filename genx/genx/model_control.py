@@ -391,7 +391,6 @@ class ModelController:
     def save_hgx(self, fname: str, update_callback=None):
         f = h5py.File(fname.encode('utf-8'), 'w')
         g = f.create_group('current')
-        g.attrs['NX_class'] = 'NXentry'
         self.model.write_h5group(g)
         opt_group = g.create_group(self.optimizer.h5group_name)
         opt_group['solver'] = self.optimizer.__class__.__name__

@@ -42,7 +42,7 @@ class DataSet(H5HintedExport):
         'NX_class': 'NXdata',
         'signal':  'y',
         'axes': 'x',
-        'auxiliary_signals': 'y_sim',
+        'auxiliary_signals': array(['y_sim'], dtype='|S10'),
         }
 
     # Parameters used for saving the object state
@@ -273,6 +273,12 @@ class DataSet(H5HintedExport):
                     '\nerror.shape: '+str(self.error.shape)
             raise GenxIOError('The data is not in the correct format all the'+ \
                               'arrays have to have the same shape:\n'+debug, filename)
+
+    def write_h5group(self, group: "h5py.Group"):
+        import h5py
+        super().write_h5group(group)
+        # create symbolic link for error values
+        group['y_error']=h5py.SoftLink(group['error'])
 
     @staticmethod
     def rms(*items):
@@ -694,6 +700,8 @@ def html2c(colors):
 class DataList(H5Savable):
     ''' Class to store a list of DataSets'''
     h5group_name = 'data'
+    _group_attr = {'NX_class': 'NXentry', 'default': 'datasets'}
+
     items: List[DataSet]
     color_source: Union[CyclicList, None]
 
@@ -711,7 +719,12 @@ class DataList(H5Savable):
         """
         Write parameters to a hdf group
         """
+        for key, value in self._group_attr.items():
+            group.attrs[key] = value
         data_group = group.create_group(DataSet.h5group_name)
+        data_group.attrs['NX_class']= 'NXentry'
+        data_group.attrs['default']= '0'
+
         for index, data in enumerate(self.items):
             data.write_h5group(data_group.create_group('%d'%index))
         group['_counter'] = self._counter

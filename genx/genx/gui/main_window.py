@@ -2194,6 +2194,8 @@ class GenxApp(wx.App):
         self.dpi_overwrite = dpi_overwrite
         self._first_init = True
         wx.App.__init__(self, redirect=False)
+        if hasattr(wx, 'OSX_FILEDIALOG_ALWAYS_SHOW_TYPES'):
+            wx.SystemOptions.SetOption(wx.OSX_FILEDIALOG_ALWAYS_SHOW_TYPES, 1)
         debug('App init complete')
 
     def ShowSplash(self):

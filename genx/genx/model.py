@@ -81,6 +81,7 @@ class Model(H5HintedExport):
         the model and the data + various other attributes.
     '''
     h5group_name = 'current'
+    _group_attr = {'NX_class': 'NXentry', 'default': 'data'}
 
     saved = True
     fom = None
