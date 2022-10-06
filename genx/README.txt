@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.14
+==============
+ * Fix re-compilation of numba code when opening project filed directly on Windows
+ * Add some NeXus file attributes to the .hgx file format to allow plotting of the data e.g. with nexpy
+ * Small change to the MacOS configuration that should support file type filtering in open dialog
+
 Changes 3.6.13
 ==============
  * Fix a bug where exporting the script with special characters raised an error under windows (ticket #197)
