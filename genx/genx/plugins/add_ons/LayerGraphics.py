@@ -38,6 +38,16 @@ class LColor:
         self.g/=norm
         self.b/=norm
 
+    @property
+    def side(self):
+        # return lighter color for side of 3d block
+        return LColor(min(1.0, self.r+0.35), min(1.0, self.g+0.35), min(1.0, self.b+0.35))
+
+    @property
+    def top(self):
+        # return lighter color for side of 3d block
+        return LColor(min(1.0, self.r+0.2), min(1.0, self.g+0.2), min(1.0, self.b+0.2))
+
     def __str__(self):
         return f"rgb({self.r*255:.0f}, {self.g*255:.0f}, {self.b*255:.0f})"
 
@@ -167,57 +177,120 @@ class BlockGenerator:
 class SVGenerator:
     block_generator: BlockGenerator
     svg: svgwrite.Drawing
+    use3d: bool
 
-    def __init__(self, sample: SampleBase, rescale=True, show_all=False, show_one=False):
+    view_box = array([100, 200])
+    move_3d = 8.0
+    vanishing_point=(175., -15.)
+
+    def __init__(self, sample: SampleBase, rescale=True, show_all=False, show_one=False, use3d=True):
+        self.use3d=use3d
         self.block_generator = BlockGenerator(sample.Stacks, rescale=rescale, show_all=show_all, show_one=show_one)
         self.create_svg()
 
-    def get_rect(self, pos:float, di:float, si:float, color:LColor=LColor(0., 0., 0.), in_stack=False):
+    def to_vp(self, point0):
+        """
+        Calculate the x,y-values for a shift from a starting point (x0,y0)
+        towards the vanishing point by an x-offset of self.move_3d.
+        """
+        px, py=self.view_box*0.01
+        x0, y0 = point0
+        dx = self.move_3d
+        vx, vy = self.vanishing_point
+        relx = dx/(vx-x0) # releative movement towrads vanishing point
+        dy = (vy-y0)*relx
+        return ((x0+dx)*px, (y0+dy)*py)
+
+    def add_rect(self, pos:float, si:float, color:LColor=LColor(0., 0., 0.), in_stack=False,
+                 width=90):
+        px, py=self.view_box*0.01
         if in_stack:
             x= 10
-            w = 80
+            w = width-5
         else:
             x = 5
-            w = 90
-        return self.svg.rect(
-            (x*svgwrite.percent, pos*svgwrite.percent),
-            (w*svgwrite.percent, si*svgwrite.percent),
-            stroke='darkgray', stroke_width=3,
+            w = width
+        if self.use3d:
+            w -= 10
+            points = [((x+w)*px, pos*py),
+                      ((x+w)*px, (pos+si)*py),
+                      self.to_vp(((x+w), (pos+si))),
+                      self.to_vp(((x+w), pos))]
+            side = self.svg.polygon(points=points,
+                                    stroke='black', stroke_width=0.5,
+                                    fill=str(color.side))
+            self.svg.add(side)
+        rect = self.svg.rect(
+            (x*px, pos*py),
+            (w*px, si*py),
+            stroke='black', stroke_width=0.5,
             fill=str(color))
+        self.svg.add(rect)
 
     def create_svg(self):
+        px, py = self.view_box*0.01
         bg = self.block_generator
-        self.svg = svgwrite.Drawing('test.svg', size=("400px", "800px"))
-        vscale = bg.dtotal / 90.
+        self.svg = svgwrite.Drawing('genx_model.svg', size=("4cm", "8cm"),
+                                    viewBox=f'0 0 {self.view_box[0]} {self.view_box[1]}')
+        vscale = bg.dtotal / 85. # 90% of image height to be used for layers
 
         blocks = bg.get_blocks()
 
-        pos = 95.0
+        if self.use3d:
+            tc = 45
+        else:
+            tc = 50
+
+        pos = 90.0
+        self.add_rect(pos, 100, LColor(0, 0, 0))
+        bc = LColor(0,0,0)
         for bi in blocks:
             if isinstance(bi, list):
-                block_start = pos
+                block_length = sum([bij.scale/vscale for bij in bi])
+                self.add_rect(pos-block_length, block_length, LColor(0.75, 0.75, 0.75), width=15)
                 for bij in bi:
                     dij = bij.scale/vscale
                     pos -= dij
                     if bij.thickness==-1:
-                        paragraph = self.svg.add(self.svg.g(font_size=20))
-                        paragraph.add(self.svg.text("...", (50*svgwrite.percent, (pos+dij/2.)*svgwrite.percent),
+                        if self.use3d:
+                            # add surface polygon
+                            shifted = self.to_vp((85, pos+dij))
+                            points = [(10*px, (pos+dij)*py),
+                                      (85*px, (pos+dij)*py),
+                                      shifted,
+                                      (shifted[0]-75*px, shifted[1])]
+                            side = self.svg.polygon(points=points,
+                                                    stroke='black', stroke_width=0.5,
+                                                    fill=str(bc.top))
+                            self.svg.add(side)
+                        paragraph = self.svg.add(self.svg.g(font_size=14))
+                        paragraph.add(self.svg.text("...", (tc*px, (pos+dij/3.)*py),
                                                     text_anchor='middle', dominant_baseline='middle'))
                     else:
-                        self.svg.add(self.get_rect(pos, bij.thickness, dij, bij.color, in_stack=True))
-                        paragraph = self.svg.add(self.svg.g(font_size=20))
-                        paragraph.add(self.svg.text(f"{bij.thickness:.0f}",
-                                                    (50*svgwrite.percent, (pos+dij/2.)*svgwrite.percent),
+                        bc = bij.color
+                        self.add_rect(pos, dij, bc, in_stack=True)
+                        paragraph = self.svg.add(self.svg.g(font_size=14))
+                        paragraph.add(self.svg.text(f"{bij.thickness:.0f}", (tc*px, (pos+dij/2.)*py),
                                                     text_anchor='middle', dominant_baseline='middle'))
             else:
                 di = bi.scale/vscale
                 pos -= di
-                self.svg.add(self.get_rect(pos, bi.thickness, di, bi.color))
-                paragraph = self.svg.add(self.svg.g(font_size=20))
-                paragraph.add(self.svg.text(f"{bi.thickness:.0f}",
-                                            (50*svgwrite.percent, (pos+di/2.)*svgwrite.percent),
+                bc = bi.color
+                self.add_rect(pos, di, bc)
+                paragraph = self.svg.add(self.svg.g(font_size=14))
+                paragraph.add(self.svg.text(f"{bi.thickness:.0f}", (tc*px, (pos+di/2.)*py),
                                             text_anchor='middle', dominant_baseline='middle'))
-
+        if self.use3d:
+            # add surface polygon
+            shifted = self.to_vp((85, pos))
+            points = [(5*px, pos*py),
+                      (85*px, pos*py),
+                      shifted,
+                      (shifted[0]-80*px, shifted[1])]
+            side = self.svg.polygon(points=points,
+                                    stroke='black', stroke_width=0.5,
+                                    fill=str(bc.top))
+            self.svg.add(side)
 
 # from genx.plugins.add_ons import LayerGraphics
 # open(r'C:\Users\glavic_a\Downloads\test.svg', 'w').write(LayerGraphics.SVGenerator(model.script_module.sample).svg.tostring())
