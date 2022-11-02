@@ -10,29 +10,22 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build-macos:
-    runs-on: macos-11
+    runs-on: macos-12
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Create environment
+    - name: Install dependencies
       run: |
-        $CONDA/bin/conda env update --file genx/mac_build/conda_build.yml --name base
-        $CONDA/bin/python -m pip install bumps orsopy pyinstaller==5.0.1 pyinstaller-hooks-contrib==2022.4 pyyaml==6.0
+        python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
+        python3 -m pip install numpy scipy matplotlib
+        python3 -m pip install appdirs h5py pymysql numba
+        python3 -m pip install wxpython
+        python3 -m pip list
         brew install create-dmg
     - name: Build with pyinstaller
       run: |
         cd genx
-        $CONDA/bin/pyinstaller genx_mac.spec
-    - name: Fix library symbolic link issue # see pyinstaller bug #5710
-      run: |
-        cd genx/dist/genx.app/Contents/MacOS
-        rm -f libwx_osx_cocoau_core-3.1.dylib libwx_baseu-3.1.dylib
-        ln -s libwx_osx_cocoau_core-3.1.5.0.0.dylib libwx_osx_cocoau_core-3.1.dylib
-        ln -s libwx_baseu-3.1.5.0.0.dylib libwx_baseu-3.1.dylib
+        pyinstaller genx_mac.spec
     - name: Remove any library signatures
       run: |
         cd genx/dist
