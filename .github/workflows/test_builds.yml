@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-12
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
@@ -49,7 +49,7 @@ jobs:
                     "GenX3-$GENX_VERSION-Installer.dmg" \
                     genx.app
     - name: Archive distribution
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: mac-dist
         path: |
