@@ -21,7 +21,7 @@ jobs:
       run: |
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
-        python3 -m pip install appdirs h5py pymysql numba
+        python3 -m pip install appdirs h5py pymysql numba requests
         python3 -m pip install wxpython
         python3 -m pip list
         brew install create-dmg
