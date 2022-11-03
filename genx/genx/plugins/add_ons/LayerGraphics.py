@@ -54,6 +54,9 @@ class LColor:
     def __str__(self):
         return f"rgb({self.r*255:.0f}, {self.g*255:.0f}, {self.b*255:.0f})"
 
+    def get_wx(self):
+        return wx.Colour(int(self.r*225), int(self.g*255), int(self.b*255))
+
 @dataclass
 class LInfo:
     thickness: float
@@ -296,8 +299,102 @@ class SVGenerator:
                                     fill=str(bc.top))
             self.svg.add(side)
 
+    def add_rect_gc(self, gc:wx.GraphicsContext, pos:float, si:float, color:LColor=LColor(0., 0., 0.), in_stack=False,
+                 width=90):
+        px, py=self.view_box*0.01
+        gx, gy = gc.GetSize()
+        gc_scale = min(gx/self.view_box[0], gy/self.view_box[1])
+
+        if in_stack:
+            x= 10
+            w = width-5
+        else:
+            x = 5
+            w = width
+        if self.use3d:
+            w -= 10
+            points = [((x+w)*px, pos*py),
+                      ((x+w)*px, (pos+si)*py),
+                      self.to_vp(((x+w), (pos+si))),
+                      self.to_vp(((x+w), pos))]
+            self.draw_polygon_gc(gc, points, color.side)
+        gc.SetPen(wx.BLACK_PEN)
+        gc.SetBrush(wx.Brush(color.get_wx(), style=wx.BRUSHSTYLE_SOLID))
+        gc.DrawRectangle(x*px*gc_scale, pos*py*gc_scale, w*px*gc_scale, si*py*gc_scale)
+
+    def draw_polygon_gc(self, gc:wx.GraphicsContext, points, fill=LColor(1, 1, 1)):
+        gx, gy = gc.GetSize()
+        gc_scale = min(gx/self.view_box[0], gy/self.view_box[1])
+
+        gc.SetPen(wx.BLACK_PEN)
+        gc.SetBrush(wx.Brush(fill.get_wx(), style=wx.BRUSHSTYLE_SOLID))
+
+        points2d=[wx.Point2D(gc_scale*x, gc_scale*y) for x,y in points]
+        points2d.append(wx.Point2D(gc_scale*points[0][0], gc_scale*points[0][1]))
+
+        gc.DrawLines(points2d)
+
+
+    def render_to_gc(self, gc:wx.GraphicsContext):
+        px, py = self.view_box*0.01
+        bg = self.block_generator
+        gx, gy = gc.GetSize()
+        gc_scale = min(gx/self.view_box[0], gy/self.view_box[1])
+
+        vscale = bg.dtotal / 85. # 90% of image height to be used for layers
+
+        blocks = bg.get_blocks()
+
+        gc.SetFont(wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL), wx.BLACK)
+
+        if self.use3d:
+            tc = 45
+        else:
+            tc = 50
+
+        pos = 90.0
+        self.add_rect_gc(gc, pos, 100, LColor(0, 0, 0))
+        bc = LColor(0,0,0)
+        for bi in blocks:
+            if isinstance(bi, list):
+                block_length = sum([bij.scale/vscale for bij in bi])
+                self.add_rect_gc(gc, pos-block_length, block_length, LColor(0.75, 0.75, 0.75), width=15)
+                for bij in bi:
+                    dij = bij.scale/vscale
+                    pos -= dij
+                    if bij.thickness==-1:
+                        if self.use3d:
+                            # add surface polygon
+                            shifted = self.to_vp((85, pos+dij))
+                            points = [(10*px, (pos+dij)*py),
+                                      (85*px, (pos+dij)*py),
+                                      shifted,
+                                      (shifted[0]-75*px, shifted[1])]
+                            self.draw_polygon_gc(gc, points, bc)
+                        gc.DrawText(f"...", gc_scale*tc*px, gc_scale*(pos+dij/3.)*py-6)
+                    else:
+                        bc = bij.color
+                        self.add_rect_gc(gc, pos, dij, bc, in_stack=True)
+                        gc.DrawText(f"{bij.thickness:.0f}", gc_scale*tc*px, gc_scale*(pos+dij/2.)*py-6)
+            else:
+                di = bi.scale/vscale
+                pos -= di
+                bc = bi.color
+                self.add_rect_gc(gc, pos, di, bc)
+                gc.DrawText(f"{bi.thickness:.0f}", gc_scale*tc*px, gc_scale*(pos+di/2.)*py-6)
+        if self.use3d:
+            # add surface polygon
+            shifted = self.to_vp((85, pos))
+            points = [(5*px, pos*py),
+                      (85*px, pos*py),
+                      shifted,
+                      (shifted[0]-80*px, shifted[1])]
+            self.draw_polygon_gc(gc, points, bc)
+
+
 class SVGPanel(wx.Panel):
-    svg_img: SVGimage = None
+    #svg_img: SVGimage = None
+    svg_img: SVGenerator = None
     last_scale = 1.0
 
     def __init__(self, parent):
@@ -312,15 +409,16 @@ class SVGPanel(wx.Panel):
             dc.SetBackground(wx.Brush('white'))
             dc.Clear()
 
-            scale = min(self.Size.width/img.width, self.Size.height/img.height)
-            if self.last_scale!=scale:
-                self.Refresh()
-                self.Update()
-                self.last_scale=scale
-                return
+            # scale = min(self.Size.width/img.width, self.Size.height/img.height)
+            # if self.last_scale!=scale:
+            #     self.Refresh()
+            #     self.Update()
+            #     self.last_scale=scale
+            #     return
 
             ctx = wx.GraphicsContext.Create(dc)
-            img.RenderToGC(ctx, scale)
+            img.render_to_gc(ctx)
+            #img.RenderToGC(ctx, scale)
         else:
             event.Skip()
 
@@ -340,23 +438,35 @@ class Plugin(framework.Template):
         self.img = SVGPanel(LG_panel)
         SA_sizer.Add(self.img, 1, wx.EXPAND | wx.GROW | wx.ALL)
 
+        bot_sizer=wx.BoxSizer(wx.HORIZONTAL)
+        SA_sizer.Add(bot_sizer, 0, wx.FIXED_MINSIZE)
+        left_sizer=wx.BoxSizer(wx.VERTICAL)
+        bot_sizer.Add(left_sizer, 1, wx.EXPAND | wx.GROW | wx.FIXED_MINSIZE)
+        bot_sizer.AddSpacer(4)
+        right_sizer=wx.BoxSizer(wx.VERTICAL)
+        bot_sizer.Add(right_sizer, 1, wx.EXPAND | wx.GROW | wx.FIXED_MINSIZE)
+
+
         self.rescale = wx.CheckBox(LG_panel, label='Rescale thickness display')
         self.rescale.SetValue(True)
-        SA_sizer.Add(self.rescale, 0, wx.FIXED_MINSIZE)
+        left_sizer.Add(self.rescale, 0, wx.FIXED_MINSIZE)
 
         self.show_all = wx.RadioButton(LG_panel, label='All layers')
-        SA_sizer.Add(self.show_all, 0, wx.FIXED_MINSIZE)
+        left_sizer.Add(self.show_all, 0, wx.FIXED_MINSIZE)
 
         show_topbot = wx.RadioButton(LG_panel, label='Top/Bottom layers')
         show_topbot.SetValue(True)
-        SA_sizer.Add(show_topbot, 0, wx.FIXED_MINSIZE)
+        left_sizer.Add(show_topbot, 0, wx.FIXED_MINSIZE)
 
         self.show_one = wx.RadioButton(LG_panel, label='Single Repetition')
-        SA_sizer.Add(self.show_one, 0, wx.FIXED_MINSIZE)
+        left_sizer.Add(self.show_one, 0, wx.FIXED_MINSIZE)
 
         self.use3d = wx.CheckBox(LG_panel, label='Pseudo 3d')
         self.use3d.SetValue(True)
-        SA_sizer.Add(self.use3d, 0, wx.FIXED_MINSIZE)
+        right_sizer.Add(self.use3d, 0, wx.FIXED_MINSIZE)
+
+        export_button = wx.Button(LG_panel, label='Save to SVG...')
+        right_sizer.Add(export_button)
 
         LG_panel.Layout()
         self.OnSimulate(None)
@@ -366,6 +476,7 @@ class Plugin(framework.Template):
         show_topbot.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
         self.show_one.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
         self.use3d.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
+        export_button.Bind(wx.EVT_BUTTON, self.ExportSVG)
 
     def OnSimulate(self, event):
         # Calculate and update the sld plot
@@ -378,9 +489,20 @@ class Plugin(framework.Template):
                         show_one=self.show_one.GetValue(),
                         use3d=self.use3d.GetValue())
         self.svg = gen.svg.tostring()
-        self.img.svg_img = SVGimage.CreateFromBytes(self.svg.encode('utf-8'))
+        #self.img.svg_img = SVGimage.CreateFromBytes(self.svg.encode('utf-8'))
+        self.img.svg_img = gen
         self.img.Refresh()
 
+    def ExportSVG(self, event):
+        dlg = wx.FileDialog(self.img, message="Save layer sketch image", defaultFile="",
+                            wildcard="SVG Image|*.svg",
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                            )
+        if dlg.ShowModal()==wx.ID_OK:
+            path = dlg.GetPath()
+            with open(path, 'w') as fh:
+                fh.write(self.svg)
+        dlg.Destroy()
 
 # from genx.plugins.add_ons import LayerGraphics
 # open(r'C:\Users\glavic_a\Downloads\test.svg', 'w').write(LayerGraphics.SVGenerator(model.script_module.sample).svg.tostring())
