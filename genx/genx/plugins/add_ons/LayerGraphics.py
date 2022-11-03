@@ -16,7 +16,7 @@ import wx
 
 from wx.svg import SVGimage
 from dataclasses import dataclass
-from numpy import log, exp, array, sqrt
+from numpy import log, array, sqrt, pi
 from genx.models.lib.refl import InstrumentBase, LayerBase, SampleBase, StackBase
 from .. import add_on_framework as framework
 
@@ -106,17 +106,29 @@ class BlockGenerator:
 
         repetitions = []
         thicknesses = []
-        color_ids = []
-        cid = 0
+        color_slds = []
 
         for stack in self.stacks:
             repetitions.append(int(stack.Repetitions))
             thicknesses.append([li.d for li in stack.Layers])
-            color_ids.append([cid+i for i, li in enumerate(stack.Layers)])
-            cid+=len(color_ids[-1])
+            color_slds.append([abs(li.dens*li.b)+abs(li.dens*li.f) for li in stack.Layers])
             if len(thicknesses[-1])>0:
                 dmin = min(dmin, min(thicknesses[-1]))
                 dmax = max(dmax, max(thicknesses[-1]))
+
+        unique_ids={}
+        color_ids=[]
+        cid = 0
+        for group_slds in color_slds:
+            group_ids=[]
+            for csld in group_slds:
+                csld = round(csld, 4)
+                if csld not in unique_ids:
+                    unique_ids[csld]=cid
+                    cid+=1
+                group_ids.append(unique_ids[csld])
+            color_ids.append(group_ids)
+
         self.dmin=dmin
         self.dmax=dmax
         self.repetitions = repetitions
@@ -151,11 +163,11 @@ class BlockGenerator:
             if ri<2:
                 output += infos
             elif self.show_one:
-                output.append(infos)
+                output.append(infos+[LInfo(-ri, self.min_rescale, LColor(1., 1., 1.))])
             elif self.show_all or ri==2:
                 output.append(ri*infos)
             else:
-                output.append(infos+[LInfo(-1., self.min_rescale, LColor(1., 1., 1.))]+infos)
+                output.append(infos+[LInfo(-ri, self.min_rescale, LColor(1., 1., 1.))]+infos)
         return output
 
     def __repr__(self):
@@ -168,9 +180,9 @@ class BlockGenerator:
                 sstr+=f'|'
                 for bij in bi:
                     sstr+=f' {bij.scale:.0f} |'
-                    if bij.thickness==-1:
+                    if bij.thickness<0:
                         bstr=bstr[:-1]
-                        bstr+=' ... '
+                        bstr+=' (x%i) '%(-bij.thickness)
                     else:
                         bstr+=f' {bij.thickness:.0f} |'
                 bstr += f'|'
@@ -258,7 +270,7 @@ class SVGenerator:
                 for bij in bi:
                     dij = bij.scale/vscale
                     pos -= dij
-                    if bij.thickness==-1:
+                    if bij.thickness<0:
                         if self.use3d:
                             # add surface polygon
                             shifted = self.to_vp((85, pos+dij))
@@ -271,7 +283,7 @@ class SVGenerator:
                                                     fill=str(bc.top))
                             self.svg.add(side)
                         paragraph = self.svg.add(self.svg.g(font_size=14))
-                        paragraph.add(self.svg.text("...", (tc*px, (pos+dij/3.)*py),
+                        paragraph.add(self.svg.text(" ... (x%i)"%(-bij.thickness), (tc*px, (pos+dij/3.)*py),
                                                     text_anchor='middle', dominant_baseline='middle'))
                     else:
                         bc = bij.color
@@ -362,7 +374,7 @@ class SVGenerator:
                 for bij in bi:
                     dij = bij.scale/vscale
                     pos -= dij
-                    if bij.thickness==-1:
+                    if bij.thickness<0:
                         if self.use3d:
                             # add surface polygon
                             shifted = self.to_vp((85, pos+dij))
@@ -372,6 +384,7 @@ class SVGenerator:
                                       (shifted[0]-75*px, shifted[1])]
                             self.draw_polygon_gc(gc, points, bc)
                         gc.DrawText(f"...", gc_scale*tc*px, gc_scale*(pos+dij/3.)*py-6)
+                        gc.DrawText(f"(x%i)"%(-bij.thickness), gc_scale*5, gc_scale*(pos+dij)*py, angle=pi/2)
                     else:
                         bc = bij.color
                         self.add_rect_gc(gc, pos, dij, bc, in_stack=True)
@@ -408,13 +421,6 @@ class SVGPanel(wx.Panel):
             dc = wx.PaintDC(self)
             dc.SetBackground(wx.Brush('white'))
             dc.Clear()
-
-            # scale = min(self.Size.width/img.width, self.Size.height/img.height)
-            # if self.last_scale!=scale:
-            #     self.Refresh()
-            #     self.Update()
-            #     self.last_scale=scale
-            #     return
 
             ctx = wx.GraphicsContext.Create(dc)
             img.render_to_gc(ctx)
