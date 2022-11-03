@@ -12,10 +12,13 @@ avoid large variation if thicknesses are too different.
 '''
 
 import svgwrite
+import wx
 
+from wx.svg import SVGimage
 from dataclasses import dataclass
 from numpy import log, exp, array, sqrt
 from genx.models.lib.refl import InstrumentBase, LayerBase, SampleBase, StackBase
+from .. import add_on_framework as framework
 
 try:
     # noinspection PyUnresolvedReferences
@@ -108,8 +111,9 @@ class BlockGenerator:
             thicknesses.append([li.d for li in stack.Layers])
             color_ids.append([cid+i for i, li in enumerate(stack.Layers)])
             cid+=len(color_ids[-1])
-            dmin = min(dmin, min(thicknesses[-1]))
-            dmax = max(dmax, max(thicknesses[-1]))
+            if len(thicknesses[-1])>0:
+                dmin = min(dmin, min(thicknesses[-1]))
+                dmax = max(dmax, max(thicknesses[-1]))
         self.dmin=dmin
         self.dmax=dmax
         self.repetitions = repetitions
@@ -128,7 +132,7 @@ class BlockGenerator:
                 dtotal+=dsequence
             elif self.show_one:
                 dtotal += dsequence
-            elif self.show_all:
+            elif self.show_all or ri==2:
                 dtotal += ri*dsequence
             else:
                 dtotal += 2*dsequence + self.min_rescale
@@ -145,7 +149,7 @@ class BlockGenerator:
                 output += infos
             elif self.show_one:
                 output.append(infos)
-            elif self.show_all:
+            elif self.show_all or ri==2:
                 output.append(ri*infos)
             else:
                 output.append(infos+[LInfo(-1., self.min_rescale, LColor(1., 1., 1.))]+infos)
@@ -291,6 +295,92 @@ class SVGenerator:
                                     stroke='black', stroke_width=0.5,
                                     fill=str(bc.top))
             self.svg.add(side)
+
+class SVGPanel(wx.Panel):
+    svg_img: SVGimage = None
+    last_scale = 1.0
+
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+
+    def OnPaint(self, event: wx.PaintEvent):
+        if self.svg_img is not None:
+            img = self.svg_img
+
+            dc = wx.PaintDC(self)
+            dc.SetBackground(wx.Brush('white'))
+            dc.Clear()
+
+            scale = min(self.Size.width/img.width, self.Size.height/img.height)
+            if self.last_scale!=scale:
+                self.Refresh()
+                self.Update()
+                self.last_scale=scale
+                return
+
+            ctx = wx.GraphicsContext.Create(dc)
+            img.RenderToGC(ctx, scale)
+        else:
+            event.Skip()
+
+
+class Plugin(framework.Template):
+    svg: str = None
+
+    def __init__(self, parent):
+        framework.Template.__init__(self, parent)
+        self.parent=parent
+
+        # Create the SLD plot
+        LG_panel=self.NewPlotFolder('Layer Graphics')
+        SA_sizer=wx.BoxSizer(wx.VERTICAL)
+        LG_panel.SetSizer(SA_sizer)
+
+        self.img = SVGPanel(LG_panel)
+        SA_sizer.Add(self.img, 1, wx.EXPAND | wx.GROW | wx.ALL)
+
+        self.rescale = wx.CheckBox(LG_panel, label='Rescale thickness display')
+        self.rescale.SetValue(True)
+        SA_sizer.Add(self.rescale, 0, wx.FIXED_MINSIZE)
+
+        self.show_all = wx.RadioButton(LG_panel, label='All layers')
+        SA_sizer.Add(self.show_all, 0, wx.FIXED_MINSIZE)
+
+        show_topbot = wx.RadioButton(LG_panel, label='Top/Bottom layers')
+        show_topbot.SetValue(True)
+        SA_sizer.Add(show_topbot, 0, wx.FIXED_MINSIZE)
+
+        self.show_one = wx.RadioButton(LG_panel, label='Single Repetition')
+        SA_sizer.Add(self.show_one, 0, wx.FIXED_MINSIZE)
+
+        self.use3d = wx.CheckBox(LG_panel, label='Pseudo 3d')
+        self.use3d.SetValue(True)
+        SA_sizer.Add(self.use3d, 0, wx.FIXED_MINSIZE)
+
+        LG_panel.Layout()
+        self.OnSimulate(None)
+
+        self.rescale.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
+        self.show_all.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
+        show_topbot.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
+        self.show_one.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
+        self.use3d.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
+
+    def OnSimulate(self, event):
+        # Calculate and update the sld plot
+        model = self.GetModel()
+        if model.script_module is None:
+            return
+        gen=SVGenerator(model.script_module.sample,
+                        rescale=self.rescale.GetValue(),
+                        show_all=self.show_all.GetValue(),
+                        show_one=self.show_one.GetValue(),
+                        use3d=self.use3d.GetValue())
+        self.svg = gen.svg.tostring()
+        self.img.svg_img = SVGimage.CreateFromBytes(self.svg.encode('utf-8'))
+        self.img.Refresh()
+
 
 # from genx.plugins.add_ons import LayerGraphics
 # open(r'C:\Users\glavic_a\Downloads\test.svg', 'w').write(LayerGraphics.SVGenerator(model.script_module.sample).svg.tostring())
