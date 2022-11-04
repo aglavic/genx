@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.15
+==============
+ * Add new LayerGraphics plugin that creates a simple sketch drawing for reflectometry models
+   to use in presentations etc.
+ * Update the Mac build system to Mac OS 12 and system python 3.10 using new wxPython 4.2 PyPI package
+
 Changes 3.6.14
 ==============
  * Fix re-compilation of numba code when opening project filed directly on Windows

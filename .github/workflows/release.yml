@@ -18,9 +18,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.7
     - name: Install dependencies
@@ -44,7 +44,7 @@ jobs:
         python update_version.py
         iscc genx.iss
     - name: Archive distribution
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: windows-dist
         path: |
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
         sudo apt update
@@ -103,7 +103,7 @@ jobs:
         packages_dir: dist_server/
         skip_existing: true
     - name: Archive distribution
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ubuntu-20-dist
         path: |
@@ -111,29 +111,25 @@ jobs:
           genx/dist/*.tar.gz
 
   build-macos:
-    runs-on: macos-10.15
+    runs-on: macos-12
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
-        python-version: 3.9
-    - name: Create environment
+        python-version: '3.10'
+    - name: Install dependencies
       run: |
-        $CONDA/bin/conda env update --file genx/mac_build/conda_build.yml --name base
-        $CONDA/bin/python -m pip install bumps orsopy pyinstaller==5.0.1 pyinstaller-hooks-contrib==2022.4 pyyaml==6.0
+        python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
+        python3 -m pip install numpy scipy matplotlib
+        python3 -m pip install appdirs h5py pymysql numba requests svgwrite
+        python3 -m pip install wxpython
+        python3 -m pip list
         brew install create-dmg
     - name: Build with pyinstaller
       run: |
         cd genx
-        $CONDA/bin/pyinstaller genx_mac.spec
-    - name: Fix library symbolic link issue # see pyinstaller bug #5710
-      run: |
-        cd genx/dist/genx.app/Contents/MacOS
-        rm -f libwx_osx_cocoau_core-3.1.dylib libwx_baseu-3.1.dylib
-        ln -s libwx_osx_cocoau_core-3.1.5.0.0.dylib libwx_osx_cocoau_core-3.1.dylib
-        ln -s libwx_baseu-3.1.5.0.0.dylib libwx_baseu-3.1.dylib
+        pyinstaller genx_mac.spec
     - name: Remove any library signatures
       run: |
         cd genx/dist
@@ -154,7 +150,7 @@ jobs:
                     "GenX3-$GENX_VERSION-Installer.dmg" \
                     genx.app
     - name: Archive distribution
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: mac-dist
         path: |
@@ -166,14 +162,14 @@ jobs:
     needs: [build-ubuntu-20, build-windows, build-macos]
     
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/download-artifact@v2
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
       with:
         name: ubuntu-20-dist
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: windows-dist
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: mac-dist
     - uses: ncipollo/release-action@v1
@@ -188,14 +184,14 @@ jobs:
     needs: [build-ubuntu-20, build-windows, build-macos]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/download-artifact@v2
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
       with:
         name: ubuntu-20-dist
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: windows-dist
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: mac-dist
     - name: Install dependencies
