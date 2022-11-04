@@ -988,7 +988,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         debug('open_model: read config')
         with self.catch_error(action='open_model', step=f'loading config for plots'):
-            [p.ReadConfig() for p in self.get_pages()]
+            [p.ReadConfig() for p in self.get_pages() if hasattr(p, 'ReadConfig')]
         with self.catch_error(action='open_model', step=f'loading config for parameter grid'):
             self.paramter_grid.ReadConfig()
             self.mb_checkables[custom_ids.MenuId.TOGGLE_SLIDER].Check(self.paramter_grid.GetValueEditorSlider())

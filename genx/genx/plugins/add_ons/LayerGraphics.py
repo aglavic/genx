@@ -84,7 +84,7 @@ class BlockGenerator:
     max_rescale = 100.
 
     def __init__(self, stacks: List[StackBase], rescale=True, show_all=False, show_one=False):
-        self.stacks = stacks
+        self.stacks = [si for si in stacks if len(si.Layers)>0]
         self.rescale = rescale
         self.show_all = show_all
         self.show_one = show_one
@@ -94,6 +94,9 @@ class BlockGenerator:
         ldi = log(di)
         ldmin = log(self.dmin)
         ldmax = log(self.dmax)
+        if ldmin==ldmax:
+            # don't resace if all thicknesses are the same
+            return di
         ld = (ldi-ldmin)/(ldmax-ldmin)
         sd = self.min_rescale + (self.max_rescale-self.min_rescale)*ld
         return sd
@@ -146,11 +149,11 @@ class BlockGenerator:
             if ri<2:
                 dtotal+=dsequence
             elif self.show_one:
-                dtotal += dsequence
+                dtotal += dsequence + dsequence / 2
             elif self.show_all or ri==2:
                 dtotal += ri*dsequence
             else:
-                dtotal += 2*dsequence + self.min_rescale
+                dtotal += 2*dsequence + dsequence / 2
         self.dtotal = dtotal
 
     def get_blocks(self):
@@ -160,14 +163,15 @@ class BlockGenerator:
         output = []
         for ri, ti, si, cidi in zip(self.repetitions, self.thicknesses, self.scaled, self.color_ids):
             infos = [LInfo(ti_j, si_j, COLORS[cid_j%len(COLORS)]) for ti_j, si_j, cid_j in zip(ti, si, cidi)]
+            dsequence = sum(si)
             if ri<2:
                 output += infos
             elif self.show_one:
-                output.append(infos+[LInfo(-ri, self.min_rescale, LColor(1., 1., 1.))])
+                output.append(infos+[LInfo(-ri, dsequence/2, LColor(1., 1., 1.))])
             elif self.show_all or ri==2:
                 output.append(ri*infos)
             else:
-                output.append(infos+[LInfo(-ri, self.min_rescale, LColor(1., 1., 1.))]+infos)
+                output.append(infos+[LInfo(-ri, dsequence/2, LColor(1., 1., 1.))]+infos)
         return output
 
     def __repr__(self):
@@ -198,12 +202,20 @@ class SVGenerator:
     svg: svgwrite.Drawing
     use3d: bool
 
+    unit_precision: int # number of digits behind decimal point for thickness label
+    unit_nm: bool # use nm instead of angstrom as unit
+
     view_box = array([100, 200])
     move_3d = 8.0
     vanishing_point=(175., -15.)
+    fontsize = 10
 
-    def __init__(self, sample: SampleBase, rescale=True, show_all=False, show_one=False, use3d=True):
-        self.use3d=use3d
+    def __init__(self, sample: SampleBase, rescale=True, show_all=False, show_one=False, use3d=True,
+                 unit_precision=1, unit_nm=True, fontsize=10):
+        self.use3d = use3d
+        self.fontsize = fontsize
+        self.unit_precision = unit_precision
+        self.unit_nm = unit_nm
         self.block_generator = BlockGenerator(sample.Stacks, rescale=rescale, show_all=show_all, show_one=show_one)
         self.create_svg()
 
@@ -220,12 +232,18 @@ class SVGenerator:
         dy = (vy-y0)*relx
         return ((x0+dx)*px, (y0+dy)*py)
 
+    def tlabel(self, thickness):
+        if self.unit_nm:
+            return f"{thickness/10:.{self.unit_precision}f} nm"
+        else:
+            return f"{thickness:.{self.unit_precision}f} Å"
+
     def add_rect(self, pos:float, si:float, color:LColor=LColor(0., 0., 0.), in_stack=False,
                  width=90):
         px, py=self.view_box*0.01
         if in_stack:
-            x= 10
-            w = width-5
+            x= 5 + self.fontsize
+            w = width-self.fontsize
         else:
             x = 5
             w = width
@@ -266,7 +284,7 @@ class SVGenerator:
         for bi in blocks:
             if isinstance(bi, list):
                 block_length = sum([bij.scale/vscale for bij in bi])
-                self.add_rect(pos-block_length, block_length, LColor(0.75, 0.75, 0.75), width=15)
+                self.add_rect(pos-block_length, block_length, LColor(0.75, 0.75, 0.75), width=10+self.fontsize)
                 for bij in bi:
                     dij = bij.scale/vscale
                     pos -= dij
@@ -274,30 +292,34 @@ class SVGenerator:
                         if self.use3d:
                             # add surface polygon
                             shifted = self.to_vp((85, pos+dij))
-                            points = [(10*px, (pos+dij)*py),
+                            points = [((5+self.fontsize)*px, (pos+dij)*py),
                                       (85*px, (pos+dij)*py),
                                       shifted,
-                                      (shifted[0]-75*px, shifted[1])]
+                                      (shifted[0]-(85-5-self.fontsize)*px, shifted[1])]
                             side = self.svg.polygon(points=points,
                                                     stroke='black', stroke_width=0.5,
                                                     fill=str(bc.top))
                             self.svg.add(side)
-                        paragraph = self.svg.add(self.svg.g(font_size=14))
-                        paragraph.add(self.svg.text(" ... (x%i)"%(-bij.thickness), (tc*px, (pos+dij/3.)*py),
+                        paragraph = self.svg.add(self.svg.g(font_size=self.fontsize))
+                        paragraph.add(self.svg.text(" ... ", (tc*px, (pos+dij/3.)*py),
                                                     text_anchor='middle', dominant_baseline='middle'))
+                        paragraph = self.svg.add(self.svg.g(font_size=self.fontsize,
+                                                            transform=f"translate(5, {(pos+dij)*py}) rotate(-90)"))
+                        paragraph.add(self.svg.text(f"(x%i)"%(-bij.thickness), (0, 0),
+                                                    text_anchor='middle', dominant_baseline='hanging'))
                     else:
                         bc = bij.color
                         self.add_rect(pos, dij, bc, in_stack=True)
-                        paragraph = self.svg.add(self.svg.g(font_size=14))
-                        paragraph.add(self.svg.text(f"{bij.thickness:.0f}", (tc*px, (pos+dij/2.)*py),
+                        paragraph = self.svg.add(self.svg.g(font_size=self.fontsize))
+                        paragraph.add(self.svg.text(self.tlabel(bij.thickness), (tc*px, (pos+dij/2.)*py),
                                                     text_anchor='middle', dominant_baseline='middle'))
             else:
                 di = bi.scale/vscale
                 pos -= di
                 bc = bi.color
                 self.add_rect(pos, di, bc)
-                paragraph = self.svg.add(self.svg.g(font_size=14))
-                paragraph.add(self.svg.text(f"{bi.thickness:.0f}", (tc*px, (pos+di/2.)*py),
+                paragraph = self.svg.add(self.svg.g(font_size=self.fontsize))
+                paragraph.add(self.svg.text(self.tlabel(bi.thickness), (tc*px, (pos+di/2.)*py),
                                             text_anchor='middle', dominant_baseline='middle'))
         if self.use3d:
             # add surface polygon
@@ -318,8 +340,8 @@ class SVGenerator:
         gc_scale = min(gx/self.view_box[0], gy/self.view_box[1])
 
         if in_stack:
-            x= 10
-            w = width-5
+            x= 5 + self.fontsize
+            w = width-self.fontsize
         else:
             x = 5
             w = width
@@ -347,6 +369,13 @@ class SVGenerator:
         gc.DrawLines(points2d)
 
 
+    def draw_centered_text(self, gc:wx.GraphicsContext, txt:str, x, y, baseline=False):
+        w, h = gc.GetFullTextExtent(txt)[:2]
+        if baseline:
+            gc.DrawText(txt, int(x-w/2.), int(y))
+        else:
+            gc.DrawText(txt, int(x-w/2.), int(y-h/2.))
+
     def render_to_gc(self, gc:wx.GraphicsContext):
         px, py = self.view_box*0.01
         bg = self.block_generator
@@ -357,7 +386,8 @@ class SVGenerator:
 
         blocks = bg.get_blocks()
 
-        gc.SetFont(wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL), wx.BLACK)
+        gc.SetFont(wx.Font(int(self.fontsize*gc_scale*0.75),
+                           wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL), wx.BLACK)
 
         if self.use3d:
             tc = 45
@@ -370,7 +400,7 @@ class SVGenerator:
         for bi in blocks:
             if isinstance(bi, list):
                 block_length = sum([bij.scale/vscale for bij in bi])
-                self.add_rect_gc(gc, pos-block_length, block_length, LColor(0.75, 0.75, 0.75), width=15)
+                self.add_rect_gc(gc, pos-block_length, block_length, LColor(0.75, 0.75, 0.75), width=10+self.fontsize)
                 for bij in bi:
                     dij = bij.scale/vscale
                     pos -= dij
@@ -378,23 +408,25 @@ class SVGenerator:
                         if self.use3d:
                             # add surface polygon
                             shifted = self.to_vp((85, pos+dij))
-                            points = [(10*px, (pos+dij)*py),
+                            points = [((5+self.fontsize)*px, (pos+dij)*py),
                                       (85*px, (pos+dij)*py),
                                       shifted,
-                                      (shifted[0]-75*px, shifted[1])]
+                                      (shifted[0]-(85-5-self.fontsize)*px, shifted[1])]
                             self.draw_polygon_gc(gc, points, bc)
-                        gc.DrawText(f"...", gc_scale*tc*px, gc_scale*(pos+dij/3.)*py-6)
+                        self.draw_centered_text(gc, "...", gc_scale*tc*px, gc_scale*(pos+dij/3.)*py)
                         gc.DrawText(f"(x%i)"%(-bij.thickness), gc_scale*5, gc_scale*(pos+dij)*py, angle=pi/2)
                     else:
                         bc = bij.color
                         self.add_rect_gc(gc, pos, dij, bc, in_stack=True)
-                        gc.DrawText(f"{bij.thickness:.0f}", gc_scale*tc*px, gc_scale*(pos+dij/2.)*py-6)
+                        self.draw_centered_text(gc, self.tlabel(bij.thickness),
+                                                gc_scale*tc*px, gc_scale*(pos+dij/2.)*py)
             else:
                 di = bi.scale/vscale
                 pos -= di
                 bc = bi.color
                 self.add_rect_gc(gc, pos, di, bc)
-                gc.DrawText(f"{bi.thickness:.0f}", gc_scale*tc*px, gc_scale*(pos+di/2.)*py-6)
+                self.draw_centered_text(gc, self.tlabel(bi.thickness),
+                                        gc_scale*tc*px, gc_scale*(pos+di/2.)*py)
         if self.use3d:
             # add surface polygon
             shifted = self.to_vp((85, pos))
@@ -411,7 +443,7 @@ class SVGPanel(wx.Panel):
     last_scale = 1.0
 
     def __init__(self, parent):
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, style=wx.FULL_REPAINT_ON_RESIZE)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
     def OnPaint(self, event: wx.PaintEvent):
@@ -449,6 +481,9 @@ class Plugin(framework.Template):
         left_sizer=wx.BoxSizer(wx.VERTICAL)
         bot_sizer.Add(left_sizer, 1, wx.EXPAND | wx.GROW | wx.FIXED_MINSIZE)
         bot_sizer.AddSpacer(4)
+        mid_sizer=wx.BoxSizer(wx.VERTICAL)
+        bot_sizer.Add(mid_sizer, 1, wx.EXPAND | wx.GROW | wx.FIXED_MINSIZE)
+        bot_sizer.AddSpacer(4)
         right_sizer=wx.BoxSizer(wx.VERTICAL)
         bot_sizer.Add(right_sizer, 1, wx.EXPAND | wx.GROW | wx.FIXED_MINSIZE)
 
@@ -469,20 +504,36 @@ class Plugin(framework.Template):
 
         self.use3d = wx.CheckBox(LG_panel, label='Pseudo 3d')
         self.use3d.SetValue(True)
-        right_sizer.Add(self.use3d, 0, wx.FIXED_MINSIZE)
+        mid_sizer.Add(self.use3d, 0, wx.FIXED_MINSIZE)
+        self.unit_nm = wx.CheckBox(LG_panel, label='nm-unit')
+        self.unit_nm.SetValue(True)
+        mid_sizer.Add(self.unit_nm, 0, wx.FIXED_MINSIZE)
+        self.unit_precision = wx.SpinCtrl(LG_panel, value="1", min=0, max=5)
+        mid_sizer.Add(self.unit_precision, 0, wx.FIXED_MINSIZE)
 
+        self.fontsize = wx.SpinCtrl(LG_panel, value="10", min=1, max=20)
+        right_sizer.Add(self.fontsize, 0, wx.FIXED_MINSIZE)
         export_button = wx.Button(LG_panel, label='Save to SVG...')
         right_sizer.Add(export_button)
+        copy_button = wx.Button(LG_panel, label='Copy to Clipboard')
+        right_sizer.Add(copy_button)
 
         LG_panel.Layout()
-        self.OnSimulate(None)
+        try:
+            self.OnSimulate(None)
+        except Exception:
+            pass
 
         self.rescale.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
         self.show_all.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
         show_topbot.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
         self.show_one.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
         self.use3d.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
+        self.unit_nm.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
+        self.unit_precision.Bind(wx.EVT_SPINCTRL, self.OnSimulate)
+        self.fontsize.Bind(wx.EVT_SPINCTRL, self.OnSimulate)
         export_button.Bind(wx.EVT_BUTTON, self.ExportSVG)
+        copy_button.Bind(wx.EVT_BUTTON, self.CopyImage)
 
     def OnSimulate(self, event):
         # Calculate and update the sld plot
@@ -493,7 +544,11 @@ class Plugin(framework.Template):
                         rescale=self.rescale.GetValue(),
                         show_all=self.show_all.GetValue(),
                         show_one=self.show_one.GetValue(),
-                        use3d=self.use3d.GetValue())
+                        use3d=self.use3d.GetValue(),
+                        unit_nm=self.unit_nm.GetValue(),
+                        unit_precision=int(self.unit_precision.GetValue()),
+                        fontsize=self.fontsize.GetValue(),
+                        )
         self.svg = gen.svg.tostring()
         #self.img.svg_img = SVGimage.CreateFromBytes(self.svg.encode('utf-8'))
         self.img.svg_img = gen
@@ -502,13 +557,34 @@ class Plugin(framework.Template):
     def ExportSVG(self, event):
         dlg = wx.FileDialog(self.img, message="Save layer sketch image", defaultFile="",
                             wildcard="SVG Image|*.svg",
-                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR
+                            style=wx.FD_SAVE | wx.FD_CHANGE_DIR | wx.FD_OVERWRITE_PROMPT
                             )
         if dlg.ShowModal()==wx.ID_OK:
             path = dlg.GetPath()
-            with open(path, 'w') as fh:
+            with open(path, 'w', encoding='utf-8') as fh:
                 fh.write(self.svg)
         dlg.Destroy()
 
-# from genx.plugins.add_ons import LayerGraphics
-# open(r'C:\Users\glavic_a\Downloads\test.svg', 'w').write(LayerGraphics.SVGenerator(model.script_module.sample).svg.tostring())
+    def CopyImage(self, event):
+        bmp = wx.Bitmap(wx.Size(300, 600), depth=32)
+        if hasattr(bmp, 'SetScaleFactor'):
+            bmp.SetScaleFactor(2.0)
+
+        memdc = wx.MemoryDC(bmp)
+        memdc.SetBackground(wx.Brush(wx.Colour(255, 255, 255, 0)))
+        memdc.Clear()
+
+        ctx = wx.GraphicsContext.Create(memdc)
+
+        self.img.svg_img.render_to_gc(ctx)
+        memdc.SelectObject(wx.NullBitmap)
+
+        bmp_obj = wx.BitmapDataObject()
+        bmp_obj.SetBitmap(bmp)
+
+        if not wx.TheClipboard.IsOpened():
+            open_success = wx.TheClipboard.Open()
+            if open_success:
+                wx.TheClipboard.SetData(bmp_obj)
+                wx.TheClipboard.Close()
+                wx.TheClipboard.Flush()
