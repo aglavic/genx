@@ -34,7 +34,8 @@ parts:
       - numpy<1.21
       - bumps
       - vtk
-      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.1.1-cp38-cp38-linux_x86_64.whl
+      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.0-cp38-cp38-linux_x86_64.whl
+      - svgwrite
     #build-packages:
       #- python3-pip
       #- python3-wheel
