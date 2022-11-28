@@ -11,6 +11,14 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.16
+==============
+ * Improve error handling and allow forcefull termination of multiprocessing fits
+ * Add full logging support when running fit with multiprocessing
+ * Add caching of GPU kernels for newver versions of numba
+ * Correctly count the number of functions to be compiled with numba
+ * Fix error when trying to use multiprocessing fit without numba installed
+
 Changes 3.6.15
 ==============
  * Add new LayerGraphics plugin that creates a simple sketch drawing for reflectometry models
