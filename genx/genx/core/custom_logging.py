@@ -1,5 +1,5 @@
 '''
-Module used to setup the default GUI logging and messaging system.
+Module used to setup the default logging and messaging system.
 The system contains on a python logging based approach with logfile,
 console output and GUI output dependent on startup options and
 message logLevel.
@@ -8,9 +8,13 @@ message logLevel.
 import sys
 import atexit
 import logging
+import logging.handlers
 import inspect
 from numpy import seterr, seterrcall
 from io import StringIO
+from threading import Thread
+from multiprocessing import Queue, current_process
+from queue import Empty
 from ..version import __version__ as str_version
 
 
@@ -26,6 +30,7 @@ elif '--debug' in sys.argv:
 
 
 def genx_exit_message():
+    mp_logger.join()
     logging.info('*** GenX %s Logging ended ***'%str_version)
 
 
@@ -38,7 +43,7 @@ def iprint(*objects, sep=None, end=None, file=None, flush=False):
         sep = ' '
     if end is None:
         end = ''  # '\n'
-    logging.info(sep.join(map(str, objects))+end)
+    logging.info(sep.join(map(str, objects))+end, stacklevel=3)
 
 
 class NumpyLogger(logging.getLoggerClass()):
@@ -62,7 +67,7 @@ class NumpyLogger(logging.getLoggerClass()):
                                                    msg, args, exc_info, func=func, extra=extra)
 
 
-nplogger = None
+nplogger:logging.Logger = None
 
 
 def numpy_logger(err, _flag):
@@ -72,6 +77,49 @@ def numpy_logger(err, _flag):
 def numpy_set_options():
     seterr(divide='call', over='call', under='ignore', invalid='call')
     seterrcall(numpy_logger)
+
+class MPLoggerThread(Thread):
+    """
+    Performs logging of sub-process started with multiprocessing.
+    The initialization routine has to call setup_mp(queue) to use this
+    loggers Queue.
+    """
+    def __init__(self):
+        super().__init__(name='MPLogger Receiver')
+        self.daemon = True
+        self.queue = Queue()
+        self.stop_thread = False
+        logging.debug(f'Created MPLoggerThread for receiving Queued messages')
+
+    def run(self):
+        logging.debug(f'MPLoggerThread started')
+        while not self.stop_thread:
+            try:
+                record = self.queue.get(True, 0.1)
+            except Empty:
+                pass
+            except Exception:
+                logging.warning('Error in MPLoggerThread', exc_info=True)
+            else:
+                logger = logging.getLogger()
+                logger.handle(record)
+
+    def join(self, timeout=None):
+        self.stop_thread = True
+        super().join(timeout)
+
+mp_logger:MPLoggerThread = None
+
+
+def setup_mp(queue):
+    # Called in initialization of new process to allow queued logging
+    h = logging.handlers.QueueHandler(queue)  # Just the one handler needed
+    root = logging.getLogger()
+    root.addHandler(h)
+    root.setLevel(logging.DEBUG)
+    name = current_process().name
+    logging.debug(f"Activated logging in process {name} using queue handler")
+    activate_excepthook()
 
 
 def setup_system():
@@ -89,6 +137,11 @@ def setup_system():
     if min(CONSOLE_LEVEL, GUI_LEVEL)>logging.DEBUG:
         logging.getLogger('numba').setLevel(logging.WARNING)
     logging.info(f'*** GenX {str_version} Logging started ***')
+
+    # create MP logger
+    global mp_logger
+    mp_logger=MPLoggerThread()
+    mp_logger.start()
 
     # define numpy warning behavior
     global nplogger
@@ -111,7 +164,9 @@ def activate_logging(logfile):
     logger = logging.getLogger()
     logfile = logging.FileHandler(logfile, 'w', encoding='utf-8')
     logger.setLevel(min(logger.getEffectiveLevel(), FILE_LEVEL))
-    formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - %(process)d:%(threadName)s:%(filename)s:%(lineno)i:%(funcName)s | %(message)s',
+    formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - '
+                                  '%(process)d:%(threadName)s:%(filename)s:%(lineno)i:%(funcName)s '
+                                  '| %(message)s',
                                   '')
     logfile.setFormatter(formatter)
     logfile.setLevel(FILE_LEVEL)

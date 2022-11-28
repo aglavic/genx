@@ -6,6 +6,7 @@ import multiprocessing
 from threading import Thread
 from dataclasses import dataclass
 from typing import Dict
+from logging import debug
 
 from numpy import *
 from bumps.fitters import FitDriver, FITTERS
@@ -15,14 +16,14 @@ from bumps.formatnum import format_uncertainty
 from bumps.dream.stats import var_stats
 
 from .exceptions import ErrorBarError, OptimizerInterrupted
+from .core import custom_logging
 from .core.config import BaseConfig
-from .core.custom_logging import iprint
 from .model import Model, GenxCurve
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
 
 
 _cpu_count = multiprocessing.cpu_count()
-
+iprint = custom_logging.iprint
 
 class BumpsDefaultCallbacks(GenxOptimizerCallback):
 
@@ -325,7 +326,7 @@ class BumpsOptimizer(GenxOptimizer):
             self.text_output("Starting a pool with %i workers ..."%(self.opt.parallel_processes,))
             self.pool = multiprocessing.Pool(processes=self.opt.parallel_processes,
                                              initializer=parallel_init,
-                                             initargs=(numba_procs,))
+                                             initargs=(numba_procs, custom_logging.mp_logger.queue))
             if use_cuda:
                 self.pool.apply_async(init_cuda)
             options['mapper'] = lambda p: list(self.pool.map(problem.nllf, p, chunksize=self.opt.parallel_chunksize))
@@ -419,17 +420,24 @@ class BumpsOptimizer(GenxOptimizer):
         return result
 
 
-def parallel_init(numba_procs=None):
+def parallel_init(numba_procs=None, log_queue=None):
     '''
     parallel initialization of a pool of processes. The function takes a
     pickle safe copy of the model and resets the script module and the compiles
     the script and creates function to set the variables.
     '''
+    if log_queue is not None:
+        custom_logging.setup_mp(log_queue)
     if numba_procs is not None:
-        import numba
-        if hasattr(numba, 'set_num_threads'):
-            iprint(f"Setting numba threads to {numba_procs}")
-            numba.set_num_threads(numba_procs)
+        try:
+            import numba
+        except ImportError:
+            pass
+        else:
+            if hasattr(numba, 'set_num_threads') and numba.get_num_threads()>numba_procs:
+                debug(f"Setting numba threads to {numba_procs}")
+                numba.set_num_threads(numba_procs)
+    debug(f'Initialize multiprocessing for bumps')
 
 
 def init_cuda():

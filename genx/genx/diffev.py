@@ -12,8 +12,8 @@ from dataclasses import dataclass
 from logging import debug
 from numpy import *
 
+from .core import custom_logging
 from .core.config import BaseConfig
-from .core.custom_logging import iprint, numpy_set_options
 from .core.Simplex import Simplex
 from .exceptions import ErrorBarError
 from .model import Model
@@ -36,6 +36,7 @@ else:
     size = comm.Get_size()
     rank = comm.Get_rank()
 
+iprint = custom_logging.iprint
 
 class DiffEvDefaultCallbacks(GenxOptimizerCallback):
 
@@ -422,7 +423,7 @@ class DiffEv(GenxOptimizer):
 
     def optimize_thread(self):
         try:
-            numpy_set_options()
+            custom_logging.numpy_set_options()
             self.optimize()
         except Exception as e:
             self.running = False
@@ -677,7 +678,7 @@ class DiffEv(GenxOptimizer):
                 self.new_best = False
                 # Do an autosave if activated and the interval is correct
                 if gen%self.opt.autosave_interval==0 and self.opt.use_autosave:
-                    self.autosave()
+                        self.autosave()
 
         if rank==0:
             if not self.error:
@@ -731,20 +732,26 @@ class DiffEv(GenxOptimizer):
         from .models.lib import paratt, USE_NUMBA
         use_cuda = paratt.Refl.__module__.rsplit('.', 1)[1]=='paratt_cuda'
         # reduce numba thread count for numba functions
+        overwrite_single = False
         if USE_NUMBA:
-            import numba
-            if getattr(numba, 'GENX_OVERWRITE_SINGLE', False):
-                numba_procs = 1
-                overwrite_single = True
+            try:
+                import numba
+            except ImportError:
+                numba_procs = None
             else:
-                numba_procs = max(1, _cpu_count//self.opt.parallel_processes)
-                overwrite_single = False
+                if getattr(numba, 'GENX_OVERWRITE_SINGLE', False):
+                    numba_procs = 1
+                    overwrite_single = True
+                else:
+                    numba_procs = max(1, _cpu_count//self.opt.parallel_processes)
         else:
             numba_procs = None
         self.text_output("Starting a pool with %i workers ..."%(self.opt.parallel_processes,))
         self.pool = processing.Pool(processes=self.opt.parallel_processes,
                                     initializer=parallel_init,
-                                    initargs=(self.model.pickable_copy(), numba_procs, False, overwrite_single))
+                                    initargs=(self.model.pickable_copy(),
+                                              numba_procs, False, overwrite_single,
+                                              custom_logging.mp_logger.queue))
         if use_cuda:
             self.pool.apply_async(init_cuda)
         time.sleep(1.0)
@@ -1345,12 +1352,15 @@ def set_numba_single():
         pass
 
 
-def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False, overwrite_single=False):
+def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False, overwrite_single=False, log_queue=None):
     '''
     parallel initialization of a pool of processes. The function takes a
     pickle safe copy of the model and resets the script module and the compiles
     the script and creates function to set the variables.
     '''
+    if log_queue:
+        custom_logging.setup_mp(log_queue)
+    debug(f'Initializing multiprocessing')
     if not use_mpi:
         # ignore KeyboardInterrupt so that master process can handle it
         import signal
@@ -1366,17 +1376,20 @@ def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False, overwrite_
             pass
         else:
             if hasattr(numba, 'set_num_threads') and numba.get_num_threads()>numba_procs:
-                iprint(f"Setting numba threads to {numba_procs}")
+                debug(f"Setting numba threads to {numba_procs}")
                 numba.set_num_threads(numba_procs)
     global model, par_funcs
-    model = model_copy
-    model.reset()
-    model.simulate()
-    (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars(use_bounds=False)
+    try:
+        model = model_copy
+        model.reset()
+        model.simulate()
+        (par_funcs, start_guess, par_min, par_max) = model.get_fit_pars(use_bounds=False)
+    except Exception:
+        debug("Exception when initializing worker process", exc_info=True)
 
 
 def init_cuda():
-    iprint("Init CUDA in one worker")
+    debug("Init CUDA in one worker")
     # activate cuda in subprocesses
     from .models.lib import paratt_cuda
     from .models.lib import neutron_cuda
@@ -1390,7 +1403,7 @@ def init_cuda():
     paratt.ReflQ = paratt_cuda.ReflQ
     paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
     neutron_refl.Refl = neutron_cuda.Refl
-    iprint("CUDA init done, go to work")
+    debug("CUDA init done, go to work")
 
 
 def parallel_calc_fom(vec):
