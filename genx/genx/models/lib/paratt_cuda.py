@@ -3,8 +3,13 @@ from numba import cuda
 import numba
 import math, cmath
 
+if numba.__version__.split('.')>['0', '55', '0']:
+    JIT_OPTIONS = dict(cache=True)
+else:
+    JIT_OPTIONS = {}
+
 @cuda.jit(numba.void(numba.float64[:], numba.float64, numba.complex128[:],
-                     numba.float64[:], numba.float64[:], numba.float64[:]))
+                     numba.float64[:], numba.float64[:], numba.float64[:]), **JIT_OPTIONS)
 def ReflNB(theta, lamda, n, d, sigma, Rout):
     # Thread id in a 1D block
     tx=cuda.threadIdx.x
@@ -46,7 +51,7 @@ def ReflNB(theta, lamda, n, d, sigma, Rout):
     Rout[ai]=abs(Aj)**2
 
 @cuda.jit(numba.void(numba.float64[:], numba.float64, numba.complex128[:],
-                     numba.float64[:], numba.float64[:], numba.complex128[:]))
+                     numba.float64[:], numba.float64[:], numba.complex128[:]), **JIT_OPTIONS)
 def AmpNB(theta, lamda, n, d, sigma, Aout):
     # Thread id in a 1D block
     tx=cuda.threadIdx.x
@@ -106,7 +111,7 @@ def Refl(theta, lamda, n, d, sigma, return_int=True):
         return CAout.copy_to_host()
 
 @cuda.jit(numba.void(numba.float64[:], numba.float64, numba.complex128[:],
-                     numba.float64[:], numba.float64[:], numba.float64[:]))
+                     numba.float64[:], numba.float64[:], numba.float64[:]), **JIT_OPTIONS)
 def ReflQNB(Q, Q0, n, d, sigma, Rout):
     # Thread id in a 1D block
     tx=cuda.threadIdx.x
@@ -143,7 +148,7 @@ def ReflQNB(Q, Q0, n, d, sigma, Rout):
     Rout[qi]=abs(Aj)**2
 
 @cuda.jit(numba.void(numba.float64[:], numba.float64, numba.complex128[:],
-                     numba.float64[:], numba.float64[:], numba.complex128[:]))
+                     numba.float64[:], numba.float64[:], numba.complex128[:]), **JIT_OPTIONS)
 def AmpQNB(Q, Q0, n, d, sigma, Aout):
     # Thread id in a 1D block
     tx=cuda.threadIdx.x
@@ -201,7 +206,7 @@ def ReflQ(Q, lamda, n, d, sigma, return_int=True):
         return CAout.copy_to_host()
 
 @cuda.jit(numba.void(numba.float64[:], numba.float64[:], numba.complex128[:, :],
-                     numba.float64[:], numba.float64[:], numba.float64[:]))
+                     numba.float64[:], numba.float64[:], numba.float64[:]), **JIT_OPTIONS)
 def Refl_nvary2NB(theta, lamda, n, d, sigma, Rout):
     # Thread id in a 1D block
     tx=cuda.threadIdx.x
@@ -243,7 +248,7 @@ def Refl_nvary2NB(theta, lamda, n, d, sigma, Rout):
     Rout[ai]=abs(Aj)**2
 
 @cuda.jit(numba.void(numba.float64[:], numba.float64[:], numba.complex128[:, :],
-                     numba.float64[:], numba.float64[:], numba.complex128[:]))
+                     numba.float64[:], numba.float64[:], numba.complex128[:]), **JIT_OPTIONS)
 def Amp_nvary2NB(theta, lamda, n, d, sigma, Aout):
     # Thread id in a 1D block
     tx=cuda.threadIdx.x

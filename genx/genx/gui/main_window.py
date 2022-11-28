@@ -1136,32 +1136,23 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                 title='Activating CUDA...')
         dlg.Show()
 
-        dlg.Update(1)
-        from ..models.lib import paratt_cuda
-        dlg.Update(2)
-        from ..models.lib import neutron_cuda
-        dlg.Update(3)
-        from ..models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_cuda.Refl
-        paratt.ReflQ = paratt_cuda.ReflQ
-        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
-        neutron_refl.Refl = neutron_cuda.Refl
-        from ..models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_cuda.Refl
-        paratt.ReflQ = paratt_cuda.ReflQ
-        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
-        neutron_refl.Refl = neutron_cuda.Refl
-
+        with self.catch_error('activate CUDA') as eh:
+            dlg.Update(1)
+            from ..models.lib import paratt_cuda
+            dlg.Update(2)
+            from ..models.lib import neutron_cuda
+            dlg.Update(3)
+        if eh.successful:
+            from ..models.lib import paratt, neutron_refl
+            paratt.Refl = paratt_cuda.Refl
+            paratt.ReflQ = paratt_cuda.ReflQ
+            paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
+            neutron_refl.Refl = neutron_cuda.Refl
         dlg.Destroy()
 
     @staticmethod
     def deactivate_cuda():
         from ..models.lib import paratt_numba, neutron_numba
-        from ..models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_numba.Refl
-        paratt.ReflQ = paratt_numba.ReflQ
-        paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
-        neutron_refl.Refl = neutron_numba.Refl
         from ..models.lib import paratt, neutron_refl
         paratt.Refl = paratt_numba.Refl
         paratt.ReflQ = paratt_numba.ReflQ
@@ -2249,6 +2240,7 @@ class GenxApp(wx.App):
             except ImportError:
                 pass
             else:
+                import inspect
                 if hasattr(numba.config, 'CACHE_DIR'):
                     # make sure to use a user directory for numba cache
                     numba.config.CACHE_DIR = os.path.join(config_path, 'numba_cache')
@@ -2261,10 +2253,11 @@ class GenxApp(wx.App):
                     WriteSplash = self.WriteSplash
 
                     def __call__(self, *args, **opts):
-                        self.WriteSplash(f'compiling numba functions {self.update_counter}/21',
+                        if inspect.stack()[1][3]!='<lambda>':
+                            self.WriteSplash(f'compiling numba functions {self.update_counter}/21',
                                          progress=0.25+0.5*(self.update_counter-1)/21.)
-                        self.update_counter += 1
-                        wx.YieldIfNeeded()
+                            self.update_counter += 1
+                            wx.YieldIfNeeded()
                         return real_jit(*args, **opts)
 
                 numba.jit = UpdateJit()

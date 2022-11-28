@@ -353,6 +353,7 @@ def compile_numba(cache_dir=None):
     try:
         # perform a compilation of numba functions with console feedback
         import numba
+        import inspect
         if cache_dir:
             numba.config.CACHE_DIR = cache_dir
         elif hasattr(numba.config, 'CACHE_DIR'):
@@ -367,13 +368,23 @@ def compile_numba(cache_dir=None):
             update_counter = 1
 
             def __call__(self, *args, **opts):
-                print(f'compiling numba functions {self.update_counter}/21')
-                self.update_counter += 1
+                if inspect.stack()[1][3]!='<lambda>':
+                    print(f'compiling numba functions {self.update_counter}/21')
+                    self.update_counter += 1
                 return real_jit(*args, **opts)
 
         print('Starting to compile numba functions..')
         numba.jit = UpdateJit()
-        from .models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
+        print("paratt")
+        from .models.lib import paratt_numba
+        print('neutron')
+        from .models.lib import neutron_numba
+        print('instrument')
+        from .models.lib import instrument_numba
+        print('offspec')
+        from .models.lib import offspec
+        print('surface')
+        from .models.lib import surface_scattering
         numba.jit = real_jit
     except Exception as e:
         print('An exception occured when trying to compile the numba functions:')
