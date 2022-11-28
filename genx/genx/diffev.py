@@ -146,6 +146,7 @@ class DiffEv(GenxOptimizer):
         self.stop = False  # true if the optimization should stop
         self.setup_ok = False  # True if the optimization have been setup
         self.error = None  # None/string if an error ahs occurred
+        self.pool = None
 
         # Logging variables
         self.fom_log = array([[0, 0]])[0:0]
@@ -394,8 +395,13 @@ class DiffEv(GenxOptimizer):
         by start_fit.
         '''
         if self.running:
-            self.stop = True
-            self.text_output('Trying to stop the fit...')
+            if self.stop and self.pool:
+                self.text_output('Forcefully killing workiers...')
+                self.pool.terminate()
+                self.dismount_parallel()
+            else:
+                self.stop = True
+                self.text_output('Trying to stop the fit...')
         else:
             self.text_output('The fit is not running')
 
@@ -778,10 +784,13 @@ class DiffEv(GenxOptimizer):
         '''
         Used to close the pool and all its processes
         '''
+        if self.pool is None:
+            return
+
         self.pool.close()
         self.pool.join()
 
-        # del self.pool
+        self.pool = None
 
     def calc_trial_fom_parallel(self):
         '''
