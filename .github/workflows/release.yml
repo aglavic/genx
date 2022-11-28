@@ -31,9 +31,9 @@ jobs:
       run: |
         cd genx
         pyinstaller genx.spec
-    - name: Pre-compile numba functions
-      run: |
-        genx\dist\genx\genx_console.exe --compile-nb
+#    - name: Pre-compile numba functions
+#      run: |
+#        genx\dist\genx\genx_console.exe --compile-nb
     - name: Download and Install Inno Setup installer
       run: |
         curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-6.1.2.exe
