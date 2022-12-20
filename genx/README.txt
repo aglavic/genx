@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.17
+==============
+ * Use single numba cache directory for any GenX executable, speeding up program start 
+ * Fix multiprocessing fit stuck in Windows binary
+ * Better logging and error reporting in multiprocessing fit
+
 Changes 3.6.16
 ==============
  * Improve error handling and allow forcefull termination of multiprocessing fits

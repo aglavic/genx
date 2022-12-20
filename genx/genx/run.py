@@ -354,6 +354,9 @@ def compile_numba(cache_dir=None):
     try:
         # perform a compilation of numba functions with console feedback
         import numba
+        from .models.lib.numba_integration import configure_numba
+        configure_numba()
+
         import inspect
 
         real_jit = numba.jit
