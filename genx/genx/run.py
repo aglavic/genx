@@ -459,9 +459,6 @@ def main():
     if not __mpi__:
         args.mpi = False
 
-    if args.compile_nb:
-        sys.exit(compile_numba())
-
     if args.run or args.mpi or args.pars or args.mod:
         # make sure at least info-messages are shown (default is warning)
         custom_logging.CONSOLE_LEVEL = min(logging.INFO, custom_logging.CONSOLE_LEVEL)
@@ -489,6 +486,9 @@ def main():
         modellib.USE_NUMBA = False
     elif args.numba_single:
         set_numba_single()
+    if args.compile_nb:
+        sys.exit(compile_numba())
+
 
     if args.run:
         start_fitting(args)

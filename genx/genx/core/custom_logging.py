@@ -125,6 +125,10 @@ def setup_mp(queue: Queue):
     root = logging.getLogger()
     root.addHandler(h)
     root.setLevel(logging.DEBUG)
+
+    logging.getLogger('matplotlib').setLevel(logging.WARNING)
+    logging.getLogger('numba').setLevel(logging.WARNING)
+
     logging.debug(f"Activated logging in process {name} using queue handler")
     activate_excepthook()
 

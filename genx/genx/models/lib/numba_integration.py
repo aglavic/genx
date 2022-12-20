@@ -1,4 +1,5 @@
 import os
+import sys
 import appdirs
 import numba.core.caching as nc
 
@@ -54,8 +55,15 @@ class _GenxCacheLocator(nc._SourceFileBackedLocatorMixin, nc._CacheLocator):
         path = os.path.abspath(py_file)
         subpath = os.path.dirname(path)
         parentdir = os.path.split(subpath)[-1]
-        return f'genx_{program_version.replace(".", "_")}_{parentdir}'
+        # separate caches for source and binary distribution
+        # mostly if source is used to test on the same machine
+        prefix = 'genx'+getattr(sys, 'frozen', 'source')
+        return f'{prefix}_{program_version.replace(".", "_")}_{parentdir}'
 
 
 def configure_numba():
-    nc._CacheImpl._locator_classes.insert(0, _GenxCacheLocator)
+    if hasattr(nc, '_CacheImpl'):
+        nc._CacheImpl._locator_classes.insert(0, _GenxCacheLocator)
+    else:
+        # Newer version of numba
+        nc.CacheImpl._locator_classes.insert(0, _GenxCacheLocator)
