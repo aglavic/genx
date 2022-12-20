@@ -101,8 +101,14 @@ class MPLoggerThread(Thread):
             except Exception:
                 logging.warning('Error in MPLoggerThread', exc_info=True)
             else:
-                logger = logging.getLogger()
-                logger.handle(record)
+                if isinstance(record, str):
+                    logging.debug(f'MPLogger received string message: {record}')
+                else:
+                    try:
+                        logger = logging.getLogger()
+                        logger.handle(record)
+                    except Exception:
+                        logging.warning('Error in MPLoggerThread record handling', exc_info=True)
 
     def join(self, timeout=None):
         self.stop_thread = True
@@ -111,13 +117,14 @@ class MPLoggerThread(Thread):
 mp_logger:MPLoggerThread = None
 
 
-def setup_mp(queue):
+def setup_mp(queue: Queue):
+    name = current_process().name
+    queue.put(f'Start setting up logging in {name}')
     # Called in initialization of new process to allow queued logging
     h = logging.handlers.QueueHandler(queue)  # Just the one handler needed
     root = logging.getLogger()
     root.addHandler(h)
     root.setLevel(logging.DEBUG)
-    name = current_process().name
     logging.debug(f"Activated logging in process {name} using queue handler")
     activate_excepthook()
 
@@ -134,8 +141,7 @@ def setup_system():
     logger.addHandler(console)
 
     logging.getLogger('matplotlib').setLevel(logging.WARNING)
-    if min(CONSOLE_LEVEL, GUI_LEVEL)>logging.DEBUG:
-        logging.getLogger('numba').setLevel(logging.WARNING)
+    logging.getLogger('numba').setLevel(logging.WARNING)
     logging.info(f'*** GenX {str_version} Logging started ***')
 
     # create MP logger

@@ -399,6 +399,9 @@ class DiffEv(GenxOptimizer):
                 self.text_output('Forcefully killing workiers...')
                 self.pool.terminate()
                 self.dismount_parallel()
+                # reset object to allow restart of fit
+                self.eval_fom = None
+                self.running = False
             else:
                 self.stop = True
                 self.text_output('Trying to stop the fit...')
@@ -753,10 +756,10 @@ class DiffEv(GenxOptimizer):
         else:
             numba_procs = None
         self.text_output("Starting a pool with %i workers ..."%(self.opt.parallel_processes,))
+        pkl_str = pickle.dumps(self.model.pickable_copy())
         self.pool = processing.Pool(processes=self.opt.parallel_processes,
                                     initializer=parallel_init,
-                                    initargs=(self.model.pickable_copy(),
-                                              numba_procs, False, overwrite_single,
+                                    initargs=(pkl_str, numba_procs, False, overwrite_single,
                                               custom_logging.mp_logger.queue))
         if use_cuda:
             self.pool.apply_async(init_cuda)
@@ -777,7 +780,8 @@ class DiffEv(GenxOptimizer):
 
         if rank==0:
             self.text_output("Inits mpi with %i processes ..."%(size,))
-        parallel_init(self.model.pickable_copy(), numba_procs, use_mpi=True, overwrite_single=True)
+        pkl_str = pickle.dumps(self.model.pickable_copy())
+        parallel_init(pkl_str, numba_procs, use_mpi=True, overwrite_single=True)
         time.sleep(0.1)
 
     def dismount_parallel(self):
@@ -1341,12 +1345,8 @@ par_funcs = ()  # global variables set in functions below
 
 
 def set_numba_single():
-    config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-    cache_dir = os.path.join(config_path, 'single_cpu_numba_cache')
-
     debug('Setting numba JIT compilation to single CPU')
     import numba
-    numba.config.CACHE_DIR = cache_dir
     old_jit = numba.jit
 
     def jit(*args, **opts):
@@ -1361,7 +1361,7 @@ def set_numba_single():
         pass
 
 
-def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False, overwrite_single=False, log_queue=None):
+def parallel_init(pkl_str:str, numba_procs=None, use_mpi=False, overwrite_single=False, log_queue=None):
     '''
     parallel initialization of a pool of processes. The function takes a
     pickle safe copy of the model and resets the script module and the compiles
@@ -1387,8 +1387,13 @@ def parallel_init(model_copy: Model, numba_procs=None, use_mpi=False, overwrite_
             if hasattr(numba, 'set_num_threads') and numba.get_num_threads()>numba_procs:
                 debug(f"Setting numba threads to {numba_procs}")
                 numba.set_num_threads(numba_procs)
+            from .models.lib.numba_integration import configure_numba
+            configure_numba()
+
     global model, par_funcs
     try:
+        # manually unpickle so the errors in import etc. are logged
+        model_copy = pickle.loads(pkl_str)
         model = model_copy
         model.reset()
         model.simulate()

@@ -28,14 +28,14 @@ class CatchModelError:
             self._status_update(text)
 
     def __enter__(self):
-        debug(f'enter {self.action}/{self.step}')
+        debug(f'enter {self.action}/{self.step}', stacklevel=3)
         if self.step:
             self.status_update(f'Start {self.step}.')
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
-            debug(f'exit {self.action}/{self.step} w/o error')
+            debug(f'exit {self.action}/{self.step} w/o error', stacklevel=3)
             self.successful=True
             self.status_update(f'Success in {self.step}.')
             return True

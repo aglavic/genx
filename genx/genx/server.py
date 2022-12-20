@@ -12,13 +12,16 @@ from . import version
 from .core import custom_logging
 
 
+config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+os.environ['NUMBA_CACHE_DIR'] = os.path.join(config_path, 'numba_cache')
+
+
 def set_numba_single():
-    config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-    cache_dir = os.path.join(config_path, 'single_cpu_numba_cache')
+    logging.debug('Setting numba JIT compilation to single CPU')
+    os.environ['NUMBA_CACHE_DIR'] = os.path.join(config_path, 'single_cpu_numba_cache')
 
     logging.debug('Setting numba JIT compilation to single CPU')
     import numba
-    numba.config.CACHE_DIR = cache_dir
     old_jit = numba.jit
 
     def jit(*args, **opts):

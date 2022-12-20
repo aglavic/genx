@@ -15,6 +15,9 @@ from .core import custom_logging
 from .core.custom_logging import activate_excepthook, activate_logging, iprint, setup_system
 
 
+config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+os.environ['NUMBA_CACHE_DIR'] = os.path.join(config_path, 'numba_cache')
+
 def start_interactive(args):
     '''
     Start genx in interactive mode (with the gui)
@@ -34,11 +37,11 @@ def start_interactive(args):
     if args.infile!='':
         debug('start GUI setup with file to load')
         filename = os.path.abspath(args.infile)
-        if getattr(sys, 'frozen', False):
+        #if getattr(sys, 'frozen', False):
             # make sure the path is set to the program executable in a frozen binary
             # this fixes unnecessery re-compiles of numba functions on Windows
-            os.chdir(os.path.dirname(os.path.abspath(sys.executable)))
-            debug(f'changed curdir to {os.path.abspath(os.path.curdir)}')
+        #    os.chdir(os.path.dirname(os.path.abspath(sys.executable)))
+        #    debug(f'changed curdir to {os.path.abspath(os.path.curdir)}')
     else:
         filename = None
     debug('start GUI setup')
@@ -152,12 +155,10 @@ def modify_file(args):
 
 
 def set_numba_single():
-    config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-    cache_dir = os.path.join(config_path, 'numba_cache_single_cpu')
-
     debug('Setting numba JIT compilation to single CPU')
+    os.environ['NUMBA_CACHE_DIR'] = os.path.join(config_path, 'single_cpu_numba_cache')
+
     import numba
-    numba.config.CACHE_DIR = cache_dir
     old_jit = numba.jit
 
     def jit(*args, **opts):
@@ -354,13 +355,6 @@ def compile_numba(cache_dir=None):
         # perform a compilation of numba functions with console feedback
         import numba
         import inspect
-        if cache_dir:
-            numba.config.CACHE_DIR = cache_dir
-        elif hasattr(numba.config, 'CACHE_DIR'):
-            import appdirs
-            config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-            # make sure to use a user directory for numba cache
-            numba.config.CACHE_DIR = os.path.join(config_path, 'numba_cache')
 
         real_jit = numba.jit
 
