@@ -2,7 +2,8 @@
 Helper functions used to analyse reflectivity using various frequency estimation techniques.
 """
 
-from numpy import linspace, pi, zeros, exp, trapz, sqrt, maximum, newaxis, zeros_like, cumsum
+from enum import Enum
+from numpy import linspace, log, pi, zeros, exp, trapz, sqrt, maximum, newaxis, zeros_like, cumsum
 
 
 def NDFT(q, y, d=None):
@@ -106,9 +107,15 @@ def average(y, N=20):
     return avg
 
 
-def transform(q, I, Qc=0., trans_type='FT',
+class TransformType(str, Enum):
+    fourier_transform = 'FT'
+    short_time_FT = 'STFT'
+    mexican_hat_WT = 'MH'
+    morlet_WT = 'MO'
+
+def transform(q, I, Qc=0., trans_type:TransformType=TransformType.fourier_transform,
               avg_correction=None, avgN=10,
-              log=False, Q4=True,
+              logI=False, Q4=True,
               derivate=True, derivN=3,
               Qmin=0., Qmax=None,
               D=None, wavelet_scaling=0.,
@@ -144,7 +151,7 @@ def transform(q, I, Qc=0., trans_type='FT',
 
     if Q4:
         I = Q**4*I
-    if log:
+    if logI:
         I = log(maximum(I, I[I>0].min()))
 
     if avg_correction:
@@ -164,14 +171,14 @@ def transform(q, I, Qc=0., trans_type='FT',
     Quse = Q[posvals];
     Iuse = I[posvals]
 
-    if trans_type=='FT':
+    if trans_type==TransformType.fourier_transform:
         D, T = NDFT(Quse, Iuse, d=D)
         T = abs(T)
-    elif trans_type=='STFT':
+    elif trans_type==TransformType.short_time_FT:
         T = abs(STFT(Quse, Iuse, D))
-    elif trans_type=='MH':
+    elif trans_type==TransformType.mexican_hat_WT:
         T = abs(CWT(Quse, Iuse, d=D, wavelet=MexicanHat))**2.+1e-20
-    elif trans_type=='MO':
+    elif trans_type==TransformType.morlet_WT:
         T = abs(CWT(Quse, Iuse, d=D, wavelet=Morlet))**2.+1e-20
     else:
         raise ValueError('Transformation type not known: %s'%trans_type)

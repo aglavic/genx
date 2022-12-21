@@ -11,7 +11,7 @@ Written by Artur Glavic
 
 import wx
 from numpy import isnan, linspace
-from .help_modules.frequency_analysis import transform
+from .help_modules.frequency_analysis import transform, TransformType
 from genx.gui.plotpanel import PlotPanel, BasePlotConfig
 from .. import add_on_framework as framework
 
@@ -41,6 +41,24 @@ class FAPlotPanel(wx.Panel):
         self.SetSizer(sizer)
         self.plot_dict={}
 
+        self.transform_log = wx.CheckBox(self, -1, 'log(R)')
+        sizer.Add(self.transform_log, 0, wx.FIXED_MINSIZE)
+        self.transform_Q4 = wx.CheckBox(self, -1, 'R Q^4')
+        self.transform_Q4.SetValue(True)
+        sizer.Add(self.transform_Q4, 0, wx.FIXED_MINSIZE)
+        self.use_derivative = wx.CheckBox(self, -1, 'dR/dQ')
+        sizer.Add(self.use_derivative, 0, wx.FIXED_MINSIZE)
+
+        self.tt={}
+        for tt in list(TransformType):
+            self.tt[tt] = wx.RadioButton(self, -1, label=tt.name)
+            sizer.Add(self.tt[tt], 0, wx.FIXED_MINSIZE)
+        self.tt[TransformType.fourier_transform].SetValue(True)
+
+        self.Qc = wx.SpinCtrlDouble(self, -1, value='0.05', min=0.00, max=0.5, inc=0.001)
+        self.Qc.SetDigits(5)
+        sizer.Add(self.Qc, 0, wx.FIXED_MINSIZE)
+
     def SetZoom(self, active=False):
         return self.plot.SetZoom(active)
 
@@ -61,18 +79,26 @@ class FAPlotPanel(wx.Panel):
 
         d=linspace(0, 500, 250)
         # New style sim function with one sld for each simulation
+        options = dict(
+            Qc=float(self.Qc.GetValue()),
+            logI = self.transform_log.IsChecked(),
+            Q4=self.transform_Q4.IsChecked(),
+            derivate=self.use_derivative.IsChecked(),
+            )
+        for tt, ctrl in self.tt.items():
+            if ctrl.GetValue():
+                options['trans_type'] = tt
+                break
         for i, di in enumerate(data):
             if i%2!=0:
                 continue
             if di.show:
                 try:
                     if not isnan(di.y).all() and (di.y>0).any():
-                        _,mag=transform(di.x, di.y, Qc=0.05,
-                                        trans_type='FT',
-                                        log=False, Q4=True,
-                                        derivate=False, derivN=3,
+                        _,mag=transform(di.x, di.y,
+                                        derivN=3,
                                         Qmin=0.08, Qmax=None,
-                                        D=d, wavelet_scaling=0.)
+                                        D=d, wavelet_scaling=0., **options)
                         self.plot.ax.plot(d, mag,
                                           color=di.data_color,
                                           ls=di.data_linetype, lw=di.data_linethickness,
@@ -80,12 +106,10 @@ class FAPlotPanel(wx.Panel):
                                           label='data '+di.name)
 
                     if di.y_sim is not None and not isnan(di.y_sim).all() and (di.y_sim>0).any():
-                        _,mag=transform(di.x, di.y_sim, Qc=0.05,
-                                        trans_type='FT',
-                                        log=False, Q4=True,
-                                        derivate=False, derivN=3,
+                        _,mag=transform(di.x, di.y_sim,
+                                        derivN=3,
                                         Qmin=0.08, Qmax=None,
-                                        D=d, wavelet_scaling=0.)
+                                        D=d, wavelet_scaling=0., **options)
                         self.plot.ax.plot(d, mag,
                                           color=di.sim_color,
                                           ls=di.sim_linetype, lw=di.sim_linethickness,
