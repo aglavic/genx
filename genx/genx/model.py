@@ -30,6 +30,18 @@ from .models.lib.parameters import get_parameters, NumericParameter
 from .parameters import Parameters
 
 
+try:
+    from yaml import dumper
+except ImportError:
+    pass
+else:
+    class DumpDict(dict):
+        # Make compact layout for non-orso header items read from files
+        def yaml_representer(self, dumper):
+            return dumper.represent_mapping(dumper.DEFAULT_MAPPING_TAG,
+                                            dict(self), flow_style=True)
+
+
 @dataclass
 class StartupScript(BaseConfig):
     section = 'startup'
@@ -82,6 +94,7 @@ class Model(H5HintedExport):
         the model and the data + various other attributes.
     '''
     h5group_name = 'current'
+    _group_attr = {'NX_class': 'NXentry', 'default': 'data'}
 
     saved = True
     fom = None
@@ -641,6 +654,8 @@ class Model(H5HintedExport):
                 prev_columns_list = None
                 prev_columns = {}
             if hasattr(self.script_module, 'inst') and self.script_module.inst.coords in ['tth', '2θ']:
+                # this will probably need changing in the future as ORSO standard
+                # will probably require Qz for first column
                 column_names = [Column('TTh', 'deg'), Column('R'), ErrorColumn('R')]
             else:
                 column_names = [Column('Qz', '1/angstrom'), Column('R'), ErrorColumn('R')]
@@ -660,7 +675,11 @@ class Model(H5HintedExport):
                 else:
                     column_names.append(Column(name))
             header['columns'] = column_names
-            ds.append(OrsoDataset(Orso(**header), np.array(columns).T))
+            header_obj = Orso(**header)
+            for key, value in header_obj._user_data.items():
+                if not key in ['analysis'] and isinstance(value, dict):
+                    header_obj._user_data[key] = DumpDict(value)
+            ds.append(OrsoDataset(header_obj, np.array(columns).T))
         try:
             save_orso(ds, basename, data_separator='\n')
         except GenxIOError as e:
@@ -733,34 +752,20 @@ class Model(H5HintedExport):
         Save the string to file with filename.
         '''
         try:
-            savefile = open(filename, 'w')
+            with open(filename, 'w', encoding='utf-8') as savefile:
+                savefile.write(save_string)
         except Exception as e:
             raise GenxIOError(e.__str__(), filename)
-
-        # Save the string to file
-        try:
-            savefile.write(save_string)
-        except Exception as e:
-            raise GenxIOError(e.__str__(), filename)
-
-        savefile.close()
 
     def _read_from_file(self, filename):
         '''
         Reads the entrie file into string and returns it.
         '''
         try:
-            loadfile = open(filename, 'r')
+            with open(filename, 'r', encoding='utf-8') as loadfile:
+                read_string = loadfile.read()
         except Exception as e:
             raise GenxIOError(e.__str__(), filename)
-
-        # Read the text from file
-        try:
-            read_string = loadfile.read()
-        except Exception as e:
-            raise GenxIOError(e.__str__(), filename)
-
-        loadfile.close()
 
         return read_string
 

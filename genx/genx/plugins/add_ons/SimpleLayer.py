@@ -600,7 +600,7 @@ class MaterialDialog(wx.Dialog):
                 items.append(f'{i+1}: {name} ({sgs}) |'
                              f' Density: {dens:.3g} g/cm³ |'
                              f' UC Volume: {V}\n{text}')
-            dia=wx.SCDialog(self,
+            dia=SCDialog(self,
                           'Several entries have been found, please select appropriate:',
                           'Select correct database entry', items)
             if not dia.ShowModal()==wx.ID_OK:

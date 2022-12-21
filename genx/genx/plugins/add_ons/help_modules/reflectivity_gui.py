@@ -22,15 +22,14 @@ class MyHtmlListBox(wx.html.HtmlListBox):
                                      style=style)
         self.SetItemList(['Starting up...'])
 
-    def SetItemList(self, list):
-        self.html_items = list
-        self.SetItemCount(len(list))
+    def SetItemList(self, html_list):
+        self.html_items = html_list
+        self.SetItemCount(len(html_list))
         # self.RefreshAll()
         self.Refresh()
 
     def OnGetItem(self, n):
         return self.html_items[n]
-
 
 class SamplePanel(wx.Panel):
     sampleh: SampleHandler

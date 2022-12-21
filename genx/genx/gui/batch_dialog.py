@@ -106,7 +106,7 @@ class BatchDialog(wx.Dialog):
         hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)
         self.Bind(wx.EVT_BUTTON, self.OnClearData, btn)
 
-        hbox.AddSpacer(20*self.dpi_scale_factor)
+        hbox.AddSpacer(int(20*self.dpi_scale_factor))
 
         btn = wx.Button(self, -1, label='Fit All')
         hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)
@@ -116,7 +116,7 @@ class BatchDialog(wx.Dialog):
         hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)
         self.Bind(wx.EVT_BUTTON, self.OnBatchFromHere, btn)
 
-        hbox.AddSpacer(20*self.dpi_scale_factor)
+        hbox.AddSpacer(int(20*self.dpi_scale_factor))
 
         btn = wx.Button(self, -1, label='Sort by Value')
         hbox.Add(btn, proportion=0, flag=wx.FIXED_MINSIZE)

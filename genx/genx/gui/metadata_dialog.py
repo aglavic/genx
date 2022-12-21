@@ -324,7 +324,7 @@ class MetaDataDialog(wx.Dialog):
                 if dia.ShowModal()==wx.ID_OK:
                     parent = self.tree.GetItemParent(self._popup_tree_item[0])
                     pkey, ptext, ppath, pobj = self.tree.GetItemData(parent)
-                    from typing import Union
+                    from typing import Union, List
                     from orsopy.fileio.base import get_args, get_origin
                     try:
                         ktype = pobj.__annotations__[key]
@@ -339,6 +339,8 @@ class MetaDataDialog(wx.Dialog):
                         for attr, atype in ktype.__annotations__.items():
                             if get_origin(atype)==Union:
                                 atype = get_args(atype)[0]
+                            if get_origin(atype) in [list, dict]:
+                                continue
                             adia = wx.TextEntryDialog(self,
                                                      message=f'Enter value for attribute {attr} ({atype.__name__}).'
                                                              f'\nCancel for "None".',

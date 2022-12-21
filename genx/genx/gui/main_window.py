@@ -994,7 +994,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         debug('open_model: read config')
         with self.catch_error(action='open_model', step=f'loading config for plots'):
-            [p.ReadConfig() for p in self.get_pages()]
+            [p.ReadConfig() for p in self.get_pages() if hasattr(p, 'ReadConfig')]
         with self.catch_error(action='open_model', step=f'loading config for parameter grid'):
             self.paramter_grid.ReadConfig()
             self.mb_checkables[custom_ids.MenuId.TOGGLE_SLIDER].Check(self.paramter_grid.GetValueEditorSlider())
@@ -1142,32 +1142,23 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                 title='Activating CUDA...')
         dlg.Show()
 
-        dlg.Update(1)
-        from ..models.lib import paratt_cuda
-        dlg.Update(2)
-        from ..models.lib import neutron_cuda
-        dlg.Update(3)
-        from ..models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_cuda.Refl
-        paratt.ReflQ = paratt_cuda.ReflQ
-        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
-        neutron_refl.Refl = neutron_cuda.Refl
-        from ..models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_cuda.Refl
-        paratt.ReflQ = paratt_cuda.ReflQ
-        paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
-        neutron_refl.Refl = neutron_cuda.Refl
-
+        with self.catch_error('activate CUDA') as eh:
+            dlg.Update(1)
+            from ..models.lib import paratt_cuda
+            dlg.Update(2)
+            from ..models.lib import neutron_cuda
+            dlg.Update(3)
+        if eh.successful:
+            from ..models.lib import paratt, neutron_refl
+            paratt.Refl = paratt_cuda.Refl
+            paratt.ReflQ = paratt_cuda.ReflQ
+            paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
+            neutron_refl.Refl = neutron_cuda.Refl
         dlg.Destroy()
 
     @staticmethod
     def deactivate_cuda():
         from ..models.lib import paratt_numba, neutron_numba
-        from ..models.lib import paratt, neutron_refl
-        paratt.Refl = paratt_numba.Refl
-        paratt.ReflQ = paratt_numba.ReflQ
-        paratt.Refl_nvary2 = paratt_numba.Refl_nvary2
-        neutron_refl.Refl = neutron_numba.Refl
         from ..models.lib import paratt, neutron_refl
         paratt.Refl = paratt_numba.Refl
         paratt.ReflQ = paratt_numba.ReflQ
@@ -2200,6 +2191,8 @@ class GenxApp(wx.App):
         self.dpi_overwrite = dpi_overwrite
         self._first_init = True
         wx.App.__init__(self, redirect=False)
+        if hasattr(wx, 'OSX_FILEDIALOG_ALWAYS_SHOW_TYPES'):
+            wx.SystemOptions.SetOption(wx.OSX_FILEDIALOG_ALWAYS_SHOW_TYPES, 1)
         debug('App init complete')
 
     def ShowSplash(self):
@@ -2253,9 +2246,10 @@ class GenxApp(wx.App):
             except ImportError:
                 pass
             else:
-                if hasattr(numba.config, 'CACHE_DIR'):
-                    # make sure to use a user directory for numba cache
-                    numba.config.CACHE_DIR = os.path.join(config_path, 'numba_cache')
+                from ..models.lib.numba_integration import configure_numba
+                configure_numba()
+
+                import inspect
                 # load numba modules, show progress as in case they aren't cached it takes some seconds
                 self.WriteSplash('compiling numba functions...', progress=0.25)
                 real_jit = numba.jit
@@ -2265,10 +2259,11 @@ class GenxApp(wx.App):
                     WriteSplash = self.WriteSplash
 
                     def __call__(self, *args, **opts):
-                        self.WriteSplash(f'compiling numba functions {self.update_counter}/21',
+                        if inspect.stack()[1][3]!='<lambda>':
+                            self.WriteSplash(f'compiling numba functions {self.update_counter}/21',
                                          progress=0.25+0.5*(self.update_counter-1)/21.)
-                        self.update_counter += 1
-                        wx.YieldIfNeeded()
+                            self.update_counter += 1
+                            wx.YieldIfNeeded()
                         return real_jit(*args, **opts)
 
                 numba.jit = UpdateJit()

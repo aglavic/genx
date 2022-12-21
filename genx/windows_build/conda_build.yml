@@ -123,6 +123,7 @@ dependencies:
     - altgraph==0.17
     - bumps
     - orsopy
+    - svgwrite
     - future==0.18.2
     - pefile==2021.5.24
     - pyinstaller==4.5

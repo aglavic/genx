@@ -37,10 +37,6 @@ Name: english; MessagesFile: compiler:Default.isl
 Source: ..\dist\genx\genx.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\dist\genx\*.*; DestDir: {app}; Flags: ignoreversion recursesubdirs
 
-; Make the cache dire writable for numba JIT functions 
-;[Dirs]
-;Name: "{app}\genx\models\lib\__pycache__"; Permissions: users-modify
-
 [Icons]
 Name: {group}\GenX 3; Filename: {app}\genx.exe; IconFilename: {app}\genx.exe; IconIndex: 0
 Name: {group}\{cm:UninstallProgram,GenX 3}; Filename: {uninstallexe}
@@ -53,6 +49,8 @@ Root: HKA; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueNa
 Root: HKA; Subkey: Software\Classes\GenX\shell\open\command; ValueType: string; ValueName: ; ValueData: """{app}\genx.exe"" ""%1"""; Tasks: associate; Flags: createvalueifdoesntexist
 
 [Run]
+Filename: "{app}\genx_console.exe"; Parameters: "--compile-nb"; Description: "Pre-compile JIT functions"; StatusMsg: "Pre-compiling JIT functions..."; Tasks: compile_jit; Flags: runasoriginaluser
 
 [Tasks]
 Name: associate; Description: Create registry entries for file association; GroupDescription: Associate Filetypes:; Flags: 
+Name: compile_jit; Description: Pre-compile JIT functions; GroupDescription: After Installation:; Flags:

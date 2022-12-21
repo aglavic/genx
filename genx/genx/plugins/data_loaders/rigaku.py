@@ -103,7 +103,7 @@ class Plugin(Template):
 
             # insert metadata into ORSO compatible fields
             dataset.meta['data_source']['experiment']['instrument']='RAS'
-            dataset.meta['data_source']['experiment']['probe']='xray'
+            dataset.meta['data_source']['experiment']['probe']='x-ray'
             dataset.meta['data_source']['measurement']['scheme']='angle-dispersive'
             inst = dataset.meta['data_source']['measurement']['instrument_settings']
             inst['incident_angle'] = {'min': float(dataset.x_raw.min()), 'max': float(dataset.x_raw.max()),

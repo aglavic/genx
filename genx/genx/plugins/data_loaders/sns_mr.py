@@ -14,6 +14,12 @@ import numpy as np
 from ..data_loader_framework import Template
 from ..utils import ShowWarningDialog
 
+SPIN_STATES = {
+    'x': 'unpolarized',
+    '+': 'po', '-': 'mo',
+    '++': 'pp', '--': 'mm', '+-': 'pm', '-+': 'mp',
+    }
+
 class Plugin(Template):
     wildcard='*.dat'
 
@@ -44,10 +50,10 @@ class Plugin(Template):
         header={'Date': '', 'Type': '', 'Input file indices': '', 'Extracted states': ''}
         fhandle=open(filename, 'r', encoding='utf-8')
         fline=fhandle.readline()
+        ref_version = fline.strip().rsplit(None, 1)[-1]
         while not '[Data]' in fline:
             if ':' in fline:
                 key, value=map(str.strip, fline[2:].split(':', 1))
-                print(key, value)
                 if key=='Input file indices':
                     name+=value
                 elif key=='Extracted states':
@@ -93,18 +99,20 @@ class Plugin(Template):
             dataset.run_command()
 
             # insert metadata into ORSO compatible fields
-            dataset.meta['data_source']['facility']='SNS@ORNL'
-            dataset.meta['data_source']['experimentDate']=header['Date']
+            dataset.meta['data_source']['experiment']['facility']='SNS@ORNL'
+            dataset.meta['data_source']['experiment']['start_date']=header['Date']
             dataset.meta['data_source']['experiment']['instrument']='MagRef (4A)'
             dataset.meta['data_source']['experiment']['probe']='neutron'
             dataset.meta['data_source']['measurement']['scheme']='energy-dispersive'
+            dataset.meta['data_source']['measurement']['instrument_settings']['polarization']=SPIN_STATES.get(header['Extracted states'], None)
+            dataset.meta['data_source']['measurement']['data_files']=header['Input file indices'].split('+')
             if load_array.shape[1]>4:
-                dataset.meta['data_source']['measurement']['omega']={'min': float(load_array[:, self.ai_col].min()),
-                                                                     'max': float(load_array[:, self.ai_col].max()),
-                                                                     'unit': 'rad'}
-                dataset.meta['data_source']['measurement']['wavelength']={'min': float(lamda.min()),
+                dataset.meta['data_source']['measurement']['instrument_settings']['incident_angle']={
+                    'min': float(load_array[:, self.ai_col].min()),
+                    'max': float(load_array[:, self.ai_col].max()),
+                    'unit': 'rad'}
+                dataset.meta['data_source']['measurement']['instrument_settings']['wavelength']={'min': float(lamda.min()),
                                                                           'max': float(lamda.max()),
                                                                           'unit': 'angstrom'}
-            dataset.meta['reduction']={'software': {'name': 'QuickNXS',
-                                                    'file_indices': header['Input file indices'],
-                                                    'spin_states': header['Extracted states']}}
+            dataset.meta['reduction']={'software': {'name': 'QuickNXS','version': ref_version}}
+

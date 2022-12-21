@@ -32,7 +32,12 @@ def check_version():
     http = requests.Session()
     http.mount("https://", adapter)
 
-    response = http.get(GITHUB_URL).json()
+    try:
+        response = http.get(GITHUB_URL).json()
+    except Exception as e:
+        # if not connection to server is possible, silently ignore
+        debug('Could not check for update, error in request:', exc_info=True)
+        return True
     if not 'name' in response:
         debug(f"Response from GitHub unexpected: {response!r}")
         return True

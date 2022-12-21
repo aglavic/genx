@@ -11,6 +11,38 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.17
+==============
+ * Use single numba cache directory for any GenX executable, speeding up program start 
+ * Fix multiprocessing fit stuck in Windows binary
+ * Better logging and error reporting in multiprocessing fit
+
+Changes 3.6.16
+==============
+ * Improve error handling and allow forcefull termination of multiprocessing fits
+ * Add full logging support when running fit with multiprocessing
+ * Add caching of GPU kernels for newver versions of numba
+ * Correctly count the number of functions to be compiled with numba
+ * Fix error when trying to use multiprocessing fit without numba installed
+
+Changes 3.6.15
+==============
+ * Add new LayerGraphics plugin that creates a simple sketch drawing for reflectometry models
+   to use in presentations etc.
+ * Update the Mac build system to Mac OS 12 and system python 3.10 using new wxPython 4.2 PyPI package
+
+Changes 3.6.14
+==============
+ * Fix re-compilation of numba code when opening project filed directly on Windows
+ * Add some NeXus file attributes to the .hgx file format to allow plotting of the data e.g. with nexpy
+ * Small change to the MacOS configuration that should support file type filtering in open dialog
+
+Changes 3.6.13
+==============
+ * Fix a bug where exporting the script with special characters raised an error under windows (ticket #197)
+ * Fix some bugs in export and parsing of .ort files
+ * Some refactoring
+
 Changes 3.6.12
 ==============
  * Fix a bug where fitting from console with autosave and --error options stopped the fit after first autosave

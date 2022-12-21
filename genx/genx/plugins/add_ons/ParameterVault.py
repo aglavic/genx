@@ -175,18 +175,19 @@ class Plugin(framework.Template):
                         plot.ax.plot(di.x, di.y_sim, c=di.sim_color,
                                      lw=di.sim_linethickness, ls=styles[k%len(styles)],
                                      marker=di.sim_symbol, ms=di.sim_symbolsize)
-                        for key in slds[i]:
-                            is_imag=key[:2]=='Im' or key[:4]=='imag'
-                            if (is_imag and self.refplugin.show_imag_sld) or not is_imag:
-                                if key!='z' and key!='SLD unit':
-                                    sld_plot.plot.ax.plot(slds[i]['z'], slds[i][key],
-                                                          colors[j%len(colors)], ls=styles[k%len(styles)],
-                                                          label=None)
-                                    j+=1
+                        # if len(slds)>i:
+                        #     for key in slds[i]:
+                        #         is_imag=key[:2]=='Im' or key[:4]=='imag'
+                        #         if (is_imag and self.refplugin.show_imag_sld) or not is_imag:
+                        #             if key!='z' and key!='SLD unit':
+                        #                 sld_plot.ax.plot(slds[i]['z'], slds[i][key],
+                        #                                       colors[j%len(colors)], ls=styles[k%len(styles)],
+                        #                                       label=None)
+                        #                 j+=1
                 k+=1
         plot.AutoScale()
         plot.flush_plot()
-        sld_plot.plot.flush_plot()
+        #sld_plot.flush_plot()
 
     def OnRecalcAll(self, event):
         pl=self.parameter_list

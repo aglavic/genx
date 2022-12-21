@@ -15,6 +15,9 @@ from .core import custom_logging
 from .core.custom_logging import activate_excepthook, activate_logging, iprint, setup_system
 
 
+config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
+os.environ['NUMBA_CACHE_DIR'] = os.path.join(config_path, 'numba_cache')
+
 def start_interactive(args):
     '''
     Start genx in interactive mode (with the gui)
@@ -33,7 +36,12 @@ def start_interactive(args):
     from .gui import main_window
     if args.infile!='':
         debug('start GUI setup with file to load')
-        filename = args.infile
+        filename = os.path.abspath(args.infile)
+        #if getattr(sys, 'frozen', False):
+            # make sure the path is set to the program executable in a frozen binary
+            # this fixes unnecessery re-compiles of numba functions on Windows
+        #    os.chdir(os.path.dirname(os.path.abspath(sys.executable)))
+        #    debug(f'changed curdir to {os.path.abspath(os.path.curdir)}')
     else:
         filename = None
     debug('start GUI setup')
@@ -157,12 +165,10 @@ def modify_file(args):
 
 
 def set_numba_single():
-    config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-    cache_dir = os.path.join(config_path, 'numba_cache_single_cpu')
-
     debug('Setting numba JIT compilation to single CPU')
+    os.environ['NUMBA_CACHE_DIR'] = os.path.join(config_path, 'single_cpu_numba_cache')
+
     import numba
-    numba.config.CACHE_DIR = cache_dir
     old_jit = numba.jit
 
     def jit(*args, **opts):
@@ -358,13 +364,10 @@ def compile_numba(cache_dir=None):
     try:
         # perform a compilation of numba functions with console feedback
         import numba
-        if cache_dir:
-            numba.config.CACHE_DIR = cache_dir
-        elif hasattr(numba.config, 'CACHE_DIR'):
-            import appdirs
-            config_path = os.path.abspath(appdirs.user_data_dir('GenX3', 'ArturGlavic'))
-            # make sure to use a user directory for numba cache
-            numba.config.CACHE_DIR = os.path.join(config_path, 'numba_cache')
+        from .models.lib.numba_integration import configure_numba
+        configure_numba()
+
+        import inspect
 
         real_jit = numba.jit
 
@@ -372,13 +375,23 @@ def compile_numba(cache_dir=None):
             update_counter = 1
 
             def __call__(self, *args, **opts):
-                print(f'compiling numba functions {self.update_counter}/21')
-                self.update_counter += 1
+                if inspect.stack()[1][3]!='<lambda>':
+                    print(f'compiling numba functions {self.update_counter}/21')
+                    self.update_counter += 1
                 return real_jit(*args, **opts)
 
         print('Starting to compile numba functions..')
         numba.jit = UpdateJit()
-        from .models.lib import paratt_numba, neutron_numba, instrument_numba, offspec, surface_scattering
+        print("paratt")
+        from .models.lib import paratt_numba
+        print('neutron')
+        from .models.lib import neutron_numba
+        print('instrument')
+        from .models.lib import instrument_numba
+        print('offspec')
+        from .models.lib import offspec
+        print('surface')
+        from .models.lib import surface_scattering
         numba.jit = real_jit
     except Exception as e:
         print('An exception occured when trying to compile the numba functions:')
@@ -456,9 +469,6 @@ def main():
     if not __mpi__:
         args.mpi = False
 
-    if args.compile_nb:
-        sys.exit(compile_numba())
-
     if args.run or args.mpi or args.pars or args.mod:
         # make sure at least info-messages are shown (default is warning)
         custom_logging.CONSOLE_LEVEL = min(logging.INFO, custom_logging.CONSOLE_LEVEL)
@@ -486,6 +496,9 @@ def main():
         modellib.USE_NUMBA = False
     elif args.numba_single:
         set_numba_single()
+    if args.compile_nb:
+        sys.exit(compile_numba())
+
 
     if args.run:
         start_fitting(args)
@@ -499,7 +512,7 @@ def main():
         modify_file(args)
     elif not args.run and not args.mpi:
         # Check if the application has been frozen
-        if hasattr(sys, "frozen") and True:
+        if getattr(sys, 'frozen', False):
             # Redirect all the output to log files
             log_file_path = appdirs.user_log_dir('GenX3', 'ArturGlavic')
             # Create dir if not found
@@ -507,8 +520,8 @@ def main():
                 os.makedirs(log_file_path)
             # print log_file_path
             # log_file_path = genx_gui._path + 'app_data/'
-            sys.stdout = open(log_file_path+'/genx.log', 'w')
-            sys.stderr = open(log_file_path+'/genx.log', 'w')
+            sys.stdout = open(log_file_path+'/genx_out.log', 'w')
+            sys.stderr = open(log_file_path+'/genx_err.log', 'w')
         start_interactive(args)
 
 

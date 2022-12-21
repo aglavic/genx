@@ -25,11 +25,11 @@ try:
 
 
     numba.cuda.detect()  # display the cuda device used, in case something whent wrong and simulator is on
-    from genx.models.lib.paratt_cuda import ReflQ as nc_ReflQ
-    from genx.models.lib.neutron_cuda import Refl as nc_ReflSF
 except:
     HAS_CUDA = False
 else:
+    from genx.models.lib.paratt_cuda import ReflQ as nc_ReflQ
+    from genx.models.lib.neutron_cuda import Refl as nc_ReflSF
     HAS_CUDA = True
 
 LAMBDA = 4.5
@@ -134,10 +134,10 @@ LARGE_SF = [
     ]
 
 
-def time_call(call, init):
+def time_call(call, init, repeat=1):
     # time a function all repeated times, goal is 1s run time
     T = Timer(call, init)
-    t1 = T.timeit(1)
+    t1 = T.timeit(repeat)
     rep = max(1, int(1./t1/5.))
     return min(T.repeat(5, rep))/rep
 
@@ -150,11 +150,14 @@ if hasattr(numba, 'set_num_threads'):
     mthread_LS = []
     print(f'{"Cores":8s} | {"Parratt [ms]":16s} | {"[ms*cores]":12s} | '
           f'{"Matrix [ms]":16s} | {"[ms*cores]":12s}')
-    for procs in range(1, cpu_count()+1):
+    for lprocs in range(int(log2(cpu_count()))+1):
+        procs = 2**lprocs
         numba.set_num_threads(procs)
-        t_parratt = time_call('nb_ReflQ(*LS_REF)', 'from __main__ import nb_ReflQ, LS_REF')
+        t_parratt = time_call('nb_ReflQ(*LS_REF)', 'from __main__ import nb_ReflQ, LS_REF',
+                              repeat=procs)
 
-        t_matrix = time_call('nb_ReflSF(*LS_SF)', 'from __main__ import nb_ReflSF, LS_SF')
+        t_matrix = time_call('nb_ReflSF(*LS_SF)', 'from __main__ import nb_ReflSF, LS_SF',
+                             repeat=procs)
         print(f'{procs:8} | {t_parratt*1000:16.3f} | {t_parratt*1000*procs:12.3f} | '
               f'{t_matrix*1000:16.3f} | {t_matrix*1000*procs:12.3f}')
         mthread_LS.append((procs, t_parratt, t_matrix))
@@ -164,11 +167,14 @@ if hasattr(numba, 'set_num_threads'):
     mthread_LQ = []
     print(f'{"Cores":8s} | {"Parratt [ms]":16s} | {"[ms*cores]":12s} | '
           f'{"Matrix [ms]":16s} | {"[ms*cores]":12s}')
-    for procs in range(1, cpu_count()+1):
+    for lprocs in range(int(log2(cpu_count()))+1):
+        procs = 2**lprocs
         numba.set_num_threads(procs)
-        t_parratt = time_call('nb_ReflQ(*LQ_REF)', 'from __main__ import nb_ReflQ, LQ_REF')
+        t_parratt = time_call('nb_ReflQ(*LQ_REF)', 'from __main__ import nb_ReflQ, LQ_REF',
+                              repeat=procs)
 
-        t_matrix = time_call('nb_ReflSF(*LQ_SF)', 'from __main__ import nb_ReflSF, LQ_SF')
+        t_matrix = time_call('nb_ReflSF(*LQ_SF)', 'from __main__ import nb_ReflSF, LQ_SF',
+                             repeat=procs)
         print(f'{procs:8} | {t_parratt*1000:16.3f} | {t_parratt*1000*procs:12.3f} | '
               f'{t_matrix*1000:16.3f} | {t_matrix*1000*procs:12.3f}')
         mthread_LQ.append((procs, t_parratt, t_matrix))

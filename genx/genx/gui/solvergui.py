@@ -4,6 +4,7 @@ Takes care of stopping and starting - output to the gui as well
 as some input from dialog boxes.
 '''
 from dataclasses import dataclass
+from logging import debug
 
 import numpy as np
 import time
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
 
 
 class GuiCallbacks(GenxOptimizerCallback):
+    echo = True
 
     def __init__(self, parent: wx.Window):
         self.parent = parent
@@ -40,6 +42,8 @@ class GuiCallbacks(GenxOptimizerCallback):
         Function to present the output from the optimizer to the user.
         Takes a string as input.
         '''
+        if self.echo:
+            debug(f'User Info: {text}', stacklevel=3)
         evt = update_text(text=text)
         wx.QueueEvent(self.parent, evt)
 
@@ -97,7 +101,7 @@ class GuiCallbacks(GenxOptimizerCallback):
 
 
 class DelayedCallbacks(Thread, GuiCallbacks):
-    last_text: Union[str, None] = None
+    last_text: Union[list, None] = None
     last_param: Union[SolverParameterInfo, None] = None
     last_update: Union[SolverUpdateInfo, None] = None
     last_endet: Union[SolverResultInfo, None] = None
@@ -108,6 +112,7 @@ class DelayedCallbacks(Thread, GuiCallbacks):
 
     def __init__(self, parent: wx.Window):
         GuiCallbacks.__init__(self, parent)
+        self.echo = False
         Thread.__init__(self, daemon=True, name="GenxDelayedCallbacks")
         self.wait_lock = Event()
         self.stop_thread = Event()
@@ -140,6 +145,7 @@ class DelayedCallbacks(Thread, GuiCallbacks):
         self.join(timeout=1.0)
 
     def text_output(self, text):
+        debug(f'User Info: {text}', stacklevel=3)
         self.last_text = text
         self.wait_lock.set()
 
