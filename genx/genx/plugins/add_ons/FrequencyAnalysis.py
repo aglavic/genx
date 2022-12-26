@@ -31,6 +31,12 @@ class FAPlotPanel(wx.Panel):
 
         sizer=wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.plot, 1, wx.EXPAND | wx.GROW | wx.ALL)
+        hsizer=wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(hsizer, 0, wx.FIXED_MINSIZE)
+        lsizer=wx.BoxSizer(wx.VERTICAL)
+        hsizer.Add(lsizer, 1, wx.EXPAND | wx.GROW)
+        rsizer=wx.BoxSizer(wx.VERTICAL)
+        hsizer.Add(rsizer, 1, wx.EXPAND | wx.GROW)
 
         self.plot.update(None)
         self.plot.ax=self.plot.figure.add_subplot(111)
@@ -42,22 +48,28 @@ class FAPlotPanel(wx.Panel):
         self.plot_dict={}
 
         self.transform_log = wx.CheckBox(self, -1, 'log(R)')
-        sizer.Add(self.transform_log, 0, wx.FIXED_MINSIZE)
+        lsizer.Add(self.transform_log, 0, wx.FIXED_MINSIZE)
         self.transform_Q4 = wx.CheckBox(self, -1, 'R Q^4')
         self.transform_Q4.SetValue(True)
-        sizer.Add(self.transform_Q4, 0, wx.FIXED_MINSIZE)
+        lsizer.Add(self.transform_Q4, 0, wx.FIXED_MINSIZE)
         self.use_derivative = wx.CheckBox(self, -1, 'dR/dQ')
-        sizer.Add(self.use_derivative, 0, wx.FIXED_MINSIZE)
+        lsizer.Add(self.use_derivative, 0, wx.FIXED_MINSIZE)
 
         self.tt={}
         for tt in list(TransformType):
             self.tt[tt] = wx.RadioButton(self, -1, label=tt.name)
-            sizer.Add(self.tt[tt], 0, wx.FIXED_MINSIZE)
+            rsizer.Add(self.tt[tt], 0, wx.FIXED_MINSIZE)
+            self.tt[tt].Bind(wx.EVT_RADIOBUTTON, self.Plot)
         self.tt[TransformType.fourier_transform].SetValue(True)
 
         self.Qc = wx.SpinCtrlDouble(self, -1, value='0.05', min=0.00, max=0.5, inc=0.001)
         self.Qc.SetDigits(5)
-        sizer.Add(self.Qc, 0, wx.FIXED_MINSIZE)
+        rsizer.Add(self.Qc, 0, wx.FIXED_MINSIZE)
+
+        self.transform_log.Bind(wx.EVT_CHECKBOX, self.Plot)
+        self.transform_Q4.Bind(wx.EVT_CHECKBOX, self.Plot)
+        self.use_derivative.Bind(wx.EVT_CHECKBOX, self.Plot)
+        self.Qc.Bind(wx.EVT_SPINCTRLDOUBLE, self.Plot)
 
     def SetZoom(self, active=False):
         return self.plot.SetZoom(active)
@@ -65,7 +77,7 @@ class FAPlotPanel(wx.Panel):
     def GetZoom(self):
         return self.plot.GetZoom()
 
-    def Plot(self):
+    def Plot(self, event=None):
         ''' Plot(self) --> None
 
         Plotting the sample Sample.

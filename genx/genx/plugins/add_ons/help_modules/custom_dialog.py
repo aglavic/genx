@@ -961,7 +961,10 @@ class FitEditMixIn:
             # strings positons to initilize the choice box.
             pos=0
             if type(val)==type(''):
-                pos=validator.index(val)
+                try:
+                    pos=validator.index(val)
+                except ValueError:
+                    pos=0
             elif type(par)==type(1):
                 pos=par
             ctrl.SetSelection(pos)
