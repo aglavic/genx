@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.18
+==============
+ * Update gsecars_ctr data loader to detect additional columns by first header line
+ * Some minor fixes for wxPython 4.2.0 and newer numba
+
 Changes 3.6.17
 ==============
  * Use single numba cache directory for any GenX executable, speeding up program start 
