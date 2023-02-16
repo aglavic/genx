@@ -11,6 +11,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.19
+==============
+ * Introduce crop_sigma sample option to spec_adaptive model that allows to limit the
+   influence of the interface transition function within the adjacent layers.
+   Thanks to Rico Ehrler for the suggestion.
+
 Changes 3.6.18
 ==============
  * Update gsecars_ctr data loader to detect additional columns by first header line

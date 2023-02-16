@@ -257,9 +257,12 @@ def calculate_segmentation(sample):
     sigma_n=array(parameters['sigma'], dtype=float64)[:-1]+1e-7
     sigma_m=array(parameters['sigma_mag'], dtype=float64)[:-1]+1e-7
     z=arange(-sigma_n[0]*5, int_pos.max()+sigma_n[-1]*5, sample.minimal_steps/5.0)
-    # interface transition functions
+    # interface transition functions, products for different per-layer rough_type cases
+    # Gaussian (starts at 1 goes to 0, interface is at 0.5)
     trans_n=(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma_n))*(rough_type==0)
+    # Linear
     trans_n+=maximum(0., minimum(1., (1.+(int_pos-z[:, newaxis])/2./sigma_n)/2.))*(rough_type==1)
+    # Exponential decrease or increase
     trans_n+=maximum(0., minimum(1., exp((int_pos-z[:, newaxis])/sigma_n)))*(rough_type==2)
     trans_n+=maximum(0., minimum(1., 1.-exp((z[:, newaxis]-int_pos)/sigma_n)))*(rough_type==3)
     trans_m=(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma_m))*(rough_type==0)
@@ -267,10 +270,27 @@ def calculate_segmentation(sample):
     trans_m+=maximum(0., minimum(1., exp((int_pos-z[:, newaxis])/sigma_m)))*(rough_type==2)
     trans_m+=maximum(0., minimum(1., 1.-exp((z[:, newaxis]-int_pos)/sigma_m)))*(rough_type==3)
     if crop_sigma:
-        int_top = (0.5-0.5*erf((z[:, newaxis]-int_pos[:-1]+d/2.)*5./d))
-        int_bot = (0.5-0.5*erf((z[:, newaxis]-int_pos[1:]-d/2.)*5./d))
-        trans_n[:, 1:-1] = int_top[:,1:]+(1.-int_top[:,1:])*trans_n[:, 1:-1]*int_bot[:,:-1]
-        trans_m[:, 1:-1] = int_top[:,1:]+(1.-int_top[:,1:])*trans_m[:, 1:-1]*int_bot[:,:-1]
+        # Cop the roughness tails above and below the interface to avoid overspill.
+        # This is done by introducing a split-location within a layer where the
+        # influence of that layers roughness function is faded out with an error function.
+        # The location of the split is defined by the ratio of adjacent roughness values.
+        # I.e. the split is closer to the interface that has lower roughness.
+
+        # sigma ratio -1 to 1
+        sratio = (sigma_n[1:]-sigma_n[:-1])/(sigma_n[1:]+sigma_n[:-1])
+        # location of split relative to bottom interface
+        delta_pos = (0.5+0.5*sratio)*d
+        sigma_pos = (1.0-abs(sratio))*d/2.0
+        # the fade out function applied to the interface from below and above located within a layer
+        interface = (0.5-0.5*erf((z[:, newaxis]-int_pos[1:]+delta_pos)*sqrt(2.)/sigma_pos))
+
+        # Fade out roughness influence close to top and bottom split location
+        trans_n[:, 0] = trans_n[:, 0]*interface[:, 0]
+        trans_n[:, 1:-1] = interface[:, :-1]+(1.-interface[:, :-1])*trans_n[:, 1:-1]*interface[:, 1:]
+        trans_n[:, -1] = interface[:, -1]+(1.-interface[:, -1])*trans_n[:, -1]
+        trans_m[:, 0] = trans_m[:, 0]*interface[:, 0]
+        trans_m[:, 1:-1] = interface[:, :-1]+(1.-interface[:, :-1])*trans_m[:, 1:-1]*interface[:, 1:]
+        trans_m[:, -1] = interface[:, -1]+(1.-interface[:, -1])*trans_m[:, -1]
     # SLD calculations
     rho_x=sum((sld_x[:-1]-sld_x[1:])*trans_n, 1)+sld_x[-1]
     rho_n=sum((sld_n[:-1]-sld_n[1:])*trans_n, 1)+sld_n[-1]
