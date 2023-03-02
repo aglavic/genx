@@ -30,7 +30,8 @@ elif '--debug' in sys.argv:
 
 
 def genx_exit_message():
-    mp_logger.join()
+    if mp_logger:
+        mp_logger.join()
     logging.info('*** GenX %s Logging ended ***'%str_version)
 
 
@@ -150,8 +151,12 @@ def setup_system():
 
     # create MP logger
     global mp_logger
-    mp_logger=MPLoggerThread()
-    mp_logger.start()
+    try:
+        mp_logger=MPLoggerThread()
+    except Exception:
+        logging.warning("Could not start multiprocessing logger:", exc_info=True)
+    else:
+        mp_logger.start()
 
     # define numpy warning behavior
     global nplogger

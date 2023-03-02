@@ -391,10 +391,10 @@ def compile_numba(cache_dir=None):
 
 def main():
     multiprocessing.freeze_support()
-    if sys.platform=='linux':
-        multiprocessing.set_start_method('forkserver')
-    else:
-        multiprocessing.set_start_method('spawn')
+    multiprocessing.set_start_method('spawn')
+    if os.path.abspath(__file__).startswith('/snap'):
+        # try fix multiprocessing in SNAP
+        multiprocessing.current_process()._config['semprefix'] = '/snap.dotrun.mp'
     # Attempt to load mpi:
     try:
         from mpi4py import MPI
