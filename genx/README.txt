@@ -13,6 +13,10 @@ A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
 Changes 3.6.19
 ==============
+ * Fix Rigaku data loader to include attenuation factors.
+
+Changes 3.6.19
+==============
  * Introduce crop_sigma sample option to spec_adaptive model that allows to limit the
    influence of the interface transition function within the adjacent layers.
    Thanks to Rico Ehrler for the suggestion.
