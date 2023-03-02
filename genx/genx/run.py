@@ -391,7 +391,10 @@ def compile_numba(cache_dir=None):
 
 def main():
     multiprocessing.freeze_support()
-    multiprocessing.set_start_method('spawn')
+    if sys.platform=='linux':
+        multiprocessing.set_start_method('forkserver')
+    else:
+        multiprocessing.set_start_method('spawn')
     # Attempt to load mpi:
     try:
         from mpi4py import MPI
