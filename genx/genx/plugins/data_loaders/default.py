@@ -59,7 +59,7 @@ class Plugin(Template):
             # Check so we have enough columns
             if load_array.shape[1]-1<max(self.x_col, self.y_col):
                 ShowWarningDialog(self.parent, 'The data file does not contain enough number of columns. It has '
-                                  +str(load_array[1])+' columns. Rember that the column index start at zero!')
+                                  +str(load_array.shape[1])+' columns. Rember that the column index start at zero!')
                 self.SetStatusText('Could not load data - not enough columns')
                 return
 

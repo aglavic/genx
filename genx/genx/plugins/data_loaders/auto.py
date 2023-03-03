@@ -19,6 +19,7 @@ from .orso import Plugin as ORSOPlugin
 from .xrdml import Plugin as XRDMLPlugin
 from .sinq_six import Plugin as SIXPlugin
 from .rigaku import Plugin as RASPlugin
+from .seifert_nja import Plugin as NJAPlugin
 
 class Plugin(ResolutionPlugin, DefaultPlugin):
     """
@@ -33,7 +34,7 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
         ResolutionPlugin.__init__(self, parent)
         self.res_col=-1
         self.loaders=[AmorPlugin(None), SNSPlugin(None), D17Plugin(None), ORSOPlugin(None),
-                      SIXPlugin(None), XRDMLPlugin(None), RASPlugin(None)]
+                      SIXPlugin(None), XRDMLPlugin(None), RASPlugin(None), NJAPlugin(None)]
         self.wildcard=";".join([li.wildcard for li in self.loaders])
 
     def CountDatasets(self, file_path):
