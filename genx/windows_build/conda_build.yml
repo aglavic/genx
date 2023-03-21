@@ -128,3 +128,4 @@ dependencies:
     - pefile==2021.5.24
     - pyinstaller==4.5
     - pyinstaller-hooks-contrib==2021.2
+    - pint
