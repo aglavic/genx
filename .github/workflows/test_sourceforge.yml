@@ -24,5 +24,5 @@ jobs:
         if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
     - name: Upload files
       run: |
-        touch test_upload.txt
-        rsync --progress -urzv test_upload.txt ${{secrets.SF_USER}}@frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
+        echo "test data" > test_upload.txt
+        rsync --progress -urz test_upload.txt ${{secrets.SF_USER}}@frs.sourceforge.net:/home/pfs/project/genx/3.x.y/
