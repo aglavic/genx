@@ -80,7 +80,10 @@ class OrsoHeaderAnalyzer:
         else:
             # not officially ORSO confirm
             coords = '2θ'
-        wavelength = float(self.instrument_settings.wavelength.as_unit('angstrom') or 1.54)
+        try:
+            wavelength = float(self.instrument_settings.wavelength.as_unit('angstrom'))
+        except Exception:
+            wavelength = 1.54
         if not isinstance(wavelength, float):
             # in case wavelength is a ValueRange (ToF)
             wavelength = 1.0
