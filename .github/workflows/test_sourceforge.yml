@@ -6,6 +6,7 @@ name: Test SF Upload
 on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+jobs:
   release-sourceforge:
     runs-on: ubuntu-latest
 
