@@ -25,4 +25,6 @@ jobs:
     - name: Upload files
       run: |
         touch test_upload.txt
+        ssh-agent sh -c "ssh-add; ssh-add -l"
+        ssh -v ${{secrets.SF_USER}}@frs.sourceforge.net
         rsync --progress -urzv test_upload.txt ${{secrets.SF_USER}}@frs.sourceforge.net:/home/pfs/project/genx/
