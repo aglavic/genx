@@ -11,6 +11,13 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.21
+==============
+ * Add data loader for nja XRR file format.
+ * Add pint and latest orsopy to binary distributions to allow for better parsing of .ort metadata.
+ * Fix the Bumps error dialog filling the wrong error ranges into the parameter grid.
+ * Fix a multiprocessing logger related bug that crashes the program under certain circumstances.
+
 Changes 3.6.20
 ==============
  * Fix Rigaku data loader to include attenuation factors.
