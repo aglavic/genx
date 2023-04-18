@@ -2120,10 +2120,10 @@ class DomainWidget(wx.ScrolledWindow):
             self.list_rects.append([])
             j=len(domain.slabs)
             for slab_name in reversed([domain.bulk_slab]+domain.slabs):
-                rect=wx.Rect(x_pos+x_padding/4., y_pos+y_padding/4.,
-                             col_width-x_padding/2., col_height+y_padding/2.)
-                sel_rect=wx.Rect(x_pos, y_pos-y_padding/4.0,
-                                 col_width, col_height+y_padding)
+                rect=wx.Rect(int(x_pos+x_padding/4.), int(y_pos+y_padding/4.),
+                             int(col_width-x_padding/2.), int(col_height+y_padding/2.))
+                sel_rect=wx.Rect(int(x_pos), int(y_pos-y_padding/4.0),
+                                 int(col_width), int(col_height+y_padding))
                 if self.selected_item[0]==i and self.selected_item[1]==j:
                     # render.DrawItemSelectionRect(self, dc, sel_rect, wx.CONTROL_SELECTED)
                     dc.SetBrush(sel_brush)
