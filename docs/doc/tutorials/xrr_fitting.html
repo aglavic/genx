@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Fitting of x-ray reflectivity data &#8212; GenX 3.6.12 documentation</title>
+    <title>Fitting of x-ray reflectivity data &#8212; GenX 3.6.21 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
@@ -36,7 +37,7 @@
         <li class="right" >
           <a href="simple_reflectivity.html" title="Simple Reflectivity Model (XRR/NR)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Fitting of x-ray reflectivity data</a></li> 
       </ul>
@@ -48,16 +49,16 @@
           <div class="body" role="main">
             
   <section id="fitting-of-x-ray-reflectivity-data">
-<span id="tutorial-xrr-fitting"></span><h1>Fitting of x-ray reflectivity data<a class="headerlink" href="#fitting-of-x-ray-reflectivity-data" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-xrr-fitting"></span><h1>Fitting of x-ray reflectivity data<a class="headerlink" href="#fitting-of-x-ray-reflectivity-data" title="Permalink to this heading">¶</a></h1>
 <section id="getting-started">
-<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h2>
 <p>Start by opening GenX. If necessary, load the Reflectivity plugin by going to the menu
 <span class="menuselection">Settings‣Plug-ins‣Load‣Reflectivity</span>.
 Two new tabs will appear in the lower right section of the window, Sample
 and Simulations. This is where we will define our sample later.</p>
 </section>
 <section id="loading-the-data">
-<h2>Loading the data<a class="headerlink" href="#loading-the-data" title="Permalink to this headline">¶</a></h2>
+<h2>Loading the data<a class="headerlink" href="#loading-the-data" title="Permalink to this heading">¶</a></h2>
 <p>Load the data by clicking on the folder icon the data tab (leftmost splitter window). Remember that a data set has
 to be marked in the list below. If you started fresh the data set will have the name Data 0.
 Download the file <a class="reference download internal" download="" href="../_downloads/49062e5354942263f8009176a80e6073/xray-tutorial.dat"><code class="xref download docutils literal notranslate"><span class="pre">xray-tutorial.dat</span></code></a>. In the file dialog choose
@@ -70,7 +71,7 @@ The one ending with raw is the loaded data. The other 3 can be changed by transf
 calculations dialog. See the <a class="reference internal" href="neutron_sim.html#tutorial-neutron-sim"><span class="std std-ref">Neutron reflectivity tutorial</span></a> for more information about transformations of data.</p>
 </section>
 <section id="creating-a-sample">
-<h2>Creating a sample<a class="headerlink" href="#creating-a-sample" title="Permalink to this headline">¶</a></h2>
+<h2>Creating a sample<a class="headerlink" href="#creating-a-sample" title="Permalink to this heading">¶</a></h2>
 <p>Time to create the sample! Click on the Sample tab. The data we just loaded comes from the a multilayer
 with the structure: MgO/Fe 4Å/Pt 39Å/[Fe XXÅ/Pt XXÅ]*20</p>
 <p>Now this structure should be defined in GenX. Start by adding three stacks, second icon on the toolbar in the Sample tab.
@@ -85,7 +86,7 @@ Press the yellow lightning on the main toolbar, F9 works as well. A red curve re
 data will appear in the data plot.</p>
 </section>
 <section id="coupling-parameters">
-<h2>Coupling parameters<a class="headerlink" href="#coupling-parameters" title="Permalink to this headline">¶</a></h2>
+<h2>Coupling parameters<a class="headerlink" href="#coupling-parameters" title="Permalink to this heading">¶</a></h2>
 <p>In order to make the fitting more effective and reduce the degrees of freedom it can be advantageous to couple parameters.
 One way is to constrain interdependent parameters another way is to re-express the parameters so that
 information easily obtained from the diffraction pattern is used, for example the bilayer
@@ -108,9 +109,9 @@ calculate a penalty factor on the figure of merit (FOM).</p>
 Press simulate to update the model.</p>
 </section>
 <section id="fitting-the-data">
-<h2>Fitting the data<a class="headerlink" href="#fitting-the-data" title="Permalink to this headline">¶</a></h2>
+<h2>Fitting the data<a class="headerlink" href="#fitting-the-data" title="Permalink to this heading">¶</a></h2>
 <section id="defining-fit-parameters">
-<h3>Defining fit parameters<a class="headerlink" href="#defining-fit-parameters" title="Permalink to this headline">¶</a></h3>
+<h3>Defining fit parameters<a class="headerlink" href="#defining-fit-parameters" title="Permalink to this heading">¶</a></h3>
 <p>First go to the Grid tab in the lower part of the window. To define a parameter right click on the leftmost cell.
 A menu will appear where the parameters you can fit appear.</p>
 <a class="reference internal image-reference" href="../_images/xray1_4.png"><img alt="../_images/xray1_4.png" src="../_images/xray1_4.png" style="width: 60%;" /></a>
@@ -133,7 +134,7 @@ Stacks in the Layer and Stack objects should under no circumstances be fitted as
 </div>
 </section>
 <section id="the-grid">
-<h3>The Grid<a class="headerlink" href="#the-grid" title="Permalink to this headline">¶</a></h3>
+<h3>The Grid<a class="headerlink" href="#the-grid" title="Permalink to this heading">¶</a></h3>
 <p>The first column defines which parameter should be fitted. The second column, value ,
 sets the start value and also serves as output for the best-so-far value. The Fit column determines
 whether or not the parameter will be refined, if not checked the parameter will not be varied. The Max and Min columns
@@ -150,7 +151,7 @@ value entry will change the value slightly and can thus be used to manually twee
 </div>
 </section>
 <section id="starting-the-fit">
-<h3>Starting the fit<a class="headerlink" href="#starting-the-fit" title="Permalink to this headline">¶</a></h3>
+<h3>Starting the fit<a class="headerlink" href="#starting-the-fit" title="Permalink to this heading">¶</a></h3>
 <p>The fit is started by clicking the green horizontal arrow in the toolbar.
 When the fit is starting, have a look at the status bar which will give you information about the
 progress of the fit.</p>
@@ -182,7 +183,7 @@ convergence has been reached. (Safe values are between 0.1% and 1.0%.)</p>
 idea to change the boundaries, within physically reasonable values.</p>
 </section>
 <section id="stopping-the-fit">
-<h3>Stopping the fit<a class="headerlink" href="#stopping-the-fit" title="Permalink to this headline">¶</a></h3>
+<h3>Stopping the fit<a class="headerlink" href="#stopping-the-fit" title="Permalink to this heading">¶</a></h3>
 <p>The fit is halted by pressing the stop button, not so difficult. It can take some time before the system responds,
 depending on how demanding the calculations are. Then a dialog pops up asking whether or not to update the gird values
 with the fitted ones, see below.
@@ -199,7 +200,7 @@ models to restart a fit to get out of a local minimum. (Or tweek some parameters
 </section>
 </section>
 <section id="analyze-the-fit">
-<h2>Analyze the Fit<a class="headerlink" href="#analyze-the-fit" title="Permalink to this headline">¶</a></h2>
+<h2>Analyze the Fit<a class="headerlink" href="#analyze-the-fit" title="Permalink to this heading">¶</a></h2>
 <p>Let’s hope that the fit you got looked good. The FOM should be below 0.1, i.e., 8e-2. The first thing we want to do
 after we got a good fit is to study the errorbars on the values. Click on the calculate errorbar button on the toolbar,
 see below.</p>
@@ -248,8 +249,9 @@ substrate and the Pt buffer.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Fitting of x-ray reflectivity data</a><ul>
 <li><a class="reference internal" href="#getting-started">Getting started</a></li>
 <li><a class="reference internal" href="#loading-the-data">Loading the data</a></li>
@@ -267,12 +269,17 @@ substrate and the Pt buffer.</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="simple_reflectivity.html"
-                        title="previous chapter">Simple Reflectivity Model (XRR/NR)</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="neutron_sim.html"
-                        title="next chapter">Neutron reflectivity tutorial</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="simple_reflectivity.html"
+                          title="previous chapter">Simple Reflectivity Model (XRR/NR)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="neutron_sim.html"
+                          title="next chapter">Neutron reflectivity tutorial</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -289,7 +296,7 @@ substrate and the Pt buffer.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -309,14 +316,14 @@ substrate and the Pt buffer.</p>
         <li class="right" >
           <a href="simple_reflectivity.html" title="Simple Reflectivity Model (XRR/NR)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Fitting of x-ray reflectivity data</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

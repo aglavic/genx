@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>How to write a Data Loader &#8212; GenX 3.6.12 documentation</title>
+    <title>How to write a Data Loader &#8212; GenX 3.6.21 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
@@ -36,7 +37,7 @@
         <li class="right" >
           <a href="data.html" title="Data classes"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" accesskey="U">Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">How to write a Data Loader</a></li> 
       </ul>
@@ -48,7 +49,7 @@
           <div class="body" role="main">
             
   <section id="how-to-write-a-data-loader">
-<span id="development-write-data-loader"></span><h1>How to write a Data Loader<a class="headerlink" href="#how-to-write-a-data-loader" title="Permalink to this headline">¶</a></h1>
+<span id="development-write-data-loader"></span><h1>How to write a Data Loader<a class="headerlink" href="#how-to-write-a-data-loader" title="Permalink to this heading">¶</a></h1>
 <p>The data loader are one of the two different plug in types that is used to customize GenX for different jobs.
 The easiest plug in to write is probably a data loader since it requires very little coding. Most of the work is
 usually to understand the data format one wants to use. The rest is easy. In principal it
@@ -61,7 +62,7 @@ usually consist of three steps:</p>
 <p>Finally the python file is added to [genx-path]/plugins/data_loaders and now it should appear in GenX
 (you might need to restart the program). Below there is a more detailed description of the process.</p>
 <section id="the-template">
-<h2>The template<a class="headerlink" href="#the-template" title="Permalink to this headline">¶</a></h2>
+<h2>The template<a class="headerlink" href="#the-template" title="Permalink to this heading">¶</a></h2>
 <p>The implementation of the template class can be found in <code class="docutils literal notranslate"><span class="pre">data_loader_framework.py</span></code>. The following
 is a brief description of the methods in the <code class="docutils literal notranslate"><span class="pre">Template</span></code> class:</p>
 <dl class="simple">
@@ -108,7 +109,7 @@ utility functions that will display dialogs:</p>
 <p>As <code class="docutils literal notranslate"><span class="pre">frame</span></code> a class deriving from Template can use <code class="docutils literal notranslate"><span class="pre">self.parent</span></code>.</p>
 </section>
 <section id="the-default-as-example">
-<h2>The default as example<a class="headerlink" href="#the-default-as-example" title="Permalink to this headline">¶</a></h2>
+<h2>The default as example<a class="headerlink" href="#the-default-as-example" title="Permalink to this heading">¶</a></h2>
 <p>Here we will display the current default data loader as an example, as of 2009-04-25, for
 the mose current version look at <code class="docutils literal notranslate"><span class="pre">genx/plugins/data_loaders/default.py</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -216,8 +217,9 @@ If you find your implementation useful make sure that they are included in the G
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">How to write a Data Loader</a><ul>
 <li><a class="reference internal" href="#the-template">The template</a></li>
 <li><a class="reference internal" href="#the-default-as-example">The default as example</a></li>
@@ -225,12 +227,17 @@ If you find your implementation useful make sure that they are included in the G
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="data.html"
-                        title="previous chapter">Data classes</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="write_fom.html"
-                        title="next chapter">Writing a FOM function</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="data.html"
+                          title="previous chapter">Data classes</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="write_fom.html"
+                          title="next chapter">Writing a FOM function</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -247,7 +254,7 @@ If you find your implementation useful make sure that they are included in the G
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -267,14 +274,14 @@ If you find your implementation useful make sure that they are included in the G
         <li class="right" >
           <a href="data.html" title="Data classes"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" >Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">How to write a Data Loader</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

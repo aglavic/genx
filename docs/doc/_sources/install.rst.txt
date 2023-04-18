@@ -20,7 +20,10 @@ trouble with this distribution you can try installing from source. (And create a
 
 Install the required python 3 packages, especially wxPython. I would advice using a new Anaconda environment.
 Afterwards you can install GenX from source. The anaconda environment packages that are known to work can be found in
-`conda_build.yml <https://raw.githubusercontent.com/aglavic/genx/master/genx/mac_build/conda_build.yml>`_
+`conda_build.yml <https://raw.githubusercontent.com/aglavic/genx/v3.6.14/genx/mac_build/conda_build.yml>`_
+
+For the latest verion of wxPython the PyPI installation is possible, too. So system python3 with pip should be
+sufficent to install all requirements.
 
 Linux
 =====
