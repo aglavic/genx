@@ -16,7 +16,9 @@ a = Analysis(['scripts/genx_mac'],
              datas=[('genx', 'genx_source/genx')],
              hiddenimports= genx_modules+[
                  'pymysql', 'numba', 'wx._core.ArtProvider', 'requests',
-                  ] + collect_submodules('h5py', 
+                 'vtk', 'vtkmodules', 'vtkmodules.all', 'vtkmodules.util.colors',
+                 'vtkmodules.util', 'vtkmodules.util.numpy_support',
+                 ] + collect_submodules('h5py',
                      filter=lambda name: not name.startswith('h5py.tests')
                   ) + collect_submodules('docutils.parsers'),
              hookspath=[],
