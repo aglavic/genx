@@ -121,6 +121,7 @@ jobs:
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install appdirs h5py pymysql numba requests svgwrite pint
         python3 -m pip install wxpython
+        python3 -m pip install vtk
         python3 -m pip list
         brew install create-dmg
     - name: Build with pyinstaller
