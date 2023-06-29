@@ -1,8 +1,8 @@
 .. _tutorial-slicing:
 
-**************************************
-Model analystical functions by slicing
-**************************************
+*************************************
+Model analytical functions by slicing
+*************************************
 
 Introduction
 ============
