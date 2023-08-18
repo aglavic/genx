@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.22
+==============
+ * Fix a bug with the update code for newer urllib3 versions (see PR #5, thanks to azelcer)
+ * Upgrade windows build to python 3.11 an recent libraries.
+
 Changes 3.6.21
 ==============
  * Add data loader for nja XRR file format.

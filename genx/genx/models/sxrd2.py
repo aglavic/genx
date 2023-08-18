@@ -730,8 +730,8 @@ class Slab:
         self.u=np.array([], dtype=np.float64)
         self.oc=np.array([], dtype=np.float64)
         self.m=np.array([], dtype=np.float64)
-        self.id=np.array([], dtype=np.str)
-        self.el=np.array([], dtype=np.str)
+        self.id=np.array([], dtype=str)
+        self.el=np.array([], dtype=str)
 
         # TODO: Type checking and defaults!
         # self.inst = inst
