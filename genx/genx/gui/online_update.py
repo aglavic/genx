@@ -21,11 +21,19 @@ from ..version import __version__ as GENX_VERSION
 GITHUB_URL="https://api.github.com/repos/aglavic/genx/releases/latest"
 GITHUB_TAGS="https://api.github.com/repos/aglavic/genx/tags"
 
+
+def _get_Retry_kw():
+    if hasattr(Retry.DEFAULT, "allowed_methods"):
+        return {"allowed_methods": ["HEAD", "GET", "OPTIONS"]}
+    return {"method_whitelist": ["HEAD", "GET", "OPTIONS"]}
+
+
 retry_strategy = Retry(
     total=3,
     status_forcelist=[429, 500, 502, 503, 504],
-    method_whitelist=["HEAD", "GET", "OPTIONS"]
+    **_get_Retry_kw()
 )
+
 
 def check_version():
     adapter = HTTPAdapter(max_retries=retry_strategy)
