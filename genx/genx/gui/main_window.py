@@ -1415,12 +1415,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Quit the program
         '''
         # Check so the model is saved before quitting
-        if event.CanVeto() and not self.model_control.saved:
+        if (not isinstance(event, wx.CloseEvent) or event.CanVeto()) and not self.model_control.saved:
             # stop window from closing if canceled
             ans = ShowQuestionDialog(self, 'If you continue any changes in your model will not be saved.',
                                      'Model not saved')
             if not ans:
-                event.Veto()
+                if isinstance(event, wx.CloseEvent):
+                    event.Veto()
                 return
 
         self.opt.hsize, self.opt.vsize = self.GetSize()
