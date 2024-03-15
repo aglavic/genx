@@ -966,16 +966,10 @@ class PlotSettingsDialog(wx.Dialog):
 
         # The Color choosers
         # Some None checking i.e. check for not defined values
-        if sim_pars['color'] is None:
-            color = (255, 255, 255, 255)
-        else:
-            color = sim_pars['color']
+        color = tuple(map(int, sim_pars.get('color', (255, 255, 255, 255))))
         self.sim_colorbutton = csel.ColourSelect(self, -1, '', color)
         # Some None checking for data.
-        if data_pars['color'] is None:
-            color = (255, 255, 255, 255)
-        else:
-            color = data_pars['color']
+        color = tuple(map(int, data_pars.get('color', (255, 255, 255, 255))))
         self.data_colorbutton = csel.ColourSelect(self, -1, '', color)
         # Add it to the grid bag sizer
         gbs.Add(self.sim_colorbutton, (1, 1))
