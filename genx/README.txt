@@ -11,10 +11,16 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.23
+==============
+ * Fix plot style dialog not working on newer version of WX.
+ * Fix handling of some chemical formulae.
+ * Fix issue when closing the GUI through the menu.
+
 Changes 3.6.22
 ==============
  * Fix a bug with the update code for newer urllib3 versions (see PR #5, thanks to azelcer)
- * Upgrade windows build to python 3.11 an recent libraries.
+ * Upgrade windows build to python 3.11 and recent libraries.
 
 Changes 3.6.21
 ==============
