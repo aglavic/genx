@@ -302,8 +302,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_import.Append(custom_ids.MenuId.IMPORT_SCRIPT, "Import Script...", "Import a python model script")
         mb_file.Append(wx.ID_ANY, "Import", mb_import, "")
         mb_export = wx.Menu()
-        mb_export.Append(custom_ids.MenuId.EXPORT_ORSO, "Export ORT (beta)...",
-                         "Export data and header in ORSO compatible ASCII format")
+        mb_export.Append(custom_ids.MenuId.EXPORT_ORSO, "Export ORSO...",
+                         "Export data and header in ORSO compatible text format (*.ort)")
         mb_export.Append(custom_ids.MenuId.EXPORT_DATA, "Export Data...", "Export data in ASCII format")
         mb_export.Append(custom_ids.MenuId.EXPORT_TABLE, "Export Table...", "Export table to an ASCII file")
         mb_export.Append(custom_ids.MenuId.EXPORT_SCRIPT, "Export Script...", "Export the script to a python file")
@@ -507,10 +507,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                         wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N",
                                         "Create a new model | Ctrl+N")
-        # self.main_frame_toolbar.AddTool(custom_ids.ToolId.NEW_FROM_FILE, "tb_new_from_file",
-        #                                 wx.Bitmap(img.getnew_from_fileImage().Scale(tb_bmp_size, tb_bmp_size)),
-        #                                 wx.NullBitmap, wx.ITEM_NORMAL, "New from file | Ctrl+Shift+N",
-        #                                 "Create a new reflectivity model based on datafile | Ctrl+Shift+N")
+        self.main_frame_toolbar.AddTool(custom_ids.ToolId.NEW_FROM_FILE, "tb_new_from_file",
+                                        wx.Bitmap(img.getnew_orsoImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "New from file | Ctrl+Shift+N",
+                                        "Create a new reflectivity model based on datafile | Ctrl+Shift+N")
         self.main_frame_toolbar.AddTool(custom_ids.ToolId.OPEN_MODEL, "tb_open",
                                         wx.Bitmap(img.getopenImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O",
@@ -550,7 +550,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def bind_toolbar(self):
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=custom_ids.ToolId.NEW_MODEL)
-        # self.Bind(wx.EVT_TOOL, self.eh_tb_new_from_file, id=custom_ids.ToolId.NEW_FROM_FILE)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_new_from_file, id=custom_ids.ToolId.NEW_FROM_FILE)
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=custom_ids.ToolId.OPEN_MODEL)
         self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=custom_ids.ToolId.SAVE_MODEL)
         self.Bind(wx.EVT_COMBOBOX, self.eh_tb_select_solver, id=custom_ids.ToolId.SOLVER_SELECT)
