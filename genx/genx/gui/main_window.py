@@ -288,6 +288,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mfmb = self.main_frame_menubar
         mb_file = wx.Menu()
         mb_file.Append(custom_ids.MenuId.NEW_MODEL, "New...\tCtrl+N", "Creates a new model")
+        mb_file.Append(custom_ids.MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N",
+                         "Creates a new reflectivity model based on datafile")
         mb_file.Append(custom_ids.MenuId.OPEN_MODEL, "Open...\tCtrl+O", "Opens an existing model")
         mb_file.Append(custom_ids.MenuId.SAVE_MODEL, "Save...\tCtrl+S", "Saves the current model")
         mb_file.Append(custom_ids.MenuId.SAVE_MODEL_AS, "Save As...", "Saves the active model with a new name")
@@ -295,8 +297,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.Append(custom_ids.MenuId.MODEL_BATCH, "Batch dialog...", "Run sequencial refinements of many datasets")
         mb_file.AppendSeparator()
         mb_import = wx.Menu()
-        mb_import.Append(custom_ids.MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N",
-                         "Creates a new reflectivity model based on datafile")
         mb_import.Append(custom_ids.MenuId.IMPORT_DATA, "Import Data...\tCtrl+D", "Import data to the active data set")
         mb_import.Append(custom_ids.MenuId.IMPORT_TABLE, "Import Table...", "Import a table from an ASCII file")
         mb_import.Append(custom_ids.MenuId.IMPORT_SCRIPT, "Import Script...", "Import a python model script")
@@ -1242,7 +1242,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 return
 
         dlg = wx.FileDialog(self, message="New from file", defaultFile="",
-                            wildcard="Suppoerted types (*.ort)|*.ort",
+                            wildcard="Suppoerted types (*.ort/*.orb)|*.ort;*.orb",
                             style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
