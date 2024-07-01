@@ -11,6 +11,13 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.24
+==============
+ * Add compatibility to ORSO binary format.
+ * Export ORSO simple model language description of GenX simulation in ORT export.
+ * Accept ORSO datasets for new models using drag-n-drop.
+ * Fix ORSO export for current orsopy version.
+
 Changes 3.6.23
 ==============
  * Fix plot style dialog not working on newer version of WX.
