@@ -2175,6 +2175,16 @@ class GenxFileDropTarget(wx.FileDropTarget):
                     return False
             self.parent.open_model(model_file)
             return True
+        if model_file.lower().endswith('.ort') or model_file.lower().endswith('.orb'):
+            # Check so the model is saved before quitting
+            if not self.parent.model_control.saved:
+                ans = ShowQuestionDialog(self.parent,
+                                         'If you continue any changes in your model will not be saved.',
+                                         'Model not saved')
+                if not ans:
+                    return False
+            self.parent.new_from_file(filenames)
+            return True
         return False
 
 
