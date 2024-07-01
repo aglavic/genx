@@ -607,6 +607,61 @@ class Model(H5HintedExport):
         '''
         self._save_to_file(filename, self.parameters.get_ascii_output())
 
+    def create_simple_model(self):
+        """
+        Create ORSO simple model representation of this model.
+        """
+        from orsopy.fileio import model_language as ml
+        sm = self.script_module
+
+        if sm.inst.probe == "x-ray":
+            # use x-ray SLDs
+            def get_material(li):
+                sld = complex(li.f*li.dens)*1e-6
+                return ml.Material(sld=ml.ComplexValue(sld.real, sld.imag))
+        else:
+            # use neutron SLDs
+            def get_material(li):
+                sld = complex(li.b*li.dens)*1e-6
+                return ml.Material(sld=ml.ComplexValue(sld.real, sld.imag))
+
+        def get_layer(li):
+            return ml.Layer(thickness=li.d, material=get_material(li), roughness=li.sigma)
+
+        names = list(sm.__dict__.keys())
+        objects = list(sm.__dict__.values())
+
+        defaults = ml.ModelParameters(length_unit="angstrom", sld_unit="1/angstrom^2")
+        layers = {}
+        materials = {}
+        materials["ambient"] = get_material(sm.Amb)
+        materials["substrate"] = get_material(sm.Sub)
+        sub_stacks = {}
+        stack_order = ["ambient"]
+        for si in reversed(sm.sample.Stacks):
+            if len(si.Layers) == 0:
+                continue
+            ni = names[objects.index(si)]
+            stack_order.append(ni)
+
+            layer_order = []
+            for lj in reversed(si.Layers):
+                nj = names[objects.index(lj)]
+                layers[nj] = get_layer(lj)
+                layer_order.append(nj)
+            sub_stacks[ni] = ml.SubStack(repetitions=si.Repetitions, stack=" | ".join(layer_order))
+        stack_order.append("substrate")
+        stack_str = " | ".join(stack_order)
+
+        return ml.SampleModel(
+            stack=stack_str,
+            origin=f'GenX model',
+            sub_stacks=sub_stacks,
+            layers=layers,
+            materials=materials,
+            globals=defaults,
+        )
+
     def export_orso(self, basename):
         '''
         Export the data to files with basename filename. ORT output.
@@ -621,6 +676,7 @@ class Model(H5HintedExport):
         add_header = {
             'analysis': {
                 'software': {'name': 'GenX', 'version': version},
+                'model': self.create_simple_model(),
                 'script': self.script,
                 'parameters': para_list,
                 }
@@ -629,8 +685,7 @@ class Model(H5HintedExport):
         add_header['analysis'].update(self.extra_analysis)
         ds = []
         for di in self.data:
-            header = Orso.empty().to_dict()
-            self.update_dictionary(header, di.meta)
+            header = Orso.from_dict(di.meta).to_dict()
             try:
                 import getpass
                 # noinspection PyTypeChecker
@@ -671,10 +726,10 @@ class Model(H5HintedExport):
                 else:
                     column_names.append(Column(name))
             header['columns'] = column_names
-            header_obj = Orso(**header)
-            for key, value in header_obj._user_data.items():
-                if not key in ['analysis'] and isinstance(value, dict):
-                    header_obj._user_data[key] = DumpDict(value)
+            header_obj = Orso.from_dict(header)
+            # for key, value in header_obj._user_data.items():
+            #     if not key in ['analysis'] and isinstance(value, dict):
+            #         header_obj._user_data[key] = DumpDict(value)
             ds.append(OrsoDataset(header_obj, np.array(columns).T))
         try:
             save_orso(ds, basename, data_separator='\n')
