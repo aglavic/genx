@@ -11,6 +11,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Chanves 3.6.25
+==============
+ * Fix bug in MagSLD where magnetization was reported 10x too high in graph (see Ticket #205).
+ * Fix inconsistent behavor for x-values <=0 (see Ticket #201).
+
 Changes 3.6.24
 ==============
  * Add compatibility to ORSO binary format.
