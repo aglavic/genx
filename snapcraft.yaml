@@ -34,14 +34,14 @@ parts:
       - numpy
       - bumps
       - vtk
-      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04/wxPython-4.2.1-cp310-cp310-linux_x86_64.whl
+#      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04/wxPython-4.2.1-cp310-cp310-linux_x86_64.whl
       - svgwrite
     #build-packages:
       #- python3-pip
       #- python3-wheel
     stage-packages:
       - python3
-    after: [desktop-gnome-platform]
+      - python3-wxgtk4.0
     override-pull: |
       snapcraftctl pull
       mkdir repo
