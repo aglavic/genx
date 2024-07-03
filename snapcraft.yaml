@@ -40,18 +40,7 @@ parts:
       #- python3-pip
       #- python3-wheel
     stage-packages:
-      - libsdl2-2.0-0
-      - libegl1
-      - libxtst6
-      - libgstreamer1.0-0
-      - libgstreamer-plugins-base1.0-0
-      - libjavascriptcoregtk-4.0-18
-      - libwebkit2gtk-4.0-37
-      - libpsm2-2-compat
-      - libgomp1-amd64-cross
-      - libsm6
-      - libtbb2
-      - libpulse0
+      - python3
     after: [desktop-gnome-platform]
     override-pull: |
       snapcraftctl pull
