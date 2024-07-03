@@ -29,6 +29,7 @@ parts:
   genx:
     plugin: python
     source: ./genx
+    extensions: [gnome]
     python-packages:
       - wheel
       - numpy
@@ -51,24 +52,6 @@ parts:
       cd ..
       rm -rf repo 
  
-  desktop-gnome-platform:
-    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-    source-subdir: gtk
-    plugin: make
-    make-parameters: ["FLAVOR=gtk3"]
-    build-packages:
-      - gcc
-    override-build: |
-      snapcraftctl build
-      mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
-
-#  snapcraft-preload:
-#    source: https://github.com/diddledan/snapcraft-preload.git
-#    source-branch: semaphore-support
-#    plugin: cmake
-#    build-packages:
-#      - gcc-multilib
-#      - g++-multilib
 
 
 apps:
