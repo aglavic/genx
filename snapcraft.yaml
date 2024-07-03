@@ -51,7 +51,7 @@ parts:
       - libgomp1-amd64-cross
       - libsm6
       - libtbb2
-      - libpulsecommon-15.99
+      - libpulse0
     after: [desktop-gnome-platform]
     override-pull: |
       snapcraftctl pull
