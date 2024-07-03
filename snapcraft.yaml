@@ -43,7 +43,7 @@ parts:
       - python3
       - python3-wxgtk4.0
     override-pull: |
-      snapcraftctl pull
+      craftctl default
       mkdir repo
       cd repo
       git clone --bare https://github.com/aglavic/genx.git .
