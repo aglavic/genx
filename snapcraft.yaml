@@ -51,6 +51,7 @@ parts:
       - libdconf1
       - libicu70
       - libwxgtk3.0-gtk3-0v5
+      - libtbb12
     override-pull: |
       craftctl default
       mkdir repo
