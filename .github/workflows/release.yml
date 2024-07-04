@@ -18,7 +18,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install dependencies
       run: |
         sudo apt update
@@ -90,7 +90,7 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
-        skip_existing: true
+        skip-existing: true
     - name: Upload server package to PyPI
       if: github.event_name != 'workflow_dispatch'
       uses: pypa/gh-action-pypi-publish@release/v1
@@ -98,7 +98,7 @@ jobs:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN_SERVER }}
         packages_dir: dist_server/
-        skip_existing: true
+        skip-existing: true
     - name: Archive distribution
       uses: actions/upload-artifact@v3
       with:
@@ -107,11 +107,65 @@ jobs:
           genx/dist/*.deb
           genx/dist/*.tar.gz
 
+  build-ubuntu-22:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential python3-setuptools python3-pip
+        pip3 install orsopy pint
+    - name: Build binary package
+      run: |
+        cd genx
+        bash debian_build/make_deb.sh
+    - name: Rename distribution files
+      run: |
+        cd genx
+        GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
+        DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
+        mv dist/*.deb $DEST_PATH
+    - name: Archive distribution
+      uses: actions/upload-artifact@v3
+      with:
+        name: ubuntu-22-dist
+        path: |
+          genx/dist/*.deb
+
+  build-ubuntu-24:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install python3 python3-matplotlib python3-scipy alien rpm build-essential python3-setuptools python3-pip
+        pip3 install orsopy pint
+    - name: Build binary package
+      run: |
+        cd genx
+        bash debian_build/make_deb.sh
+    - name: Rename distribution files
+      run: |
+        cd genx
+        GENX_VERSION=$(python3 -c "from genx.version import __version__;print(__version__)")
+        DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
+        mv dist/*.deb $DEST_PATH
+    - name: Archive distribution
+      uses: actions/upload-artifact@v3
+      with:
+        name: ubuntu-24-dist
+        path: |
+          genx/dist/*.deb
+
   build-macos:
     runs-on: macos-12
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
@@ -160,7 +214,13 @@ jobs:
     needs: [build-ubuntu-20, build-windows, build-macos]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v3
+      with:
+        name: ubuntu-24-dist
+    - uses: actions/download-artifact@v3
+      with:
+        name: ubuntu-22-dist
     - uses: actions/download-artifact@v3
       with:
         name: ubuntu-20-dist
@@ -182,7 +242,13 @@ jobs:
     needs: [build-ubuntu-20, build-windows, build-macos]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v3
+      with:
+        name: ubuntu-24-dist
+    - uses: actions/download-artifact@v3
+      with:
+        name: ubuntu-22-dist
     - uses: actions/download-artifact@v3
       with:
         name: ubuntu-20-dist
