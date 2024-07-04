@@ -13,7 +13,6 @@ import re
 from typing import List
 from ..data_loader_framework import Template
 from ..utils import ShowWarningDialog
-from orsopy.fileio import load_orso, OrsoDataset
 
 class Plugin(Template):
     wildcard='*.dat'

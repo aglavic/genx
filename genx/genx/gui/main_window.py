@@ -1534,8 +1534,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         Show an about box about GenX with some info...
         '''
-        import numpy, scipy, matplotlib, platform, orsopy
+        import numpy, scipy, matplotlib, platform
         useful = ''
+        try:
+            import orsopy
+            useful += 'ORSOpy: %s, '%orsopy.__version__
+        except ImportError:
+            pass
         try:
             # noinspection PyUnresolvedReferences
             import numba
@@ -1567,11 +1572,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             "\n\nConfiguration files stored in %s"%config_path
 
             +"\n\nThe versions of the mandatory libraries are:\n"
-             "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s, orsopy: %s"
+             "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
              "\n\nThe non-mandatory but useful packages:\n%s"
              ""%(platform.python_version(), wx.__version__,
                  numpy.__version__, scipy.__version__,
-                 matplotlib.__version__, orsopy.__version__,
+                 matplotlib.__version__,
                  useful),
             500, wx.ClientDC(self)))
         info_dilog.WebSite = (homepage_url, "GenX homepage")
@@ -1773,8 +1778,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Callback for the settings change event for the current plot
          - change the toggle for the zoom icon and change the menu items.
         '''
-        self.main_frame_toolbar.ToggleTool(custom_ids.ToolId.ZOOM, event.zoomstate)
-        self.mb_checkables[custom_ids.MenuId.ZOOM].Check(event.zoomstate)
+        self.main_frame_toolbar.ToggleTool(custom_ids.ToolId.ZOOM, bool(event.zoomstate))
+        self.mb_checkables[custom_ids.MenuId.ZOOM].Check(bool(event.zoomstate))
         if event.yscale=='log':
             self.mb_checkables[custom_ids.MenuId.Y_SCALE_LOG].Check(True)
         elif event.yscale=='linear':
