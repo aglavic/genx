@@ -66,7 +66,7 @@ apps:
   genx:
     command: bin/genx
     extensions: [gnome]
-    plugs: [desktop, wayland, x11, audio-playback, desktop-legacy, network, home, gsettings, opengl]
+    plugs: [desktop, wayland, x11, unity7, audio-playback, desktop-legacy, network, home, gsettings, opengl]
     environment:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
