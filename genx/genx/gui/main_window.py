@@ -1783,7 +1783,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.mb_checkables[custom_ids.MenuId.X_SCALE_LOG].Check(True)
         elif event.xscale=='linear':
             self.mb_checkables[custom_ids.MenuId.X_SCALE_LIN].Check(True)
-        self.mb_checkables[custom_ids.MenuId.AUTO_SCALE].Check(event.autoscale)
+        self.mb_checkables[custom_ids.MenuId.AUTO_SCALE].Check(bool(event.autoscale))
 
     def eh_tb_calc_error_bars(self, event):
         '''
