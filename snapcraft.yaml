@@ -43,10 +43,6 @@ parts:
       - python3-minimal
       - python3.10-minimal
 #      - python3-wxgtk4.0
-    override-build: |
-      craftctl default
-      # WORKAROUND: Use python from search path, the path detected by meson doesn't exist when running the Snap
-      sed -e '#!/usr/bin/env python3' -i "${CRAFT_PART_INSTALL}/usr/bin/genx"
     override-pull: |
       craftctl default
       mkdir repo
@@ -60,7 +56,7 @@ parts:
 
 apps:
   genx:
-    command: $SNAP/bin/genx
+    command: bin/genx
 #    extensions: [gnome]
 #    plugs: [desktop, x11, audio-playback, desktop-legacy, network, home, gsettings, opengl]
     environment:
