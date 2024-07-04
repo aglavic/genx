@@ -33,11 +33,11 @@ parts:
       - wheel
       - numpy
       - bumps
-#      - vtk
-#      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04/wxPython-4.2.1-cp310-cp310-linux_x86_64.whl
+      - vtk
+      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04/wxPython-4.2.1-cp310-cp310-linux_x86_64.whl
       - svgwrite
     build-packages:
-      - python3-wxgtk4.0
+#      - python3-wxgtk4.0
 #      - python3-pip
 #      - python3-wheel
     stage-packages:
@@ -58,28 +58,28 @@ parts:
 apps:
   genx:
     command: bin/genx
-#    extensions: [gnome]
-#    plugs: [desktop, x11, audio-playback, desktop-legacy, network, home, gsettings, opengl]
+    extensions: [gnome]
+    plugs: [desktop, wayland, x11, audio-playback, desktop-legacy, network, home, gsettings, opengl]
     environment:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
 
-#plugs:
-#  desktop:
-#    mount-host-font-cache: false
-#  gtk-3-themes:
-#    interface: content
-#    target: $SNAP/data-dir/themes
-#    default-provider: gtk-common-themes
-#  icon-themes:
-#    interface: content
-#    target: $SNAP/data-dir/icons
-#    default-provider: gtk-common-themes
-#  sound-themes:
-#    interface: content
-#    target: $SNAP/data-dir/sounds
-#    default-provider: gtk-common-themes
-#  gnome-42-2204:
-#    interface: content
-#    target: $SNAP/gnome-platform
-#    default-provider: gnome-42-2204
+plugs:
+  desktop:
+    mount-host-font-cache: false
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes
+  gnome-42-2204:
+    interface: content
+    target: $SNAP/gnome-platform
+    default-provider: gnome-42-2204
