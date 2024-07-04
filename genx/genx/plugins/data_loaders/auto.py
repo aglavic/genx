@@ -15,7 +15,10 @@ from .default import Plugin as DefaultPlugin
 from .amor import Plugin as AmorPlugin
 from .sns_mr import Plugin as SNSPlugin
 from .d17_cosmos import Plugin as D17Plugin
-from .orso import Plugin as ORSOPlugin
+try:
+    from .orso import Plugin as ORSOPlugin
+except ImportError:
+    ORSOPlugin=DefaultPlugin
 from .xrdml import Plugin as XRDMLPlugin
 from .sinq_six import Plugin as SIXPlugin
 from .rigaku import Plugin as RASPlugin
