@@ -571,8 +571,8 @@ class MaterialDialog(wx.Dialog):
                   'authors,title,journal,year,'
                   'formula,calcformula'
                   ' from data where formula like "- %s -"'
-                  ' and method != "theoretical"'
-                  ' and status is NULL order by file'%formula)
+                  ' and (method is NULL or method != "theoretical")'
+                  ' order by file'%formula)
         res=c.fetchall()
         if len(res)>0:
             # more then one structure available, ask for user input to select appropriate

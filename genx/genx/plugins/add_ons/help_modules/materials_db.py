@@ -460,11 +460,17 @@ class MaterialsDatabase(list):
 
     def dens_FU(self, item):
         '''Returns the formula unit (FU) density of the compound "item" in 1/Å³'''
-        return eval(self[item][1])
+        try:
+            return eval(self[item][1])
+        except SyntaxError:
+            return 0.0
 
     def dens_mass(self, item):
         '''Returns the mass density of the compound "item" in g/cm³'''
-        return eval(self[item][1])*self[item][0].mFU()/MASS_DENSITY_CONVERSION
+        try:
+            return eval(self[item][1])*self[item][0].mFU()/MASS_DENSITY_CONVERSION
+        except SyntaxError:
+            return 0.0
 
     def __delitem__(self, index):
         list.__delitem__(self, index)

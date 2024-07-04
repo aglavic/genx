@@ -44,6 +44,12 @@ parts:
       - python3-minimal
       - python3.10-minimal
       - python3-wxgtk4.0
+      - libsdl2-2.0-0
+      - libglx-mesa0
+      - libcolord2
+      - libdconf1
+      - libicu70
+      - libwxgtk3.0-1t64
     override-pull: |
       craftctl default
       mkdir repo
