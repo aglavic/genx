@@ -394,7 +394,7 @@ def main():
     multiprocessing.set_start_method('spawn')
     if os.path.abspath(__file__).startswith('/snap'):
         # try fix multiprocessing in SNAP
-        multiprocessing.current_process()._config['semprefix'] = '/snap.dotrun.mp'
+        multiprocessing.current_process()._config['semprefix'] = '/snap.genx.mp'
     # Attempt to load mpi:
     try:
         from mpi4py import MPI

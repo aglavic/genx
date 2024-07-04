@@ -50,7 +50,7 @@ parts:
       - libcolord2
       - libdconf1
       - libicu70
-      - libwxgtk3.0-1t64
+      - libwxgtk3.0-gtk3-0v5
     override-pull: |
       craftctl default
       mkdir repo
