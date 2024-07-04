@@ -13,7 +13,6 @@ import tempfile
 import subprocess
 from logging import debug, info, warning
 from dataclasses import dataclass
-from enum import Enum
 from typing import List
 from copy import deepcopy
 

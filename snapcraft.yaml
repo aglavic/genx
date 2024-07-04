@@ -36,13 +36,17 @@ parts:
 #      - vtk
       - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04/wxPython-4.2.1-cp310-cp310-linux_x86_64.whl
       - svgwrite
-    #build-packages:
-      #- python3-pip
-      #- python3-wheel
+#    build-packages:
+#      - python3-pip
+#      - python3-wheel
     stage-packages:
       - python3-minimal
       - python3.10-minimal
 #      - python3-wxgtk4.0
+    override-build: |
+      craftctl default
+      # WORKAROUND: Use python from search path, the path detected by meson doesn't exist when running the Snap
+      sed -e '#!/usr/bin/env python3' -i "${CRAFT_PART_INSTALL}/usr/bin/genx"
     override-pull: |
       craftctl default
       mkdir repo

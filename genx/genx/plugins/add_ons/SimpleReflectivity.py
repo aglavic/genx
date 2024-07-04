@@ -12,11 +12,10 @@ of depth for the sample. The substrate is to the left and the ambient material
 is to the right. This is updated when the simulation button is pressed.
 '''
 import io, traceback
+from logging import warning
 
 import wx.grid as gridlib
 from wx.adv import Wizard, WizardPageSimple
-from orsopy.slddb import api
-from orsopy.slddb.material import Formula as MatFormula
 
 from .. import add_on_framework as framework
 from genx.model import Model
@@ -41,11 +40,14 @@ try:
     # set locale to prevent some issues with data format
     import locale
 
+    from orsopy.slddb import api
+    from orsopy.slddb.material import Formula as MatFormula
 
     locale.setlocale(locale.LC_ALL, 'en_US.utf8')
     # initialize and potentially update local version of ORSO SLD db
     api.check()
 except:
+    warning("The SimpleReflectivity plugin doew not work properly without orsopy installed.")
     api = None
 
 
