@@ -11,6 +11,7 @@ import _thread
 import time
 import tempfile
 import subprocess
+import logging
 from logging import debug, info, warning
 from dataclasses import dataclass
 from typing import List
@@ -25,7 +26,7 @@ from wx.lib.wordwrap import wordwrap
 
 from .custom_events import *
 from . import custom_ids, datalist, help, images as img, parametergrid, solvergui, pubgraph_dialog
-from .exception_handling import CatchModelError
+from .exception_handling import CatchModelError, GuiExceptionHandler
 from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
 from .online_update import check_version, VersionInfoDialog
 from .batch_dialog import BatchDialog
@@ -2204,6 +2205,13 @@ class GenxApp(wx.App):
             wx.SystemOptions.SetOption(wx.OSX_FILEDIALOG_ALWAYS_SHOW_TYPES, 1)
         debug('App init complete')
 
+    def ConnectExceptionHandler(self):
+        """
+        Create a custom logging handler that opens a message dialog on critical (unhandled) exceptions.
+        """
+        self._exception_handler = GuiExceptionHandler(self)
+        logging.getLogger().addHandler(self._exception_handler)
+
     def ShowSplash(self):
         debug('Display Splash Screen')
         image = wx.Bitmap(img.getgenxImage().Scale(400, 400))
@@ -2240,6 +2248,7 @@ class GenxApp(wx.App):
             locale = wx.Locale(wx.LANGUAGE_ENGLISH_US)
             self.locale = locale
             self._first_init = False
+        self.ConnectExceptionHandler()
         self.ShowSplash()
         debug('entering init phase')
 
