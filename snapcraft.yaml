@@ -94,3 +94,5 @@ plugs:
     interface: content
     target: $SNAP/gnome-platform
     default-provider: gnome-42-2204
+  shared-memory:
+    private: true
