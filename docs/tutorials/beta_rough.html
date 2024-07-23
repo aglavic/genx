@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Beta Roughness Model &#8212; GenX 3.6.21 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Error Statistics from bumps library" href="error_statistics.html" />
+    <link rel="prev" title="Surface X-diffraction Model 2" href="sxrd2.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="error_statistics.html" title="Error Statistics from bumps library"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sxrd2.html" title="Surface X-diffraction Model 2"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Beta Roughness Model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="beta-roughness-model">
+<span id="beta-rough-model"></span><h1>Beta Roughness Model<a class="headerlink" href="#beta-roughness-model" title="Permalink to this heading">¶</a></h1>
+<p>This tutorial describes how to incorporate the general roughness model for crystal truncation rod data
+after Robinson <a class="reference internal" href="#rob86" id="id1"><span>[ROB86]</span></a>.</p>
+<p>To use this roughness model you will need the following:</p>
+<ol class="arabic">
+<li><p>Data file that includes L-value of nearest Bragg peak (LB) and distance in reciprocal lattice units between adjacent
+Bragg peaks (dL) for each data point. If dL is the same for all Bragg peaks on a given rod,
+you may use the same LB for all.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sample data file with Bragg peak position and spacing</span>
+<span class="c1"># H       K       L       I       Ierr    LB      dL</span>
+<span class="mi">0</span> <span class="mi">0</span>       <span class="mf">1.0</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">3</span>       <span class="mi">3</span>
+<span class="mi">0</span> <span class="mi">0</span>       <span class="mf">1.1</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">3</span>       <span class="mi">3</span>
+<span class="mi">0</span> <span class="mi">0</span>       <span class="mf">1.2</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">3</span>       <span class="mi">3</span>
+<span class="mi">0</span> <span class="mi">0</span>       <span class="mf">1.3</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">3</span>       <span class="mi">3</span>
+<span class="mi">0</span> <span class="mi">0</span>       <span class="mf">1.4</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">3</span>       <span class="mi">3</span>
+<span class="mi">0</span> <span class="mi">0</span>       <span class="mf">1.5</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">3</span>       <span class="mi">3</span>
+<span class="mi">0</span> <span class="mi">0</span>       <span class="mf">1.6</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">3</span>       <span class="mi">3</span>
+</pre></div>
+</div>
+</li>
+<li><p>SXRD model script modified to include the beta parameter as a user variable, and
+roughness in the structure factor calculation. Add/replace the following code in the model script
+shown at <a class="reference internal" href="sxrd.html#tutorial-sxrd"><span class="std std-ref">Surface X-diffraction tutorial</span></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 3.a Define beta for roughness model</span>
+<span class="n">rgh</span><span class="o">=</span><span class="n">UserVars</span><span class="p">()</span>
+<span class="n">rgh</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+
+<span class="c1"># 9 Define the Sim function</span>
+<span class="k">def</span> <span class="nf">Sim</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+   <span class="n">I</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="n">beta</span> <span class="o">=</span> <span class="n">rgh</span><span class="o">.</span><span class="n">beta</span>
+   <span class="c1">#9.a loop through the data sets</span>
+   <span class="k">for</span> <span class="n">data_set</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+      <span class="c1"># 9.b create all the h,k,l,LB,dL values for the rod (data_set)</span>
+      <span class="n">h</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">extra_data</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span>
+      <span class="n">k</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">extra_data</span><span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">]</span>
+      <span class="n">l</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">x</span>
+      <span class="n">LB</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">extra_data</span><span class="p">[</span><span class="s1">&#39;LB&#39;</span><span class="p">]</span>
+      <span class="n">dL</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">extra_data</span><span class="p">[</span><span class="s1">&#39;dL&#39;</span><span class="p">]</span>
+      <span class="c1"># 9.c. calculate roughness using beta model</span>
+      <span class="n">rough</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">beta</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">beta</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span><span class="o">*</span><span class="n">beta</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="n">LB</span><span class="p">)</span><span class="o">/</span><span class="n">dL</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+      <span class="c1"># 9.d. Calculate the structure factor</span>
+      <span class="n">f</span> <span class="o">=</span> <span class="n">rough</span><span class="o">*</span><span class="n">sample</span><span class="o">.</span><span class="n">calc_f</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+      <span class="c1"># 9.e Calculate |F|</span>
+      <span class="n">i</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+      <span class="c1"># 9.f Append the calculated intensity to the list I</span>
+      <span class="n">I</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+   <span class="k">return</span> <span class="n">I</span>
+</pre></div>
+</div>
+</li>
+<li><p>In your parameter grid, select an empty row, right click, and select <span class="menuselection">UserVars‣rgh.setBeta</span></p></li>
+</ol>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
+<div role="list" class="citation-list">
+<div class="citation" id="rob86" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">ROB86</a><span class="fn-bracket">]</span></span>
+<p>ROBINSON, I., 1986. CRYSTAL TRUNCATION RODS AND SURFACE-ROUGHNESS. Physical Review B 33, 3830-3836.</p>
+</div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Beta Roughness Model</a><ul>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="sxrd2.html"
+                          title="previous chapter">Surface X-diffraction Model 2</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="error_statistics.html"
+                          title="next chapter">Error Statistics from bumps library</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/beta_rough.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="error_statistics.html" title="Error Statistics from bumps library"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sxrd2.html" title="Surface X-diffraction Model 2"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Beta Roughness Model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>

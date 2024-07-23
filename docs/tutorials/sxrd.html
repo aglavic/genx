@@ -1,0 +1,606 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Surface X-diffraction tutorial &#8212; GenX 3.6.21 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Surface X-diffraction Model 2" href="sxrd2.html" />
+    <link rel="prev" title="Batch Fitting" href="batch_fitting.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sxrd2.html" title="Surface X-diffraction Model 2"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="batch_fitting.html" title="Batch Fitting"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Surface X-diffraction tutorial</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="surface-x-diffraction-tutorial">
+<span id="tutorial-sxrd"></span><h1>Surface X-diffraction tutorial<a class="headerlink" href="#surface-x-diffraction-tutorial" title="Permalink to this heading">¶</a></h1>
+<p>At the present GenX implements two different facilities to handle sxrd data.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>SXRD data loader</p></li>
+<li><p>SXRD model to calculate sxrd data</p></li>
+</ul>
+</div></blockquote>
+<section id="loading-sxrd-data">
+<h2>Loading SXRD data<a class="headerlink" href="#loading-sxrd-data" title="Permalink to this heading">¶</a></h2>
+<p>First the data loader has to be changed to load files for sxrd. Open the menu
+<span class="menuselection">Settings‣Data Loaders</span> (or press Shift-Ctrl-D) and an dialog pops up.
+Choose the sls_sxrd data loader in the drop-down box that appear. The data is loaded by marking the data set
+where the rods should be inserted and choose File-Import-Import Data (It is also possible to click on the small open
+icon above the data sets). A dialog appears and the data file to load is chosen. An example for an valid data file
+can be found in <a class="reference download internal" download="" href="../_downloads/fc3b79c07e33d46225b6d701925433b2/rods.dat"><code class="xref download docutils literal notranslate"><span class="pre">rods.dat</span></code></a> or see below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test file created: 2009-04-14</span>
+<span class="c1"># Headers:</span>
+<span class="c1">#h        k         l         I         Ie</span>
+<span class="mf">0.000e+00</span> <span class="mf">0.000e+00</span> <span class="mf">1.000e-01</span> <span class="mf">0.000e+00</span> <span class="mf">0.00e+00</span>
+<span class="mf">0.000e+00</span> <span class="mf">0.000e+00</span> <span class="mf">1.100e-01</span> <span class="mf">0.000e+00</span> <span class="mf">0.00e+00</span>
+<span class="mf">0.000e+00</span> <span class="mf">0.000e+00</span> <span class="mf">1.200e-01</span> <span class="mf">0.000e+00</span> <span class="mf">0.00e+00</span>
+<span class="mf">0.000e+00</span> <span class="mf">0.000e+00</span> <span class="mf">1.300e-01</span> <span class="mf">0.000e+00</span> <span class="mf">0.00e+00</span>
+<span class="mf">0.000e+00</span> <span class="mf">0.000e+00</span> <span class="mf">1.400e-01</span> <span class="mf">0.000e+00</span> <span class="mf">0.00e+00</span>
+<span class="mf">0.000e+00</span> <span class="mf">0.000e+00</span> <span class="mf">1.500e-01</span> <span class="mf">0.000e+00</span> <span class="mf">0.00e+00</span>
+<span class="mf">0.000e+00</span> <span class="mf">0.000e+00</span> <span class="mf">1.600e-01</span> <span class="mf">0.000e+00</span> <span class="mf">0.00e+00</span>
+</pre></div>
+</div>
+<p>The data format that this data loader wants is a 5-column consisting of h, k, l, Intensity and Intensity error
+separated with a whitespace (comma, tabs..). The default token for a comment is a #. The settings for the data
+loaders are accessed through Setting-Import Settings (or Shift-Ctrl-I). If you would happen to need to create
+your own test files you can use the python script <a class="reference download internal" download="" href="../_downloads/1b61a049cd816d2e3688b4b6ac497c66/make_sxrd_data.py"><code class="xref download docutils literal notranslate"><span class="pre">make_sxrd_data.py</span></code></a>.
+.. image::_attachments/surfdiff/data_loaded.png</p>
+<p>When the data is loaded <strong>new</strong> data sets are appended automatically. Each data set is given the name of the type ‘(h, k)’. If you started from the beginning you should also remove the data set ‘Data0’ since the data sets are appended to the previous sets.</p>
+</section>
+<section id="creating-an-sxrd-model">
+<h2>Creating an SXRD model<a class="headerlink" href="#creating-an-sxrd-model" title="Permalink to this heading">¶</a></h2>
+<p>Okay this is the tricky part first off we will create a simple model consisting of and 2 unit cell thick L
+aAlO3 film on top of a SrTiO3 substrate. The script will look something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1</span>
+<span class="kn">import</span> <span class="nn">models.sxrd</span> <span class="k">as</span> <span class="nn">model</span>
+
+<span class="c1"># 2 Defining the unit cell parameters</span>
+<span class="n">unitcell</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">UnitCell</span><span class="p">(</span><span class="mf">3.945</span><span class="p">,</span> <span class="mf">3.945</span><span class="p">,</span> <span class="mf">3.945</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+<span class="c1"># 3 Define the instrument</span>
+<span class="n">inst</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Instrument</span><span class="p">(</span><span class="n">wavel</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span>
+
+<span class="c1"># 4 Defining the bulk</span>
+<span class="n">bulk</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Slab</span><span class="p">()</span>
+<span class="c1"># 4.a Define the atoms</span>
+<span class="n">bulk</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Sr&#39;</span><span class="p">,</span> <span class="s1">&#39;sr&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">bulk</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Ti&#39;</span><span class="p">,</span> <span class="s1">&#39;ti&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">bulk</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O1&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">bulk</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O2&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">bulk</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O3&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+<span class="c1"># 5 Creating an LaAlO3 unit cell - note asymmetric unit cell</span>
+<span class="n">laouc</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">Slab</span><span class="p">(</span><span class="n">c</span> <span class="o">=</span> <span class="mf">1.05</span><span class="p">)</span>
+<span class="c1"># 5.a Define the atoms</span>
+<span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;La&#39;</span><span class="p">,</span> <span class="s1">&#39;la&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="s1">&#39;al&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O1&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O2&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># 6 Symmetry operations</span>
+<span class="n">p4</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">SymTrans</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="n">model</span><span class="o">.</span><span class="n">SymTrans</span><span class="p">([[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]),</span>
+           <span class="n">model</span><span class="o">.</span><span class="n">SymTrans</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span> <span class="n">model</span><span class="o">.</span><span class="n">SymTrans</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span> <span class="p">]</span>
+
+<span class="c1"># 7 Creating the sample with one unit cell</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="p">[</span><span class="n">laouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
+
+<span class="c1">#8 Put the right symmetry in the surface</span>
+<span class="n">sample</span><span class="o">.</span><span class="n">set_surface_sym</span><span class="p">(</span><span class="n">p4</span><span class="p">)</span>
+
+<span class="c1"># 9 Define the Sim function</span>
+<span class="k">def</span> <span class="nf">Sim</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1">#9.a loop through the data sets</span>
+    <span class="k">for</span> <span class="n">data_set</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="c1"># 9.b create all the h,k,l values for the rod (data_set)</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">extra_data</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">extra_data</span><span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">]</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">x</span>
+        <span class="c1"># 9.c. Calculate the struct factor</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">calc_f</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+        <span class="c1"># 9.d Calculate the intensity</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="c1"># 9.e Append the calculated intensity to the list I</span>
+        <span class="n">I</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">I</span>
+</pre></div>
+</div>
+<p>So to create a model script the following actions has to be made:</p>
+<ol class="arabic simple">
+<li><p>The first row imports the necessary model <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">models.sxrd</span> <span class="pre">as</span> <span class="pre">model</span></code>.</p></li>
+<li><p>Create a <code class="docutils literal notranslate"><span class="pre">UnitCell(a,</span> <span class="pre">b,</span> <span class="pre">c,</span> <span class="pre">alpha,</span> <span class="pre">beta,</span> <span class="pre">gamma)</span></code> this object contains all the lattice parameters of the
+substrate. This also relates the (h, k, l) values in the measurement to the real world.</p></li>
+<li><p>Create an <code class="docutils literal notranslate"><span class="pre">Instrument(wavel,</span> <span class="pre">alpha)</span></code>. This contains all the parameters related to the measurement. Wavelength
+in Angstroms and incidence angle in degrees.</p></li>
+<li><p>So now we define the bulk <code class="docutils literal notranslate"><span class="pre">Slab</span></code>, this takes the instrument as input.</p>
+<ol class="loweralpha simple">
+<li><p>Add all the atoms to the bulk (here we use a P1 symmetry), the command has this syntax
+<code class="docutils literal notranslate"><span class="pre">bulk.add_atom(id,</span> <span class="pre">element,x,</span> <span class="pre">y,</span> <span class="pre">z,</span> <span class="pre">u,</span> <span class="pre">occ)</span></code>. <code class="docutils literal notranslate"><span class="pre">id</span></code> denotes a unique id for the atom added. <code class="docutils literal notranslate"><span class="pre">element</span></code>
+is the element in question which has to defined in the f and rho table. <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code> is the
+base position of the atom (movements of atoms is made through the variables <code class="docutils literal notranslate"><span class="pre">dx</span></code>, <code class="docutils literal notranslate"><span class="pre">dy</span></code>, <code class="docutils literal notranslate"><span class="pre">dz</span></code>}) . <code class="docutils literal notranslate"><span class="pre">u</span></code>
+is the Debye-Waller parameter (isotropic) and <cite>occ</cite> is the occupancy of the atom.</p></li>
+</ol>
+</li>
+<li><p>Next up is the same procedure for the film atoms. Here we use the same class <code class="docutils literal notranslate"><span class="pre">Slab</span></code> but we create it
+with a twist. As an optional arguments we insert <code class="docutils literal notranslate"><span class="pre">c</span> <span class="pre">=</span> <span class="pre">1.05</span></code>. This will make the c-axis
+constant of this <code class="docutils literal notranslate"><span class="pre">Slab</span></code> 5% longer than the one defined in the <code class="docutils literal notranslate"><span class="pre">unitcell</span></code>.</p>
+<ol class="loweralpha simple">
+<li><p>Now we add all the symmetry in-equivalent atoms to this Slab, <code class="docutils literal notranslate"><span class="pre">laouc</span></code>, assuming that we have in plane
+p4 symmetry (more about the symmetry later on). Also there is then an extra argument to the <cite>add_atom</cite> method.
+The call is now on the form: <cite>laouv.add_atom(id, element, x, y, z, u, occ, mult)</cite>. The optional parameter <code class="docutils literal notranslate"><span class="pre">mult</span></code>
+is then the multiplicity of the site, i.e. how many atoms there are of this atomic site in the unitcell
+(it is tabulated in the international tables of crystallography &lt;<a class="reference external" href="http://it.iucr.org/">http://it.iucr.org/</a>&gt;).
+For a non-special position (general) this will be 4. For the (0.5,0.5) position this will
+then be 1 as it will occur only one time.</p></li>
+</ol>
+</li>
+<li><p>Now both the bulk unit cell and the surface is defined as slabs. What we have to do now is to define the
+symmetry operations for the top layer. This is done by creating <cite>SymTrans</cite> objects and placing them in a list so we
+build up all allowed symmetry operations of the plane group. The call is:
+<code class="docutils literal notranslate"><span class="pre">SymTrans(P</span> <span class="pre">=</span> <span class="pre">[[1,</span> <span class="pre">0],[0,</span> <span class="pre">1],</span> <span class="pre">t</span> <span class="pre">=</span> <span class="pre">[0,</span> <span class="pre">0])</span></code> where also the default values are shown. <code class="docutils literal notranslate"><span class="pre">P</span></code> is the rotation
+matrix of the transformation and <cite>t</cite> is the displacement vector. The default value is creating the identity
+matrix for <code class="docutils literal notranslate"><span class="pre">P</span></code> and the no displacement at all for <code class="docutils literal notranslate"><span class="pre">t</span></code>.</p></li>
+<li><p>A sample is creating by combining the instrument, bulk slab, surface slabs and the unitcell. Note that several
+surface slabs can be stacked on top of each other to create more complex structures. Call:
+<code class="docutils literal notranslate"><span class="pre">Sample(inst,</span> <span class="pre">bulk_slab,</span> <span class="pre">surface_slabs,</span> <span class="pre">unit_cell)</span></code> .</p></li>
+<li><p>To be added</p></li>
+<li><p>Now we need to define the <cite>Sim</cite> function this is a mandatory function that has to included
+in <strong>all</strong> model scripts. It takes a data structure as input. First we create an empty list which will contain
+the calculated data. This is the function that will be executed when you press on the simulate and when
+you fit your data.</p>
+<ol class="loweralpha simple">
+<li><p>Then we loop through all data sets that we have loaded.</p></li>
+<li><p>For each <code class="docutils literal notranslate"><span class="pre">data_set</span></code> we extract the h,k and l values from the data file. Note that h,k is loaded as extra
+data but the l values which is the independent variable in the plots is retrieved by <code class="docutils literal notranslate"><span class="pre">data_set.x</span></code>.
+(As a side note <code class="docutils literal notranslate"><span class="pre">data.extra_data</span></code> is an dictionary of data which is created by the sls_sxrd data loader)</p></li>
+<li><p>Then we calculate the _complex_ structure factor for the <code class="docutils literal notranslate"><span class="pre">sample</span></code>. The syntax should be obvious.</p></li>
+<li><p>The intensity the square of the absolute of the structure factor is calculated and is appended to our
+result list <code class="docutils literal notranslate"><span class="pre">I</span></code></p></li>
+<li><p>The result list (which has to have exactly the same length as the number of data sets),
+<code class="docutils literal notranslate"><span class="pre">I</span></code>, is returned from the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function.</p></li>
+</ol>
+</li>
+</ol>
+</section>
+<section id="making-a-simulation">
+<h2>Making a simulation<a class="headerlink" href="#making-a-simulation" title="Permalink to this heading">¶</a></h2>
+<p>To simulate the data click on the yellow lightning in the main tool bar. The following screen should appear.</p>
+<p>![Screenshot - simulation, linear scale](/apps/trac/genx/raw-attachment/wiki/IntroGuides/SurfDiff/simulation_lin.png)</p>
+<p>In order to see anything the scaling has to change from linear to logarithmic. Right click on the plot and choose
+<span class="menuselection">y-scale‣log</span>.</p>
+<p>This should make the plot a bit clearer. However, we still have a bunch of lines on top of each other.</p>
+<p>Lets make som of the data sets non-active. Mark all data sets in the right data list except the first one,
+right click and choose Toggle show. This turn on and off the plotting of the selected data sets. Toggle Active
+sets a flag whether or not to the data should be simulated. Naturally this flag must be read and used in the simulation
+function to have an effect.</p>
+</section>
+<section id="adding-more-layers">
+<h2>Adding more layers<a class="headerlink" href="#adding-more-layers" title="Permalink to this heading">¶</a></h2>
+<p>Usually I am more interesting in fitting and simulating films that are a couple of unitcells thick.
+So here a couple of tricks to make that that easy. If you just want to add identical unitcells on top of each
+other you can just expand the list, to simulate lets say 3 UC:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 7 Creating the sample with one unit cell</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="p">[</span><span class="n">laouc</span><span class="p">,</span> <span class="n">laouc</span><span class="p">,</span> <span class="n">laouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Another possiblity is to use the smart list functionality that python offers, which makes the following
+code equivalent to the top one:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 7 Creating the sample with one unit cell</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="p">[</span><span class="n">laouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you have several non-identical layers lets say another <code class="docutils literal notranslate"><span class="pre">Slab</span></code> called <code class="docutils literal notranslate"><span class="pre">stouc</span></code> we can make an 2 UC over
+layer on top of the <code class="docutils literal notranslate"><span class="pre">loauc</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 7 Creating the sample with one unit cell</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="p">[</span><span class="n">laouc</span><span class="p">,</span> <span class="n">laouc</span><span class="p">,</span> <span class="n">laouc</span><span class="p">,</span> <span class="n">stouc</span><span class="p">,</span> <span class="n">stouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which can also be written as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 7 Creating the sample with one unit cell</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="p">[</span><span class="n">laouc</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="p">[</span><span class="n">stouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An important consequence of reusing the defined unitcells is that <strong>all</strong> the parameters in the repeated unitcells is
+the same. For example if you would like to fit identical displacement parameters for several layers this is the way
+to go. Eventually you might want to decouple the different layers and fit them separately. Then you have to make
+a copy each slab into a separate object and place into a list. The following code copies one slab into a new one with
+another name.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sto_other</span> <span class="o">=</span> <span class="n">stouc</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The object <code class="docutils literal notranslate"><span class="pre">sto_other</span></code> will then contain atoms at the same position as <code class="docutils literal notranslate"><span class="pre">stouc</span></code> but when a property of <code class="docutils literal notranslate"><span class="pre">stouc</span></code>
+is changed it will not affect the copy, <code class="docutils literal notranslate"><span class="pre">sto_other</span></code>. Note that if you would write</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sto_other</span> <span class="o">=</span> <span class="n">stouc</span>
+</pre></div>
+</div>
+<p>a change in <code class="docutils literal notranslate"><span class="pre">stouc</span></code> or <code class="docutils literal notranslate"><span class="pre">sto_other</span></code> would affect the other! Naturally, in this object has also to be
+included in the sample in order to be simulated.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 7 Creating the sample with one unit cell</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="p">[</span><span class="n">laouc</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">sto_other</span><span class="p">,</span> <span class="n">stouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="defining-parameters-to-fit">
+<h2>Defining parameters to fit<a class="headerlink" href="#defining-parameters-to-fit" title="Permalink to this heading">¶</a></h2>
+<p>Before we proceed with the more advanced topics we will briefly review how to define which parameters to fit.
+As a user you should be aware that in GenX _everything_ can be fitted. However, it is no guarantee that the parameters
+that you have chosen to fit make any sense at all! So you should use your judgment and think about the physical model
+before you decide to fit (or freeze) a parameter. Fitting is also a little bit like craftsmanship, so in order to be
+good at it you have to practice in using the tools.</p>
+<p>The definition of which parameters the program fits is done in the tab Grid (lower panel). There are 6 columns.
+The first, <code class="docutils literal notranslate"><span class="pre">Parameter</span></code>,is the name of the _function_ that sets the parameter, next, <cite>Value}},
+the default/refined value to set the parameter to. Column number three, {{{Fit</cite> selects if the parameter in this row
+should be refined. Next the boundaries for the refinement is given by the <cite>Min</cite> and <cite>Max</cite> columns. The last column
+<cite>Errors</cite> display the calculated result of the error calculation that can be conducted after a fit.</p>
+<p>No to find the name of the parameter right click on the a box in the parameter column (Note the box is not allowed
+to be in edit mode with a cursor blinking). This will cause a pop-up menu to appear with all possible set
+functions for the objects you have defined in the script. All function that appear in this menu and as parameters
+will appear on the form <code class="docutils literal notranslate"><span class="pre">object_name.set_parameter</span></code> for example to fit the slab-global c-axis of the <code class="docutils literal notranslate"><span class="pre">stouc</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">stouc</span><span class="o">.</span><span class="n">set_c</span>
+</pre></div>
+</div>
+<p>would be chosen. Most parameter will also define its current value in the <code class="docutils literal notranslate"><span class="pre">Value</span></code> column and define
+a +/- 25% span between the <code class="docutils literal notranslate"><span class="pre">Min</span></code> and <code class="docutils literal notranslate"><span class="pre">Max</span></code> columns. So, care must be taken that the boundaries is
+physical and relevant to the parameter you have chosen.</p>
+<p>The grid can also be used as a quick way to play around with the parameters in the model.
+Something to keep in made is the following:</p>
+<ol class="arabic simple">
+<li><p>When you press simulate the script will be compiled.</p></li>
+<li><p>The Sim function will <strong>not</strong> be evaluated yet.</p></li>
+<li><p>The values in the Grid will be set to their values in the <code class="docutils literal notranslate"><span class="pre">Value</span></code> column.</p></li>
+<li><p>The Sim function will be evaluated.</p></li>
+</ol>
+<p>When you build your model you think about that when fitting the following procedure will be followed:</p>
+<ol class="arabic simple">
+<li><p>Set the parameter values.</p></li>
+<li><p>Evaluate the Sim function.</p></li>
+<li><p>Calculate the figure of merit.</p></li>
+</ol>
+<p>So if you want to do something special to your parameters, more about that later on, you can not do it
+outside the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function as that code will only be evaluated as you simulate and recompile the model.</p>
+<p>If you would like to try a quick fit just press the green arrow in the tool bar and of you go.
+Keep an eye on the status bar at the bottom of the window. This will display important information
+about how the it proceeds and what the program does. To stop the fit press the red stop sign in the toolbar and
+wait until a dialog appear which asks you if you want to keep the Values the program has fitted. If you
+would like to resume the fit, if you, for example, stopped it to early, press the round green arrow
+to the right of the stop button.</p>
+<p>During fitting you should keep an eye on the FOM tab and the Pars tab which shows the progress of the algorithm.
+For a more detailed discussion about this see the x-ray tutorial :ref:_tutorials-xrr-fitting.</p>
+</section>
+<section id="scaling-the-simulation">
+<h2>Scaling the simulation<a class="headerlink" href="#scaling-the-simulation" title="Permalink to this heading">¶</a></h2>
+<p>When fitting and simulatiing one very important thing is to also fit/change the scale factor. One can fit the
+parameter <code class="docutils literal notranslate"><span class="pre">inst.inten</span></code> which is the “incoming intensity”. This parameter multiplies with the structure
+factor when using the <code class="docutils literal notranslate"><span class="pre">sample.calc_f</span></code> function. A more effective way of doing it when fitting data, to my opinion,
+is to scale each simulation separately. The sxrd model contains two function that accomplish this task:
+<code class="docutils literal notranslate"><span class="pre">model.scale_sim(data,</span> <span class="pre">I)</span></code> and <code class="docutils literal notranslate"><span class="pre">model.scale_sqrt_sim(data,</span> <span class="pre">I)</span></code>. Both of these functions will return a
+new intensity array that are the least-squared fitted simulation to the data with respect to the scale factor.
+The minimization is done by analytically by solving <span class="math notranslate nohighlight">\(\mathrm{min}_s \sum_i \left(D_i - sI_i\right)^2\)</span> or
+<span class="math notranslate nohighlight">\(\mathrm{min}_s \sum_i \left(\sqrt{D_i} - s\sqrt{I_i}\right)^2\)</span>.
+This function should be placed right before returning the value in the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="o">...</span>
+    <span class="c1"># 9.e Append the calculated intensity to the list I</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="n">I</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">scale_sqrt_sim</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">I</span><span class="p">)</span>
+<span class="k">return</span> <span class="n">I</span>
+</pre></div>
+</div>
+</section>
+<section id="grouping-atoms">
+<h2>Grouping atoms<a class="headerlink" href="#grouping-atoms" title="Permalink to this heading">¶</a></h2>
+<p>A common sense approach can be that several atoms should move together and not independently of each other.
+For example, strain field will compress/expand an epitaxial film and consequently the lattice parameter will change.
+We have already briefly dealt with this as we talked about Slab`s and its parameter <code class="docutils literal notranslate"><span class="pre">c</span></code> which can scale the
+thickness of the slab. This should be the first attempt to use when fitting the data. Other, more elaborate,
+models might be to move atoms of the same element/site in the same manner. One obvious example of this if an alloyed
+site is simulated. This is where atoms group can come in handy. The class that handles this is called <code class="docutils literal notranslate"><span class="pre">AtomGroup</span></code>.</p>
+<section id="basic-usage">
+<h3>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading">¶</a></h3>
+<p>Naturally there are different ways of creating and working with these groups. There are two ways to create a group:</p>
+<ol class="arabic">
+<li><p>The <cite>Slab.add_atom</cite> returns an <cite>AtomGroup</cite> object. Easy to use when only a small number of atoms has to chosen.
+For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">la_atom</span> <span class="o">=</span> <span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;La&#39;</span><span class="p">,</span> <span class="s1">&#39;la&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Fetch one atom from a Slab with its unique identity (name), <code class="docutils literal notranslate"><span class="pre">id</span></code>. This is done by typing the <code class="docutils literal notranslate"><span class="pre">id</span></code> between
+brackets (cmp. dictionary lookup):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">la_atom</span> <span class="o">=</span> <span class="n">laouc</span><span class="p">[</span><span class="s1">&#39;La&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p>Atoms can be searched by the <code class="docutils literal notranslate"><span class="pre">Slab.find_atoms</span></code> method. This lets you use a logical expression to locate
+the atoms. To locate an atom all at a site (0,0,0) one would write:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">la_atom</span> <span class="o">=</span> <span class="n">laouc</span><span class="o">.</span><span class="n">find_atoms</span><span class="p">(</span><span class="s1">&#39;x == 0 and y == 0 and z == 0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>If we would have included two atoms at (0,0,0), perhaps interdiffusion between Sr and La, these two
+would now be moved together if the functions <code class="docutils literal notranslate"><span class="pre">la_atom.setdx</span></code>, <code class="docutils literal notranslate"><span class="pre">la_atom.setdy</span></code>,``la_atom.setdz`` would be called.
+The same is valid for the occupation <code class="docutils literal notranslate"><span class="pre">oc</span></code> and the Debye-Waller parameter, <code class="docutils literal notranslate"><span class="pre">u</span></code>.</p>
+<p>There are more to this thing with groups as they stand now they are handy but groups can also be added
+together to form super groups. For example I want to have the same Debye-Waller parameter of all oxygen
+in both the <code class="docutils literal notranslate"><span class="pre">stouc</span></code> slab and the <code class="docutils literal notranslate"><span class="pre">laouc</span></code> slab. This could be done with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">all_ox</span> <span class="o">=</span> <span class="n">loauc</span><span class="o">.</span><span class="n">find_atoms</span><span class="p">(</span><span class="s1">&#39;el == &quot;o&quot;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">stouc</span><span class="o">.</span><span class="n">find_atoms</span><span class="p">(</span><span class="s1">&#39;el == &quot;o&quot;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As a parameter in the grid we would choose the function <code class="docutils literal notranslate"><span class="pre">all_ox.setu</span></code> as a parameter.</p>
+<p>Finally as a practical note. It is preferable to use version 2 with brackets(<code class="docutils literal notranslate"><span class="pre">[]</span></code>) if you would like to group
+together atoms by adding them since you will not clutter up the name space with a lot of parameters you will never
+use by assigning variables to each atom.</p>
+</section>
+<section id="composition-coupling">
+<h3>Composition coupling<a class="headerlink" href="#composition-coupling" title="Permalink to this heading">¶</a></h3>
+<p>One common task for coupling atoms together is for fitting compositions instead of occupancies. This is
+especially true for solid-solid interfaces where the total occupancy usually can be considered to be 1.0.
+Lets assume we have a LaAlO/SrTiO interface and we want to fit the composition of the interface layer. First we define
+a interface <code class="docutils literal notranslate"><span class="pre">Slab</span></code> consisting of a mix the two elements.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">slato</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">Slab</span><span class="p">(</span><span class="n">c</span> <span class="o">=</span> <span class="mf">1.05</span><span class="p">)</span>
+<span class="c1"># 5.a Define the atoms</span>
+<span class="n">slato</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;La&#39;</span><span class="p">,</span> <span class="s1">&#39;La&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">slato</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Sr&#39;</span><span class="p">,</span> <span class="s1">&#39;Sr&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">slato</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">slato</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Ti&#39;</span><span class="p">,</span> <span class="s1">&#39;Ti&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">slato</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O1&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">slato</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O2&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>So for creating a composition pair of the Sr and La we type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sl</span> <span class="o">=</span> <span class="n">slato</span><span class="p">[</span><span class="s1">&#39;La&#39;</span><span class="p">]</span><span class="o">|</span><span class="n">slato</span><span class="p">[</span><span class="s1">&#39;Sr&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">AtomGroup</span></code> will now have member functions <code class="docutils literal notranslate"><span class="pre">sl.setcomp</span></code> to set the La composition and <code class="docutils literal notranslate"><span class="pre">sl.setoc</span></code> to set
+the occupancy. Note that the occupancy is calculated as: <code class="docutils literal notranslate"><span class="pre">oc_Sr_</span> <span class="pre">=</span> <span class="pre">(1</span> <span class="pre">-</span> <span class="pre">comp)*oc,</span> <span class="pre">oc_La_</span> <span class="pre">=</span> <span class="pre">comp*oc</span></code>. Per default
+the positions and debye waller parameters are <strong>not</strong> coupled (In this case they will refer to the La atom).
+To do this use the exclusive or operator instead</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sl</span> <span class="o">=</span> <span class="n">slato</span><span class="p">[</span><span class="s1">&#39;La&#39;</span><span class="p">]</span><span class="o">^</span><span class="n">slato</span><span class="p">[</span><span class="s1">&#39;Sr&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>, which couples all parameter through <code class="docutils literal notranslate"><span class="pre">sl</span></code>. The distinction becomes more important if one has more than two
+atoms and do nesting of the operators (assume we have an Y atom as well):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sl</span> <span class="o">=</span> <span class="n">slato</span><span class="p">[</span><span class="s1">&#39;La&#39;</span><span class="p">]</span><span class="o">^</span><span class="n">slato</span><span class="p">[</span><span class="s1">&#39;Sr&#39;</span><span class="p">]</span>
+<span class="n">ysl</span> <span class="o">=</span> <span class="n">slato</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span><span class="o">^</span><span class="n">sl</span>
+</pre></div>
+</div>
+<p>will connect all positional and Debye-Waller parameters together but…</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sl</span> <span class="o">=</span> <span class="n">slato</span><span class="p">[</span><span class="s1">&#39;La&#39;</span><span class="p">]</span><span class="o">^</span><span class="n">slato</span><span class="p">[</span><span class="s1">&#39;Sr&#39;</span><span class="p">]</span>
+<span class="n">ysl</span> <span class="o">=</span> <span class="n">slato</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span><span class="o">|</span><span class="n">sl</span>
+</pre></div>
+</div>
+<p>this will couple the positions of La and Sr but not to the Y. These operators offer a large degree of flexibility
+but they also probably create hard to track error - so they should be used wisely.</p>
+</section>
+</section>
+<section id="general-coupling">
+<h2>General coupling<a class="headerlink" href="#general-coupling" title="Permalink to this heading">¶</a></h2>
+<p>As you probably understand the concept with AtomGroup`s cant take you all the way to complete generality.
+This naturally more complicated but incredibly powerful as _anything_ can be implemented. The class which is
+used a container class for this is called <cite>UserVars</cite>. To use it you have to import it by inserting the following text
+(preferably in the top of the script)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">models.utils</span> <span class="kn">import</span> <span class="n">UserVars</span>
+</pre></div>
+</div>
+<p>Next you create a new object of the class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">=</span> <span class="n">UserVars</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can as many of the objects as possible, a good way to structure your parameters, with as many parameters as
+possible inside. A new parameter is created by calling the method <code class="docutils literal notranslate"><span class="pre">new_var</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="s1">&#39;comp&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now there is a new variable with the name <code class="docutils literal notranslate"><span class="pre">cp.comp</span></code> and it is initialized to have a default value of 0.5. It can
+also be accessed by right clicking on the grid and choose it as a fitting parameter. However, now we have to connect
+the parameter to our sample. Lets assume out model has been extended to include an interdiffused slab between
+the <code class="docutils literal notranslate"><span class="pre">laouc</span></code> and <code class="docutils literal notranslate"><span class="pre">stouc</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 5 Creating an LaAlO3 unit cell - note asymmetric unit cell</span>
+<span class="n">laouc</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">Slab</span><span class="p">(</span><span class="n">c</span> <span class="o">=</span> <span class="mf">1.05</span><span class="p">)</span>
+<span class="c1"># 5.a Define the atoms</span>
+<span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;La&#39;</span><span class="p">,</span> <span class="s1">&#39;la&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="s1">&#39;al&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O1&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">laouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O2&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="c1"># Create an SrTiO3 unit cell</span>
+<span class="n">stouc</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">Slab</span><span class="p">(</span><span class="n">c</span> <span class="o">=</span> <span class="mf">1.05</span><span class="p">)</span>
+<span class="c1"># 5.a Define the atoms</span>
+<span class="n">stouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Sr&#39;</span><span class="p">,</span> <span class="s1">&#39;sr&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">stouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="s1">&#39;al&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">stouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O1&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">stouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O2&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="c1"># Create an interface layer</span>
+<span class="n">lstouc</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">Slab</span><span class="p">(</span><span class="n">c</span> <span class="o">=</span> <span class="mf">1.05</span><span class="p">)</span>
+<span class="c1"># 5.a Define the atoms</span>
+<span class="n">lstouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Sr&#39;</span><span class="p">,</span> <span class="s1">&#39;sr&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">lstouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;La&#39;</span><span class="p">,</span> <span class="s1">&#39;la&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">lstouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="s1">&#39;al&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">lstouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O1&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">lstouc</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s1">&#39;O2&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># 6 Symmetry operations</span>
+<span class="n">p4</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">SymTrans</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="n">model</span><span class="o">.</span><span class="n">SymTrans</span><span class="p">([[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]),</span>
+           <span class="n">model</span><span class="o">.</span><span class="n">SymTrans</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span> <span class="n">model</span><span class="o">.</span><span class="n">SymTrans</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span> <span class="p">]</span>
+
+<span class="c1"># 7 Creating the sample with one unit cell</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="p">[</span><span class="n">stouc</span><span class="p">,</span> <span class="n">lstouc</span><span class="p">,</span> <span class="n">laouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
+
+<span class="c1"># Couple the parameter!</span>
+<span class="c1"># Create the UserVar</span>
+<span class="n">cp</span> <span class="o">=</span> <span class="n">UserVars</span><span class="p">()</span>
+<span class="n">cp</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="s1">&#39;comp&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>So the explicit coupling has to be done <em>within</em> the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function otherwise the coupling will not work
+when you fit it at a later stage. So the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function would change to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 9 Define the Sim function</span>
+<span class="k">def</span> <span class="nf">Sim</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="c1"># Parameter coupling goes before simulation!</span>
+    <span class="n">lstouc</span><span class="o">.</span><span class="n">setSroc</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">cp</span><span class="o">.</span><span class="n">comp</span><span class="p">)</span>
+    <span class="n">lstouc</span><span class="o">.</span><span class="n">setLaoc</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">comp</span><span class="p">)</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1">#9.a loop through the data sets</span>
+    <span class="k">for</span> <span class="n">data_set</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="c1"># 9.b create all the h,k,l values for the rod (data_set)</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">extra_data</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">extra_data</span><span class="p">[</span><span class="s1">&#39;k&#39;</span><span class="p">]</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">data_set</span><span class="o">.</span><span class="n">x</span>
+        <span class="c1"># 9.c. Calculate the struct factor</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">calc_f</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+        <span class="c1"># 9.d Calculate the intensity</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="c1"># 9.e Append the calculated intensity to the list I</span>
+        <span class="n">I</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">I</span>
+</pre></div>
+</div>
+<p>As seen above the different occupancies are set with the help of the cp.comp. Note that the parameter coupling
+is <em>within</em> the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function and <em>before</em> we calculate the rods. Also a good code of conduct is never assign a
+user variable a value from within the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function. This can cause a very erratic behavior when fitting
+(the evaluation depends on its history).</p>
+<p>I hope you have understood that with <code class="docutils literal notranslate"><span class="pre">UserVars</span></code> you can do just about anything. Unfortunately, this will
+also involve a lot of typing and long scripts. If you want to know more about the general philosophy of the
+layout with <code class="docutils literal notranslate"><span class="pre">UserVars</span></code> and the simulation the tutorial about writing models might be good next step
+<a class="reference internal" href="writing_model.html#tutorial-writing-model"><span class="std std-ref">Writing a custom model</span></a>.</p>
+</section>
+<section id="exporting-results">
+<h2>Exporting Results<a class="headerlink" href="#exporting-results" title="Permalink to this heading">¶</a></h2>
+<p>The Sample class allows export of the resulting atom position in the XYZ format.
+The most convenient way to perform this export is to use the <strong>UserFuncs</strong> plugin with the following
+export function in your script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">export_xyz</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">):</span>
+    <span class="n">sample</span><span class="o">.</span><span class="n">export_xyz</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After simulating the “User funcs” menu should show the entry “export_xyz”.
+Activating this menu will open a file selection dialog and the selected file will
+be used to save the XYZ data to.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Surface X-diffraction tutorial</a><ul>
+<li><a class="reference internal" href="#loading-sxrd-data">Loading SXRD data</a></li>
+<li><a class="reference internal" href="#creating-an-sxrd-model">Creating an SXRD model</a></li>
+<li><a class="reference internal" href="#making-a-simulation">Making a simulation</a></li>
+<li><a class="reference internal" href="#adding-more-layers">Adding more layers</a></li>
+<li><a class="reference internal" href="#defining-parameters-to-fit">Defining parameters to fit</a></li>
+<li><a class="reference internal" href="#scaling-the-simulation">Scaling the simulation</a></li>
+<li><a class="reference internal" href="#grouping-atoms">Grouping atoms</a><ul>
+<li><a class="reference internal" href="#basic-usage">Basic usage</a></li>
+<li><a class="reference internal" href="#composition-coupling">Composition coupling</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#general-coupling">General coupling</a></li>
+<li><a class="reference internal" href="#exporting-results">Exporting Results</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="batch_fitting.html"
+                          title="previous chapter">Batch Fitting</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="sxrd2.html"
+                          title="next chapter">Surface X-diffraction Model 2</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/sxrd.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sxrd2.html" title="Surface X-diffraction Model 2"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="batch_fitting.html" title="Batch Fitting"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Surface X-diffraction tutorial</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>

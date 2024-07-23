@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Data classes &#8212; GenX 3.6.21 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to write a Data Loader" href="write_data_loader.html" />
+    <link rel="prev" title="Development documentation" href="../development.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="write_data_loader.html" title="How to write a Data Loader"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../development.html" title="Development documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../development.html" accesskey="U">Development documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Data classes</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="data-classes">
+<span id="development-data"></span><h1>Data classes<a class="headerlink" href="#data-classes" title="Permalink to this heading">¶</a></h1>
+<p>This page will describe how the data is stored in the classes that handles the data. It will not be a complete manual.
+It will only deal with basic functionality which expert users might find handy to know.
+For more information the reader is refereed to data.py in the source tree.</p>
+<p>For storing the data two classes are implemented: The <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> class which contains one data
+set and the <code class="docutils literal notranslate"><span class="pre">DataList</span></code> class which contains several <code class="docutils literal notranslate"><span class="pre">DataSet</span></code>s.</p>
+<section id="datalist">
+<h2>DataList<a class="headerlink" href="#datalist" title="Permalink to this heading">¶</a></h2>
+<p>The major use of the <code class="docutils literal notranslate"><span class="pre">DataList</span></code> is to make ordinary list methods available and at the same time making it possible
+to apply commands to entire data set or subset when working with the data from the GUI. Some of the list
+functionality include:</p>
+<ul>
+<li><p>Extracting one element by list-like access</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">datalist</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p>Using slicing to extract a subset of the <code class="docutils literal notranslate"><span class="pre">datalist</span></code> such as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">subdatalist</span> <span class="o">=</span> <span class="n">datalist</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p>Iterations over the <cite>DataSet`s in the `DataList</cite> such as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">datalist</span><span class="p">:</span>
+    <span class="o">....</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Using the <cite>len</cite> function such as <cite>len(datalist)</cite></p></li>
+</ul>
+</li>
+</ul>
+<p>The rest of the functions for the <cite>DataList</cite> is mainly of interest for GUI programmers and should not
+be necessary to dwell upon here, if you need to know use the source.</p>
+</section>
+<section id="dataset">
+<h2>DataSet<a class="headerlink" href="#dataset" title="Permalink to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> class contains all the information about a certain data set.</p>
+<section id="general-data-handling">
+<h3>General data handling<a class="headerlink" href="#general-data-handling" title="Permalink to this heading">¶</a></h3>
+<p>When data has been loaded into the data class it is loaded into the member variables
+<code class="docutils literal notranslate"><span class="pre">x_raw</span></code>, <code class="docutils literal notranslate"><span class="pre">y_raw</span></code>, <code class="docutils literal notranslate"><span class="pre">error_raw</span></code>, <code class="docutils literal notranslate"><span class="pre">extra_data_raw</span></code> then the commands as defined
+in <code class="docutils literal notranslate"><span class="pre">x_command</span></code>, <code class="docutils literal notranslate"><span class="pre">y_command</span></code>, <code class="docutils literal notranslate"><span class="pre">error_command</span></code>, <code class="docutils literal notranslate"><span class="pre">extra_data_command</span></code> is evaluated and stored in
+the variable names <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">e</span></code> and the keys in the <code class="docutils literal notranslate"><span class="pre">extra_data</span></code> identical to the raw data
+variables. This makes the evaluations of the data calculations/transformations <em>independent</em> of previous
+evaluations. The commands are always on the raw data. The result of these evaluations is then set to the
+member variables <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>, <code class="docutils literal notranslate"><span class="pre">extra_data</span></code>.</p>
+</section>
+<section id="important-members">
+<h3>Important members<a class="headerlink" href="#important-members" title="Permalink to this heading">¶</a></h3>
+<p>The members of the class that could be of interest are:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">x</span></code></dt><dd><p>The x-values after the commands has been executed on the raw data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">y</span></code></dt><dd><p>The y-values after the commands has been executed on the raw data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">error</span></code></dt><dd><p>The error on the y-values after the commands has been executed on the raw data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sim</span></code></dt><dd><p>The simulation of the data as calculated from the <cite>Sim</cite> function in the model.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">extra_data</span></code></dt><dd><p>A <a class="reference external" href="http://docs.python.org/tutorial/datastructures.html#dictionaries">dictionary</a> of the extra data as defined b
+y the data loader plugin. This is also after the commands has been executed on the extra data if it is defined
+to be accessible from the data loader plugin.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">show</span></code></dt><dd><p>A flag, boolean, that defines if the <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> should be visible.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">use</span></code></dt><dd><p>A flag, boolean, that defines if the <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> should be used the FOM calculation.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">use_error</span></code></dt><dd><p>A flag, boolean, that defines if the <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> has errorbars that should be used.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>The name of the <code class="docutils literal notranslate"><span class="pre">DataSet</span></code>. This is a string which can be non-unique.</p>
+</dd>
+</dl>
+<p>There are also a number of member variables that defines plotting:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data_color</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">sim_color</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">data_symbol</span> <span class="o">=</span> <span class="s1">&#39;o&#39;</span>
+<span class="n">data_symbolsize</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">data_linetype</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+<span class="n">data_linethickness</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">sim_symbol</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="n">sim_symbolsize</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">sim_linetype</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+<span class="n">sim_linethickness</span> <span class="o">=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>And also the member variables that contains the raw data values as loaded from file and the commands applied to them.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_raw</span> <span class="o">=</span> <span class="n">array</span><span class="p">([])</span>
+<span class="n">y_raw</span> <span class="o">=</span> <span class="n">array</span><span class="p">([])</span>
+<span class="n">error_raw</span> <span class="o">=</span> <span class="n">array</span><span class="p">([])</span>
+<span class="n">extra_data_raw</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">extra_commands</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">x_command</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span>
+<span class="n">y_command</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span>
+<span class="n">error_command</span> <span class="o">=</span> <span class="s1">&#39;e&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="extra-data">
+<h3>Extra data<a class="headerlink" href="#extra-data" title="Permalink to this heading">¶</a></h3>
+<p>In order to operate on loaded extra_data as ordinary data it has to be added as an item to the
+dictionary extra_command. In doing so it will also be subjected to the same rigorous constraint as the
+<code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code> and <code class="docutils literal notranslate"><span class="pre">error</span></code> values. It has to an array of the same length as all the other and it has
+to possible to use it the commands for the data. Otherwise the data will just be present in
+the extra_data array to use. This can be handy for external conditions that is stored in the data file,
+for example magnetic field, temperature or pressure.</p>
+<p>To create a new <code class="docutils literal notranslate"><span class="pre">extra_data</span></code> instance use the method <code class="docutils literal notranslate"><span class="pre">set_extra_data(self,</span> <span class="pre">name,</span> <span class="pre">value,</span> <span class="pre">command</span> <span class="pre">=</span> <span class="pre">None)</span></code> for
+example to add a temperature variable <code class="docutils literal notranslate"><span class="pre">T</span></code> to the <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> <code class="docutils literal notranslate"><span class="pre">dataset</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">set_extra_data</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you on the other hand want to make it as an additional independent variable</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">set_extra_data</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">command</span> <span class="o">=</span> <span class="s1">&#39;T&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To get extra data you can use the method <code class="docutils literal notranslate"><span class="pre">get_extra_data(self,</span> <span class="pre">name)</span></code>, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_extra_data</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the future there might be an implementation so that the extra dat can be directly accessed as <cite>dataset.T</cite> but that
+will not be implemented right now.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Data classes</a><ul>
+<li><a class="reference internal" href="#datalist">DataList</a></li>
+<li><a class="reference internal" href="#dataset">DataSet</a><ul>
+<li><a class="reference internal" href="#general-data-handling">General data handling</a></li>
+<li><a class="reference internal" href="#important-members">Important members</a></li>
+<li><a class="reference internal" href="#extra-data">Extra data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../development.html"
+                          title="previous chapter">Development documentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="write_data_loader.html"
+                          title="next chapter">How to write a Data Loader</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/development/data.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="write_data_loader.html" title="How to write a Data Loader"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../development.html" title="Development documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../development.html" >Development documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Data classes</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>

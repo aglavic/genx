@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Surface X-diffraction Model 2 &#8212; GenX 3.6.21 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Beta Roughness Model" href="beta_rough.html" />
+    <link rel="prev" title="Surface X-diffraction tutorial" href="sxrd.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beta_rough.html" title="Beta Roughness Model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sxrd.html" title="Surface X-diffraction tutorial"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Surface X-diffraction Model 2</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="surface-x-diffraction-model-2">
+<span id="tutorial-sxrd2"></span><h1>Surface X-diffraction Model 2<a class="headerlink" href="#surface-x-diffraction-model-2" title="Permalink to this heading">¶</a></h1>
+<p>GenX has also an SXRD plugin using the updated model sxrd2 that makes building the model easier in a way
+similar to the reflectivity plugin.</p>
+<p>I’m not an expert on this techynique and how it was initially implemented and used in GenX.
+So this section is just to help users with a few tips. Please feel free to send me your input
+about this chapter.</p>
+<p>An example of the usage of this model and plugin can be found in the examples folder with the model “SXRD2.hgx”,
+which implements the same sample as “SXRD.hgx” but with the new facility.</p>
+<p>To convert existing models from sxrd to sxrd2 you need to make some changes to the script and then load the
+SXRD plugin. (If the script is not correct, the plugin won’t recognize the model correctly.)
+Best you use a text editor and copy the example script from “SXRD2.hgx” to one file and your model to a second file.</p>
+<dl class="simple">
+<dt>The following changes will be needed:</dt><dd><ol class="arabic simple">
+<li><p>Change the import statements in the top of the script</p></li>
+<li><p>Transfer Instrument, UnitCell and Slab objects to the blocks marked with “# BEGIN”/”# END”.
+Make sure that they are defined with keywords (e.g. wavel=…) as in the example.
+(slab.add_atom is also recognized without any keyword)</p></li>
+<li><p>Put the slabs into Domain objects and these into the Sample object. Different from sxrd the sxrd2
+model defines the slabs in the domain and is only one object.</p></li>
+<li><p>Make sure there are “DataSet” blocks for all your imported data in the “Sim” function.</p></li>
+<li><p>If you need to run any user-defined code on the model, place it in the “Sim” function before the first dataset.</p></li>
+</ol>
+</dd>
+</dl>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="sxrd.html"
+                          title="previous chapter">Surface X-diffraction tutorial</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="beta_rough.html"
+                          title="next chapter">Beta Roughness Model</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/sxrd2.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="beta_rough.html" title="Beta Roughness Model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sxrd.html" title="Surface X-diffraction tutorial"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Surface X-diffraction Model 2</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>

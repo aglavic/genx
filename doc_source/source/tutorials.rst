@@ -28,6 +28,7 @@ Reflectivity
    /tutorials/slicing
    /tutorials/sld_display
    /tutorials/batch_fitting
+   /tutorials/orso_integration
 
 Surface x-ray diffraction
 =========================

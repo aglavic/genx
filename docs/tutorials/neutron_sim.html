@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Neutron reflectivity tutorial &#8212; GenX 3.6.21 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Neutron reflectivity video tutorials" href="neutron_fit.html" />
+    <link rel="prev" title="Fitting of x-ray reflectivity data" href="xrr_fitting.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="neutron_fit.html" title="Neutron reflectivity video tutorials"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="xrr_fitting.html" title="Fitting of x-ray reflectivity data"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neutron reflectivity tutorial</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="neutron-reflectivity-tutorial">
+<span id="tutorial-neutron-sim"></span><h1>Neutron reflectivity tutorial<a class="headerlink" href="#neutron-reflectivity-tutorial" title="Permalink to this heading">¶</a></h1>
+<section id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h2>
+<p>Start by opening GenX. If necessary, load the Reflectivity plugin by going to the menu
+<span class="menuselection">Settings‣Plugins‣Load‣Reflectivity</span>.
+Two new tabs will appear in the lower right section of the window, Sample and
+Simulations. This is where we will define our sample later.</p>
+</section>
+<section id="creating-a-sample">
+<h2>Creating a sample<a class="headerlink" href="#creating-a-sample" title="Permalink to this heading">¶</a></h2>
+<p>Time to create the sample! Click on the Sample tab to get up our main working area at the moment. Next, create a
+new model by clicking on the new model button on the main toolbar (1). This will bring up a dialog window (2).
+Choose the spec_nx model, this includes neutron simulations.</p>
+<img alt="../_images/neutrons1_1.jpg" src="../_images/neutrons1_1.jpg" />
+<section id="making-a-substrate">
+<h3>Making a substrate<a class="headerlink" href="#making-a-substrate" title="Permalink to this heading">¶</a></h3>
+<p>So now we have the right model to simulate neutron reflectivity. The first step is to define a substrate.
+Double click on the substrate line in the list in the Sample tab, see below. This will pop up a dialog for
+feeding in numbers that defines the substrate layer. Put in the same numbers as the ones below. Note that the <code class="docutils literal notranslate"><span class="pre">b</span></code>
+box should say: <code class="docutils literal notranslate"><span class="pre">bc.Mg</span> <span class="pre">+</span> <span class="pre">bc.O</span></code> and in the <code class="docutils literal notranslate"><span class="pre">f</span></code> box should be <code class="docutils literal notranslate"><span class="pre">fp.Mg</span> <span class="pre">+</span> <span class="pre">fp.O</span></code></p>
+<img alt="../_images/neutrons1_2.jpg" src="../_images/neutrons1_2.jpg" />
+<p>So what does all this mean? Here is a short explanations</p>
+<ul class="simple">
+<li><dl class="field-list simple">
+<dt class="field-odd">b<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The neutron scattering length per formula unit in fm (fermi meter = 1e-15m)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">d<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">f<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The x-ray scattering length per formula unit in electrons. To be strict it is the number of Thompson
+scattering lengths for each formula unit.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">dens<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The density of formula units in units per Angstroms. Note the units!</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">magn_ang<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The angle of the magnetic moment in degres. 0 degrees correspond to a moment collinear with the neutron spin.
+(Only used in <em>neutron pol spin flip</em> calculations.)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">magn<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The magnetic moment per formula unit (same formula unit as <em>b</em> and <em>dens</em> refer to)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">sigma<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The root mean square roughness of the top interface of the layer in Angstroms.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="doing-a-simulation">
+<h2>Doing a simulation<a class="headerlink" href="#doing-a-simulation" title="Permalink to this heading">¶</a></h2>
+<section id="making-artificial-data">
+<h3>Making artificial data<a class="headerlink" href="#making-artificial-data" title="Permalink to this heading">¶</a></h3>
+<p>First we have make some x-data (q values) so we need what to simulate. Mark <em>Data 0</em> in the Data tab. Next,
+click on the calculator above it to the right. This gives a dialog box. Choose the alternative: Simulation in the
+Import from, Predefined choice box. Edit it so it looks like the picture below. Click OK.</p>
+<img alt="../_images/neutrons1_3.jpg" src="../_images/neutrons1_3.jpg" />
+</section>
+<section id="defining-the-instrument">
+<h3>Defining the instrument<a class="headerlink" href="#defining-the-instrument" title="Permalink to this heading">¶</a></h3>
+<p>Now we have to tell the program what we mean with the data we have given it. Click on the instrument icon in
+the Sample tab (1). This gives the following dialog. Change the probe to neutron and coords to q. That is enough for
+now. Click Ok.</p>
+<img alt="../_images/neutrons1_4.jpg" src="../_images/neutrons1_4.jpg" />
+</section>
+<section id="simulation">
+<h3>Simulation<a class="headerlink" href="#simulation" title="Permalink to this heading">¶</a></h3>
+<p>Press the simulation button! (The big lightning in the main toolbar). This should produce something like this:</p>
+<img alt="../_images/neutrons1_5.jpg" src="../_images/neutrons1_5.jpg" />
+<p>Okay, we have a total reflectivity edge. If the result is shown in linear scale, change the plot to log scale instead.
+Do this by going to the menu <span class="menuselection">View‣y-scale‣log</span>.
+So mission completed we have the first neutron simulation. Next step is to make a more
+complicated model and include polarized neutrons.</p>
+</section>
+</section>
+<section id="adding-layers">
+<h2>Adding Layers<a class="headerlink" href="#adding-layers" title="Permalink to this heading">¶</a></h2>
+<p>Just simulating the reflectivity of a single substrate is not very fun. So, lets add another layer.
+Why not a magnetic, so we can play around with polarized neutron reflectivity? Before we start adding layers we have
+to add a stack which will contain the layers. So Add a stack by clicking on the second toolbar button in the sample
+tab (The one with a stack of layers and a plus). Name it to Lays for example (In the popup dialog). Now we
+can add a layer (First button with one layer and a plus), call it Fe for example. Look on the screenshot below
+for the parameters.</p>
+<img alt="../_images/neutrons1_6.jpg" src="../_images/neutrons1_6.jpg" />
+<p>Click on the simulate button again and have look at some Kiessig fringes.</p>
+</section>
+<section id="polarized-neutron-reflectivity">
+<h2>Polarized Neutron Reflectivity<a class="headerlink" href="#polarized-neutron-reflectivity" title="Permalink to this heading">¶</a></h2>
+<p>Lets start the polarized neutron reflectivity by turning the polarization on in the calculations. Go to the
+instrument again and choose probe: <em>neutron pol</em>. At the same have look at the values for the pol parameter. That is
+the polarization state of the instrument: <code class="docutils literal notranslate"><span class="pre">uu</span></code>, <code class="docutils literal notranslate"><span class="pre">dd</span></code> or <code class="docutils literal notranslate"><span class="pre">ud</span></code>. The last one is only valid for
+spin-flip calculations. Press the <em>insert</em> button at the top left to add a second instrument that we can
+call <em>spin_down</em>. Here we choose equal parameters but a polarization state of <code class="docutils literal notranslate"><span class="pre">dd</span></code> instead of <code class="docutils literal notranslate"><span class="pre">uu</span></code>.
+Simulate again and observe the change in the curve on the screen.</p>
+<img alt="../_images/neutrons1_7.jpg" src="../_images/neutrons1_7.jpg" />
+<p>To see both polarization states at the same time, we have to add a second simulation dataset, first.</p>
+<p>If an advanced polarization analysis experiment with determination of polarization parameters was
+carried out it is possible to include the non-perfect polarization in modeling with the spin-flip
+instrument probe parameter.
+You should create user parameters for the p1, p2, F1 and F2 polarization parameters as defined in
+<a class="reference external" href="https://doi.org/10.1063/1.1150060">https://doi.org/10.1063/1.1150060</a> . Then go to the <strong>Simulations</strong> tab and double click on the
+simulation line for a dataset.
+There you can select <strong>PolSpecular</strong> instead of <strong>Specular</strong> and enter the user parameters
+in the correct value columns.
+(You can also just enter the values directly, but this can be time consuming for multiple datasets.)</p>
+<img alt="../_images/neutrons1_7a.jpg" src="../_images/neutrons1_7a.jpg" />
+<section id="adding-a-new-data-set">
+<h3>Adding a new data set<a class="headerlink" href="#adding-a-new-data-set" title="Permalink to this heading">¶</a></h3>
+<p>Add a new data set by clicking on the Add data button, the green cross above the data list. Clicking on that gives a
+new data set: Data 1. Mark it and click on the calculator again. Now instead of typing all that we had to the last time
+we import the calculations from Data 0. Click on the choice box at the top right and choose Data 0. The
+calculations are imported. Click on Ok.</p>
+<p>Next, choose different plot colors for the second dataset by clicking the <em>Plot settings</em> button in the data
+toolbar and choose differnt options for the simulation (here we chose green with 4px data points).
+Perhaps the names are not so exciting, Data 0 and Data 1. They can be renamed by a slow double click on the
+name in data tab. Perhaps <em>spin-up</em> and <em>spin-down</em> is more appropriate.</p>
+<p>Now we have to define to use the second instrument for calculations with the new dataset. Go to the simulation
+tab and double click on the line with <em>Data 1</em>. Select <em>inst_down</em> as <em>Instrument</em> from the drop down selection:</p>
+<img alt="../_images/neutrons1_8.jpg" src="../_images/neutrons1_8.jpg" />
+<p>If you now simulate the data again, you should get a graph that show the splitting from the magnetic
+contrast in the iron layer:</p>
+<img alt="../_images/neutrons1_9.jpg" src="../_images/neutrons1_9.jpg" />
+</section>
+</section>
+<section id="finishing-off">
+<h2>Finishing off<a class="headerlink" href="#finishing-off" title="Permalink to this heading">¶</a></h2>
+<p>You can, of course, do other things and not only spin polarized calculations. Perhaps simulating the x-ray reflectivity
+of the same sample? Just remember that the wavelength has to set as well as the probe. I guess that you can think of a
+couple other uses.</p>
+<p>For information on fitting a model to data or coupling of fit parameters, have a look at the <a class="reference internal" href="xrr_fitting.html#tutorial-xrr-fitting"><span class="std std-ref">Fitting of x-ray reflectivity data</span></a>.
+For simple models as the one described in this tutorial, the <a class="reference internal" href="simple_reflectivity.html#tutorial-simple-reflectivity"><span class="std std-ref">Simple Reflectivity Model (XRR/NR)</span></a> can be an
+alternative with a much simpler user interface.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Neutron reflectivity tutorial</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+<li><a class="reference internal" href="#creating-a-sample">Creating a sample</a><ul>
+<li><a class="reference internal" href="#making-a-substrate">Making a substrate</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#doing-a-simulation">Doing a simulation</a><ul>
+<li><a class="reference internal" href="#making-artificial-data">Making artificial data</a></li>
+<li><a class="reference internal" href="#defining-the-instrument">Defining the instrument</a></li>
+<li><a class="reference internal" href="#simulation">Simulation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#adding-layers">Adding Layers</a></li>
+<li><a class="reference internal" href="#polarized-neutron-reflectivity">Polarized Neutron Reflectivity</a><ul>
+<li><a class="reference internal" href="#adding-a-new-data-set">Adding a new data set</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#finishing-off">Finishing off</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="xrr_fitting.html"
+                          title="previous chapter">Fitting of x-ray reflectivity data</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="neutron_fit.html"
+                          title="next chapter">Neutron reflectivity video tutorials</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/neutron_sim.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="neutron_fit.html" title="Neutron reflectivity video tutorials"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="xrr_fitting.html" title="Fitting of x-ray reflectivity data"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neutron reflectivity tutorial</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>
