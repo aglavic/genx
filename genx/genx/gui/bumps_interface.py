@@ -308,7 +308,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         ax.set_ylabel(self.draw.labels[rel_max[0]])
         self.plot_panel.flush_plot()
 
-        # add analysis data do model for later storange in export header
+        # add analysis data to model for later storage in export header
         exdict = {}
         exdict['library'] = 'bumps'
         exdict['version'] = bumps_version
@@ -332,7 +332,8 @@ class StatisticalAnalysisDialog(wx.Dialog):
             dxpm = array([-res.dx, res.dx]).T*scl
         else:
             dxpm = res.dxpm*scl
-        error_labels = ['(%.3e, %.3e)'%(dxup, dxdown) for dxup, dxdown in dxpm]
+        reverse_sort = [sort_indices.index(i) for i in range(len(sort_indices))]
+        error_labels = ['(%.3e, %.3e)'%(dxup, dxdown) for dxup, dxdown in dxpm[reverse_sort]]
         self.model.parameters.set_error_pars(error_labels)
 
     def OnToggleNormalize(self, evt):
@@ -371,7 +372,8 @@ class StatisticalAnalysisDialog(wx.Dialog):
             dxpm = array([-res.dx, res.dx]).T*scl
         else:
             dxpm = res.dxpm*scl
-        error_labels = ['(%.3e, %.3e)'%(dxup, dxdown) for dxup, dxdown in dxpm]
+        reverse_sort = [sort_indices.index(i) for i in range(len(sort_indices))]
+        error_labels = ['(%.3e, %.3e)'%(dxup, dxdown) for dxup, dxdown in dxpm[reverse_sort]]
         self.model.parameters.set_error_pars(error_labels)
 
         if self.normalize_checkbox.IsChecked():

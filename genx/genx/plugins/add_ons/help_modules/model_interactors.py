@@ -2101,14 +2101,14 @@ class DomainWidget(wx.ScrolledWindow):
         pen.SetColour(wx.WHITE)
         dc.SetPen(pen)
         x_pos=x_start-x_orig
-        dc.DrawRectangle(x_pos, y_start-y_orig, max_width, max_height)
+        dc.DrawRectangle(int(x_pos), int(y_start-y_orig), int(max_width), int(max_height))
         pen.SetColour('GREY')
         dc.SetPen(pen)
         brush=wx.Brush(wx.WHITE, style=wx.BRUSHSTYLE_TRANSPARENT)
         # Drawing the line for the bulk slab
         dc.SetPen(wx.Pen('GREY', style=wx.PENSTYLE_DOT))
         y=(col_height+y_padding)*(max_slabs+1)+y_padding/2.0-y_padding/4.-y_orig
-        dc.DrawLine(x_pos, y, x_pos+max_width, y)
+        dc.DrawLine(int(x_pos), int(y), int(x_pos+max_width), int(y))
 
         sel_brush=wx.Brush(self.select_colour, style=wx.BRUSHSTYLE_SOLID)
         sel_pen=wx.Pen(wx.WHITE, style=wx.PENSTYLE_TRANSPARENT)
@@ -2120,19 +2120,19 @@ class DomainWidget(wx.ScrolledWindow):
             self.list_rects.append([])
             j=len(domain.slabs)
             for slab_name in reversed([domain.bulk_slab]+domain.slabs):
-                rect=wx.Rect(x_pos+x_padding/4., y_pos+y_padding/4.,
-                             col_width-x_padding/2., col_height+y_padding/2.)
-                sel_rect=wx.Rect(x_pos, y_pos-y_padding/4.0,
-                                 col_width, col_height+y_padding)
+                rect=wx.Rect(int(x_pos+x_padding/4.), int(y_pos+y_padding/4.),
+                             int(col_width-x_padding/2.), int(col_height+y_padding/2.))
+                sel_rect=wx.Rect(int(x_pos), int(y_pos-y_padding/4.0),
+                                 int(col_width), int(col_height+y_padding))
                 if self.selected_item[0]==i and self.selected_item[1]==j:
                     # render.DrawItemSelectionRect(self, dc, sel_rect, wx.CONTROL_SELECTED)
                     dc.SetBrush(sel_brush)
                     dc.SetPen(sel_pen)
-                    dc.DrawRectangle(sel_rect.X, sel_rect.Y, sel_rect.Width, sel_rect.Height)
+                    dc.DrawRectangle(int(sel_rect.X), int(sel_rect.Y), int(sel_rect.Width), int(sel_rect.Height))
                 dc.SetPen(pen)
                 dc.SetBrush(brush)
-                dc.DrawRectangle(rect.X, rect.Y, rect.Width, rect.Height)
-                dc.DrawText(slab_name, x_pos+x_padding//2, y_pos)
+                dc.DrawRectangle(int(rect.X), int(rect.Y), int(rect.Width), int(rect.Height))
+                dc.DrawText(slab_name, int(x_pos+x_padding/2), int(y_pos))
                 self.list_rects[-1].append(rect)
                 y_pos+=col_height+y_padding
                 j-=1

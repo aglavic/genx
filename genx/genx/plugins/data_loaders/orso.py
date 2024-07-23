@@ -9,14 +9,15 @@ See https://www.reflectometry.org/working_groups/file_formats/ for more details
 
 import numpy as np
 import re
+import h5py
 
 from typing import List
 from ..data_loader_framework import Template
 from ..utils import ShowWarningDialog
-from orsopy.fileio import load_orso, OrsoDataset
+from orsopy.fileio import load_orso, load_nexus, OrsoDataset
 
 class Plugin(Template):
-    wildcard='*.ort'
+    wildcard='*.ort;*.orb;*.nxs;*.h5;*.hdf'
     _cached_file = ''
     _cached_data: List[OrsoDataset] = None
 
@@ -33,14 +34,21 @@ class Plugin(Template):
     def CanOpen(self, file_path):
         if not Template.CanOpen(self, file_path):
             return False
-        l1=open(file_path, 'r', encoding='utf-8').readline()
-        return l1.startswith('# # ORSO')
+        if file_path.endswith('.orb') or file_path.endswith('.nxs') or file_path.endswith('.h5') or file_path.endswith(
+                '.hdf'):
+            return h5py.is_hdf5(file_path)
+        else:
+            l1=open(file_path, 'r', encoding='utf-8').readline()
+            return l1.startswith('# # ORSO')
 
     def LoadCached(self, file_path):
         if self._cached_file==file_path:
             return self._cached_data
         else:
-            orso_datasets = load_orso(file_path)
+            if file_path.endswith('.orb') or file_path.endswith('.nxs') or file_path.endswith('.h5') or file_path.endswith('.hdf'):
+                orso_datasets = load_nexus(file_path)
+            else:
+                orso_datasets = load_orso(file_path)
             self._cached_file=file_path
             self._cached_data=orso_datasets
             return orso_datasets

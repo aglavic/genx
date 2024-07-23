@@ -3,7 +3,7 @@ Module to handle different cases of exceptions in the user interface.
 """
 
 import traceback
-from logging import debug, warning, error
+from logging import debug, warning, error, Handler, Formatter, CRITICAL, LogRecord
 
 import wx
 
@@ -85,3 +85,37 @@ class CatchModelError:
             result=dlg.ShowModal()
         dlg.Destroy()
 
+class GuiExceptionHandler(Handler):
+    app: wx.App
+    show_dialog = True
+
+    def __init__(self, app, level=CRITICAL):
+        Handler.__init__(self, level=level)
+        self.app=app
+
+    def emit(self, record: LogRecord):
+        if not self.show_dialog:
+            return
+        title = "GenX - Unhandled Python Error"
+        message = f"GenX encountered an unexpected error.\n{record.exc_info[0].__name__}: {record.exc_info[1]}"
+        ext_message = f"{record.exc_text}"
+        ext_message += "\n\nYou can suppress any future warnings by choosing 'Cancel' to close this window."
+        full_trace = f"{record.exc_text}"
+
+        self.display_message(title, message, ext_message, full_trace)
+
+    def display_message(self, title, message, ext_message, full_trace, icon_style=wx.ICON_ERROR):
+        style=wx.OK|wx.CANCEL|wx.HELP
+        dlg = wx.MessageDialog(self.app.GetTopWindow(), message, title, style|icon_style)
+        dlg.SetExtendedMessage(ext_message)
+        dlg.SetHelpLabel('Copy to Clipboard')
+
+        result=dlg.ShowModal()
+        while result==wx.ID_HELP:
+            if wx.TheClipboard.Open():
+                wx.TheClipboard.SetData(wx.TextDataObject(full_trace))
+                wx.TheClipboard.Close()
+            result=dlg.ShowModal()
+        if result==wx.ID_CANCEL:
+            self.show_dialog = False
+        dlg.Destroy()

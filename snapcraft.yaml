@@ -18,7 +18,7 @@ description: |
   
   Naturally a program does not become better if I do not get feedback from you! 
   If you found a bug or want to have something included in the program submit a ticket on SourceForge at https://sourceforge.net/p/genx/tickets/ .
-base: core20
+base: core22
 confinement: strict
 grade: stable
 
@@ -31,29 +31,31 @@ parts:
     source: ./genx
     python-packages:
       - wheel
-      - numpy<1.21
+      - numpy < 2
+      - numba
       - bumps
       - vtk
-      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.0-cp38-cp38-linux_x86_64.whl
+      - pymysql
+      - requests
+      - pint
+      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04/wxPython-4.2.1-cp310-cp310-linux_x86_64.whl
       - svgwrite
-    #build-packages:
-      #- python3-pip
-      #- python3-wheel
+#    build-packages:
+#      - python3-wxgtk4.0
+#      - python3-pip
+#      - python3-wheel
     stage-packages:
+      - python3-minimal
+      - python3.10-minimal
+      - python3-wxgtk4.0
       - libsdl2-2.0-0
-      - libegl1
-      - libxtst6
-      - libgstreamer1.0-0
-      - libgstreamer-plugins-base1.0-0
-      - libjavascriptcoregtk-4.0-18
-      - libwebkit2gtk-4.0-37
-      - libpsm2-2-compat
-      - libgomp1-amd64-cross
-      - libsm6
-      - libtbb2
-    after: [desktop-gnome-platform]
+      - libglx-mesa0
+      - libcolord2
+      - libdconf1
+      - libicu70
+      - libwxgtk3.0-gtk3-0v5
     override-pull: |
-      snapcraftctl pull
+      craftctl default
       mkdir repo
       cd repo
       git clone --bare https://github.com/aglavic/genx.git .
@@ -61,39 +63,21 @@ parts:
       cd ..
       rm -rf repo 
  
-  desktop-gnome-platform:
-    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-    source-subdir: gtk
-    plugin: make
-    make-parameters: ["FLAVOR=gtk3"]
-    build-packages:
-      - gcc
-    override-build: |
-      snapcraftctl build
-      mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
-
-#  snapcraft-preload:
-#    source: https://github.com/diddledan/snapcraft-preload.git
-#    source-branch: semaphore-support
-#    plugin: cmake
-#    build-packages:
-#      - gcc-multilib
-#      - g++-multilib
 
 
 apps:
   genx:
-    command: bin/desktop-launch $SNAP/bin/genx
-    plugs: [desktop, x11, audio-playback, desktop-legacy, unity7, network, home, gsettings, opengl]
+    command: bin/genx
+    extensions: [gnome]
+    plugs: [desktop, wayland, x11, unity7, audio-playback, desktop-legacy, network, home, gsettings, opengl, mount-observe]
     environment:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
+      PYTHONPATH: $SNAP/lib/python3.10/site-packages
 
 plugs:
-  gnome-3-38-2004:
-    interface: content
-    target: $SNAP/gnome-platform
-    default-provider: gnome-3-38-2004
+  desktop:
+    mount-host-font-cache: false
   gtk-3-themes:
     interface: content
     target: $SNAP/data-dir/themes
@@ -106,4 +90,9 @@ plugs:
     interface: content
     target: $SNAP/data-dir/sounds
     default-provider: gtk-common-themes
-      
+  gnome-42-2204:
+    interface: content
+    target: $SNAP/gnome-platform
+    default-provider: gnome-42-2204
+  shared-memory:
+    private: true

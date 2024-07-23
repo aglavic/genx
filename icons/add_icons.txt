@@ -1,0 +1,5 @@
+To add new icons to GenX use:
+
+$ img2py -n new_icon -a -f new_icon.png ..\..\genx\genx\gui\images.py
+
+If Wx complains about duplicate eXif data, first open the image with Gimp to export without EXIF information.

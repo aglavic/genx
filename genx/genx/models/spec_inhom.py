@@ -181,8 +181,9 @@ Instrument
     The measured polarization of the instrument. Valid options are:
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
 '''
+import numpy as np
+
 from copy import deepcopy
-from numpy import *
 from scipy.special import wofz
 from . import spec_nx
 from .lib.sm_hayter_mook import sm_layers
@@ -236,8 +237,11 @@ def Specular(TwoThetaQz, sample, instrument):
     global __xlabel__
 
     Q, TwoThetaQz, weight=spec_nx.resolution_init(TwoThetaQz, instrument)
-    if any(Q<q_limit):
-        raise ValueError('The q vector has to be above %.1e'%q_limit)
+    # often an issue with resolution etc. so just replace Q values < q_limit
+    # if any(Q < q_limit):
+    #    raise ValueError('The q vector has to be above %.1e, please verify all your x-axis points fulfill this criterion, including possible resolution smearing.'%q_limit)
+    Q = np.maximum(Q, q_limit)
+
     restype=instrument.getRestype()
     foottype=instrument.getFootype()
     Ibkg=instrument.getIbkg()
@@ -250,7 +254,7 @@ def Specular(TwoThetaQz, sample, instrument):
     d0=[array([Layer.getD() for Layer in Stack.Layers]) for Stack in sample.Stacks]
     sigma_d=sample.getSigma_inhom()*0.01  # Inhomogeniety in \% (gamma for type 2)
     lorentz_scale=sample.getLscale_inhom()
-    flat_width=maximum(1e-4, sample.getFlatwidth_inhom()*0.01)
+    flat_width=np.maximum(1e-4, sample.getFlatwidth_inhom()*0.01)
     type_inhom=sample.getType_inhom()
     # Define the thicknesses to calculate and their propability
     if type_inhom in sample_string_choices['type_inhom']:
@@ -359,7 +363,7 @@ def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
 
     P = get_pol_matrix(p1, p2, F1, F2)
     Pline = P[POL_CHANNELS.index(instrument.pol)]
-    I = Pline[:, newaxis] * vstack([uu, ud, du, dd])
+    I = Pline[:, newaxis] * np.vstack([uu, ud, du, dd])
     return I.sum(axis=0)
 
 SLD_calculations=spec_nx.SLD_calculations

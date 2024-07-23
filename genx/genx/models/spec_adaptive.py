@@ -67,7 +67,7 @@ Stack
 
 Sample
 ~~~~~~
-``Sample(Stacks = [], Ambient = Layer(), Substrate = Layer(), minimal_steps=0.5, max_diff_n=0.01, max_diff_x=0.01, smoothen=0)``
+``Sample(Stacks = [], Ambient = Layer(), Substrate = Layer(), minimal_steps=0.5, max_diff_n=0.01, max_diff_x=0.01, smoothen=0, crop_sigma=0)``
 
 ``Stacks``
    A ``list`` consiting of ``Stack``\ s in the stacks the first item is
@@ -90,6 +90,10 @@ Sample
 ``smoothen``
    Default is to not use any roughness for the segmentation. If set to 1 this will add roughnesses between all
    segments to make the curve more smooth.
+``crop_sigma``
+   For cases where roughness of an interface is in the order of layer thickness will limit the extent
+   of roughness to the neighboring interfaces to avoid strange SLD profiles.
+   Note: This means that the sigma parameter strictly is not an actual rms roughness anymore.
 
 Instrument
 ~~~~~~~~~~
@@ -152,9 +156,8 @@ Instrument
     The measured polarization of the instrument. Valid options are:
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
 '''
-from copy import deepcopy
-from numpy import *
-from scipy.special import wofz
+import numpy as np
+
 from . import spec_nx
 from .spec_nx import refl
 from .lib.instrument import *
@@ -180,7 +183,7 @@ LayerGroups=[('Standard', ['f', 'dens', 'd', 'sigma']),
 StackParameters={'Layers': [], 'Repetitions': 1, 'Element': 0}
 SampleParameters=spec_nx.SampleParameters.copy()
 SampleParameters.update({'minimal_steps': 0.5, 'max_diff_n': 0.01,
-                         'max_diff_x': 0.01, 'smoothen': 0})
+                         'max_diff_x': 0.01, 'smoothen': 0, 'crop_sigma': 0})
 sample_string_choices={}
 
 AA_to_eV=spec_nx.AA_to_eV
@@ -235,6 +238,7 @@ def calculate_segmentation(sample):
     magn_ang=array(parameters['magn_ang'], dtype=float64)/180.*pi
     magn_void=array(parameters['magn_void'], dtype=float64)
 
+    crop_sigma = sample.crop_sigma
     sld_x=dens*f
     sld_n=dens*b
     sld_xs=dens*xs_ai
@@ -252,15 +256,40 @@ def calculate_segmentation(sample):
     sigma_n=array(parameters['sigma'], dtype=float64)[:-1]+1e-7
     sigma_m=array(parameters['sigma_mag'], dtype=float64)[:-1]+1e-7
     z=arange(-sigma_n[0]*5, int_pos.max()+sigma_n[-1]*5, sample.minimal_steps/5.0)
-    # interface transition functions
+    # interface transition functions, products for different per-layer rough_type cases
+    # Gaussian (starts at 1 goes to 0, interface is at 0.5)
     trans_n=(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma_n))*(rough_type==0)
+    # Linear
     trans_n+=maximum(0., minimum(1., (1.+(int_pos-z[:, newaxis])/2./sigma_n)/2.))*(rough_type==1)
+    # Exponential decrease or increase
     trans_n+=maximum(0., minimum(1., exp((int_pos-z[:, newaxis])/sigma_n)))*(rough_type==2)
     trans_n+=maximum(0., minimum(1., 1.-exp((z[:, newaxis]-int_pos)/sigma_n)))*(rough_type==3)
     trans_m=(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma_m))*(rough_type==0)
     trans_m+=maximum(0., minimum(1., (1.+(int_pos-z[:, newaxis])/2./sigma_m)/2.))*(rough_type==1)
     trans_m+=maximum(0., minimum(1., exp((int_pos-z[:, newaxis])/sigma_m)))*(rough_type==2)
     trans_m+=maximum(0., minimum(1., 1.-exp((z[:, newaxis]-int_pos)/sigma_m)))*(rough_type==3)
+    if crop_sigma:
+        # Cop the roughness tails above and below the interface to avoid overspill.
+        # This is done by introducing a split-location within a layer where the
+        # influence of that layers roughness function is faded out with an error function.
+        # The location of the split is defined by the ratio of adjacent roughness values.
+        # I.e. the split is closer to the interface that has lower roughness.
+
+        # sigma ratio -1 to 1
+        sratio = (sigma_n[1:]-sigma_n[:-1])/(sigma_n[1:]+sigma_n[:-1])
+        # location of split relative to bottom interface
+        delta_pos = (0.5+0.5*sratio)*d
+        sigma_pos = (1.0-abs(sratio))*d/2.0
+        # the fade out function applied to the interface from below and above located within a layer
+        interface = (0.5-0.5*erf((z[:, newaxis]-int_pos[1:]+delta_pos)*sqrt(2.)/sigma_pos))
+
+        # Fade out roughness influence close to top and bottom split location
+        trans_n[:, 0] = trans_n[:, 0]*interface[:, 0]
+        trans_n[:, 1:-1] = interface[:, :-1]+(1.-interface[:, :-1])*trans_n[:, 1:-1]*interface[:, 1:]
+        trans_n[:, -1] = interface[:, -1]+(1.-interface[:, -1])*trans_n[:, -1]
+        trans_m[:, 0] = trans_m[:, 0]*interface[:, 0]
+        trans_m[:, 1:-1] = interface[:, :-1]+(1.-interface[:, :-1])*trans_m[:, 1:-1]*interface[:, 1:]
+        trans_m[:, -1] = interface[:, -1]+(1.-interface[:, -1])*trans_m[:, -1]
     # SLD calculations
     rho_x=sum((sld_x[:-1]-sld_x[1:])*trans_n, 1)+sld_x[-1]
     rho_n=sum((sld_n[:-1]-sld_n[1:])*trans_n, 1)+sld_n[-1]

@@ -402,6 +402,12 @@ def compile_numba(cache_dir=None):
 def main():
     multiprocessing.freeze_support()
     multiprocessing.set_start_method('spawn')
+    if os.path.abspath(__file__).startswith('/snap'):
+        # try fix multiprocessing in SNAP
+        snap_sem = '/snap.genx.mp'
+        multiprocessing.current_process()._config['semprefix'] = snap_sem
+    else:
+        snap_sem = None
     # Attempt to load mpi:
     try:
         from mpi4py import MPI
@@ -475,6 +481,8 @@ def main():
     if rank>0:
         custom_logging.CONSOLE_LEVEL = logging.WARNING
     setup_system()
+    if snap_sem:
+        logging.debug(f"Multiprocessing was setup with semprefix for SNAP to {snap_sem}")
 
     if args.logfile:
         if __mpi__:

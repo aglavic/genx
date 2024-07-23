@@ -13,7 +13,7 @@ from matplotlib.backends import backend_wx
 from matplotlib import backend_bases
 from matplotlib.figure import Figure
 
-from numpy import *
+from numpy import array, isfinite, sign, newaxis, c_, ma, hstack, arange, floor
 import wx
 import wx.lib.newevent
 from wx import PAPER_A4, LANDSCAPE

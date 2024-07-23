@@ -1,4 +1,4 @@
-from numpy import *
+from numpy import pi, float64, complex128
 from numba import cuda
 import numba
 import math, cmath

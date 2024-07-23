@@ -97,6 +97,11 @@ class Plugin(Template):
                 dataset.x_command = '2*x'
             else:
                 dataset.x_command = 'x'
+            if load_array.shape[1]>2 and self.get_from_header(header, ['hw', 'r', 'attenuater', 'automode']) == 1:
+                # measurement uses attenuators
+                dataset.set_extra_data('atten', load_array[:,2])
+                dataset.y_command = 'y*atten'
+                dataset.error_command = 'e*atten'
             # Run the commands on the data - this also sets the x,y, error memebers
             # of that data item.
             dataset.run_command()

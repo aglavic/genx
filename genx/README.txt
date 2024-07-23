@@ -11,6 +11,60 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.26
+==============
+ * Add documentation tutorial about ORSO file integration.
+ * Update of SNAP builde system, should allow use with Waylend and fix some other minor issues.
+ * Update of Windows build libraries for additional functionality.
+ * Add debian build for newer Ubuntu versions (22.04 / 24.04). See documentation for installation details.
+ * Add a GUI dialog when critical python errors occure that required console/logging to be noticed before.
+ * Fix incompatibility with numpy 2.x due to bool/numpy.bool confusion.
+
+Changes 3.6.25
+==============
+ * Fix bug in MagSLD where magnetization was reported 10x too high in graph (see Ticket #205).
+ * Fix inconsistent behavor for x-values <=0 (see Ticket #201).
+
+Changes 3.6.24
+==============
+ * Add compatibility to ORSO binary format.
+ * Export ORSO simple model language description of GenX simulation in ORT export.
+ * Accept ORSO datasets for new models using drag-n-drop.
+ * Fix ORSO export for current orsopy version.
+
+Changes 3.6.23
+==============
+ * Fix plot style dialog not working on newer version of WX.
+ * Fix handling of some chemical formulae.
+ * Fix issue when closing the GUI through the menu.
+
+Changes 3.6.22
+==============
+ * Fix a bug with the update code for newer urllib3 versions (see PR #5, thanks to azelcer)
+ * Upgrade windows build to python 3.11 and recent libraries.
+
+Changes 3.6.21
+==============
+ * Add data loader for nja XRR file format.
+ * Add pint and latest orsopy to binary distributions to allow for better parsing of .ort metadata.
+ * Fix the Bumps error dialog filling the wrong error ranges into the parameter grid.
+ * Fix a multiprocessing logger related bug that crashes the program under certain circumstances.
+
+Changes 3.6.20
+==============
+ * Fix Rigaku data loader to include attenuation factors.
+
+Changes 3.6.19
+==============
+ * Introduce crop_sigma sample option to spec_adaptive model that allows to limit the
+   influence of the interface transition function within the adjacent layers.
+   Thanks to Rico Ehrler for the suggestion.
+
+Changes 3.6.18
+==============
+ * Update gsecars_ctr data loader to detect additional columns by first header line
+ * Some minor fixes for wxPython 4.2.0 and newer numba
+
 Changes 3.6.17
 ==============
  * Use single numba cache directory for any GenX executable, speeding up program start 

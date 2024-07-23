@@ -25,6 +25,10 @@ a = Analysis(['scripts\\genx'],
                             'scipy.special.cython_special', 'xml.dom.minidom',
                             'docutils.parsers.null', 'genx.plugins.add_ons.LayerGraphics',
                             'genx.gui.plotpanel', 'genx.gui.plotpanel_wx'],
+             hooksconfig={
+                 "matplotlib": {
+                     "backends": "WxAgg",
+                     },},
              hookspath=[],
              runtime_hooks=[],
              excludes=['PyQt5', ],

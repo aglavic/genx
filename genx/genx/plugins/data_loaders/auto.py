@@ -15,10 +15,14 @@ from .default import Plugin as DefaultPlugin
 from .amor import Plugin as AmorPlugin
 from .sns_mr import Plugin as SNSPlugin
 from .d17_cosmos import Plugin as D17Plugin
-from .orso import Plugin as ORSOPlugin
+try:
+    from .orso import Plugin as ORSOPlugin
+except ImportError:
+    ORSOPlugin=None
 from .xrdml import Plugin as XRDMLPlugin
 from .sinq_six import Plugin as SIXPlugin
 from .rigaku import Plugin as RASPlugin
+from .seifert_nja import Plugin as NJAPlugin
 
 class Plugin(ResolutionPlugin, DefaultPlugin):
     """
@@ -32,8 +36,10 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
     def __init__(self, parent):
         ResolutionPlugin.__init__(self, parent)
         self.res_col=-1
-        self.loaders=[AmorPlugin(None), SNSPlugin(None), D17Plugin(None), ORSOPlugin(None),
-                      SIXPlugin(None), XRDMLPlugin(None), RASPlugin(None)]
+        self.loaders=[AmorPlugin(None), SNSPlugin(None), D17Plugin(None)]
+        if ORSOPlugin:
+            self.loaders.append(ORSOPlugin(None))
+        self.loaders+=[SIXPlugin(None), XRDMLPlugin(None), RASPlugin(None), NJAPlugin(None)]
         self.wildcard=";".join([li.wildcard for li in self.loaders])
 
     def CountDatasets(self, file_path):

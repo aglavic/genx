@@ -1,17 +1,24 @@
-''' <h1>gsecars ctr data loader </h1>
+'''
+==============================
+:mod:`gsecars_ctr` data loader
+==============================
+
 Loads the data from whitespace seperated column formatted ascii data files.
 It is intended for surface x-ray diffraction data where the data sets consists
 of rod scans along the l-direction (perpendicular to the surface). The plugin
 sorts each rod with equal h and k values into one data sets. The l-direction 
-is also sorted. <p>
-The default columns are the following:<br>
-1st column h values; 2nd column k values; 3rd values l values;
-4th column Intensites; 5th column The standard deviation of the intensities;
-6th column L of first Bragg peak, 7th column L spacing of Bragg peaks
- The other settings are just as in the default data loader.<p>
+is also sorted.
 
-The h,k values is stored as extra data in data.extra_data dictonary as
-h and k. 
+The default columns are the following:
+* 1st column h values; 2nd column k values; 3rd values l values;
+* 4th column Intensites; 5th column The standard deviation of the intensities;
+* 6th column L of first Bragg peak, 7th column L spacing of Bragg peaks
+ The other settings are just as in the default data loader.
+
+The h,k values is stored as extra data in data.extra_data dictonary as h and k.
+
+If the file contains a first headerline with column titles it is used
+to populate the extra_data with these columns automatically.
 '''
 
 import numpy as np
@@ -30,6 +37,8 @@ except ImportError:
     wx.Dialog=void
 
 class Plugin(Template):
+    REQUIRED_COLUMNS=['h', 'k', 'l', 'f', 'ferr']
+
     def __init__(self, parent):
         Template.__init__(self, parent)
         self.h_col=0
@@ -56,6 +65,26 @@ class Plugin(Template):
                               filename+' \nPlease check the format.\n\n numpy.loadtxt' \
                               +' gave the following error:\n'+str(e))
         else:
+            l1 = open(filename, 'r').readline().strip()
+            if l1.startswith('#'):
+                header_cols = l1.strip('#').strip().split()
+                hc_lower = [c.lower() for c in header_cols]
+                if all([c in  hc_lower for c in self.REQUIRED_COLUMNS]):
+                    # all necessary columns in header line, overwrite default columns
+                    self.h_col = hc_lower.index('h')
+                    self.k_col = hc_lower.index('k')
+                    self.l_col = hc_lower.index('l')
+                    self.I_col = hc_lower.index('f')
+                    self.eI_col = hc_lower.index('ferr')
+                    self.LB_col = 0
+                    self.dL_col = 0
+                    extra_columns={}
+                    for i, col in enumerate(header_cols):
+                        if col.lower() in self.REQUIRED_COLUMNS:
+                            continue
+                        extra_columns[col] = i
+            else:
+                extra_columns = {'LB': self.LB_col, 'dL': self.dL_col}
             # For the freak case of only one data point
             if len(load_array.shape)<2:
                 load_array=np.array([load_array])
@@ -76,10 +105,9 @@ class Plugin(Template):
                 load_array[:, self.h_col].round().astype(type(1)),
                 load_array[:, self.k_col].round().astype(type(1)),
                 load_array[:, self.l_col], load_array[:, self.I_col],
-                load_array[:, self.eI_col],
-                load_array[:, self.LB_col], load_array[:, self.dL_col]
-                ],
-                names='h, k, l, I, eI, LB, dL')
+                load_array[:, self.eI_col]]+
+                [load_array[:, idx] for idx in extra_columns.values()],
+                names=','.join(['h', 'k', 'l', 'I', 'eI']+list(extra_columns.keys())))
             # Sort the data
             data.sort(order=('h', 'k', 'l'))
             i=0
@@ -94,10 +122,12 @@ class Plugin(Template):
                 # Run the commands on the data - this also sets the x,y, error memebers
                 # of that data item.
                 self.data[-1].run_command()
+
+                # add all extra columns
                 self.data[-1].set_extra_data('h', tmp['h'], 'h')
                 self.data[-1].set_extra_data('k', tmp['k'], 'k')
-                self.data[-1].set_extra_data('LB', tmp['LB'], 'LB')
-                self.data[-1].set_extra_data('dL', tmp['dL'], 'dL')
+                for key in extra_columns.keys():
+                    self.data[-1].set_extra_data(key, tmp[key], key)
                 # Increase the index
                 i+=len(tmp)
 
@@ -161,7 +191,7 @@ class SettingsDialog(wx.Dialog):
             self.col_controls[name]=control
 
         col_box_sizer.Add(col_grid, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        box_sizer.Add(col_box_sizer, 0, wx.ALIGN_CENTRE | wx.ALL | wx.EXPAND, 5)
+        box_sizer.Add(col_box_sizer, 0, wx.ALL | wx.EXPAND, 5)
 
         col_box=wx.StaticBox(self, -1, "Misc")
         col_box_sizer=wx.StaticBoxSizer(col_box, wx.VERTICAL)
@@ -190,7 +220,7 @@ class SettingsDialog(wx.Dialog):
             self.misc_controls[name]=control
 
         col_box_sizer.Add(col_grid, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
-        box_sizer.Add(col_box_sizer, 0, wx.ALIGN_CENTRE | wx.ALL | wx.EXPAND, 5)
+        box_sizer.Add(col_box_sizer, 0, wx.ALL | wx.EXPAND, 5)
 
         button_sizer=wx.StdDialogButtonSizer()
         okay_button=wx.Button(self, wx.ID_OK)

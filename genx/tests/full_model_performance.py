@@ -7,7 +7,7 @@ from genx.models.lib import paratt_numba, neutron_numba, paratt_cuda, neutron_cu
 
 import genx.models.spec_nx as model
 from genx.models.utils import UserVars, fp, fw, bc, bw
-from numpy import *
+from numpy import sqrt, linspace, pi
 
 # BEGIN Instrument DO NOT CHANGE
 inst = model.Instrument(footype = 'gauss beam',probe = 'neutron pol spin flip',beamw = 0.2,resintrange = 3,tthoff = 0.0,

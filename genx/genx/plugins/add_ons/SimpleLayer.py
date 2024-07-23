@@ -24,7 +24,10 @@ from abc import ABC, abstractmethod
 
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from math import cos, pi, sqrt
-from orsopy.slddb import api
+try:
+    from orsopy.slddb import api
+except ImportError:
+    api=None
 
 from ...gui import images as img
 from .. import add_on_framework as framework
@@ -402,9 +405,10 @@ class MaterialDialog(wx.Dialog):
         cif_button.Bind(wx.EVT_BUTTON, self.OnLoadCif)
         table.Add(cif_button, (8, 1), span=(2, 2), flag=wx.ALIGN_CENTER)
 
-        mg_button = wx.Button(self, label="Query ORSO SLD db")
-        mg_button.Bind(wx.EVT_BUTTON, self.OnSLDDBQuery)
-        table.Add(mg_button, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
+        if api:
+            mg_button = wx.Button(self, label="Query ORSO SLD db")
+            mg_button.Bind(wx.EVT_BUTTON, self.OnSLDDBQuery)
+            table.Add(mg_button, (10, 0), span=(1, 3), flag=wx.ALIGN_CENTER)
 
         global pymysql
         if pymysql is None:
@@ -567,8 +571,8 @@ class MaterialDialog(wx.Dialog):
                   'authors,title,journal,year,'
                   'formula,calcformula'
                   ' from data where formula like "- %s -"'
-                  ' and method != "theoretical"'
-                  ' and status is NULL order by file'%formula)
+                  ' and (method is NULL or method != "theoretical")'
+                  ' order by file'%formula)
         res=c.fetchall()
         if len(res)>0:
             # more then one structure available, ask for user input to select appropriate

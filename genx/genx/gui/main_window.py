@@ -12,9 +12,9 @@ import _thread
 import time
 import tempfile
 import subprocess
+import logging
 from logging import debug, info, warning
 from dataclasses import dataclass
-from enum import Enum
 from typing import List
 from copy import deepcopy
 
@@ -27,7 +27,7 @@ from wx.lib.wordwrap import wordwrap
 
 from .custom_events import *
 from . import custom_ids, datalist, help, images as img, parametergrid, solvergui, pubgraph_dialog
-from .exception_handling import CatchModelError
+from .exception_handling import CatchModelError, GuiExceptionHandler
 from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
 from .online_update import check_version, VersionInfoDialog
 from .batch_dialog import BatchDialog
@@ -289,6 +289,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mfmb = self.main_frame_menubar
         mb_file = wx.Menu()
         mb_file.Append(custom_ids.MenuId.NEW_MODEL, "New...\tCtrl+N", "Creates a new model")
+        mb_file.Append(custom_ids.MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N",
+                         "Creates a new reflectivity model based on datafile")
         mb_file.Append(custom_ids.MenuId.OPEN_MODEL, "Open...\tCtrl+O", "Opens an existing model")
         mb_file.Append(custom_ids.MenuId.SAVE_MODEL, "Save...\tCtrl+S", "Saves the current model")
         mb_file.Append(custom_ids.MenuId.SAVE_MODEL_AS, "Save As...", "Saves the active model with a new name")
@@ -296,15 +298,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.Append(custom_ids.MenuId.MODEL_BATCH, "Batch dialog...", "Run sequencial refinements of many datasets")
         mb_file.AppendSeparator()
         mb_import = wx.Menu()
-        mb_import.Append(custom_ids.MenuId.NEW_FROM_FILE, "New from file...\tCtrl+Shift+N",
-                         "Creates a new reflectivity model based on datafile")
         mb_import.Append(custom_ids.MenuId.IMPORT_DATA, "Import Data...\tCtrl+D", "Import data to the active data set")
         mb_import.Append(custom_ids.MenuId.IMPORT_TABLE, "Import Table...", "Import a table from an ASCII file")
         mb_import.Append(custom_ids.MenuId.IMPORT_SCRIPT, "Import Script...", "Import a python model script")
         mb_file.Append(wx.ID_ANY, "Import", mb_import, "")
         mb_export = wx.Menu()
-        mb_export.Append(custom_ids.MenuId.EXPORT_ORSO, "Export ORT (beta)...",
-                         "Export data and header in ORSO compatible ASCII format")
+        mb_export.Append(custom_ids.MenuId.EXPORT_ORSO, "Export ORSO...",
+                         "Export data and header in ORSO compatible text format (*.ort)")
         mb_export.Append(custom_ids.MenuId.EXPORT_DATA, "Export Data...", "Export data in ASCII format")
         mb_export.Append(custom_ids.MenuId.EXPORT_TABLE, "Export Table...", "Export table to an ASCII file")
         mb_export.Append(custom_ids.MenuId.EXPORT_SCRIPT, "Export Script...", "Export the script to a python file")
@@ -508,10 +508,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                                         wx.Bitmap(img.getnewImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "New model | Ctrl+N",
                                         "Create a new model | Ctrl+N")
-        # self.main_frame_toolbar.AddTool(custom_ids.ToolId.NEW_FROM_FILE, "tb_new_from_file",
-        #                                 wx.Bitmap(img.getnew_from_fileImage().Scale(tb_bmp_size, tb_bmp_size)),
-        #                                 wx.NullBitmap, wx.ITEM_NORMAL, "New from file | Ctrl+Shift+N",
-        #                                 "Create a new reflectivity model based on datafile | Ctrl+Shift+N")
+        self.main_frame_toolbar.AddTool(custom_ids.ToolId.NEW_FROM_FILE, "tb_new_from_file",
+                                        wx.Bitmap(img.getnew_orsoImage().Scale(tb_bmp_size, tb_bmp_size)),
+                                        wx.NullBitmap, wx.ITEM_NORMAL, "New from file | Ctrl+Shift+N",
+                                        "Create a new reflectivity model based on datafile | Ctrl+Shift+N")
         self.main_frame_toolbar.AddTool(custom_ids.ToolId.OPEN_MODEL, "tb_open",
                                         wx.Bitmap(img.getopenImage().Scale(tb_bmp_size, tb_bmp_size)),
                                         wx.NullBitmap, wx.ITEM_NORMAL, "Open | Ctrl+O",
@@ -551,7 +551,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def bind_toolbar(self):
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=custom_ids.ToolId.NEW_MODEL)
-        # self.Bind(wx.EVT_TOOL, self.eh_tb_new_from_file, id=custom_ids.ToolId.NEW_FROM_FILE)
+        self.Bind(wx.EVT_TOOL, self.eh_tb_new_from_file, id=custom_ids.ToolId.NEW_FROM_FILE)
         self.Bind(wx.EVT_TOOL, self.eh_tb_open, id=custom_ids.ToolId.OPEN_MODEL)
         self.Bind(wx.EVT_TOOL, self.eh_tb_save, id=custom_ids.ToolId.SAVE_MODEL)
         self.Bind(wx.EVT_COMBOBOX, self.eh_tb_select_solver, id=custom_ids.ToolId.SOLVER_SELECT)
@@ -997,7 +997,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             [p.ReadConfig() for p in self.get_pages() if hasattr(p, 'ReadConfig')]
         with self.catch_error(action='open_model', step=f'loading config for parameter grid'):
             self.paramter_grid.ReadConfig()
-            self.mb_checkables[custom_ids.MenuId.TOGGLE_SLIDER].Check(self.paramter_grid.GetValueEditorSlider())
+            self.mb_checkables[custom_ids.MenuId.TOGGLE_SLIDER].Check(bool(self.paramter_grid.GetValueEditorSlider()))
         debug('open_model: update plugins')
         with self.catch_error(action='open_model', step=f'processing plugins'):
             self.plugin_control.OnOpenModel(None)
@@ -1248,7 +1248,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 return
 
         dlg = wx.FileDialog(self, message="New from file", defaultFile="",
-                            wildcard="Suppoerted types (*.ort)|*.ort",
+                            wildcard="Suppoerted types (*.ort/*.orb)|*.ort;*.orb",
                             style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_CHANGE_DIR
                             )
         if dlg.ShowModal()==wx.ID_OK:
@@ -1421,12 +1421,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Quit the program
         '''
         # Check so the model is saved before quitting
-        if event.CanVeto() and not self.model_control.saved:
+        if (not isinstance(event, wx.CloseEvent) or event.CanVeto()) and not self.model_control.saved:
             # stop window from closing if canceled
             ans = ShowQuestionDialog(self, 'If you continue any changes in your model will not be saved.',
                                      'Model not saved')
             if not ans:
-                event.Veto()
+                if isinstance(event, wx.CloseEvent):
+                    event.Veto()
                 return
 
         self.opt.hsize, self.opt.vsize = self.GetSize()
@@ -1539,8 +1540,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         '''
         Show an about box about GenX with some info...
         '''
-        import numpy, scipy, matplotlib, platform, orsopy
+        import numpy, scipy, matplotlib, platform
         useful = ''
+        try:
+            import orsopy
+            useful += 'ORSOpy: %s, '%orsopy.__version__
+        except ImportError:
+            pass
         try:
             # noinspection PyUnresolvedReferences
             import numba
@@ -1572,11 +1578,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             "\n\nConfiguration files stored in %s"%config_path
 
             +"\n\nThe versions of the mandatory libraries are:\n"
-             "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s, orsopy: %s"
+             "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
              "\n\nThe non-mandatory but useful packages:\n%s"
              ""%(platform.python_version(), wx.__version__,
                  numpy.__version__, scipy.__version__,
-                 matplotlib.__version__, orsopy.__version__,
+                 matplotlib.__version__,
                  useful),
             500, wx.ClientDC(self)))
         info_dilog.WebSite = (homepage_url, "GenX homepage")
@@ -1789,7 +1795,6 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         elif event.xscale=='linear':
             self.mb_checkables[custom_ids.MenuId.X_SCALE_LIN].Check(True)
         self.mb_checkables[custom_ids.MenuId.AUTO_SCALE].Check(event.autoscale)
-
     def eh_tb_calc_error_bars(self, event):
         '''
         callback to calculate the error bars on the data.
@@ -2180,6 +2185,16 @@ class GenxFileDropTarget(wx.FileDropTarget):
                     return False
             self.parent.open_model(model_file)
             return True
+        if model_file.lower().endswith('.ort') or model_file.lower().endswith('.orb'):
+            # Check so the model is saved before quitting
+            if not self.parent.model_control.saved:
+                ans = ShowQuestionDialog(self.parent,
+                                         'If you continue any changes in your model will not be saved.',
+                                         'Model not saved')
+                if not ans:
+                    return False
+            self.parent.new_from_file(filenames)
+            return True
         return False
 
 
@@ -2194,6 +2209,13 @@ class GenxApp(wx.App):
         if hasattr(wx, 'OSX_FILEDIALOG_ALWAYS_SHOW_TYPES'):
             wx.SystemOptions.SetOption(wx.OSX_FILEDIALOG_ALWAYS_SHOW_TYPES, 1)
         debug('App init complete')
+
+    def ConnectExceptionHandler(self):
+        """
+        Create a custom logging handler that opens a message dialog on critical (unhandled) exceptions.
+        """
+        self._exception_handler = GuiExceptionHandler(self)
+        logging.getLogger().addHandler(self._exception_handler)
 
     def ShowSplash(self):
         debug('Display Splash Screen')
@@ -2231,6 +2253,7 @@ class GenxApp(wx.App):
             locale = wx.Locale(wx.LANGUAGE_ENGLISH_US)
             self.locale = locale
             self._first_init = False
+        self.ConnectExceptionHandler()
         self.ShowSplash()
         debug('entering init phase')
 

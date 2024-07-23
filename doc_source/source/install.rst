@@ -20,7 +20,10 @@ trouble with this distribution you can try installing from source. (And create a
 
 Install the required python 3 packages, especially wxPython. I would advice using a new Anaconda environment.
 Afterwards you can install GenX from source. The anaconda environment packages that are known to work can be found in
-`conda_build.yml <https://raw.githubusercontent.com/aglavic/genx/master/genx/mac_build/conda_build.yml>`_
+`conda_build.yml <https://raw.githubusercontent.com/aglavic/genx/v3.6.14/genx/mac_build/conda_build.yml>`_
+
+For the latest verion of wxPython the PyPI installation is possible, too. So system python3 with pip should be
+sufficent to install all requirements.
 
 Linux
 =====
@@ -29,10 +32,25 @@ Install the requirements, at least wxPython, from your package manager (Ubuntu `
 Then either install from source or, if you are using Ubuntu or a derivative, you can use the pre build .deb packages
 for your system python version.
 
+.. note::
+    For compatibility with Ubuntu 24.04 the python3-numba package will no longer be installed automatically.
+    I highly recommend installing it manually as it has significant impact on simulation performance.
+
+As an example, installation in Ubuntu 24.04 could look like this:
+
+.. code-block:: bash
+
+    sudo apt update
+    wget https://github.com/aglavic/genx/releases/download/v3.6.26/GenX-3.6.26_py312.deb
+    sudo dpkg -i GenX-3.6.26_py312.deb
+    sudo apt -f install
+    sudo apt install python3-pip
+    python3 -m pip install --break-system-packages numba pint orsopy svgwrite pymysql bumps
+
 Snap
 ----
 
-The most convenient way to install GenX on Linux is the `new snap package <https://snapcraft.io/genx>`_.
+The most convenient way to install GenX on Linux is the `snap package <https://snapcraft.io/genx>`_.
 It ships all requirements and should work on any distribution where the snap package management tool is installed.
 (e.g. all Ubuntu derivatives have it pre-installed)
 See https://snapcraft.io/docs/installing-snapd for instructions how to install snapd on your distribution.
@@ -43,10 +61,14 @@ To install via snap use:
 
     sudo snap install genx
 
-While convenient, the snap package currently has the limitation that using parallel processing during fit
-is not supported as the strict confinement does not work with the python multiprocessing library.
-The multi-core parallelization provided by numba JIT compilation is still available so that
-the impact on actual fit performance is relatively small for non-trivial models.
+The encapsulation of snap packages means, that they are more compatible over various Linux distros but sometimes
+limit functionality. For the most part this could be circumvented in my tests. There is currently one know limitation
+when using GenX installed through snap via X11-forwarding over SSH. In this case, it is possible to work around the
+display accesss error by creating a manual link via:
+
+.. code-block:: bash
+
+    ln -s ~/.Xauthority ~/snap/genx/current/.Xauthority
 
 .. _install_cluster:
 
@@ -151,20 +173,24 @@ Requirements
 
 The needed dependencies are:
 
-* Python >= 3.6
-* wxPython version > 4.0
+* Python >= 3.6 (recommend >= 3.8)
+* wxPython version > 4.0  (recommend >= 4.1)
 * Numpy version > 1.0
 * Scipy version > 0.5
 * Matplotlib version > 0.9
 * appdirs version > 1.2
 * h5py
-* orsopy
+* orsopy >= 1.2.0
 
 The non-mandotary packages are
 
 * mpi4py (with an MPI installation)
 * numba (calculation speedup by Just In Time compiler)
 * vtk (graphical display of unit cells)
+* svgwrite (for graphical image showing the layring - LayerGraphics plugin)
+* pint (support in orsopy conversion of units)
+* pymysql (access of crystallography open database for SLD - SimpleLayer plugin
+* bumps (statistical analysis and alternative refinement method)
 
 On a Linux system these packages can usually be installed through the package manager. On a windows and OSX systems the
 anaconda distribution contains all packages.

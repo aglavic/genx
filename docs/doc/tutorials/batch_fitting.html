@@ -1,24 +1,25 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Batch Fitting &#8212; GenX 3.6.12 documentation</title>
+    <title>Batch Fitting &#8212; GenX 3.6.26 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Surface X-diffraction tutorial" href="sxrd.html" />
+    <link rel="next" title="ORSO Integration" href="orso_integration.html" />
     <link rel="prev" title="The SLD graph" href="sld_display.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -31,12 +32,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sxrd.html" title="Surface X-diffraction tutorial"
+          <a href="orso_integration.html" title="ORSO Integration"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="sld_display.html" title="The SLD graph"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Batch Fitting</a></li> 
       </ul>
@@ -48,13 +49,13 @@
           <div class="body" role="main">
             
   <section id="batch-fitting">
-<span id="tutorial-batch-fitting"></span><h1>Batch Fitting<a class="headerlink" href="#batch-fitting" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-batch-fitting"></span><h1>Batch Fitting<a class="headerlink" href="#batch-fitting" title="Permalink to this heading">¶</a></h1>
 <p>While GenX allowed fitting sequences of data by loading datafiles through the command line for a long time
 the version 3.6.1 introduced a GUI interface for convenient fitting of a large number of datasets.
 This is useful, for example, if the same sample or type of sample has been measured under different conditions
 like temperature or magnetic field.</p>
 <section id="build-the-model">
-<h2>Build the model<a class="headerlink" href="#build-the-model" title="Permalink to this headline">¶</a></h2>
+<h2>Build the model<a class="headerlink" href="#build-the-model" title="Permalink to this heading">¶</a></h2>
 <p>For this example you should create a neutron reflectivity model similar to <a class="reference internal" href="neutron_sim.html#tutorial-neutron-sim"><span class="std std-ref">Neutron reflectivity tutorial</span></a> with
 a <strong>Si</strong> substrate and around 1300 Å <strong>SiO</strong>. You can also load the example <code class="docutils literal notranslate"><span class="pre">SuperAdam_SiO.hgx</span></code> directly.</p>
 <p>Download the example sequence of datafiles in <a class="reference download internal" download="" href="../_downloads/55be9e71b8fb1a3f8246450874d0da7a/SiO_sequence.zip"><code class="xref download docutils literal notranslate"><span class="pre">SiO_sequence.zip</span></code></a>
@@ -67,7 +68,7 @@ the SiO thickness and density:</p>
 <img alt="../_images/first_fit.png" src="../_images/first_fit.png" />
 </section>
 <section id="generate-a-batch-sequence">
-<h2>Generate a batch sequence<a class="headerlink" href="#generate-a-batch-sequence" title="Permalink to this headline">¶</a></h2>
+<h2>Generate a batch sequence<a class="headerlink" href="#generate-a-batch-sequence" title="Permalink to this heading">¶</a></h2>
 <p>Now you should open the batch dialog through the menu <span class="menuselection">File‣Batch dialog…</span>.
 The dialog should show without any entries. Click on <strong>Import Data…</strong> and select all the extracted filed.
 This should import 100 files and generate a list with filenames and batch index:</p>
@@ -82,7 +83,7 @@ Only number values are allowed:</p>
 <img alt="../_images/select_metadata.png" src="../_images/select_metadata.png" />
 </section>
 <section id="fit-the-batch-sequence">
-<h2>Fit the batch sequence<a class="headerlink" href="#fit-the-batch-sequence" title="Permalink to this headline">¶</a></h2>
+<h2>Fit the batch sequence<a class="headerlink" href="#fit-the-batch-sequence" title="Permalink to this heading">¶</a></h2>
 <p>Before starting the fit, make sure the optimizer parameters in <span class="menuselection">Settings‣Optimizer</span> are correct
 for a performant refinement and define adequat breaking conditions. It is advisable to fit one of the
 datasets to see how large to set the size of <strong>Max. Generations</strong> and possibly to define a
@@ -105,7 +106,7 @@ during a single fit for better convergence.</p>
 </div>
 </section>
 <section id="final-remarks">
-<h2>Final remarks<a class="headerlink" href="#final-remarks" title="Permalink to this headline">¶</a></h2>
+<h2>Final remarks<a class="headerlink" href="#final-remarks" title="Permalink to this heading">¶</a></h2>
 <p>The given data sequence should result in a flat density and thickness variation in the shape of a parabola:</p>
 <img alt="../_images/result.png" src="../_images/result.png" />
 <p>The table with the batch and fit parameters can be copied using <strong>ctrl+C</strong> and then pasted in a text file
@@ -131,8 +132,9 @@ All batch datasts are stored in the .hgx file and can later be reviewd.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Batch Fitting</a><ul>
 <li><a class="reference internal" href="#build-the-model">Build the model</a></li>
 <li><a class="reference internal" href="#generate-a-batch-sequence">Generate a batch sequence</a></li>
@@ -142,12 +144,17 @@ All batch datasts are stored in the .hgx file and can later be reviewd.</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="sld_display.html"
-                        title="previous chapter">The SLD graph</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="sxrd.html"
-                        title="next chapter">Surface X-diffraction tutorial</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="sld_display.html"
+                          title="previous chapter">The SLD graph</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="orso_integration.html"
+                          title="next chapter">ORSO Integration</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -164,7 +171,7 @@ All batch datasts are stored in the .hgx file and can later be reviewd.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -179,19 +186,19 @@ All batch datasts are stored in the .hgx file and can later be reviewd.</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sxrd.html" title="Surface X-diffraction tutorial"
+          <a href="orso_integration.html" title="ORSO Integration"
              >next</a> |</li>
         <li class="right" >
           <a href="sld_display.html" title="The SLD graph"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Batch Fitting</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

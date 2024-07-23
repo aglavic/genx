@@ -4,7 +4,7 @@ Helper module to support ORSO file header information to build reflectivity mode
 
 from dataclasses import dataclass
 from copy import deepcopy
-from typing import List, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 from orsopy import fileio
 
@@ -40,10 +40,9 @@ class LayerModel:
 class OrsoHeaderAnalyzer:
     header: fileio.Orso
     instrument: InstrumentInformation
-    layer_model: LayerModel
+    layer_model: Optional[LayerModel] = None
 
     def __init__(self, meta):
-        self.instrument = None
         self.model = None
         meta = deepcopy(meta)
         self.header = fileio.Orso(**meta)
@@ -81,7 +80,10 @@ class OrsoHeaderAnalyzer:
         else:
             # not officially ORSO confirm
             coords = '2θ'
-        wavelength = float(self.instrument_settings.wavelength.as_unit('angstrom') or 1.54)
+        try:
+            wavelength = float(self.instrument_settings.wavelength.as_unit('angstrom'))
+        except Exception:
+            wavelength = 1.54
         if not isinstance(wavelength, float):
             # in case wavelength is a ValueRange (ToF)
             wavelength = 1.0

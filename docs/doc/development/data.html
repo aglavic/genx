@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Data classes &#8212; GenX 3.6.12 documentation</title>
+    <title>Data classes &#8212; GenX 3.6.26 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
@@ -36,7 +37,7 @@
         <li class="right" >
           <a href="../development.html" title="Development documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" accesskey="U">Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Data classes</a></li> 
       </ul>
@@ -48,14 +49,14 @@
           <div class="body" role="main">
             
   <section id="data-classes">
-<span id="development-data"></span><h1>Data classes<a class="headerlink" href="#data-classes" title="Permalink to this headline">¶</a></h1>
+<span id="development-data"></span><h1>Data classes<a class="headerlink" href="#data-classes" title="Permalink to this heading">¶</a></h1>
 <p>This page will describe how the data is stored in the classes that handles the data. It will not be a complete manual.
 It will only deal with basic functionality which expert users might find handy to know.
 For more information the reader is refereed to data.py in the source tree.</p>
 <p>For storing the data two classes are implemented: The <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> class which contains one data
 set and the <code class="docutils literal notranslate"><span class="pre">DataList</span></code> class which contains several <code class="docutils literal notranslate"><span class="pre">DataSet</span></code>s.</p>
 <section id="datalist">
-<h2>DataList<a class="headerlink" href="#datalist" title="Permalink to this headline">¶</a></h2>
+<h2>DataList<a class="headerlink" href="#datalist" title="Permalink to this heading">¶</a></h2>
 <p>The major use of the <code class="docutils literal notranslate"><span class="pre">DataList</span></code> is to make ordinary list methods available and at the same time making it possible
 to apply commands to entire data set or subset when working with the data from the GUI. Some of the list
 functionality include:</p>
@@ -84,10 +85,10 @@ functionality include:</p>
 be necessary to dwell upon here, if you need to know use the source.</p>
 </section>
 <section id="dataset">
-<h2>DataSet<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<h2>DataSet<a class="headerlink" href="#dataset" title="Permalink to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">DataSet</span></code> class contains all the information about a certain data set.</p>
 <section id="general-data-handling">
-<h3>General data handling<a class="headerlink" href="#general-data-handling" title="Permalink to this headline">¶</a></h3>
+<h3>General data handling<a class="headerlink" href="#general-data-handling" title="Permalink to this heading">¶</a></h3>
 <p>When data has been loaded into the data class it is loaded into the member variables
 <code class="docutils literal notranslate"><span class="pre">x_raw</span></code>, <code class="docutils literal notranslate"><span class="pre">y_raw</span></code>, <code class="docutils literal notranslate"><span class="pre">error_raw</span></code>, <code class="docutils literal notranslate"><span class="pre">extra_data_raw</span></code> then the commands as defined
 in <code class="docutils literal notranslate"><span class="pre">x_command</span></code>, <code class="docutils literal notranslate"><span class="pre">y_command</span></code>, <code class="docutils literal notranslate"><span class="pre">error_command</span></code>, <code class="docutils literal notranslate"><span class="pre">extra_data_command</span></code> is evaluated and stored in
@@ -97,7 +98,7 @@ evaluations. The commands are always on the raw data. The result of these evalua
 member variables <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>, <code class="docutils literal notranslate"><span class="pre">extra_data</span></code>.</p>
 </section>
 <section id="important-members">
-<h3>Important members<a class="headerlink" href="#important-members" title="Permalink to this headline">¶</a></h3>
+<h3>Important members<a class="headerlink" href="#important-members" title="Permalink to this heading">¶</a></h3>
 <p>The members of the class that could be of interest are:</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">x</span></code></dt><dd><p>The x-values after the commands has been executed on the raw data.</p>
@@ -148,7 +149,7 @@ to be accessible from the data loader plugin.</p>
 </div>
 </section>
 <section id="extra-data">
-<h3>Extra data<a class="headerlink" href="#extra-data" title="Permalink to this headline">¶</a></h3>
+<h3>Extra data<a class="headerlink" href="#extra-data" title="Permalink to this heading">¶</a></h3>
 <p>In order to operate on loaded extra_data as ordinary data it has to be added as an item to the
 dictionary extra_command. In doing so it will also be subjected to the same rigorous constraint as the
 <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code> and <code class="docutils literal notranslate"><span class="pre">error</span></code> values. It has to an array of the same length as all the other and it has
@@ -184,8 +185,9 @@ will not be implemented right now.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Data classes</a><ul>
 <li><a class="reference internal" href="#datalist">DataList</a></li>
 <li><a class="reference internal" href="#dataset">DataSet</a><ul>
@@ -198,12 +200,17 @@ will not be implemented right now.</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../development.html"
-                        title="previous chapter">Development documentation</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="write_data_loader.html"
-                        title="next chapter">How to write a Data Loader</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../development.html"
+                          title="previous chapter">Development documentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="write_data_loader.html"
+                          title="next chapter">How to write a Data Loader</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -220,7 +227,7 @@ will not be implemented right now.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -240,14 +247,14 @@ will not be implemented right now.</p>
         <li class="right" >
           <a href="../development.html" title="Development documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" >Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Data classes</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

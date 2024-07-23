@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Model analystical functions by slicing &#8212; GenX 3.6.12 documentation</title>
+    <title>Model analytical functions by slicing &#8212; GenX 3.6.26 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -37,9 +38,9 @@
         <li class="right" >
           <a href="neutron_fit.html" title="Neutron reflectivity video tutorials"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Model analystical functions by slicing</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Model analytical functions by slicing</a></li> 
       </ul>
     </div>  
 
@@ -48,10 +49,10 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="model-analystical-functions-by-slicing">
-<span id="tutorial-slicing"></span><h1>Model analystical functions by slicing<a class="headerlink" href="#model-analystical-functions-by-slicing" title="Permalink to this headline">¶</a></h1>
+  <section id="model-analytical-functions-by-slicing">
+<span id="tutorial-slicing"></span><h1>Model analytical functions by slicing<a class="headerlink" href="#model-analytical-functions-by-slicing" title="Permalink to this heading">¶</a></h1>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
 <p>Sometimes one have a analytical expression for how the sample should look like and one wants to calculate the
 reflectivity from the sample without having to resort to go through the algebra to try to get the closed form
 expression. A simple way of solving this problem is to calculate the scattering length density profile and for
@@ -63,13 +64,13 @@ the scattering length density,</p>
 \[\rho (z) =  A\left( e^{-\frac{z}{\tau}} \sin(\frac{2 \pi}{T}z) + \frac{1}{2}\right).\]</div>
 </section>
 <section id="defining-the-sample">
-<h2>Defining the sample<a class="headerlink" href="#defining-the-sample" title="Permalink to this headline">¶</a></h2>
+<h2>Defining the sample<a class="headerlink" href="#defining-the-sample" title="Permalink to this heading">¶</a></h2>
 <p>First we create a sample with a substrate and stacks for the ordinary layers. For the part that should
 be sliced up an empty stack is created, see below:</p>
 <img alt="../_images/sample_strucutre.jpg" src="../_images/sample_strucutre.jpg" />
 </section>
 <section id="adding-some-custom-parameters">
-<h2>Adding some custom parameters<a class="headerlink" href="#adding-some-custom-parameters" title="Permalink to this headline">¶</a></h2>
+<h2>Adding some custom parameters<a class="headerlink" href="#adding-some-custom-parameters" title="Permalink to this heading">¶</a></h2>
 <p>Next we have to add some custom parameters to our model. <code class="docutils literal notranslate"><span class="pre">cp.rho_amp_x</span></code> is the modulation amplitude for x-rays,
 <code class="docutils literal notranslate"><span class="pre">cp.rho_amp_x</span></code> is the modulation amplitude for neutrons , <code class="docutils literal notranslate"><span class="pre">cp.tau</span></code> is the damping constant in the
 exponential term and <code class="docutils literal notranslate"><span class="pre">cp.period</span></code> is the period of the sinus wave. You add the custom parameters by
@@ -77,7 +78,7 @@ going to the Simulations tab and push on the blue nut in the toolbar.</p>
 <img alt="../_images/custom_parameters.jpg" src="../_images/custom_parameters.jpg" />
 </section>
 <section id="modifying-the-script">
-<h2>Modifying the script<a class="headerlink" href="#modifying-the-script" title="Permalink to this headline">¶</a></h2>
+<h2>Modifying the script<a class="headerlink" href="#modifying-the-script" title="Permalink to this heading">¶</a></h2>
 <p>The script has to be modified. First of a function that calculates the sld function should be defines.
 Here I have used a function that does it both for neutrons and x-rays. First, however, wee need to import
 array handling routines.</p>
@@ -183,9 +184,10 @@ pickling module there might be problems to open it on windows machines.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Model analystical functions by slicing</a><ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Model analytical functions by slicing</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#defining-the-sample">Defining the sample</a></li>
 <li><a class="reference internal" href="#adding-some-custom-parameters">Adding some custom parameters</a></li>
@@ -194,12 +196,17 @@ pickling module there might be problems to open it on windows machines.</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="neutron_fit.html"
-                        title="previous chapter">Neutron reflectivity video tutorials</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="sld_display.html"
-                        title="next chapter">The SLD graph</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="neutron_fit.html"
+                          title="previous chapter">Neutron reflectivity video tutorials</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="sld_display.html"
+                          title="next chapter">The SLD graph</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -216,7 +223,7 @@ pickling module there might be problems to open it on windows machines.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -236,14 +243,14 @@ pickling module there might be problems to open it on windows machines.</p>
         <li class="right" >
           <a href="neutron_fit.html" title="Neutron reflectivity video tutorials"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.12 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Model analystical functions by slicing</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Model analytical functions by slicing</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

@@ -57,7 +57,10 @@ class _GenxCacheLocator(nc._SourceFileBackedLocatorMixin, nc._CacheLocator):
         parentdir = os.path.split(subpath)[-1]
         # separate caches for source and binary distribution
         # mostly if source is used to test on the same machine
-        prefix = 'genx'+getattr(sys, 'frozen', 'source')
+        if getattr(sys, 'frozen', False):
+            prefix = 'genxsource'
+        else:
+            prefix = 'genxfrozen'
         return f'{prefix}_{program_version.replace(".", "_")}_{parentdir}'
 
 

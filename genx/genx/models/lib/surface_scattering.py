@@ -5,7 +5,7 @@ Rebuild of old C++ extension module.
 """
 
 from logging import debug
-from numpy import *
+from numpy import zeros, complex128, exp, pi
 import numba
 
 

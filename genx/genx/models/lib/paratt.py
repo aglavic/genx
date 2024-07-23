@@ -1,4 +1,5 @@
-from numpy import *
+import math
+from numpy import sqrt, exp, cos, pi, newaxis, array, complex128
 from functools import reduce
 from genx.core.custom_logging import iprint
 

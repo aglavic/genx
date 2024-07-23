@@ -12,11 +12,10 @@ of depth for the sample. The substrate is to the left and the ambient material
 is to the right. This is updated when the simulation button is pressed.
 '''
 import io, traceback
+from logging import warning
 
 import wx.grid as gridlib
 from wx.adv import Wizard, WizardPageSimple
-from orsopy.slddb import api
-from orsopy.slddb.material import Formula as MatFormula
 
 from .. import add_on_framework as framework
 from genx.model import Model
@@ -41,11 +40,14 @@ try:
     # set locale to prevent some issues with data format
     import locale
 
+    from orsopy.slddb import api
+    from orsopy.slddb.material import Formula as MatFormula
 
     locale.setlocale(locale.LC_ALL, 'en_US.utf8')
     # initialize and potentially update local version of ORSO SLD db
     api.check()
 except:
+    warning("The SimpleReflectivity plugin doew not work properly without orsopy installed.")
     api = None
 
 
@@ -969,10 +971,6 @@ class SamplePanel(wx.Panel):
             di.run_command()
             script += "    # BEGIN Dataset %i DO NOT CHANGE\n" \
                       "    d = data[%i]\n"%(i, i)
-            if hasattr(di, 'res') and di.res is not None:
-                script += "    inst.setRes(data[%i].res)\n"%i
-            elif res_set:
-                script += "    inst.setRes(0.001)\n"
             inst_id = i%len(insts)
             try:
                 # extract polarization channel from ORSO metadata
@@ -985,9 +983,13 @@ class SamplePanel(wx.Panel):
                     inst_id = 0
             except KeyError:
                 pass
+            if hasattr(di, 'res') and di.res is not None:
+                script += "    %s.setRes(data[%i].res)\n"%(insts[inst_id], i)
+            elif res_set:
+                script += "    %s.setRes(0.001)\n"%(insts[inst_id])
             script += "    I.append(sample.SimSpecular(d.x, %s))\n" \
-                      "    if _sim: SLD.append(sample.SimSLD(None, None, inst))\n" \
-                      "    # END Dataset %i\n"%(insts[inst_id], i)
+                      "    if _sim: SLD.append(sample.SimSLD(None, None, %s))\n" \
+                      "    # END Dataset %i\n"%(insts[inst_id], insts[inst_id], i)
             if re_color and len(insts)>1:
                 if inst_id==0:
                     di.data_color = (0.7, 0.0, 0.0)

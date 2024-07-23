@@ -44,13 +44,26 @@ class Formula(list):
     Includes the possibility to compare materials that
     have different element orders or base in their fraction.
     '''
+    element_re = (
+        r"A[cglmrstu]|B[aehikr]?|C[adeflmorsu]?|D[bsy]{0,1}|E[rsu]|F[emr]?|"
+        r"G[ade]|H[efgosx]?|I[nr]?|Kr?|L[airu]|M[dgnot]|N[abdeiop]?|"
+        r"Os?|P[abdmortu]?|R[abefghnu]|S[bcegimnr]?|T[abcehilm]|"
+        r"Uu[bhopqst]|U|V|W|Xe|Yb?|Z[nr]"
+    )
+    isotope_re = (
+        r"(A[cglmrstu]|B[aehikr]?|C[adeflmorsu]?|D[bsy]{0,1}|E[rsu]|F[emr]?|"
+        r"G[ade]|H[efgos]?|I[nr]?|Kr?|L[airu]|M[dgnot]|N[abdeiop]?|"
+        r"Os?|P[abdmortu]?|R[abefghnu]|S[bcegimnr]?|T[abcehilm]|"
+        r"Uu[bhopqst]|U|V|W|Xe|Yb?|Z[nr])"
+        r"\[[1-9][0-9]{0,2}\]"
+    )
 
     def __init__(self, data):
         # check that the data is correct form, list of [Element, fraction] items.
         for di in data:
             if len(di)!=2:
                 raise ValueError('Formula has to consist of [Element, fraction] entries')
-            if not self.check_atom(di[0]):
+            if not self.check_atom(di[0].split('[')[0]):
                 raise ValueError('Element/Isotope %s not in database'%di[0])
             di[1]=float(di[1])
         list.__init__(self, data)
@@ -69,44 +82,95 @@ class Formula(list):
         Fractions of 1 may be ommited and non-natural isotopes are
         entered with ^{N} before an element like ^{56}Fe2O3.
         '''
-        if '(' in estr or ')' in estr:
-            raise ValueError("Can't parse formula with brackets.")
-        for ign_char in [" ", "\t", "_", "-"]:
-            estr=estr.replace(ign_char, "")
-        for i in range(10):
-            estr=estr.replace(cls._get_subscript(i), '%i'%i)  # convert to normal str w/o subsccript
-        if estr=="":
-            return Formula([])
-        extracted_elements=[]
-        i=0
-        mlen=len(estr)
-        while i<mlen:
-            # find next element
-            iso_match=re.search('\^\{[0-9]{1,3}\}[A-Z][a-zA-Z]{0,1}', estr[i:])
-            normal_match=re.search('[A-Z][a-zA-Z]{0,1}', estr[i:])
-            if iso_match is None and normal_match is None:
-                break
-            elif iso_match is None or iso_match.start()>normal_match.start():
-                element=estr[i+normal_match.start():i+normal_match.end()].capitalize()
-            else:
-                element=estr[i+iso_match.start():i+normal_match.start()]
-                element+=estr[i+normal_match.start():i+normal_match.end()].capitalize()
-            i+=normal_match.end()
+        string = estr.replace(" ", "").replace("\t", "").replace("\n", "")
+        string = string.replace("{", "").replace("}", "").replace("_", "").replace("$", "")
+        extracted_elements = []
 
-            j=0
-            while i+j<mlen and (estr[i+j]=='.' or estr[i+j].isdigit()):
-                j+=1
-            count_txt=estr[i:i+j]
-            i+=j
-            if count_txt=='':
-                count=1.
-            else:
-                try:
-                    count=float(count_txt)
-                except ValueError:
-                    continue
-            extracted_elements.append([element, count])
+        groups = cls.split_groups(string)
+        for group, factor in groups:
+            try:
+                items = cls.parse_group(group, case_sensitive=True)
+            except ValueError:
+                items = cls.parse_group(group, case_sensitive=False)
+            items = [[i[0], i[1] * factor] for i in items]
+            extracted_elements += items
+
         return Formula(extracted_elements)
+
+    @staticmethod
+    def split_groups(string):
+        if "(" not in string:
+            return [(string, 1.0)]
+        out = []
+        start = string.index("(")
+        end = start
+        if start > 0:
+            out.append((string[:start], 1.0))
+        while end < len(string):
+            end = start + string[start:].find(")")
+            _next = end + 1
+            if end < start:
+                raise ValueError("Brackets need to be closed")
+            while not (_next == len(string) or string[_next].isalpha() or string[_next] == "("):
+                _next += 1
+            block = string[start + 1 : end]
+            if "(" in block:
+                raise ValueError("Only one level of brackets is allowed")
+            number = string[end + 1 : _next]
+            if number == "":
+                out.append((block, 1.0))
+            else:
+                out.append((block, float(number)))
+            if _next == len(string):
+                break
+            if "(" not in string[_next:]:
+                out.append((string[_next:], 1.0))
+                break
+            else:
+                start = _next + string[_next:].index("(")
+                end = start
+                if start > _next:
+                    out.append((string[_next:start], 1.0))
+        return out
+
+    @classmethod
+    def parse_group(cls, group, case_sensitive=True):
+        if case_sensitive:
+            flags = 0
+        else:
+            flags = re.IGNORECASE
+        out = []
+        mele = re.search(cls.element_re, group, flags=flags)
+        miso = re.search(cls.isotope_re, group, flags=flags)
+        if miso is not None and miso.start() == mele.start():
+            prev = miso
+        else:
+            prev = mele
+        if prev is None or prev.start() != 0:
+            raise ValueError("Did not find any valid element in string")
+        pos = prev.end()
+        while pos < len(group):
+            mele = re.search(cls.element_re, group[pos:], flags=flags)
+            miso = re.search(cls.isotope_re, group[pos:], flags=flags)
+            if miso is not None and miso.start() == mele.start():
+                _next = miso
+            else:
+                _next = mele
+            if _next is None:
+                break
+            if _next.start() == 0:
+                out.append((prev.string[prev.start() : prev.end()].capitalize(), 1.0))
+            else:
+                out.append(
+                    (prev.string[prev.start() : prev.end()].capitalize(), float(group[pos : pos + _next.start()]))
+                )
+            prev = _next
+            pos += _next.end()
+        if pos == len(group):
+            out.append((prev.string[prev.start() :].capitalize(), 1.0))
+        else:
+            out.append((prev.string[prev.start() : prev.end()].capitalize(), float(group[pos:])))
+        return out
 
     @classmethod
     def from_bstr(cls, bstr):
@@ -122,6 +186,13 @@ class Formula(list):
             else:
                 element, count=item[3:].split('*', 1)
                 count=float(count)
+                if element.startswith('i'):
+                    element=element[1:]
+                    i=0
+                    while element[i].isdigit():
+                        i+=1
+                    iso = element[:i]
+                    element=f'{element[i:]}[{iso}]'
                 extracted_elements.append([element, count])
         return Formula(extracted_elements)
 
@@ -129,10 +200,12 @@ class Formula(list):
         '''Generate a string with sub- and superscript numbers for material.'''
         output=''
         for element, count in self:
-            if element.startswith('^'):
+            if '[' in element:
                 try:
-                    isotope, element=element[2:].split('}')
-                    output+=self._get_superscript(int(isotope))
+                    ele, iso = element.split('[', 2)
+                    element=ele
+                    iso = int(iso.split(']')[0])
+                    output+=self._get_superscript(int(iso))
                 except (IndexError, ValueError):
                     pass
             if count==1:
@@ -183,7 +256,7 @@ class Formula(list):
 
     def elements(self):
         '''Returns alphabetically sorted list of elements in formula.'''
-        return list(sorted([ei[0].split('}')[-1] for ei in self]))
+        return list(sorted([ei[0].split('[')[0] for ei in self]))
 
     def isotopes(self):
         '''Returns same as elements but with isotopes w/ number at end of list.'''
@@ -194,7 +267,7 @@ class Formula(list):
         Amounts as stored by elements alphabetically.
         Can be used to compare two formulas for equality.
         '''
-        items=[(ei[0].split('}')[-1], ei[1]) for ei in self]
+        items=[(ei[0].split('[')[0], ei[1]) for ei in self]
         items.sort()
         return [i[1] for i in items]
 
@@ -227,6 +300,8 @@ class Formula(list):
         '''Calculate mass in u for formula unit (FU).'''
         mass=0.
         for ei, fi in self:
+            if '[' in ei:
+                ei = ei.split('[')[0]
             try:
                 mass+=fi*atomic_data[ei][2]
             except KeyError:
@@ -245,8 +320,9 @@ class Formula(list):
         '''Return a multile string with written element content.'''
         output=''
         for ei, (element, number) in enumerate(self):
-            if element.startswith('^'):
-                iso='-%s'%(element[2:].split('}')[0])
+            if '[' in element:
+                iso='-%s'%(element.split('[')[1].split(']')[0])
+                element = element.split('[')[0]
                 if not element in atomic_data:
                     iso='-unknown isotope'
                     element=element.split('}')[-1]
@@ -264,6 +340,8 @@ class Formula(list):
         for element, count in self:
             if element in isotopes:
                 element=isotopes[element][1]
+            elif '[' in element:
+                element, iso = element.split('[', 2)
             elements+='+fp.%s*%g'%(element, count)
         return elements[1:]
 
@@ -277,6 +355,8 @@ class Formula(list):
         for element, count in self:
             if element in isotopes:
                 element=isotopes[element][1]
+            elif '[' in element:
+                element, iso = element.split('[', 2)
             elements+='+fw.%s*%g'%(element, count/total)
         return elements[1:]
 
@@ -288,6 +368,10 @@ class Formula(list):
         for element, count in self:
             if element in isotopes:
                 element=isotopes[element][0]
+            elif '[' in element:
+                ele, iso = element.split('[', 2)
+                iso = int(iso.split(']')[0])
+                element=f'i{iso}{ele}'
             elements+='+bc.%s*%g'%(element, count)
         return elements[1:]
 
@@ -300,6 +384,10 @@ class Formula(list):
         for element, count in self:
             if element in isotopes:
                 element=isotopes[element][0]
+            elif '[' in element:
+                ele, iso = element.split('[', 2)
+                iso = int(iso.split(']')[0])
+                element=f'i{iso}{ele}'
             elements+='+bw.%s*%g'%(element, count/total)
         return elements[1:]
 
@@ -372,11 +460,17 @@ class MaterialsDatabase(list):
 
     def dens_FU(self, item):
         '''Returns the formula unit (FU) density of the compound "item" in 1/Å³'''
-        return eval(self[item][1])
+        try:
+            return eval(self[item][1])
+        except SyntaxError:
+            return 0.0
 
     def dens_mass(self, item):
         '''Returns the mass density of the compound "item" in g/cm³'''
-        return eval(self[item][1])*self[item][0].mFU()/MASS_DENSITY_CONVERSION
+        try:
+            return eval(self[item][1])*self[item][0].mFU()/MASS_DENSITY_CONVERSION
+        except SyntaxError:
+            return 0.0
 
     def __delitem__(self, index):
         list.__delitem__(self, index)

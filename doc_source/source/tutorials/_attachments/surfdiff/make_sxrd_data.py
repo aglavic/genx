@@ -1,7 +1,7 @@
 '''Making sxrd data for simulations
 P4mm symmetry k<h
 '''
-from numpy import *
+from numpy import c_, r_, array, arange, ones, savetxt
 
 outfile = 'rods.dat'
 
