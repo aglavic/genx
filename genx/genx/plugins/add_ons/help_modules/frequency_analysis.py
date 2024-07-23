@@ -109,7 +109,7 @@ def average(y, N=20):
 
 class TransformType(str, Enum):
     fourier_transform = 'FT'
-    short_time_FT = 'STFT'
+    # short_time_FT = 'STFT'
     mexican_hat_WT = 'MH'
     morlet_WT = 'MO'
 
@@ -118,7 +118,7 @@ def transform(q, I, Qc=0., trans_type:TransformType=TransformType.fourier_transf
               logI=False, Q4=True,
               derivate=True, derivN=3,
               Qmin=0., Qmax=None,
-              D=None, wavelet_scaling=0.,
+              D=None, wavelet_scaling=0.5,
               return_corrected=False):
     '''
     Transform a reflectivity dataset to frequency domain.
@@ -174,12 +174,14 @@ def transform(q, I, Qc=0., trans_type:TransformType=TransformType.fourier_transf
     if trans_type==TransformType.fourier_transform:
         D, T = NDFT(Quse, Iuse, d=D)
         T = abs(T)
-    elif trans_type==TransformType.short_time_FT:
-        T = abs(STFT(Quse, Iuse, D))
+    # elif trans_type==TransformType.short_time_FT:
+    #     T = abs(STFT(Quse, Iuse, D))
     elif trans_type==TransformType.mexican_hat_WT:
         T = abs(CWT(Quse, Iuse, d=D, wavelet=MexicanHat))**2.+1e-20
+        T = T[:, int(T.shape[1]*wavelet_scaling)]
     elif trans_type==TransformType.morlet_WT:
         T = abs(CWT(Quse, Iuse, d=D, wavelet=Morlet))**2.+1e-20
+        T = T[:, int(T.shape[1]*wavelet_scaling)]
     else:
         raise ValueError('Transformation type not known: %s'%trans_type)
 

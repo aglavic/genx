@@ -35,8 +35,12 @@ class FAPlotPanel(wx.Panel):
         sizer.Add(hsizer, 0, wx.FIXED_MINSIZE)
         lsizer=wx.BoxSizer(wx.VERTICAL)
         hsizer.Add(lsizer, 1, wx.EXPAND | wx.GROW)
+        csizer=wx.BoxSizer(wx.VERTICAL)
+        hsizer.Add(csizer, 1, wx.EXPAND | wx.GROW)
         rsizer=wx.BoxSizer(wx.VERTICAL)
         hsizer.Add(rsizer, 1, wx.EXPAND | wx.GROW)
+        rlabels=wx.BoxSizer(wx.VERTICAL)
+        hsizer.Add(rlabels, 1, wx.EXPAND | wx.GROW)
 
         self.plot.update(None)
         self.plot.ax=self.plot.figure.add_subplot(111)
@@ -58,18 +62,27 @@ class FAPlotPanel(wx.Panel):
         self.tt={}
         for tt in list(TransformType):
             self.tt[tt] = wx.RadioButton(self, -1, label=tt.name)
-            rsizer.Add(self.tt[tt], 0, wx.FIXED_MINSIZE)
+            csizer.Add(self.tt[tt], 0, wx.FIXED_MINSIZE)
             self.tt[tt].Bind(wx.EVT_RADIOBUTTON, self.Plot)
         self.tt[TransformType.fourier_transform].SetValue(True)
 
-        self.Qc = wx.SpinCtrlDouble(self, -1, value='0.05', min=0.00, max=0.5, inc=0.001)
+        self.Qc = wx.SpinCtrlDouble(self, -1, value='0.05', min=0.00, max=1.5, inc=0.001)
         self.Qc.SetDigits(5)
+        rlabels.Add(wx.StaticText(self, -1, 'Qc'), 0, wx.FIXED_MINSIZE)
         rsizer.Add(self.Qc, 0, wx.FIXED_MINSIZE)
+
+        self.WLscale = wx.SpinCtrlDouble(self, -1, value='0.5', min=0.00, max=1.0, inc=0.01)
+        self.WLscale.SetDigits(3)
+        rlabels.Add(wx.StaticText(self, -1, 'WL-scale'), 0, wx.FIXED_MINSIZE)
+        rsizer.Add(self.WLscale, 0, wx.FIXED_MINSIZE)
 
         self.transform_log.Bind(wx.EVT_CHECKBOX, self.Plot)
         self.transform_Q4.Bind(wx.EVT_CHECKBOX, self.Plot)
         self.use_derivative.Bind(wx.EVT_CHECKBOX, self.Plot)
         self.Qc.Bind(wx.EVT_SPINCTRLDOUBLE, self.Plot)
+        self.Qc.Bind(wx.EVT_TEXT_ENTER, self.Plot)
+        self.WLscale.Bind(wx.EVT_SPINCTRLDOUBLE, self.Plot)
+        self.WLscale.Bind(wx.EVT_TEXT_ENTER, self.Plot)
 
     def SetZoom(self, active=False):
         return self.plot.SetZoom(active)
@@ -89,13 +102,14 @@ class FAPlotPanel(wx.Panel):
         i=0
         data=self.plugin.GetModel().get_data()
 
-        d=linspace(0, 500, 250)
+        d=linspace(10.0, 2500., 250)
         # New style sim function with one sld for each simulation
         options = dict(
             Qc=float(self.Qc.GetValue()),
             logI = self.transform_log.IsChecked(),
             Q4=self.transform_Q4.IsChecked(),
             derivate=self.use_derivative.IsChecked(),
+            wavelet_scaling=self.WLscale.GetValue(),
             )
         for tt, ctrl in self.tt.items():
             if ctrl.GetValue():
@@ -110,7 +124,7 @@ class FAPlotPanel(wx.Panel):
                         _,mag=transform(di.x, di.y,
                                         derivN=3,
                                         Qmin=0.08, Qmax=None,
-                                        D=d, wavelet_scaling=0., **options)
+                                        D=d, **options)
                         self.plot.ax.plot(d, mag,
                                           color=di.data_color,
                                           ls=di.data_linetype, lw=di.data_linethickness,
@@ -121,7 +135,7 @@ class FAPlotPanel(wx.Panel):
                         _,mag=transform(di.x, di.y_sim,
                                         derivN=3,
                                         Qmin=0.08, Qmax=None,
-                                        D=d, wavelet_scaling=0., **options)
+                                        D=d, **options)
                         self.plot.ax.plot(d, mag,
                                           color=di.sim_color,
                                           ls=di.sim_linetype, lw=di.sim_linethickness,
@@ -134,8 +148,8 @@ class FAPlotPanel(wx.Panel):
                             framealpha=0.5,
                             fontsize="small", ncol=1)
 
-        self.plot.ax.yaxis.label.set_text('')
-        self.plot.ax.xaxis.label.set_text('x')
+        self.plot.ax.yaxis.label.set_text('magnitude [a.u.]')
+        self.plot.ax.xaxis.label.set_text('d [Å]')
         wx.CallAfter(self.plot.flush_plot)
         self.plot.AutoScale()
 
