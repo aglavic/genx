@@ -11,7 +11,15 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
-Chanves 3.6.25
+Changes 3.6.26
+==============
+ * Update of SNAP builde system, should allow use with Waylend and fix some other minor issues.
+ * Update of Windows build libraries for additional functionality.
+ * Add debian build for newer Ubuntu versions (22.04 / 24.04) .
+ * Add a GUI dialog when critical python errors occure that required console/logging to be noticed before.
+ * Fix incompatibility with numpy 2.x due to bool/numpy.bool confusion.
+
+Changes 3.6.25
 ==============
  * Fix bug in MagSLD where magnetization was reported 10x too high in graph (see Ticket #205).
  * Fix inconsistent behavor for x-values <=0 (see Ticket #201).

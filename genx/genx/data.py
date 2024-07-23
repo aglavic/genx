@@ -6,7 +6,7 @@ on set and the class DataList stores multiple DataSets.
 import time
 import os
 from sys import platform
-from numpy import *
+from numpy import ndarray, array, loadtxt, savetxt, c_, sqrt, linspace, nan, where, hstack
 from typing import List, Dict, Tuple, Union
 
 from .exceptions import GenxIOError

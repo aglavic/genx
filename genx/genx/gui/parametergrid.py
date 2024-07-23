@@ -10,7 +10,7 @@ import wx.lib.printout as printout
 import wx.lib.newevent
 import string
 
-from numpy import *
+from numpy import sin, cos, tan, pi, exp, log, log10, sqrt, array, arange, hstack, vstack, linspace, arcsin, arccos, arctan
 from dataclasses import dataclass
 
 from . import controls as ctrls, images as img

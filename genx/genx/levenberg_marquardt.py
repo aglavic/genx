@@ -1,11 +1,12 @@
 '''
 Use Levenberg-Marquardt as minimizer to estimate errors and for fast decent to next local minimum.
 '''
+import sys
 import pickle
 import _thread
 from dataclasses import dataclass
 
-from numpy import *
+from numpy import ndarray, sign, sqrt, array
 from scipy.optimize import leastsq
 
 from .exceptions import ErrorBarError, OptimizerInterrupted

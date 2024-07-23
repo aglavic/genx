@@ -3,7 +3,7 @@ DWBA extension for offspecular from rough surfaces.
 
 Rebuild of old C++ extension module.
 """
-from numpy import *
+from numpy import zeros, float64, conj, inf, fabs, complex128, real, arcsin, arctan, cumsum
 from scipy import integrate
 from scipy.special import factorial
 from .elfield import *

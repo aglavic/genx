@@ -7,7 +7,7 @@ import matplotlib.axes
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.figure import Figure
 
-from numpy import *
+from numpy import sin, cos, tan, pi, exp, log, log10, sqrt, array, arange, hstack, vstack, linspace, arcsin, arccos, arctan
 import wx
 from wx.py.editwindow import EditWindow
 from ..core.config import BaseConfig, Configurable

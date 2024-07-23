@@ -1,14 +1,15 @@
 '''
 Use Levenberg-Marquardt as minimizer to estimate errors and for fast decent to next local minimum.
 '''
+import sys
 import pickle
 import multiprocessing
+import numpy as np
 from threading import Thread
 from dataclasses import dataclass
 from typing import Dict
 from logging import debug
 
-from numpy import *
 from bumps.fitters import FitDriver, FITTERS
 from bumps.monitor import TimedUpdate
 from bumps.fitproblem import FitProblem, nllf_scale, BaseFitProblem
@@ -68,7 +69,7 @@ class FitterMonitor(TimedUpdate):
         self.parent.parameter_output(self.chis, history.population_values[0], history.population_points[0])
 
     def show_improvement(self, history):
-        self.parent.new_beest(self.p, array([self.steps, self.chis]).T)
+        self.parent.new_beest(self.p, np.array([self.steps, self.chis]).T)
 
     def __call__(self, history):
         t = history.time[0]
@@ -131,10 +132,10 @@ class BumpsConfig(BaseConfig):
 
 @dataclass
 class BumpsResult:
-    x: ndarray
-    dx: ndarray
-    dxpm: ndarray
-    cov: ndarray
+    x: np.ndarray
+    dx: np.ndarray
+    dxpm: np.ndarray
+    cov: np.ndarray
     chisq: float
     bproblem: 'Any'
     state: 'Any' = None
@@ -146,10 +147,10 @@ class BumpsOptimizer(GenxOptimizer):
     '''
     opt: BumpsConfig
     model: Model
-    fom_log: ndarray
-    start_guess: ndarray
-    covar: ndarray
-    errors: ndarray
+    fom_log: np.ndarray
+    start_guess: np.ndarray
+    covar: np.ndarray
+    errors: np.ndarray
 
     _callbacks: GenxOptimizerCallback = BumpsDefaultCallbacks()
     _map_indices: Dict[int, int]
@@ -163,10 +164,10 @@ class BumpsOptimizer(GenxOptimizer):
     def __init__(self):
         GenxOptimizer.__init__(self)
         self.model = Model()
-        self.fom_log = array([[0, 0]])[0:0]
-        self.start_guess = array([[0, 0]])[0:0]
-        self.covar = array([[0, 0]])[0:0]
-        self.errors = array([[0, 0]])[0:0]
+        self.fom_log = np.array([[0, 0]])[0:0]
+        self.start_guess = np.array([[0, 0]])[0:0]
+        self.covar = np.array([[0, 0]])[0:0]
+        self.errors = np.array([[0, 0]])[0:0]
         self.last_result = None
         self.bproblem = None
 
@@ -193,7 +194,7 @@ class BumpsOptimizer(GenxOptimizer):
         if len(population)==0:
             return
         best = chis.argmin()
-        population = array(list(map(self.map_bumps2genx, population)))
+        population = np.array(list(map(self.map_bumps2genx, population)))
         new_best = chis[best]<=min(fom_history)
         if new_best:
             best_pop = population[best]
@@ -214,7 +215,7 @@ class BumpsOptimizer(GenxOptimizer):
 
     def map_bumps2genx(self, p):
         # convert Bumps parameter array p to vector with GenX order of indices
-        out = zeros(len(p))
+        out = np.zeros(len(p))
         for i, pi in enumerate(p):
             out[self._map_indices[i]] = pi
         return out
@@ -222,7 +223,7 @@ class BumpsOptimizer(GenxOptimizer):
     def covar_bumps2genx(self, cov):
         if cov is None:
             return None
-        out = zeros((len(cov), len(cov)))
+        out = np.zeros((len(cov), len(cov)))
         for i, rowi in enumerate(cov):
             for j, pij in enumerate(rowi):
                 out[self._map_indices[i], self._map_indices[j]] = pij
@@ -237,8 +238,8 @@ class BumpsOptimizer(GenxOptimizer):
         (param_funcs, start_guess, par_min, par_max) = model_obj.get_fit_pars()
 
         # Control parameter setup
-        self.par_min = array(par_min)
-        self.par_max = array(par_max)
+        self.par_min = np.array(par_min)
+        self.par_max = np.array(par_max)
         self.par_funcs = param_funcs
         self.model = model_obj
         self.n_dim = len(param_funcs)
@@ -362,10 +363,10 @@ class BumpsOptimizer(GenxOptimizer):
         if dxpm is not None:
             dxm = self.map_bumps2genx(dxpm[:, 0])
             dxp = self.map_bumps2genx(dxpm[:, 1])
-            self.errors = array([dxm, dxp]).T
+            self.errors = np.array([dxm, dxp]).T
         else:
             dxmap = self.map_bumps2genx(dx)
-            self.errors = array([-1, 1])[newaxis, :]*dxmap[:, newaxis]
+            self.errors = np.array([-1, 1])[np.newaxis, :]*dxmap[:, np.newaxis]
         self.covar = self.covar_bumps2genx(cov)
 
         self.plot_output()

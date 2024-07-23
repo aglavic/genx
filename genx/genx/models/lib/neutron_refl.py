@@ -1,7 +1,7 @@
 '''
 Library for reflectivity calculations with neutrons.
 '''
-from numpy import *
+from numpy import float64, complex128, newaxis, array, rollaxis, sqrt, exp, sin, cos, hstack, zeros
 from . import math_utils as mu
 from . import int_lay_xmean
 from functools import reduce

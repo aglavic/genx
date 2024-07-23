@@ -1,16 +1,15 @@
 '''
 An implementation of the differential evolution algorithm for fitting.
 '''
-import os
 import threading
 import multiprocessing as processing
 import pickle
 import random as random_mod
 import time
-import appdirs
 from dataclasses import dataclass
 from logging import debug
-from numpy import *
+from numpy import (array, ndarray, random, zeros, ones, copy, r_, where, compress, bitwise_and,
+                   argmin, argsort, mean, seterr, ceil, append)
 
 from .core import custom_logging
 from .core.config import BaseConfig

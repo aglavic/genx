@@ -1,7 +1,7 @@
 # run performance tests on python, numba and cuda versions of code
 
 from multiprocessing import cpu_count
-from numpy import *
+from numpy import pi, array, complex128, linspace, nan, hstack, log2
 from timeit import Timer
 from genx.models import lib
 

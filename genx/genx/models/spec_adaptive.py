@@ -156,9 +156,8 @@ Instrument
     The measured polarization of the instrument. Valid options are:
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
 '''
-from copy import deepcopy
-from numpy import *
-from scipy.special import wofz
+import numpy as np
+
 from . import spec_nx
 from .spec_nx import refl
 from .lib.instrument import *

@@ -5,7 +5,7 @@ that was introduced by J.B. Hayter and H.A. Mook in J. Appl. Cryst. (1989). 22, 
 Adopted from Visual Basic script of PSI optics group.
 """
 
-from numpy import *
+from numpy import sqrt, log, arctan, pi
 
 SCALE_CONSTANT=3./sqrt(8.)
 

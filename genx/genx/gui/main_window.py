@@ -1778,8 +1778,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Callback for the settings change event for the current plot
          - change the toggle for the zoom icon and change the menu items.
         '''
-        self.main_frame_toolbar.ToggleTool(custom_ids.ToolId.ZOOM, bool(event.zoomstate))
-        self.mb_checkables[custom_ids.MenuId.ZOOM].Check(bool(event.zoomstate))
+        self.main_frame_toolbar.ToggleTool(custom_ids.ToolId.ZOOM, event.zoomstate)
+        self.mb_checkables[custom_ids.MenuId.ZOOM].Check(event.zoomstate)
         if event.yscale=='log':
             self.mb_checkables[custom_ids.MenuId.Y_SCALE_LOG].Check(True)
         elif event.yscale=='linear':
@@ -1788,8 +1788,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.mb_checkables[custom_ids.MenuId.X_SCALE_LOG].Check(True)
         elif event.xscale=='linear':
             self.mb_checkables[custom_ids.MenuId.X_SCALE_LIN].Check(True)
-        self.mb_checkables[custom_ids.MenuId.AUTO_SCALE].Check(bool(event.autoscale))
-
+        self.mb_checkables[custom_ids.MenuId.AUTO_SCALE].Check(event.autoscale)
     def eh_tb_calc_error_bars(self, event):
         '''
         callback to calculate the error bars on the data.

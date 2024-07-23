@@ -98,10 +98,11 @@ class GuiExceptionHandler(Handler):
             return
         title = "GenX - Unhandled Python Error"
         message = f"GenX encountered an unexpected error.\n{record.exc_info[0].__name__}: {record.exc_info[1]}"
-        fmt_message = f"{record.exc_text}"
         ext_message = f"{record.exc_text}"
+        ext_message += "\n\nYou can suppress any future warnings by choosing 'Cancel' to close this window."
+        full_trace = f"{record.exc_text}"
 
-        self.display_message(title, message, fmt_message, ext_message)
+        self.display_message(title, message, ext_message, full_trace)
 
     def display_message(self, title, message, ext_message, full_trace, icon_style=wx.ICON_ERROR):
         style=wx.OK|wx.CANCEL|wx.HELP

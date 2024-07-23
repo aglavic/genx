@@ -388,7 +388,7 @@ class Model(H5HintedExport):
             fom = fom/((N-p)*1.0)
 
         penalty_funcs = self.get_par_penalty()
-        if len(penalty_funcs)>0 and fom is not np.NAN:
+        if len(penalty_funcs)>0 and fom is not np.nan:
             fom += sum([pf() for pf in penalty_funcs])
         return fom_raw, fom_indiv, fom
 
@@ -1291,7 +1291,7 @@ class GenxCurve:
         r = self.residuals()
         fom = np.sum(r**2)
         penalty_funcs = self.model.get_par_penalty()
-        if len(penalty_funcs)>0 and fom is not np.NAN:
+        if len(penalty_funcs)>0 and fom is not np.nan:
             fom += sum([pf() for pf in penalty_funcs])*(len(r)-len(self._pars))
         return 0.5*fom
 

@@ -4,7 +4,14 @@
 # as in real space
 
 # THis one really needs scipy
-from numpy import *
+from numpy import (pi, sqrt, sin, cos, tan, arcsin, arccos, arctan, arctan2, real, imag, abs, cumsum, zeros, isscalar,
+                   where, ones, linspace, exp, newaxis, transpose, arange, convolve, r_, array, not_equal, logical_not,
+                   sum, dot, minimum, maximum, float32, float64, complex128, ndarray, float32, complex64, c_, r_)
+try:
+    # trapz removed in numpy 2.x
+    from numpy import trapezoid as trapz
+except ImportError:
+    from numpy import trapz
 from scipy.special import erf
 from genx.core.custom_logging import iprint
 
