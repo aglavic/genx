@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Writing a FOM function &#8212; GenX 3.6.21 documentation</title>
+    <title>Writing a FOM function &#8212; GenX 3.6.26 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -37,7 +37,7 @@
         <li class="right" >
           <a href="write_data_loader.html" title="How to write a Data Loader"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" accesskey="U">Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a FOM function</a></li> 
       </ul>
@@ -76,7 +76,7 @@ when it works, why not send it to me for inclusion in the main distribution.</p>
 <p>It’s always easiest to start with an example to get ones head around things. Let us start with an absolute
 logarithmic difference figure of merit. The code below is a slow but easy to understand variant:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">simulations</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Total number of data points</span>
     <span class="n">fom</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># The total fom to calculate</span>
     <span class="k">for</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sim</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">simulation</span><span class="p">):</span>
@@ -99,7 +99,7 @@ Note that the fom is only calculated and added if the flag <code class="docutils
 <p>An example how this can be programmed in a more compact and computationally efficient way is
 seen below, where a faster type of for loop is used.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">simulations</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="n">dataset</span><span class="o">.</span><span class="n">use</span> <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
     <span class="k">return</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">sim</span><span class="p">)))</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">sim</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">simulations</span><span class="p">)</span> <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">use</span><span class="p">])</span>
@@ -181,7 +181,7 @@ provided.</p>
         <li class="right" >
           <a href="write_data_loader.html" title="How to write a Data Loader"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.21 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" >Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a FOM function</a></li> 
       </ul>
