@@ -4,7 +4,7 @@ Help class for the Reflectivity plugin to analyze and change the script.
 import re
 
 from .reflectivity_misc import ReflectivityModule
-
+from genx.models.lib.refl_new import ReflBase
 
 avail_models = ['spec_nx', 'spec_inhom', 'spec_adaptive',
                 'interdiff', 'mag_refl', 'soft_nx']
@@ -25,11 +25,68 @@ class SampleHandler:
     def set_model(self, model: ReflectivityModule):
         self.model = model
 
+    def getStringListNew(self, html_encoding=False, html_decorator=default_html_decorator):
+        '''
+        Function to generate a list of strings that gives
+        a visual representation of the sample.
+
+        This is based on the new ModelParamBase derived reflectivity classes that don't require
+        analysis of the model script.
+        '''
+        slist = [self.sample.Substrate._repr_call()]
+        poslist = [(None, None)]
+        i = 0
+        for stack in self.sample.Stacks:
+            j = 0
+            for layer in stack.Layers:
+                slist.append(layer._repr_call())
+                poslist.append((i, j))
+                j += 1
+            slist.append('Stack: Repetitions = %s'%str(stack.Repetitions))
+            for key in list(stack._parameters.keys()):
+                if not key in ['Repetitions', 'Layers']:
+                    slist[-1] += ', %s = %s'%(key, str(getattr(stack, key)))
+            poslist.append((i, None))
+            i += 1
+        slist.append(self.sample.Ambient._repr_call())
+        for item in range(len(slist)):
+            name = self.names[-item-1]
+            par_str = slist[item]
+            if slist[item][0]=='L' and item!=0 and item!=len(slist)-1:
+                if html_encoding:
+                    slist[item] = ('<code>&nbsp;&nbsp;&nbsp;<b>'+name+'</b> = '
+                                   +html_decorator(name, par_str)+'</code>')
+                else:
+                    slist[item] = self.names[-item-1]+' = model.'+slist[item]
+            else:
+                if item==0 or item==len(slist)-1:
+                    # This is then the ambient or substrates
+                    if html_encoding:
+                        slist[item] = ('<code><b>'+name+'</b> = '
+                                       +html_decorator(name, par_str)+'</code>')
+                    else:
+                        slist[item] = self.names[-item-1]+' = model.'+slist[item]
+                else:
+                    # This is a stack!
+                    if html_encoding:
+                        slist[item] = ('<font color = "BLUE"><code><b>'+name+'</b> = '
+                                       +html_decorator(name, par_str)+'</code></font>')
+                    else:
+                        slist[item] = self.names[-item-1]+' = model.'+slist[item]
+        poslist.append((None, None))
+        slist.reverse()
+        poslist.reverse()
+        self.poslist = poslist
+        return slist
+
     def getStringList(self, html_encoding=False, html_decorator=default_html_decorator):
         '''
         Function to generate a list of strings that gives
         a visual representation of the sample.
         '''
+        if isinstance(self.sample, ReflBase):
+            return self.getStringListNew(html_encoding, html_decorator)
+
         slist = [self.sample.Substrate.__repr__()]
         poslist = [(None, None)]
         i = 0;

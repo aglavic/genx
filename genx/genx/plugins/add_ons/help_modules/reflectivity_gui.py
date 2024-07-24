@@ -5,6 +5,7 @@ import wx.html
 
 from genx.core.custom_logging import iprint
 from genx.model import Model
+from genx.models.lib.refl_new import ReflBase as ReflBaseNew
 from genx.plugins.utils import ShowQuestionDialog, ShowWarningDialog
 from . import reflectivity_images as images
 from .custom_dialog import ComplexObjectValidator, FloatObjectValidator, NoMatchValidTextObjectValidator, \
@@ -496,50 +497,84 @@ class SamplePanel(wx.Panel):
         grid_parameters = self.plugin.GetModel().get_parameters()
         if isinstance(sel, self.model.Layer):
             # The selected item is a Layer
-            for item in list(self.model.LayerParameters.keys()):
-                value = getattr(sel, item)
-                vals[item] = value
-                # if item!='n' and item!='fb':
-                if type(self.model.LayerParameters[item])!=type(1+1.0J):
-                    # Handle real parameters
-                    validators[item] = FloatObjectValidator(eval_func, alt_types=[self.model.Layer])
-                    func_name = obj_name+'.'+_set_func_prefix+item.capitalize()
-                    grid_value = grid_parameters.get_value_by_name(func_name)
-                    if grid_value is not None:
-                        vals[item] = grid_value
-                    editable[item] = grid_parameters.get_fit_state_by_name(func_name)
+            if isinstance(sel, ReflBaseNew):
+                for name, value_info in sel._parameter_info().items():
+                    # get the entry used for parameter definition
+                    vals[name] = sel._ca.get(name, getattr(sel, name))
+                    if value_info.type is not complex:
+                        # Handle real parameters
+                        validators[name] = FloatObjectValidator(eval_func, alt_types=[self.model.Layer])
+                        func_name = obj_name+'.'+_set_func_prefix+name.capitalize()
+                        grid_value = grid_parameters.get_value_by_name(func_name)
+                        if grid_value is not None:
+                            vals[name] = grid_value
+                        editable[name] = grid_parameters.get_fit_state_by_name(func_name)
+                    else:
+                        # Handle complex parameters
+                        validators[name] = ComplexObjectValidator(eval_func, alt_types=[self.model.Layer])
+                        func_name = obj_name+'.'+_set_func_prefix+name.capitalize()
+                        grid_value_real = grid_parameters.get_value_by_name(func_name+'real')
+                        grid_value_imag = grid_parameters.get_value_by_name(func_name+'imag')
+                        if grid_value_real is not None:
+                            v = eval_func(vals[name]) if type(vals[name]) is str else vals[name]
+                            vals[name] = grid_value_real+v.imag*1.0J
+                        if grid_value_imag is not None:
+                            v = eval_func(vals[name]) if type(vals[name]) is str else vals[name]
+                            vals[name] = v.real+grid_value_imag*1.0J
+                        editable[name] = max(grid_parameters.get_fit_state_by_name(func_name+'real'),
+                                             grid_parameters.get_fit_state_by_name(func_name+'imag'))
 
-                else:
-                    # Handle complex parameters
-                    validators[item] = ComplexObjectValidator(eval_func, alt_types=[self.model.Layer])
-                    func_name = obj_name+'.'+_set_func_prefix+item.capitalize()
-                    grid_value_real = grid_parameters.get_value_by_name(func_name+'real')
-                    grid_value_imag = grid_parameters.get_value_by_name(func_name+'imag')
-                    if grid_value_real is not None:
-                        v = eval_func(vals[item]) if type(vals[item]) is str else vals[item]
-                        vals[item] = grid_value_real+v.imag*1.0J
-                    if grid_value_imag is not None:
-                        v = eval_func(vals[item]) if type(vals[item]) is str else vals[item]
-                        vals[item] = v.real+grid_value_imag*1.0J
-                    editable[item] = max(grid_parameters.get_fit_state_by_name(func_name+'real'),
-                                         grid_parameters.get_fit_state_by_name(func_name+'imag'))
+                    items.append((name, vals[name]))
+                    pars.append(name)
 
-                items.append((item, value))
-                pars.append(item)
+                groups = sel.Groups
+                units = getattr(sel, 'Units', False)
 
-                # Check if the parameter is in the grid and in that case set it as uneditable
-                # func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
-                # grid_value = grid_parameters.get_value_by_name(func_name)
-                # editable[item] = grid_parameters.get_fit_state_by_name(func_name)
+            else:
+                for item in self.model.LayerParameters.keys():
+                    value = getattr(sel, item)
+                    vals[item] = value
+                    # if item!='n' and item!='fb':
+                    if type(self.model.LayerParameters[item])!=type(1+1.0J):
+                        # Handle real parameters
+                        validators[item] = FloatObjectValidator(eval_func, alt_types=[self.model.Layer])
+                        func_name = obj_name+'.'+_set_func_prefix+item.capitalize()
+                        grid_value = grid_parameters.get_value_by_name(func_name)
+                        if grid_value is not None:
+                            vals[item] = grid_value
+                        editable[item] = grid_parameters.get_fit_state_by_name(func_name)
 
-            try:
-                groups = self.model.LayerGroups
-            except Exception:
-                groups = False
-            try:
-                units = self.model.LayerUnits
-            except Exception:
-                units = False
+                    else:
+                        # Handle complex parameters
+                        validators[item] = ComplexObjectValidator(eval_func, alt_types=[self.model.Layer])
+                        func_name = obj_name+'.'+_set_func_prefix+item.capitalize()
+                        grid_value_real = grid_parameters.get_value_by_name(func_name+'real')
+                        grid_value_imag = grid_parameters.get_value_by_name(func_name+'imag')
+                        if grid_value_real is not None:
+                            v = eval_func(vals[item]) if type(vals[item]) is str else vals[item]
+                            vals[item] = grid_value_real+v.imag*1.0J
+                        if grid_value_imag is not None:
+                            v = eval_func(vals[item]) if type(vals[item]) is str else vals[item]
+                            vals[item] = v.real+grid_value_imag*1.0J
+                        editable[item] = max(grid_parameters.get_fit_state_by_name(func_name+'real'),
+                                             grid_parameters.get_fit_state_by_name(func_name+'imag'))
+
+                    items.append((item, value))
+                    pars.append(item)
+
+                    # Check if the parameter is in the grid and in that case set it as uneditable
+                    # func_name = obj_name + '.' + _set_func_prefix + item.capitalize()
+                    # grid_value = grid_parameters.get_value_by_name(func_name)
+                    # editable[item] = grid_parameters.get_fit_state_by_name(func_name)
+
+                try:
+                    groups = self.model.LayerGroups
+                except Exception:
+                    groups = False
+                try:
+                    units = self.model.LayerUnits
+                except Exception:
+                    units = False
 
             dlg = ValidateFitDialog(self, pars, vals, validators,
                                     title='Layer Editor', groups=groups,
@@ -548,13 +583,13 @@ class SamplePanel(wx.Panel):
             if dlg.ShowModal()==wx.ID_OK:
                 vals = dlg.GetValues()
                 states = dlg.GetStates()
-                for par in list(self.model.LayerParameters.keys()):
+                for par in pars:
                     if not states[par]:
                         setattr(sel, par, vals[par])
                     if editable[par]!=states[par]:
                         value = eval_func(vals[par])
 
-                        if type(self.model.LayerParameters[par]) is complex:
+                        if type(value) is complex:
                             # print type(value)
                             func_name = obj_name+'.'+_set_func_prefix+par.capitalize()+'real'
                             val = value.real

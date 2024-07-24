@@ -48,6 +48,10 @@ class ReflBase(ModelParamBase):
         # for legacy parameter lookup
         return dict([(fi.name, getattr(self, fi.name)) for fi in fields(self)])
 
+    def _parameter_info(self):
+        # field information for all parameters
+        return dict([(fi.name, fi) for fi in fields(self)])
+
 @dataclass
 class StackBase(ReflBase):
     Layers: List[ReflBase] = field(default_factory=list)
