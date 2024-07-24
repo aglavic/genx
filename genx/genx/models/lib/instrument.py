@@ -50,15 +50,9 @@ def SquareIntensity(alpha, slen, beamwidth):
 #         points - the number of points for the convolution
 #         range how far the gaussian should be convoluted
 def ResolutionVector(Q, dQ, points, range=3):
-    # if type(dQ)!=type(array([])):
-    #    dQ=dQ*ones(Q.shape)
     Qres = Q+dQ*linspace(-range, range, points)[:, newaxis]
-
     weight = 1/sqrt(2*pi)/dQ*exp(-(transpose(Q[:, newaxis])-Qres)**2/dQ**2/2)
-    Qret = Qres.flatten()  # reshape(Qres,(1,Qres.shape[0]*Qres.shape[1]))[0]
-    # print Qres
-    # print Qres.shape
-    # print Qret.shape
+    Qret = Qres.flatten()
     return Qret, weight
 
 
@@ -66,12 +60,9 @@ def ResolutionVector(Q, dQ, points, range=3):
 # and I the calculated intensity at each point. returns the intensity
 def ConvoluteResolutionVector(Qret, I, weight):
     Qret2 = Qret.reshape(weight.shape[0], weight.shape[1])
-    # print Qret.shape,weight.shape
     I2 = I.reshape(weight.shape[0], weight.shape[1])
-    # print (I*weight).shape,Qret.shape
     norm_fact = trapz(weight, x=Qret2, axis=0)
     Int = trapz(I2*weight, x=Qret2, axis=0)/norm_fact
-    # print Int.shape
     return Int
 
 

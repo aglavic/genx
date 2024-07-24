@@ -18,8 +18,11 @@ from .lib.instrument import *
 from .lib.base import AltStrEnum
 from .lib import refl_new as refl
 from .lib.physical_constants import r_e, muB_to_SL
+# import all special footprint functions
 from .lib import footprint as footprint_module
 from .lib.footprint import *
+from .lib import resolution as resolution_module
+from .lib.resolution import *
 
 # Preamble to define the parameters needed for the models outlined below:
 
@@ -312,17 +315,18 @@ def footprintcorr(Q, instrument: Instrument):
 
 def resolutioncorr(R, TwoThetaQz, foocor, instrument: Instrument, weight):
     ''' Do the convolution of the reflectivity to account for resolution effects.'''
+    R = R[:]*foocor
     restype = instrument.restype
     if restype==ResType.fast_conv:
-        R = ConvoluteFast(TwoThetaQz, R[:]*foocor, instrument.res, range=instrument.resintrange)
-    elif restype in [ResType.full_conv_rel, ResType.full_conv_abs]:
-        R = ConvoluteResolutionVector(TwoThetaQz, R[:]*foocor, weight)
+        R = ConvoluteFast(TwoThetaQz, R, instrument.res, range=instrument.resintrange)
+    elif restype in [ResType.full_conv_rel, ResType.full_conv_abs] or isinstance(restype, resolution_module.Resolution):
+        R = ConvoluteResolutionVector(TwoThetaQz, R, weight)
     elif restype==ResType.fast_conv_var:
-        R = ConvoluteFastVar(TwoThetaQz, R[:]*foocor, instrument.res, range=instrument.resintrange)
+        R = ConvoluteFastVar(TwoThetaQz, R, instrument.res, range=instrument.resintrange)
     elif restype==ResType.fast_conv_rel:
-        R = ConvoluteFastVar(TwoThetaQz, R[:]*foocor, instrument.res*TwoThetaQz, range=instrument.resintrange)
+        R = ConvoluteFastVar(TwoThetaQz, R, instrument.res*TwoThetaQz, range=instrument.resintrange)
     elif restype==ResType.none:
-        R = R[:]*foocor
+        pass
     else:
         raise ValueError('The choice of resolution type, restype,'
                          'is WRONG')
@@ -336,14 +340,14 @@ def resolution_init(TwoThetaQz, instrument: Instrument):
 
     restype = instrument.restype
     weight = 0
-    if restype==ResType.full_conv_abs:
-        (TwoThetaQz, weight) = ResolutionVector(TwoThetaQz[:],
-                                                instrument.res, instrument.respoints,
-                                                range=instrument.resintrange)
+    if isinstance(restype, resolution_module.Resolution):
+        (TwoThetaQz, weight) = restype(TwoThetaQz[:], instrument.respoints, instrument.resintrange)
+    elif restype==ResType.full_conv_abs:
+        res_function = GaussianResolution(sigma=instrument.res)
+        (TwoThetaQz, weight) = res_function(TwoThetaQz[:], instrument.respoints, instrument.resintrange)
     elif restype==ResType.full_conv_rel:
-        (TwoThetaQz, weight) = ResolutionVector(TwoThetaQz[:],
-                                                instrument.res*TwoThetaQz, instrument.respoints,
-                                                range=instrument.resintrange)
+        res_function = GaussianResolution(sigma=instrument.res*TwoThetaQz)
+        (TwoThetaQz, weight) = res_function(TwoThetaQz[:], instrument.respoints, instrument.resintrange)
     # TTH values given as x
     if instrument.coords==Coords.tth:
         Q = TwoThetatoQ(instrument.wavelength, TwoThetaQz+instrument.tthoff)

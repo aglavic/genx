@@ -5,7 +5,7 @@ All footprint classes follow the initial Footprint protocol to allow the model t
 """
 
 import numpy as np
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 
 from .instrument import GaussIntensity
 from .base import ModelParamBase
