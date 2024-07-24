@@ -18,7 +18,8 @@ from .lib.instrument import *
 from .lib.base import AltStrEnum
 from .lib import refl_new as refl
 from .lib.physical_constants import r_e, muB_to_SL
-
+from .lib import footprint as footprint_module
+from .lib.footprint import *
 
 # Preamble to define the parameters needed for the models outlined below:
 
@@ -300,6 +301,8 @@ def footprintcorr(Q, instrument: Instrument):
         foocor = SquareIntensity(theta, samlen, beamw)
     elif footype==FootType.none:
         pass
+    elif isinstance(footype, footprint_module.Footprint):
+        foocor = footype(theta, samlen)
     else:
         raise ValueError('The choice of footprint correction, footype,'
                          'is WRONG')

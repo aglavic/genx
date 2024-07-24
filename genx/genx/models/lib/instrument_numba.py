@@ -6,10 +6,16 @@ pi=math.pi
 rad=pi/180.
 sqrt2=math.sqrt(2.)
 
+def GaussIntensity(alpha, s1, s2, sigma_x):
+    if type(s1) is ndarray:
+        return GaussIntensityVector(alpha, s1, s2, sigma_x)
+    else:
+        return GaussIntensityScalar(alpha, s1, s2, sigma_x)
+
 @numba.jit(
     numba.float64[:](numba.float64[:], numba.float64, numba.float64, numba.float64),
     nopython=True, parallel=True, cache=True)
-def GaussIntensity(alpha, s1, s2, sigma_x):
+def GaussIntensityScalar(alpha, s1, s2, sigma_x):
     I=empty_like(alpha)
     if s1==s2:
         for ai in numba.prange(alpha.shape[0]):
@@ -19,6 +25,16 @@ def GaussIntensity(alpha, s1, s2, sigma_x):
         for ai in numba.prange(alpha.shape[0]):
             sinalpha=math.sin(alpha[ai]*rad)
             I[ai]=(math.erf(s1/sqrt2/sigma_x*sinalpha)+math.erf(s2/sqrt2/sigma_x*sinalpha))/2.
+    return I
+
+@numba.jit(
+    numba.float64[:](numba.float64[:], numba.float64[:], numba.float64[:], numba.float64),
+    nopython=True, parallel=True, cache=True)
+def GaussIntensityVector(alpha, s1, s2, sigma_x):
+    I=empty_like(alpha)
+    for ai in numba.prange(alpha.shape[0]):
+        sinalpha=math.sin(alpha[ai]*rad)
+        I[ai]=(math.erf(s1[ai]/sqrt2/sigma_x*sinalpha)+math.erf(s2[ai]/sqrt2/sigma_x*sinalpha))/2.
     return I
 
 @numba.jit(
