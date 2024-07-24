@@ -81,9 +81,10 @@ class ModelParamMeta(type):
         # adding documentation for class into module doc-string
         # this leads to much cleaner code in model module as beginning of file only contains
         # a general introduction and each dataclass gets documented where it's defined.
-        if cls.__doc__ is not None:
+        module = inspect.getmodule(cls)
+        if module is not None and cls.__doc__ is not None:
+            # create suitable doc string automatically, but only for non-interactively created classes
             doc = inspect.cleandoc(cls.__doc__)
-            module = inspect.getmodule(cls)
             docout = f'{cls.__name__}\n'
             docout += '~'*len(cls.__name__)+'\n'
             sig = eval('inspect.signature(cls)', module.__dict__, {'cls': cls, 'inspect':inspect})

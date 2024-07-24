@@ -878,7 +878,8 @@ class Model(H5HintedExport):
 
         # First find the classes that exists..
         # and defined in self.registred_classes
-        classes = []
+        # In addition, any class derived from ModelParamBase is found.
+        classes = [ModelParamBase]
         for c in self.opt.registred_classes+pars:
             try:
                 ctemp = self.eval_in_model(c)
@@ -897,20 +898,16 @@ class Model(H5HintedExport):
             # each item for a classes is a new dictionary that holds the
             # object name and then a list of the methods.
             par_dict = {}
-            [par_dict.__setitem__(clas.__name__, {}) for clas in classes]
+            #[par_dict.__setitem__(clas.__name__, {}) for clas in classes]
             # find all the names of the objects that belongs to 
             # one of the classes
             objs = [(name, self.eval_in_model(name)) for name in names]
-            valid_objs = [(name, obj) for name, obj in objs
-                          if isinstance(obj, tuple_of_classes)]
-            # nested for loop for finding for each valid object
-            # the right name as given by self.model_parameters.set_func
-            # Add this to the right item in par_dict given
-            # its class and name.
-            [par_dict[obj.__class__.__name__].__setitem__(name,
-                                                          [member for member in dir(obj)
-                                                           if member.startswith(self.opt.set_func)])
-             for name, obj in valid_objs]
+            for name, obj in objs:
+                if isinstance(obj, tuple_of_classes):
+                    if obj.__class__.__name__ not in par_dict:
+                        par_dict[obj.__class__.__name__] = {}
+                    par_dict[obj.__class__.__name__].__setitem__(name,
+                          [member for member in dir(obj)  if member.startswith(self.opt.set_func)])
             return par_dict
         return {}
 

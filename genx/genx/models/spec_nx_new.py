@@ -24,8 +24,6 @@ from .lib.physical_constants import r_e, muB_to_SL
 
 ModelID = 'SpecNX'
 
-__pars__ = ['Layer', 'Stack', 'Sample', 'Instrument']
-
 AA_to_eV = 12398.5
 ''' Conversion from Angstrom to eV E = AA_to_eV/lamda.'''
 
