@@ -48,6 +48,8 @@ class SquareBeamOffset(Footprint):
 
     def __call__(self, theta, samplen):
         sinalpha = np.sin(theta*np.pi/180.)
-        Fl = np.minimum(0.5, samplen/2.0/(self.width-self.offset)*sinalpha)
-        Fr = np.minimum(0.5, samplen/2.0/(self.width+self.offset)*sinalpha)
-        return Fl+Fr
+        cross_section = samplen*sinalpha
+        c_max = cross_section/2.0+self.offset
+        c_min = -cross_section/2.0+self.offset
+        FP = np.maximum(0., (np.minimum(c_max, self.width/2.)-np.maximum(c_min, -self.width/2.)))/self.width
+        return FP
