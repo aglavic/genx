@@ -185,9 +185,9 @@ import numpy as np
 
 from copy import deepcopy
 from scipy.special import wofz
-from . import spec_nx
+from . import spec_nx_legacy as spec_nx
 from .lib.sm_hayter_mook import sm_layers
-from .spec_nx import refl
+from .spec_nx_legacy import refl
 from .lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:

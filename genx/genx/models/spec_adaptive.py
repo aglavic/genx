@@ -158,8 +158,8 @@ Instrument
 '''
 import numpy as np
 
-from . import spec_nx
-from .spec_nx import refl
+from . import spec_nx_legacy as spec_nx
+from .spec_nx_legacy import refl
 from .lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:
