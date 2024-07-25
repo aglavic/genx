@@ -11,7 +11,7 @@ from typing import Union
 from .instrument import ResolutionVector
 from .base import ModelParamBase
 
-__all__ = ['GaussianResolution']
+__all__ = ['GaussianResolution', 'TrapezoidResolution']
 
 class Resolution(ModelParamBase):
     """
@@ -25,9 +25,15 @@ class Resolution(ModelParamBase):
     def __call__(self, TwoThetaQz, respoints=15, resintrange=2.0):
         raise NotImplementedError("Subclass must implement __call__ method")
 
+    def get_weight_example(self):
+        # Return a test sample of the resolution function for a q=0.1 and default parameters
+        qres, weight = self(np.array([0.1]))
+        weight = weight.flatten()/weight.max()
+        return qres, weight.flatten()
+
 @dataclass
 class GaussianResolution(Resolution):
-    sigma: Union[float, np.ndarray]
+    sigma: Union[float, np.ndarray] = 0.005
 
     def __call__(self, TwoThetaQz, respoints=15, resintrange=2.0):
         # (TwoThetaQz, weight) =
@@ -35,21 +41,14 @@ class GaussianResolution(Resolution):
 
 @dataclass
 class TrapezoidResolution(Resolution):
-    inner_width: Union[float, np.ndarray] = 0.2
-    outer_width: Union[float, np.ndarray] = 0.3
+    inner_width: Union[float, np.ndarray] = 0.02
+    outer_width: Union[float, np.ndarray] = 0.0
 
     def __call__(self, TwoThetaQz, respoints=15, resintrange=2.0):
-        # (TwoThetaQz, weight) =
-        a = -self.outer_width/2.
-        b = -self.inner_width/2.
-        c = self.inner_width/2.
-        d = self.outer_width/2.
+        full_width = np.maximum(self.inner_width, self.outer_width)
         scale = np.linspace(-0.5, 0.5, respoints)[:,np.newaxis]
-        Qres = TwoThetaQz+self.outer_width*scale
-        norm = 1./(self.inner_width+self.outer_width)
-        inner_rel = self.inner_width/self.outer_width
-        #weight = norm*np.where(2*abs(scale)<=inner_rel, 1.0, (x-a)/(b-a))
+        Qres = TwoThetaQz+full_width*scale
+        # relative size of inner and outer widths, make sure the shape is like TwoThetaQz (widths can be float or array)
+        inner_rel = self.inner_width/full_width*np.ones_like(TwoThetaQz)
+        weight = np.where(2.*abs(scale)<=inner_rel, 1.0, 1.0-(2.*abs(scale)-inner_rel)/(1.0-inner_rel))
         return (Qres.flatten(), weight)
-    # Qres = Q+dQ*linspace(-range, range, points)[:, newaxis]
-    # weight = 1/sqrt(2*pi)/dQ*exp(-(transpose(Q[:, newaxis])-Qres)**2/dQ**2/2)
-    # Qret = Qres.flatten()
