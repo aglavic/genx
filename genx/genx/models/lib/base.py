@@ -94,9 +94,9 @@ class ModelParamMeta(type):
                 if ni=='user_kwds':
                     continue
                 if ni in units and units[ni].strip()!='':
-                    call_params.append(f'{ni}={si.default} {units[ni]}')
+                    call_params.append(f'{ni}={si.default!r} ({units[ni]})')
                 else:
-                    call_params.append(f'{ni}={si.default}')
+                    call_params.append(f'{ni}={si.default!r}')
             call_string = f'{cls.__name__}({", ".join(call_params)})'
             docout += f'``{call_string}``\n\n'
             docout += doc
@@ -148,7 +148,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
             pass
         for fi in fields(self):
             if not fi.name in ca:
-                ca[fi.name] = str(self._orig_params[fi.name])
+                ca[fi.name] = repr(self._orig_params[fi.name])
         self._ca = ca
 
     @staticmethod

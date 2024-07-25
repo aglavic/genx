@@ -5,6 +5,7 @@ import wx.html
 
 from genx.core.custom_logging import iprint
 from genx.model import Model
+from genx.models.lib.base import AltStrEnum
 from genx.models.lib.refl_new import ReflBase as ReflBaseNew
 from genx.plugins.utils import ShowQuestionDialog, ShowWarningDialog
 from . import reflectivity_images as images
@@ -218,8 +219,42 @@ class SamplePanel(wx.Panel):
         """
         obj_name = 'sample'
         eval_func = self.plugin.GetModel().eval_in_model
-        grid_parameters = self.plugin.GetModel().get_parameters()
+        editable, grid_parameters, groups, pars, units, validators, vals = self.ExtractSampleParameters(obj_name)
 
+        dlg = ValidateFitDialog(self, pars, vals, validators,
+                                title='Sample Editor', groups=groups,
+                                units=units, editable_pars=editable)
+
+        if dlg.ShowModal()==wx.ID_OK:
+            old_vals = vals
+            vals = dlg.GetValues()
+            # print vals
+            states = dlg.GetStates()
+            for par in pars:
+                if not states[par]:
+                    old_type = type(old_vals[par])
+                    if isinstance(self.sampleh.sample, ReflBaseNew):
+                        self.sampleh.sample._ca[par] = vals[par]
+                        setattr(self.sampleh.sample, par, old_type(vals[par]))
+                    else:
+                        setattr(self.sampleh.sample, par, old_type(vals[par]))
+                if editable[par]!=states[par]:
+                    value = eval_func(vals[par])
+                    minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
+                    maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
+                    func_name = obj_name+'.'+_set_func_prefix+par.capitalize()
+                    grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
+                    # Tell the grid to reload the parameters
+                    self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+
+            self.Update()
+
+        dlg.Destroy()
+
+    def ExtractSampleParameters(self, obj_name):
+        if isinstance(self.sampleh.sample, ReflBaseNew):
+            return self.ExtractSampleParametersNew(obj_name)
+        grid_parameters = self.plugin.GetModel().get_parameters()
         validators = {}
         vals = {}
         pars = []
@@ -253,32 +288,36 @@ class SamplePanel(wx.Panel):
             units = self.model.SampleUnits
         except Exception:
             units = False
+        return editable, grid_parameters, groups, pars, units, validators, vals
 
-        dlg = ValidateFitDialog(self, pars, vals, validators,
-                                title='Sample Editor', groups=groups,
-                                units=units, editable_pars=editable)
+    def ExtractSampleParametersNew(self, obj_name):
+        grid_parameters = self.plugin.GetModel().get_parameters()
+        validators = {}
+        vals = {}
+        pars = []
+        items = []
+        editable = {}
 
-        if dlg.ShowModal()==wx.ID_OK:
-            old_vals = vals
-            vals = dlg.GetValues()
-            # print vals
-            states = dlg.GetStates()
-            for par in pars:
-                if not states[par]:
-                    old_type = type(old_vals[par])
-                    setattr(self.sampleh.sample, par, old_type(vals[par]))
-                if editable[par]!=states[par]:
-                    value = eval_func(vals[par])
-                    minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
-                    maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
-                    func_name = obj_name+'.'+_set_func_prefix+par.capitalize()
-                    grid_parameters.set_fit_state_by_name(func_name, value, states[par], minval, maxval)
-                    # Tell the grid to reload the parameters
-                    self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
-
-            self.Update()
-
-        dlg.Destroy()
+        for name, value_info in self.sampleh.sample._parameter_info().items():
+            if name not in ['Stacks', 'Substrate', 'Ambient']:
+                val = getattr(self.sampleh.sample, name)
+                if issubclass(value_info.type, AltStrEnum):
+                    validators[name] = [i.value for i in value_info.type]
+                    val = str(val)
+                else:
+                    validators[name] = FloatObjectValidator()
+                vals[name] = val
+                pars.append(name)
+                items.append((name, val))
+                # Check if the parameter is in the grid and in that case set it as uneditable
+                func_name = obj_name+'.'+_set_func_prefix+name.capitalize()
+                grid_value = grid_parameters.get_value_by_name(func_name)
+                editable[name] = grid_parameters.get_fit_state_by_name(func_name)
+                if grid_value is not None:
+                    vals[name] = grid_value
+        groups = self.sampleh.sample.Groups
+        units = getattr(self.sampleh.sample, 'Units', [])
+        return editable, grid_parameters, groups, pars, units, validators, vals
 
     def SetInstrument(self, instruments):
         '''SetInstrument(self, instrument) --> None
@@ -295,46 +334,12 @@ class SamplePanel(wx.Panel):
         :return: Nothing
         """
         eval_func = self.plugin.GetModel().eval_in_model
-        validators = {}
-        vals = {}
-        editable = {}
-        grid_parameters = self.plugin.GetModel().get_parameters()
-        for inst_name in self.instruments:
-            vals[inst_name] = {}
-            editable[inst_name] = {}
-
-        pars = []
-        model_inst_params = self.model.InstrumentParameters
-        for item in model_inst_params:
-            if item in self.model.instrument_string_choices:
-                # validators.append(self.model.instrument_string_choices[item])
-                validators[item] = self.model.instrument_string_choices[item]
-            else:
-                # validators.append(FloatObjectValidator())
-                validators[item] = FloatObjectValidator()
-            for inst_name in self.instruments:
-                val = getattr(self.instruments[inst_name], item)
-                vals[inst_name][item] = val
-                # Check if the parameter is in the grid and in that case set it as uneditable
-                func_name = inst_name+'.'+_set_func_prefix+item.capitalize()
-                grid_value = grid_parameters.get_value_by_name(func_name)
-                editable[inst_name][item] = grid_parameters.get_fit_state_by_name(func_name)
-                if grid_value is not None:
-                    vals[inst_name][item] = grid_value
-            pars.append(item)
+        editable, grid_parameters, model_inst_params, pars, validators, vals, groups, units= self.ExtractInstrumentParams()
 
         old_insts = []
         for inst_name in self.instruments:
             old_insts.append(inst_name)
 
-        try:
-            groups = self.model.InstrumentGroups
-        except Exception:
-            groups = False
-        try:
-            units = self.model.InstrumentUnits
-        except Exception:
-            units = False
         dlg = ValidateFitNotebookDialog(self, pars, vals, validators,
                                         title='Instrument Editor', groups=groups,
                                         units=units, fixed_pages=['inst'], editable_pars=editable)
@@ -344,37 +349,8 @@ class SamplePanel(wx.Panel):
             vals = dlg.GetValues()
             # print vals
             states = dlg.GetStates()
-            self.instruments = {}
-            for inst_name in vals:
-                new_instrument = False
-                if inst_name not in self.instruments:
-                    # A new instrument must be created:
-                    self.instruments[inst_name] = self.model.Instrument()
-                    new_instrument = True
-                for par in self.model.InstrumentParameters:
-                    if not states[inst_name][par]:
-                        orig_type = type(model_inst_params[par])
-                        if orig_type is str:
-                            e_value = vals[inst_name][par]
-                        else:
-                            e_value = eval_func(vals[inst_name][par])
-                        setattr(self.instruments[inst_name], par, orig_type(e_value))
-                    else:
-                        setattr(self.instruments[inst_name], par, old_vals[inst_name][par])
-                    if new_instrument and states[inst_name][par]>0:
-                        value = eval_func(vals[inst_name][par])
-                        minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
-                        maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
-                        func_name = inst_name+'.'+_set_func_prefix+par.capitalize()
-                        grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval, maxval)
-                    elif not new_instrument:
-                        if editable[inst_name][par]!=states[inst_name][par]:
-                            value = eval_func(vals[inst_name][par])
-                            minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
-                            maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
-                            func_name = inst_name+'.'+_set_func_prefix+par.capitalize()
-                            grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval,
-                                                                  maxval)
+            self.UpdateInstrumentConfiguration(editable, eval_func, grid_parameters, model_inst_params, old_vals,
+                                               states, vals)
 
             # Loop to remove instrument from grid if not returned from Dialog
             for inst_name in old_insts:
@@ -397,6 +373,159 @@ class SamplePanel(wx.Panel):
         else:
             pass
         dlg.Destroy()
+
+    def UpdateInstrumentConfiguration(self, editable, eval_func, grid_parameters, model_inst_params, old_vals, states,
+                                      vals):
+        if isinstance(self.sampleh.sample, ReflBaseNew):
+            return self.UpdateInstrumentConfigurationNew(editable, eval_func, grid_parameters, model_inst_params, old_vals, states,
+                                      vals)
+        self.instruments = {}
+        for inst_name in vals:
+            new_instrument = False
+            if inst_name not in self.instruments:
+                # A new instrument must be created:
+                self.instruments[inst_name] = self.model.Instrument()
+                new_instrument = True
+            for par in self.model.InstrumentParameters:
+                if not states[inst_name][par]:
+                    orig_type = type(model_inst_params[par])
+                    if orig_type is str:
+                        e_value = vals[inst_name][par]
+                    else:
+                        e_value = eval_func(vals[inst_name][par])
+                    setattr(self.instruments[inst_name], par, orig_type(e_value))
+                else:
+                    setattr(self.instruments[inst_name], par, old_vals[inst_name][par])
+                if new_instrument and states[inst_name][par]>0:
+                    value = eval_func(vals[inst_name][par])
+                    minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
+                    maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
+                    func_name = inst_name+'.'+_set_func_prefix+par.capitalize()
+                    grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval, maxval)
+                elif not new_instrument:
+                    if editable[inst_name][par]!=states[inst_name][par]:
+                        value = eval_func(vals[inst_name][par])
+                        minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
+                        maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
+                        func_name = inst_name+'.'+_set_func_prefix+par.capitalize()
+                        grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][par], minval,
+                                                              maxval)
+
+    def UpdateInstrumentConfigurationNew(self, editable, eval_func, grid_parameters, model_inst_params, old_vals, states,
+                                      vals):
+        self.instruments = {}
+        for inst_name in vals:
+            new_instrument = False
+            if inst_name not in self.instruments:
+                # A new instrument must be created:
+                self.instruments[inst_name] = self.model.Instrument()
+                new_instrument = True
+            inst = self.instruments[inst_name]
+            for name, value_info in inst._parameter_info().items():
+                if not states[inst_name][name]:
+                    orig_type = value_info.type
+                    if orig_type is str:
+                        e_value = vals[inst_name][name]
+                    elif issubclass(orig_type, AltStrEnum):
+                        e_value = vals[inst_name][name]
+                        orig_type = str
+                    else:
+                        e_value = eval_func(vals[inst_name][name])
+                    setattr(self.instruments[inst_name], name, orig_type(e_value))
+                else:
+                    setattr(self.instruments[inst_name], name, old_vals[inst_name][name])
+                if new_instrument and states[inst_name][name]>0:
+                    value = eval_func(vals[inst_name][name])
+                    minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
+                    maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
+                    func_name = inst_name+'.'+_set_func_prefix+name.capitalize()
+                    grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][name], minval, maxval)
+                elif not new_instrument:
+                    if editable[inst_name][name]!=states[inst_name][name]:
+                        value = eval_func(vals[inst_name][name])
+                        minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
+                        maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
+                        func_name = inst_name+'.'+_set_func_prefix+name.capitalize()
+                        grid_parameters.set_fit_state_by_name(func_name, value, states[inst_name][name], minval,
+                                                              maxval)
+
+
+    def ExtractInstrumentParams(self):
+        if isinstance(self.sampleh.sample, ReflBaseNew):
+            return self.ExtractInstrumentParamsNew()
+        validators = {}
+        vals = {}
+        editable = {}
+        grid_parameters = self.plugin.GetModel().get_parameters()
+        for inst_name in self.instruments:
+            vals[inst_name] = {}
+            editable[inst_name] = {}
+        pars = []
+        model_inst_params = self.model.InstrumentParameters
+        for item in model_inst_params:
+            if item in self.model.instrument_string_choices:
+                # validators.append(self.model.instrument_string_choices[item])
+                validators[item] = self.model.instrument_string_choices[item]
+            else:
+                # validators.append(FloatObjectValidator())
+                validators[item] = FloatObjectValidator()
+            for inst_name in self.instruments:
+                val = getattr(self.instruments[inst_name], item)
+                vals[inst_name][item] = val
+                # Check if the parameter is in the grid and in that case set it as uneditable
+                func_name = inst_name+'.'+_set_func_prefix+item.capitalize()
+                grid_value = grid_parameters.get_value_by_name(func_name)
+                editable[inst_name][item] = grid_parameters.get_fit_state_by_name(func_name)
+                if grid_value is not None:
+                    vals[inst_name][item] = grid_value
+            pars.append(item)
+
+        try:
+            groups = self.model.InstrumentGroups
+        except Exception:
+            groups = False
+        try:
+            units = self.model.InstrumentUnits
+        except Exception:
+            units = False
+
+        return editable, grid_parameters, model_inst_params, pars, validators, vals, groups, units
+
+    def ExtractInstrumentParamsNew(self):
+        validators = {}
+        vals = {}
+        editable = {}
+        grid_parameters = self.plugin.GetModel().get_parameters()
+        pars = []
+        groups = []
+        units = []
+        for inst_name in self.instruments:
+            inst = self.instruments[inst_name]
+            vals[inst_name] = {}
+            editable[inst_name] = {}
+            model_inst_params = []
+            groups = inst.Groups
+            units = getattr(inst, 'Units', [])
+            for name, value_info in inst._parameter_info().items():
+                model_inst_params.append(name)
+                val = getattr(self.instruments[inst_name], name)
+                if issubclass(value_info.type, AltStrEnum):
+                    validators[name] = [i.value for i in value_info.type]
+                    val = val.value
+                else:
+                    validators[name] = FloatObjectValidator()
+                vals[inst_name][name] = val
+                # Check if the parameter is in the grid and in that case set it as uneditable
+                func_name = inst_name+'.'+_set_func_prefix+name.capitalize()
+                grid_value = grid_parameters.get_value_by_name(func_name)
+                editable[inst_name][name] = grid_parameters.get_fit_state_by_name(func_name)
+                if grid_value is not None:
+                    vals[inst_name][name] = grid_value
+                pars.append(name)
+
+
+
+        return editable, grid_parameters, model_inst_params, pars, validators, vals, groups, units
 
     def MoveUp(self, evt):
         sl = self.sampleh.moveUp(self.listbox.GetSelection())
@@ -585,7 +714,10 @@ class SamplePanel(wx.Panel):
                 states = dlg.GetStates()
                 for par in pars:
                     if not states[par]:
-                        setattr(sel, par, vals[par])
+                        if isinstance(sel, ReflBaseNew):
+                            sel._ca[par] = vals[par]
+                        else:
+                            setattr(sel, par, vals[par])
                     if editable[par]!=states[par]:
                         value = eval_func(vals[par])
 
@@ -615,32 +747,60 @@ class SamplePanel(wx.Panel):
 
         else:
             # The selected item is a Stack
-            for item in list(self.model.StackParameters.keys()):
-                if item!='Layers':
-                    value = getattr(sel, item)
-                    if isinstance(value, float):
-                        validators[item] = FloatObjectValidator(eval_func, alt_types=[self.model.Stack])
-                    else:
-                        validators[item] = TextObjectValidator()
-                    items.append((item, value))
-                    pars.append(item)
-                    vals[item] = value
+            if isinstance(sel, ReflBaseNew):
+                for name, value_info in sel._parameter_info().items():
+                    if name!='Layers':
+                        value = getattr(sel, name)
+                        if value_info.type in [int, float]:
+                            validators[name] = FloatObjectValidator(eval_func, alt_types=[self.model.Stack])
+                        else:
+                            validators[name] = TextObjectValidator()
+                        items.append((name, value))
+                        pars.append(name)
+                        vals[name] = value
 
-                    # Check if the parameter is in the grid and in that case set it as uneditable
-                    func_name = obj_name+'.'+_set_func_prefix+item.capitalize()
-                    grid_value = grid_parameters.get_value_by_name(func_name)
-                    editable[item] = grid_parameters.get_fit_state_by_name(func_name)
-                    if grid_value is not None:
-                        vals[item] = grid_value
+                        # Check if the parameter is in the grid and in that case set it as uneditable
+                        func_name = obj_name+'.'+_set_func_prefix+name.capitalize()
+                        grid_value = grid_parameters.get_value_by_name(func_name)
+                        editable[name] = grid_parameters.get_fit_state_by_name(func_name)
+                        if grid_value is not None:
+                            vals[name] = grid_value
 
-            try:
-                groups = self.model.StackGroups
-            except Exception:
-                groups = False
-            try:
-                units = self.model.StackUnits
-            except Exception:
-                units = False
+                try:
+                    groups = self.model.StackGroups
+                except Exception:
+                    groups = False
+                try:
+                    units = self.model.StackUnits
+                except Exception:
+                    units = False
+            else:
+                for item in list(self.model.StackParameters.keys()):
+                    if item!='Layers':
+                        value = getattr(sel, item)
+                        if isinstance(value, float):
+                            validators[item] = FloatObjectValidator(eval_func, alt_types=[self.model.Stack])
+                        else:
+                            validators[item] = TextObjectValidator()
+                        items.append((item, value))
+                        pars.append(item)
+                        vals[item] = value
+
+                        # Check if the parameter is in the grid and in that case set it as uneditable
+                        func_name = obj_name+'.'+_set_func_prefix+item.capitalize()
+                        grid_value = grid_parameters.get_value_by_name(func_name)
+                        editable[item] = grid_parameters.get_fit_state_by_name(func_name)
+                        if grid_value is not None:
+                            vals[item] = grid_value
+
+                try:
+                    groups = self.model.StackGroups
+                except Exception:
+                    groups = False
+                try:
+                    units = self.model.StackUnits
+                except Exception:
+                    units = False
 
             dlg = ValidateFitDialog(self, pars, vals, validators,
                                     title='Layer Editor', groups=groups,

@@ -144,10 +144,73 @@ class SampleHandler:
         items = code[p:].split(',')
         return name+''.join(['<code>%s,</code>'%item for item in items])
 
+    def getCodeNew(self):
+        '''
+        Generate the python code for the current sample structure.
+        '''
+        slist = self.getStringListNew()
+        layer_code = ''
+
+        # Create code for the layers:
+        for item in slist:
+            if item.find('Layer')>-1:
+                itemp = item.lstrip()
+                layer_code = layer_code+itemp+'\n'
+        # Create code for the Stacks:
+        i = 0
+        stack_code = ''
+        item = slist[i]
+        maxi = len(slist)-1
+        while (i<maxi):
+            if item.find('Stack')>-1:
+                stack_strings = item.split(':')
+                stack_code = stack_code+stack_strings[0]+'(Layers=['
+                i += 1
+                item = slist[i]
+                stack_layers = []
+                while (item.find('Stack')<0 and i<maxi):
+                    itemp = item.split('=')[0]
+                    itemp = itemp.lstrip()
+                    stack_layers.append(itemp)
+                    # stack_code = stack_code + itemp+','
+                    i += 1
+                    item = slist[i]
+                stack_layers.reverse()
+                stack_code += ', '.join(stack_layers)
+                i -= 1
+                if stack_code[-1]!='[':
+                    stack_code = stack_code[:-1]+'],'+stack_strings[1]+')\n'
+                else:
+                    stack_code = stack_code[:]+'],'+stack_strings[1]+')\n'
+            i += 1
+            item = slist[i]
+        # Create the code for the sample
+        sample_code = 'sample = model.Sample(Stacks = ['
+        stack_strings = stack_code.split('\n')
+        rest_sample_rep = '], '
+        sample_string_pars = ', '.join([f'{name} = {self.sample._ca.get(name, None)}'
+                        for name in self.sample._parameters.keys() if name not in ['Stacks', 'Ambient', 'Substrate']])
+        if len(sample_string_pars)!=0:
+            rest_sample_rep += sample_string_pars+', '
+        rest_sample_rep += 'Ambient = Amb, Substrate = Sub)\n'
+        if stack_strings!=['']:
+            stack_strings.reverse()
+            for item in stack_strings[1:]:
+                itemp = item.split('=')[0]
+                sample_code = sample_code+itemp+','
+            sample_code = sample_code[:-2]+rest_sample_rep
+        else:
+            sample_code += rest_sample_rep
+
+        return layer_code, stack_code, sample_code
+
+
     def getCode(self):
         '''
         Generate the python code for the current sample structure.
         '''
+        if isinstance(self.sample, ReflBase):
+            return self.getCodeNew()
         slist = self.getStringList()
         layer_code = ''
 
@@ -593,8 +656,12 @@ class SampleBuilder:
         # Instrument script creation
         code = 'from models.utils import create_fp, create_fw\n'
         for inst_name in instruments:
-            code += ('%s = model.'%inst_name+
-                     instruments[inst_name].__repr__()+'\n')
+            inst_i = instruments[inst_name]
+            if isinstance(inst_i, ReflBase):
+                inst_repr = inst_i._repr_call()
+            else:
+                inst_repr = inst_i.__repr__()
+            code += (f'{inst_name} = model.{inst_repr}\n')
             code += '%s_fp = create_fp(%s.wavelength);'%(inst_name, inst_name)
             code += ' %s_fw = create_fw(%s.wavelength)\n\n'%(inst_name, inst_name)
         code += ('fp.set_wavelength(inst.wavelength); '

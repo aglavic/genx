@@ -250,7 +250,7 @@ class Instrument(refl.ReflBase):
     respoints: int = 5
     resintrange: float = 2.
     beamw: float = 0.01
-    footype: str = 'no corr'
+    footype: FootType = 'no corr'
     samplelen: float = 10.0
     incangle: float = 0.5
     pol: Polarization = 'uu'
