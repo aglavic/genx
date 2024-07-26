@@ -129,6 +129,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
             self._orig_params[fi.name] = getattr(self, fi.name)
             if inspect.isclass(fi.type) and not isinstance(getattr(self, fi.name), fi.type):
                 # convert parameter to correct type
+                # TODO: implement for more complex types like Union[a,b], check above works for both
                 setattr(self, fi.name, fi.type(getattr(self, fi.name)))
 
     def _extract_callpars(self, source):

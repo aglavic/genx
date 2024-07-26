@@ -432,9 +432,17 @@ class SamplePanel(wx.Panel):
                     else:
                         e_value = eval_func(vals[inst_name][name])
                     setattr(self.instruments[inst_name], name, orig_type(e_value))
-                else:
+                elif states[inst_name][name]!=3:
                     setattr(self.instruments[inst_name], name, old_vals[inst_name][name])
-                if new_instrument and states[inst_name][name]>0:
+                if states[inst_name][name]==3:
+                    # ignore attribute overwritten in script
+                    orig_type = value_info.type
+                    e_value = getattr(inst, name)
+                    if issubclass(orig_type, AltStrEnum):
+                        e_value = orig_type(e_value).value
+                        orig_type = str
+                    setattr(self.instruments[inst_name], name, orig_type(e_value))
+                elif new_instrument and states[inst_name][name]>0:
                     value = eval_func(vals[inst_name][name])
                     minval = min(value*(1-self.variable_span), value*(1+self.variable_span))
                     maxval = max(value*(1-self.variable_span), value*(1+self.variable_span))
@@ -507,13 +515,19 @@ class SamplePanel(wx.Panel):
             groups = inst.Groups
             units = getattr(inst, 'Units', [])
             for name, value_info in inst._parameter_info().items():
-                model_inst_params.append(name)
                 val = getattr(self.instruments[inst_name], name)
+                if not isinstance(val, value_info.type):
+                    # current value does not correspond to type, should have been converted on class creation
+                    editable[inst_name][name] = 3
+                    vals[inst_name][name] = "set in script"
+                    validators[name] = TextObjectValidator()
+                    continue
                 if issubclass(value_info.type, AltStrEnum):
                     validators[name] = [i.value for i in value_info.type]
                     val = val.value
                 else:
                     validators[name] = FloatObjectValidator()
+                model_inst_params.append(name)
                 vals[inst_name][name] = val
                 # Check if the parameter is in the grid and in that case set it as uneditable
                 func_name = inst_name+'.'+_set_func_prefix+name.capitalize()
