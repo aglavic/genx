@@ -424,23 +424,17 @@ class SamplePanel(wx.Panel):
             for name, value_info in inst._parameter_info().items():
                 if not states[inst_name][name]:
                     orig_type = value_info.type
-                    if orig_type is str:
+                    if orig_type is str or issubclass(orig_type, AltStrEnum):
                         e_value = vals[inst_name][name]
-                    elif issubclass(orig_type, AltStrEnum):
-                        e_value = vals[inst_name][name]
-                        orig_type = str
                     else:
                         e_value = eval_func(vals[inst_name][name])
                     setattr(self.instruments[inst_name], name, orig_type(e_value))
                 elif states[inst_name][name]!=3:
                     setattr(self.instruments[inst_name], name, old_vals[inst_name][name])
                 if states[inst_name][name]==3:
-                    # ignore attribute overwritten in script
+                    # ignore attribute overwritten in script and replace by default
                     orig_type = value_info.type
                     e_value = getattr(inst, name)
-                    if issubclass(orig_type, AltStrEnum):
-                        e_value = orig_type(e_value).value
-                        orig_type = str
                     setattr(self.instruments[inst_name], name, orig_type(e_value))
                 elif new_instrument and states[inst_name][name]>0:
                     value = eval_func(vals[inst_name][name])
@@ -524,7 +518,7 @@ class SamplePanel(wx.Panel):
                     continue
                 if issubclass(value_info.type, AltStrEnum):
                     validators[name] = [i.value for i in value_info.type]
-                    val = val.value
+                    val = str(val)
                 else:
                     validators[name] = FloatObjectValidator()
                 model_inst_params.append(name)

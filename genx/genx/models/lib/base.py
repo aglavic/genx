@@ -262,3 +262,9 @@ class AltStrEnum(str, Enum):
 
     def __neq__(self, other):
         return not self.__eq__(other)
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return f'"{self.value}"'
