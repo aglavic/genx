@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 '''
 Library for combined x-ray and neutrons simulations with adaptive layer segmentation
 ====================================================================================
@@ -10,447 +9,517 @@ The actual modeling of the result structure is done with the same function as in
 
 Classes
 -------
-
-Layer
-~~~~~
-``Layer(b = 0.0, d = 0.0, f = 0.0+0.0J, b=0j, dens = 1.0, magn_ang = 0.0, magn = 0.0, sigma = 0.0, xs_ai=0.0, rough_type=0, sigma_magn=0.0, magn_void=False)``
-
-``b``
-   The neutron scattering length per formula unit in fm (fermi meter =
-   1e-15m)
-``d``
-   The thickness of the layer in AA (Angstroms = 1e-10m)
-``f``
-   The x-ray scattering length per formula unit in electrons. To be
-   strict it is the number of Thompson scattering lengths for each
-   formula unit.
-``dens``
-   The density of formula units in units per Angstroms. Note the units!
-``magn_ang``
-   The angle of the magnetic moment in degress. 0 degrees correspond to
-   a moment collinear with the neutron spin.
-``magn``
-   The magnetic moment per formula unit (same formula unit as b and dens
-   refer to)
-``sigma``
-   The root mean square roughness of the top interface of the layer in
-   Angstroms.
-``sigma_mag``
-   A different roughness parameter for the magnetization of the layer, 0 is ignored
-``xs_ai``
-   The sum of the absorption cross section and the incoherent scattering
-   cross section in barns for neutrons
-``magn_void``
-   If true this layer has no magnetization. In case of *sigma_mag* beging larger then 0 the additional
-   roughness is only applied to the magnetic layer and inside this layer follows the chemical profile.
-``rough_type``
-   Used model to get the SLD profile of the interface, *0* is an error function profile (gaussian roughness),
-   *1* is a linear profile, *2* and *3* are exponential decays from bottom or top side.
-
-
-Stack
-~~~~~
-``Stack(Layers = [], Repetitions = 1, Element = 0)``
-
-``Layers``
-   A ``list`` consiting of ``Layer``\ s in the stack the first item is
-   the layer closest to the bottom
-``Repetitions``
-   The number of repsetions of the stack
-``Element``
-   The Element of the model that this stack belongs to. There has to be at least one stack with Element 0.
-   For every *Element* the layers are stacked *on top* of the substrate separately and then all *Elements* are
-   summed up to calculate the total SLD.
-   The main use case for this is either to separate magnetic from nuclear structure
-   (nuclear Element=0, magnetic Element=1) or two or more elemental contributions for element specific diffusion.
-   For layers that have no contribution at a certain depth one can add a layer with 0 density as spacer.
-
-Sample
-~~~~~~
-``Sample(Stacks = [], Ambient = Layer(), Substrate = Layer(), minimal_steps=0.5, max_diff_n=0.01, max_diff_x=0.01, smoothen=0, crop_sigma=0)``
-
-``Stacks``
-   A ``list`` consiting of ``Stack``\ s in the stacks the first item is
-   the layer closest to the bottom
-``Ambient``
-   A ``Layer`` describing the Ambient (enviroment above the sample).
-   Only the scattering lengths and density of the layer is used.
-``Substrate``
-   A ``Layer`` describing the substrate (enviroment below the sample).
-   Only the scattering lengths, density and roughness of the layer is
-   used.
-``minimal_steps``
-   The thickness of the minimal step between layers. Smaller values make the model more precise but slower.
-   For data with larger q-range a smaller minimal_step is required. Try to start with 0.5-1 Å step size and
-   increase the value until you see differences in the simulated data.
-``max_diff_n``
-   Maximum neutron SLD deviation to be allowed for layers to be combined in the adaptive procedure
-``max_diff_x``
-   Maximum x-ray SLD deviation to be allowed for layers to be combined in the adaptive procedure
-``smoothen``
-   Default is to not use any roughness for the segmentation. If set to 1 this will add roughnesses between all
-   segments to make the curve more smooth.
-``crop_sigma``
-   For cases where roughness of an interface is in the order of layer thickness will limit the extent
-   of roughness to the neighboring interfaces to avoid strange SLD profiles.
-   Note: This means that the sigma parameter strictly is not an actual rms roughness anymore.
-
-Instrument
-~~~~~~~~~~
-``Instrument(probe = 'x-ray', wavelength = 1.54, coords = '2θ', I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2, beamw = 0.01, footype = 'no corr', samplelen = 10.0, incangle = 0.0, pol = 'uu')``
-
-``probe``
-    Describes the radiation and measurments used is one of: 'x-ray',
-    'neutron', 'neutron pol', 'neutron pol spin flip', 'neutron tof',
-    'neutron pol tof' or the respective number 0, 1, 2, 3, 4, 5, 6. The
-    calculations for x-rays uses ``f`` for the scattering length for
-    neutrons ``b`` for 'neutron pol', 'neutron pol spin flip' and 'neutron
-    pol tof' alternatives the ``magn`` is used in the calculations. Note
-    that the angle of magnetization ``magn_ang`` is only used in the last
-    alternative.
-``wavelength``
-    The wavelength of the radiation given in AA (Angstroms)
-``coords``
-    The coordinates of the data given to the SimSpecular function. The
-    available alternatives are: 'q' or '2θ'. Alternatively the numbers 0 (q)
-    or 1 (tth) can be used.
-``I0``
-    The incident intensity (a scaling factor)
-``Ibkg``
-    The background intensity. Added as a constant value to the calculated
-    reflectivity
-``res``
-    The resolution of the instrument given in the coordinates of ``coords``.
-    This assumes a gaussian resolution function and ``res`` is the standard
-    deviation of that gaussian. If ``restype`` has (dx/x) in its name the
-    gaussian standard deviation is given by res*x where x is either in tth
-    or q.
-``restype``
-    Describes the rype of the resolution calculated. One of the
-    alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
-    'fast conv + varying res.', 'full conv and varying res. (dx/x)', 'fast
-    conv + varying res. (dx/x)'. The respective numbers 0-3 also works. Note
-    that fast convolution only alllows a single value into res wheras the
-    other can also take an array with the same length as the x-data (varying
-    resolution)
-``respoints``
-    The number of points to include in the resolution calculation. This is
-    only used for 'full conv and vaying res.', 'fast conv + varying res',
-    'full conv and varying res. (dx/x)' and 'fast conv + varying res.
-    (dx/x)'.
-``resintrange``
-    Number of standard deviatons to integrate the resolution function times
-    the reflectivity over
-``footype``
-    Which type of footprint correction is to be applied to the simulation.
-    One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, the
-    number 0-2 are also valid. The different choices are self expnalatory.
-``beamw``
-    The width of the beam given in mm. For 'gauss beam' it should be the
-    standard deviation. For 'square beam' it is the full width of the beam.
-``samplelen``
-    The length of the sample given in mm
-``incangle``
-    The incident angle of the neutrons, only valid in tof mode
-``pol``
-    The measured polarization of the instrument. Valid options are:
-    'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
 '''
+
 import numpy as np
+from typing import List
+from dataclasses import dataclass, field, fields
 
-from . import spec_nx_legacy as spec_nx
-from .spec_nx_legacy import refl
+from .lib import paratt as Paratt
+from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
+from .lib.base import AltStrEnum
+from .lib import refl_new as refl
+from .lib.physical_constants import r_e, muB_to_SL
+# import all special footprint functions
+from .lib import footprint as footprint_module
+from .lib.footprint import *
+from .lib import resolution as resolution_module
+from .lib.resolution import *
 
-# Preamble to define the parameters needed for the models outlined below:
+from .spec_nx import (Probe, Coords, ResType, FootType, Polarization, Instrument as NXInstrument,
+                      footprintcorr, resolutioncorr, resolution_init, neutron_sld, q_limit, AA_to_eV)
+
 ModelID='SpecAdaptive'
-__pars__=spec_nx.__pars__.copy()
-
-instrument_string_choices=spec_nx.instrument_string_choices.copy()
-InstrumentParameters=spec_nx.InstrumentParameters.copy()
-InstrumentGroups=spec_nx.InstrumentGroups.copy()
-InstrumentUnits=spec_nx.InstrumentUnits.copy()
-
-LayerParameters=spec_nx.LayerParameters.copy()
-LayerParameters.update({'magn_void': False, 'rough_type': 0, 'sigma_mag': 0.0})
-LayerUnits=spec_nx.LayerUnits.copy()
-LayerUnits.update({'magn_void': 'True/False',
-                   'rough_type': '0-gauss/1-lin\n2/3-exp', 'sigma_mag': 'AA'})
-LayerGroups=[('Standard', ['f', 'dens', 'd', 'sigma']),
-             ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang', 'sigma_mag']),
-             ('Special', ['magn_void', 'rough_type'])]
-
-StackParameters={'Layers': [], 'Repetitions': 1, 'Element': 0}
-SampleParameters=spec_nx.SampleParameters.copy()
-SampleParameters.update({'minimal_steps': 0.5, 'max_diff_n': 0.01,
-                         'max_diff_x': 0.01, 'smoothen': 0, 'crop_sigma': 0})
-sample_string_choices={}
-
-AA_to_eV=spec_nx.AA_to_eV
-q_limit=spec_nx.q_limit
-Buffer=spec_nx.Buffer
 
 __xlabel__ = "q [Å$^{-1}$]"
 __ylabel__ = "Instnsity [a.u.]"
 
-def SLD_calculations(z, item, sample, inst):
-    res=spec_nx.SLD_calculations(z, item, sample, inst)
-    res['z']-=5*refl.resolve_par(sample.Substrate, 'sigma')
-    return res
+class RoughType(AltStrEnum):
+    gauss = 'gauss'
+    linear = 'linear'
+    exp1 = 'exp-1'
+    exp2 = 'exp-2'
 
-def Specular(TwoThetaQz, sample, instrument):
-    out = spec_nx.Specular(TwoThetaQz, sample, instrument)
-    global __xlabel__
-    __xlabel__ = spec_nx.__xlabel__
-    return out
+@dataclass
+class Layer(refl.ReflBase):
+    """
+    Representing a layer in the sample structur.
 
-def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
-    out = spec_nx.PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument)
-    global __xlabel__
-    __xlabel__ = spec_nx.__xlabel__
-    return out
+    ``b``
+       The neutron scattering length per formula unit in fm (femtometer = 1e-15m)
+    ``d``
+        The thickness of the layer in AA (Angstroms = 1e-10m)
+    ``f``
+       The x-ray scattering length per formula unit in electrons. To be
+       strict it is the number of Thompson scattering lengths for each
+       formula unit.
+    ``dens``
+        The density of formula units in units per Angstroms. Note the units!
+    ``sigma``
+        The root-mean-square roughness of the top interface of the layer in Angstroms.
+    ``magn``
+        The magnetic moment per formula unit (same formula unit as b and dens refer to)
+    ``magn_ang``
+        The angle of the magnetic moment in degress. 0 degrees correspond to
+        a moment collinear with the neutron spin.
+    ``magn_void``
+       If true this layer has no magnetization. In case of *sigma_mag* beging larger then 0 the additional
+       roughness is only applied to the magnetic layer and inside this layer follows the chemical profile.
+    ``sigma_mag``
+       A different roughness parameter for the magnetization of the layer, 0 is ignored
+    ``rough_type``
+       Used model to get the SLD profile of the interface, *gauss* is an error function profile (gaussian roughness),
+       *linear* is a linear profile, *exp-1* and *exp-2* are exponential decays from bottom or top side.
+    ``xs_ai``
+       The sum of the absorption cross-section and the incoherent scattering
+       cross-section in barns for neutrons
+    """
+    sigma: float = 0.0
+    dens: float = 1.0
+    d: float = 0.0
+    f: complex = 1e-20j
+    b: complex = 0j
+    xs_ai: float = 0.0
+
+    rough_type: RoughType = 'gauss'
+
+    magn: float = 0.0
+    magn_ang: float = 0.0
+    magn_void: bool = False
+    sigma_mag: float = 0.0
 
 
-SimulationFunctions={'Specular': Specular,
-                     'PolSpecular': PolSpecular,
-                     'SLD': SLD_calculations
-                     }
+    Units = {
+        'sigma': 'AA', 'dens': 'at./AA', 'd': 'AA', 'f': 'el./at.',
+        'b': 'fm/at.', 'xs_ai': 'barn/at.',
+        'magn': 'mu_B/at.', 'magn_ang': 'deg.', 'sigma_mag': 'AA',
+        }
 
-(Instrument, Layer, Stack, Sample)=refl.MakeClasses(InstrumentParameters,
-                                                    LayerParameters, StackParameters, SampleParameters,
-                                                    SimulationFunctions,
-                                                    ModelID)
+    Groups = [('Standard', ['f', 'dens', 'd', 'sigma', 'rough_type']),
+              ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang'])]
 
-def calculate_segmentation(sample):
+@dataclass
+class LayerParameters:
+    sigma: List[float]
+    dens: List[float]
+    d: List[float]
+    f: List[complex]
+    b: List[complex]
+    xs_ai: List[float]
+    rough_type: List[RoughType]
+    magn: List[float]
+    magn_ang: List[float]
+    magn_void: List[bool]
+    sigma_mag: List[float]
+
+@dataclass
+class Stack(refl.StackBase):
+    """
+    A collection of Layer objects that can be repeated.
+
+    ``Layers``
+       A ``list`` consiting of ``Layers`` in the stack the first item is
+       the layer closest to the bottom
+    ``Repetitions``
+       The number of repsetions of the stack
+    ``Element``
+       The Element of the model that this stack belongs to. There has to be at least one stack with Element 0.
+       For every *Element* the layers are stacked *on top* of the substrate separately and then all *Elements* are
+       summed up to calculate the total SLD.
+       The main use case for this is either to separate magnetic from nuclear structure
+       (nuclear Element=0, magnetic Element=1) or two or more elemental contributions for element specific diffusion.
+       For layers that have no contribution at a certain depth one can add a layer with 0 density as spacer.
+    """
+    Layers: List[Layer] = field(default_factory=list)
+    Repetitions: int = 1
+    Element: int = 0
+
+@dataclass
+class Sample(refl.SampleBase):
+    """
+    Describe global sample by listing ambient, substrate and layer parameters.
+
+    ``Stacks``
+       A ``list`` consiting of ``Stacks`` in the stacks the first item is
+       the layer closest to the bottom
+    ``Ambient``
+       A ``Layer`` describing the Ambient (enviroment above the sample).
+       Only the scattering lengths and density of the layer is used.
+    ``Substrate``
+       A ``Layer`` describing the substrate (enviroment below the sample).
+       Only the scattering lengths, density and roughness of the layer is
+       used.
+    ``minimal_steps``
+       The thickness of the minimal step between layers. Smaller values make the model more precise but slower.
+       For data with larger q-range a smaller minimal_step is required. Try to start with 0.5-1 Å step size and
+       increase the value until you see differences in the simulated data.
+    ``max_diff_n``
+       Maximum neutron SLD deviation to be allowed for layers to be combined in the adaptive procedure
+    ``max_diff_x``
+       Maximum x-ray SLD deviation to be allowed for layers to be combined in the adaptive procedure
+    ``smoothen``
+       Default is to not use any roughness for the segmentation. If True this will add roughnesses between all
+       segments to make the curve more smooth.
+    ``crop_sigma``
+       For cases where roughness of an interface is in the order of layer thickness will limit the extent
+       of roughness to the neighboring interfaces to avoid strange SLD profiles.
+       Note: This means that the sigma parameter strictly is not an actual rms roughness anymore.
+    """
+    Stacks: List[Stack] = field(default_factory=list)
+    Ambient: Layer = field(default_factory=Layer)
+    Substrate: Layer = field(default_factory=Layer)
+
+    minimal_steps: float = 0.5
+    max_diff_n: float = 0.01
+    max_diff_x: float = 0.01
+    smoothen: bool = False
+    crop_sigma: bool = False
+    _layer_parameter_class = LayerParameters
+
+class Zeeman(AltStrEnum):
+    none = 'no corr'
+    field = 'field only'
+    pos_sf = 'SF q (+)'
+    neg_sf = 'SF q (-)'
+
+@dataclass
+class Instrument(NXInstrument):
+    zeeman: Zeeman = 'no corr'
+    mag_field: float = 0.0
+
+    Units = NXInstrument.Units | {'mag_field': "T"}
+    Groups = NXInstrument.Groups + [("Zeeman correction", ['zeeman', 'mag_field'])]
+
+
+# A buffer to save previous calculations for spin-flip calculations
+class Buffer:
+    Ruu = 0
+    Rdd = 0
+    Rdu = 0
+    Rud = 0
+    parameters = None
+    TwoThetaQz = None
+
+
+def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
+    """ Simulate the specular signal from sample when probed with instrument
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    """
+    return specular_calcs(TwoThetaQz, sample, instrument, return_int=True)
+
+def specular_calcs(TwoThetaQz, sample: Sample, instrument: Instrument, return_int=True):
+    """ Simulate the specular signal from sample when probed with instrument
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    """
+
+    # preamble to get it working with my class interface
+    restype = instrument.restype
+    Q, TwoThetaQz, weight = resolution_init(TwoThetaQz, instrument)
+    # often an issue with resolution etc. so just replace Q values < q_limit
+    # if any(Q < q_limit):
+    #    raise ValueError('The q vector has to be above %.1e, please verify all your x-axis points fulfill this criterion, including possible resolution smearing.'%q_limit)
+    Q = maximum(Q, q_limit)
+
+    ptype = instrument.probe
+    pol = instrument.pol
+
+    parameters:LayerParameters = sample.resolveLayerParameters()
+
+    dens = array(parameters.dens, dtype=float64)
+    d = array(parameters.d, dtype=float64)
+    magn = array(parameters.magn, dtype=float64)
+    # Transform to radians
+    magn_ang = array(parameters.magn_ang, dtype=float64)*pi/180.0
+
+    sigma = array(parameters.sigma, dtype=float64)
+
+    if ptype==Probe.xray:
+        # fb = array(parameters['f'], dtype = complex64)
+        e = AA_to_eV/instrument.wavelength
+        fb = refl.cast_to_array(parameters.f, e).astype(complex128)
+        sld = dens*fb*instrument.wavelength**2/2/pi
+    else:
+        fb = array(parameters.b, dtype=complex128)*1e-5
+        abs_xs = array(parameters.xs_ai, dtype=complex128)*1e-4**2
+        wl = instrument.wavelength
+        # sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
+        #                       1.0J*abs_xs*wl/4/pi)
+        sld = neutron_sld(abs_xs, dens, fb, wl)
+    # Ordinary Paratt X-rays
+    if ptype==Probe.xray:
+        R = Paratt.ReflQ(Q, instrument.wavelength, 1.0-r_e*sld, d, sigma, return_int=return_int)
+        # print 2.82e-5*sld
+    # Ordinary Paratt Neutrons
+    elif ptype==Probe.neutron:
+        R = Paratt.ReflQ(Q, instrument.wavelength, 1.0-sld, d, sigma, return_int=return_int)
+    # Ordinary Paratt but with magnetization
+    elif ptype==Probe.npol:
+        msld = muB_to_SL*magn*dens*instrument.wavelength**2/2/pi
+        # Polarization uu or ++
+        if pol==Polarization.up_up:
+            R = Paratt.ReflQ(Q, instrument.wavelength, 1.0-sld-msld, d, sigma, return_int=return_int)
+        # Polarization dd or --
+        elif pol==Polarization.down_down:
+            R = Paratt.ReflQ(Q, instrument.wavelength, 1.0-sld+msld, d, sigma, return_int=return_int)
+        elif pol==Polarization.asymmetry:
+            Rp = Paratt.ReflQ(Q, instrument.wavelength, 1.0-sld-msld, d, sigma, return_int=return_int)
+            Rm = Paratt.ReflQ(Q, instrument.wavelength, 1.0-sld+msld, d, sigma, return_int=return_int)
+            R = (Rp-Rm)/(Rp+Rm)
+
+        else:
+            raise ValueError('The value of the polarization is WRONG.'
+                             ' It should be uu(0) or dd(1)')
+    # Spin flip
+    elif ptype==Probe.npolsf:
+        # Check if we have calcluated the same sample previous:
+        if Buffer.TwoThetaQz is not None:
+            Q_ok = Buffer.TwoThetaQz.shape==Q.shape
+            if Q_ok:
+                Q_ok = not (Buffer.TwoThetaQz!=Q).any()
+        else:
+            Q_ok = False
+        if Buffer.parameters!=parameters or not Q_ok:
+            msld = muB_to_SL*magn*dens*instrument.wavelength**2/2/pi
+            # renormalize SLDs if ambient layer is not vacuum
+            if msld[-1]!=0. or sld[-1]!=0:
+                msld -= msld[-1]
+                sld -= sld[-1]
+            sld_p = sld+msld
+            sld_m = sld-msld
+            Vp = (2*pi/instrument.wavelength)**2*(sld_p*(2.+sld_p))  # (1-np**2) - better numerical accuracy
+            Vm = (2*pi/instrument.wavelength)**2*(sld_m*(2.+sld_m))  # (1-nm**2)
+            (Ruu, Rdd, Rud, Rdu) = MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma, return_int=return_int)
+            Buffer.Ruu = Ruu
+            Buffer.Rdd = Rdd
+            Buffer.Rud = Rud
+            Buffer.parameters = parameters
+            Buffer.TwoThetaQz = Q.copy()
+        else:
+            pass
+        if pol==Polarization.up_up:
+            R = Buffer.Ruu
+        elif pol==Polarization.down_down:
+            R = Buffer.Rdd
+        elif pol in [Polarization.up_down, Polarization.down_up]:
+            R = Buffer.Rud
+        # Calculating the asymmetry ass
+        elif pol==Polarization.asymmetry:
+            R = (Buffer.Ruu-Buffer.Rdd)/(Buffer.Ruu+Buffer.Rdd+2*Buffer.Rud)
+        else:
+            raise ValueError('The value of the polarization is WRONG.'
+                             ' It should be uu(0), dd(1) or ud(2)')
+
+    # tof
+    elif ptype==Probe.ntof:
+        ai = instrument.incangle
+        # if ai is an array, make sure it gets repeated for every resolution point
+        if type(ai) is ndarray and restype in [ResType.full_conv_rel, ResType.full_conv_abs]:
+            ai = (ai*ones(instrument.respoints)[:, newaxis]).flatten()
+        else:
+            ai = ai*ones(Q.shape)
+        wl = 4*pi*sin(ai*pi/180)/Q
+        sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
+        R = Paratt.Refl_nvary2(ai, wl,
+                               1.0-sld, d, sigma, return_int=return_int)
+    # tof spin polarized
+    elif ptype==Probe.npolsf:
+        wl = 4*pi*sin(instrument.incangle*pi/180)/Q
+        sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
+        msld = muB_to_SL*magn[:, newaxis]*dens[:, newaxis]*(4*pi*sin(instrument.incangle*pi/180)/Q)**2/2/pi
+        # polarization uu or ++
+        if pol==Polarization.up_up:
+            R = Paratt.Refl_nvary2(instrument.incangle*ones(Q.shape),
+                                   (4*pi*sin(instrument.incangle*pi/180)/Q), 1.0-sld-msld, d, sigma,
+                                   return_int=return_int)
+        # polarization dd or --
+        elif pol==Polarization.down_down:
+            R = Paratt.Refl_nvary2(instrument.incangle*ones(Q.shape),
+                                   (4*pi*sin(instrument.incangle*pi/180)/Q), 1.0-sld+msld, d, sigma,
+                                   return_int=return_int)
+        # Calculating the asymmetry
+        elif pol==Polarization.asymmetry:
+            Rd = Paratt.Refl_nvary2(instrument.incangle*ones(Q.shape),
+                                    (4*pi*sin(instrument.incangle*pi/180)/Q),
+                                    1.0-sld+msld, d, sigma, return_int=return_int)
+            Ru = Paratt.Refl_nvary2(instrument.incangle*ones(Q.shape),
+                                    (4*pi*sin(instrument.incangle*pi/180)/Q),
+                                    1.0-sld-msld, d, sigma, return_int=return_int)
+            R = (Ru-Rd)/(Ru+Rd)
+
+        else:
+            raise ValueError('The value of the polarization is WRONG.'
+                             ' It should be uu(0) or dd(1) or ass')
+    else:
+        raise ValueError('The choice of probe is WRONG')
+    if return_int:
+        # FootprintCorrections
+        foocor = footprintcorr(Q, instrument)
+        # Resolution corrections
+        R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
+
+        return R*instrument.I0+instrument.Ibkg
+    else:
+        return R
+
+
+def SLD_calculations(z, item, sample: Sample, inst: Instrument):
+    ''' Calculates the scatteringlength density as at the positions z
+    if item is None or "all" the function returns a dictonary of values.
+    Otherwise it returns the item as identified by its string.
+
+    # BEGIN Parameters
+    z data.x
+    item 'Re'
+    # END Parameters
     '''
-      Calculate segmentation steps inside a sample defined by
-      a maximum SLD slope and minimum step size. It first
-      calculates the nuclear and magnetic SLD profile
-      from the model and than separates it according to the
-      given parameters.
-    '''
-    parameters=resolve_parameters_by_element(sample)
-    dens=array(parameters['dens'], dtype=float64)
-    f=array(parameters['f'], dtype=complex128)
-    b=array(parameters['b'], dtype=complex128)
-    xs_ai=array(parameters['xs_ai'], dtype=float64)
-    magn=array(parameters['magn'], dtype=float64)
-    magn_ang=array(parameters['magn_ang'], dtype=float64)/180.*pi
-    magn_void=array(parameters['magn_void'], dtype=float64)
+    parameters: LayerParameters = sample.resolveLayerParameters()
+    if hasattr(sample, 'crop_sld') and sample.crop_sld!=0:
+        crop_top_bottom = abs(sample.crop_sld)
+        inter = Layer()
+        if sample.crop_sld>0:
+            inter.d = sum(parameters.d[crop_top_bottom:-crop_top_bottom])
+        else:
+            inter.d = 5.0
+            inter.dens = 0.1
+            inter.b = 12.0+0j
+            inter.f = 100.0+0j
+        if len(parameters.dens)>2*crop_top_bottom:
+            for fi in fields(Layer):
+                key = fi.name
+                value = getattr(parameters, key)
+                val_start = value[:crop_top_bottom]
+                val_end = value[-crop_top_bottom:]
+                setattr(parameters, key, val_start+[inter[key]]+val_end)
+    dens = array(parameters.dens, dtype=float32)
+    # f = array(parameters['f'], dtype = complex64)
+    e = AA_to_eV/inst.wavelength
+    f = refl.cast_to_array(parameters.f, e).astype(complex64)
+    b = array(parameters.b, dtype=complex64)*1e-5
+    abs_xs = array(parameters.xs_ai, dtype=float32)*1e-4**2
+    wl = inst.wavelength
+    ptype = inst.probe
+    magnetic = False
+    mag_sld = 0
+    sld_unit = r'r_{e}/\AA^{3}'
+    if ptype==Probe.xray:
+        sld = dens*f
+    elif ptype in [Probe.neutron, Probe.ntof]:
+        sld = dens*(wl**2/2/pi*b-1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
+        sld_unit = r'10^{-6}\AA^{-2}'
+    else:
+        magnetic = True
+        sld = dens*(wl**2/2/pi*b-1.0J*abs_xs*wl/4/pi)/1e-6/(wl**2/2/pi)
+        magn = array(parameters.magn, dtype=float64)
+        # Transform to radians
+        magn_ang = array(parameters.magn_ang, dtype=float64)*pi/180.0
+        mag_sld = 2.645*magn*dens*10.
+        mag_sld_x = mag_sld*cos(magn_ang)
+        mag_sld_y = mag_sld*sin(magn_ang)
+        sld_unit = r'10^{-6}\AA^{-2}'
 
-    crop_sigma = sample.crop_sigma
-    sld_x=dens*f
-    sld_n=dens*b
-    sld_xs=dens*xs_ai
-    # the new magnetization density and angle will be
-    # calculated from perpendicular and parallel components to allow
-    # a smooth transition in magnetic angle
-    mag_sld_nsf=magn*dens*cos(magn_ang)
-    mag_sld_sf=magn*dens*sin(magn_ang)
-
-    d=array(parameters['d'], dtype=float64)
-    d=d[1:-1]
+    d = array(parameters.d, dtype=float64)
+    d = d[1:-1]
     # Include one extra element - the zero pos (substrate/film interface)
-    int_pos=cumsum(r_[0, d])
-    rough_type=array(parameters['rough_type'], dtype=int)[:-1]
-    sigma_n=array(parameters['sigma'], dtype=float64)[:-1]+1e-7
-    sigma_m=array(parameters['sigma_mag'], dtype=float64)[:-1]+1e-7
-    z=arange(-sigma_n[0]*5, int_pos.max()+sigma_n[-1]*5, sample.minimal_steps/5.0)
-    # interface transition functions, products for different per-layer rough_type cases
-    # Gaussian (starts at 1 goes to 0, interface is at 0.5)
-    trans_n=(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma_n))*(rough_type==0)
-    # Linear
-    trans_n+=maximum(0., minimum(1., (1.+(int_pos-z[:, newaxis])/2./sigma_n)/2.))*(rough_type==1)
-    # Exponential decrease or increase
-    trans_n+=maximum(0., minimum(1., exp((int_pos-z[:, newaxis])/sigma_n)))*(rough_type==2)
-    trans_n+=maximum(0., minimum(1., 1.-exp((z[:, newaxis]-int_pos)/sigma_n)))*(rough_type==3)
-    trans_m=(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma_m))*(rough_type==0)
-    trans_m+=maximum(0., minimum(1., (1.+(int_pos-z[:, newaxis])/2./sigma_m)/2.))*(rough_type==1)
-    trans_m+=maximum(0., minimum(1., exp((int_pos-z[:, newaxis])/sigma_m)))*(rough_type==2)
-    trans_m+=maximum(0., minimum(1., 1.-exp((z[:, newaxis]-int_pos)/sigma_m)))*(rough_type==3)
-    if crop_sigma:
-        # Cop the roughness tails above and below the interface to avoid overspill.
-        # This is done by introducing a split-location within a layer where the
-        # influence of that layers roughness function is faded out with an error function.
-        # The location of the split is defined by the ratio of adjacent roughness values.
-        # I.e. the split is closer to the interface that has lower roughness.
-
-        # sigma ratio -1 to 1
-        sratio = (sigma_n[1:]-sigma_n[:-1])/(sigma_n[1:]+sigma_n[:-1])
-        # location of split relative to bottom interface
-        delta_pos = (0.5+0.5*sratio)*d
-        sigma_pos = (1.0-abs(sratio))*d/2.0
-        # the fade out function applied to the interface from below and above located within a layer
-        interface = (0.5-0.5*erf((z[:, newaxis]-int_pos[1:]+delta_pos)*sqrt(2.)/sigma_pos))
-
-        # Fade out roughness influence close to top and bottom split location
-        trans_n[:, 0] = trans_n[:, 0]*interface[:, 0]
-        trans_n[:, 1:-1] = interface[:, :-1]+(1.-interface[:, :-1])*trans_n[:, 1:-1]*interface[:, 1:]
-        trans_n[:, -1] = interface[:, -1]+(1.-interface[:, -1])*trans_n[:, -1]
-        trans_m[:, 0] = trans_m[:, 0]*interface[:, 0]
-        trans_m[:, 1:-1] = interface[:, :-1]+(1.-interface[:, :-1])*trans_m[:, 1:-1]*interface[:, 1:]
-        trans_m[:, -1] = interface[:, -1]+(1.-interface[:, -1])*trans_m[:, -1]
-    # SLD calculations
-    rho_x=sum((sld_x[:-1]-sld_x[1:])*trans_n, 1)+sld_x[-1]
-    rho_n=sum((sld_n[:-1]-sld_n[1:])*trans_n, 1)+sld_n[-1]
-    rho_m_nsf=sum((mag_sld_nsf[:-1]-mag_sld_nsf[1:])*trans_m, 1)+mag_sld_nsf[-1]
-    rho_m_sf=sum((mag_sld_sf[:-1]-mag_sld_sf[1:])*trans_m, 1)+mag_sld_sf[-1]
-    rho_void=sum((magn_void[:-1]-magn_void[1:])*trans_n, 1)+magn_void[-1]
-    xs_ai_comb=sum((sld_xs[:-1]-sld_xs[1:])*trans_n, 1)+sld_xs[-1]
-    # add more elements to the SLDs
-    for params in parameters['Elements'][1:]:
-        dens=array(params['dens'], dtype=float64)
-        f=array(params['f'], dtype=complex128)
-        b=array(params['b'], dtype=complex128)
-        xs_ai=array(params['xs_ai'], dtype=float64)
-        magn=array(params['magn'], dtype=float64)
-        magn_ang=array(params['magn_ang'], dtype=float64)/180.*pi
-        sld_x=dens*f
-        sld_n=dens*b
-        sld_xs=dens*xs_ai
-        mag_sld_nsf=magn*dens*cos(magn_ang)
-        mag_sld_sf=magn*dens*sin(magn_ang)
-
-        d=array(params['d'], dtype=float64)
-        d=d[1:-1]
-        # Include one extra element - the zero pos (substrate/film interface)
-        int_pos=cumsum(r_[0, d])
-        rough_type=array(params['rough_type'], dtype=int)[:-1]
-        sigma_n=array(params['sigma'], dtype=float64)[:-1]+1e-7
-        sigma_m=array(params['sigma_mag'], dtype=float64)[:-1]+1e-7
-        # interface transition functions
-        trans_n=(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma_n))*(rough_type==0)
-        trans_n+=maximum(0., minimum(1., (1.+(int_pos-z[:, newaxis])/2./sigma_n)/2.))*(rough_type==1)
-        trans_n+=maximum(0., minimum(1., exp((int_pos-z[:, newaxis])/sigma_n)))*(rough_type==2)
-        trans_n+=maximum(0., minimum(1., 1.-exp((z[:, newaxis]-int_pos)/sigma_n)))*(rough_type==3)
-        trans_m=(0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma_m))*(rough_type==0)
-        trans_m+=maximum(0., minimum(1., (1.+(int_pos-z[:, newaxis])/2./sigma_m)/2.))*(rough_type==1)
-        trans_m+=maximum(0., minimum(1., exp((int_pos-z[:, newaxis])/sigma_m)))*(rough_type==2)
-        trans_m+=maximum(0., minimum(1., 1.-exp((z[:, newaxis]-int_pos)/sigma_m)))*(rough_type==3)
-        # SLD calculations
-        rho_x+=sum((sld_x[:-1]-sld_x[1:])*trans_n, 1)+sld_x[-1]
-        rho_n+=sum((sld_n[:-1]-sld_n[1:])*trans_n, 1)+sld_n[-1]
-        rho_m_nsf+=sum((mag_sld_nsf[:-1]-mag_sld_nsf[1:])*trans_m, 1)+mag_sld_nsf[-1]
-        rho_m_sf+=sum((mag_sld_sf[:-1]-mag_sld_sf[1:])*trans_m, 1)+mag_sld_sf[-1]
-        xs_ai_comb+=sum((sld_xs[:-1]-sld_xs[1:])*trans_n, 1)+sld_xs[-1]
-    # calculate the segmentation
-    d_segments=[0.]
-    i=0
-    rho_x_out=[rho_x[0]]
-    rho_n_out=[rho_n[0]]
-    rho_nsf_out=[rho_m_nsf[0]]
-    rho_sf_out=[rho_m_sf[0]]
-    xs_ai_out=[xs_ai_comb[0]]
-    rho_x_r=rho_x.real
-    rho_n_p=rho_n.real+rho_m_nsf
-    rho_n_m=rho_n.real-rho_m_nsf
-    while i<(len(z)-1):
-        j=next_adaptive_segment(i, rho_x_r, rho_n_p, rho_n_m, rho_m_sf,
-                                sample.max_diff_n, sample.max_diff_x, z)
-        d_segments.append(z[j]-z[i])
-        rho_x_out.append(rho_x[i:j].mean())
-        rho_n_out.append(rho_n[i:j].mean())
-        rho_nsf_out.append(rho_m_nsf[i:j].mean()*(1.-rho_void[i:j].mean()))  # averadge magn taking voids into account
-        rho_sf_out.append(rho_m_sf[i:j].mean()*(1.-rho_void[i:j].mean()))  # averadge magn taking voids into account
-        xs_ai_out.append(xs_ai_comb[i:j].mean())  # averadge mang angle
-        i=j
-    rho_nsf_out=array(rho_nsf_out)
-    rho_sf_out=array(rho_sf_out)
-    rho_m_out=sqrt(rho_nsf_out**2+rho_sf_out**2).tolist()
-    magn_ang_out=(arctan2(rho_nsf_out, -rho_sf_out)*180./pi-90.).tolist()
-    return (d_segments[1:], rho_x_out[1:],
-            rho_n_out[1:], rho_m_out[1:], xs_ai_out[1:], magn_ang_out[1:])
-
-def next_adaptive_segment(i, rho_x_r, rho_n_p, rho_n_m, rho_m_sf, max_diff_n, max_diff_x, z):
-    # calculate the maximum variation of SLD up to given index
-    diff_x=abs(maximum.accumulate(rho_x_r[i+1:])-minimum.accumulate(rho_x_r[i+1:]))
-    diff_n_p=abs(maximum.accumulate(rho_n_p[i+1:])-minimum.accumulate(rho_n_p[i+1:]))
-    diff_n_m=abs(maximum.accumulate(rho_n_m[i+1:])-minimum.accumulate(rho_n_m[i+1:]))
-    diff_m_sf=abs(maximum.accumulate(rho_m_sf[i+1:])-minimum.accumulate(rho_m_sf[i+1:]))
-    diff_idx=where(logical_not((diff_n_p<max_diff_n) & (diff_x<max_diff_x) &
-                               (diff_n_m<max_diff_n) & (diff_m_sf<max_diff_n)))[0]
-    if len(diff_idx)>0:
-        j=min(len(z)-1, max(i+diff_idx[0]+1, i+5))
+    int_pos = cumsum(r_[0, d])
+    sigma = array(parameters.sigma, dtype=float64)[:-1]+1e-7
+    if z is None:
+        z = arange(-sigma[0]*5, int_pos.max()+sigma[-1]*5, 0.5)
+    if not magnetic:
+        rho = sum((sld[:-1]-sld[1:])*(0.5-
+                                      0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+sld[-1]
+        dic = {
+            'Re': real(rho), 'Im': imag(rho), 'z': z,
+            'SLD unit': sld_unit
+            }
     else:
-        j=len(z)-1  # last position
-    return j
-
-def resolve_parameters_by_element(sample):
-    """
-      Resolve the model standard parameters for each element.
-      The first element used for normal parameter names,
-      every other element does ignore substrate and ambience sld
-      and is assigned to the 'elements' keyword as list.
-      This makes it possible to build SLD profiles as sum of all
-      elements.
-    """
-    elements=list(set([stack.Element for stack in sample.Stacks]))
-    elements.sort()
-    par=sample.Substrate._parameters.copy()
-    for k in par:
-        par[k]=[refl.resolve_par(sample.Substrate, k)]
-    for k in sample.Substrate._parameters:
-        for stack in sample.Stacks:
-            if stack.Element!=0:
-                continue
-            par[k]=par[k]+stack.resolveLayerParameter(k)
-        par[k]=par[k]+[refl.resolve_par(sample.Ambient, k)]
-    par['sigma_mag']=where(array(par['sigma_mag'])!=0.,
-                           par['sigma_mag'], par['sigma']).tolist()
-    output=par
-    output['Elements']=[]
-    for element in elements:
-        par=sample.Substrate._parameters.copy()
-        for k in list(par.keys()):
-            par[k]=[refl.resolve_par(sample.Substrate, k)]
-        # zero substrat SLD
-        par['f']=[0j]
-        par['b']=[0j]
-        par['magn']=[0.]
-        par['xs_ai']=[0.]
-        par['magn_ang']=[0.]
-        for k in sample.Substrate._parameters:
-            for stack in sample.Stacks:
-                if stack.Element!=element:
-                    continue
-                par[k]=par[k]+stack.resolveLayerParameter(k)
-            par[k]=par[k]+[refl.resolve_par(sample.Ambient, k)+0.0]
-        # zero ambience SLD for Element
-        par['f'][-1]=0j
-        par['b'][-1]=0j
-        par['magn'][-1]=0.
-        par['xs_ai'][-1]=0.
-        par['magn_ang'][-1]=0.
-        # if magnetic roughness is set to zero use structural roughness
-        par['sigma_mag']=where(array(par['sigma_mag'])!=0.,
-                               par['sigma_mag'], par['sigma']).tolist()
-        output['Elements'].append(par)
-    return output
-
-def resolveLayerParameters(self):
-    # resolve parameters by creating layers automatically
-    # adapting changes to the SLDs
-    par={}
-    for k in ['b', 'd', 'dens', 'f', 'magn', 'magn_ang', 'sigma', 'xs_ai']:
-        par[k]=[refl.resolve_par(self.Substrate, k)]
-    par['sigma'][0]=0.
-    d, rho_x, rho_n, rho_m, xs_ai, magn_ang=calculate_segmentation(self)
-    par['d']+=d
-    par['f']+=rho_x
-    par['b']+=rho_n
-    par['magn']+=rho_m
-    par['xs_ai']+=xs_ai
-    if self.smoothen:
-        par['sigma']+=[(d[i]+d[i+1])/4. for i in range(len(d)-1)]+[0.]
+        sld_p = sld+mag_sld
+        sld_m = sld-mag_sld
+        rho_p = sum((sld_p[:-1]-sld_p[1:])*(0.5-
+                                            0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+sld_p[-1]
+        rho_m = sum((sld_m[:-1]-sld_m[1:])*(0.5-
+                                            0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+sld_m[-1]
+        rho_nucl = (rho_p+rho_m)/2.
+        if (magn_ang!=0.).any():
+            rho_mag_x = sum((mag_sld_x[:-1]-mag_sld_x[1:])*
+                            (0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+mag_sld_x[-1]
+            rho_mag_y = sum((mag_sld_y[:-1]-mag_sld_y[1:])*
+                            (0.5-0.5*erf((z[:, newaxis]-int_pos)/sqrt(2.)/sigma)), 1)+mag_sld_y[-1]
+            dic = {
+                'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),
+                'mag': real(rho_p-rho_m)/2, 'z': z, 'mag_x': rho_mag_x, 'mag_y': rho_mag_y,
+                'SLD unit': sld_unit
+                }
+        else:
+            dic = {
+                'Re non-mag': real(rho_nucl), 'Im non-mag': imag(rho_nucl),
+                'mag': real(rho_p-rho_m)/2, 'z': z,
+                'SLD unit': sld_unit
+                }
+    if item is None or item=='all':
+        return dic
     else:
-        par['sigma']+=[0. for ignore in d]
-    par['magn_ang']+=magn_ang
-    par['dens']+=[1. for ignore in d]
-    for k in ['b', 'd', 'dens', 'f', 'magn', 'magn_ang', 'sigma', 'xs_ai']:
-        par[k].append(refl.resolve_par(self.Ambient, k))
-    return par
+        try:
+            return dic[item]
+        except:
+            raise ValueError('The chosen item, %s, does not exist'%item)
 
-Sample.resolveLayerParameters=resolveLayerParameters
 
-if __name__=='__main__':
-    pass
+POL_CHANNELS = [Polarization.up_up, Polarization.down_down, Polarization.up_down, Polarization.down_up]
+
+
+def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample: Sample, instrument: Instrument):
+    """
+    Specular reflectivity of polarized measurement with finite polarization.
+    The polarization parameters are in accordance to the definition used in
+    A.R. Wildes publication, Review of Scientific Instruments 70, 11 (1999)
+    https://doi.org/10.1063/1.1150060
+
+    pol_params = (p1, p2, f1, f2)
+    p1: polarizer efficiency, 0: 100% spin-up, 1: 100% spin-down, 0.5: unpolarized
+    p2: analyzer efficiency,  0: 100% spin-up, 1: 100% spin-down, 0.5: unpolairzed
+    F1/F2: Flipper efficienty, 0: 100% efficient, 1: no flipping
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    p1 0.
+    p2 0.
+    F1 0.
+    F2 0.
+    # END Parameters
+
+    """
+    inst_pol = instrument.pol
+    if not inst_pol in POL_CHANNELS:
+        raise ValueError(f"Instrument polarization as to be one of {POL_CHANNELS}.")
+    if instrument.probe!=Probe.npolsf:
+        raise ValueError("Polarization corrected simulation requires probe to be 'neutron pol spin flip'")
+
+    instrument.pol = 'uu'
+    uu = Specular(TwoThetaQz, sample, instrument)
+    instrument.pol = 'dd'
+    dd = Specular(TwoThetaQz, sample, instrument)
+    instrument.pol = 'ud'
+    ud = Specular(TwoThetaQz, sample, instrument)
+    du = ud
+    instrument.pol = inst_pol
+
+    P = get_pol_matrix(p1, p2, F1, F2)
+    Pline = P[POL_CHANNELS.index(instrument.pol)]
+    I = Pline[:, newaxis]*np.vstack([uu, ud, du, dd])
+    return I.sum(axis=0)
+
+
+SimulationFunctions = {
+    'Specular': Specular,
+    'PolSpecular': PolSpecular,
+    'SLD': SLD_calculations,
+    }
+
+Sample.setSimulationFunctions(SimulationFunctions)
