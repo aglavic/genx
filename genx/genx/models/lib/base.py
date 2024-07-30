@@ -248,6 +248,16 @@ class AltStrEnum(str, Enum):
     `name` is the original attribute to be doublicated.
     """
 
+    @classmethod
+    def _missing_(cls, value):
+        # allow integer indices for backwards compatibility of some models
+        # order or items is according to order of definition in class
+        values = [e.value for e in cls]
+        if type(value) is int and value >=0 and value<len(values):
+            return cls(values[value])
+        else:
+            return super()._missing_(value)
+
     def __init__(self, string):
         if self.name.startswith('alternate'):
             self.alt_for = self.name.split('_', 1)[1]
