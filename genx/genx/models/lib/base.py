@@ -270,3 +270,6 @@ class AltStrEnum(str, Enum):
 
     def __repr__(self):
         return f'"{self.value}"'
+
+    def __hash__(self):
+        return str.__hash__(self.value)
