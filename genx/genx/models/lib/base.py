@@ -126,6 +126,8 @@ class ModelParamBase(metaclass=ModelParamMeta):
         self._orig_params = {}
         self._ca = {}
         for fi in fields(self):
+            if fi.name not in self.Units:
+                self.Units[fi.name] = ''
             self._orig_params[fi.name] = getattr(self, fi.name)
             if inspect.isclass(fi.type) and not isinstance(getattr(self, fi.name), fi.type):
                 # convert parameter to correct type
