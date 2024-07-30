@@ -952,7 +952,7 @@ class FitEditMixIn:
         :param validator: validator of the control
         :return: a wx control object (subclass of wx.Control)?
         """
-        if type(validator)==type([]):
+        if type(validator) in [list, tuple]:
             # There should be a list of choices
             validator=validator[:]
             ctrl=wx.Choice(parent, -1,

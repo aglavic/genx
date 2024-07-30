@@ -96,8 +96,8 @@ class Layer(refl.ReflBase):
         'magn': 'mu_B/at.', 'magn_ang': 'deg.', 'sigma_mag': 'AA',
         }
 
-    Groups = [('Standard', ['f', 'dens', 'd', 'sigma', 'rough_type']),
-              ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang'])]
+    Groups = [('Standard', ['f', 'dens', 'd', 'sigma', 'sigma_mag', 'rough_type']),
+              ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang', 'magn_void'])]
 
 @dataclass
 class LayerParameters:
