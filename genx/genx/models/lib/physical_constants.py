@@ -11,6 +11,7 @@ Memu_to_SLD=M_to_SLD*ApM_to_emucc
 muB=9.2740101E-24 # Bohr magneton [A·m^2]
 
 muB_to_SL=muB*M_to_SLD*1e24 # magnetic scattering length for a moment of 1 Bohr magneton
+T_to_SL=2.31605e-6 # 1/T/Á² magnetic field in Tesla to scattering length
 AAm2_to_emucc=1e-6/Memu_to_SLD # conversion of SLD [Å/m²] to M [emu/cm³]
 
 MASS_DENSITY_CONVERSION=1e-24*N_a  # g/cm³-> u/Å³ - used in converting mass density for SLDs

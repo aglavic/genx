@@ -20,7 +20,7 @@ from .lib import neutron_refl as MatrixNeutron
 from .lib.instrument import *
 from .lib.base import AltStrEnum
 from .lib import refl_new as refl
-from .lib.physical_constants import r_e, muB_to_SL
+from .lib.physical_constants import r_e, muB_to_SL, T_to_SL
 # import all special footprint functions
 from .lib import footprint as footprint_module
 from .lib.footprint import *
@@ -29,7 +29,7 @@ from .lib.resolution import *
 
 from . import spec_nx
 from .spec_nx import (Probe, Coords, ResType, FootType, Polarization, Instrument as NXInstrument, LayerParameters,
-                      footprintcorr, resolutioncorr, resolution_init, neutron_sld, q_limit, AA_to_eV)
+                      q_limit, AA_to_eV)
 
 ModelID='SpecAdaptive'
 
@@ -213,14 +213,114 @@ class Buffer:
     parameters = None
     TwoThetaQz = None
 
+def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
+    """ For details see spec_nx implementation with more comments.
+
+    This implements the concepts of [1] by correcting the q-position for spin-flip and
+    adding a magnetic sld to all layers along the external field diretion.
+
+    [1] Brian B. Maranville et al., "Polarized specular neutron reflectivity", J. Appl. Cryst. (2016). 49, 1121–1129
+    """
+
+    restype = instrument.restype
+    pol = instrument.pol
+    Q, TwoThetaQz, weight = spec_nx.resolution_init(TwoThetaQz, instrument)
+
+
+    rho_Z = instrument.mag_field*T_to_SL
+    # apply Zeeman correction to spin-flip channel q
+    if   instrument.zeeman==Zeeman.pos_sf and pol==Polarization.up_down or \
+         instrument.zeeman==Zeeman.neg_sf and pol==Polarization.down_up:
+        Q = Q/2. + np.sqrt((Q/2.)**2 + 8*pi*rho_Z)
+    elif instrument.zeeman==Zeeman.pos_sf and pol==Polarization.down_up or \
+         instrument.zeeman==Zeeman.neg_sf and pol==Polarization.up_down:
+        Q = Q/2. + np.sqrt(maximum(0., (Q/2.)**2 - 8*pi*rho_Z))
+
+    Q = maximum(Q, q_limit)
+
+
+    parameters:LayerParameters = sample.resolveLayerParameters()
+
+    dens = array(parameters.dens, dtype=float64)
+    d = array(parameters.d, dtype=float64)
+    magn = array(parameters.magn, dtype=float64)
+    # Transform to radians
+    magn_ang = array(parameters.magn_ang, dtype=float64)*pi/180.0
+
+    sigma = array(parameters.sigma, dtype=float64)
+
+    fb = array(parameters.b, dtype=complex128)*1e-5
+    abs_xs = array(parameters.xs_ai, dtype=complex128)*1e-4**2
+    wl = instrument.wavelength
+    # sld = dens*(wl**2/2/pi*sqrt(fb**2 - (abs_xs/2.0/wl)**2) -
+    #                       1.0J*abs_xs*wl/4/pi)
+    sld = spec_nx.neutron_sld(abs_xs, dens, fb, wl)
+
+    # Check if we have calcluated the same sample previous:
+    if Buffer.TwoThetaQz is not None:
+        Q_ok = Buffer.TwoThetaQz.shape==Q.shape
+        if Q_ok:
+            Q_ok = not (Buffer.TwoThetaQz!=Q).any()
+    else:
+        Q_ok = False
+    if Buffer.parameters!=(parameters, instrument.mag_field) or not Q_ok:
+        msld = muB_to_SL*magn*dens*instrument.wavelength**2/2/pi
+        # apply Zeeman correction to magnetic parameters
+        magn_x = msld*cos(magn_ang)  # M parallel to polarization
+        magn_y = msld*sin(magn_ang)  # M perpendicular to polarization
+        magn_x += rho_Z  # Apply magnetization from external field
+        # calculate new magnitudes and angles
+        msld = sqrt(magn_x**2+magn_y**2)
+        magn_ang = np.arctan2(magn_y, magn_x)
+        # renormalize SLDs if ambient layer is not vacuum
+        if msld[-1]!=0. or sld[-1]!=0:
+            msld -= msld[-1]
+            sld -= sld[-1]
+        sld_p = sld+msld
+        sld_m = sld-msld
+        Vp = (2*pi/instrument.wavelength)**2*(sld_p*(2.+sld_p))  # (1-np**2) - better numerical accuracy
+        Vm = (2*pi/instrument.wavelength)**2*(sld_m*(2.+sld_m))  # (1-nm**2)
+        (Ruu, Rdd, Rud, Rdu) = MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma, return_int=True)
+        Buffer.Ruu = Ruu
+        Buffer.Rdd = Rdd
+        Buffer.Rud = Rud
+        Buffer.parameters = (parameters, instrument.mag_field)
+        Buffer.TwoThetaQz = Q.copy()
+    else:
+        pass
+    if pol==Polarization.up_up:
+        R = Buffer.Ruu
+    elif pol==Polarization.down_down:
+        R = Buffer.Rdd
+    elif pol in [Polarization.up_down, Polarization.down_up]:
+        R = Buffer.Rud
+    # Calculating the asymmetry ass
+    elif pol==Polarization.asymmetry:
+        R = (Buffer.Ruu-Buffer.Rdd)/(Buffer.Ruu+Buffer.Rdd+2*Buffer.Rud)
+    else:
+        raise ValueError('The value of the polarization is WRONG.'
+                         ' It should be uu(0), dd(1) or ud(2)')
+
+    # FootprintCorrections
+    foocor = spec_nx.footprintcorr(Q, instrument)
+    # Resolution corrections
+    R = spec_nx.resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
+
+    return R*instrument.I0+instrument.Ibkg
 
 def SLD_calculations(z, item, sample, inst):
     res=spec_nx.SLD_calculations(z, item, sample, inst)
     res['z']-=5*sample._resolve_parameter(sample.Substrate, 'sigma')
     return res
 
-def Specular(TwoThetaQz, sample, instrument):
-    out = spec_nx.Specular(TwoThetaQz, sample, instrument)
+def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
+    if instrument.probe==Probe.npolsf and instrument.zeeman!=Zeeman.none:
+        # additional Zeeman correction
+        out = specular_calc_zeemann(TwoThetaQz, sample, instrument)
+    else:
+        # use standard calculation
+        out = spec_nx.specular_calcs(TwoThetaQz, sample, instrument, return_int=True)
+
     global __xlabel__
     __xlabel__ = spec_nx.__xlabel__
     return out

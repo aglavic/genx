@@ -514,7 +514,7 @@ def specular_calcs(TwoThetaQz, sample: Sample, instrument: Instrument, return_in
         R = Paratt.Refl_nvary2(ai, wl,
                                1.0-sld, d, sigma, return_int=return_int)
     # tof spin polarized
-    elif ptype==Probe.npolsf:
+    elif ptype==Probe.ntofpol:
         wl = 4*pi*sin(instrument.incangle*pi/180)/Q
         sld = neutron_sld(abs_xs[:, newaxis], dens[:, newaxis], fb[:, newaxis], wl)
         msld = muB_to_SL*magn[:, newaxis]*dens[:, newaxis]*(4*pi*sin(instrument.incangle*pi/180)/Q)**2/2/pi
