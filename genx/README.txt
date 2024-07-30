@@ -11,6 +11,10 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.6.27
+==============
+ * Fix bug when using log function within column calulation that prohibited use of D17 dataloader.
+
 Changes 3.6.26
 ==============
  * Add documentation tutorial about ORSO file integration.
