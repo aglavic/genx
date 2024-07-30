@@ -6,8 +6,9 @@ on set and the class DataList stores multiple DataSets.
 import time
 import os
 from sys import platform
-from numpy import (pi, sqrt, sin, cos, tan, arcsin, arccos, arctan, arctan2, real, imag, abs, cumsum, zeros, isscalar,
-                   where, ones, linspace, exp, newaxis, transpose, arange, convolve, r_, array, not_equal, logical_not,
+from numpy import (pi, sqrt, sin, cos, tan, arcsin, arccos, arctan, arctan2, real, imag, abs, cumsum, isscalar,
+                   exp, log, log2, log10, zeros, ones, zeros_like, ones_like,
+                   where, ones, linspace, newaxis, transpose, arange, convolve, r_, array, not_equal, logical_not,
                    sum, dot, minimum, maximum, float32, float64, complex128, ndarray, float32, complex64, c_, r_,
                    loadtxt, savetxt, hstack, nan)
 from typing import List, Dict, Tuple, Union
