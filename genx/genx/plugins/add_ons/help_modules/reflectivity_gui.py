@@ -1,12 +1,15 @@
 """
 GUI support classes for the Reflectivity plug-in.
 """
+from typing import Callable, Dict, List
+
 import wx.html
 
 from genx.core.custom_logging import iprint
 from genx.model import Model
 from genx.models.lib.base import AltStrEnum
 from genx.models.lib.refl_new import ReflBase as ReflBaseNew
+from genx.parameters import Parameters
 from genx.plugins.utils import ShowQuestionDialog, ShowWarningDialog
 from . import reflectivity_images as images
 from .custom_dialog import ComplexObjectValidator, FloatObjectValidator, NoMatchValidTextObjectValidator, \
@@ -32,6 +35,113 @@ class MyHtmlListBox(wx.html.HtmlListBox):
 
     def OnGetItem(self, n):
         return self.html_items[n]
+
+class ReflClassEditor:
+    """
+    Class to handle GUI input for parameters to any ReflBase derived class.
+
+    The class is analyzed and suitable entries are created automatically. The parameters use the value
+    supplied when instantiated within the GenX model script, thus numbers can be calculated using formulae.
+    """
+    parent: wx.Panel
+    object_name: str
+    eval_func: Callable
+
+    instance: ReflBaseNew
+    pars: List[str]
+    par_vals: dict
+    par_validators: dict
+    par_editable: Dict[str, int]
+
+    def __init__(self, parent, object_name, eval_func):
+        self.parent = parent
+        self.object_name = object_name
+        self.eval_func = eval_func
+        self.initialize()
+        self.extract_values()
+
+    def initialize(self):
+        """
+        Set up the necessary attributes for the analysis.
+        """
+        self.instance = self.eval_func(self.object_name)
+        if not isinstance(self.instance, ReflBaseNew):
+            raise RuntimeError(f'{self.instance} is not an instance of a ReflBase derived object')
+        self.pars = []
+        self.par_vals = {}
+        self.par_validators = {}
+        self.par_editable = {}
+
+    def extract_values(self):
+        """
+        Collect information from current model needed to build the dialog window.
+
+        Each ModelParamBase object has a ._ca dictionary that is populated during model
+        compilation with a string of the parameter values given on class creation. If
+        keyword was not supplied the dictionary contains the default value.
+        """
+        for par_name, value_info in self.instance._parameter_info().items():
+            value = self.instance._ca[par_name]
+            validator = self.get_validator(value, value_info)
+            self.pars.append(par_name)
+            self.par_vals[par_name] = value
+            self.par_validators[par_name] = validator
+
+    def extract_grid_params(self, grid_parameters:Parameters):
+        """
+        Checks the grid for fit parameters and overwrites the dialog
+        values with those.
+        Also sets the editable state accordingly.
+        """
+        for par_name, value_info in self.instance._parameter_info().items():
+            func_name = self.object_name+'.'+_set_func_prefix+par_name.capitalize()
+            if value_info.type is not complex:
+                grid_value = grid_parameters.get_value_by_name(func_name)
+                if grid_value is not None:
+                    self.par_vals[par_name] = grid_value
+                self.par_editable[par_name] = grid_parameters.get_fit_state_by_name(func_name)
+            else:
+                grid_value_real = grid_parameters.get_value_by_name(func_name+'real')
+                grid_value_imag = grid_parameters.get_value_by_name(func_name+'imag')
+                v = self.eval_func(self.par_vals[par_name])
+                if grid_value_real is not None:
+                    v = grid_value_real+v.imag*1.0J
+                if grid_value_imag is not None:
+                    v = v.real+grid_value_imag*1.0J
+                self.par_vals[par_name] = repr(v)
+                self.par_editable[par_name] = (
+                    max(grid_parameters.get_fit_state_by_name(func_name+'real'),
+                        grid_parameters.get_fit_state_by_name(func_name+'imag')))
+
+
+    def ShowDialog(self):
+        ...
+
+    def update_grid(self, grid_parameters:Parameters):
+        ...
+
+    def update_object(self):
+        ...
+
+    def get_validator(self, val, value_info):
+        try:
+            val = value_info.type(val)
+        except Exception:
+            pass
+        if issubclass(value_info.type, AltStrEnum):
+            validator = [i.value for i in value_info.type]
+        elif not isinstance(val, value_info.type):
+            # current value does not correspond to type, should have been converted on class creation
+            validator = ["set in script"]
+        elif value_info.type is complex:
+            validator = ComplexObjectValidator(eval_func=self.eval_func)
+        elif value_info.type is bool:
+            validator = ["True", "False"]
+        else:
+            validator = FloatObjectValidator(eval_func=self.eval_func)
+        return validator
+
+
 
 class SamplePanel(wx.Panel):
     sampleh: SampleHandler
