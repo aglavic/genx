@@ -308,6 +308,48 @@ def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
 
     return R*instrument.I0+instrument.Ibkg
 
+def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample: Sample, instrument: Instrument):
+    """
+    Specular reflectivity of polarized measurement with finite polarization.
+    The polarization parameters are in accordance to the definition used in
+    A.R. Wildes publication, Review of Scientific Instruments 70, 11 (1999)
+    https://doi.org/10.1063/1.1150060
+
+    pol_params = (p1, p2, f1, f2)
+    p1: polarizer efficiency, 0: 100% spin-up, 1: 100% spin-down, 0.5: unpolarized
+    p2: analyzer efficiency,  0: 100% spin-up, 1: 100% spin-down, 0.5: unpolairzed
+    F1/F2: Flipper efficienty, 0: 100% efficient, 1: no flipping
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    p1 0.
+    p2 0.
+    F1 0.
+    F2 0.
+    # END Parameters
+
+    """
+    inst_pol = instrument.pol
+    if not inst_pol in spec_nx.POL_CHANNELS:
+        raise ValueError(f"Instrument polarization as to be one of {spec_nx.POL_CHANNELS}.")
+    if instrument.probe!=Probe.npolsf:
+        raise ValueError("Polarization corrected simulation requires probe to be 'neutron pol spin flip'")
+
+    instrument.pol = 'uu'
+    uu = Specular(TwoThetaQz, sample, instrument)
+    instrument.pol = 'dd'
+    dd = Specular(TwoThetaQz, sample, instrument)
+    instrument.pol = 'ud'
+    ud = Specular(TwoThetaQz, sample, instrument)
+    instrument.pol = 'du'
+    du = Specular(TwoThetaQz, sample, instrument)
+    instrument.pol = inst_pol
+
+    P = get_pol_matrix(p1, p2, F1, F2)
+    Pline = P[spec_nx.POL_CHANNELS.index(instrument.pol)]
+    I = Pline[:, newaxis]*np.vstack([uu, ud, du, dd])
+    return I.sum(axis=0)
+
 def SLD_calculations(z, item, sample, inst):
     res=spec_nx.SLD_calculations(z, item, sample, inst)
     res['z']-=5*sample._resolve_parameter(sample.Substrate, 'sigma')
@@ -324,13 +366,6 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
     global __xlabel__
     __xlabel__ = spec_nx.__xlabel__
     return out
-
-def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
-    out = spec_nx.PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument)
-    global __xlabel__
-    __xlabel__ = spec_nx.__xlabel__
-    return out
-
 
 SimulationFunctions = {
     'Specular': Specular,

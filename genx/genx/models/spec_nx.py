@@ -730,7 +730,7 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
             raise ValueError('The chosen item, %s, does not exist'%item)
 
 
-POL_CHANNELS = [Polarization.up_up, Polarization.down_down, Polarization.up_down, Polarization.down_up]
+POL_CHANNELS = [Polarization.up_up, Polarization.up_down, Polarization.down_up, Polarization.down_down]
 
 
 def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample: Sample, instrument: Instrument):
