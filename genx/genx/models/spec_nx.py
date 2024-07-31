@@ -631,7 +631,7 @@ def OffSpecular(TwoThetaQz, ThetaQx, sample: Sample, instrument: Instrument):
 def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     ''' Calculates the scatteringlength density as at the positions z
     if item is None or "all" the function returns a dictonary of values.
-    Otherwise it returns the item as identified by its string.
+    Otherwise, it returns the item as identified by its string.
     
     # BEGIN Parameters
     z data.x

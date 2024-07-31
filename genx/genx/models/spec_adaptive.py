@@ -351,11 +351,26 @@ def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample: Sample, instrument: Instrume
     return I.sum(axis=0)
 
 def SLD_calculations(z, item, sample, inst):
+    ''' Calculates the scatteringlength density as at the positions z
+    if item is None or "all" the function returns a dictonary of values.
+    Otherwise, it returns the item as identified by its string.
+
+    # BEGIN Parameters
+    z data.x
+    item 'Re'
+    # END Parameters
+    '''
     res=spec_nx.SLD_calculations(z, item, sample, inst)
     res['z']-=5*sample._resolve_parameter(sample.Substrate, 'sigma')
     return res
 
 def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
+    """ Simulate the specular signal from sample when probed with instrument
+
+    # BEGIN Parameters
+    TwoThetaQz data.x
+    # END Parameters
+    """
     if instrument.probe==Probe.npolsf and instrument.zeeman!=Zeeman.none:
         # additional Zeeman correction
         out = specular_calc_zeemann(TwoThetaQz, sample, instrument)

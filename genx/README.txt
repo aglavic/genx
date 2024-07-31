@@ -1,4 +1,4 @@
-This package contains GenX 3.6 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contains GenX 3.7 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -10,6 +10,17 @@ References
 ==========
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
+
+Changes 3.7.0
+=============
+ * Add the FrequencyAnalysis plugin that allows to analyze the reflectivity using various corrections to
+   extract approximate layer thicknesses.
+ * Add advanced footprint and resolution classes that can even be replaced by user defined functions. See
+   the trapezoidal beam profile example in "SuperAdam_SiO_advanced_fp_res.hgx".
+ * Add Zeeman-effect correction for neutron polarization analysis with spin-flip in elevated external field
+   to the spec_adaptive model. Can be activated using the instrument parameter "zeeman" and "mag_field".
+ * Implement new python dataclass based model parameterization. The GUI will detect any parameter in the model
+   based on the base class which allows more flexibility in model modification and improves general maintainability.
 
 Changes 3.6.27
 ==============

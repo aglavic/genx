@@ -58,7 +58,6 @@ class SamplePanel(wx.Panel):
         boxhor.Add(self.toolbar, proportion=0, flag=wx.EXPAND)
         boxhor.AddSpacer(2)
         self.listbox = MyHtmlListBox(self, -1, style=wx.BORDER_SUNKEN)
-        # self.listbox.SetItemList(self.sampleh.getStringList())
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.lbDoubleClick, self.listbox)
         boxhor.Add(self.listbox, 1, wx.EXPAND)
 
@@ -161,7 +160,7 @@ class SamplePanel(wx.Panel):
             ret_str = str[:start_index]
             for par_str in str[start_index:].split(','):
                 par_name = par_str.split('=')[0].strip()
-                # par_name normal paramter (real number)
+                # par_name normal parameter (real number)
                 if (name, par_name) in dic_lookup:
                     val, state = dic_lookup[(name, par_name)]
                     if state==1:
@@ -328,7 +327,7 @@ class SamplePanel(wx.Panel):
         self.instruments = instruments
 
     def EditInstrument(self, evt):
-        """Event handler that creates an dialog box to edit the instruments.
+        """Event handler that creates a dialog box to edit the instruments.
 
         :param evt:
         :return: Nothing
@@ -979,7 +978,7 @@ class DataParameterPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
         self.plugin = plugin
         boxver = wx.BoxSizer(wx.VERTICAL)
-        # Indention for a command - used to seperate commands and data
+        # Indention for a command - used to separate commands and data
         self.command_indent = '<pre>   '
         self.script_update_func = None
         self.parameterlist = []
@@ -1580,7 +1579,7 @@ class ParameterExpressionDialog(wx.Dialog):
             label = wx.StaticText(self, -1, item)
             gbs.Add(label, (0, index), flag=wx.ALIGN_LEFT, border=5)
 
-        # Get the objects that should be in the choiceboxes
+        # Get the objects that should be in the choice boxes
         par_dict = model.get_possible_parameters()
         objlist = []
         funclist = []
