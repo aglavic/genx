@@ -104,40 +104,33 @@ recommended to write a model library (python module). This is what has been done
 Instead of writing a lot of functions for each model, a class, or several, can be written to make the model
 simple to use. As a more elaborate solution for the previous simple example we can define a class::
 
-    from numpy import exp
+    from numpy import *
+    from dataclasses import dataclass
+    from models.utils import UserVars
+    from models.lib.base import ModelParamBase
 
-    # Make GenX recognize the class as containing fittable parameters
-    __pars__ = ['Gauss']
 
     # Define user axes labels for plotting in the GUI
     __xlabel__ = 'x-axis'
     __ylabel__ = 'y-axis'
 
-    # Definition of the class
-    class Gauss:
-        # A class for a Gaussian
-        # The creator of the class
-        def __init__(self,w=1.0,xc=0.0,A=1.0):
-            self.w=w
-            self.xc=xc
-            self.A=A
+    # Definition of the class used for each peak
+    @dataclass
+    class Gauss(ModelParamBase):
+        A: float = 1.0
+        w: float = 1.0
+        xc: float = 0.0
 
-        # The set functions used in the parameters column
-        def setW(self, w):
-            self.w=w
-
-        def setXc(self, xc):
-            self.xc=xc
-
-        def setA(self, A):
-            self.A=A
-
-        # The function to calculate the model (A Gaussian)
         def Simulate(self, x):
-            return self.A*exp((x-self.xc)**2/self.w**2)
+            return self.A*exp(-(x - self.xc)**2/2/self.w**2)
+
+    # Definition of background parameter
+    cp = UserVars()
+    cp.new_var('bkg', 100)
+
 
     # Make a Gaussian:
-    Peak1=Gauss(w=2.0,xc=1.5,A=2.0)
+    Peak1=Gauss(w=2.0, xc=1.5, A=2.0)
 
     def Sim(data):
         # Calculate the Gaussian
@@ -148,15 +141,16 @@ simple to use. As a more elaborate solution for the previous simple example we c
 
 This code is quite similar to the first version but encapsulates all necessary information in one class.
 It starts with the definition of the class ``Gauss``.
-This class has a constructor, ``__init__``, to initialize the parameters of the object and methods (functions of a class) to set the
-attributes (member variables), denoted as ``self.*``. It also contains a method to calculate a Gaussian with the these
-attributes. After the class definition an instance (object), ``Peak1``, of the Gauss class is created. Then the ``Sim`` function
-is defined as in the previous example but with the function call exchanged to ``Peak1.Simulate(data.x[0])`` in order
+The use of the ``@dataclass`` decorator and derivation from ``ModelParamBase`` ensures that the parameters are
+automatically set and validated during instanciation and that GenX recognizes the class for setting parameters
+in the Grid. The class also contains a method to calculate a Gaussian with the these attributes.
+After the class definition an instance (object), ``Peak1``, of the Gauss class is created. Then the ``Sim`` function
+is defined as in the previous example but with the function call exchanged to ``Peak1.Simulate(data[0].x)`` in order
 to simulate the object ``Peak1``. The function names that should go into the parameter column in the
 parameter window will be: ``Peak1.setW``, ``Peak1.setXc`` and ``Peak1.setA`` and should be selecteble from the menu
-below ``Gauss`` as we defined the ``__pars__`` variable to tell the user interface about our new class.
+after running the first simulation.
 
-The main data plot will use the axes labels defined with the ``__xlabel__`` and ``__ylabel__`` variables.
+The main data plot we use the axes labels defined with the ``__xlabel__`` and ``__ylabel__`` variables.
 For pre-defined models these are set automatically but can always be overwritten by the user in the script.
 
 Multiple Gaussians

@@ -197,6 +197,76 @@ class Zeeman(AltStrEnum):
 
 @dataclass
 class Instrument(NXInstrument):
+    """
+    Specify parameters of the probe and reflectometry instrument.
+
+    ``probe``
+        Describes the radiation and measurments used, it is one of:
+        'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip',
+        'neutron tof', 'neutron pol tof'.
+        The calculations for x-rays uses ``f`` for the scattering length for
+        neutrons ``b`` for 'neutron pol', 'neutron pol spin flip' and 'neutron
+        pol tof' alternatives the ``magn`` is used in the calculations. Note
+        that the angle of magnetization ``magn_ang`` is only used in the spin
+        flip model.
+    ``wavelength``
+        The wavelength of the radiation given in AA (Angstroms)
+    ``coords``
+        The coordinates of the data given to the SimSpecular function. The
+        available alternatives are: 'q' or '2θ'. Alternatively the numbers 0 (q)
+        or 1 (tth) can be used.
+    ``I0``
+        The incident intensity (a scaling factor)
+    ``Ibkg``
+        The background intensity. Added as a constant value to the calculated
+        reflectivity
+    ``res``
+        The resolution of the instrument given in the coordinates of ``coords``.
+        This assumes a gaussian resolution function and ``res`` is the standard
+        deviation of that gaussian. If ``restype`` has (dx/x) in its name the
+        gaussian standard deviation is given by res*x where x is either in tth
+        or q.
+    ``restype``
+        Describes the rype of the resolution calculated. One of the
+        alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
+        'fast conv + varying res.', 'full conv and varying res. (dx/x)', 'fast
+        conv + varying res. (dx/x)'. The respective numbers 0-3 also works. Note
+        that fast convolution only alllows a single value into res wheras the
+        other can also take an array with the same length as the x-data (varying
+        resolution)
+    ``respoints``
+        The number of points to include in the resolution calculation. This is
+        only used for 'full conv and vaying res.', 'fast conv + varying res',
+        'full conv and varying res. (dx/x)' and 'fast conv + varying res.
+        (dx/x)'.
+    ``resintrange``
+        Number of standard deviatons to integrate the resolution function times
+        the reflectivity over
+    ``footype``
+        Which type of footprint correction is to be applied to the simulation.
+        One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, the
+        number 0-2 are also valid. The different choices are self expnalatory.
+    ``beamw``
+        The width of the beam given in mm. For 'gauss beam' it should be the
+        standard deviation. For 'square beam' it is the full width of the beam.
+    ``samplelen``
+        The length of the sample given in mm
+    ``incangle``
+        The incident angle of the neutrons, only valid in tof mode
+    ``pol``
+        The measured polarization of the instrument. Valid options are:
+        'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
+    ``zeeman``
+        Apply corrections for Zeeman-effect when using neutron pol spin-flip model with elevated magnetic field
+        and canted magnetic moments. The configuration can be one of 'no corr', 'field only', 'SF q (+)' or 'SF q (-)'.
+        With 'field only', the q-values for calculation are not changed but the magnetic SLD for all layers
+        is modified by the external field (including substrate and ambient layer). The 'SF q (+/-)' make an
+        additional correct to the q-value for spin-flip channels that assumes the q-value was calculated
+        from the incident angle (+) or the outgoing angle (-). (Direction of the beam changes due to
+        the energy loss/gain from spin-flip in a magnetic field.)
+    ``mag_field``
+        Strength of the external magnetic field in T.
+    """
     zeeman: Zeeman = 'no corr'
     mag_field: float = 0.0
 
