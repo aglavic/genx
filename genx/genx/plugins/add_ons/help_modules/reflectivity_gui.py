@@ -397,7 +397,6 @@ class SamplePanel(wx.Panel):
         eval_func = self.plugin.GetModel().eval_in_model
 
         if isinstance(self.sampleh.sample, ReflBaseNew):
-            sl = None
             grid_parameters = self.plugin.GetModel().get_parameters()
             editor = ReflClassEditor(self, obj_name, eval_func, grid_parameters,
                                      ignore_attributes=['Ambient', 'Substrate', 'Stacks'])

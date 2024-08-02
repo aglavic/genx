@@ -182,6 +182,8 @@ jobs:
       run: |
         cd genx
         pyinstaller genx_mac.spec
+    - name: Setup tmate session for debug
+      uses: mxschmitt/action-tmate@v3
     - name: Remove any library signatures
       run: |
         cd genx/dist
