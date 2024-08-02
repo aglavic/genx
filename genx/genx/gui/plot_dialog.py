@@ -4,17 +4,16 @@ Simple dialog window to show a plot graph.
 
 import wx
 
-from .plotpanel import PlotPanel, BasePlotConfig
+from .plotpanel import BasePlotConfig, PlotPanel
 
 
 class DialogPlotConfig(BasePlotConfig):
-    section = 'dialog plot'
+    section = "dialog plot"
 
 
 class DialogPlot(PlotPanel):
 
-    def __init__(self, parent, id=-1, color=None, dpi=None
-                 , style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
+    def __init__(self, parent, id=-1, color=None, dpi=None, style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):
         PlotPanel.__init__(self, parent, id, color, dpi, DialogPlotConfig, style, **kwargs)
         self.update(None)
         self.ax = self.figure.add_subplot(111)
@@ -23,7 +22,7 @@ class DialogPlot(PlotPanel):
 
 class PlotDialog(wx.Dialog):
 
-    def __init__(self, parent, title='GenX Plot'):
+    def __init__(self, parent, title="GenX Plot"):
         wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
@@ -31,7 +30,7 @@ class PlotDialog(wx.Dialog):
 
         self._plot_dialog = DialogPlot(self)
         vbox.Add(self._plot_dialog, proportion=1, flag=wx.EXPAND)
-        self.SetMinSize(wx.Size(200,200))
+        self.SetMinSize(wx.Size(200, 200))
 
     @property
     def plot(self):
@@ -54,9 +53,9 @@ class PlotDialog(wx.Dialog):
 
     def clear_data(self):
         ax = self._plot_dialog.ax
-        while len(ax.lines)>0:
+        while len(ax.lines) > 0:
             ax.lines[0].remove()
-        while len(ax.collections)>0:
+        while len(ax.collections) > 0:
             ax.collections[0].remove()
 
     @property

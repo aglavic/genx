@@ -1,79 +1,88 @@
-'''<h1>Exporter</h1>
+"""<h1>Exporter</h1>
 A plugin that allows to export models for the use in other programs.
 Currently, only BornAgain is supported to easy transfer from spcular
 to off-specular or GISAS simulations.
 
-'''
-from .. import add_on_framework as framework
+"""
+
 import wx
+
+from .. import add_on_framework as framework
+
 
 class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
-        self.menu=self.NewMenu('Exporter')
-        self.parent=parent
+        self.menu = self.NewMenu("Exporter")
+        self.parent = parent
 
-        self.mb_export_ba=wx.MenuItem(self.menu, wx.NewId(),
-                                      "BornAgain script...",
-                                      "Export reflectometry layers to BornAgain python script.",
-                                      wx.ITEM_NORMAL)
+        self.mb_export_ba = wx.MenuItem(
+            self.menu,
+            wx.NewId(),
+            "BornAgain script...",
+            "Export reflectometry layers to BornAgain python script.",
+            wx.ITEM_NORMAL,
+        )
         self.menu.Append(self.mb_export_ba)
         self.parent.Bind(wx.EVT_MENU, self.OnExportBA, self.mb_export_ba)
 
-        self.StatusMessage('Sucessfully loaded Exporter...')
+        self.StatusMessage("Sucessfully loaded Exporter...")
 
     def OnExportBA(self, event):
-        '''Export layer model to BornAgain script.
-        '''
-        dlg=wx.FileDialog(self.parent, message="Export As", defaultFile="genx_model.py",
-                          wildcard="Python (*.py)|*.py",
-                          style=wx.FD_SAVE  # | wx.FD_CHANGE_DIR
-                          )
-        if dlg.ShowModal()!=wx.ID_OK:
+        """Export layer model to BornAgain script."""
+        dlg = wx.FileDialog(
+            self.parent,
+            message="Export As",
+            defaultFile="genx_model.py",
+            wildcard="Python (*.py)|*.py",
+            style=wx.FD_SAVE,  # | wx.FD_CHANGE_DIR
+        )
+        if dlg.ShowModal() != wx.ID_OK:
             return
-        fname=dlg.GetPath()
+        fname = dlg.GetPath()
 
-        model=self.GetModel()
+        model = self.GetModel()
         model.simulate()
-        m=model.script_module
-        names=list(m.__dict__.keys())
-        objects=list(m.__dict__.values())
+        m = model.script_module
+        names = list(m.__dict__.keys())
+        objects = list(m.__dict__.values())
 
-        s=m.sample
+        s = m.sample
 
-        output='# layer definitions: thickness, density, f-xray, b-neutron, roughness, muB/FU\n'
-        output+='Ambient='+self._expand_layer(s.Ambient)+'\n'
-        output+='Stacks=[\n'
+        output = "# layer definitions: thickness, density, f-xray, b-neutron, roughness, muB/FU\n"
+        output += "Ambient=" + self._expand_layer(s.Ambient) + "\n"
+        output += "Stacks=[\n"
         for stack in s.Stacks:
             if stack in objects:
-                name='- Stack: '+names[objects.index(stack)]
+                name = "- Stack: " + names[objects.index(stack)]
             else:
-                name=''
-            output+=f"         [{stack.Repetitions:d}, #repetitions {name}\n"
+                name = ""
+            output += f"         [{stack.Repetitions:d}, #repetitions {name}\n"
             for l in stack.Layers:
                 if l in objects:
-                    name='# '+names[objects.index(l)]
+                    name = "# " + names[objects.index(l)]
                 else:
-                    name=''
-                output+='           '+self._expand_layer(l)+f',{name}\n'
-            output+='         ],\n'
-        output+='       ]\n'
-        output+='Substrate='+self._expand_layer(s.Substrate)+'\n\n'
-        output+=f'probe="{m.inst.probe}"'
+                    name = ""
+                output += "           " + self._expand_layer(l) + f",{name}\n"
+            output += "         ],\n"
+        output += "       ]\n"
+        output += "Substrate=" + self._expand_layer(s.Substrate) + "\n\n"
+        output += f'probe="{m.inst.probe}"'
 
-        open(fname, 'w', encoding='utf-8').write(TEMPLATE%output)
+        open(fname, "w", encoding="utf-8").write(TEMPLATE % output)
 
     def _expand_layer(self, layer):
         return f"[{layer.d}, {layer.dens}, {layer.f}, {layer.b}, {layer.sigma}, {layer.magn}]"
 
     def clear_menu(self):
-        '''clear_menu(self) --> None
-        
+        """clear_menu(self) --> None
+
         Clears the menu from all items present in it
-        '''
+        """
         [self.menu.RemoveItem(item) for item in self.menu.GetMenuItems()]
 
-TEMPLATE='''import bornagain as ba
+
+TEMPLATE = '''import bornagain as ba
 from bornagain import angstrom, deg, nm
 
 %s

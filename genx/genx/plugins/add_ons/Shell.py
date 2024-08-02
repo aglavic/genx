@@ -1,4 +1,4 @@
-'''<h1>Shell</h1>
+"""<h1>Shell</h1>
 A plugin which opens a up a new tab with a shell inside.
 Can be used for introspection in GenX. To acess the module
 which holds the script type: <code>model.script_module.[object]</code>.
@@ -18,20 +18,30 @@ The available entry points into GenX is:
     <dd>Access to the model object. Stores the script and the module. 
     Important object.</dd>
 </dl>
-'''
+"""
+
+import wx
+import wx.py.shell
+
 from .. import add_on_framework as framework
-import wx.py.shell, wx
+
 
 class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
-        inputpanel=self.NewInputFolder('Shell')
-        sizer=wx.BoxSizer(wx.HORIZONTAL)
+        inputpanel = self.NewInputFolder("Shell")
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
         inputpanel.SetSizer(sizer)
-        self.shell=wx.py.shell.Shell(inputpanel, -1,
-                                     locals={'frame': parent, 'model': self.GetModel(),
-                                             'data': self.GetModel().get_data(),
-                                             'ctrl': parent.model_control.controller})
+        self.shell = wx.py.shell.Shell(
+            inputpanel,
+            -1,
+            locals={
+                "frame": parent,
+                "model": self.GetModel(),
+                "data": self.GetModel().get_data(),
+                "ctrl": parent.model_control.controller,
+            },
+        )
         sizer.Add(self.shell, 1, wx.EXPAND)
         inputpanel.Layout()
-        self.StatusMessage('Shell plugin loaded')
+        self.StatusMessage("Shell plugin loaded")

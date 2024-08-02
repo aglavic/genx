@@ -1,28 +1,28 @@
-'''
+"""
 Handling of a table of materials with associated density parameters.
 Includes parsing of chemical formula string.
-'''
+"""
 
+import json
 import os
 import re
-import json
 
-from genx.models.utils import bc, fp, fw, __bc_dict__  # @UnusedImport
-from genx.models.lib.physical_constants import MASS_DENSITY_CONVERSION
 from genx.core.custom_logging import iprint
+from genx.models.lib.physical_constants import MASS_DENSITY_CONVERSION
+from genx.models.utils import __bc_dict__, bc, fp, fw  # @UnusedImport
 
 # configuration file to store the known materials
 try:
     import appdirs
 except ImportError:
-    config_path=os.path.expanduser(os.path.join('~', '.genx'))
+    config_path = os.path.expanduser(os.path.join("~", ".genx"))
 else:
-    config_path=appdirs.user_data_dir('GenX3', 'ArturGlavic')
+    config_path = appdirs.user_data_dir("GenX3", "ArturGlavic")
 if not os.path.exists(config_path):
     os.makedirs(config_path)
-config_file=os.path.join(config_path, 'materials.cfg')
+config_file = os.path.join(config_path, "materials.cfg")
 
-default_materials=[
+default_materials = [
     [[["Cr", 1.0]], "7.19*0.602214/51.9961"],
     [[["D", 2.0], ["O", 1.0]], "1.107*0.602214/20.0276"],
     [[["Fe", 1.0]], "7.874*0.602214/55.845"],
@@ -35,15 +35,16 @@ default_materials=[
     [[["Sr", 1.0], ["Ti", 1.0], ["O", 3.0]], "1.0/(3.905**3)"],
     [[["Ti", 1.0]], "4.506*0.602214/47.867"],
     [[["Ti", 1.0], ["O", 2.0]], "4.0/(4.5318*5.5019*4.9063)"],
-    ]
+]
 
 
 class Formula(list):
-    '''
+    """
     Holds the elements and fraction for a chemical formula.
     Includes the possibility to compare materials that
     have different element orders or base in their fraction.
-    '''
+    """
+
     element_re = (
         r"A[cglmrstu]|B[aehikr]?|C[adeflmorsu]?|D[bsy]{0,1}|E[rsu]|F[emr]?|"
         r"G[ade]|H[efgosx]?|I[nr]?|Kr?|L[airu]|M[dgnot]|N[abdeiop]?|"
@@ -61,27 +62,27 @@ class Formula(list):
     def __init__(self, data):
         # check that the data is correct form, list of [Element, fraction] items.
         for di in data:
-            if len(di)!=2:
-                raise ValueError('Formula has to consist of [Element, fraction] entries')
-            if not self.check_atom(di[0].split('[')[0]):
-                raise ValueError('Element/Isotope %s not in database'%di[0])
-            di[1]=float(di[1])
+            if len(di) != 2:
+                raise ValueError("Formula has to consist of [Element, fraction] entries")
+            if not self.check_atom(di[0].split("[")[0]):
+                raise ValueError("Element/Isotope %s not in database" % di[0])
+            di[1] = float(di[1])
         list.__init__(self, data)
 
     @classmethod
     def from_str(cls, estr):
-        '''
+        """
         Try to parse a formula string,
         has to be a simple formula with no brackets.
-        
+
         Most read errors are ignored, so the result might not be
         the intended formula if the entry format is wrong.
         Format should be:
         {Element 1}{frac 1}{Element 2}{frac 2} like Fe2O3, SiO2 or H2O
-        
+
         Fractions of 1 may be ommited and non-natural isotopes are
         entered with ^{N} before an element like ^{56}Fe2O3.
-        '''
+        """
         string = estr.replace(" ", "").replace("\t", "").replace("\n", "")
         string = string.replace("{", "").replace("}", "").replace("_", "").replace("$", "")
         extracted_elements = []
@@ -174,141 +175,141 @@ class Formula(list):
 
     @classmethod
     def from_bstr(cls, bstr):
-        '''
+        """
         Try to parse a string of scattering length elements,
         the same type that is returned by self.b().
-        '''
-        items=map(str.strip, bstr.split('+'))
-        extracted_elements=[]
+        """
+        items = map(str.strip, bstr.split("+"))
+        extracted_elements = []
         for item in items:
-            if not item[:3] in ['bc.', 'bw.']:
+            if not item[:3] in ["bc.", "bw."]:
                 continue
             else:
-                element, count=item[3:].split('*', 1)
-                count=float(count)
-                if element.startswith('i'):
-                    element=element[1:]
-                    i=0
+                element, count = item[3:].split("*", 1)
+                count = float(count)
+                if element.startswith("i"):
+                    element = element[1:]
+                    i = 0
                     while element[i].isdigit():
-                        i+=1
+                        i += 1
                     iso = element[:i]
-                    element=f'{element[i:]}[{iso}]'
+                    element = f"{element[i:]}[{iso}]"
                 extracted_elements.append([element, count])
         return Formula(extracted_elements)
 
     def __str__(self):
-        '''Generate a string with sub- and superscript numbers for material.'''
-        output=''
+        """Generate a string with sub- and superscript numbers for material."""
+        output = ""
         for element, count in self:
-            if '[' in element:
+            if "[" in element:
                 try:
-                    ele, iso = element.split('[', 2)
-                    element=ele
-                    iso = int(iso.split(']')[0])
-                    output+=self._get_superscript(int(iso))
+                    ele, iso = element.split("[", 2)
+                    element = ele
+                    iso = int(iso.split("]")[0])
+                    output += self._get_superscript(int(iso))
                 except (IndexError, ValueError):
                     pass
-            if count==1:
-                output+=element
+            if count == 1:
+                output += element
             else:
-                output+=element+self._get_subscript(count)
+                output += element + self._get_subscript(count)
         return output
 
     def estr(self):
-        '''Generates an editable (ascii) string that can be parsed back as Formul'''
-        output=''
+        """Generates an editable (ascii) string that can be parsed back as Formul"""
+        output = ""
         for element, count in self:
-            if count==1:
-                output+=element
+            if count == 1:
+                output += element
             else:
-                output+=element+"%g"%count
+                output += element + "%g" % count
         return output
 
     @classmethod
     def _get_superscript(cls, count):
-        '''
-          Return a subscript unicode string that equals the given number.
-        '''
-        scount='%g'%count
-        result=''
+        """
+        Return a subscript unicode string that equals the given number.
+        """
+        scount = "%g" % count
+        result = ""
         for char in scount:
-            if char=='.':
-                result+='﹒'
+            if char == ".":
+                result += "﹒"
             else:
                 # a superscript digit in unicode
-                result+=(b'\\u207'+char.encode('utf-8')).decode('unicode-escape')
+                result += (b"\\u207" + char.encode("utf-8")).decode("unicode-escape")
         return result
 
     @classmethod
     def _get_subscript(cls, count):
-        '''
-          Return a subscript unicode string that equals the given number.
-        '''
-        scount='%g'%count
-        result=''
+        """
+        Return a subscript unicode string that equals the given number.
+        """
+        scount = "%g" % count
+        result = ""
         for char in scount:
-            if char=='.':
-                result+='﹒'
+            if char == ".":
+                result += "﹒"
             else:
                 # a subscript digit in unicode
-                result+=(b'\\u208'+char.encode('utf-8')).decode('unicode-escape')
+                result += (b"\\u208" + char.encode("utf-8")).decode("unicode-escape")
         return result
 
     def elements(self):
-        '''Returns alphabetically sorted list of elements in formula.'''
-        return list(sorted([ei[0].split('[')[0] for ei in self]))
+        """Returns alphabetically sorted list of elements in formula."""
+        return list(sorted([ei[0].split("[")[0] for ei in self]))
 
     def isotopes(self):
-        '''Returns same as elements but with isotopes w/ number at end of list.'''
+        """Returns same as elements but with isotopes w/ number at end of list."""
         return list(sorted([ei[0] for ei in self]))
 
     def amounts(self):
-        '''
+        """
         Amounts as stored by elements alphabetically.
         Can be used to compare two formulas for equality.
-        '''
-        items=[(ei[0].split('[')[0], ei[1]) for ei in self]
+        """
+        items = [(ei[0].split("[")[0], ei[1]) for ei in self]
         items.sort()
         return [i[1] for i in items]
 
     def fractions(self):
-        '''
+        """
         Fractional numbers sorted by elements alphabetically.
         Can be used to compare two formulas for equivalency.
-        '''
-        fractions=self.amounts()
-        total=sum(fractions)
-        return [f/total for f in fractions]
+        """
+        fractions = self.amounts()
+        total = sum(fractions)
+        return [f / total for f in fractions]
 
     def __eq__(self, other):
-        if type(other)!=Formula:
+        if type(other) != Formula:
             try:
-                cmpo=Formula(other)
+                cmpo = Formula(other)
             except:
                 return False
-        return self.elements()==other.elements() and self.amounts()==other.amounts()
+        return self.elements() == other.elements() and self.amounts() == other.amounts()
 
     def equivalent(self, other):
-        '''
+        """
         Returns if formula contains equivalent elemental composition,
         ignores the size of the fomula unit. For equality use ==.
-        '''
-        cmpo=Formula(other)
-        return self.elements()==other.elements() and self.fractions()==other.fractions()
+        """
+        cmpo = Formula(other)
+        return self.elements() == other.elements() and self.fractions() == other.fractions()
 
     def mFU(self):
-        '''Calculate mass in u for formula unit (FU).'''
-        mass=0.
+        """Calculate mass in u for formula unit (FU)."""
+        mass = 0.0
         for ei, fi in self:
-            if '[' in ei:
-                ei = ei.split('[')[0]
+            if "[" in ei:
+                ei = ei.split("[")[0]
             try:
-                mass+=fi*atomic_data[ei][2]
+                mass += fi * atomic_data[ei][2]
             except KeyError:
-                if ei.startswith('^{'):
-                    raise KeyError('Unknonw isotope: "%s"'%ei)
+                if ei.startswith("^{"):
+                    raise KeyError('Unknonw isotope: "%s"' % ei)
                 else:
-                    raise KeyError('Element %s does not exist'%ei)
+                    raise KeyError("Element %s does not exist" % ei)
         # return 1. if formulat is empty to avoid division by zero in density
         return mass or 1.0
 
@@ -317,102 +318,103 @@ class Formula(list):
         return atom_string in atomic_data
 
     def describe(self):
-        '''Return a multile string with written element content.'''
-        output=''
+        """Return a multile string with written element content."""
+        output = ""
         for ei, (element, number) in enumerate(self):
-            if '[' in element:
-                iso='-%s'%(element.split('[')[1].split(']')[0])
-                element = element.split('[')[0]
+            if "[" in element:
+                iso = "-%s" % (element.split("[")[1].split("]")[0])
+                element = element.split("[")[0]
                 if not element in atomic_data:
-                    iso='-unknown isotope'
-                    element=element.split('}')[-1]
+                    iso = "-unknown isotope"
+                    element = element.split("}")[-1]
             else:
-                iso=''
-            output+="%g x %s\n"%(number, atomic_data[element][0]+iso)
+                iso = ""
+            output += "%g x %s\n" % (number, atomic_data[element][0] + iso)
         return output[:-1]
 
     def f(self):
-        '''Return string to be used in models to calculate scattering power f'''
-        if len(self)==0:
-            return '0.j'
+        """Return string to be used in models to calculate scattering power f"""
+        if len(self) == 0:
+            return "0.j"
         fw.set_wavelength(1.54)
-        elements=''
+        elements = ""
         for element, count in self:
             if element in isotopes:
-                element=isotopes[element][1]
-            elif '[' in element:
-                element, iso = element.split('[', 2)
-            elements+='+fp.%s*%g'%(element, count)
+                element = isotopes[element][1]
+            elif "[" in element:
+                element, iso = element.split("[", 2)
+            elements += "+fp.%s*%g" % (element, count)
         return elements[1:]
 
     def fw(self):
-        '''Return string to be used in models to calculate scattering power f'''
-        if len(self)==0:
-            return '0.j'
+        """Return string to be used in models to calculate scattering power f"""
+        if len(self) == 0:
+            return "0.j"
         fw.set_wavelength(1.54)
-        elements=''
-        total=sum(self.amounts())
+        elements = ""
+        total = sum(self.amounts())
         for element, count in self:
             if element in isotopes:
-                element=isotopes[element][1]
-            elif '[' in element:
-                element, iso = element.split('[', 2)
-            elements+='+fw.%s*%g'%(element, count/total)
+                element = isotopes[element][1]
+            elif "[" in element:
+                element, iso = element.split("[", 2)
+            elements += "+fw.%s*%g" % (element, count / total)
         return elements[1:]
 
     def b(self):
-        '''Return string to be used in models to calculate scattering length b'''
-        if len(self)==0:
-            return '0.j'
-        elements=''
+        """Return string to be used in models to calculate scattering length b"""
+        if len(self) == 0:
+            return "0.j"
+        elements = ""
         for element, count in self:
             if element in isotopes:
-                element=isotopes[element][0]
-            elif '[' in element:
-                ele, iso = element.split('[', 2)
-                iso = int(iso.split(']')[0])
-                element=f'i{iso}{ele}'
-            elements+='+bc.%s*%g'%(element, count)
+                element = isotopes[element][0]
+            elif "[" in element:
+                ele, iso = element.split("[", 2)
+                iso = int(iso.split("]")[0])
+                element = f"i{iso}{ele}"
+            elements += "+bc.%s*%g" % (element, count)
         return elements[1:]
 
     def bw(self):
-        '''Return string to be used in models to calculate scattering length b'''
-        if len(self)==0:
-            return '0.j'
-        elements=''
-        total=sum(self.amounts())
+        """Return string to be used in models to calculate scattering length b"""
+        if len(self) == 0:
+            return "0.j"
+        elements = ""
+        total = sum(self.amounts())
         for element, count in self:
             if element in isotopes:
-                element=isotopes[element][0]
-            elif '[' in element:
-                ele, iso = element.split('[', 2)
-                iso = int(iso.split(']')[0])
-                element=f'i{iso}{ele}'
-            elements+='+bw.%s*%g'%(element, count/total)
+                element = isotopes[element][0]
+            elif "[" in element:
+                ele, iso = element.split("[", 2)
+                iso = int(iso.split("]")[0])
+                element = f"i{iso}{ele}"
+            elements += "+bw.%s*%g" % (element, count / total)
         return elements[1:]
 
+
 class MaterialsDatabase(list):
-    '''
+    """
     Holds a list of materials and associated methods.
-    '''
+    """
 
     def __init__(self):
         if os.path.exists(config_file):
             try:
-                known_materials=json.loads(open(config_file, 'r').read())
+                known_materials = json.loads(open(config_file, "r").read())
             except json.JSONDecodeError:
                 iprint("Can't reload material list, file corrupted.")
-                known_materials=default_materials
+                known_materials = default_materials
         else:
-            known_materials=default_materials
-        data=[self.prepare(mi) for mi in known_materials]
+            known_materials = default_materials
+        data = [self.prepare(mi) for mi in known_materials]
         list.__init__(self, data)
 
     def save_data(self):
-        open(config_file, 'w').write(json.dumps(self))
+        open(config_file, "w").write(json.dumps(self))
 
     def prepare(self, item):
-        if len(item)!=2:
+        if len(item) != 2:
             raise ValueError("Requires [Formula, density_str] entry")
         return [Formula(item[0]), item[1]]
 
@@ -424,14 +426,14 @@ class MaterialsDatabase(list):
         if type(item) in [str, Formula]:
             # Try to match formula with database
             if type(item) is str:
-                item=Formula.from_str(item)
+                item = Formula.from_str(item)
             for material in self:
-                if material[0]==item:
+                if material[0] == item:
                     return material
                 if material[0].equivalent(item):
-                    material=[item, material[1]+'*%g'%(material[0].mFU()/item.mFU())]
+                    material = [item, material[1] + "*%g" % (material[0].mFU() / item.mFU())]
                     return material
-            raise IndexError("Material %s no in database"%item.estr())
+            raise IndexError("Material %s no in database" % item.estr())
         else:
             return list.__getitem__(self, item)
 
@@ -439,9 +441,9 @@ class MaterialsDatabase(list):
         if type(item) in [str, Formula]:
             # Try to match formula with database
             if type(item) is str:
-                item=Formula.from_str(item)
+                item = Formula.from_str(item)
             for material in self:
-                if material[0]==item:
+                if material[0] == item:
                     return True
                 if material[0].equivalent(item):
                     return True
@@ -450,25 +452,25 @@ class MaterialsDatabase(list):
             return list.__contains__(self, item)
 
     def SLDx(self, item):
-        density=self.dens_FU(item)
+        density = self.dens_FU(item)
         fw.set_wavelength(1.54)
-        return density*eval(self[item][0].f())  # *2.82
+        return density * eval(self[item][0].f())  # *2.82
 
     def SLDn(self, item):
-        density=self.dens_FU(item)
-        return density*eval(self[item][0].b())*10.
+        density = self.dens_FU(item)
+        return density * eval(self[item][0].b()) * 10.0
 
     def dens_FU(self, item):
-        '''Returns the formula unit (FU) density of the compound "item" in 1/Å³'''
+        """Returns the formula unit (FU) density of the compound "item" in 1/Å³"""
         try:
             return eval(self[item][1])
         except SyntaxError:
             return 0.0
 
     def dens_mass(self, item):
-        '''Returns the mass density of the compound "item" in g/cm³'''
+        """Returns the mass density of the compound "item" in g/cm³"""
         try:
-            return eval(self[item][1])*self[item][0].mFU()/MASS_DENSITY_CONVERSION
+            return eval(self[item][1]) * self[item][0].mFU() / MASS_DENSITY_CONVERSION
         except SyntaxError:
             return 0.0
 
@@ -488,9 +490,10 @@ class MaterialsDatabase(list):
         list.pop(self, index)
         self.save_data()
 
+
 # list of elements with their name, atomic number and atomic mass values (+GenX name)
 # mostly to calculate atomic density from mass density
-atomic_data={
+atomic_data = {
     "D": ("Deuterium", 1, 2.01410178),
     "H": ("Hydrogen", 1, 1.0079),
     "He": ("Helium", 2, 4.0026),
@@ -601,29 +604,27 @@ atomic_data={
     "Bh": ("Bohrium", 107, 264),
     "Hs": ("Hassium", 108, 277),
     "Mt": ("Meitnerium", 109, 268),
-    }
+}
 
-isotopes={
-    'D': ('i2H', 'H'),
-    }
+isotopes = {
+    "D": ("i2H", "H"),
+}
 
-'''
+"""
     Go through the database of neutron scattering length and generate
     isotope list accordingly.
-'''
+"""
 for key in __bc_dict__.keys():
-    if not key.startswith('i'):
+    if not key.startswith("i"):
         continue
     try:
-        N=int(re.findall(r'\d+', key)[0])
+        N = int(re.findall(r"\d+", key)[0])
     except IndexError:
         continue
-    element=key[len('i%i'%N):].capitalize()
-    isokey='^{%i}%s'%(N, element)
-    n='i%i%s'%(N, element)
-    isotopes[isokey]=(n, element)
-    atomic_data[isokey]=(atomic_data[element][0],
-                         atomic_data[element][1],
-                         float(N))
+    element = key[len("i%i" % N) :].capitalize()
+    isokey = "^{%i}%s" % (N, element)
+    n = "i%i%s" % (N, element)
+    isotopes[isokey] = (n, element)
+    atomic_data[isokey] = (atomic_data[element][0], atomic_data[element][1], float(N))
 
-mdb=MaterialsDatabase()
+mdb = MaterialsDatabase()

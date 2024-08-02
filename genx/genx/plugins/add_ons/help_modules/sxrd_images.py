@@ -3,7 +3,7 @@
 #
 from wx.lib.embeddedimage import PyEmbeddedImage
 
-copy=PyEmbeddedImage(
+copy = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAHeSURBVDiN1ZXPaxNBFMc/M7OtKBUSxMZeJEgx1B9VKAqpP+hFEEQv+g941fbgzaM3PSgI"
@@ -15,13 +15,14 @@ copy=PyEmbeddedImage(
     "iAxFDokFblT/D9AazOYBtW7Mfy181JvBbK4wV5qdso9vD5v3Lx5SrSxsGNi82GVjzP2ZvHu8"
     "+CW3M/A871+BAPNoPebrKsC+3+XSANDxN5BaZQFjzByAisipL34vXuxKdovtyRQ68Al8b03z"
     "GzVmP71l4tGorwPvBpCLm/iSlKoG2LgmhAiQ8jorL2W9x9oBZFj+GsIUAJ+BWtOxBOMItoBE"
-    "Vo2oAAAAAElFTkSuQmCC")
-getcopyData=copy.GetData
-getcopyImage=copy.GetImage
-getcopyBitmap=copy.GetBitmap
+    "Vo2oAAAAAElFTkSuQmCC"
+)
+getcopyData = copy.GetData
+getcopyImage = copy.GetImage
+getcopyBitmap = copy.GetBitmap
 
 # ----------------------------------------------------------------------
-cut=PyEmbeddedImage(
+cut = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAK+SURBVDiNpdNbSBRRGAfw/8zuuLtnZlfHOd7wNkKFF0hdL0VtVhD00GtUJEVIdNEXiXqK"
@@ -37,13 +38,14 @@ cut=PyEmbeddedImage(
     "/AdiCwufy8pK7aMjoyw8E34NIJTMJwIAB8ANoA6AvFQrk9PlhYLCgtjmLZtilNJ7yWLLhlL6"
     "klKqE4k0Uqq8ycvL1QC41u1JkvjT6XQ2LI33paa6ZgEUJtq4Ui+rKSk2GIYxAACKohzleT4C"
     "4HsicKVOGSMiiQiC8CjO4l4w5mGMbwUQTwRaVqjPCoJgiiLZZbVY6Pz8wgNd11sSYcmGS7zk"
-    "b34Bv2kANxdpNYwAAAAASUVORK5CYII=")
-getcutData=cut.GetData
-getcutImage=cut.GetImage
-getcutBitmap=cut.GetBitmap
+    "b34Bv2kANxdpNYwAAAAASUVORK5CYII="
+)
+getcutData = cut.GetData
+getcutImage = cut.GetImage
+getcutBitmap = cut.GetBitmap
 
 # ----------------------------------------------------------------------
-domain=PyEmbeddedImage(
+domain = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAJtSURBVDiNlZM/aFNBHMc/r7m2L0mb1CZp0n/YSsB2KbRLQaSDDi7dBFcVxN1BQZwEwUG6"
@@ -57,13 +59,14 @@ domain=PyEmbeddedImage(
     "hxEiAK5OXCIMIsDsy2/W7bs7PuF1E3GS/UsNKdMAiApIHQRg/qlxdMTn8vuF04NruHnqrTou"
     "NaUJpfr4hGks5e/cyYWNpZgApaPCbB6209Duha4geD3OUmS9MFEBKet3XkgT8WiarfhXEjsZ"
     "PhRLLLcIfB4Pw11Bov3dRPt7iFryuFJSILkGbxb2arGEVS3I1kMt1MFoZp8UkLEpxRUOM+nz"
-    "sTcyTPmUG2FqqOwev/J5qjt5jNVV0kDtJE377/wGaRcACN5CN3MAAAAASUVORK5CYII=")
-getdomainData=domain.GetData
-getdomainImage=domain.GetImage
-getdomainBitmap=domain.GetBitmap
+    "sTcyTPmUG2FqqOwev/J5qjt5jNVV0kDtJE377/wGaRcACN5CN3MAAAAASUVORK5CYII="
+)
+getdomainData = domain.GetData
+getdomainImage = domain.GetImage
+getdomainBitmap = domain.GetBitmap
 
 # ----------------------------------------------------------------------
-insert_domain=PyEmbeddedImage(
+insert_domain = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAMrSURBVDiNfZRNaFxVGIafO/dM5tx786PNf9JghIjJJlhbELrIwi7cdCeoddG04latCApK"
@@ -81,13 +84,14 @@ insert_domain=PyEmbeddedImage(
     "DG0e9HTB2y/V9+m33+G1BSsL9FaDSiNm0q7988NU/wfK3kdmXvPi8fQ9FUaoqfNkZ/8gc3+F"
     "q/kiN1oU7a7LWE8XI0P9jAwNMMK2XQ1qAUaEKIqYv7XMT5c3gnTGVLfCVNnqfogDK5vkgJWY"
     "9HZvL0cjL/H8oVfUsZYH/40YuPZ5NK396MTNmywDAfD/dWlSbudjifftJF0AJqJSXDFnyuvk"
-    "tpv+BWqctPtB+yPkAAAAAElFTkSuQmCC")
-getinsert_domainData=insert_domain.GetData
-getinsert_domainImage=insert_domain.GetImage
-getinsert_domainBitmap=insert_domain.GetBitmap
+    "tpv+BWqctPtB+yPkAAAAAElFTkSuQmCC"
+)
+getinsert_domainData = insert_domain.GetData
+getinsert_domainImage = insert_domain.GetImage
+getinsert_domainBitmap = insert_domain.GetBitmap
 
 # ----------------------------------------------------------------------
-insert_layer=PyEmbeddedImage(
+insert_layer = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAJ6SURBVDiN5ZO9axRBGMZ/szubndnL5e6SMzEBg1FREBEiIYUKET/AwkKIhY2F2PgHmFYQ"
@@ -102,13 +106,14 @@ insert_layer=PyEmbeddedImage(
     "KmJrFnyaptRqVawxv4EXvPnNx3FslnvQ3QPbxE1dFL0LpZCbDrhrs/kMgQrQKmBmynwrPW18"
     "kVIipUw/vQpvLXfkuY+P7Q6wAGQH3KNrx+x5qcIfHRnePGyUnl7/uuWP7P+WYSs1ojrWGuLE"
     "LJlbMdCkaWTTX98piiOSyC4hrhgYTjP58kbyQBdFEQBBOv+eOyvd/8/6DhXMJVdzbPBEAAAA"
-    "AElFTkSuQmCC")
-getinsert_layerData=insert_layer.GetData
-getinsert_layerImage=insert_layer.GetImage
-getinsert_layerBitmap=insert_layer.GetBitmap
+    "AElFTkSuQmCC"
+)
+getinsert_layerData = insert_layer.GetData
+getinsert_layerImage = insert_layer.GetImage
+getinsert_layerBitmap = insert_layer.GetBitmap
 
 # ----------------------------------------------------------------------
-isometric=PyEmbeddedImage(
+isometric = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAHSSURBVDiNxZJNSBRhGICfmZ2Zdnc2TW1TdNcVVyxi1SASEhLCQ2sHkegSHTsYSJcu4imI"
@@ -120,13 +125,14 @@ isometric=PyEmbeddedImage(
     "qZI78cKyooSbOJ3DHwmL5f8JhWX9XaGu6TsXOQmldPt/p3DeGeYLVzeU7IOPurTza7dh2TC9"
     "lFEBT0FhIm0F7k5rN84/NTJvU57cNABjnzycHDbExJIxCDwp/PRvApFy/5vWakOMdiOP1Xjl"
     "bC+y67BX1OzzvQNKihXlcjRS5k1VmoodDXqTQGy3olwOFVP0C/lriBUsUM38AAAAAElFTkSu"
-    "QmCC")
-getisometricData=isometric.GetData
-getisometricImage=isometric.GetImage
-getisometricBitmap=isometric.GetBitmap
+    "QmCC"
+)
+getisometricData = isometric.GetData
+getisometricImage = isometric.GetImage
+getisometricBitmap = isometric.GetBitmap
 
 # ----------------------------------------------------------------------
-orbit=PyEmbeddedImage(
+orbit = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAFpSURBVDiNvdS/S1ZxFMfxV08p9gQOLoLYDx6KcHQJE3XKSQiXVofAKRvERZpc/BNaXBpL"
@@ -136,26 +142,28 @@ orbit=PyEmbeddedImage(
     "eN6EN38UMBHdCGAvJjGQrrAG3zGLpVQbp9H+mYq4kdofSEbqAFeknGsi0wNcxxq+YRv9GJGc"
     "bSMe43mAr+ITXmEc5bMKj/AyrEFyjk1hhUhyjMs4xDKm8FGVr6aS0mNzJ5JWVJbB3kBzrJsl"
     "45ILuIbbsW7Bh7zAt+iQXODd2OcCLkpaHQ7ouwwx/1Qnnkp+tOern3aQSPwCX+wtAAAAAElF"
-    "TkSuQmCC")
-getorbitData=orbit.GetData
-getorbitImage=orbit.GetImage
-getorbitBitmap=orbit.GetBitmap
+    "TkSuQmCC"
+)
+getorbitData = orbit.GetData
+getorbitImage = orbit.GetImage
+getorbitBitmap = orbit.GetBitmap
 
 # ----------------------------------------------------------------------
-pan=PyEmbeddedImage(
+pan = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AADzSURBVDiNrdQxSgRBEAXQN66Ma2LkAQQRFzyAGBt4AsXYQPAw7l5DjEwVPIC5oAjiGdRg"
     "QVjWoHtlkHGmZPvDp6Hnd1V1/emiMAZB3RG28NYnXA0GPMYM90F9J4Z4z1wrEfAC88yzPnHk"
     "yjt4QoW9pUpr4CazFyulMv4VsJb6NA6cneBcMu0HVV4PcYJTbEg9e2no9vP60NjbxQifuM68"
     "W1Q4yFwkqMQxl/7RWdvHYb7G5Nd+myljqT31P5J3BmxFcZcjw+ESB9jENm67xJEKHyU3R5L7"
-    "S6OWBsMH1vvEkbf8hSupPdM+cXTATvGM16C+HL4BUo8mSicT6tEAAAAASUVORK5CYII=")
-getpanData=pan.GetData
-getpanImage=pan.GetImage
-getpanBitmap=pan.GetBitmap
+    "S6OWBsMH1vvEkbf8hSupPdM+cXTATvGM16C+HL4BUo8mSicT6tEAAAAASUVORK5CYII="
+)
+getpanData = pan.GetData
+getpanImage = pan.GetImage
+getpanBitmap = pan.GetBitmap
 
 # ----------------------------------------------------------------------
-paste=PyEmbeddedImage(
+paste = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAHLSURBVDiN7dS9axRBHMbx78zu3N7paXJBfDltBC3EGFLoFYKFChpOfGnEwka0sLBV8jfY"
@@ -166,13 +174,14 @@ paste=PyEmbeddedImage(
     "gLPfHNZJKkfOIuUf3mPplrMfuTFxn59aLHcyPaAtSCm7wgBClQPA2E4nPbP/nP/gigMDCdZa"
     "nLW++UxM8nuTZErJgOVegXCOxpsnXYHvX43Ts1pRUJ0us3rFCKoD8ODqMPXtuygUS17s+9cZ"
     "vnya5sxeRzu18ktgbCzCAQd2wNZ18OFzHd3y367QC/39gg1rBS+nHRI0dH6wm6SgsX4Nwaq8"
-    "cF19byoz8y5ILKPGckGk+m3ASaDnLz0HvANuAckv5NKXBBlyzwYAAAAASUVORK5CYII=")
-getpasteData=paste.GetData
-getpasteImage=paste.GetImage
-getpasteBitmap=paste.GetBitmap
+    "cF19byoz8y5ILKPGckGk+m3ASaDnLz0HvANuAckv5NKXBBlyzwYAAAAASUVORK5CYII="
+)
+getpasteData = paste.GetData
+getpasteImage = paste.GetImage
+getpasteBitmap = paste.GetBitmap
 
 # ----------------------------------------------------------------------
-paste_new=PyEmbeddedImage(
+paste_new = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AALISURBVDiNnZTNa1RXGMZ/58y9cyeZG8zErzKmiLQR29JgwQYqFKyKSoraTXHRnS66LrT2"
@@ -188,13 +197,14 @@ paste_new=PyEmbeddedImage(
     "DvFCT/8YWhZUhTRxnP9ujJXLAqZrgauMu9MtwDiCwX44e/hrRvrepSMuzXe6AUjrCdFqpVCa"
     "RVQgyVj19wTLJ4QL1/WZ8/zyHJh6wSiw9S1YtwLuPRkh+1cskhQMAWCo1RMkcfT2QOUZWMig"
     "GZurqSM7dFaks2C03QOpQv6uFArLrQGYuFPTkWFpPJlS65WT0PyxAd4EPgWWtQMC2BzdQcQq"
-    "AJ8x5TPGgdvAccD9A477Uz6v2B3/AAAAAElFTkSuQmCC")
-getpaste_newData=paste_new.GetData
-getpaste_newImage=paste_new.GetImage
-getpaste_newBitmap=paste_new.GetBitmap
+    "AJ8x5TPGgdvAccD9A477Uz6v2B3/AAAAAElFTkSuQmCC"
+)
+getpaste_newData = paste_new.GetData
+getpaste_newImage = paste_new.GetImage
+getpaste_newBitmap = paste_new.GetBitmap
 
 # ----------------------------------------------------------------------
-sample=PyEmbeddedImage(
+sample = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAJmSURBVDiNlZO9TxNxHIefux70hUJb2hPaIgWNCBIGZDCR0AFNTFwcHBw00UTj7p9g4mCC"
@@ -208,13 +218,14 @@ sample=PyEmbeddedImage(
     "rPiQFbX29P11Xlmj88Klu7cVhx1/c1ltJCOPof851X+lx69KTmdrV5ML9y9pA7Eosy/hjnRv"
     "hwCGUdq/sCot1DqtF9d1mNqA1SRYW8HfBR3mt3GXdJdYlFD0CsrUYxKRKJ9/pviYzxLVwel1"
     "MexxM3AwwOHJcUKnJ3DabXulyaTg5Uw+8yESj+cKpYikuhnVMiSAlEkzksPB2LEjXA0FGfa4"
-    "8BgGZLJoWpr1TJb56ALPgcX/Wde+8wsuf/VmF6kkGwAAAABJRU5ErkJggg==")
-getsampleData=sample.GetData
-getsampleImage=sample.GetImage
-getsampleBitmap=sample.GetBitmap
+    "8BgGZLJoWpr1TJb56ALPgcX/Wde+8wsuf/VmF6kkGwAAAABJRU5ErkJggg=="
+)
+getsampleData = sample.GetData
+getsampleImage = sample.GetImage
+getsampleBitmap = sample.GetBitmap
 
 # ----------------------------------------------------------------------
-selection=PyEmbeddedImage(
+selection = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAG3SURBVDiN3dK/axphHAbw72tPT1POH9wZkxMCiuI/4IFK/oluRx2EAxdxcBJ1yCRYhFpw"
@@ -225,13 +236,14 @@ selection=PyEmbeddedImage(
     "t4aRSEQHYDPScBlZlm8mk4lV13XiuKdv5nK5KJVK9Rhj94bbATCpqnpBRJBleZ7L5T6LovhI"
     "RPD5fA+z2cxvGCMiisfjX4gIkiQ9ViqV1wBM4XD4zmw2o1AojDbC0un0ORHBbrejVCqlF/Ns"
     "NvvWarViOBy+MoxlMpkTxhhsNhuKxeLRz2f1en2vWq1eA2CGMAAvB4PBld/vRz6ff2e4xRpU"
-    "nk6n2l/B/tn8AOiszSoOz6k8AAAAAElFTkSuQmCC")
-getselectionData=selection.GetData
-getselectionImage=selection.GetImage
-getselectionBitmap=selection.GetBitmap
+    "nk6n2l/B/tn8AOiszSoOz6k8AAAAAElFTkSuQmCC"
+)
+getselectionData = selection.GetData
+getselectionImage = selection.GetImage
+getselectionBitmap = selection.GetBitmap
 
 # ----------------------------------------------------------------------
-x=PyEmbeddedImage(
+x = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAKwSURBVDiNzZJdSFNxGMZ/+3adOadzc37VtPzApIuQlkISoReZEAZdeGEXEWFkGl1IBkIQ"
@@ -247,13 +259,14 @@ x=PyEmbeddedImage(
     "nUnMARkqsO1Lw+lpCve+nUdMj2caSIyZ0KLj3tVDpGbow+9NvbhX/FwGpoMw8NXNo44P+AGM"
     "WrhVgSUtno6oAxPUHM81Ul6UinpiGZ6PI3aOYnd6aZUYh4eGK304hhwwsQy7klDkGilN1FIt"
     "MdI9lBk03DQJ5EiN4DrByWXqgJnIBFolJRl6LkXWvq/yaTnABcKXYYvrF1mX2jQHt3dFAAAA"
-    "AElFTkSuQmCC")
-getxData=x.GetData
-getxImage=x.GetImage
-getxBitmap=x.GetBitmap
+    "AElFTkSuQmCC"
+)
+getxData = x.GetData
+getxImage = x.GetImage
+getxBitmap = x.GetBitmap
 
 # ----------------------------------------------------------------------
-y=PyEmbeddedImage(
+y = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAH8SURBVDiNzZI/TBNhGMZ/17v0CrRH06QFcsbEBAeJDRubi8KAsmK0NakLBhNH/8QmRicT"
@@ -265,13 +278,14 @@ y=PyEmbeddedImage(
     "RwR4n6GsGcwCX5v1YnMCyAsCRyMdDA72ICkybBaRrw3RrSoIO3tw/i36iskYUGwWC/8wBOhU"
     "Q2S+TXBEkaFcBcl5S3qerelFbjbvrtWEAHs2ZHWTM2eP0+Fzrl02IP2Jpdw2Ex66gzt0YZV4"
     "/UHj51K+nrsxRy5rcRmwvXSehgBVmznNqPNVkwrwo5WmpeH/oP0NpcMa9G34tVGLd6uev2If"
-    "Xv8QgJDMWG8Xky63ShRWLS4C5UNHbVv8BdrTml0zMuGBAAAAAElFTkSuQmCC")
-getyData=y.GetData
-getyImage=y.GetImage
-getyBitmap=y.GetBitmap
+    "Xv8QgJDMWG8Xky63ShRWLS4C5UNHbVv8BdrTml0zMuGBAAAAAElFTkSuQmCC"
+)
+getyData = y.GetData
+getyImage = y.GetImage
+getyBitmap = y.GetBitmap
 
 # ----------------------------------------------------------------------
-z=PyEmbeddedImage(
+z = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAHGSURBVDiNzZO9S1thFMZ/NzGmzU2GGvVWYoVQkUxCJJMVF8Fa7SKoLdSAgyL+AZVmVQod"
@@ -282,13 +296,14 @@ z=PyEmbeddedImage(
     "DraTcN7AX62ukkNJcrD2ZpRmq1kjXoSQ96IsHp2xeCVngKXFzset8ctPePeIrGTnA2CuVVzi"
     "ULLz6lkPHffuaG/fEjC9TiQmMwDkriTYaGO63839SS83AeQLGHnNYfSEh2Bs5/RH4Wxv4PPu"
     "FM2W/22eh8gtfeLAauK8XHHslOO/mcLb1wu29rkJrz3mthEnAJ6X/IikuKvnChY7k8X889io"
-    "HKhlzl4vmN5P8n54GatRwbzKV+Ptrwv+AQc3h7C1xoWhAAAAAElFTkSuQmCC")
-getzData=z.GetData
-getzImage=z.GetImage
-getzBitmap=z.GetBitmap
+    "HKhlzl4vmN5P8n54GatRwbzKV+Ptrwv+AQc3h7C1xoWhAAAAAElFTkSuQmCC"
+)
+getzData = z.GetData
+getzImage = z.GetImage
+getzBitmap = z.GetBitmap
 
 # ----------------------------------------------------------------------
-zoom_small=PyEmbeddedImage(
+zoom_small = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAARTQAAEU0BwDlgYwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
     "AAInSURBVDiNrdMxaBNRGAfw/x13RwjhCsmB2NwJpxy5dkiPJpLQLEU0EJEki5McZOrgUGiG"
@@ -301,7 +316,8 @@ zoom_small=PyEmbeddedImage(
     "QqHwPB6PL6fT6Vwmk3nD8/yE53na29t764sREWOa5qcphtNHfH4MgKLRKO3u7jaJSDi//6+/"
     "vL6+/n5nZ+fedJzL5b6VSqWXnU7nkeM4ciAQcGOxWLdYLD5bWFj46Hu6jY2NVyzLnp1iZWXl"
     "qNFoXPPd5JXt7e1NQRDOMMMwxvv7+7dmwgDAcZwX2WyWAJCqqif1ev32zNg0w+GwvLa2Nq7V"
-    "avf/G5uGiKQrw64ivwHZFc3aocTgCAAAAABJRU5ErkJggg==")
-getzoom_smallData=zoom_small.GetData
-getzoom_smallImage=zoom_small.GetImage
-getzoom_smallBitmap=zoom_small.GetBitmap
+    "avf/G5uGiKQrw64ivwHZFc3aocTgCAAAAABJRU5ErkJggg=="
+)
+getzoom_smallData = zoom_small.GetData
+getzoom_smallImage = zoom_small.GetImage
+getzoom_smallBitmap = zoom_small.GetBitmap

@@ -1,15 +1,18 @@
 import warnings
+
 from dataclasses import dataclass
 from logging import debug
 
 import matplotlib
 import matplotlib.axes
+import wx
+
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.figure import Figure
-
-from numpy import sin, cos, tan, pi, exp, log, log10, sqrt, array, arange, hstack, vstack, linspace, arcsin, arccos, arctan
-import wx
+from numpy import (arange, arccos, arcsin, arctan, array, cos, exp, hstack, linspace, log, log10, pi, sin, sqrt, tan,
+                   vstack)
 from wx.py.editwindow import EditWindow
+
 from ..core.config import BaseConfig, Configurable
 from ..data import DataList, DataSet
 
@@ -18,19 +21,20 @@ from ..data import DataList, DataSet
 class SimplePlotPanel(wx.Panel):
     ax: matplotlib.axes.Axes
 
-    def __init__(self, parent, id=-1, color=None, dpi=None,
-                 style=wx.NO_FULL_REPAINT_ON_RESIZE | wx.EXPAND | wx.ALL, **kwargs):
+    def __init__(
+        self, parent, id=-1, color=None, dpi=None, style=wx.NO_FULL_REPAINT_ON_RESIZE | wx.EXPAND | wx.ALL, **kwargs
+    ):
         wx.Panel.__init__(self, parent, id=id, style=style, **kwargs)
         if dpi is None:
-            dpi = wx.GetApp().dpi_scale_factor*96.  # wx.GetDisplayPPI()[0]
+            dpi = wx.GetApp().dpi_scale_factor * 96.0  # wx.GetDisplayPPI()[0]
         self.parent = parent
-        debug('init PlotPanel - setup figure')
+        debug("init PlotPanel - setup figure")
         self.figure = Figure(figsize=(1.0, 1.0), dpi=dpi)
-        debug('init PlotPanel - setup canvas')
+        debug("init PlotPanel - setup canvas")
         self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
         self.SetColor(color)
         self._resizeflag = True
-        self.print_size = (15./2.54, 12./2.54)
+        self.print_size = (15.0 / 2.54, 12.0 / 2.54)
         # self._SetSize()
 
         # debug('init PlotPanel - bind events')
@@ -45,18 +49,18 @@ class SimplePlotPanel(wx.Panel):
         self.bitmap = wx.Bitmap(1, 1, depth=wx.BITMAP_SCREEN_DEPTH)
         #        DEBUG_MSG("__init__() - bitmap w:%d h:%d" % (w,h), 2, self)
         self._isDrawn = False
-        debug('end init PlotPanel')
+        debug("end init PlotPanel")
 
     def clear(self):
         self.figure.clear()
         self.ax = self.figure.add_subplot(111)
 
     def SetColor(self, rgbtuple=None):
-        ''' Set the figure and canvas color to be the same '''
+        """Set the figure and canvas color to be the same"""
         if not rgbtuple:
             rgbtuple = self.parent.GetBackgroundColour()
             # wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE).Get()
-        col = [c/255. for c in rgbtuple]
+        col = [c / 255.0 for c in rgbtuple]
         self.figure.set_facecolor(col)
         self.figure.set_edgecolor(col)
         self.canvas.SetBackgroundColour(wx.Colour(*rgbtuple))
@@ -71,9 +75,9 @@ class SimplePlotPanel(wx.Panel):
             self._SetSize()
 
     def _SetSize(self):
-        ''' This method can be called to force the Plot to be a desired
-            size which defaults to the ClientSize of the Panel.
-        '''
+        """This method can be called to force the Plot to be a desired
+        size which defaults to the ClientSize of the Panel.
+        """
         pixels = self.GetMinSize()
 
         self.canvas.SetSize(pixels)
@@ -93,15 +97,16 @@ class SimplePlotPanel(wx.Panel):
 
 @dataclass
 class PublicationConfig(BaseConfig):
-    section = 'publication graph'
+    section = "publication graph"
 
     width: float = 3.39
     heigth: float = 2.36
-    font_size: int = int(matplotlib.rcParams['font.size'])
+    font_size: int = int(matplotlib.rcParams["font.size"])
     font_familty: int = wx.FONTFAMILY_DEFAULT
-    font_face: str = matplotlib.rcParams['font.sans-serif'][0]
+    font_face: str = matplotlib.rcParams["font.sans-serif"][0]
 
-    start_text: str = repr('''fig.set_facecolor('white')
+    start_text: str = repr(
+        """fig.set_facecolor('white')
 # for other matplotlib rc style options see https://matplotlib.org/stable/tutorials/introductory/customizing.html
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.size'] = font_size # dialog entry
@@ -120,18 +125,20 @@ ylabel(model.__ylabel__)
 legend()
 tight_layout(pad=0.5)
 show()
-#savefig(r"your_file_name.png", dpi=300)'''.splitlines())
+#savefig(r"your_file_name.png", dpi=300)""".splitlines()
+    )
 
 
 class PublicationDialog(wx.Dialog, Configurable):
     opt: PublicationConfig
 
     def __init__(self, parent, id=-1, data: DataList = None, module=None):
-        wx.Dialog.__init__(self, parent, id=id,
-                           style=wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE)
+        wx.Dialog.__init__(
+            self, parent, id=id, style=wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE
+        )
         Configurable.__init__(self)
         self.ReadConfig()
-        self.SetTitle('Custom plotting for Publication')
+        self.SetTitle("Custom plotting for Publication")
 
         self.data = data
         self.module = module
@@ -142,10 +149,10 @@ class PublicationDialog(wx.Dialog, Configurable):
         hbox.Add(vbox, 10, wx.EXPAND | wx.ALL, 4)
         self.tinput = EditWindow(self, wx.ID_ANY)
         self.tinput.SetBackSpaceUnIndents(True)
-        self.tinput.SetText('\n'.join(eval(self.opt.start_text)))
+        self.tinput.SetText("\n".join(eval(self.opt.start_text)))
 
         vbox.Add(self.tinput, 1, wx.EXPAND, 0)
-        button = wx.Button(self, label='plot')
+        button = wx.Button(self, label="plot")
         vbox.Add(button, 0, wx.EXPAND, 0)
 
         vbox2 = wx.BoxSizer(wx.VERTICAL)
@@ -159,26 +166,35 @@ class PublicationDialog(wx.Dialog, Configurable):
         vbox2.Add(self.error_text, 0, wx.EXPAND, 0)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         vbox2.Add(hbox2, 0, wx.EXPAND, 0)
-        self.width = wx.SpinCtrlDouble(self, min=0.1, max=30.0, initial=self.opt.width,
-                                       inc=0.01, style=wx.SP_ARROW_KEYS)
-        self.height = wx.SpinCtrlDouble(self, min=0.1, max=30.0, initial=self.opt.heigth,
-                                        inc=0.01, style=wx.SP_ARROW_KEYS)
-        hbox2.Add(wx.StaticText(self, label='Width (inches)'))
+        self.width = wx.SpinCtrlDouble(
+            self, min=0.1, max=30.0, initial=self.opt.width, inc=0.01, style=wx.SP_ARROW_KEYS
+        )
+        self.height = wx.SpinCtrlDouble(
+            self, min=0.1, max=30.0, initial=self.opt.heigth, inc=0.01, style=wx.SP_ARROW_KEYS
+        )
+        hbox2.Add(wx.StaticText(self, label="Width (inches)"))
         hbox2.Add(self.width, 0, wx.FIXED_MINSIZE | wx.RIGHT, 10)
-        hbox2.Add(wx.StaticText(self, label='Height (inches)'))
+        hbox2.Add(wx.StaticText(self, label="Height (inches)"))
         hbox2.Add(self.height, 0, wx.FIXED_MINSIZE | wx.RIGHT, 10)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         vbox2.Add(hbox2, 0, wx.EXPAND, 0)
         self.font = wx.FontPickerCtrl(self, style=wx.FNTP_FONTDESC_AS_LABEL)
-        self.font.SetSelectedFont(wx.Font(self.opt.font_size, self.opt.font_familty,
-                                          wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False,
-                                          faceName=self.opt.font_face))
-        hbox2.Add(wx.StaticText(self, label='Font'))
+        self.font.SetSelectedFont(
+            wx.Font(
+                self.opt.font_size,
+                self.opt.font_familty,
+                wx.FONTSTYLE_NORMAL,
+                wx.FONTWEIGHT_NORMAL,
+                False,
+                faceName=self.opt.font_face,
+            )
+        )
+        hbox2.Add(wx.StaticText(self, label="Font"))
         hbox2.Add(self.font, 0, wx.EXPAND, 0)
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         vbox2.Add(hbox2, 0, wx.EXPAND, 0)
-        save_button = wx.Button(self, label='store current script and settings as default')
+        save_button = wx.Button(self, label="store current script and settings as default")
         hbox2.Add(save_button, 0, wx.EXPAND, 0)
 
         self.hbox = hbox
@@ -191,7 +207,7 @@ class PublicationDialog(wx.Dialog, Configurable):
     def OnPlot(self, event):
         txt = self.tinput.GetText()
         font = self.font.GetSelectedFont()
-        weights = {wx.FONTWEIGHT_BOLD: 'bold', wx.FONTWEIGHT_NORMAL: 'normal'}
+        weights = {wx.FONTWEIGHT_BOLD: "bold", wx.FONTWEIGHT_NORMAL: "normal"}
         env = dict(
             rcParams=matplotlib.rcParams,
             data=self.data,
@@ -201,30 +217,29 @@ class PublicationDialog(wx.Dialog, Configurable):
             canvas=self.plot.canvas,
             savefig=self.plot.figure.savefig,
             tight_layout=self.plot.figure.tight_layout,
-
             font_size=font.GetPointSize(),
             font_face=font.GetFaceName(),
             font_weight=weights[font.GetWeight()],
-            )
+        )
 
         def clear():
             self.plot.clear()
             ax = self.plot.ax
-            env['plot'] = ax.plot,
-            env['semilogy'] = ax.semilogy
-            env['errorbar'] = ax.errorbar
-            env['title'] = ax.set_title
+            env["plot"] = (ax.plot,)
+            env["semilogy"] = ax.semilogy
+            env["errorbar"] = ax.errorbar
+            env["title"] = ax.set_title
 
-            env['xlabel'] = ax.set_xlabel
-            env['ylabel'] = ax.set_ylabel
-            env['legend'] = ax.legend
-            env['axes'] = ax
+            env["xlabel"] = ax.set_xlabel
+            env["ylabel"] = ax.set_ylabel
+            env["legend"] = ax.legend
+            env["axes"] = ax
 
-        env['clear'] = clear
+        env["clear"] = clear
 
-        w = int(self.width.GetValue()*72*self.dpi_scale_factor*2)
-        h = int(self.height.GetValue()*72*self.dpi_scale_factor*2)
-        self.plot.figure.dpi = int(72*self.dpi_scale_factor*2)
+        w = int(self.width.GetValue() * 72 * self.dpi_scale_factor * 2)
+        h = int(self.height.GetValue() * 72 * self.dpi_scale_factor * 2)
+        self.plot.figure.dpi = int(72 * self.dpi_scale_factor * 2)
         size = wx.Size(w, h)
         self.plot.SetMinSize(size)
         self.plot.SetSize(size)
@@ -232,7 +247,7 @@ class PublicationDialog(wx.Dialog, Configurable):
         try:
             exec(txt, env)
         except Exception as e:
-            self.error_text.SetLabel(e.__class__.__name__+': '+str(e))
+            self.error_text.SetLabel(e.__class__.__name__ + ": " + str(e))
             self.error_text.Show()
         else:
             self.error_text.Hide()

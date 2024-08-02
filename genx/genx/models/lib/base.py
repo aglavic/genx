@@ -2,19 +2,18 @@
 Define base classes that can be used in models for prameterization. This classes are model independent.
 """
 
-import sys
-import inspect
 import ast
-from enum import Enum
-# noinspection PyUnresolvedReferences
-from dataclasses import (dataclass, _FIELD, _FIELD_INITVAR, _FIELDS, _HAS_DEFAULT_FACTORY, _POST_INIT_NAME, MISSING,
-                         _create_fn, _field_init, _init_param, _set_new_attribute, field, fields, )
+import inspect
+import sys
 
+# noinspection PyUnresolvedReferences
+from dataclasses import (_FIELD, _FIELD_INITVAR, _FIELDS, _HAS_DEFAULT_FACTORY, _POST_INIT_NAME, MISSING, _create_fn,
+                         _field_init, _init_param, _set_new_attribute, dataclass, field, fields)
+from enum import Enum
 
 # change of signature introduced in python 3.10.1
-if sys.version_info>=(3, 10, 1):
+if sys.version_info >= (3, 10, 1):
     _field_init_real = _field_init
-
 
     def _field_init(f, frozen, locals, self_name):
         return _field_init_real(f, frozen, locals, self_name, False)
@@ -51,12 +50,12 @@ def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
 
     return _create_fn(
         "__init__",
-        [self_name, '*']+[_init_param(f) for f in fieldsarg if f.init]+["**user_kwds"],
+        [self_name, "*"] + [_init_param(f) for f in fieldsarg if f.init] + ["**user_kwds"],
         body_lines,
         locals=locals,
         globals=globals,
         return_type=None,
-        )
+    )
 
 
 class ModelParamMeta(type):
@@ -68,7 +67,10 @@ class ModelParamMeta(type):
     def __new__(meta, name, bases, attrs):
         cls = super().__new__(meta, name, bases, attrs)
 
-        if "__annotations__" in attrs and len([k for k in attrs["__annotations__"].keys() if not k.startswith("_")])>0:
+        if (
+            "__annotations__" in attrs
+            and len([k for k in attrs["__annotations__"].keys() if not k.startswith("_")]) > 0
+        ):
             as_dataclass = dataclass(cls)
             fieldsarg = getattr(as_dataclass, _FIELDS)
 
@@ -77,7 +79,7 @@ class ModelParamMeta(type):
             # Include InitVars and regular fields (so, not ClassVars).
             flds = [f for f in fieldsarg.values() if f._field_type in (_FIELD, _FIELD_INITVAR)]
             init_fun = _custom_init_fn(flds, False, has_post_init, "self", globals())
-            setattr(cls, '__init__', init_fun)
+            setattr(cls, "__init__", init_fun)
         # adding documentation for class into module doc-string
         # this leads to much cleaner code in model module as beginning of file only contains
         # a general introduction and each dataclass gets documented where it's defined.
@@ -85,22 +87,22 @@ class ModelParamMeta(type):
         if module is not None and cls.__doc__ is not None:
             # create suitable doc string automatically, but only for non-interactively created classes
             doc = inspect.cleandoc(cls.__doc__)
-            docout = f'{cls.__name__}\n'
-            docout += '~'*len(cls.__name__)+'\n'
-            sig = eval('inspect.signature(cls)', module.__dict__, {'cls': cls, 'inspect':inspect})
-            units = getattr(cls, 'Units', {})
+            docout = f"{cls.__name__}\n"
+            docout += "~" * len(cls.__name__) + "\n"
+            sig = eval("inspect.signature(cls)", module.__dict__, {"cls": cls, "inspect": inspect})
+            units = getattr(cls, "Units", {})
             call_params = []
             for ni, si in sig.parameters.items():
-                if ni=='user_kwds':
+                if ni == "user_kwds":
                     continue
-                if ni in units and units[ni].strip()!='':
-                    call_params.append(f'{ni}={si.default!r} ({units[ni]})')
+                if ni in units and units[ni].strip() != "":
+                    call_params.append(f"{ni}={si.default!r} ({units[ni]})")
                 else:
-                    call_params.append(f'{ni}={si.default!r}')
+                    call_params.append(f"{ni}={si.default!r}")
             call_string = f'{cls.__name__}({", ".join(call_params)})'
-            docout += f'``{call_string}``\n\n'
+            docout += f"``{call_string}``\n\n"
             docout += doc
-            module.__doc__+=docout+'\n\n'
+            module.__doc__ += docout + "\n\n"
 
         return cls
 
@@ -116,18 +118,19 @@ class ModelParamBase(metaclass=ModelParamMeta):
     dictionary that can be used in GUI and documentation to annotate the
     physical unit used for the parameter.
     """
+
     Units = {}
 
     def __post_init__(self):
         self._generate_setters()
         self._generate_getters()
         # record the line number in the script when executed by exec, see model.Model.compile_script
-        self._lno_context = inspect.stack()[2].lineno-1
+        self._lno_context = inspect.stack()[2].lineno - 1
         self._orig_params = {}
         self._ca = {}
         for fi in fields(self):
             if fi.name not in self.Units:
-                self.Units[fi.name] = ''
+                self.Units[fi.name] = ""
             self._orig_params[fi.name] = getattr(self, fi.name)
             if inspect.isclass(fi.type) and not isinstance(getattr(self, fi.name), fi.type):
                 # convert parameter to correct type
@@ -137,16 +140,16 @@ class ModelParamBase(metaclass=ModelParamMeta):
     def _extract_callpars(self, source):
         # try to extract call arguments for the keywords
         context = [source.splitlines()[self._lno_context]]
-        call_lines = ''.join(context)
+        call_lines = "".join(context)
         ca = {}
         try:
             p = ast.parse(call_lines)
             kws = p.body[0].value.keywords
             for kw in kws:
-                if hasattr(ast, 'get_source_segment'):
+                if hasattr(ast, "get_source_segment"):
                     ca[kw.arg] = ast.get_source_segment(call_lines, kw.value)
                 else:
-                    ca[kw.arg] = call_lines[kw.value.col_offset:kw.value.end_col_offset]
+                    ca[kw.arg] = call_lines[kw.value.col_offset : kw.value.end_col_offset]
         except Exception:
             pass
         for fi in fields(self):
@@ -159,23 +162,23 @@ class ModelParamBase(metaclass=ModelParamMeta):
         def set_func(value):
             setattr(object, par, value)
 
-        set_func.__name__ = 'set'+par.capitalize()
+        set_func.__name__ = "set" + par.capitalize()
         return set_func
 
     @staticmethod
     def _get_real_setter(object, par):
         def set_func(value):
-            setattr(object, par, value+getattr(object, par).imag*1J)
+            setattr(object, par, value + getattr(object, par).imag * 1j)
 
-        set_func.__name__ = 'set'+par.capitalize()+'real'
+        set_func.__name__ = "set" + par.capitalize() + "real"
         return set_func
 
     @staticmethod
     def _get_imag_setter(object, par):
         def set_func(value):
-            setattr(object, par, value*1J+getattr(object, par).real)
+            setattr(object, par, value * 1j + getattr(object, par).real)
 
-        set_func.__name__ = 'set'+par.capitalize()+'imag'
+        set_func.__name__ = "set" + par.capitalize() + "imag"
         return set_func
 
     def _generate_setters(self):
@@ -197,7 +200,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
         def get_func():
             return getattr(object, par)
 
-        get_func.__name__ = 'get'+par.capitalize()
+        get_func.__name__ = "get" + par.capitalize()
         return get_func
 
     @staticmethod
@@ -205,7 +208,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
         def get_func():
             return getattr(object, par).real
 
-        get_func.__name__ = 'get'+par.capitalize()+'real'
+        get_func.__name__ = "get" + par.capitalize() + "real"
         return get_func
 
     @staticmethod
@@ -213,7 +216,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
         def get_func():
             return getattr(object, par).imag
 
-        get_func.__name__ = 'get'+par.capitalize()+'imag'
+        get_func.__name__ = "get" + par.capitalize() + "imag"
         return get_func
 
     def _generate_getters(self):
@@ -230,14 +233,15 @@ class ModelParamBase(metaclass=ModelParamMeta):
                 setattr(self, get_imag_func.__name__, get_imag_func)
 
     def _repr_call(self):
-        output = self.__class__.__name__+'('
+        output = self.__class__.__name__ + "("
         for fi in fields(self):
             call = self._ca.get(fi.name, None)
             if call is not None:
-                output += f'{fi.name}={call}, '
+                output += f"{fi.name}={call}, "
             else:
-                output += f'{fi.name}={getattr(self, fi.name)!r}, '
-        return output[:-2]+')'
+                output += f"{fi.name}={getattr(self, fi.name)!r}, "
+        return output[:-2] + ")"
+
 
 class AltStrEnum(str, Enum):
     """
@@ -253,22 +257,22 @@ class AltStrEnum(str, Enum):
         # allow integer indices for backwards compatibility of some models
         # order or items is according to order of definition in class
         values = [e.value for e in cls]
-        if type(value) is int and value >=0 and value<len(values):
+        if type(value) is int and value >= 0 and value < len(values):
             return cls(values[value])
         else:
             return super()._missing_(value)
 
     def __init__(self, string):
-        if self.name.startswith('alternate'):
-            self.alt_for = self.name.split('_', 1)[1]
+        if self.name.startswith("alternate"):
+            self.alt_for = self.name.split("_", 1)[1]
         else:
             self.alt_for = None
 
     def __eq__(self, other):
-        if getattr(other, 'alt_for', None) is not None:
+        if getattr(other, "alt_for", None) is not None:
             return self.name == other.alt_for or str.__eq__(self, other)
-        elif getattr(self, 'alt_for', None) is not None:
-            return self.alt_for==other.name or str.__eq__(self, other)
+        elif getattr(self, "alt_for", None) is not None:
+            return self.alt_for == other.name or str.__eq__(self, other)
         else:
             return str.__eq__(self, other)
 

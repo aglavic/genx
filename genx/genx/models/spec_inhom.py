@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-'''
+"""
 Library for combined x-ray and neutrons simulations for inhomogeneous samples.
 ==============================================================================
 In addition to the options from spec_nx this allows to model thickness variation over
@@ -180,150 +180,168 @@ Instrument
 ``pol``
     The measured polarization of the instrument. Valid options are:
     'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
-'''
+"""
+from copy import deepcopy
+
 import numpy as np
 
-from copy import deepcopy
 from scipy.special import wofz
+
 from . import spec_nx_legacy as spec_nx
+from .lib.instrument import *
 from .lib.sm_hayter_mook import sm_layers
 from .spec_nx_legacy import refl
-from .lib.instrument import *
 
 # Preamble to define the parameters needed for the models outlined below:
-ModelID='SpecInhom'
-__pars__=spec_nx.__pars__.copy()
+ModelID = "SpecInhom"
+__pars__ = spec_nx.__pars__.copy()
 
-instrument_string_choices=spec_nx.instrument_string_choices.copy()
-InstrumentParameters=spec_nx.InstrumentParameters.copy()
-InstrumentGroups=spec_nx.InstrumentGroups.copy()
-InstrumentUnits=spec_nx.InstrumentUnits.copy()
+instrument_string_choices = spec_nx.instrument_string_choices.copy()
+InstrumentParameters = spec_nx.InstrumentParameters.copy()
+InstrumentGroups = spec_nx.InstrumentGroups.copy()
+InstrumentUnits = spec_nx.InstrumentUnits.copy()
 
-LayerParameters=spec_nx.LayerParameters.copy()
-LayerParameters.update({'sigma_gradient': 0.0, 'd_gradient': 0.0})
-LayerUnits=spec_nx.LayerUnits.copy()
-LayerUnits.update({'sigma_gradient': '1', 'd_gradient': '1'})
-LayerGroups=[('Standard', ['f', 'dens', 'd', 'sigma']),
-             ('Neutron', ['b', 'xs_ai', 'magn', 'magn_ang']),
-             ('Inhom.', ['sigma_gradient', 'd_gradient'])]
+LayerParameters = spec_nx.LayerParameters.copy()
+LayerParameters.update({"sigma_gradient": 0.0, "d_gradient": 0.0})
+LayerUnits = spec_nx.LayerUnits.copy()
+LayerUnits.update({"sigma_gradient": "1", "d_gradient": "1"})
+LayerGroups = [
+    ("Standard", ["f", "dens", "d", "sigma"]),
+    ("Neutron", ["b", "xs_ai", "magn", "magn_ang"]),
+    ("Inhom.", ["sigma_gradient", "d_gradient"]),
+]
 
-StackParameters={'Layers': [], 'Repetitions': 1,
-                 'sigma_gradient': 0.,  # amount of increase in roughness from bottom to top
-                 'sigma_gtype': 3,  # model for this increas (rel lin, rel sqrt, abs lin, abs sqrt)
-                 'd_gradient': 0.,  # change in thickness bottom to top
-                 'beta_sm' : 0.0, # function applied to change thickness (linear,  super-mirror (d=beta SM))
-                 'sm_scale': 1.0, # scaling factor for thicknesses in super-mirror
-                 'dens_gradient': 0.,  # change in density bottom to top
-                 }
-SampleParameters=spec_nx.SampleParameters.copy()
-SampleParameters.update({'sigma_inhom': 0.0, 'lscale_inhom': 0.9, 'flatwidth_inhom': 0.3,
-                         'steps_inhom': 20, 'type_inhom': 'empiric PLD', 'crop_sld': 200})
-sample_string_choices={
-    'type_inhom': ['gauss', 'semi-gauss', 'empiric PLD'],
+StackParameters = {
+    "Layers": [],
+    "Repetitions": 1,
+    "sigma_gradient": 0.0,  # amount of increase in roughness from bottom to top
+    "sigma_gtype": 3,  # model for this increas (rel lin, rel sqrt, abs lin, abs sqrt)
+    "d_gradient": 0.0,  # change in thickness bottom to top
+    "beta_sm": 0.0,  # function applied to change thickness (linear,  super-mirror (d=beta SM))
+    "sm_scale": 1.0,  # scaling factor for thicknesses in super-mirror
+    "dens_gradient": 0.0,  # change in density bottom to top
+}
+SampleParameters = spec_nx.SampleParameters.copy()
+SampleParameters.update(
+    {
+        "sigma_inhom": 0.0,
+        "lscale_inhom": 0.9,
+        "flatwidth_inhom": 0.3,
+        "steps_inhom": 20,
+        "type_inhom": "empiric PLD",
+        "crop_sld": 200,
     }
+)
+sample_string_choices = {
+    "type_inhom": ["gauss", "semi-gauss", "empiric PLD"],
+}
 
-AA_to_eV=spec_nx.AA_to_eV
-q_limit=spec_nx.q_limit
-Buffer=spec_nx.Buffer
+AA_to_eV = spec_nx.AA_to_eV
+q_limit = spec_nx.q_limit
+Buffer = spec_nx.Buffer
 
 __xlabel__ = "q [Å$^{-1}$]"
 __ylabel__ = "Instnsity [a.u.]"
 
+
 def Specular(TwoThetaQz, sample, instrument):
-    '''
-      The model function. Averadging the intensities for different
-      layer thicknesses as found for e.g. large PLD samples.
-    '''
+    """
+    The model function. Averadging the intensities for different
+    layer thicknesses as found for e.g. large PLD samples.
+    """
     global __xlabel__
 
-    Q, TwoThetaQz, weight=spec_nx.resolution_init(TwoThetaQz, instrument)
+    Q, TwoThetaQz, weight = spec_nx.resolution_init(TwoThetaQz, instrument)
     # often an issue with resolution etc. so just replace Q values < q_limit
     # if any(Q < q_limit):
     #    raise ValueError('The q vector has to be above %.1e, please verify all your x-axis points fulfill this criterion, including possible resolution smearing.'%q_limit)
     Q = np.maximum(Q, q_limit)
 
-    restype=instrument.getRestype()
-    foottype=instrument.getFootype()
-    Ibkg=instrument.getIbkg()
-    instrument.setRestype('no conv')
-    instrument.setFootype('no corr')
-    instrument.Ibkg=0.
-    sampcall=deepcopy(sample)
+    restype = instrument.getRestype()
+    foottype = instrument.getFootype()
+    Ibkg = instrument.getIbkg()
+    instrument.setRestype("no conv")
+    instrument.setFootype("no corr")
+    instrument.Ibkg = 0.0
+    sampcall = deepcopy(sample)
 
     # average thicknesses before inhomogeniety average
-    d0=[array([Layer.getD() for Layer in Stack.Layers]) for Stack in sample.Stacks]
-    sigma_d=sample.getSigma_inhom()*0.01  # Inhomogeniety in \% (gamma for type 2)
-    lorentz_scale=sample.getLscale_inhom()
-    flat_width=np.maximum(1e-4, sample.getFlatwidth_inhom()*0.01)
-    type_inhom=sample.getType_inhom()
+    d0 = [array([Layer.getD() for Layer in Stack.Layers]) for Stack in sample.Stacks]
+    sigma_d = sample.getSigma_inhom() * 0.01  # Inhomogeniety in \% (gamma for type 2)
+    lorentz_scale = sample.getLscale_inhom()
+    flat_width = np.maximum(1e-4, sample.getFlatwidth_inhom() * 0.01)
+    type_inhom = sample.getType_inhom()
     # Define the thicknesses to calculate and their propability
-    if type_inhom in sample_string_choices['type_inhom']:
-        type_inhom=sample_string_choices['type_inhom'].index(type_inhom)
+    if type_inhom in sample_string_choices["type_inhom"]:
+        type_inhom = sample_string_choices["type_inhom"].index(type_inhom)
     else:
-        type_inhom=0
-    if sigma_d==0:  # no inhomogeniety
-        d_fact=array([1.])
-        P=array([1.])
-    elif type_inhom==1:  # half gaussian shape inhomogeniety
-        d_fact=1.+linspace(-2.*sigma_d, 0, sample.getSteps_inhom())
-        P=exp(-0.5*(d_fact-sigma_d-1.)**2/sigma_d**2)
-        P/=P.sum()
-        mean_d=(P*d_fact).sum()
-        d_fact+=1.-mean_d
-    elif type_inhom==2:  # inhomogeniety of a PLD line focus, better approximation
-        d_fact=1.+linspace(-1.*max(2.*sigma_d, flat_width), 0, sample.getSteps_inhom())
-        Pg=where(d_fact>flat_width, lorentz_scale*1./(1.+((d_fact-1.)/sigma_d)**2), 0.)
-        Pf=(1.-lorentz_scale)*where(d_fact>flat_width, 1., 0.)
-        P=Pg+Pf
-        P/=P.sum()
-        mean_d=(P*d_fact).sum()
-        d_fact+=1.-mean_d
+        type_inhom = 0
+    if sigma_d == 0:  # no inhomogeniety
+        d_fact = array([1.0])
+        P = array([1.0])
+    elif type_inhom == 1:  # half gaussian shape inhomogeniety
+        d_fact = 1.0 + linspace(-2.0 * sigma_d, 0, sample.getSteps_inhom())
+        P = exp(-0.5 * (d_fact - sigma_d - 1.0) ** 2 / sigma_d**2)
+        P /= P.sum()
+        mean_d = (P * d_fact).sum()
+        d_fact += 1.0 - mean_d
+    elif type_inhom == 2:  # inhomogeniety of a PLD line focus, better approximation
+        d_fact = 1.0 + linspace(-1.0 * max(2.0 * sigma_d, flat_width), 0, sample.getSteps_inhom())
+        Pg = where(d_fact > flat_width, lorentz_scale * 1.0 / (1.0 + ((d_fact - 1.0) / sigma_d) ** 2), 0.0)
+        Pf = (1.0 - lorentz_scale) * where(d_fact > flat_width, 1.0, 0.0)
+        P = Pg + Pf
+        P /= P.sum()
+        mean_d = (P * d_fact).sum()
+        d_fact += 1.0 - mean_d
     else:  # gaussian inhomegeniety
-        d_fact=1.+linspace(-sigma_d, sigma_d, sample.getSteps_inhom())
-        P=exp(-0.5*(d_fact-1.)**2/sigma_d**2)
-        P/=P.sum()
+        d_fact = 1.0 + linspace(-sigma_d, sigma_d, sample.getSteps_inhom())
+        P = exp(-0.5 * (d_fact - 1.0) ** 2 / sigma_d**2)
+        P /= P.sum()
     # list for reflectivities to average
-    Rlist=[]
+    Rlist = []
     # Iterate over thicknesses
     for d_facti, Pi in zip(d_fact, P):
-        di=[d_facti*d0i for d0i in d0]
+        di = [d_facti * d0i for d0i in d0]
         for i, Stack in enumerate(sampcall.Stacks):
             for j, Layer in enumerate(Stack.Layers):
                 # Layer.setD(di[i][j])
-                Layer.d=di[i][j]
-        Rlist.append(Pi*spec_nx.Specular(TwoThetaQz, sampcall, instrument))
-    R=array(Rlist).sum(axis=0)
+                Layer.d = di[i][j]
+        Rlist.append(Pi * spec_nx.Specular(TwoThetaQz, sampcall, instrument))
+    R = array(Rlist).sum(axis=0)
 
     instrument.setRestype(restype)
     instrument.setFootype(foottype)
-    instrument.Ibkg=Ibkg
+    instrument.Ibkg = Ibkg
 
     # footprint correction
-    foocor=spec_nx.footprintcorr(Q, instrument)
+    foocor = spec_nx.footprintcorr(Q, instrument)
     # resolution correction
-    R=spec_nx.resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
+    R = spec_nx.resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
 
     __xlabel__ = spec_nx.__xlabel__
-    return R+instrument.getIbkg()
+    return R + instrument.getIbkg()
+
 
 def ResolutionVectorAsymetric(Q, dQ, points, dLambda, asymmetry, range_=3):
-    '''
-      Resolution vector for a asymmetric wavelength distribution found in
-      neutron experiments with multilayer monochromator.
-    '''
-    Qrange=max(range_*dQ, range_*dLambda*Q.max())
-    Qstep=2*Qrange/points
-    Qres=Q+(arange(points)-(points-1)/2)[:, newaxis]*Qstep
-    Quse=transpose(Q[:, newaxis])
+    """
+    Resolution vector for a asymmetric wavelength distribution found in
+    neutron experiments with multilayer monochromator.
+    """
+    Qrange = max(range_ * dQ, range_ * dLambda * Q.max())
+    Qstep = 2 * Qrange / points
+    Qres = Q + (arange(points) - (points - 1) / 2)[:, newaxis] * Qstep
+    Quse = transpose(Q[:, newaxis])
 
-    gamma_asym=2.*dLambda*Quse/(1+exp(asymmetry*(Quse-Qres)))
-    z=(Quse-Qres+(abs(gamma_asym)*1j))/abs(dQ)/sqrt(2.)
-    z0=(0.+(abs(gamma_asym)*1j))/abs(dQ)/sqrt(2)
-    weight=wofz(z).real/wofz(z0).real
-    Qret=Qres.flatten()
+    gamma_asym = 2.0 * dLambda * Quse / (1 + exp(asymmetry * (Quse - Qres)))
+    z = (Quse - Qres + (abs(gamma_asym) * 1j)) / abs(dQ) / sqrt(2.0)
+    z0 = (0.0 + (abs(gamma_asym) * 1j)) / abs(dQ) / sqrt(2)
+    weight = wofz(z).real / wofz(z0).real
+    Qret = Qres.flatten()
     return Qret, weight
 
-POL_CHANNELS = ['uu', 'ud', 'du', 'dd']
+
+POL_CHANNELS = ["uu", "ud", "du", "dd"]
+
 
 def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
     """
@@ -349,14 +367,14 @@ def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
     inst_pol = instrument.pol
     if not inst_pol in POL_CHANNELS:
         raise ValueError(f"Instrument polarization as to be one of {POL_CHANNELS}.")
-    if instrument.probe not in [3, instrument_string_choices['probe'][3]]:
+    if instrument.probe not in [3, instrument_string_choices["probe"][3]]:
         raise ValueError("Polarization corrected simulation requires probe to be 'neutron pol spin flip'")
 
-    instrument.pol = 'uu'
+    instrument.pol = "uu"
     uu = Specular(TwoThetaQz, sample, instrument)
-    instrument.pol = 'dd'
+    instrument.pol = "dd"
     dd = Specular(TwoThetaQz, sample, instrument)
-    instrument.pol = 'ud'
+    instrument.pol = "ud"
     ud = Specular(TwoThetaQz, sample, instrument)
     du = ud
     instrument.pol = inst_pol
@@ -366,125 +384,147 @@ def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
     I = Pline[:, newaxis] * np.vstack([uu, ud, du, dd])
     return I.sum(axis=0)
 
-SLD_calculations=spec_nx.SLD_calculations
 
-SimulationFunctions={'Specular': Specular,
-                     'PolSpecular': PolSpecular,
-                     'SLD': SLD_calculations
-                     }
+SLD_calculations = spec_nx.SLD_calculations
 
-(Instrument, Layer, Stack, Sample)=refl.MakeClasses(InstrumentParameters,
-                                                    LayerParameters, StackParameters, SampleParameters,
-                                                    SimulationFunctions,
-                                                    ModelID)
+SimulationFunctions = {"Specular": Specular, "PolSpecular": PolSpecular, "SLD": SLD_calculations}
+
+(Instrument, Layer, Stack, Sample) = refl.MakeClasses(
+    InstrumentParameters, LayerParameters, StackParameters, SampleParameters, SimulationFunctions, ModelID
+)
+
 
 # Add gradient for sigma and thickness to multilayers
 def resolveLayerParameter(self, parameter):
-    if self.beta_sm>0:
+    if self.beta_sm > 0:
         # user has selected super-mirror coating sequence
         m = self.Repetitions
         beta = self.beta_sm
-        rho_all = [refl.resolve_par(L, 'dens')*(refl.resolve_par(L, 'b').real+refl.resolve_par(L, 'magn'))*1e-5
-                   for L in self.Layers]
-        rhoA = max(rho_all)*1e-5
-        rhoB = min(rho_all)*1e-5
+        rho_all = [
+            refl.resolve_par(L, "dens") * (refl.resolve_par(L, "b").real + refl.resolve_par(L, "magn")) * 1e-5
+            for L in self.Layers
+        ]
+        rhoA = max(rho_all) * 1e-5
+        rhoB = min(rho_all) * 1e-5
         # critical wave vector values (in paper this is includes an addition factor of 1/2)
-        QcA = 4.*pi*sqrt(rhoA/pi+0j)
-        QcB = 4.*pi*sqrt(rhoB/pi+0j)
-        Qcm = 0.022*m # critical q for given m-value
-        g=Qcm/QcA
-        QAB = QcA / sqrt(QcA**2-QcB**2)
-        b = beta*QAB**4 + 2.*beta*QAB**2 - 1
-        N = int(abs(beta*((g**2*QAB**2+1)**2-1)-b))
-    elif self.beta_sm<0:
+        QcA = 4.0 * pi * sqrt(rhoA / pi + 0j)
+        QcB = 4.0 * pi * sqrt(rhoB / pi + 0j)
+        Qcm = 0.022 * m  # critical q for given m-value
+        g = Qcm / QcA
+        QAB = QcA / sqrt(QcA**2 - QcB**2)
+        b = beta * QAB**4 + 2.0 * beta * QAB**2 - 1
+        N = int(abs(beta * ((g**2 * QAB**2 + 1) ** 2 - 1) - b))
+    elif self.beta_sm < 0:
         # super-mirror from Hayter and Mook iterative method was selected, fixed number of layers
         N = int(abs(self.Repetitions))
     else:
         N = int(self.Repetitions)
-    if parameter=='sigma':
-        sigma_gradient=self.sigma_gradient
+    if parameter == "sigma":
+        sigma_gradient = self.sigma_gradient
         # parameters for layers with roughness gradient
-        par=[refl.resolve_par(lay, parameter) for lay in self.Layers]
+        par = [refl.resolve_par(lay, parameter) for lay in self.Layers]
         for i in range(1, N):
-            if self.sigma_gtype==0:
+            if self.sigma_gtype == 0:
                 # linear increase of roughness to (1+sigma_gradient) times bottom roughness)
-                par+=[refl.resolve_par(lay, parameter)*(1.+(sigma_gradient+lay.sigma_gradient)*i/(N-1))
-                      for lay in self.Layers]
-            elif self.sigma_gtype==1:
+                par += [
+                    refl.resolve_par(lay, parameter) * (1.0 + (sigma_gradient + lay.sigma_gradient) * i / (N - 1))
+                    for lay in self.Layers
+                ]
+            elif self.sigma_gtype == 1:
                 # add roughness using rms
-                par+=[refl.resolve_par(lay, parameter)*sqrt(
-                    1.+((sigma_gradient+lay.sigma_gradient)*i/(N-1))**2)
-                      for lay in self.Layers]
-            elif self.sigma_gtype==2:
+                par += [
+                    refl.resolve_par(lay, parameter)
+                    * sqrt(1.0 + ((sigma_gradient + lay.sigma_gradient) * i / (N - 1)) ** 2)
+                    for lay in self.Layers
+                ]
+            elif self.sigma_gtype == 2:
                 # linear increase of roughness to bottom roughness + sigma_gradient)
-                par+=[refl.resolve_par(lay, parameter)+(sigma_gradient+lay.sigma_gradient)*i/(N-1)
-                      for lay in self.Layers]
-            elif self.sigma_gtype==3:
+                par += [
+                    refl.resolve_par(lay, parameter) + (sigma_gradient + lay.sigma_gradient) * i / (N - 1)
+                    for lay in self.Layers
+                ]
+            elif self.sigma_gtype == 3:
                 # add roughness using rms
-                par+=[sqrt(
-                    refl.resolve_par(lay, parameter)**2+((sigma_gradient+lay.sigma_gradient)*i/(N-1))**2)
-                      for lay in self.Layers]
+                par += [
+                    sqrt(
+                        refl.resolve_par(lay, parameter) ** 2
+                        + ((sigma_gradient + lay.sigma_gradient) * i / (N - 1)) ** 2
+                    )
+                    for lay in self.Layers
+                ]
             else:
-                raise NotImplementedError('sigma_gtype must be between 0 and 3')
-    elif parameter=='d':
+                raise NotImplementedError("sigma_gtype must be between 0 and 3")
+    elif parameter == "d":
         d_gradient = self.d_gradient
-        if self.beta_sm>0:
+        if self.beta_sm > 0:
             # layer thickness sequence based on calculated bi-layer thicknesses for super-mirror
-            L_thicknesses = [refl.resolve_par(lay, 'd')+0.0 for lay in self.Layers]
+            L_thicknesses = [refl.resolve_par(lay, "d") + 0.0 for lay in self.Layers]
             D_start = sum(L_thicknesses)
-            rel_thickness = [di/D_start for di in L_thicknesses]
-            sm_scale=self.sm_scale
-            idx=arange(N)
-            D_SL=abs((2.*QAB*pi/QcA) / sqrt(sqrt(1+(N-idx+b)/beta)-1))*(1.0+d_gradient*idx/(N-1))*sm_scale
+            rel_thickness = [di / D_start for di in L_thicknesses]
+            sm_scale = self.sm_scale
+            idx = arange(N)
+            D_SL = (
+                abs((2.0 * QAB * pi / QcA) / sqrt(sqrt(1 + (N - idx + b) / beta) - 1))
+                * (1.0 + d_gradient * idx / (N - 1))
+                * sm_scale
+            )
             par = []
             for i in range(N):
-                par += [di*D_SL[i] for di in rel_thickness]
-        elif self.beta_sm<0:
+                par += [di * D_SL[i] for di in rel_thickness]
+        elif self.beta_sm < 0:
             zeta = -self.beta_sm
-            rho_all = [refl.resolve_par(L, 'dens')*(refl.resolve_par(L, 'b').real+refl.resolve_par(L, 'magn'))*1e-5
-                       for L in self.Layers]
-            rho1 = max(rho_all) # in paper, SLD is called alpha
+            rho_all = [
+                refl.resolve_par(L, "dens") * (refl.resolve_par(L, "b").real + refl.resolve_par(L, "magn")) * 1e-5
+                for L in self.Layers
+            ]
+            rho1 = max(rho_all)  # in paper, SLD is called alpha
             rho2 = min(rho_all)
             # if two layers are chosen, use scale from olgorithm, else only change main 2 layers size
-            L_thicknesses = [refl.resolve_par(lay, 'd')+0.0 for lay in self.Layers]
+            L_thicknesses = [refl.resolve_par(lay, "d") + 0.0 for lay in self.Layers]
             D_start = sum(L_thicknesses)
-            idx1,idx2=rho_all.index(rho1),rho_all.index(rho2)
-            rest_size=D_start-L_thicknesses[idx1]-L_thicknesses[idx2]
+            idx1, idx2 = rho_all.index(rho1), rho_all.index(rho2)
+            rest_size = D_start - L_thicknesses[idx1] - L_thicknesses[idx2]
             # layer thicknesses according to Hayter+Mook algorithm
-            D_SL=sm_layers(rho1, rho2, N, zeta)
+            D_SL = sm_layers(rho1, rho2, N, zeta)
             # sign on repetitions defines direction of multilayer
-            if self.Repetitions>0:
+            if self.Repetitions > 0:
                 D_SL.reverse()
-            par=[]
-            sm_scale=self.sm_scale
+            par = []
+            sm_scale = self.sm_scale
             for i, (d1, d2) in enumerate(D_SL):
                 # variation from user parameters
-                var_scale=(1.0+d_gradient*i/(N-1))*sm_scale
+                var_scale = (1.0 + d_gradient * i / (N - 1)) * sm_scale
                 # scale the size of main two layer but remove residual layer thicknesses
-                total_bilayer=d1+d2
-                scaled_bilayer=(total_bilayer-rest_size)/total_bilayer
+                total_bilayer = d1 + d2
+                scaled_bilayer = (total_bilayer - rest_size) / total_bilayer
                 for i, di in enumerate(L_thicknesses):
-                    if i==idx1:
-                        par.append(d1*scaled_bilayer*var_scale)
-                    elif i==idx2:
-                        par.append(d2*scaled_bilayer*var_scale)
+                    if i == idx1:
+                        par.append(d1 * scaled_bilayer * var_scale)
+                    elif i == idx2:
+                        par.append(d2 * scaled_bilayer * var_scale)
                     else:
-                        par.append(di*var_scale)
+                        par.append(di * var_scale)
         else:
             # parameters for layers with thickness gradient
-            par=[]
+            par = []
             for i in range(N):
-                par+=[refl.resolve_par(lay, parameter)*(1.-(d_gradient+lay.d_gradient)*(1./2.-float(i)/N))
-                      for lay in self.Layers]
-    elif parameter in ['dens']:
-        dens_gradient=self.dens_gradient
+                par += [
+                    refl.resolve_par(lay, parameter)
+                    * (1.0 - (d_gradient + lay.d_gradient) * (1.0 / 2.0 - float(i) / N))
+                    for lay in self.Layers
+                ]
+    elif parameter in ["dens"]:
+        dens_gradient = self.dens_gradient
         # parameters for layers with roughness gradient
-        par=[]
+        par = []
         for i in range(N):
-            par+=[refl.resolve_par(lay, parameter)*(1.-dens_gradient*(1./2.-float(i)/self.Repetitions)) for lay in
-                  self.Layers]
+            par += [
+                refl.resolve_par(lay, parameter) * (1.0 - dens_gradient * (1.0 / 2.0 - float(i) / self.Repetitions))
+                for lay in self.Layers
+            ]
     else:
-        par=[refl.resolve_par(lay, parameter)+0.0 for lay in self.Layers]*N
+        par = [refl.resolve_par(lay, parameter) + 0.0 for lay in self.Layers] * N
     return par
 
-Stack.resolveLayerParameter=resolveLayerParameter
+
+Stack.resolveLayerParameter = resolveLayerParameter

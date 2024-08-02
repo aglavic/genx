@@ -1,30 +1,33 @@
-'''
+"""
 Use Levenberg-Marquardt as minimizer to estimate errors and for fast decent to next local minimum.
-'''
-import sys
-import pickle
+"""
+
 import multiprocessing
-import numpy as np
-from threading import Thread
+import pickle
+import sys
+
 from dataclasses import dataclass
-from typing import Dict
 from logging import debug
+from threading import Thread
+from typing import Dict
 
-from bumps.fitters import FitDriver, FITTERS
-from bumps.monitor import TimedUpdate
-from bumps.fitproblem import FitProblem, nllf_scale, BaseFitProblem
-from bumps.formatnum import format_uncertainty
+import numpy as np
+
 from bumps.dream.stats import var_stats
+from bumps.fitproblem import BaseFitProblem, FitProblem, nllf_scale
+from bumps.fitters import FITTERS, FitDriver
+from bumps.formatnum import format_uncertainty
+from bumps.monitor import TimedUpdate
 
-from .exceptions import ErrorBarError, OptimizerInterrupted
 from .core import custom_logging
 from .core.config import BaseConfig
-from .model import Model, GenxCurve
+from .exceptions import ErrorBarError, OptimizerInterrupted
+from .model import GenxCurve, Model
 from .solver_basis import GenxOptimizer, GenxOptimizerCallback, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
-
 
 _cpu_count = multiprocessing.cpu_count()
 iprint = custom_logging.iprint
+
 
 class BumpsDefaultCallbacks(GenxOptimizerCallback):
 
@@ -47,7 +50,7 @@ class BumpsDefaultCallbacks(GenxOptimizerCallback):
 
 class FitterMonitor(TimedUpdate):
 
-    def __init__(self, problem: FitProblem, parent: 'BumpsOptimizer', progress=0.5, improvement=2.0):
+    def __init__(self, problem: FitProblem, parent: "BumpsOptimizer", progress=0.5, improvement=2.0):
         TimedUpdate.__init__(self, progress=progress, improvement=improvement)
         self.problem = problem
         self.parent = parent
@@ -59,13 +62,13 @@ class FitterMonitor(TimedUpdate):
 
     def show_progress(self, history):
         scale, err = nllf_scale(self.problem)
-        chisq = scale*history.value[0]
-        n_fev = len(history.population_values[0])*(history.step[0]-self.last_step)
-        dt = history.time[0]-self.last_time
+        chisq = scale * history.value[0]
+        n_fev = len(history.population_values[0]) * (history.step[0] - self.last_step)
+        dt = history.time[0] - self.last_time
         self.last_step = history.step[0]
         self.last_time = history.time[0]
-        self.parent.n_fom_evals = len(history.population_values[0])*history.step[0]
-        self.parent.text_output(f'FOM: {chisq:.3f} Iteration: {history.step[0]} Speed: {n_fev/dt:.1f}')
+        self.parent.n_fom_evals = len(history.population_values[0]) * history.step[0]
+        self.parent.text_output(f"FOM: {chisq:.3f} Iteration: {history.step[0]} Speed: {n_fev/dt:.1f}")
         self.parent.parameter_output(self.chis, history.population_values[0], history.population_points[0])
 
     def show_improvement(self, history):
@@ -77,29 +80,29 @@ class FitterMonitor(TimedUpdate):
 
         scale, err = nllf_scale(self.problem)
         self.steps.append(history.step[0])
-        self.chis.append(scale*history.value[0])
-        if v<self.value:
+        self.chis.append(scale * history.value[0])
+        if v < self.value:
             self.improved = True
             self.value = v
             self.p = history.point[0]
-        if t>self.progress_time+self.progress_delta:
+        if t > self.progress_time + self.progress_delta:
             self.progress_time = t
             self.show_progress(history)
-        if self.improved and t>self.improvement_time+self.improvement_delta:
+        if self.improved and t > self.improvement_time + self.improvement_delta:
             self.improved = False
             self.improvement_time = t
             self.show_improvement(history)
 
 
-if 'DREAM' in [fi.name for fi in FITTERS]:
-    fitter_default_name = 'DREAM'
+if "DREAM" in [fi.name for fi in FITTERS]:
+    fitter_default_name = "DREAM"
 else:
     fitter_default_name = FITTERS[0].name
 
 
 @dataclass
 class BumpsConfig(BaseConfig):
-    section = 'solver'
+    section = "solver"
 
     population: int = 12
     samples: int = 10000
@@ -107,7 +110,7 @@ class BumpsConfig(BaseConfig):
     thin: int = 1
     alpha: int = 0
     burn: int = 1000
-    outliers: str = BaseConfig.GChoice('none', ['none', 'IQR', 'Grubbs', 'Mahal'], label='Outlier Test')
+    outliers: str = BaseConfig.GChoice("none", ["none", "IQR", "Grubbs", "Mahal"], label="Outlier Test")
     trim: bool = False
 
     ftol: float = 1e-6
@@ -116,18 +119,20 @@ class BumpsConfig(BaseConfig):
     method: str = BaseConfig.GChoice(fitter_default_name, selection=[fi.name for fi in FITTERS])
 
     use_parallel_processing: bool = False
-    parallel_processes: int = BaseConfig.GParam(_cpu_count, pmin=2, pmax=_cpu_count, label='# processes')
-    parallel_chunksize: int = BaseConfig.GParam(10, pmin=1, pmax=1000, label='items/chunk')
+    parallel_processes: int = BaseConfig.GParam(_cpu_count, pmin=2, pmax=_cpu_count, label="# processes")
+    parallel_chunksize: int = BaseConfig.GParam(10, pmin=1, pmax=1000, label="items/chunk")
 
     use_boundaries = True
 
     groups = {  # for building config dialogs
-        'Bumps Fitting': ['method', 'steps'],
-        'Statistic Solvers': ['population', ],
-        'Tolerances': [['ftol', 'xtol']],
-        'DREAM': [['burn', 'samples'], ['trim', 'thin'], 'alpha', 'outliers'],
-        'Parallel processing': ['use_parallel_processing', 'parallel_processes', 'parallel_chunksize']
-        }
+        "Bumps Fitting": ["method", "steps"],
+        "Statistic Solvers": [
+            "population",
+        ],
+        "Tolerances": [["ftol", "xtol"]],
+        "DREAM": [["burn", "samples"], ["trim", "thin"], "alpha", "outliers"],
+        "Parallel processing": ["use_parallel_processing", "parallel_processes", "parallel_chunksize"],
+    }
 
 
 @dataclass
@@ -137,14 +142,15 @@ class BumpsResult:
     dxpm: np.ndarray
     cov: np.ndarray
     chisq: float
-    bproblem: 'Any'
-    state: 'Any' = None
+    bproblem: "Any"
+    state: "Any" = None
 
 
 class BumpsOptimizer(GenxOptimizer):
-    '''
+    """
     Optimizer based on Levenberg-Marquardt algorithm.
-    '''
+    """
+
     opt: BumpsConfig
     model: Model
     fom_log: np.ndarray
@@ -175,7 +181,7 @@ class BumpsOptimizer(GenxOptimizer):
         return pickle.dumps(self)
 
     def pickle_load(self, pickled_string: bytes):
-        obj = pickle.loads(pickled_string, encoding='latin1', errors='ignore')
+        obj = pickle.loads(pickled_string, encoding="latin1", errors="ignore")
         # TODO: set own options from object
 
     def get_start_guess(self):
@@ -191,21 +197,23 @@ class BumpsOptimizer(GenxOptimizer):
         self._callbacks.text_output(text)
 
     def parameter_output(self, fom_history, chis, population):
-        if len(population)==0:
+        if len(population) == 0:
             return
         best = chis.argmin()
         population = np.array(list(map(self.map_bumps2genx, population)))
-        new_best = chis[best]<=min(fom_history)
+        new_best = chis[best] <= min(fom_history)
         if new_best:
             best_pop = population[best]
         else:
             best_pop = self.best_vec
-        param_info = SolverParameterInfo(values=best_pop,
-                                         new_best=new_best,
-                                         population=[pi for pi in population],
-                                         max_val=self.par_max.copy(),
-                                         min_val=self.par_min.copy(),
-                                         fitting=True)
+        param_info = SolverParameterInfo(
+            values=best_pop,
+            new_best=new_best,
+            population=[pi for pi in population],
+            max_val=self.par_max.copy(),
+            min_val=self.par_min.copy(),
+            fitting=True,
+        )
         self._callbacks.parameter_output(param_info)
 
     def new_beest(self, p, fom_log):
@@ -230,10 +238,10 @@ class BumpsOptimizer(GenxOptimizer):
         return out
 
     def connect_model(self, model_obj: Model):
-        '''
+        """
         Connects the model [model] to this object. Retrives the function
         that sets the variables  and stores a reference to the model.
-        '''
+        """
         # Retrieve parameters from the model
         (param_funcs, start_guess, par_min, par_max) = model_obj.get_fit_pars()
 
@@ -249,10 +257,10 @@ class BumpsOptimizer(GenxOptimizer):
         self.last_result = None
 
     def calc_sim(self, vec):
-        ''' calc_sim(self, vec) --> None
+        """calc_sim(self, vec) --> None
         Function that will evaluate the the data points for
         parameters in vec.
-        '''
+        """
         # Set the parameter values
         list(map(lambda func, value: func(value), self.par_funcs, vec))
 
@@ -260,10 +268,10 @@ class BumpsOptimizer(GenxOptimizer):
         return self.model.fom
 
     def calc_fom(self, vec):
-        '''
+        """
         Function to calcuate the figure of merit for parameter vector
         vec.
-        '''
+        """
         if self._stop_fit:
             raise OptimizerInterrupted("interrupted")
         # Set the parameter values
@@ -275,7 +283,8 @@ class BumpsOptimizer(GenxOptimizer):
     def calc_error_bar(self, index: int) -> (float, float):
         if self.errors is None:
             raise ErrorBarError(
-                "Could not get covariance matrix from fit, maybe the parameters are coupled/have no influence?")
+                "Could not get covariance matrix from fit, maybe the parameters are coupled/have no influence?"
+            )
         return self.errors[index][0], self.errors[index][1]
 
     def project_evals(self, index: int):
@@ -293,44 +302,47 @@ class BumpsOptimizer(GenxOptimizer):
 
     def optimize(self):
         options = {}
-        options['pop'] = self.opt.population
-        options['samples'] = self.opt.samples
-        options['steps'] = self.opt.steps
-        options['thin'] = self.opt.thin
-        options['alpha'] = self.opt.alpha
-        options['outliers'] = self.opt.outliers
-        options['trim'] = self.opt.trim
-        options['burn'] = self.opt.burn
-        options['ftol'] = self.opt.ftol
-        options['xtol'] = self.opt.xtol
+        options["pop"] = self.opt.population
+        options["samples"] = self.opt.samples
+        options["steps"] = self.opt.steps
+        options["thin"] = self.opt.thin
+        options["alpha"] = self.opt.alpha
+        options["outliers"] = self.opt.outliers
+        options["trim"] = self.opt.trim
+        options["burn"] = self.opt.burn
+        options["ftol"] = self.opt.ftol
+        options["xtol"] = self.opt.xtol
 
         problem = self.bproblem
         problem.fitness.stop_fit = False
-        options['abort_test'] = lambda: problem.fitness.stop_fit
+        options["abort_test"] = lambda: problem.fitness.stop_fit
         pnames = list(problem.model_parameters().keys())
         mnames = problem.labels()
         self._map_indices = dict(((i, pnames.index(ni)) for i, ni in enumerate(mnames)))
 
         fitclass = None
         for fitclass in FITTERS:
-            if fitclass.name==self.opt.method:
+            if fitclass.name == self.opt.method:
                 break
 
         if self.opt.use_parallel_processing:
-            from .models.lib import paratt, USE_NUMBA
-            use_cuda = paratt.Refl.__module__.rsplit('.', 1)[1]=='paratt_cuda'
+            from .models.lib import USE_NUMBA, paratt
+
+            use_cuda = paratt.Refl.__module__.rsplit(".", 1)[1] == "paratt_cuda"
             # reduce numba thread count for numba functions
             if USE_NUMBA:
-                numba_procs = max(1, _cpu_count//self.opt.parallel_processes)
+                numba_procs = max(1, _cpu_count // self.opt.parallel_processes)
             else:
                 numba_procs = None
-            self.text_output("Starting a pool with %i workers ..."%(self.opt.parallel_processes,))
-            self.pool = multiprocessing.Pool(processes=self.opt.parallel_processes,
-                                             initializer=parallel_init,
-                                             initargs=(numba_procs, custom_logging.mp_logger.queue))
+            self.text_output("Starting a pool with %i workers ..." % (self.opt.parallel_processes,))
+            self.pool = multiprocessing.Pool(
+                processes=self.opt.parallel_processes,
+                initializer=parallel_init,
+                initargs=(numba_procs, custom_logging.mp_logger.queue),
+            )
             if use_cuda:
                 self.pool.apply_async(init_cuda)
-            options['mapper'] = lambda p: list(self.pool.map(problem.nllf, p, chunksize=self.opt.parallel_chunksize))
+            options["mapper"] = lambda p: list(self.pool.map(problem.nllf, p, chunksize=self.opt.parallel_chunksize))
             # TODO: investigate why function connection is lost here
             (param_funcs, start_guess, par_min, par_max) = self.model.get_fit_pars()
             self.par_funcs = param_funcs
@@ -343,7 +355,7 @@ class BumpsOptimizer(GenxOptimizer):
         x, fx = driver.fit()
         problem.setp(x)
         dx = driver.stderr()
-        if self.opt.method.lower()=='dream':
+        if self.opt.method.lower() == "dream":
             dxpm = self.model.asym_stderr(driver.fitter)
         else:
             dxpm = None
@@ -355,7 +367,7 @@ class BumpsOptimizer(GenxOptimizer):
             self.pool = None
 
         result = BumpsResult(x=x, dx=dx, dxpm=dxpm, cov=cov, chisq=driver.chisq(), bproblem=self.bproblem)
-        if hasattr(driver.fitter, 'state'):
+        if hasattr(driver.fitter, "state"):
             result.state = driver.fitter.state
         self.last_result = result
 
@@ -366,7 +378,7 @@ class BumpsOptimizer(GenxOptimizer):
             self.errors = np.array([dxm, dxp]).T
         else:
             dxmap = self.map_bumps2genx(dx)
-            self.errors = np.array([-1, 1])[np.newaxis, :]*dxmap[:, np.newaxis]
+            self.errors = np.array([-1, 1])[np.newaxis, :] * dxmap[:, np.newaxis]
         self.covar = self.covar_bumps2genx(cov)
 
         self.plot_output()
@@ -384,7 +396,7 @@ class BumpsOptimizer(GenxOptimizer):
         pass
 
     def is_fitted(self):
-        return self.n_fom_evals>0
+        return self.n_fom_evals > 0
 
     def is_configured(self) -> bool:
         pass
@@ -392,19 +404,15 @@ class BumpsOptimizer(GenxOptimizer):
     def set_callbacks(self, callbacks: GenxOptimizerCallback):
         self._callbacks = callbacks
 
-    def get_callbacks(self) -> 'GenxOptimizerCallback':
+    def get_callbacks(self) -> "GenxOptimizerCallback":
         return self._callbacks
 
     def plot_output(self):
         self.calc_sim(self.best_vec)
         fom_log = self.get_fom_log()
         data = SolverUpdateInfo(
-            fom_value=fom_log[-1, 1],
-            fom_name='chi2bars',
-            fom_log=fom_log,
-            new_best=True,
-            data=self.model.data
-            )
+            fom_value=fom_log[-1, 1], fom_name="chi2bars", fom_log=fom_log, new_best=True, data=self.model.data
+        )
         self._callbacks.plot_output(data)
 
     def get_result_info(self, interrupted=False):
@@ -416,17 +424,17 @@ class BumpsOptimizer(GenxOptimizer):
             population=[],
             max_val=[],
             min_val=[],
-            fitting=False
-            )
+            fitting=False,
+        )
         return result
 
 
 def parallel_init(numba_procs=None, log_queue=None):
-    '''
+    """
     parallel initialization of a pool of processes. The function takes a
     pickle safe copy of the model and resets the script module and the compiles
     the script and creates function to set the variables.
-    '''
+    """
     if log_queue is not None:
         custom_logging.setup_mp(log_queue)
     if numba_procs is not None:
@@ -435,23 +443,23 @@ def parallel_init(numba_procs=None, log_queue=None):
         except ImportError:
             pass
         else:
-            if hasattr(numba, 'set_num_threads') and numba.get_num_threads()>numba_procs:
+            if hasattr(numba, "set_num_threads") and numba.get_num_threads() > numba_procs:
                 debug(f"Setting numba threads to {numba_procs}")
                 numba.set_num_threads(numba_procs)
-    debug(f'Initialize multiprocessing for bumps')
+    debug(f"Initialize multiprocessing for bumps")
 
 
 def init_cuda():
     iprint("Init CUDA in one worker")
     # activate cuda in subprocesses
-    from .models.lib import paratt_cuda
-    from .models.lib import neutron_cuda
-    from .models.lib import paratt, neutron_refl
+    from .models.lib import neutron_cuda, neutron_refl, paratt, paratt_cuda
+
     paratt.Refl = paratt_cuda.Refl
     paratt.ReflQ = paratt_cuda.ReflQ
     paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2
     neutron_refl.Refl = neutron_cuda.Refl
-    from .models.lib import paratt, neutron_refl
+    from .models.lib import neutron_refl, paratt
+
     paratt.Refl = paratt_cuda.Refl
     paratt.ReflQ = paratt_cuda.ReflQ
     paratt.Refl_nvary2 = paratt_cuda.Refl_nvary2

@@ -68,8 +68,12 @@ _CurrentCamera:        The camera for the current renderer
 """
 
 # import usual libraries
-import math, os, sys
+import math
+import os
+import sys
+
 import wx
+
 # noinspection PyUnresolvedReferences
 from vtk import vtkCellPicker, vtkProperty, vtkRenderWindow
 
@@ -82,11 +86,11 @@ from vtk import vtkCellPicker, vtkProperty, vtkRenderWindow
 #    wx.WX_USE_GL_CANVAS
 # except NameError:
 if True:
-    if wx.Platform=='__WXMSW__':
-        WX_USE_GLCANVAS=0
+    if wx.Platform == "__WXMSW__":
+        WX_USE_GLCANVAS = 0
     else:
-        WX_USE_GLCANVAS=1
-WX_USE_GLCANVAS=0
+        WX_USE_GLCANVAS = 1
+WX_USE_GLCANVAS = 0
 # Keep capturing mouse after mouse is dragged out of window
 # (in wxGTK 2.3.2 there is a bug that keeps this from working,
 # but it is only relevant in wxGTK if there are multiple windows)
@@ -94,10 +98,10 @@ WX_USE_GLCANVAS=0
 #    wx.WX_USE_X_CAPTURE
 # except NameError:
 if True:
-    if wx.Platform=='__WXMSW__':
-        WX_USE_X_CAPTURE=1
+    if wx.Platform == "__WXMSW__":
+        WX_USE_X_CAPTURE = 1
     else:
-        WX_USE_X_CAPTURE=0
+        WX_USE_X_CAPTURE = 0
 
 # end of configuration items
 
@@ -105,9 +109,10 @@ if True:
 if WX_USE_GLCANVAS:
     from wx.glcanvas import GLCanvas
 
-    baseClass=GLCanvas
+    baseClass = GLCanvas
 else:
-    baseClass=wx.Window
+    baseClass = wx.Window
+
 
 class wxVTKRenderWindow(baseClass):
     """
@@ -119,77 +124,77 @@ class wxVTKRenderWindow(baseClass):
 
     def __init__(self, parent, ID, *args, **kw):
         # miscellaneous protected variables
-        self._CurrentRenderer=None
-        self._CurrentCamera=None
-        self._CurrentZoom=1.0
-        self._CurrentLight=None
+        self._CurrentRenderer = None
+        self._CurrentCamera = None
+        self._CurrentZoom = 1.0
+        self._CurrentLight = None
 
-        self._ViewportCenterX=0
-        self._ViewportCenterY=0
+        self._ViewportCenterX = 0
+        self._ViewportCenterY = 0
 
-        self._Picker=vtkCellPicker()
-        self._PickedActor=None
-        self._PickedProperty=vtkProperty()
+        self._Picker = vtkCellPicker()
+        self._PickedActor = None
+        self._PickedProperty = vtkProperty()
         self._PickedProperty.SetColor(1, 0, 0)
-        self._PrePickedProperty=None
+        self._PrePickedProperty = None
 
         # these record the previous mouse position
-        self._LastX=0
-        self._LastY=0
+        self._LastX = 0
+        self._LastY = 0
 
         # the current interaction mode (Rotate, Pan, Zoom, etc)
-        self._Mode=None
-        self._ActiveButton=None
+        self._Mode = None
+        self._ActiveButton = None
 
         # private attributes
-        self.__OldFocus=None
+        self.__OldFocus = None
 
         # used by the LOD actors
-        self._DesiredUpdateRate=15
-        self._StillUpdateRate=0.0001
+        self._DesiredUpdateRate = 15
+        self._StillUpdateRate = 0.0001
 
         # First do special handling of some keywords:
         # stereo, position, size, width, height, style
 
-        stereo=0
+        stereo = 0
 
-        if 'stereo' in kw:
-            if kw['stereo']:
-                stereo=1
-            del kw['stereo']
+        if "stereo" in kw:
+            if kw["stereo"]:
+                stereo = 1
+            del kw["stereo"]
 
-        position=wx.DefaultPosition
+        position = wx.DefaultPosition
 
-        if 'position' in kw:
-            position=kw['position']
-            del kw['position']
+        if "position" in kw:
+            position = kw["position"]
+            del kw["position"]
 
-        size=wx.DefaultSize
+        size = wx.DefaultSize
 
-        if 'size' in kw:
-            size=kw['size']
-            del kw['size']
+        if "size" in kw:
+            size = kw["size"]
+            del kw["size"]
 
-        if 'width' in kw and 'height' in kw:
-            size=(kw['width'], kw['height'])
-            del kw['width']
-            del kw['height']
+        if "width" in kw and "height" in kw:
+            size = (kw["width"], kw["height"])
+            del kw["width"]
+            del kw["height"]
 
         # wxWANTS_CHARS says to give us e.g. TAB
         # wxNO_FULL_REPAINT_ON_RESIZE cuts down resize flicker under GTK
-        style=wx.WANTS_CHARS | wx.NO_FULL_REPAINT_ON_RESIZE
+        style = wx.WANTS_CHARS | wx.NO_FULL_REPAINT_ON_RESIZE
 
-        if 'style' in kw:
-            style=style | kw['style']
-            del kw['style']
+        if "style" in kw:
+            style = style | kw["style"]
+            del kw["style"]
 
         # the enclosing frame must be shown under GTK or the windows
         #  don't connect together properly
-        l=[]
-        p=parent
+        l = []
+        p = parent
         while p:  # make a list of all parents
             l.append(p)
-            p=p.GetParent()
+            p = p.GetParent()
         l.reverse()  # sort list into descending order
         for p in l:
             p.Show()
@@ -198,7 +203,7 @@ class wxVTKRenderWindow(baseClass):
         baseClass.__init__(self, parent, ID, position, size, style)
 
         # create the RenderWindow and initialize it
-        self._RenderWindow=vtkRenderWindow()
+        self._RenderWindow = vtkRenderWindow()
         try:
             self._RenderWindow.SetSize(size.width, size.height)
         except AttributeError:
@@ -207,10 +212,10 @@ class wxVTKRenderWindow(baseClass):
             self._RenderWindow.StereoCapableWindowOn()
             self._RenderWindow.SetStereoTypeToCrystalEyes()
 
-        self.__Created=0
+        self.__Created = 0
         # Tell the RenderWindow to render inside the wxWindow.
         if self.GetHandle():
-            self.__Created=1
+            self.__Created = 1
             self._RenderWindow.SetWindowInfo(str(self.GetHandle()))
 
         # refresh window by doing a Render
@@ -243,7 +248,7 @@ class wxVTKRenderWindow(baseClass):
     def SetDesiredUpdateRate(self, rate):
         """Mirrors the method with the same name in
         vtkRenderWindowInteractor."""
-        self._DesiredUpdateRate=rate
+        self._DesiredUpdateRate = rate
 
     def GetDesiredUpdateRate(self):
         """Mirrors the method with the same name in
@@ -253,7 +258,7 @@ class wxVTKRenderWindow(baseClass):
     def SetStillUpdateRate(self, rate):
         """Mirrors the method with the same name in
         vtkRenderWindowInteractor."""
-        self._StillUpdateRate=rate
+        self._StillUpdateRate = rate
 
     def GetStillUpdateRate(self):
         """Mirrors the method with the same name in
@@ -261,16 +266,16 @@ class wxVTKRenderWindow(baseClass):
         return self._StillUpdateRate
 
     def OnPaint(self, event):
-        dc=wx.PaintDC(self)
+        dc = wx.PaintDC(self)
         self.Render()
 
     def _OnSize(self, event):
-        if wx.Platform!='__WXMSW__':
+        if wx.Platform != "__WXMSW__":
             try:
-                width, height=event.GetSize()
+                width, height = event.GetSize()
             except:
-                width=event.GetSize().width
-                height=event.GetSize().height
+                width = event.GetSize().width
+                height = event.GetSize().height
             self._RenderWindow.SetSize(width, height)
         self.OnSize(event)
         if self.__Created:
@@ -288,7 +293,7 @@ class wxVTKRenderWindow(baseClass):
 
     def OnEnterWindow(self, event):
         if self.__OldFocus is None:
-            self.__OldFocus=wx.Window.FindFocus()
+            self.__OldFocus = wx.Window.FindFocus()
             self.SetFocus()
 
     def _OnLeaveWindow(self, event):
@@ -297,7 +302,7 @@ class wxVTKRenderWindow(baseClass):
     def OnLeaveWindow(self, event):
         if self.__OldFocus:
             self.__OldFocus.SetFocus()
-            self.__OldFocus=None
+            self.__OldFocus = None
 
     def OnSetFocus(self, event):
         pass
@@ -310,17 +315,17 @@ class wxVTKRenderWindow(baseClass):
         self._RenderWindow.SetDesiredUpdateRate(self._DesiredUpdateRate)
 
         if event.RightDown():
-            button="Right"
+            button = "Right"
         elif event.LeftDown():
-            button="Left"
+            button = "Left"
         elif event.MiddleDown():
-            button="Middle"
+            button = "Middle"
         else:
-            button=None
+            button = None
 
         # save the button and capture mouse until the button is released
         if button and not self._ActiveButton:
-            self._ActiveButton=button
+            self._ActiveButton = button
             if WX_USE_X_CAPTURE:
                 self.CaptureMouse()
 
@@ -341,38 +346,38 @@ class wxVTKRenderWindow(baseClass):
     def OnLeftDown(self, event):
         if not self._Mode:
             if event.ControlDown():
-                self._Mode="Zoom"
+                self._Mode = "Zoom"
             elif event.ShiftDown():
-                self._Mode="Pan"
+                self._Mode = "Pan"
             else:
-                self._Mode="Rotate"
+                self._Mode = "Rotate"
 
     def OnRightDown(self, event):
         if not self._Mode:
-            self._Mode="Zoom"
+            self._Mode = "Zoom"
 
     def OnMiddleDown(self, event):
         if not self._Mode:
-            self._Mode="Pan"
+            self._Mode = "Pan"
 
     def _OnButtonUp(self, event):
         # helper function for releasing mouse capture
         self._RenderWindow.SetDesiredUpdateRate(self._StillUpdateRate)
 
         if event.RightUp():
-            button="Right"
+            button = "Right"
         elif event.LeftUp():
-            button="Left"
+            button = "Left"
         elif event.MiddleUp():
-            button="Middle"
+            button = "Middle"
         else:
-            button=None
+            button = None
 
         # if the ActiveButton is realeased, then release mouse capture
-        if self._ActiveButton and button==self._ActiveButton:
+        if self._ActiveButton and button == self._ActiveButton:
             if WX_USE_X_CAPTURE:
                 self.ReleaseMouse()
-            self._ActiveButton=None
+            self._ActiveButton = None
 
         self.OnButtonUp(event)
 
@@ -389,7 +394,7 @@ class wxVTKRenderWindow(baseClass):
             if self._CurrentRenderer:
                 self.Render()
 
-        self._Mode=None
+        self._Mode = None
 
     def OnLeftUp(self, event):
         pass
@@ -401,27 +406,27 @@ class wxVTKRenderWindow(baseClass):
         pass
 
     def OnMotion(self, event):
-        if self._Mode=="Pan":
+        if self._Mode == "Pan":
             self.Pan(event)
-        elif self._Mode=="Rotate":
+        elif self._Mode == "Rotate":
             self.Rotate(event)
-        elif self._Mode=="Zoom":
+        elif self._Mode == "Zoom":
             self.Zoom(event)
 
     def OnChar(self, event):
         pass
 
     def OnKeyDown(self, event):
-        if event.GetKeyCode()==ord('R'):
+        if event.GetKeyCode() == ord("R"):
             self.Reset(event)
-        if event.GetKeyCode()==ord('W'):
+        if event.GetKeyCode() == ord("W"):
             self.Wireframe()
-        if event.GetKeyCode()==ord('S'):
+        if event.GetKeyCode() == ord("S"):
             self.Surface()
-        if event.GetKeyCode()==ord('P'):
+        if event.GetKeyCode() == ord("P"):
             self.PickActor(event)
 
-        if event.GetKeyCode()<256:
+        if event.GetKeyCode() < 256:
             self.OnChar(event)
 
     def OnKeyUp(self, event):
@@ -438,7 +443,7 @@ class wxVTKRenderWindow(baseClass):
 
     def Render(self):
         if self._CurrentLight:
-            light=self._CurrentLight
+            light = self._CurrentLight
             light.SetPosition(self._CurrentCamera.GetPosition())
             light.SetFocalPoint(self._CurrentCamera.GetFocalPoint())
 
@@ -446,7 +451,7 @@ class wxVTKRenderWindow(baseClass):
             self._RenderWindow.Render()
         elif self.GetHandle():
             self._RenderWindow.SetWindowInfo(str(self.GetHandle()))
-            self.__Created=1
+            self.__Created = 1
             self._RenderWindow.Render()
 
     def UpdateRenderer(self, event):
@@ -454,142 +459,136 @@ class wxVTKRenderWindow(baseClass):
         UpdateRenderer will identify the renderer under the mouse and set
         up _CurrentRenderer, _CurrentCamera, and _CurrentLight.
         """
-        x=event.GetX()
-        y=event.GetY()
-        windowX, windowY=self._RenderWindow.GetSize()
+        x = event.GetX()
+        y = event.GetY()
+        windowX, windowY = self._RenderWindow.GetSize()
 
-        renderers=self._RenderWindow.GetRenderers()
-        numRenderers=renderers.GetNumberOfItems()
+        renderers = self._RenderWindow.GetRenderers()
+        numRenderers = renderers.GetNumberOfItems()
 
-        self._CurrentRenderer=None
+        self._CurrentRenderer = None
         renderers.InitTraversal()
         for i in range(0, numRenderers):
-            renderer=renderers.GetNextItem()
-            vx, vy=(0, 0)
-            if windowX>1:
-                vx=float(x)/(windowX-1)
-            if windowY>1:
-                vy=(windowY-float(y)-1)/(windowY-1)
-            (vpxmin, vpymin, vpxmax, vpymax)=renderer.GetViewport()
+            renderer = renderers.GetNextItem()
+            vx, vy = (0, 0)
+            if windowX > 1:
+                vx = float(x) / (windowX - 1)
+            if windowY > 1:
+                vy = (windowY - float(y) - 1) / (windowY - 1)
+            (vpxmin, vpymin, vpxmax, vpymax) = renderer.GetViewport()
 
-            if vpxmin<=vx<=vpxmax and vpymin<=vy<=vpymax:
-                self._CurrentRenderer=renderer
-                self._ViewportCenterX=float(windowX)*(vpxmax-vpxmin)/2.0 \
-                                      +vpxmin
-                self._ViewportCenterY=float(windowY)*(vpymax-vpymin)/2.0 \
-                                      +vpymin
-                self._CurrentCamera=self._CurrentRenderer.GetActiveCamera()
-                lights=self._CurrentRenderer.GetLights()
+            if vpxmin <= vx <= vpxmax and vpymin <= vy <= vpymax:
+                self._CurrentRenderer = renderer
+                self._ViewportCenterX = float(windowX) * (vpxmax - vpxmin) / 2.0 + vpxmin
+                self._ViewportCenterY = float(windowY) * (vpymax - vpymin) / 2.0 + vpymin
+                self._CurrentCamera = self._CurrentRenderer.GetActiveCamera()
+                lights = self._CurrentRenderer.GetLights()
                 lights.InitTraversal()
-                self._CurrentLight=lights.GetNextItem()
+                self._CurrentLight = lights.GetNextItem()
                 break
 
-        self._LastX=x
-        self._LastY=y
+        self._LastX = x
+        self._LastY = y
 
     def GetCurrentRenderer(self):
         return self._CurrentRenderer
 
     def Rotate(self, event):
         if self._CurrentRenderer:
-            x=event.GetX()
-            y=event.GetY()
+            x = event.GetX()
+            y = event.GetY()
 
-            self._CurrentCamera.Azimuth(self._LastX-x)
-            self._CurrentCamera.Elevation(y-self._LastY)
+            self._CurrentCamera.Azimuth(self._LastX - x)
+            self._CurrentCamera.Elevation(y - self._LastY)
             self._CurrentCamera.OrthogonalizeViewUp()
 
-            self._LastX=x
-            self._LastY=y
+            self._LastX = x
+            self._LastY = y
 
             self._CurrentRenderer.ResetCameraClippingRange()
             self.Render()
 
     def Pan(self, event):
         if self._CurrentRenderer:
-            x=event.GetX()
-            y=event.GetY()
+            x = event.GetX()
+            y = event.GetY()
 
-            renderer=self._CurrentRenderer
-            camera=self._CurrentCamera
-            (pPoint0, pPoint1, pPoint2)=camera.GetPosition()
-            (fPoint0, fPoint1, fPoint2)=camera.GetFocalPoint()
+            renderer = self._CurrentRenderer
+            camera = self._CurrentCamera
+            (pPoint0, pPoint1, pPoint2) = camera.GetPosition()
+            (fPoint0, fPoint1, fPoint2) = camera.GetFocalPoint()
 
             if camera.GetParallelProjection():
                 renderer.SetWorldPoint(fPoint0, fPoint1, fPoint2, 1.0)
                 renderer.WorldToDisplay()
-                fx, fy, fz=renderer.GetDisplayPoint()
-                renderer.SetDisplayPoint(fx-x+self._LastX,
-                                         fy+y-self._LastY,
-                                         fz)
+                fx, fy, fz = renderer.GetDisplayPoint()
+                renderer.SetDisplayPoint(fx - x + self._LastX, fy + y - self._LastY, fz)
                 renderer.DisplayToWorld()
-                fx, fy, fz, fw=renderer.GetWorldPoint()
+                fx, fy, fz, fw = renderer.GetWorldPoint()
                 camera.SetFocalPoint(fx, fy, fz)
 
                 renderer.SetWorldPoint(pPoint0, pPoint1, pPoint2, 1.0)
                 renderer.WorldToDisplay()
-                fx, fy, fz=renderer.GetDisplayPoint()
-                renderer.SetDisplayPoint(fx-x+self._LastX,
-                                         fy+y-self._LastY,
-                                         fz)
+                fx, fy, fz = renderer.GetDisplayPoint()
+                renderer.SetDisplayPoint(fx - x + self._LastX, fy + y - self._LastY, fz)
                 renderer.DisplayToWorld()
-                fx, fy, fz, fw=renderer.GetWorldPoint()
+                fx, fy, fz, fw = renderer.GetWorldPoint()
                 camera.SetPosition(fx, fy, fz)
 
             else:
-                (fPoint0, fPoint1, fPoint2)=camera.GetFocalPoint()
+                (fPoint0, fPoint1, fPoint2) = camera.GetFocalPoint()
                 # Specify a point location in world coordinates
                 renderer.SetWorldPoint(fPoint0, fPoint1, fPoint2, 1.0)
                 renderer.WorldToDisplay()
                 # Convert world point coordinates to display coordinates
-                dPoint=renderer.GetDisplayPoint()
-                focalDepth=dPoint[2]
+                dPoint = renderer.GetDisplayPoint()
+                focalDepth = dPoint[2]
 
-                aPoint0=self._ViewportCenterX+(x-self._LastX)
-                aPoint1=self._ViewportCenterY-(y-self._LastY)
+                aPoint0 = self._ViewportCenterX + (x - self._LastX)
+                aPoint1 = self._ViewportCenterY - (y - self._LastY)
 
                 renderer.SetDisplayPoint(aPoint0, aPoint1, focalDepth)
                 renderer.DisplayToWorld()
 
-                (rPoint0, rPoint1, rPoint2, rPoint3)=renderer.GetWorldPoint()
-                if rPoint3!=0.0:
-                    rPoint0=rPoint0/rPoint3
-                    rPoint1=rPoint1/rPoint3
-                    rPoint2=rPoint2/rPoint3
+                (rPoint0, rPoint1, rPoint2, rPoint3) = renderer.GetWorldPoint()
+                if rPoint3 != 0.0:
+                    rPoint0 = rPoint0 / rPoint3
+                    rPoint1 = rPoint1 / rPoint3
+                    rPoint2 = rPoint2 / rPoint3
 
-                camera.SetFocalPoint((fPoint0-rPoint0)+fPoint0,
-                                     (fPoint1-rPoint1)+fPoint1,
-                                     (fPoint2-rPoint2)+fPoint2)
+                camera.SetFocalPoint(
+                    (fPoint0 - rPoint0) + fPoint0, (fPoint1 - rPoint1) + fPoint1, (fPoint2 - rPoint2) + fPoint2
+                )
 
-                camera.SetPosition((fPoint0-rPoint0)+pPoint0,
-                                   (fPoint1-rPoint1)+pPoint1,
-                                   (fPoint2-rPoint2)+pPoint2)
+                camera.SetPosition(
+                    (fPoint0 - rPoint0) + pPoint0, (fPoint1 - rPoint1) + pPoint1, (fPoint2 - rPoint2) + pPoint2
+                )
 
-            self._LastX=x
-            self._LastY=y
+            self._LastX = x
+            self._LastY = y
 
             self.Render()
 
     def Zoom(self, event):
         if self._CurrentRenderer:
-            x=event.GetX()
-            y=event.GetY()
+            x = event.GetX()
+            y = event.GetY()
 
-            renderer=self._CurrentRenderer
-            camera=self._CurrentCamera
+            renderer = self._CurrentRenderer
+            camera = self._CurrentCamera
 
-            zoomFactor=math.pow(1.02, (0.5*(self._LastY-y)))
-            self._CurrentZoom=self._CurrentZoom*zoomFactor
+            zoomFactor = math.pow(1.02, (0.5 * (self._LastY - y)))
+            self._CurrentZoom = self._CurrentZoom * zoomFactor
 
             if camera.GetParallelProjection():
-                parallelScale=camera.GetParallelScale()/zoomFactor
+                parallelScale = camera.GetParallelScale() / zoomFactor
                 camera.SetParallelScale(parallelScale)
             else:
                 camera.Dolly(zoomFactor)
                 renderer.ResetCameraClippingRange()
 
-            self._LastX=x
-            self._LastY=y
+            self._LastX = x
+            self._LastY = y
 
             self.Render()
 
@@ -600,50 +599,48 @@ class wxVTKRenderWindow(baseClass):
         self.Render()
 
     def Wireframe(self):
-        actors=self._CurrentRenderer.GetActors()
-        numActors=actors.GetNumberOfItems()
+        actors = self._CurrentRenderer.GetActors()
+        numActors = actors.GetNumberOfItems()
         actors.InitTraversal()
         for i in range(0, numActors):
-            actor=actors.GetNextItem()
+            actor = actors.GetNextItem()
             actor.GetProperty().SetRepresentationToWireframe()
 
         self.Render()
 
     def Surface(self):
-        actors=self._CurrentRenderer.GetActors()
-        numActors=actors.GetNumberOfItems()
+        actors = self._CurrentRenderer.GetActors()
+        numActors = actors.GetNumberOfItems()
         actors.InitTraversal()
         for i in range(0, numActors):
-            actor=actors.GetNextItem()
+            actor = actors.GetNextItem()
             actor.GetProperty().SetRepresentationToSurface()
 
         self.Render()
 
     def PickActor(self, event):
         if self._CurrentRenderer:
-            x=event.GetX()
-            y=event.GetY()
+            x = event.GetX()
+            y = event.GetY()
 
-            renderer=self._CurrentRenderer
-            picker=self._Picker
+            renderer = self._CurrentRenderer
+            picker = self._Picker
 
-            windowX, windowY=self._RenderWindow.GetSize()
-            picker.Pick(x, (windowY-y-1), 0.0, renderer)
-            actor=picker.GetActor()
+            windowX, windowY = self._RenderWindow.GetSize()
+            picker.Pick(x, (windowY - y - 1), 0.0, renderer)
+            actor = picker.GetActor()
 
-            if (self._PickedActor is not None and
-                    self._PrePickedProperty is not None):
+            if self._PickedActor is not None and self._PrePickedProperty is not None:
                 self._PickedActor.SetProperty(self._PrePickedProperty)
                 # release hold of the property
                 self._PrePickedProperty.UnRegister(self._PrePickedProperty)
-                self._PrePickedProperty=None
+                self._PrePickedProperty = None
 
             if actor is not None:
-                self._PickedActor=actor
-                self._PrePickedProperty=self._PickedActor.GetProperty()
+                self._PickedActor = actor
+                self._PrePickedProperty = self._PickedActor.GetProperty()
                 # hold onto the property
                 self._PrePickedProperty.Register(self._PrePickedProperty)
                 self._PickedActor.SetProperty(self._PickedProperty)
 
             self.Render()
-

@@ -2,9 +2,10 @@
 Messaging protocol for remote model refinement with GenX server.
 """
 
-import zlib
-import struct
 import asyncio
+import struct
+import zlib
+
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -15,7 +16,6 @@ from typing import Union
 from ..diffev import DiffEvConfig
 from ..model import Model
 from ..solver_basis import GenxOptimizer, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
-
 
 header_types = {}
 
@@ -37,6 +37,7 @@ class GenXMessage(ABC):
     ## Data Length ## (8 bytes, single unsigned long long)
     ## Data ## (bz2 compressed pickled class with data)
     """
+
     HEADER_TYPE = 0
 
     @classmethod
@@ -50,7 +51,7 @@ class GenXMessage(ABC):
         usefull if information about the data should be used
         while it is transmitted.
         """
-        return b''
+        return b""
 
     def make_data(self):
         return dumps(self)
@@ -59,7 +60,7 @@ class GenXMessage(ABC):
         header = self.make_header()
         data = self.make_data()
         data = zlib.compress(data, 1)
-        message = struct.pack("I", len(header)+4)
+        message = struct.pack("I", len(header) + 4)
         message += struct.pack("I", self.HEADER_TYPE)
         message += header
         message += struct.pack("I", len(data))
@@ -68,23 +69,23 @@ class GenXMessage(ABC):
 
     @staticmethod
     async def receive(io: asyncio.StreamReader) -> "GenXMessage":
-        debug('GenXMessage receiving')
+        debug("GenXMessage receiving")
         header_length = struct.unpack("I", await io.read(4))[0]
         header_type = struct.unpack("I", await io.read(4))[0]
-        debug(f'GenXMessage header_length={header_length} ; header_type={header_type}')
-        if header_type!=0:
+        debug(f"GenXMessage header_length={header_length} ; header_type={header_type}")
+        if header_type != 0:
             header_string = await io.read(header_length)
             header_data = loads(header_string)
             header_types[header_type].use_header(header_data)
         data_length = struct.unpack("I", await io.read(4))[0]
-        debug(f'GenXMessage data_length={data_length}')
+        debug(f"GenXMessage data_length={data_length}")
         data_string = await io.read(data_length)
-        debug(f'Length of data_string received: {len(data_string)}')
-        while len(data_string)<data_length:
-            data_string += await io.read(data_length-len(data_string))
+        debug(f"Length of data_string received: {len(data_string)}")
+        while len(data_string) < data_length:
+            data_string += await io.read(data_length - len(data_string))
         data_string = zlib.decompress(data_string)
         res = loads(data_string)
-        debug(f'GenXMessage of type {type(res)} sucessfully unpacked')
+        debug(f"GenXMessage of type {type(res)} sucessfully unpacked")
         return res
 
 
@@ -122,4 +123,4 @@ class OptimizerUpdate(GenXMessage):
     payload: Union[SolverUpdateInfo, SolverParameterInfo, SolverResultInfo]
 
     def __repr__(self):
-        return f'OptimizerUpdate(payload={self.payload.__class__.__name__})'
+        return f"OptimizerUpdate(payload={self.payload.__class__.__name__})"
