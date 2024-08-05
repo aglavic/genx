@@ -21,6 +21,8 @@ Changes 3.7.0
    to the spec_adaptive model. Can be activated using the instrument parameter "zeeman" and "mag_field".
  * Implement new python dataclass based model parameterization. The GUI will detect any parameter in the model
    based on the base class which allows more flexibility in model modification and improves general maintainability.
+ * Add code signature to Mac OS distribution to remove need for user to ignore security warnings on installation/run.
+   (Thanks to the international scattering alliance for support in creating the certificate.)
 
 Changes 3.6.27
 ==============
