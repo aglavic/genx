@@ -316,7 +316,7 @@ jobs:
     - name: Archive distribution
       uses: actions/upload-artifact@v4
       with:
-        name: mac-dist
+        name: mac-dist-m1
         path: |
           genx/dist/GenX3*.dmg
 
@@ -342,6 +342,9 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: mac-dist
+    - uses: actions/download-artifact@v4
+      with:
+        name: mac-dist-m1
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe,GenX3*.dmg"
@@ -350,7 +353,7 @@ jobs:
   release-sourceforge:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-20.04
-    needs: [build-ubuntu-24, build-ubuntu-22, build-ubuntu-20, build-windows, build-macos]
+    needs: [build-ubuntu-24, build-ubuntu-22, build-ubuntu-20, build-windows, build-macos-m1]
 
     steps:
     - uses: actions/checkout@v4
@@ -369,6 +372,9 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: mac-dist
+    - uses: actions/download-artifact@v4
+      with:
+        name: mac-dist-m1
     - name: Install dependencies
       run: |
         sudo apt update
