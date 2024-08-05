@@ -168,7 +168,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'
     - name: Install dependencies
       run: |
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
@@ -212,7 +212,7 @@ jobs:
         # cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 #    - name: Setup tmate session for debug
 #      uses: mxschmitt/action-tmate@v3
-    - name: Remove any library signatures
+    - name: Add library signatures
       run: |
         cd genx/dist
         codesign --deep --force --options=runtime --entitlements ../mac_build/entitlements.plist --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B --timestamp genx.app

@@ -45,7 +45,7 @@ exe = EXE(pyz,
           upx=False,
           console=False,
           disable_windowed_traceback=False,
-          target_arch=None,
+          target_arch="universal2",
           codesign_identity=None,
           entitlements_file=None , icon='mac_build/genx.icns')
 coll = COLLECT(exe,
