@@ -234,6 +234,9 @@ jobs:
         # for distribution the dmg needs to be notarized, requires right account from apple
     - name: Setup tmate session for debug
       uses: mxschmitt/action-tmate@v3
+      env:
+        NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
+        NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
     - name: Archive distribution
       uses: actions/upload-artifact@v4
       with:
