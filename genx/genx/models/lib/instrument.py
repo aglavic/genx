@@ -4,10 +4,10 @@
 # as in real space
 
 # THis one really needs scipy
-from numpy import (abs, arange, arccos, arcsin, arctan, arctan2, array, c_, complex64, complex128, convolve, cos,
-                   cumsum, dot, exp, float32, float64, imag, isscalar, linspace, logical_not, maximum, minimum, ndarray,
-                   newaxis, not_equal, ones, pi, r_, real, sin, sqrt, sum, tan, transpose, where, zeros)
-
+from numpy import (pi, sqrt, sin, cos, tan, arcsin, arccos, arctan, arctan2, real, imag, abs, cumsum, zeros, isscalar,
+                   where, ones, linspace, exp, newaxis, transpose, arange, convolve, r_, array, not_equal, logical_not,
+                   ones_like, zeros_like, conj, rollaxis, bitwise_not, allclose, append,
+                   sum, dot, minimum, maximum, float32, float64, complex128, ndarray, float32, complex64, c_)
 try:
     # trapz removed in numpy 2.x
     from numpy import trapezoid as trapz
