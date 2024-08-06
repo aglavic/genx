@@ -231,12 +231,14 @@ jobs:
                     "GenX3-$GENX_VERSION-Installer.dmg" \
                     genx.app
         codesign --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B "GenX3-$GENX_VERSION-Installer.dmg"
-        # for distribution the dmg needs to be notarized, requires right account from apple
-    - name: Setup tmate session for debug
-      uses: mxschmitt/action-tmate@v3
+    - name: Notarize app
       env:
         NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
         NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+      run: |
+        xcrun notarytool submit genx/dist/GenX3*.dmg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
+#    - name: Setup tmate session for debug
+#      uses: mxschmitt/action-tmate@v3
     - name: Archive distribution
       uses: actions/upload-artifact@v4
       with:
@@ -294,8 +296,6 @@ jobs:
         # apply provisioning profile
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         # cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-#    - name: Setup tmate session for debug
-#      uses: mxschmitt/action-tmate@v3
     - name: Add library signatures
       run: |
         cd genx/dist
@@ -318,6 +318,12 @@ jobs:
                     genx.app
         codesign --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B "GenX3-$GENX_VERSION-M1-Installer.dmg"
         # for distribution the dmg needs to be notarized, requires right account from apple
+    - name: Notarize app
+      env:
+        NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
+        NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+      run: |
+        xcrun notarytool submit genx/dist/GenX3*.dmg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
     - name: Archive distribution
       uses: actions/upload-artifact@v4
       with:
