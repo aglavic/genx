@@ -276,9 +276,6 @@ class AltStrEnum(str, Enum):
         else:
             return str.__eq__(self, other)
 
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
     def __str__(self):
         return self.value
 
