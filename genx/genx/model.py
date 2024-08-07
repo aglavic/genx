@@ -153,9 +153,9 @@ class Model(H5HintedExport):
         self.set_fom_from_config()
 
     def WriteConfig(self):
-        self.opt.safe_config()
-        self.startup_script.safe_config()
-        self.solver_parameters.safe_config()
+        self.opt.save_config()
+        self.startup_script.save_config()
+        self.solver_parameters.save_config()
         self.set_fom_from_config()
 
     def set_fom_from_config(self):

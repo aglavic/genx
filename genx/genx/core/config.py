@@ -4,6 +4,7 @@ Configuration and config file handling.
 
 import dataclasses
 import io
+import os
 
 from abc import ABC, abstractmethod
 from configparser import ConfigParser
@@ -30,11 +31,18 @@ class Config:
         Loads the default config from file filename. Raises a IOError if the
         can not be found.
         """
+        if not os.path.exists(filename):
+            raise GenxIOError(f"Could not load default config file {filename}:\n File does not exist", filename)
         try:
-            self.default_config.read(filename)
+            with open(filename, "r") as f:
+                f.readline()
         except Exception as e:
             iprint(e)
             raise GenxIOError(f"Could not load default config file:\n {e}", filename)
+
+        # the read method ignores any errors, thus checks have to be done in this method beforehand
+        self.default_config.read(filename)
+
         if reset:
             self.model_config = ConfigParser()
 
@@ -54,7 +62,6 @@ class Config:
         Loads a config from a string input.  Raises an IOError if the string can not be
         read.
         """
-        self.model_config = ConfigParser()
         try:
             self.model_config.read_string(string)
         except Exception as e:
@@ -62,7 +69,7 @@ class Config:
 
     def _getf(self, method: str, section: str, option: str, fallback=None):
         """
-        For the function function try to locate the section and option first in
+        For the getter-method name of config objects try to locate the section and option first in
         model_config if that fails try to locate it in default_config. If both
         fails raise a GenxOptionError.
         """
@@ -148,7 +155,7 @@ class BaseConfig(ABC):
     @property
     @abstractmethod
     def section(self):
-        raise NotImplementedError("Subclass needs to define the section attribute.")
+        """Subclass needs to define the section attribute."""
 
     def asdict(self):
         # noinspection PyDataclass
@@ -181,7 +188,7 @@ class BaseConfig(ABC):
             else:
                 setattr(self, field.name, value)
 
-    def safe_config(self, default=False):
+    def save_config(self, default=False):
         data = self.asdict()
         if default:
             setter = config.default_set
@@ -269,8 +276,19 @@ class MergedConfig(BaseConfig):
     def __init__(self, *children):
         self._children = list(children)
 
+    def __eq__(self, other):
+        if not hasattr(other, "_children") or len(other._children) != len(self._children):
+            return False
+        out = True
+        for i, child in enumerate(self._children):
+            out &= child.__eq__(other._children[i])
+        return out
+
     def __or__(self, other):
-        all_children = self._children + [other]
+        if hasattr(other, "_children"):
+            all_children = self._children + other._children
+        else:
+            all_children = self._children + [other]
         return MergedConfig(*all_children)
 
     def get_fields(self, fltr=None) -> List[dataclasses.Field]:
@@ -327,7 +345,7 @@ class Configurable:
 
         if not issubclass(config_class, BaseConfig):
             raise ValueError(
-                "Configurable needs either an explicit config_class " "or 'opt' type hint derived from BaseConfig"
+                "Configurable needs either an explicit config_class or 'opt' type hint derived from BaseConfig"
             )
 
         self.opt = config_class()
@@ -339,7 +357,7 @@ class Configurable:
 
     def WriteConfig(self, default=False):
         """Writes the varaibles to be stored to the config"""
-        self.opt.safe_config(default=default)
+        self.opt.save_config(default=default)
 
     def UpdateConfigValues(self):
         """

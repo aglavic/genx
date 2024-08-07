@@ -896,7 +896,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.wstartup.show_profiles = startup_dialog.GetShowAtStartup()
                 self.wstartup.widescreen = startup_dialog.GetWidescreen()
                 self.wstartup.wx_plotting = startup_dialog.GetWxPloting()
-                self.wstartup.safe_config(default=True)
+                self.wstartup.save_config(default=True)
                 conf_mod.config.write_default(os.path.join(config_path, "genx.conf"))
                 if (self.wstartup.wx_plotting, self.wstartup.widescreen) != prev_gui and force_show:
                     # in case the GUI has to be re-build completely
@@ -1594,7 +1594,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.opt.vsplit = self.ver_splitter.GetSashPosition()
         self.opt.hsplit = self.hor_splitter.GetSashPosition()
         self.opt.psplit = self.plot_splitter.GetSashPosition()
-        self.opt.safe_config(default=True)
+        self.opt.save_config(default=True)
 
         conf_mod.config.write_default(os.path.join(config_path, "genx.conf"))
 
