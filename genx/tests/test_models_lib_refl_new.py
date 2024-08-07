@@ -1,6 +1,6 @@
-'''
+"""
 Test of the models.lib.base classes used in model builds (new style).
-'''
+"""
 
 import unittest
 
@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import List
 
 from genx.models.lib.refl_new import ReflBase, SampleBase, StackBase
+
 
 class TestReflBase(unittest.TestCase):
 
@@ -18,7 +19,7 @@ class TestReflBase(unittest.TestCase):
             p_int: int = 0
 
         t = TestReflBase()
-        self.assertEqual(t._parameters, {'p_float': 0.0, 'p_int': 0})
+        self.assertEqual(t._parameters, {"p_float": 0.0, "p_int": 0})
         for name, pinfo in t._parameter_info().items():
             self.assertEqual(pinfo.type, type(getattr(t, name)))
 
@@ -30,9 +31,9 @@ class TestReflBase(unittest.TestCase):
 
         t = TestStack(Layers=[])
 
-        self.assertEqual(t._parameters, {'p_float': 0.0, 'p_int': 0, 'Layers': [], 'Repetitions': 1})
+        self.assertEqual(t._parameters, {"p_float": 0.0, "p_int": 0, "Layers": [], "Repetitions": 1})
 
-        self.assertEqual(t.resolveLayerParameter('d'), [])
+        self.assertEqual(t.resolveLayerParameter("d"), [])
 
     def test_layer_stack(self):
         @dataclass
@@ -45,9 +46,9 @@ class TestReflBase(unittest.TestCase):
             d: float = 0.0
 
         t = TestStack(Layers=[TestLayer()], Repetitions=1)
-        self.assertEqual(t.resolveLayerParameter('d'), [0.0])
+        self.assertEqual(t.resolveLayerParameter("d"), [0.0])
         t = TestStack(Layers=[TestLayer()], Repetitions=5)
-        self.assertEqual(t.resolveLayerParameter('d'), [0.0]*5)
+        self.assertEqual(t.resolveLayerParameter("d"), [0.0] * 5)
 
     def test_sample(self):
         @dataclass
@@ -66,21 +67,26 @@ class TestReflBase(unittest.TestCase):
         @dataclass
         class TestSample(SampleBase):
             _layer_parameter_class = LayerParameters
-        @dataclass
-        class TestSample2(SampleBase):
-            ...
 
-        s = TestSample(Stacks=[TestStack(Layers=[TestLayer()], Repetitions=1)], Ambient=TestLayer(), Substrate=TestLayer())
+        @dataclass
+        class TestSample2(SampleBase): ...
+
+        s = TestSample(
+            Stacks=[TestStack(Layers=[TestLayer()], Repetitions=1)], Ambient=TestLayer(), Substrate=TestLayer()
+        )
         self.assertEqual(s.resolveLayerParameters(), LayerParameters(d=[0.0, 0.0, 0.0]))
-        s2 = TestSample2(Stacks=[TestStack(Layers=[TestLayer()], Repetitions=1)], Ambient=TestLayer(), Substrate=TestLayer())
+        s2 = TestSample2(
+            Stacks=[TestStack(Layers=[TestLayer()], Repetitions=1)], Ambient=TestLayer(), Substrate=TestLayer()
+        )
         self.assertEqual(s2.resolveLayerParameters(), dict(d=[0.0, 0.0, 0.0]))
 
         def sim_test(first, smpl, last):
-            if first!=last:
+            if first != last:
                 raise ValueError()
             return smpl
-        TestSample.setSimulationFunctions({'Bier': sim_test})
-        self.assertTrue(hasattr(s, 'SimBier'))
-        self.assertEqual(s.SimBier(1,1), s)
+
+        TestSample.setSimulationFunctions({"Bier": sim_test})
+        self.assertTrue(hasattr(s, "SimBier"))
+        self.assertEqual(s.SimBier(1, 1), s)
         with self.assertRaises(ValueError):
-            s.SimBier(1,2)
+            s.SimBier(1, 2)
