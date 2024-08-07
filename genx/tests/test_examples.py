@@ -29,3 +29,11 @@ class TestReflModels(unittest.TestCase):
                 refl.ReadModel()
                 model.compile_script()
                 model.simulate()
+
+
+class TestDataLoaders(unittest.TestCase):
+    def test_data_loaders(self):
+        model, optimizer, refl = api.Reflectivity.create_new("spec_nx")
+
+        api.data_loader.d17_legacy.LoadData(model.data[0], os.path.join(BASE_DIR, "D17_SiO.out"))
+        api.data_loader.default.LoadData(model.data[0], os.path.join(BASE_DIR, "xray-tutorial.dat"))

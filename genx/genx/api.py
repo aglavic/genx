@@ -826,9 +826,13 @@ class DataLoaderInterface:
         for dl in self._handler.get_possible_plugins():
             try:
                 self._handler.load_plugin(dl)
+                self._handler.loaded_plugins[dl].parent = self
                 setattr(self, dl, self._handler.loaded_plugins[dl])
             except Exception as error:
                 print(error)
+
+    def SetStatusText(self, text):
+        pass
 
     def __repr__(self):
         output = "Available data loaders:"
