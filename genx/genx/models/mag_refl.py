@@ -81,7 +81,7 @@ Stack
 ``Stack(Layers = [], Repetitions = 1)``
 
 ``Layers``
-   A ``list`` consiting of ``Layer``\ s in the stack the first item is
+   A ``list`` consiting of ``Layer``s in the stack the first item is
    the layer closest to the bottom
 ``Repetitions``
    The number of repetitions of the stack
@@ -91,7 +91,7 @@ Sample
 ``Sample(Stacks = [], dsld_max = 0.1, dsld_offdiag_max = 0.1,              compress = 'yes', slicing = 'no', dsld_n_max = 0.01,              dabs_n_max = 0.01, sld_buffer = 20.0, sld_delta = 5.0,              dmag_max = 0.01, sld_mult = 4.0, slice_depth = 1.0,              Ambient = Amb, Substrate = Sub)``
 
 ``Stacks``
-   A ``list`` consiting of ``Stack``\ s in the stacks the first item is
+   A ``list`` consiting of ``Stack``s in the stacks the first item is
    the layer closest to the bottom
 ``Ambient``
    A ``Layer`` describing the Ambient (enviroment above the sample).
@@ -647,7 +647,7 @@ def SLD_calculations(z, item, sample, inst):
             "Im sl_yz": chi[1][2].imag * c,
             "Im sl_zz": chi[2][2].imag * c,
             "z": z,
-            "SLD unit": "r_e/\AA^{3}",
+            "SLD unit": "r_e/\\AA^{3}",
         }
     else:
         new_size = len(d) * 2
@@ -676,7 +676,7 @@ def SLD_calculations(z, item, sample, inst):
                 "Im sld_m": sl_m1p.imag,
                 "mag_dens": mag_densp,
                 "z": z,
-                "SLD unit": "r_{e}/\AA^{3},\,\mu_{B}/\AA^{3}",
+                "SLD unit": "r_{e}/\\AA^{3},\\,\\mu_{B}/\\AA^{3}",
             }
         elif theory in [2, instrument_string_choices["theory"][2]]:
             # Neutron spin pol
@@ -685,7 +685,7 @@ def SLD_calculations(z, item, sample, inst):
                 "abs_n": abs_np,
                 "mag_dens": mag_densp,
                 "z": z,
-                "SLD unit": "fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}",
+                "SLD unit": "fm/\\AA^{3}, b/\\AA^{3},\\,\\mu_{B}/\\AA^{3}",
             }
         elif theory in [3, instrument_string_choices["theory"][3]]:
             # Neutron spin pol with spin flip
@@ -696,7 +696,7 @@ def SLD_calculations(z, item, sample, inst):
                 "mag_dens_x": mag_dens_xp,
                 "mag_dens_y": mag_dens_yp,
                 "z": z,
-                "SLD unit": "fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}",
+                "SLD unit": "fm/\\AA^{3}, b/\\AA^{3},\\,\\mu_{B}/\\AA^{3}",
             }
         elif theory in [4, instrument_string_choices["theory"][4]]:
             # Neutron spin pol
@@ -705,11 +705,11 @@ def SLD_calculations(z, item, sample, inst):
                 "abs_n": abs_np,
                 "mag_dens": mag_densp,
                 "z": z,
-                "SLD unit": "fm/\AA^{3}, b/\AA^{3},\,\mu_{B}/\AA^{3}",
+                "SLD unit": "fm/\\AA^{3}, b/\\AA^{3},\\,\\mu_{B}/\\AA^{3}",
             }
         if theory in [5, instrument_string_choices["theory"][5]]:
             # isotropic (normal x-ray reflectivity)
-            dic = {"Re sld_c": sl_cp.real, "Im sld_c": sl_cp.imag, "z": z, "SLD unit": "r_{e}/\AA^{3}"}
+            dic = {"Re sld_c": sl_cp.real, "Im sld_c": sl_cp.imag, "z": z, "SLD unit": "r_{e}/\\AA^{3}"}
 
     if item is None or item == "all":
         return dic
@@ -876,7 +876,7 @@ def compose_sld_anal(z, sample, instrument):
             "Im sl_yz": c_yz.imag * c,
             "Im sl_zz": c_zz.imag * c,
             "z": z,
-            "SLD unit": "r_e/\AA^{3}",
+            "SLD unit": "r_e/\\AA^{3}",
         }
     elif theory in [1, instrument_string_choices["theory"][1]]:
         # Simplified anisotropic
@@ -887,11 +887,11 @@ def compose_sld_anal(z, sample, instrument):
             "Im sld_m": sld_m.imag,
             "mag_dens": mag_dens,
             "z": z,
-            "SLD unit": "r_{e}/\AA^{3},\,\mu_{B}/\AA^{3}",
+            "SLD unit": "r_{e}/\\AA^{3},\\,\\mu_{B}/\\AA^{3}",
         }
     elif theory in [2, instrument_string_choices["theory"][2]]:
         # Neutron spin pol
-        return {"sld_n": sld_n, "mag_dens": mag_dens, "z": z, "SLD unit": "fm/\AA^{3}, \mu_{B}/\AA^{3}"}
+        return {"sld_n": sld_n, "mag_dens": mag_dens, "z": z, "SLD unit": "fm/\\AA^{3}, \\mu_{B}/\\AA^{3}"}
     elif theory in [3, instrument_string_choices["theory"][3]]:
         # Neutron spin pol with spin flip
         return {
@@ -900,14 +900,19 @@ def compose_sld_anal(z, sample, instrument):
             "mag_dens_x": mag_dens_x,
             "mag_dens_y": mag_dens_y,
             "z": z,
-            "SLD unit": "fm/\AA^{3}, \mu_{B}/\AA^{3}",
+            "SLD unit": "fm/\\AA^{3}, \\mu_{B}/\\AA^{3}",
         }
     elif theory in [4, instrument_string_choices["theory"][4]]:
         # Neutron spin pol tof
-        return {"sld_n": sld_n, "mag_dens": mag_dens, "z": z, "SLD unit": "fm/\AA^{3}, \mu_{B}/\AA^{3}"}
+        return {"sld_n": sld_n, "mag_dens": mag_dens, "z": z, "SLD unit": "fm/\\AA^{3}, \\mu_{B}/\\AA^{3}"}
     elif theory in [5, instrument_string_choices["theory"][5]]:
         # x-ray isotropic (normal x-ray reflectivity)
-        return {"Re sld_c": sld_c.real, "Im sld_c": sld_c.imag, "z": z, "SLD unit": "r_{e}/\AA^{3},\,\mu_{B}/\AA^{3}"}
+        return {
+            "Re sld_c": sld_c.real,
+            "Im sld_c": sld_c.imag,
+            "z": z,
+            "SLD unit": "r_{e}/\\AA^{3},\\,\\mu_{B}/\\AA^{3}",
+        }
     else:
         raise ValueError("Wrong value of theory given. Value: %s" % theory)
 

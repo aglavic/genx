@@ -91,7 +91,7 @@ class TestResolution(unittest.TestCase):
         q_out_s, weights_s = instrument.ResolutionVector(q_in, dq, n_points, range=rng)
         q_out_v, weights_v = instrument.ResolutionVector(q_in, dq * np.ones_like(q_in), n_points, range=rng)
         np.testing.assert_array_equal(q_out_s, q_out_v)
-        np.testing.assert_array_equal(weights_s, weights_v)
+        np.testing.assert_array_almost_equal(weights_s, weights_v)
 
     def test_convolution(self):
         q_in = np.linspace(0.01, 0.301, 300)

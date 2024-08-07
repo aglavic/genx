@@ -387,14 +387,21 @@ class Reflectivity(SampleBuilder):
         if len(layers) == 0:
             raise ValueError("Could not find any Layers in the" " model script. Check the script.")
 
-        # Now its time to set all the parameters so that we have the strings
+        # Now it's time to set all the parameters so that we have the strings
         # instead of the evaluated value - looks better
-        for lay in layers:
-            for par in lay[1].split(","):
-                vars = par.split("=")
-                exec(
-                    '%s.%s = "%s"' % (lay[0], vars[0].strip(), vars[1].strip()), self.GetModel().script_module.__dict__
-                )
+        from .models.lib.refl_new import ReflBase
+
+        if isinstance(self.GetModel().script_module.sample, ReflBase):
+            # TODO: revisit the whole method for new style model analysis
+            pass
+        else:
+            for lay in layers:
+                for par in lay[1].split(","):
+                    vars = par.split("=")
+                    exec(
+                        '%s.%s = "%s"' % (lay[0], vars[0].strip(), vars[1].strip()),
+                        self.GetModel().script_module.__dict__,
+                    )
 
         data_names, insts, sim_args, sim_exp, sim_funcs = self.find_sim_function_parameters()
 

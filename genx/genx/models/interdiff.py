@@ -35,7 +35,7 @@ Stack
 ``Stack(Layers = [], Repetitions = 1)``
 
 ``Layers``
-   A ``list`` consiting of ``Layer``\ s in the stack the first item is
+   A ``list`` consiting of ``Layer``' s in the stack the first item is
    the layer closest to the bottom
 ``Repetitions``
    The number of repsetions of the stack
@@ -45,7 +45,7 @@ Sample
 ``Sample(Stacks = [], Ambient = Layer(), Substrate = Layer(), eta_z = 10.0,     eta_x = 10.0, h = 1.0)``
 
 ``Stacks``
-   A ``list`` consiting of ``Stack``\ s in the stacks the first item is
+   A ``list`` consiting of ``Stack``' s in the stacks the first item is
    the layer closest to the bottom
 ``Ambient``
    A ``Layer`` describing the Ambient (enviroment above the sample).
@@ -328,7 +328,7 @@ def SLD_calculations(z, item, sample, inst):
     if z is None:
         z = arange(-sigma[0] * 5, int_pos.max() + sigma[-1] * 5, 0.5)
     rho = sum(d_sld * (0.5 - 0.5 * erf((z[:, newaxis] - int_pos) / sqrt(2.0) / sigma)), 1) + sld[-1]
-    dic = {"Re": real(rho), "Im": imag(rho), "z": z, "SLD unit": "r_{e}/\AA^{3}"}
+    dic = {"Re": real(rho), "Im": imag(rho), "z": z, "SLD unit": "r_{e}/\\AA^{3}"}
     if item is None or item == "all":
         return dic
     else:

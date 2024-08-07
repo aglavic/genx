@@ -201,9 +201,9 @@ class SampleHandler:
         rest_sample_rep = "], "
         sample_string_pars = ", ".join(
             [
-                f"{name} = {self.sample._ca.get(name, None)}"
+                f"{name} = {self.sample._ca.get(name)}"
                 for name in self.sample._parameters.keys()
-                if name not in ["Stacks", "Ambient", "Substrate"]
+                if name in self.sample._ca and name not in ["Stacks", "Ambient", "Substrate"]
             ]
         )
         if len(sample_string_pars) != 0:
