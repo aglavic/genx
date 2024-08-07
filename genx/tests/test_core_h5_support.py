@@ -7,6 +7,8 @@ import tempfile
 import unittest
 
 from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Dict
 
 import h5py
 import numpy as np
@@ -21,6 +23,7 @@ def default_dict():
 @dataclass
 class H5TestSub(H5HintedExport):
     h5group_name = "subtest"
+    _group_attr = {"NX_class": "NXentry", "default": "datasets"}
 
     testvalue: str
 
@@ -38,6 +41,8 @@ class H5Tester(H5HintedExport):
     saved_float: float
     saved_complex: complex
     saved_dict: dict
+    saved_Dict: Dict[str, str]
+    saved_Dict2: Dict[str, int]
     saved_array: np.ndarray
     saved_subclass: H5TestSub
 
@@ -49,16 +54,29 @@ class H5Tester(H5HintedExport):
     saved_default_array: np.ndarray = field(default_factory=lambda: np.arange(100))
 
 
+class H5Tester2(H5HintedExport):
+    h5group_name = "test_group"
+
+    _ignored: list = [1, 2, 3]
+
+    checked_default: str = "abc"
+    checked_list: list = [1, 2, 3]
+
+
 class TestH5HintedExport(unittest.TestCase):
 
     def test_write_read(self):
-        ds1 = H5Tester("abc1", 10, 45.3, 85.4 + 5.3j, default_dict(), np.linspace(-1.0, 1.0, 50), H5TestSub("test"))
+        ds1 = H5Tester(
+            "abc1", 10, 45.3, 85.4 + 5.3j, default_dict(), {}, {}, np.linspace(-1.0, 1.0, 50), H5TestSub("test")
+        )
         ds2 = H5Tester(
             "abc2",
             20,
             25.3,
             45.4 + 2.3j,
-            {"b": "c", "d": 13},
+            {"b": "c", "d": 13, "e": datetime(2024, 8, 1), "f": {1, 2, 3}},
+            {"a": "äö"},
+            {"a": 13},
             np.linspace(-2, 1, 50),
             H5TestSub("test"),
             "def",
@@ -66,10 +84,10 @@ class TestH5HintedExport(unittest.TestCase):
             42.5,
             0.4 - 2j,
             {"b": "c", "d": 13},
-            np.linspace(-2, 1, 50),
+            np.linspace(-2, 1, 50000),
         )  # overwritten defaults
-        ds1re = H5Tester("", 0, 0.0, 0j, {}, np.array([]), H5TestSub(""))
-        ds2re = H5Tester("", 0, 0.0, 0j, {}, np.array([]), H5TestSub(""), "", 0, 0.0, 0j, {}, np.array([]))
+        ds1re = H5Tester("", 0, 0.0, 0j, {}, {}, {}, np.array([]), H5TestSub(""))
+        ds2re = H5Tester("", 0, 0.0, 0j, {}, {}, {}, np.array([]), H5TestSub(""), "", 0, 0.0, 0j, {}, np.array([]))
 
         with tempfile.TemporaryFile("w+b") as tmp:
             hdf = h5py.File(tmp, "w")
@@ -111,3 +129,10 @@ class TestH5HintedExport(unittest.TestCase):
         np.testing.assert_array_equal(ds1da, ds1rda)
         np.testing.assert_array_equal(ds2a, ds2ra)
         np.testing.assert_array_equal(ds2da, ds2rda)
+
+    def test_hinted(self):
+        t = H5Tester2()
+        t.init_defaults()
+        self.assertFalse(t.checked_list is H5Tester2.checked_list)
+        self.assertEqual(t.checked_list, H5Tester2.checked_list)
+        self.assertTrue(t._ignored is H5Tester2._ignored)

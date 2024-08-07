@@ -97,7 +97,8 @@ class H5Savable(ABC):
                     try:
                         value = datetime.fromisoformat(value.decode("ascii"))
                     except AttributeError:
-                        value = datetime.strptime(lue.decode("ascii"), "%Y-%m-%dT%H:%M:%S")
+                        # compatibility with older python
+                        value = datetime.strptime(value.decode("ascii"), "%Y-%m-%dT%H:%M:%S")
                 else:
                     value = value.decode("utf-8")
             node[item_path[-1]] = value
@@ -123,7 +124,7 @@ class H5HintedExport(H5Savable):
             if attr in self._export_ignore or attr.startswith("_"):
                 continue
             if not hasattr(self.__class__, attr):
-                continue
+                continue  # might be a case that does not exist
             default = getattr(self.__class__, attr)
             if hasattr(default, "copy"):
                 default = default.copy()  # for array, dict and lists, make sure a copy is used
