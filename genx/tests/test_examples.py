@@ -19,21 +19,3 @@ class TestExamples(unittest.TestCase):
             with self.subTest(f"Datafile {fl}", i=i):
                 model, optimizer = api.load(fl)
                 model.simulate()
-
-
-class TestReflModels(unittest.TestCase):
-    def test_empty_models(self):
-        for i, name in enumerate(["spec_nx", "spec_adaptive", "spec_inhom", "soft_nx", "mag_refl", "interdiff"]):
-            with self.subTest(f"Model {name}", i=i):
-                model, optimizer, refl = api.Reflectivity.create_new(name)
-                refl.ReadModel()
-                model.compile_script()
-                model.simulate()
-
-
-class TestDataLoaders(unittest.TestCase):
-    def test_data_loaders(self):
-        model, optimizer, refl = api.Reflectivity.create_new("spec_nx")
-
-        api.data_loader.d17_legacy.LoadData(model.data[0], os.path.join(BASE_DIR, "D17_SiO.out"))
-        api.data_loader.default.LoadData(model.data[0], os.path.join(BASE_DIR, "xray-tutorial.dat"))

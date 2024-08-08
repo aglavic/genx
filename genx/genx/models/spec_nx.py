@@ -25,6 +25,8 @@ from .lib.footprint import *
 from .lib.instrument import *
 from .lib.physical_constants import muB_to_SL, r_e
 from .lib.resolution import *
+from .lib.testing import ModelTestCase
+
 
 # Preamble to define the parameters needed for the models outlined below:
 
@@ -322,7 +324,10 @@ def footprintcorr(Q, instrument: Instrument):
     samlen = instrument.samplelen
 
     if instrument.probe in [Probe.ntof, Probe.ntofpol]:
-        theta = instrument.incangle
+        if type(instrument.incangle) is float:
+            theta = instrument.incangle*ones_like(Q)
+        else:
+            theta = instrument.incangle
         # if ai is an array, make sure it gets repeated for every resolution point
         if type(theta) is ndarray and instrument.restype in [ResType.full_conv_rel, ResType.full_conv_abs]:
             theta = (theta * ones(instrument.respoints)[:, newaxis]).flatten()
@@ -710,7 +715,7 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
                 value = getattr(parameters, key)
                 val_start = value[:crop_top_bottom]
                 val_end = value[-crop_top_bottom:]
-                setattr(parameters, key, val_start + [inter[key]] + val_end)
+                setattr(parameters, key, val_start + [getattr(inter, key)] + val_end)
     dens = array(parameters.dens, dtype=float32)
     # f = array(parameters['f'], dtype = complex64)
     e = AA_to_eV / inst.wavelength
@@ -856,3 +861,171 @@ SimulationFunctions = {
 }
 
 Sample.setSimulationFunctions(SimulationFunctions)
+
+class TestSpecNX(ModelTestCase):
+    # TODO: currently this only checks for raise conditions in the code above, check of results should be added
+
+    def test_spec_xray(self):
+        sample = Sample(Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5+1e-7j, dens=0.1)])],
+                        Ambient=Layer(),
+                        Substrate=Layer(f=5e-5+2e-7j, dens=0.1))
+        instrument = Instrument(probe=Probe.xray, coords=Coords.tth, res = 0.001, restype = ResType.none,
+                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=1.54)
+        with self.subTest("x-ray tth"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray q"):
+            instrument.coords = Coords.q
+            Specular(self.qz, sample, instrument)
+
+        # resolution corrections
+        with self.subTest("x-ray q-res-fast"):
+            instrument.restype = ResType.fast_conv
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-fast-rel"):
+            instrument.restype = ResType.fast_conv_rel
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-fast-var"):
+            instrument.restype = ResType.fast_conv_var
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-full"):
+            instrument.restype = ResType.full_conv_abs
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-full-rel"):
+            instrument.restype = ResType.full_conv_rel
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-gauss"):
+            instrument.restype = GaussianResolution(sigma=0.001)
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-trapezoid"):
+            instrument.restype = TrapezoidResolution(inner_width=0.001, outer_width=0.002)
+            instrument.restype.get_weight_example()
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-wrong"):
+            instrument.restype = 123
+            with self.assertRaises(ValueError):
+                Specular(self.qz, sample, instrument)
+        instrument.restype = ResType.none
+
+        # footprint corrections
+        with self.subTest("x-ray q-footprint-square"):
+            instrument.footype = FootType.square
+            Specular(self.qz, sample, instrument)
+        instrument.coords = Coords.tth
+        with self.subTest("x-ray tth-footprint-square"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-gauss"):
+            instrument.footype = FootType.gauss
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-gauss-offset"):
+            instrument.footype = GaussianBeamOffset(sigma=0.5, offset=0.1)
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-square-offset"):
+            instrument.footype = SquareBeamOffset(width=0.1, offset=0.05)
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-trapezoid"):
+            instrument.footype = TrapezoidBeam(inner_width=0.1, outer_width=0.2)
+            Specular(self.tth, sample, instrument)
+            instrument.footype = TrapezoidBeam(inner_width=0.1, outer_width=0.1)
+            Specular(self.tth, sample, instrument)
+            instrument.footype = TrapezoidBeam(inner_width=0.0, outer_width=0.2)
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-wrong"):
+            instrument.footype = 123
+            with self.assertRaises(ValueError):
+                Specular(self.qz, sample, instrument)
+
+        instrument.footype = FootType.none
+        with self.subTest("x-ray tth-field"):
+            SpecularField(self.tth, sample, instrument)
+
+
+    def test_spec_neutron(self):
+        sample = Sample(Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+                        Ambient=Layer(b=1e-7, dens=0.1),
+                        Substrate=Layer(b=4e-6, dens=0.1))
+        instrument = Instrument(probe=Probe.neutron, coords=Coords.tth, res = 0.001, restype = ResType.none,
+                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=4.5, incangle=0.5)
+        with self.subTest("neutron tth"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("neutron q"):
+            instrument.coords = Coords.q
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint"):
+            instrument.probe = Probe.ntof
+            instrument.footype = FootType.square
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint"):
+            instrument.footype = FootType.none
+            instrument.restype = ResType.full_conv_rel
+            Specular(self.qz, sample, instrument)
+            instrument.incangle = ones_like(self.qz)*0.5
+            Specular(self.qz, sample, instrument)
+        instrument.incangle = 0.5
+        instrument.restype = ResType.none
+        with self.subTest("neutron-pol++ q"):
+            instrument.probe = Probe.npol
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-pol-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-polsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpol++ q"):
+            instrument.probe = Probe.ntofpol
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpol-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpolsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+
+        with self.subTest("neutron-sf++ q"):
+            instrument.probe = Probe.npolsf
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf+- q"):
+            instrument.pol = Polarization.up_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf-+ q"):
+            instrument.pol = Polarization.down_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sfsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-polspec q"):
+            instrument.pol = Polarization.up_up
+            PolSpecular(self.qz, 0.01, 0.01, 0.01, 0.01, sample, instrument)
+
+    def test_sld(self):
+        sample = Sample(Stacks=[
+            Stack(Layers=[Layer(d=150, sigma=2.0, f=2e-5+1e-7j, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+                        Ambient=Layer(b=1e-7, dens=0.1),
+                        Substrate=Layer(b=4e-6, dens=0.1))
+        instrument = Instrument(probe=Probe.xray, coords=Coords.tth, res = 0.001, restype = ResType.none,
+                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=4.5, incangle=0.5)
+        with self.subTest("sld xray"):
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron"):
+            instrument.probe = Probe.neutron
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron pol"):
+            instrument.probe = Probe.npolsf
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron pol2"):
+            sample.Stacks[0].Layers[0].magn_ang = 0.
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron crop"):
+            instrument.probe = Probe.neutron
+            sample.crop_sld = 15
+            sample.Stacks[0].Repetitions = 100
+            SLD_calculations(None, None, sample, instrument)
+            sample.crop_sld = -15
+            sample.Stacks[0].Repetitions = 100
+            SLD_calculations(None, None, sample, instrument)
