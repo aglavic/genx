@@ -28,6 +28,7 @@ from .lib.footprint import *
 from .lib.instrument import *
 from .lib.physical_constants import T_to_SL, muB_to_SL, r_e
 from .lib.resolution import *
+from .lib.testing import ModelTestCase
 from .spec_nx import AA_to_eV, Coords, FootType
 from .spec_nx import Instrument as NXInstrument
 from .spec_nx import LayerParameters, Polarization, Probe, ResType, q_limit
@@ -703,3 +704,125 @@ def resolve_parameters_by_element(sample):
         par["sigma_mag"] = where(array(par["sigma_mag"]) != 0.0, par["sigma_mag"], par["sigma"]).tolist()
         output["Elements"].append(par)
     return output
+
+class TestSpecAdaptive(ModelTestCase):
+    # TODO: currently this only checks for raise conditions in the code above, check of results should be added
+
+    def test_spec_neutron(self):
+        sample = Sample(Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+                        Ambient=Layer(b=1e-7, dens=0.1),
+                        Substrate=Layer(b=4e-6, dens=0.1))
+        instrument = Instrument(probe=Probe.neutron, coords=Coords.tth, res = 0.001, restype = ResType.none,
+                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=4.5, incangle=0.5)
+        with self.subTest("neutron tth"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("neutron q"):
+            instrument.coords = Coords.q
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint"):
+            instrument.probe = Probe.ntof
+            instrument.footype = FootType.square
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint"):
+            instrument.footype = FootType.none
+            instrument.restype = ResType.full_conv_rel
+            Specular(self.qz, sample, instrument)
+            instrument.incangle = ones_like(self.qz)*0.5
+            Specular(self.qz, sample, instrument)
+        instrument.incangle = 0.5
+        instrument.restype = ResType.none
+        with self.subTest("neutron-pol++ q"):
+            instrument.probe = Probe.npol
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-pol-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-polsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpol++ q"):
+            instrument.probe = Probe.ntofpol
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpol-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpolsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+
+        with self.subTest("neutron-sf++ q"):
+            instrument.probe = Probe.npolsf
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf+- q"):
+            instrument.pol = Polarization.up_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf-+ q"):
+            instrument.pol = Polarization.down_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sfsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-polspec q"):
+            instrument.pol = Polarization.up_up
+            PolSpecular(self.qz, 0.01, 0.01, 0.01, 0.01, sample, instrument)
+
+    def test_zeemann(self):
+        sample = Sample(Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+                        Ambient=Layer(b=1e-7, dens=0.1),
+                        Substrate=Layer(b=4e-6, dens=0.1))
+        instrument = Instrument(probe=Probe.npolsf, coords=Coords.tth, res = 0.001, restype = ResType.none,
+                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=4.5, incangle=0.5,
+                                zeeman=Zeeman.field, mag_field=1.0)
+        with self.subTest("zeemann-sf++ q"):
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("zeemann-sf-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("zeemann-sf+- q"):
+            instrument.pol = Polarization.up_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("zeemann-sf-+ q"):
+            instrument.pol = Polarization.down_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("zeemann-sf+- q+"):
+            instrument.pol = Polarization.up_down
+            instrument.zeeman = Zeeman.pos_sf
+            Specular(self.qz, sample, instrument)
+        with self.subTest("zeemann-sf+- q-"):
+            instrument.pol = Polarization.up_down
+            instrument.zeeman = Zeeman.neg_sf
+            Specular(self.qz, sample, instrument)
+
+    def test_sld(self):
+        sample = Sample(Stacks=[
+            Stack(Layers=[Layer(d=150, sigma=2.0, f=2e-5+1e-7j, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)]),
+            Stack(Layers=[Layer(d=150, sigma=2.0, f=2e-5+1e-7j, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)], Element=1),
+            ], crop_sigma=True, Ambient=Layer(b=1e-7, dens=0.1), Substrate=Layer(b=4e-6, dens=0.1))
+        instrument = Instrument(probe=Probe.xray, coords=Coords.tth, res = 0.001, restype = ResType.none,
+                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=4.5, incangle=0.5)
+        with self.subTest("sld xray"):
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron"):
+            instrument.probe = Probe.neutron
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron pol"):
+            instrument.probe = Probe.npolsf
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron pol2"):
+            sample.Stacks[0].Layers[0].magn_ang = 0.
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron crop"):
+            instrument.probe = Probe.neutron
+            sample.crop_sld = 15
+            sample.Stacks[0].Repetitions = 100
+            SLD_calculations(None, None, sample, instrument)
+            sample.crop_sld = -15
+            sample.Stacks[0].Repetitions = 100
+            SLD_calculations(None, None, sample, instrument)
