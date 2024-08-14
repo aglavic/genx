@@ -485,8 +485,8 @@ class DeleteParams(ModelAction):
     def __init__(self, model, rows):
         self.model = model
         names = self.model.parameters.get_names()
-        self.param_names = [names[ri] for ri in rows if names[ri].strip() != ""]
-        self.empty_rows = [ri for ri in rows if names[ri].strip() == ""]
+        self.param_names = [names[ri] for ri in rows if ri < len(names) and names[ri].strip() != ""]
+        self.empty_rows = [ri for ri in rows if ri < len(names) and names[ri].strip() == ""]
         self.old_data = []
 
     def execute(self):
