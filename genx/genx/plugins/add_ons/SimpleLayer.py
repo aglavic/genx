@@ -32,6 +32,8 @@ try:
 except ImportError:
     api = None
 
+from genx.models.lib.refl_new import ReflBase as ReflBaseNew
+
 from ...gui import images as img
 from ...gui.custom_choice_dialog import SCDialog
 from .. import add_on_framework as framework
@@ -87,7 +89,11 @@ class RefPluginInterface(PluginInterface):
         except:
             ShowInfoDialog(panel, "You have to select a layer or stack before applying material")
             return
-        if layer:
+        if isinstance(layer, ReflBaseNew):
+            layer._ca["f"] = formula.f()
+            layer._ca["b"] = formula.b()
+            layer._ca["dens"] = density
+        elif layer:
             layer.f = formula.f()
             layer.b = formula.b()
             layer.dens = density
