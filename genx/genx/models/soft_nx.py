@@ -153,6 +153,10 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
     TwoThetaQz data.x
     # END Parameters
     """
+    global __xlabel__
+    __xlabel__ = "q [Å$^{-1}$]"
+    if instrument.coords == Coords.tth:
+        __xlabel__ = "2θ [°]"
 
     # preamble to get it working with my class interface
     restype = instrument.restype
