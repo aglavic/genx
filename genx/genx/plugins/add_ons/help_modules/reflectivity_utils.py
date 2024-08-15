@@ -43,10 +43,10 @@ class SampleHandler:
                 slist.append(layer._repr_call())
                 poslist.append((i, j))
                 j += 1
-            slist.append("Stack: Repetitions = %s" % stack._ca["Repetitions"])
+            slist.append("Stack: Repetitions = %s" % stack._ca.get("Repetitions", stack.Repetitions))
             for key in list(stack._parameters.keys()):
                 if not key in ["Repetitions", "Layers"]:
-                    slist[-1] += ", %s = %s" % (key, stack._ca[key])
+                    slist[-1] += ", %s = %s" % (key, stack._ca.get(key, getattr(stack, key)))
             poslist.append((i, None))
             i += 1
         slist.append(self.sample.Ambient._repr_call())

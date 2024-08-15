@@ -5,6 +5,8 @@ Constants used in various computations.
 r_e = 2.8179403227e-5  # classical electron radius [Å] ( 1/(4 pi epsilon0) * (e_charge**2)/(m_e*c**2) )
 N_a = 6.022_140_76e23  # 1/mol
 
+AA_to_eV = 12_398.41984 # x-ray energy conversion [eV/Å] ( h * c / 1Å)
+
 M_to_SLD = 2.853e-6  # m/A/Å² conversion M [A/m] to SLD [Å^-2]
 ApM_to_emucc = 1e-3  # conversion M [A/m] to M [emu/cm³]
 Memu_to_SLD = M_to_SLD * ApM_to_emucc

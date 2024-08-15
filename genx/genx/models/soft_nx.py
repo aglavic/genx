@@ -30,7 +30,7 @@ from .lib.instrument import *
 from .lib.physical_constants import muB_to_SL, r_e
 from .lib.resolution import *
 from .lib.testing import ModelTestCase
-from .spec_nx import (AA_to_eV, Coords, FootType, Instrument, Polarization, Probe, ResType, footprintcorr, q_limit,
+from .spec_nx import (AA_to_eV, Coords, Instrument, Polarization, Probe, ResType, footprintcorr, q_limit,
                       resolution_init, resolutioncorr)
 
 # Preamble to define the parameters needed for the models outlined below:
@@ -78,7 +78,7 @@ class Layer(refl.ReflBase):
         "magn_ang": "deg.",
     }
 
-    Groups = [("Standard", ["d", "sigma", "sld_x"]), ("Neutron", ["sld_n", "sld_m", "magn_ang"])]
+    Groups = [("General", ["d", "sigma"]), ("Neutron", ["sld_n", "sld_m", "magn_ang"]), ("X-Ray", ["sld_x"])]
 
 
 @dataclass
@@ -158,8 +158,6 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
     restype = instrument.restype
     Q, TwoThetaQz, weight = resolution_init(TwoThetaQz, instrument)
     # often an issue with resolution etc. so just replace Q values < q_limit
-    # if any(Q < q_limit):
-    #    raise ValueError('The q vector has to be above %.1e, please verify all your x-axis points fulfill this criterion, including possible resolution smearing.'%q_limit)
     Q = maximum(Q, q_limit)
 
     ptype = instrument.probe
@@ -317,39 +315,41 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
     # END Parameters
     """
     # preamble to get it working with my class interface
-    restype = instrument.getRestype()
+    restype = instrument.restype
     # TODO: Fix so that resolution can be included.
-    if restype != 0 and restype != instrument_string_choices["restype"][0]:
+    if restype != 0 and restype != ResType.none:
         raise ValueError("Only no resolution is allowed for energy scans.")
 
     wl = AA_to_eV / Energy
+    global __xlabel__
+    __xlabel__ = "E [eV]"
 
     # TTH values given as x
-    if instrument.getCoords() == instrument_string_choices["coords"][1] or instrument.getCoords() == 1:
+    if instrument.coords == Coords.tth:
         theta = TwoThetaQz / 2.0
     # Q vector given....
-    elif instrument.getCoords() == instrument_string_choices["coords"][0] or instrument.getCoords() == 0:
+    elif instrument.coords == Coords.q:
         theta = arcsin(TwoThetaQz * wl / 4 / pi) * 180.0 / pi
 
     else:
         raise ValueError("The value for coordinates, coords, is WRONG!" "should be q(0) or tth(1).")
     Q = 4 * pi / wl * sin((2 * theta + instrument.getTthoff()) * pi / 360.0)
 
-    type = instrument.getProbe()
+    ptype = instrument.getProbe()
 
-    parameters = sample.resolveLayerParameters()
-    if type == instrument_string_choices["probe"][0] or type == 0:
-        sld = refl.cast_to_array(parameters["sld_x"], Energy) * 1e-6
+    parameters: LayerParameters = sample.resolveLayerParameters()
+    if ptype == Probe.xray:
+        sld = refl.cast_to_array(parameters.sld_x, Energy) * 1e-6
     else:
-        sld = array(parameters["sld_n"], dtype=complex64).real * 1e-6
+        sld = array(parameters.sld_n, dtype=complex64).real * 1e-6
 
-    d = array(parameters["d"], dtype=float64)
-    sigma = array(parameters["sigma"], dtype=float64)
+    d = array(parameters.d, dtype=float64)
+    sigma = array(parameters.sigma, dtype=float64)
 
     wl = instrument.getWavelength()
     l2pi = wl**2 / 2 / 3.141592
     # Ordinary Paratt X-rays
-    if type == instrument_string_choices["probe"][0] or type == 0:
+    if ptype == Probe.xray:
         # R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-r_e*sld,d,sigma)
         R = Paratt.Refl_nvary2(theta, wl, 1.0 - l2pi * sld, d, sigma)
     else:
@@ -374,7 +374,7 @@ def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
     raise NotImplementedError("Not implemented use model interdiff insteads")
 
 
-def SLD_calculations(z, item, sample, inst):
+def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     """Calculates the scatteringlength density as at the positions z
     if item is None or "all" the function returns a dictonary of values.
     Otherwise it returns the item as identified by its string.
@@ -384,41 +384,36 @@ def SLD_calculations(z, item, sample, inst):
     item 'Re'
     # END Parameters
     """
-    parameters = sample.resolveLayerParameters()
+    parameters: LayerParameters = sample.resolveLayerParameters()
     # f = array(parameters['f'], dtype = complex64)
-    e = AA_to_eV / inst.getWavelength()
-    sld_x = refl.cast_to_array(parameters["sld_x"], e)
-    sld_n = array(parameters["sld_n"], dtype=complex64)
-    type = inst.getProbe()
+    e = AA_to_eV / inst.wavelength
+    sld_x = refl.cast_to_array(parameters.sld_x, e)
+    sld_n = array(parameters.sld_n, dtype=complex64)
+    ptype = inst.probe
     magnetic = False
     mag_sld = 0
     sld_unit = "10^{-6}\AA^{2}"
-    if type == instrument_string_choices["probe"][0] or type == 0:
+    if ptype == Probe.xray:
         sld = sld_x
-    elif (
-        type == instrument_string_choices["probe"][1]
-        or type == 1
-        or type == instrument_string_choices["probe"][4]
-        or type == 4
-    ):
+    elif ptype == Probe.neutron:
         sld = sld_n
         sld_unit = "10^{-6}/\AA^{2}"
     else:
         magnetic = True
         sld = sld_n
-        sld_m = array(parameters["sld_m"], dtype=float64)
+        sld_m = array(parameters.sld_m, dtype=float64)
         # Transform to radians
-        magn_ang = array(parameters["magn_ang"], dtype=float64) * pi / 180.0
+        magn_ang = array(parameters.magn_ang, dtype=float64) * pi / 180.0
         mag_sld = sld_m
         mag_sld_x = mag_sld * cos(magn_ang)
         mag_sld_y = mag_sld * sin(magn_ang)
         sld_unit = "10^{-6}/\AA^{2}"
 
-    d = array(parameters["d"], dtype=float64)
+    d = array(parameters.d, dtype=float64)
     d = d[1:-1]
     # Include one extra element - the zero pos (substrate/film interface)
     int_pos = cumsum(r_[0, d])
-    sigma = array(parameters["sigma"], dtype=float64)[:-1] + 1e-7
+    sigma = array(parameters.sigma, dtype=float64)[:-1] + 1e-7
     if z is None:
         z = arange(-sigma[0] * 5, int_pos.max() + sigma[-1] * 5, 0.5)
     if not magnetic:
@@ -483,3 +478,5 @@ SimulationFunctions = {
     "SLD": SLD_calculations,
     "EnergySpecular": EnergySpecular,
 }
+
+Sample.setSimulationFunctions(SimulationFunctions)

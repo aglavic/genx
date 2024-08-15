@@ -23,7 +23,7 @@ from .lib import resolution as resolution_module
 from .lib.base import AltStrEnum
 from .lib.footprint import *
 from .lib.instrument import *
-from .lib.physical_constants import muB_to_SL, r_e
+from .lib.physical_constants import muB_to_SL, r_e, AA_to_eV
 from .lib.resolution import *
 from .lib.testing import ModelTestCase
 
@@ -31,9 +31,6 @@ from .lib.testing import ModelTestCase
 # Preamble to define the parameters needed for the models outlined below:
 
 ModelID = "SpecNX"
-
-AA_to_eV = 12398.5
-""" Conversion from Angstrom to eV E = AA_to_eV/lamda."""
 
 q_limit = 1e-10
 """ Minimum allowed q-value """
@@ -444,8 +441,6 @@ def specular_calcs(TwoThetaQz, sample: Sample, instrument: Instrument, return_in
     restype = instrument.restype
     Q, TwoThetaQz, weight = resolution_init(TwoThetaQz, instrument)
     # often an issue with resolution etc. so just replace Q values < q_limit
-    # if any(Q < q_limit):
-    #    raise ValueError('The q vector has to be above %.1e, please verify all your x-axis points fulfill this criterion, including possible resolution smearing.'%q_limit)
     Q = maximum(Q, q_limit)
 
     ptype = instrument.probe

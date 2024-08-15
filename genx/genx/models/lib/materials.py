@@ -15,10 +15,7 @@ from scipy import interpolate
 
 from . import scatteringlengths as _sl
 from .parameters import Calc, ComplexArray, Float, HasParameters
-from .physical_constants import r_e
-
-# Transformations between AA and eV
-_AA_to_eV = 12398.42
+from .physical_constants import r_e, AA_to_eV
 
 _module_dir, _filename = path.split(__file__)
 # Look only after the file name and not the ending since

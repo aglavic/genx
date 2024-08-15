@@ -192,13 +192,11 @@ from .lib import neutron_refl as neutron_refl
 from .lib import paratt as Paratt
 from .lib import refl, xrmr
 from .lib.instrument import *
-from .lib.physical_constants import muB_to_SL
+from .lib.physical_constants import muB_to_SL, AA_to_eV, r_e
 
 mag_limit = 1e-8
 mpy_limit = 1e-8
 theta_limit = 1e-8
-
-re = 2.8179402894e-5
 
 # Preamble to define the parameters needed for the models outlined below:
 ModelID = "MAGrefl"
@@ -397,9 +395,6 @@ class NBuffer:
     parameters = None
     TwoThetaQz = None
 
-
-AA_to_eV = 12398.5
-""" Conversion from Angstrom to eV E = AA_to_eV/lamda."""
 
 
 def correct_reflectivity(R, TwoThetaQz, instrument, theta, weight):
