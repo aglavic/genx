@@ -46,7 +46,7 @@ class SampleHandler:
             slist.append("Stack: Repetitions = %s" % stack._ca.get("Repetitions", stack.Repetitions))
             for key in list(stack._parameters.keys()):
                 if not key in ["Repetitions", "Layers"]:
-                    slist[-1] += ", %s = %s" % (key, stack._ca.get(key, getattr(stack, key)))
+                    slist[-1] += ", %s = %s" % (key, stack._ca.get(key, repr(getattr(stack, key))))
             poslist.append((i, None))
             i += 1
         slist.append(self.sample.Ambient._repr_call())

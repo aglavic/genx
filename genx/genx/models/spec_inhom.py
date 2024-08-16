@@ -101,9 +101,12 @@ class Layer(NXLayer):
 
     Units = NXLayer.Units | {"sigma_gradient": "1", "d_gradient": "1"}
 
-    Groups = [("Standard", ["f", "dens", "d", "sigma"]),
+    Groups = [
+        ("General", ["d", "dens", "sigma"]),
               ("Neutron", ["b", "xs_ai", "magn", "magn_ang"]),
-              ("Inhom.", ["sigma_gradient", "d_gradient"])]
+              ("Inhom.", ["sigma_gradient", "d_gradient"]),
+              ("X-Ray", ["f"]),
+              ]
 
 
 @dataclass
@@ -126,13 +129,15 @@ class Stack(refl.StackBase):
        A ``list`` consiting of ``Layer``\ s in the stack the first item is
        the layer closest to the bottom
     ``Repetitions``
-       The number of repsetions of the stack
-    ``sigma_gradient``
-       amount of increase in roughness from bottom to top applied to all layers in the stack
+       The number of repsetions of the stack or m-value for analytical super-mirror model.
     ``sigma_gtype``
        model for this increase in roughness (relative linlinea, relative sqrt, absolute linear, absolute sqrt)
+    ``sigma_gradient``
+       amount of increase in roughness from bottom to top applied to all layers in the stack
     ``d_gradient``
        thickness increase from bottom to top
+    ``dens_gradient``
+       density increase from bottom to top
     ``beta_sm``
        Parameter used to model neutron super-mirror coatings. There are two models implemented.
        If *beta_sm* is positive, a simplified analystical model from J. Schelten and K. Mika (Nuc. Inst. Metho. 160 (1979))
@@ -159,18 +164,23 @@ class Stack(refl.StackBase):
     ``sm_scale``
        A scaling parameter applied to all thicknesses in a supermirror. This can account for thickness
        differences introduced by the manufacturing process due to imperfect calibration.
-    ``dens_gradient``
-       density increase from bottom to top
     """
 
     Layers: List[Layer] = field(default_factory=list)
-    Repetitions: int = 1
-    sigma_gradient: float = 0.0  # amount of increase in roughness from bottom to top
+    Repetitions: float = 1.0
     sigma_gtype: SigmaGradientType = 0  # model for this increas (rel lin, rel sqrt, abs lin, abs sqrt)
+    sigma_gradient: float = 0.0  # amount of increase in roughness from bottom to top
     d_gradient: float = 0.0  # change in thickness bottom to top
+    dens_gradient: float = 0.0  # change in density bottom to top
     beta_sm: float =  0.0  # function applied to change thickness (linear,  super-mirror (d=beta SM))
     sm_scale: float = 1.0  # scaling factor for thicknesses in super-mirror
-    dens_gradient: float = 0.0  # change in density bottom to top
+
+    Groups = [
+        ("General", ["Repetitions"]),
+        ("Roughness Gradient", ["sigma_gtype", "sigma_gradient"]),
+        ("Supermirror", ["beta_sm", "sm_scale"]),
+        ("Other Gradients", ["d_gradient", "dens_gradient"]),
+        ]
 
     def resolveLayerParameter(self, name):
         """
@@ -184,9 +194,9 @@ class Stack(refl.StackBase):
                 li.dens * (li.b.real + li.magn) * 1e-5
                 for li in self.Layers
             ]
-            rhoA = max(rho_all) * 1e-5
-            rhoB = min(rho_all) * 1e-5
-            # critical wave vector values (in paper this is includes an addition factor of 1/2)
+            rhoA = max(rho_all)
+            rhoB = min(rho_all)
+            # critical wave vector values (in paper this includes an addition factor of 1/2)
             QcA = 4.0 * pi * sqrt(rhoA / pi + 0j)
             QcB = 4.0 * pi * sqrt(rhoB / pi + 0j)
             Qcm = 0.022 * m  # critical q for given m-value
@@ -194,8 +204,12 @@ class Stack(refl.StackBase):
             QAB = QcA / sqrt(QcA**2 - QcB**2)
             b = beta * QAB**4 + 2.0 * beta * QAB**2 - 1
             N = int(abs(beta * ((g**2 * QAB**2 + 1) ** 2 - 1) - b))
+            if N>100000:
+                raise ValueError("the number of bi-layers calculated is greater than 100 000, please check beta_sm parameter")
         elif self.beta_sm < 0:
             # super-mirror from Hayter and Mook iterative method was selected, fixed number of layers
+            if abs(self.beta_sm)>1.0 or abs(self.beta_sm)<0.6:
+                raise ValueError("negative beta_sm should be between -1 and -0.6")
             N = int(abs(self.Repetitions))
         else:
             N = int(self.Repetitions)

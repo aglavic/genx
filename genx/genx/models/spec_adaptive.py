@@ -54,31 +54,32 @@ class Layer(refl.ReflBase):
     """
     Representing a layer in the sample structur.
 
-    ``b``
-       The neutron scattering length per formula unit in fm (femtometer = 1e-15m)
     ``d``
         The thickness of the layer in AA (Angstroms = 1e-10m)
-    ``f``
-       The x-ray scattering length per formula unit in electrons. To be
-       strict it is the number of Thompson scattering lengths for each
-       formula unit.
     ``dens``
         The density of formula units in units per Angstroms. Note the units!
     ``sigma``
         The root-mean-square roughness of the top interface of the layer in Angstroms.
+    ``rough_type``
+       Used model to get the SLD profile of the interface, *gauss* is an error function profile (gaussian roughness),
+       *linear* is a linear profile, *exp-1* and *exp-2* are exponential decays from bottom or top side.
     ``magn``
         The magnetic moment per formula unit (same formula unit as b and dens refer to)
     ``magn_ang``
         The angle of the magnetic moment in degress. 0 degrees correspond to
         a moment collinear with the neutron spin.
     ``magn_void``
-       If true this layer has no magnetization. In case of *sigma_mag* beging larger then 0 the additional
+       If true this layer has no magnetization. In case of *sigma_mag* beging larger than 0, the additional
        roughness is only applied to the magnetic layer and inside this layer follows the chemical profile.
     ``sigma_mag``
        A different roughness parameter for the magnetization of the layer, 0 is ignored
-    ``rough_type``
-       Used model to get the SLD profile of the interface, *gauss* is an error function profile (gaussian roughness),
-       *linear* is a linear profile, *exp-1* and *exp-2* are exponential decays from bottom or top side.
+
+    ``f``
+       The x-ray scattering length per formula unit in electrons. To be
+       strict it is the number of Thompson scattering lengths for each
+       formula unit.
+    ``b``
+       The neutron scattering length per formula unit in fm (femtometer = 1e-15m)
     ``xs_ai``
        The sum of the absorption cross-section and the incoherent scattering
        cross-section in barns for neutrons
@@ -111,9 +112,11 @@ class Layer(refl.ReflBase):
     }
 
     Groups = [
-        ("Standard", ["f", "dens", "d", "sigma", "sigma_mag", "rough_type"]),
-        ("Neutron", ["b", "xs_ai", "magn", "magn_ang", "magn_void"]),
-    ]
+        ("General", ["d", "dens", "sigma", "rough_type"]),
+        ("Neutron Magnetic", ["magn", "magn_ang", "magn_void", "sigma_mag"]),
+        ("X-Ray", ["f"]),
+        ("Neutron Nuclear", ["b", "xs_ai"]),
+        ]
 
 
 @dataclass
@@ -218,15 +221,6 @@ class Instrument(NXInstrument):
     """
     Specify parameters of the probe and reflectometry instrument.
 
-    ``probe``
-        Describes the radiation and measurments used, it is one of:
-        'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip',
-        'neutron tof', 'neutron pol tof'.
-        The calculations for x-rays uses ``f`` for the scattering length for
-        neutrons ``b`` for 'neutron pol', 'neutron pol spin flip' and 'neutron
-        pol tof' alternatives the ``magn`` is used in the calculations. Note
-        that the angle of magnetization ``magn_ang`` is only used in the spin
-        flip model.
     ``wavelength``
         The wavelength of the radiation given in AA (Angstroms)
     ``coords``
@@ -238,12 +232,22 @@ class Instrument(NXInstrument):
     ``Ibkg``
         The background intensity. Added as a constant value to the calculated
         reflectivity
-    ``res``
-        The resolution of the instrument given in the coordinates of ``coords``.
-        This assumes a gaussian resolution function and ``res`` is the standard
-        deviation of that gaussian. If ``restype`` has (dx/x) in its name the
-        gaussian standard deviation is given by res*x where x is either in tth
-        or q.
+    ``tthoff``
+        Linear offset to the scattering angle calibration
+    ``probe``
+        Describes the radiation and measurments used, it is one of:
+        'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip',
+        'neutron tof', 'neutron pol tof'.
+        The calculations for x-rays uses ``f`` for the scattering length for
+        neutrons ``b`` for 'neutron pol', 'neutron pol spin flip' and 'neutron
+        pol tof' alternatives the ``magn`` is used in the calculations. Note
+        that the angle of magnetization ``magn_ang`` is only used in the spin
+        flip model.
+    ``pol``
+        The measured polarization of the instrument. Valid options are:
+        'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
+    ``incangle``
+        The incident angle of the neutrons, only valid in tof mode
     ``restype``
         Describes the rype of the resolution calculated. One of the
         alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
@@ -252,6 +256,12 @@ class Instrument(NXInstrument):
         that fast convolution only alllows a single value into res wheras the
         other can also take an array with the same length as the x-data (varying
         resolution)
+    ``res``
+        The resolution of the instrument given in the coordinates of ``coords``.
+        This assumes a gaussian resolution function and ``res`` is the standard
+        deviation of that gaussian. If ``restype`` has (dx/x) in its name the
+        gaussian standard deviation is given by res*x where x is either in tth
+        or q.
     ``respoints``
         The number of points to include in the resolution calculation. This is
         only used for 'full conv and vaying res.', 'fast conv + varying res',
@@ -269,11 +279,6 @@ class Instrument(NXInstrument):
         standard deviation. For 'square beam' it is the full width of the beam.
     ``samplelen``
         The length of the sample given in mm
-    ``incangle``
-        The incident angle of the neutrons, only valid in tof mode
-    ``pol``
-        The measured polarization of the instrument. Valid options are:
-        'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
     ``zeeman``
         Apply corrections for Zeeman-effect when using neutron pol spin-flip model with elevated magnetic field
         and canted magnetic moments. The configuration can be one of 'no corr', 'field only', 'SF q (+)' or 'SF q (-)'.
