@@ -7,6 +7,7 @@ from typing import Callable, Dict, List
 import wx.html
 
 from genx.core.custom_logging import iprint
+from genx.gui.help import rst_html
 from genx.model import Model
 from genx.models.lib.base import AltStrEnum
 from genx.models.lib.refl_new import ReflBase as ReflBaseNew
@@ -39,6 +40,35 @@ class MyHtmlListBox(wx.html.HtmlListBox):
         return self.html_items[n]
 
 
+class ReflClassHelpDialog(wx.Frame):
+    def __init__(self, parent, item: ReflBaseNew):
+        wx.Frame.__init__(self, parent, -1, f"{item.__class__.__name__} Help",
+                          style=wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX | wx.RESIZE_BORDER |
+                                wx.FRAME_TOOL_WINDOW | wx.CAPTION | wx.CLOSE_BOX | wx.CLIP_CHILDREN |wx.STAY_ON_TOP)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+
+        self.html_win = wx.html.HtmlWindow(self, -1, style=wx.NO_FULL_REPAINT_ON_RESIZE)
+        sizer.Add(self.html_win, 1, flag=wx.EXPAND, border=20)
+
+        self.SetSizer(sizer)
+
+        sizer.Fit(self)
+        self.Layout()
+        size = parent.GetSize()
+        pos = parent.GetPosition()
+        gsize = wx.GetApp().GetTopWindow().GetSize()
+        gpos = wx.GetApp().GetTopWindow().GetPosition()
+        self.SetSize((600, gsize.y))
+        self.SetPosition((pos.x+size.x, gpos.y))
+
+        doc = f"{item.__class__.__name__}\n{'='*len(item.__class__.__name__)}\n\n{item.__class__.__doc__}"
+        doc = rst_html(doc)
+        self.html_win.SetPage(doc)
+        self.html_win.SetHTMLBackgroundColour((230,230,255,255))
+
+
 class ReflClassEditor:
     """
     Class to handle GUI input for parameters to any ReflBase derived class.
@@ -65,6 +95,7 @@ class ReflClassEditor:
         self.eval_func = eval_func
         self.grid_parameters = grid_parameters
         self.ignore_attributes = ignore_attributes or []
+        self.help_dialog = None
 
         self.initialize()
         self.extract_values()
@@ -134,6 +165,12 @@ class ReflClassEditor:
                     self.grid_parameters.get_fit_state_by_name(func_name + "imag"),
                 )
 
+    def ShowHelp(self, event):
+        if self.help_dialog:
+            return
+        self.help_dialog = ReflClassHelpDialog(self.dlg, self.instance)
+        self.help_dialog.Show()
+
     def ShowDialog(self, title=None):
         if title is None:
             title = f"{self.instance.__class__.__name__} Editor ({self.object_name})"
@@ -141,7 +178,7 @@ class ReflClassEditor:
         groups = self.instance.Groups
         units = getattr(self.instance, "Units", False)
 
-        dlg = ValidateFitDialog(
+        self.dlg = ValidateFitDialog(
             self.parent,
             self.pars,
             self.par_vals,
@@ -151,13 +188,27 @@ class ReflClassEditor:
             units=units,
             editable_pars=self.par_editable,
         )
-        res = dlg.ShowModal()
+
+        if self.instance.__class__.__doc__!='':
+            help_btn = wx.Button(self.dlg, -1, "Show Help")
+            help_btn.SetBackgroundColour((230, 230, 255, 255))
+            # dlg.border_sizer.InsertSpacer(0, 2)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.AddStretchSpacer(1)
+            sizer.Add(help_btn, 0, wx.FIXED_MINSIZE, 0)
+            self.dlg.border_sizer.Insert(0, sizer, 0, wx.ALIGN_RIGHT)
+            self.dlg.Fit()
+            self.dlg.Bind(wx.EVT_BUTTON, self.ShowHelp, help_btn)
+
+        res = self.dlg.ShowModal()
         if res == wx.ID_OK:
-            vals = dlg.GetValues()
-            states = dlg.GetStates()
+            vals = self.dlg.GetValues()
+            states = self.dlg.GetStates()
             self.update_object(vals, states)
             self.update_grid(vals, states)
-        dlg.Destroy()
+        if self.help_dialog:
+            self.help_dialog.Destroy()
+        self.dlg.Destroy()
         return res == wx.ID_OK
 
     def update_object(self, vals, states):
@@ -549,6 +600,20 @@ class SamplePanel(wx.Panel):
             fixed_pages=["inst"],
             editable_pars=editable,
         )
+
+        if isinstance(self.sampleh.sample, ReflBaseNew):
+            def show_help(event):
+                hlp = ReflClassHelpDialog(dlg, self.sampleh.model.Instrument())
+                hlp.Show()
+            help_btn = wx.Button(dlg, -1, "Show Help")
+            help_btn.SetBackgroundColour((230, 230, 255, 255))
+            # dlg.border_sizer.InsertSpacer(0, 2)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.AddStretchSpacer(1)
+            sizer.Add(help_btn, 0, wx.FIXED_MINSIZE, 0)
+            dlg.border_sizer.Insert(0, sizer, 0, wx.ALIGN_RIGHT)
+            dlg.Fit()
+            dlg.Bind(wx.EVT_BUTTON, show_help , help_btn)
 
         if dlg.ShowModal() == wx.ID_OK:
             old_vals = vals

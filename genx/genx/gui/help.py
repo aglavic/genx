@@ -92,6 +92,7 @@ class PluginHelpDialog(wx.Frame):
         sizer.Add(choice_sizer, 0, wx.EXPAND, border=20)
 
         self.html_win = html.HtmlWindow(self, -1, style=wx.NO_FULL_REPAINT_ON_RESIZE)
+
         sizer.Add(self.html_win, 1, flag=wx.EXPAND, border=20)
 
         self.SetSizer(sizer)
@@ -99,8 +100,9 @@ class PluginHelpDialog(wx.Frame):
         sizer.Fit(self)
         self.Layout()
         size = parent.GetSize()
-        x = max(size.y / 2, size.x / 3)
-        self.SetSize((x, size.y))
+        pos = parent.GetPosition()
+        self.SetSize((600, size.y))
+        self.SetPosition((pos.x+size.x, pos.y))
 
         self.choice.SetSelection(0)
         self.on_choice(None)
@@ -116,6 +118,7 @@ class PluginHelpDialog(wx.Frame):
         else:
             doc = self.load_doc(self.module)
         self.html_win.SetPage(doc)
+        self.html_win.SetHTMLBackgroundColour((230,255,230,255))
 
     def find_modules(self, module):
         """find_modules(self, directory) --> string_list
