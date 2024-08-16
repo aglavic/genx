@@ -831,11 +831,11 @@ def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample: Sample, instrument: Instrume
     if instrument.probe != Probe.npolsf:
         raise ValueError("Polarization corrected simulation requires probe to be 'neutron pol spin flip'")
 
-    instrument.pol = "uu"
+    instrument.pol = Polarization("uu")
     uu = Specular(TwoThetaQz, sample, instrument)
-    instrument.pol = "dd"
+    instrument.pol = Polarization("dd")
     dd = Specular(TwoThetaQz, sample, instrument)
-    instrument.pol = "ud"
+    instrument.pol = Polarization("ud")
     ud = Specular(TwoThetaQz, sample, instrument)
     du = ud
     instrument.pol = inst_pol
