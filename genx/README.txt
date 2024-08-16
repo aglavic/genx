@@ -19,6 +19,7 @@ Changes 3.7.0
    the trapezoidal beam profile example in "SuperAdam_SiO_advanced_fp_res.hgx".
  * Add Zeeman-effect correction for neutron polarization analysis with spin-flip in elevated external field
    to the spec_adaptive model. Can be activated using the instrument parameter "zeeman" and "mag_field".
+ * Model help button in all parameter dialogs to quickly look up the meaning of parameters. 
  * Implement new python dataclass based model parameterization. The GUI will detect any parameter in the model
    based on the base class which allows more flexibility in model modification and improves general maintainability.
  * Add code signature to Mac OS distribution to remove need for user to ignore security warnings on installation/run.
