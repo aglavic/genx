@@ -95,6 +95,9 @@ class ReflClassEditor:
                 continue
             value = self.instance._ca[par_name]
             validator = self.get_validator(value_info)
+            if isinstance(value_info.type, type) and issubclass(value_info.type, AltStrEnum):
+                # for AltStrEnum evaluate value string, convert to Enum and then get string representation
+                value = str(value_info.type(self.eval_func(value)))
             self.pars.append(par_name)
             self.par_vals[par_name] = value
             self.par_validators[par_name] = validator
