@@ -23,10 +23,9 @@ from .lib import resolution as resolution_module
 from .lib.base import AltStrEnum
 from .lib.footprint import *
 from .lib.instrument import *
-from .lib.physical_constants import muB_to_SL, r_e, AA_to_eV
+from .lib.physical_constants import AA_to_eV, muB_to_SL, r_e
 from .lib.resolution import *
 from .lib.testing import ModelTestCase
-
 
 # Preamble to define the parameters needed for the models outlined below:
 
@@ -41,7 +40,7 @@ __ylabel__ = "Instnsity [a.u.]"
 
 class Probe(AltStrEnum):
     xray = "x-ray"
-    neutron = ("neutron",)
+    neutron = "neutron"
     npol = "neutron pol"
     npolsf = "neutron pol spin flip"
     ntof = "neutron tof"
@@ -129,9 +128,7 @@ class Layer(refl.ReflBase):
         "magn_ang": "deg.",
     }
 
-    Groups = [("General", ["d", "dens", "sigma"]),
-              ("Neutron", ["b", "xs_ai", "magn", "magn_ang"]),
-              ("X-Ray", ["f"])]
+    Groups = [("General", ["d", "dens", "sigma"]), ("Neutron", ["b", "xs_ai", "magn", "magn_ang"]), ("X-Ray", ["f"])]
 
 
 @dataclass
@@ -297,14 +294,7 @@ class Instrument(refl.ReflBase):
         ("General", ["wavelength", "coords", "I0", "Ibkg", "tthoff"]),
         ("Resolution", ["restype", "res", "respoints", "resintrange"]),
         ("Probe", ["probe", "pol", "incangle"]),
-        (
-            "Footprint",
-            [
-                "footype",
-                "beamw",
-                "samplelen",
-            ],
-        ),
+        ("Footprint", ["footype", "beamw", "samplelen"]),
     ]
 
 
@@ -326,7 +316,7 @@ def footprintcorr(Q, instrument: Instrument):
 
     if instrument.probe in [Probe.ntof, Probe.ntofpol]:
         if type(instrument.incangle) is float:
-            theta = instrument.incangle*ones_like(Q)
+            theta = instrument.incangle * ones_like(Q)
         else:
             theta = instrument.incangle
         # if ai is an array, make sure it gets repeated for every resolution point
@@ -389,7 +379,7 @@ def resolution_init(TwoThetaQz, instrument: Instrument):
         Q = TwoThetatoQ(instrument.wavelength, TwoThetaQz + instrument.tthoff)
         __xlabel__ = "2θ [°]"
     # Q vector given....
-    elif instrument.coords in [Coords.q]:
+    elif instrument.coords == Coords.q:
         # if there is no tth offset, nothing to be done for Q
         if instrument.tthoff == 0:
             Q = TwoThetaQz
@@ -861,15 +851,26 @@ SimulationFunctions = {
 
 Sample.setSimulationFunctions(SimulationFunctions)
 
+
 class TestSpecNX(ModelTestCase):
     # TODO: currently this only checks for raise conditions in the code above, check of results should be added
 
     def test_spec_xray(self):
-        sample = Sample(Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5+1e-7j, dens=0.1)])],
-                        Ambient=Layer(),
-                        Substrate=Layer(f=5e-5+2e-7j, dens=0.1))
-        instrument = Instrument(probe=Probe.xray, coords=Coords.tth, res = 0.001, restype = ResType.none,
-                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=1.54)
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1)])],
+            Ambient=Layer(),
+            Substrate=Layer(f=5e-5 + 2e-7j, dens=0.1),
+        )
+        instrument = Instrument(
+            probe=Probe.xray,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=1.54,
+        )
         with self.subTest("x-ray tth"):
             Specular(self.tth, sample, instrument)
         with self.subTest("x-ray q"):
@@ -937,13 +938,23 @@ class TestSpecNX(ModelTestCase):
         with self.subTest("x-ray tth-field"):
             SpecularField(self.tth, sample, instrument)
 
-
     def test_spec_neutron(self):
-        sample = Sample(Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
-                        Ambient=Layer(b=1e-7, dens=0.1),
-                        Substrate=Layer(b=4e-6, dens=0.1))
-        instrument = Instrument(probe=Probe.neutron, coords=Coords.tth, res = 0.001, restype = ResType.none,
-                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=4.5, incangle=0.5)
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+            Ambient=Layer(b=1e-7, dens=0.1),
+            Substrate=Layer(b=4e-6, dens=0.1),
+        )
+        instrument = Instrument(
+            probe=Probe.neutron,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=4.5,
+            incangle=0.5,
+        )
         with self.subTest("neutron tth"):
             Specular(self.tth, sample, instrument)
         with self.subTest("neutron q"):
@@ -957,7 +968,7 @@ class TestSpecNX(ModelTestCase):
             instrument.footype = FootType.none
             instrument.restype = ResType.full_conv_rel
             Specular(self.qz, sample, instrument)
-            instrument.incangle = ones_like(self.qz)*0.5
+            instrument.incangle = ones_like(self.qz) * 0.5
             Specular(self.qz, sample, instrument)
         instrument.incangle = 0.5
         instrument.restype = ResType.none
@@ -1003,12 +1014,22 @@ class TestSpecNX(ModelTestCase):
             PolSpecular(self.qz, 0.01, 0.01, 0.01, 0.01, sample, instrument)
 
     def test_sld(self):
-        sample = Sample(Stacks=[
-            Stack(Layers=[Layer(d=150, sigma=2.0, f=2e-5+1e-7j, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
-                        Ambient=Layer(b=1e-7, dens=0.1),
-                        Substrate=Layer(b=4e-6, dens=0.1))
-        instrument = Instrument(probe=Probe.xray, coords=Coords.tth, res = 0.001, restype = ResType.none,
-                                beamw = 0.1, footype = FootType.none, tthoff = 0.0, wavelength=4.5, incangle=0.5)
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=2e-5 + 1e-7j, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+            Ambient=Layer(b=1e-7, dens=0.1),
+            Substrate=Layer(b=4e-6, dens=0.1),
+        )
+        instrument = Instrument(
+            probe=Probe.xray,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=4.5,
+            incangle=0.5,
+        )
         with self.subTest("sld xray"):
             SLD_calculations(None, None, sample, instrument)
         with self.subTest("sld neutron"):
@@ -1018,7 +1039,7 @@ class TestSpecNX(ModelTestCase):
             instrument.probe = Probe.npolsf
             SLD_calculations(None, None, sample, instrument)
         with self.subTest("sld neutron pol2"):
-            sample.Stacks[0].Layers[0].magn_ang = 0.
+            sample.Stacks[0].Layers[0].magn_ang = 0.0
             SLD_calculations(None, None, sample, instrument)
         with self.subTest("sld neutron crop"):
             instrument.probe = Probe.neutron
