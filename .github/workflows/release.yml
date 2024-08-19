@@ -248,7 +248,7 @@ jobs:
 
   build-macos-m1:
     runs-on: macos-14
-    needs: [build-macos]
+#    needs: [build-macos]
 
     steps:
     - uses: actions/checkout@v4
@@ -323,7 +323,7 @@ jobs:
         NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
         NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
       run: |
-        xcrun notarytool submit genx/dist/GenX3*.dmg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
+        # xcrun notarytool submit genx/dist/GenX3*.dmg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
     - name: Archive distribution
       uses: actions/upload-artifact@v4
       with:
