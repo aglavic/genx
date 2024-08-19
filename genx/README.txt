@@ -1,4 +1,5 @@
-This package contains GenX 3.6 a program to refine x-ray and neutron reflectivity as well as surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
+This package contains GenX 3.7 a program to refine x-ray and neutron reflectivity as well as
+surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
 =======
@@ -24,6 +25,9 @@ Changes 3.7.0
    based on the base class which allows more flexibility in model modification and improves general maintainability.
  * Add code signature to Mac OS distribution to remove need for user to ignore security warnings on installation/run.
    (Thanks to the international scattering alliance for support in creating the certificate.)
+ * Change parameteriazation of interdiff model to use sigma+sigmar instead of sigmai+sigmar to make it
+   equivalent to reflectivity models that only use sigma = sqrt(sigmai**2+sigmar**2). To fit sigmai one
+   should create a user parameter or set proper limits in sigma+sigmar fit.
 
 Changes 3.6.28
 ==============

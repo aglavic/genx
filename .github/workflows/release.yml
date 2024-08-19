@@ -334,7 +334,7 @@ jobs:
   release:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs: [build-ubuntu-24, build-ubuntu-22, build-ubuntu-20, build-windows, build-macos-m1]
+    needs: [build-ubuntu-24, build-ubuntu-22, build-ubuntu-20, build-windows, build-macos, build-macos-m1]
     
     steps:
     - uses: actions/checkout@v4
@@ -356,11 +356,20 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: mac-dist-m1
+    - name: Create release notes
+      id: release-notes-prepare
+      run: |
+        cd genx
+        GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
+        echo "GENX_VERSION=$GENX_VERSION" >> "$GITHUB_ENV"
+        python3 create_release_notes.py
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe,GenX3*.dmg"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
+        bodyFile: genx/create_release_notes.py
+        prerelease: ${{ contains(env.GENX_VERSION, 'a') || contains(env.GENX_VERSION, 'b') }}
   release-sourceforge:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-20.04
