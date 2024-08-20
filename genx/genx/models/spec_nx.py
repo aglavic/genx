@@ -111,7 +111,9 @@ class Layer(refl.ReflBase):
     d: float = 0.0
     dens: float = 1.0
     sigma: float = 0.0
+
     f: complex = 1e-20j
+
     b: complex = 0j
     xs_ai: float = 0.0
     magn: float = 0.0
@@ -133,10 +135,12 @@ class Layer(refl.ReflBase):
 
 @dataclass
 class LayerParameters:
-    sigma: List[float]
-    dens: List[float]
     d: List[float]
+    dens: List[float]
+    sigma: List[float]
+
     f: List[complex]
+
     b: List[complex]
     xs_ai: List[float]
     magn: List[float]
@@ -193,19 +197,6 @@ class Instrument(refl.ReflBase):
     """
     Specify parameters of the probe and reflectometry instrument.
 
-    ``wavelength``
-        The wavelength of the radiation given in AA (Angstroms)
-    ``coords``
-        The coordinates of the data given to the SimSpecular function. The
-        available alternatives are: 'q' or '2θ'. Alternatively the numbers 0 (q)
-        or 1 (tth) can be used.
-    ``I0``
-        The incident intensity (a scaling factor)
-    ``Ibkg``
-        The background intensity. Added as a constant value to the calculated
-        reflectivity
-    ``tthoff``
-        Linear offset to the scattering angle calibration
     ``probe``
         Describes the radiation and measurments used, it is one of:
         'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip',
@@ -215,9 +206,22 @@ class Instrument(refl.ReflBase):
         pol tof' alternatives the ``magn`` is used in the calculations. Note
         that the angle of magnetization ``magn_ang`` is only used in the spin
         flip model.
+    ``wavelength``
+        The wavelength of the radiation given in AA (Angstroms)
+    ``I0``
+        The incident intensity (a scaling factor)
+    ``Ibkg``
+        The background intensity. Added as a constant value to the calculated
+        reflectivity
     ``pol``
         The measured polarization of the instrument. Valid options are:
         'uu','dd', 'ud', 'du' or 'ass' the respective number 0-3 also works.
+    ``coords``
+        The coordinates of the data given to the SimSpecular function. The
+        available alternatives are: 'q' or '2θ'. Alternatively the numbers 0 (q)
+        or 1 (tth) can be used.
+    ``tthoff``
+        Linear offset to the scattering angle calibration
     ``incangle``
         The incident angle of the neutrons, only valid in tof mode
     ``restype``
@@ -255,19 +259,19 @@ class Instrument(refl.ReflBase):
 
     probe: Probe = "x-ray"
     wavelength: float = 1.54
-    coords: Coords = "2θ"
     I0: float = 1.0
-    res: float = 0.001
+    Ibkg: float = 0.0
+    pol: Polarization = "uu"
+    coords: Coords = "2θ"
+    tthoff: float = 0.0
+    incangle: float = 0.5
     restype: ResType = "no conv"
+    res: float = 0.001
     respoints: int = 5
     resintrange: float = 2.0
-    beamw: float = 0.01
     footype: FootType = "no corr"
+    beamw: float = 0.01
     samplelen: float = 10.0
-    incangle: float = 0.5
-    pol: Polarization = "uu"
-    Ibkg: float = 0.0
-    tthoff: float = 0.0
 
     Units = {
         "probe": "",
@@ -291,9 +295,9 @@ class Instrument(refl.ReflBase):
     }
 
     Groups = [
-        ("General", ["wavelength", "coords", "I0", "Ibkg", "tthoff"]),
-        ("Resolution", ["restype", "res", "respoints", "resintrange"]),
-        ("Probe", ["probe", "pol", "incangle"]),
+        ("Radiation", ["probe", "wavelength", "I0", "Ibkg", "pol"]),
+        ("X-Resolution", ["restype", "res", "respoints", "resintrange"]),
+        ("X-Coordinates", ["coords", "tthoff", "incangle"]),
         ("Footprint", ["footype", "beamw", "samplelen"]),
     ]
 

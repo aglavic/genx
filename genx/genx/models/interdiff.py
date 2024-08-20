@@ -244,16 +244,11 @@ class Instrument(refl.ReflBase):
     }
 
     Groups = [
-        ("General", ["wavelength", "coords", "I0", "Ibkg"]),
-        ("Resolution", ["restype", "res", "respoints", "resintrange"]),
-        (
-            "DWBA",
-            ["taylor_n"],
-        ),
-        (
-            "Footprint",
-            ["footype", "beamw", "samplelen"],
-        ),
+        ("Radiation", ["wavelength", "I0", "Ibkg"]),
+        ("X-Resolution", ["restype", "res", "respoints", "resintrange"]),
+        ("X-Coordinates", ["coords"]),
+        ("DWBA", ["taylor_n"]),
+        ("Footprint", ["footype", "beamw", "samplelen"]),
     ]
 
 

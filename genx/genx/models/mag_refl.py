@@ -16,6 +16,30 @@ version. Should only be used by expert users.
 Classes
 -------
 
+"""
+
+from dataclasses import dataclass, field, fields
+from typing import List
+
+from .lib import ables as ables
+from .lib import edm_slicing as edm
+from .lib import neutron_refl as neutron_refl
+from .lib import paratt as Paratt
+from .lib import refl_new as refl
+from .lib import xrmr
+from .lib.base import AltStrEnum
+from .lib.instrument import *
+from .lib.physical_constants import AA_to_eV, muB_to_SL, r_e
+
+# Preamble to define the parameters needed for the models outlined below:
+ModelID = "MAGrefl"
+
+mag_limit = 1e-8
+mpy_limit = 1e-8
+theta_limit = 1e-8
+
+"""
+
 Layer
 ~~~~~
 ``Layer(fr = 1e-20j, b = 1e-20j, dd_u = 0.0, d = 0.0, f = 1e-20j, dens = 1.0, resmag = 1.0,              theta_m = 0.0, fm2 = 1e-20j, xs_ai = 0.0,              sigma_mu = 0.0, fm1 = 1e-20j, dmag_u = 0.0,              mag = 0.0, sigma_ml = 0.0, sigma_c = 0.0,               resdens = 1.0, phi_m = 0.0, dd_l = 0.0, dmag_l = 0.0)``
@@ -173,171 +197,300 @@ Instrument
     standard deviation. For 'square beam' it is the full width of the beam.
 ``samplelen``
     The length of the sample given in mm
-``theory``
-    Defines which theory (code) that should calcualte the reflectivity.
-    Should be one of: 'x-ray anis.', 'x-ray simpl. anis.', 'x-ray iso.',
-    'neutron spin-pol' or 'neutron spin-flip'.
-``xpol``
-    The polarization state of the x-ray beam. Should be one of:
-    'circ+','circ-','tot', 'ass', 'sigma', 'pi', 'sigma-sigma', 'sigma-pi',
-    'pi-pi' or 'pi-sigma'
-``npol``
-    The neutron polarization state. Should be '++', '--' or '+-','-+' for
-    spin flip.
 """
 
-from .lib import ables as ables
-from .lib import edm_slicing as edm
-from .lib import neutron_refl as neutron_refl
-from .lib import paratt as Paratt
-from .lib import refl, xrmr
-from .lib.instrument import *
-from .lib.physical_constants import muB_to_SL, AA_to_eV, r_e
 
-mag_limit = 1e-8
-mpy_limit = 1e-8
-theta_limit = 1e-8
+class XRayPol(AltStrEnum):
+    total = "tot"
+    circ_plus = "circ+"
+    circ_minus = "circ-"
 
-# Preamble to define the parameters needed for the models outlined below:
-ModelID = "MAGrefl"
-# Automatic loading of parameters possible by including this list
-__pars__ = ["Layer", "Stack", "Sample", "Instrument"]
-# Used for making choices in the GUI
-instrument_string_choices = {
-    "coords": ["q", "tth"],
-    "restype": ["no conv", "fast conv", "full conv and varying res.", "fast conv + varying res."],
-    "footype": ["no corr", "gauss beam", "square beam"],
-    "xpol": ["circ+", "circ-", "tot", "ass", "sigma", "pi", "sigma-sigma", "sigma-pi", "pi-pi", "pi-sigma"],
-    "npol": ["++", "--", "+-", "ass", "-+"],
-    "theory": [
-        "x-ray anis.",
-        "x-ray simpl. anis.",
-        "neutron spin-pol",
-        "neutron spin-flip",
-        "neutron spin-pol tof",
-        "x-ray iso.",
-    ],
-    # 'compress':['yes', 'no'],
-    # 'slicing':['yes', 'no'],
-}
+    sigma = "σ"
+    pi = "π"
+    sigma_sigma = "σ-σ"
+    sigma_pi = "σ-π"
+    pi_pi = "π-π"
+    pi_sigma = "π-σ"
 
-InstrumentParameters = {
-    "wavelength": 1.54,
-    "coords": "tth",
-    "I0": 1.0,
-    "res": 0.001,
-    "restype": "no conv",
-    "respoints": 5,
-    "resintrange": 2.0,
-    "beamw": 0.01,
-    "footype": "no corr",
-    "samplelen": 10.0,
-    "Ibkg": 0.0,
-    "xpol": "circ+",
-    "npol": "++",
-    "theory": "x-ray anis.",
-    "incang": 0.2,
-}
-# Coordinates=1 => twothetainput
-# Coordinates=0 => Q input
-# Res stddev of resolution
-# ResType 0: No resolution convlution
-#               1: Fast convolution
-#               2: Full Convolution +varying resolution
-#               3: Fast convolution varying resolution
-# ResPoints Number of points for the convolution only valid for ResolutionType=2
-# ResIntrange Number of standard deviatons to integrate over default 2
-# Parameters for footprint coorections
-# Footype: 0: No corections for footprint
-#          1: Correction for Gaussian beam => Beaw given in mm and stddev
-#          2: Correction for square profile => Beaw given in full width mm
-# Samlen= Samplelength in mm.
-#
-#
-InstrumentGroups = [
-    ("General", ["wavelength", "coords", "I0", "Ibkg", "incang"]),
-    ("Resolution", ["restype", "res", "respoints", "resintrange"]),
-    (
-        "Misc.",
-        [
-            "theory",
-            "xpol",
-            "npol",
-        ],
-    ),
-    (
-        "Footprint",
-        [
-            "footype",
-            "beamw",
-            "samplelen",
-        ],
-    ),
-]
-InstrumentUnits = {
-    "wavelength": "AA",
-    "coords": "",
-    "I0": "arb.",
-    "res": "[coord]",
-    "restype": "",
-    "respoints": "pts.",
-    "resintrange": "[coord]",
-    "beamw": "mm",
-    "footype": "",
-    "samplelen": "mm",
-    "Ibkg": "arb.",
-    "xpol": "",
-    "theory": "",
-    "npol": "",
-    "incang": "deg",
-}
+    asymmetry = "ass"
 
-LayerParameters = {
-    "dens": 1.0,
-    "d": 0.0,
-    "f": (0.0 + 1e-20j),
-    "fr": (0.0 + 1e-20j),
-    "fm1": (0.0 + 1e-20j),
-    "fm2": (0.0 + 1e-20j),
-    "phi_m": 0.0,
-    "theta_m": 0.0,
-    "resdens": 1.0,
-    "resmag": 1.0,
-    "sigma_c": 0.0,
-    "sigma_ml": 0.0,
-    "sigma_mu": 0.0,
-    "mag": 0.0,
-    "dmag_l": 0.0,
-    "dmag_u": 0.0,
-    "dd_l": 0.0,
-    "dd_u": 0.0,
-    "b": 1e-20j,
-    "xs_ai": 0.0,
-    # 'dtheta_l': 0.0, 'dtheta_u':0.0, 'dphi_l':0.0, 'dphi_u':0.0,
-}
-LayerUnits = {
-    "dens": "at./AA^3",
-    "d": "AA",
-    "f": "el.",
-    "fr": "el.",
-    "fm1": "el./mu_B",
-    "fm2": "el./mu_B^2",
-    "phi_m": "deg.",
-    "theta_m": "deg.",
-    "resdens": "rel.",
-    "resmag": "rel.",
-    "sigma_c": "AA",
-    "sigma_ml": "AA",
-    "sigma_mu": "AA",
-    "mag": "mu_B",
-    "dmag_l": "rel.",
-    "dmag_u": "rel.",
-    "dd_l": "AA",
-    "dd_u": "AA",
-    "b": "fm",
-    "xs_ai": "barn/at.",
-    # 'dtheta_l': 0.0, 'dtheta_u':0.0, 'dphi_l':0.0, 'dphi_u':0.0,
-}
+    alternate_sigma = "sigma"
+    alternate_pi = "pi"
+    alternate_sigma_sigma = "sigma-sigma"
+    alternate_sigma_pi = "sigma-pi"
+    alternate_pi_pi = "pi-pi"
+    alternate_pi_sigma = "pi-sigma"
+
+
+class NeutronPol(AltStrEnum):
+    up_up = "uu"
+    down_down = "dd"
+    up_down = "ud"
+    down_up = "du"
+    asymmetry = "ass"
+
+    alternate_up_up = "++"
+    alternate_down_down = "--"
+    alternate_up_down = "+-"
+    alternate_down_up = "-+"
+
+
+class ProbeTheory(AltStrEnum):
+    xray_iso = "x-ray"
+    xray_simple_aniso = "x-ray simpl. anis."
+    xray_aniso = "x-ray anis."
+    npol = "neutron pol"
+    ntofpol = "neutron pol tof"
+    npolsf = "neutron pol spin flip"
+
+
+class Coords(AltStrEnum):
+    q = "q"
+    tth = "2θ"
+    alternate_tth = "tth"
+
+
+class ResType(AltStrEnum):
+    none = "no conv"
+    fast_conv = "fast conv"
+    fast_conv_var = "fast conv + varying res."
+    full_conv_abs = "full conv and varying res."
+
+
+class FootType(AltStrEnum):
+    none = "no corr"
+    gauss = "gauss beam"
+    square = "square beam"
+
+
+@dataclass
+class Layer(refl.ReflBase):
+    """
+    Representing a layer in the sample structur.
+
+    ``d``
+        The thickness of the layer in AA (Angstroms = 1e-10m)
+    ``dens``
+        The density of formula units in units per Angstroms. Note the units!
+    ``sigma``
+        The root mean square roughness of the top interface of the layer in Angstroms.
+    ``f``
+       The x-ray scattering length per formula unit in electrons. To be
+       strict it is the number of Thompson scattering lengths for each
+       formula unit.
+    ``b``
+       The neutron scattering length per formula unit in fm (femtometer = 1e-15m)
+    ``xs_ai``
+       The sum of the absorption cross section and the incoherent scattering
+       cross section in barns for neutrons
+    ``magn``
+        The magnetic moment per formula unit (same formula unit as b and dens refer to)
+    ``magn_ang``
+        The angle of the magnetic moment in degress. 0 degrees correspond to
+        a moment collinear with the neutron spin.
+    """
+
+    d: float = 0.0
+    dens: float = 1.0
+    sigma: float = 0.0
+
+    f: complex = 1e-20j
+    fr: complex = 0j
+    fm1: complex = 0j
+    fm2: complex = 0j
+    resdens: float = 1.0
+    resmag: float = 1.0
+
+    dd_l: float = 0.0
+    dd_u: float = 0.0
+    dmag_l: float = 0.0
+    dmag_u: float = 0.0
+    sigma_ml: float = 0.0
+    sigma_mu: float = 0.0
+
+    b: complex = 0j
+    xs_ai: float = 0.0
+
+    magn: float = 0.0
+    magn_ang: float = 0.0
+    magn_theta: float = 0.0
+
+    Units = {
+        "sigma": "AA",
+        "dens": "at./AA",
+        "d": "AA",
+        "f": "el./at.",
+        "b": "fm/at.",
+        "xs_ai": "barn/at.",
+        "magn": "mu_B/at.",
+        "magn_ang": "deg.",
+        "fr": "el.",
+        "fm1": "el./mu_B",
+        "fm2": "el./mu_B^2",
+        "phi_m": "deg.",
+        "theta_m": "deg.",
+        "resdens": "rel.",
+        "resmag": "rel.",
+        "sigma_c": "AA",
+        "sigma_ml": "AA",
+        "sigma_mu": "AA",
+        "mag": "mu_B",
+        "dmag_l": "rel.",
+        "dmag_u": "rel.",
+        "dd_l": "AA",
+        "dd_u": "AA",
+    }
+
+    Groups = [
+        ("General", ["d", "dens", "sigma"]),
+        ("Neutron", ["b", "xs_ai"]),
+        ("X-Ray", ["f", "fr", "fm1", "fm2", "resdens", "resmag"]),
+        ("Magnetic", ["magn", "magn_ang", "magn_theta"]),
+        ("Magn. Interfaces", ["dd_u", "dmag_u", "sigma_mu", "dd_l", "dmag_l", "sigma_ml"]),
+    ]
+
+
+@dataclass
+class LayerParameters:
+    d: List[float]
+    dens: List[float]
+    sigma: List[float]
+
+    magn: List[float]
+    magn_ang: List[float]
+    magn_theta: List[float]
+
+    f: List[complex]
+    fr: List[complex]
+    fm1: List[complex]
+    fm2: List[complex]
+    resdens: List[float]
+    resmag: List[float]
+
+    b: List[complex]
+    xs_ai: List[float]
+    magn: List[float]
+    magn_ang: List[float]
+
+    dd_l: List[float]
+    dd_u: List[float]
+    dmag_l: List[float]
+    dmag_u: List[float]
+    sigma_ml: List[float]
+    sigma_mu: List[float]
+
+
+@dataclass
+class Instrument(refl.ReflBase):
+    """
+    Specify parameters of the probe and reflectometry instrument.
+
+    ``probe``
+        Defines the theory (model) that should calcualte the reflectivity.
+        Should be one of: 'x-ray anis.', 'x-ray simpl. anis.', 'x-ray',
+        'neutron pol', 'neutron pol tof' or 'neutron pol spin flip'.
+        Neutron models use either Parratt's formaism (non spin-flip models) or
+        optical matrix method.
+    ``wavelength``
+        The wavelength of the radiation given in AA (Angstroms)
+    ``I0``
+        The incident intensity (a scaling factor)
+    ``Ibkg``
+        The background intensity. Added as a constant value to the calculated
+        reflectivity
+    ``xpol``
+        The polarization state of the x-ray beam. Should be one of:
+        'circ+','circ-','tot', 'ass', 'sigma', 'pi', 'sigma-sigma', 'sigma-pi',
+        'pi-pi' or 'pi-sigma'
+    ``npol``
+        The neutron polarization state. Should be '++', '--' or '+-','-+' for
+        spin flip.
+    ``coords``
+        The coordinates of the data given to the SimSpecular function. The
+        available alternatives are: 'q' or '2θ'. Alternatively the numbers 0 (q)
+        or 1 (tth) can be used.
+    ``tthoff``
+        Linear offset to the scattering angle calibration
+    ``incangle``
+        The incident angle of the neutrons, only valid in tof mode
+    ``restype``
+        Describes the rype of the resolution calculated. One of the
+        alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
+        'fast conv + varying res.', 'full conv and varying res. (dx/x)', 'fast
+        conv + varying res. (dx/x)'. The respective numbers 0-3 also works. Note
+        that fast convolution only alllows a single value into res wheras the
+        other can also take an array with the same length as the x-data (varying
+        resolution)
+    ``res``
+        The resolution of the instrument given in the coordinates of ``coords``.
+        This assumes a gaussian resolution function and ``res`` is the standard
+        deviation of that gaussian. If ``restype`` has (dx/x) in its name the
+        gaussian standard deviation is given by res*x where x is either in tth
+        or q.
+    ``respoints``
+        The number of points to include in the resolution calculation. This is
+        only used for 'full conv and vaying res.', 'fast conv + varying res',
+        'full conv and varying res. (dx/x)' and 'fast conv + varying res.
+        (dx/x)'.
+    ``resintrange``
+        Number of standard deviatons to integrate the resolution function times
+        the reflectivity over
+    ``footype``
+        Which type of footprint correction is to be applied to the simulation.
+        One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, the
+        number 0-2 are also valid. The different choices are self expnalatory.
+    ``beamw``
+        The width of the beam given in mm. For 'gauss beam' it should be the
+        standard deviation. For 'square beam' it is the full width of the beam.
+    ``samplelen``
+        The length of the sample given in mm
+    """
+
+    probe: ProbeTheory = "x-ray"
+    wavelength: float = 1.54
+    I0: float = 1.0
+    Ibkg: float = 0.0
+    xpol: XRayPol = "tot"
+    npol: NeutronPol = "uu"
+    coords: Coords = "2θ"
+    incangle: float = 0.5
+    restype: ResType = "no conv"
+    res: float = 0.001
+    respoints: int = 5
+    resintrange: float = 2.0
+    footype: FootType = "no corr"
+    beamw: float = 0.01
+    samplelen: float = 10.0
+
+    Units = {
+        "probe": "",
+        "wavelength": "Å",
+        "coords": "",
+        "I0": "arb.",
+        "res": "[coord]",
+        "restype": "",
+        "respoints": "pts.",
+        "resintrange": "[coord]",
+        "beamw": "mm",
+        "footype": "",
+        "samplelen": "mm",
+        "incangle": "°",
+        "xpol": "",
+        "npol": "",
+        "Ibkg": "arb.",
+        "2θ": "°",
+        "tth": "°",
+        "q": "Å$^-1$",
+    }
+
+    Groups = [
+        ("Radiation", ["probe", "wavelength", "I0", "Ibkg", "xpol", "npol"]),
+        ("X-Resolution", ["restype", "res", "respoints", "resintrange"]),
+        ("X-Coordinates", ["coords", "incangle"]),
+        ("Footprint", ["footype", "beamw", "samplelen"]),
+    ]
+
+
 LayerGroups = [
     ("Scatt. len.", ["b", "xs_ai", "f", "fr", "fm1", "fm2"]),
     ("Magnetism", ["mag", "resmag", "phi_m", "theta_m"]),
@@ -394,7 +547,6 @@ class NBuffer:
     Rud = 0
     parameters = None
     TwoThetaQz = None
-
 
 
 def correct_reflectivity(R, TwoThetaQz, instrument, theta, weight):

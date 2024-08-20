@@ -368,12 +368,12 @@ jobs:
         artifacts: "GenX*.deb,GenX*.tar.gz,GenX-*_win64_setup.exe,GenX3*.dmg"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
-        bodyFile: genx/create_release_notes.py
+        bodyFile: genx/release_notes.md
         prerelease: ${{ contains(env.GENX_VERSION, 'a') || contains(env.GENX_VERSION, 'b') }}
   release-sourceforge:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-20.04
-    needs: [build-ubuntu-24, build-ubuntu-22, build-ubuntu-20, build-windows, build-macos-m1]
+    needs: [build-ubuntu-24, build-ubuntu-22, build-ubuntu-20, build-windows, build-macos, build-macos-m1]
 
     steps:
     - uses: actions/checkout@v4
