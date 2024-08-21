@@ -175,7 +175,7 @@ References:
 
 import os
 
-from dataclasses import Field, dataclass, field
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -520,10 +520,10 @@ class Spectrum2p(refl.ReflBase):
 
     """
 
-    hs: float = 0.0
-    soc: float = 0.0
     gsm: tuple = field(default_factory=lambda: ((0, 0, 0), (1, 1, 0), (1, 0, 1), (0, 1, 1), (2, 1, 1), (2, 0, 2)))
     norm_denom: tuple = field(default_factory=lambda: (1.0, 1.0, 1, 1.0, 1.0, 1.0))
+    hs: float = 0.0
+    soc: float = 0.0
     valid_e: float = 700.0
 
     def __post_init__(self):
@@ -657,7 +657,15 @@ class SpectrumComponent(refl.ReflBase):
     gamma: float = 1.0
     sigma: float = 1.0
 
-    def __init__(self, spectra, gsm, **kwargs):
+    def __new__(cls, spectra, gsm, **kwargs):
+        self = super().__new__(cls)
+        self.__init__(
+            spectra=spectra,
+            gsm=gsm,
+            el3=kwargs.get("el3", cls.el3),
+            gamma=kwargs.get("gamma", cls.gamma),
+            sigma=kwargs.get("sigma", cls.sigma),
+        )
         self.spectra = spectra
         self.gsm = gsm
 
@@ -669,14 +677,19 @@ class SpectrumComponent(refl.ReflBase):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.__post_init__()
+        return self
 
     def _make_w_fields(self, w_index):
         new_field = field(default=0.0)
         xyz = self.gsm[w_index]
         new_field.name = "w%d%d%d" % tuple(xyz)
         new_field.type = float
-        self._FIELDS.append(new_field)
+        from dataclasses import _FIELD, _FIELDS  # noqa
+
+        new_field._field_type = _FIELD
+        updt_fields = getattr(self, _FIELDS) | {new_field.name: new_field}
+        setattr(self, _FIELDS, updt_fields)
+        setattr(self, new_field.name, 0.0)
 
 
 @dataclass
@@ -724,6 +737,7 @@ class Background2p(refl.ReflBase):
     """
 
     parent: Spectrum2p = field(default_factory=Spectrum2p)
+    element: str = "fe"
 
     el3: float = 710.0
     sigma: float = 0.5
@@ -743,14 +757,17 @@ class Background2p(refl.ReflBase):
         "cu": {"Z": 29, "El3": 931.1, "El2": 951.0},
     }
 
-    def __init__(self, parent, element, **kwargs):
-        self.parent = parent
-
-        # Set all parameters given as keyword arguments
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-        self.__post_init__()
+    def __new__(cls, parent, element, **kwargs):
+        self = super().__new__(cls)
+        self.__init__(
+            parent=parent,
+            el3=kwargs.get("el3", cls.el3),
+            sigma=kwargs.get("sigma", cls.sigma),
+            pre_edge=kwargs.get("pre_edge", cls.pre_edge),
+            post_edge=kwargs.get("post_edge", cls.post_edge),
+            de=kwargs.get("de", cls.de),
+            kk_emax=kwargs.get("kk_emax", cls.kk_emax),
+        )
 
         # Default numerical values for the step function width and its offset.
         self.sigma_tab = 0.5
@@ -764,6 +781,8 @@ class Background2p(refl.ReflBase):
         self.element = element.lower()
 
         self.load_nff_file(os.path.join(__F_DB_DIR__, "%s.nff" % element.lower()), el_db["El3"], el_db["El2"])
+
+        return self
 
     def fit_table_data(self, e_tab, f2_tab, pre_slice, between_slice, post_slice):
         """Fits the L2 and L3 steps in tabular data to parametrise the spectra in the fitting range.
