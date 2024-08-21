@@ -10,7 +10,7 @@ from genx.core.custom_logging import iprint
 from genx.gui.help import rst_html
 from genx.model import Model
 from genx.models.lib.base import AltStrEnum
-from genx.models.lib.refl_new import ReflBase as ReflBaseNew
+from genx.models.lib.refl_base import ReflBase as ReflBaseNew
 from genx.parameters import Parameters
 from genx.plugins.utils import ShowQuestionDialog, ShowWarningDialog
 
@@ -42,12 +42,22 @@ class MyHtmlListBox(wx.html.HtmlListBox):
 
 class ReflClassHelpDialog(wx.Frame):
     def __init__(self, parent, item: ReflBaseNew):
-        wx.Frame.__init__(self, parent, -1, f"{item.__class__.__name__} Help",
-                          style=wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX | wx.RESIZE_BORDER |
-                                wx.FRAME_TOOL_WINDOW | wx.CAPTION | wx.CLOSE_BOX | wx.CLIP_CHILDREN |wx.STAY_ON_TOP)
+        wx.Frame.__init__(
+            self,
+            parent,
+            -1,
+            f"{item.__class__.__name__} Help",
+            style=wx.MINIMIZE_BOX
+            | wx.MAXIMIZE_BOX
+            | wx.RESIZE_BORDER
+            | wx.FRAME_TOOL_WINDOW
+            | wx.CAPTION
+            | wx.CLOSE_BOX
+            | wx.CLIP_CHILDREN
+            | wx.STAY_ON_TOP,
+        )
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-
 
         self.html_win = wx.html.HtmlWindow(self, -1, style=wx.NO_FULL_REPAINT_ON_RESIZE)
         sizer.Add(self.html_win, 1, flag=wx.EXPAND, border=20)
@@ -61,12 +71,12 @@ class ReflClassHelpDialog(wx.Frame):
         gsize = wx.GetApp().GetTopWindow().GetSize()
         gpos = wx.GetApp().GetTopWindow().GetPosition()
         self.SetSize((600, gsize.y))
-        self.SetPosition((pos.x+size.x, gpos.y))
+        self.SetPosition((pos.x + size.x, gpos.y))
 
         doc = f"{item.__class__.__name__}\n{'='*len(item.__class__.__name__)}\n\n{item.__class__.__doc__}"
         doc = rst_html(doc)
         self.html_win.SetPage(doc)
-        self.html_win.SetHTMLBackgroundColour((230,230,255,255))
+        self.html_win.SetHTMLBackgroundColour((230, 230, 255, 255))
 
 
 class ReflClassEditor:
@@ -189,7 +199,7 @@ class ReflClassEditor:
             editable_pars=self.par_editable,
         )
 
-        if self.instance.__class__.__doc__!='':
+        if self.instance.__class__.__doc__ != "":
             help_btn = wx.Button(self.dlg, -1, "Show Help")
             help_btn.SetBackgroundColour((230, 230, 255, 255))
             # dlg.border_sizer.InsertSpacer(0, 2)
@@ -602,9 +612,11 @@ class SamplePanel(wx.Panel):
         )
 
         if isinstance(self.sampleh.sample, ReflBaseNew):
+
             def show_help(event):
                 hlp = ReflClassHelpDialog(dlg, self.sampleh.model.Instrument())
                 hlp.Show()
+
             help_btn = wx.Button(dlg, -1, "Show Help")
             help_btn.SetBackgroundColour((230, 230, 255, 255))
             # dlg.border_sizer.InsertSpacer(0, 2)
@@ -613,7 +625,7 @@ class SamplePanel(wx.Panel):
             sizer.Add(help_btn, 0, wx.FIXED_MINSIZE, 0)
             dlg.border_sizer.Insert(0, sizer, 0, wx.ALIGN_RIGHT)
             dlg.Fit()
-            dlg.Bind(wx.EVT_BUTTON, show_help , help_btn)
+            dlg.Bind(wx.EVT_BUTTON, show_help, help_btn)
 
         if dlg.ShowModal() == wx.ID_OK:
             old_vals = vals

@@ -389,7 +389,7 @@ class Reflectivity(SampleBuilder):
 
         # Now it's time to set all the parameters so that we have the strings
         # instead of the evaluated value - looks better
-        from .models.lib.refl_new import ReflBase
+        from .models.lib.refl_base import ReflBase
 
         if isinstance(self.GetModel().script_module.sample, ReflBase):
             # TODO: revisit the whole method for new style model analysis

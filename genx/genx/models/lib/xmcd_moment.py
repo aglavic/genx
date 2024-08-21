@@ -183,7 +183,7 @@ from scipy import integrate, special
 
 from genx.core.custom_logging import iprint
 
-from . import refl_new as refl
+from . import refl_base as refl
 
 _head, _tail = os.path.split(__file__)
 # Look only after the file name and not the ending since

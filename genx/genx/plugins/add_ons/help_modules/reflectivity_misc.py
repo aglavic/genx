@@ -4,7 +4,7 @@ Could be extended with other small helpers.
 """
 
 from genx.data import DataList
-from genx.models.lib.refl_new import ReflBase, SampleBase, StackBase
+from genx.models.lib.refl_base import ReflBase, SampleBase, StackBase
 
 try:
     # noinspection PyUnresolvedReferences

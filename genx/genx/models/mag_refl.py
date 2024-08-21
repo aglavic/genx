@@ -25,7 +25,7 @@ from .lib import ables as ables
 from .lib import edm_slicing as edm
 from .lib import neutron_refl as neutron_refl
 from .lib import paratt as Paratt
-from .lib import refl_new as refl
+from .lib import refl_base as refl
 from .lib import xrmr
 from .lib.base import AltStrEnum
 from .lib.instrument import *

@@ -32,7 +32,7 @@ try:
 except ImportError:
     api = None
 
-from genx.models.lib.refl_new import ReflBase as ReflBaseNew
+from genx.models.lib.refl_base import ReflBase as ReflBaseNew
 
 from ...gui import images as img
 from ...gui.custom_choice_dialog import SCDialog
@@ -90,7 +90,7 @@ class RefPluginInterface(PluginInterface):
             ShowInfoDialog(panel, "You have to select a layer or stack before applying material")
             return
         if isinstance(layer, ReflBaseNew):
-            if hasattr(layer, 'sld_n'):
+            if hasattr(layer, "sld_n"):
                 # model based on sld values not formula and density
                 layer._ca["sld_x"] = f"10*{density}*({formula.f()})"
                 layer._ca["sld_n"] = f"10*{density}*({formula.b()})"

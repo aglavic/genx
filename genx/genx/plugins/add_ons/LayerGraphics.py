@@ -18,7 +18,7 @@ import wx
 
 from numpy import array, log, pi, sqrt
 
-from genx.models.lib.refl_new import SampleBase, StackBase
+from genx.models.lib.refl_base import SampleBase, StackBase
 
 from .. import add_on_framework as framework
 

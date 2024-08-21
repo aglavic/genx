@@ -7,7 +7,7 @@ import unittest
 from dataclasses import dataclass, field
 from typing import List
 
-from genx.models.lib.refl_new import ReflBase, SampleBase, StackBase
+from genx.models.lib.refl_base import ReflBase, SampleBase, StackBase
 
 
 class TestReflBase(unittest.TestCase):

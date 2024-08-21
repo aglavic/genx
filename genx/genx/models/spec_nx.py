@@ -18,7 +18,7 @@ import numpy as np
 from .lib import footprint as footprint_module
 from .lib import neutron_refl as MatrixNeutron
 from .lib import paratt as Paratt
-from .lib import refl_new as refl
+from .lib import refl_base as refl
 from .lib import resolution as resolution_module
 from .lib.base import AltStrEnum
 from .lib.footprint import *

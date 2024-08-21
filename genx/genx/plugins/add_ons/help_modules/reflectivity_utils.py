@@ -4,7 +4,7 @@ Help class for the Reflectivity plugin to analyze and change the script.
 
 import re
 
-from genx.models.lib.refl_new import ReflBase
+from genx.models.lib.refl_base import ReflBase
 
 from .reflectivity_misc import ReflectivityModule
 

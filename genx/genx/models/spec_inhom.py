@@ -7,6 +7,7 @@ the sample surface and gradients in the roughness and thickness over a repetitio
 Classes
 -------
 """
+
 from copy import deepcopy
 from dataclasses import dataclass, field, fields
 from typing import List
@@ -18,7 +19,7 @@ from . import spec_nx
 from .lib import footprint as footprint_module
 from .lib import neutron_refl as MatrixNeutron
 from .lib import paratt as Paratt
-from .lib import refl_new as refl
+from .lib import refl_base as refl
 from .lib import resolution as resolution_module
 from .lib.base import AltStrEnum
 from .lib.footprint import *
@@ -27,8 +28,10 @@ from .lib.physical_constants import T_to_SL, muB_to_SL, r_e
 from .lib.resolution import *
 from .lib.sm_hayter_mook import sm_layers
 from .lib.testing import ModelTestCase
-from .spec_nx import FootType, Layer as NXLayer, LayerParameters as NXLayerParameters, Polarization, Probe, ResType, \
-    q_limit, Instrument
+from .spec_nx import FootType, Instrument
+from .spec_nx import Layer as NXLayer
+from .spec_nx import LayerParameters as NXLayerParameters
+from .spec_nx import Polarization, Probe, ResType, q_limit
 
 # Preamble to define the parameters needed for the models outlined below:
 ModelID = "SpecInhom"
@@ -37,7 +40,6 @@ Buffer = spec_nx.Buffer
 
 __xlabel__ = "q [Å$^{-1}$]"
 __ylabel__ = "Instnsity [a.u.]"
-
 
 
 """
@@ -96,6 +98,7 @@ class Layer(NXLayer):
     ``d_gradient``
        Increase of the thickness of this layer from bottom to top in stack repetitions
     """
+
     sigma_gradient: float = 0.0
     d_gradient: float = 0.0
 
@@ -103,10 +106,10 @@ class Layer(NXLayer):
 
     Groups = [
         ("General", ["d", "dens", "sigma"]),
-              ("Neutron", ["b", "xs_ai", "magn", "magn_ang"]),
-              ("Inhom.", ["sigma_gradient", "d_gradient"]),
-              ("X-Ray", ["f"]),
-              ]
+        ("Neutron", ["b", "xs_ai", "magn", "magn_ang"]),
+        ("Inhom.", ["sigma_gradient", "d_gradient"]),
+        ("X-Ray", ["f"]),
+    ]
 
 
 @dataclass
@@ -114,11 +117,13 @@ class LayerParameters(NXLayerParameters):
     sigma_gradient: List[float]
     d_gradient: List[float]
 
+
 class SigmaGradientType(AltStrEnum):
     rel_lin = "relative linear"
     rel_sqrt = "relative sqrt"
     abs_lin = "absolute linear"
     abs_sqrt = "absolute sqrt"
+
 
 @dataclass
 class Stack(refl.StackBase):
@@ -172,7 +177,7 @@ class Stack(refl.StackBase):
     sigma_gradient: float = 0.0  # amount of increase in roughness from bottom to top
     d_gradient: float = 0.0  # change in thickness bottom to top
     dens_gradient: float = 0.0  # change in density bottom to top
-    beta_sm: float =  0.0  # function applied to change thickness (linear,  super-mirror (d=beta SM))
+    beta_sm: float = 0.0  # function applied to change thickness (linear,  super-mirror (d=beta SM))
     sm_scale: float = 1.0  # scaling factor for thicknesses in super-mirror
 
     Groups = [
@@ -180,7 +185,7 @@ class Stack(refl.StackBase):
         ("Roughness Gradient", ["sigma_gtype", "sigma_gradient"]),
         ("Supermirror", ["beta_sm", "sm_scale"]),
         ("Other Gradients", ["d_gradient", "dens_gradient"]),
-        ]
+    ]
 
     def resolveLayerParameter(self, name):
         """
@@ -190,10 +195,7 @@ class Stack(refl.StackBase):
             # user has selected super-mirror coating sequence
             m = self.Repetitions
             beta = self.beta_sm
-            rho_all = [
-                li.dens * (li.b.real + li.magn) * 1e-5
-                for li in self.Layers
-            ]
+            rho_all = [li.dens * (li.b.real + li.magn) * 1e-5 for li in self.Layers]
             rhoA = max(rho_all)
             rhoB = min(rho_all)
             # critical wave vector values (in paper this includes an addition factor of 1/2)
@@ -204,51 +206,43 @@ class Stack(refl.StackBase):
             QAB = QcA / sqrt(QcA**2 - QcB**2)
             b = beta * QAB**4 + 2.0 * beta * QAB**2 - 1
             N = int(abs(beta * ((g**2 * QAB**2 + 1) ** 2 - 1) - b))
-            if N>100000:
-                raise ValueError("the number of bi-layers calculated is greater than 100 000, please check beta_sm parameter")
+            if N > 100000:
+                raise ValueError(
+                    "the number of bi-layers calculated is greater than 100 000, please check beta_sm parameter"
+                )
         elif self.beta_sm < 0:
             # super-mirror from Hayter and Mook iterative method was selected, fixed number of layers
-            if abs(self.beta_sm)>1.0 or abs(self.beta_sm)<0.6:
+            if abs(self.beta_sm) > 1.0 or abs(self.beta_sm) < 0.6:
                 raise ValueError("negative beta_sm should be between -1 and -0.6")
             N = int(abs(self.Repetitions))
         else:
             N = int(self.Repetitions)
-        if name =="sigma":
+        if name == "sigma":
             sigma_gradient = self.sigma_gradient
             # parameters for layers with roughness gradient
             par = [li.sigma for li in self.Layers]
             for i in range(1, N):
                 if self.sigma_gtype == SigmaGradientType.rel_lin:
                     # linear increase of roughness to (1+sigma_gradient) times bottom roughness)
-                    par += [
-                        li.sigma*(1.0+(sigma_gradient+li.sigma_gradient)*i/(N-1))
-                        for li in self.Layers
-                    ]
+                    par += [li.sigma * (1.0 + (sigma_gradient + li.sigma_gradient) * i / (N - 1)) for li in self.Layers]
                 elif self.sigma_gtype == SigmaGradientType.rel_sqrt:
                     # add roughness using rms
                     par += [
-                        li.sigma
-                        * sqrt(1.0 + ((sigma_gradient + li.sigma_gradient) * i / (N - 1)) ** 2)
+                        li.sigma * sqrt(1.0 + ((sigma_gradient + li.sigma_gradient) * i / (N - 1)) ** 2)
                         for li in self.Layers
                     ]
                 elif self.sigma_gtype == SigmaGradientType.abs_lin:
                     # linear increase of roughness to bottom roughness + sigma_gradient)
-                    par += [
-                        li.sigma+(sigma_gradient+li.sigma_gradient)*i/(N-1)
-                        for li in self.Layers
-                    ]
+                    par += [li.sigma + (sigma_gradient + li.sigma_gradient) * i / (N - 1) for li in self.Layers]
                 elif self.sigma_gtype == SigmaGradientType.abs_sqrt:
                     # add roughness using rms
                     par += [
-                        sqrt(
-                            li.sigma**2
-                            +((sigma_gradient + li.sigma_gradient) * i / (N - 1))**2
-                        )
+                        sqrt(li.sigma**2 + ((sigma_gradient + li.sigma_gradient) * i / (N - 1)) ** 2)
                         for li in self.Layers
                     ]
                 else:
                     raise NotImplementedError("sigma_gtype must be in SigmaGradientType Enum")
-        elif name =="d":
+        elif name == "d":
             d_gradient = self.d_gradient
             if self.beta_sm > 0:
                 # layer thickness sequence based on calculated bi-layer thicknesses for super-mirror
@@ -267,10 +261,7 @@ class Stack(refl.StackBase):
                     par += [di * D_SL[i] for di in rel_thickness]
             elif self.beta_sm < 0:
                 zeta = -self.beta_sm
-                rho_all = [
-                    li.dens * (li.b.real + li.magn) * 1e-5
-                    for li in self.Layers
-                ]
+                rho_all = [li.dens * (li.b.real + li.magn) * 1e-5 for li in self.Layers]
                 rho1 = max(rho_all)  # in paper, SLD is called alpha
                 rho2 = min(rho_all)
                 # if two layers are chosen, use scale from olgorithm, else only change main 2 layers size
@@ -303,9 +294,7 @@ class Stack(refl.StackBase):
                 par = []
                 for i in range(N):
                     par += [
-                        li.d
-                        * (1.0 - (d_gradient + li.d_gradient) * (1.0 / 2.0 - float(i) / N))
-                        for li in self.Layers
+                        li.d * (1.0 - (d_gradient + li.d_gradient) * (1.0 / 2.0 - float(i) / N)) for li in self.Layers
                     ]
         elif name == "dens":
             dens_gradient = self.dens_gradient
@@ -313,11 +302,10 @@ class Stack(refl.StackBase):
             par = []
             for i in range(N):
                 par += [
-                    li.dens*(1.0-dens_gradient*(1.0/2.0-float(i)/self.Repetitions))
-                    for li in self.Layers
+                    li.dens * (1.0 - dens_gradient * (1.0 / 2.0 - float(i) / self.Repetitions)) for li in self.Layers
                 ]
         else:
-            par = [getattr(li, name) for li in self.Layers]*N
+            par = [getattr(li, name) for li in self.Layers] * N
         return par
 
 
@@ -325,6 +313,7 @@ class InhomType(AltStrEnum):
     gauss = "gauss"
     semi_gauss = "semi-gauss"
     empiric = "empiric PLD"
+
 
 @dataclass
 class Sample(refl.SampleBase):
