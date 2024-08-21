@@ -34,7 +34,7 @@ from dataclasses import dataclass, field, fields
 from typing import List, Tuple
 
 from .base import ModelParamBase
-from .refl import cast_to_array
+from .refl import cast_to_array, harm_sizes
 
 
 class ReflBase(ModelParamBase):
