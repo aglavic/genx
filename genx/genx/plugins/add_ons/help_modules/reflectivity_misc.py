@@ -4,7 +4,7 @@ Could be extended with other small helpers.
 """
 
 from genx.data import DataList
-from genx.models.lib.refl import InstrumentBase, LayerBase, SampleBase, StackBase
+from genx.models.lib.refl_new import ReflBase, SampleBase, StackBase
 
 try:
     # noinspection PyUnresolvedReferences
@@ -15,7 +15,7 @@ else:
 
     class Sample(Protocol):
 
-        def SimSLD(self, z, item: Union[str, None], inst: InstrumentBase) -> Dict[str, Any]: ...
+        def SimSLD(self, z, item: Union[str, None], inst: ReflBase) -> Dict[str, Any]: ...
 
     def Sim(data: DataList) -> List[Any]: ...
 
@@ -43,13 +43,13 @@ else:
         StackGroups: Iterable
         StackUnits: Dict[str, str]
 
-        Instrument: Type[InstrumentBase]
+        Instrument: Type[ReflBase]
         Sample: Type[SampleBase]
         Stack: Type[StackBase]
-        Layer: Type[LayerBase]
+        Layer: Type[ReflBase]
 
         _sim: bool
         SLD: List[Dict[str, Any]]
         sample: Sample
         Sim: Sim
-        inst: InstrumentBase
+        inst: ReflBase

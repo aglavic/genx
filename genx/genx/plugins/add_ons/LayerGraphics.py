@@ -17,9 +17,8 @@ import svgwrite
 import wx
 
 from numpy import array, log, pi, sqrt
-from wx.svg import SVGimage
 
-from genx.models.lib.refl import InstrumentBase, LayerBase, SampleBase, StackBase
+from genx.models.lib.refl_new import SampleBase, StackBase
 
 from .. import add_on_framework as framework
 

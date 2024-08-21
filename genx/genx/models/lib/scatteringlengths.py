@@ -14,7 +14,7 @@ from scipy import interpolate
 
 from genx.core.custom_logging import iprint
 
-from . import refl
+from . import refl_new as refl
 
 
 # ==============================================================================

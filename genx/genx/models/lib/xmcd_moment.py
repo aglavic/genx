@@ -4,7 +4,7 @@ r"""
 .. module:: xmcd_moment
    :synopsis: A physical model for the 2p edges in x-ray magnetic resonant reflectivity.
 
-This module provides he framework to model the spectroscopic response of the scattering lengths
+This module provides the framework to model the spectroscopic response of the scattering lengths
 around an 2p absorption edge. The approach was first presented by van der Laan [Laan97]_ for modelling the line shape
 of the XMCD (x-ray magnetic circular dichrosim) spectrum of the 3d metals and later used experimentally by
 Gold, Bayer and Goering [Gold04]_ for fitting XMCD spectra and extracting moments.
@@ -175,13 +175,15 @@ References:
 
 import os
 
+from dataclasses import Field, dataclass, field
+
 import numpy as np
 
 from scipy import integrate, special
 
 from genx.core.custom_logging import iprint
 
-from . import refl
+from . import refl_new as refl
 
 _head, _tail = os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -474,6 +476,7 @@ def calc_de(hs, j, l, s):
     return hs * (j * (j + 1.0) + s * (s + 1) - l * (l + 1.0)) / (2 * j * (j + 1.0))
 
 
+@dataclass
 class Spectrum2p(refl.ReflBase):
     """Class to model the lineshape of a 2p level including dichroism.
 
@@ -517,44 +520,23 @@ class Spectrum2p(refl.ReflBase):
 
     """
 
-    _parameters = {"hs": 0.0, "soc": 0.0}
+    hs: float = 0.0
+    soc: float = 0.0
+    gsm: tuple = field(default_factory=lambda: ((0, 0, 0), (1, 1, 0), (1, 0, 1), (0, 1, 1), (2, 1, 1), (2, 0, 2)))
+    norm_denom: tuple = field(default_factory=lambda: (1.0, 1.0, 1, 1.0, 1.0, 1.0))
+    valid_e: float = 700.0
 
-    def __init__(
-        self,
-        hs=0.0,
-        soc=0.0,
-        gsm=((0, 0, 0), (1, 1, 0), (1, 0, 1), (0, 1, 1), (2, 1, 1), (2, 0, 2)),
-        norm_denom=(1.0, 1.0, 1, 1.0, 1.0, 1.0),
-        valid_e=700.0,
-    ):
-        """
-        Parameters:
-            hs(float): The exchange field (eV).
-            soc(float):  The spin orbit coupling (eV).
-            gsm(list of tuples 3xint):  The ground state moments used in the spectra, a list of 3 int tuples.
-            norm_denom(list of floats):  The normalisation denominators for the ground
-                                         state moments (same order as gsm).
-            valid_e(float): Energy (eV) where a validation (type check) of the function is made when the scattering
-                            lengths are inserted in a validator (used in the Reflectivity plugin).
-
-        """
-
-        self.gsm = gsm
-        self.norm_denom = np.array(norm_denom, dtype=np.float64)
+    def __post_init__(self):
+        super().__post_init__()
+        self.norm_denom = np.array(self.norm_denom, dtype=np.float64)
         self.w_glob = np.ones_like(self.norm_denom)
-
-        for par in self._parameters:
-            self._make_set_func(par)
-            self._make_get_func(par)
-        self.hs = hs
-        self.soc = soc
 
         for i in range(len(self.gsm)):
             self._make_w_set_func(i)
             self._make_w_get_func(i)
 
-        self.h_l3 = [create_h_table(3, gsm, 0), create_h_table(3, gsm, 1), create_h_table(3, gsm, 2)]
-        self.h_l2 = [create_h_table(1, gsm, 0), create_h_table(1, gsm, 1), create_h_table(1, gsm, 2)]
+        self.h_l3 = [create_h_table(3, self.gsm, 0), create_h_table(3, self.gsm, 1), create_h_table(3, self.gsm, 2)]
+        self.h_l2 = [create_h_table(1, self.gsm, 0), create_h_table(1, self.gsm, 1), create_h_table(1, self.gsm, 2)]
 
         self.components = []
         self.bkg = None
@@ -564,9 +546,9 @@ class Spectrum2p(refl.ReflBase):
         self.m_l3 = np.arange(-self.j_l3, self.j_l3 + 1.0 / 2.0, 1.0)
         self.m_l2 = np.arange(-self.j_l2, self.j_l2 + 1.0 / 2.0, 1.0)
 
-        self.fres = refl.ReflFunction(self.calc_fres, (valid_e,), {}, id="f(E)")
-        self.fm1 = refl.ReflFunction(self.calc_fm1, (valid_e,), {}, id="f(E)")
-        self.fm2 = refl.ReflFunction(self.calc_fm2, (valid_e,), {}, id="f(E)")
+        self.fres = refl.ReflFunction(self.calc_fres, (self.valid_e,), {}, id="f(E)")
+        self.fm1 = refl.ReflFunction(self.calc_fm1, (self.valid_e,), {}, id="f(E)")
+        self.fm2 = refl.ReflFunction(self.calc_fm2, (self.valid_e,), {}, id="f(E)")
 
     def _make_w_set_func(self, w_index):
         """Creates a set function for a ground state moment and binds it to the object"""
@@ -665,10 +647,15 @@ class Spectrum2p(refl.ReflBase):
         return self.calc_spectra(energy, 2)
 
 
+@dataclass
 class SpectrumComponent(refl.ReflBase):
     """Class to keep the variables of a spectral component."""
 
-    _parameters = {"el3": 700.0, "gamma": 1.0, "sigma": 1.0}
+    spectra: Spectrum2p = field(default_factory=Spectrum2p)
+    gsm: tuple = field(default_factory=lambda: ((0, 0, 0), (1, 1, 0), (1, 0, 1), (0, 1, 1), (2, 1, 1), (2, 0, 2)))
+    el3: float = 700.0
+    gamma: float = 1.0
+    sigma: float = 1.0
 
     def __init__(self, spectra, gsm, **kwargs):
         self.spectra = spectra
@@ -676,46 +663,23 @@ class SpectrumComponent(refl.ReflBase):
 
         self.w = np.zeros(len(gsm))
         for i in range(len(self.gsm)):
-            self._make_w_set_func(i)
-            self._make_w_get_func(i)
-
-        for par in self._parameters:
-            setattr(self, par, self._parameters[par])
-            self._make_set_func(par)
-            self._make_get_func(par)
+            self._make_w_fields(i)
 
         # Set all parameters given as keyword arguments
-        for k in kwargs:
-            try:
-                func = getattr(self, "set" + k.capitalize())
-            except AttributeError:
-                raise AttributeError("%s is not an parameter in %s" % (k, self.__class__))
-            else:
-                func(kwargs[k])
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
-    def _make_w_set_func(self, w_index):
-        """Creates a set function for a ground state moment and binds it to the object"""
+        self.__post_init__()
+
+    def _make_w_fields(self, w_index):
+        new_field = field(default=0.0)
         xyz = self.gsm[w_index]
-        par_name = "w%d%d%d" % xyz
-
-        def set_func(val):
-            self.w[w_index] = val
-
-        set_func.__name__ = "set" + par_name.capitalize()
-        setattr(self, set_func.__name__, set_func)
-
-    def _make_w_get_func(self, w_index):
-        """Creates a get function for parameter par and binds it to the object"""
-        xyz = self.gsm[w_index]
-        par_name = "w%d%d%d" % xyz
-
-        def get_func():
-            return self.w[w_index]
-
-        get_func.__name__ = "get" + par_name.capitalize()
-        setattr(self, get_func.__name__, get_func)
+        new_field.name = "w%d%d%d" % tuple(xyz)
+        new_field.type = float
+        self._FIELDS.append(new_field)
 
 
+@dataclass
 class Background2p(refl.ReflBase):
     r"""A class to model the 2p background spectra, the non-resonant part, with a smoothed step function.
 
@@ -759,7 +723,15 @@ class Background2p(refl.ReflBase):
         * sigma
     """
 
-    _parameters = {"el3": 710.0, "sigma": 0.5, "pre_edge": 100.0, "post_edge": 100.0, "de": 0.2, "kk_emax": 15000}
+    parent: Spectrum2p = field(default_factory=Spectrum2p)
+
+    el3: float = 710.0
+    sigma: float = 0.5
+    pre_edge: float = 100.0
+    post_edge: float = 100.0
+    de: float = 0.2
+    kk_emax: float = 15000.0
+
     _elements = {
         "ti": {"Z": 22, "El3": 455.5, "El2": 461.5},
         "v": {"Z": 23, "El3": 512.9, "El2": 520.5},
@@ -774,20 +746,11 @@ class Background2p(refl.ReflBase):
     def __init__(self, parent, element, **kwargs):
         self.parent = parent
 
-        # Create set and get functions for all parameters.
-        for par in self._parameters:
-            setattr(self, par, self._parameters[par])
-            self._make_set_func(par)
-            self._make_get_func(par)
-
         # Set all parameters given as keyword arguments
-        for k in kwargs:
-            try:
-                func = getattr(self, "set" + k.capitalize())
-            except AttributeError:
-                raise AttributeError("%s is not an parameter in %s" % (k, self.__class__))
-            else:
-                func(kwargs[k])
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+        self.__post_init__()
 
         # Default numerical values for the step function width and its offset.
         self.sigma_tab = 0.5
@@ -795,7 +758,7 @@ class Background2p(refl.ReflBase):
 
         # Setting element specific details
         if element.lower() not in self._elements:
-            raise NotImplementedError("Element %s has not a background that is implemented" % element)
+            raise NotImplementedError("Element %s does not have a background that is implemented" % element)
         el_db = self._elements[element.lower()]
         self.Z = el_db["Z"]
         self.element = element.lower()
