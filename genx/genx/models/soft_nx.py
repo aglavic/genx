@@ -30,7 +30,7 @@ from .lib.instrument import *
 from .lib.physical_constants import muB_to_SL, r_e
 from .lib.resolution import *
 from .lib.testing import ModelTestCase
-from .spec_nx import (AA_to_eV, Coords, Instrument, Polarization, Probe, ResType, footprintcorr, q_limit,
+from .spec_nx import (AA_to_eV, Coords, FootType, Instrument, Polarization, Probe, ResType, footprintcorr, q_limit,
                       resolution_init, resolutioncorr)
 
 # Preamble to define the parameters needed for the models outlined below:
@@ -252,17 +252,19 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
         else:
             ai = ai * ones(Q.shape)
         wl = 4 * pi * sin(ai * pi / 180) / Q
-        R = Paratt.Refl_nvary2(ai, wl, 1.0 - l2pi * sld, d, sigma, return_int=True)
+        l2pi = wl**2 / 2 / 3.141592
+        R = Paratt.Refl_nvary2(ai, wl, 1.0 - l2pi * sld[:, newaxis], d, sigma, return_int=True)
     # tof spin polarized
     elif ptype == Probe.ntofpol:
         wl = 4 * pi * sin(instrument.incangle * pi / 180) / Q
-        msld = sld_m * (4 * pi * sin(instrument.incangle * pi / 180) / Q) ** 2 / 2 / pi
+        l2pi = wl**2 / 2 / 3.141592
+        msld = sld_m[:, newaxis] * (4 * pi * sin(instrument.incangle * pi / 180) / Q) ** 2 / 2 / pi
         # polarization uu or ++
         if pol == Polarization.up_up:
             R = Paratt.Refl_nvary2(
                 instrument.incangle * ones(Q.shape),
                 (4 * pi * sin(instrument.incangle * pi / 180) / Q),
-                1.0 - l2pi * (sld + msld),
+                1.0 - l2pi * (sld[:, newaxis] + msld),
                 d,
                 sigma,
                 return_int=True,
@@ -272,7 +274,7 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
             R = Paratt.Refl_nvary2(
                 instrument.incangle * ones(Q.shape),
                 (4 * pi * sin(instrument.incangle * pi / 180) / Q),
-                1.0 - l2pi * (sld - msld),
+                1.0 - l2pi * (sld[:, newaxis] - msld),
                 d,
                 sigma,
                 return_int=True,
@@ -282,7 +284,7 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
             Rd = Paratt.Refl_nvary2(
                 instrument.incangle * ones(Q.shape),
                 (4 * pi * sin(instrument.incangle * pi / 180) / Q),
-                1.0 - l2pi * (sld - msld),
+                1.0 - l2pi * (sld[:, newaxis] - msld),
                 d,
                 sigma,
                 return_int=True,
@@ -290,7 +292,7 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
             Ru = Paratt.Refl_nvary2(
                 instrument.incangle * ones(Q.shape),
                 (4 * pi * sin(instrument.incangle * pi / 180) / Q),
-                1.0 - l2pi * (sld + msld),
+                1.0 - l2pi * (sld[:, newaxis] + msld),
                 d,
                 sigma,
                 return_int=True,
@@ -307,10 +309,10 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
     # Resolution corrections
     R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
 
-    return R * instrument.getI0() + instrument.getIbkg()
+    return R * instrument.I0 + instrument.Ibkg
 
 
-def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
+def EnergySpecular(Energy, TwoThetaQz, sample: Sample, instrument: Instrument):
     """Simulate the specular signal from sample when probed with instrument. Energy should be in eV.
 
     # BEGIN Parameters
@@ -323,6 +325,8 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
     # TODO: Fix so that resolution can be included.
     if restype != 0 and restype != ResType.none:
         raise ValueError("Only no resolution is allowed for energy scans.")
+    if instrument.probe != Probe.xray:
+        raise NotImplementedError("EnergySpecular only implemented for xray, for neutron ToF use Specular.")
 
     wl = AA_to_eV / Energy
     global __xlabel__
@@ -330,41 +334,28 @@ def EnergySpecular(Energy, TwoThetaQz, sample, instrument):
 
     # TTH values given as x
     if instrument.coords == Coords.tth:
-        theta = TwoThetaQz / 2.0
+        theta = (TwoThetaQz + instrument.tthoff) / 2.0 * ones_like(Energy)
     # Q vector given....
     elif instrument.coords == Coords.q:
-        theta = arcsin(TwoThetaQz * wl / 4 / pi) * 180.0 / pi
-
-    else:
-        raise ValueError("The value for coordinates, coords, is WRONG!" "should be q(0) or tth(1).")
-    Q = 4 * pi / wl * sin((2 * theta + instrument.getTthoff()) * pi / 360.0)
-
-    ptype = instrument.getProbe()
+        theta = ((arcsin(TwoThetaQz * wl / 4 / pi) * 180.0 / pi) + instrument.tthoff / 2.0) * ones_like(Energy)
 
     parameters: LayerParameters = sample.resolveLayerParameters()
-    if ptype == Probe.xray:
-        sld = refl.cast_to_array(parameters.sld_x, Energy) * 1e-6
-    else:
-        sld = array(parameters.sld_n, dtype=complex64).real * 1e-6
+    sld = refl.cast_to_array(parameters.sld_x, Energy) * 1e-6
 
     d = array(parameters.d, dtype=float64)
     sigma = array(parameters.sigma, dtype=float64)
 
-    wl = instrument.getWavelength()
     l2pi = wl**2 / 2 / 3.141592
     # Ordinary Paratt X-rays
-    if ptype == Probe.xray:
-        # R = Paratt.ReflQ(Q,instrument.getWavelength(),1.0-r_e*sld,d,sigma)
-        R = Paratt.Refl_nvary2(theta, wl, 1.0 - l2pi * sld, d, sigma)
-    else:
-        raise ValueError("The choice of probe is WRONG")
+    R = Paratt.Refl_nvary2(theta, wl, 1.0 - l2pi * sld[:, newaxis], d, sigma)
+
     # TODO: Fix corrections
     # FootprintCorrections
     # foocor = footprintcorr(Q, instrument)
     # Resolution corrections
     # R = resolutioncorr(R, TwoThetaQz, foocor, instrument, weight)
 
-    return R * instrument.getI0() + instrument.getIbkg()
+    return R * instrument.I0 + instrument.Ibkg
 
 
 def OffSpecular(TwoThetaQz, ThetaQx, sample, instrument):
@@ -484,3 +475,209 @@ SimulationFunctions = {
 }
 
 Sample.setSimulationFunctions(SimulationFunctions)
+
+
+class TestSoftNX(ModelTestCase):
+    # TODO: currently this only checks for raise conditions in the code above, check of results should be added
+
+    def test_spec_xray(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, sld_x=3e-5 + 1e-7j)])],
+            Ambient=Layer(),
+            Substrate=Layer(sld_x=5e-5 + 2e-7j),
+        )
+        instrument = Instrument(
+            probe=Probe.xray,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=1.54,
+        )
+        with self.subTest("x-ray tth"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray q"):
+            instrument.coords = Coords.q
+            Specular(self.qz, sample, instrument)
+
+        # resolution corrections
+        with self.subTest("x-ray q-res-fast"):
+            instrument.restype = ResType.fast_conv
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-fast-rel"):
+            instrument.restype = ResType.fast_conv_rel
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-fast-var"):
+            instrument.restype = ResType.fast_conv_var
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-full"):
+            instrument.restype = ResType.full_conv_abs
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-full-rel"):
+            instrument.restype = ResType.full_conv_rel
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-wrong"):
+            instrument.restype = 123
+            with self.assertRaises(ValueError):
+                Specular(self.qz, sample, instrument)
+        instrument.restype = ResType.none
+
+        # footprint corrections
+        with self.subTest("x-ray q-footprint-square"):
+            instrument.footype = FootType.square
+            Specular(self.qz, sample, instrument)
+        instrument.coords = Coords.tth
+        with self.subTest("x-ray tth-footprint-square"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-gauss"):
+            instrument.footype = FootType.gauss
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-wrong"):
+            instrument.footype = 123
+            with self.assertRaises(ValueError):
+                Specular(self.qz, sample, instrument)
+
+    def test_spec_neutron(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, sld_n=3e-6, sld_m=1e-6)])],
+            Ambient=Layer(sld_n=1e-7),
+            Substrate=Layer(sld_n=4e-6),
+        )
+        instrument = Instrument(
+            probe=Probe.neutron,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=4.5,
+            incangle=0.5,
+        )
+        with self.subTest("neutron tth"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("neutron q"):
+            instrument.coords = Coords.q
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint"):
+            instrument.probe = Probe.ntof
+            instrument.footype = FootType.square
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint"):
+            instrument.footype = FootType.none
+            instrument.restype = ResType.full_conv_rel
+            Specular(self.qz, sample, instrument)
+            instrument.incangle = ones_like(self.qz) * 0.5
+            Specular(self.qz, sample, instrument)
+        instrument.incangle = 0.5
+        instrument.restype = ResType.none
+        with self.subTest("neutron-pol++ q"):
+            instrument.probe = Probe.npol
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-pol-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-polsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpol++ q"):
+            instrument.probe = Probe.ntofpol
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpol-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpolsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+
+        with self.subTest("neutron tthoffset"):
+            instrument.probe = Probe.neutron
+            instrument.tthoff = 0.1
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof tthoffset"):
+            instrument.probe = Probe.ntof
+            instrument.tthoff = 0.1
+            Specular(self.qz, sample, instrument)
+
+        with self.subTest("neutron-sf++ q"):
+            instrument.probe = Probe.npolsf
+            instrument.pol = Polarization.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf-- q"):
+            instrument.pol = Polarization.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf+- q"):
+            instrument.pol = Polarization.up_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf-+ q"):
+            instrument.pol = Polarization.down_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sfsa q"):
+            instrument.pol = Polarization.asymmetry
+            Specular(self.qz, sample, instrument)
+
+    def test_energy(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, sld_x=3e-6)])],
+            Ambient=Layer(sld_x=1e-7),
+            Substrate=Layer(sld_x=4e-6),
+        )
+        instrument = Instrument(
+            probe=Probe.xray,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=4.5,
+            incangle=0.5,
+        )
+        energy = linspace(8000.0, 5000.0, 20)
+
+        with self.subTest("energy xray"):
+            EnergySpecular(energy, 1.5, sample, instrument)
+        with self.subTest("energy xray q"):
+            instrument.coords = Coords.q
+            EnergySpecular(energy, 1.5, sample, instrument)
+
+    def test_sld(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=2e-5 + 1e-7j, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+            Ambient=Layer(b=1e-7, dens=0.1),
+            Substrate=Layer(b=4e-6, dens=0.1),
+        )
+        instrument = Instrument(
+            probe=Probe.xray,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=4.5,
+            incangle=0.5,
+        )
+        with self.subTest("sld xray"):
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron"):
+            instrument.probe = Probe.neutron
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron pol"):
+            instrument.probe = Probe.npolsf
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron pol2"):
+            sample.Stacks[0].Layers[0].magn_ang = 0.0
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron crop"):
+            instrument.probe = Probe.neutron
+            sample.crop_sld = 15
+            sample.Stacks[0].Repetitions = 100
+            SLD_calculations(None, None, sample, instrument)
+            sample.crop_sld = -15
+            sample.Stacks[0].Repetitions = 100
+            SLD_calculations(None, None, sample, instrument)

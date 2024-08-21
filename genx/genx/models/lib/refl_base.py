@@ -295,7 +295,7 @@ def is_reflfunction(obj):
 
 
 def cast_to_array(list_of_obj, *args, **kwargs):
-    """Casts an list_of_obj, can be a number or an ReflFunction, into an list of evaluated values"""
+    """Casts a list_of_obj, can be a number or an ReflFunction, into a list of evaluated values"""
     id = ""
     shape = False
     ret_list = []

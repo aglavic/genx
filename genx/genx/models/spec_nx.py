@@ -621,6 +621,8 @@ def EnergySpecular(Energy, TwoThetaQz, sample: Sample, instrument: Instrument):
     # TODO: Fix so that resolution can be included.
     if restype != 0 and restype != ResType.none:
         raise ValueError("Only no resolution is allowed for energy scans.")
+    if instrument.probe != Probe.xray:
+        raise NotImplementedError("EnergySpecular only implemented for xray, for neutron ToF use Specular.")
 
     wl = AA_to_eV / Energy
     global __xlabel__
@@ -628,39 +630,25 @@ def EnergySpecular(Energy, TwoThetaQz, sample: Sample, instrument: Instrument):
 
     # TTH values given as x
     if instrument.coords == Coords.tth:
-        theta = TwoThetaQz / 2.0
+        theta = (TwoThetaQz + instrument.tthoff) / 2.0 * ones_like(Energy)
     # Q vector given....
     elif instrument.coords == Coords.q:
-        theta = arcsin(TwoThetaQz * wl / 4 / pi) * 180.0 / pi
+        theta = ((arcsin(TwoThetaQz * wl / 4 / pi) * 180.0 / pi) + instrument.tthoff / 2.0) * ones_like(Energy)
 
     else:
         raise ValueError("The value for coordinates, coords, is WRONG!" "should be q(0) or tth(1).")
-    Q = 4 * pi / wl * sin((2 * theta + instrument.tthoff) * pi / 360.0)
-
-    ptype = instrument.probe
 
     parameters: LayerParameters = sample.resolveLayerParameters()
-    if ptype == Probe.xray:
-        fb = refl.cast_to_array(parameters.f, Energy).astype(complex128)
-    else:
-        fb = array(parameters.b, dtype=complex128) * 1e-5
-        abs_xs = array(parameters.xs_ai, dtype=complex128) * 1e-4**2
+    fb = refl.cast_to_array(parameters.f, Energy).astype(complex128)
 
     dens = array(parameters.dens, dtype=float64)
     d = array(parameters.d, dtype=float64)
     sigma = array(parameters.sigma, dtype=float64)
 
-    if ptype == Probe.xray:
-        sld = dens[:, newaxis] * fb * wl**2 / 2 / pi
-    else:
-        wl = instrument.wavelength
-        sld = dens * (wl**2 / 2 / pi * sqrt(fb**2 - (abs_xs / 2.0 / wl) ** 2) - 1.0j * abs_xs * wl / 4 / pi)
-    # Ordinary Paratt X-rays
-    if ptype == Probe.xray:
-        # R = Paratt.ReflQ(Q,instrument.wavelength,1.0-2.82e-5*sld,d,sigma)
-        R = Paratt.Refl_nvary2(theta, wl, 1.0 - r_e * sld, d, sigma)
-    else:
-        raise ValueError("The choice of probe is WRONG")
+    sld = (dens * fb)[:, newaxis] * wl**2 / 2 / pi
+
+    R = Paratt.Refl_nvary2(theta, wl, 1.0 - r_e * sld, d, sigma)
+
     # TODO: Fix corrections
     # FootprintCorrections
     # foocor = footprintcorr(Q, instrument)
@@ -898,10 +886,10 @@ class TestSpecNX(ModelTestCase):
             instrument.restype = ResType.full_conv_rel
             Specular(self.qz, sample, instrument)
         with self.subTest("x-ray q-res-gauss"):
-            instrument.restype = GaussianResolution(sigma=0.001)
+            instrument.restype = resolution_module.GaussianResolution(sigma=0.001)
             Specular(self.qz, sample, instrument)
         with self.subTest("x-ray q-res-trapezoid"):
-            instrument.restype = TrapezoidResolution(inner_width=0.001, outer_width=0.002)
+            instrument.restype = resolution_module.TrapezoidResolution(inner_width=0.001, outer_width=0.002)
             instrument.restype.get_weight_example()
             Specular(self.qz, sample, instrument)
         with self.subTest("x-ray q-res-wrong"):
@@ -997,6 +985,15 @@ class TestSpecNX(ModelTestCase):
             instrument.pol = Polarization.asymmetry
             Specular(self.qz, sample, instrument)
 
+        with self.subTest("neutron tthoffset"):
+            instrument.probe = Probe.neutron
+            instrument.tthoff = 0.1
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof tthoffset"):
+            instrument.probe = Probe.ntof
+            instrument.tthoff = 0.1
+            Specular(self.qz, sample, instrument)
+
         with self.subTest("neutron-sf++ q"):
             instrument.probe = Probe.npolsf
             instrument.pol = Polarization.up_up
@@ -1016,6 +1013,33 @@ class TestSpecNX(ModelTestCase):
         with self.subTest("neutron-polspec q"):
             instrument.pol = Polarization.up_up
             PolSpecular(self.qz, 0.01, 0.01, 0.01, 0.01, sample, instrument)
+
+    def test_energy(self):
+        from .utils import fp
+
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, f=fp.Fe, dens=0.1, magn=0.1, magn_ang=24.0)])],
+            Ambient=Layer(b=1e-7, dens=0.1),
+            Substrate=Layer(b=4e-6, f=fp.Si, dens=0.1),
+        )
+        instrument = Instrument(
+            probe=Probe.xray,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=4.5,
+            incangle=0.5,
+        )
+        energy = linspace(8000.0, 5000.0, 20)
+
+        with self.subTest("energy xray"):
+            EnergySpecular(energy, 1.5, sample, instrument)
+        with self.subTest("energy xray q"):
+            instrument.coords = Coords.q
+            EnergySpecular(energy, 1.5, sample, instrument)
 
     def test_sld(self):
         sample = Sample(
