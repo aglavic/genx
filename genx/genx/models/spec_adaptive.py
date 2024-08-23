@@ -369,7 +369,7 @@ def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
         # apply Zeeman correction to magnetic parameters
         magn_x = msld * cos(magn_ang)  # M parallel to polarization
         magn_y = msld * sin(magn_ang)  # M perpendicular to polarization
-        magn_x += rho_Z  # Apply magnetization from external field
+        magn_x += rho_Z * instrument.wavelength**2 / 2 / pi  # Apply magnetization from external field
         # calculate new magnitudes and angles
         msld = sqrt(magn_x**2 + magn_y**2)
         magn_ang = np.arctan2(magn_y, magn_x)
