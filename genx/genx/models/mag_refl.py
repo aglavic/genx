@@ -30,6 +30,8 @@ from .lib import xrmr
 from .lib.base import AltStrEnum
 from .lib.instrument import *
 from .lib.physical_constants import AA_to_eV, muB_to_SL, r_e
+from .lib.testing import ModelTestCase
+
 
 # Preamble to define the parameters needed for the models outlined below:
 ModelID = "MAGrefl"
@@ -1300,8 +1302,8 @@ def extract_anal_iso_pars(sample: Sample, instrument: Instrument, theta, xray_en
         wl = 4 * pi * sin(instrument.incangle * pi / 180) / Q
         b = (array(parameters.b, dtype=complex128) * 1e-5)[:, newaxis] * ones(wl.shape)
         abs_xs = (array(parameters.xs_ai, dtype=complex128) * 1e-4**2)[:, newaxis] * ones(wl.shape)
-        sld = dens[:, newaxis] * (wl**2 / 2 / pi * sqrt(b**2 - (abs_xs / 2.0 / wl) ** 2) - 1.0j * abs_xs * wl / 4 / pi)
-        msld = (muB_to_SL * (mag * dens)[:, newaxis] * wl**2 / 2 / pi) * (cos(theta_m) * cos(phi))[:, newaxis]
+        sld = dens * (wl**2 / 2 / pi * sqrt(b**2 - (abs_xs / 2.0 / wl) ** 2) - 1.0j * abs_xs * wl / 4 / pi)
+        msld = (muB_to_SL * mag[:, newaxis] * dens * wl**2 / 2 / pi) * (cos(theta_m) * cos(phi))[:, newaxis]
 
         if pol == NeutronPol.up_up:
             n = 1.0 - sld - msld
@@ -1325,7 +1327,7 @@ def extract_anal_iso_pars(sample: Sample, instrument: Instrument, theta, xray_en
 
 
 def reflectivity_xmag(sample: Sample, instrument: Instrument, theta, TwoThetaQz, xray_energy, return_amplitude=True):
-    if not sample.slicing:
+    if sample.slicing:
         R = slicing_reflectivity(sample, instrument, theta, TwoThetaQz, xray_energy, return_amplitude=return_amplitude)
     else:
         R = analytical_reflectivity(
@@ -1471,7 +1473,7 @@ def analytical_reflectivity(
         pol = instrument.xpol
         Q = 4 * pi / lamda * sin(theta * pi / 180)
         if pol == XRayPol.circ_plus:
-            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, "+")
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, XRayPol.circ_plus)
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
             R = ables.ReflQ_mag(
                 Q,
@@ -1487,7 +1489,7 @@ def analytical_reflectivity(
                 sigma_l[::-1],
             )
         elif pol == XRayPol.circ_minus:
-            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, "-")
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, XRayPol.circ_minus)
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
             R = ables.ReflQ_mag(
                 Q,
@@ -1503,7 +1505,7 @@ def analytical_reflectivity(
                 sigma_l[::-1],
             )
         elif pol == XRayPol.total:
-            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, "-")
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, XRayPol.circ_minus)
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
             Rm = ables.ReflQ_mag(
                 Q,
@@ -1518,7 +1520,7 @@ def analytical_reflectivity(
                 dd_l[::-1],
                 sigma_l[::-1],
             )
-            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, "+")
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, XRayPol.circ_plus)
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
             Rp = ables.ReflQ_mag(
                 Q,
@@ -1535,7 +1537,7 @@ def analytical_reflectivity(
             )
             R = (Rp + Rm) / 2.0
         elif pol == XRayPol.asymmetry:
-            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, "-")
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, XRayPol.circ_minus)
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
             Rm = ables.ReflQ_mag(
                 Q,
@@ -1550,7 +1552,7 @@ def analytical_reflectivity(
                 dd_l[::-1],
                 sigma_l[::-1],
             )
-            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, "+")
+            pars = extract_anal_iso_pars(sample, instrument, theta, xray_energy, XRayPol.circ_plus)
             n, d, sigma_c, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l = pars
             Rp = ables.ReflQ_mag(
                 Q,
@@ -1741,7 +1743,7 @@ def slicing_reflectivity(sample: Sample, instrument: Instrument, theta, TwoTheta
             mpy = mpy[::-1]
             W = xrmr.do_calc(g_0, lamda, chi, d, non_mag, mpy)
             XBuffer.W = W
-            XBuffer.parameters = parameters.copy()
+            XBuffer.parameters = parameters
             XBuffer.coords = instrument.coords
             XBuffer.g_0 = g_0.copy()
             XBuffer.wavelength = lamda
@@ -1948,9 +1950,9 @@ def convolute_reflectivity(R, instrument: Instrument, foocor, TwoThetaQz, weight
     elif restype == ResType.fast_conv:
         R = ConvoluteFast(TwoThetaQz, R[:] * foocor, instrument.res, range=instrument.resintrange)
     elif restype == ResType.fast_conv_var:
-        R = ConvoluteResolutionVector(TwoThetaQz, R[:] * foocor, weight)
-    elif restype == ResType.full_conv_var:
         R = ConvoluteFastVar(TwoThetaQz, R[:] * foocor, instrument.res, range=instrument.resintrange)
+    elif restype == ResType.full_conv_var:
+        R = ConvoluteResolutionVector(TwoThetaQz, R[:]*foocor, weight)
     else:
         raise ValueError("Variable restype has an unvalid value")
     return R
@@ -1966,3 +1968,372 @@ SimulationFunctions = {
 }
 
 Sample.setSimulationFunctions(SimulationFunctions)
+
+class TestSpecNX(ModelTestCase):
+    # TODO: currently this only checks for raise conditions in the code above, check of results should be added
+
+    def test_spec_xray(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1,
+                                        magn=0.1, magn_ang=24.0, magn_theta=10.)])],
+            Ambient=Layer(),
+            Substrate=Layer(f=5e-5 + 2e-7j, dens=0.1),
+            slicing=False,
+        )
+        instrument = Instrument(
+            probe=ProbeTheory.xray_iso,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            wavelength=1.54,
+        )
+        with self.subTest("x-ray tth"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-field"):
+            SpecularElectricField(self.tth, sample, instrument)
+        with self.subTest("x-ray q"):
+            instrument.coords = Coords.q
+            Specular(self.qz, sample, instrument)
+
+        # resolution corrections
+        with self.subTest("x-ray q-res-fast"):
+            instrument.restype = ResType.fast_conv
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-fast-var"):
+            instrument.restype = ResType.fast_conv_var
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-full"):
+            instrument.restype = ResType.full_conv_var
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-wrong"):
+            instrument.restype = 123
+            with self.assertRaises(ValueError):
+                Specular(self.qz, sample, instrument)
+        instrument.restype = ResType.none
+
+        # resonant models
+        with self.subTest("x-ray res simple +"):
+            instrument.probe = ProbeTheory.xray_simple_aniso
+            instrument.xpol = XRayPol.circ_plus
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res simple -"):
+            instrument.xpol = XRayPol.circ_minus
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res simple tot"):
+            instrument.xpol = XRayPol.total
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res simple asym"):
+            instrument.xpol = XRayPol.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full +"):
+            instrument.probe = ProbeTheory.xray_aniso
+            instrument.xpol = XRayPol.circ_plus
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full -"):
+            instrument.xpol = XRayPol.circ_minus
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full tot"):
+            instrument.xpol = XRayPol.total
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full asym"):
+            instrument.xpol = XRayPol.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full sigma"):
+            instrument.xpol = XRayPol.sigma
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full pi"):
+            instrument.xpol = XRayPol.pi
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full sigma-sigma"):
+            instrument.xpol = XRayPol.sigma_sigma
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full pi-pi"):
+            instrument.xpol = XRayPol.pi_pi
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full sigma-pi"):
+            instrument.xpol = XRayPol.sigma_pi
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full pi-sigma"):
+            instrument.xpol = XRayPol.pi_sigma
+            Specular(self.qz, sample, instrument)
+
+        # footprint corrections
+        with self.subTest("x-ray q-footprint-square"):
+            instrument.footype = FootType.square
+            Specular(self.qz, sample, instrument)
+        instrument.coords = Coords.tth
+        with self.subTest("x-ray tth-footprint-square"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-gauss"):
+            instrument.footype = FootType.gauss
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-wrong"):
+            instrument.footype = 123
+            with self.assertRaises(ValueError):
+                Specular(self.qz, sample, instrument)
+
+
+    def test_spec_neutron(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+            Ambient=Layer(b=1e-7, dens=0.1),
+            Substrate=Layer(b=4e-6, dens=0.1),
+            slicing=False,
+        )
+        instrument = Instrument(
+            probe=ProbeTheory.npol,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            wavelength=4.5,
+            incangle=0.5,
+        )
+        with self.subTest("neutron tth"):
+            instrument.npol = NeutronPol.up_up
+            Specular(self.tth, sample, instrument)
+        with self.subTest("neutron q +"):
+            instrument.coords = Coords.q
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron q -"):
+            instrument.npol = NeutronPol.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint +"):
+            instrument.npol = NeutronPol.up_up
+            instrument.probe = ProbeTheory.ntofpol
+            instrument.footype = FootType.square
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint -"):
+            instrument.npol = NeutronPol.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof q-footprint"):
+            instrument.npol = NeutronPol.up_up
+            instrument.footype = FootType.none
+            instrument.restype = ResType.full_conv_var
+            Specular(self.qz, sample, instrument)
+        instrument.restype = ResType.none
+        with self.subTest("neutron-pol++ q"):
+            instrument.probe = ProbeTheory.npol
+            instrument.pol = NeutronPol.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-pol-- q"):
+            instrument.pol = NeutronPol.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-polsa q"):
+            instrument.pol = NeutronPol.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpol++ q"):
+            instrument.probe = ProbeTheory.ntofpol
+            instrument.pol = NeutronPol.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpol-- q"):
+            instrument.pol = NeutronPol.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tofpolsa q"):
+            instrument.pol = NeutronPol.asymmetry
+            Specular(self.qz, sample, instrument)
+
+        with self.subTest("neutron tthoffset"):
+            instrument.probe = ProbeTheory.npol
+            instrument.tthoff = 0.1
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-tof tthoffset"):
+            instrument.probe = ProbeTheory.ntofpol
+            instrument.tthoff = 0.1
+            Specular(self.qz, sample, instrument)
+
+        with self.subTest("neutron-sf++ q"):
+            instrument.probe = ProbeTheory.npolsf
+            instrument.pol = NeutronPol.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf-- q"):
+            instrument.pol = NeutronPol.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf+- q"):
+            instrument.pol = NeutronPol.up_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sf-+ q"):
+            instrument.pol = NeutronPol.down_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron-sfsa q"):
+            instrument.pol = NeutronPol.asymmetry
+            Specular(self.qz, sample, instrument)
+
+    def test_spec_slicing(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1,
+                                        magn=0.1, magn_ang=24.0, magn_theta=10.)])],
+            Ambient=Layer(),
+            Substrate=Layer(f=5e-5 + 2e-7j, dens=0.1),
+            slicing=True,
+        )
+        instrument = Instrument(
+            probe=ProbeTheory.xray_iso,
+            coords=Coords.q,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            wavelength=1.54,
+        )
+        with self.subTest("x-ray iso"):
+            Specular(self.qz, sample, instrument)
+
+        with self.subTest("x-ray iso nocompress"):
+            sample.compress = False
+            Specular(self.qz, sample, instrument)
+        sample.compress = True
+
+        # resonant models
+        with self.subTest("x-ray res simple +"):
+            instrument.probe = ProbeTheory.xray_simple_aniso
+            instrument.xpol = XRayPol.circ_plus
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res simple -"):
+            instrument.xpol = XRayPol.circ_minus
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res simple tot"):
+            instrument.xpol = XRayPol.total
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res simple asym"):
+            instrument.xpol = XRayPol.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full +"):
+            instrument.probe = ProbeTheory.xray_aniso
+            instrument.xpol = XRayPol.circ_plus
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full -"):
+            instrument.xpol = XRayPol.circ_minus
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full tot"):
+            instrument.xpol = XRayPol.total
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full asym"):
+            instrument.xpol = XRayPol.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full sigma"):
+            instrument.xpol = XRayPol.sigma
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full pi"):
+            instrument.xpol = XRayPol.pi
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full sigma-sigma"):
+            instrument.xpol = XRayPol.sigma_sigma
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full pi-pi"):
+            instrument.xpol = XRayPol.pi_pi
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full sigma-pi"):
+            instrument.xpol = XRayPol.sigma_pi
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray res full pi-sigma"):
+            instrument.xpol = XRayPol.pi_sigma
+            Specular(self.qz, sample, instrument)
+
+        # neutron models
+        with self.subTest("neutron pol +"):
+            instrument.probe = ProbeTheory.npol
+            instrument.npol = NeutronPol.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron pol -"):
+            instrument.npol = NeutronPol.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron pol asym"):
+            instrument.npol = NeutronPol.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron tofpol +"):
+            instrument.probe = ProbeTheory.ntofpol
+            instrument.npol = NeutronPol.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron tofpol -"):
+            instrument.npol = NeutronPol.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron tofpol asym"):
+            instrument.npol = NeutronPol.asymmetry
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron polsf ++"):
+            instrument.probe = ProbeTheory.npolsf
+            instrument.npol = NeutronPol.up_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron polsf --"):
+            instrument.npol = NeutronPol.down_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron polsf +-"):
+            instrument.npol = NeutronPol.up_down
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron polsf -+"):
+            instrument.npol = NeutronPol.down_up
+            Specular(self.qz, sample, instrument)
+        with self.subTest("neutron polsf asym"):
+            instrument.npol = NeutronPol.asymmetry
+            Specular(self.qz, sample, instrument)
+
+
+    def test_energy(self):
+        from .utils import fp
+
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, f=fp.Fe, dens=0.1, magn=0.1, magn_ang=24.0)])],
+            Ambient=Layer(b=1e-7, dens=0.1),
+            Substrate=Layer(b=4e-6, f=fp.Si, dens=0.1),
+            slicing=False,
+        )
+        instrument = Instrument(
+            probe=ProbeTheory.xray_iso,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            wavelength=4.5,
+            incangle=0.5,
+        )
+        energy = linspace(8000.0, 5000.0, 20)
+
+        with self.subTest("energy xray"):
+            EnergySpecular(energy, 1.5, sample, instrument)
+        with self.subTest("energy xray q"):
+            instrument.coords = Coords.q
+            EnergySpecular(energy, 1.5, sample, instrument)
+
+    def test_sld(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=2e-5 + 1e-7j, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
+            Ambient=Layer(b=1e-7, dens=0.1),
+            Substrate=Layer(b=4e-6, dens=0.1),
+        )
+        instrument = Instrument(
+            probe=ProbeTheory.xray_iso,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            wavelength=4.5,
+            incangle=0.5,
+        )
+        with self.subTest("sld xray"):
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld xray slicing"):
+            sample.slicing = True
+            SLD_calculations(None, None, sample, instrument)
+        sample.slicing = False
+        with self.subTest("sld xray aniso"):
+            instrument.probe = ProbeTheory.xray_aniso
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld xray aniso slicing"):
+            sample.slicing = True
+            SLD_calculations(None, None, sample, instrument)
+        sample.slicing = False
+        with self.subTest("sld neutron"):
+            instrument.probe = ProbeTheory.npol
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron pol"):
+            instrument.probe = ProbeTheory.npolsf
+            SLD_calculations(None, None, sample, instrument)
+        with self.subTest("sld neutron pol2"):
+            sample.Stacks[0].Layers[0].magn_ang = 0.0
+            SLD_calculations(None, None, sample, instrument)
