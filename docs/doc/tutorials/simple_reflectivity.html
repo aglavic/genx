@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Simple Reflectivity Model (XRR/NR) &#8212; GenX 3.6.26 documentation</title>
+    <title>Simple Reflectivity Model (XRR/NR) &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
@@ -37,7 +36,7 @@
         <li class="right" >
           <a href="writing_model.html" title="Writing a custom model"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Simple Reflectivity Model (XRR/NR)</a></li> 
       </ul>
@@ -49,11 +48,11 @@
           <div class="body" role="main">
             
   <section id="simple-reflectivity-model-xrr-nr">
-<span id="tutorial-simple-reflectivity"></span><h1>Simple Reflectivity Model (XRR/NR)<a class="headerlink" href="#simple-reflectivity-model-xrr-nr" title="Permalink to this heading">¶</a></h1>
+<span id="tutorial-simple-reflectivity"></span><h1>Simple Reflectivity Model (XRR/NR)<a class="headerlink" href="#simple-reflectivity-model-xrr-nr" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial will show you the general use of the SimpleReflectivity plugin (see <a class="reference internal" href="plugin.html#tutorial-plugin"><span class="std std-ref">Plugins: an introduction</span></a>) to
 build a neutron or x-ray reflectivity model and fit it to your data.</p>
 <section id="getting-started">
-<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h2>
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
 <p>Start by opening GenX and selecting the SimpleProfile. (Or load the simple reflectivity
 plugin by going to the menu <span class="menuselection">Settings‣Plugins‣Load‣SimpleReflectivity</span>.)</p>
 <p>When creating a new model the GUI will show a wizard to guide you through the initial model setup:</p>
@@ -65,7 +64,7 @@ and silicon as a substrate:</p>
 <a class="reference internal image-reference" href="../_images/InitialInterface.JPG"><img alt="../_images/InitialInterface.JPG" src="../_images/InitialInterface.JPG" style="width: 100%;" /></a>
 </section>
 <section id="the-model-table">
-<h2>The Model Table<a class="headerlink" href="#the-model-table" title="Permalink to this heading">¶</a></h2>
+<h2>The Model Table<a class="headerlink" href="#the-model-table" title="Permalink to this headline">¶</a></h2>
 <p>At the bottom is a table with the sample structure. Each model has one Ambient layer
 (media the neutron propagates through before reflection), a set of top layers (green) that are not repeated,
 a set of central layers (white) that can be repeated if Repetition is &gt;1, a set of bottom layers (purple) that
@@ -79,40 +78,40 @@ whose meaning depends on the selection in the Second column (Formula/Mixure).</p
 <blockquote>
 <div><ul class="simple">
 <li><dl class="field-list simple">
-<dt class="field-odd">Layer<span class="colon">:</span></dt>
+<dt class="field-odd">Layer</dt>
 <dd class="field-odd"><p>User defined name for each layer, has to be unique</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">Chem. Formula<span class="colon">:</span></dt>
+<dt class="field-odd">Chem. Formula</dt>
 <dd class="field-odd"><p>Define the elemental composition for the layer as sum formula (e.g. Fe2O3).
 In case that you would prefer to enter the scattering length density directly set this to <em>SLD</em></p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">Density [g/cm³]<span class="colon">:</span></dt>
+<dt class="field-odd">Density [g/cm³]</dt>
 <dd class="field-odd"><p>Material mass density for the layer. If <em>Chem. Formula</em> is <em>SLD</em> this is the
 scattering length density in units of 10⁻⁶ Å².</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">Moment [µB/FU]<span class="colon">:</span></dt>
+<dt class="field-odd">Moment [µB/FU]</dt>
 <dd class="field-odd"><p>Magnetic moment, if any, within the layer in units of 1 Bohr-Magneton per given Chemical
 formula unit (FU). This value has no obvious meaning for <em>Chem. Formula</em> set to <em>SLD</em>.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">d [Å]<span class="colon">:</span></dt>
+<dt class="field-odd">d [Å]</dt>
 <dd class="field-odd"><p>Thickness of this layer.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">σ [Å]<span class="colon">:</span></dt>
+<dt class="field-odd">σ [Å]</dt>
 <dd class="field-odd"><p>Roughness of this layer.</p>
 </dd>
 </dl>
@@ -124,37 +123,37 @@ formula unit (FU). This value has no obvious meaning for <em>Chem. Formula</em> 
 <blockquote>
 <div><ul class="simple">
 <li><dl class="field-list simple">
-<dt class="field-odd">Layer<span class="colon">:</span></dt>
+<dt class="field-odd">Layer</dt>
 <dd class="field-odd"><p>User defined name for each layer, has to be unique</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">SLD-1 [10⁻⁶ Å²]<span class="colon">:</span></dt>
+<dt class="field-odd">SLD-1 [10⁻⁶ Å²]</dt>
 <dd class="field-odd"><p>Scattering length density (SLD) for the first material</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">SLD-2 [10⁻⁶ Å²]<span class="colon">:</span></dt>
+<dt class="field-odd">SLD-2 [10⁻⁶ Å²]</dt>
 <dd class="field-odd"><p>SLD for the second material</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">Fraction [% SLD-1]<span class="colon">:</span></dt>
+<dt class="field-odd">Fraction [% SLD-1]</dt>
 <dd class="field-odd"><p>Amount of first material in the mixture (e.g. H2O vs. D2O)</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">d [Å]<span class="colon">:</span></dt>
+<dt class="field-odd">d [Å]</dt>
 <dd class="field-odd"><p>Thickness of this layer.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">σ [Å]<span class="colon">:</span></dt>
+<dt class="field-odd">σ [Å]</dt>
 <dd class="field-odd"><p>Roughness of this layer.</p>
 </dd>
 </dl>
@@ -173,60 +172,60 @@ model to the <em>Reflectivity</em> plugin for more advanced modeling options.
 (see <a class="reference internal" href="xrr_fitting.html#tutorial-xrr-fitting"><span class="std std-ref">Fitting of x-ray reflectivity data</span></a> and <a class="reference internal" href="neutron_sim.html#tutorial-neutron-sim"><span class="std std-ref">Neutron reflectivity tutorial</span></a>.)</p>
 </section>
 <section id="instrument-parameters">
-<h2>Instrument Parameters<a class="headerlink" href="#instrument-parameters" title="Permalink to this heading">¶</a></h2>
+<h2>Instrument Parameters<a class="headerlink" href="#instrument-parameters" title="Permalink to this headline">¶</a></h2>
 <p>For parameters that concern the experiment itself a dialog can be opened with the <strong>Instrument Settings</strong> button
 in the toolbar. The dialog allows to choose:</p>
 <ul class="simple">
 <li><dl class="field-list simple">
-<dt class="field-odd">probe<span class="colon">:</span></dt>
+<dt class="field-odd">probe</dt>
 <dd class="field-odd"><p>The radiation type used</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">wavelength<span class="colon">:</span></dt>
+<dt class="field-odd">wavelength</dt>
 <dd class="field-odd"><p>The wavelength used, if not measureing time of flight neutrons</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">I0<span class="colon">:</span></dt>
+<dt class="field-odd">I0</dt>
 <dd class="field-odd"><p>Initial intensity, for nomalized data this should be 1.0</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">coords<span class="colon">:</span></dt>
+<dt class="field-odd">coords</dt>
 <dd class="field-odd"><p>Coordinats of the x-axes, angle 2-Theta or wavevector transfer q</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">Ibkg<span class="colon">:</span></dt>
+<dt class="field-odd">Ibkg</dt>
 <dd class="field-odd"><p>Constant experimental background (value at high q)</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">res<span class="colon">:</span></dt>
+<dt class="field-odd">res</dt>
 <dd class="field-odd"><p>Instrumental resolution in the same coordinates as x</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">footype<span class="colon">:</span></dt>
+<dt class="field-odd">footype</dt>
 <dd class="field-odd"><p>Function used for footprint correction. <em>no corr</em> for no correction, <em>square-</em> or <em>gaussian beam</em> profile</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">samplelen<span class="colon">:</span></dt>
+<dt class="field-odd">samplelen</dt>
 <dd class="field-odd"><p>Length of the sample along the beam, ignored if <em>no corr</em> was selected</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">beamw<span class="colon">:</span></dt>
+<dt class="field-odd">beamw</dt>
 <dd class="field-odd"><p>Width of the beam in scattering direction, for <em>gaussian</em> beam this is the sigma value</p>
 </dd>
 </dl>
@@ -242,7 +241,7 @@ has to be used to modify the <em>res</em> column.</p>
 </div>
 </section>
 <section id="reading-the-data">
-<h2>Reading the data<a class="headerlink" href="#reading-the-data" title="Permalink to this heading">¶</a></h2>
+<h2>Reading the data<a class="headerlink" href="#reading-the-data" title="Permalink to this headline">¶</a></h2>
 <p>To load the data select the dataset in the list on the right and click the small <em>Open</em> icon above it to import
 a dataset. For multiple datasets you can add more entries by pushing the <em>plus</em> button in the same toolbar.</p>
 <p>If you are using the generic <em>auto</em>, <em>default</em> or <em>resolution</em> data loader you may have to first select the data file
@@ -259,7 +258,7 @@ bottom and choose “Si” with density 2.32998 for the substrate and “SiO” 
 <img alt="../_images/ModelZoom.JPG" src="../_images/ModelZoom.JPG" />
 </section>
 <section id="fitting-the-model">
-<h2>Fitting the model<a class="headerlink" href="#fitting-the-model" title="Permalink to this heading">¶</a></h2>
+<h2>Fitting the model<a class="headerlink" href="#fitting-the-model" title="Permalink to this headline">¶</a></h2>
 <p>You can choose which parameters to fit by checking the box left of it. Selecting the layer density, thickness
 as well as layer and substrate roughnesses should be sufficient to properly fit this dataset. When you are ready,
 press the green right arrow in the window toolbar or press <em>ctrl+F</em>. You should see a live update of the model
@@ -272,7 +271,7 @@ Most of the settings in this dialog are for advanced users to optimize the fitti
 <img alt="../_images/OptimizerSettings.JPG" src="../_images/OptimizerSettings.JPG" />
 </section>
 <section id="parameter-uncertainties">
-<h2>Parameter uncertainties<a class="headerlink" href="#parameter-uncertainties" title="Permalink to this heading">¶</a></h2>
+<h2>Parameter uncertainties<a class="headerlink" href="#parameter-uncertainties" title="Permalink to this headline">¶</a></h2>
 <p>After a fit is finished it is possible to get an estimation on parameter uncertainties by clicking on the <em>calculate
 errorbars</em> button. This will open a dialog with a table showing the fitted parameters, their result value and
 an estimate on errors in negative and positive direction.</p>
@@ -297,9 +296,8 @@ based on the <em>bumps</em> library. (Button <strong>P</strong> next to the one 
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Simple Reflectivity Model (XRR/NR)</a><ul>
 <li><a class="reference internal" href="#getting-started">Getting started</a></li>
 <li><a class="reference internal" href="#the-model-table">The Model Table</a></li>
@@ -311,17 +309,12 @@ based on the <em>bumps</em> library. (Button <strong>P</strong> next to the one 
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="writing_model.html"
-                          title="previous chapter">Writing a custom model</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="xrr_fitting.html"
-                          title="next chapter">Fitting of x-ray reflectivity data</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="writing_model.html"
+                        title="previous chapter">Writing a custom model</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xrr_fitting.html"
+                        title="next chapter">Fitting of x-ray reflectivity data</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -338,7 +331,7 @@ based on the <em>bumps</em> library. (Button <strong>P</strong> next to the one 
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -358,14 +351,14 @@ based on the <em>bumps</em> library. (Button <strong>P</strong> next to the one 
         <li class="right" >
           <a href="writing_model.html" title="Writing a custom model"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Simple Reflectivity Model (XRR/NR)</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

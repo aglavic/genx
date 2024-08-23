@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>How to package GenX &#8212; GenX 3.6.26 documentation</title>
+    <title>How to package GenX &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
@@ -37,7 +36,7 @@
         <li class="right" >
           <a href="write_fom.html" title="Writing a FOM function"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" accesskey="U">Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">How to package GenX</a></li> 
       </ul>
@@ -49,7 +48,7 @@
           <div class="body" role="main">
             
   <section id="how-to-package-genx">
-<span id="development-distribution"></span><h1>How to package GenX<a class="headerlink" href="#how-to-package-genx" title="Permalink to this heading">¶</a></h1>
+<span id="development-distribution"></span><h1>How to package GenX<a class="headerlink" href="#how-to-package-genx" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This is outdated and no more valid for GenX 3. An automatic packaging
@@ -64,7 +63,7 @@ Only the PyPI distribution and upload to sourceforge is manual.</p>
 </ol>
 <p>Right now I could not get a binary OSX distribution to work, please let me know if you find a solution.</p>
 <section id="pypi-distribution">
-<h2>PyPI distribution<a class="headerlink" href="#pypi-distribution" title="Permalink to this heading">¶</a></h2>
+<h2>PyPI distribution<a class="headerlink" href="#pypi-distribution" title="Permalink to this headline">¶</a></h2>
 <p>The steps needed for PyPI are:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">build</span>
 <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">twine</span> <span class="n">upload</span> <span class="n">build</span><span class="o">/*</span>
@@ -85,26 +84,20 @@ Only the PyPI distribution and upload to sourceforge is manual.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">How to package GenX</a><ul>
 <li><a class="reference internal" href="#pypi-distribution">PyPI distribution</a></li>
 </ul>
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="write_fom.html"
-                          title="previous chapter">Writing a FOM function</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="mag_refl.html"
-                          title="next chapter">A model for magnetic reflectivity</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="write_fom.html"
+                        title="previous chapter">Writing a FOM function</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="mag_refl.html"
+                        title="next chapter">A model for magnetic reflectivity</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -121,7 +114,7 @@ Only the PyPI distribution and upload to sourceforge is manual.</p>
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -141,14 +134,14 @@ Only the PyPI distribution and upload to sourceforge is manual.</p>
         <li class="right" >
           <a href="write_fom.html" title="Writing a FOM function"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" >Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">How to package GenX</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

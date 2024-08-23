@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Writing a custom model &#8212; GenX 3.6.26 documentation</title>
+    <title>Writing a custom model &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
@@ -37,7 +36,7 @@
         <li class="right" >
           <a href="diffev.html" title="Fitting with Differential Evolution"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a custom model</a></li> 
       </ul>
@@ -49,7 +48,7 @@
           <div class="body" role="main">
             
   <section id="writing-a-custom-model">
-<span id="tutorial-writing-model"></span><h1>Writing a custom model<a class="headerlink" href="#writing-a-custom-model" title="Permalink to this heading">¶</a></h1>
+<span id="tutorial-writing-model"></span><h1>Writing a custom model<a class="headerlink" href="#writing-a-custom-model" title="Permalink to this headline">¶</a></h1>
 <p>Writing a model is quite easy in GenX if you are familiar with using the Python language.
 There is a couple of things one needs to keep in mind in order to successfully build such a model,
 which will be covered in this tutorial.</p>
@@ -64,7 +63,7 @@ Most models that are provided by GenX include automatic generation of the releva
 which are called <em>setParameter</em> for a model attribute called <em>parameter</em>.</p>
 </div>
 <section id="programming-python">
-<h2>Programming Python<a class="headerlink" href="#programming-python" title="Permalink to this heading">¶</a></h2>
+<h2>Programming Python<a class="headerlink" href="#programming-python" title="Permalink to this headline">¶</a></h2>
 <p>Since writing a model actually involves writing a script in Python it is good to have some basic knowledge of the syntax.
 However, if you have some basic knowledge about programming it should be fairly easy to just look at the examples
 and write your own models without having to learn Python specifically.
@@ -82,7 +81,7 @@ with numerical computations. There is also a
 <a class="reference external" href="https://www.enthought.com/wp-content/uploads/Enthought-MATLAB-to-Python-White-Paper.pdf">migration guide for those who are familiar with MatLab</a>.</p>
 </section>
 <section id="the-data-class">
-<h2>The Data class<a class="headerlink" href="#the-data-class" title="Permalink to this heading">¶</a></h2>
+<h2>The Data class<a class="headerlink" href="#the-data-class" title="Permalink to this headline">¶</a></h2>
 <p>In order to write the Sim class it is necessary to know the structure of the class <code class="docutils literal notranslate"><span class="pre">Data</span></code> which is taken as a
 parameter. The variables which could be useful in the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function are:</p>
 <ul class="simple">
@@ -97,7 +96,7 @@ parameter. The variables which could be useful in the <code class="docutils lite
 </ul>
 </section>
 <section id="simple-example">
-<h2>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this heading">¶</a></h2>
+<h2>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this headline">¶</a></h2>
 <p>Knowing what the Data class contains we will start with a simple example, making a model that fits one
 Gaussian to the first data set. The free parameters of the Gaussian are; the center of the peak, Xc, the peak width,
 W, and the amplitude of the peak, A. Writing a model for it would produce a code as shown below. Note that a
@@ -141,67 +140,61 @@ by <code class="docutils literal notranslate"><span class="pre">MyVar</span></co
 </div>
 </section>
 <section id="making-a-class">
-<h2>Making a class<a class="headerlink" href="#making-a-class" title="Permalink to this heading">¶</a></h2>
+<h2>Making a class<a class="headerlink" href="#making-a-class" title="Permalink to this headline">¶</a></h2>
 <p>The code above is usually sufficient for prototyping and simple problems. For more complex models it is
 recommended to write a model library (python module). This is what has been done for the simulation of x-ray reflectivity data.
 Instead of writing a lot of functions for each model, a class, or several, can be written to make the model
 simple to use. As a more elaborate solution for the previous simple example we can define a class:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">exp</span>
-<span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="c1"># Make GenX recognize the class as containing fittable parameters</span>
-<span class="linenos"> 4</span><span class="n">__pars__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Gauss&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="linenos"> 2</span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="linenos"> 3</span><span class="kn">from</span> <span class="nn">models.utils</span> <span class="kn">import</span> <span class="n">UserVars</span>
+<span class="linenos"> 4</span><span class="kn">from</span> <span class="nn">models.lib.base</span> <span class="kn">import</span> <span class="n">ModelParamBase</span>
 <span class="linenos"> 5</span>
-<span class="linenos"> 6</span><span class="c1"># Define user axes labels for plotting in the GUI</span>
-<span class="linenos"> 7</span><span class="n">__xlabel__</span> <span class="o">=</span> <span class="s1">&#39;x-axis&#39;</span>
-<span class="linenos"> 8</span><span class="n">__ylabel__</span> <span class="o">=</span> <span class="s1">&#39;y-axis&#39;</span>
-<span class="linenos"> 9</span>
-<span class="linenos">10</span><span class="c1"># Definition of the class</span>
-<span class="linenos">11</span><span class="k">class</span> <span class="nc">Gauss</span><span class="p">:</span>
-<span class="linenos">12</span>    <span class="c1"># A class for a Gaussian</span>
-<span class="linenos">13</span>    <span class="c1"># The creator of the class</span>
-<span class="linenos">14</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">w</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">xc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">A</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
-<span class="linenos">15</span>        <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">=</span><span class="n">w</span>
-<span class="linenos">16</span>        <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">=</span><span class="n">xc</span>
-<span class="linenos">17</span>        <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="o">=</span><span class="n">A</span>
-<span class="linenos">18</span>
-<span class="linenos">19</span>    <span class="c1"># The set functions used in the parameters column</span>
-<span class="linenos">20</span>    <span class="k">def</span> <span class="nf">setW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
-<span class="linenos">21</span>        <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">=</span><span class="n">w</span>
-<span class="linenos">22</span>
-<span class="linenos">23</span>    <span class="k">def</span> <span class="nf">setXc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc</span><span class="p">):</span>
-<span class="linenos">24</span>        <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="o">=</span><span class="n">xc</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="c1"># Define user axes labels for plotting in the GUI</span>
+<span class="linenos"> 8</span><span class="n">__xlabel__</span> <span class="o">=</span> <span class="s1">&#39;x-axis&#39;</span>
+<span class="linenos"> 9</span><span class="n">__ylabel__</span> <span class="o">=</span> <span class="s1">&#39;y-axis&#39;</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="c1"># Definition of the class used for each peak</span>
+<span class="linenos">12</span><span class="nd">@dataclass</span>
+<span class="linenos">13</span><span class="k">class</span> <span class="nc">Gauss</span><span class="p">(</span><span class="n">ModelParamBase</span><span class="p">):</span>
+<span class="linenos">14</span>    <span class="n">A</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="linenos">15</span>    <span class="n">w</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="linenos">16</span>    <span class="n">xc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span>    <span class="k">def</span> <span class="nf">Simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="linenos">19</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="linenos">20</span>
+<span class="linenos">21</span><span class="c1"># Definition of background parameter</span>
+<span class="linenos">22</span><span class="n">cp</span> <span class="o">=</span> <span class="n">UserVars</span><span class="p">()</span>
+<span class="linenos">23</span><span class="n">cp</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="s1">&#39;bkg&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="linenos">24</span>
 <span class="linenos">25</span>
-<span class="linenos">26</span>    <span class="k">def</span> <span class="nf">setA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
-<span class="linenos">27</span>        <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="o">=</span><span class="n">A</span>
+<span class="linenos">26</span><span class="c1"># Make a Gaussian:</span>
+<span class="linenos">27</span><span class="n">Peak1</span><span class="o">=</span><span class="n">Gauss</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">A</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 <span class="linenos">28</span>
-<span class="linenos">29</span>    <span class="c1"># The function to calculate the model (A Gaussian)</span>
-<span class="linenos">30</span>    <span class="k">def</span> <span class="nf">Simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-<span class="linenos">31</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="o">*</span><span class="n">exp</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-<span class="linenos">32</span>
-<span class="linenos">33</span><span class="c1"># Make a Gaussian:</span>
-<span class="linenos">34</span><span class="n">Peak1</span><span class="o">=</span><span class="n">Gauss</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span><span class="n">xc</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span><span class="n">A</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
-<span class="linenos">35</span>
-<span class="linenos">36</span><span class="k">def</span> <span class="nf">Sim</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-<span class="linenos">37</span>    <span class="c1"># Calculate the Gaussian</span>
-<span class="linenos">38</span>    <span class="n">I</span><span class="o">=</span><span class="n">Peak1</span><span class="o">.</span><span class="n">Simulate</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-<span class="linenos">39</span>    <span class="c1"># The returned value has to be a list</span>
-<span class="linenos">40</span>    <span class="k">return</span> <span class="p">[</span><span class="n">I</span><span class="p">]</span>
+<span class="linenos">29</span><span class="k">def</span> <span class="nf">Sim</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="linenos">30</span>    <span class="c1"># Calculate the Gaussian</span>
+<span class="linenos">31</span>    <span class="n">I</span><span class="o">=</span><span class="n">Peak1</span><span class="o">.</span><span class="n">Simulate</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+<span class="linenos">32</span>    <span class="c1"># The returned value has to be a list</span>
+<span class="linenos">33</span>    <span class="k">return</span> <span class="p">[</span><span class="n">I</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This code is quite similar to the first version but encapsulates all necessary information in one class.
 It starts with the definition of the class <code class="docutils literal notranslate"><span class="pre">Gauss</span></code>.
-This class has a constructor, <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, to initialize the parameters of the object and methods (functions of a class) to set the
-attributes (member variables), denoted as <code class="docutils literal notranslate"><span class="pre">self.*</span></code>. It also contains a method to calculate a Gaussian with the these
-attributes. After the class definition an instance (object), <code class="docutils literal notranslate"><span class="pre">Peak1</span></code>, of the Gauss class is created. Then the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function
-is defined as in the previous example but with the function call exchanged to <code class="docutils literal notranslate"><span class="pre">Peak1.Simulate(data.x[0])</span></code> in order
+The use of the <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator and derivation from <code class="docutils literal notranslate"><span class="pre">ModelParamBase</span></code> ensures that the parameters are
+automatically set and validated during instanciation and that GenX recognizes the class for setting parameters
+in the Grid. The class also contains a method to calculate a Gaussian with the these attributes.
+After the class definition an instance (object), <code class="docutils literal notranslate"><span class="pre">Peak1</span></code>, of the Gauss class is created. Then the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function
+is defined as in the previous example but with the function call exchanged to <code class="docutils literal notranslate"><span class="pre">Peak1.Simulate(data[0].x)</span></code> in order
 to simulate the object <code class="docutils literal notranslate"><span class="pre">Peak1</span></code>. The function names that should go into the parameter column in the
 parameter window will be: <code class="docutils literal notranslate"><span class="pre">Peak1.setW</span></code>, <code class="docutils literal notranslate"><span class="pre">Peak1.setXc</span></code> and <code class="docutils literal notranslate"><span class="pre">Peak1.setA</span></code> and should be selecteble from the menu
-below <code class="docutils literal notranslate"><span class="pre">Gauss</span></code> as we defined the <code class="docutils literal notranslate"><span class="pre">__pars__</span></code> variable to tell the user interface about our new class.</p>
-<p>The main data plot will use the axes labels defined with the <code class="docutils literal notranslate"><span class="pre">__xlabel__</span></code> and <code class="docutils literal notranslate"><span class="pre">__ylabel__</span></code> variables.
+after running the first simulation.</p>
+<p>The main data plot we use the axes labels defined with the <code class="docutils literal notranslate"><span class="pre">__xlabel__</span></code> and <code class="docutils literal notranslate"><span class="pre">__ylabel__</span></code> variables.
 For pre-defined models these are set automatically but can always be overwritten by the user in the script.</p>
 </section>
 <section id="multiple-gaussians">
-<h2>Multiple Gaussians<a class="headerlink" href="#multiple-gaussians" title="Permalink to this heading">¶</a></h2>
+<h2>Multiple Gaussians<a class="headerlink" href="#multiple-gaussians" title="Permalink to this headline">¶</a></h2>
 <p>Making the model based on a class makes it easier to extend. For example if two peaks should be fitted
 the class does not have to be changed. Instead an additional object of the class <code class="docutils literal notranslate"><span class="pre">Gauss</span></code>, for example called
 <code class="docutils literal notranslate"><span class="pre">Peak2</span></code>, can be created and the two contributions are then added in the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function. The end of the script
@@ -221,7 +214,7 @@ above would then be modified to</p>
 be <code class="docutils literal notranslate"><span class="pre">Peak2.setW</span></code>, <code class="docutils literal notranslate"><span class="pre">Peak2.setXc</span></code> and <code class="docutils literal notranslate"><span class="pre">Peak2.setA</span></code>.</p>
 </section>
 <section id="parameter-coupling">
-<h2>Parameter coupling<a class="headerlink" href="#parameter-coupling" title="Permalink to this heading">¶</a></h2>
+<h2>Parameter coupling<a class="headerlink" href="#parameter-coupling" title="Permalink to this headline">¶</a></h2>
 <p>When the base class is created it can be extended with more problem oriented constraints by using
 functions as in the first example. For example, in some cases it might be known that the width of the two
 Gaussians should be the same. This can be solved by defining a new variable</p>
@@ -255,9 +248,8 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Writing a custom model</a><ul>
 <li><a class="reference internal" href="#programming-python">Programming Python</a></li>
 <li><a class="reference internal" href="#the-data-class">The Data class</a></li>
@@ -269,17 +261,12 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="diffev.html"
-                          title="previous chapter">Fitting with Differential Evolution</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="simple_reflectivity.html"
-                          title="next chapter">Simple Reflectivity Model (XRR/NR)</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="diffev.html"
+                        title="previous chapter">Fitting with Differential Evolution</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="simple_reflectivity.html"
+                        title="next chapter">Simple Reflectivity Model (XRR/NR)</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -296,7 +283,7 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -316,14 +303,14 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
         <li class="right" >
           <a href="diffev.html" title="Fitting with Differential Evolution"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a custom model</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>ORSO Integration &#8212; GenX 3.6.26 documentation</title>
+    <title>ORSO Integration &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
@@ -37,7 +36,7 @@
         <li class="right" >
           <a href="batch_fitting.html" title="Batch Fitting"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">ORSO Integration</a></li> 
       </ul>
@@ -49,9 +48,9 @@
           <div class="body" role="main">
             
   <section id="orso-integration">
-<span id="tutorial-orso"></span><h1>ORSO Integration<a class="headerlink" href="#orso-integration" title="Permalink to this heading">¶</a></h1>
+<span id="tutorial-orso"></span><h1>ORSO Integration<a class="headerlink" href="#orso-integration" title="Permalink to this headline">¶</a></h1>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>The Open Reflectometry Standards Organization (ORSO) has defined file types for reflectometry that
 allow standardized header information to be reat programmatically. GenX integrates these capabilities
 when exporting the simulated data (<span class="menuselection">File‣Export‣Export ORSO…</span>). The text format <cite>*.ort</cite>
@@ -64,7 +63,7 @@ and check the results.</p>
 </div>
 </section>
 <section id="metadata-dialog">
-<h2>Metadata Dialog<a class="headerlink" href="#metadata-dialog" title="Permalink to this heading">¶</a></h2>
+<h2>Metadata Dialog<a class="headerlink" href="#metadata-dialog" title="Permalink to this headline">¶</a></h2>
 <p>GenX keeps track of metadata from imported measurements. Depending on the data loader, different
 amount of information is available. You can browse through the metadata using the Data panel,
 selecting one dataset and clicking the information button:</p>
@@ -79,7 +78,7 @@ measurement corresponds to.</p>
 allows to insert new items accoring to ORSO specification.</p>
 </section>
 <section id="new-model-from-file">
-<h2>New Model from File<a class="headerlink" href="#new-model-from-file" title="Permalink to this heading">¶</a></h2>
+<h2>New Model from File<a class="headerlink" href="#new-model-from-file" title="Permalink to this headline">¶</a></h2>
 <p>For a proper ORSO datafile it is possible to create a new reflectivity model, making use of existing
 information from the header. For this use the menu <span class="menuselection">File‣New from file…</span>.</p>
 <p>By default this defines the instrument parameters (neutron/x-ray etc.).
@@ -89,7 +88,7 @@ has been provided by the user, GenX will already use the information to buid the
 arc configured accoring to the specification.</p>
 </section>
 <section id="exported-fit">
-<h2>Exported Fit<a class="headerlink" href="#exported-fit" title="Permalink to this heading">¶</a></h2>
+<h2>Exported Fit<a class="headerlink" href="#exported-fit" title="Permalink to this headline">¶</a></h2>
 <p>When exporting data for publication using the ORSO format, a typical header would look like this.
 In addition to all header data from the imported measurement, GenX adds the <strong>analysis</strong> section.
 It includes not only the fit script but all fit parameters, uncertainties as well as a model
@@ -97,186 +96,186 @@ accoring to the <a class="reference external" href="https://www.reflectometry.or
 <p>(In this example, a full statistical analysis accoring to <a class="reference internal" href="error_statistics.html#tutorial-error-statistics"><span class="std std-ref">Error Statistics from bumps library</span></a> was performed.)</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># ORSO reflectivity data file | 1.1 standard | YAML encoding | https://www.reflectometry.org/</span>
 <span class="nt">data_source</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">owner</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GenX</span>
-<span class="w">    </span><span class="nt">affiliation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Paul Scherrer Institut</span>
-<span class="w">  </span><span class="nt">experiment</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example</span>
-<span class="w">    </span><span class="nt">instrument</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SuperAdam</span>
-<span class="w">    </span><span class="nt">start_date</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
-<span class="w">    </span><span class="nt">probe</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">neutron</span>
-<span class="w">  </span><span class="nt">sample</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO on Si</span>
-<span class="w">  </span><span class="nt">measurement</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">instrument_settings</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">incident_angle</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">min</span><span class="p">:</span><span class="w"> </span><span class="nv">0.01</span><span class="p p-Indicator">,</span><span class="nt"> max</span><span class="p">:</span><span class="w"> </span><span class="nv">4.2</span><span class="p p-Indicator">,</span><span class="nt"> unit</span><span class="p">:</span><span class="w"> </span><span class="nv">deg</span><span class="p p-Indicator">}</span>
-<span class="w">      </span><span class="nt">wavelength</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">magnitude</span><span class="p">:</span><span class="w"> </span><span class="nv">4.4</span><span class="p p-Indicator">,</span><span class="nt"> unit</span><span class="p">:</span><span class="w"> </span><span class="nv">angstrom</span><span class="p p-Indicator">}</span>
-<span class="w">      </span><span class="nt">polarization</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unpolarized</span>
-<span class="w">    </span><span class="nt">data_files</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
-<span class="w">  </span><span class="nt">file_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">for_import.ort</span>
+  <span class="nt">owner</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">GenX</span>
+    <span class="nt">affiliation</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Paul Scherrer Institut</span>
+  <span class="nt">experiment</span><span class="p">:</span>
+    <span class="nt">title</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Example</span>
+    <span class="nt">instrument</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SuperAdam</span>
+    <span class="nt">start_date</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">null</span>
+    <span class="nt">probe</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">neutron</span>
+  <span class="nt">sample</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO on Si</span>
+  <span class="nt">measurement</span><span class="p">:</span>
+    <span class="nt">instrument_settings</span><span class="p">:</span>
+      <span class="nt">incident_angle</span><span class="p">:</span> <span class="p p-Indicator">{</span><span class="nt">min</span><span class="p">:</span> <span class="nv">0.01</span><span class="p p-Indicator">,</span><span class="nt"> max</span><span class="p">:</span> <span class="nv">4.2</span><span class="p p-Indicator">,</span><span class="nt"> unit</span><span class="p">:</span> <span class="nv">deg</span><span class="p p-Indicator">}</span>
+      <span class="nt">wavelength</span><span class="p">:</span> <span class="p p-Indicator">{</span><span class="nt">magnitude</span><span class="p">:</span> <span class="nv">4.4</span><span class="p p-Indicator">,</span><span class="nt"> unit</span><span class="p">:</span> <span class="nv">angstrom</span><span class="p p-Indicator">}</span>
+      <span class="nt">polarization</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">unpolarized</span>
+    <span class="nt">data_files</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
+  <span class="nt">file_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">for_import.ort</span>
 <span class="nt">reduction</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">software</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="nv">null</span><span class="p p-Indicator">}</span>
-<span class="nt">data_set</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO ref</span>
+  <span class="nt">software</span><span class="p">:</span> <span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span> <span class="nv">null</span><span class="p p-Indicator">}</span>
+<span class="nt">data_set</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO ref</span>
 <span class="nt">analysis</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">software</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GenX</span>
-<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.6.26</span>
-<span class="w">  </span><span class="nt">model</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">stack</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ambient | surf | substrate</span>
-<span class="w">    </span><span class="nt">origin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GenX model</span>
-<span class="w">    </span><span class="nt">sub_stacks</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">surf</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">repetitions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="w">        </span><span class="nt">stack</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO</span>
-<span class="w">    </span><span class="nt">layers</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">SiO</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">thickness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1212.22800714822</span>
-<span class="w">        </span><span class="nt">roughness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.306906302304505</span>
-<span class="w">        </span><span class="nt">material</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">sld</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">real</span><span class="p">:</span><span class="w"> </span><span class="nv">4.2969154511952156e-07</span><span class="p p-Indicator">,</span><span class="nt"> imag</span><span class="p">:</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">}</span>
-<span class="w">    </span><span class="nt">materials</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">ambient</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">sld</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">real</span><span class="p">:</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="nt"> imag</span><span class="p">:</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">}</span>
-<span class="w">      </span><span class="nt">substrate</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">sld</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">real</span><span class="p">:</span><span class="w"> </span><span class="nv">2.0583957958990535e-07</span><span class="p p-Indicator">,</span><span class="nt"> imag</span><span class="p">:</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">}</span>
-<span class="w">    </span><span class="nt">globals</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">roughness</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">magnitude</span><span class="p">:</span><span class="w"> </span><span class="nv">0.3</span><span class="p p-Indicator">,</span><span class="nt"> unit</span><span class="p">:</span><span class="w"> </span><span class="nv">nm</span><span class="p p-Indicator">}</span>
-<span class="w">      </span><span class="nt">length_unit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">angstrom</span>
-<span class="w">      </span><span class="nt">mass_density_unit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">g/cm^3</span>
-<span class="w">      </span><span class="nt">number_density_unit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1/nm^3</span>
-<span class="w">      </span><span class="nt">sld_unit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1/angstrom^2</span>
-<span class="w">      </span><span class="nt">magnetic_moment_unit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">muB</span>
-<span class="w">  </span><span class="nt">script</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;import</span><span class="nv"> </span><span class="s">models.spec_nx</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">model\nfrom</span><span class="nv"> </span><span class="s">models.utils</span><span class="nv"> </span><span class="s">import</span><span class="nv"> </span><span class="s">UserVars,</span><span class="nv"> </span><span class="s">fp,\</span>
-<span class="w">    </span><span class="s">\ fw,</span><span class="nv"> </span><span class="s">bc,</span><span class="nv"> </span><span class="s">bw\nfrom</span><span class="nv"> </span><span class="s">numpy</span><span class="nv"> </span><span class="s">import</span><span class="nv"> </span><span class="s">*\n\n#</span><span class="nv"> </span><span class="s">BEGIN</span><span class="nv"> </span><span class="s">Instrument</span><span class="nv"> </span><span class="s">DO</span><span class="nv"> </span><span class="s">NOT</span><span class="nv"> </span><span class="s">CHANGE\nfrom</span><span class="nv"> </span><span class="s">models.utils\</span>
-<span class="w">    </span><span class="s">\ import</span><span class="nv"> </span><span class="s">create_fp,</span><span class="nv"> </span><span class="s">create_fw\ninst</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Instrument(probe=&#39;neutron&#39;,</span><span class="nv"> </span><span class="s">wavelength=4.4,\</span>
-<span class="w">    </span><span class="s">\ coords=&#39;q&#39;,</span><span class="nv"> </span><span class="s">I0=14.998640637081689,</span><span class="nv"> </span><span class="s">res=0.001,</span><span class="nv"> </span><span class="s">restype=&#39;full</span><span class="nv"> </span><span class="s">conv</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">varying\</span>
-<span class="w">    </span><span class="s">\ res.&#39;,</span><span class="nv"> </span><span class="s">respoints=9,</span><span class="nv"> </span><span class="s">resintrange=3,</span><span class="nv"> </span><span class="s">beamw=1.361494002150504,</span><span class="nv"> </span><span class="s">footype=&#39;gauss</span><span class="nv"> </span><span class="s">beam&#39;,\</span>
-<span class="w">    </span><span class="s">\ samplelen=50.0,</span><span class="nv"> </span><span class="s">incangle=0.0,</span><span class="nv"> </span><span class="s">pol=&#39;uu&#39;,</span><span class="nv"> </span><span class="s">Ibkg=3.9351064727954855e-06,</span><span class="nv"> </span><span class="s">tthoff=0.0,)\n\</span>
-<span class="w">    </span><span class="s">inst_fp</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">create_fp(inst.wavelength);</span><span class="nv"> </span><span class="s">inst_fw</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">create_fw(inst.wavelength)\n\n\</span>
-<span class="w">    </span><span class="s">fp.set_wavelength(inst.wavelength);</span><span class="nv"> </span><span class="s">fw.set_wavelength(inst.wavelength)\n#</span><span class="nv"> </span><span class="s">END\</span>
-<span class="w">    </span><span class="s">\ Instrument\n\n#</span><span class="nv"> </span><span class="s">BEGIN</span><span class="nv"> </span><span class="s">Sample</span><span class="nv"> </span><span class="s">DO</span><span class="nv"> </span><span class="s">NOT</span><span class="nv"> </span><span class="s">CHANGE\nAmb</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Layer(sigma=0.0,</span><span class="nv"> </span><span class="s">dens=1.0,\</span>
-<span class="w">    </span><span class="s">\ d=0.0,</span><span class="nv"> </span><span class="s">f=(1e-20+1e-20j),</span><span class="nv"> </span><span class="s">b=0,</span><span class="nv"> </span><span class="s">xs_ai=0.0,</span><span class="nv"> </span><span class="s">magn=0.0,</span><span class="nv"> </span><span class="s">magn_ang=0.0)\nSiO</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Layer(sigma=2,\</span>
-<span class="w">    </span><span class="s">\ dens=0.026,</span><span class="nv"> </span><span class="s">d=1205,</span><span class="nv"> </span><span class="s">f=(1e-20+1e-20j),</span><span class="nv"> </span><span class="s">b=bc.Si</span><span class="nv"> </span><span class="s">+</span><span class="nv"> </span><span class="s">bc.O*2,</span><span class="nv"> </span><span class="s">xs_ai=0.0,</span><span class="nv"> </span><span class="s">magn=0.0,\</span>
-<span class="w">    </span><span class="s">\ magn_ang=0.0)\nSub</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Layer(sigma=2,</span><span class="nv"> </span><span class="s">dens=8/5.443**3,</span><span class="nv"> </span><span class="s">d=0.0,</span><span class="nv"> </span><span class="s">f=(1e-20+1e-20j),\</span>
-<span class="w">    </span><span class="s">\ b=bc.Si,</span><span class="nv"> </span><span class="s">xs_ai=0.0,</span><span class="nv"> </span><span class="s">magn=0.0,</span><span class="nv"> </span><span class="s">magn_ang=0.0)\n\nsurf</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Stack(Layers=[SiO],\</span>
-<span class="w">    </span><span class="s">\ Repetitions</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">1)\n\nsample</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Sample(Stacks</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">[surf],</span><span class="nv"> </span><span class="s">Ambient</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">Amb,</span><span class="nv"> </span><span class="s">Substrate\</span>
-<span class="w">    </span><span class="s">\ =</span><span class="nv"> </span><span class="s">Sub)\n#</span><span class="nv"> </span><span class="s">END</span><span class="nv"> </span><span class="s">Sample\n\n#</span><span class="nv"> </span><span class="s">BEGIN</span><span class="nv"> </span><span class="s">Parameters</span><span class="nv"> </span><span class="s">DO</span><span class="nv"> </span><span class="s">NOT</span><span class="nv"> </span><span class="s">CHANGE\ncp</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">UserVars()\n\</span>
-<span class="w">    </span><span class="s">cp.new_var(&#39;dtheta&#39;,</span><span class="nv"> </span><span class="s">0.04)\ncp.new_var(&#39;dlol&#39;,</span><span class="nv"> </span><span class="s">0.007)\ncp.new_sys_err(&#39;tth0&#39;,\</span>
-<span class="w">    </span><span class="s">\ 0.0,</span><span class="nv"> </span><span class="s">0.0035)\n#</span><span class="nv"> </span><span class="s">END</span><span class="nv"> </span><span class="s">Parameters\n\nSLD</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">[]\ndef</span><span class="nv"> </span><span class="s">Sim(data):\n</span><span class="nv">    </span><span class="s">I</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">[]\n</span><span class="nv">   </span><span class="s">\</span>
-<span class="w">    </span><span class="s">\ SLD[:]</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">[]\n</span><span class="nv">    </span><span class="s">#</span><span class="nv"> </span><span class="s">BEGIN</span><span class="nv"> </span><span class="s">Dataset</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">DO</span><span class="nv"> </span><span class="s">NOT</span><span class="nv"> </span><span class="s">CHANGE\n</span><span class="nv">    </span><span class="s">inst.setTthoff(cp.getTth0())\n\</span>
-<span class="w">    </span><span class="s">\ </span><span class="nv">   </span><span class="s">inst.setRes(sqrt((cp.dlol*data[0].x)**2</span><span class="nv"> </span><span class="s">+</span><span class="nv"> </span><span class="s">(4*3.1415/4.4*cp.dtheta*pi/360)**2))\n\</span>
-<span class="w">    </span><span class="s">\ </span><span class="nv">   </span><span class="s">d</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">data[0]\n</span><span class="nv">    </span><span class="s">I.append(sample.SimSpecular(d.x,</span><span class="nv"> </span><span class="s">inst))\n</span><span class="nv">    </span><span class="s">if</span><span class="nv"> </span><span class="s">_sim:</span><span class="nv"> </span><span class="s">SLD.append(sample.SimSLD(None,</span>
-<span class="w">    </span><span class="s">\ None,</span><span class="nv"> </span><span class="s">inst))\n</span><span class="nv">    </span><span class="s">#</span><span class="nv"> </span><span class="s">END</span><span class="nv"> </span><span class="s">Dataset</span><span class="nv"> </span><span class="s">0\n</span><span class="nv">    </span><span class="s">return</span><span class="nv"> </span><span class="s">I&quot;</span>
-<span class="w">  </span><span class="nt">parameters</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO.setD</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1212.22800714822</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">903.75</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1506.25</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">(-4.222e-01, 4.558e-01)</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO.setB</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16.52659788921237</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">11.816324999999999</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">19.693875</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">(-5.753e-02, 5.761e-02)</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO.setSigma</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.306906302304505</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.5</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15.0</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">(-1.975e-01, 3.629e-01)</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Sub.setSigma</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.563155140343594</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.5</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15.0</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">(-1.311e+00, 7.008e-01)</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inst.setI0</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.8056171439193776</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.5</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15.0</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inst.setIbkg</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.1398201626854554e-06</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0e-05</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cp.setTth0</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-0.00014253852631751873</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-0.05</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.05</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inst.setBeamw</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.6</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.15000000000000002</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.5</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cp.setDlol</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.005</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.004</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.008</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Parameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cp.setDtheta</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.033</span>
-<span class="w">    </span><span class="nt">Fit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">    </span><span class="nt">Min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.03</span>
-<span class="w">    </span><span class="nt">Max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.05</span>
-<span class="w">    </span><span class="nt">Error</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span>
-<span class="w">  </span><span class="nt">statistics_mcmc</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">library</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bumps</span>
-<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9.3</span>
-<span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">pop</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
-<span class="w">      </span><span class="nt">burn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span>
-<span class="w">      </span><span class="nt">samples</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100000</span>
-<span class="w">    </span><span class="nt">parameters</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO_B</span>
-<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16.52659788921237</span>
-<span class="w">      </span><span class="nt">error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.05757321442536423</span>
-<span class="w">      </span><span class="nt">cross_correlations</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">SiO_B</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.003169740268471557</span>
-<span class="w">        </span><span class="nt">SiO_D</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0039037691554475317</span>
-<span class="w">        </span><span class="nt">SiO_Sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0010288173799339142</span>
-<span class="w">        </span><span class="nt">Sub_Sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.013075369118058998</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO_D</span>
-<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1212.22800714822</span>
-<span class="w">      </span><span class="nt">error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.43902018031155876</span>
-<span class="w">      </span><span class="nt">cross_correlations</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">SiO_B</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0039037691554475317</span>
-<span class="w">        </span><span class="nt">SiO_D</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.18902683733024617</span>
-<span class="w">        </span><span class="nt">SiO_Sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.006523187144176223</span>
-<span class="w">        </span><span class="nt">Sub_Sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.001940201735574769</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SiO_Sigma</span>
-<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.306906302304505</span>
-<span class="w">      </span><span class="nt">error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.28023314693246926</span>
-<span class="w">      </span><span class="nt">cross_correlations</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">SiO_B</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.001028817379933914</span>
-<span class="w">        </span><span class="nt">SiO_D</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.006523187144176223</span>
-<span class="w">        </span><span class="nt">SiO_Sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.06652948247714746</span>
-<span class="w">        </span><span class="nt">Sub_Sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-0.19488424544167524</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Sub_Sigma</span>
-<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.563155140343594</span>
-<span class="w">      </span><span class="nt">error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0059575457738956</span>
-<span class="w">      </span><span class="nt">cross_correlations</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">SiO_B</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.013075369118058998</span>
-<span class="w">        </span><span class="nt">SiO_D</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.001940201735574769</span>
-<span class="w">        </span><span class="nt">SiO_Sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-0.19488424544167524</span>
-<span class="w">        </span><span class="nt">Sub_Sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.7994400246403878</span>
-<span class="w">  </span><span class="nt">operator</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">glavic_a</span>
-<span class="w">  </span><span class="nt">timestamp</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;2024-07-23T14:56:01&#39;</span>
+  <span class="nt">software</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">GenX</span>
+    <span class="nt">version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3.6.26</span>
+  <span class="nt">model</span><span class="p">:</span>
+    <span class="nt">stack</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ambient | surf | substrate</span>
+    <span class="nt">origin</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">GenX model</span>
+    <span class="nt">sub_stacks</span><span class="p">:</span>
+      <span class="nt">surf</span><span class="p">:</span>
+        <span class="nt">repetitions</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+        <span class="nt">stack</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO</span>
+    <span class="nt">layers</span><span class="p">:</span>
+      <span class="nt">SiO</span><span class="p">:</span>
+        <span class="nt">thickness</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1212.22800714822</span>
+        <span class="nt">roughness</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4.306906302304505</span>
+        <span class="nt">material</span><span class="p">:</span>
+          <span class="nt">sld</span><span class="p">:</span> <span class="p p-Indicator">{</span><span class="nt">real</span><span class="p">:</span> <span class="nv">4.2969154511952156e-07</span><span class="p p-Indicator">,</span><span class="nt"> imag</span><span class="p">:</span> <span class="nv">0.0</span><span class="p p-Indicator">}</span>
+    <span class="nt">materials</span><span class="p">:</span>
+      <span class="nt">ambient</span><span class="p">:</span>
+        <span class="nt">sld</span><span class="p">:</span> <span class="p p-Indicator">{</span><span class="nt">real</span><span class="p">:</span> <span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="nt"> imag</span><span class="p">:</span> <span class="nv">0.0</span><span class="p p-Indicator">}</span>
+      <span class="nt">substrate</span><span class="p">:</span>
+        <span class="nt">sld</span><span class="p">:</span> <span class="p p-Indicator">{</span><span class="nt">real</span><span class="p">:</span> <span class="nv">2.0583957958990535e-07</span><span class="p p-Indicator">,</span><span class="nt"> imag</span><span class="p">:</span> <span class="nv">0.0</span><span class="p p-Indicator">}</span>
+    <span class="nt">globals</span><span class="p">:</span>
+      <span class="nt">roughness</span><span class="p">:</span> <span class="p p-Indicator">{</span><span class="nt">magnitude</span><span class="p">:</span> <span class="nv">0.3</span><span class="p p-Indicator">,</span><span class="nt"> unit</span><span class="p">:</span> <span class="nv">nm</span><span class="p p-Indicator">}</span>
+      <span class="nt">length_unit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">angstrom</span>
+      <span class="nt">mass_density_unit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">g/cm^3</span>
+      <span class="nt">number_density_unit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1/nm^3</span>
+      <span class="nt">sld_unit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1/angstrom^2</span>
+      <span class="nt">magnetic_moment_unit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">muB</span>
+  <span class="nt">script</span><span class="p">:</span> <span class="s">&quot;import</span><span class="nv"> </span><span class="s">models.spec_nx</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">model\nfrom</span><span class="nv"> </span><span class="s">models.utils</span><span class="nv"> </span><span class="s">import</span><span class="nv"> </span><span class="s">UserVars,</span><span class="nv"> </span><span class="s">fp,\</span>
+    <span class="s">\ fw,</span><span class="nv"> </span><span class="s">bc,</span><span class="nv"> </span><span class="s">bw\nfrom</span><span class="nv"> </span><span class="s">numpy</span><span class="nv"> </span><span class="s">import</span><span class="nv"> </span><span class="s">*\n\n#</span><span class="nv"> </span><span class="s">BEGIN</span><span class="nv"> </span><span class="s">Instrument</span><span class="nv"> </span><span class="s">DO</span><span class="nv"> </span><span class="s">NOT</span><span class="nv"> </span><span class="s">CHANGE\nfrom</span><span class="nv"> </span><span class="s">models.utils\</span>
+    <span class="s">\ import</span><span class="nv"> </span><span class="s">create_fp,</span><span class="nv"> </span><span class="s">create_fw\ninst</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Instrument(probe=&#39;neutron&#39;,</span><span class="nv"> </span><span class="s">wavelength=4.4,\</span>
+    <span class="s">\ coords=&#39;q&#39;,</span><span class="nv"> </span><span class="s">I0=14.998640637081689,</span><span class="nv"> </span><span class="s">res=0.001,</span><span class="nv"> </span><span class="s">restype=&#39;full</span><span class="nv"> </span><span class="s">conv</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">varying\</span>
+    <span class="s">\ res.&#39;,</span><span class="nv"> </span><span class="s">respoints=9,</span><span class="nv"> </span><span class="s">resintrange=3,</span><span class="nv"> </span><span class="s">beamw=1.361494002150504,</span><span class="nv"> </span><span class="s">footype=&#39;gauss</span><span class="nv"> </span><span class="s">beam&#39;,\</span>
+    <span class="s">\ samplelen=50.0,</span><span class="nv"> </span><span class="s">incangle=0.0,</span><span class="nv"> </span><span class="s">pol=&#39;uu&#39;,</span><span class="nv"> </span><span class="s">Ibkg=3.9351064727954855e-06,</span><span class="nv"> </span><span class="s">tthoff=0.0,)\n\</span>
+    <span class="s">inst_fp</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">create_fp(inst.wavelength);</span><span class="nv"> </span><span class="s">inst_fw</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">create_fw(inst.wavelength)\n\n\</span>
+    <span class="s">fp.set_wavelength(inst.wavelength);</span><span class="nv"> </span><span class="s">fw.set_wavelength(inst.wavelength)\n#</span><span class="nv"> </span><span class="s">END\</span>
+    <span class="s">\ Instrument\n\n#</span><span class="nv"> </span><span class="s">BEGIN</span><span class="nv"> </span><span class="s">Sample</span><span class="nv"> </span><span class="s">DO</span><span class="nv"> </span><span class="s">NOT</span><span class="nv"> </span><span class="s">CHANGE\nAmb</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Layer(sigma=0.0,</span><span class="nv"> </span><span class="s">dens=1.0,\</span>
+    <span class="s">\ d=0.0,</span><span class="nv"> </span><span class="s">f=(1e-20+1e-20j),</span><span class="nv"> </span><span class="s">b=0,</span><span class="nv"> </span><span class="s">xs_ai=0.0,</span><span class="nv"> </span><span class="s">magn=0.0,</span><span class="nv"> </span><span class="s">magn_ang=0.0)\nSiO</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Layer(sigma=2,\</span>
+    <span class="s">\ dens=0.026,</span><span class="nv"> </span><span class="s">d=1205,</span><span class="nv"> </span><span class="s">f=(1e-20+1e-20j),</span><span class="nv"> </span><span class="s">b=bc.Si</span><span class="nv"> </span><span class="s">+</span><span class="nv"> </span><span class="s">bc.O*2,</span><span class="nv"> </span><span class="s">xs_ai=0.0,</span><span class="nv"> </span><span class="s">magn=0.0,\</span>
+    <span class="s">\ magn_ang=0.0)\nSub</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Layer(sigma=2,</span><span class="nv"> </span><span class="s">dens=8/5.443**3,</span><span class="nv"> </span><span class="s">d=0.0,</span><span class="nv"> </span><span class="s">f=(1e-20+1e-20j),\</span>
+    <span class="s">\ b=bc.Si,</span><span class="nv"> </span><span class="s">xs_ai=0.0,</span><span class="nv"> </span><span class="s">magn=0.0,</span><span class="nv"> </span><span class="s">magn_ang=0.0)\n\nsurf</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Stack(Layers=[SiO],\</span>
+    <span class="s">\ Repetitions</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">1)\n\nsample</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">model.Sample(Stacks</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">[surf],</span><span class="nv"> </span><span class="s">Ambient</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">Amb,</span><span class="nv"> </span><span class="s">Substrate\</span>
+    <span class="s">\ =</span><span class="nv"> </span><span class="s">Sub)\n#</span><span class="nv"> </span><span class="s">END</span><span class="nv"> </span><span class="s">Sample\n\n#</span><span class="nv"> </span><span class="s">BEGIN</span><span class="nv"> </span><span class="s">Parameters</span><span class="nv"> </span><span class="s">DO</span><span class="nv"> </span><span class="s">NOT</span><span class="nv"> </span><span class="s">CHANGE\ncp</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">UserVars()\n\</span>
+    <span class="s">cp.new_var(&#39;dtheta&#39;,</span><span class="nv"> </span><span class="s">0.04)\ncp.new_var(&#39;dlol&#39;,</span><span class="nv"> </span><span class="s">0.007)\ncp.new_sys_err(&#39;tth0&#39;,\</span>
+    <span class="s">\ 0.0,</span><span class="nv"> </span><span class="s">0.0035)\n#</span><span class="nv"> </span><span class="s">END</span><span class="nv"> </span><span class="s">Parameters\n\nSLD</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">[]\ndef</span><span class="nv"> </span><span class="s">Sim(data):\n</span><span class="nv">    </span><span class="s">I</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">[]\n</span><span class="nv">   </span><span class="s">\</span>
+    <span class="s">\ SLD[:]</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">[]\n</span><span class="nv">    </span><span class="s">#</span><span class="nv"> </span><span class="s">BEGIN</span><span class="nv"> </span><span class="s">Dataset</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">DO</span><span class="nv"> </span><span class="s">NOT</span><span class="nv"> </span><span class="s">CHANGE\n</span><span class="nv">    </span><span class="s">inst.setTthoff(cp.getTth0())\n\</span>
+    <span class="s">\ </span><span class="nv">   </span><span class="s">inst.setRes(sqrt((cp.dlol*data[0].x)**2</span><span class="nv"> </span><span class="s">+</span><span class="nv"> </span><span class="s">(4*3.1415/4.4*cp.dtheta*pi/360)**2))\n\</span>
+    <span class="s">\ </span><span class="nv">   </span><span class="s">d</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">data[0]\n</span><span class="nv">    </span><span class="s">I.append(sample.SimSpecular(d.x,</span><span class="nv"> </span><span class="s">inst))\n</span><span class="nv">    </span><span class="s">if</span><span class="nv"> </span><span class="s">_sim:</span><span class="nv"> </span><span class="s">SLD.append(sample.SimSLD(None,</span>
+    <span class="s">\ None,</span><span class="nv"> </span><span class="s">inst))\n</span><span class="nv">    </span><span class="s">#</span><span class="nv"> </span><span class="s">END</span><span class="nv"> </span><span class="s">Dataset</span><span class="nv"> </span><span class="s">0\n</span><span class="nv">    </span><span class="s">return</span><span class="nv"> </span><span class="s">I&quot;</span>
+  <span class="nt">parameters</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO.setD</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1212.22800714822</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">903.75</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1506.25</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">(-4.222e-01, 4.558e-01)</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO.setB</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">16.52659788921237</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">11.816324999999999</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">19.693875</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">(-5.753e-02, 5.761e-02)</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO.setSigma</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4.306906302304505</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.5</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">15.0</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">(-1.975e-01, 3.629e-01)</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Sub.setSigma</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4.563155140343594</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.5</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">15.0</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">(-1.311e+00, 7.008e-01)</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">inst.setI0</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5.8056171439193776</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.5</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">15.0</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="s">&#39;-&#39;</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">inst.setIbkg</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2.1398201626854554e-06</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.0</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.0e-05</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="s">&#39;-&#39;</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">cp.setTth0</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-0.00014253852631751873</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-0.05</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.05</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="s">&#39;-&#39;</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">inst.setBeamw</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.6</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.15000000000000002</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.5</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="s">&#39;-&#39;</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">cp.setDlol</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.005</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.004</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.008</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="s">&#39;-&#39;</span>
+  <span class="p p-Indicator">-</span> <span class="nt">Parameter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">cp.setDtheta</span>
+    <span class="nt">Value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.033</span>
+    <span class="nt">Fit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+    <span class="nt">Min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.03</span>
+    <span class="nt">Max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.05</span>
+    <span class="nt">Error</span><span class="p">:</span> <span class="s">&#39;-&#39;</span>
+  <span class="nt">statistics_mcmc</span><span class="p">:</span>
+    <span class="nt">library</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bumps</span>
+    <span class="nt">version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.9.3</span>
+    <span class="nt">settings</span><span class="p">:</span>
+      <span class="nt">pop</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">8</span>
+      <span class="nt">burn</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">200</span>
+      <span class="nt">samples</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100000</span>
+    <span class="nt">parameters</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO_B</span>
+      <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">16.52659788921237</span>
+      <span class="nt">error</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.05757321442536423</span>
+      <span class="nt">cross_correlations</span><span class="p">:</span>
+        <span class="nt">SiO_B</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.003169740268471557</span>
+        <span class="nt">SiO_D</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.0039037691554475317</span>
+        <span class="nt">SiO_Sigma</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.0010288173799339142</span>
+        <span class="nt">Sub_Sigma</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.013075369118058998</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO_D</span>
+      <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1212.22800714822</span>
+      <span class="nt">error</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.43902018031155876</span>
+      <span class="nt">cross_correlations</span><span class="p">:</span>
+        <span class="nt">SiO_B</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.0039037691554475317</span>
+        <span class="nt">SiO_D</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.18902683733024617</span>
+        <span class="nt">SiO_Sigma</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.006523187144176223</span>
+        <span class="nt">Sub_Sigma</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.001940201735574769</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SiO_Sigma</span>
+      <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4.306906302304505</span>
+      <span class="nt">error</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.28023314693246926</span>
+      <span class="nt">cross_correlations</span><span class="p">:</span>
+        <span class="nt">SiO_B</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.001028817379933914</span>
+        <span class="nt">SiO_D</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.006523187144176223</span>
+        <span class="nt">SiO_Sigma</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.06652948247714746</span>
+        <span class="nt">Sub_Sigma</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-0.19488424544167524</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Sub_Sigma</span>
+      <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4.563155140343594</span>
+      <span class="nt">error</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.0059575457738956</span>
+      <span class="nt">cross_correlations</span><span class="p">:</span>
+        <span class="nt">SiO_B</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.013075369118058998</span>
+        <span class="nt">SiO_D</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.001940201735574769</span>
+        <span class="nt">SiO_Sigma</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-0.19488424544167524</span>
+        <span class="nt">Sub_Sigma</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.7994400246403878</span>
+  <span class="nt">operator</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">glavic_a</span>
+  <span class="nt">timestamp</span><span class="p">:</span> <span class="s">&#39;2024-07-23T14:56:01&#39;</span>
 <span class="nt">columns</span><span class="p">:</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="nv">Qz</span><span class="p p-Indicator">,</span><span class="nt"> unit</span><span class="p">:</span><span class="w"> </span><span class="nv">1/angstrom</span><span class="p p-Indicator">}</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="nv">R</span><span class="p p-Indicator">}</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">error_of</span><span class="p">:</span><span class="w"> </span><span class="nv">R</span><span class="p p-Indicator">}</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="nv">Rsim</span><span class="p p-Indicator">}</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="nv">FOM</span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span> <span class="nv">Qz</span><span class="p p-Indicator">,</span><span class="nt"> unit</span><span class="p">:</span> <span class="nv">1/angstrom</span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span> <span class="nv">R</span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">error_of</span><span class="p">:</span> <span class="nv">R</span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span> <span class="nv">Rsim</span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span> <span class="nv">FOM</span><span class="p p-Indicator">}</span>
 </pre></div>
 </div>
 </section>
@@ -292,9 +291,8 @@ accoring to the <a class="reference external" href="https://www.reflectometry.or
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">ORSO Integration</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#metadata-dialog">Metadata Dialog</a></li>
@@ -304,17 +302,12 @@ accoring to the <a class="reference external" href="https://www.reflectometry.or
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="batch_fitting.html"
-                          title="previous chapter">Batch Fitting</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="sxrd.html"
-                          title="next chapter">Surface X-diffraction tutorial</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="batch_fitting.html"
+                        title="previous chapter">Batch Fitting</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sxrd.html"
+                        title="next chapter">Surface X-diffraction tutorial</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -331,7 +324,7 @@ accoring to the <a class="reference external" href="https://www.reflectometry.or
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -351,14 +344,14 @@ accoring to the <a class="reference external" href="https://www.reflectometry.or
         <li class="right" >
           <a href="batch_fitting.html" title="Batch Fitting"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">ORSO Integration</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

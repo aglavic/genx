@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Frequently Asked Questions &#8212; GenX 3.6.26 documentation</title>
+    <title>Frequently Asked Questions &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -38,7 +37,7 @@
         <li class="right" >
           <a href="tutorials/mpi.html" title="Using GenX from the command line (with mpi)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Frequently Asked Questions</a></li> 
       </ul>
     </div>  
@@ -49,32 +48,32 @@
           <div class="body" role="main">
             
   <section id="frequently-asked-questions">
-<span id="faq"></span><h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this heading">¶</a></h1>
+<span id="faq"></span><h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
 <section id="general">
-<h2>General<a class="headerlink" href="#general" title="Permalink to this heading">¶</a></h2>
+<h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
 <section id="how-should-i-cite-genx">
-<h3>How should I cite GenX?<a class="headerlink" href="#how-should-i-cite-genx" title="Permalink to this heading">¶</a></h3>
+<h3>How should I cite GenX?<a class="headerlink" href="#how-should-i-cite-genx" title="Permalink to this headline">¶</a></h3>
 <p>Give a reference to the paper describing GenX 3:
 <a class="reference external" href="https://doi.org/10.1107/S1600576722006653">A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022)</a>
 And if you want to give a link to the homepage: &lt;<a class="reference external" href="http://genx.sf.net">http://genx.sf.net</a>&gt;</p>
 </section>
 <section id="issue-with-editing-the-grid-on-mac">
-<h3>Issue with editing the grid on Mac<a class="headerlink" href="#issue-with-editing-the-grid-on-mac" title="Permalink to this heading">¶</a></h3>
+<h3>Issue with editing the grid on Mac<a class="headerlink" href="#issue-with-editing-the-grid-on-mac" title="Permalink to this headline">¶</a></h3>
 <p>If you use a Swedish decimal comma then there are difficulties editing the grid. Swap to a decimal point instead in
 settings.</p>
 </section>
 </section>
 <section id="fitting">
-<h2>Fitting<a class="headerlink" href="#fitting" title="Permalink to this heading">¶</a></h2>
+<h2>Fitting<a class="headerlink" href="#fitting" title="Permalink to this headline">¶</a></h2>
 <section id="can-t-fit-and-fom-shows-inf-or-nan">
-<h3>Can’t fit and FOM shows inf or Nan<a class="headerlink" href="#can-t-fit-and-fom-shows-inf-or-nan" title="Permalink to this heading">¶</a></h3>
+<h3>Can’t fit and FOM shows inf or Nan<a class="headerlink" href="#can-t-fit-and-fom-shows-inf-or-nan" title="Permalink to this headline">¶</a></h3>
 <p>If you are using a figure of merit that uses log, for example the log fom (figure of merit)
 which is the <strong>standard</strong>, you probably have a negative or zero data point. Remove the data point or change
 the fom to a more suitable one. The same can happen if you fit with a fom that uses errors as weight and you
 have an error of zero somewhere.</p>
 </section>
 <section id="an-error-message-appears-when-i-start-fitting-or-the-fom-plot-and-the-fom-message-in-the-toolbar-differ">
-<h3>An error message appears when I start fitting or the FOM plot and the FOM message in the toolbar differ<a class="headerlink" href="#an-error-message-appears-when-i-start-fitting-or-the-fom-plot-and-the-fom-message-in-the-toolbar-differ" title="Permalink to this heading">¶</a></h3>
+<h3>An error message appears when I start fitting or the FOM plot and the FOM message in the toolbar differ<a class="headerlink" href="#an-error-message-appears-when-i-start-fitting-or-the-fom-plot-and-the-fom-message-in-the-toolbar-differ" title="Permalink to this headline">¶</a></h3>
 <p>The following message appears: ERROR The disagreement between two subsequent evaluations is larger
 than [Number(1e-10)]. Check the model for circular assignments. In older versions this showed up as different
 FOM’s in the toolbar and the FOM plot.</p>
@@ -116,9 +115,9 @@ parameter <code class="docutils literal notranslate"><span class="pre">allowed</
 </section>
 </section>
 <section id="reflectivity">
-<h2>Reflectivity<a class="headerlink" href="#reflectivity" title="Permalink to this heading">¶</a></h2>
+<h2>Reflectivity<a class="headerlink" href="#reflectivity" title="Permalink to this headline">¶</a></h2>
 <section id="how-do-i-add-a-2theta-offset">
-<h3>How do I add a 2Theta offset<a class="headerlink" href="#how-do-i-add-a-2theta-offset" title="Permalink to this heading">¶</a></h3>
+<h3>How do I add a 2Theta offset<a class="headerlink" href="#how-do-i-add-a-2theta-offset" title="Permalink to this headline">¶</a></h3>
 <p>Sometimes during fitting one needs to add a small 2Theta offset due to misalignment. To do this you start by
 adding a custom variable in the reflectivity plugin. This is the blue nut button in the simulation tab. Lets call
 the parameter <code class="docutils literal notranslate"><span class="pre">TthOff</span></code>.</p>
@@ -147,7 +146,7 @@ in the simulation tab. That is the <cite>Sim</cite> function does not have to be
 has been implemented in the spec_nx model.</p>
 </section>
 <section id="what-about-different-scattering-length-databases">
-<h3>What about different scattering length databases?<a class="headerlink" href="#what-about-different-scattering-length-databases" title="Permalink to this heading">¶</a></h3>
+<h3>What about different scattering length databases?<a class="headerlink" href="#what-about-different-scattering-length-databases" title="Permalink to this headline">¶</a></h3>
 <p>GenX has currently three different scattering length databases fp, fw, bc and f. The databases beginning with f
 relates to x-ray scattering. These are based on the Henke tables and can be found at the
 <a class="reference external" href="http://www.cxro.lbl.gov/">CXRO’s homepage</a>. The difference between fp and fw is the scaling fp has
@@ -161,14 +160,14 @@ coherent scattering length used for neutron reflectivity calculations. It has a 
 bw which works as for fw. Note that bc is given in fm (fermi meters).</p>
 </section>
 <section id="what-happens-if-i-fit-the-scattering-length">
-<h3>What happens if I fit the scattering length?<a class="headerlink" href="#what-happens-if-i-fit-the-scattering-length" title="Permalink to this heading">¶</a></h3>
+<h3>What happens if I fit the scattering length?<a class="headerlink" href="#what-happens-if-i-fit-the-scattering-length" title="Permalink to this headline">¶</a></h3>
 <p>As GenX only can fit real numbers the complex part of the scattering length will be ignored.
 Thus the absorption is put to zero. If you want to fit both parameters you have to make a custom variable
 to scale both real and imaginary part, fit material density or choose the individual Real and Imag
 variables available for fitting (e.g. <code class="docutils literal notranslate"><span class="pre">Layer.setFreal/Layer.setFimag</span></code>).</p>
 </section>
 <section id="could-you-explain-how-the-density-is-defined-works-with-an-example">
-<h3>Could you explain how the density is defined/works with an example?<a class="headerlink" href="#could-you-explain-how-the-density-is-defined-works-with-an-example" title="Permalink to this heading">¶</a></h3>
+<h3>Could you explain how the density is defined/works with an example?<a class="headerlink" href="#could-you-explain-how-the-density-is-defined-works-with-an-example" title="Permalink to this headline">¶</a></h3>
 <p>The key thing to understand is that the calculations use the scattering length density, the scattering length
 multiplied with the density. Thus, how you define and scale your scattering length must be taken into account
 when you define the density.</p>
@@ -182,7 +181,7 @@ various materials parameters and automatically sets Layer x-ray and neutron para
 <a class="reference internal image-reference" href="_images/SimpleLayer.png"><img alt="_images/SimpleLayer.png" src="_images/SimpleLayer.png" style="width: 50%;" /></a>
 </section>
 <section id="how-do-i-transform-from-g-cm3-to-formula-unit-a3">
-<h3>How do I transform from g/cm<sup>3</sup> to formula unit/Å<sup>3</sup> ?<a class="headerlink" href="#how-do-i-transform-from-g-cm3-to-formula-unit-a3" title="Permalink to this heading">¶</a></h3>
+<h3>How do I transform from g/cm<sup>3</sup> to formula unit/Å<sup>3</sup> ?<a class="headerlink" href="#how-do-i-transform-from-g-cm3-to-formula-unit-a3" title="Permalink to this headline">¶</a></h3>
 <p>I have the density of my material in g/cm<sup>3</sup> or kg/m<sup>3</sup>, how do I use it in GenX? There are two ways:
 The first involves only to work with compositions in weight percent and use the fw scattering factors which are
 scattering lengths per weight and use densities in g/cm<sup>3</sup>. The other is recalculate the density in g/cm<sup>3</sup>
@@ -206,7 +205,7 @@ defined as: <code class="docutils literal notranslate"><span class="pre">f</span
 The density becomes: <span class="math notranslate nohighlight">\(dens = \frac{5.12 \times 10^3}{(1.66054 \times 10^3 \times 183.24} = 0.017\)</span></p>
 </section>
 <section id="error-when-simulating-spin-flip-reflectivity">
-<h3>Error when simulating spin flip reflectivity<a class="headerlink" href="#error-when-simulating-spin-flip-reflectivity" title="Permalink to this heading">¶</a></h3>
+<h3>Error when simulating spin flip reflectivity<a class="headerlink" href="#error-when-simulating-spin-flip-reflectivity" title="Permalink to this headline">¶</a></h3>
 <p>I get an error when the program tries to calculate neutron spin flip reflectivity. The error is following:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">It</span> <span class="n">was</span> <span class="ow">not</span> <span class="n">possible</span> <span class="n">to</span> <span class="n">evaluate</span> <span class="n">the</span> <span class="n">model</span> <span class="n">script</span><span class="o">.</span>
 
@@ -219,12 +218,12 @@ The density becomes: <span class="math notranslate nohighlight">\(dens = \frac{5
 remove the first data points and it should work.</p>
 </section>
 <section id="is-it-possible-to-automatically-normalise-the-fitted-function-to-the-data">
-<h3>Is it possible to automatically normalise the fitted function to the data?<a class="headerlink" href="#is-it-possible-to-automatically-normalise-the-fitted-function-to-the-data" title="Permalink to this heading">¶</a></h3>
+<h3>Is it possible to automatically normalise the fitted function to the data?<a class="headerlink" href="#is-it-possible-to-automatically-normalise-the-fitted-function-to-the-data" title="Permalink to this headline">¶</a></h3>
 <p>Yes. Add the parameter I0 from the Instrument sub-menu to scale the fit; fitting this parameter will
 autoscale the fit to the data.</p>
 </section>
 <section id="i-want-to-use-different-instruments-instances-to-fit-data-sets-collected-of-different-instruments">
-<h3>I want to use different instruments instances to fit data sets collected of different instruments<a class="headerlink" href="#i-want-to-use-different-instruments-instances-to-fit-data-sets-collected-of-different-instruments" title="Permalink to this heading">¶</a></h3>
+<h3>I want to use different instruments instances to fit data sets collected of different instruments<a class="headerlink" href="#i-want-to-use-different-instruments-instances-to-fit-data-sets-collected-of-different-instruments" title="Permalink to this headline">¶</a></h3>
 <p>Multiple instrument can defined in the instrument definition dialog. These could be, for example,
 x-ray and neutron instruments or the same instrument with different polarization.
 By double clicking on the simulation function definition in the simulation tab
@@ -253,9 +252,8 @@ dataset will use the same settings as the last.</p>
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Frequently Asked Questions</a><ul>
 <li><a class="reference internal" href="#general">General</a><ul>
 <li><a class="reference internal" href="#how-should-i-cite-genx">How should I cite GenX?</a></li>
@@ -282,17 +280,12 @@ dataset will use the same settings as the last.</p>
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="tutorials/mpi.html"
-                          title="previous chapter">Using GenX from the command line (with mpi)</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="development.html"
-                          title="next chapter">Development documentation</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorials/mpi.html"
+                        title="previous chapter">Using GenX from the command line (with mpi)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="development.html"
+                        title="next chapter">Development documentation</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -309,7 +302,7 @@ dataset will use the same settings as the last.</p>
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -329,13 +322,13 @@ dataset will use the same settings as the last.</p>
         <li class="right" >
           <a href="tutorials/mpi.html" title="Using GenX from the command line (with mpi)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Frequently Asked Questions</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

@@ -1,25 +1,24 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Development documentation &#8212; GenX 3.6.26 documentation</title>
+    <title>Development documentation &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="_static/genx.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Data classes" href="development/data.html" />
+    <link rel="next" title="GenX Reflectivity Models" href="development/models.html" />
     <link rel="prev" title="Frequently Asked Questions" href="faq.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -32,12 +31,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="development/data.html" title="Data classes"
+          <a href="development/models.html" title="GenX Reflectivity Models"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="faq.html" title="Frequently Asked Questions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Development documentation</a></li> 
       </ul>
     </div>  
@@ -48,10 +47,19 @@
           <div class="body" role="main">
             
   <section id="development-documentation">
-<span id="development"></span><h1>Development documentation<a class="headerlink" href="#development-documentation" title="Permalink to this heading">¶</a></h1>
+<span id="development"></span><h1>Development documentation<a class="headerlink" href="#development-documentation" title="Permalink to this headline">¶</a></h1>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="development/models.html">GenX Reflectivity Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations">Library for combined x-ray and neutrons simulations.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/models.html#id1">Library for combined x-ray and neutrons simulations.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations-with-adaptive-layer-segmentation">Library for combined x-ray and neutrons simulations with adaptive layer segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations-for-inhomogeneous-samples">Library for combined x-ray and neutrons simulations for inhomogeneous samples.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/models.html#library-for-specular-and-off-specular-x-ray-reflectivity">Library for specular and off-specular x-ray reflectivity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development/models.html#library-for-specular-magnetic-x-ray-and-neutron-reflectivity">Library for specular magnetic x-ray and neutron reflectivity</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="development/data.html">Data classes</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="development/data.html#datalist">DataList</a></li>
 <li class="toctree-l2"><a class="reference internal" href="development/data.html#dataset">DataSet</a></li>
@@ -98,16 +106,12 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="faq.html"
-                          title="previous chapter">Frequently Asked Questions</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="development/data.html"
-                          title="next chapter">Data classes</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="faq.html"
+                        title="previous chapter">Frequently Asked Questions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="development/models.html"
+                        title="next chapter">GenX Reflectivity Models</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -124,7 +128,7 @@
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -139,18 +143,18 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="development/data.html" title="Data classes"
+          <a href="development/models.html" title="GenX Reflectivity Models"
              >next</a> |</li>
         <li class="right" >
           <a href="faq.html" title="Frequently Asked Questions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Development documentation</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

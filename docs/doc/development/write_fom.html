@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Writing a FOM function &#8212; GenX 3.6.26 documentation</title>
+    <title>Writing a FOM function &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
@@ -37,7 +36,7 @@
         <li class="right" >
           <a href="write_data_loader.html" title="How to write a Data Loader"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" accesskey="U">Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a FOM function</a></li> 
       </ul>
@@ -49,14 +48,14 @@
           <div class="body" role="main">
             
   <section id="writing-a-fom-function">
-<span id="development-write-fom"></span><h1>Writing a FOM function<a class="headerlink" href="#writing-a-fom-function" title="Permalink to this heading">¶</a></h1>
+<span id="development-write-fom"></span><h1>Writing a FOM function<a class="headerlink" href="#writing-a-fom-function" title="Permalink to this headline">¶</a></h1>
 <p>The figure of merit (FOM) function is one of the most important things when fitting a model to
 measured data. The FOM defines what a good fit is and distinguishes it from a bad fit.
 Every fitting problem has its own quirks and twists and may therefore benefit from having a custom FOM
 function written for that specific problem. Here, we will briefly go through the steps you need to take to
 extend GenX with your very own FOM function.</p>
 <section id="making-a-custom-fom-available-in-genx">
-<h2>Making a custom FOM available in GenX<a class="headerlink" href="#making-a-custom-fom-available-in-genx" title="Permalink to this heading">¶</a></h2>
+<h2>Making a custom FOM available in GenX<a class="headerlink" href="#making-a-custom-fom-available-in-genx" title="Permalink to this headline">¶</a></h2>
 <p>The file that defines the different built-in FOM functions is called <code class="docutils literal notranslate"><span class="pre">fom_funcs.py</span></code>.
 As of svn release 145, there is a simple and transparent way to add your own FOM functions in a separate file,
 which must be called <code class="docutils literal notranslate"><span class="pre">fom_funcs_custom.py</span></code> and reside in the same directory as <code class="docutils literal notranslate"><span class="pre">fom_funcs.py</span></code>. This file is
@@ -72,11 +71,11 @@ add some documentation to the html string which is used as a help function withi
 when it works, why not send it to me for inclusion in the main distribution.</p>
 </section>
 <section id="example-of-a-fom-function">
-<h2>Example of a FOM function<a class="headerlink" href="#example-of-a-fom-function" title="Permalink to this heading">¶</a></h2>
+<h2>Example of a FOM function<a class="headerlink" href="#example-of-a-fom-function" title="Permalink to this headline">¶</a></h2>
 <p>It’s always easiest to start with an example to get ones head around things. Let us start with an absolute
 logarithmic difference figure of merit. The code below is a slow but easy to understand variant:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">simulations</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
+    <span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Total number of data points</span>
     <span class="n">fom</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># The total fom to calculate</span>
     <span class="k">for</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sim</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">simulation</span><span class="p">):</span>
@@ -99,7 +98,7 @@ Note that the fom is only calculated and added if the flag <code class="docutils
 <p>An example how this can be programmed in a more compact and computationally efficient way is
 seen below, where a faster type of for loop is used.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">simulations</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
+    <span class="sd">&#39;&#39;&#39; The absolute logarithmic difference&#39;&#39;&#39;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="n">dataset</span><span class="o">.</span><span class="n">use</span> <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
     <span class="k">return</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">sim</span><span class="p">)))</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">sim</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">simulations</span><span class="p">)</span> <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">use</span><span class="p">])</span>
@@ -124,9 +123,8 @@ provided.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Writing a FOM function</a><ul>
 <li><a class="reference internal" href="#making-a-custom-fom-available-in-genx">Making a custom FOM available in GenX</a></li>
 <li><a class="reference internal" href="#example-of-a-fom-function">Example of a FOM function</a></li>
@@ -134,17 +132,12 @@ provided.</p>
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="write_data_loader.html"
-                          title="previous chapter">How to write a Data Loader</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="packaging.html"
-                          title="next chapter">How to package GenX</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="write_data_loader.html"
+                        title="previous chapter">How to write a Data Loader</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="packaging.html"
+                        title="next chapter">How to package GenX</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -161,7 +154,7 @@ provided.</p>
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -181,14 +174,14 @@ provided.</p>
         <li class="right" >
           <a href="write_data_loader.html" title="How to write a Data Loader"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" >Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a FOM function</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

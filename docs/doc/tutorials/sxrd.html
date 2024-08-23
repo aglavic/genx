@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Surface X-diffraction tutorial &#8212; GenX 3.6.26 documentation</title>
+    <title>Surface X-diffraction tutorial &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -38,7 +37,7 @@
         <li class="right" >
           <a href="orso_integration.html" title="ORSO Integration"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Surface X-diffraction tutorial</a></li> 
       </ul>
@@ -50,7 +49,7 @@
           <div class="body" role="main">
             
   <section id="surface-x-diffraction-tutorial">
-<span id="tutorial-sxrd"></span><h1>Surface X-diffraction tutorial<a class="headerlink" href="#surface-x-diffraction-tutorial" title="Permalink to this heading">¶</a></h1>
+<span id="tutorial-sxrd"></span><h1>Surface X-diffraction tutorial<a class="headerlink" href="#surface-x-diffraction-tutorial" title="Permalink to this headline">¶</a></h1>
 <p>At the present GenX implements two different facilities to handle sxrd data.</p>
 <blockquote>
 <div><ul class="simple">
@@ -59,7 +58,7 @@
 </ul>
 </div></blockquote>
 <section id="loading-sxrd-data">
-<h2>Loading SXRD data<a class="headerlink" href="#loading-sxrd-data" title="Permalink to this heading">¶</a></h2>
+<h2>Loading SXRD data<a class="headerlink" href="#loading-sxrd-data" title="Permalink to this headline">¶</a></h2>
 <p>First the data loader has to be changed to load files for sxrd. Open the menu
 <span class="menuselection">Settings‣Data Loaders</span> (or press Shift-Ctrl-D) and an dialog pops up.
 Choose the sls_sxrd data loader in the drop-down box that appear. The data is loaded by marking the data set
@@ -86,7 +85,7 @@ your own test files you can use the python script <a class="reference download i
 <p>When the data is loaded <strong>new</strong> data sets are appended automatically. Each data set is given the name of the type ‘(h, k)’. If you started from the beginning you should also remove the data set ‘Data0’ since the data sets are appended to the previous sets.</p>
 </section>
 <section id="creating-an-sxrd-model">
-<h2>Creating an SXRD model<a class="headerlink" href="#creating-an-sxrd-model" title="Permalink to this heading">¶</a></h2>
+<h2>Creating an SXRD model<a class="headerlink" href="#creating-an-sxrd-model" title="Permalink to this headline">¶</a></h2>
 <p>Okay this is the tricky part first off we will create a simple model consisting of and 2 unit cell thick L
 aAlO3 film on top of a SrTiO3 substrate. The script will look something like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1</span>
@@ -200,7 +199,7 @@ result list <code class="docutils literal notranslate"><span class="pre">I</span
 </ol>
 </section>
 <section id="making-a-simulation">
-<h2>Making a simulation<a class="headerlink" href="#making-a-simulation" title="Permalink to this heading">¶</a></h2>
+<h2>Making a simulation<a class="headerlink" href="#making-a-simulation" title="Permalink to this headline">¶</a></h2>
 <p>To simulate the data click on the yellow lightning in the main tool bar. The following screen should appear.</p>
 <p>![Screenshot - simulation, linear scale](/apps/trac/genx/raw-attachment/wiki/IntroGuides/SurfDiff/simulation_lin.png)</p>
 <p>In order to see anything the scaling has to change from linear to logarithmic. Right click on the plot and choose
@@ -212,7 +211,7 @@ sets a flag whether or not to the data should be simulated. Naturally this flag 
 function to have an effect.</p>
 </section>
 <section id="adding-more-layers">
-<h2>Adding more layers<a class="headerlink" href="#adding-more-layers" title="Permalink to this heading">¶</a></h2>
+<h2>Adding more layers<a class="headerlink" href="#adding-more-layers" title="Permalink to this headline">¶</a></h2>
 <p>Usually I am more interesting in fitting and simulating films that are a couple of unitcells thick.
 So here a couple of tricks to make that that easy. If you just want to add identical unitcells on top of each
 other you can just expand the list, to simulate lets say 3 UC:</p>
@@ -258,7 +257,7 @@ included in the sample in order to be simulated.</p>
 </div>
 </section>
 <section id="defining-parameters-to-fit">
-<h2>Defining parameters to fit<a class="headerlink" href="#defining-parameters-to-fit" title="Permalink to this heading">¶</a></h2>
+<h2>Defining parameters to fit<a class="headerlink" href="#defining-parameters-to-fit" title="Permalink to this headline">¶</a></h2>
 <p>Before we proceed with the more advanced topics we will briefly review how to define which parameters to fit.
 As a user you should be aware that in GenX _everything_ can be fitted. However, it is no guarantee that the parameters
 that you have chosen to fit make any sense at all! So you should use your judgment and think about the physical model
@@ -305,7 +304,7 @@ to the right of the stop button.</p>
 For a more detailed discussion about this see the x-ray tutorial :ref:_tutorials-xrr-fitting.</p>
 </section>
 <section id="scaling-the-simulation">
-<h2>Scaling the simulation<a class="headerlink" href="#scaling-the-simulation" title="Permalink to this heading">¶</a></h2>
+<h2>Scaling the simulation<a class="headerlink" href="#scaling-the-simulation" title="Permalink to this headline">¶</a></h2>
 <p>When fitting and simulatiing one very important thing is to also fit/change the scale factor. One can fit the
 parameter <code class="docutils literal notranslate"><span class="pre">inst.inten</span></code> which is the “incoming intensity”. This parameter multiplies with the structure
 factor when using the <code class="docutils literal notranslate"><span class="pre">sample.calc_f</span></code> function. A more effective way of doing it when fitting data, to my opinion,
@@ -324,7 +323,7 @@ This function should be placed right before returning the value in the <code cla
 </div>
 </section>
 <section id="grouping-atoms">
-<h2>Grouping atoms<a class="headerlink" href="#grouping-atoms" title="Permalink to this heading">¶</a></h2>
+<h2>Grouping atoms<a class="headerlink" href="#grouping-atoms" title="Permalink to this headline">¶</a></h2>
 <p>A common sense approach can be that several atoms should move together and not independently of each other.
 For example, strain field will compress/expand an epitaxial film and consequently the lattice parameter will change.
 We have already briefly dealt with this as we talked about Slab`s and its parameter <code class="docutils literal notranslate"><span class="pre">c</span></code> which can scale the
@@ -332,7 +331,7 @@ thickness of the slab. This should be the first attempt to use when fitting the 
 models might be to move atoms of the same element/site in the same manner. One obvious example of this if an alloyed
 site is simulated. This is where atoms group can come in handy. The class that handles this is called <code class="docutils literal notranslate"><span class="pre">AtomGroup</span></code>.</p>
 <section id="basic-usage">
-<h3>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading">¶</a></h3>
+<h3>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h3>
 <p>Naturally there are different ways of creating and working with these groups. There are two ways to create a group:</p>
 <ol class="arabic">
 <li><p>The <cite>Slab.add_atom</cite> returns an <cite>AtomGroup</cite> object. Easy to use when only a small number of atoms has to chosen.
@@ -369,7 +368,7 @@ together atoms by adding them since you will not clutter up the name space with 
 use by assigning variables to each atom.</p>
 </section>
 <section id="composition-coupling">
-<h3>Composition coupling<a class="headerlink" href="#composition-coupling" title="Permalink to this heading">¶</a></h3>
+<h3>Composition coupling<a class="headerlink" href="#composition-coupling" title="Permalink to this headline">¶</a></h3>
 <p>One common task for coupling atoms together is for fitting compositions instead of occupancies. This is
 especially true for solid-solid interfaces where the total occupancy usually can be considered to be 1.0.
 Lets assume we have a LaAlO/SrTiO interface and we want to fit the composition of the interface layer. First we define
@@ -411,7 +410,7 @@ but they also probably create hard to track error - so they should be used wisel
 </section>
 </section>
 <section id="general-coupling">
-<h2>General coupling<a class="headerlink" href="#general-coupling" title="Permalink to this heading">¶</a></h2>
+<h2>General coupling<a class="headerlink" href="#general-coupling" title="Permalink to this headline">¶</a></h2>
 <p>As you probably understand the concept with AtomGroup`s cant take you all the way to complete generality.
 This naturally more complicated but incredibly powerful as _anything_ can be implemented. The class which is
 used a container class for this is called <cite>UserVars</cite>. To use it you have to import it by inserting the following text
@@ -501,7 +500,7 @@ layout with <code class="docutils literal notranslate"><span class="pre">UserVar
 <a class="reference internal" href="writing_model.html#tutorial-writing-model"><span class="std std-ref">Writing a custom model</span></a>.</p>
 </section>
 <section id="exporting-results">
-<h2>Exporting Results<a class="headerlink" href="#exporting-results" title="Permalink to this heading">¶</a></h2>
+<h2>Exporting Results<a class="headerlink" href="#exporting-results" title="Permalink to this headline">¶</a></h2>
 <p>The Sample class allows export of the resulting atom position in the XYZ format.
 The most convenient way to perform this export is to use the <strong>UserFuncs</strong> plugin with the following
 export function in your script:</p>
@@ -525,9 +524,8 @@ be used to save the XYZ data to.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Surface X-diffraction tutorial</a><ul>
 <li><a class="reference internal" href="#loading-sxrd-data">Loading SXRD data</a></li>
 <li><a class="reference internal" href="#creating-an-sxrd-model">Creating an SXRD model</a></li>
@@ -546,17 +544,12 @@ be used to save the XYZ data to.</p>
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="orso_integration.html"
-                          title="previous chapter">ORSO Integration</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="sxrd2.html"
-                          title="next chapter">Surface X-diffraction Model 2</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="orso_integration.html"
+                        title="previous chapter">ORSO Integration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sxrd2.html"
+                        title="next chapter">Surface X-diffraction Model 2</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -573,7 +566,7 @@ be used to save the XYZ data to.</p>
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -593,14 +586,14 @@ be used to save the XYZ data to.</p>
         <li class="right" >
           <a href="orso_integration.html" title="ORSO Integration"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Surface X-diffraction tutorial</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>

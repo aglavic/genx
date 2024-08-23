@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Welcome to GenX’s documentation! &#8212; GenX 3.6.26 documentation</title>
+    <title>Welcome to GenX’s documentation! &#8212; GenX 3.7.0b1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="shortcut icon" href="_static/genx.ico"/>
@@ -33,7 +32,7 @@
         <li class="right" >
           <a href="install.html" title="Installation"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="#">GenX 3.7.0b1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Welcome to GenX’s documentation!</a></li> 
       </ul>
     </div>  
@@ -44,7 +43,7 @@
           <div class="body" role="main">
             
   <section id="welcome-to-genx-s-documentation">
-<h1>Welcome to GenX’s documentation!<a class="headerlink" href="#welcome-to-genx-s-documentation" title="Permalink to this heading">¶</a></h1>
+<h1>Welcome to GenX’s documentation!<a class="headerlink" href="#welcome-to-genx-s-documentation" title="Permalink to this headline">¶</a></h1>
 <p>GenX is a tool to refine x-ray, neutron reflectivity as well as surface x-ray diffraction data written in Python.
 The refinement is conducted with an optimization algorithm called differential evolution which is very robust.
 The reflectivity model in GenX is build using a graphical plugin but can be highly customized in a script.</p>
@@ -64,7 +63,7 @@ might exist. Please report these via the issue tracker.</p>
 just jump to <a class="reference internal" href="tutorials/simple_reflectivity.html#tutorial-simple-reflectivity"><span class="std std-ref">Simple Reflectivity Model (XRR/NR)</span></a>, <a class="reference internal" href="tutorials/neutron_fit.html#tutorial-neutron-fit"><span class="std std-ref">Neutron reflectivity video tutorials</span></a> or load one of the
 <a class="reference external" href="https://github.com/aglavic/genx/tree/master/genx/genx/examples">example GenX models</a>.</p>
 <section id="contents">
-<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this heading">¶</a></h2>
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
@@ -141,6 +140,15 @@ just jump to <a class="reference internal" href="tutorials/simple_reflectivity.h
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">Development documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development/models.html">GenX Reflectivity Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations">Library for combined x-ray and neutrons simulations.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/models.html#id1">Library for combined x-ray and neutrons simulations.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations-with-adaptive-layer-segmentation">Library for combined x-ray and neutrons simulations with adaptive layer segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations-for-inhomogeneous-samples">Library for combined x-ray and neutrons simulations for inhomogeneous samples.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-specular-and-off-specular-x-ray-reflectivity">Library for specular and off-specular x-ray reflectivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-specular-magnetic-x-ray-and-neutron-reflectivity">Library for specular magnetic x-ray and neutron reflectivity</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="development/data.html">Data classes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="development/data.html#datalist">DataList</a></li>
 <li class="toctree-l3"><a class="reference internal" href="development/data.html#dataset">DataSet</a></li>
@@ -190,21 +198,17 @@ just jump to <a class="reference internal" href="tutorials/simple_reflectivity.h
             <p class="logo"><a href="#">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="#">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Welcome to GenX’s documentation!</a><ul>
 <li><a class="reference internal" href="#contents">Contents</a></li>
 </ul>
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="install.html"
-                          title="next chapter">Installation</a></p>
-  </div>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installation</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -221,7 +225,7 @@ just jump to <a class="reference internal" href="tutorials/simple_reflectivity.h
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -238,13 +242,13 @@ just jump to <a class="reference internal" href="tutorials/simple_reflectivity.h
         <li class="right" >
           <a href="install.html" title="Installation"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">GenX 3.6.26 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="#">GenX 3.7.0b1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Welcome to GenX’s documentation!</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
   </body>
 </html>
