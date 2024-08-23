@@ -33,6 +33,8 @@ with open("release_notes.md", "w") as fh:
     found_first = 0
     if "a" in __version__:
         fh.write(ALPHA_NOTE)
+    elif "b" in __version__:
+        fh.write(BETA_NOTE)
     fh.write(RELEASE_HEAD)
     for l in open("README.txt", "r").readlines():
         if f"Changes 3." in l:
