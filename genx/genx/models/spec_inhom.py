@@ -41,30 +41,6 @@ Buffer = spec_nx.Buffer
 __xlabel__ = "q [Å$^{-1}$]"
 __ylabel__ = "Instnsity [a.u.]"
 
-
-"""
-Layer
-~~~~~
-``Layer(b = 0.0, d = 0.0, f = 0.0+0.0J, dens = 1.0, magn_ang = 0.0, magn = 0.0, sigma = 0.0, sigma_gradient=0.0, d_gradient=0.0)``
-
-
-Stack
-~~~~~
-``Stack(Layers = [], Repetitions = 1, sigma_gradient=0.0, sigma_gtype=3, d_gradient=0.0, dens_gradient=0.0)``
-
-
-Sample
-~~~~~~
-``Sample(Stacks = [], Ambient = Layer(), Substrate = Layer(), sigma_inhom=0.0, lscale_inhom=0.9, flatwidth_inhom=0.3, steps_inhom=20, type_inhom='semi-gauss')``
-
-
-Instrument
-~~~~~~~~~~
-``Instrument(probe = 'x-ray', wavelength = 1.54, coords = '2θ', I0 = 1.0 res = 0.001, restype = 'no conv', respoints = 5, resintrange = 2, beamw = 0.01, footype = 'no corr', samplelen = 10.0, incangle = 0.0, pol = 'uu')``
-
-"""
-
-
 @dataclass
 class Layer(NXLayer):
     """
@@ -442,25 +418,6 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
     return R + instrument.Ibkg
 
 
-def ResolutionVectorAsymetric(Q, dQ, points, dLambda, asymmetry, range_=3):
-    """
-    Resolution vector for an asymmetric wavelength distribution found in
-    neutron experiments with multilayer monochromator.
-
-    TODO: Currently not used, maybe revisit and put into resolution functions.
-    """
-    Qrange = max(range_ * dQ, range_ * dLambda * Q.max())
-    Qstep = 2 * Qrange / points
-    Qres = Q + (arange(points) - (points - 1) / 2)[:, newaxis] * Qstep
-    Quse = transpose(Q[:, newaxis])
-
-    gamma_asym = 2.0 * dLambda * Quse / (1 + exp(asymmetry * (Quse - Qres)))
-    z = (Quse - Qres + (abs(gamma_asym) * 1j)) / abs(dQ) / sqrt(2.0)
-    z0 = (0.0 + (abs(gamma_asym) * 1j)) / abs(dQ) / sqrt(2)
-    weight = wofz(z).real / wofz(z0).real
-    Qret = Qres.flatten()
-    return Qret, weight
-
 
 def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample, instrument):
     """
@@ -779,18 +736,19 @@ class TestSpecInhom(ModelTestCase):
             Specular(self.qz, sample, instrument)
 
     def test_supermirrors(self):
+        from .utils import bc
         sample = Sample(
             Stacks=[
                 Stack(
                     Layers=[
-                        Layer(d=50, sigma=2.0, b=6e-6 + 0j, dens=0.1),
-                        Layer(d=50, sigma=2.0, b=-1.5e-6 + 0j, dens=0.1),
+                        Layer(d=50, sigma=2.0, b=bc.Ni, dens=8.908*0.602214/58.6934),
+                        Layer(d=50, sigma=2.0, b=bc.Ti, dens=4.506*0.602214/47.867),
                     ],
                     Repetitions=2.0,
                 )
             ],
             Ambient=Layer(),
-            Substrate=Layer(b=2e-6, dens=0.1),
+            Substrate=Layer(b=bc.Si, dens=0.04995982812477898),
         )
         instrument = Instrument(
             probe=Probe.neutron,
@@ -802,10 +760,10 @@ class TestSpecInhom(ModelTestCase):
             tthoff=0.0,
             wavelength=1.54,
         )
-        # with self.subTest("analytic supermirror"):
-        #     sample.Stacks[0].beta_sm = 0.9
-        #     sample.Stacks[0].Repetitions = 2.5 # m-value
-        #     Specular(self.qz, sample, instrument)
+        with self.subTest("analytic supermirror"):
+            sample.Stacks[0].beta_sm = 0.75
+            sample.Stacks[0].Repetitions = 2.5 # m-value
+            Specular(self.qz, sample, instrument)
         with self.subTest("analytic supermirror"):
             sample.Stacks[0].beta_sm = -0.99
             sample.Stacks[0].Repetitions = 2000  # number layers
