@@ -681,3 +681,19 @@ class TestSoftNX(ModelTestCase):
             sample.crop_sld = -15
             sample.Stacks[0].Repetitions = 100
             SLD_calculations(None, None, sample, instrument)
+
+def standard_xray():
+    """
+        return the defied standard x-ray reflectivity to compare against other models
+    """
+    qz = linspace(0.01, 0.3, 15)
+    scl = 0.1*AA_to_eV * 1.54 / 2 / pi
+    return Specular(
+        qz,
+        Sample(
+            Ambient=Layer(),
+            Substrate=Layer(d=150.0, sld_x=(1e-5 + 1e-8j)*scl),
+            Stacks=[Stack(Layers=[Layer(d=150.0, sld_x=(2e-5 + 2e-8j)*scl)])],
+        ),
+        Instrument(probe=Probe.xray, coords=Coords.q, wavelength=1.54, footype=FootType.none, restype=ResType.none),
+    )

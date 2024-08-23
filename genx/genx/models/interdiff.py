@@ -613,3 +613,18 @@ class TestInterdiff(ModelTestCase):
         )
         with self.subTest("sld xray"):
             SLD_calculations(None, None, sample, instrument)
+
+def standard_xray():
+    """
+        return the defied standard x-ray reflectivity to compare against other models
+    """
+    qz = linspace(0.01, 0.3, 15)
+    return Specular(
+        qz,
+        Sample(
+            Ambient=Layer(),
+            Substrate=Layer(d=150.0, f=1e-5 + 1e-8j, dens=0.1),
+            Stacks=[Stack(Layers=[Layer(d=150.0, f=2e-5 + 2e-8j, dens=0.1)])],
+        ),
+        Instrument(coords=Coords.q, wavelength=1.54, footype=FootType.none, restype=ResType.none),
+    )

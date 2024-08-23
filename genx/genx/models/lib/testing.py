@@ -16,9 +16,9 @@ class ModelTestCase(unittest.TestCase):
     @property
     def tth(self):
         # x-points for tth in reflectivity
-        return np.linspace(0.01, 6.0, 151)
+        return np.linspace(0.01, 6.0, 15)
 
     @property
     def qz(self):
         # x-points for q in reflectivity
-        return np.linspace(0.001, 0.3, 151)
+        return np.linspace(0.005, 0.3, 15)

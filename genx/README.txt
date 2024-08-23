@@ -28,6 +28,8 @@ Changes 3.7.0
  * Change parameteriazation of interdiff model to use sigma+sigmar instead of sigmai+sigmar to make it
    equivalent to reflectivity models that only use sigma = sqrt(sigmai**2+sigmar**2). To fit sigmai one
    should create a user parameter or set proper limits in sigma+sigmar fit.
+ * Increase test coverage, especially for code inside of models. This lead to several bug fixes and
+   will improve stability of future releases.
 
 Changes 3.6.28
 ==============
