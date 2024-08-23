@@ -415,7 +415,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample: Sample, instrument: In
     instrument.Ibkg = 0.0
     instrument.restype = ResType(0)
     if isinstance(TwoThetaQz, ndarray):
-        Ispec = Specular([TwoThetaQz[cen_idx]], sample, instrument)
+        Ispec = Specular(array([TwoThetaQz[cen_idx]], dtype=float64), sample, instrument)
     else:
         Ispec = Specular(array([TwoThetaQz], dtype=float64), sample, instrument)[0]
     instrument.Ibkg = Ibgk
@@ -465,3 +465,151 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
 SimulationFunctions = {"Specular": Specular, "OffSpecular": OffSpecularMingInterdiff, "SLD": SLD_calculations}
 
 Sample.setSimulationFunctions(SimulationFunctions)
+
+class TestInterdiff(ModelTestCase):
+    # TODO: currently this only checks for raise conditions in the code above, check of results should be added
+
+    def test_spec(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1)])],
+            Ambient=Layer(),
+            Substrate=Layer(f=5e-5 + 2e-7j, dens=0.1),
+        )
+        instrument = Instrument(
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            wavelength=1.54,
+        )
+        with self.subTest("x-ray tth"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray q"):
+            instrument.coords = Coords.q
+            Specular(self.qz, sample, instrument)
+
+        # resolution corrections
+        with self.subTest("x-ray q-res-fast"):
+            instrument.restype = ResType.fast_conv
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-fast-var"):
+            instrument.restype = ResType.fast_conv_var
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-full"):
+            instrument.restype = ResType.full_conv_abs
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-gauss"):
+            instrument.restype = resolution_module.GaussianResolution(sigma=0.001)
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-trapezoid"):
+            instrument.restype = resolution_module.TrapezoidResolution(inner_width=0.001, outer_width=0.002)
+            instrument.restype.get_weight_example()
+            Specular(self.qz, sample, instrument)
+        with self.subTest("x-ray q-res-wrong"):
+            instrument.restype = 123
+            with self.assertRaises(ValueError):
+                Specular(self.qz, sample, instrument)
+        instrument.restype = ResType.none
+
+        # footprint corrections
+        with self.subTest("x-ray q-footprint-square"):
+            instrument.footype = FootType.square
+            Specular(self.qz, sample, instrument)
+        instrument.coords = Coords.tth
+        with self.subTest("x-ray tth-footprint-square"):
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-gauss"):
+            instrument.footype = FootType.gauss
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-gauss-offset"):
+            instrument.footype = GaussianBeamOffset(sigma=0.5, offset=0.1)
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-square-offset"):
+            instrument.footype = SquareBeamOffset(width=0.1, offset=0.05)
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-trapezoid"):
+            instrument.footype = TrapezoidBeam(inner_width=0.1, outer_width=0.2)
+            Specular(self.tth, sample, instrument)
+            instrument.footype = TrapezoidBeam(inner_width=0.1, outer_width=0.1)
+            Specular(self.tth, sample, instrument)
+            instrument.footype = TrapezoidBeam(inner_width=0.0, outer_width=0.2)
+            Specular(self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-wrong"):
+            instrument.footype = 123
+            with self.assertRaises(ValueError):
+                Specular(self.qz, sample, instrument)
+
+
+    def test_offspec(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1)])],
+            Ambient=Layer(),
+            Substrate=Layer(f=5e-5 + 2e-7j, dens=0.1),
+        )
+        instrument = Instrument(
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            wavelength=1.54,
+        )
+        with self.subTest("x-ray tth"):
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+        with self.subTest("x-ray q"):
+            instrument.coords = Coords.q
+            OffSpecularMingInterdiff(0.01*self.qz, self.qz, sample, instrument)
+
+        # resolution corrections
+        with self.subTest("x-ray q-res-fast"):
+            instrument.restype = ResType.fast_conv
+            OffSpecularMingInterdiff(0.01*self.qz, self.qz, sample, instrument)
+            OffSpecularMingInterdiff(0.001, self.qz, sample, instrument)
+        with self.subTest("x-ray tth-res-fast"):
+            instrument.coords = Coords.tth
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+            OffSpecularMingInterdiff(0.1, self.tth, sample, instrument)
+        instrument.restype = ResType.none
+        instrument.coords = Coords.q
+
+        # footprint corrections
+        with self.subTest("x-ray q-footprint-square"):
+            instrument.footype = FootType.square
+            OffSpecularMingInterdiff(0.01*self.qz, self.qz, sample, instrument)
+        instrument.coords = Coords.tth
+        with self.subTest("x-ray tth-footprint-square"):
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-gauss"):
+            instrument.footype = FootType.gauss
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-gauss-offset"):
+            instrument.footype = GaussianBeamOffset(sigma=0.5, offset=0.1)
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-square-offset"):
+            instrument.footype = SquareBeamOffset(width=0.1, offset=0.05)
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+        with self.subTest("x-ray tth-footprint-trapezoid"):
+            instrument.footype = TrapezoidBeam(inner_width=0.1, outer_width=0.2)
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+            instrument.footype = TrapezoidBeam(inner_width=0.1, outer_width=0.1)
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+            instrument.footype = TrapezoidBeam(inner_width=0.0, outer_width=0.2)
+            OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
+
+    def test_sld(self):
+        sample = Sample(
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1)])],
+            Ambient=Layer(),
+            Substrate=Layer(f=5e-5 + 2e-7j, dens=0.1),
+        )
+        instrument = Instrument(
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            wavelength=4.5,
+        )
+        with self.subTest("sld xray"):
+            SLD_calculations(None, None, sample, instrument)
