@@ -329,14 +329,14 @@ def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
         or instrument.zeeman == Zeeman.neg_sf
         and pol == Polarization.down_up
     ):
-        Q = Q / 2.0 + np.sqrt((Q / 2.0) ** 2 + 8 * pi * rho_Z)
+        Q = Q / 2.0 + np.sqrt((Q / 2.0) ** 2 - 8 * pi * rho_Z)
     elif (
         instrument.zeeman == Zeeman.pos_sf
         and pol == Polarization.down_up
         or instrument.zeeman == Zeeman.neg_sf
         and pol == Polarization.up_down
     ):
-        Q = Q / 2.0 + np.sqrt(maximum(0.0, (Q / 2.0) ** 2 - 8 * pi * rho_Z))
+        Q = Q / 2.0 + np.sqrt(maximum(0.0, (Q / 2.0) ** 2 + 8 * pi * rho_Z))
 
     Q = maximum(Q, q_limit)
 
@@ -365,11 +365,11 @@ def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
     else:
         Q_ok = False
     if Buffer.parameters != (parameters, instrument.mag_field) or not Q_ok:
-        msld = muB_to_SL * magn * dens * instrument.wavelength**2 / 2 / pi
+        msld = muB_to_SL * magn * dens
         # apply Zeeman correction to magnetic parameters
         magn_x = msld * cos(magn_ang)  # M parallel to polarization
         magn_y = msld * sin(magn_ang)  # M perpendicular to polarization
-        magn_x += rho_Z * instrument.wavelength**2 / 2 / pi  # Apply magnetization from external field
+        magn_x += rho_Z  # Apply magnetization from external field
         # calculate new magnitudes and angles
         msld = sqrt(magn_x**2 + magn_y**2)
         magn_ang = np.arctan2(magn_y, magn_x)
@@ -377,10 +377,10 @@ def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
         if msld[-1] != 0.0 or sld[-1] != 0:
             msld -= msld[-1]
             sld -= sld[-1]
-        sld_p = sld + msld
-        sld_m = sld - msld
-        Vp = (2 * pi / instrument.wavelength) ** 2 * (sld_p * (2.0 + sld_p))  # (1-np**2) - better numerical accuracy
-        Vm = (2 * pi / instrument.wavelength) ** 2 * (sld_m * (2.0 + sld_m))  # (1-nm**2)
+        sld_p = sld * 2 * pi / wl**2 + msld
+        sld_m = sld * 2 * pi / wl**2 - msld
+        Vp = (2 * pi) * (sld_p * (2.0 + sld_p))  # (1-np**2) - better numerical accuracy
+        Vm = (2 * pi) * (sld_m * (2.0 + sld_m))  # (1-nm**2)
         (Ruu, Rdd, Rud, Rdu) = MatrixNeutron.Refl(Q, Vp, Vm, d, magn_ang, sigma, return_int=True)
         Buffer.Ruu = Ruu
         Buffer.Rdd = Rdd
@@ -874,9 +874,10 @@ class TestSpecAdaptive(ModelTestCase):
             sample.Stacks[0].Repetitions = 100
             SLD_calculations(None, None, sample, instrument)
 
+
 def standard_xray():
     """
-        return the defied standard x-ray reflectivity to compare against other models
+    return the defied standard x-ray reflectivity to compare against other models
     """
     qz = linspace(0.01, 0.3, 15)
     return Specular(
