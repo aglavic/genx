@@ -238,7 +238,7 @@ jobs:
         GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
         cd dist
         ditto ./genx.app /tmp/genx/Applications/genx.app
-        productbuild --identifier "com.aglavic.genx.pkg" --sign "HASH_OF_INSTALLER_ID" --timestamp --root /tmp/genx / "GenX3-$GENX_VERSION-Installer.pkg"
+        productbuild --identifier "com.aglavic.genx.pkg" --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B --timestamp --root /tmp/genx / "GenX3-$GENX_VERSION-Installer.pkg"
     - name: Notarize app
       env:
         NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
