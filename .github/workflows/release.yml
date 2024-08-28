@@ -260,7 +260,7 @@ jobs:
         NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
       run: |
         xcrun notarytool submit genx/dist/GenX3*.dmg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
-        xcrun notarytool submit genx/dist/GenX3*.pkg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
+        # xcrun notarytool submit genx/dist/GenX3*.pkg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
 #    - name: Setup tmate session for debug
 #      uses: mxschmitt/action-tmate@v3
     - name: Archive distribution

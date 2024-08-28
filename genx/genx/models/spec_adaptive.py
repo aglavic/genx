@@ -329,14 +329,14 @@ def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
         or instrument.zeeman == Zeeman.neg_sf
         and pol == Polarization.down_up
     ):
-        Q = Q / 2.0 + np.sqrt((Q / 2.0) ** 2 - 8 * pi * rho_Z)
+        Q = Q / 2.0 + np.sqrt((Q / 2.0) ** 2 + 8 * pi * rho_Z)
     elif (
         instrument.zeeman == Zeeman.pos_sf
         and pol == Polarization.down_up
         or instrument.zeeman == Zeeman.neg_sf
         and pol == Polarization.up_down
     ):
-        Q = Q / 2.0 + np.sqrt(maximum(0.0, (Q / 2.0) ** 2 + 8 * pi * rho_Z))
+        Q = Q / 2.0 + np.sqrt(maximum(0.0, (Q / 2.0) ** 2 - 8 * pi * rho_Z))
 
     Q = maximum(Q, q_limit)
 
