@@ -11,11 +11,23 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      build-items:
+        description: 'Items to be build'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - windows
+          - linux
+          - mac
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build-windows:
     runs-on: windows-latest
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "windows"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -49,6 +61,7 @@ jobs:
 
   build-ubuntu-20:
     runs-on: ubuntu-20.04
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -109,6 +122,7 @@ jobs:
 
   build-ubuntu-22:
     runs-on: ubuntu-22.04
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -136,6 +150,7 @@ jobs:
 
   build-ubuntu-24:
     runs-on: ubuntu-24.04
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -163,6 +178,7 @@ jobs:
 
   build-macos:
     runs-on: macos-13
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -231,14 +247,13 @@ jobs:
                     "GenX3-$GENX_VERSION-Installer.dmg" \
                     genx.app
         codesign --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B "GenX3-$GENX_VERSION-Installer.dmg"
-
     - name: Package app pkg
       run: |
         cd genx
         GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
         cd dist
-        ditto ./genx.app /tmp/genx/Applications/genx.app
-        productbuild --identifier "com.aglavic.genx.pkg" --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B --timestamp --root /tmp/genx / "GenX3-$GENX_VERSION-Installer.pkg"
+        # ditto ./genx.app /tmp/genx/Applications/genx.app
+        # productbuild --identifier "com.isa.genx.pkg" --sign {Developer ID Installer identity} --timestamp --root /tmp/genx / "GenX3-$GENX_VERSION-Installer.pkg"
     - name: Notarize app
       env:
         NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
@@ -258,7 +273,7 @@ jobs:
 
   build-macos-m1:
     runs-on: macos-14
-#    needs: [build-macos]
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
