@@ -1078,10 +1078,52 @@ class TestSpecNX(ModelTestCase):
             sample.Stacks[0].Repetitions = 100
             SLD_calculations(None, None, sample, instrument)
 
+    def test_inversion(self):
+        sample = Sample(
+            Stacks=[
+                Stack(
+                    Layers=[
+                        Layer(d=50, sigma=4.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0),
+                        Layer(d=100, sigma=3.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0),
+                        Layer(d=150, sigma=2.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0),
+                    ]
+                )
+            ],
+            Ambient=Layer(b=1e-7, dens=0.1),
+            Substrate=Layer(b=4e-6, dens=0.1, sigma=1.0),
+        )
+        sample_inv = -Sample(
+            Stacks=[
+                Stack(
+                    Layers=[
+                        Layer(d=150, sigma=3.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0),
+                        Layer(d=100, sigma=4.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0),
+                        Layer(d=50, sigma=1.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0),
+                    ]
+                )
+            ],
+            Ambient=Layer(b=4e-6, dens=0.1),
+            Substrate=Layer(b=1e-7, dens=0.1, sigma=2.0),
+        )
+        instrument = Instrument(
+            probe=Probe.neutron,
+            coords=Coords.tth,
+            res=0.001,
+            restype=ResType.none,
+            beamw=0.1,
+            footype=FootType.none,
+            tthoff=0.0,
+            wavelength=4.5,
+            incangle=0.5,
+        )
+        ref = Specular(self.tth, sample, instrument)
+        inv = Specular(self.tth, sample_inv, instrument)
+        np.testing.assert_array_equal(ref, inv)
+
 
 def standard_xray():
     """
-        return the defied standard x-ray reflectivity to compare against other models
+    return the defied standard x-ray reflectivity to compare against other models
     """
     qz = linspace(0.01, 0.3, 15)
     return Specular(

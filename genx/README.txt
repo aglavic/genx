@@ -24,6 +24,7 @@ Changes 3.7.0
  * Implement new python dataclass based model parameterization. The GUI will detect any parameter in the model
    based on the base class which allows more flexibility in model modification and improves general maintainability.
  * Add code signature to Mac OS distribution to remove need for user to ignore security warnings on installation/run.
+   The distribution now uses package installers ".pkg" instead of ".dmg", no more warnings should occure for first start.
    (Thanks to the international scattering alliance for support in creating the certificate.)
  * Add feature to invert sample structure for measurements from two sides of the surface. To use
    set in the script "sample = -sample". If you use both in one model, don't forget to invert back after

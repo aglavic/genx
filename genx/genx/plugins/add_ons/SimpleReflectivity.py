@@ -28,12 +28,14 @@ from genx.gui.custom_events import (EVT_PARAMETER_GRID_CHANGE, EVT_UPDATE_MODEL,
 from genx.gui.images import getopenBitmap, getplottingBitmap
 from genx.gui.parametergrid import ValueCellRenderer
 from genx.model import Model
+from genx.models.lib.refl_base import ReflBase
 
 from ...gui import custom_ids
 from .. import add_on_framework as framework
 from .help_modules import reflectivity_images as images
 from .help_modules.custom_dialog import *
 from .help_modules.materials_db import MASS_DENSITY_CONVERSION, Formula, mdb
+from .help_modules.reflectivity_gui import ReflClassHelpDialog
 from .help_modules.reflectivity_sample_plot import SamplePlotPanel
 from .help_modules.reflectivity_utils import find_code_segment
 
@@ -67,6 +69,48 @@ def get_mat_api(frm: Formula):
     except Exception:
         debug("Error in SLD DB query", exc_info=True)
         return None
+
+
+class Instrument(ReflBase):
+    """
+    Specify parameters of the probe and reflectometry instrument in SimpleReflectivity.
+
+    ``probe``
+        Describes the radiation and measurments used, it is one of:
+        'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip',
+        'neutron tof', 'neutron pol tof'.
+        The calculations for x-rays uses ``f`` for the scattering length for
+        neutrons ``b`` for 'neutron pol', 'neutron pol spin flip' and 'neutron
+        pol tof' alternatives the ``magn`` is used in the calculations. Note
+        that the angle of magnetization ``magn_ang`` is only used in the spin
+        flip model.
+    ``wavelength``
+        The wavelength of the radiation given in AA (Angstroms)
+    ``I0``
+        The incident intensity (a scaling factor)
+    ``footype``
+        Which type of footprint correction is to be applied to the simulation.
+        One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, the
+        number 0-2 are also valid. The different choices are self expnalatory.
+    ``beamw``
+        The width of the beam given in mm. For 'gauss beam' it should be the
+        standard deviation. For 'square beam' it is the full width of the beam.
+    ``samplelen``
+        The length of the sample given in mm
+    ``coords``
+        The coordinates of the data given to the SimSpecular function. The
+        available alternatives are: 'q' or '2θ'. Alternatively the numbers 0 (q)
+        or 1 (tth) can be used.
+    ``Ibkg``
+        The background intensity. Added as a constant value to the calculated
+        reflectivity
+    ``res``
+        The resolution of the instrument given in the coordinates of ``coords``.
+        This assumes a gaussian resolution function and ``res`` is the standard
+        deviation of that gaussian. If ``restype`` has (dx/x) in its name the
+        gaussian standard deviation is given by res*x where x is either in tth
+        or q.
+    """
 
 
 class SampleGrid(gridlib.Grid):
@@ -817,6 +861,8 @@ class SamplePanel(wx.Panel):
     model: Model
     last_sample_script = ""
 
+    help_dialog = None
+
     inst_params = dict(
         probe="neutron pol",
         I0=1.0,
@@ -1088,6 +1134,12 @@ class SamplePanel(wx.Panel):
         if update_script:
             self.update_callback(None)
 
+    def ShowHelp(self, event):
+        if self.help_dialog:
+            return
+        self.help_dialog = ReflClassHelpDialog(self.dlg, Instrument())
+        self.help_dialog.Show()
+
     def EditInstrument(self, evt):
         """Event handler that creates an dialog box to edit the instruments.
 
@@ -1127,7 +1179,7 @@ class SamplePanel(wx.Panel):
         groups = [
             ("Radiation", ("probe", "wavelength", "I0")),
             ("Data", ("coords", "Ibkg", "res")),
-            ("Footprint Correction", ("footype", "samplelen", "beamw")),
+            ("Footprint Correction", ("footype", "beamw", "samplelen")),
         ]
         for item in validators.keys():
             func_name = inst_name + "." + _set_func_prefix + item.capitalize()
@@ -1135,13 +1187,23 @@ class SamplePanel(wx.Panel):
             val = self.inst_params[item]
             vals[item] = val
 
-        dlg = ValidateFitDialog(
+        self.dlg = ValidateFitDialog(
             self, pars, vals, validators, title="Instrument Editor", groups=groups, units=units, editable_pars=editable
         )
 
-        if dlg.ShowModal() == wx.ID_OK:
-            vals = dlg.GetValues()
-            states = dlg.GetStates()
+        help_btn = wx.Button(self.dlg, -1, "Show Help")
+        help_btn.SetBackgroundColour((230, 230, 255, 255))
+        # dlg.border_sizer.InsertSpacer(0, 2)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.AddStretchSpacer(1)
+        sizer.Add(help_btn, 0, wx.FIXED_MINSIZE, 0)
+        self.dlg.border_sizer.Insert(0, sizer, 0, wx.ALIGN_RIGHT)
+        self.dlg.Fit()
+        self.dlg.Bind(wx.EVT_BUTTON, self.ShowHelp, help_btn)
+
+        if self.dlg.ShowModal() == wx.ID_OK:
+            vals = self.dlg.GetValues()
+            states = self.dlg.GetStates()
             for key, value in vals.items():
                 if type(self.inst_params[key]) is not str:
                     value = float(vals[key])
@@ -1156,7 +1218,7 @@ class SamplePanel(wx.Panel):
             self.UpdateModel(evt="inst")
         else:
             pass
-        dlg.Destroy()
+        self.dlg.Destroy()
 
     def SwitchAdvancedReflectivity(self, evt):
         # Load Reflectivity plugin for more advanced options, this will unload current plugin
