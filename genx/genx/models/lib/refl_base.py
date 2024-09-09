@@ -30,6 +30,7 @@ Choices should use appropriate Enum to simplify comparison. An example would be:
         pol: Polarization = Polarization.up_up
 """
 
+from copy import copy, deepcopy
 from dataclasses import dataclass, field, fields
 from typing import List
 
@@ -55,6 +56,12 @@ class ReflBase(ModelParamBase):
         # field information for all parameters
         return dict([(fi.name, fi) for fi in fields(self)])
 
+    def copy(self, deep=False):
+        if deep:
+            return deepcopy(self)
+        else:
+            return copy(self)
+
 
 @dataclass
 class StackBase(ReflBase):
@@ -73,6 +80,7 @@ class SampleBase(ReflBase):
 
     # following attribute can be used in sub-class to specify dataclass to return on resolveLayerParameters
     _layer_parameter_class = None
+    _is_inverted = False
 
     def _resolve_parameter(self, obj, key):
         return getattr(obj, key)
@@ -85,6 +93,11 @@ class SampleBase(ReflBase):
             for stack in self.Stacks:
                 par[fi.name] += stack.resolveLayerParameter(fi.name)
             par[fi.name].append(self._resolve_parameter(self.Ambient, fi.name))
+        if self._is_inverted:
+            for key, values in par.items():
+                par[key] = list(reversed(values))
+                if key.startswith("sigma"):
+                    par[key] = par[key][1:] + [0.0]
         if self._layer_parameter_class:
             return self._layer_parameter_class(**par)
         else:
@@ -103,7 +116,19 @@ class SampleBase(ReflBase):
     def setSimulationFunctions(cls, sim_functions):
         [cls._add_sim_method(k, func) for k, func in sim_functions.items()]
 
+    def __neg__(self):
+        """
+        The negative of the sample is a representation with inverted layer
+        order. This is useful for measurements from the substrate side.
+        It takes care of swapping the roughness indices to stay between the same adjecent layers.
+        """
+        # use a shallow copy as only the bool flag is inverted
+        output = self.copy()
+        output._is_inverted = not self._is_inverted
+        return output
 
+
+# TODO: Leftovers from old style models, needs refactoring
 class ReflFunction:
     def __init__(self, function, validation_args, validation_kwargs, id=None):
         """Creates the Refl Function given function. The arguments validation_args and

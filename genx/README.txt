@@ -25,6 +25,9 @@ Changes 3.7.0
    based on the base class which allows more flexibility in model modification and improves general maintainability.
  * Add code signature to Mac OS distribution to remove need for user to ignore security warnings on installation/run.
    (Thanks to the international scattering alliance for support in creating the certificate.)
+ * Add feature to invert sample structure for measurements from two sides of the surface. To use
+   set in the script "sample = -sample". If you use both in one model, don't forget to invert back after
+   the simulation in question.
  * Change parameteriazation of interdiff model to use sigma+sigmar instead of sigmai+sigmar to make it
    equivalent to reflectivity models that only use sigma = sqrt(sigmai**2+sigmar**2). To fit sigmai one
    should create a user parameter or set proper limits in sigma+sigmar fit.
