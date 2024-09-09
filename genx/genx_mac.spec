@@ -59,10 +59,11 @@ coll = COLLECT(exe,
 app = BUNDLE(coll,
              name='genx.app',
              icon='mac_build/genx.icns',
-             bundle_identifier=None,
+             bundle_identifier='com.isa.genx.pkg',
              info_plist={
              'NSPrincipalClass': 'NSApplication',
              'NSAppleScriptEnabled': False,
+             'CFBundlePackageType': 'APPL',
              'CFBundleDocumentTypes': [
                 {
                     'CFBundleTypeName': 'GenX Model File',
@@ -70,7 +71,8 @@ app = BUNDLE(coll,
                      'CFBundleTypeExtensions': ['hgx', 'gx'],
                     'LSHandlerRank': 'Owner',
                     'CFBundleTypeRole' : 'Editor',
-                    }
+                    'CFBundleIdentifier': 'com.isa.genx.pkg',
+                }
                 ]
             },
             )
