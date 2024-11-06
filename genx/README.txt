@@ -12,6 +12,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.1
+=============
+ * Fix incompatibility with Python 3.12 dataclasses.
+
+
 Changes 3.7.0
 =============
  * Add the FrequencyAnalysis plugin that allows to analyze the reflectivity using various corrections to

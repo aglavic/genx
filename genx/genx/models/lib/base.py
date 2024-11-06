@@ -32,8 +32,18 @@ def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
             elif seen_default:
                 raise TypeError(f"non-default argument {f.name!r} " "follows default argument")
 
-    locals = {f"_type_{f.name}": f.type for f in fieldsarg}
-    locals.update({"MISSING": MISSING, "_HAS_DEFAULT_FACTORY": _HAS_DEFAULT_FACTORY})
+    if sys.version_info >= (3, 12, 0):
+        # changed behavior in dataclasses
+        locals = {f"__dataclass_type_{f.name}__": f.type for f in fieldsarg}
+        locals.update(
+            {
+                "__dataclass_HAS_DEFAULT_FACTORY__": _HAS_DEFAULT_FACTORY,
+                "__dataclass_builtins_object__": object,
+            }
+        )
+    else:
+        locals = {f"_type_{f.name}": f.type for f in fieldsarg}
+        locals.update({"MISSING": MISSING, "_HAS_DEFAULT_FACTORY": _HAS_DEFAULT_FACTORY})
 
     body_lines = []
     for f in fieldsarg:
