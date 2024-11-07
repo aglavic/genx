@@ -426,14 +426,16 @@ class ModelController:
             if type(solver_class) is bytes:
                 solver_class = solver_class.decode("utf-8")
                 solver_module = solver_module.decode("utf-8")
+        gscope=globals()
+        lscope=locals()
         if solver_class != self.optimizer.__class__.__name__:
             try:
-                exec(f"from {solver_module} import {solver_class}")
+                exec(f"from {solver_module} import {solver_class}", gscope, lscope)
             except ImportError:
                 warning(f"Could not import solver {solver_class} from moudle {solver_module}")
             else:
                 prev_optimizer = self.optimizer
-                exec(f"self.optimizer={solver_class}()")
+                exec(f"self.optimizer={solver_class}()", gscope, lscope)
                 self.optimizer.set_callbacks(prev_optimizer.get_callbacks())
         self.optimizer.read_h5group(opt_group)
         try:

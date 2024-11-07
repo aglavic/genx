@@ -114,7 +114,7 @@ class Model(H5HintedExport):
     @fomfunction.setter
     def fomfunction(self, value):
         if value in fom_funcs.func_names:
-            self.set_fom_func(eval("fom_funcs." + value))
+            self.set_fom_func(getattr(fom_funcs, value))
             self.solver_parameters.figure_of_merit = value
         else:
             iprint("Can not find fom function name %s" % value)
@@ -132,7 +132,7 @@ class Model(H5HintedExport):
         self.set_script("")
         # noinspection PyBroadException
         try:
-            self.set_script("\n".join(eval(self.startup_script.script)))
+            self.set_script("\n".join(eval(self.startup_script.script, globals(), locals())))
         except Exception:
             debug("Issue when loading script from config:", exc_info=True)
         self.parameters = Parameters()

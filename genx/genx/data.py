@@ -314,10 +314,12 @@ class DataSet(H5HintedExport):
         e = self.error_raw
         rms = self.rms
 
+        gscope=globals()
+        lscope=locals()
         for key in self.extra_data:
-            exec('%s = self.extra_data_raw["%s"]' % (key, key))
+            exec('%s = self.extra_data_raw["%s"]' % (key, key), gscope, lscope)
 
-        self.x = eval(self.x_command)
+        self.x = eval(self.x_command, gscope, lscope)
 
     def run_y_command(self):
         x = self.x_raw
@@ -325,10 +327,12 @@ class DataSet(H5HintedExport):
         e = self.error_raw
         rms = self.rms
 
+        gscope=globals()
+        lscope=locals()
         for key in self.extra_data:
-            exec('%s = self.extra_data_raw["%s"]' % (key, key))
+            exec('%s = self.extra_data_raw["%s"]' % (key, key), gscope, lscope)
 
-        self.y = eval(self.y_command)
+        self.y = eval(self.y_command, gscope, lscope)
 
     def run_error_command(self):
         x = self.x_raw
@@ -339,8 +343,10 @@ class DataSet(H5HintedExport):
         xt = self.x
         yt = self.y
 
+        gscope=globals()
+        lscope=locals()
         for key in self.extra_data:
-            exec('%s = self.extra_data_raw["%s"]' % (key, key))
+            exec('%s = self.extra_data_raw["%s"]' % (key, key), gscope, lscope)
 
         def fpe(xmax=0.05, relerr=0.01, x=xt, y=yt):
             """
@@ -356,7 +362,7 @@ class DataSet(H5HintedExport):
                 [(y[1] - y[0]) / (x[1] - x[0]), (y[2:] - y[:-2]) / (x[2:] - x[:-2]), (y[-1] - y[-2]) / (x[-1] - x[-2])]
             )
 
-        self.error = eval(self.error_command)
+        self.error = eval(self.error_command, gscope, lscope)
 
     def run_extra_commands(self):
         x = self.x_raw
@@ -364,22 +370,15 @@ class DataSet(H5HintedExport):
         e = self.error_raw
         rms = self.rms
 
-        if sys.version_info>=(3, 13,0):
-            # changes in handling of scope need to be accounted for
-            scope = locals()
-            for key in self.extra_data_raw:
-                exec('%s = self.extra_data_raw["%s"]'%(key, key), locals=scope)
-        else:
-            for key in self.extra_data_raw:
-                exec('%s = self.extra_data_raw["%s"]' % (key, key))
+        gscope=globals()
+        lscope=locals()
+        for key in self.extra_data_raw:
+            exec('%s = self.extra_data_raw["%s"]' % (key, key), gscope, lscope)
 
         for key in self.extra_data_raw:
             if not key in self.extra_commands:
                 self.extra_commands[key] = "%s" % key
-            if sys.version_info>=(3, 13, 0):
-                self.extra_data[key] = eval(self.extra_commands["%s"%key], locals=scope)
-            else:
-                self.extra_data[key] = eval(self.extra_commands["%s" % key])
+            self.extra_data[key] = eval(self.extra_commands["%s" % key], gscope, lscope)
 
         if "res" in self.extra_data:
             self.res = self.extra_data["res"]
@@ -416,19 +415,21 @@ class DataSet(H5HintedExport):
         xt, yt, et = x, y, e  # make sure values are always defined
 
         # Know we have to do this with the extra data
+        gscope=globals()
+        lscope=locals()
         for key in self.extra_data_raw:
-            exec('%s = self.extra_data_raw["%s"]' % (key, key))
+            exec('%s = self.extra_data_raw["%s"]' % (key, key), gscope, lscope)
 
         # Try to evaluate all the expressions
         if command_dict["x"] != "":
             try:
-                xt = eval(command_dict["x"])
+                xt = eval(command_dict["x"], gscope, lscope)
             except Exception as e:
                 result += "Error in evaluating x expression.\n\nPython output:\n" + e.__str__() + "\n"
 
         if command_dict["y"] != "":
             try:
-                yt = eval(command_dict["y"])
+                yt = eval(command_dict["y"], gscope, lscope)
             except Exception as e:
                 result += "Error in evaluating y expression.\n\nPython output:\n" + e.__str__() + "\n"
 
@@ -453,7 +454,7 @@ class DataSet(H5HintedExport):
                 )
 
             try:
-                et = eval(command_dict["e"])
+                et = eval(command_dict["e"], gscope, lscope)
             except Exception as e:
                 result += "Error in evaluating e expression.\n\nPython output:\n" + e.__str__() + "\n"
 
@@ -462,7 +463,7 @@ class DataSet(H5HintedExport):
             value = command_dict[key]
             if command_dict[key] != "":
                 try:
-                    extra_results[key] = eval(value)
+                    extra_results[key] = eval(value, gscope, lscope)
                 except Exception as e:
                     result += "Error in evaluating %s expression.\n\nPython output:\n" % key + e.__str__() + "\n"
 
@@ -548,15 +549,17 @@ class DataSet(H5HintedExport):
         pars [dictonary] is None that item will be skipped, i.e. keep its old
         value.
         """
+        gscope=globals()
+        lscope=locals()
         for name in self.plot_setting_names:
             if pars[name] is not None:
                 if type(pars[name]) == type(""):
-                    exec("self.data_" + name + ' = "' + pars[name].__str__() + '"')
+                    exec("self.data_" + name + ' = "' + pars[name].__str__() + '"', gscope, lscope)
                 elif name == "color":
                     c = pars["color"]
                     self.data_color = (c[0] / 255.0, c[1] / 255.0, c[2] / 255.0)
                 else:
-                    exec("self.data_" + name + " = " + pars[name].__str__())
+                    exec("self.data_" + name + " = " + pars[name].__str__(), gscope, lscope)
 
     def set_sim_plot_items(self, pars):
         """
@@ -565,15 +568,17 @@ class DataSet(H5HintedExport):
         pars [dictonary] is None that item will be skipped, i.e. keep its old
         value.
         """
+        gscope=globals()
+        lscope=locals()
         for name in self.plot_setting_names:
             if pars[name] is not None:
                 if type(pars[name]) == type(""):
-                    exec("self.sim_" + name + ' = "' + pars[name].__str__() + '"')
+                    exec("self.sim_" + name + ' = "' + pars[name].__str__() + '"', gscope, lscope)
                 elif name == "color":
                     c = pars["color"]
                     self.sim_color = (c[0] / 255.0, c[1] / 255.0, c[2] / 255.0)
                 else:
-                    exec("self.sim_" + name + " = " + pars[name].__str__())
+                    exec("self.sim_" + name + " = " + pars[name].__str__(), gscope, lscope)
 
     def set_show(self, val):
         self.show = bool(val)
@@ -697,15 +702,18 @@ class DataSet(H5HintedExport):
         return ipw.VBox(vlist)
 
     def _ipyw_change(self, change):
-        exec("self.%s=change.new" % (change.owner._child_val))
+        exec("self.%s=change.new" % (change.owner._child_val), {'self': self, 'change': change})
 
     def _ipyw_change_color(self, change):
         if type(change.new) is str:
-            exec("self.%s=html2c(change.new)" % (change.owner._child_val))
+            exec("self.%s=html2c(change.new)" % (change.owner._child_val),
+                 {'self': self, 'change': change, 'html2c': html2c})
 
     def _ipyw_command(self, change):
+        gscope=globals()
+        lscope=locals()
         if change.owner._command in ["x", "y", "error"]:
-            exec("self.%s_command=change.new" % change.owner._command)
+            exec("self.%s_command=change.new" % change.owner._command, gscope, lscope)
         else:
             self.extra_commands[change.owner._command] = change.new
         try:
@@ -1054,7 +1062,8 @@ class DataList(H5Savable):
         return vbox
 
     def _ipyw_change(self, change):
-        exec("self.items[%i].%s=change.new" % (change.owner._child_id, change.owner._child_val))
+        exec("self.items[%i].%s=change.new" % (change.owner._child_id, change.owner._child_val),
+             {'self': self, 'change': change})
 
     def _ipyw_add(self, button):
         import ipywidgets as ipw

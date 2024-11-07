@@ -413,7 +413,7 @@ class ModelControlGUI(wx.EvtHandler):
             )
             fom_funcs.func_names.append(fom_func_name)
             exectext = "fom_funcs." + fom_func_name + " = self.parent.model.fom_func"
-            exec(exectext, locals(), globals())
+            exec(exectext, {}, {'fom_funcs': fom_funcs, 'self': self})
 
         combined_options = self.controller.get_combined_options()
         dlg = SettingsDialog(frame, combined_options, apply_callback=lambda options: False, title="Optimizer Settings")

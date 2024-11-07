@@ -328,7 +328,7 @@ def R2bars(simulations, data):
 obj_list = dir()[:]
 
 # find all functions
-all_func_names = [s for s in obj_list if type(eval(s)).__name__ == "function"]
+all_func_names = [s for s in obj_list if type(eval(s, globals(), locals())).__name__ == "function"]
 func_names = [s for s in all_func_names if not s.startswith("_")]
 
 # End of file
