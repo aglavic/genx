@@ -4,6 +4,7 @@ include changelog.txt
 
 include genx/genx.conf
 include tests/data/*.*
+include tests/*.py
 recursive-include genx/examples *
 recursive-include genx/profiles *
 recursive-include genx/models/databases *
