@@ -1,7 +1,9 @@
 include README.txt
+include LICENSE.txt
 include changelog.txt
 
 include genx/genx.conf
+include tests/data/*.*
 recursive-include genx/examples *
 recursive-include genx/profiles *
 recursive-include genx/models/databases *
