@@ -213,8 +213,11 @@ class DiffEv(GenxOptimizer):
         self.setup_ok = False
         super().read_h5group(group)
 
-        self.par_evals.copy_from(group["par_evals"][()])
-        self.fom_evals.copy_from(group["fom_evals"][()])
+        try:
+            self.par_evals.copy_from(group["par_evals"][()])
+            self.fom_evals.copy_from(group["fom_evals"][()])
+        except KeyError:
+            pass
 
     def get_start_guess(self):
         return self.start_guess
