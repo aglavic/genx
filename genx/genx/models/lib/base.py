@@ -5,19 +5,20 @@ Define base classes that can be used in models for prameterization. This classes
 import ast
 import inspect
 import sys
+import logging
+import dataclasses
 
-# noinspection PyUnresolvedReferences
-from dataclasses import (_FIELD, _FIELD_INITVAR, _FIELDS, _HAS_DEFAULT_FACTORY, _POST_INIT_NAME, MISSING, _create_fn,
-                         _field_init, _init_param, _set_new_attribute, dataclass, field, fields)
+from dataclasses import dataclass, field, fields
 from enum import Enum
 
 # change of signature introduced in python 3.10.1
 if sys.version_info >= (3, 10, 1):
-    _field_init_real = _field_init
+    _field_init_real = dataclasses._field_init
 
     def _field_init(f, frozen, locals, self_name):
         return _field_init_real(f, frozen, locals, self_name, False)
-
+else:
+    _field_init = dataclasses._field_init
 
 def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
     """
@@ -27,7 +28,7 @@ def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
     seen_default = False
     for f in fieldsarg:
         if f.init:
-            if not (f.default is MISSING and f.default_factory is MISSING):
+            if not (f.default is dataclasses.MISSING and f.default_factory is dataclasses.MISSING):
                 seen_default = True
             elif seen_default:
                 raise TypeError(f"non-default argument {f.name!r} " "follows default argument")
@@ -37,13 +38,13 @@ def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
         locals = {f"__dataclass_type_{f.name}__": f.type for f in fieldsarg}
         locals.update(
             {
-                "__dataclass_HAS_DEFAULT_FACTORY__": _HAS_DEFAULT_FACTORY,
+                "__dataclass_HAS_DEFAULT_FACTORY__": dataclasses._HAS_DEFAULT_FACTORY,
                 "__dataclass_builtins_object__": object,
             }
         )
     else:
         locals = {f"_type_{f.name}": f.type for f in fieldsarg}
-        locals.update({"MISSING": MISSING, "_HAS_DEFAULT_FACTORY": _HAS_DEFAULT_FACTORY})
+        locals.update({"MISSING": dataclasses.MISSING, "_HAS_DEFAULT_FACTORY": dataclasses._HAS_DEFAULT_FACTORY})
 
     body_lines = []
     for f in fieldsarg:
@@ -52,20 +53,35 @@ def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
             body_lines.append(line)
 
     if has_post_init:
-        params_str = ",".join(f.name for f in fieldsarg if f._field_type is _FIELD_INITVAR)
-        body_lines.append(f"{self_name}.{_POST_INIT_NAME}({params_str})")
+        params_str = ",".join(f.name for f in fieldsarg if f._field_type is dataclasses._FIELD_INITVAR)
+        body_lines.append(f"{self_name}.{dataclasses._POST_INIT_NAME}({params_str})")
 
-    # processing of additional user keyword arguments
-    body_lines += ["setattr(self, '_unused_kwds', user_kwds)"]
+    arg_list_genx = [self_name, "*"] + [dataclasses._init_param(f) for f in fieldsarg if f.init] + ["**user_kwds"]
+    if sys.version_info >=  (3, 13, 0):
+        # If no body lines, use 'pass'.
+        if not body_lines:
+            body_lines = ['  pass']
+        if has_post_init:
+            body_lines[-1] = '  '+body_lines[-1]
+        func_builder = dataclasses._FuncBuilder(globals)
+        func_builder.add_fn('__init__',
+                            arg_list_genx,
+                            body_lines,
+                            locals=locals,
+                            return_type=None)
+        return func_builder
+    else:
+        # processing of additional user keyword arguments
+        body_lines += ["setattr(self, '_unused_kwds', user_kwds)"]
 
-    return _create_fn(
-        "__init__",
-        [self_name, "*"] + [_init_param(f) for f in fieldsarg if f.init] + ["**user_kwds"],
-        body_lines,
-        locals=locals,
-        globals=globals,
-        return_type=None,
-    )
+        return dataclasses._create_fn(
+            "__init__",
+            arg_list_genx,
+            body_lines,
+            locals=locals,
+            globals=globals,
+            return_type=None,
+        )
 
 
 class ModelParamMeta(type):
@@ -82,14 +98,17 @@ class ModelParamMeta(type):
             and len([k for k in attrs["__annotations__"].keys() if not k.startswith("_")]) > 0
         ):
             as_dataclass = dataclass(cls)
-            fieldsarg = getattr(as_dataclass, _FIELDS)
+            fieldsarg = getattr(as_dataclass, dataclasses._FIELDS)
 
             # Generate custom __init__ method that allows arbitrary extra keyword arguments
-            has_post_init = hasattr(as_dataclass, _POST_INIT_NAME)
+            has_post_init = hasattr(as_dataclass, dataclasses._POST_INIT_NAME)
             # Include InitVars and regular fields (so, not ClassVars).
-            flds = [f for f in fieldsarg.values() if f._field_type in (_FIELD, _FIELD_INITVAR)]
+            flds = [f for f in fieldsarg.values() if f._field_type in (dataclasses._FIELD, dataclasses._FIELD_INITVAR)]
             init_fun = _custom_init_fn(flds, False, has_post_init, "self", globals())
-            setattr(cls, "__init__", init_fun)
+            if sys.version_info>=(3,13,0):
+                init_fun.add_fns_to_class(cls)
+            else:
+                setattr(cls, "__init__", init_fun)
         # adding documentation for class into module doc-string
         # this leads to much cleaner code in model module as beginning of file only contains
         # a general introduction and each dataclass gets documented where it's defined.

@@ -4,6 +4,7 @@ on set and the class DataList stores multiple DataSets.
 """
 
 import os
+import sys
 import time
 
 from sys import platform
@@ -363,13 +364,22 @@ class DataSet(H5HintedExport):
         e = self.error_raw
         rms = self.rms
 
-        for key in self.extra_data_raw:
-            exec('%s = self.extra_data_raw["%s"]' % (key, key))
+        if sys.version_info>=(3, 13,0):
+            # changes in handling of scope need to be accounted for
+            scope = locals()
+            for key in self.extra_data_raw:
+                exec('%s = self.extra_data_raw["%s"]'%(key, key), locals=scope)
+        else:
+            for key in self.extra_data_raw:
+                exec('%s = self.extra_data_raw["%s"]' % (key, key))
 
         for key in self.extra_data_raw:
             if not key in self.extra_commands:
                 self.extra_commands[key] = "%s" % key
-            self.extra_data[key] = eval(self.extra_commands["%s" % key])
+            if sys.version_info>=(3, 13, 0):
+                self.extra_data[key] = eval(self.extra_commands["%s"%key], locals=scope)
+            else:
+                self.extra_data[key] = eval(self.extra_commands["%s" % key])
 
         if "res" in self.extra_data:
             self.res = self.extra_data["res"]
