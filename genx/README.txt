@@ -12,10 +12,14 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.2
+=============
+ * Fixes for compatibility with Python 3.13
+ * Fix to issue that might occur in some testing environments
+
 Changes 3.7.1
 =============
  * Fix incompatibility with Python 3.12 dataclasses.
-
 
 Changes 3.7.0
 =============
