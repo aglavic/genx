@@ -9,8 +9,15 @@ import numpy as np
 from genx.models import lib, sxrd
 
 lib.USE_NUMBA = False
-from genx.models.lib import (instrument, instrument_numba, neutron_numba, neutron_refl, paratt, paratt_numba,
-                             surface_scattering)
+from genx.models.lib import instrument, neutron_refl, paratt
+
+try:
+    from genx.models.lib import paratt_numba, instrument_numba, neutron_numba, surface_scattering
+except ModuleNotFoundError:
+    # numba might not be installed
+    paratt_numba = None
+    instrument_numba = None
+    neutron_numba = None
 
 try:
     from genx.models.lib import neutron_cuda, paratt_cuda
@@ -19,7 +26,7 @@ except:
 else:
     CUDA = True
 
-
+@unittest.skipIf(paratt_numba is None, 'Numba not available')
 class TestInstrumentModule(unittest.TestCase):
 
     # Test the models.core.instruments functions implemented in models.core.instruments_numba
@@ -97,7 +104,7 @@ class TestInstrumentModule(unittest.TestCase):
         np.testing.assert_array_almost_equal(Q1, Q2)
         np.testing.assert_array_almost_equal(weight1, weight2)
 
-
+@unittest.skipIf(paratt_numba is None, 'Numba not available')
 class TestParattModule(unittest.TestCase):
 
     # Test the models.core.paratt functions implemented in models.core.paratt_numba
@@ -355,6 +362,7 @@ class TestParattModule(unittest.TestCase):
             np.testing.assert_array_almost_equal(G1, G2)
 
 
+@unittest.skipIf(paratt_numba is None, 'Numba not available')
 class TestNeutronModule(unittest.TestCase):
 
     # Test the models.core.neutron_refl functions implemented in models.core.neutron_numba
@@ -534,6 +542,7 @@ class TestNeutronModule(unittest.TestCase):
             np.testing.assert_array_almost_equal(G1, G2)
 
 
+@unittest.skipIf(paratt_numba is None, 'Numba not available')
 class TestSXRD(unittest.TestCase):
     # test the models.lib.surface_scattering fast complex sum implementation
 

@@ -5,7 +5,6 @@
 import unittest
 
 from importlib import reload
-from unittest.mock import patch
 
 import numpy as np
 
@@ -16,6 +15,10 @@ from genx.models import lib
 lib.USE_NUMBA = False
 from genx.models.lib import instrument
 
+try:
+    import numba
+except ModuleNotFoundError:
+    numba = None
 
 class TestFootprint(unittest.TestCase):
     def test_fp_square(self):
@@ -124,6 +127,7 @@ class TestResolution(unittest.TestCase):
         np.testing.assert_array_almost_equal(Iconv, 1.0)
 
 
+@unittest.skipIf(numba is None, 'Numba not available')
 class TestInstrumentModuleBranching(unittest.TestCase):
     def setUp(self):
         from genx.models.lib import instrument_numba

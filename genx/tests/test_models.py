@@ -14,10 +14,18 @@ from importlib import import_module
 
 MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "genx", "models")
 
+try:
+    import numba
+except ModuleNotFoundError:
+    numba = None
+
 class TestReflModels(unittest.TestCase):
     def test_empty_models(self):
         ref_refl = None
-        for i, name in enumerate(["spec_nx", "spec_adaptive", "spec_inhom", "soft_nx", "mag_refl", "interdiff"]):
+        models_to_test = ["spec_nx", "spec_adaptive", "spec_inhom", "soft_nx", "mag_refl"]
+        if numba is not None:
+            models_to_test += ["interdiff"]
+        for i, name in enumerate(models_to_test):
             with self.subTest(f"Model {name} import", i=i):
                 model, optimizer, refl = api.Reflectivity.create_new(name)
                 refl.ReadModel()
@@ -40,7 +48,10 @@ def load_tests(loader, standard_tests, pattern):
         module_name = os.path.basename(mi)[:-3]
         if mi in ['__init__', 'symmetries', 'utils']:
             continue
-        import_module(f'genx.models.{module_name}', )
+        try:
+            import_module(f'genx.models.{module_name}', )
+        except ModuleNotFoundError:
+            raise unittest.SkipTest("Skipping module " + module_name + ", error on import")
 
     suite = unittest.TestSuite()
     for test_class in [TestReflModels]+ModelTestCases:
