@@ -216,9 +216,11 @@ class Instrument(refl.ReflBase):
     wavelength: float = 1.54
     coords: Coords = "2θ"
     I0: float = 1.0
+    I0_offspec: float = 1.0
     Ibkg: float = 0.0
     restype: ResType = "no conv"
     res: float = 0.001
+    detres: float = 0.01
     respoints: int = 5
     resintrange: float = 2.0
     footype: FootType = "no corr"
@@ -230,9 +232,11 @@ class Instrument(refl.ReflBase):
         "wavelength": "Å",
         "coords": "",
         "I0": "arb.",
+        "I0_offspec": "arb.",
         "Ibkg": "arb.",
         "restype": "",
         "res": "[coord]",
+        "detres": "[coord]",
         "respoints": "pts.",
         "resintrange": "[coord]",
         "footype": "",
@@ -244,8 +248,8 @@ class Instrument(refl.ReflBase):
     }
 
     Groups = [
-        ("Radiation", ["wavelength", "I0", "Ibkg"]),
-        ("X-Resolution", ["restype", "res", "respoints", "resintrange"]),
+        ("Radiation", ["wavelength", "I0", "I0_offspec", "Ibkg"]),
+        ("Resolution", ["restype", "res", "detres", "respoints", "resintrange"]),
         ("X-Coordinates", ["coords"]),
         ("DWBA", ["taylor_n"]),
         ("Footprint", ["footype", "beamw", "samplelen"]),
@@ -333,23 +337,25 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample: Sample, instrument: In
     if instrument.coords == Coords.tth:
         alphaR1 = ThetaQx
         betaR1 = TwoThetaQz - ThetaQx
-        cen_idx = where(betaR1 >= 0)[0][0]
+        if (betaR1 > 0).all() or (betaR1 < 0).all():
+            longitudinal = True
+        else:
+            longitudinal = False
+            cen_idx = where(betaR1 >= 0)[0][0]
         qx = k * (cos(alphaR1 * pi / 180) - cos(betaR1 * pi / 180))
         qz = k * (sin(alphaR1 * pi / 180) + sin(betaR1 * pi / 180))
+        tth = TwoThetaQz
     else:
         qz = TwoThetaQz
         qx = ThetaQx
-        cen_idx = where(qx >= 0)[0][0]
-    if isinstance(qz, ndarray):
-        qz_c = qz[cen_idx]
-    else:
-        qz_c = qz
-    tth = arcsin(qz_c / 4.0 / pi * lamda) * 2.0
-    qx_max = k * (1.0 - cos(tth))
-
-    if instrument.coords == Coords.q:
-        # calculate incident angle from qx for footprint correction
+        if (qx > 0).all() or (qx < 0).all():
+            longitudinal = True
+        else:
+            longitudinal = False
+            cen_idx = where(qx >= 0)[0][0]
+        tth = arcsin(qz / 4.0 / pi * lamda) * 2.0
         alphaR1 = (arctan2(qx, qz) + tth / 2.0) * 180.0 / pi
+        betaR1 = tth - alphaR1
 
     parameters: LayerParameters = sample.resolveLayerParameters()
 
@@ -385,7 +391,7 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample: Sample, instrument: In
     (I, alpha, omega) = offspec.DWBA_Interdiff(
         qx, qz, lamda, n, z, sigmar, sigmai, eta, h, eta_z, d, taylor_n=instrument.taylor_n
     )
-    I = real(I) * ((qx > -qx_max) & (qx < qx_max)) * instrument.I0
+    I = real(I) * ((alphaR1 > 0) & (betaR1 > 0)) * instrument.I0
 
     # FootprintCorrections
     foocor = 1.0
@@ -408,27 +414,28 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample: Sample, instrument: In
     restype = instrument.restype
     if restype == ResType.none:
         # if no resolution is defined, don't include specular peak
-        return I + instrument.Ibkg
+        return I * instrument.I0_offspec + instrument.Ibkg
 
     # include specular peak
     Ibgk = instrument.Ibkg
     instrument.Ibkg = 0.0
-    instrument.restype = ResType(0)
-    if isinstance(TwoThetaQz, ndarray):
-        Ispec = Specular(array([TwoThetaQz[cen_idx]], dtype=float64), sample, instrument)
+    # instrument.restype = ResType(0)
+    if isinstance(tth, ndarray):
+        Ispec = Specular(array(tth, dtype=float64), sample, instrument)
     else:
-        Ispec = Specular(array([TwoThetaQz], dtype=float64), sample, instrument)[0]
+        Ispec = Specular(array([tth], dtype=float64), sample, instrument)[0]
     instrument.Ibkg = Ibgk
-    instrument.restype = restype
+    # instrument.restype = restype
 
     if instrument.coords == Coords.tth:
-        spec_peak = Ispec * exp(-0.5 * (TwoThetaQz / 2.0 - ThetaQx) ** 2 / instrument.res**2)
+        spec_peak = Ispec * exp(-0.5 * (TwoThetaQz / 2.0 - ThetaQx) ** 2 / instrument.detres**2)
     else:
         # angular resolution converted to qx grid
-        qx_res = k * (cos(tth / 2) - cos(tth / 2 * (1 + instrument.res / qz_c)))
+        qx_res = k * (cos(tth / 2) - cos(tth / 2 * (1 + instrument.detres / qz)))
         spec_peak = Ispec * exp(-0.5 * ThetaQx**2 / qx_res**2)
 
-    return spec_peak + I + Ibgk
+    # TODO: Make correct convolution of off-specular intensity and absolute scale
+    return spec_peak + I * instrument.I0_offspec * instrument.detres * 1e3 + Ibgk
 
 
 def SLD_calculations(z, item, sample: Sample, inst: Instrument):
@@ -465,6 +472,7 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
 SimulationFunctions = {"Specular": Specular, "OffSpecular": OffSpecularMingInterdiff, "SLD": SLD_calculations}
 
 Sample.setSimulationFunctions(SimulationFunctions)
+
 
 class TestInterdiff(ModelTestCase):
     # TODO: currently this only checks for raise conditions in the code above, check of results should be added
@@ -540,7 +548,6 @@ class TestInterdiff(ModelTestCase):
             with self.assertRaises(ValueError):
                 Specular(self.qz, sample, instrument)
 
-
     def test_offspec(self):
         sample = Sample(
             Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1)])],
@@ -559,12 +566,12 @@ class TestInterdiff(ModelTestCase):
             OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
         with self.subTest("x-ray q"):
             instrument.coords = Coords.q
-            OffSpecularMingInterdiff(0.01*self.qz, self.qz, sample, instrument)
+            OffSpecularMingInterdiff(0.01 * self.qz, self.qz, sample, instrument)
 
         # resolution corrections
         with self.subTest("x-ray q-res-fast"):
             instrument.restype = ResType.fast_conv
-            OffSpecularMingInterdiff(0.01*self.qz, self.qz, sample, instrument)
+            OffSpecularMingInterdiff(0.01 * self.qz, self.qz, sample, instrument)
             OffSpecularMingInterdiff(0.001, self.qz, sample, instrument)
         with self.subTest("x-ray tth-res-fast"):
             instrument.coords = Coords.tth
@@ -576,7 +583,7 @@ class TestInterdiff(ModelTestCase):
         # footprint corrections
         with self.subTest("x-ray q-footprint-square"):
             instrument.footype = FootType.square
-            OffSpecularMingInterdiff(0.01*self.qz, self.qz, sample, instrument)
+            OffSpecularMingInterdiff(0.01 * self.qz, self.qz, sample, instrument)
         instrument.coords = Coords.tth
         with self.subTest("x-ray tth-footprint-square"):
             OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
@@ -614,9 +621,10 @@ class TestInterdiff(ModelTestCase):
         with self.subTest("sld xray"):
             SLD_calculations(None, None, sample, instrument)
 
+
 def standard_xray():
     """
-        return the defied standard x-ray reflectivity to compare against other models
+    return the defied standard x-ray reflectivity to compare against other models
     """
     qz = linspace(0.01, 0.3, 15)
     return Specular(

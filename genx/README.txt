@@ -12,6 +12,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.3
+=============
+ * Add possibility of longitudinal scans to off-specular simulation (interdiff)
+ * Add detector resolution and off-specular scaling factor to interdiff model, absolut scaling needs correction
+
 Changes 3.7.2
 =============
  * Fixes for compatibility with Python 3.13
