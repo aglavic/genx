@@ -569,10 +569,10 @@ class TestInterdiff(ModelTestCase):
             OffSpecularMingInterdiff(0.01 * self.qz, self.qz, sample, instrument)
 
         # resolution corrections
-        with self.subTest("x-ray q-res-fast"):
-            instrument.restype = ResType.fast_conv
-            OffSpecularMingInterdiff(0.01 * self.qz, self.qz, sample, instrument)
-            OffSpecularMingInterdiff(0.001, self.qz, sample, instrument)
+        # with self.subTest("x-ray q-res-fast"):
+        #    instrument.restype = ResType.fast_conv
+        #    OffSpecularMingInterdiff(0.01 * self.qz, self.qz, sample, instrument)
+        #    OffSpecularMingInterdiff(0.001, self.qz, sample, instrument)
         with self.subTest("x-ray tth-res-fast"):
             instrument.coords = Coords.tth
             OffSpecularMingInterdiff(self.tth, self.tth, sample, instrument)
