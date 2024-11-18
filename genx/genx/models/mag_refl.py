@@ -1919,6 +1919,9 @@ def slicing_reflectivity(sample: Sample, instrument: Instrument, theta, TwoTheta
         else:
             raise ValueError(f"For simple neutron polarized model, polarization {pol} is not possible")
     elif theory == ProbeTheory.xray_iso:
+        if instrument.xpol!=XRayPol.total:
+            raise ValueError(f"For xray isotropic model, polarization {instrument.xpol} "
+                             f"is not possible, only 'total' is supported.")
         c = 1 / (lamda**2 * r_e / pi)
         sl_c = -chi[0][0] * c
         n = 1 - lamda**2 * r_e / pi * sl_c[:, newaxis] / 2.0 * ones(theta.shape)

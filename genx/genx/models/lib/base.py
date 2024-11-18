@@ -298,6 +298,11 @@ class AltStrEnum(str, Enum):
             self.alt_for = None
 
     def __eq__(self, other):
+        try:
+            # if an item can't be converted to this Enum, it can't be equal
+            other = self.__class__(other)
+        except ValueError:
+            return False
         if getattr(other, "alt_for", None) is not None:
             return self.name == other.alt_for or str.__eq__(self, other)
         elif getattr(self, "alt_for", None) is not None:

@@ -44,6 +44,7 @@ class SamplePlotPanel(PlotPanel):
 
         self.update = self.Plot
         self.create_axes()
+        self.plot_dicts = []
 
     def create_axes(self):
         self.ax = self.figure.add_subplot(111)
