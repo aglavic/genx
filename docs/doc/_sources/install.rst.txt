@@ -108,7 +108,7 @@ Using Minconda
 
         conda create -n genx python=3.9
         conda activate genx
-        conda install pip appdirs h5py scipy psutil numba
+        conda install pip platformdirs h5py scipy psutil numba
         pip install orsopy bumps
 
     * Depending on configuration you might need to install other libraries like glib if the installed
@@ -158,7 +158,7 @@ You can create a suitable anaconda environment using the following commands, i:
 
 .. code-block:: bash
 
-    conda create --name genx python=3.9 matplotlib appdirs h5py scipy numba psutil pymysql
+    conda create --name genx python=3.9 matplotlib platformdirs h5py scipy numba psutil pymysql
     conda activate genx
     conda install wxpython # you might need a different channel, e.g. conda-forge
     pip install genx3
@@ -178,7 +178,7 @@ The needed dependencies are:
 * Numpy version > 1.0
 * Scipy version > 0.5
 * Matplotlib version > 0.9
-* appdirs version > 1.2
+* platformdirs
 * h5py
 * orsopy >= 1.2.0
 

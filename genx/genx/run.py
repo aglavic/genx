@@ -8,13 +8,13 @@ import sys
 from logging import debug, getLogger
 from threading import Thread
 
-import appdirs
+import platformdirs
 
 from . import version
 from .core import custom_logging
 from .core.custom_logging import activate_excepthook, activate_logging, iprint, setup_system
 
-config_path = os.path.abspath(appdirs.user_data_dir("GenX3", "ArturGlavic"))
+config_path = os.path.abspath(platformdirs.user_data_dir("GenX3", "ArturGlavic"))
 os.environ["NUMBA_CACHE_DIR"] = os.path.join(config_path, "numba_cache")
 
 
@@ -582,7 +582,7 @@ def main():
         # Check if the application has been frozen
         if getattr(sys, "frozen", False):
             # Redirect all the output to log files
-            log_file_path = appdirs.user_log_dir("GenX3", "ArturGlavic")
+            log_file_path = platformdirs.user_log_dir("GenX3", "ArturGlavic")
             # Create dir if not found
             if not os.path.exists(log_file_path):
                 os.makedirs(log_file_path)

@@ -3,12 +3,12 @@ import sys
 
 from logging import debug
 
-import appdirs
 import numba.core.caching as nc
+import platformdirs
 
 from ...version import __version__ as program_version
 
-config_path = os.path.abspath(appdirs.user_data_dir("GenX3", "ArturGlavic"))
+config_path = os.path.abspath(platformdirs.user_data_dir("GenX3", "ArturGlavic"))
 
 
 class _GenxCacheLocator(nc._SourceFileBackedLocatorMixin, nc._CacheLocator):

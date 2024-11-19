@@ -8,12 +8,12 @@ import asyncio
 import logging
 import os
 
-import appdirs
+import platformdirs
 
 from . import version
 from .core import custom_logging
 
-config_path = os.path.abspath(appdirs.user_data_dir("GenX3", "ArturGlavic"))
+config_path = os.path.abspath(platformdirs.user_data_dir("GenX3", "ArturGlavic"))
 os.environ["NUMBA_CACHE_DIR"] = os.path.join(config_path, "numba_cache")
 
 

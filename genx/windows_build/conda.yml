@@ -6,7 +6,7 @@ dependencies:
   - pip
   - wxpython
   - matplotlib
-  - appdirs
+  - platformdirs
   - h5py
   - scipy
   - psutil

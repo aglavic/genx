@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from logging import debug, info, warning
 from typing import List
 
-import appdirs
+import platformdirs
 import wx
 import wx.adv
 import wx.grid
@@ -45,7 +45,7 @@ if _path[-4:] == ".zip":
     _path, ending = os.path.split(_path)
 
 # Get the configuration path, create if it not exists
-config_path = os.path.abspath(appdirs.user_data_dir("GenX3", "ArturGlavic"))
+config_path = os.path.abspath(platformdirs.user_data_dir("GenX3", "ArturGlavic"))
 profile_dest = os.path.abspath(os.path.join(config_path, "profiles"))
 profile_src = os.path.abspath(os.path.join(_path, "..", "profiles"))
 info(
