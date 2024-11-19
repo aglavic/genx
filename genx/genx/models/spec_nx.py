@@ -707,7 +707,7 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     ptype = inst.probe
     magnetic = False
     mag_sld = 0
-    sld_unit = r"r_{e}/\AA^{3}"
+    sld_unit = "r_{e}/\\AA^{3}"
     if ptype == Probe.xray:
         sld = dens * f
     elif ptype in [Probe.neutron, Probe.ntof]:

@@ -79,7 +79,7 @@ class Plugin(framework.Template):
         for ann in self._annotations:
             try:
                 ann.remove()
-            except:
+            except Exception:
                 pass
         self._annotations = []
         self._orgi_call(event)
@@ -98,7 +98,7 @@ class Plugin(framework.Template):
                     continue
                 z = slds["z"]
                 unit = slds["SLD unit"]
-                if unit in ["fm/\AA^{3}", "\\AA^{-2}", "", "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
+                if unit in ["fm/\\AA^{3}", "\\AA^{-2}", "", "10^{-6}\\AA^{-2}"] and self.mb_second_axis.IsChecked():
                     for key, value in list(slds.items()):
                         if key == "mag" and value.sum() > 0.0:
                             msld = value
@@ -122,7 +122,7 @@ class Plugin(framework.Template):
                                 )
         if (
             msld is not None
-            and unit in ["fm/\AA^{3}", "\\AA^{-2}", "", "10^{-6}\\AA^{-2}"]
+            and unit in ["fm/\\AA^{3}", "\\AA^{-2}", "", "10^{-6}\\AA^{-2}"]
             and self.mb_second_axis.IsChecked()
         ):
             ax2.set_visible(True)

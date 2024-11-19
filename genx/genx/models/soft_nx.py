@@ -387,12 +387,12 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     ptype = inst.probe
     magnetic = False
     mag_sld = 0
-    sld_unit = "10^{-6}\AA^{2}"
+    sld_unit = "10^{-6}\\AA^{2}"
     if ptype == Probe.xray:
         sld = sld_x
     elif ptype == Probe.neutron:
         sld = sld_n
-        sld_unit = "10^{-6}/\AA^{2}"
+        sld_unit = "10^{-6}/\\AA^{2}"
     else:
         magnetic = True
         sld = sld_n
@@ -402,7 +402,7 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
         mag_sld = sld_m
         mag_sld_x = mag_sld * cos(magn_ang)
         mag_sld_y = mag_sld * sin(magn_ang)
-        sld_unit = "10^{-6}/\AA^{2}"
+        sld_unit = "10^{-6}/\\AA^{2}"
 
     d = array(parameters.d, dtype=float64)
     d = d[1:-1]
@@ -682,18 +682,19 @@ class TestSoftNX(ModelTestCase):
             sample.Stacks[0].Repetitions = 100
             SLD_calculations(None, None, sample, instrument)
 
+
 def standard_xray():
     """
-        return the defied standard x-ray reflectivity to compare against other models
+    return the defied standard x-ray reflectivity to compare against other models
     """
     qz = linspace(0.01, 0.3, 15)
-    scl = 0.1*AA_to_eV * 1.54 / 2 / pi
+    scl = 0.1 * AA_to_eV * 1.54 / 2 / pi
     return Specular(
         qz,
         Sample(
             Ambient=Layer(),
-            Substrate=Layer(d=150.0, sld_x=(1e-5 + 1e-8j)*scl),
-            Stacks=[Stack(Layers=[Layer(d=150.0, sld_x=(2e-5 + 2e-8j)*scl)])],
+            Substrate=Layer(d=150.0, sld_x=(1e-5 + 1e-8j) * scl),
+            Stacks=[Stack(Layers=[Layer(d=150.0, sld_x=(2e-5 + 2e-8j) * scl)])],
         ),
         Instrument(probe=Probe.xray, coords=Coords.q, wavelength=1.54, footype=FootType.none, restype=ResType.none),
     )
