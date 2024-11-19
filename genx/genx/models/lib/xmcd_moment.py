@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 r"""
 .. module:: xmcd_moment
    :synopsis: A physical model for the 2p edges in x-ray magnetic resonant reflectivity.

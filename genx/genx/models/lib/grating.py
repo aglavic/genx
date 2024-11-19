@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 r"""
 .. module:: grating
    :synopsis: Models to calcualte the reflectivity from a grating

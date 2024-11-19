@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 r"""
 .. module:: island_lattice.py
    :synopsis: Models to calcualte the reflectivity from a 2D island array

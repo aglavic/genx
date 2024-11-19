@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 r"""
 .. module:: stratified_base.py
    :synopsis: Base model for a stratified sample (Sample-Stack-Layer)

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 r"""
 .. module:: parameters
    :synopsis: Classes to work with parameters and expressions thereof.
@@ -7,6 +5,7 @@ r"""
 .. moduleauthor:: Matts Björck <matts.bjorck@gmail.com>
 
 """
+
 from collections.abc import MutableSequence
 
 import numpy as np
