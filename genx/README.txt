@@ -12,6 +12,13 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.4
+=============
+ * Fix bugs that could lead to unexpected results or errors when selecting polarization states.
+ * Replace deprecated appdirs by platformdirs module.
+ * Make genx_server run without numba (now numba has to be manually installed if it is desired).
+ * Fix some minor issues with code and warnings during testing.
+
 Changes 3.7.3
 =============
  * Add possibility of longitudinal scans to off-specular simulation (interdiff)
