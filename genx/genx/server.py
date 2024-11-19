@@ -109,6 +109,7 @@ def main():
         logging.debug("Arguments from parser: %s" % args)
 
     if args.disable_numba:
+        logging.debug("Manually disable numba JIT compilation")
         from genx.models import lib as modellib
 
         modellib.USE_NUMBA = False
@@ -119,8 +120,13 @@ def main():
             except ImportError:
                 pass
         if rank == 0:
-            logging.info("Importing numba based modules to pre-compile JIT functions, this can take some time")
-        from genx.models.lib import instrument_numba, neutron_numba, offspec, paratt_numba, surface_scattering
+            try:
+                import numba
+            except ModuleNotFoundError:
+                logging.debug("Numba not found, don't import JIT functions.")
+            else:
+                logging.info("Importing numba based modules to pre-compile JIT functions, this can take some time")
+                from genx.models.lib import instrument_numba, neutron_numba, offspec, paratt_numba, surface_scattering
 
         if rank == 0:
             logging.info("Modules imported successfully")
