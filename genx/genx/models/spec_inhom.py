@@ -107,7 +107,7 @@ class Stack(refl.StackBase):
     A collection of Layer objects that can be repeated.
 
     ``Layers``
-       A ``list`` consiting of ``Layer``\ s in the stack the first item is
+       A ``list`` consiting of ``Layer``s in the stack the first item is
        the layer closest to the bottom
     ``Repetitions``
        The number of repsetions of the stack or m-value for analytical super-mirror model.
@@ -297,7 +297,7 @@ class Sample(refl.SampleBase):
     Describe global sample by listing ambient, substrate and layer parameters.
 
     ``Stacks``
-       A ``list`` consiting of ``Stack``\ s in the stacks the first item is
+       A ``list`` consiting of ``Stack``s in the stacks the first item is
        the layer closest to the bottom
     ``Ambient``
        A ``Layer`` describing the Ambient (enviroment above the sample).

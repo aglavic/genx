@@ -735,8 +735,8 @@ class SampleBuilder:
         return data_names, insts, sim_args, sim_exp, sim_funcs
 
     def find_layers_stacks(self, sample_text):
-        re_layer = re.compile("([A-Za-z]\w*)\s*=\s*model\.Layer\s*\((.*)\)\n")
-        re_stack = re.compile("([A-Za-z]\w*)\s*=\s*model\.Stack\s*\(\s*Layers=\[(.*)\].*\n")
+        re_layer = re.compile(r"([A-Za-z]\w*)\s*=\s*model\.Layer\s*\((.*)\)\n")
+        re_stack = re.compile(r"([A-Za-z]\w*)\s*=\s*model\.Stack\s*\(\s*Layers=\[(.*)\].*\n")
         layers = re_layer.findall(sample_text)
         layer_names = [t[0] for t in layers]
         stacks = re_stack.findall(sample_text)
@@ -790,7 +790,7 @@ class SampleBuilder:
     def find_instrument_names(self):
         script = self.GetModel().script
         code = self.find_code_segment(script, "Instrument")
-        re_layer = re.compile("([A-Za-z]\w*)\s*=\s*model\.Instrument\s*\((.*)\)\n")
+        re_layer = re.compile(r"([A-Za-z]\w*)\s*=\s*model\.Instrument\s*\((.*)\)\n")
         instrument_strings = re_layer.findall(code)
         instrument_names = [t[0] for t in instrument_strings]
         return instrument_names

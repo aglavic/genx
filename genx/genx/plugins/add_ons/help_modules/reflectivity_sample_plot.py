@@ -157,8 +157,8 @@ class SamplePlotPanel(PlotPanel):
             else:
                 self.ax.legend(loc="upper right", framealpha=0.5, fontsize="small", ncol=1)
             sld_unit = ", ".join(sld_units)
-            self.ax.yaxis.label.set_text("$\mathrm{\mathsf{SLD\,[%s]}}$" % sld_unit)
-            self.ax.xaxis.label.set_text("$\mathrm{\mathsf{ z\,[\AA]}}$")
+            self.ax.yaxis.label.set_text(r"$\mathrm{\mathsf{SLD\,[%s]}}$" % sld_unit)
+            self.ax.xaxis.label.set_text(r"$\mathrm{\mathsf{ z\,[\AA]}}$")
             wx.CallAfter(self.flush_plot)
             self.AutoScale()
 
@@ -364,8 +364,8 @@ class SamplePlotPanel(PlotPanel):
             else:
                 self.ax.legend(loc="upper right", framealpha=0.5, fontsize="small", ncol=1)
             sld_unit = ", ".join(sld_units)
-            self.ax.yaxis.label.set_text("$\mathrm{\mathsf{SLD\,[%s]}}$" % sld_unit)
-            self.ax.xaxis.label.set_text("$\mathrm{\mathsf{ z\,[\AA]}}$")
+            self.ax.yaxis.label.set_text(r"$\mathrm{\mathsf{SLD\,[%s]}}$" % sld_unit)
+            self.ax.xaxis.label.set_text(r"$\mathrm{\mathsf{ z\,[\AA]}}$")
             wx.CallAfter(self.flush_plot)
             self.AutoScale()
 

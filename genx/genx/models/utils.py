@@ -75,12 +75,12 @@ non-dispersive (without resonant contribution).
 fw
 ^^
 Same thing as f but scaled so that it can be used with a density in
-g/cm\ :sup:`3\ .`
+g/cm\\ :sup:`3\\ .`
 
 bw
 ^^
 Same thing as bc but scaled so that it can be used with a density in
-g/cm\ :sup:`3\ .`
+g/cm\\ :sup:`3\\ .`
 """
 
 import os

@@ -197,7 +197,7 @@ __F_DB_DIR__ = os.path.join(__MODULE_DIR__, "../databases/f1f2_nist/")
 
 
 def voigt(x, x_0, gamma, sigma):
-    """The complex Voigt function (a convolution of a Lorentzian and a Gaussian function).
+    r"""The complex Voigt function (a convolution of a Lorentzian and a Gaussian function).
 
     Parameters:
        x (array or float): Independent value where to evaluate the Voigt function.
