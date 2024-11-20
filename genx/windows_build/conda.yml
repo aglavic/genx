@@ -21,3 +21,4 @@ dependencies:
   - bumps
   - svgwrite
   - orsopy
+  - docutils
