@@ -3,7 +3,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - _openmp_mutex=4.5=2_gnu
   - aiohappyeyeballs=2.4.0=py312haa95532_0
   - aiohttp=3.10.5=py312h827c3e9_0
   - aiosignal=1.2.0=pyhd3eb1b0_0
@@ -32,7 +31,7 @@ dependencies:
   - double-conversion=3.3.0=h63175ca_0
   - eigen=3.4.0=h59b6b97_0
   - expat=2.6.4=he0c23c2_0
-  - ffmpeg=7.1.0=gpl_h2585aa8_704
+  - ffmpeg=7.1.0=gpl_ha871990_104
   - flexcache=0.3=pyhd8ed1ab_0
   - flexparser=0.4=pyhd8ed1ab_0
   - font-ttf-dejavu-sans-mono=2.37=hd3eb1b0_0
@@ -68,25 +67,20 @@ dependencies:
   - lcms2=2.16=h67d730c_0
   - lerc=4.0.0=h63175ca_0
   - libaec=1.1.3=h63175ca_0
-  - libblas=3.9.0=8_mkl
   - libbrotlicommon=1.0.9=h2bbff1b_8
   - libbrotlidec=1.0.9=h2bbff1b_8
   - libbrotlienc=1.0.9=h2bbff1b_8
-  - libcblas=3.9.0=8_mkl
-  - libclang13=19.1.3=default_ha5278ca_0
+  - libclang13=19.1.4=default_ha5278ca_0
   - libcurl=8.10.1=h1ee3ff0_0
   - libdeflate=1.21=h2466b09_0
   - libexpat=2.6.4=he0c23c2_0
   - libffi=3.4.4=hd77b12b_1
-  - libgcc=14.2.0=h1383e82_1
   - libglib=2.82.2=h7025463_0
-  - libgomp=14.2.0=h1383e82_1
-  - libhwloc=2.11.2=default_ha69328c_1001
+  - libhwloc=2.11.1=default_h8125262_1000
   - libiconv=1.17=hcfcfb64_2
   - libintl=0.22.5=h5728263_3
   - libintl-devel=0.22.5=h5728263_3
   - libjpeg-turbo=3.0.3=h827c3e9_0
-  - liblapack=3.9.0=8_mkl
   - libnetcdf=4.9.2=nompi_h92078aa_114
   - libogg=1.3.5=h2bbff1b_1
   - libopus=1.3.1=h8ffe710_1
@@ -98,22 +92,31 @@ dependencies:
   - libtiff=4.6.0=hb151862_4
   - libvorbis=1.3.7=he774522_0
   - libwebp-base=1.4.0=hcfcfb64_0
-  - libwinpthread=12.0.0.r4.gg4f2fc60ca=h57928b3_8
-  - libxcb=1.17.0=h0e4246c_0
+  - libxcb=1.16=h013a479_1
   - libxml2=2.13.5=h442d1da_0
   - libzip=1.11.2=h3135430_0
   - libzlib=1.3.1=h2466b09_2
   - llvmlite=0.43.0=py312h1f7db74_1
   - loguru=0.7.2=py312haa95532_1
   - lz4-c=1.9.4=h2bbff1b_1
+  - m2w64-gcc-libgfortran=5.3.0=6
+  - m2w64-gcc-libs=5.3.0=7
+  - m2w64-gcc-libs-core=5.3.0=7
+  - m2w64-gmp=6.1.0=2
+  - m2w64-libwinpthread-git=5.0.0.4634.697f757=2
   - matplotlib=3.9.2=py312haa95532_0
   - matplotlib-base=3.9.2=py312hbdc63d0_0
-  - mkl=2020.4=hb70f87d_311
+  - mkl=2023.1.0=h6b88ed4_46358
+  - mkl-service=2.4.0=py312h2bbff1b_1
+  - mkl_fft=1.3.11=py312h827c3e9_0
+  - mkl_random=1.2.8=py312h0158946_0
   - msgpack-python=1.0.3=py312h59b6b97_0
+  - msys2-conda-epoch=20160418=1
   - multidict=6.1.0=py312h827c3e9_0
   - nlohmann_json=3.11.2=h6c2663c_0
-  - numba=0.60.0=py312hcccf92d_0
-  - numpy=1.26.4=py312h8753938_0
+  - numba=0.60.0=py312h0158946_0
+  - numpy=1.26.4=py312hfd52020_0
+  - numpy-base=1.26.4=py312h4dde369_0
   - openh264=2.5.0=ha9db3cd_0
   - openjpeg=2.5.2=hae555c5_0
   - openssl=3.4.0=h2466b09_0
@@ -131,6 +134,7 @@ dependencies:
   - proj=9.5.0=hd9569ee_0
   - psutil=5.9.0=py312h2bbff1b_0
   - pthread-stubs=0.3=h3c9f919_1
+  - pthreads-win32=2.9.1=h2466b09_4
   - pugixml=1.14=h63175ca_0
   - pycparser=2.21=pyhd3eb1b0_0
   - pyinstaller=5.13.2=py312h827c3e9_0
@@ -149,7 +153,7 @@ dependencies:
   - qt-main=5.15.15=h264fbc2_0
   - qt6-main=6.7.2=hbb46ec1_5
   - requests=2.32.3=py312haa95532_1
-  - scipy=1.14.1=py312h337df96_1
+  - scipy=1.14.1=py312h9d85e7c_0
   - setuptools=75.1.0=py312haa95532_0
   - sip=6.7.12=py312hd77b12b_0
   - six=1.16.0=pyhd3eb1b0_1
@@ -157,8 +161,8 @@ dependencies:
   - sqlite=3.45.3=h2bbff1b_0
   - svgwrite=1.4.3=pyhd8ed1ab_0
   - svt-av1=2.3.0=he0c23c2_0
-  - tbb=2022.0.0=h62715c5_0
-  - tbb-devel=2022.0.0=h47441b3_0
+  - tbb=2021.13.0=hc790b64_0
+  - tbb-devel=2021.13.0=h053bfa6_0
   - tk=8.6.13=h5226925_1
   - tornado=6.4.1=py312h827c3e9_0
   - typing-extensions=4.11.0=py312haa95532_0
@@ -181,8 +185,8 @@ dependencies:
   - wxwidgets=3.2.6=had4d501_0
   - x264=1!164.3095=h8ffe710_2
   - x265=3.5=h2d74725_3
-  - xorg-libxau=1.0.11=h0e40799_1
-  - xorg-libxdmcp=1.1.5=h0e40799_0
+  - xorg-libxau=1.0.11=hcd874cb_0
+  - xorg-libxdmcp=1.1.3=hcd874cb_0
   - xz=5.4.6=h8cc25b3_1
   - yaml=0.2.5=he774522_0
   - yarl=1.11.0=py312h827c3e9_0
