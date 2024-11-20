@@ -498,14 +498,14 @@ class Spectrum2p(refl.ReflBase):
     The wXYZs from the SpectrumComponent class is scaled according to the following formula
 
     .. math::
-        w^{xyxz}_\mathrm{eff} = w^{xyz}_\mathrm{SpectrumComponent} w^{xyz}_\mathrm{Spectrum2p}/\mathrm{norm\_denom}.
+        w^{xyxz}_\\mathrm{eff} = w^{xyz}_\\mathrm{SpectrumComponent} w^{xyz}_\\mathrm{Spectrum2p}/\\mathrm{norm\\_denom}.
 
 
     The subscripts on the right hand side denote which class the w parameter belongs to. The use for these normalisation
     could be to define normalisation factors (norm_denom) from reference spectra with known values of number of holes,
     spin magnetic moment and orbital magnetic moment. While keeping the spectral shape constant, constant
     :math:`w^{xyz}_\mathrm{SpectrumComponent}` the overall spectra can be scaled to change the different values with the
-    parameters :math:`w^{xyz}_\mathrm{Spectrum2p}`.
+    parameters :math:`w^{xyz}_\\mathrm{Spectrum2p}`.
 
     Fitting Parameters
         * hs(float) - The exchange field that causes the levels to split (eV).
@@ -972,7 +972,7 @@ class ModelGoering:
         """A fit model to simulate one xmcd spectral moment of a p_3/2, p_1/2 absorption edge.
 
         :param w000: proportional to :math:`n_h`
-        :param w110: proportional to :math:`-l \dot s`
+        :param w110: proportional to :math:`-l \\dot s`
         :param w101: proportional to :math:`L_z/2`
         :param w011: proportional to :math:`2 S_z`
         :param w211: proportional to :math:`7 T_z/2`
