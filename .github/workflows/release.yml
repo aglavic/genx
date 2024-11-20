@@ -34,7 +34,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: 3.7
+        python-version: 3.12
     - name: Install dependencies
       run: |
         C:\Miniconda\condabin\conda.bat env update --file genx\windows_build\conda_build.yml --name base
