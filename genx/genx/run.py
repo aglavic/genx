@@ -446,6 +446,7 @@ def main():
         rank = MPI.COMM_WORLD.Get_rank()
 
     parser = argparse.ArgumentParser(
+        prog="genx",
         description="GenX %s, fits data to a model." % version.__version__,
         epilog="For support, manuals and bug reporting see http://genx.sf.net",
     )
