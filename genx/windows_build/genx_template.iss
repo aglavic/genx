@@ -54,3 +54,52 @@ Filename: "{app}\genx_console.exe"; Parameters: "--compile-nb"; Description: "Pr
 [Tasks]
 Name: associate; Description: Create registry entries for file association; GroupDescription: Associate Filetypes:; Flags: 
 Name: compile_jit; Description: Pre-compile JIT functions; GroupDescription: After Installation:; Flags:
+
+; Perform uninstall before installing new version, just in case there are conflicts
+[Code]
+const
+    UninstallerRegPath = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + '{#emit SetupSetting("AppName")}' + '_is1';
+
+function GetUninstallerExePath(): String;
+var
+    UninstallerExePath: String;
+begin
+    Result := '';
+    if RegQueryStringValue(HKLM, UninstallerRegPath, 'UninstallString', UninstallerExePath) then
+    begin
+        Result := UninstallerExePath;
+    end
+    else
+    begin
+        MsgBox('Uninstaller location not found in the registry.', mbError, MB_OK);
+    end;
+end;
+
+procedure UninstallPreviousVersion();
+var
+    UninstallerExePath: String;
+    ResultCode: Integer;
+begin
+    UninstallerExePath := GetUninstallerExePath();
+    if (UninstallerExePath <> '') then
+    begin
+        MsgBox('Executing uninstaller: ' + UninstallerExePath, mbInformation, MB_OK);
+        if ShellExec('runas', UninstallerExePath, '/NORESTART', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode) then
+        begin
+            MsgBox('Previous version uninstalled successfully.', mbInformation, MB_OK);
+        end
+        else
+        begin
+            MsgBox('Failed to uninstall the previous version. ResultCode: ' + IntToStr(ResultCode), mbError, MB_OK);
+            Abort();
+        end;
+    end;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+    if (CurStep = ssInstall) then
+    begin
+        UninstallPreviousVersion();
+    end;
+end;
