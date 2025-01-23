@@ -58,7 +58,7 @@ Name: compile_jit; Description: Pre-compile JIT functions; GroupDescription: Aft
 ; Perform uninstall before installing new version, just in case there are conflicts
 [Code]
 const
-    UninstallerRegPath = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + '{#emit SetupSetting("AppName")}' + '_is1';
+    UninstallerRegPath = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + '{#emit SetupSetting("AppId")}' + '_is1';
 
 function GetUninstallerExePath(): String;
 var
