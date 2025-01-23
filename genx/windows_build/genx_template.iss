@@ -12,7 +12,7 @@ AppPublisher=Artur Glavic
 AppPublisherURL=https://sourceforge.net/projects/genx
 AppSupportURL=https://sourceforge.net/projects/genx
 AppUpdatesURL=https://sourceforge.net/projects/genx
-DefaultDirName={pf}\GenX 3
+DefaultDirName={autopf}\GenX 3
 DefaultGroupName=GenX 3
 AllowNoIcons=true
 
@@ -27,7 +27,8 @@ WizardImageFile=.\install_wizard_bkg.bmp
 WizardSmallImageFile=.\install_wizard_small.bmp
 WizardStyle=modern
 InfoBeforeFile=..\README.txt
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 
 
 [Languages]
@@ -44,6 +45,7 @@ Name: {group}\{cm:UninstallProgram,GenX 3}; Filename: {uninstallexe}
 [Registry]
 Root: HKA; Subkey: Software\Classes\.gx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
 Root: HKA; Subkey: Software\Classes\.hgx; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate; Flags: uninsdeletevalue createvalueifdoesntexist
+Root: HKA; Subkey: Software\Classes\.ort; ValueType: string; ValueName: ; ValueData: GenX; Tasks: associate_ort; Flags: uninsdeletevalue createvalueifdoesntexist
 Root: HKA; Subkey: Software\Classes\GenX; ValueType: string; ValueName: ; ValueData: GenX model; Tasks: associate; Flags: uninsdeletekey createvalueifdoesntexist
 Root: HKA; Subkey: Software\Classes\GenX\DefaultIcon; ValueType: string; ValueName: ; ValueData: {app}\genx.exe,1; Tasks: associate; Flags: createvalueifdoesntexist
 Root: HKA; Subkey: Software\Classes\GenX\shell\open\command; ValueType: string; ValueName: ; ValueData: """{app}\genx.exe"" ""%1"""; Tasks: associate; Flags: createvalueifdoesntexist
@@ -53,25 +55,26 @@ Filename: "{app}\genx_console.exe"; Parameters: "--compile-nb"; Description: "Pr
 
 [Tasks]
 Name: associate; Description: Create registry entries for file association; GroupDescription: Associate Filetypes:; Flags: 
+Name: associate_ort; Description: Let GenX open ORSO files (*.ort); GroupDescription: Associate Filetypes:; Flags: unchecked
 Name: compile_jit; Description: Pre-compile JIT functions; GroupDescription: After Installation:; Flags:
+Name: uninstall; Description: Uninstall previous version of GenX 3; GroupDescription: Remove Old Files:; Flags: 
 
 ; Perform uninstall before installing new version, just in case there are conflicts
 [Code]
-const
-    UninstallerRegPath = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + '{#emit SetupSetting("AppId")}' + '_is1';
-
 function GetUninstallerExePath(): String;
 var
     UninstallerExePath: String;
+    INSTALL_KEY: String;
 begin
+    INSTALL_KEY := ExpandConstant('Software\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1');
     Result := '';
-    if RegQueryStringValue(HKLM, UninstallerRegPath, 'UninstallString', UninstallerExePath) then
+    if RegQueryStringValue(HKEY_AUTO, INSTALL_KEY, 'UninstallString', UninstallerExePath) then
     begin
         Result := UninstallerExePath;
     end
     else
     begin
-        MsgBox('Uninstaller location not found in the registry.', mbError, MB_OK);
+        Log('Uninstaller location not found in the registry. ('+INSTALL_KEY+')');
     end;
 end;
 
@@ -82,18 +85,17 @@ var
 begin
     Log('UninstallPreviousVersion called');
     UninstallerExePath := GetUninstallerExePath();
-    if (UninstallerExePath <> '') then
+    if ((UninstallerExePath <> '') and WizardIsTaskSelected('uninstall')) then
     begin
-        MsgBox('Executing uninstaller: ' + UninstallerExePath, mbInformation, MB_OK);
-        if ShellExec('runas', UninstallerExePath, '/NORESTART', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode) then
+        Log('Executing uninstaller: ' + UninstallerExePath);
+        if ShellExec('runas', UninstallerExePath, '/NORESTART /SILENT', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode) then
         begin
-            MsgBox('Previous version uninstalled successfully.', mbInformation, MB_OK);
+            // MsgBox('Previous version uninstalled successfully.', mbInformation, MB_OK);
         end
         else
         begin
             Log('Failed to uninstall the previous version. ResultCode: ' + IntToStr(ResultCode));
             MsgBox('Failed to uninstall the previous version. ResultCode: ' + IntToStr(ResultCode), mbError, MB_OK);
-            Abort();
         end;
     end;
 end;

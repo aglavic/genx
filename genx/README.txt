@@ -15,6 +15,7 @@ A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 Changes 3.7.5
 =============
  * Update the windows build environment
+ * Update windows installer to remove previous version, avoiding conflicts
  * GenX installed via pip can now be executed as "python -m genx"
  * Fix SLD plot in mag_refl interpreting slicing option wrongly (#206)
 
