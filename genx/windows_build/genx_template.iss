@@ -84,7 +84,6 @@ begin
     UninstallerExePath := GetUninstallerExePath();
     if (UninstallerExePath <> '') then
     begin
-        Log(Executing uninstaller: ' + UninstallerExePath);
         MsgBox('Executing uninstaller: ' + UninstallerExePath, mbInformation, MB_OK);
         if ShellExec('runas', UninstallerExePath, '/NORESTART', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode) then
         begin
