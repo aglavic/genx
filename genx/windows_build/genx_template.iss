@@ -80,9 +80,11 @@ var
     UninstallerExePath: String;
     ResultCode: Integer;
 begin
+    Log('UninstallPreviousVersion called');
     UninstallerExePath := GetUninstallerExePath();
     if (UninstallerExePath <> '') then
     begin
+        Log(Executing uninstaller: ' + UninstallerExePath);
         MsgBox('Executing uninstaller: ' + UninstallerExePath, mbInformation, MB_OK);
         if ShellExec('runas', UninstallerExePath, '/NORESTART', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode) then
         begin
@@ -90,11 +92,13 @@ begin
         end
         else
         begin
+            Log('Failed to uninstall the previous version. ResultCode: ' + IntToStr(ResultCode));
             MsgBox('Failed to uninstall the previous version. ResultCode: ' + IntToStr(ResultCode), mbError, MB_OK);
             Abort();
         end;
     end;
 end;
+
 
 procedure CurStepChanged(CurStep: TSetupStep);
 begin

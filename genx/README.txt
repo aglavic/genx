@@ -12,6 +12,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.5
+=============
+ * Update the windows build environment
+ * GenX installed via pip can now be executed as "python -m genx"
+ * Fix SLD plot in mag_refl interpreting slicing option wrongly (#206)
+
 Changes 3.7.4
 =============
  * Fix bugs that could lead to unexpected results or errors when selecting polarization states.
