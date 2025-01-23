@@ -32,7 +32,6 @@ from .lib.instrument import *
 from .lib.physical_constants import AA_to_eV, muB_to_SL, r_e
 from .lib.testing import ModelTestCase
 
-
 # Preamble to define the parameters needed for the models outlined below:
 ModelID = "MAGrefl"
 
@@ -691,7 +690,7 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     # END Parameters
     """
     use_slicing = sample.slicing
-    if use_slicing:
+    if not use_slicing:
         return compose_sld_anal(z, sample, inst)
     lamda = inst.wavelength
     theory = inst.probe
@@ -1919,9 +1918,11 @@ def slicing_reflectivity(sample: Sample, instrument: Instrument, theta, TwoTheta
         else:
             raise ValueError(f"For simple neutron polarized model, polarization {pol} is not possible")
     elif theory == ProbeTheory.xray_iso:
-        if instrument.xpol!=XRayPol.total:
-            raise ValueError(f"For xray isotropic model, polarization {instrument.xpol} "
-                             f"is not possible, only 'total' is supported.")
+        if instrument.xpol != XRayPol.total:
+            raise ValueError(
+                f"For xray isotropic model, polarization {instrument.xpol} "
+                f"is not possible, only 'total' is supported."
+            )
         c = 1 / (lamda**2 * r_e / pi)
         sl_c = -chi[0][0] * c
         n = 1 - lamda**2 * r_e / pi * sl_c[:, newaxis] / 2.0 * ones(theta.shape)
@@ -1955,7 +1956,7 @@ def convolute_reflectivity(R, instrument: Instrument, foocor, TwoThetaQz, weight
     elif restype == ResType.fast_conv_var:
         R = ConvoluteFastVar(TwoThetaQz, R[:] * foocor, instrument.res, range=instrument.resintrange)
     elif restype == ResType.full_conv_var:
-        R = ConvoluteResolutionVector(TwoThetaQz, R[:]*foocor, weight)
+        R = ConvoluteResolutionVector(TwoThetaQz, R[:] * foocor, weight)
     else:
         raise ValueError("Variable restype has an unvalid value")
     return R
@@ -1972,13 +1973,17 @@ SimulationFunctions = {
 
 Sample.setSimulationFunctions(SimulationFunctions)
 
+
 class TestSpecNX(ModelTestCase):
     # TODO: currently this only checks for raise conditions in the code above, check of results should be added
 
     def test_spec_xray(self):
         sample = Sample(
-            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1,
-                                        magn=0.1, magn_ang=24.0, magn_theta=10.)])],
+            Stacks=[
+                Stack(
+                    Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1, magn=0.1, magn_ang=24.0, magn_theta=10.0)]
+                )
+            ],
             Ambient=Layer(),
             Substrate=Layer(f=5e-5 + 2e-7j, dens=0.1),
             slicing=False,
@@ -2077,7 +2082,6 @@ class TestSpecNX(ModelTestCase):
             with self.assertRaises(ValueError):
                 Specular(self.qz, sample, instrument)
 
-
     def test_spec_neutron(self):
         sample = Sample(
             Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
@@ -2167,8 +2171,11 @@ class TestSpecNX(ModelTestCase):
 
     def test_spec_slicing(self):
         sample = Sample(
-            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1,
-                                        magn=0.1, magn_ang=24.0, magn_theta=10.)])],
+            Stacks=[
+                Stack(
+                    Layers=[Layer(d=150, sigma=2.0, f=3e-5 + 1e-7j, dens=0.1, magn=0.1, magn_ang=24.0, magn_theta=10.0)]
+                )
+            ],
             Ambient=Layer(),
             Substrate=Layer(f=5e-5 + 2e-7j, dens=0.1),
             slicing=True,
@@ -2274,7 +2281,6 @@ class TestSpecNX(ModelTestCase):
             instrument.npol = NeutronPol.asymmetry
             Specular(self.qz, sample, instrument)
 
-
     def test_energy(self):
         from .utils import fp
 
@@ -2341,9 +2347,10 @@ class TestSpecNX(ModelTestCase):
             sample.Stacks[0].Layers[0].magn_ang = 0.0
             SLD_calculations(None, None, sample, instrument)
 
+
 def standard_xray():
     """
-        return the defied standard x-ray reflectivity to compare against other models
+    return the defied standard x-ray reflectivity to compare against other models
     """
     qz = linspace(0.01, 0.3, 15)
     return Specular(
@@ -2353,6 +2360,7 @@ def standard_xray():
             Substrate=Layer(d=150.0, f=1e-5 + 1e-8j, dens=0.1),
             Stacks=[Stack(Layers=[Layer(d=150.0, f=2e-5 + 2e-8j, dens=0.1)])],
         ),
-        Instrument(probe=ProbeTheory.xray_iso, coords=Coords.q, wavelength=1.54,
-                   footype=FootType.none, restype=ResType.none),
+        Instrument(
+            probe=ProbeTheory.xray_iso, coords=Coords.q, wavelength=1.54, footype=FootType.none, restype=ResType.none
+        ),
     )
