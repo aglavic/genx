@@ -1,22 +1,20 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>A model for fitting the spectral response &#8212; GenX 3.7.0b1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <title>A model for fitting the spectral response &#8212; GenX 3.7.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=989f22b4" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/documentation_options.js?v=7a952085"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
-    <link rel="shortcut icon" href="../../_static/genx.ico"/>
+    <link rel="icon" href="../../_static/genx.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="prev" title="Data Loader Plugins" href="data_loaders.html" /> 
@@ -33,7 +31,7 @@
         <li class="right" >
           <a href="data_loaders.html" title="Data Loader Plugins"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.7.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../development.html" >Development documentation</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../genx_package.html" accesskey="U">GenX Python Package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">A model for fitting the spectral response</a></li> 
@@ -46,14 +44,14 @@
           <div class="body" role="main">
             
   <section id="module-genx.models.lib.xmcd_moment">
-<span id="a-model-for-fitting-the-spectral-response"></span><span id="moment-analysis"></span><h1>A model for fitting the spectral response<a class="headerlink" href="#module-genx.models.lib.xmcd_moment" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-xmcd_moment"></span><p>This module provides the framework to model the spectroscopic response of the scattering lengths
+<span id="a-model-for-fitting-the-spectral-response"></span><span id="moment-analysis"></span><h1>A model for fitting the spectral response<a class="headerlink" href="#module-genx.models.lib.xmcd_moment" title="Link to this heading">¶</a></h1>
+<p id="module-xmcd_moment">This module provides the framework to model the spectroscopic response of the scattering lengths
 around an 2p absorption edge. The approach was first presented by van der Laan <a class="reference internal" href="#laan97" id="id1"><span>[Laan97]</span></a> for modelling the line shape
 of the XMCD (x-ray magnetic circular dichrosim) spectrum of the 3d metals and later used experimentally by
 Gold, Bayer and Goering <a class="reference internal" href="#gold04" id="id2"><span>[Gold04]</span></a> for fitting XMCD spectra and extracting moments.</p>
 <p>The ground state moment model has also been justified by Dörfler and Fähnle <a class="reference internal" href="#dorfler06" id="id3"><span>[Dörfler06]</span></a>.</p>
 <section id="theory">
-<h2>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h2>
+<h2>Theory<a class="headerlink" href="#theory" title="Link to this heading">¶</a></h2>
 <p>All the equation shown in this section are reproduced from <a class="reference internal" href="#laan97" id="id4"><span>[Laan97]</span></a> if not otherwise stated.</p>
 <p>The total intensity, <span class="math notranslate nohighlight">\(I_{j,m}^{(r)}\)</span>, from an <span class="math notranslate nohighlight">\(j,m\)</span> level  can be written as</p>
 <div class="math notranslate nohighlight">
@@ -64,10 +62,6 @@ a polarised light that belongs to the ground state moment <span class="math notr
 signifies that the properties belong to the holes. The physical meaning of the different ground state moments can be
 found in the table below.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 45%" />
-<col style="width: 55%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Ground state moment</p></th>
 <th class="head"><p>Meaning</p></th>
@@ -123,15 +117,6 @@ correspond to <span class="math notranslate nohighlight">\(a = 1\)</span> and li
 tabulated in <a class="reference internal" href="#laan97" id="id5"><span>[Laan97]</span></a> and can be found reproduced below.</p>
 <p>Values for <span class="math notranslate nohighlight">\(h_{jm}^{xyza}\)</span> for each ground state moment and j and light polarisation <span class="math notranslate nohighlight">\(a\)</span>.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 16%" />
-<col style="width: 11%" />
-<col style="width: 11%" />
-<col style="width: 19%" />
-<col style="width: 12%" />
-<col style="width: 20%" />
-<col style="width: 11%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"></th>
 <th class="head" colspan="2"><p>a = 0</p></th>
@@ -272,13 +257,6 @@ tabulated in <a class="reference internal" href="#laan97" id="id5"><span>[Laan97
 <p>is a normalisation factor. The symbols written out as matrices are Wigner 3j symbols. These have been evaluated using
 RREF <a class="reference internal" href="#stone80" id="id6"><span>[Stone80]</span></a>.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 11%" />
-<col style="width: 16%" />
-<col style="width: 23%" />
-<col style="width: 24%" />
-<col style="width: 24%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p><span class="math notranslate nohighlight">\(j\)</span></p></th>
 <th class="head"><p><span class="math notranslate nohighlight">\(n_{j0}\)</span></p></th>
@@ -305,13 +283,6 @@ RREF <a class="reference internal" href="#stone80" id="id6"><span>[Stone80]</spa
 <p>Calculating the <span class="math notranslate nohighlight">\(u_{jm}^r\)</span> for the different combinations of <span class="math notranslate nohighlight">\(j\)</span>, <span class="math notranslate nohighlight">\(m\)</span> and <span class="math notranslate nohighlight">\(r\)</span> yields the
 following table.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 27%" />
-<col style="width: 18%" />
-<col style="width: 19%" />
-<col style="width: 18%" />
-<col style="width: 18%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p><span class="math notranslate nohighlight">\(j, m\)</span></p></th>
 <th class="head"><p><span class="math notranslate nohighlight">\(u_{jm}^0\)</span></p></th>
@@ -376,65 +347,70 @@ The Voigt function which is the convolution between a lorentzian function and a 
 to use.</p>
 </section>
 <section id="references">
-<h2>References:<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
-<dl class="citation">
-<dt class="label" id="laan97"><span class="brackets">Laan97</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id4">2</a>,<a href="#id5">3</a>)</span></dt>
-<dd><p>Laan, G. Van Der. (1997). Line shape of 2p magnetic-x-ray-dichroism spectra in 3d metallic systems.
+<h2>References:<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<div role="list" class="citation-list">
+<div class="citation" id="laan97" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>Laan97<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id4">2</a>,<a role="doc-backlink" href="#id5">3</a>)</span>
+<p>Laan, G. Van Der. (1997). Line shape of 2p magnetic-x-ray-dichroism spectra in 3d metallic systems.
 Physical Review B, 55(13), 8086–8089.</p>
 <p>Laan, G. (1997). The role of the spin polarization in x-ray magnetic circular dichroism spectra of
 itinerant magnets. Journal of Physics: Condensed Matter, 9, L259–L265.</p>
-</dd>
-<dt class="label" id="gold04"><span class="brackets"><a class="fn-backref" href="#id2">Gold04</a></span></dt>
-<dd><p>Gold, S., Bayer, a., &amp; Goering, E. (2004). Ground-State-Moment-Analysis: A quantitative tool for X-ray
+</div>
+<div class="citation" id="gold04" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">Gold04</a><span class="fn-bracket">]</span></span>
+<p>Gold, S., Bayer, a., &amp; Goering, E. (2004). Ground-State-Moment-Analysis: A quantitative tool for X-ray
 magnetic circular dichroism analysis for 3d transition metals. Applied Physics A: Materials Science &amp; Processing,
 78(6), 855–865. doi:10.1007/s00339-003-2442-8</p>
-</dd>
-<dt class="label" id="dorfler06"><span class="brackets"><a class="fn-backref" href="#id3">Dörfler06</a></span></dt>
-<dd><p>Dörfler, Fabian (2006). Contributions to the theory of x-ray magnetic dichroism. Max-Planck-Institut fur
+</div>
+<div class="citation" id="dorfler06" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">Dörfler06</a><span class="fn-bracket">]</span></span>
+<p>Dörfler, Fabian (2006). Contributions to the theory of x-ray magnetic dichroism. Max-Planck-Institut fur
 Metallforschung Stuttgart and Universität Stuttgart. PhD thesis.</p>
 <p>Dörfler, F., &amp; Fähnle, M. (2006). Theoretical justification of ground-state moment analysis of magnetic
 dichroic x-ray absorption spectra for 3d transition metals. Phys. Rev. B, 74(22),
 224424. doi:10.1103/PhysRevB.74.224424</p>
-</dd>
-<dt class="label" id="stone80"><span class="brackets"><a class="fn-backref" href="#id6">Stone80</a></span></dt>
-<dd><p>Stone, A and Wood, (1980). C. Comp. Phys. Comm., 21 , 195.</p>
-</dd>
-</dl>
+</div>
+<div class="citation" id="stone80" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">Stone80</a><span class="fn-bracket">]</span></span>
+<p>Stone, A and Wood, (1980). C. Comp. Phys. Comm., 21 , 195.</p>
+</div>
+</div>
 <section id="spectrum2p">
-<h3>Spectrum2p<a class="headerlink" href="#spectrum2p" title="Permalink to this headline">¶</a></h3>
+<h3>Spectrum2p<a class="headerlink" href="#spectrum2p" title="Link to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">Spectrum2p(gsm=&lt;factory&gt;,</span> <span class="pre">norm_denom=&lt;factory&gt;,</span> <span class="pre">hs=0.0,</span> <span class="pre">soc=0.0,</span> <span class="pre">valid_e=700.0)</span></code></p>
 <p>Class to model the lineshape of a 2p level including dichroism.</p>
 <dl class="field-list simple">
-<dt class="field-odd">param hs</dt>
+<dt class="field-odd">param hs<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The exchange field (eV).</p>
 </dd>
-<dt class="field-even">type hs</dt>
+<dt class="field-even">type hs<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
-<dt class="field-odd">param soc</dt>
+<dt class="field-odd">param soc<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The spin orbit coupling (eV).</p>
 </dd>
-<dt class="field-even">type soc</dt>
+<dt class="field-even">type soc<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
-<dt class="field-odd">param gsm</dt>
+<dt class="field-odd">param gsm<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The ground state moments used in the spectra, a list of 3 int tuples.</p>
 </dd>
-<dt class="field-even">type gsm</dt>
+<dt class="field-even">type gsm<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of tuples 3xint</p>
 </dd>
-<dt class="field-odd">param norm_denom</dt>
+<dt class="field-odd">param norm_denom<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The normalisation denominators for the ground
 state moments (same order as gsm).</p>
 </dd>
-<dt class="field-even">type norm_denom</dt>
+<dt class="field-even">type norm_denom<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of floats</p>
 </dd>
-<dt class="field-odd">param valid_e</dt>
+<dt class="field-odd">param valid_e<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Energy (eV) where a validation (type check) of the function is made when the scattering
 lengths are inserted in a validator (used in the Reflectivity plugin).</p>
 </dd>
-<dt class="field-even">type valid_e</dt>
+<dt class="field-even">type valid_e<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
 </dl>
@@ -468,61 +444,61 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 </dl>
 </section>
 <section id="spectrumcomponent">
-<h3>SpectrumComponent<a class="headerlink" href="#spectrumcomponent" title="Permalink to this headline">¶</a></h3>
+<h3>SpectrumComponent<a class="headerlink" href="#spectrumcomponent" title="Link to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">SpectrumComponent(spectra=&lt;class</span> <span class="pre">'inspect._empty'&gt;,</span> <span class="pre">gsm=&lt;class</span> <span class="pre">'inspect._empty'&gt;,</span> <span class="pre">kwargs=&lt;class</span> <span class="pre">'inspect._empty'&gt;)</span></code></p>
 <p>Class to keep the variables of a spectral component.</p>
 </section>
 <section id="background2p">
-<h3>Background2p<a class="headerlink" href="#background2p" title="Permalink to this headline">¶</a></h3>
+<h3>Background2p<a class="headerlink" href="#background2p" title="Link to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">Background2p(parent=&lt;class</span> <span class="pre">'inspect._empty'&gt;,</span> <span class="pre">element=&lt;class</span> <span class="pre">'inspect._empty'&gt;,</span> <span class="pre">kwargs=&lt;class</span> <span class="pre">'inspect._empty'&gt;)</span></code></p>
 <p>A class to model the 2p background spectra, the non-resonant part, with a smoothed step function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">param el3</dt>
+<dt class="field-odd">param el3<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Energy position of the L3 edge.</p>
 </dd>
-<dt class="field-even">type el3</dt>
+<dt class="field-even">type el3<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
-<dt class="field-odd">param sigma</dt>
+<dt class="field-odd">param sigma<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The width of the error function (std in eV).</p>
 </dd>
-<dt class="field-even">type sigma</dt>
+<dt class="field-even">type sigma<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
-<dt class="field-odd">param pre_edge</dt>
+<dt class="field-odd">param pre_edge<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The width of the pre edge region (eV).</p>
 </dd>
-<dt class="field-even">type pre_edge</dt>
+<dt class="field-even">type pre_edge<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
-<dt class="field-odd">param post_edge</dt>
+<dt class="field-odd">param post_edge<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The width of the post edge region (eV).</p>
 </dd>
-<dt class="field-even">type post_edge</dt>
+<dt class="field-even">type post_edge<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
-<dt class="field-odd">param de</dt>
+<dt class="field-odd">param de<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The sampling spacing for the recalcualted table (eV).</p>
 </dd>
-<dt class="field-even">type de</dt>
+<dt class="field-even">type de<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
-<dt class="field-odd">param kk_emax</dt>
+<dt class="field-odd">param kk_emax<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The maximum energy values taken from the tables in eV. The value should be well above the K edge.</p>
 </dd>
-<dt class="field-even">type kk_emax</dt>
+<dt class="field-even">type kk_emax<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
-<dt class="field-odd">param element</dt>
+<dt class="field-odd">param element<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The element to which the background applies. Used to find theoretical f values (from the nist database), position of the L2/L3 edge and Z (number of electrons).</p>
 </dd>
-<dt class="field-even">type element</dt>
+<dt class="field-even">type element<span class="colon">:</span></dt>
 <dd class="field-even"><p>string</p>
 </dd>
-<dt class="field-odd">param parent</dt>
+<dt class="field-odd">param parent<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The parent spectra to which the Background applies.</p>
 </dd>
-<dt class="field-even">type parent</dt>
+<dt class="field-even">type parent<span class="colon">:</span></dt>
 <dd class="field-even"><p>Spectra2p</p>
 </dd>
 </dl>
@@ -551,12 +527,14 @@ are calculated, which is the difference between the tabulated and the current, o
 </ul>
 </dd>
 </dl>
+</section>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Background2p">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">Background2p</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">Background2p</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p" title="Link to this definition">¶</a></dt>
 <dd><p>A class to model the 2p background spectra, the non-resonant part, with a smoothed step function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>el3</strong> (<em>float</em>) – Energy position of the L3 edge.</p></li>
 <li><p><strong>sigma</strong> (<em>float</em>) – The width of the error function (std in eV).</p></li>
@@ -596,16 +574,16 @@ are calculated, which is the difference between the tabulated and the current, o
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Background2p.calc_abs">
-<span class="sig-name descname"><span class="pre">calc_abs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.calc_abs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_abs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.calc_abs" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the absorption background function for the given energies.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>energy</strong> (<em>array of floats</em>) – Energy points in eV.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>energy</strong> (<em>array</em><em> of </em><em>floats</em>) – Energy points in eV.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Absorption, the complex part of the scattering length.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Abs (array of floats)</p>
 </dd>
 </dl>
@@ -613,16 +591,16 @@ are calculated, which is the difference between the tabulated and the current, o
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Background2p.calc_f">
-<span class="sig-name descname"><span class="pre">calc_f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.calc_f" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.calc_f" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the complex background scattering length for energy.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>energy</strong> (<em>array of floats</em>) – Energy points where to evaluate f</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>energy</strong> (<em>array</em><em> of </em><em>floats</em>) – Energy points where to evaluate f</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Scattering length.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>f (array of complex)</p>
 </dd>
 </dl>
@@ -630,7 +608,7 @@ are calculated, which is the difference between the tabulated and the current, o
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Background2p.create_bkg_f1">
-<span class="sig-name descname"><span class="pre">create_bkg_f1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_l3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_l2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_tab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2_tab</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.create_bkg_f1" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_bkg_f1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_l3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_l2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_tab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2_tab</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.create_bkg_f1" title="Link to this definition">¶</a></dt>
 <dd><p>Create the background f1 data to be used in later calculations.</p>
 <p>The method will fit the tabulated f2 value to analytical function and replace the step in the table with
 a error function (with a width (std) given by the parameter <code class="docutils literal notranslate"><span class="pre">sigma_tab</span></code>)
@@ -639,15 +617,15 @@ on a range of <code class="docutils literal notranslate"><span class="pre">e_l3<
 f2 values in the <code class="docutils literal notranslate"><span class="pre">f2_tab``array.</span> <span class="pre">This</span> <span class="pre">array</span> <span class="pre">is</span> <span class="pre">Kramer-Kronig</span> <span class="pre">transformed</span> <span class="pre">to</span> <span class="pre">yield</span> <span class="pre">the</span> <span class="pre">corresponding</span> <span class="pre">f1</span> <span class="pre">values.</span>
 <span class="pre">The</span> <span class="pre">values</span> <span class="pre">are</span> <span class="pre">stored</span> <span class="pre">as</span> <span class="pre">``f1_tab</span></code> and <code class="docutils literal notranslate"><span class="pre">f2_tab</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>e_l3</strong> (<em>float</em>) – Position of the L3 edge in eV.</p></li>
 <li><p><strong>e_l2</strong> (<em>float</em>) – Position of the L2 edge in eV.</p></li>
-<li><p><strong>e_tab</strong> (<em>array of floats</em>) – The scattering length tables energy values in eV.</p></li>
-<li><p><strong>f2_tab</strong> (<em>array of floats</em>) – The f2 values of the scattering length tables.</p></li>
+<li><p><strong>e_tab</strong> (<em>array</em><em> of </em><em>floats</em>) – The scattering length tables energy values in eV.</p></li>
+<li><p><strong>f2_tab</strong> (<em>array</em><em> of </em><em>floats</em>) – The f2 values of the scattering length tables.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Nothing.</p>
 </dd>
 </dl>
@@ -655,22 +633,22 @@ f2 values in the <code class="docutils literal notranslate"><span class="pre">f2
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Background2p.fit_table_data">
-<span class="sig-name descname"><span class="pre">fit_table_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_tab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2_tab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">between_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_slice</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.fit_table_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">fit_table_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_tab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2_tab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">between_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_slice</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.fit_table_data" title="Link to this definition">¶</a></dt>
 <dd><p>Fits the L2 and L3 steps in tabular data to parametrise the spectra in the fitting range.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>e_tab</strong> (<em>array of floats</em>) – The scattering length tables energy values in eV.</p></li>
-<li><p><strong>f2_tab</strong> (<em>array of floats</em>) – The f2 values of the scattering length tables.</p></li>
+<li><p><strong>e_tab</strong> (<em>array</em><em> of </em><em>floats</em>) – The scattering length tables energy values in eV.</p></li>
+<li><p><strong>f2_tab</strong> (<em>array</em><em> of </em><em>floats</em>) – The f2 values of the scattering length tables.</p></li>
 <li><p><strong>pre_slice</strong> (<em>slice</em>) – A slice object that contain the pre edge data.</p></li>
 <li><p><strong>between_slice</strong> (<em>slice</em>) – A slice object that indexes the region between the L2 and L3 edge.</p></li>
 <li><p><strong>post_slice</strong> (<em>slice</em>) – A slice object that indexes the region post edge region.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A function of the form f(e, e_l3, e_l2, sigma).</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>f (function)</p>
 </dd>
 </dl>
@@ -678,17 +656,17 @@ f2 values in the <code class="docutils literal notranslate"><span class="pre">f2
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Background2p.load_nff_file">
-<span class="sig-name descname"><span class="pre">load_nff_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_l3_tab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_l2_tab</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.load_nff_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">load_nff_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_l3_tab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_l2_tab</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Background2p.load_nff_file" title="Link to this definition">¶</a></dt>
 <dd><p>Load an nff (scattering length table) file.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>file_path</strong> (<em>string</em>) – Path to file.</p></li>
 <li><p><strong>e_l3_tab</strong> (<em>float</em>) – Position of the L3 edge in the table (eV).</p></li>
 <li><p><strong>e_l2_tab</strong> (<em>float</em>) – Position of the L2 edge in the table (eV).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Nothing.</p>
 </dd>
 </dl>
@@ -698,17 +676,17 @@ f2 values in the <code class="docutils literal notranslate"><span class="pre">f2
 
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.ModelGoering">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">ModelGoering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w000</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w110</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w101</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w011</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w211</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w202</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_L3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">710.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.ModelGoering" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">ModelGoering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w000</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w110</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w101</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w011</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w211</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w202</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_L3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">710.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.ModelGoering" title="Link to this definition">¶</a></dt>
 <dd><p>A fit model to simulate one xmcd spectral moment of a p_3/2, p_1/2 absorption edge.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.ModelGoering.calc_fm1">
-<span class="sig-name descname"><span class="pre">calc_fm1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.ModelGoering.calc_fm1" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_fm1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.ModelGoering.calc_fm1" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the fm1 structure factor</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>e</strong> – The energy points where fm1 is evaluated.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>fm1 scattering factor</p>
 </dd>
 </dl>
@@ -716,13 +694,13 @@ f2 values in the <code class="docutils literal notranslate"><span class="pre">f2
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.ModelGoering.xmcd">
-<span class="sig-name descname"><span class="pre">xmcd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.ModelGoering.xmcd" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">xmcd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.ModelGoering.xmcd" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the xmcd absorption signal.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>e</strong> – The energy where the xmcd is calculated.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>xmcd signal</p>
 </dd>
 </dl>
@@ -732,15 +710,15 @@ f2 values in the <code class="docutils literal notranslate"><span class="pre">f2
 
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Spectrum2p">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">Spectrum2p</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*</span></em>, <em class="sig-param"><span class="pre">gsm:</span> <span class="pre">tuple</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em>, <em class="sig-param"><span class="pre">norm_denom:</span> <span class="pre">tuple</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em>, <em class="sig-param"><span class="pre">hs:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></em>, <em class="sig-param"><span class="pre">soc:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></em>, <em class="sig-param"><span class="pre">valid_e:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">700.0</span></em>, <em class="sig-param"><span class="pre">**user_kwds</span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">Spectrum2p</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gsm:</span> <span class="pre">tuple</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_denom:</span> <span class="pre">tuple</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hs:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soc:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_e:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">700.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p" title="Link to this definition">¶</a></dt>
 <dd><p>Class to model the lineshape of a 2p level including dichroism.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>hs</strong> (<em>float</em>) – The exchange field (eV).</p></li>
 <li><p><strong>soc</strong> (<em>float</em>) – The spin orbit coupling (eV).</p></li>
-<li><p><strong>gsm</strong> (<em>list of tuples 3xint</em>) – The ground state moments used in the spectra, a list of 3 int tuples.</p></li>
-<li><p><strong>norm_denom</strong> (<em>list of floats</em>) – The normalisation denominators for the ground
+<li><p><strong>gsm</strong> (<em>list</em><em> of </em><em>tuples 3xint</em>) – The ground state moments used in the spectra, a list of 3 int tuples.</p></li>
+<li><p><strong>norm_denom</strong> (<em>list</em><em> of </em><em>floats</em>) – The normalisation denominators for the ground
 state moments (same order as gsm).</p></li>
 <li><p><strong>valid_e</strong> (<em>float</em>) – Energy (eV) where a validation (type check) of the function is made when the scattering
 lengths are inserted in a validator (used in the Reflectivity plugin).</p></li>
@@ -777,60 +755,54 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Spectrum2p.calc_fm1">
-<span class="sig-name descname"><span class="pre">calc_fm1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fm1" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_fm1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fm1" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the circular dirchroic compenet.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Spectrum2p.calc_fm2">
-<span class="sig-name descname"><span class="pre">calc_fm2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fm2" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_fm2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fm2" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the linear dichroic component.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Spectrum2p.calc_fres">
-<span class="sig-name descname"><span class="pre">calc_fres</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fres" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_fres</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fres" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the isotropic resonant scattering length.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Spectrum2p.calc_spectra">
-<span class="sig-name descname"><span class="pre">calc_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_spectra" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_spectra" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the total spectra.</p>
 <p>Sums up all contributions from the different components.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>float</em><em> or </em><em>array</em>) – The energy where to evaluate the spectra.</p></li>
 <li><p><strong>a</strong> (<em>int</em>) – Number representing the exciting polarization.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>spectra(complex array or complex)</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>spectra(complex array or complex)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.Spectrum2p.calc_spectra_comp">
-<span class="sig-name descname"><span class="pre">calc_spectra_comp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_spectra_comp" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_spectra_comp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_spectra_comp" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the spectra from one component</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>e</strong> (<em>float array</em>) – The energy values where the spectra are to be calcualted.</p></li>
 <li><p><strong>comp</strong> (<em>SpectralComponent</em>) – The spectral component.</p></li>
 <li><p><strong>a</strong> (<em>int</em>) – The polarization of the exciting light.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>spectra (complex np.array)</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>spectra (complex np.array)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -839,16 +811,16 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.SpectrumComponent">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">SpectrumComponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gsm</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.SpectrumComponent" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">SpectrumComponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gsm</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.SpectrumComponent" title="Link to this definition">¶</a></dt>
 <dd><p>Class to keep the variables of a spectral component.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.calc_de">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">calc_de</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.calc_de" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">calc_de</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.calc_de" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the energy spacing between different m levels due to the exchange field hs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>hs</strong> (<em>float</em>) – The exchange filed in eV</p></li>
 <li><p><strong>j</strong> (<em>float</em>) – The j quantum number of the core level</p></li>
@@ -856,10 +828,10 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 <li><p><strong>s</strong> (<em>float</em>) – The s quatum number of the core level</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The energy spacing</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>de(float)</p>
 </dd>
 </dl>
@@ -867,11 +839,11 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.calc_h">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">calc_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.calc_h" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">calc_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.calc_h" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the h values for the given parameters.</p>
 <p>For a full description see the Theory section in module documentation.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>xyz</strong> (<em>tuple</em><em>, </em><em>3 int</em>) – A tuple indicating the ground state moment.</p></li>
 <li><p><strong>j2</strong> (<em>int</em>) – The j quantum number multiplied by 2 (value 3 or 1).</p></li>
@@ -879,10 +851,10 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 <li><p><strong>a</strong> (<em>int</em>) – The polarisation of the exciting light.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Transition probability of the given state with ground state moment 1.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>h (float)</p>
 </dd>
 </dl>
@@ -890,30 +862,27 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.create_h_table">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">create_h_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">j2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.create_h_table" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">create_h_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">j2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.create_h_table" title="Link to this definition">¶</a></dt>
 <dd><p>Create an h values for the given j level’s m subleves for the different xyz values</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>j2</strong> (<em>int</em>) – 2*j where j is the j quatum number for the ground state.</p></li>
 <li><p><strong>xyz_values</strong> (<em>list</em>) – A list of three int tuples denoting the ground state moment.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>h_table(array)</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>h_table(array)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.create_interval">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">create_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_max</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.create_interval" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">create_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_max</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.create_interval" title="Link to this definition">¶</a></dt>
 <dd><p>Creates a closed slice [x_min, x_max] where x_min &lt; x[slice] &lt; x_max.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>slice object</p>
 </dd>
 </dl>
@@ -921,26 +890,26 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.kk_int">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">kk_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.kk_int" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">kk_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.kk_int" title="Link to this definition">¶</a></dt>
 <dd><p>Do the Kramer Kronig transform from f2 to f1</p>
 <p>If the parameters e_min or e_max is given the evaluation range is reduced so that the final size of
 f1kk is reduced. The Kramer-Kronig transformation is conducted as suggested by the Newville in the DIFFKK manual.
 The integrand is defined as in the XOP data booklet.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>e</strong> (<em>array of floats</em>) – Energy values of the values found in f2 (eV).</p></li>
-<li><p><strong>f2</strong> (<em>array of floats</em>) – The imaginary part of the scattering length (electrons)</p></li>
+<li><p><strong>e</strong> (<em>array</em><em> of </em><em>floats</em>) – Energy values of the values found in f2 (eV).</p></li>
+<li><p><strong>f2</strong> (<em>array</em><em> of </em><em>floats</em>) – The imaginary part of the scattering length (electrons)</p></li>
 <li><p><strong>Z</strong> (<em>int</em>) – The number of electrons of the element, (electrons).</p></li>
 <li><p><strong>e_min</strong> (<em>float</em>) – The minimum value of the returned real part of f.</p></li>
 <li><p><strong>e_max</strong> (<em>float</em>) – The maximum value of the returned real part of f.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The energy values for the calculated f1 (eV).
 array of floats: The real part of the scattering length, f1, (electrons).</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>array of floats</p>
 </dd>
 </dl>
@@ -952,13 +921,13 @@ array of floats: The real part of the scattering length, f1, (electrons).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.kk_int_old">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">kk_int_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_outer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.kk_int_old" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">kk_int_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_outer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.kk_int_old" title="Link to this definition">¶</a></dt>
 <dd><p>Original Kramer-Kronig transform - a slower implementation of kk_int</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.step_func">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">step_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.step_func" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">step_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.step_func" title="Link to this definition">¶</a></dt>
 <dd><p>Defines the step funciton (erf) of the L2/L3 edges</p>
 <blockquote>
 <div><p>x (array of floats):
@@ -966,18 +935,15 @@ x0 (float):
 sigma (float):</p>
 </div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>step_func (array of floats)</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>step_func (array of floats)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.test_h">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">test_h</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.test_h" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">test_h</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.test_h" title="Link to this definition">¶</a></dt>
 <dd><p>Compare the calculations with previously tabulated values.</p>
 <p>Validate the calculation of the u values by comparing the h values calculated by this module
 with the ones calculated from the (Gold, 2004)</p>
@@ -989,10 +955,10 @@ magnetic circular dichroism analysis for 3d transition metals. Applied Physics A
 
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.voigt">
-<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">voigt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.voigt" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">voigt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.voigt" title="Link to this definition">¶</a></dt>
 <dd><p>The complex Voigt function (a convolution of a Lorentzian and a Gaussian function).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>array</em><em> or </em><em>float</em>) – Independent value where to evaluate the Voigt function.</p></li>
 <li><p><strong>x_0</strong> (<em>float</em><em> or </em><em>array</em>) – Centre of the peak.</p></li>
@@ -1000,10 +966,10 @@ magnetic circular dichroism analysis for 3d transition metals. Applied Physics A
 <li><p><strong>sigma</strong> (<em>float</em><em> or </em><em>array</em>) – The standard deviation of the Gaussian part.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The complex Voigt function evaluated at x</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>V(complex array)</p>
 </dd>
 </dl>
@@ -1020,8 +986,6 @@ of the Gaussian component.</p>
 </dd></dl>
 
 </section>
-</section>
-</section>
 
 
             <div class="clearer"></div>
@@ -1033,8 +997,9 @@ of the Gaussian component.</p>
             <p class="logo"><a href="../../index.html">
               <img class="logo" src="../../_static/logo.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">A model for fitting the spectral response</a><ul>
 <li><a class="reference internal" href="#theory">Theory</a></li>
 <li><a class="reference internal" href="#references">References:</a><ul>
@@ -1043,13 +1008,47 @@ of the Gaussian component.</p>
 <li><a class="reference internal" href="#background2p">Background2p</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Background2p"><code class="docutils literal notranslate"><span class="pre">Background2p</span></code></a><ul>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Background2p.calc_abs"><code class="docutils literal notranslate"><span class="pre">Background2p.calc_abs()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Background2p.calc_f"><code class="docutils literal notranslate"><span class="pre">Background2p.calc_f()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Background2p.create_bkg_f1"><code class="docutils literal notranslate"><span class="pre">Background2p.create_bkg_f1()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Background2p.fit_table_data"><code class="docutils literal notranslate"><span class="pre">Background2p.fit_table_data()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Background2p.load_nff_file"><code class="docutils literal notranslate"><span class="pre">Background2p.load_nff_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.ModelGoering"><code class="docutils literal notranslate"><span class="pre">ModelGoering</span></code></a><ul>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.ModelGoering.calc_fm1"><code class="docutils literal notranslate"><span class="pre">ModelGoering.calc_fm1()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.ModelGoering.xmcd"><code class="docutils literal notranslate"><span class="pre">ModelGoering.xmcd()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Spectrum2p"><code class="docutils literal notranslate"><span class="pre">Spectrum2p</span></code></a><ul>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fm1"><code class="docutils literal notranslate"><span class="pre">Spectrum2p.calc_fm1()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fm2"><code class="docutils literal notranslate"><span class="pre">Spectrum2p.calc_fm2()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_fres"><code class="docutils literal notranslate"><span class="pre">Spectrum2p.calc_fres()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_spectra"><code class="docutils literal notranslate"><span class="pre">Spectrum2p.calc_spectra()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.Spectrum2p.calc_spectra_comp"><code class="docutils literal notranslate"><span class="pre">Spectrum2p.calc_spectra_comp()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.SpectrumComponent"><code class="docutils literal notranslate"><span class="pre">SpectrumComponent</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.calc_de"><code class="docutils literal notranslate"><span class="pre">calc_de()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.calc_h"><code class="docutils literal notranslate"><span class="pre">calc_h()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.create_h_table"><code class="docutils literal notranslate"><span class="pre">create_h_table()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.create_interval"><code class="docutils literal notranslate"><span class="pre">create_interval()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.kk_int"><code class="docutils literal notranslate"><span class="pre">kk_int()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.kk_int_old"><code class="docutils literal notranslate"><span class="pre">kk_int_old()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.step_func"><code class="docutils literal notranslate"><span class="pre">step_func()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.test_h"><code class="docutils literal notranslate"><span class="pre">test_h()</span></code></a></li>
+<li><a class="reference internal" href="#genx.models.lib.xmcd_moment.voigt"><code class="docutils literal notranslate"><span class="pre">voigt()</span></code></a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="data_loaders.html"
-                        title="previous chapter">Data Loader Plugins</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="data_loaders.html"
+                          title="previous chapter">Data Loader Plugins</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -1057,7 +1056,7 @@ of the Gaussian component.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -1065,8 +1064,8 @@ of the Gaussian component.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1083,15 +1082,15 @@ of the Gaussian component.</p>
         <li class="right" >
           <a href="data_loaders.html" title="Data Loader Plugins"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.7.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../development.html" >Development documentation</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../genx_package.html" >GenX Python Package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">A model for fitting the spectral response</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

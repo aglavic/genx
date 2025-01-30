@@ -15,15 +15,17 @@ Mac OS
 ======
 
 Binary packages for Mac OS are `provided <https://github.com/aglavic/genx/releases/latest>`_ as
-GenX-3.X.X_Installer.dmg images that can directly be installed. If you are having
+GenX3-3.X.X-M1-Installer.pkg and GenX3-3.X.X-Installer.pkg packages that can directly be installed. If you are having
 trouble with this distribution you can try installing from source. (And create a trouble ticket, please.)
 
-Install the required python 3 packages, especially wxPython. I would advice using a new Anaconda environment.
-Afterwards you can install GenX from source. The anaconda environment packages that are known to work can be found in
+Since a while the use of packages for wxPython from PyPI is possible, too. So system python3 with pip should be
+sufficent to install all requirements. (See instructions below.)
+
+If this fails, too, install the required python 3 packages, especially wxPython manually.
+I would advice using a new Anaconda environment. Afterwards you can install GenX from source.
+The anaconda environment packages that are known to work can be found in
 `conda_build.yml <https://raw.githubusercontent.com/aglavic/genx/v3.6.14/genx/mac_build/conda_build.yml>`_
 
-For the latest verion of wxPython the PyPI installation is possible, too. So system python3 with pip should be
-sufficent to install all requirements.
 
 Linux
 =====
@@ -144,29 +146,20 @@ and unpack it. Run the file scripts/genx directly:
     python3 scripts/genx
 
 You can also install it in your python 3 environment as user ``pip3 install --user genx3`` or
-system wide ``sudo pip3 install genx3`` and run:
+system wide ``sudo pip3 install genx3`` as well as the optional requiremetns and run:
 
 .. code-block:: bash
 
-    pip3 install --user genx3
+    pip3 install --user genx3 numba vtk bumps
     genx
 
-Anaconda
---------
-
-You can create a suitable anaconda environment using the following commands, i:
+Or in a virtual environment / if python default is 3.x:
 
 .. code-block:: bash
 
-    conda create --name genx python=3.9 matplotlib platformdirs h5py scipy numba psutil pymysql
-    conda activate genx
-    conda install wxpython # you might need a different channel, e.g. conda-forge
-    pip install genx3
+    python -m pip install genx3 numba vtk bumps
     genx
-    # if the command is not recognized you can try instead
-    python -m genx.run
 
-You can also try `download this <_attachments/conda.yml>`_ environment file with ``conda env create --file conda.yml``.
 
 Requirements
 ------------
@@ -191,6 +184,9 @@ The non-mandotary packages are
 * pint (support in orsopy conversion of units)
 * pymysql (access of crystallography open database for SLD - SimpleLayer plugin
 * bumps (statistical analysis and alternative refinement method)
+* docutils (improves how help pages are displayed)
 
+With modern python environments, all requirements can be installed via pip and, despite for the optional packages,
+are being automatically installed when using the genx3 package.
 On a Linux system these packages can usually be installed through the package manager. On a windows and OSX systems the
 anaconda distribution contains all packages.

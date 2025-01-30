@@ -1,21 +1,19 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Using GenX from the command line (with mpi) &#8212; GenX 3.7.0b1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    <title>Using GenX from the command line (with mpi) &#8212; GenX 3.7.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=989f22b4" />
     
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
+    <script src="../_static/documentation_options.js?v=7a952085"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
-    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Frequently Asked Questions" href="../faq.html" />
@@ -36,7 +34,7 @@
         <li class="right" >
           <a href="performance.html" title="Optimizer and model performance"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Using GenX from the command line (with mpi)</a></li> 
       </ul>
@@ -48,9 +46,9 @@
           <div class="body" role="main">
             
   <section id="using-genx-from-the-command-line-with-mpi">
-<span id="tutorial-mpi"></span><h1>Using GenX from the command line (with mpi)<a class="headerlink" href="#using-genx-from-the-command-line-with-mpi" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-mpi"></span><h1>Using GenX from the command line (with mpi)<a class="headerlink" href="#using-genx-from-the-command-line-with-mpi" title="Link to this heading">¶</a></h1>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
 <p>Using GenX from the command line lets you, in the simplest case, start up the gui. You can also
 run fits without starting up the gui at all. This opens possibilities to make a batch script of multiple GenX runs and,
 in addition, you can run GenX on machines without a desktop environment. GenX also supports mpi for fitting
@@ -58,12 +56,12 @@ in parallel opens up the possibility to use it on clusters. The mpi implementati
 Note that, currently, the command line is only fully implemented in the source/pip versions.</p>
 </section>
 <section id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h2>
 <p>If you only intend to run GenX from the command line you do not need an installation of wxPython or matplotlib.</p>
 <p>See section <a class="reference internal" href="../install.html#install-cluster"><span class="std std-ref">Clusters</span></a> for installation instructions.</p>
 </section>
 <section id="command-line-arguments">
-<h2>Command line arguments<a class="headerlink" href="#command-line-arguments" title="Permalink to this headline">¶</a></h2>
+<h2>Command line arguments<a class="headerlink" href="#command-line-arguments" title="Link to this heading">¶</a></h2>
 <p>The arguments to GenX can be viewed by executing the program with the <code class="docutils literal notranslate"><span class="pre">--help</span></code> option.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -214,7 +212,7 @@ also be used to stop a MPI refinement at any time.</p>
 </div>
 </section>
 <section id="using-mpi">
-<h2>Using MPI<a class="headerlink" href="#using-mpi" title="Permalink to this headline">¶</a></h2>
+<h2>Using MPI<a class="headerlink" href="#using-mpi" title="Link to this heading">¶</a></h2>
 <p>If MPI and mpi4py is installed on the system the <code class="docutils literal notranslate"><span class="pre">--mpi</span></code> switch will be activated. Note that the description for
 <code class="docutils literal notranslate"><span class="pre">--mpi</span></code> in the help will not appear until the mpi4py can be loaded correctly. In order to use mpi the command <code class="docutils literal notranslate"><span class="pre">mpirun</span></code>
 or <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code> has to be used. The argument <code class="docutils literal notranslate"><span class="pre">-np</span></code> defines how many processes to use. An example can be seen below.</p>
@@ -273,7 +271,7 @@ If a logfile is written with the <code class="docutils literal notranslate"><spa
 primary process starting with number <code class="docutils literal notranslate"><span class="pre">00</span></code>.</p>
 </section>
 <section id="using-remote-refinement-server">
-<h2>Using remote refinement server<a class="headerlink" href="#using-remote-refinement-server" title="Permalink to this headline">¶</a></h2>
+<h2>Using remote refinement server<a class="headerlink" href="#using-remote-refinement-server" title="Link to this heading">¶</a></h2>
 <p>To have the advantage of high performance computing and interactive refinement GenX has a server script that
 can be started on the cluster and a desktop client within the same network can use this as worker for
 refinement from a GUI client.</p>
@@ -301,7 +299,7 @@ on the console (if –debug is not set).</p>
 </div>
 <p>The client optimizer settings will determine if multiprocessing or MPI will be used.</p>
 <section id="connection-settings">
-<h3>Connection settings<a class="headerlink" href="#connection-settings" title="Permalink to this headline">¶</a></h3>
+<h3>Connection settings<a class="headerlink" href="#connection-settings" title="Link to this heading">¶</a></h3>
 <p>The genx_server script takes two optional arguments <code class="docutils literal notranslate"><span class="pre">address</span></code> and <code class="docutils literal notranslate"><span class="pre">port</span></code>. By default the sever listens only to
 connections from <strong>localhost</strong> on port <strong>3000</strong>.
 You can choose to listen on any incoming network interfaces by supplying <strong>0.0.0.0</strong> as <code class="docutils literal notranslate"><span class="pre">address</span></code> but this is
@@ -326,8 +324,9 @@ $ mpiexec -np 32 genx_server
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Using GenX from the command line (with mpi)</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#dependencies">Dependencies</a></li>
@@ -341,12 +340,17 @@ $ mpiexec -np 32 genx_server
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="performance.html"
-                        title="previous chapter">Optimizer and model performance</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../faq.html"
-                        title="next chapter">Frequently Asked Questions</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="performance.html"
+                          title="previous chapter">Optimizer and model performance</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../faq.html"
+                          title="next chapter">Frequently Asked Questions</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -354,7 +358,7 @@ $ mpiexec -np 32 genx_server
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -362,8 +366,8 @@ $ mpiexec -np 32 genx_server
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -383,14 +387,14 @@ $ mpiexec -np 32 genx_server
         <li class="right" >
           <a href="performance.html" title="Optimizer and model performance"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Using GenX from the command line (with mpi)</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

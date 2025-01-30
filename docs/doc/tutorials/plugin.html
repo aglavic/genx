@@ -1,21 +1,19 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Plugins: an introduction &#8212; GenX 3.7.0b1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    <title>Plugins: an introduction &#8212; GenX 3.7.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=989f22b4" />
     
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
+    <script src="../_static/documentation_options.js?v=7a952085"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
-    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Data handling" href="data_handling.html" />
@@ -36,7 +34,7 @@
         <li class="right" >
           <a href="gui.html" title="Overview of the user interface"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Plugins: an introduction</a></li> 
       </ul>
@@ -48,11 +46,11 @@
           <div class="body" role="main">
             
   <section id="plugins-an-introduction">
-<span id="tutorial-plugin"></span><h1>Plugins: an introduction<a class="headerlink" href="#plugins-an-introduction" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-plugin"></span><h1>Plugins: an introduction<a class="headerlink" href="#plugins-an-introduction" title="Link to this heading">¶</a></h1>
 <p>If you start reading the tutorials on this website you will hear a lot about plugins.
 This page will briefly explain what plugins mean in GenX and why they will help you.</p>
 <section id="what-they-are">
-<h2>What they are<a class="headerlink" href="#what-they-are" title="Permalink to this headline">¶</a></h2>
+<h2>What they are<a class="headerlink" href="#what-they-are" title="Link to this heading">¶</a></h2>
 <p>A plugin is an extension of GenX which can dynamically (that is while the program is running)
 be loaded and unloaded. A plugin framework exist in most programs in order to make them extensible.
 It also helps the developers to have reusable code. GenX has been designed so that it should work for
@@ -72,12 +70,12 @@ extend the graphical user interface with new functionality. See below.</p></li>
 </div></blockquote>
 </section>
 <section id="how-to-use-them">
-<h2>How to use them<a class="headerlink" href="#how-to-use-them" title="Permalink to this headline">¶</a></h2>
+<h2>How to use them<a class="headerlink" href="#how-to-use-them" title="Link to this heading">¶</a></h2>
 <p>First of all, there is some basic help built into GenX already. Go to the menu <span class="menuselection">Help‣Plugins Help</span>
 and you will see help pages for all plugins. This is mostly intended as a quick reference with
 the important information ready at hand.</p>
 <section id="data-loader">
-<h3>Data Loader<a class="headerlink" href="#data-loader" title="Permalink to this headline">¶</a></h3>
+<h3>Data Loader<a class="headerlink" href="#data-loader" title="Link to this heading">¶</a></h3>
 <p>The Data loaders are a small but powerful plugin feature. It allows user to load data from different file
 formats. Now , as of 2021-11-22, 11 different file formats are implemented as well as an <em>auto</em> loader
 that selects a suitable file format from a list of supported extensions. There are two generic loaders
@@ -106,26 +104,26 @@ These would be accessed by:</p>
 <p>If you would like to know about how to write your own data loaders gor to <a class="reference internal" href="../development/write_data_loader.html#development-write-data-loader"><span class="std std-ref">How to write a Data Loader</span></a>.</p>
 </section>
 <section id="plugins">
-<h3>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h3>
+<h3>Plugins<a class="headerlink" href="#plugins" title="Link to this heading">¶</a></h3>
 <p>As said above these plugins extend the graphical user interface to implement new functionality.
 To load a plugin use the menu <span class="menuselection">Settings‣Plugins‣Load</span> and choose the plugin you want.
 To remove them from GenX use the menu <span class="menuselection">Settings‣Plugins‣Unload</span> - and choose the
 plugin you want to remove.</p>
 <section id="simplereflectivity">
-<h4>SimpleReflectivity<a class="headerlink" href="#simplereflectivity" title="Permalink to this headline">¶</a></h4>
+<h4>SimpleReflectivity<a class="headerlink" href="#simplereflectivity" title="Link to this heading">¶</a></h4>
 <p>This plugin is a simplified model builder for reflectivity measurements. It is based on <em>Reflectviity</em>
 but has a much simpler interface and <em>hides</em> the more complex aspects of the GenX interface from
 the user.
 See the tutorials: <a class="reference internal" href="simple_reflectivity.html#tutorial-simple-reflectivity"><span class="std std-ref">Simple Reflectivity Model (XRR/NR)</span></a>.</p>
 </section>
 <section id="reflectivity">
-<h4>Reflectivity<a class="headerlink" href="#reflectivity" title="Permalink to this headline">¶</a></h4>
+<h4>Reflectivity<a class="headerlink" href="#reflectivity" title="Link to this heading">¶</a></h4>
 <p>The reflectivity plugin was the first plugin for defining a complete fitting model.
 It does so by providing controls to define a sample structure. See the tutorials: <a class="reference internal" href="xrr_fitting.html#tutorial-xrr-fitting"><span class="std std-ref">Fitting of x-ray reflectivity data</span></a> and
 <a class="reference internal" href="neutron_sim.html#tutorial-neutron-sim"><span class="std std-ref">Neutron reflectivity tutorial</span></a>.</p>
 </section>
 <section id="simplelayer">
-<h4>SimpleLayer<a class="headerlink" href="#simplelayer" title="Permalink to this headline">¶</a></h4>
+<h4>SimpleLayer<a class="headerlink" href="#simplelayer" title="Link to this heading">¶</a></h4>
 <p>A small interface to quickly define SLD layer parameters from structure or density and chemical composition.
 It stores the defined materials for quicker use in future models. In the add material dialog there
 are some options to query only databases for a given chemical formula.
@@ -133,37 +131,37 @@ If materials are definde, the SimpleReflectivity plugin will automatically selec
 for newly provided chemical formulas.</p>
 </section>
 <section id="exporter">
-<h4>Exporter<a class="headerlink" href="#exporter" title="Permalink to this headline">¶</a></h4>
+<h4>Exporter<a class="headerlink" href="#exporter" title="Link to this heading">¶</a></h4>
 <p>This is a tool to convert reflectometry models into formats for different software. Right now
 only BornAgain is supported.</p>
 </section>
 <section id="magsld">
-<h4>MagSLD<a class="headerlink" href="#magsld" title="Permalink to this headline">¶</a></h4>
+<h4>MagSLD<a class="headerlink" href="#magsld" title="Link to this heading">¶</a></h4>
 <p>Modifies the SLD plot from the reflectivity plugins to display magnetization units and layer
 integrated magnetic moment.</p>
 <section id="parametervault">
-<h5>ParameterVault<a class="headerlink" href="#parametervault" title="Permalink to this headline">¶</a></h5>
+<h5>ParameterVault<a class="headerlink" href="#parametervault" title="Link to this heading">¶</a></h5>
 <p>This plugin can be used to store model parameter value sets from the grid to compare with
 modified versions.</p>
 </section>
 <section id="sxrd">
-<h5>SXRD<a class="headerlink" href="#sxrd" title="Permalink to this headline">¶</a></h5>
+<h5>SXRD<a class="headerlink" href="#sxrd" title="Link to this heading">¶</a></h5>
 <p>Similar model builder as in the Reflectivity plugin but for surface x-ray diffraction models.</p>
 </section>
 <section id="spinasymmetry">
-<h5>SpinAsymmetry<a class="headerlink" href="#spinasymmetry" title="Permalink to this headline">¶</a></h5>
+<h5>SpinAsymmetry<a class="headerlink" href="#spinasymmetry" title="Link to this heading">¶</a></h5>
 <p>Adds an extra graph that displays the neutron spin-asymmetry of magnetic models calculated
 for the data points and model.</p>
 </section>
 </section>
 <section id="shell">
-<h4>Shell<a class="headerlink" href="#shell" title="Permalink to this headline">¶</a></h4>
+<h4>Shell<a class="headerlink" href="#shell" title="Link to this heading">¶</a></h4>
 <p>This will open a new folder in the lower input notebook. This allows for introspection of the
 different parts of GenX. It should be used only by expert users for debugging. It can also be used to
 debug script if you are proficient enough in python. See the help for more information.</p>
 </section>
 <section id="userfuncs">
-<h4>UserFuncs<a class="headerlink" href="#userfuncs" title="Permalink to this headline">¶</a></h4>
+<h4>UserFuncs<a class="headerlink" href="#userfuncs" title="Link to this heading">¶</a></h4>
 <p>This little plugin creates a new menu item and searches the model for functions that takes no
 input arguments or are type annotated and makes it possible to call them from that menu.
 This can be used to create output from a physical model.
@@ -172,13 +170,13 @@ The usage to export XYZ files is shown in the SXRD.hgx example file.
 See the help in <span class="menuselection">Misc‣Plugin</span> help.</p>
 </section>
 <section id="test">
-<h4>Test<a class="headerlink" href="#test" title="Permalink to this headline">¶</a></h4>
+<h4>Test<a class="headerlink" href="#test" title="Link to this heading">¶</a></h4>
 <p>This is just a test plugin which tests all the standard functionality provided in the plugin framework.
 It will open a new folder in each notebook in the window and in addition it creates a new menu item. No practical use.</p>
 </section>
 </section>
 <section id="models">
-<h3>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h3>
+<h3>Models<a class="headerlink" href="#models" title="Link to this heading">¶</a></h3>
 <p>Have a look at the other <a class="reference internal" href="../tutorials.html#tutorials"><span class="std std-ref">Tutorials</span></a>. Most of the information presented here is about the different models.</p>
 </section>
 </section>
@@ -194,8 +192,9 @@ It will open a new folder in each notebook in the window and in addition it crea
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Plugins: an introduction</a><ul>
 <li><a class="reference internal" href="#what-they-are">What they are</a></li>
 <li><a class="reference internal" href="#how-to-use-them">How to use them</a><ul>
@@ -223,12 +222,17 @@ It will open a new folder in each notebook in the window and in addition it crea
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="gui.html"
-                        title="previous chapter">Overview of the  user interface</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="data_handling.html"
-                        title="next chapter">Data handling</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="gui.html"
+                          title="previous chapter">Overview of the  user interface</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="data_handling.html"
+                          title="next chapter">Data handling</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -236,7 +240,7 @@ It will open a new folder in each notebook in the window and in addition it crea
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -244,8 +248,8 @@ It will open a new folder in each notebook in the window and in addition it crea
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -265,14 +269,14 @@ It will open a new folder in each notebook in the window and in addition it crea
         <li class="right" >
           <a href="gui.html" title="Overview of the user interface"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.0b1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.5 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Plugins: an introduction</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

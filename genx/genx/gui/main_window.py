@@ -1707,19 +1707,20 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         import scipy
 
         useful = ""
+        missing = ""
         try:
             import orsopy
 
             useful += "ORSOpy: %s, " % orsopy.__version__
         except ImportError:
-            pass
+            missing += "orsopy, "
         try:
             # noinspection PyUnresolvedReferences
             import numba
 
             useful += "Numba: %s, " % numba.__version__
         except ImportError:
-            pass
+            missing += "numba, "
         try:
             # noinspection PyUnresolvedReferences
             import vtk
@@ -1727,14 +1728,14 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             # noinspection PyUnresolvedReferences
             useful += "VTK: %s, " % vtk.vtkVersion.GetVTKVersion()
         except ImportError:
-            pass
+            missing += "vtk, "
         try:
             # noinspection PyUnresolvedReferences
             import bumps
 
             useful += "Bumps: %s, " % bumps.__version__
         except ImportError:
-            pass
+            missing += "bumps, "
 
         info_dilog = wx.adv.AboutDialogInfo()
         info_dilog.SetName("GenX")
@@ -1748,7 +1749,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 "\n\nConfiguration files stored in %s" % config_path
                 + "\n\nThe versions of the mandatory libraries are:\n"
                 "Python: %s, wxPython: %s, Numpy: %s, Scipy: %s, Matplotlib: %s"
-                "\n\nThe non-mandatory but useful packages:\n%s"
+                "\n\nNon-mandatory but useful packages:\n%s\n\nMissing useful packages:\n%s"
                 ""
                 % (
                     platform.python_version(),
@@ -1756,7 +1757,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                     numpy.__version__,
                     scipy.__version__,
                     matplotlib.__version__,
-                    useful,
+                    useful.rstrip(', '),
+                    missing.rstrip(', '),
                 ),
                 500,
                 wx.ClientDC(self),
