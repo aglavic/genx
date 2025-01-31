@@ -43,7 +43,7 @@ jobs:
       run: |
         cd genx
         RELEASE_TAG=$(git describe --abbrev=0 --tags)
-        python3 -c "from genx.version import increment_version;increment_version(minor=True, current='$RELEASE_TAG'.lstrip('v'))"
+        python3 -c "from genx.version import increment_version;increment_version(minor=False, current='$RELEASE_TAG'.lstrip('v'))"
         GENX_VERSION=$(python -c "from genx.version import __version__;print('v'+__version__)")
         echo "GENX_VERSION=$GENX_VERSION" >> "$GITHUB_ENV"
     - name: Build html documentation
@@ -61,4 +61,4 @@ jobs:
         file_pattern: 'docs/doc/*'
         commit_user_email: artur.glavic@psi.ch
         commit_author: Artur Glavic <artur.glavic@psi.ch>
-        #tagging_message: ${{ env.GENX_VERSION }}
+        tagging_message: ${{ env.GENX_VERSION }}
