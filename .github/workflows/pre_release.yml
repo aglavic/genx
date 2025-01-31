@@ -16,6 +16,9 @@ on:
           - full_revision
           - only_documentation
 
+env:
+   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
 jobs:
   perform_pre_release:
     runs-on: ubuntu-22.04
