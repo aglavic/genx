@@ -150,14 +150,14 @@ system wide ``sudo pip3 install genx3`` as well as the optional requiremetns and
 
 .. code-block:: bash
 
-    pip3 install --user genx3 numba vtk bumps
+    pip3 install --user genx3 numba vtk bumps pymysql
     genx
 
 Or in a virtual environment / if python default is 3.x:
 
 .. code-block:: bash
 
-    python -m pip install genx3 numba vtk bumps
+    python -m pip install genx3 numba vtk bumps pymysql
     genx
 
 

@@ -1736,6 +1736,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             useful += "Bumps: %s, " % bumps.__version__
         except ImportError:
             missing += "bumps, "
+        try:
+            # noinspection PyUnresolvedReferences
+            import pymysql
+
+            useful += "PyMySQL: %s, " % pymysql.__version__
+        except ImportError:
+            missing += "pymysql, "
 
         info_dilog = wx.adv.AboutDialogInfo()
         info_dilog.SetName("GenX")

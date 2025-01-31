@@ -3,14 +3,14 @@
 <html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Data Loader Plugins &#8212; GenX 3.7.5 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=989f22b4" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=8129e082" />
     
     <script src="../../_static/documentation_options.js?v=7a952085"></script>
-    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="icon" href="../../_static/genx.ico"/>
@@ -311,46 +311,6 @@ that allows the user set import settings for example.</p>
 
 </dd></dl>
 
-<section id="orso-orso-standard-file-data-loader">
-<span id="module-genx.plugins.data_loaders.orso"></span><h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">orso</span></code> ORSO standard file data loader<a class="headerlink" href="#orso-orso-standard-file-data-loader" title="Link to this heading">¶</a></h2>
-<p>Loads the format following the specification of the Open Reflectometry Standards Organization (ORSO).
-See <a class="reference external" href="https://www.reflectometry.org/working_groups/file_formats/">https://www.reflectometry.org/working_groups/file_formats/</a> for more details</p>
-</section>
-<dl class="py class">
-<dt class="sig sig-object py" id="genx.plugins.data_loaders.orso.Plugin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.plugins.data_loaders.orso.</span></span><span class="sig-name descname"><span class="pre">Plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.orso.Plugin" title="Link to this definition">¶</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="genx.plugins.data_loaders.orso.Plugin.CanOpen">
-<span class="sig-name descname"><span class="pre">CanOpen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.orso.Plugin.CanOpen" title="Link to this definition">¶</a></dt>
-<dd><p>Return if the data loader class can open the given file.
-Default implementation just checks if the filename matches the wildcard, if it exists.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="genx.plugins.data_loaders.orso.Plugin.CountDatasets">
-<span class="sig-name descname"><span class="pre">CountDatasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.orso.Plugin.CountDatasets" title="Link to this definition">¶</a></dt>
-<dd><p>Count the number of dataset in a file. Default implementation of
-dataloader allows for only one item.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="genx.plugins.data_loaders.orso.Plugin.LoadCached">
-<span class="sig-name descname"><span class="pre">LoadCached</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.orso.Plugin.LoadCached" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="genx.plugins.data_loaders.orso.Plugin.LoadData">
-<span class="sig-name descname"><span class="pre">LoadData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.plugins.data_loaders.orso.Plugin.LoadData" title="Link to this definition">¶</a></dt>
-<dd><p>Loads the data from filename into the data_item_number.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="genx.plugins.data_loaders.orso.Plugin.wildcard">
-<span class="sig-name descname"><span class="pre">wildcard</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'*.ort;*.orb;*.nxs;*.h5;*.hdf'</span></em><a class="headerlink" href="#genx.plugins.data_loaders.orso.Plugin.wildcard" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <section id="rigaku-rigaku-ascii-file-from-smartlab-ras">
 <span id="module-genx.plugins.data_loaders.rigaku"></span><h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">rigaku</span></code>  Rigaku ASCII file from Smartlab (<a href="#id2"><span class="problematic" id="id3">*</span></a>.ras)<a class="headerlink" href="#rigaku-rigaku-ascii-file-from-smartlab-ras" title="Link to this heading">¶</a></h2>
 <p>Loads the data exported by Rigaku Smartlab.</p>
@@ -623,15 +583,6 @@ that allows the user set import settings for example.</p>
 <li><a class="reference internal" href="#genx.plugins.data_loaders.d17_legacy.SettingsDialog.GetMiscValues"><code class="docutils literal notranslate"><span class="pre">SettingsDialog.GetMiscValues()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#orso-orso-standard-file-data-loader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">orso</span></code> ORSO standard file data loader</a></li>
-<li><a class="reference internal" href="#genx.plugins.data_loaders.orso.Plugin"><code class="docutils literal notranslate"><span class="pre">Plugin</span></code></a><ul>
-<li><a class="reference internal" href="#genx.plugins.data_loaders.orso.Plugin.CanOpen"><code class="docutils literal notranslate"><span class="pre">Plugin.CanOpen()</span></code></a></li>
-<li><a class="reference internal" href="#genx.plugins.data_loaders.orso.Plugin.CountDatasets"><code class="docutils literal notranslate"><span class="pre">Plugin.CountDatasets()</span></code></a></li>
-<li><a class="reference internal" href="#genx.plugins.data_loaders.orso.Plugin.LoadCached"><code class="docutils literal notranslate"><span class="pre">Plugin.LoadCached()</span></code></a></li>
-<li><a class="reference internal" href="#genx.plugins.data_loaders.orso.Plugin.LoadData"><code class="docutils literal notranslate"><span class="pre">Plugin.LoadData()</span></code></a></li>
-<li><a class="reference internal" href="#genx.plugins.data_loaders.orso.Plugin.wildcard"><code class="docutils literal notranslate"><span class="pre">Plugin.wildcard</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#rigaku-rigaku-ascii-file-from-smartlab-ras"><code class="xref py py-mod docutils literal notranslate"><span class="pre">rigaku</span></code>  Rigaku ASCII file from Smartlab (*.ras)</a></li>
 <li><a class="reference internal" href="#genx.plugins.data_loaders.rigaku.Plugin"><code class="docutils literal notranslate"><span class="pre">Plugin</span></code></a><ul>
 <li><a class="reference internal" href="#genx.plugins.data_loaders.rigaku.Plugin.LoadData"><code class="docutils literal notranslate"><span class="pre">Plugin.LoadData()</span></code></a></li>
@@ -701,7 +652,7 @@ that allows the user set import settings for example.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<search id="searchbox" style="display: none" role="search">
+<div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -709,7 +660,7 @@ that allows the user set import settings for example.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</search>
+</div>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -738,7 +689,7 @@ that allows the user set import settings for example.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>
