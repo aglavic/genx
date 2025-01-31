@@ -1,19 +1,21 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>The SLD graph &#8212; GenX 3.7.5 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=8129e082" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script src="../_static/documentation_options.js?v=7a952085"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     
-    <link rel="icon" href="../_static/genx.ico"/>
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Batch Fitting" href="batch_fitting.html" />
@@ -46,12 +48,12 @@
           <div class="body" role="main">
             
   <section id="the-sld-graph">
-<span id="tutorial-sld-display"></span><h1>The SLD graph<a class="headerlink" href="#the-sld-graph" title="Link to this heading">¶</a></h1>
+<span id="tutorial-sld-display"></span><h1>The SLD graph<a class="headerlink" href="#the-sld-graph" title="Permalink to this headline">¶</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">Reflectivity</span></code> and <code class="docutils literal notranslate"><span class="pre">SimpleReflectivity</span></code> plugins add a graph to display the sample profile as height
 from substrate vs. scattering length density (SLD) to the user interface. There are several curves
 when the model is based on more then one physical propserty (real and imaginary as well as magnetic parts).</p>
 <section id="context-menu-options">
-<h2>Context menu options<a class="headerlink" href="#context-menu-options" title="Link to this heading">¶</a></h2>
+<h2>Context menu options<a class="headerlink" href="#context-menu-options" title="Permalink to this headline">¶</a></h2>
 <p>For the highest degree of flexibility, newer models are build to generate one set SLD profiles for each dataset
 as there might be changes to the model between each dataset simulation.
 An example would be a sample that changes thickness and density between reflectivity scans or a change in magnetization
@@ -61,21 +63,21 @@ The context menu (right click on graph) therefore provides additional options to
 <blockquote>
 <div><ul class="simple">
 <li><dl class="field-list simple">
-<dt class="field-odd">Legend Outside<span class="colon">:</span></dt>
+<dt class="field-odd">Legend Outside</dt>
 <dd class="field-odd"><p>Reduces the plot area and places the line legend on the right of the graph instead of
 in the top-right corner.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">Color from Data<span class="colon">:</span></dt>
+<dt class="field-odd">Color from Data</dt>
 <dd class="field-odd"><p>Uses the simulation color of each dataset to define SLD graph colors. The possible items
 that make up each simulation are derived by changing the color saturation and value (HSV).</p>
 </dd>
 </dl>
 </li>
 <li><dl class="field-list simple">
-<dt class="field-odd">Single Sample Mode<span class="colon">:</span></dt>
+<dt class="field-odd">Single Sample Mode</dt>
 <dd class="field-odd"><p>For simulations that do not change the sample model between datasets this can be activated
 to display just the SLD profile of the first simulation.</p>
 </dd>
@@ -85,7 +87,7 @@ to display just the SLD profile of the first simulation.</p>
 </div></blockquote>
 </section>
 <section id="sld-uncertainty">
-<h2>SLD uncertainty<a class="headerlink" href="#sld-uncertainty" title="Link to this heading">¶</a></h2>
+<h2>SLD uncertainty<a class="headerlink" href="#sld-uncertainty" title="Permalink to this headline">¶</a></h2>
 <p>With the <code class="docutils literal notranslate"><span class="pre">Reflectivity</span></code> plugin the SLD profile can also be used to visualize the parameter uncertainties from
 a fit. While this results in an intuitive display of real-space geometry one has to keep in mind that
 reflectometry does not measure the geometry directly but correlations between interfaces and the results are thus
@@ -106,7 +108,7 @@ a reference surface of -1 (left) and 0 (right):</p>
 <a class="reference internal image-reference" href="../_images/sld_uncertainty_bottom.png"><img alt="../_images/sld_uncertainty_bottom.png" src="../_images/sld_uncertainty_bottom.png" style="width: 48%;" /></a>
 </section>
 <section id="custom-filter">
-<h2>Custom filter<a class="headerlink" href="#custom-filter" title="Link to this heading">¶</a></h2>
+<h2>Custom filter<a class="headerlink" href="#custom-filter" title="Permalink to this headline">¶</a></h2>
 <p>If the buildin options to display the profiles do not fit your needs you can modify the displayed
 datasets and components within the model script.
 The recent reflectivity model <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function will start like this:</p>
@@ -161,9 +163,8 @@ simulate the data again.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">The SLD graph</a><ul>
 <li><a class="reference internal" href="#context-menu-options">Context menu options</a></li>
 <li><a class="reference internal" href="#sld-uncertainty">SLD uncertainty</a></li>
@@ -172,17 +173,12 @@ simulate the data again.</p>
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="slicing.html"
-                          title="previous chapter">Model analytical functions by slicing</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="batch_fitting.html"
-                          title="next chapter">Batch Fitting</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="slicing.html"
+                        title="previous chapter">Model analytical functions by slicing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="batch_fitting.html"
+                        title="next chapter">Batch Fitting</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -199,7 +195,7 @@ simulate the data again.</p>
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -225,8 +221,8 @@ simulate the data again.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>

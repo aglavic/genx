@@ -1,19 +1,21 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Writing a custom model &#8212; GenX 3.7.5 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=8129e082" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script src="../_static/documentation_options.js?v=7a952085"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     
-    <link rel="icon" href="../_static/genx.ico"/>
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Simple Reflectivity Model (XRR/NR)" href="simple_reflectivity.html" />
@@ -46,7 +48,7 @@
           <div class="body" role="main">
             
   <section id="writing-a-custom-model">
-<span id="tutorial-writing-model"></span><h1>Writing a custom model<a class="headerlink" href="#writing-a-custom-model" title="Link to this heading">¶</a></h1>
+<span id="tutorial-writing-model"></span><h1>Writing a custom model<a class="headerlink" href="#writing-a-custom-model" title="Permalink to this headline">¶</a></h1>
 <p>Writing a model is quite easy in GenX if you are familiar with using the Python language.
 There is a couple of things one needs to keep in mind in order to successfully build such a model,
 which will be covered in this tutorial.</p>
@@ -61,7 +63,7 @@ Most models that are provided by GenX include automatic generation of the releva
 which are called <em>setParameter</em> for a model attribute called <em>parameter</em>.</p>
 </div>
 <section id="programming-python">
-<h2>Programming Python<a class="headerlink" href="#programming-python" title="Link to this heading">¶</a></h2>
+<h2>Programming Python<a class="headerlink" href="#programming-python" title="Permalink to this headline">¶</a></h2>
 <p>Since writing a model actually involves writing a script in Python it is good to have some basic knowledge of the syntax.
 However, if you have some basic knowledge about programming it should be fairly easy to just look at the examples
 and write your own models without having to learn Python specifically.
@@ -79,7 +81,7 @@ with numerical computations. There is also a
 <a class="reference external" href="https://www.enthought.com/wp-content/uploads/Enthought-MATLAB-to-Python-White-Paper.pdf">migration guide for those who are familiar with MatLab</a>.</p>
 </section>
 <section id="the-data-class">
-<h2>The Data class<a class="headerlink" href="#the-data-class" title="Link to this heading">¶</a></h2>
+<h2>The Data class<a class="headerlink" href="#the-data-class" title="Permalink to this headline">¶</a></h2>
 <p>In order to write the Sim class it is necessary to know the structure of the class <code class="docutils literal notranslate"><span class="pre">Data</span></code> which is taken as a
 parameter. The variables which could be useful in the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function are:</p>
 <ul class="simple">
@@ -94,7 +96,7 @@ parameter. The variables which could be useful in the <code class="docutils lite
 </ul>
 </section>
 <section id="simple-example">
-<h2>Simple example<a class="headerlink" href="#simple-example" title="Link to this heading">¶</a></h2>
+<h2>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this headline">¶</a></h2>
 <p>Knowing what the Data class contains we will start with a simple example, making a model that fits one
 Gaussian to the first data set. The free parameters of the Gaussian are; the center of the peak, Xc, the peak width,
 W, and the amplitude of the peak, A. Writing a model for it would produce a code as shown below. Note that a
@@ -138,7 +140,7 @@ by <code class="docutils literal notranslate"><span class="pre">MyVar</span></co
 </div>
 </section>
 <section id="making-a-class">
-<h2>Making a class<a class="headerlink" href="#making-a-class" title="Link to this heading">¶</a></h2>
+<h2>Making a class<a class="headerlink" href="#making-a-class" title="Permalink to this headline">¶</a></h2>
 <p>The code above is usually sufficient for prototyping and simple problems. For more complex models it is
 recommended to write a model library (python module). This is what has been done for the simulation of x-ray reflectivity data.
 Instead of writing a lot of functions for each model, a class, or several, can be written to make the model
@@ -192,7 +194,7 @@ after running the first simulation.</p>
 For pre-defined models these are set automatically but can always be overwritten by the user in the script.</p>
 </section>
 <section id="multiple-gaussians">
-<h2>Multiple Gaussians<a class="headerlink" href="#multiple-gaussians" title="Link to this heading">¶</a></h2>
+<h2>Multiple Gaussians<a class="headerlink" href="#multiple-gaussians" title="Permalink to this headline">¶</a></h2>
 <p>Making the model based on a class makes it easier to extend. For example if two peaks should be fitted
 the class does not have to be changed. Instead an additional object of the class <code class="docutils literal notranslate"><span class="pre">Gauss</span></code>, for example called
 <code class="docutils literal notranslate"><span class="pre">Peak2</span></code>, can be created and the two contributions are then added in the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function. The end of the script
@@ -212,7 +214,7 @@ above would then be modified to</p>
 be <code class="docutils literal notranslate"><span class="pre">Peak2.setW</span></code>, <code class="docutils literal notranslate"><span class="pre">Peak2.setXc</span></code> and <code class="docutils literal notranslate"><span class="pre">Peak2.setA</span></code>.</p>
 </section>
 <section id="parameter-coupling">
-<h2>Parameter coupling<a class="headerlink" href="#parameter-coupling" title="Link to this heading">¶</a></h2>
+<h2>Parameter coupling<a class="headerlink" href="#parameter-coupling" title="Permalink to this headline">¶</a></h2>
 <p>When the base class is created it can be extended with more problem oriented constraints by using
 functions as in the first example. For example, in some cases it might be known that the width of the two
 Gaussians should be the same. This can be solved by defining a new variable</p>
@@ -246,9 +248,8 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Writing a custom model</a><ul>
 <li><a class="reference internal" href="#programming-python">Programming Python</a></li>
 <li><a class="reference internal" href="#the-data-class">The Data class</a></li>
@@ -260,17 +261,12 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="diffev.html"
-                          title="previous chapter">Fitting with Differential Evolution</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="simple_reflectivity.html"
-                          title="next chapter">Simple Reflectivity Model (XRR/NR)</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="diffev.html"
+                        title="previous chapter">Fitting with Differential Evolution</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="simple_reflectivity.html"
+                        title="next chapter">Simple Reflectivity Model (XRR/NR)</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -287,7 +283,7 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -313,8 +309,8 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>

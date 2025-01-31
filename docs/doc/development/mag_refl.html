@@ -1,19 +1,21 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>A model for magnetic reflectivity &#8212; GenX 3.7.5 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=8129e082" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script src="../_static/documentation_options.js?v=7a952085"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     
-    <link rel="icon" href="../_static/genx.ico"/>
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="GenX Python Package" href="genx_package.html" />
@@ -46,17 +48,17 @@
           <div class="body" role="main">
             
   <section id="a-model-for-magnetic-reflectivity">
-<span id="model-mag-refl"></span><h1>A model for magnetic reflectivity<a class="headerlink" href="#a-model-for-magnetic-reflectivity" title="Link to this heading">¶</a></h1>
+<span id="model-mag-refl"></span><h1>A model for magnetic reflectivity<a class="headerlink" href="#a-model-for-magnetic-reflectivity" title="Permalink to this headline">¶</a></h1>
 <p>The model described here is  work in progress and this is only intended as a first draft of the model.
 It is not intended for general use.</p>
 <section id="changes-necessary">
-<h2>Changes necessary<a class="headerlink" href="#changes-necessary" title="Link to this heading">¶</a></h2>
+<h2>Changes necessary<a class="headerlink" href="#changes-necessary" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Implement faster calculation of multilayers - make use of repetition unit</p></li>
 </ul>
 </section>
 <section id="changes-done">
-<h2>Changes done<a class="headerlink" href="#changes-done" title="Link to this heading">¶</a></h2>
+<h2>Changes done<a class="headerlink" href="#changes-done" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Perhaps the angle theta_m should be relative the quantization axis of the probe.
 That is as described above for the photon case but an offset of 90 deg for the neutron case.
@@ -78,9 +80,9 @@ faster than the previous python implementation.</p></li>
 </ul>
 </section>
 <section id="layer-parameters">
-<h2>Layer Parameters<a class="headerlink" href="#layer-parameters" title="Link to this heading">¶</a></h2>
+<h2>Layer Parameters<a class="headerlink" href="#layer-parameters" title="Permalink to this headline">¶</a></h2>
 <section id="optical-constants">
-<h3>Optical constants<a class="headerlink" href="#optical-constants" title="Link to this heading">¶</a></h3>
+<h3>Optical constants<a class="headerlink" href="#optical-constants" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>f</dt><dd><p>The ordinary (tabualted) scattering length. For example <code class="docutils literal notranslate"><span class="pre">fp.Fe</span></code> for pure Fe, <code class="docutils literal notranslate"><span class="pre">0.5*fp.Fe</span> <span class="pre">+</span> <span class="pre">fp.O*0.5</span></code> for
 FeO (this should be in atomic percent).</p>
@@ -100,7 +102,7 @@ This is the opposite as to the definition by Stephanov and Shina, thus fr = -(F1
 </dl>
 </section>
 <section id="densities">
-<h3>Densities<a class="headerlink" href="#densities" title="Link to this heading">¶</a></h3>
+<h3>Densities<a class="headerlink" href="#densities" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>dens</dt><dd><p>The atomic density of the material in questions in units of atoms/AA3. The density of Fe is calculated as 2/2.8663</p>
 </dd>
@@ -112,7 +114,7 @@ it would correspond to 0.5.</p>
 </dl>
 </section>
 <section id="non-magnetic-layer-parameters">
-<h3>Non-magnetic layer parameters<a class="headerlink" href="#non-magnetic-layer-parameters" title="Link to this heading">¶</a></h3>
+<h3>Non-magnetic layer parameters<a class="headerlink" href="#non-magnetic-layer-parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>d</dt><dd><p>The thickness of the layer.</p>
 </dd>
@@ -121,7 +123,7 @@ it would correspond to 0.5.</p>
 </dl>
 </section>
 <section id="magnetic-parameters">
-<h3>Magnetic parameters<a class="headerlink" href="#magnetic-parameters" title="Link to this heading">¶</a></h3>
+<h3>Magnetic parameters<a class="headerlink" href="#magnetic-parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>sigma_m</dt><dd><p>The magnitude of the magnetic roughness.</p>
 </dd>
@@ -149,12 +151,12 @@ in-plane magnetized sample and an angle of 90 deg means an perpendicular magneti
 </section>
 </section>
 <section id="stack-parameters">
-<h2>Stack Parameters<a class="headerlink" href="#stack-parameters" title="Link to this heading">¶</a></h2>
+<h2>Stack Parameters<a class="headerlink" href="#stack-parameters" title="Permalink to this headline">¶</a></h2>
 </section>
 <section id="sample-parameters">
-<h2>Sample Parameters<a class="headerlink" href="#sample-parameters" title="Link to this heading">¶</a></h2>
+<h2>Sample Parameters<a class="headerlink" href="#sample-parameters" title="Permalink to this headline">¶</a></h2>
 <section id="control-flags">
-<h3>Control flags<a class="headerlink" href="#control-flags" title="Link to this heading">¶</a></h3>
+<h3>Control flags<a class="headerlink" href="#control-flags" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>slicing</dt><dd><p>If yes the model will use roughness values and slice the sld profile up as given by the layer parameters.
 Otherwise the layers will only be boxes compress: If yes and slicing also is yes the model will merge layers
@@ -163,7 +165,7 @@ with similar optical densities.</p>
 </dl>
 </section>
 <section id="slicing-parameters">
-<h3>Slicing Parameters<a class="headerlink" href="#slicing-parameters" title="Link to this heading">¶</a></h3>
+<h3>Slicing Parameters<a class="headerlink" href="#slicing-parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>slice_depth</dt><dd><p>This is the size of each layer that the model slices up the model into.</p>
 </dd>
@@ -176,7 +178,7 @@ with similar optical densities.</p>
 </dl>
 </section>
 <section id="compression-parameters">
-<h3>Compression parameters<a class="headerlink" href="#compression-parameters" title="Link to this heading">¶</a></h3>
+<h3>Compression parameters<a class="headerlink" href="#compression-parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt>dsld_max</dt><dd><p>Steps smaller than this parameter will be merged into thicker layers. This applies to the diagonal parts of
 the susceptibility matrix. The units are electrons.</p>
@@ -200,9 +202,8 @@ the susceptibility matrix. The units are electrons.</p>
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">A model for magnetic reflectivity</a><ul>
 <li><a class="reference internal" href="#changes-necessary">Changes necessary</a></li>
 <li><a class="reference internal" href="#changes-done">Changes done</a></li>
@@ -224,17 +225,12 @@ the susceptibility matrix. The units are electrons.</p>
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="packaging.html"
-                          title="previous chapter">How to package GenX</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="genx_package.html"
-                          title="next chapter">GenX Python Package</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="packaging.html"
+                        title="previous chapter">How to package GenX</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="genx_package.html"
+                        title="next chapter">GenX Python Package</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -251,7 +247,7 @@ the susceptibility matrix. The units are electrons.</p>
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -277,8 +273,8 @@ the susceptibility matrix. The units are electrons.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>

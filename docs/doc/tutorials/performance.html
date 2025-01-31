@@ -1,19 +1,21 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Optimizer and model performance &#8212; GenX 3.7.5 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=8129e082" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script src="../_static/documentation_options.js?v=7a952085"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     
-    <link rel="icon" href="../_static/genx.ico"/>
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Using GenX from the command line (with mpi)" href="mpi.html" />
@@ -46,13 +48,13 @@
           <div class="body" role="main">
             
   <section id="optimizer-and-model-performance">
-<span id="tutorial-performance"></span><h1>Optimizer and model performance<a class="headerlink" href="#optimizer-and-model-performance" title="Link to this heading">¶</a></h1>
+<span id="tutorial-performance"></span><h1>Optimizer and model performance<a class="headerlink" href="#optimizer-and-model-performance" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This page is still under development. Questions and comments are welcome to improve usability.</p>
 </div>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>Computing performance is a complex topic and in a modeling set like GenX,
 where the user has a large amount of flexibilit within the model definition,
 on generic one-size-fits-all solution is possible.</p>
@@ -62,9 +64,9 @@ options in the optimizer settings you can use to tune the calculation to your
 sepcific model.</p>
 </section>
 <section id="main-factors-determining-performance">
-<h2>Main factors determining performance<a class="headerlink" href="#main-factors-determining-performance" title="Link to this heading">¶</a></h2>
+<h2>Main factors determining performance<a class="headerlink" href="#main-factors-determining-performance" title="Permalink to this headline">¶</a></h2>
 <section id="single-model-execution">
-<h3>Single model execution<a class="headerlink" href="#single-model-execution" title="Link to this heading">¶</a></h3>
+<h3>Single model execution<a class="headerlink" href="#single-model-execution" title="Permalink to this headline">¶</a></h3>
 <p>When simulating a single model, no generic solution for parallel processing can be applied.
 Especially in Python with the so-called “Global Interpreter Lock” (GIL) there is no shared
 state between threads running on different cores.</p>
@@ -87,7 +89,7 @@ Because of several caveats and the need to re-compile the JIT code every time Ge
 is started I would not recommand this in most cases, at the moment.</p>
 </section>
 <section id="fitting-the-model">
-<h3>Fitting the model<a class="headerlink" href="#fitting-the-model" title="Link to this heading">¶</a></h3>
+<h3>Fitting the model<a class="headerlink" href="#fitting-the-model" title="Permalink to this headline">¶</a></h3>
 <p>One advantage of the Differential Evolution algorithm is,
 that a large number of parameter sets are being calculated for every
 generation without any interdependance. This allows a relatively simple
@@ -113,7 +115,7 @@ as the population size.</p>
 </section>
 </section>
 <section id="tips-to-optimize-your-model-performance">
-<h2>Tips to optimize your model performance<a class="headerlink" href="#tips-to-optimize-your-model-performance" title="Link to this heading">¶</a></h2>
+<h2>Tips to optimize your model performance<a class="headerlink" href="#tips-to-optimize-your-model-performance" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p>Always use the “Speed” indication in the status bar at the bottom of the window. It shows, how many
@@ -123,7 +125,7 @@ function evaluations per second are being calculated during the fit</p></li>
 </ul>
 </div></blockquote>
 <section id="simple-models">
-<h3>Simple models<a class="headerlink" href="#simple-models" title="Link to this heading">¶</a></h3>
+<h3>Simple models<a class="headerlink" href="#simple-models" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li><p>Models with &lt;20 layers and a few 100 datapoints</p></li>
@@ -135,7 +137,7 @@ function evaluations per second are being calculated during the fit</p></li>
 </div></blockquote>
 </section>
 <section id="complex-models">
-<h3>Complex models<a class="headerlink" href="#complex-models" title="Link to this heading">¶</a></h3>
+<h3>Complex models<a class="headerlink" href="#complex-models" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li><p>These can have 100 or more layers and resolution convolution that leads to &gt;1000 datapoints</p></li>
@@ -160,9 +162,8 @@ to 1.5x to 2.0x improvement, even on a system with powerful 16-core CPU.</p></li
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Optimizer and model performance</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#main-factors-determining-performance">Main factors determining performance</a><ul>
@@ -179,17 +180,12 @@ to 1.5x to 2.0x improvement, even on a system with powerful 16-core CPU.</p></li
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="error_statistics.html"
-                          title="previous chapter">Error Statistics from bumps library</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="mpi.html"
-                          title="next chapter">Using GenX from the command line (with mpi)</a></p>
-  </div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="error_statistics.html"
+                        title="previous chapter">Error Statistics from bumps library</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="mpi.html"
+                        title="next chapter">Using GenX from the command line (with mpi)</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -206,7 +202,7 @@ to 1.5x to 2.0x improvement, even on a system with powerful 16-core CPU.</p></li
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -232,8 +228,8 @@ to 1.5x to 2.0x improvement, even on a system with powerful 16-core CPU.</p></li
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>

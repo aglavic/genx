@@ -1,19 +1,21 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Welcome to GenX’s documentation! &#8212; GenX 3.7.5 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=8129e082" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script src="_static/documentation_options.js?v=7a952085"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     
-    <link rel="icon" href="_static/genx.ico"/>
+    <link rel="shortcut icon" href="_static/genx.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installation" href="install.html" /> 
@@ -41,7 +43,7 @@
           <div class="body" role="main">
             
   <section id="welcome-to-genx-s-documentation">
-<h1>Welcome to GenX’s documentation!<a class="headerlink" href="#welcome-to-genx-s-documentation" title="Link to this heading">¶</a></h1>
+<h1>Welcome to GenX’s documentation!<a class="headerlink" href="#welcome-to-genx-s-documentation" title="Permalink to this headline">¶</a></h1>
 <p>GenX is a tool to refine x-ray, neutron reflectivity as well as surface x-ray diffraction data written in Python.
 The refinement is conducted with an optimization algorithm called differential evolution which is very robust.
 The reflectivity model in GenX is build using a graphical plugin but can be highly customized in a script.</p>
@@ -61,7 +63,7 @@ might exist. Please report these via the issue tracker.</p>
 just jump to <a class="reference internal" href="tutorials/simple_reflectivity.html#tutorial-simple-reflectivity"><span class="std std-ref">Simple Reflectivity Model (XRR/NR)</span></a>, <a class="reference internal" href="tutorials/neutron_fit.html#tutorial-neutron-fit"><span class="std std-ref">Neutron reflectivity video tutorials</span></a> or load one of the
 <a class="reference external" href="https://github.com/aglavic/genx/tree/master/genx/genx/examples">example GenX models</a>.</p>
 <section id="contents">
-<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">¶</a></h2>
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
@@ -139,119 +141,10 @@ just jump to <a class="reference internal" href="tutorials/simple_reflectivity.h
 <li class="toctree-l1"><a class="reference internal" href="development.html">Development documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="development/models.html">GenX Reflectivity Models</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations">Library for combined x-ray and neutrons simulations.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Buffer"><code class="docutils literal notranslate"><span class="pre">Buffer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Coords"><code class="docutils literal notranslate"><span class="pre">Coords</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.EnergySpecular"><code class="docutils literal notranslate"><span class="pre">EnergySpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.FootType"><code class="docutils literal notranslate"><span class="pre">FootType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Instrument"><code class="docutils literal notranslate"><span class="pre">Instrument</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.LayerParameters"><code class="docutils literal notranslate"><span class="pre">LayerParameters</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.OffSpecular"><code class="docutils literal notranslate"><span class="pre">OffSpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.PolSpecular"><code class="docutils literal notranslate"><span class="pre">PolSpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Polarization"><code class="docutils literal notranslate"><span class="pre">Polarization</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Probe"><code class="docutils literal notranslate"><span class="pre">Probe</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.ResType"><code class="docutils literal notranslate"><span class="pre">ResType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.SLD_calculations"><code class="docutils literal notranslate"><span class="pre">SLD_calculations()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Sample"><code class="docutils literal notranslate"><span class="pre">Sample</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Specular"><code class="docutils literal notranslate"><span class="pre">Specular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.SpecularField"><code class="docutils literal notranslate"><span class="pre">SpecularField()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.TestSpecNX"><code class="docutils literal notranslate"><span class="pre">TestSpecNX</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.footprintcorr"><code class="docutils literal notranslate"><span class="pre">footprintcorr()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.neutron_sld"><code class="docutils literal notranslate"><span class="pre">neutron_sld()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.q_limit"><code class="docutils literal notranslate"><span class="pre">q_limit</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.resolution_init"><code class="docutils literal notranslate"><span class="pre">resolution_init()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.resolutioncorr"><code class="docutils literal notranslate"><span class="pre">resolutioncorr()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.specular_calcs"><code class="docutils literal notranslate"><span class="pre">specular_calcs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_nx.standard_xray"><code class="docutils literal notranslate"><span class="pre">standard_xray()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#module-genx.models.soft_nx">Library for combined x-ray and neutrons simulations.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.Buffer"><code class="docutils literal notranslate"><span class="pre">Buffer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.EnergySpecular"><code class="docutils literal notranslate"><span class="pre">EnergySpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.LayerParameters"><code class="docutils literal notranslate"><span class="pre">LayerParameters</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.OffSpecular"><code class="docutils literal notranslate"><span class="pre">OffSpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.SLD_calculations"><code class="docutils literal notranslate"><span class="pre">SLD_calculations()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.Sample"><code class="docutils literal notranslate"><span class="pre">Sample</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.Specular"><code class="docutils literal notranslate"><span class="pre">Specular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.TestSoftNX"><code class="docutils literal notranslate"><span class="pre">TestSoftNX</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.soft_nx.standard_xray"><code class="docutils literal notranslate"><span class="pre">standard_xray()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="development/models.html#id1">Library for combined x-ray and neutrons simulations.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations-with-adaptive-layer-segmentation">Library for combined x-ray and neutrons simulations with adaptive layer segmentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.Buffer"><code class="docutils literal notranslate"><span class="pre">Buffer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.Instrument"><code class="docutils literal notranslate"><span class="pre">Instrument</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.PolSpecular"><code class="docutils literal notranslate"><span class="pre">PolSpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.RoughType"><code class="docutils literal notranslate"><span class="pre">RoughType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.SLD_calculations"><code class="docutils literal notranslate"><span class="pre">SLD_calculations()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.Sample"><code class="docutils literal notranslate"><span class="pre">Sample</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.Specular"><code class="docutils literal notranslate"><span class="pre">Specular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.TestSpecAdaptive"><code class="docutils literal notranslate"><span class="pre">TestSpecAdaptive</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.Zeeman"><code class="docutils literal notranslate"><span class="pre">Zeeman</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.calculate_segmentation"><code class="docutils literal notranslate"><span class="pre">calculate_segmentation()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.next_adaptive_segment"><code class="docutils literal notranslate"><span class="pre">next_adaptive_segment()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.resolve_parameters_by_element"><code class="docutils literal notranslate"><span class="pre">resolve_parameters_by_element()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.specular_calc_zeemann"><code class="docutils literal notranslate"><span class="pre">specular_calc_zeemann()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_adaptive.standard_xray"><code class="docutils literal notranslate"><span class="pre">standard_xray()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-combined-x-ray-and-neutrons-simulations-for-inhomogeneous-samples">Library for combined x-ray and neutrons simulations for inhomogeneous samples.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.InhomType"><code class="docutils literal notranslate"><span class="pre">InhomType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.LayerParameters"><code class="docutils literal notranslate"><span class="pre">LayerParameters</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.PolSpecular"><code class="docutils literal notranslate"><span class="pre">PolSpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.Sample"><code class="docutils literal notranslate"><span class="pre">Sample</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.SigmaGradientType"><code class="docutils literal notranslate"><span class="pre">SigmaGradientType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.Specular"><code class="docutils literal notranslate"><span class="pre">Specular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.TestSpecInhom"><code class="docutils literal notranslate"><span class="pre">TestSpecInhom</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.spec_inhom.standard_xray"><code class="docutils literal notranslate"><span class="pre">standard_xray()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-specular-and-off-specular-x-ray-reflectivity">Library for specular and off-specular x-ray reflectivity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.Coords"><code class="docutils literal notranslate"><span class="pre">Coords</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.FootType"><code class="docutils literal notranslate"><span class="pre">FootType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.Instrument"><code class="docutils literal notranslate"><span class="pre">Instrument</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.LayerParameters"><code class="docutils literal notranslate"><span class="pre">LayerParameters</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.OffSpecularMingInterdiff"><code class="docutils literal notranslate"><span class="pre">OffSpecularMingInterdiff()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.ResType"><code class="docutils literal notranslate"><span class="pre">ResType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.SLD_calculations"><code class="docutils literal notranslate"><span class="pre">SLD_calculations()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.Sample"><code class="docutils literal notranslate"><span class="pre">Sample</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.Specular"><code class="docutils literal notranslate"><span class="pre">Specular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.TestInterdiff"><code class="docutils literal notranslate"><span class="pre">TestInterdiff</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.q_limit"><code class="docutils literal notranslate"><span class="pre">q_limit</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.interdiff.standard_xray"><code class="docutils literal notranslate"><span class="pre">standard_xray()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="development/models.html#library-for-specular-magnetic-x-ray-and-neutron-reflectivity">Library for specular magnetic x-ray and neutron reflectivity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.Coords"><code class="docutils literal notranslate"><span class="pre">Coords</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.EnergySpecular"><code class="docutils literal notranslate"><span class="pre">EnergySpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.EnergySpecularField"><code class="docutils literal notranslate"><span class="pre">EnergySpecularField()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.FootType"><code class="docutils literal notranslate"><span class="pre">FootType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.Instrument"><code class="docutils literal notranslate"><span class="pre">Instrument</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.LayerParameters"><code class="docutils literal notranslate"><span class="pre">LayerParameters</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.NBuffer"><code class="docutils literal notranslate"><span class="pre">NBuffer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.NeutronPol"><code class="docutils literal notranslate"><span class="pre">NeutronPol</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.OffSpecular"><code class="docutils literal notranslate"><span class="pre">OffSpecular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.ProbeTheory"><code class="docutils literal notranslate"><span class="pre">ProbeTheory</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.ResType"><code class="docutils literal notranslate"><span class="pre">ResType</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.SLD_calculations"><code class="docutils literal notranslate"><span class="pre">SLD_calculations()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.Sample"><code class="docutils literal notranslate"><span class="pre">Sample</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.Specular"><code class="docutils literal notranslate"><span class="pre">Specular()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.SpecularElectricField"><code class="docutils literal notranslate"><span class="pre">SpecularElectricField()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.TestSpecNX"><code class="docutils literal notranslate"><span class="pre">TestSpecNX</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.XBuffer"><code class="docutils literal notranslate"><span class="pre">XBuffer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.XRayPol"><code class="docutils literal notranslate"><span class="pre">XRayPol</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.analytical_reflectivity"><code class="docutils literal notranslate"><span class="pre">analytical_reflectivity()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.compose_sld"><code class="docutils literal notranslate"><span class="pre">compose_sld()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.compose_sld_anal"><code class="docutils literal notranslate"><span class="pre">compose_sld_anal()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.convolute_reflectivity"><code class="docutils literal notranslate"><span class="pre">convolute_reflectivity()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.correct_reflectivity"><code class="docutils literal notranslate"><span class="pre">correct_reflectivity()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.extract_anal_iso_pars"><code class="docutils literal notranslate"><span class="pre">extract_anal_iso_pars()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.footprint_correction"><code class="docutils literal notranslate"><span class="pre">footprint_correction()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.neturon_sld"><code class="docutils literal notranslate"><span class="pre">neturon_sld()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.reflectivity_xmag"><code class="docutils literal notranslate"><span class="pre">reflectivity_xmag()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.slicing_reflectivity"><code class="docutils literal notranslate"><span class="pre">slicing_reflectivity()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.standard_xray"><code class="docutils literal notranslate"><span class="pre">standard_xray()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="development/models.html#genx.models.mag_refl.theta_limit"><code class="docutils literal notranslate"><span class="pre">theta_limit</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="development/data.html">Data classes</a><ul>
@@ -303,21 +196,17 @@ just jump to <a class="reference internal" href="tutorials/simple_reflectivity.h
             <p class="logo"><a href="#">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
-  <div>
-    <h3><a href="#">Table of Contents</a></h3>
-    <ul>
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
 <li><a class="reference internal" href="#">Welcome to GenX’s documentation!</a><ul>
 <li><a class="reference internal" href="#contents">Contents</a></li>
 </ul>
 </li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="install.html"
-                          title="next chapter">Installation</a></p>
-  </div>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installation</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -334,7 +223,7 @@ just jump to <a class="reference internal" href="tutorials/simple_reflectivity.h
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -356,8 +245,8 @@ just jump to <a class="reference internal" href="tutorials/simple_reflectivity.h
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>
