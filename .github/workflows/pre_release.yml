@@ -27,6 +27,7 @@ jobs:
       with:
         fetch-depth: 0
         fetch-tags: true
+        token: ${{ secrets.PAT_TOKEN }}
     - name: Install dependencies
       run: |
         sudo apt update
