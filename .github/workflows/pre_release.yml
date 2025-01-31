@@ -36,7 +36,7 @@ jobs:
         cd genx
         RELEASE_TAG=$(git describe --abbrev=0 --tags)
         python3 -c "from genx.version import increment_version;increment_version(minor=True, current='$RELEASE_TAG'.lstrip('v'))"
-        GENX_VERSION=$(python -c "from genx.version import __version__;print("v"+__version__)")
+        GENX_VERSION=$(python -c "from genx.version import __version__;print('v'+__version__)")
         echo "GENX_VERSION=$GENX_VERSION" >> "$GITHUB_ENV"
     - name: Increment version full
       if: ${{ (github.event.inputs.action == 'full_revision') }}
@@ -44,7 +44,7 @@ jobs:
         cd genx
         RELEASE_TAG=$(git describe --abbrev=0 --tags)
         python3 -c "from genx.version import increment_version;increment_version(minor=True, current='$RELEASE_TAG'.lstrip('v'))"
-        GENX_VERSION=$(python -c "from genx.version import __version__;print("v"+__version__)")
+        GENX_VERSION=$(python -c "from genx.version import __version__;print('v'+__version__)")
         echo "GENX_VERSION=$GENX_VERSION" >> "$GITHUB_ENV"
     - name: Build html documentation
       run: |
