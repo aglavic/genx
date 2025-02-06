@@ -12,6 +12,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.6
+=============
+ * Add support for Rigaku .resx format in data loader. 
+ * Create build for documentation to github.
+ * Add github issue tracker to replace the bug-reporting in SourceForge.
+
 Changes 3.7.5
 =============
  * Update the windows build environment
