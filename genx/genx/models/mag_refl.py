@@ -19,7 +19,7 @@ Classes
 """
 
 from dataclasses import dataclass, field, fields
-from typing import List
+from typing import List, Union
 
 from .lib import ables as ables
 from .lib import edm_slicing as edm
@@ -30,6 +30,7 @@ from .lib import xrmr
 from .lib.base import AltStrEnum
 from .lib.instrument import *
 from .lib.physical_constants import AA_to_eV, muB_to_SL, r_e
+from .lib.refl_base import ReflFunction
 from .lib.testing import ModelTestCase
 
 # Preamble to define the parameters needed for the models outlined below:
@@ -218,7 +219,7 @@ class Layer(refl.ReflBase):
     sigma: float = 0.0
 
     f: complex = 1e-20j
-    fr: complex = 0j
+    fr: Union[complex, ReflFunction] = 0j
     fm1: complex = 0j
     fm2: complex = 0j
     resdens: float = 1.0

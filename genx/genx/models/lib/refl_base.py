@@ -130,15 +130,26 @@ class SampleBase(ReflBase):
 
 # TODO: Leftovers from old style models, needs refactoring
 class ReflFunction:
-    def __init__(self, function, validation_args, validation_kwargs, id=None):
+    def __init__(self, function, validation_args=None, validation_kwargs=None, id=None):
         """Creates the Refl Function given function. The arguments validation_args and
         validation_kwargs will be used to the validate the returned type of the function by passing
         them to function. The variable id should be a unique string to identify the type ReflFunction.
         """
+        if validation_args is None and validation_kwargs is None:
+            if hasattr(function, "__func__"):
+                return
+            else:
+                raise ValueError("ReflFunction must have validation_args and validation_kwargs arguments")
         self.__func__ = function
         self.validation_args = validation_args
         self.validation_kwargs = validation_kwargs
         self.id = id
+
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], ReflFunction):
+            return args[0]
+        else:
+            return super().__new__(cls)
 
     def __call__(self, *args, **kwargs):
         return self.__func__(*args, **kwargs)

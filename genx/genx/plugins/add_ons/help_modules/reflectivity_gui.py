@@ -2,7 +2,7 @@
 GUI support classes for the Reflectivity plug-in.
 """
 
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Union
 
 import wx.html
 
@@ -228,7 +228,18 @@ class ReflClassEditor:
             if not states[name]:
                 # only update parameters in the script that are not set in the grid
                 orig_type = value_info.type
-                if orig_type is str or issubclass(orig_type, AltStrEnum):
+                if getattr(orig_type, "__origin__", None) is Union:
+                    e_value = self.eval_func(vals[name])
+                    success = False
+                    for subtype in orig_type.__args__:
+                        try:
+                            setattr(self.instance, name, subtype(e_value))
+                        except (ValueError, TypeError):
+                            continue
+                        else:
+                            self.instance._ca[name] = str(vals[name])
+                    return
+                elif orig_type is str or issubclass(orig_type, AltStrEnum):
                     e_value = vals[name]
                     self.instance._ca[name] = repr(vals[name])
                 else:
