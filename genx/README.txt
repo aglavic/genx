@@ -12,6 +12,10 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.8
+=============
+ * Fix version file not being commited into repository after update
+
 Changes 3.7.7
 =============
  * Fix the usage of fd.{El} as argument to Layer.fr for mag_refl model.

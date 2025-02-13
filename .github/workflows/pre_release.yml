@@ -62,7 +62,7 @@ jobs:
       name: Commit new documentation
       with:
         commit_message: Build documentation with Sphinx ${{ env.GENX_VERSION }}
-        file_pattern: 'docs/doc/*'
+        file_pattern: 'docs/doc/* genx/genx/version.py'
         commit_user_email: artur.glavic@psi.ch
         commit_author: Artur Glavic <artur.glavic@psi.ch>
         tagging_message: ${{ env.GENX_VERSION }}
