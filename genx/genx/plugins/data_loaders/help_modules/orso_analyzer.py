@@ -273,8 +273,12 @@ class OrsoHeaderAnalyzer:
             lm = self.layer_model
             tmp = refl.sampleh.sample.Ambient
             tmp.b, tmp.f, tmp.dens = lm.ambient.b, lm.ambient.f, lm.ambient.dens
+            tmp._ca["f"] = lm.ambient.f
+            tmp._ca["b"] = lm.ambient.b
             tmp = refl.sampleh.sample.Substrate
             tmp.b, tmp.f, tmp.dens, tmp.sigma = lm.substrate.b, lm.substrate.f, lm.substrate.dens, lm.substrate.sigma
+            tmp._ca["f"] = lm.substrate.f
+            tmp._ca["b"] = lm.substrate.b
 
             pos = 1
             for si, (rep, stack) in enumerate(zip(lm.repetitions, lm.stacks)):
@@ -290,6 +294,8 @@ class OrsoHeaderAnalyzer:
 
                     layer_obj.b, layer_obj.f, layer_obj.dens = layer.b, layer.f, layer.dens
                     layer_obj.d, layer_obj.sigma = layer.d, layer.sigma
+                    layer_obj._ca["b"] = layer.b
+                    layer_obj._ca["f"] = layer.f
 
             refl.sample_widget.Update()
 
