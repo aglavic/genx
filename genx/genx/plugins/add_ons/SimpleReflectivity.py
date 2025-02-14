@@ -603,8 +603,12 @@ class SampleTable(gridlib.GridTableBase):
             layer_stack = BOT_LAYER
             model_row -= 1
         elif row == self.repeatedInfo():
-            layer_type = self.layers[row - 1][1]
-            layer_stack = self.layers[row - 1][11]
+            if len(self.layers) == 0:
+                layer_type = "Formula"
+                layer_stack = ML_LAYER
+            else:
+                layer_type = self.layers[row - 1][1]
+                layer_stack = self.layers[row - 1][11]
         elif model_row > 0:
             layer_type = self.layers[model_row - 1][1]
             layer_stack = self.layers[model_row - 1][11]
@@ -691,7 +695,11 @@ class SampleTable(gridlib.GridTableBase):
         if layer[1] == "Formula":
             formula = layer[2]
             if formula == "SLD":
-                nSLD = float(eval(layer[4]))
+                try:
+                    nSLD = float(eval(layer[4]))
+                except TypeError:
+                    nSLD = 0.0
+                    layer[4] = "0.0"
                 mSLD = float(eval(layer[6]))
                 output += "f=%s, " % (10 * nSLD - 10j * mSLD)
                 output += "b=%s, " % nSLD
@@ -707,8 +715,14 @@ class SampleTable(gridlib.GridTableBase):
                 out_param["dens"] = dens
                 out_param["magn"] = float(eval(layer[6]))
         else:
-            SLD1 = float(eval(layer[2]))
-            SLD2 = float(eval(layer[4]))
+            try:
+                SLD1 = float(eval(layer[2]))
+                SLD2 = float(eval(layer[4]))
+            except TypeError:
+                SLD1 = 0.0
+                SLD2 = 0.0
+                layer[2] = "0.0"
+                layer[4] = "0.0"
             frac = float(eval(layer[6])) / 100.0
             output += "f=(%s*%s+(1-%s)*%s), " % (frac, SLD1, frac, SLD2)
             output += "b=(%s*%s+(1-%s)*%s), " % (frac, SLD1, frac, SLD2)
