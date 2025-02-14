@@ -462,7 +462,11 @@ class SampleTable(gridlib.GridTableBase):
         model_code = self.getModelCode()
         evt = update_model_event()
         evt.script = model_code
-        wx.PostEvent(self.parent, evt)
+        try:
+            wx.PostEvent(self.parent, evt)
+        except RuntimeError:
+            # it might happen on startup when plugins are re-loaded
+            pass
 
     def repeatedInfo(self):
         # get the first row of the repeated layer structure
