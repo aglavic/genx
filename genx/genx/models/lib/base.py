@@ -3,10 +3,10 @@ Define base classes that can be used in models for prameterization. This classes
 """
 
 import ast
-import inspect
-import sys
-import logging
 import dataclasses
+import inspect
+import logging
+import sys
 
 from dataclasses import dataclass, field, fields
 from enum import Enum
@@ -17,8 +17,10 @@ if sys.version_info >= (3, 10, 1):
 
     def _field_init(f, frozen, locals, self_name):
         return _field_init_real(f, frozen, locals, self_name, False)
+
 else:
     _field_init = dataclasses._field_init
+
 
 def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
     """
@@ -57,18 +59,14 @@ def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
         body_lines.append(f"{self_name}.{dataclasses._POST_INIT_NAME}({params_str})")
 
     arg_list_genx = [self_name, "*"] + [dataclasses._init_param(f) for f in fieldsarg if f.init] + ["**user_kwds"]
-    if sys.version_info >=  (3, 13, 0):
+    if sys.version_info >= (3, 13, 0):
         # If no body lines, use 'pass'.
         if not body_lines:
-            body_lines = ['  pass']
+            body_lines = ["  pass"]
         if has_post_init:
-            body_lines[-1] = '  '+body_lines[-1]
+            body_lines[-1] = "  " + body_lines[-1]
         func_builder = dataclasses._FuncBuilder(globals)
-        func_builder.add_fn('__init__',
-                            arg_list_genx,
-                            body_lines,
-                            locals=locals,
-                            return_type=None)
+        func_builder.add_fn("__init__", arg_list_genx, body_lines, locals=locals, return_type=None)
         return func_builder
     else:
         # processing of additional user keyword arguments
@@ -105,7 +103,7 @@ class ModelParamMeta(type):
             # Include InitVars and regular fields (so, not ClassVars).
             flds = [f for f in fieldsarg.values() if f._field_type in (dataclasses._FIELD, dataclasses._FIELD_INITVAR)]
             init_fun = _custom_init_fn(flds, False, has_post_init, "self", globals())
-            if sys.version_info>=(3,13,0):
+            if sys.version_info >= (3, 13, 0):
                 init_fun.add_fns_to_class(cls)
             else:
                 setattr(cls, "__init__", init_fun)
@@ -217,7 +215,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
             set_func = ModelParamBase._get_setter(self, par)
             setattr(self, set_func.__name__, set_func)
 
-            if fi.type is complex:
+            if fi.type is complex or complex in getattr(fi.type, "__args__", ()):
                 set_real_func = ModelParamBase._get_real_setter(self, par)
                 setattr(self, set_real_func.__name__, set_real_func)
 

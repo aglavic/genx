@@ -274,7 +274,7 @@ class ReflClassEditor:
                     self.grid_parameters.set_fit_state_by_name(func_name, value, states[name], minval, maxval)
             elif self.par_editable[name] and not states[name]:
                 # remove fit parameter from grid as is changed to set in script
-                if value_info.type is complex:
+                if value_info.type is complex or complex in getattr(value_info.type, "__args__", ()):
                     func_name = self.object_name + "." + _set_func_prefix + name.capitalize() + "real"
                     self.grid_parameters.set_fit_state_by_name(func_name, 0.0, 0, 0, 0)
                     func_name = self.object_name + "." + _set_func_prefix + name.capitalize() + "imag"
@@ -286,7 +286,7 @@ class ReflClassEditor:
     def get_validator(self, value_info):
         if isinstance(value_info.type, type) and issubclass(value_info.type, AltStrEnum):
             validator = [i.value for i in value_info.type]
-        elif value_info.type is complex:
+        elif value_info.type is complex or complex in getattr(value_info.type, "__args__", ()):
             validator = ComplexObjectValidator(eval_func=self.eval_func)
         elif value_info.type is bool:
             validator = ["True", "False"]
@@ -834,7 +834,7 @@ class SamplePanel(wx.Panel):
             # current value does not correspond to type, should have been converted on class creation
             val = "set in script"
             validator = ["set in script"]
-        elif value_info.type is complex:
+        elif value_info.type is complex or complex in getattr(value_info.type, "__args__", ()):
             validator = ComplexObjectValidator(eval_func=eval_func)
         elif value_info.type is bool:
             validator = ["True", "False"]
