@@ -1,4 +1,4 @@
-__version__ = "3.7.8"
+__version__ = "3.7.9"
 
 def increment_version(minor=True, current=None):
     if current is None:
