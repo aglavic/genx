@@ -20,6 +20,7 @@ try:
     from .orso import Plugin as ORSOPlugin
 except ImportError:
     ORSOPlugin = None
+from .bruker import Plugin as BrukerPlugin
 from .rigaku import Plugin as RASPlugin
 from .seifert_nja import Plugin as NJAPlugin
 from .sinq_six import Plugin as SIXPlugin
@@ -41,7 +42,7 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
         self.loaders = [AmorPlugin(None), SNSPlugin(None), D17Plugin(None)]
         if ORSOPlugin:
             self.loaders.append(ORSOPlugin(None))
-        self.loaders += [SIXPlugin(None), XRDMLPlugin(None), RASPlugin(None), NJAPlugin(None)]
+        self.loaders += [SIXPlugin(None), XRDMLPlugin(None), RASPlugin(None), NJAPlugin(None), BrukerPlugin(None)]
         self.wildcard = ";".join([li.wildcard for li in self.loaders])
 
     def CountDatasets(self, file_path):

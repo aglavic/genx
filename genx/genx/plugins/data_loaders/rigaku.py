@@ -23,36 +23,37 @@ except ImportError:
     wx = void()
     wx.Dialog = void
 
+
 class MeasurementCondition:
-    operator = 'unknown'
-    system = 'Unknown Rigaku'
+    operator = "unknown"
+    system = "Unknown Rigaku"
     RASHeader = {}
     Axes = {}
-    axis = 'TwoThetaOmega'
-    mode = 'unknown'
-    comment = ''
-    memo = ''
-    sample = ''
-    file_type = 'RAS_RAW'
+    axis = "TwoThetaOmega"
+    mode = "unknown"
+    comment = ""
+    memo = ""
+    sample = ""
+    file_type = "RAS_RAW"
     generator = {}
     detector = {}
     optics = {}
     auto_atten = False
-    scan_unit = 'deg'
+    scan_unit = "deg"
     start_time = None
 
     # used to parse and represent the MeasurementCondition0.xml file content
     def __init__(self, root):
         for element in root:
-            if element.tag == 'RASHeader':
+            if element.tag == "RASHeader":
                 self.parse_ras(element)
-            elif element.tag=='GeneralInformation':
+            elif element.tag == "GeneralInformation":
                 self.parse_GI(element)
-            elif element.tag=='ScanInformation':
+            elif element.tag == "ScanInformation":
                 self.parse_scan(element)
-            elif element.tag=='Axes':
+            elif element.tag == "Axes":
                 self.parse_axes(element)
-            elif element.tag == 'HWConfigurations':
+            elif element.tag == "HWConfigurations":
                 self.parse_hw(element)
 
     def parse_ras(self, element):
@@ -68,28 +69,28 @@ class MeasurementCondition:
 
     def parse_GI(self, element):
         for child in element:
-            if child.tag == 'Operator':
+            if child.tag == "Operator":
                 self.operator = child.text
-            elif child.tag=='SystemName':
+            elif child.tag == "SystemName":
                 self.system = child.text
-            elif child.tag=='Comment':
-                self.comment = child.text or ''
-            elif child.tag=='Memo':
-                self.memo = child.text or ''
-            elif child.tag == 'SampleName':
+            elif child.tag == "Comment":
+                self.comment = child.text or ""
+            elif child.tag == "Memo":
+                self.memo = child.text or ""
+            elif child.tag == "SampleName":
                 self.sample = child.text
 
     def parse_scan(self, element):
         for child in element:
-            if child.tag == 'AxisName':
+            if child.tag == "AxisName":
                 self.axis = child.text
-            elif child.tag=='Mode':
+            elif child.tag == "Mode":
                 self.mode = child.text
-            elif child.tag == 'AttenuatorAutoMode':
-                self.auto_atten = child.text.strip().lower()=='true'
-            elif child.tag=='PositionUnit':
+            elif child.tag == "AttenuatorAutoMode":
+                self.auto_atten = child.text.strip().lower() == "true"
+            elif child.tag == "PositionUnit":
                 self.scan_unit = child.text
-            elif child.tag == 'StartTime':
+            elif child.tag == "StartTime":
                 self.start_time = child.text
 
     def parse_axes(self, element):
@@ -103,43 +104,43 @@ class MeasurementCondition:
                 Axes[key] = value
         self.Axes = Axes
 
-
     def parse_hw(self, element):
         for child in element:
-            if child.tag=='XrayGenerator':
+            if child.tag == "XrayGenerator":
                 generator = {}
                 for sc in child:
                     generator[sc.tag] = sc.text
                 self.generator = generator
-            elif child.tag=='Detector':
+            elif child.tag == "Detector":
                 detector = {}
                 for sc in child:
                     detector[sc.tag] = sc.text
                 self.detector = detector
-            elif child.tag=='Optics':
+            elif child.tag == "Optics":
                 optics = {}
                 for sc in child:
                     optics[sc.tag] = sc.text
                 self.optics = optics
 
     def parse_pair(self, element):
-        if element.tag != 'Pair':
+        if element.tag != "Pair":
             raise ValueError
-        return element[0].text.lstrip('*'), element[1].text
+        return element[0].text.lstrip("*"), element[1].text
 
     def parse_axis(self, element):
-        if element.tag != 'Axis':
+        if element.tag != "Axis":
             raise ValueError
-        return element.attrib['Name'], dict(element.attrib)
+        return element.attrib["Name"], dict(element.attrib)
 
     def to_dict(self):
         output = {}
-        output['Generator'] = self.generator
-        output['Detector'] = self.detector
-        output['Optics'] = self.optics
-        output['Axes'] = self.Axes
-        output['RASHeader'] = self.RASHeader
+        output["Generator"] = self.generator
+        output["Detector"] = self.detector
+        output["Optics"] = self.optics
+        output["Axes"] = self.Axes
+        output["RASHeader"] = self.RASHeader
         return output
+
 
 class Plugin(Template):
     wildcard = "*.ras;*.rasx"
@@ -153,6 +154,7 @@ class Plugin(Template):
         self.comment = "*"
         self.skip_rows = 0
         self.delimiter = None
+
     def ReadHeader(self, fh):
         header = {}
         hl = fh.readline()
@@ -201,7 +203,7 @@ class Plugin(Template):
         """
         Loads the data from filename into the data_item_number.
         """
-        if filename.endswith('.rasx'):
+        if filename.endswith(".rasx"):
             return self.LoadRasX(dataset, filename, data_id)
         try:
             with open(filename, encoding="utf-8", errors="ignore") as fh:
@@ -235,7 +237,7 @@ class Plugin(Template):
 
             # insert metadata into ORSO compatible fields
             dataset.meta["data_source"]["experiment"]["instrument"] = "RAS"
-            dataset.meta["data_source"]["experiment"]["probe"] = "x-ray"
+            dataset.meta["data_source"]["experiment"]["probe"] = "xray"
             dataset.meta["data_source"]["measurement"]["scheme"] = "angle-dispersive"
             inst = dataset.meta["data_source"]["measurement"]["instrument_settings"]
             inst["incident_angle"] = {
@@ -252,15 +254,15 @@ class Plugin(Template):
             dataset.meta["ras_header"] = header
 
     def LoadRasX(self, dataset, filename, data_id):
-        import zipfile
         import io
         import xml.etree.ElementTree as ET
+        import zipfile
 
         try:
             with zipfile.ZipFile(filename, "r") as zip_ref:
-                profile_txt=zip_ref.open('Data0/Profile0.txt', 'r').read()
-                header_xml=zip_ref.open('Data0/MesurementConditions0.xml', 'r').read()
-            load_array = np.loadtxt(io.StringIO(profile_txt.decode('utf-8-sig')))
+                profile_txt = zip_ref.open("Data0/Profile0.txt", "r").read()
+                header_xml = zip_ref.open("Data0/MesurementConditions0.xml", "r").read()
+            load_array = np.loadtxt(io.StringIO(profile_txt.decode("utf-8-sig")))
             info = MeasurementCondition(ET.fromstring(header_xml))
         except Exception as e:
             ShowWarningDialog(
@@ -292,7 +294,7 @@ class Plugin(Template):
             dataset.meta["data_source"]["owner"]["name"] = info.operator
             dataset.meta["data_source"]["experiment"]["instrument"] = info.system
             dataset.meta["data_source"]["experiment"]["probe"] = "x-ray"
-            dataset.meta["data_source"]["experiment"]["title"] = info.memo + ' - ' + info.comment
+            dataset.meta["data_source"]["experiment"]["title"] = info.memo + " - " + info.comment
             dataset.meta["data_source"]["experiment"]["start_date"] = info.start_time
             dataset.meta["data_source"]["measurement"]["scheme"] = "angle-dispersive"
             inst = dataset.meta["data_source"]["measurement"]["instrument_settings"]
@@ -302,7 +304,7 @@ class Plugin(Template):
                 "unit": info.scan_unit,
             }
             inst["wavelength"] = {
-                "magnitude": float(info.generator.get('WavelengthKalpha1', 1.540593)),
+                "magnitude": float(info.generator.get("WavelengthKalpha1", 1.540593)),
                 "unit": "angstrom",
             }
             dataset.meta["data_source"]["sample"] = {"name": info.sample}

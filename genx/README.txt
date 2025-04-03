@@ -12,13 +12,18 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.10
+==============
+ * Add initial support for Bruker BRML file format.
+ * Fix import of XRDML file format if saved with UTF-8 BOM lead bytes.
+
 Changes 3.7.9
 =============
  * Fix missing real/imag setter for mag_refl parameter Layer.fr.
 
 Changes 3.7.8
 =============
- * Fix version file not being commited into repository after update
+ * Fix version file not being commited into repository after update.
 
 Changes 3.7.7
 =============
