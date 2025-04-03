@@ -41,7 +41,7 @@ class Plugin(Template):
 
     def CountDatasets(self, file_path):
         try:
-            orso_datasets = self.ReadXpert(file_path)
+            orso_datasets = ReadXpert(file_path)
         except Exception as e:
             return 1
         else:
@@ -76,6 +76,9 @@ class Plugin(Template):
             dataset.meta["data_source"]["experiment"]["instrument"] = "XRDML"
             dataset.meta["data_source"]["experiment"]["probe"] = "xray"
             dataset.meta["data_source"]["measurement"]["scheme"] = "angle-dispersive"
+            dataset.meta["data_source"]["sample"]["name"] = ds[3]
+            dataset.meta["data_source"]["experiment"].update(ds[4])
+            dataset.meta["data_source"]["measurement"].update(ds[5])
 
     def SettingsDialog(self):
         """
@@ -192,6 +195,7 @@ def ReadXpert(file_name):
     raw_data = open(file_name, "r").read()
     while len(raw_data) > 0 and raw_data[0] != "<":
         # some files are written using UTF-8 BOM format that has extra bytes before the text starts
+        # this will ignore any characters at the beginning that are not "<", the tag opening for XML
         raw_data = raw_data[1:]
     xml_data = parseString(raw_data).firstChild
 
@@ -201,7 +205,15 @@ def ReadXpert(file_name):
     except AttributeError:
         sample_name = file_name.rsplit(".", 1)[0]
     datasets = []
+
+    try:
+        lamda = float(xml_data.getElementsByTagName("kAlpha1")[0].firstChild.nodeValue)
+    except (IndexError, ValueError):
+        lamda = 1.54  # Cu k-alpha
+
     for xml_scan in xml_data.getElementsByTagName("xrdMeasurement")[0].getElementsByTagName("scan"):
+        meta_experiment = {}
+        meta_measurement = {}
         scan = xml_scan.getElementsByTagName("dataPoints")[0]
 
         moving_positions = {}
@@ -218,6 +230,11 @@ def ReadXpert(file_name):
             atten = np.array(atten_factors)
         except IndexError:
             atten = 1.0
+        try:
+            meta_experiment["start_date"] = xml_scan.getElementsByTagName("startTimeStamp")[0].firstChild.nodeValue
+        except IndexError:
+            pass
+
         time = float(scan.getElementsByTagName("commonCountingTime")[0].firstChild.nodeValue)
         data_tags = scan.getElementsByTagName("intensities") + scan.getElementsByTagName("counts")
         data = data_tags[0].firstChild.nodeValue
@@ -230,6 +247,10 @@ def ReadXpert(file_name):
             th = np.linspace(moving_positions["2Theta"][0], moving_positions["2Theta"][1], len(data)) / 2.0
         else:
             th = np.linspace(moving_positions["Omega"][0], moving_positions["Omega"][1], len(data))
-        Q = 4.0 * np.pi / 1.54 * np.sin(th / 180.0 * np.pi)
-        datasets.append((Q, I, dI, sample_name))
+        Q = 4.0 * np.pi / lamda * np.sin(th / 180.0 * np.pi)
+        meta_measurement["instrument_settings"] = {
+            "incident_angle": {"min": float(th.min()), "max": float(th.max()), "unit": "deg"},
+            "wavelength": {"magnitude": lamda, "unit": "angstrom"},
+        }
+        datasets.append((Q, I, dI, sample_name, meta_experiment, meta_measurement))
     return datasets
