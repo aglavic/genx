@@ -190,6 +190,9 @@ def ReadXpert(file_name):
     Read the data of a philips X'Pert diffractometer file, exported as text files.
     """
     raw_data = open(file_name, "r").read()
+    while len(raw_data) > 0 and raw_data[0] != "<":
+        # some files are written using UTF-8 BOM format that has extra bytes before the text starts
+        raw_data = raw_data[1:]
     xml_data = parseString(raw_data).firstChild
 
     # retrieve data
