@@ -692,7 +692,7 @@ class SpectrumComponent(refl.ReflBase):
 
 @dataclass
 class Background2p(refl.ReflBase):
-    r"""A class to model the 2p background spectra, the non-resonant part, with a smoothed step function.
+    """A class to model the 2p background spectra, the non-resonant part, with a smoothed step function.
 
 
     Parameters:
@@ -709,12 +709,12 @@ class Background2p(refl.ReflBase):
     The background, B, is modelled with two error function according to
 
     .. math::
-        B = a_0 + a_1 e + (a_2 + a_3 e) \Phi(e, e_l3) + (a_4 + a_5 e) \Phi(e, e_l2),
+        B = a_0 + a_1 e + (a_2 + a_3 e) \\Phi(e, e_l3) + (a_4 + a_5 e) \\Phi(e, e_l2),
 
     where
 
     .. math::
-        \Phi(e, e_0) = \frac{1}{2}\left( 1 + \mathrm{erf}\left( \frac{e - e_0}{\sqrt{2} \sigma} \right)\right).
+        \\Phi(e, e_0) = \\frac{1}{2}\\left( 1 + \\mathrm{erf}\\left( \\frac{e - e_0}{\\sqrt{2} \\sigma} \\right)\\right).
 
     This function is used to up-sample the theoretical, tabulates, f2 values for the spectral region (the L2/L3 within
     the pre and post edge values) to a point spacing of de. This data then replaces the data in the tabulated f2 values
