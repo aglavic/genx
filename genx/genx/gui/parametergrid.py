@@ -5,6 +5,7 @@ definition of the parameters.
 """
 
 import string
+import pdb, traceback
 
 from dataclasses import dataclass
 
@@ -1371,6 +1372,10 @@ class ParameterGrid(wx.Panel, Configurable):
         item = self.pmenu.Append(-1, "Manual Edit")
         self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
 
+        # Add item for automatic adding of all relevant instrument, layer and sub parameters
+        item = self.pmenu.Append(-1, "Add Layer Items")
+        self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
+
         self.PopupMenu(self.pmenu, pos)
         self.pmenu.Destroy()
 
@@ -1401,6 +1406,7 @@ class ParameterGrid(wx.Panel, Configurable):
         :return: Nothing
         """
         item = self.pmenu.FindItemById(event.GetId())
+        
         # Check if the item should be edit manually
         if item.GetItemLabel() == "Simulate to see parameters":
             self.parent.eh_tb_simulate(event)
@@ -1409,8 +1415,48 @@ class ParameterGrid(wx.Panel, Configurable):
             if self.grid.CanEnableCellControl():
                 self.grid.EnableCellEditControl()
             return
+    
+        if item.GetItemLabel() == "Add Layer Items":
+            # Added by Kibbi 15/04/25
+            # Easy way to add relevant instrument parameters and 
+            # most commonly used layer parameters with a single click
+        
+            # Instrument items to add
+            instItemsToAdd = ['setI0','setIbkg','setBeamw','setRes']
+            i = 0
+            #for it in self.par_dict['Instrument']['inst']:
+            for it in instItemsToAdd:
+                try:
+                    self.fillLine('inst', it, i)
+                    i+=1
+                except Exception as e:
+                    traceback.print_exc()
+            # Add a blank line after instrument parameters
+            i += 1
+            self.table.InsertRow(i)
+            
+            # Layer items to add
+            layItemsToAdd = ['setDens','setD','setSigma']
+            
+            for par in self.par_dict['Layer'].keys():
+                if par != 'Amb':
+                    for it in layItemsToAdd:
+                        # add three lines and one empty
+                        try:
+                            self.fillLine(par, it,i)
+                            i+=1
+                        except Exception as e:
+                            print(e)
+                            traceback.print_exc()
+                    # Add a blank after each layer segment
+                    self.table.InsertRow(i)
+                    i+=1
+            return
+        
         # GetItemLabel seems to screw up underscores a bit replacing the with a
         # double one - this fixes it
+        print(item.GetItemLabel())
+        print(self.CurSelection)
         text = item.GetItemLabel().replace("__", "_")
         self.grid.SetCellValue(self.CurSelection[0], self.CurSelection[1], text)
         # Try to find out if the values also has an get function so that
@@ -1418,8 +1464,8 @@ class ParameterGrid(wx.Panel, Configurable):
         lis = text.split("." + self.set_func)
         if len(lis) == 2:
             try:
-                value = self.evalf(lis[0] + "." + self.get_func + lis[1])().real
-                self.table.SetValue(self.CurSelection[0], 1, value)
+                value = self.evalf(lis[0] + "." + self.get_func + lis[1])().real # this is e.g. Al2O3.getD 
+                self.table.SetValue(self.CurSelection[0], 1, value) # (linePos, colPos, whatToSet)
                 # Takes care so that also negative numbers give the
                 # correct values in the min and max cells
                 minval = value * (1 - self.variable_span)
@@ -1443,6 +1489,22 @@ class ParameterGrid(wx.Panel, Configurable):
             except Exception as S:
                 iprint("Not possible to init the variable automatically")
                 # print S
+
+    def fillLine(self, parameter, item, lineNo):
+        # Makes the code a bit readable. This function adds
+        # a new line and fills it with information from the parameter
+        # and an item for that parameter
+        text = "%s.%s" % (parameter,item)
+        valText = "%s.%s" % (parameter, item.replace('set','get'))
+        value = self.evalf(valText)().real 
+        print("%i, %s -> %.2f" % (lineNo,text,value))
+        self.grid.SetCellValue(lineNo ,0, text)
+        self.table.SetValue(lineNo, 1, value)
+        
+        minval = value * (1 - self.variable_span)
+        maxval = value * (1 + self.variable_span)
+        self.table.SetValue(lineNo, 3, min(minval, maxval))
+        self.table.SetValue(lineNo, 4, max(minval, maxval))
 
     def OnResize(self, evt):
         self.SetColWidths()
