@@ -1436,11 +1436,12 @@ class ParameterGrid(wx.Panel, Configurable):
             self.table.InsertRow(i)
             
             # Layer items to add
-            layItemsToAdd = ['setDens','setD','setSigma']
-            
-            for par in self.par_dict['Layer'].keys():
+            layerItemsToAdd = ['setDens','setD','setSigma']
+            # Reversing layers so 'sub' is on top and we go up the sample
+            layers = list(reversed(self.par_dict['Layer'].keys()))
+            for par in layers:
                 if par != 'Amb':
-                    for it in layItemsToAdd:
+                    for it in layerItemsToAdd:
                         # add three lines and one empty
                         try:
                             self.fillLine(par, it,i)
