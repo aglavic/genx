@@ -1373,7 +1373,7 @@ class ParameterGrid(wx.Panel, Configurable):
         self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
 
         # Add item for automatic adding of all relevant instrument, layer and sub parameters
-        item = self.pmenu.Append(-1, "Add Layer Items")
+        item = self.pmenu.Append(-1, "Common pars")
         self.Bind(wx.EVT_MENU, self.OnPopUpItemSelected, item)
 
         self.PopupMenu(self.pmenu, pos)
@@ -1416,7 +1416,7 @@ class ParameterGrid(wx.Panel, Configurable):
                 self.grid.EnableCellEditControl()
             return
     
-        if item.GetItemLabel() == "Add Layer Items":
+        if item.GetItemLabel() == "Common pars":
             # Added by Kibbi 15/04/25
             # Easy way to add relevant instrument parameters and 
             # most commonly used layer parameters with a single click
