@@ -58,20 +58,18 @@ def _custom_init_fn(fieldsarg, frozen, has_post_init, self_name, globals):
         params_str = ",".join(f.name for f in fieldsarg if f._field_type is dataclasses._FIELD_INITVAR)
         body_lines.append(f"{self_name}.{dataclasses._POST_INIT_NAME}({params_str})")
 
-    arg_list_genx = [self_name, "*"] + [dataclasses._init_param(f) for f in fieldsarg if f.init] + ["**user_kwds"]
+    # processing of additional user keyword arguments
+    body_lines += ["setattr(self, '_unused_kwds', user_kwds)"]
+
+    arg_list_genx = [self_name, ] + [dataclasses._init_param(f) for f in fieldsarg if f.init] + ["**user_kwds"]
     if sys.version_info >= (3, 13, 0):
-        # If no body lines, use 'pass'.
-        if not body_lines:
-            body_lines = ["  pass"]
-        if has_post_init:
-            body_lines[-1] = "  " + body_lines[-1]
+        # Make sure all body_lines are indented.
+        body_lines = [f'  {l.strip()}' for l in body_lines]
         func_builder = dataclasses._FuncBuilder(globals)
         func_builder.add_fn("__init__", arg_list_genx, body_lines, locals=locals, return_type=None)
+        func_builder.unconditional_adds['__init__']=True
         return func_builder
     else:
-        # processing of additional user keyword arguments
-        body_lines += ["setattr(self, '_unused_kwds', user_kwds)"]
-
         return dataclasses._create_fn(
             "__init__",
             arg_list_genx,
@@ -147,12 +145,12 @@ class ModelParamBase(metaclass=ModelParamMeta):
     """
 
     Units = {}
+    CREATES_OWN_SETTER = 'CREATES_OWN_SETTER' # indicates the setter function should not be created for child class
 
     def __post_init__(self):
         self._generate_setters()
         self._generate_getters()
         # record the line number in the script when executed by exec, see model.Model.compile_script
-        self._lno_context = inspect.stack()[2].lineno - 1
         self._orig_params = {}
         self._ca = {}
         for fi in fields(self):
@@ -163,8 +161,17 @@ class ModelParamBase(metaclass=ModelParamMeta):
                 # convert parameter to correct type
                 # TODO: implement for more complex types like Union[a,b], check above works for both
                 setattr(self, fi.name, fi.type(getattr(self, fi.name)))
+        direct_call_context = inspect.stack()[2]
+        if direct_call_context.filename.endswith(".py"):
+            # the class was generated in some other scope then the script, don't record line number
+            self._lno_context = None
+            return
+        else:
+            self._lno_context = inspect.stack()[2].lineno - 1
 
     def _extract_callpars(self, source):
+        if self._lno_context is None:
+            return
         # try to extract call arguments for the keywords
         context = [source.splitlines()[self._lno_context]]
         call_lines = "".join(context)
@@ -210,6 +217,8 @@ class ModelParamBase(metaclass=ModelParamMeta):
 
     def _generate_setters(self):
         for fi in fields(self):
+            if fi.type is self.CREATES_OWN_SETTER:
+                continue
             par = str(fi.name)
 
             set_func = ModelParamBase._get_setter(self, par)
@@ -248,6 +257,8 @@ class ModelParamBase(metaclass=ModelParamMeta):
 
     def _generate_getters(self):
         for fi in fields(self):
+            if fi.type is self.CREATES_OWN_SETTER:
+                continue
             par = str(fi.name)
             get_func = ModelParamBase._get_getter(self, par)
             setattr(self, get_func.__name__, get_func)

@@ -12,6 +12,10 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.11
+==============
+ *
+
 Changes 3.7.10
 ==============
  * Add initial support for Bruker BRML file format.

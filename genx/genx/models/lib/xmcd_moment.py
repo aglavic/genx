@@ -504,7 +504,7 @@ class Spectrum2p(refl.ReflBase):
     The subscripts on the right hand side denote which class the w parameter belongs to. The use for these normalisation
     could be to define normalisation factors (norm_denom) from reference spectra with known values of number of holes,
     spin magnetic moment and orbital magnetic moment. While keeping the spectral shape constant, constant
-    :math:`w^{xyz}_\mathrm{SpectrumComponent}` the overall spectra can be scaled to change the different values with the
+    :math:`w^{xyz}_\\mathrm{SpectrumComponent}` the overall spectra can be scaled to change the different values with the
     parameters :math:`w^{xyz}_\\mathrm{Spectrum2p}`.
 
     Fitting Parameters
@@ -657,13 +657,6 @@ class SpectrumComponent(refl.ReflBase):
 
     def __new__(cls, spectra, gsm, **kwargs):
         self = super().__new__(cls)
-        self.__init__(
-            spectra=spectra,
-            gsm=gsm,
-            el3=kwargs.get("el3", cls.el3),
-            gamma=kwargs.get("gamma", cls.gamma),
-            sigma=kwargs.get("sigma", cls.sigma),
-        )
         self.spectra = spectra
         self.gsm = gsm
 
@@ -681,7 +674,18 @@ class SpectrumComponent(refl.ReflBase):
         new_field = field(default=0.0)
         xyz = self.gsm[w_index]
         new_field.name = "w%d%d%d" % tuple(xyz)
-        new_field.type = float
+        new_field.type = self.CREATES_OWN_SETTER # overwrite setter function creation for this attribute
+
+        def set_func(value):
+            self.w[w_index] = value
+        def get_func(value):
+            return self.w[w_index]
+
+        set_func.__name__ = "set" + new_field.name.capitalize()
+        get_func.__name__ = "get" + new_field.name.capitalize()
+        setattr(self, set_func.__name__, set_func)
+        setattr(self, new_field.name, property(get_func, set_func))
+
         from dataclasses import _FIELD, _FIELDS  # noqa
 
         new_field._field_type = _FIELD
@@ -1141,8 +1145,8 @@ def kk_int(e, f2, Z=0, e_min=None, e_max=None):
         ekk = ekk[: np.argmin(np.abs(e_max - ekk))]
 
     f1kk = np.empty_like(ekk)
-    f1kk[1::2] = integrate.trapz(e[::2] * f2[::2] / (ekk[1::2][:, np.newaxis] ** 2 - e[::2] ** 2), e[::2])
-    f1kk[::2] = integrate.trapz(e[1::2] * f2[1::2] / (ekk[::2][:, np.newaxis] ** 2 - e[1::2] ** 2), e[1::2])
+    f1kk[1::2] = np.trapz(e[::2] * f2[::2] / (ekk[1::2][:, np.newaxis] ** 2 - e[::2] ** 2), e[::2])
+    f1kk[::2] = np.trapz(e[1::2] * f2[1::2] / (ekk[::2][:, np.newaxis] ** 2 - e[1::2] ** 2), e[1::2])
 
     fkk = (
         Z
@@ -1168,13 +1172,13 @@ def kk_int_old(e_new, e, f2, Z, offset=1e-1, offset_outer=1, e_step=0.1):
     ekk = e_new
 
     f1kk_tmp = [
-        integrate.trapz(
+        np.trapz(
             create_int_func(e, f2, ep)(np.arange(0, ep - offset_outer + e_step, e_step)),
             np.arange(0, ep - offset_outer + e_step, e_step),
         )
         + integrate.quad(create_int_func(e, f2, ep), ep - offset_outer, ep - offset)[0]
         + integrate.quad(create_int_func(e, f2, ep), ep + offset, ep + offset_outer)[0]
-        + integrate.trapz(
+        + np.trapz(
             create_int_func(e, f2, ep)(np.arange(ep + offset_outer, e.max() + e_step, e_step)),
             np.arange(ep + offset_outer, e.max() + e_step, e_step),
         )
@@ -1209,7 +1213,7 @@ if __name__ == "__main__":
     f_mod = bkg.calc_f(e_test)
 
     pl.subplot(211)
-    pl.plot(e_test, f_mod.imag)
+    pl.plot(e_test, -f_mod.imag)
     pl.plot(e, f2, ".")
     pl.xlim(e_test.min(), e_test.max())
     pl.subplot(212)
