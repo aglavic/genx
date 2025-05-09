@@ -14,7 +14,9 @@ A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
 Changes 3.7.11
 ==============
- *
+ * Fix xmcd_moment model, regression from <3.7.0
+ * Fix dataclass handling in python >= 3.13.0
+ * Remove dependency for VTK in SXRD plugin
 
 Changes 3.7.10
 ==============

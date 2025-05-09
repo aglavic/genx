@@ -16,8 +16,12 @@ from genx.core.decorators import log_call
 from genx.gui.solvergui import EVT_UPDATE_SCRIPT
 
 from .. import add_on_framework as framework
-from .help_modules import atom_viewer
 from .help_modules import model_interactors as mi
+
+try:
+    from .help_modules import atom_viewer
+except ImportError:
+    atom_viewer = None
 
 code = """
         # BEGIN Instruments
@@ -63,6 +67,8 @@ code = """
 
 
 class Plugin(framework.Template):
+    sample_view = None
+
     def __init__(self, parent):
 
         framework.Template.__init__(self, parent)
@@ -81,7 +87,8 @@ class Plugin(framework.Template):
         self.layout_sample_edit()
         self.layout_simulation_edit()
         self.layout_misc_edit()
-        self.layout_domain_viewer()
+        if atom_viewer is not None:
+            self.layout_domain_viewer()
         self.create_main_window_menu()
 
         self.OnInteractorChanged(None)
@@ -295,7 +302,7 @@ class Plugin(framework.Template):
 
     def update_domain_view(self):
         domain = self.sample_edit_widget.get_selected_domain_name()
-        if domain:
+        if domain and self.sample_view:
             try:
                 domain = self.GetModel().eval_in_model(domain)
             except Exception:
