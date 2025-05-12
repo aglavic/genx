@@ -4,9 +4,10 @@ define which parameters to fit. The library parameters contains the class
 definition of the parameters. 
 """
 
-import string, traceback
+import string
 
 from dataclasses import dataclass
+from logging import debug
 
 import wx
 import wx.grid as gridlib
@@ -1405,7 +1406,6 @@ class ParameterGrid(wx.Panel, Configurable):
         :return: Nothing
         """
         item = self.pmenu.FindItemById(event.GetId())
-        
         # Check if the item should be edit manually
         if item.GetItemLabel() == "Simulate to see parameters":
             self.parent.eh_tb_simulate(event)
@@ -1428,8 +1428,8 @@ class ParameterGrid(wx.Panel, Configurable):
                 try:
                     self.fillLine('inst', it, i)
                     i+=1
-                except Exception as e:
-                    traceback.print_exc()
+                except Exception:
+                    debug('Error inserting common pars:', exc_info=True)
             # Add a blank line after instrument parameters
             i += 1
             self.table.InsertRow(i)
@@ -1445,9 +1445,8 @@ class ParameterGrid(wx.Panel, Configurable):
                         try:
                             self.fillLine(par, it,i)
                             i+=1
-                        except Exception as e:
-                            print(e)
-                            traceback.print_exc()
+                        except Exception:
+                            debug('Error inserting common pars:', exc_info=True)
                     # Add a blank after each layer segment
                     self.table.InsertRow(i)
                     i+=1
@@ -1455,8 +1454,6 @@ class ParameterGrid(wx.Panel, Configurable):
         
         # GetItemLabel seems to screw up underscores a bit replacing the with a
         # double one - this fixes it
-        print(item.GetItemLabel())
-        print(self.CurSelection)
         text = item.GetItemLabel().replace("__", "_")
         self.grid.SetCellValue(self.CurSelection[0], self.CurSelection[1], text)
         # Try to find out if the values also has an get function so that
@@ -1497,7 +1494,6 @@ class ParameterGrid(wx.Panel, Configurable):
         text = "%s.%s" % (parameter,item)
         valText = "%s.%s" % (parameter, item.replace('set','get'))
         value = self.evalf(valText)().real 
-        print("%i, %s -> %.2f" % (lineNo,text,value))
         self.grid.SetCellValue(lineNo ,0, text)
         self.table.SetValue(lineNo, 1, value)
         
