@@ -774,6 +774,7 @@ class ParameterGrid(wx.Panel, Configurable):
         self.sizer_hor.Add(self.grid, proportion=1, flag=wx.EXPAND, border=0)
 
         self.parent = frame
+        self.model_ctrl = model_ctrl
         self.prt = printout.PrintTable(parent)
 
         self.project_func = None
@@ -1009,6 +1010,17 @@ class ParameterGrid(wx.Panel, Configurable):
             shortHelp="Scan FOM",
         )
         self.Bind(wx.EVT_TOOL, self.eh_scan_fom, id=newid)
+
+        self.toolbar.AddSeparator()
+
+        newid = wx.NewId()
+        self.toolbar.AddTool(
+            newid,
+            label="Fill Defaults",
+            bitmap=wx.Bitmap(img.add_defaults.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
+            shortHelp="Fill the grid with default fit parameters for current model",
+        )
+        self.Bind(wx.EVT_TOOL, self.add_common_pars, id=newid)
 
     def eh_add_row(self, event):
         """Event handler for adding a row
@@ -1453,10 +1465,12 @@ class ParameterGrid(wx.Panel, Configurable):
                 iprint("Not possible to init the variable automatically")
                 # print S
 
-    def add_common_pars(self):
+    def add_common_pars(self, event=None):
         # Easy way to add relevant instrument parameters and
         # most commonly used layer parameters with a single click
         # Which parameters are used is defined in the model for each class
+        if not self.model_ctrl.model.compiled:
+            self.parent.eh_tb_simulate(event)
         i = 0
         for key, value in self.par_dict.items():
             if isinstance(value, dict):
