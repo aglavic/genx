@@ -146,6 +146,7 @@ class ModelParamBase(metaclass=ModelParamMeta):
 
     Units = {}
     CREATES_OWN_SETTER = 'CREATES_OWN_SETTER' # indicates the setter function should not be created for child class
+    DEFAULT_FIT_PARAMS = [] # Classes can define default attributes that are filled in the grid
 
     def __post_init__(self):
         self._generate_setters()

@@ -273,6 +273,7 @@ class Layer(refl.ReflBase):
         ("Magn. Interfaces", ["dd_u", "dmag_u", "sigma_mu", "dd_l", "dmag_l", "sigma_ml"]),
     ]
 
+    DEFAULT_FIT_PARAMS = ["d", "sigma"]
 
 @dataclass
 class LayerParameters:
@@ -414,6 +415,7 @@ class Instrument(refl.ReflBase):
         ("Footprint", ["footype", "beamw", "samplelen"]),
     ]
 
+    DEFAULT_FIT_PARAMS = ["I0", "Ibkg", "Beamw", "res"]
 
 @dataclass
 class Stack(refl.StackBase):

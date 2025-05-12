@@ -80,6 +80,7 @@ class Layer(refl.ReflBase):
 
     Groups = [("General", ["d", "sigma"]), ("Neutron", ["sld_n", "sld_m", "magn_ang"]), ("X-Ray", ["sld_x"])]
 
+    DEFAULT_FIT_PARAMS = ["d", "sld_n", "sigma"]
 
 @dataclass
 class LayerParameters:

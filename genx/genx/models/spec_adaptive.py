@@ -118,6 +118,7 @@ class Layer(refl.ReflBase):
         ("Neutron Nuclear", ["b", "xs_ai"]),
     ]
 
+    DEFAULT_FIT_PARAMS = ["d", "dens", "sigma"]
 
 @dataclass
 class Stack(refl.StackBase):

@@ -1416,41 +1416,7 @@ class ParameterGrid(wx.Panel, Configurable):
             return
     
         if item.GetItemLabel() == "Common pars":
-            # Added by Kibbi 15/04/25
-            # Easy way to add relevant instrument parameters and 
-            # most commonly used layer parameters with a single click
-        
-            # Instrument items to add
-            instItemsToAdd = ['setI0','setIbkg','setBeamw','setRes']
-            i = 0
-            #for it in self.par_dict['Instrument']['inst']:
-            for it in instItemsToAdd:
-                try:
-                    self.fillLine('inst', it, i)
-                    i+=1
-                except Exception:
-                    debug('Error inserting common pars:', exc_info=True)
-            # Add a blank line after instrument parameters
-            i += 1
-            self.table.InsertRow(i)
-            
-            # Layer items to add
-            layerItemsToAdd = ['setDens','setD','setSigma']
-            # Reversing layers so 'sub' is on top and we go up the sample
-            layers = list(reversed(self.par_dict['Layer'].keys()))
-            for par in layers:
-                if par != 'Amb':
-                    for it in layerItemsToAdd:
-                        # add three lines and one empty
-                        try:
-                            self.fillLine(par, it,i)
-                            i+=1
-                        except Exception:
-                            debug('Error inserting common pars:', exc_info=True)
-                    # Add a blank after each layer segment
-                    self.table.InsertRow(i)
-                    i+=1
-            return
+            return self.add_common_pars()
         
         # GetItemLabel seems to screw up underscores a bit replacing the with a
         # double one - this fixes it
@@ -1487,12 +1453,42 @@ class ParameterGrid(wx.Panel, Configurable):
                 iprint("Not possible to init the variable automatically")
                 # print S
 
-    def fillLine(self, parameter, item, lineNo):
+    def add_common_pars(self):
+        # Easy way to add relevant instrument parameters and
+        # most commonly used layer parameters with a single click
+        # Which parameters are used is defined in the model for each class
+        i = 0
+        for key, value in self.par_dict.items():
+            if isinstance(value, dict):
+                for key2, value2 in value.items():
+                    if key2 in ['Amb']:
+                        continue # special case of items not to fit
+                    obj = self.evalf(key2) # get the object for this key to extract default parameters
+                    default_item_list = getattr(obj, 'DEFAULT_FIT_PARAMS', [])
+                    for param in default_item_list:
+                        if key2=='Sub' and param=='d':
+                            continue # special case of items not to fit
+                        try:
+                            self.fillLine(key2, param, i)
+                            i += 1
+                        except Exception:
+                            debug('Error inserting common pars:', exc_info=True)
+
+                    if len(default_item_list)>0:
+                        # Add a blank after each class segment
+                        if self.table.GetNumberRows()<(i+1):
+                            self.table.InsertRow(i)
+                        i += 1
+
+    def fillLine(self, obj, parameter, lineNo):
         # Makes the code a bit readable. This function adds
         # a new line and fills it with information from the parameter
         # and an item for that parameter
-        text = "%s.%s" % (parameter,item)
-        valText = "%s.%s" % (parameter, item.replace('set','get'))
+        param_set = 'set'+parameter.capitalize()
+        param_get = 'get'+parameter.capitalize()
+
+        text = "%s.%s" % (obj, param_set)
+        valText = "%s.%s" % (obj, param_get)
         value = self.evalf(valText)().real 
         self.grid.SetCellValue(lineNo ,0, text)
         self.table.SetValue(lineNo, 1, value)

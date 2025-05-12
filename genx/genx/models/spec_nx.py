@@ -132,6 +132,8 @@ class Layer(refl.ReflBase):
 
     Groups = [("General", ["d", "dens", "sigma"]), ("Neutron", ["b", "xs_ai", "magn", "magn_ang"]), ("X-Ray", ["f"])]
 
+    DEFAULT_FIT_PARAMS = ["d", "dens", "sigma"]
+
 
 @dataclass
 class LayerParameters:
@@ -301,6 +303,7 @@ class Instrument(refl.ReflBase):
         ("Footprint", ["footype", "beamw", "samplelen"]),
     ]
 
+    DEFAULT_FIT_PARAMS = ["I0", "Ibkg", "Beamw", "res"]
 
 # A buffer to save previous calculations for spin-flip calculations
 class Buffer:

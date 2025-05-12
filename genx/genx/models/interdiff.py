@@ -99,6 +99,7 @@ class Layer(refl.ReflBase):
 
     Groups = [("General", ["d", "dens", "sigma", "sigmai"]), ("X-Ray", ["f"])]
 
+    DEFAULT_FIT_PARAMS = ["d", "dens", "sigma", "sigmai"]
 
 @dataclass
 class LayerParameters:
@@ -254,6 +255,8 @@ class Instrument(refl.ReflBase):
         ("DWBA", ["taylor_n"]),
         ("Footprint", ["footype", "beamw", "samplelen"]),
     ]
+
+    DEFAULT_FIT_PARAMS = ["I0", "Ibkg", "Beamw", "res"]
 
 
 def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
