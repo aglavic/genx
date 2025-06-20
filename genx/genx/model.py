@@ -967,9 +967,12 @@ class Model(H5HintedExport):
         # compile again to have a completely independent script module
         self.compile_script()
 
+        import bumps
         from bumps.fitproblem import FitProblem
-
-        return FitProblem(GenxCurve(self))
+        if bumps.__version__.startswith("0."):
+            return FitProblem(GenxCurve(self))
+        else:
+            return FitProblem([GenxCurve(self)])
 
     def asym_stderr(self, dream_fit):
         """
@@ -979,7 +982,7 @@ class Model(H5HintedExport):
         """
         from bumps.dream.stats import var_stats
 
-        vstats = var_stats(dream_fit.state.draw(portion=dream_fit._trimmed))
+        vstats = var_stats(dream_fit.state.draw())
         return np.array([(v.p68[0] - v.best, v.p68[1] - v.best) for v in vstats], "d")
 
     def bumps_fit(

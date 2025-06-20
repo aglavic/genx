@@ -271,7 +271,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
 
         self.fom_text.SetLabel("FOM chi²/bars: %.3f" % self.chisq)
         self.draw = res.state.draw()
-        pnames = list(self.bproblem.model_parameters().keys())
+        pnames = self.bproblem.labels()
         sort_indices = [pnames.index(ni) for ni in self.draw.labels]
 
         self.abs_cov = res.cov
