@@ -296,7 +296,7 @@ class PlotPanel(wx.Panel, Configurable):
 
         sx, sy = mDataDict["scaledXY"]  # scaled x,y of closest point
         # 10by10 square centered on point
-        dc.DrawRectangle(sx - 5, sy - 5, 10, 10)
+        dc.DrawRectangle(int(sx - 5), int(sy - 5), 10, 10)
         px, py = mDataDict["pointXY"]
         cNum = mDataDict["curveNum"]
         pntIn = mDataDict["pIndex"]
@@ -473,7 +473,11 @@ class DataPlotPanel(PlotPanel):
         pe_datasets = [data_set for data_set in data if data_set.use_error and data_set.show]
 
         for data_set in p_datasets:
-            data1 = np.vstack([data_set.x, np.nan_to_num(data_set.y)]).T
+            if self.canvas.logScale[1]:
+                y = np.maximum(1e-20, np.nan_to_num(data_set.y))
+            else:
+                y = np.nan_to_num(data_set.y)
+            data1 = np.vstack([data_set.x, y]).T
             if data_set.data_linetype != "":
                 item = wxplot.PolyLine(
                     data1,
