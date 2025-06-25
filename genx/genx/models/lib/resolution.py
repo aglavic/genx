@@ -12,7 +12,7 @@ import numpy as np
 from .base import ModelParamBase
 from .instrument import ResolutionVector
 
-__all__ = ["GaussianResolution", "TrapezoidResolution"]
+__all__ = ["GaussianResolution", "TrapezoidResolution", "XrayKalpha"]
 
 
 class Resolution(ModelParamBase):
@@ -56,3 +56,21 @@ class TrapezoidResolution(Resolution):
         inner_rel = self.inner_width / full_width * np.ones_like(TwoThetaQz)
         weight = np.where(2.0 * abs(scale) <= inner_rel, 1.0, 1.0 - (2.0 * abs(scale) - inner_rel) / (1.0 - inner_rel))
         return (Qres.flatten(), weight)
+
+@dataclass
+class XrayKalpha(Resolution):
+    sigma_2theta: float
+    energy_alpha1: float = 8047.78
+    energy_alpha2: float = 8027.83
+    ratio12: float = 2.0
+
+    def __call__(self, TwoThetaQz, respoints=15, resintrange=2.0):
+        """
+        Create two gaussian resolution functions for k-alpha1 and k-alpha2 wavelengths.
+        Assume that the wavelength defined in the model is for k-alpha1.
+        """
+        alpha2_qratio = self.energy_alpha2/self.energy_alpha1
+        TTH1, weight1 = ResolutionVector(TwoThetaQz[:], self.sigma_2theta, respoints, range=resintrange)
+        TTH2, weight2 = ResolutionVector(alpha2_qratio*TwoThetaQz[:], self.sigma_2theta, respoints, range=resintrange)
+        I2 = 1.0/self.ratio12
+        return np.vstack([TTH1.reshape(*weight1.shape), TTH2.reshape(*weight2.shape)]).flatten(), np.vstack([weight1, weight2*I2])
