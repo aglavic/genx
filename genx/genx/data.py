@@ -343,11 +343,6 @@ class DataSet(H5HintedExport):
         xt = self.x
         yt = self.y
 
-        gscope=globals()
-        lscope=locals()
-        for key in self.extra_data:
-            exec('%s = self.extra_data_raw["%s"]' % (key, key), gscope, lscope)
-
         def fpe(xmax=0.05, relerr=0.01, x=xt, y=yt):
             """
             Estimate intensity error due to beam crossection deviating from model foot print
@@ -361,6 +356,11 @@ class DataSet(H5HintedExport):
             return hstack(
                 [(y[1] - y[0]) / (x[1] - x[0]), (y[2:] - y[:-2]) / (x[2:] - x[:-2]), (y[-1] - y[-2]) / (x[-1] - x[-2])]
             )
+
+        gscope=globals()
+        lscope=locals()
+        for key in self.extra_data:
+            exec('%s = self.extra_data_raw["%s"]' % (key, key), gscope, lscope)
 
         self.error = eval(self.error_command, gscope, lscope)
 
@@ -452,6 +452,7 @@ class DataSet(H5HintedExport):
                         (y[-1] - y[-2]) / (x[-1] - x[-2]),
                     ]
                 )
+            lscope.update(locals())
 
             try:
                 et = eval(command_dict["e"], gscope, lscope)

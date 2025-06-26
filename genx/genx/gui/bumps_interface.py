@@ -4,6 +4,7 @@ Classes to interface with the bumps module for fitting and statistical analysis.
 
 import threading
 
+import bumps
 import wx
 
 from bumps import __version__ as bumps_version
@@ -223,11 +224,20 @@ class StatisticalAnalysisDialog(wx.Dialog):
     def OnRunAnalysis(self, event):
         if self.thread is not None:
             self.run_button.SetLabel("Run Analysis...")
-            self.bproblem.fitness.stop_fit = True
+            if bumps.__version__.startswith("0."):
+                self.bproblem.fitness.stop_fit = True
+            else:
+                self.bproblem.stop_fit = True
             return
         self.thread = threading.Thread(target=self.run_bumps)
         self.thread.start()
         self.run_button.SetLabel("Stop Run")
+
+    def get_bumps_param_names(self):
+        if bumps.__version__.startswith("0."):
+            return list(self.bproblem.model_parameters().keys())
+        else:
+            return list(self.bproblem.model_parameters()['models'][0].keys())
 
     def run_bumps(self):
         self.bproblem = self.model.bumps_problem()
@@ -235,7 +245,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
         pop = self.entries["pop"].GetValue()
         burn = self.entries["burn"].GetValue()
         samples = self.entries["samples"].GetValue()
-        self.pbar.SetRange(int(samples / (len(self.bproblem.model_parameters()) * pop)) + burn)
+        self.pbar.SetRange(int(samples / (len(self.get_bumps_param_names()) * pop)) + burn)
 
         with CatchModelError(self, "bumps_modeling") as mgr:
             res = self.model.bumps_fit(
@@ -370,7 +380,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
             if self.chicorrect_checkbox.IsChecked():
                 display_cov = display_cov * self.chisq
             fmt = "%.4g"
-        pnames = list(self.bproblem.model_parameters().keys())
+        pnames = self.get_bumps_param_names()
         sort_indices = [pnames.index(ni) for ni in self.draw.labels]
         for i, ci in enumerate(self.rel_cov):
             for j, cj in enumerate(ci):
@@ -384,7 +394,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
             scl = sqrt(self.chisq)
         else:
             scl = 1.0
-        pnames = list(self.bproblem.model_parameters().keys())
+        pnames = self.get_bumps_param_names()
         sort_indices = [pnames.index(ni) for ni in self.draw.labels]
         res = self._res
         for i, dxi in enumerate(res.dx):
@@ -411,7 +421,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
 
     def OnSelectCell(self, evt):
         ri, rj = evt.GetCol(), evt.GetRow() - 2
-        pnames = list(self.bproblem.model_parameters().keys())
+        pnames = self.get_bumps_param_names()
         reverse_indices = [self.draw.labels.index(ni) for ni in pnames]
         i = reverse_indices[ri]
         j = reverse_indices[rj]
@@ -436,6 +446,9 @@ class StatisticalAnalysisDialog(wx.Dialog):
         if self.thread is not None and self.thread.is_alive():
             # a running bumps simulation can't be interrupted from other thread, stop window from closing
             self.ptxt.SetLabel("Simulation running")
-            self.bproblem.fitness.stop_fit = True
+            if bumps.__version__.startswith("0."):
+                self.bproblem.fitness.stop_fit = True
+            else:
+                self.bproblem.stop_fit = True
             self.thread.join(timeout=5.0)
         event.Skip()

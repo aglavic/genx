@@ -1003,6 +1003,7 @@ class Model(H5HintedExport):
         # create a fitter similar to the bumps.fitters.fit function but with option for GUI monitoring
         if monitors is None:
             monitors = []
+        import bumps
         from bumps.fitters import FIT_ACTIVE_IDS, FIT_AVAILABLE_IDS, FITTERS, FitDriver
 
         from genx.bumps_optimizer import BumpsResult
@@ -1018,9 +1019,12 @@ class Model(H5HintedExport):
 
         if problem is None:
             problem = self.bumps_problem()
-        problem.fitness.stop_fit = False
-        options["abort_test"] = lambda: problem.fitness.stop_fit
-
+        if bumps.__version__.startswith("0."):
+            problem.fitness.stop_fit = False
+            options["abort_test"] = lambda: problem.fitness.stop_fit
+        else:
+            problem.stop_fit = False
+            options["abort_test"] = lambda: problem.stop_fit
         # verbose = True
         if method not in FIT_AVAILABLE_IDS:
             raise ValueError("unknown method %r not one of %s" % (method, ", ".join(sorted(FIT_ACTIVE_IDS))))
