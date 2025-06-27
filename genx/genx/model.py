@@ -635,6 +635,7 @@ class Model(H5HintedExport):
         Create ORSO simple model representation of this model.
         """
         from orsopy.fileio import model_language as ml
+        from orsopy.fileio.base import ComplexValue
 
         sm = self.script_module
 
@@ -642,13 +643,13 @@ class Model(H5HintedExport):
             # use x-ray SLDs
             def get_material(li):
                 sld = complex(li.f * li.dens) * 1e-6
-                return ml.Material(sld=ml.ComplexValue(sld.real, sld.imag))
+                return ml.Material(sld=ComplexValue(sld.real, sld.imag))
 
         else:
             # use neutron SLDs
             def get_material(li):
                 sld = complex(li.b * li.dens) * 1e-6
-                return ml.Material(sld=ml.ComplexValue(sld.real, sld.imag))
+                return ml.Material(sld=ComplexValue(sld.real, sld.imag))
 
         def get_layer(li):
             return ml.Layer(thickness=li.d, material=get_material(li), roughness=li.sigma)

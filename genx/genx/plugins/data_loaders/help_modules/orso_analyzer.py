@@ -96,7 +96,7 @@ class OrsoHeaderAnalyzer:
     @staticmethod
     def get_layer_data(layer) -> LayerData:
         layer.material.generate_density()
-        if layer.material.formula:
+        if getattr(layer.material, 'formula', None):
             formula = Formula.from_str(layer.material.formula)
             if layer.material.number_density:
                 dens = layer.material.number_density.as_unit("1/angstrom**3")
@@ -309,7 +309,10 @@ except ImportError:
     pass
 else:
     from orsopy.utils.chemical_formula import Formula as OrsoFormula
-    from orsopy.utils.density_resolver import DensityResolver
+    try:
+        from orsopy.utils.density_resolver import DensityResolver
+    except ImportError:
+        from orsopy.utils.density_resolver import MaterialResolver as DensityResolver
     from orsopy.utils.resolver_slddb import ResolverSLDDB
 
     from ...add_ons.help_modules.materials_db import mdb
