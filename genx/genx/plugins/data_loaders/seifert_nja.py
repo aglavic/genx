@@ -107,7 +107,7 @@ class Plugin(Template):
 
             # insert metadata into ORSO compatible fields
             dataset.meta["data_source"]["facility"] = "Seifert nja loader"
-            dataset.meta["data_source"]["experiment"]["probe"] = "xray"
+            dataset.meta["data_source"]["experiment"]["probe"] = "x-ray"
             dataset.meta["data_source"]["measurement"]["scheme"] = "angle-dispersive"
             # header evaluations
             inst = dataset.meta["data_source"]["measurement"]["instrument_settings"]

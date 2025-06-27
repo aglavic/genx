@@ -125,7 +125,7 @@ class Plugin(Template):
                 if il.attrib.get("Name", "") == "User":
                     dataset.meta["data_source"]["owner"]["name"] = il.attrib["Value"]
             dataset.meta["data_source"]["experiment"]["instrument"] = "Bruker"
-            dataset.meta["data_source"]["experiment"]["probe"] = "xray"
+            dataset.meta["data_source"]["experiment"]["probe"] = "x-ray"
             try:
                 dataset.meta["data_source"]["experiment"]["start_date"] = data_xml.find("TimeStampStarted").text
             except AttributeError:

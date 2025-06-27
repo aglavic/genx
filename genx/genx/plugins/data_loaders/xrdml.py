@@ -74,7 +74,7 @@ class Plugin(Template):
 
             # insert metadata into ORSO compatible fields
             dataset.meta["data_source"]["experiment"]["instrument"] = "XRDML"
-            dataset.meta["data_source"]["experiment"]["probe"] = "xray"
+            dataset.meta["data_source"]["experiment"]["probe"] = "x-ray"
             dataset.meta["data_source"]["measurement"]["scheme"] = "angle-dispersive"
             dataset.meta["data_source"]["sample"]["name"] = ds[3]
             dataset.meta["data_source"]["experiment"].update(ds[4])
@@ -240,9 +240,9 @@ def ReadXpert(file_name):
         data = data_tags[0].firstChild.nodeValue
         data = list(map(float, data.split()))
         I = np.array(data)
-        dI = np.sqrt(I * atten) / atten
-        I /= time
-        dI /= time
+        dI = np.sqrt(I)
+        I /= time / atten
+        dI /= time / atten
         if "2Theta" in moving_positions:
             th = np.linspace(moving_positions["2Theta"][0], moving_positions["2Theta"][1], len(data)) / 2.0
         else:
