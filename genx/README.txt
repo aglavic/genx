@@ -12,6 +12,16 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.12
+==============
+ * Add advanced resolution function describing Kalpha 1/2 wavelength for
+   high resolution measurements with oscillations up to larger reflection angles
+   (see new esample "X-ray_Reflecitvity_kalpha.hgx" on how to use it)
+ * Update orsopy integration for version >=1.2.2
+ * Implement compatibility for bumps version 1.x
+ * Fix XRDML intensity scaling when attenuation was used
+ * Fix some GUI bugs
+
 Changes 3.7.11
 ==============
  * New context menu entry in grid that allows population with most commonly used parameters of a model.
