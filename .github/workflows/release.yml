@@ -160,7 +160,7 @@ jobs:
     - name: Install dependencies
       run: |
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
-        python3 -m pip install "numpy<2" "scipy=1.15.3" matplotlib
+        python3 -m pip install "numpy<2" "scipy<1.16" matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
         python3 -m pip install wxpython
         python3 -m pip install vtk
@@ -245,7 +245,7 @@ jobs:
     - name: Install dependencies
       run: |
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
-        python3 -m pip install "numpy<2" "scipy=1.15.3" matplotlib
+        python3 -m pip install "numpy<2" "scipy<1.16" matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
         python3 -m pip install wxpython
         python3 -m pip install vtk
