@@ -16,8 +16,12 @@ a = Analysis(['scripts/genx_mac'],
              datas=[('genx', 'genx_source/genx')],
              hiddenimports= genx_modules+[
                  'pymysql', 'numba', 'wx._core.ArtProvider', 'requests',
+                 'scipy._lib.array_api_compat.numpy.fft', 'scipy.special._special_ufuncs',
+                 'scipy.special.cython_special', 'xml.dom.minidom',
                  'vtk', 'vtkmodules', 'vtkmodules.all', 'vtkmodules.util.colors',
                  'vtkmodules.util', 'vtkmodules.util.numpy_support',
+                 'docutils.parsers.null', 'genx.plugins.add_ons.LayerGraphics',
+                 'genx.gui.plotpanel', 'genx.gui.plotpanel_wx',
                  ] + collect_submodules('h5py',
                      filter=lambda name: not name.startswith('h5py.tests')
                   ) + collect_submodules('docutils.parsers'),
