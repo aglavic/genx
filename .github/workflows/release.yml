@@ -234,7 +234,7 @@ jobs:
           genx/dist/GenX3*.pkg
 
   build-macos-m1:
-    runs-on: macos-14
+    runs-on: macos-15
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
