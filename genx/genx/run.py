@@ -427,8 +427,8 @@ def compile_numba(cache_dir=None):
 
 
 def main():
-    multiprocessing.freeze_support()
     multiprocessing.set_start_method("spawn")
+    multiprocessing.freeze_support()
     if os.path.abspath(__file__).startswith("/snap"):
         # try fix multiprocessing in SNAP
         snap_sem = "/snap.genx.mp"
