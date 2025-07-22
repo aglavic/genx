@@ -234,7 +234,7 @@ jobs:
           genx/dist/GenX3*.pkg
 
   build-macos-m1:
-    runs-on: macos-15
+    runs-on: macos-13-xlarge
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
@@ -253,7 +253,7 @@ jobs:
     - name: Build with pyinstaller
       run: |
         cd genx
-        pyinstaller genx_mac_m1.spec
+        pyinstaller genx_mac.spec
     - name: Install the Apple certificate and provisioning profile
       env:
         BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
