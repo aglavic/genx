@@ -12,7 +12,7 @@ genx_modules += ['genx.gui.plotpanel', 'genx.gui.plotpanel_wx']
 
 a = Analysis(['scripts/genx_mac'],
              pathex=[os.path.abspath(os.path.curdir)],
-             binaries=[("/opt/homebrew/Cellar/llvm@18/18.1.8/lib/c++/libc++.1.dylib", ".")],
+             binaries=[("/opt/homebrew/Cellar/llvm@15/15.0.7/lib/c++/libc++.1.dylib", ".")],
              datas=[('genx', 'genx_source/genx')],
              hiddenimports= genx_modules+[
                  'numpy', 'pymysql', 'numba', 'wx._core.ArtProvider', 'requests',

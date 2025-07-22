@@ -253,7 +253,7 @@ jobs:
     - name: Build with pyinstaller
       run: |
         cd genx
-        pyinstaller genx_mac.spec
+        pyinstaller genx_mac_m1.spec
     - name: Install the Apple certificate and provisioning profile
       env:
         BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
