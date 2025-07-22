@@ -26,8 +26,8 @@ jobs:
         python3 -m pip list
     - name: Show paths
       run: |
-        find /usr/lib /opt/homebrew -name libz.1.dylib
-        find /usr/lib /opt/homebrew -name libomp.dylib
+        find / -name libz.1.dylib
+        find / -name libomp.dylib
     - name: Build with pyinstaller
       run: |
         cd genx
