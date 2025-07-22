@@ -10,7 +10,6 @@ on:
 jobs:
   build-macos-m1:
     runs-on: macos-15
-    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
