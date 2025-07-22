@@ -15,7 +15,7 @@ a = Analysis(['scripts/genx_mac'],
              binaries=[("/opt/homebrew/Cellar/llvm@18/18.1.8/lib/c++/libc++.1.dylib", ".")],
              datas=[('genx', 'genx_source/genx')],
              hiddenimports= genx_modules+[
-                 'pymysql', 'numba', 'wx._core.ArtProvider', 'requests',
+                 'numpy', 'pymysql', 'numba', 'wx._core.ArtProvider', 'requests',
                  'scipy._lib.array_api_compat.numpy.fft', 'scipy.special._special_ufuncs',
                  'scipy.special.cython_special', 'xml.dom.minidom',
                  'vtk', 'vtkmodules', 'vtkmodules.all', 'vtkmodules.util.colors',
