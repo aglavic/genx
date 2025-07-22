@@ -26,9 +26,9 @@ jobs:
         python3 -m pip list
     - name: Show paths
       run: |
-        echo $DYLD_LIBRARY_PATH 
-        ls /usr/lib
-        find / -name libc++.1.dylib
+        find /opt/homebrew/Cellar -name libz.1.dylib
+        find /opt/homebrew/Cellar -name libc++.1.dylib
+        find /opt/homebrew/Cellar -name libomp.dylib
     - name: Build with pyinstaller
       run: |
         cd genx
