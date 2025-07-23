@@ -12,6 +12,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.13
+==============
+ * Remove old and buggy zoom facility and add standard matplotlib toolbar for each graph, instead.
+ * Update windows and Mac OS build environments, fixing issue with M1 package.
+
 Changes 3.7.12
 ==============
  * Add advanced resolution function describing Kalpha 1/2 wavelength for
