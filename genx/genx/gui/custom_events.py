@@ -31,7 +31,7 @@ EVT_SIM_PLOT = wx.PyEventBinder(sim_plot_type)
 ## parametergrid
 # Event for when the grid has new values
 grid_change, EVT_PARAMETER_GRID_CHANGE = NewEvent()
-# Event for then the value of a parameter has changed. Should be used to do
+# Event for when the value of a parameter has changed. Should be used to do
 # simulations interactively.
 value_change, EVT_PARAMETER_VALUE_CHANGE = NewEvent()
 set_parameter_value, EVT_PARAMETER_SET_VALUE = NewEvent()

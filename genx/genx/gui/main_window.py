@@ -281,7 +281,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
         # Initializations..
         # To force an update of the menubar...
-        self.plot_data.SetZoom(False)
+        # self.plot_data.SetZoom(False)
 
         with self.catch_error(action="init", step=f"reading plot config"):
             for p in [self.plot_data, self.plot_fom, self.plot_pars, self.plot_fomscan]:
@@ -390,13 +390,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         )
         mb_view.Append(wx.ID_ANY, "Auto Color", mb_view_colors, "")
         mb_view.AppendSeparator()
-        self.mb_checkables[custom_ids.MenuId.ZOOM] = mb_view.Append(
-            custom_ids.MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK
-        )
-        mb_view.Append(custom_ids.MenuId.ZOOM_ALL, "Zoom All\tCtrl+Shift+Z", "Zoom to fit all data points")
-        self.mb_checkables[custom_ids.MenuId.AUTO_SCALE] = mb_view.Append(
-            custom_ids.MenuId.AUTO_SCALE, "Autoscale", "Sets autoscale on when plotting", wx.ITEM_CHECK
-        )
+        # self.mb_checkables[custom_ids.MenuId.ZOOM] = mb_view.Append(
+        #     custom_ids.MenuId.ZOOM, "Zoom\tCtrl+Z", "Turn the zoom on/off", wx.ITEM_CHECK
+        # )
+        # mb_view.Append(custom_ids.MenuId.ZOOM_ALL, "Zoom All\tCtrl+Shift+Z", "Zoom to fit all data points")
+        # self.mb_checkables[custom_ids.MenuId.AUTO_SCALE] = mb_view.Append(
+        #     custom_ids.MenuId.AUTO_SCALE, "Autoscale", "Sets autoscale on when plotting", wx.ITEM_CHECK
+        # )
         self.mb_checkables[custom_ids.MenuId.USE_TOGGLE_SHOW] = mb_view.Append(
             custom_ids.MenuId.USE_TOGGLE_SHOW,
             "Use Toggle Show",
@@ -520,15 +520,15 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_data_toggle_error, id=custom_ids.MenuId.TOGGLE_ERROR)
         self.Bind(wx.EVT_MENU, self.eh_data_calc, id=custom_ids.MenuId.CALCS_DATA)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_grid_slider, id=custom_ids.MenuId.TOGGLE_SLIDER)
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_zoom, id=custom_ids.MenuId.ZOOM)
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_zoomall, id=custom_ids.MenuId.ZOOM_ALL)
+        # self.Bind(wx.EVT_MENU, self.eh_mb_view_zoom, id=custom_ids.MenuId.ZOOM)
+        # self.Bind(wx.EVT_MENU, self.eh_mb_view_zoomall, id=custom_ids.MenuId.ZOOM_ALL)
         for key in COLOR_CYCLES.keys():
             self.Bind(wx.EVT_MENU, self.eh_mb_view_color_cycle, id=self.mb_checkables[key].GetId())
         self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_log, id=custom_ids.MenuId.Y_SCALE_LOG)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_yscale_linear, id=custom_ids.MenuId.Y_SCALE_LIN)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_log, id=custom_ids.MenuId.X_SCALE_LOG)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_xscale_linear, id=custom_ids.MenuId.X_SCALE_LOG)
-        self.Bind(wx.EVT_MENU, self.eh_mb_view_autoscale, id=custom_ids.MenuId.AUTO_SCALE)
+        # self.Bind(wx.EVT_MENU, self.eh_mb_view_autoscale, id=custom_ids.MenuId.AUTO_SCALE)
         self.Bind(wx.EVT_MENU, self.eh_mb_view_use_toggle_show, id=custom_ids.MenuId.USE_TOGGLE_SHOW)
         self.Bind(wx.EVT_MENU, self.eh_tb_simulate, id=custom_ids.MenuId.SIM_MODEL)
         self.Bind(wx.EVT_MENU, self.eh_mb_fit_evaluate, id=custom_ids.MenuId.EVAL_MODEL)
@@ -659,16 +659,16 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             "Error Statistics",
             "Error Statistics",
         )
-        self.main_frame_toolbar.AddSeparator()
-        self.main_frame_toolbar.AddTool(
-            custom_ids.ToolId.ZOOM,
-            "tb_zoom",
-            wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size, tb_bmp_size)),
-            wx.NullBitmap,
-            wx.ITEM_CHECK,
-            "Zoom | Ctrl+Z",
-            "Turn zoom on/off  | Ctrl+Z",
-        )
+        # self.main_frame_toolbar.AddSeparator()
+        # self.main_frame_toolbar.AddTool(
+        #     custom_ids.ToolId.ZOOM,
+        #     "tb_zoom",
+        #     wx.Bitmap(img.getzoomImage().Scale(tb_bmp_size, tb_bmp_size)),
+        #     wx.NullBitmap,
+        #     wx.ITEM_CHECK,
+        #     "Zoom | Ctrl+Z",
+        #     "Turn zoom on/off  | Ctrl+Z",
+        # )
 
     def bind_toolbar(self):
         self.Bind(wx.EVT_TOOL, self.eh_tb_new, id=custom_ids.ToolId.NEW_MODEL)
@@ -682,7 +682,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_TOOL, self.eh_tb_restart_fit, id=custom_ids.ToolId.RESTART_FIT)
         self.Bind(wx.EVT_TOOL, self.eh_tb_calc_error_bars, id=custom_ids.ToolId.CALC_ERROR)
         self.Bind(wx.EVT_TOOL, self.eh_tb_error_stats, id=custom_ids.ToolId.ERROR_STATS)
-        self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=custom_ids.ToolId.ZOOM)
+        # self.Bind(wx.EVT_TOOL, self.eh_tb_zoom, id=custom_ids.ToolId.ZOOM)
 
     def OnInputPageChanged(self, evt):
         tpage, fpage = evt.GetSelection(), evt.GetOldSelection()
@@ -1743,6 +1743,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             useful += "PyMySQL: %s, " % pymysql.__version__
         except ImportError:
             missing += "pymysql, "
+        try:
+            # noinspection PyUnresolvedReferences
+            import svgwrite
+
+            useful += "SVGwrite: %s, " % svgwrite.__version__
+        except ImportError:
+            missing += "svgwrite, "
 
         info_dilog = wx.adv.AboutDialogInfo()
         info_dilog.SetName("GenX")
@@ -1975,8 +1982,8 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         Callback for the settings change event for the current plot
          - change the toggle for the zoom icon and change the menu items.
         """
-        self.main_frame_toolbar.ToggleTool(custom_ids.ToolId.ZOOM, event.zoomstate)
-        self.mb_checkables[custom_ids.MenuId.ZOOM].Check(event.zoomstate)
+        # self.main_frame_toolbar.ToggleTool(custom_ids.ToolId.ZOOM, event.zoomstate)
+        # self.mb_checkables[custom_ids.MenuId.ZOOM].Check(event.zoomstate)
         if event.yscale == "log":
             self.mb_checkables[custom_ids.MenuId.Y_SCALE_LOG].Check(True)
         elif event.yscale == "linear":
@@ -1985,7 +1992,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.mb_checkables[custom_ids.MenuId.X_SCALE_LOG].Check(True)
         elif event.xscale == "linear":
             self.mb_checkables[custom_ids.MenuId.X_SCALE_LIN].Check(True)
-        self.mb_checkables[custom_ids.MenuId.AUTO_SCALE].Check(event.autoscale)
+        # self.mb_checkables[custom_ids.MenuId.AUTO_SCALE].Check(event.autoscale)
 
     def eh_tb_calc_error_bars(self, event):
         """

@@ -15,12 +15,13 @@ import wx.lib.newevent
 from matplotlib import backend_bases
 from matplotlib.backends import backend_wx
 from matplotlib.backends.backend_agg import RendererAgg
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, NavigationToolbar2WxAgg as NavigationToolbar
 from matplotlib.figure import Figure
 from numpy import arange, array, c_, floor, hstack, isfinite, ma, newaxis, sign
 from wx import LANDSCAPE, PAPER_A4
 
 from ..core.config import BaseConfig, Configurable
+from ..data import DataList
 from ..model import Model
 from .custom_events import plot_position, skips_event, state_changed
 
@@ -85,6 +86,10 @@ class PlotPanel(wx.Panel, Configurable):
         debug("init PlotPanel - setup canvas")
         self.canvas = FigureCanvasWxAgg(self, -1, self.figure)
         self.canvas.SetExtraStyle(wx.EXPAND)
+        debug("init PlotPanel - setup toolbar")
+        self.toolbar = NavigationToolbar(self.canvas)
+        self.toolbar.Realize()
+
         self.SetColor(color)
         self.print_size = (15.0 / 2.54, 12.0 / 2.54)
 
@@ -97,12 +102,13 @@ class PlotPanel(wx.Panel, Configurable):
         self.zooming = False
 
         debug("init PlotPanel - bind events")
-        self.canvas.Bind(wx.EVT_LEFT_DOWN, self.OnLeftMouseButtonDown)
-        self.canvas.Bind(wx.EVT_LEFT_UP, self.OnLeftMouseButtonUp)
-        self.canvas.Bind(wx.EVT_MOTION, self.OnMouseMove)
-        self.canvas.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDblClick)
-        self.canvas.Bind(wx.EVT_MIDDLE_DOWN, self.OnLeftDblClick)
-        self.canvas.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        self.canvas.mpl_connect("button_press_event", self.OnMPLButton)
+        # self.canvas.Bind(wx.EVT_LEFT_DOWN, self.OnLeftMouseButtonDown)
+        # self.canvas.Bind(wx.EVT_LEFT_UP, self.OnLeftMouseButtonUp)
+        # self.canvas.Bind(wx.EVT_MOTION, self.OnMouseMove)
+        # self.canvas.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDblClick)
+        # self.canvas.Bind(wx.EVT_MIDDLE_DOWN, self.OnLeftDblClick)
+        # self.canvas.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseScroll)
 
         cursor = wx.Cursor(wx.CURSOR_CROSS)
@@ -113,11 +119,22 @@ class PlotPanel(wx.Panel, Configurable):
         debug("init PlotPanel - FigurePrinter and Bitmap")
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.canvas, 1, wx.EXPAND)
+        sizer.Add(self.toolbar,  0, wx.LEFT | wx.EXPAND)
         self.SetSizer(sizer)
 
         # Init printout stuff
         self.fig_printer = FigurePrinter(self)
         debug("end init PlotPanel")
+
+    def OnMPLButton(self, event):
+        if self.toolbar.mode.name!='NONE':
+            return
+        if event.button == 3:
+            self.OnContextMenu(event)
+        elif event.button == 2:
+            pass
+        elif event.button == 1:
+            self.OnLeftMouseButtonDown(event)
 
     def SetColor(self, rgbtuple=None):
         """Set the figure and canvas color to be the same"""
@@ -213,7 +230,7 @@ class PlotPanel(wx.Panel, Configurable):
         does not work for negative log data. This works!
         """
 
-        if not (self.autoscale or force):
+        if not (self.toolbar.mode.name=="NONE" or force):
             return
         # If nothing is plotted no autoscale use defaults...
         if sum([len(line.get_ydata()) > 0 for line in self.ax.lines]) == 0:
@@ -275,6 +292,7 @@ class PlotPanel(wx.Panel, Configurable):
             if ymin != ymax:
                 self.ax.set_ylim(ymin * (1 - sign(ymin) * 0.05), ymax * (1 + sign(ymax) * 0.05))
             self.flush_plot()
+            self.toolbar.update()
         except UserWarning:
             pass
 
@@ -401,6 +419,7 @@ class PlotPanel(wx.Panel, Configurable):
         self.callback_window = window
 
     def OnLeftDblClick(self, event: wx.MouseEvent):
+        return
         if self.ax and (self.zoom or event.MiddleDown()):
             tmp = self.GetAutoScale()
             self.SetAutoScale(True)
@@ -411,35 +430,11 @@ class PlotPanel(wx.Panel, Configurable):
             # self.ax.set_autoscale_on(False)
 
     def OnLeftMouseButtonDown(self, event):
-        self.start_pos = event.Position
-
-        # print 'Left Mouse button pressed ', self.ax.transData.inverse_xy_tup(self.start_pos)
-        class Point:
-            pass
-
-        p = Point()
-        p.x, p.y = self.start_pos
-        size = self.canvas.GetClientSize()
-        p.y = size.height - p.y
-        if self.zoom and self.ax:
-            in_axes = self.ax.in_axes(p)
-            if in_axes:
-                self.zooming = True
-                self.cur_rect = None
-                self.canvas.CaptureMouse()
-                self.overlay = wx.Overlay()
-            else:
-                self.zooming = False
-        elif self.ax:
-            size = self.canvas.GetClientSize()
-            xy = self.ax.transData.inverted().transform(
-                array([self.start_pos[0], size.height - self.start_pos[1]])[newaxis, :]
-            )
-            x, y = xy[0, 0], xy[0, 1]
-            if self.callback_window:
-                evt = plot_position(text="(%.3e, %.3e)" % (x, y))
+        if event.dblclick:
+            return self.OnLeftDblClick(event)
+        if event.inaxes and self.callback_window:
+                evt = plot_position(text="(%.3e, %.3e)" % (event.xdata, event.ydata))
                 wx.PostEvent(self.callback_window, evt)
-            # print x,y
 
     def OnMouseMove(self, event):
         if self.zooming and event.Dragging() and event.LeftIsDown():
@@ -465,7 +460,7 @@ class PlotPanel(wx.Panel, Configurable):
         else:
             event.Skip()
 
-    def OnMouseScroll(self, event: wx.MouseEvent):
+    def OnMouseScroll(self, event):
         if event.GetWheelAxis() == wx.MOUSE_WHEEL_HORIZONTAL:
             event.Skip()
             return
@@ -514,6 +509,7 @@ class PlotPanel(wx.Panel, Configurable):
                 else:
                     self.ax.set_ylim(ymin, ymax + yrange * 0.2 * rot)
         self.flush_plot()
+        self.toolbar.push_current()
 
     def OnLeftMouseButtonUp(self, event):
         if self.canvas.HasCapture():
@@ -568,25 +564,25 @@ class PlotPanel(wx.Panel, Configurable):
 
     def generate_context_menu(self):
         menu = wx.Menu()
-        zoomID = wx.NewId()
-        menu.AppendCheckItem(zoomID, "Zoom")
-        menu.Check(zoomID, self.GetZoom())
+        # zoomID = wx.NewId()
+        # menu.AppendCheckItem(zoomID, "Zoom")
+        # menu.Check(zoomID, self.GetZoom())
 
-        def OnZoom(event):
-            self.SetZoom(not self.GetZoom())
+        # def OnZoom(event):
+        #     self.SetZoom(not self.GetZoom())
+        #
+        # self.Bind(wx.EVT_MENU, OnZoom, id=zoomID)
+        # zoomallID = wx.NewId()
+        # menu.Append(zoomallID, "Zoom All")
 
-        self.Bind(wx.EVT_MENU, OnZoom, id=zoomID)
-        zoomallID = wx.NewId()
-        menu.Append(zoomallID, "Zoom All")
-
-        def zoomall(event):
-            tmp = self.GetAutoScale()
-            self.SetAutoScale(True)
-            self.AutoScale()
-            self.SetAutoScale(tmp)
-            # self.flush_plot()
-
-        self.Bind(wx.EVT_MENU, zoomall, id=zoomallID)
+        # def zoomall(event):
+        #     tmp = self.GetAutoScale()
+        #     self.SetAutoScale(True)
+        #     self.AutoScale()
+        #     self.SetAutoScale(tmp)
+        #     # self.flush_plot()
+        #
+        # self.Bind(wx.EVT_MENU, zoomall, id=zoomallID)
         copyID = wx.NewId()
         menu.Append(copyID, "Copy")
 
@@ -646,14 +642,14 @@ class PlotPanel(wx.Panel, Configurable):
 
         self.Bind(wx.EVT_MENU, xscale_log, id=logID)
         self.Bind(wx.EVT_MENU, xscale_lin, id=linID)
-        autoscaleID = wx.NewId()
-        menu.AppendCheckItem(autoscaleID, "Autoscale")
-        menu.Check(autoscaleID, self.GetAutoScale())
-
-        def OnAutoScale(event):
-            self.SetAutoScale(not self.GetAutoScale())
-
-        self.Bind(wx.EVT_MENU, OnAutoScale, id=autoscaleID)
+        # autoscaleID = wx.NewId()
+        # menu.AppendCheckItem(autoscaleID, "Autoscale")
+        # menu.Check(autoscaleID, self.GetAutoScale())
+        #
+        # def OnAutoScale(event):
+        #     self.SetAutoScale(not self.GetAutoScale())
+        #
+        # self.Bind(wx.EVT_MENU, OnAutoScale, id=autoscaleID)
         return menu
 
     def flush_plot(self):
@@ -1123,7 +1119,7 @@ class DataPlotPanel(PlotPanel):
         # Force an update of the plot
         self.flush_plot()
 
-    def plot_data_fit(self, data):
+    def plot_data_fit(self, data: DataList):
         if not self.ax:
             # self.ax = self.figure.add_subplot(111)
             self.create_axes()
@@ -1191,7 +1187,7 @@ class DataPlotPanel(PlotPanel):
         self.autoscale_error_ax()
         self.flush_plot()
 
-    def plot_data_sim(self, data):
+    def plot_data_sim(self, data: DataList):
         if not self.ax:
             # self.ax = self.figure.add_subplot(111)
             self.create_axes()
@@ -1413,6 +1409,10 @@ class DataPlotPanel(PlotPanel):
                 self.update = self.plot_data_fit
                 self.SetAutoScale(False)
             self.update(event.data)
+        elif event.desc=="Model loaded":
+            self.toolbar.mode = backend_bases._Mode.NONE
+            self.toolbar._update_buttons_checked()
+            self.AutoScale()
 
 
 class ErrorPanelConfig(BasePlotConfig):
@@ -1446,7 +1446,11 @@ class ErrorPlotPanel(PlotPanel):
             self.ax.plot(data[:, 0], data[:, 1], "-r")
             if self.GetAutoScale() and len(data) > 0:
                 self.ax.set_ylim(data[:, 1].min() * 0.95, data[:, 1].max() * 1.05)
-                self.ax.set_xlim(data[:, 0].min(), data[:, 0].max())
+                xmin, xmax = data[:, 0].min(), data[:, 0].max()
+                if xmin==xmax:
+                    xmin -= 0.01
+                    xmax += 0.01
+                self.ax.set_xlim(xmin, xmax)
                 # self.AutoScale()
 
         self.ax.set_xlabel("Iteration")

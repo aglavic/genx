@@ -173,6 +173,7 @@ dependencies:
   - six=1.17.0=pyhd8ed1ab_0
   - snappy=1.2.2=h7fa0ca8_0
   - sqlite=3.50.3=hdb435a2_0
+  - svgwrite=1.4.3=pyhd8ed1ab_1
   - svt-av1=3.0.2=he0c23c2_0
   - tbb=2021.13.0=h62715c5_1
   - tbb-devel=2021.13.0=h47441b3_1
