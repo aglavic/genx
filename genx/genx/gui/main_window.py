@@ -2021,16 +2021,11 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         """plot_page_changed(frame, event) --> None
 
         Callback for page change in plot notebook. Changes the state of
-        the zoom toggle button.
+        the toggles.
         """
         sel = event.GetSelection()
         pages = self.get_pages()
         if sel < len(pages):
-            zoom_state = pages[sel].GetZoom()
-            # Set the zoom button to the correct value
-            self.main_frame_toolbar.ToggleTool(custom_ids.ToolId.ZOOM, zoom_state)
-            self.mb_checkables[custom_ids.MenuId.ZOOM].Check(zoom_state)
-
             yscale = pages[sel].GetYScale()
             if yscale == "log":
                 self.mb_checkables[custom_ids.MenuId.Y_SCALE_LOG].Check(True)
