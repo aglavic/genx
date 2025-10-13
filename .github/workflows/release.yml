@@ -168,8 +168,7 @@ jobs:
         python3 -m pip list
     - name: list all llvm folders
       run: |
-        ls /opt/homebrew/Cellar/llvm*/*/lib
-        ls /opt/homebrew/Cellar/tbb/2022.2.0
+        ls /opt/homebrew/Cellar/tbb/2022.2.0/lib
     - name: Build with pyinstaller
       run: |
         cd genx
@@ -258,8 +257,8 @@ jobs:
         python3 -m pip list
     - name: list library folders
       run: |
-        ls /opt/homebrew/Cellar/llvm@15/15.0.7/lib
-        ls /opt/homebrew/Cellar/tbb/2022.2.0
+        ls /opt/homebrew/Cellar/llvm@15/15.0.7/lib/clang
+        ls /opt/homebrew/Cellar/tbb/2022.2.0/lib
     - name: Build with pyinstaller
       run: |
         cd genx
