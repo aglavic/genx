@@ -166,6 +166,10 @@ jobs:
         python3 -m pip install wxpython
         python3 -m pip install vtk
         python3 -m pip list
+    - name: list library folders
+      run: |
+        ls /usr/local/Cellar/libomp/21.1.0/*
+        ls /opt/homebrew/Cellar/libomp/21.1.2/*
     - name: Build with pyinstaller
       run: |
         cd genx
@@ -254,7 +258,7 @@ jobs:
         python3 -m pip list
     - name: list library folders
       run: |
-        ls /opt/homebrew/Cellar/libomp*/lib/
+        ls /opt/homebrew/Cellar/libomp/21.1.2/*
     - name: Build with pyinstaller
       run: |
         cd genx
