@@ -159,16 +159,12 @@ jobs:
         python-version: '3.12'
     - name: Install dependencies
       run: |
-        brew install tbb
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
         python3 -m pip install wxpython
         python3 -m pip install vtk
         python3 -m pip list
-    - name: list all llvm folders
-      run: |
-        ls /usr/local/Cellar/tbb/2022.2.0/lib
     - name: Build with pyinstaller
       run: |
         cd genx
@@ -248,7 +244,6 @@ jobs:
         python-version: '3.12'
     - name: Install dependencies
       run: |
-        brew install tbb
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
@@ -257,7 +252,7 @@ jobs:
         python3 -m pip list
     - name: list library folders
       run: |
-        ls /opt/homebrew/Cellar/llvm@15/15.0.7/lib/clang/15.0.7
+        ls /opt/homebrew/Cellar/llvm@15/15.0.7/lib/clang/15.0.7/lib
     - name: Build with pyinstaller
       run: |
         cd genx
