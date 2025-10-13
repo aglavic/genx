@@ -2418,6 +2418,12 @@ class GenxApp(wx.App):
         image = wx.Bitmap(img.getgenxImage().Scale(400, 400))
         self.splash = wx.adv.SplashScreen(image, wx.adv.SPLASH_CENTER_ON_SCREEN, wx.adv.SPLASH_NO_TIMEOUT, None)
         wx.YieldIfNeeded()
+        try:
+            # if pyinstaller with splash, close it now
+            import pyi_splash
+            pyi_splash.close()
+        except ImportError:
+            pass
 
     def WriteSplash(self, text, progress=0.0):
         image = self.splash.GetBitmap()
