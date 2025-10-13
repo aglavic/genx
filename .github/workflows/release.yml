@@ -159,6 +159,7 @@ jobs:
         python-version: '3.12'
     - name: Install dependencies
       run: |
+        brew install libomp
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
@@ -244,6 +245,7 @@ jobs:
         python-version: '3.12'
     - name: Install dependencies
       run: |
+        brew install libomp
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
@@ -252,7 +254,7 @@ jobs:
         python3 -m pip list
     - name: list library folders
       run: |
-        ls /opt/homebrew/Cellar/llvm@15/15.0.7/lib/clang/15.0.7/lib/darwin
+        ls /opt/homebrew/Cellar/libomp*/lib/
     - name: Build with pyinstaller
       run: |
         cd genx
