@@ -16,7 +16,7 @@ a = Analysis(['scripts/genx_mac'],
                        ("/opt/homebrew/Cellar/libomp/21.1.2/lib/libomp.dylib", ".")],
              datas=[('genx', 'genx_source/genx')],
              hiddenimports= genx_modules+[
-                 'numpy', 'pymysql', 'numba', 'wx._core.ArtProvider', 'requests',
+                 'numpy', 'pymysql', 'numba', 'requests',
                  'scipy._lib.array_api_compat.numpy.fft', 'scipy.special._special_ufuncs',
                  'scipy.special.cython_special', 'xml.dom.minidom',
                  'vtk', 'vtkmodules', 'vtkmodules.all', 'vtkmodules.util.colors',
