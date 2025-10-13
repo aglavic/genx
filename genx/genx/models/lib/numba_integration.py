@@ -3,6 +3,7 @@ import sys
 
 from logging import debug
 
+import numba
 import numba.core.caching as nc
 import platformdirs
 
@@ -69,6 +70,9 @@ class _GenxCacheLocator(nc._SourceFileBackedLocatorMixin, nc._CacheLocator):
 
 
 def configure_numba():
+    # configure thread safety, will use the tbb or openMP thead backend, which is thread but not fork safe
+    # as we configure multiprocessing to use 'spawn' we shouldn't have to worry about forking
+    numba.config.THREADING_LAYER = 'threadsafe'
     if hasattr(nc, "_CacheImpl"):
         nc._CacheImpl._locator_classes.insert(0, _GenxCacheLocator)
     else:
