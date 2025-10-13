@@ -101,8 +101,15 @@ class PluginHelpDialog(wx.Frame):
         self.Layout()
         size = parent.GetSize()
         pos = parent.GetPosition()
+
+        available_screen = wx.Display().GetClientArea()
+        dest = (pos.x+size.x, pos.y)
+        if (dest[0]+600)>available_screen[2]:
+            #if the screen is not large enough, put window as far to the right as possible
+            dest = (available_screen[2]-600, pos.y)
+
         self.SetSize((600, size.y))
-        self.SetPosition((pos.x+size.x, pos.y))
+        self.SetPosition(dest)
 
         self.choice.SetSelection(0)
         self.on_choice(None)
