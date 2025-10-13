@@ -252,7 +252,7 @@ jobs:
         python3 -m pip list
     - name: list library folders
       run: |
-        ls /opt/homebrew/Cellar/llvm@15/15.0.7/lib/clang/15.0.7/lib
+        ls /opt/homebrew/Cellar/llvm@15/15.0.7/lib/clang/15.0.7/lib/darwin
     - name: Build with pyinstaller
       run: |
         cd genx
