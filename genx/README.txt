@@ -16,6 +16,7 @@ Changes 3.7.14
 ==============
  * Prevent help window from being shown off-screen when main window is on right edge of screen
  * Fix crash in OSX build caused by missing threading library for numba
+ * Add pyinstaller splash image on Windows build to show startup indication earlier
 
 Changes 3.7.13
 ==============

@@ -351,7 +351,7 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             self.materials_list.pop(index)
             # Update the list
             self.SetItemCount(len(self.materials_list))
-            self.RefreshItems(index, len(self.materials_list))
+            self.RefreshItems(index, len(self.materials_list)-1)
 
     def AddItem(self, item):
         index = 0
@@ -359,7 +359,7 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
             index += 1
         self.materials_list.insert(index, item)
         self.SetItemCount(len(self.materials_list))
-        self.RefreshItems(index, len(self.materials_list))
+        self.RefreshItems(index, len(self.materials_list)-1)
 
 
 class MaterialDialog(wx.Dialog):
