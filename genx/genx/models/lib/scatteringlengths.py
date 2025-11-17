@@ -433,7 +433,7 @@ def create_fp_lookup(path):
         f1_e = (energy - e[pos1]) * (f1[pos2] - f1[pos1]) / (e[pos2] - e[pos1]) + f1[pos1]
         f2_e = (energy - e[pos1]) * (f2[pos2] - f2[pos1]) / (e[pos2] - e[pos1]) + f2[pos1]
 
-        return f1_e - 1.0j * f2_e
+        return complex(f1_e - 1.0j * f2_e)
 
     return lookup_func
 

@@ -65,6 +65,9 @@ class LInfo:
     thickness: float
     scale: float
     color: LColor
+    name: str
+    # sld: complex
+    # sld_unit: str
 
 
 COLORS = [
@@ -94,8 +97,10 @@ class BlockGenerator:
     min_rescale = 30.0
     max_rescale = 100.0
 
-    def __init__(self, stacks: List[StackBase], rescale=True, show_all=False, show_one=False):
+    def __init__(self, stacks: List[StackBase], layer_names: dict,
+                 rescale=True, show_all=False, show_one=False):
         self.stacks = [si for si in stacks if len(si.Layers) > 0]
+        self.layer_names = layer_names
         self.rescale = rescale
         self.show_all = show_all
         self.show_one = show_one
@@ -121,11 +126,13 @@ class BlockGenerator:
         repetitions = []
         thicknesses = []
         color_slds = []
+        names = []
 
         for stack in self.stacks:
             repetitions.append(int(stack.Repetitions))
             thicknesses.append([li.d for li in stack.Layers])
             color_slds.append([abs(li.dens * li.b) + abs(li.dens * li.f) for li in stack.Layers])
+            names.append([self.layer_names[id(li)] for li in stack.Layers])
             if len(thicknesses[-1]) > 0:
                 dmin = min(dmin, min(thicknesses[-1]))
                 dmax = max(dmax, max(thicknesses[-1]))
@@ -147,6 +154,7 @@ class BlockGenerator:
         self.dmax = dmax
         self.repetitions = repetitions
         self.color_ids = color_ids
+        self.names = names
 
         if self.rescale:
             sthicknesses = [list(map(self.rescale_thickness, ti)) for ti in thicknesses]
@@ -172,8 +180,8 @@ class BlockGenerator:
         Returns a list of blocks with either a thickness or list of thicknesses
         """
         output = []
-        for ri, ti, si, cidi in zip(self.repetitions, self.thicknesses, self.scaled, self.color_ids):
-            infos = [LInfo(ti_j, si_j, COLORS[cid_j % len(COLORS)]) for ti_j, si_j, cid_j in zip(ti, si, cidi)]
+        for ri, ti, si, cidi, ni in zip(self.repetitions, self.thicknesses, self.scaled, self.color_ids, self.names):
+            infos = [LInfo(ti_j, si_j, COLORS[cid_j % len(COLORS)], ni_j) for ti_j, si_j, cid_j, ni_j in zip(ti, si, cidi, ni)]
             dsequence = sum(si)
             if ri < 2:
                 output += infos
@@ -216,6 +224,7 @@ class SVGenerator:
 
     unit_precision: int  # number of digits behind decimal point for thickness label
     unit_nm: bool  # use nm instead of angstrom as unit
+    is_xray: bool
 
     view_box = array([100, 200])
     move_3d = 8.0
@@ -225,6 +234,7 @@ class SVGenerator:
     def __init__(
         self,
         sample: SampleBase,
+        layer_names: dict = {},
         rescale=True,
         show_all=False,
         show_one=False,
@@ -232,12 +242,15 @@ class SVGenerator:
         unit_precision=1,
         unit_nm=True,
         fontsize=10,
+        is_xray=True,
     ):
         self.use3d = use3d
         self.fontsize = fontsize
         self.unit_precision = unit_precision
         self.unit_nm = unit_nm
-        self.block_generator = BlockGenerator(sample.Stacks, rescale=rescale, show_all=show_all, show_one=show_one)
+        self.is_xray = is_xray
+        self.block_generator = BlockGenerator(sample.Stacks, layer_names=layer_names,
+                                              rescale=rescale, show_all=show_all, show_one=show_one)
         self.create_svg()
 
     def to_vp(self, point0):
@@ -590,8 +603,13 @@ class Plugin(framework.Template):
         model = self.GetModel()
         if model.script_module is None:
             return
+        # create a mapping of layer object ids to layer name
+        layer_names = dict([(id(item), ii)
+                       for ii,item in model.script_module.__dict__.items()
+                       if type(item).__name__=='Layer'])
         gen = SVGenerator(
             model.script_module.sample,
+            layer_names = layer_names,
             rescale=self.rescale.GetValue(),
             show_all=self.show_all.GetValue(),
             show_one=self.show_one.GetValue(),
@@ -599,6 +617,7 @@ class Plugin(framework.Template):
             unit_nm=self.unit_nm.GetValue(),
             unit_precision=int(self.unit_precision.GetValue()),
             fontsize=self.fontsize.GetValue(),
+            is_xray=model.script_module.inst.probe=='x-ray',
         )
         self.svg = gen.svg.tostring()
         # self.img.svg_img = SVGimage.CreateFromBytes(self.svg.encode('utf-8'))

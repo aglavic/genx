@@ -47,3 +47,4 @@ Other tutorials
    /tutorials/error_statistics
    /tutorials/performance
    /tutorials/mpi
+   /tutorials/notebook

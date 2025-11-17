@@ -587,14 +587,15 @@ class ConnectedParameter:
     def _repr_ipyw_(self):
         import ipywidgets as ipw
 
-        wname = ipw.Combobox(
-            value=self.name,
-            options=[
+        if self._model is None:
+            options = ['inst', 'Amb', 'Sub']
+        else:
+            options = [
                 ni
-                for ni, oi in self._parent.model.script_module.__dict__.items()
+                for ni, oi in self._model.script_module.__dict__.items()
                 if type(oi).__name__ in ["Layer", "Stack", "Instrument"]
-            ],
-        )
+            ]
+        wname = ipw.Combobox(value=self.name, options=options)
         wname.change_item = "name"
         wval = ipw.FloatText(value=self.value, layout=ipw.Layout(width="20%"))
         wval.change_item = "value"
@@ -618,7 +619,7 @@ class ConnectedParameter:
                     name = change.new.split(".")[0]
                     change.owner.options = tuple(
                         "%s.%s" % (name, si)
-                        for si in dir(self._parent.model.script_module.__dict__[name])
+                        for si in dir(self._model.script_module.__dict__[name])
                         if si.startswith("set")
                     )
                 except:
@@ -626,7 +627,7 @@ class ConnectedParameter:
             else:
                 change.owner.options = tuple(
                     ni
-                    for ni, oi in self._parent.model.script_module.__dict__.items()
+                    for ni, oi in self._model.script_module.__dict__.items()
                     if type(oi).__name__ in ["Layer", "Stack", "Instrument"]
                 )
 

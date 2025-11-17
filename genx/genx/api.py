@@ -436,6 +436,8 @@ class Reflectivity(SampleBuilder):
             self[name] = stack
         else:
             for key, value in kwargs.items():
+                if type(value) is str:
+                    value = eval(value, self.GetModel().script_module.__dict__)
                 setattr(stack, key, value)
             self.WriteModel()
         return self[name]
@@ -449,6 +451,8 @@ class Reflectivity(SampleBuilder):
             self[name] = layer
         else:
             for key, value in kwargs.items():
+                if type(value) is str:
+                    value = eval(value, self.GetModel().script_module.__dict__)
                 setattr(lay, key, value)
             self.WriteModel()
         return self[name]
