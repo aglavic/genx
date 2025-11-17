@@ -149,7 +149,7 @@ jobs:
           genx/dist/*.deb
 
   build-macos:
-    runs-on: macos-14-large
+    runs-on: macos-13
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
