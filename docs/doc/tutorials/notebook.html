@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Running GenX Models in Jupyter Notebook/Lab &#8212; GenX 3.7.14 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/genx.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Frequently Asked Questions" href="../faq.html" />
+    <link rel="prev" title="Using GenX from the command line (with mpi)" href="mpi.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../faq.html" title="Frequently Asked Questions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="mpi.html" title="Using GenX from the command line (with mpi)"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.14 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Running GenX Models in Jupyter Notebook/Lab</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="running-genx-models-in-jupyter-notebook-lab">
+<span id="tutorial-notebook"></span><h1>Running GenX Models in Jupyter Notebook/Lab<a class="headerlink" href="#running-genx-models-in-jupyter-notebook-lab" title="Permalink to this headline">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Jupyter notebooks have become quite popular in experimental and data science as they allow
+to work on data analysis and write code interactively while being able to reproduce the results
+and display results nicely.</p>
+<p>While the main strength of GenX is the interactive development of models using a graphical user
+interface while keeping the felxibility of a modifyable model script, GenX also supports to
+use the essential features via an API interface that includes special jupyter notebook support.</p>
+<p>While it is possible to build models via this API it is mostly intended to run and anlyze already
+existing model, e.g. to perform statistical analysis of the results.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>The genx installation includes some example notebooks that can be used as a reference.
+You can find them in:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">genx</span> <span class="n">installation</span><span class="p">}</span><span class="o">/</span><span class="n">genx</span><span class="o">/</span><span class="n">examples</span><span class="o">/*.</span><span class="n">ipynb</span>
+</pre></div>
+</div>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
+<p>To use the GenX API, the package needs to be found by your python environment use in the notebook.
+I you installed GenX via pip in the same environment, that should already be the case.</p>
+<p>The following shows you how to load a GenX file, inspect the model and run a fit:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pytlab</span> <span class="n">inline</span> <span class="c1"># %matplotlib inline</span>
+<span class="kn">from</span> <span class="nn">genx</span> <span class="kn">import</span> <span class="n">api</span>
+
+<span class="n">model</span><span class="p">,</span><span class="n">optimizer</span><span class="o">=</span><span class="n">api</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;D17_TOF_SiO.hgx&#39;</span><span class="p">)</span>
+<span class="c1"># save the model script to a file for later inspection</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;genx_model.py&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">script</span><span class="p">)</span>
+
+<span class="c1">########## new cell ############</span>
+<span class="n">model</span><span class="o">.</span><span class="n">parameters</span>
+<span class="c1"># ==&gt; output a list of fit parameters from the &quot;grid&quot; tab of the GUI</span>
+<span class="c1">########## new cell ############</span>
+<span class="n">optimizer</span>
+<span class="c1"># ==&gt; output the configuration options for the fit, can be modified as attributes of this object</span>
+<span class="c1">########## new cell ############</span>
+<span class="n">api</span><span class="o">.</span><span class="n">fit_notebook</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+<span class="c1"># ==&gt; performs the fit and shows live update of the progress</span>
+<span class="c1">########## new cell ############</span>
+<span class="n">api</span><span class="o">.</span><span class="n">fit_update</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+<span class="n">model</span>
+<span class="c1"># ==&gt; update model with fit results and show the overview widget for the model</span>
+<span class="c1">########## new cell ############</span>
+<span class="c1"># potentially save the fit result to a new file</span>
+<span class="c1">#api.save(r&#39;testoutput.hgx&#39;, model, optimizer)</span>
+</pre></div>
+</div>
+</section>
+<section id="widgets">
+<h2>Widgets<a class="headerlink" href="#widgets" title="Permalink to this headline">¶</a></h2>
+<p>There are some experimental notebook widgets implemented, that allow interactive modification
+of GenX models similar to the GUI. This can be useful for testing or if only partial code based
+analysis is desired.
+The widgets can be accessed as attributes of some objects:</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Running GenX Models in Jupyter Notebook/Lab</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#quick-start">Quick Start</a></li>
+<li><a class="reference internal" href="#widgets">Widgets</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="mpi.html"
+                        title="previous chapter">Using GenX from the command line (with mpi)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../faq.html"
+                        title="next chapter">Frequently Asked Questions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/notebook.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../faq.html" title="Frequently Asked Questions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="mpi.html" title="Using GenX from the command line (with mpi)"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.7.14 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Running GenX Models in Jupyter Notebook/Lab</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Matts Björck, 2020, Artur Glavic.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>
