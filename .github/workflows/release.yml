@@ -37,6 +37,7 @@ jobs:
         python-version: 3.12
     - name: Install dependencies
       run: |
+        pip install brotli
         C:\Miniconda\condabin\conda.bat env update --file genx\windows_build\conda_build.yml --name base
         C:\Miniconda\condabin\conda.bat init powershell
     - name: Build with pyinstaller
