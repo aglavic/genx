@@ -26,7 +26,6 @@ dependencies:
   - charset-normalizer=3.4.2=pyhd8ed1ab_0
   - colorama=0.4.6=pyhd8ed1ab_1
   - contourpy=1.3.2=py313h1ec8472_0
-  - cudatoolkit=11.8.0=h09e9e62_13
   - cycler=0.12.1=pyhd8ed1ab_1
   - dav1d=1.2.1=hcfcfb64_0
   - dill=0.4.0=pyhd8ed1ab_0
