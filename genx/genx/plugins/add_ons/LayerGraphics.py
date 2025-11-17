@@ -23,7 +23,7 @@ from .. import add_on_framework as framework
 
 try:
     # noinspection PyUnresolvedReferences
-    from typing import List
+    from typing import Dict, List
 except ImportError:
     List = object
 
@@ -66,9 +66,7 @@ class LInfo:
     scale: float
     color: LColor
     name: str
-    # sld: complex
-    # sld_unit: str
-
+    sld: str
 
 COLORS = [
     LColor(1.0, 0.0, 0.0),
@@ -83,6 +81,7 @@ COLORS = [
 class BlockGenerator:
     stacks: List[StackBase]
     rescale: bool  # apply the mapping function to reduce visible variation of size
+    is_xray: bool # use x-ray as basis for sld calculation
     show_all: bool  # show all layers in a repeating stack separately
     show_one: bool  # show just one sequence in a repreating stack when above 1 repetition
 
@@ -97,10 +96,11 @@ class BlockGenerator:
     min_rescale = 30.0
     max_rescale = 100.0
 
-    def __init__(self, stacks: List[StackBase], layer_names: dict,
-                 rescale=True, show_all=False, show_one=False):
+    def __init__(self, stacks: List[StackBase], layer_names: Dict[int, str],
+                 is_xray=True, rescale=True, show_all=False, show_one=False):
         self.stacks = [si for si in stacks if len(si.Layers) > 0]
         self.layer_names = layer_names
+        self.is_xray = is_xray
         self.rescale = rescale
         self.show_all = show_all
         self.show_one = show_one
@@ -127,12 +127,18 @@ class BlockGenerator:
         thicknesses = []
         color_slds = []
         names = []
+        slds = []
 
         for stack in self.stacks:
             repetitions.append(int(stack.Repetitions))
             thicknesses.append([li.d for li in stack.Layers])
-            color_slds.append([abs(li.dens * li.b) + abs(li.dens * li.f) for li in stack.Layers])
-            names.append([self.layer_names[id(li)] for li in stack.Layers])
+            names.append([self.layer_names.get(id(li), '').replace('_', ' ') for li in stack.Layers])
+            if self.is_xray:
+                slds.append([f'{li.dens*li.f.real:.2f} rₑ/Å³' for li in stack.Layers])
+                color_slds.append([abs(li.dens*li.f) for li in stack.Layers])
+            else:
+                slds.append([f'{li.dens*li.b.real*10.:.2f} 10⁻⁶ Å⁻²' for li in stack.Layers])
+                color_slds.append([abs(li.dens * li.b) for li in stack.Layers])
             if len(thicknesses[-1]) > 0:
                 dmin = min(dmin, min(thicknesses[-1]))
                 dmax = max(dmax, max(thicknesses[-1]))
@@ -154,13 +160,14 @@ class BlockGenerator:
         self.dmax = dmax
         self.repetitions = repetitions
         self.color_ids = color_ids
-        self.names = names
 
         if self.rescale:
             sthicknesses = [list(map(self.rescale_thickness, ti)) for ti in thicknesses]
         else:
             sthicknesses = thicknesses
         self.thicknesses = thicknesses
+        self.names = names
+        self.slds = slds
         self.scaled = sthicknesses
 
         for ri, ti in zip(repetitions, sthicknesses):
@@ -180,17 +187,19 @@ class BlockGenerator:
         Returns a list of blocks with either a thickness or list of thicknesses
         """
         output = []
-        for ri, ti, si, cidi, ni in zip(self.repetitions, self.thicknesses, self.scaled, self.color_ids, self.names):
-            infos = [LInfo(ti_j, si_j, COLORS[cid_j % len(COLORS)], ni_j) for ti_j, si_j, cid_j, ni_j in zip(ti, si, cidi, ni)]
+        for ri, ti, si, cidi, ni, di in zip(self.repetitions, self.thicknesses, self.scaled,
+                                            self.color_ids, self.names, self.slds):
+            infos = [LInfo(ti_j, si_j, COLORS[cid_j % len(COLORS)], ni_j, di_j)
+                     for ti_j, si_j, cid_j, ni_j, di_j in zip(ti, si, cidi, ni, di)]
             dsequence = sum(si)
             if ri < 2:
                 output += infos
             elif self.show_one:
-                output.append(infos + [LInfo(-ri, dsequence / 2, LColor(1.0, 1.0, 1.0))])
+                output.append(infos + [LInfo(-ri, dsequence / 2, LColor(1.0, 1.0, 1.0), '', '')])
             elif self.show_all or ri == 2:
                 output.append(ri * infos)
             else:
-                output.append(infos + [LInfo(-ri, dsequence / 2, LColor(1.0, 1.0, 1.0))] + infos)
+                output.append(infos + [LInfo(-ri, dsequence / 2, LColor(1.0, 1.0, 1.0), '', '')] + infos)
         return output
 
     def __repr__(self):
@@ -224,7 +233,6 @@ class SVGenerator:
 
     unit_precision: int  # number of digits behind decimal point for thickness label
     unit_nm: bool  # use nm instead of angstrom as unit
-    is_xray: bool
 
     view_box = array([100, 200])
     move_3d = 8.0
@@ -234,10 +242,12 @@ class SVGenerator:
     def __init__(
         self,
         sample: SampleBase,
-        layer_names: dict = {},
+        layer_names,
         rescale=True,
         show_all=False,
         show_one=False,
+        show_names=False,
+        show_slds=False,
         use3d=True,
         unit_precision=1,
         unit_nm=True,
@@ -248,8 +258,9 @@ class SVGenerator:
         self.fontsize = fontsize
         self.unit_precision = unit_precision
         self.unit_nm = unit_nm
-        self.is_xray = is_xray
-        self.block_generator = BlockGenerator(sample.Stacks, layer_names=layer_names,
+        self.show_names = show_names
+        self.show_slds = show_slds
+        self.block_generator = BlockGenerator(sample.Stacks, layer_names=layer_names, is_xray=is_xray,
                                               rescale=rescale, show_all=show_all, show_one=show_one)
         self.create_svg()
 
@@ -268,9 +279,10 @@ class SVGenerator:
 
     def tlabel(self, thickness):
         if self.unit_nm:
-            return f"{thickness/10:.{self.unit_precision}f} nm"
+            output = f"{thickness/10:.{self.unit_precision}f} nm"
         else:
-            return f"{thickness:.{self.unit_precision}f} Å"
+            output = f"{thickness:.{self.unit_precision}f} Å"
+        return output
 
     def add_rect(self, pos: float, si: float, color: LColor = LColor(0.0, 0.0, 0.0), in_stack=False, width=90):
         px, py = self.view_box * 0.01
@@ -359,6 +371,24 @@ class SVGenerator:
                                 dominant_baseline="middle",
                             )
                         )
+                        if self.show_names:
+                            paragraph.add(
+                                self.svg.text(
+                                    bij.name,
+                                    (tc * px, (pos + dij / 2.0) * py-self.fontsize*1.2),
+                                    text_anchor="middle",
+                                    dominant_baseline="middle",
+                                )
+                            )
+                        if self.show_slds:
+                            paragraph.add(
+                                self.svg.text(
+                                    bij.sld,
+                                    (tc * px, (pos + dij / 2.0) * py+self.fontsize*1.2),
+                                    text_anchor="middle",
+                                    dominant_baseline="middle",
+                                )
+                            )
             else:
                 di = bi.scale / vscale
                 pos -= di
@@ -373,6 +403,24 @@ class SVGenerator:
                         dominant_baseline="middle",
                     )
                 )
+                if self.show_names:
+                    paragraph.add(
+                        self.svg.text(
+                            bi.name,
+                            (tc*px, (pos+di/2.0)*py-self.fontsize*1.2),
+                            text_anchor="middle",
+                            dominant_baseline="middle",
+                            )
+                        )
+                if self.show_slds:
+                    paragraph.add(
+                        self.svg.text(
+                            bi.sld,
+                            (tc*px, (pos+di/2.0)*py+self.fontsize*1.2),
+                            text_anchor="middle",
+                            dominant_baseline="middle",
+                            )
+                        )
         if self.use3d:
             # add surface polygon
             shifted = self.to_vp((85, pos))
@@ -456,6 +504,12 @@ class SVGenerator:
         pos = 90.0
         self.add_rect_gc(gc, pos, 100, LColor(0, 0, 0))
         bc = LColor(0, 0, 0)
+        font_center = 0.
+        font_offset = gc_scale*self.fontsize*1.2
+        if self.show_names:
+            font_center += font_offset/2.
+        if self.show_slds:
+            font_center -= font_offset/2.
         for bi in blocks:
             if isinstance(bi, list):
                 block_length = sum([bij.scale / vscale for bij in bi])
@@ -483,17 +537,29 @@ class SVGenerator:
                     else:
                         bc = bij.color
                         self.add_rect_gc(gc, pos, dij, bc, in_stack=True)
-                        self.draw_centered_text(
-                            gc, self.tlabel(bij.thickness), gc_scale * tc * px, gc_scale * (pos + dij / 2.0) * py
+                        if self.show_names:
+                            self.draw_centered_text(gc, bij.name, gc_scale * tc * px,
+                                                    gc_scale * (pos + dij / 2.0) * py + font_center - font_offset)
+                        self.draw_centered_text(gc, self.tlabel(bij.thickness),
+                                                gc_scale * tc * px, gc_scale * (pos + dij / 2.0) * py + font_center
                         )
+                        if self.show_slds:
+                            self.draw_centered_text(gc, bij.sld, gc_scale*tc*px,
+                                                    gc_scale*(pos+dij/2.0)*py + font_center + font_offset)
             else:
                 di = bi.scale / vscale
                 pos -= di
                 bc = bi.color
                 self.add_rect_gc(gc, pos, di, bc)
-                self.draw_centered_text(
-                    gc, self.tlabel(bi.thickness), gc_scale * tc * px, gc_scale * (pos + di / 2.0) * py
+                if self.show_names:
+                    self.draw_centered_text(gc, bi.name, gc_scale*tc*px,
+                                        gc_scale*(pos+di/2.0)*py + font_center - font_offset)
+                self.draw_centered_text(gc, self.tlabel(bi.thickness),
+                                        gc_scale * tc * px, gc_scale * (pos + di / 2.0) * py + font_center
                 )
+                if self.show_slds:
+                    self.draw_centered_text(gc, bi.sld, gc_scale*tc*px,
+                                            gc_scale*(pos+di/2.0)*py + font_center + font_offset)
         if self.use3d:
             # add surface polygon
             shifted = self.to_vp((85, pos))
@@ -565,6 +631,14 @@ class Plugin(framework.Template):
         self.show_one = wx.RadioButton(LG_panel, label="Single Repetition")
         left_sizer.Add(self.show_one, 0, wx.FIXED_MINSIZE)
 
+        self.show_names = wx.CheckBox(LG_panel, label="Show Names")
+        self.show_names.SetValue(False)
+        left_sizer.Add(self.show_names, 0, wx.FIXED_MINSIZE)
+
+        self.show_slds = wx.CheckBox(LG_panel, label="Show SLDs")
+        self.show_slds.SetValue(False)
+        mid_sizer.Add(self.show_slds, 0, wx.FIXED_MINSIZE)
+
         self.use3d = wx.CheckBox(LG_panel, label="Pseudo 3d")
         self.use3d.SetValue(True)
         mid_sizer.Add(self.use3d, 0, wx.FIXED_MINSIZE)
@@ -588,6 +662,8 @@ class Plugin(framework.Template):
             pass
 
         self.rescale.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
+        self.show_names.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
+        self.show_slds.Bind(wx.EVT_CHECKBOX, self.OnSimulate)
         self.show_all.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
         show_topbot.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
         self.show_one.Bind(wx.EVT_RADIOBUTTON, self.OnSimulate)
@@ -610,6 +686,8 @@ class Plugin(framework.Template):
         gen = SVGenerator(
             model.script_module.sample,
             layer_names = layer_names,
+            show_names = self.show_names.GetValue(),
+            show_slds = self.show_slds.GetValue(),
             rescale=self.rescale.GetValue(),
             show_all=self.show_all.GetValue(),
             show_one=self.show_one.GetValue(),
@@ -640,8 +718,6 @@ class Plugin(framework.Template):
 
     def CopyImage(self, event):
         bmp = wx.Bitmap(wx.Size(300, 600), depth=32)
-        if hasattr(bmp, "SetScaleFactor"):
-            bmp.SetScaleFactor(2.0)
 
         memdc = wx.MemoryDC(bmp)
         memdc.SetBackground(wx.Brush(wx.Colour(255, 255, 255, 0)))
