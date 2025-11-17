@@ -34,11 +34,10 @@ jobs:
     - name: Install dependencies
       run: |
         C:\Miniconda\condabin\conda.bat config --set channel_priority strict
-        C:\Miniconda\condabin\conda.bat config --prepend conda-forge
-        C:\Miniconda\condabin\conda.bat env update --file genx\windows_build\conda_build.yml --name base
-        C:\Miniconda\condabin\conda.bat init powershell
+        C:\Miniconda\condabin\conda.bat env create --file genx\windows_build\conda_build.yml
     - name: Build with pyinstaller
       run: |
+        C:\Miniconda\condabin\conda.bat activate genx_release
         cd genx
         pyinstaller genx.spec
     - name: Download and Install Inno Setup installer
@@ -47,6 +46,7 @@ jobs:
         ./installer.exe /verysilent /allusers /dir=inst
     - name: Build setup file
       run: |
+        C:\Miniconda\condabin\conda.bat activate genx_release
         cd genx\windows_build
         python update_version.py
         iscc genx.iss
