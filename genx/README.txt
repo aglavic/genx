@@ -12,6 +12,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.7.15
+==============
+ * Fix bumps parameter statistics window wrongly assigning results to parameters.
+ * Add 1d plot for the individual parameters shown in the statistics dialog graph.
+
 Changes 3.7.14
 ==============
  * Prevent help window from being shown off-screen when main window is on right edge of screen

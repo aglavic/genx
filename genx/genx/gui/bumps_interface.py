@@ -13,8 +13,8 @@ from bumps.fitproblem import nllf_scale
 from bumps.formatnum import format_uncertainty
 from bumps.monitor import TimedUpdate
 from matplotlib.colors import LogNorm
-from numpy import array, maximum, newaxis, sqrt
-from wx.grid import EVT_GRID_CELL_LEFT_DCLICK, Grid
+from numpy import array, maximum, newaxis, sqrt, linspace
+from wx.grid import EVT_GRID_CELL_LEFT_DCLICK
 
 from ..bumps_optimizer import BumpsResult
 from ..plugins.utils import ShowInfoDialog
@@ -281,7 +281,7 @@ class StatisticalAnalysisDialog(wx.Dialog):
 
         self.fom_text.SetLabel("FOM chi²/bars: %.3f" % self.chisq)
         self.draw = res.state.draw()
-        pnames = self.bproblem.labels()
+        pnames = self.get_bumps_param_names()
         sort_indices = [pnames.index(ni) for ni in self.draw.labels]
 
         self.abs_cov = res.cov
@@ -322,16 +322,10 @@ class StatisticalAnalysisDialog(wx.Dialog):
                 if i != j and abs(cj) > rel_max[2]:
                     rel_max = [min(i, j), max(i, j), abs(cj)]
         self.hists = _hists(self.draw.points.T, bins=50)
+        self.grid.SelectBlock(sort_indices[rel_max[0]]+2, sort_indices[rel_max[1]],
+                              sort_indices[rel_max[0]]+2, sort_indices[rel_max[1]], addToSelected=False)
 
-        fig = self.plot_panel.figure
-        fig.clear()
-        ax = fig.add_subplot(111)
-        data, x, y = self.hists[(rel_max[0], rel_max[1])]
-        vmin, vmax = data[data > 0].min(), data.max()
-        ax.pcolorfast(y, x, maximum(vmin, data), norm=LogNorm(vmin, vmax), cmap="inferno")
-        ax.set_xlabel(self.draw.labels[rel_max[1]])
-        ax.set_ylabel(self.draw.labels[rel_max[0]])
-        self.plot_panel.flush_plot()
+        self.plot_histogram(rel_max[0], rel_max[1])
 
         # add analysis data to model for later storage in export header
         exdict = {}
@@ -432,12 +426,23 @@ class StatisticalAnalysisDialog(wx.Dialog):
             i = j
             j = itmp
 
+        self.plot_histogram(i, j)
+
+    def plot_histogram(self, i, j):
         fig = self.plot_panel.figure
         fig.clear()
         ax = fig.add_subplot(111)
         data, x, y = self.hists[(i, j)]
-        vmin, vmax = data[data > 0].min(), data.max()
+        vmin, vmax = data[data>0].min(), data.max()
         ax.pcolorfast(y, x, maximum(vmin, data), norm=LogNorm(vmin, vmax), cmap="inferno")
+        p1 = data.sum(axis=1)
+        p1 = 0.5*p1/p1.max()*(y[-1]-y[0])+y[0]
+        p1x = (x[:-1]+x[1:])/2.
+        p2 = data.sum(axis=0)
+        p2 = 0.5*p2/p2.max()*(x[-1]-x[0])+x[0]
+        p2y = (y[:-1]+y[1:])/2.
+        ax.plot(p1, p1x, color='blue')
+        ax.plot(p2y, p2, color='blue')
         ax.set_xlabel(self.draw.labels[j])
         ax.set_ylabel(self.draw.labels[i])
         self.plot_panel.flush_plot()
