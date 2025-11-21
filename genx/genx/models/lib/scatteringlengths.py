@@ -222,7 +222,10 @@ class Database(object):
             return stored_values[name]
         else:
             try:
-                stored_values[name] = object.__getattribute__(self, "lookup_value")(name)
+                res = object.__getattribute__(self, "lookup_value")(name)
+                if type(res) is complex:
+                    res = ElementComplex(res, name)
+                stored_values[name] = res
             except (LookupError, IOError) as e:
                 raise LookupError("The name %s does not exist in the" "database" % name)
             return stored_values[name]
@@ -253,6 +256,30 @@ class Database(object):
 
 
 # ==============================================================================
+class ElementComplex(complex):
+    def __new__(cls, value, element):
+        instance = super().__new__(cls, value)
+        instance.composition = ((1.0, element),)
+        return instance
+
+    def __mul__(self, other):
+        output = super().__mul__(other)
+        if type(other) in [float, int]:
+            output = super().__new__(ElementComplex, output)
+            output.composition = tuple((value*other, element) for value, element in self.composition)
+        return output
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __add__(self, other):
+        output = super().__add__(other)
+        if type(other) is ElementComplex:
+            output = super().__new__(ElementComplex, output)
+            output.composition = self.composition + other.composition
+        return output
+
+
 class FormFactor(Database):
     """A database for the x-ray formfactor which includes the
     anomulous part as well as the angle dependent part. The object will
