@@ -14,6 +14,7 @@ A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
 Changes 3.7.15
 ==============
+ * Fix SimpleReflectivity error when seleccting a cell in the multilayer header part #
  * Fix bumps parameter statistics window wrongly assigning results to parameters.
  * Add 1d plot for the individual parameters shown in the statistics dialog graph.
 

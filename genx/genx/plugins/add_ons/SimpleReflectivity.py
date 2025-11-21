@@ -128,6 +128,9 @@ class SampleGrid(gridlib.Grid):
         self._activated_ctrl = False
 
     def onCellSelected(self, evt):
+        if evt.Row==self.parent.sample_table.repeatedInfo() and evt.Col!=10:
+            # prevent selection of header text cells
+            return
         if evt.Col in [1]:
             self._activated_ctrl = True
             wx.CallAfter(self.EnableCellEditControl)
@@ -496,12 +499,8 @@ class SampleTable(gridlib.GridTableBase):
             if col == 0:
                 attr.SetSize(1, 8)
                 attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_BOTTOM)
-                return attr
-            if col == 8:
+            elif col == 8:
                 attr.SetSize(1, 2)
-                return attr
-            if col == 10:
-                return attr
             return attr
         row = self.realRow(row)
 
