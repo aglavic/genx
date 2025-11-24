@@ -1421,7 +1421,12 @@ class Plugin(framework.Template):
             menu, wx.NewId(), "Show Im SLD", "Toggles showing the imaginary part of the SLD", wx.ITEM_CHECK
         )
         menu.Append(self.mb_show_imag_sld)
+        self.mb_use_mass_density = wx.MenuItem(
+            menu, wx.NewId(), "Mass Density", "Toggles using mass density instead of SLD", wx.ITEM_CHECK
+        )
+        menu.Append(self.mb_use_mass_density)
         self.mb_show_imag_sld.Check(self.sld_plot.opt.show_imag)
+        self.mb_use_mass_density.Check(self.sld_plot.opt.use_mass_density)
         self.mb_autoupdate_sim = parent.mb_checkables[custom_ids.MenuId.AUTO_SIM]
         self.mb_autoupdate_sim.Check(True)
         self.mb_autoupdate_sld = wx.MenuItem(
@@ -1454,6 +1459,7 @@ class Plugin(framework.Template):
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnShowImagSLD, self.mb_show_imag_sld)
+        self.parent.Bind(wx.EVT_MENU, self.OnShowMassDensity, self.mb_use_mass_density)
         self.parent.Bind(wx.EVT_MENU, self.OnHideAdvanced, self.mb_hide_advanced)
 
         self.DisableGrid()
@@ -1520,6 +1526,11 @@ class Plugin(framework.Template):
 
     def OnShowImagSLD(self, evt):
         self.sld_plot.opt.show_imag = self.mb_show_imag_sld.IsChecked()
+        self.sld_plot.WriteConfig()
+        self.sld_plot.Plot()
+
+    def OnShowMassDensity(self, evt):
+        self.sld_plot.opt.use_mass_density = self.mb_use_mass_density.IsChecked()
         self.sld_plot.WriteConfig()
         self.sld_plot.Plot()
 

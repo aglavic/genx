@@ -313,7 +313,7 @@ class FormFactor(Database):
             # Removing a bug with proxy adding does not work properly
             for key in stored_vals:
                 f = object.__getattribute__(self, "lookup_value")(key)
-                stored_vals[key] = f
+                stored_vals[key] = ElementComplex(f, key)
 
     def __getattribute__(self, name):
         """__getattribute__(self, name) --> value
@@ -351,7 +351,11 @@ class ScatteringLength(Database):
         values is a dictonary of key value pairs that are used in the database.
         """
         Database.__init__(self)
-        object.__setattr__(self, "stored_values", values)
+        ele_vals = {}
+        for key, value in values.items():
+            if type(value) in [float, complex]:
+                ele_vals[key] = ElementComplex(value, key)
+        object.__setattr__(self, "stored_values", ele_vals)
 
     def lookup_value(self, name):
         raise LookupError("The element %s does not exist in the database" % name)
