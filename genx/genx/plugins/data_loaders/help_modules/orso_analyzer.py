@@ -1,6 +1,7 @@
 """
 Helper module to support ORSO file header information to build reflectivity models.
 """
+import logging
 
 from copy import deepcopy
 from dataclasses import dataclass
@@ -52,7 +53,10 @@ class OrsoHeaderAnalyzer:
         self.header = fileio.Orso(**meta)
         self.analyze_instrument_info()
         if hasattr(fileio, "model_language") and self.header.data_source.sample.model:
-            self.analyze_model()
+            try:
+                self.analyze_model()
+            except Exception:
+                logging.warning('Header defined a sample model but parsing the model failed', exc_info=True)
 
     @property
     def instrument_settings(self) -> fileio.InstrumentSettings:
@@ -106,15 +110,15 @@ class OrsoHeaderAnalyzer:
                 from genx.models.utils import bc
 
                 try:
-                    dens = layer.material.get_sld().real / eval(formula.b()).real
+                    dens = layer.material.get_sld().real*1e5 / eval(formula.b(), globals={'bc': bc}, locals={}).real
                 except Exception:
                     dens = 0.1
             b = formula.b()
             f = formula.f()
         else:
             formula = None
-            b = layer.material.get_sld()
-            f = layer.material.get_sld()
+            b = layer.material.get_sld()*1e6
+            f = layer.material.get_sld()*1e6
             dens = 0.1
         d = layer.thickness.as_unit("angstrom")
         sigma = layer.roughness.as_unit("angstrom")

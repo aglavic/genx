@@ -1078,23 +1078,26 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         meta = deepcopy(self.data_list.data_cont.data[0].meta)
         ana_meta = meta.get("analysis", {})
         if ana_meta.get("software", {}).get("name", "") == "GenX":
-            self.model_control.set_model_script(ana_meta["script"])
-            params = ana_meta["parameters"]
-            pdata = [[pi["Parameter"], pi["Value"], pi["Fit"], pi["Min"], pi["Max"], pi["Error"]] for pi in params]
-            self.model_control.get_model_params().data = pdata
-            self.paramter_grid.table.UpdateView()
-            for di in self.data_list.data_cont.data:
-                del di.meta["analysis"]
+            with self.catch_error(action="extract_model", step=f"Extract stored GenX model") as mng:
+                self.model_control.set_model_script(ana_meta["script"])
+                params = ana_meta["parameters"]
+                pdata = [[pi["Parameter"], pi["Value"], pi["Fit"], pi["Min"], pi["Max"], pi["Error"]] for pi in params]
+                self.model_control.get_model_params().data = pdata
+                self.paramter_grid.table.UpdateView()
+                for di in self.data_list.data_cont.data:
+                    del di.meta["analysis"]
         else:
             from genx.plugins.data_loaders.help_modules.orso_analyzer import OrsoHeaderAnalyzer
 
-            header_analyzed = OrsoHeaderAnalyzer(meta)
-
-            from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
+            with self.catch_error(action="analyze_metatdata", step=f"Using OrsoHeader to build model") as mng:
+                header_analyzed = OrsoHeaderAnalyzer(meta)
 
             if "SimpleReflectivity" in self.plugin_control.plugin_handler.loaded_plugins:
+                from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
+
                 refl: SRPlugin = self.plugin_control.GetPlugin("SimpleReflectivity")
-                header_analyzed.build_simple_model(refl)
+                with self.catch_error(action="build_model", step=f"Building new model from metadata") as mng:
+                    header_analyzed.build_simple_model(refl)
             else:
                 from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
 
@@ -1102,7 +1105,9 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                     self.plugin_control.plugin_handler.load_plugin("Reflectivity")
                 # create a new script with the reflectivity plugin
                 refl: ReflPlugin = self.plugin_control.GetPlugin("Reflectivity")
-                header_analyzed.build_reflectivity(refl)
+
+                with self.catch_error(action="build_model", step=f"Building new model from metadata") as mng:
+                    header_analyzed.build_reflectivity(refl)
 
         with self.catch_error(action="open_model", step=f"processing plugins"):
             self.plugin_control.OnOpenModel(None)
