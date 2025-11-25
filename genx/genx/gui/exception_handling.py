@@ -105,8 +105,11 @@ class GuiExceptionHandler(Handler):
         if not self.show_dialog:
             return
         title = "GenX - Unhandled Python Error"
-        message = f"GenX encountered an unexpected error.\n{record.exc_info[0].__name__}: {record.exc_info[1]}"
+        message = f"{record.exc_info[0].__name__}: {record.exc_info[1]}"
+        # limit error message to last 30 lines to prevent overflow of dialog over screen
+        message = 'GenX encountered an unexpected error.\n'+'\n'.join(message.splitlines()[-5:])
         ext_message = f"{record.exc_text}"
+        ext_message = '\n'.join(ext_message.splitlines()[-30:])
         ext_message += "\n\nYou can suppress any future warnings by choosing 'Cancel' to close this window."
         full_trace = f"{record.exc_text}"
 
