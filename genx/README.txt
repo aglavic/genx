@@ -15,11 +15,10 @@ A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 Changes 3.8.0
 =============
  * Add capability to SLD graph to show elemental and absolute mass density
- * Improve Publication Graph dialog with more examples code and SLD/mass density graphs
- * Fix catching common errors when creating model from ORSO .ort file header
+ * Improve Publication Graph dialog with more example code and SLD/mass density graphs
+ * Fix catching common errors when creating model from ORSO file header
  * Fix error dialog could become too large to fit on screen
  * Fix small bugs
-
 
 Changes 3.7.15
 ==============
