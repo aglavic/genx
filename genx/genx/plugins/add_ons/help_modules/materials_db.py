@@ -279,7 +279,10 @@ class Formula(list):
         """
         fractions = self.amounts()
         total = sum(fractions)
-        return [f / total for f in fractions]
+        if total==0.:
+            return [0. for f in fractions]
+        else:
+            return [f / total for f in fractions]
 
     def __eq__(self, other):
         if type(other) != Formula:

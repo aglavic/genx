@@ -1630,7 +1630,7 @@ class Plugin(framework.Template):
 
     def OnDataChanged(self, event):
         """Take into account changes in data.."""
-        self.sample_widget.UpdateModel()
+        self.sample_widget.UpdateModel(re_color=True)
 
     def OnOpenModel(self, event):
         """

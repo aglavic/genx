@@ -559,6 +559,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
     def load_from_files(self, files, do_update=True):
         offset = self.data_cont.get_count()
         while offset > 0 and not self.data_cont.has_data(offset - 1):
+            # if there is a dataset but no data points it gets re-used
             offset -= 1
         i = 0
         for fi in files:
