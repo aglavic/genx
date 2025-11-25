@@ -6,6 +6,8 @@ from logging import debug
 import matplotlib
 import matplotlib.axes
 import wx
+import numpy as np
+import matplotlib.pyplot as plt
 
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.figure import Figure
@@ -106,33 +108,71 @@ class PublicationConfig(BaseConfig):
     font_face: str = matplotlib.rcParams["font.sans-serif"][0]
 
     start_text: str = repr(
-        """fig.set_facecolor('white')
-# for other matplotlib rc style options see https://matplotlib.org/stable/tutorials/introductory/customizing.html
+        """## Create plots using matplotlib related to your model.
+## Uncomment relevant lines to save/show different graphs.
+## For other matplotlib rc style options see 
+## https://matplotlib.org/stable/tutorials/introductory/customizing.html
+fig.set_facecolor('white')
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.size'] = font_size # dialog entry
 rcParams['font.sans-serif'] = font_face # dialog entry
 rcParams['font.weight'] = font_weight # dialog entry
 rcParams['mathtext.fontset'] = 'dejavusans' # 'dejavuserif'|'cm'|'stix'|'stixsans'
-clear()
 
+#outimg = save_file_dialog('*.png') # select filename for export
+############ Plot of Reflectivity curves ###############
+clear()
 for di in data:
     if not di.show:
         continue
-    errorbar(di.x, di.y, yerr=di.error, label="data-"+di.name, **di.data_kwds)
-    semilogy(di.x, di.y_sim, label="sim-"+di.name, **di.sim_kwds)
+    errorbar(di.x, di.y, yerr=di.error, label="data-"+di.name, **di.data_kwds, zorder=2)
+    semilogy(di.x, di.y_sim, label="sim-"+di.name, **di.sim_kwds, zorder=5)
 xlabel(model.__xlabel__)
 ylabel(model.__ylabel__)
 legend()
 tight_layout(pad=0.5)
-show()
-#savefig(r"your_file_name.png", dpi=300)""".splitlines()
+#savefig(outimg, dpi=300) # save to selected image file
+show() # show in GUI graph
+
+########### Plot of SLD profiles ##############
+clear()
+sld = SLD[0] # assuming all dataset represent the same model
+for key, value in sld.items():
+    if key in ['z', 'SLD unit', 'Mass Density']:
+        continue
+    plot(sld['z'], value, label=key)
+xlabel("z [Å]")
+ylabel(f"SLD [${sld['SLD unit']}$]")
+legend()
+tight_layout(pad=0.5)
+#savefig(outimg[:-4]+'_sld.png', dpi=300) # save to image file with changed suffix
+#show() # show in GUI graph
+
+########### Plot of SLD profiles ##############
+clear()
+md = SLD[0]['Mass Density'] # assuming all dataset represent the same model
+## replace standard line colors with colormap
+## See https://matplotlib.org/stable/users/explain/colors/colormaps.html
+axes.set_prop_cycle(color=cm.gist_rainbow(np.linspace(0,1,len(md.keys())-1)))
+for key, value in md.items():
+    if key in ['z', 'SLD unit']:
+        continue
+    plot(md['z'], value, label=key)
+xlabel("z [Å]")
+ylabel(f"density [${md['SLD unit']}$]")
+legend()
+tight_layout(pad=0.5)
+#savefig(outimg[:-4]+'_dens.png', dpi=300) # save to image file with changed suffix
+#show() # show in GUI graph
+
+""".splitlines()
     )
 
 
 class PublicationDialog(wx.Dialog, Configurable):
     opt: PublicationConfig
 
-    def __init__(self, parent, id=-1, data: DataList = None, module=None):
+    def __init__(self, parent, id=-1, data: DataList = None, module=None, SLD: dict = None):
         wx.Dialog.__init__(
             self, parent, id=id, style=wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE
         )
@@ -142,43 +182,63 @@ class PublicationDialog(wx.Dialog, Configurable):
 
         self.data = data
         self.module = module
+        self.SLD = SLD
         self.dpi_scale_factor = parent.dpi_scale_factor
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.SetSizer(hbox)
+        main_box = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(main_box)
+        splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER | wx.SP_LIVE_UPDATE)
+        main_box.Add(splitter, 1, wx.EXPAND)
+
+        left_panel = wx.Panel(splitter, wx.ID_ANY)
         vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox.Add(vbox, 10, wx.EXPAND | wx.ALL, 4)
-        self.tinput = EditWindow(self, wx.ID_ANY)
+        left_panel.SetSizer(vbox)
+        right_panel = wx.Panel(splitter, wx.ID_ANY)
+        vbox2 = wx.BoxSizer(wx.VERTICAL)
+        right_panel.SetSizer(vbox2)
+        splitter.SplitVertically(left_panel, right_panel)
+        splitter.SetSashPosition(550)
+        splitter.SetSashGravity(0.66)
+
+        # ------------ Left Panel items --------------
+        self.tinput = EditWindow(left_panel, wx.ID_ANY)
         self.tinput.SetBackSpaceUnIndents(True)
         self.tinput.SetText("\n".join(eval(self.opt.start_text)))
 
         vbox.Add(self.tinput, 1, wx.EXPAND, 0)
-        button = wx.Button(self, label="plot")
+        button = wx.Button(left_panel, label="plot")
         vbox.Add(button, 0, wx.EXPAND, 0)
 
-        vbox2 = wx.BoxSizer(wx.VERTICAL)
-        hbox.Add(vbox2, 1, wx.EXPAND | wx.ALL, 4)
-        self.plot = SimplePlotPanel(self)
+        # ------------ Right Panel items --------------
+        self.plot_area = wx.ScrolledWindow(right_panel)
+        self.plot_area.SetScrollbars(1, 1, 1, 1)
+        pavbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot_area.SetSizer(pavbox)
+        self.plot_area.SetAutoLayout(True)
+        vbox2.Add(self.plot_area, 1, wx.EXPAND, 0)
+        self.plot = SimplePlotPanel(self.plot_area)
         self.plot.SetMinSize(wx.Size(300, 300))
-        vbox2.Add(self.plot, 1, wx.EXPAND, 0)
-        self.error_text = wx.StaticText(self)
+        pavbox.Add(self.plot, 1, wx.EXPAND, 0)
+        self.error_text = wx.StaticText(right_panel)
         self.error_text.SetBackgroundColour(wx.Colour(255, 150, 150))
         self.error_text.Hide()
         vbox2.Add(self.error_text, 0, wx.EXPAND, 0)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         vbox2.Add(hbox2, 0, wx.EXPAND, 0)
         self.width = wx.SpinCtrlDouble(
-            self, min=0.1, max=30.0, initial=self.opt.width, inc=0.01, style=wx.SP_ARROW_KEYS
+            right_panel, min=0.1, max=30.0, initial=self.opt.width, inc=0.01,
+            style=wx.SP_ARROW_KEYS|wx.TE_PROCESS_ENTER
         )
         self.height = wx.SpinCtrlDouble(
-            self, min=0.1, max=30.0, initial=self.opt.heigth, inc=0.01, style=wx.SP_ARROW_KEYS
+            right_panel, min=0.1, max=30.0, initial=self.opt.heigth, inc=0.01,
+            style=wx.SP_ARROW_KEYS|wx.TE_PROCESS_ENTER
         )
-        hbox2.Add(wx.StaticText(self, label="Width (inches)"))
+        hbox2.Add(wx.StaticText(right_panel, label="Width (inches)"))
         hbox2.Add(self.width, 0, wx.FIXED_MINSIZE | wx.RIGHT, 10)
-        hbox2.Add(wx.StaticText(self, label="Height (inches)"))
+        hbox2.Add(wx.StaticText(right_panel, label="Height (inches)"))
         hbox2.Add(self.height, 0, wx.FIXED_MINSIZE | wx.RIGHT, 10)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         vbox2.Add(hbox2, 0, wx.EXPAND, 0)
-        self.font = wx.FontPickerCtrl(self, style=wx.FNTP_FONTDESC_AS_LABEL)
+        self.font = wx.FontPickerCtrl(right_panel, style=wx.FNTP_FONTDESC_AS_LABEL)
         self.font.SetSelectedFont(
             wx.Font(
                 self.opt.font_size,
@@ -189,20 +249,30 @@ class PublicationDialog(wx.Dialog, Configurable):
                 faceName=self.opt.font_face,
             )
         )
-        hbox2.Add(wx.StaticText(self, label="Font"))
+        hbox2.Add(wx.StaticText(right_panel, label="Font"))
         hbox2.Add(self.font, 0, wx.EXPAND, 0)
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         vbox2.Add(hbox2, 0, wx.EXPAND, 0)
-        save_button = wx.Button(self, label="store current script and settings as default")
+        save_button = wx.Button(right_panel, label="store current script and settings as default")
         hbox2.Add(save_button, 0, wx.EXPAND, 0)
 
-        self.hbox = hbox
         self.Bind(wx.EVT_BUTTON, self.OnPlot, button)
         self.Bind(wx.EVT_BUTTON, self.OnStoreDefaults, save_button)
         self.Bind(wx.EVT_COMMAND_ENTER, self.OnPlot)
         self.Bind(wx.EVT_SPINCTRLDOUBLE, self.OnPlot)
         self.SetSize(wx.Size(800, 800))
+
+    def SaveFromScript(self, wildcard="*.png"):
+        # called from within the script to select file name to save to
+        with wx.FileDialog(self, "Save Plot",
+                           wildcard=f"Imag files ({wildcard})|{wildcard}",
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+            if fileDialog.ShowModal()==wx.ID_CANCEL:
+                return  # the user changed their mind
+
+            # save the current contents in the file
+            return fileDialog.GetPath()
 
     def OnPlot(self, event):
         txt = self.tinput.GetText()
@@ -212,6 +282,7 @@ class PublicationDialog(wx.Dialog, Configurable):
             rcParams=matplotlib.rcParams,
             data=self.data,
             model=self.module,
+            SLD=self.SLD,
             show=self.plot.flush_plot,
             fig=self.plot.figure,
             canvas=self.plot.canvas,
@@ -220,12 +291,15 @@ class PublicationDialog(wx.Dialog, Configurable):
             font_size=font.GetPointSize(),
             font_face=font.GetFaceName(),
             font_weight=weights[font.GetWeight()],
+            save_file_dialog=self.SaveFromScript,
+            np=np,
+            cm=plt.cm,
         )
 
         def clear():
             self.plot.clear()
             ax = self.plot.ax
-            env["plot"] = (ax.plot,)
+            env["plot"] = ax.plot
             env["semilogy"] = ax.semilogy
             env["errorbar"] = ax.errorbar
             env["title"] = ax.set_title
@@ -243,6 +317,7 @@ class PublicationDialog(wx.Dialog, Configurable):
         size = wx.Size(w, h)
         self.plot.SetMinSize(size)
         self.plot.SetSize(size)
+        self.plot_area.FitInside()
         clear()
         try:
             exec(txt, env)
@@ -254,7 +329,6 @@ class PublicationDialog(wx.Dialog, Configurable):
 
         # make sure we reset the default rc values
         matplotlib.rcdefaults()
-        self.hbox.SetItemMinSize(self.plot, size)
         self.Layout()
 
     def OnStoreDefaults(self, event):

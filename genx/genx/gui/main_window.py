@@ -325,7 +325,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.Append(wx.ID_ANY, "Export", mb_export, "")
         mb_file.AppendSeparator()
         mb_print = wx.Menu()
-        mb_print.Append(
+        mb_file.Append(
             custom_ids.MenuId.PUBLISH_PLOT, "Publish Plot...\tCtrl+Shift+P", "Generate publication quality graph"
         )
         mb_print.Append(custom_ids.MenuId.PRINT_PLOT, "Print Plot...\tCtrl+P", "Print the current plot")
@@ -1457,10 +1457,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.update_title()
 
     def eh_mb_publish_plot(self, event):
+        script_module = self.model_control.get_model()
         dia = pubgraph_dialog.PublicationDialog(
             self,
             data=self.model_control.get_data(),
-            module=self.model_control.get_model().eval_in_model('globals().get("model")'),
+            module=script_module.eval_in_model('globals().get("model")'),
+            SLD=script_module.eval_in_model('globals().get("SLD", [])'),
         )
         dia.ShowModal()
 
