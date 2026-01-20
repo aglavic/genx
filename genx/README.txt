@@ -12,6 +12,13 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.1
+=============
+ * Fix import issues with attenuation factors for XRDML (#20) and Bruker BRML file import
+ * Fix metadata sometime being overwritten when using multiple datasets
+ * Fix ORSO export error if two datasets would have the same name
+ * Fix Uncertainty profile that was broken due to changes from adding mass density
+
 Changes 3.8.0
 =============
  * Add capability to SLD graph to show elemental and absolute mass density

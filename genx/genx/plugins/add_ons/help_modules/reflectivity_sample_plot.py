@@ -232,7 +232,7 @@ class SamplePlotPanel(PlotPanel):
         zmin = 1e6
         zmax = -1e6
         for SLDi in initial_SLDs:
-            data.append(dict([(key, []) for key in SLDi if key not in ["z", "SLD unit"]]))
+            data.append(dict([(key, []) for key in SLDi if key not in ["z", "SLD unit", "Mass Density"]]))
             zmin = min(SLDi["z"].min(), zmin)
             zmax = max(SLDi["z"].max(), zmax)
         # create a general z-range for all simulations
@@ -262,7 +262,7 @@ class SamplePlotPanel(PlotPanel):
                     SLDi["z"] -= h[reference_interface]
 
                 for key, value in SLDi.items():
-                    if key in ["z", "SLD unit"]:
+                    if key in ["z", "SLD unit", "Mass Density"]:
                         continue
                     zfun = interp1d(
                         SLDi["z"], value, fill_value=(value[0], value[-1]), bounds_error=False, kind="linear"
