@@ -22,13 +22,12 @@ on:
           - windows
           - linux
           - mac
-          - retry_release
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build-windows:
     runs-on: windows-latest
-    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "windows", "retry_release"]'), github.event.inputs.build-items)) }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "windows"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -60,7 +59,7 @@ jobs:
 
   build-ubuntu-22:
     runs-on: ubuntu-22.04
-    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux", "retry_release"]'), github.event.inputs.build-items)) }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -121,7 +120,7 @@ jobs:
 
   build-ubuntu-24:
     runs-on: ubuntu-24.04
-    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux", "retry_release"]'), github.event.inputs.build-items)) }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -149,7 +148,7 @@ jobs:
 
   build-macos:
     runs-on: macos-15-intel
-    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac", "retry_release"]'), github.event.inputs.build-items)) }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -235,7 +234,7 @@ jobs:
 
   build-macos-m1:
     runs-on: macos-14
-    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac", "retry_release"]'), github.event.inputs.build-items)) }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -318,7 +317,7 @@ jobs:
           genx/dist/GenX3*.pkg
 
   release:
-    if: ${{ (github.event_name != 'workflow_dispatch') || (github.event.inputs.build-items == 'retry_release') }}
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: [build-ubuntu-24, build-ubuntu-22, build-windows, build-macos, build-macos-m1]
     
