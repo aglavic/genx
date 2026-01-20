@@ -768,6 +768,14 @@ class Model(H5HintedExport):
             #     if not key in ['analysis'] and isinstance(value, dict):
             #         header_obj._user_data[key] = DumpDict(value)
             ds.append(OrsoDataset(header_obj, np.array(columns).T))
+            ds_names = [di.info.data_set for di in ds]
+            for i, ni in enumerate(ds_names):
+                if ni in ds_names[:i]:
+                    j = 2
+                    while f'{ni} ({j})' in ds_names[:i]:
+                        j += 1
+                    ds_names[i] = f'{ni} ({j})'
+                    ds[i].info.data_set = ds_names[i]
         try:
             save_orso(ds, basename, data_separator="\n")
         except GenxIOError as e:
