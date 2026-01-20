@@ -159,10 +159,9 @@ jobs:
     - name: Install dependencies
       run: |
         brew install libomp
-        export LLVM_DIR=/opt/homebrew/Cellar/llvm@18/18.1.8/lib/cmake
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
-        python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
+        python3 -m pip install platformdirs h5py pymysql numba==0.62.1 requests svgwrite pint docutils
         python3 -m pip install wxpython
         python3 -m pip install vtk
         python3 -m pip list
