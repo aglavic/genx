@@ -246,7 +246,7 @@ def ReadXpert(file_name):
             I /= time / atten
             dI /= time / atten
         else:
-            dI = np.sqrt(I)/np.sqrt(atten)
+            dI = np.sqrt(I*atten)
             I /= time
             dI /= time
 

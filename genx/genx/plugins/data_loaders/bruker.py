@@ -85,14 +85,14 @@ class Plugin(Template):
             y_idx = columns.index("Count")
             try:
                 att_idx = columns.index("AbsorptionFactor")
-                atten = 1.0 / load_array[:, att_idx]
+                atten = load_array[:, att_idx]
             except ValueError:
                 att_idx = None
                 atten = 1.0
 
             dataset.x_raw = load_array[:, x_idx]
-            dataset.y_raw = load_array[:, y_idx] * atten
-            dataset.error_raw = np.sqrt(load_array[:, y_idx]) * atten
+            dataset.y_raw = load_array[:, y_idx]
+            dataset.error_raw = np.sqrt(load_array[:, y_idx]*atten)
             if not tth_only:
                 dataset.x_command = "2*x"
             else:
