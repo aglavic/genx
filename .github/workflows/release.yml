@@ -158,7 +158,8 @@ jobs:
         python-version: '3.12'
     - name: Install dependencies
       run: |
-        brew install libomp
+        brew install libomp@21.1.8
+        export LLVM_DIR=/opt/homebrew/Cellar/llvm@18/18.1.8/lib/cmake
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
@@ -244,7 +245,7 @@ jobs:
         python-version: '3.12'
     - name: Install dependencies
       run: |
-        brew install libomp
+        brew install libomp@21.1.8
         python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
