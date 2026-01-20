@@ -237,12 +237,19 @@ def ReadXpert(file_name):
 
         time = float(scan.getElementsByTagName("commonCountingTime")[0].firstChild.nodeValue)
         data_tags = scan.getElementsByTagName("intensities") + scan.getElementsByTagName("counts")
-        data = data_tags[0].firstChild.nodeValue
-        data = list(map(float, data.split()))
+        data_tag = data_tags[0]
+        data = list(map(float, data_tag.firstChild.nodeValue.split()))
+
         I = np.array(data)
-        dI = np.sqrt(I)
-        I /= time / atten
-        dI /= time / atten
+        if data_tag.nodeName=="counts":
+            dI = np.sqrt(I)
+            I /= time / atten
+            dI /= time / atten
+        else:
+            dI = np.sqrt(I)/np.sqrt(atten)
+            I /= time
+            dI /= time
+
         if "2Theta" in moving_positions:
             th = np.linspace(moving_positions["2Theta"][0], moving_positions["2Theta"][1], len(data)) / 2.0
         else:
