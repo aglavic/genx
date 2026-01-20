@@ -3,6 +3,7 @@
 Library that implements a template (Template) class for classes that
 loads data into GenX.
 """
+from copy import deepcopy
 
 from ..data import META_DEFAULT, DataSet
 from .utils import ShowInfoDialog
@@ -124,7 +125,7 @@ class Template:
         """
         A wrapper around LoadData that makes sure there is minimal metadata generated.
         """
-        dataset.meta = META_DEFAULT.copy()
+        dataset.meta = deepcopy(META_DEFAULT)
         # in case the data loader does not define any metadata
         # at least set the instrument to data loader name
         dataset.meta["data_source"]["experiment"]["instrument"] = self.__module__.rsplit(".", 1)[1]
