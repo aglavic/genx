@@ -12,6 +12,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.2
+=============
+ * Change XRDML reader to keep angle instead of converting to Q
+ * Add option to convert all ORSO .ort output to Q as specified in the standart
+ * Fix SLD graph reporting magnetization components if model is not neutron spin-flip (#19)
+
 Changes 3.8.1
 =============
  * Fix import issues with attenuation factors for XRDML (#20) and Bruker BRML file import
