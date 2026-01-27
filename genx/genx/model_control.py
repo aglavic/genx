@@ -257,8 +257,8 @@ class ModelController:
     def export_script(self, basename):
         self.model.export_script(basename)
 
-    def export_orso(self, basename):
-        self.model.export_orso(basename)
+    def export_orso(self, basename, convert_to_q=True):
+        self.model.export_orso(basename, convert_to_q)
 
     def import_table(self, filename):
         self.model.import_table(filename)

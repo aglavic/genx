@@ -688,7 +688,7 @@ class Model(H5HintedExport):
             globals=defaults,
         )
 
-    def export_orso(self, basename):
+    def export_orso(self, basename, convert_to_q=True):
         """
         Export the data to files with basename filename. ORT output.
         The fileending will be .ort
@@ -742,9 +742,11 @@ class Model(H5HintedExport):
                 prev_columns_list = None
                 prev_columns = {}
             if hasattr(self.script_module, "inst") and self.script_module.inst.coords in ["tth", "2θ"]:
-                # this will probably need changing in the future as ORSO standard
-                # will probably require Qz for first column
-                column_names = [Column("TTh", "deg"), Column("R"), ErrorColumn("R")]
+                if convert_to_q:
+                    column_names = [Column("Qz", "1/angstrom"), Column("R"), ErrorColumn("R")]
+                    columns[0] = 4.*np.pi/self.script_module.inst.wavelength*np.sin(columns[0]/360.*np.pi)
+                else:
+                    column_names = [Column("TTh", "deg"), Column("R"), ErrorColumn("R")]
             else:
                 column_names = [Column("Qz", "1/angstrom"), Column("R"), ErrorColumn("R")]
             if "res" in di.extra_data:

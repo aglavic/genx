@@ -100,6 +100,20 @@ class WindowStartup(conf_mod.BaseConfig):
     wx_plotting: bool = False
 
 
+class ORSOFileDialogHook(wx.FileDialogCustomizeHook):
+    convert_to_q = True
+
+    def __init__(self):
+        super().__init__()
+
+    def AddCustomControls(self, customizer):
+        self.checkbox = customizer.AddCheckBox("Convert TTH to Q\n(ORSO specification)")
+        self.checkbox.SetValue(self.convert_to_q)
+
+    def TransferDataFromCustomControls(self):
+        self.convert_to_q = self.checkbox.GetValue()
+
+
 class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     opt: GUIConfig
     script_file: str = None
@@ -1499,10 +1513,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             wildcard="ORSO Text File (*.ort)|*.ort",
             style=wx.FD_SAVE | wx.FD_CHANGE_DIR,
         )
+        customizeHook = ORSOFileDialogHook()
+        dlg.SetCustomizeHook(customizeHook)
+
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             with self.catch_error(action="export_orso", step=f"export file {os.path.basename(path)}"):
-                self.model_control.export_orso(path)
+                self.model_control.export_orso(path, convert_to_q=customizeHook.convert_to_q)
         dlg.Destroy()
 
     def eh_mb_export_data(self, event):

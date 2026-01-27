@@ -343,8 +343,8 @@ class ModelControlGUI(wx.EvtHandler):
     def export_script(self, basename):
         self.controller.export_script(basename)
 
-    def export_orso(self, basename):
-        self.controller.export_orso(basename)
+    def export_orso(self, basename, convert_to_q=True):
+        self.controller.export_orso(basename, convert_to_q)
 
     def import_table(self, filename):
         self.controller.import_table(filename)
