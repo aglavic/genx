@@ -6,7 +6,7 @@ It also adds a a custom menu.
 
 from genx.core.custom_logging import iprint
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 
 
 class Plugin(framework.Template):

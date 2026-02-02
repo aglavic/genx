@@ -18,7 +18,6 @@ from logging import debug, info, warning
 from typing import List
 
 import platformdirs
-import wx
 import wx.adv
 import wx.grid
 import wx.py
@@ -1107,13 +1106,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 header_analyzed = OrsoHeaderAnalyzer(meta)
 
             if "SimpleReflectivity" in self.plugin_control.plugin_handler.loaded_plugins:
-                from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
+                from genx.gui_wx.add_ons import Plugin as SRPlugin
 
                 refl: SRPlugin = self.plugin_control.GetPlugin("SimpleReflectivity")
                 with self.catch_error(action="build_model", step=f"Building new model from metadata") as mng:
                     header_analyzed.build_simple_model(refl)
             else:
-                from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
+                from genx.gui_wx.add_ons import Plugin as ReflPlugin
 
                 if not "Reflectivity" in self.plugin_control.plugin_handler.loaded_plugins:
                     self.plugin_control.plugin_handler.load_plugin("Reflectivity")

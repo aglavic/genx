@@ -34,7 +34,21 @@ def start_interactive(args):
     except:
         pass
 
-    from .gui import main_window
+    gui_toolkit = getattr(args, "gui", "wx")
+
+    if gui_toolkit == "wx":
+        from . import gui_generic
+        gui_generic.set_gui_toolkit('wx')
+        from .gui_wx import main_window
+    elif gui_toolkit == "qt":
+        from . import gui_generic
+        gui_generic.set_gui_toolkit('qt')
+        raise RuntimeError(
+            "Qt GUI selected (--gui qt), but gui_qt is not implemented yet. "
+            "Use '--gui wx' for the existing GUI."
+        )
+    else:
+        raise ValueError(f"Unknown GUI toolkit: {gui_toolkit!r}")
 
     if args.infile != "":
         debug("start GUI setup with file to load")
@@ -47,21 +61,22 @@ def start_interactive(args):
     else:
         filename = None
     debug("start GUI setup")
-    if args.debug:
-        debug("initialize wx Inspection App")
-        from wx.lib.mixins.inspection import InspectionMixin
+    if gui_toolkit == "wx":
+        if args.debug:
+            debug("initialize wx Inspection App")
+            from wx.lib.mixins.inspection import InspectionMixin
 
-        class InspApp(main_window.GenxApp, InspectionMixin):
-            def OnInit(self):
-                # Initialize the inspection tool.
-                self.Init()
-                return main_window.GenxApp.OnInit(self)
+            class InspApp(main_window.GenxApp, InspectionMixin):
+                def OnInit(self):
+                    # Initialize the inspection tool.
+                    self.Init()
+                    return main_window.GenxApp.OnInit(self)
 
-        app = InspApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
-    else:
-        app = main_window.GenxApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
-    debug("setup complete, start WX MainLoop")
-    app.MainLoop()
+            app = InspApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
+        else:
+            app = main_window.GenxApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
+        debug("setup complete, start WX MainLoop")
+        app.MainLoop()
     debug("leave start_interactive")
 
 
@@ -467,28 +482,21 @@ def main():
     opt_group.add_argument("--kr", type=float, default=-1, help="Cross over constant (float 0 < kr < 1)")
     opt_group.add_argument("-s", "--esave", action="store_true", help="Force save evals to gx file.")
     opt_group.add_argument("-e", "--error", action="store_true", help="Calculate/export error bars.")
-    opt_group.add_argument(
-        "--var", type=float, default=-1, help="Minimum relative parameter variation to stop the fit (%%)"
-    )
-    opt_group.add_argument(
-        "--bumps", action="store_true", help="Use Bumps DREAM optimizer instead of GenX Differential Evolution"
-    )
+    opt_group.add_argument("--var", type=float, default=-1, help="Minimum relative parameter variation to stop the fit (%%)")
+    opt_group.add_argument("--bumps", action="store_true", help="Use Bumps DREAM optimizer instead of GenX Differential Evolution")
     data_group = parser.add_argument_group("data arguments")
-    data_group.add_argument(
-        "-d", dest="data_set", type=int, default=0, help="Active data set to act upon. Index starting at 0."
-    )
+    data_group.add_argument("-d", dest="data_set", type=int, default=0, help="Active data set to act upon. Index starting at 0.")
     data_group.add_argument("--load", dest="datafile", help="Load file into active data set. Index starting at 0.")
     data_group.add_argument("--export", dest="save_datafile", help="Save active data set to file. Index starting at 0.")
     data_group = parser.add_argument_group("startup options")
+    data_group.add_argument("-l", "--logfile", dest="logfile", default=None, type=str, help="Output debug information to logfile.")
+    data_group.add_argument("--debug", dest="debug", default=False, action="store_true", help="Show additional debug information on console/logfile")
     data_group.add_argument(
-        "-l", "--logfile", dest="logfile", default=None, type=str, help="Output debug information to logfile."
-    )
-    data_group.add_argument(
-        "--debug",
-        dest="debug",
-        default=False,
-        action="store_true",
-        help="Show additional debug information on console/logfile",
+        "--gui",
+        dest="gui",
+        choices=("wx", "qt"),
+        default="wx",
+        help="Select GUI toolkit for interactive mode. 'wx' is the current GUI; 'qt' will be added during migration.",
     )
     data_group.add_argument(
         "--dpi-scale",
@@ -502,7 +510,7 @@ def main():
         dest="use_curses",
         default=True,
         action="store_false",
-        help="Disable Curses interactive console interface for command line " "fitting on UNIX systems.",
+        help="Disable Curses interactive console interface for command line fitting on UNIX systems.",
     )
     data_group.add_argument(
         "--disable-nb",

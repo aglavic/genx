@@ -36,8 +36,8 @@ from genx.models.lib.refl_base import ReflBase as ReflBaseNew
 
 from ...gui import images as img
 from ...gui.custom_choice_dialog import SCDialog
-from .. import add_on_framework as framework
-from ..utils import ShowInfoDialog, ShowQuestionDialog
+from genx.plugins import add_on_framework as framework
+from genx.plugins.utils import ShowInfoDialog, ShowQuestionDialog
 from .help_modules.materials_db import MASS_DENSITY_CONVERSION, Formula, MaterialsDatabase, mdb
 
 pymysql = None

@@ -10,7 +10,7 @@ import wx.lib.scrolledpanel as scrolledpanel
 from genx.core.custom_logging import iprint
 from genx.models import utils
 
-from ...utils import ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
+from genx.plugins.utils import ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
 from . import custom_dialog as cust_dia
 from . import reflectivity_images as icons
 from . import sxrd_images

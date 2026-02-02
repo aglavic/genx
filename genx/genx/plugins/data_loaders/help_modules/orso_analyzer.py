@@ -9,12 +9,12 @@ from typing import TYPE_CHECKING, List, Optional
 
 from orsopy import fileio
 
-from ...add_ons.help_modules.materials_db import MASS_DENSITY_CONVERSION, Formula
+from genx.gui_wx.add_ons import MASS_DENSITY_CONVERSION, Formula
 
 if TYPE_CHECKING:
     # make sure the wx based plugins don't need to be imported at runtime
-    from ...add_ons.Reflectivity import Plugin as RPlugin
-    from ...add_ons.SimpleReflectivity import Plugin as SRPlugin
+    from genx.gui_wx.add_ons import Plugin as RPlugin
+    from genx.gui_wx.add_ons import Plugin as SRPlugin
 
 
 @dataclass
@@ -202,7 +202,7 @@ class OrsoHeaderAnalyzer:
             ]
 
     def build_simple_model(self, refl: "SRPlugin"):
-        from ...add_ons.SimpleReflectivity import BOT_LAYER, ML_LAYER, TOP_LAYER
+        from genx.gui_wx.add_ons import BOT_LAYER, ML_LAYER, TOP_LAYER
 
         refl.sample_widget.sample_table.ResetModel()
         refl.sample_widget.inst_params["probe"] = self.instrument.probe
@@ -319,7 +319,7 @@ else:
         from orsopy.utils.density_resolver import MaterialResolver as DensityResolver
     from orsopy.utils.resolver_slddb import ResolverSLDDB
 
-    from ...add_ons.help_modules.materials_db import mdb
+    from genx.gui_wx.add_ons import mdb
 
     class ResolverGenX(DensityResolver):
         comment = "from GenX "

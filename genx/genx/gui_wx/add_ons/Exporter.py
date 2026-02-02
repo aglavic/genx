@@ -7,7 +7,7 @@ to off-specular or GISAS simulations.
 
 import wx
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 
 
 class Plugin(framework.Template):

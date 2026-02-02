@@ -47,7 +47,7 @@ from contextlib import ExitStack
 
 import wx
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 from .help_modules.custom_dialog import ValidateDialog, ValueValidator
 
 DEFAULT_VALUE = {int: 0, float: 0.0, str: ""}

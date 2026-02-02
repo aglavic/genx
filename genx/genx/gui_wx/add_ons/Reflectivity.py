@@ -60,7 +60,7 @@ from genx.exceptions import GenxError
 from genx.gui.custom_events import EVT_UPDATE_SCRIPT
 from genx.model import Model
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 from .help_modules.custom_dialog import *
 from .help_modules.reflectivity_gui import DataParameterPanel, SamplePanel
 from .help_modules.reflectivity_misc import ReflectivityModule

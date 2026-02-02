@@ -15,7 +15,7 @@ from genx.core.custom_logging import iprint
 from genx.core.decorators import log_call
 from genx.gui.solvergui import EVT_UPDATE_SCRIPT
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 from .help_modules import model_interactors as mi
 
 try:

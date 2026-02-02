@@ -31,7 +31,7 @@ from genx.model import Model
 from genx.models.lib.refl_base import ReflBase
 
 from ...gui import custom_ids
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 from .help_modules import reflectivity_images as images
 from .help_modules.custom_dialog import *
 from .help_modules.materials_db import MASS_DENSITY_CONVERSION, Formula, mdb

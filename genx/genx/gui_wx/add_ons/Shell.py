@@ -23,7 +23,7 @@ The available entry points into GenX is:
 import wx
 import wx.py.shell
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 
 
 class Plugin(framework.Template):

@@ -23,8 +23,8 @@ import genx.gui.images as img
 
 from genx.parameters import Parameters
 
-from .. import add_on_framework as framework
-from ..utils import ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
+from genx.plugins import add_on_framework as framework
+from genx.plugins.utils import ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
 
 
 class Plugin(framework.Template):

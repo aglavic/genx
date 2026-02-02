@@ -14,7 +14,7 @@ if sys.platform == "win32":
 from .diffev import DiffEv
 from .model import Model
 from .model_control import ModelController
-from .plugins.add_ons.help_modules.reflectivity_utils import SampleBuilder, SampleHandler, avail_models
+from genx.gui_wx.add_ons import SampleBuilder, SampleHandler, avail_models
 from .plugins.utils import PluginHandler
 
 _fit_output = []

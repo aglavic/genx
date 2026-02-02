@@ -16,7 +16,7 @@ from numpy import trapz
 
 from genx.models.lib.physical_constants import AAm2_to_emucc
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 
 
 class Plugin(framework.Template):

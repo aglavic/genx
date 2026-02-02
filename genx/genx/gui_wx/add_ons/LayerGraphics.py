@@ -19,7 +19,7 @@ from numpy import array, log, pi, sqrt
 
 from genx.models.lib.refl_base import SampleBase, StackBase
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 
 try:
     # noinspection PyUnresolvedReferences

@@ -14,7 +14,7 @@ from numpy import isnan, linspace
 
 from genx.gui.plotpanel import BasePlotConfig, PlotPanel
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 from .help_modules.frequency_analysis import TransformType, transform
 
 

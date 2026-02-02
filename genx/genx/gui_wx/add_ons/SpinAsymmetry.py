@@ -14,7 +14,7 @@ from numpy import isnan
 
 from genx.gui.plotpanel import BasePlotConfig, PlotPanel
 
-from .. import add_on_framework as framework
+from genx.plugins import add_on_framework as framework
 
 
 class SAPlotConfig(BasePlotConfig):
