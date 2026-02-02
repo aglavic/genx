@@ -57,7 +57,7 @@ class LColor:
         return f"rgb({self.r*255:.0f}, {self.g*255:.0f}, {self.b*255:.0f})"
 
     def get_wx(self):
-        return wx.Colour(int(self.r * 225), int(self.g * 255), int(self.b * 255))
+        return wx.Colour(int(self.r * 255), int(self.g * 255), int(self.b * 255))
 
 
 @dataclass
