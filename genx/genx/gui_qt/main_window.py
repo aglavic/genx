@@ -89,6 +89,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     def __init__(self, *, filename: Optional[str] = None):
         self._init_phase = True
         self._startup_filename = filename
+        self._logging_dialogs = []
 
         # Load GUI config
         conf_mod.Configurable.__init__(self, GUIConfig)
@@ -106,7 +107,6 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
         self._install_status_update_hook()
         self._setup_window_basics()
-        self._setup_autoconnect()
         self._setup_app_exception_dialogs()
 
         # Apply window size immediately (safe)
@@ -293,6 +293,40 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     def on_actionResumeFit_triggered(self, checked: bool = False) -> None:
         with self.catch_error(action="menu", step="resume fit"):
             self.resume_fit()
+
+    @QtCore.Slot(bool)
+    def on_actionCollectDebugInfo_triggered(self, checked: bool = False) -> None:
+        import logging
+
+        from ..core import custom_logging
+        from .log_dialog import LoggingDialog
+
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Save Logfile As",
+            "genx.log",
+            "GenX logfile (*.log)",
+        )
+        if filename:
+            if os.path.exists(filename):
+                res = QtWidgets.QMessageBox.question(
+                    self,
+                    "Overwrite file?",
+                    f"File {os.path.basename(filename)} exists, overwrite?",
+                )
+                if res == QtWidgets.QMessageBox.StandardButton.Yes:
+                    custom_logging.activate_logging(filename)
+            else:
+                custom_logging.activate_logging(filename)
+
+        dlg = LoggingDialog(self)
+        dlg.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self._logging_dialogs.append(dlg)
+        dlg.destroyed.connect(lambda _=None, d=dlg: self._logging_dialogs.remove(d) if d in self._logging_dialogs else None)
+        dlg.show()
 
     # Optional: handle checkable actions (stubs)
     @QtCore.Slot(bool)
