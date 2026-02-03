@@ -1,0 +1,849 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+  <class>GenxMainWindowUI</class>
+  <widget class="QMainWindow" name="GenxMainWindowUI">
+    <property name="windowTitle">
+      <string>GenX</string>
+    </property>
+    <property name="windowIcon">
+      <iconset>
+        <normaloff>:/main_gui/genx.svg</normaloff>
+        <normalon>:/main_gui/genx.svg</normalon>
+      </iconset>
+    </property>
+    <widget class="QWidget" name="centralwidget">
+      <layout class="QVBoxLayout" name="centralLayout">
+        <item>
+          <widget class="QSplitter" name="mainSplitter">
+            <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+            </property>
+            <widget class="QTabWidget" name="leftTabWidget">
+              <widget class="QWidget" name="tabData">
+                <attribute name="title">
+                  <string>Data</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="dataTabLayout"/>
+              </widget>
+              <widget class="QWidget" name="tabView">
+                <attribute name="title">
+                  <string>View</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="viewTabLayout"/>
+              </widget>
+            </widget>
+            <widget class="QSplitter" name="rightSplitter">
+              <property name="orientation">
+                <enum>Qt::Vertical</enum>
+              </property>
+              <widget class="QSplitter" name="plotSplitter">
+                <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                </property>
+                <widget class="QTabWidget" name="plotTabWidget">
+                  <property name="tabPosition">
+                    <enum>QTabWidget::South</enum>
+                  </property>
+                  <widget class="QWidget" name="plotTabData">
+                    <attribute name="title">
+                      <string>Data</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="plotDataLayout"/>
+                  </widget>
+                  <widget class="QWidget" name="plotTabFom">
+                    <attribute name="title">
+                      <string>FOM</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="plotFomLayout"/>
+                  </widget>
+                  <widget class="QWidget" name="plotTabPars">
+                    <attribute name="title">
+                      <string>Pars</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="plotParsLayout"/>
+                  </widget>
+                  <widget class="QWidget" name="plotTabFomScans">
+                    <attribute name="title">
+                      <string>FOM scans</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="plotFomScansLayout"/>
+                  </widget>
+                </widget>
+                <widget class="QTabWidget" name="pluginTabWidget">
+                  <property name="tabPosition">
+                    <enum>QTabWidget::South</enum>
+                  </property>
+                  <widget class="QWidget" name="pluginTabEmpty">
+                    <attribute name="title">
+                      <string>Empty Tab</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="pluginEmptyLayout"/>
+                  </widget>
+                </widget>
+              </widget>
+              <widget class="QTabWidget" name="inputTabWidget">
+                <property name="tabPosition">
+                  <enum>QTabWidget::South</enum>
+                </property>
+                <widget class="QWidget" name="inputTabGrid">
+                  <attribute name="title">
+                    <string>Grid</string>
+                  </attribute>
+                  <layout class="QVBoxLayout" name="inputGridLayout"/>
+                </widget>
+                <widget class="QWidget" name="inputTabScript">
+                  <attribute name="title">
+                    <string>Script</string>
+                  </attribute>
+                  <layout class="QVBoxLayout" name="inputScriptLayout">
+                    <item>
+                      <widget class="QPlainTextEdit" name="scriptEditor"/>
+                    </item>
+                  </layout>
+                </widget>
+              </widget>
+            </widget>
+          </widget>
+        </item>
+      </layout>
+    </widget>
+
+    <widget class="QMenuBar" name="menubar">
+      <addaction name="menuFile"/>
+      <addaction name="menuEdit"/>
+      <addaction name="menuView"/>
+      <addaction name="menuModel"/>
+      <addaction name="menuSettings"/>
+      <addaction name="menuHelp"/>
+      <widget class="QMenu" name="menuFile">
+        <property name="title">
+          <string>&amp;File</string>
+        </property>
+        <addaction name="actionNewModel"/>
+        <addaction name="actionNewFromFile"/>
+        <addaction name="actionOpenModel"/>
+        <addaction name="actionSaveModel"/>
+        <addaction name="actionSaveModelAs"/>
+        <addaction name="separator"/>
+        <addaction name="actionBatchDialog"/>
+        <addaction name="separator"/>
+        <addaction name="menuImport"/>
+        <addaction name="menuExport"/>
+        <addaction name="separator"/>
+        <addaction name="menuPrint"/>
+        <addaction name="separator"/>
+        <addaction name="actionQuit"/>
+        <widget class="QMenu" name="menuImport">
+          <property name="title">
+            <string>Import</string>
+          </property>
+          <addaction name="actionImportData"/>
+          <addaction name="actionImportTable"/>
+          <addaction name="actionImportScript"/>
+        </widget>
+        <widget class="QMenu" name="menuExport">
+          <property name="title">
+            <string>Export</string>
+          </property>
+          <addaction name="actionExportOrso"/>
+          <addaction name="actionExportData"/>
+          <addaction name="actionExportTable"/>
+          <addaction name="actionExportScript"/>
+        </widget>
+        <widget class="QMenu" name="menuPrint">
+          <property name="title">
+            <string>Print</string>
+          </property>
+          <addaction name="actionPublishPlot"/>
+          <addaction name="actionPrintPlot"/>
+          <addaction name="actionPrintGrid"/>
+          <addaction name="actionPrintScript"/>
+        </widget>
+      </widget>
+
+      <widget class="QMenu" name="menuEdit">
+        <property name="title">
+          <string>&amp;Edit</string>
+        </property>
+        <addaction name="actionUndo"/>
+        <addaction name="actionRedo"/>
+        <addaction name="actionHistory"/>
+        <addaction name="separator"/>
+        <addaction name="actionCopyGraph"/>
+        <addaction name="actionCopySimulation"/>
+        <addaction name="actionCopyTable"/>
+        <addaction name="separator"/>
+        <addaction name="actionFindReplace"/>
+        <addaction name="actionOpenInEditor"/>
+        <addaction name="separator"/>
+        <addaction name="menuData"/>
+        <widget class="QMenu" name="menuData">
+          <property name="title">
+            <string>Data</string>
+          </property>
+          <addaction name="actionNewDataSet"/>
+          <addaction name="actionDeleteDataSet"/>
+          <addaction name="actionLowerData"/>
+          <addaction name="actionRaiseData"/>
+          <addaction name="separator"/>
+          <addaction name="actionToggleShow"/>
+          <addaction name="actionToggleUse"/>
+          <addaction name="actionToggleError"/>
+          <addaction name="separator"/>
+          <addaction name="actionCalculations"/>
+        </widget>
+      </widget>
+
+      <widget class="QMenu" name="menuView">
+        <property name="title">
+          <string>&amp;View</string>
+        </property>
+        <addaction name="actionValueAsSlider"/>
+        <addaction name="separator"/>
+        <addaction name="actionPlotMarkers"/>
+        <addaction name="menuAutoColor"/>
+        <addaction name="separator"/>
+        <addaction name="actionUseToggleShow"/>
+        <addaction name="separator"/>
+        <addaction name="menuYScale"/>
+        <addaction name="menuXScale"/>
+        <widget class="QMenu" name="menuAutoColor">
+          <property name="title">
+            <string>Auto Color</string>
+          </property>
+          <addaction name="actionColorNone"/>
+          <addaction name="actionColorCycle1"/>
+          <addaction name="actionColorCycle2"/>
+        </widget>
+        <widget class="QMenu" name="menuYScale">
+          <property name="title">
+            <string>y scale</string>
+          </property>
+          <addaction name="actionYScaleLog"/>
+          <addaction name="actionYScaleLin"/>
+        </widget>
+        <widget class="QMenu" name="menuXScale">
+          <property name="title">
+            <string>x scale</string>
+          </property>
+          <addaction name="actionXScaleLog"/>
+          <addaction name="actionXScaleLin"/>
+        </widget>
+      </widget>
+
+      <widget class="QMenu" name="menuModel">
+        <property name="title">
+          <string>&amp;Model</string>
+        </property>
+        <addaction name="actionSimulateAutomatically"/>
+        <addaction name="separator"/>
+        <addaction name="actionSimulate"/>
+        <addaction name="actionEvaluate"/>
+        <addaction name="actionUseCuda"/>
+        <addaction name="separator"/>
+        <addaction name="actionStartFit"/>
+        <addaction name="actionStopFit"/>
+        <addaction name="actionResumeFit"/>
+        <addaction name="separator"/>
+        <addaction name="actionAnalyzeFit"/>
+      </widget>
+
+      <widget class="QMenu" name="menuSettings">
+        <property name="title">
+          <string>&amp;Settings</string>
+        </property>
+        <addaction name="menuPlugins"/>
+        <addaction name="separator"/>
+        <addaction name="actionOptimizer"/>
+        <addaction name="actionDataLoader"/>
+        <addaction name="actionImportSettings"/>
+        <addaction name="separator"/>
+        <addaction name="actionStartupProfile"/>
+        <addaction name="actionSelectExternalEditor"/>
+        <widget class="QMenu" name="menuPlugins">
+          <property name="title">
+            <string>Plugins</string>
+          </property>
+        </widget>
+      </widget>
+
+      <widget class="QMenu" name="menuHelp">
+        <property name="title">
+          <string>&amp;Help</string>
+        </property>
+        <addaction name="actionModelsHelp"/>
+        <addaction name="actionFomHelp"/>
+        <addaction name="actionPluginsHelp"/>
+        <addaction name="actionDataLoadersHelp"/>
+        <addaction name="separator"/>
+        <addaction name="actionOpenExamples"/>
+        <addaction name="actionOpenManual"/>
+        <addaction name="actionOpenHomepage"/>
+        <addaction name="actionAbout"/>
+        <addaction name="separator"/>
+        <addaction name="actionCollectDebugInfo"/>
+      </widget>
+    </widget>
+
+    <widget class="QToolBar" name="toolbarMain">
+      <property name="windowTitle">
+        <string>Main</string>
+      </property>
+      <addaction name="actionNewModel"/>
+      <addaction name="actionNewFromFile"/>
+      <addaction name="actionOpenModel"/>
+      <addaction name="actionSaveModel"/>
+      <addaction name="separator"/>
+      <addaction name="actionSimulate"/>
+      <addaction name="separator"/>
+      <addaction name="actionStartFit"/>
+      <addaction name="actionStopFit"/>
+      <addaction name="actionResumeFit"/>
+      <addaction name="actionCalcErrorBars"/>
+      <addaction name="actionErrorStatistics"/>
+    </widget>
+
+    <widget class="QStatusBar" name="statusbar"/>
+    <action name="actionNewModel">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/new.svg</normaloff>
+          <normalon>:/main_gui/new.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>New...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+N</string>
+      </property>
+    </action>
+    <action name="actionNewFromFile">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/new_from_file.png</normaloff>
+          <normalon>:/main_gui/new_from_file.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>New from file...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Shift+N</string>
+      </property>
+    </action>
+    <action name="actionOpenModel">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/open.svg</normaloff>
+          <normalon>:/main_gui/open.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Open...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+O</string>
+      </property>
+    </action>
+    <action name="actionSaveModel">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/save.svg</normaloff>
+          <normalon>:/main_gui/save.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Save</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+S</string>
+      </property>
+    </action>
+    <action name="actionSaveModelAs">
+      <property name="text">
+        <string>Save As...</string>
+      </property>
+    </action>
+    <action name="actionQuit">
+      <property name="text">
+        <string>&amp;Quit</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+Q</string>
+      </property>
+    </action>
+
+    <action name="actionBatchDialog">
+      <property name="text">
+        <string>Batch dialog...</string>
+      </property>
+    </action>
+
+    <action name="actionImportData">
+      <property name="text">
+        <string>Import Data...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+D</string>
+      </property>
+    </action>
+    <action name="actionImportTable">
+      <property name="text">
+        <string>Import Table...</string>
+      </property>
+    </action>
+    <action name="actionImportScript">
+      <property name="text">
+        <string>Import Script...</string>
+      </property>
+    </action>
+
+    <action name="actionExportOrso">
+      <property name="text">
+        <string>Export ORSO...</string>
+      </property>
+    </action>
+    <action name="actionExportData">
+      <property name="text">
+        <string>Export Data...</string>
+      </property>
+    </action>
+    <action name="actionExportTable">
+      <property name="text">
+        <string>Export Table...</string>
+      </property>
+    </action>
+    <action name="actionExportScript">
+      <property name="text">
+        <string>Export Script...</string>
+      </property>
+    </action>
+
+    <action name="actionPublishPlot">
+      <property name="text">
+        <string>Publish Plot...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Shift+P</string>
+      </property>
+    </action>
+    <action name="actionPrintPlot">
+      <property name="text">
+        <string>Print Plot...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+P</string>
+      </property>
+    </action>
+    <action name="actionPrintGrid">
+      <property name="text">
+        <string>Print Grid...</string>
+      </property>
+    </action>
+    <action name="actionPrintScript">
+      <property name="text">
+        <string>Print Script...</string>
+      </property>
+    </action>
+
+    <action name="actionUndo">
+      <property name="text">
+        <string>Undo</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Z</string>
+      </property>
+    </action>
+    <action name="actionRedo">
+      <property name="text">
+        <string>Redo</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Shift+Z</string>
+      </property>
+    </action>
+    <action name="actionHistory">
+      <property name="text">
+        <string>History...</string>
+      </property>
+    </action>
+
+    <action name="actionCopyGraph">
+      <property name="text">
+        <string>Copy Graph</string>
+      </property>
+    </action>
+    <action name="actionCopySimulation">
+      <property name="text">
+        <string>Copy Simulation</string>
+      </property>
+    </action>
+    <action name="actionCopyTable">
+      <property name="text">
+        <string>Copy Table</string>
+      </property>
+    </action>
+
+    <action name="actionFindReplace">
+      <property name="text">
+        <string>Find/Replace...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+F</string>
+      </property>
+    </action>
+    <action name="actionOpenInEditor">
+      <property name="text">
+        <string>Open in Editor</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+E</string>
+      </property>
+    </action>
+
+    <action name="actionNewDataSet">
+      <property name="text">
+        <string>New data set</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+N</string>
+      </property>
+    </action>
+    <action name="actionDeleteDataSet">
+      <property name="text">
+        <string>Delete</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+D</string>
+      </property>
+    </action>
+    <action name="actionLowerData">
+      <property name="text">
+        <string>Lower item</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+L</string>
+      </property>
+    </action>
+    <action name="actionRaiseData">
+      <property name="text">
+        <string>Raise item</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+R</string>
+      </property>
+    </action>
+    <action name="actionToggleShow">
+      <property name="text">
+        <string>Toggle Show</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+S</string>
+      </property>
+    </action>
+    <action name="actionToggleUse">
+      <property name="text">
+        <string>Toggle Use</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+U</string>
+      </property>
+    </action>
+    <action name="actionToggleError">
+      <property name="text">
+        <string>Toggle Error</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+E</string>
+      </property>
+    </action>
+    <action name="actionCalculations">
+      <property name="text">
+        <string>Calculations...</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+C</string>
+      </property>
+    </action>
+
+    <action name="actionValueAsSlider">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>Value as slider</string>
+      </property>
+    </action>
+    <action name="actionPlotMarkers">
+      <property name="text">
+        <string>Plot Markers</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Shift+P</string>
+      </property>
+    </action>
+    <action name="actionUseToggleShow">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>Use Toggle Show</string>
+      </property>
+    </action>
+
+    <action name="actionColorNone">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>none</string>
+      </property>
+    </action>
+    <action name="actionColorCycle1">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>cycle1</string>
+      </property>
+    </action>
+    <action name="actionColorCycle2">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>cycle2</string>
+      </property>
+    </action>
+
+    <action name="actionYScaleLog">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>log</string>
+      </property>
+    </action>
+    <action name="actionYScaleLin">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>lin</string>
+      </property>
+    </action>
+    <action name="actionXScaleLog">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>log</string>
+      </property>
+    </action>
+    <action name="actionXScaleLin">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>lin</string>
+      </property>
+    </action>
+
+    <action name="actionSimulateAutomatically">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>Simulate Automatically</string>
+      </property>
+    </action>
+    <action name="actionSimulate">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/simulate.svg</normaloff>
+          <normalon>:/main_gui/simulate.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Simulate</string>
+      </property>
+      <property name="shortcut">
+        <string>F9</string>
+      </property>
+    </action>
+    <action name="actionEvaluate">
+      <property name="text">
+        <string>Evaluate</string>
+      </property>
+      <property name="shortcut">
+        <string>F5</string>
+      </property>
+    </action>
+    <action name="actionUseCuda">
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+      <property name="text">
+        <string>Use CUDA</string>
+      </property>
+    </action>
+    <action name="actionStartFit">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/start_fit.svg</normaloff>
+          <normalon>:/main_gui/start_fit.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Start Fit</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+F</string>
+      </property>
+    </action>
+    <action name="actionStopFit">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/stop_fit.svg</normaloff>
+          <normalon>:/main_gui/stop_fit.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Halt Fit</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+H</string>
+      </property>
+    </action>
+    <action name="actionResumeFit">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/restart_fit.svg</normaloff>
+          <normalon>:/main_gui/restart_fit.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Resume Fit</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+R</string>
+      </property>
+    </action>
+    <action name="actionAnalyzeFit">
+      <property name="text">
+        <string>Analyze fit</string>
+      </property>
+    </action>
+
+    <action name="actionCalcErrorBars">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/calc_error_bar.svg</normaloff>
+          <normalon>:/main_gui/calc_error_bar.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Calculate errorbars</string>
+      </property>
+    </action>
+    <action name="actionErrorStatistics">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/par_proj.svg</normaloff>
+          <normalon>:/main_gui/par_proj.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Error Statistics</string>
+      </property>
+    </action>
+
+    <action name="actionOptimizer">
+      <property name="text">
+        <string>Optimizer...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Shift+O</string>
+      </property>
+    </action>
+    <action name="actionDataLoader">
+      <property name="text">
+        <string>Data Loader...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Shift+D</string>
+      </property>
+    </action>
+    <action name="actionImportSettings">
+      <property name="text">
+        <string>Import settings...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Shift+I</string>
+      </property>
+    </action>
+    <action name="actionStartupProfile">
+      <property name="text">
+        <string>Startup Profile...</string>
+      </property>
+    </action>
+    <action name="actionSelectExternalEditor">
+      <property name="text">
+        <string>Select External Editor...</string>
+      </property>
+    </action>
+
+    <action name="actionModelsHelp">
+      <property name="text">
+        <string>Models Help...</string>
+      </property>
+    </action>
+    <action name="actionFomHelp">
+      <property name="text">
+        <string>FOM Help</string>
+      </property>
+    </action>
+    <action name="actionPluginsHelp">
+      <property name="text">
+        <string>Plugins Help...</string>
+      </property>
+    </action>
+    <action name="actionDataLoadersHelp">
+      <property name="text">
+        <string>Data loaders Help...</string>
+      </property>
+    </action>
+    <action name="actionOpenExamples">
+      <property name="text">
+        <string>Open Examples...</string>
+      </property>
+    </action>
+    <action name="actionOpenManual">
+      <property name="text">
+        <string>Open Manual...</string>
+      </property>
+    </action>
+    <action name="actionOpenHomepage">
+      <property name="text">
+        <string>Open Homepage...</string>
+      </property>
+    </action>
+    <action name="actionAbout">
+      <property name="text">
+        <string>About...</string>
+      </property>
+    </action>
+    <action name="actionCollectDebugInfo">
+      <property name="text">
+        <string>Collect Debug Info...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+L</string>
+      </property>
+    </action>
+
+  </widget>
+  <resources/>
+  <connections/>
+</ui>

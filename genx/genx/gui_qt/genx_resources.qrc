@@ -1,0 +1,33 @@
+<RCC>
+    <qresource prefix="/main_gui">
+        <file alias="FOM.svg">../../../icons/main_gui/FOM.svg</file>
+        <file alias="Icon2.svg">../../../icons/main_gui/Icon2.svg</file>
+        <file alias="add.svg">../../../icons/main_gui/add.svg</file>
+        <file alias="add_simulation.svg">../../../icons/main_gui/add_simulation.svg</file>
+        <file alias="calc.svg">../../../icons/main_gui/calc.svg</file>
+        <file alias="calc_error_bar.svg">../../../icons/main_gui/calc_error_bar.svg</file>
+        <file alias="delete.svg">../../../icons/main_gui/delete.svg</file>
+        <file alias="genx.svg">../../../icons/main_gui/genx.svg</file>
+        <file alias="genx_file_v1.svg">../../../icons/main_gui/genx_file_v1.svg</file>
+        <file alias="genx_v2.svg">../../../icons/main_gui/genx_v2.svg</file>
+        <file alias="genx_v3.svg">../../../icons/main_gui/genx_v3.svg</file>
+        <file alias="lines.svg">../../../icons/main_gui/lines.svg</file>
+        <file alias="move_down.svg">../../../icons/main_gui/move_down.svg</file>
+        <file alias="move_up.svg">../../../icons/main_gui/move_up.svg</file>
+        <file alias="new.svg">../../../icons/main_gui/new.svg</file>
+        <file alias="new_from_file.png">../../../icons/main_gui/new_from_file.png</file>
+        <file alias="open.svg">../../../icons/main_gui/open.svg</file>
+        <file alias="par_proj.svg">../../../icons/main_gui/par_proj.svg</file>
+        <file alias="par_scan.svg">../../../icons/main_gui/par_scan.svg</file>
+        <file alias="plotting.svg">../../../icons/main_gui/plotting.svg</file>
+        <file alias="points.svg">../../../icons/main_gui/points.svg</file>
+        <file alias="restart_fit.svg">../../../icons/main_gui/restart_fit.svg</file>
+        <file alias="save.svg">../../../icons/main_gui/save.svg</file>
+        <file alias="simulate.svg">../../../icons/main_gui/simulate.svg</file>
+        <file alias="slider.svg">../../../icons/main_gui/slider.svg</file>
+        <file alias="sort.svg">../../../icons/main_gui/sort.svg</file>
+        <file alias="start_fit.svg">../../../icons/main_gui/start_fit.svg</file>
+        <file alias="stop_fit.svg">../../../icons/main_gui/stop_fit.svg</file>
+        <file alias="zoom.svg">../../../icons/main_gui/zoom.svg</file>
+    </qresource>
+</RCC>

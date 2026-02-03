@@ -42,11 +42,8 @@ def start_interactive(args):
         from .gui_wx import main_window
     elif gui_toolkit == "qt":
         from . import gui_generic
-        gui_generic.set_gui_toolkit('qt')
-        raise RuntimeError(
-            "Qt GUI selected (--gui qt), but gui_qt is not implemented yet. "
-            "Use '--gui wx' for the existing GUI."
-        )
+        gui_generic.set_gui_toolkit("qt")
+        from .gui_qt import main_window as qt_main_window
     else:
         raise ValueError(f"Unknown GUI toolkit: {gui_toolkit!r}")
 
@@ -77,6 +74,10 @@ def start_interactive(args):
             app = main_window.GenxApp(filename=filename, dpi_overwrite=args.dpi_overwrite)
         debug("setup complete, start WX MainLoop")
         app.MainLoop()
+    else:
+        debug("setup complete, start Qt event loop")
+        qt_main_window.start_qt_app(filename=filename, debug=args.debug)
+
     debug("leave start_interactive")
 
 
