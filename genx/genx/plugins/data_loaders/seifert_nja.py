@@ -11,17 +11,6 @@ import numpy as np
 from ..data_loader_framework import Template
 from ..utils import ShowWarningDialog
 
-try:
-    import wx
-except ImportError:
-    # in case of console usinge withou wx beeing installed put a mock class/module
-    class void:
-        pass
-
-    wx = void()
-    wx.Dialog = void
-
-
 class Plugin(Template):
     wildcard = "*.nja"
 

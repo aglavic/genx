@@ -7,7 +7,7 @@ from typing import Callable, Dict, List, Union
 import wx.html
 
 from genx.core.custom_logging import iprint
-from genx.gui.help import rst_html
+from genx.gui_wx.help import rst_html
 from genx.model import Model
 from genx.models.lib.base import AltStrEnum
 from genx.models.lib.refl_base import ReflBase as ReflBaseNew

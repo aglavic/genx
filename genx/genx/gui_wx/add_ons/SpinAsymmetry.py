@@ -12,7 +12,7 @@ import wx
 
 from numpy import isnan
 
-from genx.gui.plotpanel import BasePlotConfig, PlotPanel
+from genx.gui_wx.plotpanel import BasePlotConfig, PlotPanel
 
 from genx.plugins import add_on_framework as framework
 

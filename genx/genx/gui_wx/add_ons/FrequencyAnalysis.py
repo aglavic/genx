@@ -12,10 +12,10 @@ import wx
 
 from numpy import isnan, linspace
 
-from genx.gui.plotpanel import BasePlotConfig, PlotPanel
+from genx.gui_wx.plotpanel import BasePlotConfig, PlotPanel
 
 from genx.plugins import add_on_framework as framework
-from .help_modules.frequency_analysis import TransformType, transform
+from genx.tools.frequency_analysis import TransformType, transform
 
 
 class FAPlotConfig(BasePlotConfig):

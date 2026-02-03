@@ -15,7 +15,7 @@ from scipy.interpolate import interp1d
 
 from genx.core.custom_logging import iprint
 from genx.data import DataList
-from genx.gui.plotpanel import BasePlotConfig, PlotPanel
+from genx.gui_wx.plotpanel import BasePlotConfig, PlotPanel
 from genx.model import Model
 
 from .reflectivity_misc import ReflectivityModule

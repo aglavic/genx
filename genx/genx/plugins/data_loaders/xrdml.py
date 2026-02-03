@@ -13,19 +13,6 @@ import numpy as np
 from ..data_loader_framework import Template
 from ..utils import ShowWarningDialog
 
-try:
-    import wx
-
-    from wx.lib.masked import NumCtrl
-except ImportError:
-
-    class void:
-        pass
-
-    wx = void()
-    wx.Dialog = void
-
-
 class Plugin(Template):
     wildcard = "*.xrdml"
 

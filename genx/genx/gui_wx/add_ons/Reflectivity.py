@@ -57,7 +57,7 @@ import wx.html
 
 from genx.core.custom_logging import iprint
 from genx.exceptions import GenxError
-from genx.gui.custom_events import EVT_UPDATE_SCRIPT
+from genx.gui_wx.custom_events import EVT_UPDATE_SCRIPT
 from genx.model import Model
 
 from genx.plugins import add_on_framework as framework

@@ -12,11 +12,22 @@ import sys
 from logging import error, info, warning
 
 try:
-    import wx
+    from genx.gui_generic.utils import ShowErrorDialog, ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
 except ImportError:
-    wx = None
+    pass
 
 # ==============================================================================
+
+head, tail = os.path.split(__file__)
+# Look only after the file name and not the ending since
+# the file ending can be pyc if compiled...
+__FILENAME__ = tail.split(".")[0]
+# This assumes that plugin is under the current dir may need
+# changing
+__MODULE_DIR__ = head
+if __MODULE_DIR__ != os.path.sep:
+    __MODULE_DIR__ += os.path.sep
+
 
 
 class PluginHandler:
@@ -102,7 +113,10 @@ class PluginHandler:
         Load a module given by name
         """
         # print 'Trying to load module: ', module_name
-        module = __import__(module_name, globals(), locals(), ["plugins"], level=1)
+        if module_name.startswith('add_ons.'):
+            module = __import__('genx.gui_generic.'+module_name, globals(), locals(), ["genx.gui_generic"])
+        else:
+            module = __import__(module_name, globals(), locals(), ["plugins"], level=1)
         return module
 
     def unload_plugin(self, plugin_name):
@@ -112,52 +126,3 @@ class PluginHandler:
         # print self.loaded_plugins.keys()
         self.loaded_plugins[plugin_name].Remove()
         del self.loaded_plugins[plugin_name]
-
-
-# END: PluginHandler
-# ==============================================================================
-# Utility Dialog functions..
-def ShowInfoDialog(frame, message, title="Information"):
-    if wx is None:
-        print(message)
-        return
-    else:
-        exc_info = sys.exc_info()
-        info(message, exc_info=exc_info[0] and exc_info)
-    dlg = wx.MessageDialog(frame, message, title, wx.OK | wx.ICON_INFORMATION)
-    dlg.ShowModal()
-    dlg.Destroy()
-
-
-def ShowWarningDialog(frame, message, title="Warning"):
-    if wx is None:
-        print(message)
-        return
-    else:
-        exc_info = sys.exc_info()
-        warning(message, exc_info=exc_info[0] and exc_info)
-    dlg = wx.MessageDialog(frame, message, title, wx.OK | wx.ICON_ERROR)
-    dlg.ShowModal()
-    dlg.Destroy()
-
-
-def ShowErrorDialog(frame, message, title="ERROR"):
-    if wx is None:
-        print(message)
-        return
-    else:
-        exc_info = sys.exc_info()
-        error(message, exc_info=exc_info[0] and exc_info)
-    dlg = wx.MessageDialog(frame, message, title, wx.OK | wx.ICON_ERROR)
-    dlg.ShowModal()
-    dlg.Destroy()
-
-
-def ShowQuestionDialog(frame, message, title="Question"):
-    if wx is None:
-        result = input(message + " [y/n]").strip().lower() in ["y", "yes"]
-        return result
-    dlg = wx.MessageDialog(frame, message, title, wx.YES_NO | wx.ICON_QUESTION)
-    result = dlg.ShowModal() == wx.ID_YES
-    dlg.Destroy()
-    return result

@@ -13,7 +13,7 @@ import wx
 from genx.core.config import config
 from genx.core.custom_logging import iprint
 
-from genx.plugins.utils import PluginHandler, ShowErrorDialog
+from genx.plugins.utils import PluginHandler, ShowErrorDialog, __MODULE_DIR__ as plugin_dir
 
 head, tail = os.path.split(__file__)
 # Look only after the file name and not the ending since
@@ -22,13 +22,13 @@ __FILENAME__ = tail.split(".")[0]
 # This assumes that plugin is under the current dir may need
 # changing
 __MODULE_DIR__ = head
-if __MODULE_DIR__ != "/":
-    __MODULE_DIR__ += "/"
+if __MODULE_DIR__ != os.path.sep:
+    __MODULE_DIR__ += os.path.sep
 
 
 class PluginController:
     def __init__(self, parent):
-        self.plugin_handler = PluginHandler(parent, __MODULE_DIR__, "data_loaders")
+        self.plugin_handler = PluginHandler(parent, plugin_dir, "data_loaders")
         self.parent = parent
         self.plugin_handler.load_plugin("auto")
 

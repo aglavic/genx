@@ -19,7 +19,7 @@ import wx
 
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
-import genx.gui.images as img
+import genx.gui_wx.images as img
 
 from genx.parameters import Parameters
 

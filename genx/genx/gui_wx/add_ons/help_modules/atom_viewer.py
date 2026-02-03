@@ -16,7 +16,7 @@ from vtk import (vtkActor, vtkActor2D, vtkArrowSource, vtkAxesActor, vtkPolyData
 
 from genx.core.custom_logging import iprint
 
-from . import atom_colors as atom_colors
+from genx.tools import atom_colors as atom_colors
 from . import custom_dialog, sxrd_images
 from .wxVTKRenderWindow import wxVTKRenderWindow
 

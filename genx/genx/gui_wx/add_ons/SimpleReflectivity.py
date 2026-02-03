@@ -21,20 +21,18 @@ import wx.grid as gridlib
 
 from wx.adv import Wizard, WizardPageSimple
 
-from genx.core.custom_logging import iprint
 from genx.exceptions import GenxError
-from genx.gui.custom_events import (EVT_PARAMETER_GRID_CHANGE, EVT_UPDATE_MODEL, EVT_UPDATE_PARAMETERS,
+from ..custom_events import (EVT_PARAMETER_GRID_CHANGE, EVT_UPDATE_MODEL, EVT_UPDATE_PARAMETERS,
                                     EVT_UPDATE_SCRIPT, skips_event, update_model_event)
-from genx.gui.images import getopenBitmap, getplottingBitmap
-from genx.gui.parametergrid import ValueCellRenderer
+from ..images import getopenBitmap, getplottingBitmap
+from ..parametergrid import ValueCellRenderer
 from genx.model import Model
 from genx.models.lib.refl_base import ReflBase
 
-from ...gui import custom_ids
+from .. import custom_ids
 from genx.plugins import add_on_framework as framework
-from .help_modules import reflectivity_images as images
 from .help_modules.custom_dialog import *
-from .help_modules.materials_db import MASS_DENSITY_CONVERSION, Formula, mdb
+from genx.tools.materials_db import MASS_DENSITY_CONVERSION, Formula, mdb
 from .help_modules.reflectivity_gui import ReflClassHelpDialog
 from .help_modules.reflectivity_sample_plot import SamplePlotPanel
 from .help_modules.reflectivity_utils import find_code_segment
