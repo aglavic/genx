@@ -327,6 +327,7 @@ def _install_qt_exception_handler(app: QtWidgets.QApplication) -> None:
 
 def start_qt_app(*, filename: Optional[str], debug: bool = False) -> None:
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon(":/main_gui/genx.ico"))
     _install_qt_exception_handler(app)
 
     win = GenxMainWindow(filename=filename)

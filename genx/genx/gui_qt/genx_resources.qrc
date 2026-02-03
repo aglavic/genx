@@ -8,6 +8,7 @@
         <file alias="calc_error_bar.svg">../../../icons/main_gui/calc_error_bar.svg</file>
         <file alias="delete.svg">../../../icons/main_gui/delete.svg</file>
         <file alias="genx.svg">../../../icons/main_gui/genx.svg</file>
+        <file alias="genx.ico">windows_build/genx.ico</file>
         <file alias="genx_file_v1.svg">../../../icons/main_gui/genx_file_v1.svg</file>
         <file alias="genx_v2.svg">../../../icons/main_gui/genx_v2.svg</file>
         <file alias="genx_v3.svg">../../../icons/main_gui/genx_v3.svg</file>
