@@ -21,7 +21,7 @@ except ImportError:
 
 from .. import data
 from ..core.config import BaseConfig, Configurable
-from . import data_loader_wx as dlf
+from . import data_loader as dlf
 from . import images as img
 from .custom_events import data_list_type, update_plotsettings
 from .message_dialogs import ShowErrorDialog, ShowNotificationDialog, ShowQuestionDialog, ShowWarningDialog

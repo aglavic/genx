@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
     QPlainTextEdit, QSizePolicy, QSplitter, QStatusBar,
     QTabWidget, QToolBar, QVBoxLayout, QWidget)
 
+from genx.gui_qt.datalist import DataListControl
 from genx.gui_qt.plotpanel import (DataPlotPanel, ErrorPlotPanel, FomScanPlotPanel, ParsPlotPanel)
 
 class Ui_GenxMainWindowUI(object):
@@ -230,6 +231,11 @@ class Ui_GenxMainWindowUI(object):
         self.tabData.setObjectName(u"tabData")
         self.dataTabLayout = QVBoxLayout(self.tabData)
         self.dataTabLayout.setObjectName(u"dataTabLayout")
+        self.dataListControl = DataListControl(self.tabData)
+        self.dataListControl.setObjectName(u"dataListControl")
+
+        self.dataTabLayout.addWidget(self.dataListControl)
+
         self.leftTabWidget.addTab(self.tabData, "")
         self.tabView = QWidget()
         self.tabView.setObjectName(u"tabView")

@@ -23,7 +23,11 @@
                 <attribute name="title">
                   <string>Data</string>
                 </attribute>
-                <layout class="QVBoxLayout" name="dataTabLayout"/>
+                <layout class="QVBoxLayout" name="dataTabLayout">
+                  <item>
+                    <widget class="DataListControl" name="dataListControl"/>
+                  </item>
+                </layout>
               </widget>
               <widget class="QWidget" name="tabView">
                 <attribute name="title">
@@ -881,6 +885,11 @@
       <class>FomScanPlotPanel</class>
       <extends>QWidget</extends>
       <header>genx.gui_qt.plotpanel</header>
+    </customwidget>
+    <customwidget>
+      <class>DataListControl</class>
+      <extends>QWidget</extends>
+      <header>genx.gui_qt.datalist</header>
     </customwidget>
   </customwidgets>
   <connections/>

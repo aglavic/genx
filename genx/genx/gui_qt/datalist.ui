@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+  <class>DataListControl</class>
+  <widget class="QWidget" name="DataListControl">
+    <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+        <widget class="QToolBar" name="toolbar">
+          <addaction name="actionAddData"/>
+          <addaction name="actionImportData"/>
+          <addaction name="actionAddSimulation"/>
+          <addaction name="actionDataInfo"/>
+          <addaction name="separator1"/>
+          <addaction name="actionMoveUp"/>
+          <addaction name="actionMoveDown"/>
+          <addaction name="actionDelete"/>
+          <addaction name="separator2"/>
+          <addaction name="actionPlotting"/>
+          <addaction name="actionCalc"/>
+        </widget>
+      </item>
+      <item>
+        <widget class="QWidget" name="listContainer">
+          <layout class="QVBoxLayout" name="listLayout"/>
+        </widget>
+      </item>
+    </layout>
+    <action name="actionAddData">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/add.svg</normaloff>
+          <normalon>:/main_gui/add.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Add data set</string>
+      </property>
+      <property name="toolTip">
+        <string>Insert empty data set</string>
+      </property>
+    </action>
+    <action name="actionImportData">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/open.svg</normaloff>
+          <normalon>:/main_gui/open.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Import data set</string>
+      </property>
+      <property name="toolTip">
+        <string>Import data into selected data set</string>
+      </property>
+    </action>
+    <action name="actionAddSimulation">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/add_simulation.svg</normaloff>
+          <normalon>:/main_gui/add_simulation.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Add simulation set</string>
+      </property>
+      <property name="toolTip">
+        <string>Insert a data set for simulation</string>
+      </property>
+    </action>
+    <action name="actionDataInfo">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/info.png</normaloff>
+          <normalon>:/main_gui/info.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Data info</string>
+      </property>
+      <property name="toolTip">
+        <string>Show the meta data information for the selected dataset</string>
+      </property>
+    </action>
+    <action name="separator1">
+      <property name="separator">
+        <bool>true</bool>
+      </property>
+    </action>
+    <action name="actionMoveUp">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/move_up.svg</normaloff>
+          <normalon>:/main_gui/move_up.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Move up</string>
+      </property>
+      <property name="toolTip">
+        <string>Move selected data set(s) up</string>
+      </property>
+    </action>
+    <action name="actionMoveDown">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/move_down.svg</normaloff>
+          <normalon>:/main_gui/move_down.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Move down</string>
+      </property>
+      <property name="toolTip">
+        <string>Move selected data set(s) down</string>
+      </property>
+    </action>
+    <action name="actionDelete">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/delete.svg</normaloff>
+          <normalon>:/main_gui/delete.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Delete data set</string>
+      </property>
+      <property name="toolTip">
+        <string>Delete selected data set</string>
+      </property>
+    </action>
+    <action name="separator2">
+      <property name="separator">
+        <bool>true</bool>
+      </property>
+    </action>
+    <action name="actionPlotting">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/plotting.svg</normaloff>
+          <normalon>:/main_gui/plotting.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Plot settings</string>
+      </property>
+      <property name="toolTip">
+        <string>Plot settings</string>
+      </property>
+    </action>
+    <action name="actionCalc">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/calc.svg</normaloff>
+          <normalon>:/main_gui/calc.svg</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Calculations</string>
+      </property>
+      <property name="toolTip">
+        <string>Calculation on selected data set(s)</string>
+      </property>
+    </action>
+  </widget>
+  <resources/>
+  <connections/>
+</ui>
