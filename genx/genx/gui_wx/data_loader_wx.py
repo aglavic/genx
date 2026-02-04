@@ -13,7 +13,8 @@ import wx
 from genx.core.config import config
 from genx.core.custom_logging import iprint
 
-from genx.plugins.utils import PluginHandler, ShowErrorDialog, __MODULE_DIR__ as plugin_dir
+from genx.plugins.utils import PluginHandler, __MODULE_DIR__ as plugin_dir
+from .utils import ShowErrorDialog
 
 head, tail = os.path.split(__file__)
 # Look only after the file name and not the ending since

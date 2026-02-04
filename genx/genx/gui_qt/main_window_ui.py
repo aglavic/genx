@@ -20,6 +20,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
     QPlainTextEdit, QSizePolicy, QSplitter, QStatusBar,
     QTabWidget, QToolBar, QVBoxLayout, QWidget)
 
+from genx.gui_qt.plotpanel import (DataPlotPanel, ErrorPlotPanel, FomScanPlotPanel, ParsPlotPanel)
+
 class Ui_GenxMainWindowUI(object):
     def setupUi(self, GenxMainWindowUI):
         if not GenxMainWindowUI.objectName():
@@ -248,21 +250,41 @@ class Ui_GenxMainWindowUI(object):
         self.plotTabData.setObjectName(u"plotTabData")
         self.plotDataLayout = QVBoxLayout(self.plotTabData)
         self.plotDataLayout.setObjectName(u"plotDataLayout")
+        self.plotDataPanel = DataPlotPanel(self.plotTabData)
+        self.plotDataPanel.setObjectName(u"plotDataPanel")
+
+        self.plotDataLayout.addWidget(self.plotDataPanel)
+
         self.plotTabWidget.addTab(self.plotTabData, "")
         self.plotTabFom = QWidget()
         self.plotTabFom.setObjectName(u"plotTabFom")
         self.plotFomLayout = QVBoxLayout(self.plotTabFom)
         self.plotFomLayout.setObjectName(u"plotFomLayout")
+        self.plotFomPanel = ErrorPlotPanel(self.plotTabFom)
+        self.plotFomPanel.setObjectName(u"plotFomPanel")
+
+        self.plotFomLayout.addWidget(self.plotFomPanel)
+
         self.plotTabWidget.addTab(self.plotTabFom, "")
         self.plotTabPars = QWidget()
         self.plotTabPars.setObjectName(u"plotTabPars")
         self.plotParsLayout = QVBoxLayout(self.plotTabPars)
         self.plotParsLayout.setObjectName(u"plotParsLayout")
+        self.plotParsPanel = ParsPlotPanel(self.plotTabPars)
+        self.plotParsPanel.setObjectName(u"plotParsPanel")
+
+        self.plotParsLayout.addWidget(self.plotParsPanel)
+
         self.plotTabWidget.addTab(self.plotTabPars, "")
         self.plotTabFomScans = QWidget()
         self.plotTabFomScans.setObjectName(u"plotTabFomScans")
         self.plotFomScansLayout = QVBoxLayout(self.plotTabFomScans)
         self.plotFomScansLayout.setObjectName(u"plotFomScansLayout")
+        self.plotFomScansPanel = FomScanPlotPanel(self.plotTabFomScans)
+        self.plotFomScansPanel.setObjectName(u"plotFomScansPanel")
+
+        self.plotFomScansLayout.addWidget(self.plotFomScansPanel)
+
         self.plotTabWidget.addTab(self.plotTabFomScans, "")
         self.plotSplitter.addWidget(self.plotTabWidget)
         self.pluginTabWidget = QTabWidget(self.plotSplitter)

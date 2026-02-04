@@ -172,11 +172,6 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.opt.hsplit = _first_size(self.ui.rightSplitter)
         self.opt.psplit = _first_size(self.ui.plotSplitter)
 
-    def _setup_autoconnect(self) -> None:
-        # Enables automatic connections based on objectName:
-        # QAction(objectName="actionOpenModel") -> on_actionOpenModel_triggered()
-        QtCore.QMetaObject.connectSlotsByName(self)
-
     def _setup_app_exception_dialogs(self) -> None:
         app = QtWidgets.QApplication.instance()
         if app is None:

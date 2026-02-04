@@ -48,25 +48,41 @@
                     <attribute name="title">
                       <string>Data</string>
                     </attribute>
-                    <layout class="QVBoxLayout" name="plotDataLayout"/>
+                    <layout class="QVBoxLayout" name="plotDataLayout">
+                      <item>
+                        <widget class="DataPlotPanel" name="plotDataPanel"/>
+                      </item>
+                    </layout>
                   </widget>
                   <widget class="QWidget" name="plotTabFom">
                     <attribute name="title">
                       <string>FOM</string>
                     </attribute>
-                    <layout class="QVBoxLayout" name="plotFomLayout"/>
+                    <layout class="QVBoxLayout" name="plotFomLayout">
+                      <item>
+                        <widget class="ErrorPlotPanel" name="plotFomPanel"/>
+                      </item>
+                    </layout>
                   </widget>
                   <widget class="QWidget" name="plotTabPars">
                     <attribute name="title">
                       <string>Pars</string>
                     </attribute>
-                    <layout class="QVBoxLayout" name="plotParsLayout"/>
+                    <layout class="QVBoxLayout" name="plotParsLayout">
+                      <item>
+                        <widget class="ParsPlotPanel" name="plotParsPanel"/>
+                      </item>
+                    </layout>
                   </widget>
                   <widget class="QWidget" name="plotTabFomScans">
                     <attribute name="title">
                       <string>FOM scans</string>
                     </attribute>
-                    <layout class="QVBoxLayout" name="plotFomScansLayout"/>
+                    <layout class="QVBoxLayout" name="plotFomScansLayout">
+                      <item>
+                        <widget class="FomScanPlotPanel" name="plotFomScansPanel"/>
+                      </item>
+                    </layout>
                   </widget>
                 </widget>
                 <widget class="QTabWidget" name="pluginTabWidget">
@@ -845,5 +861,27 @@
 
   </widget>
   <resources/>
+  <customwidgets>
+    <customwidget>
+      <class>DataPlotPanel</class>
+      <extends>QWidget</extends>
+      <header>genx.gui_qt.plotpanel</header>
+    </customwidget>
+    <customwidget>
+      <class>ErrorPlotPanel</class>
+      <extends>QWidget</extends>
+      <header>genx.gui_qt.plotpanel</header>
+    </customwidget>
+    <customwidget>
+      <class>ParsPlotPanel</class>
+      <extends>QWidget</extends>
+      <header>genx.gui_qt.plotpanel</header>
+    </customwidget>
+    <customwidget>
+      <class>FomScanPlotPanel</class>
+      <extends>QWidget</extends>
+      <header>genx.gui_qt.plotpanel</header>
+    </customwidget>
+  </customwidgets>
   <connections/>
 </ui>
