@@ -33,7 +33,11 @@
                 <attribute name="title">
                   <string>View</string>
                 </attribute>
-                <layout class="QVBoxLayout" name="viewTabLayout"/>
+                <layout class="QVBoxLayout" name="viewTabLayout">
+                  <item>
+                    <widget class="DataGridPanel" name="dataGridPanel"/>
+                  </item>
+                </layout>
               </widget>
             </widget>
             <widget class="QSplitter" name="rightSplitter">
@@ -890,6 +894,11 @@
       <class>DataListControl</class>
       <extends>QWidget</extends>
       <header>genx.gui_qt.datalist</header>
+    </customwidget>
+    <customwidget>
+      <class>DataGridPanel</class>
+      <extends>QWidget</extends>
+      <header>genx.gui_qt.data_grid_panel</header>
     </customwidget>
   </customwidgets>
   <connections/>

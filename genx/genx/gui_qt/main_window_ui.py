@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
     QPlainTextEdit, QSizePolicy, QSplitter, QStatusBar,
     QTabWidget, QToolBar, QVBoxLayout, QWidget)
 
+from genx.gui_qt.data_grid_panel import DataGridPanel
 from genx.gui_qt.datalist import DataListControl
 from genx.gui_qt.plotpanel import (DataPlotPanel, ErrorPlotPanel, FomScanPlotPanel, ParsPlotPanel)
 
@@ -241,6 +242,11 @@ class Ui_GenxMainWindowUI(object):
         self.tabView.setObjectName(u"tabView")
         self.viewTabLayout = QVBoxLayout(self.tabView)
         self.viewTabLayout.setObjectName(u"viewTabLayout")
+        self.dataGridPanel = DataGridPanel(self.tabView)
+        self.dataGridPanel.setObjectName(u"dataGridPanel")
+
+        self.viewTabLayout.addWidget(self.dataGridPanel)
+
         self.leftTabWidget.addTab(self.tabView, "")
         self.mainSplitter.addWidget(self.leftTabWidget)
         self.rightSplitter = QSplitter(self.mainSplitter)

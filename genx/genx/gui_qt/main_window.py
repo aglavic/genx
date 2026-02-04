@@ -106,6 +106,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         self._install_status_update_hook()
+        self._setup_data_view()
         self._setup_window_basics()
         self._setup_app_exception_dialogs()
 
@@ -127,6 +128,15 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     def _setup_window_basics(self) -> None:
         self.setWindowTitle(f"GenX {program_version}")
         self.setMinimumSize(600, 400)
+
+    def _setup_data_view(self) -> None:
+        data_list_ctrl = getattr(self.ui, "dataListControl", None)
+        data_grid_panel = getattr(self.ui, "dataGridPanel", None)
+        if data_list_ctrl is None or data_grid_panel is None:
+            return
+        data_list = data_list_ctrl.list_ctrl.data_cont.get_data()
+        data_grid_panel.set_data_list(data_list)
+        data_list_ctrl.list_ctrl.data_list_event.connect(data_grid_panel.on_data_list_event)
 
     def _apply_gui_config(self) -> None:
         """
