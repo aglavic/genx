@@ -115,16 +115,16 @@
                   </attribute>
                   <layout class="QVBoxLayout" name="inputGridLayout"/>
                 </widget>
-                <widget class="QWidget" name="inputTabScript">
-                  <attribute name="title">
-                    <string>Script</string>
-                  </attribute>
-                  <layout class="QVBoxLayout" name="inputScriptLayout">
-                    <item>
-                      <widget class="QPlainTextEdit" name="scriptEditor"/>
-                    </item>
-                  </layout>
-                </widget>
+              <widget class="QWidget" name="inputTabScript">
+                <attribute name="title">
+                  <string>Script</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="inputScriptLayout">
+                  <item>
+                    <widget class="GenxScriptEditor" name="scriptEditor"/>
+                  </item>
+                </layout>
+              </widget>
               </widget>
             </widget>
           </widget>
@@ -899,6 +899,11 @@
       <class>DataGridPanel</class>
       <extends>QWidget</extends>
       <header>genx.gui_qt.data_grid_panel</header>
+    </customwidget>
+    <customwidget>
+      <class>GenxScriptEditor</class>
+      <extends>QWidget</extends>
+      <header>genx.gui_qt.script_editor</header>
     </customwidget>
   </customwidgets>
   <connections/>

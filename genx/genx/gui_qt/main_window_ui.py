@@ -17,12 +17,13 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
-    QPlainTextEdit, QSizePolicy, QSplitter, QStatusBar,
-    QTabWidget, QToolBar, QVBoxLayout, QWidget)
+    QSizePolicy, QSplitter, QStatusBar, QTabWidget,
+    QToolBar, QVBoxLayout, QWidget)
 
 from genx.gui_qt.data_grid_panel import DataGridPanel
 from genx.gui_qt.datalist import DataListControl
 from genx.gui_qt.plotpanel import (DataPlotPanel, ErrorPlotPanel, FomScanPlotPanel, ParsPlotPanel)
+from genx.gui_qt.script_editor import GenxScriptEditor
 
 class Ui_GenxMainWindowUI(object):
     def setupUi(self, GenxMainWindowUI):
@@ -321,7 +322,7 @@ class Ui_GenxMainWindowUI(object):
         self.inputTabScript.setObjectName(u"inputTabScript")
         self.inputScriptLayout = QVBoxLayout(self.inputTabScript)
         self.inputScriptLayout.setObjectName(u"inputScriptLayout")
-        self.scriptEditor = QPlainTextEdit(self.inputTabScript)
+        self.scriptEditor = GenxScriptEditor(self.inputTabScript)
         self.scriptEditor.setObjectName(u"scriptEditor")
 
         self.inputScriptLayout.addWidget(self.scriptEditor)

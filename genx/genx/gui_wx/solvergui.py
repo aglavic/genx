@@ -18,7 +18,7 @@ from .. import diffev, fom_funcs, levenberg_marquardt, model_control
 from ..core.colors import COLOR_CYCLES
 from ..core.custom_logging import iprint
 from ..model_actions import ModelAction, ModelInfluence
-from ..plugins.utils import ShowInfoDialog
+from .utils import ShowInfoDialog
 from ..remote import optimizer as remote_optimizer
 from ..solver_basis import GenxOptimizerCallback, SolverParameterInfo, SolverResultInfo, SolverUpdateInfo
 from .custom_events import *
