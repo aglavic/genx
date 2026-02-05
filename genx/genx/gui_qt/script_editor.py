@@ -3,8 +3,6 @@ Qt-only script editor widget for GenX.
 Designed to be replaceable with a QScintilla implementation later.
 """
 
-from __future__ import annotations
-
 import re
 from typing import Optional
 

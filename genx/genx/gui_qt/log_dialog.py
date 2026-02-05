@@ -3,8 +3,6 @@ Qt logging dialog to display log records and inspect details.
 Ported from the wx implementation.
 """
 
-from __future__ import annotations
-
 import logging
 from traceback import format_exception
 from typing import List, Optional

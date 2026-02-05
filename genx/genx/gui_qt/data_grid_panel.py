@@ -2,8 +2,6 @@
 Qt widget equivalent to the wx data_notebook_pane_2 panel.
 """
 
-from __future__ import annotations
-
 from typing import Optional
 
 from PySide6 import QtCore, QtWidgets, QtGui

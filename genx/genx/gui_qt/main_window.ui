@@ -223,6 +223,9 @@
                     <property name="bottomMargin">
                       <number>0</number>
                     </property>
+                    <item>
+                      <widget class="ParameterGrid" name="paramterGrid"/>
+                    </item>
                   </layout>
                 </widget>
               <widget class="QWidget" name="inputTabScript">
@@ -1026,6 +1029,11 @@
       <class>GenxScriptEditor</class>
       <extends>QWidget</extends>
       <header>genx.gui_qt.script_editor</header>
+    </customwidget>
+    <customwidget>
+      <class>ParameterGrid</class>
+      <extends>QWidget</extends>
+      <header>genx.gui_qt.parametergrid</header>
     </customwidget>
   </customwidgets>
   <connections/>

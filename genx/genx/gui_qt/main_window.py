@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 import sys
 import os
@@ -20,6 +18,7 @@ from ..core import config as conf_mod
 from ..core.colors import COLOR_CYCLES
 from ..core.custom_logging import iprint, numpy_set_options
 from . import solvergui
+from .parametergrid import ParameterGrid
 #from ..plugins import add_on_framework as add_on
 from ..version import __version__ as program_version
 
@@ -165,6 +164,37 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
         self.set_script_text(self.model_control.get_model_script())
 
+        param_grid = getattr(self.ui, "paramterGrid", None)
+        if param_grid is None:
+            layout = getattr(self.ui, "inputGridLayout", None)
+            if layout is not None:
+                param_grid = ParameterGrid(self)
+                layout.addWidget(param_grid)
+        if param_grid is not None:
+            self.paramter_grid = param_grid
+            param_grid.SetParameters(self.model_control.get_model_params())
+            param_grid.SetFOMFunctions(self.model_control.ProjectEvals, self.model_control.ScanParameter)
+            param_grid.set_parameter_value.connect(
+                lambda row, col, value: self.model_control.OnSetParameterValue(
+                    solvergui.SetParameterValueEvent(row=row, col=col, value=value)
+                )
+            )
+            param_grid.move_parameter.connect(
+                lambda row, step: self.model_control.OnMoveParameter(
+                    solvergui.MoveParameterEvent(row=row, step=step)
+                )
+            )
+            param_grid.insert_parameter.connect(self.model_control.OnInsertParameter)
+            param_grid.delete_parameters.connect(self.model_control.OnDeleteParameter)
+            param_grid.sort_and_group_parameters.connect(self.model_control.OnSortAndGroupParameters)
+            param_grid.grid_changed.connect(self._on_parameter_grid_change)
+
+    def _on_parameter_grid_change(self, permanent_change: bool) -> None:
+        if self._init_phase or not hasattr(self, "model_control"):
+            return
+        if permanent_change:
+            self.model_control.saved = False
+
     def _on_solver_text(self, text: str) -> None:
         if text:
             self._status_update(text)
@@ -190,6 +220,24 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         if editor is None:
             return ""
         return editor.toPlainText()
+
+    def _get_data_list_ctrl(self):
+        return getattr(getattr(self.ui, "dataListControl", None), "list_ctrl", None)
+
+    def _get_active_plot_panel(self):
+        tab = getattr(self.ui, "plotTabWidget", None)
+        if tab is None:
+            return None
+        current = tab.currentWidget()
+        if current is None:
+            return None
+        mapping = {
+            getattr(self.ui, "plotTabData", None): getattr(self.ui, "plotDataPanel", None),
+            getattr(self.ui, "plotTabFom", None): getattr(self.ui, "plotFomPanel", None),
+            getattr(self.ui, "plotTabPars", None): getattr(self.ui, "plotParsPanel", None),
+            getattr(self.ui, "plotTabFomScans", None): getattr(self.ui, "plotFomScansPanel", None),
+        }
+        return mapping.get(current, None)
     def _apply_gui_config(self) -> None:
         """
         Apply GUIConfig values to the Qt layout (window size + splitter positions).
@@ -278,19 +326,24 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         pass
 
     def simulate(self) -> None:
-        pass
+        if hasattr(self, "model_control"):
+            self.model_control.simulate()
 
     def evaluate(self) -> None:
-        pass
+        if hasattr(self, "model_control"):
+            self.model_control.evaluate()
 
     def start_fit(self) -> None:
-        pass
+        if hasattr(self, "model_control"):
+            self.model_control.StartFit()
 
     def stop_fit(self) -> None:
-        pass
+        if hasattr(self, "model_control"):
+            self.model_control.StopFit()
 
     def resume_fit(self) -> None:
-        pass
+        if hasattr(self, "model_control"):
+            self.model_control.ResumeFit()
 
     # ----------------------------
     # QAction auto-connected slots
@@ -393,6 +446,158 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     @QtCore.Slot(bool)
     def on_actionUseCuda_triggered(self, checked: bool) -> None:
         pass
+
+    @QtCore.Slot(bool)
+    def on_actionImportData_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.LoadData()
+
+    @QtCore.Slot(bool)
+    def on_actionAddData_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.AddItem()
+
+    @QtCore.Slot(bool)
+    def on_actionAddSimulation_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.CreateSimData()
+
+    @QtCore.Slot(bool)
+    def on_actionDataInfo_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.ShowInfo()
+
+    @QtCore.Slot(bool)
+    def on_actionDelete_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.DeleteItem()
+
+    @QtCore.Slot(bool)
+    def on_actionMoveUp_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.MoveItemUp()
+
+    @QtCore.Slot(bool)
+    def on_actionMoveDown_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.MoveItemDown()
+
+    @QtCore.Slot(bool)
+    def on_actionPlotting_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.OnPlotSettings()
+
+    @QtCore.Slot(bool)
+    def on_actionCalc_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.OnCalcEdit()
+
+    @QtCore.Slot(bool)
+    def on_actionNewDataSet_triggered(self, checked: bool = False) -> None:
+        self.on_actionAddData_triggered(checked)
+
+    @QtCore.Slot(bool)
+    def on_actionDeleteDataSet_triggered(self, checked: bool = False) -> None:
+        self.on_actionDelete_triggered(checked)
+
+    @QtCore.Slot(bool)
+    def on_actionLowerData_triggered(self, checked: bool = False) -> None:
+        self.on_actionMoveDown_triggered(checked)
+
+    @QtCore.Slot(bool)
+    def on_actionRaiseData_triggered(self, checked: bool = False) -> None:
+        self.on_actionMoveUp_triggered(checked)
+
+    @QtCore.Slot(bool)
+    def on_actionToggleShow_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.OnShowData()
+
+    @QtCore.Slot(bool)
+    def on_actionToggleUse_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.OnUseData()
+
+    @QtCore.Slot(bool)
+    def on_actionToggleError_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.OnUseError()
+
+    @QtCore.Slot(bool)
+    def on_actionCalculations_triggered(self, checked: bool = False) -> None:
+        self.on_actionCalc_triggered(checked)
+
+    @QtCore.Slot(bool)
+    def on_actionPlotMarkers_triggered(self, checked: bool = False) -> None:
+        self.on_actionPlotting_triggered(checked)
+
+    @QtCore.Slot(bool)
+    def on_actionUseToggleShow_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.SetShowToggle(checked)
+
+    @QtCore.Slot(bool)
+    def on_actionOptimizer_triggered(self, checked: bool = False) -> None:
+        if hasattr(self, "model_control"):
+            self.model_control.ParametersDialog(self)
+
+    @QtCore.Slot(bool)
+    def on_actionUndo_triggered(self, checked: bool = False) -> None:
+        if hasattr(self, "model_control"):
+            self.model_control.OnUndo()
+
+    @QtCore.Slot(bool)
+    def on_actionRedo_triggered(self, checked: bool = False) -> None:
+        if hasattr(self, "model_control"):
+            self.model_control.OnRedo()
+
+    @QtCore.Slot(bool)
+    def on_actionHistory_triggered(self, checked: bool = False) -> None:
+        if hasattr(self, "model_control"):
+            self.model_control.OnShowHistory()
+
+    @QtCore.Slot(bool)
+    def on_actionCopyGraph_triggered(self, checked: bool = False) -> None:
+        panel = self._get_active_plot_panel()
+        if panel is not None:
+            panel.CopyToClipboard()
+
+    @QtCore.Slot(bool)
+    def on_actionPrintPlot_triggered(self, checked: bool = False) -> None:
+        panel = self._get_active_plot_panel()
+        if panel is not None:
+            panel.Print()
+
+    @QtCore.Slot(bool)
+    def on_actionPublishPlot_triggered(self, checked: bool = False) -> None:
+        panel = self._get_active_plot_panel()
+        if panel is not None:
+            panel.PrintPreview()
+
+    @QtCore.Slot(bool)
+    def on_actionDataLoader_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.ChangeDataLoader()
+
+    @QtCore.Slot(bool)
+    def on_actionImportSettings_triggered(self, checked: bool = False) -> None:
+        ctrl = self._get_data_list_ctrl()
+        if ctrl is not None:
+            ctrl.OnImportSettings()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         # Persist window/splitter sizes

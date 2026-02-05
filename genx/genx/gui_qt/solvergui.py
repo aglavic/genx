@@ -3,8 +3,6 @@ Qt port of solvergui from wx.
 Uses Qt signals/slots and dataclasses for event payloads.
 """
 
-from __future__ import annotations
-
 import time
 from dataclasses import dataclass
 from logging import debug
@@ -294,9 +292,8 @@ class ModelControlGUI(QtCore.QObject):
                 dl._UpdateData("Plot settings changed", data_changed=True)
         if ModelInfluence.PARAM in action.influences:
             param_grid = getattr(self.parent, "paramter_grid", None)
-            table = getattr(param_grid, "table", None) if param_grid is not None else None
-            if table is not None and hasattr(table, "SetParameters"):
-                table.SetParameters(self.controller.get_parameters(), clear=False, permanent_change=True)
+            if param_grid is not None and hasattr(param_grid, "SetParameters"):
+                param_grid.SetParameters(self.controller.get_parameters(), clear=False, permanent_change=True)
             self.value_change.emit()
 
     def OnUndo(self, _event=None):
@@ -392,6 +389,9 @@ class ModelControlGUI(QtCore.QObject):
 
     def simulate(self, recompile=False):
         self.controller.simulate(recompile=recompile)
+
+    def evaluate(self):
+        self.controller.evaluate()
 
     def set_error_pars(self, error_values):
         self.controller.set_error_pars(error_values)
@@ -591,9 +591,8 @@ class ModelControlGUI(QtCore.QObject):
         if evt.desc not in ["Parameter Update", "Parameter Reset"]:
             return
         param_grid = getattr(self.parent, "paramter_grid", None)
-        table = getattr(param_grid, "table", None) if param_grid is not None else None
-        if table is not None and hasattr(table, "ShowParameters"):
-            table.ShowParameters(evt.values)
+        if param_grid is not None and hasattr(param_grid, "ShowParameters"):
+            param_grid.ShowParameters(evt.values)
 
     def OnShowHistory(self, _evt=None):
         dia = HistoryDialog(self.parent, self.controller.history)

@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
 
 from genx.gui_qt.data_grid_panel import DataGridPanel
 from genx.gui_qt.datalist import DataListControl
+from genx.gui_qt.parametergrid import ParameterGrid
 from genx.gui_qt.plotpanel import (DataPlotPanel, ErrorPlotPanel, FomScanPlotPanel, ParsPlotPanel)
 from genx.gui_qt.script_editor import GenxScriptEditor
 
@@ -326,6 +327,11 @@ class Ui_GenxMainWindowUI(object):
         self.inputGridLayout = QVBoxLayout(self.inputTabGrid)
         self.inputGridLayout.setObjectName(u"inputGridLayout")
         self.inputGridLayout.setContentsMargins(0, 0, 0, 0)
+        self.paramterGrid = ParameterGrid(self.inputTabGrid)
+        self.paramterGrid.setObjectName(u"paramterGrid")
+
+        self.inputGridLayout.addWidget(self.paramterGrid)
+
         self.inputTabWidget.addTab(self.inputTabGrid, "")
         self.inputTabScript = QWidget()
         self.inputTabScript.setObjectName(u"inputTabScript")

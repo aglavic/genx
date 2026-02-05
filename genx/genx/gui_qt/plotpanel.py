@@ -3,8 +3,6 @@ Qt port of the wx-based plotpanel module.
 Implements matplotlib plotting panels using the Qt backend.
 """
 
-from __future__ import annotations
-
 import warnings
 from dataclasses import dataclass
 from logging import ERROR, debug, getLogger

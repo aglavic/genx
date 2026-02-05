@@ -5,8 +5,6 @@ Mirrors the concepts from the wx GUI version:
 - GuiExceptionHandler logging.Handler for unhandled exceptions routed through logging
 """
 
-from __future__ import annotations
-
 import traceback
 from dataclasses import dataclass
 from logging import CRITICAL, Handler, LogRecord, debug, error, warning
