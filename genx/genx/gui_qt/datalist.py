@@ -182,10 +182,13 @@ class DataListModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
         row, col = index.row(), index.column()
-        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+        if role in (QtCore.Qt.ItemDataRole.DisplayRole, QtCore.Qt.ItemDataRole.EditRole):
             if col == 0:
                 return self.data_cont.get_item_text(row, col)
             return ""
+        if role == QtCore.Qt.ItemDataRole.BackgroundRole:
+            if index.row() in self.parent().show_indices:
+                return QtGui.QBrush(QtGui.QColor(230, 230, 230))
         if role == QtCore.Qt.ItemDataRole.CheckStateRole and col in (1, 2, 3):
             if col == 1:
                 return QtCore.Qt.CheckState.Checked if self.data_cont.data[row].show else QtCore.Qt.CheckState.Unchecked
@@ -287,6 +290,12 @@ class VirtualDataList(QtWidgets.QTableView, Configurable):
         self.setEditTriggers(
             QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked
             | QtWidgets.QAbstractItemView.EditTrigger.SelectedClicked
+        )
+        self.setStyleSheet(
+            "QTableView::item:selected { background-color: #e6e6e6; color: #000000; }"
+            "QTableView::item:selected:!active { background-color: #e6e6e6; color: #000000; }"
+            "QTableView::item:hover { background-color: transparent; }"
+            "QTableView::item:selected:hover { background-color: #e6e6e6; color: #000000; }"
         )
         self.horizontalHeader().setStretchLastSection(False)
         self.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)

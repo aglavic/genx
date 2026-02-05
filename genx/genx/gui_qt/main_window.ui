@@ -7,12 +7,24 @@
     </property>
     <property name="windowIcon">
       <iconset>
-        <normaloff>:/main_gui/genx.svg</normaloff>
-        <normalon>:/main_gui/genx.svg</normalon>
+        <normaloff>:/main_gui/genx.png</normaloff>
+        <normalon>:/main_gui/genx.png</normalon>
       </iconset>
     </property>
     <widget class="QWidget" name="centralwidget">
       <layout class="QVBoxLayout" name="centralLayout">
+        <property name="leftMargin">
+          <number>0</number>
+        </property>
+        <property name="topMargin">
+          <number>0</number>
+        </property>
+        <property name="rightMargin">
+          <number>0</number>
+        </property>
+        <property name="bottomMargin">
+          <number>0</number>
+        </property>
         <item>
           <widget class="QSplitter" name="mainSplitter">
             <property name="orientation">
@@ -24,6 +36,18 @@
                   <string>Data</string>
                 </attribute>
                 <layout class="QVBoxLayout" name="dataTabLayout">
+                  <property name="leftMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                    <number>0</number>
+                  </property>
                   <item>
                     <widget class="DataListControl" name="dataListControl"/>
                   </item>
@@ -34,6 +58,18 @@
                   <string>View</string>
                 </attribute>
                 <layout class="QVBoxLayout" name="viewTabLayout">
+                  <property name="leftMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                    <number>0</number>
+                  </property>
                   <item>
                     <widget class="DataGridPanel" name="dataGridPanel"/>
                   </item>
@@ -57,6 +93,18 @@
                       <string>Data</string>
                     </attribute>
                     <layout class="QVBoxLayout" name="plotDataLayout">
+                      <property name="leftMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                        <number>0</number>
+                      </property>
                       <item>
                         <widget class="DataPlotPanel" name="plotDataPanel"/>
                       </item>
@@ -67,6 +115,18 @@
                       <string>FOM</string>
                     </attribute>
                     <layout class="QVBoxLayout" name="plotFomLayout">
+                      <property name="leftMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                        <number>0</number>
+                      </property>
                       <item>
                         <widget class="ErrorPlotPanel" name="plotFomPanel"/>
                       </item>
@@ -77,6 +137,18 @@
                       <string>Pars</string>
                     </attribute>
                     <layout class="QVBoxLayout" name="plotParsLayout">
+                      <property name="leftMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                        <number>0</number>
+                      </property>
                       <item>
                         <widget class="ParsPlotPanel" name="plotParsPanel"/>
                       </item>
@@ -87,6 +159,18 @@
                       <string>FOM scans</string>
                     </attribute>
                     <layout class="QVBoxLayout" name="plotFomScansLayout">
+                      <property name="leftMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                        <number>0</number>
+                      </property>
                       <item>
                         <widget class="FomScanPlotPanel" name="plotFomScansPanel"/>
                       </item>
@@ -101,7 +185,20 @@
                     <attribute name="title">
                       <string>Empty Tab</string>
                     </attribute>
-                    <layout class="QVBoxLayout" name="pluginEmptyLayout"/>
+                    <layout class="QVBoxLayout" name="pluginEmptyLayout">
+                      <property name="leftMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                        <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                        <number>0</number>
+                      </property>
+                    </layout>
                   </widget>
                 </widget>
               </widget>
@@ -113,13 +210,38 @@
                   <attribute name="title">
                     <string>Grid</string>
                   </attribute>
-                  <layout class="QVBoxLayout" name="inputGridLayout"/>
+                  <layout class="QVBoxLayout" name="inputGridLayout">
+                    <property name="leftMargin">
+                      <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                      <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                      <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                      <number>0</number>
+                    </property>
+                  </layout>
                 </widget>
               <widget class="QWidget" name="inputTabScript">
                 <attribute name="title">
                   <string>Script</string>
                 </attribute>
                 <layout class="QVBoxLayout" name="inputScriptLayout">
+                  <property name="leftMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                    <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                    <number>0</number>
+                  </property>
                   <item>
                     <widget class="GenxScriptEditor" name="scriptEditor"/>
                   </item>
@@ -331,8 +453,8 @@
     <action name="actionNewModel">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/new.svg</normaloff>
-          <normalon>:/main_gui/new.svg</normalon>
+          <normaloff>:/main_gui/new.png</normaloff>
+          <normalon>:/main_gui/new.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -359,8 +481,8 @@
     <action name="actionOpenModel">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/open.svg</normaloff>
-          <normalon>:/main_gui/open.svg</normalon>
+          <normaloff>:/main_gui/open.png</normaloff>
+          <normalon>:/main_gui/open.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -373,8 +495,8 @@
     <action name="actionSaveModel">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/save.svg</normaloff>
-          <normalon>:/main_gui/save.svg</normalon>
+          <normaloff>:/main_gui/save.png</normaloff>
+          <normalon>:/main_gui/save.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -685,8 +807,8 @@
     <action name="actionSimulate">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/simulate.svg</normaloff>
-          <normalon>:/main_gui/simulate.svg</normalon>
+          <normaloff>:/main_gui/simulate.png</normaloff>
+          <normalon>:/main_gui/simulate.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -715,8 +837,8 @@
     <action name="actionStartFit">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/start_fit.svg</normaloff>
-          <normalon>:/main_gui/start_fit.svg</normalon>
+          <normaloff>:/main_gui/start_fit.png</normaloff>
+          <normalon>:/main_gui/start_fit.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -729,8 +851,8 @@
     <action name="actionStopFit">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/stop_fit.svg</normaloff>
-          <normalon>:/main_gui/stop_fit.svg</normalon>
+          <normaloff>:/main_gui/stop_fit.png</normaloff>
+          <normalon>:/main_gui/stop_fit.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -743,8 +865,8 @@
     <action name="actionResumeFit">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/restart_fit.svg</normaloff>
-          <normalon>:/main_gui/restart_fit.svg</normalon>
+          <normaloff>:/main_gui/restart_fit.png</normaloff>
+          <normalon>:/main_gui/restart_fit.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -763,8 +885,8 @@
     <action name="actionCalcErrorBars">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/calc_error_bar.svg</normaloff>
-          <normalon>:/main_gui/calc_error_bar.svg</normalon>
+          <normaloff>:/main_gui/calc_error_bar.png</normaloff>
+          <normalon>:/main_gui/calc_error_bar.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -774,8 +896,8 @@
     <action name="actionErrorStatistics">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/par_proj.svg</normaloff>
-          <normalon>:/main_gui/par_proj.svg</normalon>
+          <normaloff>:/main_gui/par_proj.png</normaloff>
+          <normalon>:/main_gui/par_proj.png</normalon>
         </iconset>
       </property>
       <property name="text">

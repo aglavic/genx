@@ -27,8 +27,8 @@
     <action name="actionAddData">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/add.svg</normaloff>
-          <normalon>:/main_gui/add.svg</normalon>
+          <normaloff>:/main_gui/add.png</normaloff>
+          <normalon>:/main_gui/add.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -41,8 +41,8 @@
     <action name="actionImportData">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/open.svg</normaloff>
-          <normalon>:/main_gui/open.svg</normalon>
+          <normaloff>:/main_gui/open.png</normaloff>
+          <normalon>:/main_gui/open.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -55,8 +55,8 @@
     <action name="actionAddSimulation">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/add_simulation.svg</normaloff>
-          <normalon>:/main_gui/add_simulation.svg</normalon>
+          <normaloff>:/main_gui/add_simulation.png</normaloff>
+          <normalon>:/main_gui/add_simulation.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -88,8 +88,8 @@
     <action name="actionMoveUp">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/move_up.svg</normaloff>
-          <normalon>:/main_gui/move_up.svg</normalon>
+          <normaloff>:/main_gui/move_up.png</normaloff>
+          <normalon>:/main_gui/move_up.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -102,8 +102,8 @@
     <action name="actionMoveDown">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/move_down.svg</normaloff>
-          <normalon>:/main_gui/move_down.svg</normalon>
+          <normaloff>:/main_gui/move_down.png</normaloff>
+          <normalon>:/main_gui/move_down.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -116,8 +116,8 @@
     <action name="actionDelete">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/delete.svg</normaloff>
-          <normalon>:/main_gui/delete.svg</normalon>
+          <normaloff>:/main_gui/delete.png</normaloff>
+          <normalon>:/main_gui/delete.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -135,8 +135,8 @@
     <action name="actionPlotting">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/plotting.svg</normaloff>
-          <normalon>:/main_gui/plotting.svg</normalon>
+          <normaloff>:/main_gui/plotting.png</normaloff>
+          <normalon>:/main_gui/plotting.png</normalon>
         </iconset>
       </property>
       <property name="text">
@@ -149,8 +149,8 @@
     <action name="actionCalc">
       <property name="icon">
         <iconset>
-          <normaloff>:/main_gui/calc.svg</normaloff>
-          <normalon>:/main_gui/calc.svg</normalon>
+          <normaloff>:/main_gui/calc.png</normaloff>
+          <normalon>:/main_gui/calc.png</normalon>
         </iconset>
       </property>
       <property name="text">
