@@ -19,6 +19,7 @@ from .exception_handling import CatchModelError, GuiExceptionHandler
 from ..core import config as conf_mod
 from ..core.colors import COLOR_CYCLES
 from ..core.custom_logging import iprint, numpy_set_options
+from . import solvergui
 #from ..plugins import add_on_framework as add_on
 from ..version import __version__ as program_version
 
@@ -138,6 +139,57 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         data_grid_panel.set_data_list(data_list)
         data_list_ctrl.list_ctrl.data_list_event.connect(data_grid_panel.on_data_list_event)
 
+    def _setup_solver_gui(self) -> None:
+        self.model_control = solvergui.ModelControlGUI(self)
+        self.model_control.set_update_min_time(self.opt.solver_update_time)
+
+        data_list_ctrl = getattr(self.ui, "dataListControl", None)
+        if data_list_ctrl is not None:
+            self.model_control.set_data(data_list_ctrl.list_ctrl.data_cont.data)
+            data_list_ctrl.list_ctrl.update_plotsettings.connect(self.model_control.update_plotsettings)
+            data_list_ctrl.list_ctrl.data_list_event.connect(self._on_data_list_event)
+
+        plot_data = getattr(self.ui, "plotDataPanel", None)
+        plot_fom = getattr(self.ui, "plotFomPanel", None)
+        plot_pars = getattr(self.ui, "plotParsPanel", None)
+        if plot_data is not None:
+            self.model_control.update_plot.connect(plot_data.OnSolverPlotEvent)
+        if plot_fom is not None:
+            self.model_control.update_plot.connect(plot_fom.OnSolverPlotEvent)
+        if plot_pars is not None:
+            self.model_control.update_parameters.connect(plot_pars.OnSolverParameterEvent)
+
+        self.model_control.update_parameters.connect(self.model_control.OnUpdateParameters)
+        self.model_control.update_text.connect(self._on_solver_text)
+        self.model_control.update_script.connect(self._on_update_script)
+
+        self.set_script_text(self.model_control.get_model_script())
+
+    def _on_solver_text(self, text: str) -> None:
+        if text:
+            self._status_update(text)
+
+    def _on_update_script(self, script_text: str) -> None:
+        self.set_script_text(script_text)
+
+    def _on_data_list_event(self, event) -> None:
+        plot_data = getattr(self.ui, "plotDataPanel", None)
+        if plot_data is not None:
+            plot_data.OnDataListEvent(event)
+
+    def set_script_text(self, text: str) -> None:
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is None:
+            return
+        editor.blockSignals(True)
+        editor.setPlainText(text)
+        editor.blockSignals(False)
+
+    def get_script_text(self) -> str:
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is None:
+            return ""
+        return editor.toPlainText()
     def _apply_gui_config(self) -> None:
         """
         Apply GUIConfig values to the Qt layout (window size + splitter positions).
@@ -206,7 +258,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def initialize(self) -> None:
         """Initialize controllers/services. (Stub)"""
-        # Future: create model_control, plugin control, load configs, etc.
+        self._setup_solver_gui()
         if self._startup_filename:
             self.open_model(self._startup_filename)
 

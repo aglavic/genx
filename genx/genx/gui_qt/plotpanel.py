@@ -502,7 +502,11 @@ class PlotPanel(Configurable, QtWidgets.QWidget):
     # Slots for event-driven updates
     @QtCore.Slot(object)
     def OnDataListEvent(self, event):
-        data_list = event.GetData()
+        data_list = getattr(event, "data", None)
+        if data_list is None and hasattr(event, "GetData"):
+            data_list = event.GetData()
+        if data_list is None:
+            return
         if event.data_changed:
             if event.new_data:
                 self.update = self.plot_data
@@ -516,7 +520,13 @@ class PlotPanel(Configurable, QtWidgets.QWidget):
 
     @QtCore.Slot(object)
     def OnSimPlotEvent(self, event):
-        model: Model = event.GetModel()
+        model = getattr(event, "model", None)
+        if model is None and hasattr(event, "GetModel"):
+            model = event.GetModel()
+        if model is None and isinstance(event, Model):
+            model = event
+        if model is None:
+            return
         data_list = model.get_data()
         self.update = self.plot_data_sim
         self.update(data_list)
