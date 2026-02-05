@@ -2,6 +2,7 @@ import logging
 import sys
 import os
 import shutil
+import time
 from dataclasses import dataclass
 
 import platformdirs
@@ -12,7 +13,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..version import __version__ as program_version
 from .exception_handling import CatchModelError, GuiExceptionHandler
-from .message_dialogs import ShowQuestionDialog
+from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
 
 
 from ..core import config as conf_mod
@@ -823,9 +824,17 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     @QtCore.Slot(bool)
     def on_actionPublishPlot_triggered(self, checked: bool = False) -> None:
-        panel = self._get_active_plot_panel()
-        if panel is not None:
-            panel.PrintPreview()
+        with self.catch_error(action="menu", step="publish plot"):
+            from .pubgraph_dialog import PublicationDialog
+
+            script_module = self.model_control.get_model()
+            dia = PublicationDialog(
+                self,
+                data=self.model_control.get_data(),
+                module=script_module.eval_in_model('globals().get("model")'),
+                SLD=script_module.eval_in_model('globals().get("SLD", [])'),
+            )
+            dia.exec()
 
     @QtCore.Slot(bool)
     def on_actionDataLoader_triggered(self, checked: bool = False) -> None:
@@ -838,6 +847,40 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         ctrl = self._get_data_list_ctrl()
         if ctrl is not None:
             ctrl.OnImportSettings()
+
+    @QtCore.Slot(bool)
+    def on_actionBatchDialog_triggered(self, checked: bool = False) -> None:
+        from .batch_dialog import BatchDialog
+
+        dia = BatchDialog(self, self.model_control)
+        size = self.size()
+        dia.resize(int(size.width() / 3), int(size.height() * 0.8))
+        dia.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        dia.show()
+
+    @QtCore.Slot(bool)
+    def on_actionErrorStatistics_triggered(self, checked: bool = False) -> None:
+        from .bumps_interface import StatisticalAnalysisDialog
+
+        dia = StatisticalAnalysisDialog(self, self.model_control.get_model())
+        dia.exec()
+
+    def check_for_update(self) -> None:
+        from .online_update import VersionInfoDialog, check_version
+
+        same_version = True
+        with self.catch_error(action="update_check", step="check_version"):
+            same_version = check_version()
+            self.opt.last_update_check = time.time()
+        if same_version:
+            return
+        with self.catch_error(action="update_check", step="show_dialog"):
+            dia = VersionInfoDialog(self)
+            res = dia.exec()
+            if res == VersionInfoDialog.RESULT_RESTART:
+                ShowNotificationDialog(self, "You need to restart GenX for the changes to take effect.")
+            elif res == VersionInfoDialog.RESULT_QUIT:
+                self.close()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         # Persist window/splitter sizes
@@ -868,5 +911,7 @@ def start_qt_app(*, filename: Optional[str], debug: bool = False) -> None:
 
     win = GenxMainWindow(filename=filename)
     win.show()
+    if time.time() - win.opt.last_update_check > (7 * 24 * 3600):
+        QtCore.QTimer.singleShot(1000, win.check_for_update)
 
     sys.exit(app.exec())
