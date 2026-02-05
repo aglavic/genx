@@ -90,6 +90,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self._init_phase = True
         self._startup_filename = filename
         self._logging_dialogs = []
+        self._last_input_tab = None
 
         # Load GUI config
         conf_mod.Configurable.__init__(self, GUIConfig)
@@ -153,6 +154,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         plot_pars = getattr(self.ui, "plotParsPanel", None)
         if plot_data is not None:
             self.model_control.update_plot.connect(plot_data.OnSolverPlotEvent)
+            self.model_control.sim_plot.connect(plot_data.OnSimPlotEvent)
         if plot_fom is not None:
             self.model_control.update_plot.connect(plot_fom.OnSolverPlotEvent)
         if plot_pars is not None:
@@ -163,6 +165,11 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.model_control.update_script.connect(self._on_update_script)
 
         self.set_script_text(self.model_control.get_model_script())
+
+        input_tabs = getattr(self.ui, "inputTabWidget", None)
+        if input_tabs is not None:
+            self._last_input_tab = input_tabs.currentIndex()
+            input_tabs.currentChanged.connect(self._on_input_tab_changed)
 
         param_grid = getattr(self.ui, "paramterGrid", None)
         if param_grid is None:
@@ -211,9 +218,16 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         editor = getattr(self.ui, "scriptEditor", None)
         if editor is None:
             return
-        editor.blockSignals(True)
-        editor.setPlainText(text)
-        editor.blockSignals(False)
+        if editor.toPlainText() == text:
+            return
+        cursor = editor.textCursor()
+        vscroll = editor.verticalScrollBar().value()
+        hscroll = editor.horizontalScrollBar().value()
+        with QtCore.QSignalBlocker(editor):
+            editor.setPlainText(text)
+        editor.setTextCursor(cursor)
+        editor.verticalScrollBar().setValue(vscroll)
+        editor.horizontalScrollBar().setValue(hscroll)
 
     def get_script_text(self) -> str:
         editor = getattr(self.ui, "scriptEditor", None)
@@ -238,6 +252,21 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             getattr(self.ui, "plotTabFomScans", None): getattr(self.ui, "plotFomScansPanel", None),
         }
         return mapping.get(current, None)
+
+    def _on_input_tab_changed(self, index: int) -> None:
+        if self._init_phase or not hasattr(self, "model_control"):
+            self._last_input_tab = index
+            return
+        input_tabs = getattr(self.ui, "inputTabWidget", None)
+        script_tab = getattr(self.ui, "inputTabScript", None)
+        if input_tabs is None or script_tab is None:
+            self._last_input_tab = index
+            return
+        script_index = input_tabs.indexOf(script_tab)
+        if self._last_input_tab == script_index and index != script_index:
+            self.model_control.set_model_script(self.get_script_text())
+            self.model_control.saved = False
+        self._last_input_tab = index
     def _apply_gui_config(self) -> None:
         """
         Apply GUIConfig values to the Qt layout (window size + splitter positions).
@@ -327,14 +356,17 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def simulate(self) -> None:
         if hasattr(self, "model_control"):
+            self.model_control.set_model_script(self.get_script_text())
             self.model_control.simulate()
 
     def evaluate(self) -> None:
         if hasattr(self, "model_control"):
+            self.model_control.set_model_script(self.get_script_text())
             self.model_control.evaluate()
 
     def start_fit(self) -> None:
         if hasattr(self, "model_control"):
+            self.model_control.set_model_script(self.get_script_text())
             self.model_control.StartFit()
 
     def stop_fit(self) -> None:

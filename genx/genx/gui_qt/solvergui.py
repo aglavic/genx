@@ -232,6 +232,7 @@ class ModelControlGUI(QtCore.QObject):
 
     update_script = QtCore.Signal(str)
     update_plot = QtCore.Signal(object)
+    sim_plot = QtCore.Signal(object)
     update_text = QtCore.Signal(str)
     update_parameters = QtCore.Signal(object)
     fitting_ended = QtCore.Signal(object)
@@ -389,6 +390,7 @@ class ModelControlGUI(QtCore.QObject):
 
     def simulate(self, recompile=False):
         self.controller.simulate(recompile=recompile)
+        self.sim_plot.emit(self.controller.get_model())
 
     def evaluate(self):
         self.controller.evaluate()
