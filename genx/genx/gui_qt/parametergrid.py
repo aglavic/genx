@@ -32,7 +32,7 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
         QtWidgets.QWidget.__init__(self, parent)
-        Configurable.__init__(self, ParameterGridConfig)
+        Configurable.__init__(self)
         self.opt.load_config()
 
         self._pars = parameters.Parameters()

@@ -12,6 +12,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..version import __version__ as program_version
 from .exception_handling import CatchModelError, GuiExceptionHandler
+from .message_dialogs import ShowQuestionDialog
 
 
 from ..core import config as conf_mod
@@ -197,7 +198,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             param_grid.grid_changed.connect(self._on_parameter_grid_change)
 
     def _on_parameter_grid_change(self, permanent_change: bool) -> None:
-        if self._init_phase or not hasattr(self, "model_control"):
+        if self._init_phase:
             return
         if permanent_change:
             self.model_control.saved = False
@@ -253,8 +254,14 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         }
         return mapping.get(current, None)
 
+    def _update_for_save(self) -> None:
+        self.model_control.set_model_script(self.get_script_text())
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is not None and hasattr(param_grid.opt, "save_config"):
+            param_grid.opt.save_config(default=True)
+
     def _on_input_tab_changed(self, index: int) -> None:
-        if self._init_phase or not hasattr(self, "model_control"):
+        if self._init_phase:
             self._last_input_tab = index
             return
         input_tabs = getattr(self.ui, "inputTabWidget", None)
@@ -340,42 +347,180 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             self.open_model(self._startup_filename)
 
     def new_model(self) -> None:
-        pass
+        if not self.model_control.saved:
+            ans = ShowQuestionDialog(
+                self,
+                "If you continue any changes in your model will not be saved.",
+                "Model not saved",
+                yes_no=True,
+            )
+            if not ans:
+                return
+
+        self.model_control.new_model()
+        model = self.model_control.get_model()
+        data_list_ctrl = getattr(self.ui, "dataListControl", None)
+        if data_list_ctrl is not None:
+            data_list_ctrl.eh_external_new_model(model)
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is not None:
+            param_grid.SetParameters(self.model_control.get_model_params())
+        self.set_script_text(self.model_control.get_model_script())
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is not None and hasattr(editor, "EmptyUndoBuffer"):
+            editor.EmptyUndoBuffer()
+        self.model_control.ModelLoaded()
+        self._status_update("New model created")
 
     def new_from_file(self) -> None:
         pass
 
     def open_model(self, path: str) -> None:
-        pass
+        if not self.model_control.saved:
+            ans = ShowQuestionDialog(
+                self,
+                "If you continue any changes in your model will not be saved.",
+                "Model not saved",
+                yes_no=True,
+            )
+            if not ans:
+                return
+
+        if not path:
+            path, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self,
+                "Open",
+                "",
+                "GenX File (*.hgx *.gx)",
+            )
+            if not path:
+                return
+
+        self.model_control.new_model()
+        with self.catch_error(action="open_model", step=f"open file {os.path.basename(path)}") as mng:
+            self.model_control.load_file(path)
+        if not mng.successful:
+            return
+
+        for panel in (
+            getattr(self.ui, "plotDataPanel", None),
+            getattr(self.ui, "plotFomPanel", None),
+            getattr(self.ui, "plotParsPanel", None),
+            getattr(self.ui, "plotFomScansPanel", None),
+        ):
+            if panel is not None and hasattr(panel, "ReadConfig"):
+                panel.ReadConfig()
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is not None and hasattr(param_grid, "ReadConfig"):
+            param_grid.ReadConfig()
+
+        model = self.model_control.get_model()
+        data_list_ctrl = getattr(self.ui, "dataListControl", None)
+        if data_list_ctrl is not None:
+            data_list_ctrl.eh_external_new_model(model)
+        self.set_script_text(self.model_control.get_model_script())
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is not None and hasattr(editor, "EmptyUndoBuffer"):
+            editor.EmptyUndoBuffer()
+        self.model_control.ModelLoaded()
+        self._status_update("Model loaded from file")
 
     def save_model(self) -> None:
-        pass
+        self._update_for_save()
+        fname = self.model_control.get_filename()
+        if not fname:
+            self.save_model_as()
+            return
+        with self.catch_error(action="save_model", step=f"save file {os.path.basename(fname)}"):
+            if len(self.model_control.controller.model_store) > 0:
+                prog = QtWidgets.QProgressDialog(
+                    f"Writing to file\n{fname}\n",
+                    "Cancel",
+                    0,
+                    100,
+                    self,
+                )
+                prog.setWindowTitle("Saving...")
+                prog.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
+
+                def update_callback(i, n_total):
+                    prog.setValue(int(i / n_total * 100))
+                    prog.setLabelText(f"Writing to file\n{fname}\ndataset {i} of {n_total}")
+                    QtWidgets.QApplication.processEvents()
+
+                try:
+                    self.model_control.controller.save_file(fname, update_callback=update_callback)
+                finally:
+                    prog.close()
+            else:
+                self.model_control.controller.save_file(fname)
+        self._status_update("Model saved")
 
     def save_model_as(self) -> None:
-        pass
+        fname, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Save As",
+            "",
+            "HDF5 GenX File (*.hgx);;GenX File (*.gx)",
+        )
+        if not fname:
+            return
+        self._update_for_save()
+        base, ext = os.path.splitext(fname)
+        if ext == "":
+            ext = ".hgx"
+        fname = base + ext
+        if os.path.exists(fname):
+            result = ShowQuestionDialog(
+                self,
+                f"The file {os.path.basename(fname)} already exists. Do you wish to overwrite it?",
+                "Overwrite?",
+                yes_no=True,
+            )
+            if not result:
+                return
+        with self.catch_error(action="saveas", step=f"saveing file as {os.path.basename(fname)}"):
+            if len(self.model_control.controller.model_store) > 0:
+                prog = QtWidgets.QProgressDialog(
+                    f"Writing to file\n{fname}\n",
+                    "Cancel",
+                    0,
+                    100,
+                    self,
+                )
+                prog.setWindowTitle("Saving...")
+                prog.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
+
+                def update_callback(i, n_total):
+                    prog.setValue(int(i / n_total * 100))
+                    prog.setLabelText(f"Writing to file\n{fname}\ndataset {i} of {n_total}")
+                    QtWidgets.QApplication.processEvents()
+
+                try:
+                    self.model_control.controller.save_file(fname, update_callback=update_callback)
+                finally:
+                    prog.close()
+            else:
+                self.model_control.controller.save_file(fname)
+        self._status_update("Model saved")
 
     def simulate(self) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.set_model_script(self.get_script_text())
-            self.model_control.simulate()
+        self.model_control.set_model_script(self.get_script_text())
+        self.model_control.simulate()
 
     def evaluate(self) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.set_model_script(self.get_script_text())
-            self.model_control.evaluate()
+        self.model_control.set_model_script(self.get_script_text())
+        self.model_control.evaluate()
 
     def start_fit(self) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.set_model_script(self.get_script_text())
-            self.model_control.StartFit()
+        self.model_control.set_model_script(self.get_script_text())
+        self.model_control.StartFit()
 
     def stop_fit(self) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.StopFit()
+        self.model_control.StopFit()
 
     def resume_fit(self) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.ResumeFit()
+        self.model_control.ResumeFit()
 
     # ----------------------------
     # QAction auto-connected slots
@@ -583,23 +728,19 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     @QtCore.Slot(bool)
     def on_actionOptimizer_triggered(self, checked: bool = False) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.ParametersDialog(self)
+        self.model_control.ParametersDialog(self)
 
     @QtCore.Slot(bool)
     def on_actionUndo_triggered(self, checked: bool = False) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.OnUndo()
+        self.model_control.OnUndo()
 
     @QtCore.Slot(bool)
     def on_actionRedo_triggered(self, checked: bool = False) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.OnRedo()
+        self.model_control.OnRedo()
 
     @QtCore.Slot(bool)
     def on_actionHistory_triggered(self, checked: bool = False) -> None:
-        if hasattr(self, "model_control"):
-            self.model_control.OnShowHistory()
+        self.model_control.OnShowHistory()
 
     @QtCore.Slot(bool)
     def on_actionCopyGraph_triggered(self, checked: bool = False) -> None:
