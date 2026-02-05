@@ -19,6 +19,7 @@ from ..core import config as conf_mod
 from ..core.colors import COLOR_CYCLES
 from ..core.custom_logging import iprint, numpy_set_options
 from . import solvergui
+from . import add_on_framework as add_on
 from .parametergrid import ParameterGrid
 #from ..plugins import add_on_framework as add_on
 from ..version import __version__ as program_version
@@ -184,6 +185,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.model_control.update_parameters.connect(self.model_control.OnUpdateParameters)
         self.model_control.update_text.connect(self._on_solver_text)
         self.model_control.update_script.connect(self._on_update_script)
+        self.model_control.update_plot.connect(self._on_fitting_update)
+        self.model_control.sim_plot.connect(self._on_simulate_update)
 
         self.set_script_text(self.model_control.get_model_script())
 
@@ -219,11 +222,20 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             param_grid.sort_and_group_parameters.connect(self.model_control.OnSortAndGroupParameters)
             param_grid.grid_changed.connect(self._on_parameter_grid_change)
 
+    def _setup_plugin_control(self) -> None:
+        menu_plugins = getattr(self.ui, "menuPlugins", None)
+        if menu_plugins is None:
+            return
+        self.plugin_control = add_on.PluginController(self, menu_plugins)
+        self.plugin_control.LoadDefaultPlugins()
+
     def _on_parameter_grid_change(self, permanent_change: bool) -> None:
         if self._init_phase:
             return
         if permanent_change:
             self.model_control.saved = False
+        if hasattr(self, "plugin_control"):
+            self.plugin_control.OnGridChanged(type("GridEvent", (), {"permanent_change": permanent_change})())
 
     def _on_solver_text(self, text: str) -> None:
         if text:
@@ -236,6 +248,16 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         plot_data = getattr(self.ui, "plotDataPanel", None)
         if plot_data is not None:
             plot_data.OnDataListEvent(event)
+        if hasattr(self, "plugin_control"):
+            self.plugin_control.OnDataChanged(event)
+
+    def _on_fitting_update(self, event) -> None:
+        if hasattr(self, "plugin_control"):
+            self.plugin_control.OnFittingUpdate(event)
+
+    def _on_simulate_update(self, event) -> None:
+        if hasattr(self, "plugin_control"):
+            self.plugin_control.OnSimulate(event)
 
     def set_script_text(self, text: str) -> None:
         editor = getattr(self.ui, "scriptEditor", None)
@@ -380,6 +402,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     def initialize(self) -> None:
         """Initialize controllers/services. (Stub)"""
         self._setup_solver_gui()
+        self._setup_plugin_control()
         if self._startup_filename:
             self.open_model(self._startup_filename)
 
@@ -407,6 +430,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         if editor is not None and hasattr(editor, "EmptyUndoBuffer"):
             editor.EmptyUndoBuffer()
         self.model_control.ModelLoaded()
+        if hasattr(self, "plugin_control"):
+            self.plugin_control.OnNewModel(None)
         self._status_update("New model created")
 
     def new_from_file(self) -> None:
@@ -461,6 +486,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         if editor is not None and hasattr(editor, "EmptyUndoBuffer"):
             editor.EmptyUndoBuffer()
         self.model_control.ModelLoaded()
+        if hasattr(self, "plugin_control"):
+            self.plugin_control.OnOpenModel(None)
         self._status_update("Model loaded from file")
 
     def save_model(self) -> None:

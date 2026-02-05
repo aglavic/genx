@@ -14,7 +14,8 @@ import wx
 
 from genx.core.config import BaseConfig, Configurable
 
-from genx.plugins.utils import PluginHandler, ShowErrorDialog, ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
+from genx.plugins.utils import PluginHandler
+from .utils import ShowErrorDialog, ShowInfoDialog, ShowQuestionDialog, ShowWarningDialog
 
 head, tail = os.path.split(__file__)
 # Look only after the file name and not the ending since

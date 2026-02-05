@@ -29,4 +29,17 @@
         <file alias="stop_fit.png">../../../icons/main_gui/stop_fit.png</file>
         <file alias="zoom.png">../../../icons/main_gui/zoom.png</file>
     </qresource>
+    <qresource prefix="/reflectivity_plugin">
+        <file alias="add.png">../../../icons/reflectivity_plugin/add.png</file>
+        <file alias="add_defaults.png">../../../icons/reflectivity_plugin/add_defaults.png</file>
+        <file alias="change_name.png">../../../icons/reflectivity_plugin/change_name.png</file>
+        <file alias="custom_parameters.png">../../../icons/reflectivity_plugin/custom_parameters.png</file>
+        <file alias="delete.png">../../../icons/reflectivity_plugin/delete.png</file>
+        <file alias="insert_layer.png">../../../icons/reflectivity_plugin/insert_layer.png</file>
+        <file alias="insert_stack.png">../../../icons/reflectivity_plugin/insert_stack.png</file>
+        <file alias="instrument.png">../../../icons/reflectivity_plugin/instrument.png</file>
+        <file alias="move_down.png">../../../icons/reflectivity_plugin/move_down.png</file>
+        <file alias="move_up.png">../../../icons/reflectivity_plugin/move_up.png</file>
+        <file alias="sample.png">../../../icons/reflectivity_plugin/sample.png</file>
+    </qresource>
 </RCC>
