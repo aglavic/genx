@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+  <class>ParameterGrid</class>
+  <widget class="QWidget" name="ParameterGrid">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+        <number>0</number>
+      </property>
+      <property name="topMargin">
+        <number>0</number>
+      </property>
+      <property name="rightMargin">
+        <number>0</number>
+      </property>
+      <property name="bottomMargin">
+        <number>0</number>
+      </property>
+      <item>
+        <widget class="QToolBar" name="toolbar">
+          <property name="orientation">
+            <enum>Qt::Vertical</enum>
+          </property>
+          <addaction name="actionAddRow"/>
+          <addaction name="actionDeleteRow"/>
+          <addaction name="actionMoveUp"/>
+          <addaction name="actionMoveDown"/>
+          <addaction name="separator1"/>
+          <addaction name="actionSort"/>
+          <addaction name="actionSortName"/>
+          <addaction name="separator2"/>
+          <addaction name="actionProjectFom"/>
+          <addaction name="actionScanFom"/>
+        </widget>
+      </item>
+      <item>
+        <widget class="QTableWidget" name="parameterTable"/>
+      </item>
+    </layout>
+    <action name="actionAddRow">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/add.png</normaloff>
+          <normalon>:/main_gui/add.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Add row</string>
+      </property>
+      <property name="toolTip">
+        <string>Insert a new parameter row</string>
+      </property>
+    </action>
+    <action name="actionDeleteRow">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/delete.png</normaloff>
+          <normalon>:/main_gui/delete.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Delete row</string>
+      </property>
+      <property name="toolTip">
+        <string>Delete selected parameter row(s)</string>
+      </property>
+    </action>
+    <action name="actionMoveUp">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/move_up.png</normaloff>
+          <normalon>:/main_gui/move_up.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Move up</string>
+      </property>
+      <property name="toolTip">
+        <string>Move selected row up</string>
+      </property>
+    </action>
+    <action name="actionMoveDown">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/move_down.png</normaloff>
+          <normalon>:/main_gui/move_down.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Move down</string>
+      </property>
+      <property name="toolTip">
+        <string>Move selected row down</string>
+      </property>
+    </action>
+    <action name="separator1">
+      <property name="separator">
+        <bool>true</bool>
+      </property>
+    </action>
+    <action name="actionSort">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/sort.png</normaloff>
+          <normalon>:/main_gui/sort.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Sort</string>
+      </property>
+      <property name="toolTip">
+        <string>Sort parameters by attribute</string>
+      </property>
+    </action>
+    <action name="actionSortName">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/sort2.png</normaloff>
+          <normalon>:/main_gui/sort2.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Sort name</string>
+      </property>
+      <property name="toolTip">
+        <string>Sort parameters by object name</string>
+      </property>
+    </action>
+    <action name="separator2">
+      <property name="separator">
+        <bool>true</bool>
+      </property>
+    </action>
+    <action name="actionProjectFom">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/par_proj.png</normaloff>
+          <normalon>:/main_gui/par_proj.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Project FOM</string>
+      </property>
+      <property name="toolTip">
+        <string>Project FOM for selected parameter</string>
+      </property>
+    </action>
+    <action name="actionScanFom">
+      <property name="icon">
+        <iconset>
+          <normaloff>:/main_gui/par_scan.png</normaloff>
+          <normalon>:/main_gui/par_scan.png</normalon>
+        </iconset>
+      </property>
+      <property name="text">
+        <string>Scan FOM</string>
+      </property>
+      <property name="toolTip">
+        <string>Scan FOM for selected parameter</string>
+      </property>
+    </action>
+  </widget>
+  <resources/>
+  <connections/>
+</ui>
