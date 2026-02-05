@@ -111,6 +111,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self._setup_data_view()
         self._setup_window_basics()
         self._setup_app_exception_dialogs()
+        self._setup_toolbar_icon_sizes()
 
         # Apply window size immediately (safe)
         self.resize(int(self.opt.hsize), int(self.opt.vsize))
@@ -130,6 +131,25 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     def _setup_window_basics(self) -> None:
         self.setWindowTitle(f"GenX {program_version}")
         self.setMinimumSize(600, 400)
+
+    def _setup_toolbar_icon_sizes(self) -> None:
+        base = QtWidgets.QApplication.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ToolBarIconSize)
+        main_size = QtCore.QSize(int(base * 1.4), int(base * 1.4))
+        small_size = QtCore.QSize(int(base * 0.85), int(base * 0.85))
+
+        main_toolbar = getattr(self.ui, "toolbarMain", None)
+        if main_toolbar is not None:
+            main_toolbar.setIconSize(main_size)
+
+        data_list_ctrl = getattr(self.ui, "dataListControl", None)
+        if data_list_ctrl is not None and hasattr(data_list_ctrl, "ui"):
+            data_toolbar = getattr(data_list_ctrl.ui, "toolbar", None)
+            if data_toolbar is not None:
+                data_toolbar.setIconSize(small_size)
+
+        param_grid = getattr(self.ui, "paramterGrid", None)
+        if param_grid is not None and hasattr(param_grid, "toolbar"):
+            param_grid.toolbar.setIconSize(small_size)
 
     def _setup_data_view(self) -> None:
         data_list_ctrl = getattr(self.ui, "dataListControl", None)
@@ -182,6 +202,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             self.paramter_grid = param_grid
             param_grid.SetParameters(self.model_control.get_model_params())
             param_grid.SetFOMFunctions(self.model_control.ProjectEvals, self.model_control.ScanParameter)
+            param_grid.SetEvalFunc(self.model_control.eval_in_model)
+            param_grid.SetSimulateFunc(self.simulate)
             param_grid.set_parameter_value.connect(
                 lambda row, col, value: self.model_control.OnSetParameterValue(
                     solvergui.SetParameterValueEvent(row=row, col=col, value=value)
@@ -259,6 +281,21 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         param_grid = getattr(self, "paramter_grid", None)
         if param_grid is not None and hasattr(param_grid.opt, "save_config"):
             param_grid.opt.save_config(default=True)
+
+    def _set_possible_parameters_in_grid(self) -> None:
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is None:
+            return
+        with self.catch_error(
+            action="set_possible_parameters_in_grid",
+            step="getting possible parameters",
+            verbose=False,
+        ) as mgr:
+            par_dict = self.model_control.get_possible_parameters()
+        if not mgr.successful:
+            return
+        param_grid.SetParameterSelections(par_dict)
+        param_grid.SetEvalFunc(self.model_control.eval_in_model)
 
     def _on_input_tab_changed(self, index: int) -> None:
         if self._init_phase:
@@ -413,6 +450,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         param_grid = getattr(self, "paramter_grid", None)
         if param_grid is not None and hasattr(param_grid, "ReadConfig"):
             param_grid.ReadConfig()
+            param_grid.SetParameters(self.model_control.get_model_params(), permanent_change=False)
 
         model = self.model_control.get_model()
         data_list_ctrl = getattr(self.ui, "dataListControl", None)
@@ -507,10 +545,12 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     def simulate(self) -> None:
         self.model_control.set_model_script(self.get_script_text())
         self.model_control.simulate()
+        self._set_possible_parameters_in_grid()
 
     def evaluate(self) -> None:
         self.model_control.set_model_script(self.get_script_text())
         self.model_control.evaluate()
+        self._set_possible_parameters_in_grid()
 
     def start_fit(self) -> None:
         self.model_control.set_model_script(self.get_script_text())

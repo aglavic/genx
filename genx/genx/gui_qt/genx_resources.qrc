@@ -24,6 +24,7 @@
         <file alias="simulate.png">../../../icons/main_gui/simulate.png</file>
         <file alias="slider.png">../../../icons/main_gui/slider.png</file>
         <file alias="sort.png">../../../icons/main_gui/sort.png</file>
+        <file alias="sort2.png">../../../icons/main_gui/sort2.png</file>
         <file alias="start_fit.png">../../../icons/main_gui/start_fit.png</file>
         <file alias="stop_fit.png">../../../icons/main_gui/stop_fit.png</file>
         <file alias="zoom.png">../../../icons/main_gui/zoom.png</file>

@@ -11,6 +11,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
+from .parametergrid_ui import Ui_ParameterGrid
 
 
 @dataclass
@@ -40,42 +41,28 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         self._eval_func: Optional[Callable[[str], object]] = None
         self._project_func: Optional[Callable[[int], None]] = None
         self._scan_func: Optional[Callable[[int], None]] = None
+        self._simulate_func: Optional[Callable[[], None]] = None
+        self._par_dict = {}
+        self._variable_span = 0.2
 
         self._build_ui()
         self._populate_from_pars()
         self._apply_value_editor()
 
     def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        self.ui = Ui_ParameterGrid()
+        self.ui.setupUi(self)
+        self.toolbar = self.ui.toolbar
+        self.table = self.ui.parameterTable
 
-        self.toolbar = QtWidgets.QToolBar(self)
-        layout.addWidget(self.toolbar, 0)
-
-        self._act_add = self.toolbar.addAction("Add")
-        self._act_delete = self.toolbar.addAction("Delete")
-        self._act_up = self.toolbar.addAction("Move Up")
-        self._act_down = self.toolbar.addAction("Move Down")
-        self.toolbar.addSeparator()
-        self._act_sort = self.toolbar.addAction("Sort")
-        self._act_sort_name = self.toolbar.addAction("Sort Name")
-        self.toolbar.addSeparator()
-        self._act_project = self.toolbar.addAction("Project FOM")
-        self._act_scan = self.toolbar.addAction("Scan FOM")
-
-        self._act_add.triggered.connect(self._on_add_row)
-        self._act_delete.triggered.connect(self._on_delete_rows)
-        self._act_up.triggered.connect(lambda: self._on_move_row(-1))
-        self._act_down.triggered.connect(lambda: self._on_move_row(1))
-        self._act_sort.triggered.connect(lambda: self._on_sort(parameters.SortSplitItem.ATTRIBUTE))
-        self._act_sort_name.triggered.connect(lambda: self._on_sort(parameters.SortSplitItem.OBJ_NAME))
-        self._act_project.triggered.connect(self._on_project_fom)
-        self._act_scan.triggered.connect(self._on_scan_fom)
-
-        self.table = QtWidgets.QTableWidget(self)
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(self._pars.get_col_headers())
-        self.table.horizontalHeader().setStretchLastSection(True)
+        header = self.table.horizontalHeader()
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        for col in range(self.table.columnCount()):
+            if col != 2:
+                header.setSectionResizeMode(col, QtWidgets.QHeaderView.ResizeMode.Interactive)
         self.table.verticalHeader().setVisible(True)
         self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
@@ -85,9 +72,44 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
             | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed
         )
         self.table.itemChanged.connect(self._on_item_changed)
-        layout.addWidget(self.table, 1)
+        self.table.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self._on_context_menu)
 
         self._slider_delegate = SliderValueDelegate(self.table)
+        self._column_weights = {0: 3, 1: 2, 3: 1, 4: 1, 5: 1}
+        self._update_column_widths()
+
+    @QtCore.Slot()
+    def on_actionAddRow_triggered(self) -> None:
+        self._on_add_row()
+
+    @QtCore.Slot()
+    def on_actionDeleteRow_triggered(self) -> None:
+        self._on_delete_rows()
+
+    @QtCore.Slot()
+    def on_actionMoveUp_triggered(self) -> None:
+        self._on_move_row(-1)
+
+    @QtCore.Slot()
+    def on_actionMoveDown_triggered(self) -> None:
+        self._on_move_row(1)
+
+    @QtCore.Slot()
+    def on_actionSort_triggered(self) -> None:
+        self._on_sort(parameters.SortSplitItem.ATTRIBUTE)
+
+    @QtCore.Slot()
+    def on_actionSortName_triggered(self) -> None:
+        self._on_sort(parameters.SortSplitItem.OBJ_NAME)
+
+    @QtCore.Slot()
+    def on_actionProjectFom_triggered(self) -> None:
+        self._on_project_fom()
+
+    @QtCore.Slot()
+    def on_actionScanFom_triggered(self) -> None:
+        self._on_scan_fom()
 
     def _populate_from_pars(self) -> None:
         self._updating = True
@@ -110,7 +132,26 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
             self._update_row_labels()
         finally:
             self._updating = False
+        self._update_column_widths()
         self._apply_value_editor()
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self._update_column_widths()
+
+    def _update_column_widths(self) -> None:
+        if self.table.columnCount() == 0:
+            return
+        header = self.table.horizontalHeader()
+        fit_col = 2
+        fit_width = header.sectionSize(fit_col)
+        available = self.table.viewport().width() - fit_width
+        if available <= 0:
+            return
+        total_weight = sum(self._column_weights.values())
+        for col, weight in self._column_weights.items():
+            width = max(40, int(available * weight / total_weight))
+            self.table.setColumnWidth(col, width)
 
     def _format_value(self, col: int, value: object) -> str:
         if col in (1, 3, 4) and isinstance(value, (float, int)):
@@ -281,12 +322,113 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         self._eval_func = func
 
     def SetParameterSelections(self, _par_dict) -> None:
-        pass
+        self._par_dict = _par_dict or {}
 
     def SetValueEditorSlider(self, active: bool) -> None:
         self.opt.value_slider = bool(active)
         self.opt.save_config(default=True)
         self._apply_value_editor()
+
+    def SetSimulateFunc(self, func: Optional[Callable[[], None]]) -> None:
+        self._simulate_func = func
+
+    def _on_context_menu(self, pos: QtCore.QPoint) -> None:
+        index = self.table.indexAt(pos)
+        if not index.isValid() or index.column() != 0:
+            return
+        row = index.row()
+        self.table.setCurrentCell(row, 0)
+
+        menu = QtWidgets.QMenu(self)
+        if not self._par_dict:
+            simulate_action = menu.addAction("Simulate to see parameters")
+            simulate_action.triggered.connect(self._on_simulate_request)
+        else:
+            self._populate_parameter_menu(menu, self._par_dict)
+
+        menu.addSeparator()
+        manual_action = menu.addAction("Manual Edit")
+        manual_action.triggered.connect(lambda: self._edit_cell(row, 0))
+        common_action = menu.addAction("Common pars")
+        common_action.triggered.connect(self._on_common_pars)
+
+        menu.exec(self.table.viewport().mapToGlobal(pos))
+
+    def _populate_parameter_menu(self, menu: QtWidgets.QMenu, par_dict: dict) -> None:
+        for cl in sorted(par_dict.keys(), key=str.lower):
+            clmenu = QtWidgets.QMenu(cl, menu)
+            entry = par_dict[cl]
+            if isinstance(entry, dict):
+                for obj in sorted(entry.keys(), key=str.lower):
+                    obj_menu = QtWidgets.QMenu(obj, clmenu)
+                    funcs = entry[obj]
+                    for func in sorted(funcs, key=str.lower):
+                        text = f"{obj}.{func}"
+                        action = obj_menu.addAction(text)
+                        action.triggered.connect(lambda _=False, t=text: self._apply_parameter_choice(t))
+                    clmenu.addMenu(obj_menu)
+            elif isinstance(entry, list):
+                for obj in sorted(entry, key=str.lower):
+                    action = clmenu.addAction(obj)
+                    action.triggered.connect(lambda _=False, t=obj: self._apply_parameter_choice(t))
+            menu.addMenu(clmenu)
+
+    def _apply_parameter_choice(self, text: str) -> None:
+        row = self._current_row()
+        if row < 0:
+            return
+        self._set_cell_value(row, 0, text)
+        value = self._evaluate_parameter_value(text)
+        if value is None:
+            return
+        self._set_cell_value(row, 1, value)
+        minval = value * (1 - self._variable_span)
+        maxval = value * (1 + self._variable_span)
+        self._set_cell_value(row, 3, min(minval, maxval))
+        self._set_cell_value(row, 4, max(minval, maxval))
+
+    def _evaluate_parameter_value(self, text: str):
+        if self._eval_func is None:
+            return None
+        try:
+            if ".set" in text:
+                getter = text.replace(".set", ".get", 1)
+                result = self._eval_func(getter)
+                return result() if callable(result) else result
+            result = self._eval_func(f"{text}.value")
+            return result() if callable(result) else result
+        except Exception:
+            return None
+
+    def _set_cell_value(self, row: int, col: int, value: object) -> None:
+        self._updating = True
+        try:
+            item = self.table.item(row, col)
+            if item is None:
+                item = QtWidgets.QTableWidgetItem("")
+                self.table.setItem(row, col, item)
+            if col == 2:
+                item.setCheckState(QtCore.Qt.CheckState.Checked if value else QtCore.Qt.CheckState.Unchecked)
+            else:
+                item.setText(self._format_value(col, value))
+            self._set_par_value(row, col, value)
+            self.set_parameter_value.emit(row, col, value)
+        finally:
+            self._updating = False
+
+    def _edit_cell(self, row: int, col: int) -> None:
+        item = self.table.item(row, col)
+        if item is None:
+            item = QtWidgets.QTableWidgetItem("")
+            self.table.setItem(row, col, item)
+        self.table.editItem(item)
+
+    def _on_simulate_request(self) -> None:
+        if self._simulate_func:
+            self._simulate_func()
+
+    def _on_common_pars(self) -> None:
+        QtWidgets.QMessageBox.information(self, "Common pars", "Common parameter insertion is not available yet.")
 
     def _apply_value_editor(self) -> None:
         if self.opt.value_slider:

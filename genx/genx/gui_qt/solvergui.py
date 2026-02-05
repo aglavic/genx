@@ -476,6 +476,7 @@ class ModelControlGUI(QtCore.QObject):
             self.controller.update_combined_options(updates)
 
     def ModelLoaded(self):
+        self.parent.param_grid.SetParameters(self.controller.get_model_params(), permanent_change=False)
         self.update_plot.emit(
             UpdatePlotEvent(
                 model=self.controller.get_fitted_model(),
