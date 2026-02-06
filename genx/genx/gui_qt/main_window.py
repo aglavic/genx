@@ -253,9 +253,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.setMinimumSize(600, 400)
 
     def _setup_auto_color_menu(self) -> None:
-        menu = getattr(self.ui, "menuAutoColor", None)
-        if menu is None:
-            return
+        menu = self.ui.menuAutoColor
+        menu.clear()
         group = QtGui.QActionGroup(self)
         group.setExclusive(True)
         self._auto_color_actions = {}
@@ -279,25 +278,13 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         main_size = QtCore.QSize(int(base * 1.4), int(base * 1.4))
         small_size = QtCore.QSize(int(base * 0.85), int(base * 0.85))
 
-        main_toolbar = getattr(self.ui, "toolbarMain", None)
-        if main_toolbar is not None:
-            main_toolbar.setIconSize(main_size)
-
-        data_list_ctrl = getattr(self.ui, "dataListControl", None)
-        if data_list_ctrl is not None and hasattr(data_list_ctrl, "ui"):
-            data_toolbar = getattr(data_list_ctrl.ui, "toolbar", None)
-            if data_toolbar is not None:
-                data_toolbar.setIconSize(small_size)
-
-        param_grid = getattr(self.ui, "paramterGrid", None)
-        if param_grid is not None and hasattr(param_grid, "toolbar"):
-            param_grid.toolbar.setIconSize(small_size)
+        self.ui.toolbarMain.setIconSize(main_size)
+        self.ui.dataListControl.ui.toolbar.setIconSize(small_size)
+        self.ui.paramterGrid.toolbar.setIconSize(small_size)
 
     def _setup_data_view(self) -> None:
-        data_list_ctrl = getattr(self.ui, "dataListControl", None)
-        data_grid_panel = getattr(self.ui, "dataGridPanel", None)
-        if data_list_ctrl is None or data_grid_panel is None:
-            return
+        data_list_ctrl = self.ui.dataListControl
+        data_grid_panel = self.ui.dataGridPanel
         data_list = data_list_ctrl.list_ctrl.data_cont.get_data()
         data_grid_panel.set_data_list(data_list)
         data_list_ctrl.list_ctrl.data_list_event.connect(data_grid_panel.on_data_list_event)
@@ -307,22 +294,18 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.model_control = ModelControlGUI(self)
         self.model_control.set_update_min_time(self.opt.solver_update_time)
 
-        data_list_ctrl = getattr(self.ui, "dataListControl", None)
-        if data_list_ctrl is not None:
-            self.model_control.set_data(data_list_ctrl.list_ctrl.data_cont.data)
-            data_list_ctrl.list_ctrl.update_plotsettings.connect(self.model_control.update_plotsettings)
-            data_list_ctrl.list_ctrl.data_list_event.connect(self._on_data_list_event)
+        data_list_ctrl = self.ui.dataListControl
+        self.model_control.set_data(data_list_ctrl.list_ctrl.data_cont.data)
+        data_list_ctrl.list_ctrl.update_plotsettings.connect(self.model_control.update_plotsettings)
+        data_list_ctrl.list_ctrl.data_list_event.connect(self._on_data_list_event)
 
-        plot_data = getattr(self.ui, "plotDataPanel", None)
-        plot_fom = getattr(self.ui, "plotFomPanel", None)
-        plot_pars = getattr(self.ui, "plotParsPanel", None)
-        if plot_data is not None:
-            self.model_control.update_plot.connect(plot_data.OnSolverPlotEvent)
-            self.model_control.sim_plot.connect(plot_data.OnSimPlotEvent)
-        if plot_fom is not None:
-            self.model_control.update_plot.connect(plot_fom.OnSolverPlotEvent)
-        if plot_pars is not None:
-            self.model_control.update_parameters.connect(plot_pars.OnSolverParameterEvent)
+        plot_data = self.ui.plotDataPanel
+        plot_fom = self.ui.plotFomPanel
+        plot_pars = self.ui.plotParsPanel
+        self.model_control.update_plot.connect(plot_data.OnSolverPlotEvent)
+        self.model_control.sim_plot.connect(plot_data.OnSimPlotEvent)
+        self.model_control.update_plot.connect(plot_fom.OnSolverPlotEvent)
+        self.model_control.update_parameters.connect(plot_pars.OnSolverParameterEvent)
 
         self.model_control.update_parameters.connect(self.model_control.OnUpdateParameters)
         self.model_control.update_text.connect(self._on_solver_text)
@@ -332,10 +315,9 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
         self.set_script_text(self.model_control.get_model_script())
 
-        input_tabs = getattr(self.ui, "inputTabWidget", None)
-        if input_tabs is not None:
-            self._last_input_tab = input_tabs.currentIndex()
-            input_tabs.currentChanged.connect(self._on_input_tab_changed)
+        input_tabs = self.ui.inputTabWidget
+        self._last_input_tab = input_tabs.currentIndex()
+        input_tabs.currentChanged.connect(self._on_input_tab_changed)
 
         param_grid = self.ui.paramterGrid
         layout = self.ui.inputGridLayout
@@ -347,9 +329,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         param_grid.SetFOMFunctions(self.project_fom_parameter, self.scan_parameter)
         param_grid.SetEvalFunc(self.model_control.eval_in_model)
         param_grid.SetSimulateFunc(self.simulate)
-        action_value_slider = getattr(self.ui, "actionValueAsSlider", None)
-        if action_value_slider is not None:
-            action_value_slider.setChecked(param_grid.opt.value_slider)
+        self.ui.actionValueAsSlider.setChecked(param_grid.opt.value_slider)
         self._sync_auto_color_from_model()
         param_grid.set_parameter_value.connect(
             lambda row, col, value: self.model_control.OnSetParameterValue(
@@ -367,16 +347,13 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         param_grid.grid_changed.connect(self._on_parameter_grid_change)
 
     def _setup_plugin_control(self) -> None:
-        menu_plugins = getattr(self.ui, "menuPlugins", None)
-        if menu_plugins is None:
-            return
+        menu_plugins = self.ui.menuPlugins
         from . import add_on_framework
         self.plugin_control = add_on_framework.PluginController(self, menu_plugins)
         self.plugin_control.LoadDefaultPlugins()
 
     def _auto_simulate_enabled(self) -> bool:
-        action = getattr(self.ui, "actionSimulateAutomatically", None)
-        return bool(action and action.isChecked())
+        return self.ui.actionSimulateAutomatically.isChecked()
 
     def _ensure_auto_simulate_timer(self) -> QtCore.QTimer:
         if self._auto_simulate_timer is None:
@@ -400,25 +377,21 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def _sync_model_to_ui(self, *, update_plugins: bool = True) -> None:
         for panel in (
-            getattr(self.ui, "plotDataPanel", None),
-            getattr(self.ui, "plotFomPanel", None),
-            getattr(self.ui, "plotParsPanel", None),
-            getattr(self.ui, "plotFomScansPanel", None),
+            self.ui.plotDataPanel,
+            self.ui.plotFomPanel,
+            self.ui.plotParsPanel,
+            self.ui.plotFomScansPanel,
         ):
-            if panel is not None and hasattr(panel, "ReadConfig"):
+            if hasattr(panel, "ReadConfig"):
                 panel.ReadConfig()
         param_grid = getattr(self, "paramter_grid", None)
         if param_grid is not None and hasattr(param_grid, "ReadConfig"):
             param_grid.ReadConfig()
             param_grid.SetParameters(self.model_control.get_model_params(), permanent_change=False)
         model = self.model_control.get_model()
-        data_list_ctrl = getattr(self.ui, "dataListControl", None)
-        if data_list_ctrl is not None:
-            data_list_ctrl.eh_external_new_model(model)
+        self.ui.dataListControl.eh_external_new_model(model)
         self.set_script_text(self.model_control.get_model_script())
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is not None and hasattr(editor, "EmptyUndoBuffer"):
-            editor.EmptyUndoBuffer()
+        self.ui.scriptEditor.EmptyUndoBuffer()
         self.model_control.ModelLoaded()
         if update_plugins and hasattr(self, "plugin_control"):
             self.plugin_control.OnOpenModel(None)
@@ -452,9 +425,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def _check_external_script(self) -> None:
         text = self._get_external_script_text()
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is None:
-            return
+        editor = self.ui.scriptEditor
         if text is not None and text.strip() != editor.toPlainText().strip():
             self.set_script_text(text, from_external=True)
             self.simulate()
@@ -468,9 +439,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
                 self._start_external_script_watch()
 
     def _open_external_editor(self) -> None:
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is None:
-            return
+        editor = self.ui.scriptEditor
         with tempfile.NamedTemporaryFile(mode="w", prefix="genx", suffix=".py", encoding="utf-8", delete=False) as sfile:
             sfile.write(self.get_script_text())
             self._external_script_file = sfile.name
@@ -490,20 +459,15 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
         editor.setReadOnly(True)
         editor.setStyleSheet("QPlainTextEdit { background: #d2d2d2; }")
-        action = getattr(self.ui, "actionOpenInEditor", None)
-        if action is not None:
-            action.setText("Reactivate internal editor\tCtrl+E")
+        self.ui.actionOpenInEditor.setText("Reactivate internal editor\tCtrl+E")
         self._external_editor_proc = proc
         self._start_external_script_watch()
 
     def _deactivate_external_editing(self) -> None:
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is not None:
-            editor.setReadOnly(False)
-            editor.setStyleSheet("")
-        action = getattr(self.ui, "actionOpenInEditor", None)
-        if action is not None:
-            action.setText("Open in Editor\tCtrl+E")
+        editor = self.ui.scriptEditor
+        editor.setReadOnly(False)
+        editor.setStyleSheet("")
+        self.ui.actionOpenInEditor.setText("Open in Editor\tCtrl+E")
         self._stop_external_script_watch()
         self._external_editor_proc = None
         if self._external_script_file:
@@ -556,9 +520,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.set_script_text(script_text)
 
     def _on_data_list_event(self, event) -> None:
-        plot_data = getattr(self.ui, "plotDataPanel", None)
-        if plot_data is not None:
-            plot_data.OnDataListEvent(event)
+        self.ui.plotDataPanel.OnDataListEvent(event)
         if hasattr(self, "plugin_control"):
             self.plugin_control.OnDataChanged(event)
 
@@ -583,14 +545,10 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             bestx = self.model_control.get_parameter_data(row)[1]
             besty = self.model_control.get_fom()
             e_scale = getattr(self.model_control.controller.optimizer.opt, "errorbar_level", 0)
-            plot = getattr(self.ui, "plotFomScansPanel", None)
-            if plot is not None:
-                plot.SetPlottype("scan")
-                plot.Plot((x, y, bestx, besty, e_scale), self.model_control.get_parameter_name(row), "FOM")
-            plot_tabs = getattr(self.ui, "plotTabWidget", None)
-            plot_tab = getattr(self.ui, "plotTabFomScans", None)
-            if plot_tabs is not None and plot_tab is not None:
-                plot_tabs.setCurrentWidget(plot_tab)
+            plot = self.ui.plotFomScansPanel
+            plot.SetPlottype("scan")
+            plot.Plot((x, y, bestx, besty, e_scale), self.model_control.get_parameter_name(row), "FOM")
+            self.ui.plotTabWidget.setCurrentWidget(self.ui.plotTabFomScans)
 
     def project_fom_parameter(self, row: int) -> None:
         """
@@ -628,14 +586,10 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             _fs, pars = self.model_control.get_sim_pars()
             bestx = pars[row]
             besty = self.model_control.get_fom()
-            plot = getattr(self.ui, "plotFomScansPanel", None)
-            if plot is not None:
-                plot.SetPlottype("project")
-                plot.Plot((x, y, bestx, besty, e_scale), self.model_control.get_parameter_name(row), "FOM")
-            plot_tabs = getattr(self.ui, "plotTabWidget", None)
-            plot_tab = getattr(self.ui, "plotTabFomScans", None)
-            if plot_tabs is not None and plot_tab is not None:
-                plot_tabs.setCurrentWidget(plot_tab)
+            plot = self.ui.plotFomScansPanel
+            plot.SetPlottype("project")
+            plot.Plot((x, y, bestx, besty, e_scale), self.model_control.get_parameter_name(row), "FOM")
+            self.ui.plotTabWidget.setCurrentWidget(self.ui.plotTabFomScans)
 
     def _on_fitting_update(self, event) -> None:
         if hasattr(self, "plugin_control"):
@@ -646,9 +600,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             self.plugin_control.OnSimulate(event)
 
     def set_script_text(self, text: str, from_external: bool = False) -> None:
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is None:
-            return
+        editor = self.ui.scriptEditor
         if editor.toPlainText() == text:
             return
         if not from_external and self._external_script_file is not None:
@@ -663,9 +615,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         editor.horizontalScrollBar().setValue(hscroll)
 
     def get_script_text(self) -> str:
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is None:
-            return ""
+        editor = self.ui.scriptEditor
         if self._external_script_file:
             text = self._get_external_script_text()
             if text is not None:
@@ -674,20 +624,16 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         return editor.toPlainText()
 
     def _get_data_list_ctrl(self):
-        return getattr(getattr(self.ui, "dataListControl", None), "list_ctrl", None)
+        return self.ui.dataListControl.list_ctrl
 
     def _get_active_plot_panel(self):
-        tab = getattr(self.ui, "plotTabWidget", None)
-        if tab is None:
-            return None
+        tab = self.ui.plotTabWidget
         current = tab.currentWidget()
-        if current is None:
-            return None
         mapping = {
-            getattr(self.ui, "plotTabData", None): getattr(self.ui, "plotDataPanel", None),
-            getattr(self.ui, "plotTabFom", None): getattr(self.ui, "plotFomPanel", None),
-            getattr(self.ui, "plotTabPars", None): getattr(self.ui, "plotParsPanel", None),
-            getattr(self.ui, "plotTabFomScans", None): getattr(self.ui, "plotFomScansPanel", None),
+            self.ui.plotTabData: self.ui.plotDataPanel,
+            self.ui.plotTabFom: self.ui.plotFomPanel,
+            self.ui.plotTabPars: self.ui.plotParsPanel,
+            self.ui.plotTabFomScans: self.ui.plotFomScansPanel,
         }
         return mapping.get(current, None)
 
@@ -716,11 +662,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         if self._init_phase:
             self._last_input_tab = index
             return
-        input_tabs = getattr(self.ui, "inputTabWidget", None)
-        script_tab = getattr(self.ui, "inputTabScript", None)
-        if input_tabs is None or script_tab is None:
-            self._last_input_tab = index
-            return
+        input_tabs = self.ui.inputTabWidget
+        script_tab = self.ui.inputTabScript
         script_index = input_tabs.indexOf(script_tab)
         if self._last_input_tab == script_index and index != script_index:
             self.model_control.set_model_script(self.get_script_text())
@@ -814,16 +757,12 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
         self.model_control.new_model()
         model = self.model_control.get_model()
-        data_list_ctrl = getattr(self.ui, "dataListControl", None)
-        if data_list_ctrl is not None:
-            data_list_ctrl.eh_external_new_model(model)
+        self.ui.dataListControl.eh_external_new_model(model)
         param_grid = getattr(self, "paramter_grid", None)
         if param_grid is not None:
             param_grid.SetParameters(self.model_control.get_model_params())
         self.set_script_text(self.model_control.get_model_script())
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is not None and hasattr(editor, "EmptyUndoBuffer"):
-            editor.EmptyUndoBuffer()
+        self.ui.scriptEditor.EmptyUndoBuffer()
         self.model_control.ModelLoaded()
         if hasattr(self, "plugin_control"):
             self.plugin_control.OnNewModel(None)
@@ -1319,9 +1258,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     @QtCore.Slot(bool)
     def on_actionFindReplace_triggered(self, checked: bool = False) -> None:
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is None:
-            return
+        editor = self.ui.scriptEditor
         find_text, ok = QtWidgets.QInputDialog.getText(self, "Find", "Find text:")
         if not ok or not find_text:
             return
@@ -1379,9 +1316,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     @QtCore.Slot(bool)
     def on_actionPrintScript_triggered(self, checked: bool = False) -> None:
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is None:
-            return
+        editor = self.ui.scriptEditor
         printer = QtPrintSupport.QPrinter()
         dlg = QtPrintSupport.QPrintDialog(printer, self)
         if dlg.exec() != QtWidgets.QDialog.DialogCode.Accepted:
