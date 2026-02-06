@@ -77,6 +77,15 @@ class GUIConfig(conf_mod.BaseConfig):
     editor: str = None
     last_update_check: float = 0.0
 
+
+class _ActionCheckable:
+    def __init__(self, action: QtGui.QAction) -> None:
+        self._action = action
+
+    def Check(self) -> None:
+        self._action.setChecked(True)
+
+
 class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     """
     Qt main window.
@@ -104,6 +113,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self._external_script_file = None
         self._external_editor_proc = None
         self._script_watch_timer = None
+        self._auto_simulate_timer = None
+        self.mb_checkables = {}
 
         # Load GUI config
         conf_mod.Configurable.__init__(self, GUIConfig)
@@ -123,6 +134,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self._install_status_update_hook()
         self._setup_data_view()
         self._setup_window_basics()
+        self._setup_auto_color_menu()
         self._update_splash("creating main window.....", progress=0.85)
         self._setup_toolbar_icon_sizes()
         self._update_splash("creating main window......", progress=0.95)
@@ -240,6 +252,28 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.setWindowTitle(f"GenX {program_version}")
         self.setMinimumSize(600, 400)
 
+    def _setup_auto_color_menu(self) -> None:
+        menu = getattr(self.ui, "menuAutoColor", None)
+        if menu is None:
+            return
+        group = QtGui.QActionGroup(self)
+        group.setExclusive(True)
+        self._auto_color_actions = {}
+
+        for key in COLOR_CYCLES.keys():
+            action = QtGui.QAction(key, self)
+            action.setActionGroup(group)
+            action.setCheckable(True)
+            menu.addAction(action)
+            action.triggered.connect(lambda _checked=False, k=key: self._on_auto_color_selected(k))
+            self._auto_color_actions[key] = action
+            self.mb_checkables[key] = _ActionCheckable(action)
+
+    def _on_auto_color_selected(self, key: str) -> None:
+        if not hasattr(self, "model_control"):
+            return
+        self.model_control.update_color_cycle(COLOR_CYCLES.get(key))
+
     def _setup_toolbar_icon_sizes(self) -> None:
         base = QtWidgets.QApplication.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ToolBarIconSize)
         main_size = QtCore.QSize(int(base * 1.4), int(base * 1.4))
@@ -303,34 +337,34 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             self._last_input_tab = input_tabs.currentIndex()
             input_tabs.currentChanged.connect(self._on_input_tab_changed)
 
-        param_grid = getattr(self.ui, "paramterGrid", None)
-        if param_grid is None:
-            layout = getattr(self.ui, "inputGridLayout", None)
-            if layout is not None:
-                from .parametergrid import ParameterGrid
-                param_grid = ParameterGrid(self)
-                layout.addWidget(param_grid)
-        if param_grid is not None:
-            self.paramter_grid = param_grid
-            from .solvergui import SetParameterValueEvent, MoveParameterEvent
-            param_grid.SetParameters(self.model_control.get_model_params())
-            param_grid.SetFOMFunctions(self.model_control.ProjectEvals, self.model_control.ScanParameter)
-            param_grid.SetEvalFunc(self.model_control.eval_in_model)
-            param_grid.SetSimulateFunc(self.simulate)
-            param_grid.set_parameter_value.connect(
-                lambda row, col, value: self.model_control.OnSetParameterValue(
-                    SetParameterValueEvent(row=row, col=col, value=value)
-                )
+        param_grid = self.ui.paramterGrid
+        layout = self.ui.inputGridLayout
+        from .parametergrid import ParameterGrid
+
+        self.paramter_grid = param_grid
+        from .solvergui import SetParameterValueEvent, MoveParameterEvent
+        param_grid.SetParameters(self.model_control.get_model_params())
+        param_grid.SetFOMFunctions(self.project_fom_parameter, self.scan_parameter)
+        param_grid.SetEvalFunc(self.model_control.eval_in_model)
+        param_grid.SetSimulateFunc(self.simulate)
+        action_value_slider = getattr(self.ui, "actionValueAsSlider", None)
+        if action_value_slider is not None:
+            action_value_slider.setChecked(param_grid.opt.value_slider)
+        self._sync_auto_color_from_model()
+        param_grid.set_parameter_value.connect(
+            lambda row, col, value: self.model_control.OnSetParameterValue(
+                SetParameterValueEvent(row=row, col=col, value=value)
             )
-            param_grid.move_parameter.connect(
-                lambda row, step: self.model_control.OnMoveParameter(
-                    MoveParameterEvent(row=row, step=step)
-                )
+        )
+        param_grid.move_parameter.connect(
+            lambda row, step: self.model_control.OnMoveParameter(
+                MoveParameterEvent(row=row, step=step)
             )
-            param_grid.insert_parameter.connect(self.model_control.OnInsertParameter)
-            param_grid.delete_parameters.connect(self.model_control.OnDeleteParameter)
-            param_grid.sort_and_group_parameters.connect(self.model_control.OnSortAndGroupParameters)
-            param_grid.grid_changed.connect(self._on_parameter_grid_change)
+        )
+        param_grid.insert_parameter.connect(self.model_control.OnInsertParameter)
+        param_grid.delete_parameters.connect(self.model_control.OnDeleteParameter)
+        param_grid.sort_and_group_parameters.connect(self.model_control.OnSortAndGroupParameters)
+        param_grid.grid_changed.connect(self._on_parameter_grid_change)
 
     def _setup_plugin_control(self) -> None:
         menu_plugins = getattr(self.ui, "menuPlugins", None)
@@ -339,6 +373,30 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         from . import add_on_framework
         self.plugin_control = add_on_framework.PluginController(self, menu_plugins)
         self.plugin_control.LoadDefaultPlugins()
+
+    def _auto_simulate_enabled(self) -> bool:
+        action = getattr(self.ui, "actionSimulateAutomatically", None)
+        return bool(action and action.isChecked())
+
+    def _ensure_auto_simulate_timer(self) -> QtCore.QTimer:
+        if self._auto_simulate_timer is None:
+            timer = QtCore.QTimer(self)
+            timer.setSingleShot(True)
+            timer.timeout.connect(self._run_auto_simulate)
+            self._auto_simulate_timer = timer
+        return self._auto_simulate_timer
+
+    def _schedule_auto_simulate(self) -> None:
+        if not self._auto_simulate_enabled():
+            return
+        timer = self._ensure_auto_simulate_timer()
+        timer.start(150)
+
+    def _run_auto_simulate(self) -> None:
+        if not self._auto_simulate_enabled():
+            return
+        with self.catch_error(action="auto_simulate", step="simulate"):
+            self.simulate()
 
     def _sync_model_to_ui(self, *, update_plugins: bool = True) -> None:
         for panel in (
@@ -472,8 +530,23 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             return
         if permanent_change:
             self.model_control.saved = False
+            self._schedule_auto_simulate()
         if hasattr(self, "plugin_control"):
             self.plugin_control.OnGridChanged(type("GridEvent", (), {"permanent_change": permanent_change})())
+
+    def _sync_auto_color_from_model(self) -> None:
+        if not hasattr(self, "model_control"):
+            return
+        current = self.model_control.get_color_cycle()
+        colors2keys = dict((value, key) for key, value in COLOR_CYCLES.items())
+        key = colors2keys.get(current, colors2keys.get(None))
+        if key is None:
+            return
+        action = self._auto_color_actions.get(key) if hasattr(self, "_auto_color_actions") else None
+        if action is not None:
+            action.blockSignals(True)
+            action.setChecked(True)
+            action.blockSignals(False)
 
     def _on_solver_text(self, text: str) -> None:
         if text:
@@ -488,6 +561,81 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             plot_data.OnDataListEvent(event)
         if hasattr(self, "plugin_control"):
             self.plugin_control.OnDataChanged(event)
+
+    def scan_parameter(self, row: int) -> None:
+        """
+        Scan a parameter by stepping between min/max with user-defined points.
+        """
+        self.model_control.compile_if_needed()
+        points, ok = QtWidgets.QInputDialog.getInt(
+            self,
+            "Scan Parameter",
+            "Steps",
+            50,
+            2,
+            1000,
+        )
+        if not ok:
+            return
+        self._status_update("Scanning parameter")
+        with self.catch_error(action="scan_parameters", step="scanning parameters"):
+            x, y = self.model_control.ScanParameter(row, points)
+            bestx = self.model_control.get_parameter_data(row)[1]
+            besty = self.model_control.get_fom()
+            e_scale = getattr(self.model_control.controller.optimizer.opt, "errorbar_level", 0)
+            plot = getattr(self.ui, "plotFomScansPanel", None)
+            if plot is not None:
+                plot.SetPlottype("scan")
+                plot.Plot((x, y, bestx, besty, e_scale), self.model_control.get_parameter_name(row), "FOM")
+            plot_tabs = getattr(self.ui, "plotTabWidget", None)
+            plot_tab = getattr(self.ui, "plotTabFomScans", None)
+            if plot_tabs is not None and plot_tab is not None:
+                plot_tabs.setCurrentWidget(plot_tab)
+
+    def project_fom_parameter(self, row: int) -> None:
+        """
+        Project FOM onto a parameter axis using stored evaluations.
+        """
+        import numpy as np
+
+        if not self.model_control.IsFitted():
+            ShowNotificationDialog(
+                self,
+                "Please conduct a fit before scanning a parameter. "
+                "The script needs to be compiled and foms have to be collected.",
+            )
+            return
+        self._status_update("Trying to project FOM")
+        with self.catch_error(action="project_fom_parameters", step="projecting fom parameters"):
+            e_scale = getattr(self.model_control.controller.optimizer.opt, "errorbar_level", None)
+            if e_scale is None:
+                ShowNotificationDialog(
+                    self,
+                    "This feature requires a fit with Differential Evolution, consider using FOM scan instead.",
+                )
+                return
+            x, y = self.model_control.ProjectEvals(row)
+            if len(x) == 0 or len(y) == 0:
+                ShowNotificationDialog(
+                    self,
+                    "Please conduct a fit before projecting a parameter. "
+                    "The script needs to be compiled and foms have to be collected.",
+                )
+                return
+            if self.model_control.get_fom() is None or np.isnan(self.model_control.get_fom()):
+                ShowNotificationDialog(self, "The model must be simulated (FOM is not a valid number)")
+                return
+            _fs, pars = self.model_control.get_sim_pars()
+            bestx = pars[row]
+            besty = self.model_control.get_fom()
+            plot = getattr(self.ui, "plotFomScansPanel", None)
+            if plot is not None:
+                plot.SetPlottype("project")
+                plot.Plot((x, y, bestx, besty, e_scale), self.model_control.get_parameter_name(row), "FOM")
+            plot_tabs = getattr(self.ui, "plotTabWidget", None)
+            plot_tab = getattr(self.ui, "plotTabFomScans", None)
+            if plot_tabs is not None and plot_tab is not None:
+                plot_tabs.setCurrentWidget(plot_tab)
 
     def _on_fitting_update(self, event) -> None:
         if hasattr(self, "plugin_control"):
@@ -908,7 +1056,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     # Optional: handle checkable actions (stubs)
     @QtCore.Slot(bool)
     def on_actionSimulateAutomatically_triggered(self, checked: bool) -> None:
-        pass
+        if checked:
+            self._schedule_auto_simulate()
 
     @QtCore.Slot(bool)
     def on_actionUseCuda_triggered(self, checked: bool) -> None:

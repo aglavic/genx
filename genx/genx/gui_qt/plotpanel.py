@@ -106,6 +106,7 @@ class PlotPanel(Configurable, QtWidgets.QWidget):
 
         self.SetColor(color)
         self.print_size = (15.0 / 2.54, 12.0 / 2.54)
+        self._pending_draw = False
 
         # Flags and bindings for zooming
         self.opt.load_config()
@@ -487,10 +488,25 @@ class PlotPanel(Configurable, QtWidgets.QWidget):
         return menu
 
     def flush_plot(self):
+        if not self.isVisible():
+            self._pending_draw = True
+            return
+        self._flush_plot_now()
+
+    def _flush_plot_now(self) -> None:
+        if self.canvas.width() <= 0 or self.canvas.height() <= 0:
+            self._pending_draw = True
+            return
+        self._pending_draw = False
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
             self.figure.tight_layout(h_pad=0)
         self.canvas.draw()
+
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
+        if self._pending_draw:
+            QtCore.QTimer.singleShot(0, self._flush_plot_now)
 
     def update(self, data):
         pass

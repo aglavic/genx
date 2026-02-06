@@ -469,9 +469,6 @@
      <property name="title">
       <string>Auto Color</string>
      </property>
-     <addaction name="actionColorNone"/>
-     <addaction name="actionColorCycle1"/>
-     <addaction name="actionColorCycle2"/>
     </widget>
     <widget class="QMenu" name="menuYScale">
      <property name="title">
@@ -850,30 +847,6 @@
    </property>
    <property name="text">
     <string>Use Toggle Show</string>
-   </property>
-  </action>
-  <action name="actionColorNone">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>none</string>
-   </property>
-  </action>
-  <action name="actionColorCycle1">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>cycle1</string>
-   </property>
-  </action>
-  <action name="actionColorCycle2">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>cycle2</string>
    </property>
   </action>
   <action name="actionYScaleLog">

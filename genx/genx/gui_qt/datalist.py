@@ -203,11 +203,15 @@ class DataListModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.ItemDataRole.DecorationRole and col == 0:
             colors = self.data_cont.get_colors()
             if 0 <= row < len(colors):
-                data_color, _sim_color = colors[row]
+                data_color, sim_color = colors[row]
                 pix = QtGui.QPixmap(16, 16)
                 pix.fill(QtCore.Qt.GlobalColor.transparent)
                 painter = QtGui.QPainter(pix)
                 try:
+                    painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+                    painter.setBrush(QtGui.QBrush(QtGui.QColor(*sim_color)))
+                    painter.setPen(QtGui.QPen(QtGui.QColor(*sim_color)))
+                    painter.drawRect(1, 1, 14, 14)
                     painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
                     painter.setBrush(QtGui.QBrush(QtGui.QColor(*data_color)))
                     painter.setPen(QtGui.QPen(QtGui.QColor(*data_color)))
@@ -556,11 +560,30 @@ class DataListControl(QtWidgets.QWidget):
         super().__init__(parent)
         self.ui = Ui_DataListControl()
         self.ui.setupUi(self)
+        self._scope_action_object_names()
         mydata = data.DataList()
         self.data_cont = DataController(mydata)
         self.list_ctrl = VirtualDataList(self, self.data_cont, status_text=status_text)
 
         self.ui.listLayout.addWidget(self.list_ctrl, 1)
+
+    def _scope_action_object_names(self) -> None:
+        # Avoid QMainWindow auto-connecting to these actions (they already connect locally).
+        actions = (
+            "actionAddData",
+            "actionImportData",
+            "actionAddSimulation",
+            "actionDataInfo",
+            "actionMoveUp",
+            "actionMoveDown",
+            "actionDelete",
+            "actionPlotting",
+            "actionCalc",
+        )
+        for name in actions:
+            action = getattr(self.ui, name, None)
+            if action is not None:
+                action.setObjectName(f"{name}_datalist")
 
     @QtCore.Slot()
     def on_actionImportData_triggered(self):

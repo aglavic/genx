@@ -52,8 +52,10 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
     def _build_ui(self) -> None:
         self.ui = Ui_ParameterGrid()
         self.ui.setupUi(self)
+        self._scope_action_object_names()
         self.toolbar = self.ui.toolbar
         self.table = self.ui.parameterTable
+        self._action_value_slider = None
 
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(self._pars.get_col_headers())
@@ -75,9 +77,47 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         self.table.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self._on_context_menu)
 
-        self._slider_delegate = SliderValueDelegate(self.table)
+        self._value_bar_delegate = ValueBarDelegate(self.table)
+        self._opaque_delegate = OpaqueItemDelegate(self.table)
         self._column_weights = {0: 3, 1: 2, 3: 1, 4: 1, 5: 1}
         self._update_column_widths()
+        self._setup_value_slider_action()
+
+    def _setup_value_slider_action(self) -> None:
+        action = QtGui.QAction(self)
+        action.setObjectName("actionValueAsSlider_paramgrid")
+        action.setCheckable(True)
+        action.setChecked(self.opt.value_slider)
+        action.setText("Show sliders")
+        action.setToolTip("Show the parameter values as sliders")
+        action.setIcon(QtGui.QIcon(":/main_gui/slider.png"))
+        action.toggled.connect(self._on_value_slider_toggled)
+        project_action = getattr(self.ui, "actionProjectFom", None)
+        if project_action is not None:
+            self.toolbar.insertAction(project_action, action)
+        else:
+            self.toolbar.addAction(action)
+        self._action_value_slider = action
+
+    def _on_value_slider_toggled(self, checked: bool) -> None:
+        self.SetValueEditorSlider(bool(checked))
+
+    def _scope_action_object_names(self) -> None:
+        # Avoid QMainWindow auto-connecting to these actions (parameter grid owns them).
+        actions = (
+            "actionAddRow",
+            "actionDeleteRow",
+            "actionMoveUp",
+            "actionMoveDown",
+            "actionSort",
+            "actionSortName",
+            "actionProjectFom",
+            "actionScanFom",
+        )
+        for name in actions:
+            action = getattr(self.ui, name, None)
+            if action is not None:
+                action.setObjectName(f"{name}_paramgrid")
 
     @QtCore.Slot()
     def on_actionAddRow_triggered(self) -> None:
@@ -214,21 +254,8 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         if row < 0:
             row = 0
         self._pars.insert_row(row)
-        self.table.insertRow(row)
-        for col in range(self.table.columnCount()):
-            value = self._pars.get_value(row, col)
-            if col == 2:
-                item = QtWidgets.QTableWidgetItem("")
-                item.setFlags(
-                    QtCore.Qt.ItemFlag.ItemIsEnabled
-                    | QtCore.Qt.ItemFlag.ItemIsSelectable
-                    | QtCore.Qt.ItemFlag.ItemIsUserCheckable
-                )
-                item.setCheckState(QtCore.Qt.CheckState.Checked if value else QtCore.Qt.CheckState.Unchecked)
-            else:
-                item = QtWidgets.QTableWidgetItem(self._format_value(col, value))
-            self.table.setItem(row, col, item)
-        self._update_row_labels()
+        self._populate_from_pars()
+        self.table.setCurrentCell(row, 0)
         self.insert_parameter.emit(row)
         self._emit_grid_changed(permanent_change=True)
 
@@ -254,7 +281,7 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
             return
         target = row + step
         self._pars.move_row(row, step)
-        self._swap_rows(row, target)
+        self._populate_from_pars()
         self.table.setCurrentCell(target, 0)
         self._update_row_labels()
         self.move_parameter.emit(row, step)
@@ -328,6 +355,21 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         self.opt.value_slider = bool(active)
         self.opt.save_config(default=True)
         self._apply_value_editor()
+        self._sync_value_slider_actions()
+
+    def _sync_value_slider_actions(self) -> None:
+        action = self._action_value_slider
+        if action is not None:
+            action.blockSignals(True)
+            action.setChecked(self.opt.value_slider)
+            action.blockSignals(False)
+        window = self.window()
+        if window is not None:
+            menu_action = window.findChild(QtGui.QAction, "actionValueAsSlider")
+            if menu_action is not None:
+                menu_action.blockSignals(True)
+                menu_action.setChecked(self.opt.value_slider)
+                menu_action.blockSignals(False)
 
     def SetSimulateFunc(self, func: Optional[Callable[[], None]]) -> None:
         self._simulate_func = func
@@ -431,10 +473,9 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "Common pars", "Common parameter insertion is not available yet.")
 
     def _apply_value_editor(self) -> None:
-        if self.opt.value_slider:
-            self.table.setItemDelegateForColumn(1, self._slider_delegate)
-        else:
-            self.table.setItemDelegateForColumn(1, None)
+        self.table.setItemDelegate(self._opaque_delegate)
+        self._value_bar_delegate.set_use_slider(self.opt.value_slider)
+        self.table.setItemDelegateForColumn(1, self._value_bar_delegate)
 
 
 class SliderValueDelegate(QtWidgets.QStyledItemDelegate):
@@ -479,6 +520,176 @@ class SliderValueDelegate(QtWidgets.QStyledItemDelegate):
         min_val = self._to_float(model.index(index.row(), 3).data())
         max_val = self._to_float(model.index(index.row(), 4).data())
         return min_val, max_val
+
+    @staticmethod
+    def _to_float(value):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return 0.0
+
+
+class OpaqueItemDelegate(QtWidgets.QStyledItemDelegate):
+    def createEditor(self, parent, option, index):
+        editor = super().createEditor(parent, option, index)
+        if isinstance(editor, QtWidgets.QLineEdit):
+            editor.setAutoFillBackground(True)
+            palette = editor.palette()
+            base = QtWidgets.QApplication.palette().color(QtGui.QPalette.ColorRole.Base)
+            palette.setColor(QtGui.QPalette.ColorRole.Base, base)
+            editor.setPalette(palette)
+        return editor
+
+
+class WheelValueEditor(QtWidgets.QLineEdit):
+    valueStepped = QtCore.Signal(float)
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self._min_value = None
+        self._max_value = None
+        self._steps = 20
+
+    def setRange(self, min_value, max_value) -> None:
+        self._min_value = min_value
+        self._max_value = max_value
+
+    def setSteps(self, steps: int) -> None:
+        self._steps = steps
+
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        if self._min_value is None or self._max_value is None:
+            return super().wheelEvent(event)
+        low = min(self._min_value, self._max_value)
+        high = max(self._min_value, self._max_value)
+        span = high - low
+        if span <= 0 or self._steps <= 0:
+            return super().wheelEvent(event)
+        try:
+            value = float(self.text())
+        except ValueError:
+            value = low
+        step = span / self._steps
+        if event.angleDelta().y() > 0:
+            value += step
+        elif event.angleDelta().y() < 0:
+            value -= step
+        value = max(low, min(high, value))
+        self.setText(f"{value:.7g}")
+        self.valueStepped.emit(value)
+        event.accept()
+
+
+class ValueBarDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self._use_slider = False
+
+    def set_use_slider(self, enabled: bool) -> None:
+        self._use_slider = bool(enabled)
+
+    def createEditor(self, parent, option, index):
+        if index.column() != 1:
+            return super().createEditor(parent, option, index)
+        if self._use_slider:
+            slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, parent)
+            slider.setMinimum(0)
+            slider.setMaximum(1000)
+            model = index.model()
+            slider.valueChanged.connect(
+                lambda _value, m=model, i=index: self._set_model_from_slider(m, i, slider)
+            )
+            return slider
+        editor = WheelValueEditor(parent)
+        min_val, max_val = self._get_min_max(index)
+        editor.setRange(min_val, max_val)
+        editor.setSteps(20)
+        editor.setAutoFillBackground(True)
+        palette = editor.palette()
+        base = QtWidgets.QApplication.palette().color(QtGui.QPalette.ColorRole.Base)
+        palette.setColor(QtGui.QPalette.ColorRole.Base, base)
+        editor.setPalette(palette)
+        model = index.model()
+        editor.valueStepped.connect(lambda value, m=model, i=index: m.setData(i, value))
+        return editor
+
+    def setEditorData(self, editor, index):
+        if self._use_slider and isinstance(editor, QtWidgets.QSlider):
+            min_val, max_val = self._get_min_max(index)
+            value = self._to_float(index.data())
+            editor.setProperty("min_val", min_val)
+            editor.setProperty("max_val", max_val)
+            if max_val <= min_val:
+                editor.setValue(0)
+                return
+            value = max(min_val, min(max_val, value))
+            pos = int((value - min_val) / (max_val - min_val) * editor.maximum())
+            editor.setValue(pos)
+            return
+        return super().setEditorData(editor, index)
+
+    def setModelData(self, editor, model, index):
+        if self._use_slider and isinstance(editor, QtWidgets.QSlider):
+            min_val = editor.property("min_val")
+            max_val = editor.property("max_val")
+            if min_val is None or max_val is None or max_val <= min_val:
+                return
+            value = min_val + (max_val - min_val) * (editor.value() / editor.maximum())
+            model.setData(index, value)
+            return
+        return super().setModelData(editor, model, index)
+
+    def paint(self, painter, option, index):
+        opt = QtWidgets.QStyleOptionViewItem(option)
+        self.initStyleOption(opt, index)
+        style = opt.widget.style() if opt.widget else QtWidgets.QApplication.style()
+        text = opt.text
+        opt.text = ""
+        style.drawControl(QtWidgets.QStyle.ControlElement.CE_ItemViewItem, opt, painter, opt.widget)
+
+        if index.column() == 1:
+            min_val, max_val = self._get_min_max(index)
+            low = min(min_val, max_val)
+            high = max(min_val, max_val)
+            if high > low:
+                value = self._to_float(index.data())
+                ratio = (value - low) / (high - low)
+                ratio = max(0.0, min(1.0, ratio))
+                bar_rect = option.rect.adjusted(2, 1, -2, -1)
+                painter.save()
+                painter.setPen(QtCore.Qt.NoPen)
+                fill_width = int(bar_rect.width() * ratio)
+                if fill_width > 0:
+                    painter.setBrush(QtGui.QColor(215, 215, 215, 160))
+                    painter.drawRect(bar_rect.adjusted(0, 0, -(bar_rect.width() - fill_width), 0))
+                painter.restore()
+
+        hide_text = False
+        if self._use_slider and opt.widget is not None:
+            view = opt.widget
+            if (
+                isinstance(view, QtWidgets.QAbstractItemView)
+                and view.state() == QtWidgets.QAbstractItemView.State.EditingState
+                and view.currentIndex() == index
+            ):
+                hide_text = True
+        if text and not hide_text:
+            text_role = QtGui.QPalette.ColorRole.Text
+            style.drawItemText(painter, option.rect, opt.displayAlignment, opt.palette, True, text, text_role)
+
+    def _get_min_max(self, index):
+        model = index.model()
+        min_val = self._to_float(model.index(index.row(), 3).data())
+        max_val = self._to_float(model.index(index.row(), 4).data())
+        return min_val, max_val
+
+    def _set_model_from_slider(self, model, index, slider) -> None:
+        min_val = slider.property("min_val")
+        max_val = slider.property("max_val")
+        if min_val is None or max_val is None or max_val <= min_val:
+            return
+        value = min_val + (max_val - min_val) * (slider.value() / slider.maximum())
+        model.setData(index, value)
 
     @staticmethod
     def _to_float(value):

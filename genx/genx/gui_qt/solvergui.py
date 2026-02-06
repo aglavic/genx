@@ -302,6 +302,9 @@ class ModelControlGUI(QtCore.QObject):
 
     def OnRedo(self, _event=None):
         self.controller.redo_action()
+        param_grid = getattr(self.parent, "paramter_grid", None)
+        if param_grid is not None and hasattr(param_grid, "SetParameters"):
+            param_grid.SetParameters(self.controller.get_model_params(), permanent_change=False)
 
     def SetUndoRedoLabels(self):
         undos, redos = self.controller.history_stacks()
@@ -357,6 +360,9 @@ class ModelControlGUI(QtCore.QObject):
 
     def get_sim_pars(self):
         return self.controller.get_sim_pars()
+
+    def get_color_cycle(self):
+        return self.controller.get_color_cycle()
 
     def get_parameter_data(self, row):
         return self.controller.get_parameter_data(row)
@@ -476,7 +482,9 @@ class ModelControlGUI(QtCore.QObject):
             self.controller.update_combined_options(updates)
 
     def ModelLoaded(self):
-        self.parent.param_grid.SetParameters(self.controller.get_model_params(), permanent_change=False)
+        param_grid = getattr(self.parent, "paramter_grid", None)
+        if param_grid is not None and hasattr(param_grid, "SetParameters"):
+            param_grid.SetParameters(self.controller.get_model_params(), permanent_change=False)
         self.update_plot.emit(
             UpdatePlotEvent(
                 model=self.controller.get_fitted_model(),
