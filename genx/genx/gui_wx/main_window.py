@@ -2,42 +2,25 @@
 Main GenX window and functionality.
 """
 
-import _thread
 import logging
 import os
 import shutil
-import subprocess
 import sys
-import tempfile
 import time
-import webbrowser
 
-from copy import deepcopy
 from dataclasses import dataclass
 from logging import debug, info, warning
 from typing import List
 
 import platformdirs
+import wx
 import wx.adv
-import wx.grid
-import wx.py
-import wx.stc
-
-from wx.lib.wordwrap import wordwrap
 
 from ..core import config as conf_mod
-from ..core.colors import COLOR_CYCLES
-from ..core.custom_logging import iprint, numpy_set_options
-from ..plugins import add_on_framework as add_on
 from ..version import __version__ as program_version
-from . import custom_ids, datalist, help
 from . import images as img
-from . import parametergrid, pubgraph_dialog, solvergui
-from .batch_dialog import BatchDialog
-from .custom_events import *
-from .exception_handling import CatchModelError, GuiExceptionHandler
-from .message_dialogs import ShowNotificationDialog, ShowQuestionDialog
-from .online_update import VersionInfoDialog, check_version
+from .custom_events import skips_event
+from .exception_handling import CatchModelError
 
 _path = os.path.dirname(__file__)
 if _path[-4:] == ".zip":
@@ -76,6 +59,77 @@ if not os.path.exists(os.path.join(config_path, "genx.conf")):
 
 manual_url = "https://aglavic.github.io/genx/doc/"
 homepage_url = "https://aglavic.github.io/genx/"
+
+_PRELOAD_DONE = False
+
+
+def _preload_gui_modules() -> None:
+    global _PRELOAD_DONE
+    if _PRELOAD_DONE:
+        return
+
+    global _thread, subprocess, tempfile, webbrowser, deepcopy
+    global wordwrap
+    global COLOR_CYCLES, iprint, numpy_set_options
+    global add_on, custom_ids, datalist, help, parametergrid, pubgraph_dialog, solvergui
+    global BatchDialog, ShowNotificationDialog, ShowQuestionDialog, VersionInfoDialog, check_version
+    global GuiExceptionHandler
+    global EVT_NEW_MODEL, EVT_SIM_PLOT
+    global EVT_PARAMETER_GRID_CHANGE, EVT_PARAMETER_VALUE_CHANGE, EVT_PARAMETER_SET_VALUE
+    global EVT_MOVE_PARAMETER, EVT_INSERT_PARAMETER, EVT_DELETE_PARAMETERS, EVT_SORT_AND_GROUP_PARAMETERS
+    global EVT_DATA_LIST, EVT_UPDATE_PLOTSETTINGS
+    global EVT_PLOT_POSITION, EVT_PLOT_SETTINGS_CHANGE
+    global EVT_UPDATE_SCRIPT, EVT_UPDATE_PLOT, EVT_SOLVER_UPDATE_TEXT, EVT_UPDATE_PARAMETERS
+    global EVT_FITTING_ENDED, EVT_AUTOSAVE, EVT_BATCH_NEXT, EVT_UPDATE_MODEL
+    global new_model_type, sim_plot_type
+
+    import _thread as _thread
+    import subprocess as subprocess
+    import tempfile as tempfile
+    import webbrowser as webbrowser
+    from copy import deepcopy as deepcopy
+
+    import wx.grid
+    import wx.py
+    import wx.stc
+    from wx.lib.wordwrap import wordwrap as wordwrap
+
+    from ..core.colors import COLOR_CYCLES as COLOR_CYCLES
+    from ..core.custom_logging import iprint as iprint, numpy_set_options as numpy_set_options
+    from ..plugins import add_on_framework as add_on
+    from . import custom_ids as custom_ids, datalist as datalist, help as help
+    from . import parametergrid as parametergrid, pubgraph_dialog as pubgraph_dialog, solvergui as solvergui
+    from .batch_dialog import BatchDialog as BatchDialog
+    from .message_dialogs import ShowNotificationDialog as ShowNotificationDialog, ShowQuestionDialog as ShowQuestionDialog
+    from .online_update import VersionInfoDialog as VersionInfoDialog, check_version as check_version
+    from .exception_handling import GuiExceptionHandler as GuiExceptionHandler
+    from .custom_events import (
+        EVT_NEW_MODEL,
+        EVT_SIM_PLOT,
+        EVT_PARAMETER_GRID_CHANGE,
+        EVT_PARAMETER_VALUE_CHANGE,
+        EVT_PARAMETER_SET_VALUE,
+        EVT_MOVE_PARAMETER,
+        EVT_INSERT_PARAMETER,
+        EVT_DELETE_PARAMETERS,
+        EVT_SORT_AND_GROUP_PARAMETERS,
+        EVT_DATA_LIST,
+        EVT_UPDATE_PLOTSETTINGS,
+        EVT_PLOT_POSITION,
+        EVT_PLOT_SETTINGS_CHANGE,
+        EVT_UPDATE_SCRIPT,
+        EVT_UPDATE_PLOT,
+        EVT_SOLVER_UPDATE_TEXT,
+        EVT_UPDATE_PARAMETERS,
+        EVT_FITTING_ENDED,
+        EVT_AUTOSAVE,
+        EVT_BATCH_NEXT,
+        EVT_UPDATE_MODEL,
+        new_model_type,
+        sim_plot_type,
+    )
+
+    _PRELOAD_DONE = True
 
 
 @dataclass
@@ -2478,8 +2532,9 @@ class GenxApp(wx.App):
             locale = wx.Locale(wx.LANGUAGE_ENGLISH_US)
             self.locale = locale
             self._first_init = False
-        self.ConnectExceptionHandler()
         self.ShowSplash()
+        _preload_gui_modules()
+        self.ConnectExceptionHandler()
         debug("entering init phase")
 
         self.WriteSplash("initializeing main window...")

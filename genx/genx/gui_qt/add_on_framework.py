@@ -34,21 +34,78 @@ class Template:
         self.data_pages = []
         self.menus = []
 
+    class _PluginPage(QtWidgets.QWidget):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+            self.setContentsMargins(0, 0, 0, 0)
+
+        def _reset_layout_margins(self) -> None:
+            layout = self.layout()
+            if layout is not None:
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)
+
+        def childEvent(self, event):
+            super().childEvent(event)
+            if event.type() == QtCore.QEvent.Type.ChildAdded:
+                if isinstance(event.child(), QtWidgets.QLayout):
+                    self._reset_layout_margins()
+
+        def event(self, event):
+            if event.type() == QtCore.QEvent.Type.LayoutRequest:
+                self._reset_layout_margins()
+            return super().event(event)
+
+    def _get_plugin_tab_widget(self) -> QtWidgets.QTabWidget | None:
+        return getattr(self.parent.ui, "pluginTabWidget", None)
+
+    def _get_plugin_empty_tab(self) -> QtWidgets.QWidget | None:
+        return getattr(self.parent.ui, "pluginTabEmpty", None)
+
+    def _plugin_tab_count(self, notebook: QtWidgets.QTabWidget | None) -> int:
+        if notebook is None:
+            return 0
+        empty = self._get_plugin_empty_tab()
+        return sum(1 for i in range(notebook.count()) if notebook.widget(i) is not empty)
+
+    def _remove_plugin_empty_tab(self, notebook: QtWidgets.QTabWidget | None) -> None:
+        if notebook is None:
+            return
+        empty = self._get_plugin_empty_tab()
+        if empty is None:
+            return
+        idx = notebook.indexOf(empty)
+        if idx >= 0:
+            notebook.removeTab(idx)
+
+    def _ensure_plugin_empty_tab(self, notebook: QtWidgets.QTabWidget | None) -> None:
+        if notebook is None:
+            return
+        empty = self._get_plugin_empty_tab()
+        if empty is None:
+            return
+        if notebook.indexOf(empty) < 0:
+            notebook.addTab(empty, "Empty Tab")
+
     def InputPageChanged(self, pname):
         pass
 
     def NewPlotFolder(self, name, pos=-1):
-        panel = QtWidgets.QWidget()
-        notebook = getattr(self.parent.ui, "pluginTabWidget", None)
+        panel = self._PluginPage()
+        notebook = self._get_plugin_tab_widget()
         if notebook is None:
             notebook = getattr(self.parent.ui, "plotTabWidget", None)
+        else:
+            empty = self._get_plugin_empty_tab()
+            if empty is not None and notebook.count() == 1 and notebook.widget(0) is empty:
+                self._remove_plugin_empty_tab(notebook)
         if notebook is not None:
             notebook.addTab(panel, name)
         self.plot_pages.append(panel)
         return panel
 
     def NewInputFolder(self, name, pos=-1):
-        panel = QtWidgets.QWidget()
+        panel = self._PluginPage()
         notebook = getattr(self.parent.ui, "inputTabWidget", None)
         if notebook is not None:
             notebook.addTab(panel, name)
@@ -56,8 +113,10 @@ class Template:
         return panel
 
     def NewDataFolder(self, name, pos=-1):
-        panel = QtWidgets.QWidget()
-        notebook = getattr(self.parent.ui, "leftTabWidget", None)
+        panel = self._PluginPage()
+        notebook = getattr(self.parent.ui, "leftPluginTabWidget", None)
+        if notebook is None:
+            notebook = getattr(self.parent.ui, "leftTabWidget", None)
         if notebook is not None:
             notebook.addTab(panel, name)
         self.data_pages.append(panel)
@@ -129,11 +188,16 @@ class Template:
     def Remove(self):
         plot_nb = getattr(self.parent.ui, "pluginTabWidget", None) or getattr(self.parent.ui, "plotTabWidget", None)
         input_nb = getattr(self.parent.ui, "inputTabWidget", None)
-        data_nb = getattr(self.parent.ui, "leftTabWidget", None)
+        data_nb = getattr(self.parent.ui, "leftPluginTabWidget", None)
+        if data_nb is None:
+            data_nb = getattr(self.parent.ui, "leftTabWidget", None)
 
         for panel in self.plot_pages:
             if plot_nb is None:
                 continue
+            if plot_nb is self._get_plugin_tab_widget():
+                if self._plugin_tab_count(plot_nb) == 1 and plot_nb.indexOf(panel) >= 0:
+                    self._ensure_plugin_empty_tab(plot_nb)
             idx = plot_nb.indexOf(panel)
             if idx >= 0:
                 plot_nb.removeTab(idx)

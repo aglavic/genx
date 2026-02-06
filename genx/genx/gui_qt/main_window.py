@@ -19,10 +19,6 @@ from .message_dialogs import ShowQuestionDialog, ShowNotificationDialog
 from ..core import config as conf_mod
 from ..core.colors import COLOR_CYCLES
 from ..core.custom_logging import iprint, numpy_set_options
-from . import solvergui
-from . import add_on_framework as add_on
-from .parametergrid import ParameterGrid
-#from ..plugins import add_on_framework as add_on
 from ..version import __version__ as program_version
 
 _path = os.path.dirname(__file__)
@@ -63,9 +59,7 @@ if not os.path.exists(os.path.join(config_path, "genx.conf")):
 manual_url = "https://aglavic.github.io/genx/doc/"
 homepage_url = "https://aglavic.github.io/genx/"
 
-
-from .main_window_ui import Ui_GenxMainWindowUI
-from . import genx_resources_rc  # noqa: F401
+from . import genx_resources_rc
 
 @dataclass
 class GUIConfig(conf_mod.BaseConfig):
@@ -75,6 +69,7 @@ class GUIConfig(conf_mod.BaseConfig):
     vsplit: int = 300
     hsplit: int = 400
     psplit: int = 550
+    lsplit: int = 300
     solver_update_time: float = 1.5
     editor: str = None
     last_update_check: float = 0.0
@@ -90,6 +85,13 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     opt: GUIConfig
 
     def __init__(self, *, filename: Optional[str] = None):
+        self._splash = None
+        self._splash_base_pixmap = None
+        self._start_splash()
+        self._update_splash("initializing modules...", progress=0.0)
+        self._preload_numba_modules()
+        self._update_splash("creating main window...", progress=0.7)
+
         self._init_phase = True
         self._startup_filename = filename
         self._logging_dialogs = []
@@ -104,16 +106,19 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         debug("starting setup of MainFrame")
         QtWidgets.QMainWindow.__init__(self)
 
-
-
+        from .main_window_ui import Ui_GenxMainWindowUI
         self.ui = Ui_GenxMainWindowUI()
         self.ui.setupUi(self)
+
+        self._update_splash("creating main window....", progress=0.75)
 
         self._install_status_update_hook()
         self._setup_data_view()
         self._setup_window_basics()
+        self._update_splash("creating main window.....", progress=0.85)
         self._setup_app_exception_dialogs()
         self._setup_toolbar_icon_sizes()
+        self._update_splash("creating main window......", progress=0.95)
 
         # Apply window size immediately (safe)
         self.resize(int(self.opt.hsize), int(self.opt.vsize))
@@ -129,6 +134,100 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     # ----------------------------
     # Core setup helpers
     # ----------------------------
+
+    def _start_splash(self) -> None:
+        app = QtWidgets.QApplication.instance()
+        if app is None:
+            return
+        pixmap = QtGui.QPixmap(":/main_gui/genx.png")
+        if pixmap.isNull():
+            pixmap = QtGui.QPixmap(400, 400)
+            pixmap.fill(QtGui.QColor(255, 255, 255))
+        else:
+            pixmap = pixmap.scaled(400, 400, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+
+        splash = QtWidgets.QSplashScreen(pixmap, QtCore.Qt.WindowStaysOnTopHint)
+        splash.show()
+        app.processEvents()
+        try:
+            import pyi_splash
+
+            pyi_splash.close()
+        except ImportError:
+            pass
+
+        self._splash = splash
+        self._splash_base_pixmap = pixmap
+
+    def _update_splash(self, text: str, progress: float = 0.0) -> None:
+        if self._splash is None or self._splash_base_pixmap is None:
+            return
+        pixmap = QtGui.QPixmap(self._splash_base_pixmap)
+        painter = QtGui.QPainter(pixmap)
+        font = QtWidgets.QApplication.font()
+        painter.setFont(font)
+        metrics = QtGui.QFontMetrics(font)
+        bar_height = metrics.height() + 4
+        margin = max(10, int(pixmap.width() * 0.075))
+        bar_width = pixmap.width() - 2 * margin
+        painter.fillRect(margin, 0, bar_width, bar_height, QtGui.QColor(255, 255, 255))
+        if progress > 0.0:
+            filled = int(bar_width * min(progress, 1.0))
+            painter.fillRect(margin, 0, filled, bar_height, QtGui.QColor(252, 175, 62))
+        painter.setPen(QtGui.QColor(0, 0, 0))
+        text_width = metrics.horizontalAdvance(text)
+        painter.drawText((pixmap.width() - text_width) // 2, metrics.ascent() + 2, text)
+        painter.end()
+        self._splash.setPixmap(pixmap)
+        self._splash.show()
+        QtWidgets.QApplication.processEvents()
+
+    def _finish_splash(self) -> None:
+        if self._splash is None:
+            return
+        self._update_splash("Done.", progress=1.0)
+        self._splash.finish(self)
+        self._splash = None
+        self._splash_base_pixmap = None
+
+    def _preload_numba_modules(self) -> None:
+        from ..models.lib import USE_NUMBA
+
+        if not USE_NUMBA:
+            return
+        try:
+            import numba
+        except ImportError:
+            return
+
+        from ..models.lib.numba_integration import configure_numba
+
+        configure_numba()
+
+        import inspect
+
+        real_jit = numba.jit
+
+        class UpdateJit:
+            update_counter = 1
+
+            def __call__(self, *args, **opts):
+                if inspect.stack()[1][3] != "<lambda>":
+                    self._update_status(
+                        f"compiling numba functions {self.update_counter}/22",
+                        0.0 + 0.7 * (self.update_counter - 1) / 22.0,
+                    )
+                    self.update_counter += 1
+                return real_jit(*args, **opts)
+
+            def __init__(self, update_status):
+                self._update_status = update_status
+
+        numba.jit = UpdateJit(self._update_splash)
+        try:
+            from ..models.lib import instrument_numba, neutron_numba, offspec, paratt_numba, surface_scattering
+        finally:
+            numba.jit = real_jit
 
     def _setup_window_basics(self) -> None:
         self.setWindowTitle(f"GenX {program_version}")
@@ -163,7 +262,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         data_list_ctrl.list_ctrl.data_list_event.connect(data_grid_panel.on_data_list_event)
 
     def _setup_solver_gui(self) -> None:
-        self.model_control = solvergui.ModelControlGUI(self)
+        from .solvergui import ModelControlGUI
+        self.model_control = ModelControlGUI(self)
         self.model_control.set_update_min_time(self.opt.solver_update_time)
 
         data_list_ctrl = getattr(self.ui, "dataListControl", None)
@@ -200,22 +300,24 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         if param_grid is None:
             layout = getattr(self.ui, "inputGridLayout", None)
             if layout is not None:
+                from .parametergrid import ParameterGrid
                 param_grid = ParameterGrid(self)
                 layout.addWidget(param_grid)
         if param_grid is not None:
             self.paramter_grid = param_grid
+            from .solvergui import SetParameterValueEvent, MoveParameterEvent
             param_grid.SetParameters(self.model_control.get_model_params())
             param_grid.SetFOMFunctions(self.model_control.ProjectEvals, self.model_control.ScanParameter)
             param_grid.SetEvalFunc(self.model_control.eval_in_model)
             param_grid.SetSimulateFunc(self.simulate)
             param_grid.set_parameter_value.connect(
                 lambda row, col, value: self.model_control.OnSetParameterValue(
-                    solvergui.SetParameterValueEvent(row=row, col=col, value=value)
+                    SetParameterValueEvent(row=row, col=col, value=value)
                 )
             )
             param_grid.move_parameter.connect(
                 lambda row, step: self.model_control.OnMoveParameter(
-                    solvergui.MoveParameterEvent(row=row, step=step)
+                    MoveParameterEvent(row=row, step=step)
                 )
             )
             param_grid.insert_parameter.connect(self.model_control.OnInsertParameter)
@@ -227,7 +329,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         menu_plugins = getattr(self.ui, "menuPlugins", None)
         if menu_plugins is None:
             return
-        self.plugin_control = add_on.PluginController(self, menu_plugins)
+        from . import add_on_framework
+        self.plugin_control = add_on_framework.PluginController(self, menu_plugins)
         self.plugin_control.LoadDefaultPlugins()
 
     def _on_parameter_grid_change(self, permanent_change: bool) -> None:
@@ -353,7 +456,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             second = max(50, int(total - first))
             splitter.setSizes([first, second])
 
-        # mainSplitter: leftTabWidget | rightSplitter
+        # mainSplitter: leftSplitter | rightSplitter
         _set_splitter_sizes(self.ui.mainSplitter, self.opt.vsplit)
 
         # rightSplitter: plotSplitter | inputTabWidget
@@ -361,6 +464,9 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
         # plotSplitter: plotTabWidget | pluginTabWidget
         _set_splitter_sizes(self.ui.plotSplitter, self.opt.psplit)
+
+        # leftSplitter: leftTabWidget | leftPluginTabWidget
+        _set_splitter_sizes(self.ui.leftSplitter, self.opt.lsplit)
 
     def _store_gui_config_from_widgets(self) -> None:
         """
@@ -377,6 +483,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.opt.vsplit = _first_size(self.ui.mainSplitter)
         self.opt.hsplit = _first_size(self.ui.rightSplitter)
         self.opt.psplit = _first_size(self.ui.plotSplitter)
+        self.opt.lsplit = _first_size(self.ui.leftSplitter)
 
     def _setup_app_exception_dialogs(self) -> None:
         app = QtWidgets.QApplication.instance()
@@ -911,6 +1018,7 @@ def start_qt_app(*, filename: Optional[str], debug: bool = False) -> None:
 
     win = GenxMainWindow(filename=filename)
     win.show()
+    win._finish_splash()
     if time.time() - win.opt.last_update_check > (7 * 24 * 3600):
         QtCore.QTimer.singleShot(1000, win.check_for_update)
 

@@ -92,6 +92,7 @@ class PlotPanel(Configurable, QtWidgets.QWidget):
         debug("start init PlotPanel")
         QtWidgets.QWidget.__init__(self, parent, **kwargs)
         Configurable.__init__(self, config_class)
+        self.setAutoFillBackground(True)
         if dpi is None:
             dpi = 96.0
         self.parent = parent
@@ -146,11 +147,8 @@ class PlotPanel(Configurable, QtWidgets.QWidget):
     def SetColor(self, rgbtuple=None):
         """Set the figure and canvas color to be the same."""
         if not rgbtuple:
-            if self.parent is not None:
-                rgb = self.parent.palette().color(self.parent.backgroundRole())
-                rgbtuple = (rgb.red(), rgb.green(), rgb.blue())
-            else:
-                rgbtuple = (240, 240, 240)
+            rgb = self.parent.palette().color(self.parent.backgroundRole())
+            rgbtuple = (rgb.red(), rgb.green(), rgb.blue())
         col = [c / 255.0 for c in rgbtuple]
         self.figure.set_facecolor(col)
         self.figure.set_edgecolor(col)

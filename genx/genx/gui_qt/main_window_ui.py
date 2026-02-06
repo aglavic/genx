@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.3
+## Created by: Qt User Interface Compiler version 6.9.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,23 +16,25 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
-    QSizePolicy, QSplitter, QStatusBar, QTabWidget,
-    QToolBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QFrame, QMainWindow, QMenu,
+    QMenuBar, QSizePolicy, QSplitter, QStatusBar,
+    QTabWidget, QToolBar, QVBoxLayout, QWidget)
 
 from genx.gui_qt.data_grid_panel import DataGridPanel
 from genx.gui_qt.datalist import DataListControl
 from genx.gui_qt.parametergrid import ParameterGrid
 from genx.gui_qt.plotpanel import (DataPlotPanel, ErrorPlotPanel, FomScanPlotPanel, ParsPlotPanel)
 from genx.gui_qt.script_editor import GenxScriptEditor
+from . import genx_resources_rc
 
 class Ui_GenxMainWindowUI(object):
     def setupUi(self, GenxMainWindowUI):
         if not GenxMainWindowUI.objectName():
             GenxMainWindowUI.setObjectName(u"GenxMainWindowUI")
+        GenxMainWindowUI.resize(1180, 870)
         icon = QIcon()
-        icon.addFile(u":/main_gui/genx.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        icon.addFile(u":/main_gui/genx.png", QSize(), QIcon.Mode.Normal, QIcon.State.On)
+        icon.addFile(u":/main_gui/genx.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u":/main_gui/genx.ico", QSize(), QIcon.Mode.Normal, QIcon.State.On)
         GenxMainWindowUI.setWindowIcon(icon)
         self.actionNewModel = QAction(GenxMainWindowUI)
         self.actionNewModel.setObjectName(u"actionNewModel")
@@ -228,8 +230,13 @@ class Ui_GenxMainWindowUI(object):
         self.centralLayout.setContentsMargins(0, 0, 0, 0)
         self.mainSplitter = QSplitter(self.centralwidget)
         self.mainSplitter.setObjectName(u"mainSplitter")
+        self.mainSplitter.setFrameShape(QFrame.StyledPanel)
+        self.mainSplitter.setFrameShadow(QFrame.Sunken)
         self.mainSplitter.setOrientation(Qt.Horizontal)
-        self.leftTabWidget = QTabWidget(self.mainSplitter)
+        self.leftSplitter = QSplitter(self.mainSplitter)
+        self.leftSplitter.setObjectName(u"leftSplitter")
+        self.leftSplitter.setOrientation(Qt.Vertical)
+        self.leftTabWidget = QTabWidget(self.leftSplitter)
         self.leftTabWidget.setObjectName(u"leftTabWidget")
         self.tabData = QWidget()
         self.tabData.setObjectName(u"tabData")
@@ -253,16 +260,43 @@ class Ui_GenxMainWindowUI(object):
         self.viewTabLayout.addWidget(self.dataGridPanel)
 
         self.leftTabWidget.addTab(self.tabView, "")
-        self.mainSplitter.addWidget(self.leftTabWidget)
+        self.leftSplitter.addWidget(self.leftTabWidget)
+        self.leftPluginTabFrame = QFrame(self.leftSplitter)
+        self.leftPluginTabFrame.setObjectName(u"leftPluginTabFrame")
+        self.leftPluginTabFrame.setFrameShape(QFrame.StyledPanel)
+        self.leftPluginTabFrame.setFrameShadow(QFrame.Sunken)
+        self.leftPluginTabFrameLayout = QVBoxLayout(self.leftPluginTabFrame)
+        self.leftPluginTabFrameLayout.setObjectName(u"leftPluginTabFrameLayout")
+        self.leftPluginTabFrameLayout.setContentsMargins(0, 0, 0, 0)
+        self.leftPluginTabWidget = QTabWidget(self.leftPluginTabFrame)
+        self.leftPluginTabWidget.setObjectName(u"leftPluginTabWidget")
+        self.leftPluginTabWidget.setTabPosition(QTabWidget.North)
+        self.leftPluginTabWidget.setDocumentMode(True)
+        self.leftPluginTabWidget.setMovable(True)
+
+        self.leftPluginTabFrameLayout.addWidget(self.leftPluginTabWidget)
+
+        self.leftSplitter.addWidget(self.leftPluginTabFrame)
+        self.mainSplitter.addWidget(self.leftSplitter)
         self.rightSplitter = QSplitter(self.mainSplitter)
         self.rightSplitter.setObjectName(u"rightSplitter")
         self.rightSplitter.setOrientation(Qt.Vertical)
         self.plotSplitter = QSplitter(self.rightSplitter)
         self.plotSplitter.setObjectName(u"plotSplitter")
         self.plotSplitter.setOrientation(Qt.Horizontal)
-        self.plotTabWidget = QTabWidget(self.plotSplitter)
+        self.plotTabFrame = QFrame(self.plotSplitter)
+        self.plotTabFrame.setObjectName(u"plotTabFrame")
+        self.plotTabFrame.setFrameShape(QFrame.WinPanel)
+        self.plotTabFrame.setFrameShadow(QFrame.Raised)
+        self.plotTabFrame.setLineWidth(3)
+        self.plotTabFrameLayout = QVBoxLayout(self.plotTabFrame)
+        self.plotTabFrameLayout.setObjectName(u"plotTabFrameLayout")
+        self.plotTabFrameLayout.setContentsMargins(0, 0, 0, 0)
+        self.plotTabWidget = QTabWidget(self.plotTabFrame)
         self.plotTabWidget.setObjectName(u"plotTabWidget")
         self.plotTabWidget.setTabPosition(QTabWidget.South)
+        self.plotTabWidget.setDocumentMode(True)
+        self.plotTabWidget.setMovable(True)
         self.plotTabData = QWidget()
         self.plotTabData.setObjectName(u"plotTabData")
         self.plotDataLayout = QVBoxLayout(self.plotTabData)
@@ -307,17 +341,33 @@ class Ui_GenxMainWindowUI(object):
         self.plotFomScansLayout.addWidget(self.plotFomScansPanel)
 
         self.plotTabWidget.addTab(self.plotTabFomScans, "")
-        self.plotSplitter.addWidget(self.plotTabWidget)
-        self.pluginTabWidget = QTabWidget(self.plotSplitter)
+
+        self.plotTabFrameLayout.addWidget(self.plotTabWidget)
+
+        self.plotSplitter.addWidget(self.plotTabFrame)
+        self.pluginTabFrame = QFrame(self.plotSplitter)
+        self.pluginTabFrame.setObjectName(u"pluginTabFrame")
+        self.pluginTabFrame.setFrameShape(QFrame.WinPanel)
+        self.pluginTabFrame.setFrameShadow(QFrame.Raised)
+        self.pluginTabFrame.setLineWidth(3)
+        self.pluginTabFrameLayout = QVBoxLayout(self.pluginTabFrame)
+        self.pluginTabFrameLayout.setObjectName(u"pluginTabFrameLayout")
+        self.pluginTabFrameLayout.setContentsMargins(0, 0, 0, 0)
+        self.pluginTabWidget = QTabWidget(self.pluginTabFrame)
         self.pluginTabWidget.setObjectName(u"pluginTabWidget")
         self.pluginTabWidget.setTabPosition(QTabWidget.South)
+        self.pluginTabWidget.setDocumentMode(True)
+        self.pluginTabWidget.setMovable(True)
         self.pluginTabEmpty = QWidget()
         self.pluginTabEmpty.setObjectName(u"pluginTabEmpty")
         self.pluginEmptyLayout = QVBoxLayout(self.pluginTabEmpty)
         self.pluginEmptyLayout.setObjectName(u"pluginEmptyLayout")
         self.pluginEmptyLayout.setContentsMargins(0, 0, 0, 0)
         self.pluginTabWidget.addTab(self.pluginTabEmpty, "")
-        self.plotSplitter.addWidget(self.pluginTabWidget)
+
+        self.pluginTabFrameLayout.addWidget(self.pluginTabWidget)
+
+        self.plotSplitter.addWidget(self.pluginTabFrame)
         self.rightSplitter.addWidget(self.plotSplitter)
         self.inputTabWidget = QTabWidget(self.rightSplitter)
         self.inputTabWidget.setObjectName(u"inputTabWidget")
@@ -352,6 +402,7 @@ class Ui_GenxMainWindowUI(object):
         GenxMainWindowUI.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(GenxMainWindowUI)
         self.menubar.setObjectName(u"menubar")
+        self.menubar.setGeometry(QRect(0, 0, 1180, 21))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuImport = QMenu(self.menuFile)
@@ -383,7 +434,7 @@ class Ui_GenxMainWindowUI(object):
         GenxMainWindowUI.setMenuBar(self.menubar)
         self.toolbarMain = QToolBar(GenxMainWindowUI)
         self.toolbarMain.setObjectName(u"toolbarMain")
-        GenxMainWindowUI.addToolBar(self.toolbarMain)
+        GenxMainWindowUI.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbarMain)
         self.statusbar = QStatusBar(GenxMainWindowUI)
         self.statusbar.setObjectName(u"statusbar")
         GenxMainWindowUI.setStatusBar(self.statusbar)

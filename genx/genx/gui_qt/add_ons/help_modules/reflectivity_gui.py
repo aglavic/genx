@@ -50,6 +50,10 @@ from .reflectivity_utils import SampleHandler, find_code_segment
 
 _set_func_prefix = "set"
 
+def _set_small_toolbar_icon_size(toolbar: QtWidgets.QToolBar) -> None:
+    base = QtWidgets.QApplication.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ToolBarIconSize)
+    toolbar.setIconSize(QtCore.QSize(int(base * 0.85), int(base * 0.85)))
+
 
 class _HtmlItemDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter, option, index):
@@ -302,6 +306,7 @@ class SamplePanel(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout(self)
         self.toolbar = QtWidgets.QToolBar(self)
+        _set_small_toolbar_icon_size(self.toolbar)
         self._setup_toolbar()
         layout.addWidget(self.toolbar, 0)
         self.listbox = MyHtmlListBox(self)
@@ -828,6 +833,7 @@ class DataParameterPanel(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout(self)
         self.toolbar = QtWidgets.QToolBar(self)
+        _set_small_toolbar_icon_size(self.toolbar)
         self._setup_toolbar()
         layout.addWidget(self.toolbar, 0)
         self.listbox = MyHtmlListBox(self)
