@@ -5,6 +5,7 @@ GUI support classes for the Reflectivity plug-in (Qt version).
 from typing import Callable, Dict, List, Union
 
 from PySide6 import QtCore, QtGui, QtWidgets
+from shiboken6 import isValid
 
 from genx.core.custom_logging import iprint
 from genx.gui_qt.utils import ShowQuestionDialog, ShowWarningDialog
@@ -171,6 +172,14 @@ class ReflClassEditor:
             self.par_vals[par_name] = value
             self.par_validators[par_name] = validator
 
+    def _show_help_dialog(self, parent: QtWidgets.QWidget) -> None:
+        if self.help_dialog and isValid(self.help_dialog):
+            return
+        self.help_dialog = ReflClassHelpDialog(parent, self.instance)
+        self.help_dialog.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self.help_dialog.destroyed.connect(lambda _=None: setattr(self, "help_dialog", None))
+        self.help_dialog.show()
+
     def extract_grid_params(self):
         if self.grid_parameters is None:
             return
@@ -213,7 +222,17 @@ class ReflClassEditor:
             groups=groups,
             units=units,
             editable_pars=self.par_editable,
+            group_boxes=True,
         )
+        help_btn = QtWidgets.QPushButton("Show Help", dlg)
+        help_btn.setStyleSheet("background-color: rgb(230, 230, 255);")
+        help_btn.clicked.connect(lambda: self._show_help_dialog(dlg))
+        help_row = QtWidgets.QHBoxLayout()
+        help_row.addStretch(1)
+        help_row.addWidget(help_btn)
+        layout = dlg.layout()
+        if layout is not None:
+            layout.insertLayout(0, help_row)
 
         res = dlg.ShowModal()
         if res == QtWidgets.QDialog.DialogCode.Accepted:
@@ -221,6 +240,9 @@ class ReflClassEditor:
             states = dlg.GetStates()
             self.update_object(vals, states)
             self.update_grid(vals, states)
+        if self.help_dialog and isValid(self.help_dialog):
+            self.help_dialog.close()
+            self.help_dialog = None
         dlg.close()
         return res == QtWidgets.QDialog.DialogCode.Accepted
 
@@ -475,6 +497,7 @@ class SamplePanel(QtWidgets.QWidget):
         editable, grid_parameters, model_inst_params, pars, validators, vals, groups, units = (
             self.ExtractInstrumentParams()
         )
+        old_insts = list(self.instruments.keys())
         dlg = ValidateFitNotebookDialog(
             self,
             pars,
@@ -484,7 +507,36 @@ class SamplePanel(QtWidgets.QWidget):
             groups=groups,
             units=units,
             editable_pars=editable,
+            fixed_pages=["inst"],
+            show_toolbar=True,
         )
+        help_btn = QtWidgets.QPushButton("Show Help", dlg)
+        help_btn.setStyleSheet("background-color: rgb(230, 230, 255);")
+        help_dialog = None
+
+        def show_help():
+            nonlocal help_dialog
+            if help_dialog and isValid(help_dialog):
+                return
+            try:
+                inst = self.model.Instrument()
+            except Exception:
+                inst = self.sampleh.sample.Instrument()
+            help_dialog = ReflClassHelpDialog(dlg, inst)
+            help_dialog.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+            def clear_help_dialog():
+                nonlocal help_dialog
+                help_dialog = None
+            help_dialog.destroyed.connect(clear_help_dialog)
+            help_dialog.show()
+
+        help_btn.clicked.connect(show_help)
+        help_row = QtWidgets.QHBoxLayout()
+        help_row.addStretch(1)
+        help_row.addWidget(help_btn)
+        layout = dlg.layout()
+        if layout is not None:
+            layout.insertLayout(0, help_row)
         if dlg.ShowModal() == QtWidgets.QDialog.DialogCode.Accepted:
             old_vals = vals
             vals = dlg.GetValues()
@@ -492,8 +544,21 @@ class SamplePanel(QtWidgets.QWidget):
             self.UpdateInstrumentConfiguration(
                 editable, eval_func, grid_parameters, model_inst_params, old_vals, states, vals
             )
+            for inst_name in old_insts:
+                if inst_name not in list(vals.keys()):
+                    for par in pars:
+                        if editable[inst_name][par] > 0:
+                            func_name = inst_name + "." + _set_func_prefix + par.capitalize()
+                            grid_parameters.set_fit_state_by_name(func_name, 0, 0, 0, 0)
             self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
             self.Update()
+            for change in dlg.GetChanges():
+                if change[0] != "" and change[1] != "":
+                    self.plugin.InstrumentNameChange(change[0], change[1])
+                elif change[1] == "":
+                    self.plugin.InstrumentNameChange(change[0], "inst")
+        if help_dialog and isValid(help_dialog):
+            help_dialog.close()
         dlg.close()
 
     def UpdateInstrumentConfiguration(
@@ -542,7 +607,10 @@ class SamplePanel(QtWidgets.QWidget):
             for name, value_info in inst._parameter_info().items():
                 if not states[inst_name][name]:
                     orig_type = value_info.type
-                    e_value = vals[inst_name][name] if orig_type is str else eval_func(vals[inst_name][name])
+                    if orig_type is str or issubclass(orig_type, AltStrEnum):
+                        e_value = vals[inst_name][name]
+                    else:
+                        e_value = eval_func(vals[inst_name][name])
                     setattr(self.instruments[inst_name], name, orig_type(e_value))
                 elif states[inst_name][name] != 3:
                     setattr(self.instruments[inst_name], name, old_vals[inst_name][name])
@@ -570,13 +638,14 @@ class SamplePanel(QtWidgets.QWidget):
         vals = {}
         editable = {}
         grid_parameters = self.plugin.GetModel().get_parameters()
+        string_choices = getattr(self.model, "instrument_string_choices", {}) or {}
         for inst_name in self.instruments:
             vals[inst_name] = {}
             editable[inst_name] = {}
         pars = []
         model_inst_params = self.model.InstrumentParameters
         for item in model_inst_params:
-            validators[item] = self.model.instrument_string_choices.get(item, FloatObjectValidator())
+            validators[item] = string_choices.get(item, FloatObjectValidator())
             for inst_name in self.instruments:
                 val = getattr(self.instruments[inst_name], item)
                 vals[inst_name][item] = val
@@ -595,25 +664,48 @@ class SamplePanel(QtWidgets.QWidget):
         vals = {}
         editable = {}
         grid_parameters = self.plugin.GetModel().get_parameters()
+        pars = []
+        model_inst_params = []
         for inst_name in self.instruments:
             vals[inst_name] = {}
             editable[inst_name] = {}
-        pars = []
-        inst = self.model.Instrument()
-        for name, value_info in inst._parameter_info().items():
-            validators[name] = self.model.instrument_string_choices.get(name, FloatObjectValidator())
-            for inst_name in self.instruments:
+            inst = self.instruments[inst_name]
+            groups = inst.Groups
+            units = getattr(inst, "Units", [])
+            for name, value_info in inst._parameter_info().items():
                 val = getattr(self.instruments[inst_name], name)
+                val, validator = self.get_validator(val, value_info)
+                model_inst_params.append(name)
                 vals[inst_name][name] = val
+                validators[name] = validator
                 func_name = inst_name + "." + _set_func_prefix + name.capitalize()
                 grid_value = grid_parameters.get_value_by_name(func_name)
                 editable[inst_name][name] = grid_parameters.get_fit_state_by_name(func_name)
                 if grid_value is not None:
                     vals[inst_name][name] = grid_value
-            pars.append(name)
-        groups = getattr(self.model, "InstrumentGroups", False)
-        units = getattr(self.model, "InstrumentUnits", False)
-        return editable, grid_parameters, inst._parameter_info(), pars, validators, vals, groups, units
+                pars.append(name)
+        return editable, grid_parameters, model_inst_params, pars, validators, vals, groups, units
+
+    def get_validator(self, val, value_info, eval_func=eval):
+        try:
+            val = value_info.type(val)
+        except Exception:
+            pass
+        if issubclass(value_info.type, AltStrEnum):
+            validator = [i.value for i in value_info.type]
+            val = str(val)
+        elif not isinstance(val, value_info.type):
+            # current value does not correspond to type, should have been converted on class creation
+            val = "set in script"
+            validator = ["set in script"]
+        elif value_info.type is complex or complex in getattr(value_info.type, "__args__", ()):
+            validator = ComplexObjectValidator(eval_func=eval_func)
+        elif value_info.type is bool:
+            validator = ["True", "False"]
+            val = repr(val)
+        else:
+            validator = FloatObjectValidator(eval_func=eval_func)
+        return val, validator
 
     def InsertLay(self, _evt=None):
         pos = self.listbox.GetSelection()
@@ -771,7 +863,15 @@ class SamplePanel(QtWidgets.QWidget):
         groups = getattr(self.model, "LayerGroups", False)
         units = getattr(self.model, "LayerUnits", False)
         dlg = ValidateFitDialog(
-            self, pars, vals, validators, title="Layer Editor", groups=groups, units=units, editable_pars=editable
+            self,
+            pars,
+            vals,
+            validators,
+            title="Layer Editor",
+            groups=groups,
+            units=units,
+            editable_pars=editable,
+            group_boxes=True,
         )
         sl = None
         if dlg.ShowModal() == QtWidgets.QDialog.DialogCode.Accepted:

@@ -12,7 +12,7 @@ from genx.model import Model
 from genx.models.lib.base import AltStrEnum
 from genx.models.lib.refl_base import ReflBase as ReflBaseNew
 from genx.parameters import Parameters
-from genx.plugins.utils import ShowQuestionDialog, ShowWarningDialog
+from ...utils import ShowQuestionDialog, ShowWarningDialog
 
 from . import reflectivity_images as images
 from .custom_dialog import (ComplexObjectValidator, FloatObjectValidator, NoMatchValidTextObjectValidator,

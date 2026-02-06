@@ -3,13 +3,16 @@ import sys
 import os
 import shutil
 import time
+import webbrowser
+import tempfile
+import subprocess
 from dataclasses import dataclass
 
 import platformdirs
 from logging import debug, info, warning
 from typing import Optional
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets, QtPrintSupport
 
 from ..version import __version__ as program_version
 from .exception_handling import CatchModelError, GuiExceptionHandler
@@ -85,6 +88,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     opt: GUIConfig
 
     def __init__(self, *, filename: Optional[str] = None):
+        self._setup_app_exception_dialogs()
         self._splash = None
         self._splash_base_pixmap = None
         self._start_splash()
@@ -96,6 +100,10 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self._startup_filename = filename
         self._logging_dialogs = []
         self._last_input_tab = None
+        self._help_dialogs = []
+        self._external_script_file = None
+        self._external_editor_proc = None
+        self._script_watch_timer = None
 
         # Load GUI config
         conf_mod.Configurable.__init__(self, GUIConfig)
@@ -116,7 +124,6 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self._setup_data_view()
         self._setup_window_basics()
         self._update_splash("creating main window.....", progress=0.85)
-        self._setup_app_exception_dialogs()
         self._setup_toolbar_icon_sizes()
         self._update_splash("creating main window......", progress=0.95)
 
@@ -333,6 +340,133 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.plugin_control = add_on_framework.PluginController(self, menu_plugins)
         self.plugin_control.LoadDefaultPlugins()
 
+    def _sync_model_to_ui(self, *, update_plugins: bool = True) -> None:
+        for panel in (
+            getattr(self.ui, "plotDataPanel", None),
+            getattr(self.ui, "plotFomPanel", None),
+            getattr(self.ui, "plotParsPanel", None),
+            getattr(self.ui, "plotFomScansPanel", None),
+        ):
+            if panel is not None and hasattr(panel, "ReadConfig"):
+                panel.ReadConfig()
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is not None and hasattr(param_grid, "ReadConfig"):
+            param_grid.ReadConfig()
+            param_grid.SetParameters(self.model_control.get_model_params(), permanent_change=False)
+        model = self.model_control.get_model()
+        data_list_ctrl = getattr(self.ui, "dataListControl", None)
+        if data_list_ctrl is not None:
+            data_list_ctrl.eh_external_new_model(model)
+        self.set_script_text(self.model_control.get_model_script())
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is not None and hasattr(editor, "EmptyUndoBuffer"):
+            editor.EmptyUndoBuffer()
+        self.model_control.ModelLoaded()
+        if update_plugins and hasattr(self, "plugin_control"):
+            self.plugin_control.OnOpenModel(None)
+
+    def _get_external_script_text(self) -> Optional[str]:
+        if not self._external_script_file:
+            return None
+        try:
+            return open(self._external_script_file, "r", encoding="utf-8").read()
+        except OSError:
+            return None
+
+    def _write_external_script_text(self, text: str) -> None:
+        if not self._external_script_file:
+            return
+        try:
+            open(self._external_script_file, "w", encoding="utf-8").write(text)
+        except OSError:
+            warning("Could not write external script file", exc_info=True)
+
+    def _start_external_script_watch(self) -> None:
+        if self._script_watch_timer is None:
+            self._script_watch_timer = QtCore.QTimer(self)
+            self._script_watch_timer.timeout.connect(self._check_external_script)
+        if not self._script_watch_timer.isActive():
+            self._script_watch_timer.start(1000)
+
+    def _stop_external_script_watch(self) -> None:
+        if self._script_watch_timer is not None:
+            self._script_watch_timer.stop()
+
+    def _check_external_script(self) -> None:
+        text = self._get_external_script_text()
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is None:
+            return
+        if text is not None and text.strip() != editor.toPlainText().strip():
+            self.set_script_text(text, from_external=True)
+            self.simulate()
+        if self._external_editor_proc and self._external_editor_proc.poll() is not None:
+            self._external_editor_proc = None
+            self._stop_external_script_watch()
+            res = ShowQuestionDialog(self, "Editor process exited, reactivate internal editor?", "Editor Closed")
+            if res:
+                self._deactivate_external_editing()
+            else:
+                self._start_external_script_watch()
+
+    def _open_external_editor(self) -> None:
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is None:
+            return
+        with tempfile.NamedTemporaryFile(mode="w", prefix="genx", suffix=".py", encoding="utf-8", delete=False) as sfile:
+            sfile.write(self.get_script_text())
+            self._external_script_file = sfile.name
+        if not self.opt.editor:
+            if not self._select_external_editor():
+                os.remove(self._external_script_file)
+                self._external_script_file = None
+                return
+        try:
+            proc = subprocess.Popen([self.opt.editor, self._external_script_file])
+        except (subprocess.SubprocessError, OSError):
+            os.remove(self._external_script_file)
+            self._external_script_file = None
+            self.opt.editor = None
+            warning("Could not open editor", exc_info=True)
+            return
+
+        editor.setReadOnly(True)
+        editor.setStyleSheet("QPlainTextEdit { background: #d2d2d2; }")
+        action = getattr(self.ui, "actionOpenInEditor", None)
+        if action is not None:
+            action.setText("Reactivate internal editor\tCtrl+E")
+        self._external_editor_proc = proc
+        self._start_external_script_watch()
+
+    def _deactivate_external_editing(self) -> None:
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is not None:
+            editor.setReadOnly(False)
+            editor.setStyleSheet("")
+        action = getattr(self.ui, "actionOpenInEditor", None)
+        if action is not None:
+            action.setText("Open in Editor\tCtrl+E")
+        self._stop_external_script_watch()
+        self._external_editor_proc = None
+        if self._external_script_file:
+            try:
+                os.remove(self._external_script_file)
+            except OSError:
+                warning("Could not remove external script file", exc_info=True)
+            self._external_script_file = None
+
+    def _select_external_editor(self) -> bool:
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Select Editor Executable",
+            "",
+            "Executable (*.exe);;All files (*.*)",
+        )
+        if not path:
+            return False
+        self.opt.editor = path
+        return True
+
     def _on_parameter_grid_change(self, permanent_change: bool) -> None:
         if self._init_phase:
             return
@@ -363,12 +497,14 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         if hasattr(self, "plugin_control"):
             self.plugin_control.OnSimulate(event)
 
-    def set_script_text(self, text: str) -> None:
+    def set_script_text(self, text: str, from_external: bool = False) -> None:
         editor = getattr(self.ui, "scriptEditor", None)
         if editor is None:
             return
         if editor.toPlainText() == text:
             return
+        if not from_external and self._external_script_file is not None:
+            self._write_external_script_text(text)
         cursor = editor.textCursor()
         vscroll = editor.verticalScrollBar().value()
         hscroll = editor.horizontalScrollBar().value()
@@ -382,6 +518,11 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         editor = getattr(self.ui, "scriptEditor", None)
         if editor is None:
             return ""
+        if self._external_script_file:
+            text = self._get_external_script_text()
+            if text is not None:
+                self.set_script_text(text, from_external=True)
+                return text
         return editor.toPlainText()
 
     def _get_data_list_ctrl(self):
@@ -487,8 +628,6 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def _setup_app_exception_dialogs(self) -> None:
         app = QtWidgets.QApplication.instance()
-        if app is None:
-            return
         handler = GuiExceptionHandler(app)
         logging.getLogger().addHandler(handler)
 
@@ -571,31 +710,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             self.model_control.load_file(path)
         if not mng.successful:
             return
-
-        for panel in (
-            getattr(self.ui, "plotDataPanel", None),
-            getattr(self.ui, "plotFomPanel", None),
-            getattr(self.ui, "plotParsPanel", None),
-            getattr(self.ui, "plotFomScansPanel", None),
-        ):
-            if panel is not None and hasattr(panel, "ReadConfig"):
-                panel.ReadConfig()
-        param_grid = getattr(self, "paramter_grid", None)
-        if param_grid is not None and hasattr(param_grid, "ReadConfig"):
-            param_grid.ReadConfig()
-            param_grid.SetParameters(self.model_control.get_model_params(), permanent_change=False)
-
-        model = self.model_control.get_model()
-        data_list_ctrl = getattr(self.ui, "dataListControl", None)
-        if data_list_ctrl is not None:
-            data_list_ctrl.eh_external_new_model(model)
-        self.set_script_text(self.model_control.get_model_script())
-        editor = getattr(self.ui, "scriptEditor", None)
-        if editor is not None and hasattr(editor, "EmptyUndoBuffer"):
-            editor.EmptyUndoBuffer()
-        self.model_control.ModelLoaded()
-        if hasattr(self, "plugin_control"):
-            self.plugin_control.OnOpenModel(None)
+        self._sync_model_to_ui(update_plugins=True)
         self._status_update("Model loaded from file")
 
     def save_model(self) -> None:
@@ -800,6 +915,121 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         pass
 
     @QtCore.Slot(bool)
+    def on_actionImportTable_triggered(self, checked: bool = False) -> None:
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Import table",
+            "",
+            "Table File (*.tab);;All files (*.*)",
+        )
+        if not path:
+            return
+        with self.catch_error(action="import_table", step=f"importing table {os.path.basename(path)}") as mgr:
+            self.model_control.import_table(path)
+        if not mgr.successful:
+            return
+        self._sync_model_to_ui(update_plugins=False)
+        self._status_update("Table imported from file")
+
+    @QtCore.Slot(bool)
+    def on_actionImportScript_triggered(self, checked: bool = False) -> None:
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Import script",
+            "",
+            "Python files (*.py);;All files (*.*)",
+        )
+        if not path:
+            return
+        with self.catch_error(action="import_script", step=f"importing file {os.path.basename(path)}"):
+            self.model_control.import_script(path)
+        self._sync_model_to_ui(update_plugins=True)
+
+    @QtCore.Slot(bool)
+    def on_actionExportOrso_triggered(self, checked: bool = False) -> None:
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export data and model",
+            "",
+            "ORSO Text File (*.ort)",
+        )
+        if not path:
+            return
+        res = ShowQuestionDialog(
+            self,
+            "Convert TTH to Q (ORSO specification)?",
+            "Convert to Q",
+            yes_no=True,
+        )
+        with self.catch_error(action="export_orso", step=f"export file {os.path.basename(path)}"):
+            self.model_control.export_orso(path, convert_to_q=bool(res))
+
+    @QtCore.Slot(bool)
+    def on_actionExportData_triggered(self, checked: bool = False) -> None:
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export data",
+            "",
+            "Dat File (*.dat)",
+        )
+        if not path:
+            return
+        with self.catch_error(action="export_data", step=f"data file {os.path.basename(path)}"):
+            self.model_control.export_data(path)
+
+    @QtCore.Slot(bool)
+    def on_actionExportTable_triggered(self, checked: bool = False) -> None:
+        fname, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export table",
+            "",
+            "Table File (*.tab)",
+        )
+        if not fname:
+            return
+        base, ext = os.path.splitext(fname)
+        if ext == "":
+            ext = ".tab"
+        fname = base + ext
+        if os.path.exists(fname):
+            result = ShowQuestionDialog(
+                self,
+                f"The file {os.path.basename(fname)} already exists. Do you wish to overwrite it?",
+                "Overwrite?",
+                yes_no=True,
+            )
+            if not result:
+                return
+        with self.catch_error(action="export_table", step=f"table file {os.path.basename(fname)}"):
+            self.model_control.export_table(fname)
+
+    @QtCore.Slot(bool)
+    def on_actionExportScript_triggered(self, checked: bool = False) -> None:
+        fname, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export script",
+            "",
+            "Python File (*.py)",
+        )
+        if not fname:
+            return
+        base, ext = os.path.splitext(fname)
+        if ext == "":
+            ext = ".py"
+        fname = base + ext
+        if os.path.exists(fname):
+            result = ShowQuestionDialog(
+                self,
+                f"The file {os.path.basename(fname)} already exists. Do you wish to overwrite it?",
+                "Overwrite?",
+                yes_no=True,
+            )
+            if not result:
+                return
+        with self.catch_error(action="export_script", step=f"export file {os.path.basename(fname)}"):
+            self.model_control.export_script(fname)
+
+    @QtCore.Slot(bool)
     def on_actionImportData_triggered(self, checked: bool = False) -> None:
         ctrl = self._get_data_list_ctrl()
         if ctrl is not None:
@@ -924,10 +1154,90 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             panel.CopyToClipboard()
 
     @QtCore.Slot(bool)
+    def on_actionCopySimulation_triggered(self, checked: bool = False) -> None:
+        text_string = self.model_control.get_data_as_asciitable()
+        QtWidgets.QApplication.clipboard().setText(text_string)
+
+    @QtCore.Slot(bool)
+    def on_actionCopyTable_triggered(self, checked: bool = False) -> None:
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is None:
+            return
+        pars = getattr(param_grid, "_pars", None)
+        if pars is None or not hasattr(pars, "get_ascii_output"):
+            return
+        QtWidgets.QApplication.clipboard().setText(pars.get_ascii_output())
+
+    @QtCore.Slot(bool)
+    def on_actionFindReplace_triggered(self, checked: bool = False) -> None:
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is None:
+            return
+        find_text, ok = QtWidgets.QInputDialog.getText(self, "Find", "Find text:")
+        if not ok or not find_text:
+            return
+        action = QtWidgets.QMessageBox.question(
+            self,
+            "Find/Replace",
+            "Replace all occurrences?",
+            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
+        )
+        if action == QtWidgets.QMessageBox.StandardButton.Yes:
+            replace_text, ok = QtWidgets.QInputDialog.getText(self, "Replace", "Replace with:")
+            if not ok:
+                return
+            text = editor.toPlainText()
+            if find_text not in text:
+                ShowNotificationDialog(self, f"Could not find text {find_text}")
+                return
+            self.set_script_text(text.replace(find_text, replace_text))
+        else:
+            if not editor.find(find_text):
+                ShowNotificationDialog(self, f"Could not find text {find_text}")
+
+    @QtCore.Slot(bool)
+    def on_actionOpenInEditor_triggered(self, checked: bool = False) -> None:
+        if self._external_script_file is not None:
+            self._deactivate_external_editing()
+            return
+        self._open_external_editor()
+
+    @QtCore.Slot(bool)
     def on_actionPrintPlot_triggered(self, checked: bool = False) -> None:
         panel = self._get_active_plot_panel()
         if panel is not None:
             panel.Print()
+
+    @QtCore.Slot(bool)
+    def on_actionPrintGrid_triggered(self, checked: bool = False) -> None:
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is None:
+            return
+        printer = QtPrintSupport.QPrinter()
+        dlg = QtPrintSupport.QPrintDialog(printer, self)
+        if dlg.exec() != QtWidgets.QDialog.DialogCode.Accepted:
+            return
+        painter = QtGui.QPainter(printer)
+        if not painter.isActive():
+            return
+        rect = painter.viewport()
+        size = param_grid.size()
+        if size.width() > 0 and size.height() > 0:
+            scale = min(rect.width() / size.width(), rect.height() / size.height())
+            painter.scale(scale, scale)
+        param_grid.render(painter)
+        painter.end()
+
+    @QtCore.Slot(bool)
+    def on_actionPrintScript_triggered(self, checked: bool = False) -> None:
+        editor = getattr(self.ui, "scriptEditor", None)
+        if editor is None:
+            return
+        printer = QtPrintSupport.QPrinter()
+        dlg = QtPrintSupport.QPrintDialog(printer, self)
+        if dlg.exec() != QtWidgets.QDialog.DialogCode.Accepted:
+            return
+        editor.print(printer)
 
     @QtCore.Slot(bool)
     def on_actionPublishPlot_triggered(self, checked: bool = False) -> None:
@@ -956,6 +1266,14 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             ctrl.OnImportSettings()
 
     @QtCore.Slot(bool)
+    def on_actionSelectExternalEditor_triggered(self, checked: bool = False) -> None:
+        self._select_external_editor()
+
+    @QtCore.Slot(bool)
+    def on_actionStartupProfile_triggered(self, checked: bool = False) -> None:
+        ShowNotificationDialog(self, "Startup profile dialog is not yet available in the Qt UI.")
+
+    @QtCore.Slot(bool)
     def on_actionBatchDialog_triggered(self, checked: bool = False) -> None:
         from .batch_dialog import BatchDialog
 
@@ -971,6 +1289,135 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
         dia = StatisticalAnalysisDialog(self, self.model_control.get_model())
         dia.exec()
+
+    @QtCore.Slot(bool)
+    def on_actionCalcErrorBars_triggered(self, checked: bool = False) -> None:
+        with self.catch_error(action="calc_error_bars", step="calculating errorbars"):
+            error_values = self.model_control.CalcErrorBars()
+            self.model_control.set_error_pars(error_values)
+            param_grid = getattr(self, "paramter_grid", None)
+            if param_grid is not None:
+                param_grid.SetParameters(self.model_control.get_parameters())
+            self._status_update("Errorbars calculated")
+
+    @QtCore.Slot(bool)
+    def on_actionOpenExamples_triggered(self, checked: bool = False) -> None:
+        examples_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "examples", "")
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Open Example",
+            examples_dir,
+            "GenX File (*.hgx *.gx *.ort *.orb)",
+        )
+        if not path:
+            return
+        if path.endswith(".ort") or path.endswith(".orb"):
+            ShowNotificationDialog(self, "ORSO file import is not yet available in the Qt UI.")
+            return
+        self.open_model(path)
+
+    @QtCore.Slot(bool)
+    def on_actionOpenManual_triggered(self, checked: bool = False) -> None:
+        webbrowser.open_new(manual_url)
+
+    @QtCore.Slot(bool)
+    def on_actionOpenHomepage_triggered(self, checked: bool = False) -> None:
+        webbrowser.open_new(homepage_url)
+
+    @QtCore.Slot(bool)
+    def on_actionAbout_triggered(self, checked: bool = False) -> None:
+        import platform
+
+        versions = []
+        missing = []
+        try:
+            import numpy
+            versions.append(f"NumPy: {numpy.__version__}")
+        except ImportError:
+            missing.append("numpy")
+        try:
+            import scipy
+            versions.append(f"SciPy: {scipy.__version__}")
+        except ImportError:
+            missing.append("scipy")
+        try:
+            import matplotlib
+            versions.append(f"Matplotlib: {matplotlib.__version__}")
+        except ImportError:
+            missing.append("matplotlib")
+        try:
+            import orsopy
+            versions.append(f"ORSOpy: {orsopy.__version__}")
+        except ImportError:
+            missing.append("orsopy")
+        try:
+            import numba
+            versions.append(f"Numba: {numba.__version__}")
+        except ImportError:
+            missing.append("numba")
+        try:
+            import vtk
+            versions.append(f"VTK: {vtk.__version__}")
+        except ImportError:
+            missing.append("vtk")
+
+        info_lines = [
+            f"GenX {program_version}",
+            f"Python {platform.python_version()}",
+        ] + versions
+        if missing:
+            info_lines.append("Missing: " + ", ".join(sorted(missing)))
+        QtWidgets.QMessageBox.about(self, "About GenX", "\n".join(info_lines))
+
+    @QtCore.Slot(bool)
+    def on_actionModelsHelp_triggered(self, checked: bool = False) -> None:
+        from .help import PluginHelpDialog
+
+        dlg = PluginHelpDialog(self, "models", title="Models help")
+        dlg.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self._help_dialogs.append(dlg)
+        dlg.destroyed.connect(lambda _=None, d=dlg: self._help_dialogs.remove(d) if d in self._help_dialogs else None)
+        dlg.show()
+
+    @QtCore.Slot(bool)
+    def on_actionFomHelp_triggered(self, checked: bool = False) -> None:
+        from .help import PluginHelpDialog
+
+        dlg = PluginHelpDialog(self, "fom_funcs", title="FOM functions help")
+        dlg.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self._help_dialogs.append(dlg)
+        dlg.destroyed.connect(lambda _=None, d=dlg: self._help_dialogs.remove(d) if d in self._help_dialogs else None)
+        dlg.show()
+
+    @QtCore.Slot(bool)
+    def on_actionPluginsHelp_triggered(self, checked: bool = False) -> None:
+        from .help import PluginHelpDialog
+
+        dlg = PluginHelpDialog(self, "gui_qt.add_ons", title="Plugins help")
+        dlg.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self._help_dialogs.append(dlg)
+        dlg.destroyed.connect(lambda _=None, d=dlg: self._help_dialogs.remove(d) if d in self._help_dialogs else None)
+        dlg.show()
+
+    @QtCore.Slot(bool)
+    def on_actionDataLoadersHelp_triggered(self, checked: bool = False) -> None:
+        from .help import PluginHelpDialog
+
+        dlg = PluginHelpDialog(self, "plugins.data_loaders", title="Data loaders help")
+        dlg.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self._help_dialogs.append(dlg)
+        dlg.destroyed.connect(lambda _=None, d=dlg: self._help_dialogs.remove(d) if d in self._help_dialogs else None)
+        dlg.show()
+
+    @QtCore.Slot(bool)
+    def on_actionAnalyzeFit_triggered(self, checked: bool = False) -> None:
+        warning("Event handler `on_actionAnalyzeFit_triggered` not implemented")
+
+    @QtCore.Slot(bool)
+    def on_actionValueAsSlider_triggered(self, checked: bool = False) -> None:
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is not None:
+            param_grid.SetValueEditorSlider(bool(checked))
 
     def check_for_update(self) -> None:
         from .online_update import VersionInfoDialog, check_version
@@ -998,23 +1445,14 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         except Exception:
             debug("Could not persist GUIConfig on close", exc_info=True)
 
+        if self._external_script_file:
+            self._deactivate_external_editing()
         super().closeEvent(event)
-
-
-def _install_qt_exception_handler(app: QtWidgets.QApplication) -> None:
-    handler = GuiExceptionHandler(app)
-    logging.getLogger().addHandler(handler)
-
-    def excepthook(exc_type, exc, tb):
-        logging.getLogger().critical("Unhandled exception", exc_info=(exc_type, exc, tb))
-
-    sys.excepthook = excepthook
 
 
 def start_qt_app(*, filename: Optional[str], debug: bool = False) -> None:
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(":/main_gui/genx.ico"))
-    _install_qt_exception_handler(app)
 
     win = GenxMainWindow(filename=filename)
     win.show()

@@ -387,6 +387,7 @@ class ValidateBaseDialog(QtWidgets.QDialog):
         groups=None,
         cols=2,
         editable_pars=None,
+        group_boxes=False,
     ):
         super().__init__(parent)
         self.setWindowTitle(title)
@@ -398,17 +399,26 @@ class ValidateBaseDialog(QtWidgets.QDialog):
         self.groups = groups or []
         self.text_controls = {}
         self.editable_pars = editable_pars or {}
+        self.group_boxes = group_boxes
 
         main_layout = QtWidgets.QVBoxLayout(self)
-        if self.groups:
+        if self.groups and not self.group_boxes:
             tabs = QtWidgets.QTabWidget(self)
             for group_name, group_pars in self.groups:
                 tab = QtWidgets.QWidget()
                 tabs.addTab(tab, group_name)
                 self._layout_params(tab, group_pars)
             main_layout.addWidget(tabs, 1)
+        elif self.groups and self.group_boxes:
+            group_container = QtWidgets.QWidget(self)
+            group_layout, controls = self._grid_layout(group_container, self.vals, self.editable_pars)
+            group_container.setLayout(group_layout)
+            self.text_controls.update(controls)
+            main_layout.addWidget(group_container, 1)
         else:
-            self._layout_params(self, self.pars)
+            form_container = QtWidgets.QWidget(self)
+            self._layout_params(form_container, self.pars)
+            main_layout.addWidget(form_container, 1)
 
         buttons = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel, parent=self
@@ -434,6 +444,38 @@ class ValidateBaseDialog(QtWidgets.QDialog):
             layout.addWidget(unit_label, row, 2, 1, 1)
 
             self.text_controls[par] = ctrl
+
+    def _layout_group(self, parent, pars, vals, editable_pars):
+        layout = QtWidgets.QGridLayout(parent)
+        controls = {}
+        for row, par in enumerate(pars):
+            label = QtWidgets.QLabel(par, parent)
+            layout.addWidget(label, row, 0, 1, 1)
+            validator = self.validators[par]
+            val = vals[par]
+            state = editable_pars.get(par, 0)
+            ctrl = self.create_edit_ctrl(state, parent, val, validator)
+            unit = self.units.get(par, "")
+            unit_label = QtWidgets.QLabel(unit, parent)
+            layout.addWidget(ctrl, row, 1, 1, 1)
+            layout.addWidget(unit_label, row, 2, 1, 1)
+            controls[par] = ctrl
+        return layout, controls
+
+    def _grid_layout(self, parent, vals, editable_pars):
+        layout = QtWidgets.QGridLayout(parent)
+        controls = {}
+        for index, group in enumerate(self.groups):
+            if not isinstance(group[0], str):
+                raise TypeError("First item in a group has to be a string")
+            group_box = QtWidgets.QGroupBox(group[0], parent)
+            group_layout, group_controls = self._layout_group(group_box, group[1], vals, editable_pars)
+            group_box.setLayout(group_layout)
+            row = index // self.cols
+            col = index % self.cols
+            layout.addWidget(group_box, row, col)
+            controls.update(group_controls)
+        return layout, controls
 
     def _on_accept(self):
         for par, validator in self.validators.items():
@@ -486,6 +528,8 @@ class ValidateBaseNotebookDialog(QtWidgets.QDialog):
         groups=None,
         cols=2,
         editable_pars=None,
+        fixed_pages=None,
+        show_toolbar=False,
     ):
         super().__init__(parent)
         self.setWindowTitle(title)
@@ -497,8 +541,21 @@ class ValidateBaseNotebookDialog(QtWidgets.QDialog):
         self.groups = groups or []
         self.text_controls = {}
         self.editable_pars = editable_pars or {}
+        self.fixed_pages = fixed_pages or []
+        self.changes = []
 
         main_layout = QtWidgets.QVBoxLayout(self)
+        self.toolbar = None
+        if show_toolbar:
+            self.toolbar = QtWidgets.QToolBar(self)
+            self.toolbar.setIconSize(QtCore.QSize(20, 20))
+            insert_action = self.toolbar.addAction(QtGui.QIcon(":/reflectivity_plugin/insert_layer.png"), "Insert")
+            delete_action = self.toolbar.addAction(QtGui.QIcon(":/reflectivity_plugin/delete.png"), "Delete")
+            rename_action = self.toolbar.addAction(QtGui.QIcon(":/reflectivity_plugin/change_name.png"), "Rename")
+            insert_action.triggered.connect(self._eh_insert)
+            delete_action.triggered.connect(self._eh_delete)
+            rename_action.triggered.connect(self._eh_rename)
+            main_layout.addWidget(self.toolbar, 0)
         self.tabs = QtWidgets.QTabWidget(self)
         main_layout.addWidget(self.tabs, 1)
 
@@ -514,24 +571,103 @@ class ValidateBaseNotebookDialog(QtWidgets.QDialog):
         buttons.rejected.connect(self.reject)
         main_layout.addWidget(buttons, 0)
 
-    def AddPage(self, name, vals, editable_pars, select=False):
-        panel = QtWidgets.QWidget()
-        self.tabs.addTab(panel, name)
-        layout = QtWidgets.QGridLayout(panel)
-        for row, par in enumerate(self.pars):
-            label = QtWidgets.QLabel(par, panel)
+    def _layout_group(self, parent, pars, vals, editable_pars):
+        layout = QtWidgets.QGridLayout(parent)
+        controls = {}
+        for row, par in enumerate(pars):
+            label = QtWidgets.QLabel(par, parent)
             layout.addWidget(label, row, 0, 1, 1)
             validator = self.validators[par]
             val = vals[par]
             state = editable_pars.get(par, 0)
-            ctrl = self.create_edit_ctrl(state, panel, val, validator)
+            ctrl = self.create_edit_ctrl(state, parent, val, validator)
             unit = self.units.get(par, "")
-            unit_label = QtWidgets.QLabel(unit, panel)
+            unit_label = QtWidgets.QLabel(unit, parent)
             layout.addWidget(ctrl, row, 1, 1, 1)
             layout.addWidget(unit_label, row, 2, 1, 1)
-            self.text_controls.setdefault(name, {})[par] = ctrl
+            controls[par] = ctrl
+        return layout, controls
+
+    def _grid_layout(self, parent, vals, editable_pars):
+        layout = QtWidgets.QGridLayout(parent)
+        controls = {}
+        for index, group in enumerate(self.groups):
+            if not isinstance(group[0], str):
+                raise TypeError("First item in a group has to be a string")
+            group_box = QtWidgets.QGroupBox(group[0], parent)
+            group_layout, group_controls = self._layout_group(group_box, group[1], vals, editable_pars)
+            group_box.setLayout(group_layout)
+            row = index // self.cols
+            col = index % self.cols
+            layout.addWidget(group_box, row, col)
+            controls.update(group_controls)
+        return layout, controls
+
+    def AddPage(self, name, vals, editable_pars, select=False):
+        panel = QtWidgets.QWidget()
+        self.tabs.addTab(panel, name)
+        if self.groups:
+            layout, controls = self._grid_layout(panel, vals, editable_pars)
+        else:
+            layout, controls = self._layout_group(panel, self.pars, vals, editable_pars)
+        panel.setLayout(layout)
+        self.text_controls.setdefault(name, {}).update(controls)
         if select:
             self.tabs.setCurrentWidget(panel)
+        if name not in self.vals:
+            self.vals[name] = vals.copy()
+            self.editable_pars[name] = editable_pars.copy()
+
+    def RemovePage(self, name):
+        if name in self.fixed_pages:
+            return False
+        index = -1
+        for i in range(self.tabs.count()):
+            if self.tabs.tabText(i) == name:
+                index = i
+                break
+        if index < 0:
+            return False
+        self.tabs.removeTab(index)
+        self.vals.pop(name, None)
+        self.text_controls.pop(name, None)
+        return True
+
+    def _eh_insert(self):
+        current_name = self.tabs.tabText(self.tabs.currentIndex())
+        if self.fixed_pages:
+            current_name = self.fixed_pages[0]
+        index = 1
+        while f"{current_name}_{index}" in self.vals:
+            index += 1
+        new_name = f"{current_name}_{index}"
+        state = {key: 0 for key in self.vals[current_name]}
+        self.AddPage(new_name, self.vals[current_name], state, select=True)
+        self.changes.append(("", new_name))
+
+    def _eh_delete(self):
+        current_name = self.tabs.tabText(self.tabs.currentIndex())
+        if self.RemovePage(current_name):
+            self.changes.append((current_name, ""))
+
+    def _eh_rename(self):
+        current_name = self.tabs.tabText(self.tabs.currentIndex())
+        if current_name in self.fixed_pages:
+            QtWidgets.QMessageBox.information(self, "Rename", f"It is forbidden to change the name of {current_name}")
+            return
+        unallowed = [name for name in self.vals if name != current_name]
+        validators = {"Name": NoMatchValidTextObjectValidator(unallowed)}
+        dlg = ValidateDialog(self, ["Name"], {"Name": current_name}, validators, title="Give New Name")
+        if dlg.ShowModal() == QtWidgets.QDialog.DialogCode.Accepted:
+            vals = dlg.GetValues()
+            new_name = vals["Name"]
+            if new_name != current_name:
+                self.vals[new_name] = self.vals.pop(current_name)
+                self.text_controls[new_name] = self.text_controls.pop(current_name)
+                idx = self.tabs.currentIndex()
+                self.tabs.setTabText(idx, new_name)
+                self.changes.append((current_name, new_name))
+        dlg.close()
 
     def _on_accept(self):
         for page_name, controls in self.text_controls.items():
@@ -562,6 +698,9 @@ class ValidateBaseNotebookDialog(QtWidgets.QDialog):
                 else:
                     p[page][par] = ctrl.text() if not isinstance(ctrl, FitSelectorCombo) else ctrl.text()
         return p
+
+    def GetChanges(self):
+        return self.changes
 
     def ShowModal(self):
         return self.exec()
