@@ -23,72 +23,18 @@ from .history_dialog import HistoryDialog
 from .message_dialogs import ShowErrorDialog, ShowQuestionDialog, ShowWarningDialog
 from .settings_dialog import SettingsDialog
 from .utils import ShowInfoDialog
+from .custom_events import (
+    BatchNextEvent,
+    FittingEndedEvent,
+    MoveParameterEvent,
+    SetParameterValueEvent,
+    UpdateParametersEvent,
+    UpdatePlotEvent,
+    UpdatePlotSettingsEvent,
+)
 
 if TYPE_CHECKING:
     from . import main_window
-
-
-@dataclass(frozen=True)
-class UpdatePlotEvent:
-    data: object | None = None
-    fom_value: float | None = None
-    fom_name: str | None = None
-    fom_log: object | None = None
-    update_fit: bool = False
-    desc: str = ""
-    model: object | None = None
-
-
-@dataclass(frozen=True)
-class UpdateParametersEvent:
-    values: object
-    new_best: bool
-    population: object
-    max_val: object
-    min_val: object
-    fitting: bool
-    desc: str
-    update_errors: bool = False
-    permanent_change: bool = False
-
-
-@dataclass(frozen=True)
-class FittingEndedEvent:
-    start_guess: object
-    error_message: str | None
-    values: object
-    new_best: bool
-    population: object
-    max_val: object
-    min_val: object
-    fitting: bool
-    desc: str
-
-
-@dataclass(frozen=True)
-class BatchNextEvent:
-    last_index: int
-    finished: bool
-
-
-@dataclass(frozen=True)
-class UpdatePlotSettingsEvent:
-    indices: list[int]
-    sim_par: dict
-    data_par: dict
-
-
-@dataclass(frozen=True)
-class SetParameterValueEvent:
-    row: int
-    col: int
-    value: object
-
-
-@dataclass(frozen=True)
-class MoveParameterEvent:
-    row: int
-    step: int
 
 
 class GuiCallbacks(GenxOptimizerCallback):
@@ -474,7 +420,7 @@ class ModelControlGUI(QtCore.QObject):
             exec(exectext, {}, {"fom_funcs": fom_funcs, "self": self})
 
         combined_options = self.controller.get_combined_options()
-        dlg = SettingsDialog(frame, combined_options, apply_callback=lambda options: False, title="Optimizer Settings")
+        dlg = SettingsDialog(frame, combined_options, apply_callback=lambda options: True, title="Optimizer Settings")
 
         res = dlg.exec()
         if res == QtWidgets.QDialog.DialogCode.Accepted:

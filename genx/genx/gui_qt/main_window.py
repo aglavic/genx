@@ -324,7 +324,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         from .parametergrid import ParameterGrid
 
         self.paramter_grid = param_grid
-        from .solvergui import SetParameterValueEvent, MoveParameterEvent
+        from .custom_events import SetParameterValueEvent, MoveParameterEvent
         param_grid.SetParameters(self.model_control.get_model_params())
         param_grid.SetFOMFunctions(self.project_fom_parameter, self.scan_parameter)
         param_grid.SetEvalFunc(self.model_control.eval_in_model)
@@ -881,17 +881,20 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def simulate(self) -> None:
         self.model_control.set_model_script(self.get_script_text())
-        self.model_control.simulate()
+        with self.catch_error(action="simulate", step=f"simulating the model") as mgr:
+            self.model_control.simulate()
         self._set_possible_parameters_in_grid()
 
     def evaluate(self) -> None:
         self.model_control.set_model_script(self.get_script_text())
-        self.model_control.evaluate()
+        with self.catch_error(action="evaluate", step=f"evaluate the model") as mgr:
+            self.model_control.evaluate()
         self._set_possible_parameters_in_grid()
 
     def start_fit(self) -> None:
         self.model_control.set_model_script(self.get_script_text())
-        self.model_control.StartFit()
+        with self.catch_error(action="fit_start", step=f"starting fit"):
+            self.model_control.StartFit()
 
     def stop_fit(self) -> None:
         self.model_control.StopFit()

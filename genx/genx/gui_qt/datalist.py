@@ -9,6 +9,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from .. import data
 from ..core.config import BaseConfig, Configurable
+from .custom_events import DataListEvent
 from .data_loader import PluginController as DataLoaderController
 from .datalist_ui import Ui_DataListControl
 from .message_dialogs import ShowErrorDialog, ShowNotificationDialog, ShowQuestionDialog, ShowWarningDialog
@@ -136,20 +137,6 @@ class DataController:
 
     def toggle_use_error(self, positions):
         [self.data.toggle_use_error(pos) for pos in positions]
-
-
-@dataclass
-class DataListEvent:
-    data: data.DataList
-    data_changed: bool = True
-    new_data: bool = False
-    new_model: bool = False
-    description: str = ""
-    data_moved: bool = False
-    position: int | list[int] | None = None
-    up: bool = False
-    deleted: bool = False
-    name_change: bool = False
 
 
 @dataclass
