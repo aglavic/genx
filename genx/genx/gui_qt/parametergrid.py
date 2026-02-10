@@ -549,6 +549,7 @@ class WheelValueEditor(QtWidgets.QLineEdit):
         self._min_value = None
         self._max_value = None
         self._steps = 20
+        self._original_value = None
 
     def setRange(self, min_value, max_value) -> None:
         self._min_value = min_value
@@ -556,6 +557,9 @@ class WheelValueEditor(QtWidgets.QLineEdit):
 
     def setSteps(self, steps: int) -> None:
         self._steps = steps
+
+    def setOriginalValue(self, value: float) -> None:
+        self._original_value = value
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if self._min_value is None or self._max_value is None:
@@ -578,6 +582,12 @@ class WheelValueEditor(QtWidgets.QLineEdit):
         self.setText(f"{value:.7g}")
         self.valueStepped.emit(value)
         event.accept()
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        if event.key() == QtCore.Qt.Key.Key_Escape and self._original_value is not None:
+            self.setText(f"{self._original_value:.7g}")
+            self.valueStepped.emit(self._original_value)
+        super().keyPressEvent(event)
 
 
 class ValueBarDelegate(QtWidgets.QStyledItemDelegate):
@@ -626,6 +636,8 @@ class ValueBarDelegate(QtWidgets.QStyledItemDelegate):
             pos = int((value - min_val) / (max_val - min_val) * editor.maximum())
             editor.setValue(pos)
             return
+        if isinstance(editor, WheelValueEditor):
+            editor.setOriginalValue(self._to_float(index.data()))
         return super().setEditorData(editor, index)
 
     def setModelData(self, editor, model, index):
