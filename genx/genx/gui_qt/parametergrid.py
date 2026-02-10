@@ -49,6 +49,12 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         self._populate_from_pars()
         self._apply_value_editor()
 
+    def UpdateConfigValues(self) -> None:
+        if not hasattr(self, "table"):
+            return
+        self._apply_value_editor()
+        self._sync_value_slider_actions()
+
     def _build_ui(self) -> None:
         self.ui = Ui_ParameterGrid()
         self.ui.setupUi(self)
