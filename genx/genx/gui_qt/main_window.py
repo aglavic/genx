@@ -328,7 +328,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         param_grid.SetParameters(self.model_control.get_model_params())
         param_grid.SetFOMFunctions(self.project_fom_parameter, self.scan_parameter)
         param_grid.SetEvalFunc(self.model_control.eval_in_model)
-        param_grid.SetSimulateFunc(self.simulate)
+        param_grid.SetSimulateFunc(self.simulate_param_changed)
         self.ui.actionValueAsSlider.setChecked(param_grid.opt.value_slider)
         self._sync_auto_color_from_model()
         param_grid.set_parameter_value.connect(
@@ -879,6 +879,12 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
                 self.model_control.controller.save_file(fname)
         self._status_update("Model saved")
 
+    def simulate_param_changed(self):
+        # simulate when model parameter was changed
+        self.model_control.set_model_script(self.get_script_text())
+        with self.catch_error(action="simulate", step=f"simulating the model") as mgr:
+            self.model_control.simulate(recompile=False)
+
     def simulate(self) -> None:
         self.model_control.set_model_script(self.get_script_text())
         with self.catch_error(action="simulate", step=f"simulating the model") as mgr:
@@ -938,8 +944,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     @QtCore.Slot(bool)
     def on_actionSimulate_triggered(self, checked: bool = False) -> None:
-        with self.catch_error(action="menu", step="simulate"):
-            self.simulate()
+        self.simulate()
 
     @QtCore.Slot(bool)
     def on_actionEvaluate_triggered(self, checked: bool = False) -> None:

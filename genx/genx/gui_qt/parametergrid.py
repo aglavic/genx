@@ -477,7 +477,6 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         self._value_bar_delegate.set_use_slider(self.opt.value_slider)
         self.table.setItemDelegateForColumn(1, self._value_bar_delegate)
 
-
 class SliderValueDelegate(QtWidgets.QStyledItemDelegate):
     def createEditor(self, parent, option, index):
         if index.column() != 1:
@@ -549,7 +548,6 @@ class WheelValueEditor(QtWidgets.QLineEdit):
         self._min_value = None
         self._max_value = None
         self._steps = 20
-        self._original_value = None
 
     def setRange(self, min_value, max_value) -> None:
         self._min_value = min_value
@@ -557,9 +555,6 @@ class WheelValueEditor(QtWidgets.QLineEdit):
 
     def setSteps(self, steps: int) -> None:
         self._steps = steps
-
-    def setOriginalValue(self, value: float) -> None:
-        self._original_value = value
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if self._min_value is None or self._max_value is None:
@@ -583,17 +578,13 @@ class WheelValueEditor(QtWidgets.QLineEdit):
         self.valueStepped.emit(value)
         event.accept()
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        if event.key() == QtCore.Qt.Key.Key_Escape and self._original_value is not None:
-            self.setText(f"{self._original_value:.7g}")
-            self.valueStepped.emit(self._original_value)
-        super().keyPressEvent(event)
-
 
 class ValueBarDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._use_slider = False
+        self._orig_value = 0.
+        self.closeEditor.connect(self.onEditorClosed)
 
     def set_use_slider(self, enabled: bool) -> None:
         self._use_slider = bool(enabled)
@@ -601,6 +592,7 @@ class ValueBarDelegate(QtWidgets.QStyledItemDelegate):
     def createEditor(self, parent, option, index):
         if index.column() != 1:
             return super().createEditor(parent, option, index)
+        self._orig_value = self._to_float(index.data())
         if self._use_slider:
             slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, parent)
             slider.setMinimum(0)
@@ -636,8 +628,6 @@ class ValueBarDelegate(QtWidgets.QStyledItemDelegate):
             pos = int((value - min_val) / (max_val - min_val) * editor.maximum())
             editor.setValue(pos)
             return
-        if isinstance(editor, WheelValueEditor):
-            editor.setOriginalValue(self._to_float(index.data()))
         return super().setEditorData(editor, index)
 
     def setModelData(self, editor, model, index):
@@ -709,3 +699,15 @@ class ValueBarDelegate(QtWidgets.QStyledItemDelegate):
             return float(value)
         except (TypeError, ValueError):
             return 0.0
+
+    def onEditorClosed(self, editor, hint):
+        if hint == QtWidgets.QAbstractItemDelegate.EndEditHint.RevertModelCache:
+            if isinstance(editor, WheelValueEditor):
+                editor.setText(f"{self._orig_value:.7g}")
+                editor.valueStepped.emit(self._orig_value)
+            else:
+                min_val = editor.property("min_val")
+                max_val = editor.property("max_val")
+                value = max(min_val, min(max_val, self._orig_value))
+                pos = int((value-min_val)/(max_val-min_val)*editor.maximum())
+                editor.setValue(pos)
