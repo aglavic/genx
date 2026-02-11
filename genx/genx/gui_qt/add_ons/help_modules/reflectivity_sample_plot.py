@@ -92,7 +92,7 @@ class SamplePlotPanel(PlotPanel):
         i = 0
         sld_units = []
 
-        if self.plugin.sim_returns_sld and model._sim:
+        if getattr(self.plugin, 'sim_returns_sld', False) and model._sim:
             # New style sim function with one sld for each simulation
             self.plot_dicts = list(model.SLD)
             for sim in range(len(self.plot_dicts)):

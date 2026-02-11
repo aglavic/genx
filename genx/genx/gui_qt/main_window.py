@@ -251,6 +251,20 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
     def _setup_window_basics(self) -> None:
         self.setWindowTitle(f"GenX {program_version}")
         self.setMinimumSize(600, 400)
+        self.setStyleSheet(
+            #"QTableView { background-color: #ffffff; }"
+            "QTableView QHeaderView { background-color: #fafafa; font-weight:bold;}"
+            #"QTableView::indicator { width: 1em; height: 1em; border-radius: 0.2em; border: 1px solid black;}"
+            #"QTableView::indicator:checked {background-color: #cccccc; "
+            #"border-top: 3px inset grey; border-right: 1px outset black; border-bottom: 1px outset black; border-left: 3px inset grey;}"
+            #"QTableView::indicator:unchecked {background-color: #eeeeee; "
+            #"border-top: 1px outset black; border-right: 3px inset grey; border-bottom: 3px inset grey; border-left: 1px outset black;}"
+            #"QTableView::item:selected { background-color: #e6e6e6; color: #000000; }"
+            #"QTableView::item:selected:!active { background-color: #e6e6e6; color: #000000; }"
+            #"QTableView::item:hover { background-color: transparent; }"
+            #"QTableView::item:selected:hover { background-color: #e6e6e6; color: #000000; }"
+        )
+
 
     def _setup_auto_color_menu(self) -> None:
         menu = self.ui.menuAutoColor
@@ -521,8 +535,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def _on_data_list_event(self, event) -> None:
         self.ui.plotDataPanel.OnDataListEvent(event)
-        if hasattr(self, "plugin_control"):
-            self.plugin_control.OnDataChanged(event)
+        self.plugin_control.OnDataChanged(event)
 
     def scan_parameter(self, row: int) -> None:
         """
