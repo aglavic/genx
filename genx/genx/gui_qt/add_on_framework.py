@@ -21,46 +21,46 @@ __MODULE_DIR__ = head
 if __MODULE_DIR__ != "/":
     __MODULE_DIR__ += "/"
 
+class PluginPage(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setContentsMargins(0, 0, 0, 0)
+
+    def _reset_layout_margins(self) -> None:
+        layout = self.layout()
+        if layout is not None:
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(0)
+
+    def childEvent(self, event):
+        super().childEvent(event)
+        if event.type() == QtCore.QEvent.Type.ChildAdded:
+            if isinstance(event.child(), QtWidgets.QLayout):
+                self._reset_layout_margins()
+
+    def event(self, event):
+        if event.type() == QtCore.QEvent.Type.LayoutRequest:
+            self._reset_layout_margins()
+        return super().event(event)
 
 class Template:
     """
     Qt template class for handling plugins.
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent: "GenxMainWindow"):
         self.parent = parent
         self.plot_pages = []
         self.input_pages = []
         self.data_pages = []
         self.menus = []
 
-    class _PluginPage(QtWidgets.QWidget):
-        def __init__(self, parent=None):
-            super().__init__(parent)
-            self.setContentsMargins(0, 0, 0, 0)
-
-        def _reset_layout_margins(self) -> None:
-            layout = self.layout()
-            if layout is not None:
-                layout.setContentsMargins(0, 0, 0, 0)
-                layout.setSpacing(0)
-
-        def childEvent(self, event):
-            super().childEvent(event)
-            if event.type() == QtCore.QEvent.Type.ChildAdded:
-                if isinstance(event.child(), QtWidgets.QLayout):
-                    self._reset_layout_margins()
-
-        def event(self, event):
-            if event.type() == QtCore.QEvent.Type.LayoutRequest:
-                self._reset_layout_margins()
-            return super().event(event)
 
     def _get_plugin_tab_widget(self) -> QtWidgets.QTabWidget | None:
-        return getattr(self.parent.ui, "pluginTabWidget", None)
+        return self.parent.ui.pluginTabWidget
 
     def _get_plugin_empty_tab(self) -> QtWidgets.QWidget | None:
-        return getattr(self.parent.ui, "pluginTabEmpty", None)
+        return self.parent.ui.pluginTabEmpty
 
     def _plugin_tab_count(self, notebook: QtWidgets.QTabWidget | None) -> int:
         if notebook is None:
@@ -91,10 +91,10 @@ class Template:
         pass
 
     def NewPlotFolder(self, name, pos=-1):
-        panel = self._PluginPage()
+        panel = PluginPage()
         notebook = self._get_plugin_tab_widget()
         if notebook is None:
-            notebook = getattr(self.parent.ui, "plotTabWidget", None)
+            notebook = self.parent.ui.plotTabWidget
         else:
             empty = self._get_plugin_empty_tab()
             if empty is not None and notebook.count() == 1 and notebook.widget(0) is empty:
@@ -105,18 +105,18 @@ class Template:
         return panel
 
     def NewInputFolder(self, name, pos=-1):
-        panel = self._PluginPage()
-        notebook = getattr(self.parent.ui, "inputTabWidget", None)
+        panel = PluginPage()
+        notebook = self.parent.ui.inputTabWidget
         if notebook is not None:
             notebook.addTab(panel, name)
         self.input_pages.append(panel)
         return panel
 
     def NewDataFolder(self, name, pos=-1):
-        panel = self._PluginPage()
-        notebook = getattr(self.parent.ui, "leftPluginTabWidget", None)
+        panel = PluginPage()
+        notebook = self.parent.ui.leftPluginTabWidget
         if notebook is None:
-            notebook = getattr(self.parent.ui, "leftTabWidget", None)
+            notebook = self.parent.ui.leftTabWidget
         if notebook is not None:
             notebook.addTab(panel, name)
         self.data_pages.append(panel)
@@ -186,30 +186,21 @@ class Template:
         pass
 
     def Remove(self):
-        plot_nb = getattr(self.parent.ui, "pluginTabWidget", None) or getattr(self.parent.ui, "plotTabWidget", None)
-        input_nb = getattr(self.parent.ui, "inputTabWidget", None)
-        data_nb = getattr(self.parent.ui, "leftPluginTabWidget", None)
-        if data_nb is None:
-            data_nb = getattr(self.parent.ui, "leftTabWidget", None)
+        plot_nb = self._get_plugin_tab_widget()
+        input_nb = self.parent.ui.inputTabWidget
+        data_nb = self.parent.ui.leftPluginTabWidget
 
         for panel in self.plot_pages:
-            if plot_nb is None:
-                continue
-            if plot_nb is self._get_plugin_tab_widget():
-                if self._plugin_tab_count(plot_nb) == 1 and plot_nb.indexOf(panel) >= 0:
-                    self._ensure_plugin_empty_tab(plot_nb)
             idx = plot_nb.indexOf(panel)
+            if self._plugin_tab_count(plot_nb) == 1 and idx >= 0:
+                self._ensure_plugin_empty_tab(plot_nb)
             if idx >= 0:
                 plot_nb.removeTab(idx)
         for panel in self.input_pages:
-            if input_nb is None:
-                continue
             idx = input_nb.indexOf(panel)
             if idx >= 0:
                 input_nb.removeTab(idx)
         for panel in self.data_pages:
-            if data_nb is None:
-                continue
             idx = data_nb.indexOf(panel)
             if idx >= 0:
                 data_nb.removeTab(idx)
@@ -272,6 +263,8 @@ class PluginController(Configurable):
             self.update_plugins()
             return
         existing_plugins = self.plugin_handler.get_possible_plugins()
+        not_found = []
+        not_loadable = []
         for plugin in plugin_str.split(";"):
             if not self.plugin_handler.is_loaded(plugin):
                 if plugin in existing_plugins:
@@ -283,17 +276,25 @@ class PluginController(Configurable):
                         traceback.print_exc(200, outp)
                         tbtext = outp.getvalue()
                         outp.close()
-                        ShowErrorDialog(
-                            self.parent, "Can NOT load plugin " + plugin + "\nPython traceback below:\n\n" + tbtext
-                        )
-                        self.RegisterPlugin(plugin)
+                        not_loadable.append((plugin, tbtext))
                 else:
-                    ShowInfoDialog(
-                        self.parent,
-                        'Could not find plugin "%s"'
-                        ". Either there is an error in the config file"
-                        " or the plugin is not installed." % plugin,
-                    )
+                    not_found.append(plugin)
+        if not_loadable:
+            text = "Can NOT load plugin "
+            tbtext = "\nPython traceback below:\n\n"
+            for pi, tbti in not_loadable:
+                text += pi+'; '
+                tbtext += tbti+'\n'
+            ShowErrorDialog(
+                self.parent, text[:-2]+tbtext
+                )
+        elif not_found:
+            ShowInfoDialog(
+                self.parent,
+                'Could not find plugin(s) "%s"'
+                ". Either there is an error in the config file"
+                " or the plugin is not installed."%(";".join(not_found)),
+                )
         self.update_plugins()
 
     def LoadPlugin(self, plugin):

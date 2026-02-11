@@ -190,6 +190,10 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         super().resizeEvent(event)
         self._update_column_widths()
 
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
+        QtCore.QTimer.singleShot(0, self._update_column_widths)
+
     def _update_column_widths(self) -> None:
         if self.table.columnCount() == 0:
             return
