@@ -611,6 +611,10 @@ class DataListControl(QtWidgets.QWidget):
     def eh_external_new_model(self, model):
         self.list_ctrl.OnNewModel(model)
 
+    @QtCore.Slot(object)
+    def on_model_loaded(self, model) -> None:
+        self.eh_external_new_model(model)
+
     def DataLoaderSettingsDialog(self):
         self.list_ctrl.ChangeDataLoader()
 

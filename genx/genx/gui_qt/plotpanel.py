@@ -134,6 +134,11 @@ class PlotPanel(Configurable, QtWidgets.QWidget):
         self.fig_printer = QtFigurePrinter(self)
         debug("end init PlotPanel")
 
+    @QtCore.Slot(object)
+    def on_model_loaded(self, _model) -> None:
+        if hasattr(self, "ReadConfig"):
+            self.ReadConfig()
+
     def OnMPLButton(self, event):
         mode = getattr(self.toolbar, "mode", None)
         if mode not in (None, "", "None") and str(mode).lower() not in ("none", ""):

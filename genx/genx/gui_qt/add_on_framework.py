@@ -329,15 +329,15 @@ class PluginController(Configurable):
             self.update_plugins()
             return True
 
-    def OnNewModel(self, event):
+    def OnNewModel(self, event=None):
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnNewModel(event)
 
-    def OnDataChanged(self, event):
+    def OnDataChanged(self, event=None):
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnDataChanged(event)
 
-    def OnOpenModel(self, event):
+    def OnOpenModel(self, event=None):
         loaded_plugins = list(self.plugin_handler.loaded_plugins.keys())
         for name in loaded_plugins:
             self.plugin_handler.unload_plugin(name)
@@ -350,15 +350,19 @@ class PluginController(Configurable):
         for name in loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnOpenModel(event)
 
-    def OnSimulate(self, event):
+    @QtCore.Slot(object)
+    def on_model_loaded(self, _model) -> None:
+        self.OnOpenModel(None)
+
+    def OnSimulate(self, event=None):
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnSimulate(event)
 
-    def OnFittingUpdate(self, event):
+    def OnFittingUpdate(self, event=None):
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnFittingUpdate(event)
 
-    def OnGridChanged(self, event):
+    def OnGridChanged(self, event=None):
         for name in self.plugin_handler.loaded_plugins:
             self.plugin_handler.loaded_plugins[name].OnGridChange(event)
 

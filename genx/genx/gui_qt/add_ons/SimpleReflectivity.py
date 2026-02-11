@@ -893,7 +893,7 @@ class SamplePanel(QtWidgets.QWidget):
 
     def UpdateGrid(self, grid_parameters):
         self._last_grid_data = [list(di) for di in grid_parameters.data]
-        self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+        self.plugin.parent.ui.paramterGrid.SetParameters(grid_parameters)
 
     def CheckGridUpdate(self, parameters=None):
         if parameters is None:
@@ -1383,8 +1383,6 @@ class Plugin(framework.Template):
             self.StatusMessage("New sample loaded to plugin!")
 
     def OnFitParametersUpdated(self, event):
-        if getattr(self.parent.model_control, "loading_model", False):
-            return
         grid_parameters = self.GetModel().get_parameters()
         keys = grid_parameters.get_fit_pars()[1]
         values = event.values

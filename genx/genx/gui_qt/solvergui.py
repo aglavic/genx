@@ -26,8 +26,6 @@ from .utils import ShowInfoDialog
 from .custom_events import (
     BatchNextEvent,
     FittingEndedEvent,
-    MoveParameterEvent,
-    SetParameterValueEvent,
     UpdateParametersEvent,
     UpdatePlotEvent,
     UpdatePlotSettingsEvent,
@@ -461,6 +459,10 @@ class ModelControlGUI(QtCore.QObject):
                 self.update_parameters.emit(evt)
         QtCore.QTimer.singleShot(100, self.SetModelSaved)
 
+    @QtCore.Slot(object)
+    def on_model_loaded(self, _model) -> None:
+        self.ModelLoaded()
+
     def SetModelSaved(self):
         self.saved = True
 
@@ -529,11 +531,11 @@ class ModelControlGUI(QtCore.QObject):
         self.batch_next.emit(BatchNextEvent(last_index=idx, finished=False))
         QtCore.QTimer.singleShot(1000, self.controller.StartFit)
 
-    def OnSetParameterValue(self, evt: SetParameterValueEvent):
-        self.controller.set_parameter_value(evt.row, evt.col, evt.value)
+    def OnSetParameterValue(self, row, col, value):
+        self.controller.set_parameter_value(row, col, value)
 
-    def OnMoveParameter(self, evt: MoveParameterEvent):
-        self.controller.move_parameter(evt.row, evt.step)
+    def OnMoveParameter(self, row, step):
+        self.controller.move_parameter(row, step)
 
     def OnInsertParameter(self, row: int):
         self.controller.insert_parameter(row)
@@ -543,13 +545,6 @@ class ModelControlGUI(QtCore.QObject):
 
     def OnSortAndGroupParameters(self, sort_params):
         self.controller.sort_and_group_parameters(sort_params)
-
-    def OnUpdateParameters(self, evt: UpdateParametersEvent):
-        if evt.desc not in ["Parameter Update", "Parameter Reset"]:
-            return
-        param_grid = getattr(self.parent, "paramter_grid", None)
-        if param_grid is not None and hasattr(param_grid, "ShowParameters"):
-            param_grid.ShowParameters(evt.values)
 
     def OnShowHistory(self, _evt=None):
         dia = HistoryDialog(self.parent, self.controller.history)

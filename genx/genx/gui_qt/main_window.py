@@ -95,6 +95,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
       `on_<objectName>_triggered(...)` for QAction with objectName from the .ui file.
     """
     opt: GUIConfig
+    model_loaded = QtCore.Signal(object)
 
     def __init__(self, *, filename: Optional[str] = None):
         self._setup_app_exception_dialogs()
@@ -301,6 +302,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         data_list = data_list_ctrl.list_ctrl.data_cont.get_data()
         data_grid_panel.set_data_list(data_list)
         data_list_ctrl.list_ctrl.data_list_event.connect(data_grid_panel.on_data_list_event)
+        self.model_loaded.connect(data_list_ctrl.on_model_loaded)
 
     def _setup_solver_gui(self) -> None:
         from .solvergui import ModelControlGUI
@@ -315,58 +317,55 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         plot_data = self.ui.plotDataPanel
         plot_fom = self.ui.plotFomPanel
         plot_pars = self.ui.plotParsPanel
+        plot_foms = self.ui.plotFomScansPanel
         self.model_control.update_plot.connect(plot_data.OnSolverPlotEvent)
         self.model_control.sim_plot.connect(plot_data.OnSimPlotEvent)
         self.model_control.update_plot.connect(plot_fom.OnSolverPlotEvent)
         self.model_control.update_parameters.connect(plot_pars.OnSolverParameterEvent)
 
-        self.model_control.update_parameters.connect(self.model_control.OnUpdateParameters)
         self.model_control.update_text.connect(self._on_solver_text)
         self.model_control.update_script.connect(self._on_update_script)
-        self.model_control.update_plot.connect(self._on_fitting_update)
-        self.model_control.sim_plot.connect(self._on_simulate_update)
         self.model_control.update_plot.connect(self._on_fom_update)
         self.model_control.sim_plot.connect(self._on_fom_update)
+        self.model_loaded.connect(self.model_control.on_model_loaded)
+        self.model_loaded.connect(plot_data.on_model_loaded)
+        self.model_loaded.connect(plot_fom.on_model_loaded)
+        self.model_loaded.connect(plot_pars.on_model_loaded)
+        self.model_loaded.connect(plot_foms.on_model_loaded)
 
         self.set_script_text(self.model_control.get_model_script())
         self._setup_solver_toolbar()
 
-        input_tabs = self.ui.inputTabWidget
-        self._last_input_tab = input_tabs.currentIndex()
-        input_tabs.currentChanged.connect(self._on_input_tab_changed)
+        self._last_input_tab = self.ui.inputTabWidget.currentIndex()
+        self.ui.inputTabWidget.currentChanged.connect(self._on_input_tab_changed)
 
         param_grid = self.ui.paramterGrid
-        layout = self.ui.inputGridLayout
-        from .parametergrid import ParameterGrid
 
-        self.paramter_grid = param_grid
-        from .custom_events import SetParameterValueEvent, MoveParameterEvent
         param_grid.SetParameters(self.model_control.get_model_params())
         param_grid.SetFOMFunctions(self.project_fom_parameter, self.scan_parameter)
         param_grid.SetEvalFunc(self.model_control.eval_in_model)
         param_grid.SetSimulateFunc(self.simulate_param_changed)
         self.ui.actionValueAsSlider.setChecked(param_grid.opt.value_slider)
         self._sync_auto_color_from_model()
-        param_grid.set_parameter_value.connect(
-            lambda row, col, value: self.model_control.OnSetParameterValue(
-                SetParameterValueEvent(row=row, col=col, value=value)
-            )
-        )
-        param_grid.move_parameter.connect(
-            lambda row, step: self.model_control.OnMoveParameter(
-                MoveParameterEvent(row=row, step=step)
-            )
-        )
+        self.model_loaded.connect(param_grid.on_model_loaded)
+        self.model_control.update_parameters.connect(param_grid.on_update_parameters)
+        self.model_loaded.connect(self._on_model_loaded_script)
+        param_grid.set_parameter_value.connect(self.model_control.OnSetParameterValue)
+        param_grid.move_parameter.connect(self.model_control.OnMoveParameter)
         param_grid.insert_parameter.connect(self.model_control.OnInsertParameter)
         param_grid.delete_parameters.connect(self.model_control.OnDeleteParameter)
         param_grid.sort_and_group_parameters.connect(self.model_control.OnSortAndGroupParameters)
         param_grid.grid_changed.connect(self._on_parameter_grid_change)
 
+        self.model_control.update_plot.connect(self.plugin_control.OnFittingUpdate)
+        self.model_control.sim_plot.connect(self.plugin_control.OnSimulate)
+
     def _setup_plugin_control(self) -> None:
         menu_plugins = self.ui.menuPlugins
         from . import add_on_framework
         self.plugin_control = add_on_framework.PluginController(self, menu_plugins)
-        self.plugin_control.LoadDefaultPlugins()
+        self.model_loaded.connect(self.plugin_control.on_model_loaded)
+        self.ui.dataListControl.list_ctrl.data_list_event.connect(self.plugin_control.OnDataChanged)
 
     def _auto_simulate_enabled(self) -> bool:
         return self.ui.actionSimulateAutomatically.isChecked()
@@ -391,26 +390,10 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         with self.catch_error(action="auto_simulate", step="simulate"):
             self.simulate()
 
-    def _sync_model_to_ui(self, *, update_plugins: bool = True) -> None:
-        for panel in (
-            self.ui.plotDataPanel,
-            self.ui.plotFomPanel,
-            self.ui.plotParsPanel,
-            self.ui.plotFomScansPanel,
-        ):
-            if hasattr(panel, "ReadConfig"):
-                panel.ReadConfig()
-        param_grid = getattr(self, "paramter_grid", None)
-        if param_grid is not None and hasattr(param_grid, "ReadConfig"):
-            param_grid.ReadConfig()
-            param_grid.SetParameters(self.model_control.get_model_params(), permanent_change=False)
-        model = self.model_control.get_model()
-        self.ui.dataListControl.eh_external_new_model(model)
-        self.set_script_text(self.model_control.get_model_script())
+    @QtCore.Slot(object)
+    def _on_model_loaded_script(self, model) -> None:
+        self.set_script_text(model.get_script())
         self.ui.scriptEditor.EmptyUndoBuffer()
-        self.model_control.ModelLoaded()
-        if update_plugins and hasattr(self, "plugin_control"):
-            self.plugin_control.OnOpenModel(None)
 
     def _get_external_script_text(self) -> Optional[str]:
         if not self._external_script_file:
@@ -511,8 +494,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         if permanent_change:
             self.model_control.saved = False
             self._schedule_auto_simulate()
-        if hasattr(self, "plugin_control"):
-            self.plugin_control.OnGridChanged(type("GridEvent", (), {"permanent_change": permanent_change})())
+        self.plugin_control.OnGridChanged(type("GridEvent", (), {"permanent_change": permanent_change})())
 
     def _sync_auto_color_from_model(self) -> None:
         if not hasattr(self, "model_control"):
@@ -533,8 +515,6 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             self._status_update(text)
 
     def _on_fom_update(self, event) -> None:
-        if not hasattr(self, "main_fom_label"):
-            return
         fom_value = getattr(event, "fom_value", None)
         fom_name = getattr(event, "fom_name", None)
         if fom_value is None or fom_name is None:
@@ -551,7 +531,6 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def _on_data_list_event(self, event) -> None:
         self.ui.plotDataPanel.OnDataListEvent(event)
-        self.plugin_control.OnDataChanged(event)
 
     def scan_parameter(self, row: int) -> None:
         """
@@ -619,14 +598,6 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             plot.SetPlottype("project")
             plot.Plot((x, y, bestx, besty, e_scale), self.model_control.get_parameter_name(row), "FOM")
             self.ui.plotTabWidget.setCurrentWidget(self.ui.plotTabFomScans)
-
-    def _on_fitting_update(self, event) -> None:
-        if hasattr(self, "plugin_control"):
-            self.plugin_control.OnFittingUpdate(event)
-
-    def _on_simulate_update(self, event) -> None:
-        if hasattr(self, "plugin_control"):
-            self.plugin_control.OnSimulate(event)
 
     def set_script_text(self, text: str, from_external: bool = False) -> None:
         editor = self.ui.scriptEditor
@@ -823,10 +794,12 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
 
     def initialize(self) -> None:
         """Initialize controllers/services. (Stub)"""
-        self._setup_solver_gui()
         self._setup_plugin_control()
+        self._setup_solver_gui()
         if self._startup_filename:
             self.open_model(self._startup_filename)
+        else:
+            self.plugin_control.LoadDefaultPlugins()
 
     def new_model(self) -> None:
         if not self.model_control.saved:
@@ -840,16 +813,8 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
                 return
 
         self.model_control.new_model()
-        model = self.model_control.get_model()
-        self.ui.dataListControl.eh_external_new_model(model)
-        param_grid = getattr(self, "paramter_grid", None)
-        if param_grid is not None:
-            param_grid.SetParameters(self.model_control.get_model_params())
-        self.set_script_text(self.model_control.get_model_script())
-        self.ui.scriptEditor.EmptyUndoBuffer()
-        self.model_control.ModelLoaded()
-        if hasattr(self, "plugin_control"):
-            self.plugin_control.OnNewModel(None)
+        self.model_loaded.emit(self.model_control.get_model())
+        self.plugin_control.OnNewModel(None)
         self._status_update("New model created")
 
     def new_from_file(self) -> None:
@@ -881,7 +846,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             self.model_control.load_file(path)
         if not mng.successful:
             return
-        self._sync_model_to_ui(update_plugins=True)
+        self.model_loaded.emit(self.model_control.get_model())
         self._status_update("Model loaded from file")
 
     def save_model(self) -> None:
@@ -1108,7 +1073,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             self.model_control.import_table(path)
         if not mgr.successful:
             return
-        self._sync_model_to_ui(update_plugins=False)
+        self.model_loaded.emit(self.model_control.get_model())
         self._status_update("Table imported from file")
 
     @QtCore.Slot(bool)
@@ -1123,7 +1088,7 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
             return
         with self.catch_error(action="import_script", step=f"importing file {os.path.basename(path)}"):
             self.model_control.import_script(path)
-        self._sync_model_to_ui(update_plugins=True)
+        self.model_loaded.emit(self.model_control.get_model())
 
     @QtCore.Slot(bool)
     def on_actionExportOrso_triggered(self, checked: bool = False) -> None:

@@ -9,6 +9,7 @@ from typing import Callable, Optional
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from .custom_events import UpdateParametersEvent
 from .. import parameters
 from ..core.config import BaseConfig, Configurable
 from .parametergrid_ui import Ui_ParameterGrid
@@ -156,6 +157,10 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
     @QtCore.Slot()
     def on_actionScanFom_triggered(self) -> None:
         self._on_scan_fom()
+
+    @QtCore.Slot()
+    def on_update_parameters(self, event: UpdateParametersEvent):
+        self.ShowParameters(event.values, event.permanent_change)
 
     def _populate_from_pars(self) -> None:
         self._updating = True
@@ -325,7 +330,12 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
         self._populate_from_pars()
         self._emit_grid_changed(permanent_change=permanent_change)
 
-    def ShowParameters(self, values) -> None:
+    @QtCore.Slot(object)
+    def on_model_loaded(self, model) -> None:
+        self.ReadConfig()
+        self.SetParameters(model.parameters, clear=False, permanent_change=False)
+
+    def ShowParameters(self, values, permanent_change=False) -> None:
         self._updating = True
         try:
             idx = 0
@@ -342,7 +352,7 @@ class ParameterGrid(Configurable, QtWidgets.QWidget):
                     item.setText(self._format_value(1, value))
         finally:
             self._updating = False
-        self._emit_grid_changed(permanent_change=False)
+        self._emit_grid_changed(permanent_change=permanent_change)
 
     def GetParameters(self):
         return self._pars
