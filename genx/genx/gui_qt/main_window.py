@@ -252,7 +252,6 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.setWindowTitle(f"GenX {program_version}")
         self.setMinimumSize(600, 400)
         self.setStyleSheet(
-            #"QTableView { background-color: #ffffff; }"
             "QTableView QHeaderView { background-color: #fafafa; font-weight:bold;}"
             #"QTableView::indicator { width: 1em; height: 1em; border-radius: 0.2em; border: 1px solid black;}"
             #"QTableView::indicator:checked {background-color: #cccccc; "
@@ -326,8 +325,11 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         self.model_control.update_script.connect(self._on_update_script)
         self.model_control.update_plot.connect(self._on_fitting_update)
         self.model_control.sim_plot.connect(self._on_simulate_update)
+        self.model_control.update_plot.connect(self._on_fom_update)
+        self.model_control.sim_plot.connect(self._on_fom_update)
 
         self.set_script_text(self.model_control.get_model_script())
+        self._setup_solver_toolbar()
 
         input_tabs = self.ui.inputTabWidget
         self._last_input_tab = input_tabs.currentIndex()
@@ -530,6 +532,20 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         if text:
             self._status_update(text)
 
+    def _on_fom_update(self, event) -> None:
+        if not hasattr(self, "main_fom_label"):
+            return
+        fom_value = getattr(event, "fom_value", None)
+        fom_name = getattr(event, "fom_name", None)
+        if fom_value is None or fom_name is None:
+            fom_value = self.model_control.get_fom()
+            fom_name = self.model_control.get_fom_name()
+        if fom_value is None:
+            text = f"FOM {fom_name}: None"
+        else:
+            text = f"FOM {fom_name}: {fom_value:.4e}"
+        self.main_fom_label.setText(text)
+
     def _on_update_script(self, script_text: str) -> None:
         self.set_script_text(script_text)
 
@@ -655,6 +671,61 @@ class GenxMainWindow(conf_mod.Configurable, QtWidgets.QMainWindow):
         param_grid = getattr(self, "paramter_grid", None)
         if param_grid is not None and hasattr(param_grid.opt, "save_config"):
             param_grid.opt.save_config(default=True)
+
+    def _setup_solver_toolbar(self) -> None:
+        if hasattr(self, "solver_select"):
+            return
+        toolbar = self.ui.toolbarMain
+
+        self.solver_select = QtWidgets.QComboBox(toolbar)
+        self.solver_select.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.solver_select.addItems(self.model_control.get_solvers())
+        self.solver_select.currentTextChanged.connect(self._on_solver_selected)
+
+        current_solver = self._get_current_solver_name()
+        if current_solver:
+            index = self.solver_select.findText(current_solver)
+            if index >= 0:
+                self.solver_select.setCurrentIndex(index)
+
+        toolbar.insertWidget(self.ui.actionStartFit, self.solver_select)
+        toolbar.insertSeparator(self.ui.actionStartFit)
+
+        toolbar.addSeparator()
+        self.main_fom_label = QtWidgets.QLabel("FOM: None", toolbar)
+        font = self.main_fom_label.font()
+        font.setPointSize(max(16, font.pointSize()))
+        self.main_fom_label.setFont(font)
+        toolbar.addWidget(self.main_fom_label)
+
+    def _get_current_solver_name(self) -> str:
+        solver_classes = [solver.__class__ for solver in self.model_control.solvers.values()]
+        loaded_solver = self.model_control.controller.optimizer.__class__
+        if loaded_solver in solver_classes:
+            return list(self.model_control.solvers.keys())[solver_classes.index(loaded_solver)]
+        return loaded_solver.__name__
+
+    def _on_solver_selected(self, name: str) -> None:
+        if not name:
+            return
+        self.model_control.set_solver(name)
+        param_grid = getattr(self, "paramter_grid", None)
+        if param_grid is not None:
+            param_grid.SetParameters(self.model_control.get_model_params(), clear=False, permanent_change=False)
+
+    def eh_ex_set_solver_selection(self, selection: str) -> None:
+        if not hasattr(self, "solver_select"):
+            return
+        with QtCore.QSignalBlocker(self.solver_select):
+            index = self.solver_select.findText(selection)
+            if index >= 0:
+                self.solver_select.setCurrentIndex(index)
+
+    def eh_ex_add_solver_selection(self, selection: str) -> None:
+        if not hasattr(self, "solver_select"):
+            return
+        if self.solver_select.findText(selection) < 0:
+            self.solver_select.addItem(selection)
 
     def _set_possible_parameters_in_grid(self) -> None:
         param_grid = getattr(self, "paramter_grid", None)

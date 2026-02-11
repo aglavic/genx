@@ -465,6 +465,50 @@ class SampleTableData:
     def get_name_list(self):
         return ["Amb"] + [li[0] for li in self.layers] + ["Sub"]
 
+    def update_layer_parameters(self, layer, dens=None, magn=None, d=None, sigma=None):
+        # Update table values during/after a fit, layer can be index or name.
+        if not isinstance(layer, int):
+            layer = self.get_name_list().index(layer)
+        if layer == 0:
+            data = self.ambient
+        elif layer == (len(self.layers) + 1):
+            data = self.substrate
+        else:
+            data = self.layers[layer - 1]
+
+        if not self._last_layer_data or len(self._last_layer_data) <= layer:
+            self._last_layer_data = [list(self.ambient)] + [list(li) for li in self.layers] + [list(self.substrate)]
+        ref_data = self._last_layer_data[layer]
+
+        if data[1] == "Formula":
+            formula = data[2]
+            if formula == "SLD":
+                if dens is not None and data[3]:
+                    data[4] = str(eval(ref_data[4]) * dens / 0.1)
+                if magn is not None and data[5]:
+                    data[6] = str(eval(ref_data[6]) * dens / 0.1)
+            else:
+                if dens is not None and data[3]:
+                    new_dens = float(dens) * formula.mFU() / MASS_DENSITY_CONVERSION
+                    data[4] = str(new_dens)
+                if magn is not None and data[5]:
+                    data[6] = str(float(magn))
+        elif dens is not None:
+            sld1 = float(eval(ref_data[2]))
+            sld2 = float(eval(ref_data[4]))
+            frac = float(eval(ref_data[6])) / 100.0
+            new_dens = (frac * sld1 + (1 - frac) * sld2) * dens / 0.1
+            if data[3]:
+                sld2_fraction = new_dens - frac * sld1
+                data[4] = str(sld2_fraction / (1.0 - frac))
+            if data[5]:
+                new_frac = (new_dens - sld2) / (sld1 - sld2)
+                data[6] = str(new_frac * 100.0)
+        if d is not None and data[7]:
+            data[8] = str(float(d))
+        if sigma is not None and data[9]:
+            data[10] = str(float(sigma))
+
 class FormulaDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, panel, parent=None):
         super().__init__(parent)
@@ -642,6 +686,7 @@ class SamplePanel(QtWidgets.QWidget):
         self.inst_params = dict(SamplePanel.inst_params)
         self.update_callback = None
         self._instrument_dialog = None
+        self._last_grid_data = None
 
         self.toolbar = QtWidgets.QToolBar(self)
         self._build_toolbar()
@@ -683,6 +728,7 @@ class SamplePanel(QtWidgets.QWidget):
         self.instrument_button.setText("Instrument Settings")
         self.instrument_button.setIcon(QtGui.QIcon(":/reflectivity_plugin/instrument.png"))
         self.instrument_button.setToolTip("Edit probe and instrument parameters")
+        self.instrument_button.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolbar.addWidget(self.instrument_button)
 
         self.toolbar.addSeparator()
@@ -696,6 +742,7 @@ class SamplePanel(QtWidgets.QWidget):
         self.advanced_button.setToolTip(
             "Switch to Reflectivity plugin for advanced modeling options.\nThis converts the model and can't be undone."
         )
+        self.advanced_button.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolbar.addWidget(self.advanced_button)
 
         self.action_add.triggered.connect(self.OnLayerAdd)
@@ -847,6 +894,32 @@ class SamplePanel(QtWidgets.QWidget):
     def UpdateGrid(self, grid_parameters):
         self._last_grid_data = [list(di) for di in grid_parameters.data]
         self.plugin.parent.paramter_grid.SetParameters(grid_parameters)
+
+    def CheckGridUpdate(self, parameters=None):
+        if parameters is None:
+            new_grid = self.plugin.GetModel().get_parameters()
+            new_data = [list(di) for di in new_grid.data]
+        else:
+            new_data = parameters
+        if self._last_grid_data == new_data:
+            return
+        layers = self.sample_table.get_name_list()
+        for pi, val, *_rest in new_data:
+            try:
+                name, param = pi.split(".", 1)
+            except ValueError:
+                continue
+            if name in layers:
+                if param == _set_func_prefix + "Dens":
+                    self.sample_table.update_layer_parameters(name, dens=val)
+                if param == _set_func_prefix + "Magn":
+                    self.sample_table.update_layer_parameters(name, magn=val)
+                if param == _set_func_prefix + "D":
+                    self.sample_table.update_layer_parameters(name, d=val)
+                if param == _set_func_prefix + "Sigma":
+                    self.sample_table.update_layer_parameters(name, sigma=val)
+        self.grid.refresh()
+        self._last_grid_data = new_data
 
     def UpdateModel(self, evt=None, first=False, re_color=False):
         coords = self.inst_params["coords"]
@@ -1310,10 +1383,14 @@ class Plugin(framework.Template):
             self.StatusMessage("New sample loaded to plugin!")
 
     def OnFitParametersUpdated(self, event):
+        if getattr(self.parent.model_control, "loading_model", False):
+            return
         grid_parameters = self.GetModel().get_parameters()
         keys = grid_parameters.get_fit_pars()[1]
         values = event.values
         parameters = [(key, value, None, None, None, None) for key, value in zip(keys, values)]
+        self.sample_widget.CheckGridUpdate(parameters=parameters)
+        self.sample_widget.Update(update_script=False)
         if event.permanent_change:
             for pi, val in zip(keys, values):
                 try:
