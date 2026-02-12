@@ -321,29 +321,41 @@ class PluginController(Configurable):
             return
         existing_plugins = self.plugin_handler.get_possible_plugins()
 
+        not_found = []
+        not_loadable = []
         for plugin in plugin_str.split(";"):
-            # Check so the plugin is not loaded and exists
             if not self.plugin_handler.is_loaded(plugin):
                 if plugin in existing_plugins:
                     try:
                         self.plugin_handler.load_plugin(plugin)
-                        self.RegisterPlugin(plugin)
-                    except:
+                    except Exception:
                         outp = io.StringIO()
                         traceback.print_exc(200, outp)
                         tbtext = outp.getvalue()
                         outp.close()
-                        ShowErrorDialog(
-                            self.parent, "Can NOT load plugin " + plugin + "\nPython traceback below:\n\n" + tbtext
-                        )
+                        not_loadable.append((plugin, tbtext))
+                    else:
                         self.RegisterPlugin(plugin)
                 else:
-                    ShowInfoDialog(
-                        self.parent,
-                        'Could not find plugin "%s"'
-                        ". Either there is an error in the config file"
-                        " or the plugin is not installed." % plugin,
-                    )
+                    not_found.append(plugin)
+        if not_loadable:
+            text = "Can NOT load plugin "
+            if not_found:
+                text = 'Could not find plugin "%s"\n\n'%(";".join(not_found)) + text
+            tbtext = "\nPython traceback below:\n\n"
+            for pi, tbti in not_loadable:
+                text += pi+'; '
+                tbtext += tbti+'\n'
+            ShowErrorDialog(
+                self.parent, text[:-2]+tbtext
+                )
+        elif not_found:
+            ShowInfoDialog(
+                self.parent,
+                'Could not find plugin "%s"'
+                ". Either there is an error in the config file"
+                " or the plugin is not installed."%(";".join(not_found)),
+                )
         self.update_plugins()
 
     # Callbacks
