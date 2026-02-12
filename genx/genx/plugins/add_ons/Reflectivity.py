@@ -62,7 +62,7 @@ from genx.model import Model
 
 from .. import add_on_framework as framework
 from .help_modules.custom_dialog import *
-from .help_modules.reflectivity_gui import DataParameterPanel, SamplePanel
+from .help_modules.reflectivity_gui import DataParameterPanel, SamplePanel, ORSOExportDialogHook
 from .help_modules.reflectivity_misc import ReflectivityModule
 from .help_modules.reflectivity_sample_plot import SamplePlotPanel
 from .help_modules.reflectivity_utils import SampleBuilder, SampleHandler, avail_models
@@ -132,9 +132,13 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         # Create a menu for handling the plugin
         menu = self.NewMenu("Reflec")
         self.mb_import_sample = wx.MenuItem(
-            menu, wx.NewId(), "Import ORSO...", "Import a sample model from ORSO yaml format", wx.ITEM_NORMAL
+            menu, wx.NewId(), "Import Sample...", "Import a sample model from ORSO yaml format", wx.ITEM_NORMAL
         )
         menu.Append(self.mb_import_sample)
+        self.mb_export_sample = wx.MenuItem(
+            menu, wx.NewId(), "Export Sample...", "Export the sample model to ORSO yaml format", wx.ITEM_NORMAL
+        )
+        menu.Append(self.mb_export_sample)
         menu.AppendSeparator()
         self.mb_export_sld = wx.MenuItem(
             menu, wx.NewId(), "Export SLD...", "Export the SLD to a ASCII file", wx.ITEM_NORMAL
@@ -170,6 +174,7 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         self.mb_autoupdate_sld.Check(False)
         # self.mb_autoupdate_sld.SetCheckable(True)
         self.parent.Bind(wx.EVT_MENU, self.OnImportSample, self.mb_import_sample)
+        self.parent.Bind(wx.EVT_MENU, self.OnExportSample, self.mb_export_sample)
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnGenerateUncertainty, self.mb_generate_uncertainty)
         self.parent.Bind(wx.EVT_MENU, self.OnExportUncertainty, self.mb_export_uncertainty)
@@ -215,6 +220,30 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
         if dlg.ShowModal() == wx.ID_OK:
             fname = dlg.GetPath()
             self.parent.replace_sample_model(fname)
+
+    def OnExportSample(self, evt):
+        dlg = wx.FileDialog(
+            self.parent,
+            message="Export Sample Model to ...",
+            defaultFile="",
+            wildcard="ORSO model (*.yml/*.yaml)|*.yml;*.yaml",
+            style=wx.FD_SAVE | wx.FD_CHANGE_DIR,
+        )
+        customizeHook = ORSOExportDialogHook()
+        dlg.SetCustomizeHook(customizeHook)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            fname = dlg.GetPath()
+            if not (fname.endswith(".yml") or fname.endswith(".yaml")):
+                fname = fname+'.yaml'
+            result = True
+            if os.path.exists(fname):
+                filepath, filename = os.path.split(fname)
+                result = self.ShowQuestionDialog(
+                    "The file %s already exists." " Do" " you wish to overwrite it?" % filename
+                )
+            if result:
+                self.GetModel().export_simple_model(fname, compact=customizeHook.export_compact)
 
     def OnExportSLD(self, evt):
         dlg = wx.FileDialog(

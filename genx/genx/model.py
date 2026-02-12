@@ -783,6 +783,107 @@ class Model(H5HintedExport):
         except GenxIOError as e:
             raise GenxIOError(e.error_message, e.file)
 
+    def export_simple_model(self, filename, compact=False):
+        # make sure model is compiled and parameters are applied
+        self.simulate()
+
+        def get_name(obj):
+            for key, value in self.script_module.__dict__.items():
+                if value is obj:
+                    return key
+            else:
+                return None
+
+        from orsopy.fileio.model_language import SampleModel, SubStack, Layer, Material, ModelParameters
+        from orsopy.fileio import ComplexValue
+
+        def get_fomula(composition):
+            # creates a formula from a composition list making element numbers more beautiful
+            output = ''
+            for fi, ei in composition:
+                output += ei.title()
+                if fi==1.0:
+                    continue
+                elif fi==int(fi):
+                    output += str(int(fi))
+                else:
+                    output += str(fi)
+            return output
+
+        xray = self.script_module.inst.probe == 'x-ray'
+
+        def get_layer(layer):
+            if hasattr(layer.f, 'composition'):
+                material = Material(formula=get_fomula(layer.f.composition), number_density=layer.dens)
+            elif hasattr(layer.b, 'composition'):
+                material = Material(formula=get_fomula(layer.b.composition), number_density=layer.dens)
+            else:
+                if xray:
+                    sld = 1e-5*layer.f*layer.dens
+                else:
+                    sld = 1e-5*layer.b*layer.dens
+                material = Material(sld=ComplexValue(sld.real, sld.imag, unit='1/angstrom^2'))
+
+            return Layer(
+                thickness=layer.d,
+                roughness=layer.sigma,
+                material=material,
+                )
+
+        main_stack = []
+        sub_stacks = {}
+        layers = {}
+        globals = ModelParameters(length_unit='angstrom', number_density_unit='1/angstrom^3')
+
+        sample = self.script_module.sample
+        layers['Amb'] = get_layer(self.script_module.Amb)
+        layers['Amb'].thickness = None
+        layers['Amb'].roughness = None
+
+        for stack in reversed(sample.Stacks):
+            sn = get_name(stack)
+            main_stack.append(sn)
+            stack_layers = []
+
+            for layer in reversed(stack.Layers):
+                ln = get_name(layer)
+                layers[ln] = get_layer(layer)
+                stack_layers.append(ln)
+
+
+            sub_stacks[sn] = SubStack(
+                repetitions=stack.Repetitions,
+                stack=" | ".join(stack_layers)
+                )
+
+        layers['Sub'] = get_layer(self.script_module.Sub)
+        layers['Sub'].thickness = None
+
+        if not compact:
+            sample_model = SampleModel(
+                stack='Amb | '+" | ".join(main_stack)+' | Sub',
+                origin='GenX model export',
+                globals=globals,
+                sub_stacks=sub_stacks,
+                layers=layers,
+                )
+        else:
+            for i, si in enumerate(main_stack):
+                stack = sub_stacks[si]
+                if stack.repetitions>1:
+                    main_stack[i] = f"{stack.repetitions} ( {stack.stack} )"
+                else:
+                    main_stack[i] = stack.stack
+            sample_model = SampleModel(
+                stack='Amb | '+" | ".join(main_stack)+' | Sub',
+                origin='GenX model export',
+                globals=globals,
+                layers=layers,
+                )
+
+        with open(filename, 'w') as fh:
+            fh.write(sample_model.to_yaml())
+
     @staticmethod
     def update_orso_meta(datasets: DataList):
         from orsopy.fileio import Orso

@@ -12,6 +12,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.3
+=============
+ * Possibility to import and export the sample model from ORSO model language
+ * Export SLD always using single column spacers for compatibility with matlab
+ * Improve plugin loader resility when accountering an error
+
 Changes 3.8.2
 =============
  * Change XRDML reader to keep angle instead of converting to Q
