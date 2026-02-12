@@ -11,7 +11,6 @@ if numba.__version__.split(".") > ["0", "55", "0"]:
 else:
     JIT_OPTIONS = {}
 
-##################### not yet correct ###############################
 
 
 @cuda.jit(
