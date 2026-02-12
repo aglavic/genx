@@ -1069,7 +1069,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def _set_status_text(self, text):
         wx.CallAfter(self.main_frame_statusbar.SetStatusText, text)
 
-    def catch_error(self, action="execution", step=None, verbose=True):
+    def catch_error(self, action="execution", step=None, verbose=True) -> CatchModelError:
         if verbose:
             return CatchModelError(self, action=action, step=step, status_update=self._set_status_text)
         else:
@@ -1128,6 +1128,48 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         debug("open_model: post new model event")
         _post_new_model_event(self, self.model_control.get_model())
         self.update_title()
+
+    def apply_sample_model(self, header_analyzed):
+        if "SimpleReflectivity" in self.plugin_control.plugin_handler.loaded_plugins:
+            from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
+
+            refl: SRPlugin = self.plugin_control.GetPlugin("SimpleReflectivity")
+            with self.catch_error(action="build_model", step=f"Building new model from metadata") as mng:
+                header_analyzed.build_simple_sample(refl)
+        else:
+            from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
+
+            if not "Reflectivity" in self.plugin_control.plugin_handler.loaded_plugins:
+                self.plugin_control.plugin_handler.load_plugin("Reflectivity")
+            # create a new script with the reflectivity plugin
+            refl: ReflPlugin = self.plugin_control.GetPlugin("Reflectivity")
+
+            with self.catch_error(action="build_model", step=f"Building new model from metadata") as mng:
+                header_analyzed.build_sample(refl)
+
+    def replace_sample_model(self, path):
+        debug("replace_sample_model: extract ORSO model")
+        from genx.plugins.data_loaders.help_modules.orso_analyzer import OrsoHeaderAnalyzer
+
+        if path.endswith('.ort'):
+            from orsopy.fileio import load_orso
+            with self.catch_error(action="load_file", step=f"Extracint header information from ORSO file"):
+                ds0 = load_orso(path)[0]
+            with self.catch_error(action="analyze_metatdata", step=f"Using ModelLanguage to build model") as mng:
+                header_analyzed = OrsoHeaderAnalyzer.from_orso(ds0.info)
+        elif path.endswith('.orb'):
+            from orsopy.fileio import load_nexus
+            with self.catch_error(action="load_file", step=f"Extracint header information from ORSO file"):
+                ds0 = load_nexus(path)[0]
+            with self.catch_error(action="analyze_metatdata", step=f"Using ModelLanguage to build model") as mng:
+                header_analyzed = OrsoHeaderAnalyzer.from_orso(ds0.info)
+        else:
+            with self.catch_error(action="analyze_metatdata", step=f"Using ModelLanguage to build model") as mng:
+                yaml_data = open(path, 'r').read()
+                header_analyzed = OrsoHeaderAnalyzer.from_yaml(yaml_data)
+
+        if mng.successful:
+            self.apply_sample_model(header_analyzed)
 
     def open_model(self, path):
         debug("open_model: clear model")
@@ -2414,6 +2456,16 @@ class GenxFileDropTarget(wx.FileDropTarget):
                 if not ans:
                     return False
             self.parent.new_from_file(filenames)
+            return True
+        if model_file.lower().endswith(".yaml") or model_file.lower().endswith(".yml"):
+            # Check so the model is saved before quitting
+            if not self.parent.model_control.saved:
+                ans = ShowQuestionDialog(
+                    self.parent, "Do you want to replace your sample model from ORSO model language?", "Replace Sample"
+                )
+                if not ans:
+                    return False
+            self.parent.replace_sample_model(model_file)
             return True
         return False
 

@@ -27,20 +27,26 @@ class InstrumentInformation:
 @dataclass
 class LayerData:
     dens: float
-    formula: Formula
+    formula: Optional[Formula]
     f: complex
     b: complex
     d: float
     sigma: float
+    name: Optional[str]
+
+
+@dataclass
+class StackData:
+    layers: List[LayerData]
+    name: Optional[str]
 
 
 @dataclass
 class LayerModel:
     substrate: LayerData
     ambient: LayerData
-    stacks: List[List[LayerData]]
+    stacks: List[StackData]
     repetitions: List[int]
-
 
 class OrsoHeaderAnalyzer:
     header: fileio.Orso
@@ -50,13 +56,52 @@ class OrsoHeaderAnalyzer:
     def __init__(self, meta):
         self.model = None
         meta = deepcopy(meta)
-        self.header = fileio.Orso(**meta)
+        self.header = fileio.Orso.from_dict(meta)
         self.analyze_instrument_info()
         if hasattr(fileio, "model_language") and self.header.data_source.sample.model:
             try:
                 self.analyze_model()
             except Exception:
                 logging.warning('Header defined a sample model but parsing the model failed', exc_info=True)
+
+    @classmethod
+    def from_orso(cls, orso_header):
+        self = object.__new__(cls)
+        self.model = None
+        self.header = orso_header
+        self.analyze_instrument_info()
+        try:
+            self.analyze_model()
+        except Exception:
+            logging.warning('Header defined a sample model but parsing the model failed', exc_info=True)
+        return self
+
+    @classmethod
+    def from_yaml(cls, yaml_text):
+        import yaml
+        from orsopy.fileio.model_language import SampleModel
+
+        meta = yaml.safe_load(yaml_text)
+
+        for parent in ['data_source', 'sample', 'model']:
+            if parent in meta:
+                meta = meta[parent]
+        if not 'stack' in meta:
+            raise ValueError('A sample model must contain the "stack" attribute')
+
+        self = object.__new__(cls)
+        self.model = None
+        self.header = fileio.Orso.empty()
+        self.header.data_source.sample.model = SampleModel.from_dict(meta)
+
+        self.instrument = InstrumentInformation(probe='x-ray', coords='q', wavelength=1.54)
+
+        try:
+            self.analyze_model()
+        except Exception:
+            logging.warning('Header defined a sample model but parsing the model failed', exc_info=True)
+
+        return self
 
     @property
     def instrument_settings(self) -> fileio.InstrumentSettings:
@@ -120,9 +165,10 @@ class OrsoHeaderAnalyzer:
             b = layer.material.get_sld()*1e6
             f = layer.material.get_sld()*1e6
             dens = 0.1
+        name = getattr(layer, 'original_name', None) or getattr(layer.material, 'original_name', None)
         d = layer.thickness.as_unit("angstrom")
         sigma = layer.roughness.as_unit("angstrom")
-        return LayerData(dens=dens, formula=formula, b=b, f=f, d=d, sigma=sigma)
+        return LayerData(dens=dens, formula=formula, b=b, f=f, d=d, sigma=sigma, name=name)
 
     def analyze_model(self):
         from orsopy.fileio import model_language
@@ -136,20 +182,20 @@ class OrsoHeaderAnalyzer:
         for si in res_stack:
             if hasattr(si, "repetitions"):
                 repetitions.append(si.repetitions)
-                stack_layers = []
+                stack = StackData(layers=[], name=getattr(si, 'original_name', None))
                 for stack_item in si.sequence:
                     if isinstance(stack_item, model_language.Layer):
-                        stack_layers.append(self.get_layer_data(stack_item))
+                        stack.layers.append(self.get_layer_data(stack_item))
                     else:
-                        stack_layers += list(map(self.get_layer_data, stack_item.resolve_to_layers()))
-                stacks.append(stack_layers)
+                        stack.layers += list(map(self.get_layer_data, stack_item.resolve_to_layers()))
+                stacks.append(stack)
                 last_stack = True
             elif last_stack:
                 last_stack = False
                 repetitions.append(1)
-                stacks.append([self.get_layer_data(si)])
+                stacks.append(StackData(layers=[self.get_layer_data(si)], name=None))
             else:
-                stacks[-1].append(self.get_layer_data(si))
+                stacks[-1].layers.append(self.get_layer_data(si))
 
         # make sure we remove ambient and substrate from a single repetition stack
         if repetitions[0] != 1:
@@ -160,10 +206,10 @@ class OrsoHeaderAnalyzer:
             repetitions[-1] -= 1
             repetitions.append(1)
             stacks.append(stacks[-1])
-        ambient = stacks[0].pop(0)
-        substrate = stacks[-1].pop(-1)
+        ambient = stacks[0].layers.pop(0)
+        substrate = stacks[-1].layers.pop(-1)
         for i, si in reversed(list(enumerate(stacks))):
-            if len(si) == 0:
+            if len(si.layers) == 0:
                 stacks.pop(i)
                 repetitions.pop(i)
         self.layer_model = LayerModel(ambient=ambient, substrate=substrate, stacks=stacks, repetitions=repetitions)
@@ -172,7 +218,7 @@ class OrsoHeaderAnalyzer:
         if layer.formula:
             dens = layer.dens * layer.formula.mFU() / MASS_DENSITY_CONVERSION
             return [
-                None,
+                layer.name,
                 "Formula",
                 layer.formula,
                 False,
@@ -187,7 +233,7 @@ class OrsoHeaderAnalyzer:
             ]
         else:
             return [
-                None,
+                layer.name,
                 "Formula",
                 "SLD",
                 False,
@@ -202,16 +248,18 @@ class OrsoHeaderAnalyzer:
             ]
 
     def build_simple_model(self, refl: "SRPlugin"):
-        from ...add_ons.SimpleReflectivity import BOT_LAYER, ML_LAYER, TOP_LAYER
-
         refl.sample_widget.sample_table.ResetModel()
         refl.sample_widget.inst_params["probe"] = self.instrument.probe
         refl.sample_widget.inst_params["wavelength"] = self.instrument.wavelength
         refl.sample_widget.inst_params["coords"] = self.instrument.coords
         refl.sample_widget.inst_params["res"] = 0.01
+        self.build_simple_sample(refl)
+
+    def build_simple_sample(self, refl: "SRPlugin"):
+        from ...add_ons.SimpleReflectivity import BOT_LAYER, ML_LAYER, TOP_LAYER
         if self.layer_model:
             # if any stack is repeated, use that as central one
-            if any([ri > 1 for ri in self.layer_model.repetitions]):
+            if any([ri>1 for ri in self.layer_model.repetitions]):
                 pos = TOP_LAYER
                 is_ML = True
             else:
@@ -222,20 +270,26 @@ class OrsoHeaderAnalyzer:
             layers = []
             repetitions = 1
             for i, (ri, si) in enumerate(zip(self.layer_model.repetitions, self.layer_model.stacks)):
-                if is_ML and pos == ML_LAYER:
+                if is_ML and pos==ML_LAYER:
                     pos = BOT_LAYER
-                if ri > 1 and pos == TOP_LAYER:
+                if ri>1 and pos==TOP_LAYER:
                     pos = ML_LAYER
                     repetitions = ri
-                    for li in si:
+                    for li in si.layers:
                         nl = self.simple_refl_layer(li, pos=pos)
-                        nl[0] = f"Layer_{ID:02}"
+                        if nl[0] is None:
+                            nl[0] = f"Layer_{ID:02}"
+                        elif nl[0] in [ni[0] for ni in layers]:
+                            nl[0] = f"{nl[0]}_{ID:02}"
                         layers.append(nl)
                         ID += 1
                 else:
-                    for li in ri * si:
+                    for li in ri*si.layers:
                         nl = self.simple_refl_layer(li, pos=pos)
-                        nl[0] = f"Layer_{ID:02}"
+                        if nl[0] is None:
+                            nl[0] = f"Layer_{ID:02}"
+                        elif nl[0] in [ni[0] for ni in layers]:
+                            nl[0] = f"{nl[0]}_{ID:02}"
                         layers.append(nl)
                         ID += 1
             refl.sample_widget.sample_table.ambient = self.simple_refl_layer(self.layer_model.ambient)
@@ -273,6 +327,9 @@ class OrsoHeaderAnalyzer:
                 if pol in pol_names:
                     el[i].append(f'inst.setPol("{pol_names[pol]}")')
 
+        self.build_sample(refl)
+
+    def build_sample(self, refl: "RPlugin"):
         if self.layer_model:
             lm = self.layer_model
             tmp = refl.sampleh.sample.Ambient
@@ -284,14 +341,29 @@ class OrsoHeaderAnalyzer:
             tmp._ca["f"] = lm.substrate.f
             tmp._ca["b"] = lm.substrate.b
 
+            while len(refl.sampleh)>2:
+                # clear the stacks in the sample handler
+                refl.sampleh.deleteItem(1)
+
             pos = 1
             for si, (rep, stack) in enumerate(zip(lm.repetitions, lm.stacks)):
-                refl.sampleh.insertItem(pos, "Stack", f"ST_{si}")
+                name = stack.name
+                if name is None:
+                    name = f"Stack_{si:02}"
+                elif name in refl.sampleh.names:
+                    name = f"{name}_{si:02}"
+                refl.sampleh.insertItem(pos, "Stack", name)
                 stack_obj = refl.sampleh.sample.Stacks[0]
                 stack_obj.Repetitions = rep
                 pos += 1
-                for li, layer in enumerate(stack):
-                    refl.sampleh.insertItem(pos, "Layer", f"L_{si}_{li:02}")
+                for li, layer in enumerate(stack.layers):
+                    name = layer.name
+                    if name is None:
+                        name = f"Layer_{pos:02}"
+                    elif name in refl.sampleh.names:
+                        name = f"{name}_{pos:02}"
+
+                    refl.sampleh.insertItem(pos, "Layer", name)
                     pos += 1
 
                     layer_obj = stack_obj.Layers[0]

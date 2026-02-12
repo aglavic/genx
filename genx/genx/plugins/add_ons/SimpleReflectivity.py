@@ -1413,6 +1413,11 @@ class Plugin(framework.Template):
 
         # Create a menu for handling the plugin
         menu = self.NewMenu("Reflec")
+        self.mb_import_sample = wx.MenuItem(
+            menu, wx.NewId(), "Import ORSO...", "Import a sample model from ORSO yaml format", wx.ITEM_NORMAL
+        )
+        menu.Append(self.mb_import_sample)
+        menu.AppendSeparator()
         self.mb_export_sld = wx.MenuItem(
             menu, wx.NewId(), "Export SLD...", "Export the SLD to a ASCII file", wx.ITEM_NORMAL
         )
@@ -1456,6 +1461,7 @@ class Plugin(framework.Template):
             self.OnNewModel(None)
 
         # self.mb_autoupdate_sld.SetCheckable(True)
+        self.parent.Bind(wx.EVT_MENU, self.OnImportSample, self.mb_import_sample)
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnShowImagSLD, self.mb_show_imag_sld)
@@ -1533,6 +1539,18 @@ class Plugin(framework.Template):
         self.sld_plot.opt.use_mass_density = self.mb_use_mass_density.IsChecked()
         self.sld_plot.WriteConfig()
         self.sld_plot.Plot()
+
+    def OnImportSample(self, evt):
+        dlg = wx.FileDialog(
+            self.parent,
+            message="Import Sample Model from ...",
+            defaultFile="",
+            wildcard="ORSO model (*.yml/*.yaml/*.ort/*.orb)|*.yml;*.yaml;*.ort;*.orb",
+            style=wx.FD_OPEN | wx.FD_CHANGE_DIR,
+        )
+        if dlg.ShowModal() == wx.ID_OK:
+            fname = dlg.GetPath()
+            self.parent.replace_sample_model(fname)
 
     def OnExportSLD(self, evt):
         dlg = wx.FileDialog(
