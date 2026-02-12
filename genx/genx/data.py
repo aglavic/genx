@@ -274,9 +274,9 @@ class DataSet(H5HintedExport):
             header = (
                 f'Dataset "{self.name}" exported from GenX3 on {time.ctime()}\n'
                 f"Column lables:\n"
-                f"x                I_simulated        I                  error(I)"
+                f"x                 I_simulated         I                   error(I)"
             )
-            savetxt(filename, c_[self.x, self.y_sim, self.y, self.error], header=header, fmt="%.12e")
+            savetxt(filename, c_[self.x, self.y_sim, self.y, self.error], header=header, fmt="%.13e")
         else:
             debug = (
                 "y_sim.shape: "

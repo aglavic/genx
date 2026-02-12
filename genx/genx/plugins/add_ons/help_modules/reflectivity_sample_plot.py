@@ -195,7 +195,7 @@ class SamplePlotPanel(PlotPanel):
             for key in self.plot_dicts[sim].get("Mass Density", {}):
                 if key not in ["z", "SLD unit"]:
                     save_array = np.r_[save_array, [self.plot_dicts[sim]["Mass Density"][key]]]
-                    header += f" MD_{key:19s}"
+                    header += f" MD_{key:16s}"
 
             with open(new_filename, "w", encoding="utf-8") as f:
                 f.write("# File exported from GenX's Reflectivity plugin\n")
@@ -211,7 +211,7 @@ class SamplePlotPanel(PlotPanel):
                     f.write("# Mass Density (MD) unit: %s\n" % sld_unit)
                 f.write("# Coumns: \n")
                 f.write("#" + header + "\n")
-                np.savetxt(f, save_array.T, fmt="%-19.12e")
+                np.savetxt(f, save_array.T, fmt="%.13e")
 
     def generate_sld_distribution(self, reference_interface=0, number_sample=1000):
         """
@@ -420,7 +420,7 @@ class SamplePlotPanel(PlotPanel):
                     f.write("# SLD unit: %s\n" % sld_unit)
                 f.write("# Coumns: \n")
                 f.write("#" + header + "\n")
-                np.savetxt(f, save_array.T, fmt="%-19.12e")
+                np.savetxt(f, save_array.T, fmt="%.13e")
         if do_plot:
             self.PlotConfidence(plot_data=plot_data)
 
