@@ -176,7 +176,7 @@ class H5HintedExport(H5Savable):
                     try:
                         group[attr] = value
                     except Exception:
-                        warning(f"Error in writing value={value}", exc_info=True)
+                        warning(f"Error in writing value for {attr}={value}", exc_info=True)
         for key, value in self._group_attr.items():
             group.attrs[key] = value
 
