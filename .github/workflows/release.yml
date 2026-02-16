@@ -303,7 +303,7 @@ jobs:
         cd dist
         ditto ./genx.app /tmp/genx/Applications/genx.app
         productbuild  --component './genx.app' /Applications \
-          --scripts mac_build/scripts --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
+          --scripts ../mac_build/scripts --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
           --version "$GENX_VERSION" "GenX3-$GENX_VERSION-M1-Installer.pkg"
     - name: Notarize app
       env:
