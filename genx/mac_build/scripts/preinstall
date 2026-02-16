@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+
+APP="/Applications/genx.app"
+
+# Remove previous app bundle if present
+if [ -d "$APP" ]; then
+  rm -rf "$APP"
+fi
+
+exit 0
