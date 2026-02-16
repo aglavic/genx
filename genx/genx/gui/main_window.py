@@ -2683,7 +2683,6 @@ class GenxApp(wx.App):
         debug(f'Received new files to open {fileNames}')
         main_frame = self.GetTopWindow()
         if fileNames[0].endswith(".ort"):
-            wx.CallAfter(self.WriteSplash, "load default plugins...", progress=0.9)
             wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
             wx.CallAfter(main_frame.new_from_file, fileNames)
         else:
