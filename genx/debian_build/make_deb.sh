@@ -31,8 +31,8 @@ cp ../debian_build/*.desktop "${NAME}.orig/usr/share/applications/"
 #   menu
 mkdir -p "${NAME}/usr/share/pixmaps/"
 mkdir -p "${NAME}.orig/usr/share/pixmaps/"
-cp ../debian_build/*.xpm "${NAME}/usr/share/pixmaps/"
-cp ../debian_build/*.xpm "${NAME}.orig/usr/share/pixmaps/"
+cp ../debian_build/genx.png "${NAME}/usr/share/pixmaps/"
+cp ../debian_build/genx.png "${NAME}.orig/usr/share/pixmaps/"
 
 #   mime
 mkdir -p "${NAME}/tmp/genx_icons"

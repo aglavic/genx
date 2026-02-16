@@ -4,12 +4,12 @@ summary: GenX 3 - Reflectometry and surface diffraction refinement
 description: |
   GenX is a versatile program using the differential evolution algorithm for fitting, primarily, X-ray and neutron reflectivity data, 
   lately also surface x-ray diffraction data. The differential evolution algorithm is a robust optimization method which avoids local minima 
-  but at same is a highly effective. GenX is written in python and uses the wxpython package for the Graphical User Interface (GUI) Screenshot. 
+  but at the same time is highly effective. GenX is written in python and uses the wxpython package for the Graphical User Interface (GUI). 
   A model to fit is defined either through a GUI plug-in or via a python script. The possibility to script everything makes it easy to develop completely new fitting model. 
   Clearly, GenX is extremely modular, making it possible to extend the program with models and plug-ins for most fitting problems. 
   
-  At the present GenX is shipped with models for x-ray and neutron specular reflectivity, off-specular x-ray reflectivity and surface x-ray diffraction. 
-  A detailed description, of a older version, has been published in https://www.iucr.org/cgi-bin/paper?aj5091 .
+  At the present, GenX is shipped with models for x-ray and neutron specular reflectivity, off-specular x-ray reflectivity and surface x-ray diffraction. 
+  A detailed description has been published in https://doi.org/10.1107/S1600576722006653 .
   
   Feedback and Help:
   You can find a manual with examples at https://aglavic.github.io/genx/doc/, for reflectometry a good start is with the SimpleReflectivity guide
@@ -17,13 +17,13 @@ description: |
   https://aglavic.github.io/genx/doc/tutorials/neutron_fit.html.
   
   Naturally a program does not become better if I do not get feedback from you! 
-  If you found a bug or want to have something included in the program submit a ticket on SourceForge at https://sourceforge.net/p/genx/tickets/ .
-base: core22
+  If you found a bug or want to have something included in the program submit a ticket on Github at https://github.com/aglavic/genx/issues/ .
+base: core24
 confinement: strict
 grade: stable
 
-architectures: 
-  - build-on: amd64
+platforms:
+  amd64:
 
 parts:
   genx:
@@ -31,29 +31,24 @@ parts:
     source: ./genx
     python-packages:
       - wheel
-      - numpy < 2
+      - numpy
       - numba
       - bumps
       - vtk
       - pymysql
       - requests
       - pint
-      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04/wxPython-4.2.1-cp310-cp310-linux_x86_64.whl
       - svgwrite
-#    build-packages:
-#      - python3-wxgtk4.0
-#      - python3-pip
-#      - python3-wheel
     stage-packages:
       - python3-minimal
-      - python3.10-minimal
+      - python3.12-minimal
       - python3-wxgtk4.0
       - libsdl2-2.0-0
       - libglx-mesa0
       - libcolord2
       - libdconf1
-      - libicu70
-      - libwxgtk3.0-gtk3-0v5
+      - libicu74
+      - libwxgtk3.2-1t64
     override-pull: |
       craftctl default
       mkdir repo
@@ -73,7 +68,7 @@ apps:
     environment:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
-      PYTHONPATH: $SNAP/lib/python3.10/site-packages
+      PYTHONPATH: $SNAP/lib/python3.12/site-packages
 
 plugs:
   desktop:
@@ -90,9 +85,13 @@ plugs:
     interface: content
     target: $SNAP/data-dir/sounds
     default-provider: gtk-common-themes
-  gnome-42-2204:
+  gnome-46-2404:
     interface: content
     target: $SNAP/gnome-platform
-    default-provider: gnome-42-2204
+    default-provider: gnome-46-2404
+  gpu-2404:
+    interface: content
+    target: $SNAP/gpu-2404
+    default-provider: mesa-2404
   shared-memory:
     private: true
