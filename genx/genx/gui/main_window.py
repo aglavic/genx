@@ -2679,6 +2679,16 @@ class GenxApp(wx.App):
 
         subprocess.Popen([sys.executable, "-m", "genx.run"])
 
+    def MacOpenFiles(self, fileNames):
+        debug(f'Received new files to open {fileNames}')
+        main_frame = self.GetTopWindow()
+        if fileNames[0].endswith(".ort"):
+            wx.CallAfter(self.WriteSplash, "load default plugins...", progress=0.9)
+            wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
+            wx.CallAfter(main_frame.new_from_file, fileNames)
+        else:
+            wx.CallAfter(main_frame.open_model, fileNames[0])
+
 
 class StartUpConfigDialog(wx.Dialog):
 

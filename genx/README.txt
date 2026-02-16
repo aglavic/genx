@@ -12,6 +12,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.6
+=============
+ * Allow Mac OS GUI to open files directly as expected
+ * Improve Linux mime-type handling
+ * Update snap build environment
+
 Changes 3.8.5
 =============
  * Fix a file missing from the last commit that would crash the program during startup
