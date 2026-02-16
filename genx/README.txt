@@ -12,6 +12,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.4
+=============
+ * Add the option to keep only one instance of GenX GUI at a time (see Settings Menu)
+ * Fix bug where saving a model with Levenberg-Marquardt optimizer active would corrupt the file
+
 Changes 3.8.3
 =============
  * Possibility to import and export the sample model from ORSO model language

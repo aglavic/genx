@@ -62,7 +62,7 @@ class OrsoHeaderAnalyzer:
             try:
                 self.analyze_model()
             except Exception:
-                logging.warning('Header defined a sample model but parsing the model failed', exc_info=True)
+                logging.error('Header defined a sample model but parsing the model failed', exc_info=True)
 
     @classmethod
     def from_orso(cls, orso_header):
@@ -73,7 +73,7 @@ class OrsoHeaderAnalyzer:
         try:
             self.analyze_model()
         except Exception:
-            logging.warning('Header defined a sample model but parsing the model failed', exc_info=True)
+            logging.critical('Header defined a sample model but parsing the model failed', exc_info=True)
         return self
 
     @classmethod
@@ -99,7 +99,7 @@ class OrsoHeaderAnalyzer:
         try:
             self.analyze_model()
         except Exception:
-            logging.warning('Header defined a sample model but parsing the model failed', exc_info=True)
+            logging.critical('Header defined a sample model but parsing the model failed', exc_info=True)
 
         return self
 

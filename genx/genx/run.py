@@ -26,6 +26,15 @@ def start_interactive(args):
     """
     debug("enter start_interactive")
     activate_excepthook()
+    # Check if single instance is running
+    from .gui.single_instance import SingleInstanceClient
+    sc = SingleInstanceClient()
+    if sc.is_server_running():
+        if args.infile:
+            sc.send_message([args.infile])
+        else:
+            sc.send_message([])
+        sys.exit(0)
     # Fix blurry text on Windows 10
     import ctypes
 

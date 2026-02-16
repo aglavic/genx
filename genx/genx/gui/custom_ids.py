@@ -90,6 +90,7 @@ class MenuId(int, Enum):
     SET_PLOT = wx.Window.NewControlId()
     SET_PROFILE = wx.Window.NewControlId()
     SET_EDITOR = wx.Window.NewControlId()
+    SET_SINGLE = wx.Window.NewControlId()
 
     HELP_MODEL = wx.Window.NewControlId()
     HELP_FOM = wx.Window.NewControlId()

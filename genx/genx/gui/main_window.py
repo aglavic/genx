@@ -90,6 +90,7 @@ class GUIConfig(conf_mod.BaseConfig):
     solver_update_time: float = 1.5
     editor: str = None
     last_update_check: float = 0.0
+    single_instance: bool = False
 
 
 @dataclass
@@ -117,6 +118,7 @@ class ORSOFileDialogHook(wx.FileDialogCustomizeHook):
 class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     opt: GUIConfig
     script_file: str = None
+    single_instance_server = None
 
     def __init__(self, parent: wx.App, dpi_overwrite=None):
         self._init_phase = True
@@ -301,6 +303,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             for p in [self.plot_data, self.plot_fom, self.plot_pars, self.plot_fomscan]:
                 p.ReadConfig()
 
+        self.mb_checkables[custom_ids.MenuId.SET_SINGLE].Check(self.opt.single_instance)
+        if self.opt.single_instance:
+            self.single_instance_activate()
+
         debug("finished setup of MainFrame")
 
     def create_menu(self):
@@ -474,6 +480,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_set.AppendSeparator()
         mb_set.Append(custom_ids.MenuId.SET_PROFILE, "Startup Profile...", "")
         mb_set.Append(custom_ids.MenuId.SET_EDITOR, "Select External Editor...", "")
+        self.mb_checkables[custom_ids.MenuId.SET_SINGLE] = mb_set.Append(
+            custom_ids.MenuId.SET_SINGLE,
+            "Single Instance",
+            "Keep only one instance of GenX, subsequent calls raise the window and load a given file",
+            wx.ITEM_CHECK,
+        )
+
         mfmb.Append(mb_set, "Settings")
         help_menu = wx.Menu()
         help_menu.Append(custom_ids.MenuId.HELP_MODEL, "Models Help...", "Show help for the models")
@@ -558,6 +571,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_data_plots, id=custom_ids.MenuId.SET_PLOT)
         self.Bind(wx.EVT_MENU, self.eh_show_startup_dialog, id=custom_ids.MenuId.SET_PROFILE)
         self.Bind(wx.EVT_MENU, self.eh_mb_select_editor, id=custom_ids.MenuId.SET_EDITOR)
+        self.Bind(wx.EVT_MENU, self.eh_on_toggle_single_instance, id=custom_ids.MenuId.SET_SINGLE)
         self.Bind(wx.EVT_MENU, self.eh_mb_models_help, id=custom_ids.MenuId.HELP_MODEL)
         self.Bind(wx.EVT_MENU, self.eh_mb_fom_help, id=custom_ids.MenuId.HELP_FOM)
         self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, id=custom_ids.MenuId.HELP_PLUGINS)
@@ -708,7 +722,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def scan_parameter(self, row):
         """
-        Scans the parameter in row row [int] from max to min in the number
+        Scans the parameter in row [int] from max to min in the number
         of steps given by dialog input.
         """
         self.model_control.compile_if_needed()
@@ -728,6 +742,44 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.sep_plot_notebook.SetSelection(3)
 
         dlg.Destroy()
+
+    def eh_on_toggle_single_instance(self, evnt):
+        if self.mb_checkables[custom_ids.MenuId.SET_SINGLE].IsChecked():
+            self.single_instance_activate()
+            self.opt.single_instance = True
+        else:
+            self.single_isntance_deactivate()
+            self.opt.single_instance = False
+
+    def single_instance_activate(self):
+        with self.catch_error(action="single_instance_activate", step=f"activating single instance mode"):
+            if self.single_instance_server is not None:
+                return
+            from .single_instance import SingleInstanceServer
+            self.single_instance_server = SingleInstanceServer(on_message=self.single_instance_callback)
+            self.single_instance_server.start()
+
+    def single_isntance_deactivate(self):
+        with self.catch_error(action="single_instance_activate", step=f"deactivating single instance mode"):
+            self.single_instance_server.stop()
+            self.single_instance_server = None
+
+    def single_instance_callback(self, message: List[str]):
+        self.Iconize(False)
+        self.SetFocus()
+        self.Raise()
+        if len(message)>0:
+            if not self.model_control.saved:
+                ans = ShowQuestionDialog(
+                    self, "If you continue any changes in your model will not be saved.","Model not saved"
+                    )
+                if not ans:
+                    return
+
+            if message[0].endswith(".ort"):
+                wx.CallAfter(self.new_from_file, message)
+            else:
+                wx.CallAfter(self.open_model, message[0])
 
     def __set_properties(self):
         self.main_frame_fom_text = wx.StaticText(
@@ -1670,6 +1722,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if self.script_file:
             os.remove(self.script_file)
             self.script_file = None
+
+        if self.single_instance_server:
+            self.single_instance_server.stop()
+            self.single_instance_server = None
 
         self.Destroy()
 
