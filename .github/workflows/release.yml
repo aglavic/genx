@@ -302,7 +302,9 @@ jobs:
         GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
         cd dist
         ditto ./genx.app /tmp/genx/Applications/genx.app
-        productbuild  --component './genx.app' /Applications --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 --version "$GENX_VERSION" "GenX3-$GENX_VERSION-M1-Installer.pkg"
+        productbuild  --component './genx.app' /Applications \
+          --scripts pkg/scripts --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
+          --version "$GENX_VERSION" "GenX3-$GENX_VERSION-M1-Installer.pkg"
     - name: Notarize app
       env:
         NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
