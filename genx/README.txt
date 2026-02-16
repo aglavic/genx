@@ -12,6 +12,10 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.5
+=============
+ * Fix a file missing from the last commit that would crash the program during startup
+
 Changes 3.8.4
 =============
  * Add the option to keep only one instance of GenX GUI at a time (see Settings Menu)
