@@ -47,8 +47,8 @@ parts:
       - libcolord2
       - libdconf1
       - libicu74
-    env:
-      PARTS_PYTHON_VENV_ARGS: "--system-site-packages"
+    build-environment:
+      - PARTS_PYTHON_VENV_ARGS: "--system-site-packages"
     override-pull: |
       craftctl default
       mkdir repo
