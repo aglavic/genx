@@ -33,18 +33,17 @@ parts:
       - wheel
       - numba
       - bumps
+      - pint
+      - vtk
+      - pymysql
+      - requests
       - svgwrite
+      - matplotlib
+      - platformdirs
     build-packages:
       - git
     stage-packages:
-      - python3-full
       - python3-wxgtk4.0
-      - python3-numpy
-      - python3-matplotlib
-      - python3-requests
-      - python3-pymysql
-      - python3-vtk9
-      - python3-pint
       - libsdl2-2.0-0
       - libglx-mesa0
       - libcolord2
@@ -52,6 +51,7 @@ parts:
       - libicu74
     build-environment:
       - PARTS_PYTHON_VENV_ARGS: "--system-site-packages"
+      - PYTHONPATH: "$SNAP/lib/python3.12/site-packages:$SNAP/usr/lib/python3/dist-packages:$PYTHONPATH"
     override-pull: |
       craftctl default
       mkdir repo
@@ -61,7 +61,7 @@ parts:
       cd ..
       rm -rf repo
       cp setup_snap.cfg setup.cfg
- 
+
 
 
 apps:
@@ -72,7 +72,7 @@ apps:
     environment:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
-      PYTHONPATH: $SNAP/lib/python3.12/site-packages
+      PYTHONPATH: "$SNAP/lib/python3.12/site-packages:$SNAP/usr/lib/python3/dist-packages:$PYTHONPATH"
 
 plugs:
   desktop:
