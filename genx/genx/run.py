@@ -406,7 +406,7 @@ def compile_numba(cache_dir=None):
 
             def __call__(self, *args, **opts):
                 if inspect.stack()[1][3] != "<lambda>":
-                    print(f"compiling numba functions {self.update_counter}/21")
+                    print(f"compiling numba functions {self.update_counter}/22")
                     self.update_counter += 1
                 return real_jit(*args, **opts)
 

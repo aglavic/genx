@@ -32,7 +32,7 @@ parts:
     python-packages:
       - wheel
       - numba
-      - bumps
+      - bumps==1.0.2
       - pint
       - vtk
       - pymysql
