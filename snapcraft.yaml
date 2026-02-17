@@ -38,7 +38,7 @@ parts:
       - git
     stage-packages:
       - python3-minimal
-      - python3-3.12-minimal
+      - python3.12-minimal
       - python3-wxgtk4.0
       - python3-numpy
       - python3-matplotlib
