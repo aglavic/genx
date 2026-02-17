@@ -34,6 +34,7 @@ parts:
       - numba
       - bumps
       - svgwrite
+      - wxPython==0
     build-packages:
       - git
     stage-packages:
