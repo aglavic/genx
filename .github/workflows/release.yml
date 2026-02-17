@@ -148,7 +148,7 @@ jobs:
 
   build-macos:
     runs-on: macos-15-intel
-    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", ]'), github.event.inputs.build-items)) }}
 
     steps:
     - uses: actions/checkout@v4
@@ -294,6 +294,8 @@ jobs:
         # update bundle version
         plutil -replace CFBundleShortVersionString -string "$GENX_VERSION" ./genx.app/Contents/Info.plist
         plutil -replace CFBundleVersion -string "$GENX_VERSION-$(git rev-parse --short "$GITHUB_SHA")" ./genx.app/Contents/Info.plist
+        plutil -replace BundlePostInstallScriptPath -string "postinstall" ./genx.app/Contents/Info.plist
+        plutil -replace BundlePreInstallScriptPath -string "preinstall" ./genx.app/Contents/Info.plist
         # sign the library
         codesign --deep --force --options=runtime --entitlements ../mac_build/entitlements.plist --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B --timestamp genx.app
     - name: Package app pkg
