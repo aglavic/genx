@@ -31,25 +31,24 @@ parts:
     source: ./genx
     python-packages:
       - wheel
-      - numpy
       - numba
       - bumps
-      - vtk
-      - pymysql
-      - requests
-      - pint
-      - https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxPython-4.2.2-cp312-cp312-linux_x86_64.whl
       - svgwrite
     stage-packages:
-      - python3-minimal
-      - python3.12-minimal
       - python3-wxgtk4.0
+      - python3-numpy
+      - python3-matplotlib
+      - python3-requests
+      - python3-pymysql
+      - python3-vtk9
+      - python3-pint
       - libsdl2-2.0-0
       - libglx-mesa0
       - libcolord2
       - libdconf1
       - libicu74
-      - libwxgtk3.2-1t64
+    env:
+      PARTS_PYTHON_VENV_ARGS: "--system-site-packages"
     override-pull: |
       craftctl default
       mkdir repo
