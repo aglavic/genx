@@ -34,7 +34,6 @@ parts:
       - numba
       - bumps
       - svgwrite
-      - wxPython==0
     build-packages:
       - git
     stage-packages:
@@ -59,9 +58,10 @@ parts:
       mkdir repo
       cd repo
       git clone --bare https://github.com/aglavic/genx.git .
-      snapcraftctl set-version $(git describe --tags)
+      craftctl set version=$(git describe --tags)
       cd ..
-      rm -rf repo 
+      rm -rf repo
+      cp setup_snap.cfg setup.cfg
  
 
 
