@@ -294,9 +294,8 @@ jobs:
         # update bundle version
         plutil -replace CFBundleShortVersionString -string "$GENX_VERSION" ./genx.app/Contents/Info.plist
         plutil -replace CFBundleVersion -string "$GENX_VERSION-$(git rev-parse --short "$GITHUB_SHA")" ./genx.app/Contents/Info.plist
-        plutil -insert BundlePostInstallScriptPath -string "postinstall" ./genx.app/Contents/Info.plist
-        plutil -insert BundlePreInstallScriptPath -string "preinstall" ./genx.app/Contents/Info.plist
-        plutil -insert BundleInstallScriptTimeout -integer 600 ./genx.app/Contents/Info.plist
+        plutil -replace CFBundleIdentifier -string "com.isa.genx" ./genx.app/Contents/Info.plist
+        plutil -replace BundleInstallScriptTimeout -integer 600 ./genx.app/Contents/Info.plist
         # sign the library
         codesign --deep --force --options=runtime --entitlements ../mac_build/entitlements.plist --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B --timestamp genx.app
     - name: Package app pkg
@@ -307,7 +306,6 @@ jobs:
         ditto ./genx.app /tmp/genx/Applications/genx.app
         productbuild  --component './genx.app' /Applications \
           --scripts ../mac_build/scripts --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
-          --verbose \
           --version "$GENX_VERSION" "GenX3-$GENX_VERSION-M1-Installer.pkg"
     - name: Notarize app
       env:
