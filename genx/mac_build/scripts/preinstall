@@ -2,10 +2,16 @@
 set -euo pipefail
 
 APP="/Applications/genx.app"
+LINK_PATH="/usr/local/bin/genx"
 
 # Remove previous app bundle if present
 if [ -d "$APP" ]; then
   rm -rf "$APP"
+fi
+
+# Remove old symlink (will be recreated in postinstall)
+if [ -L "$LINK" ] || [ -f "$LINK" ]; then
+  rm -f "$LINK"
 fi
 
 exit 0

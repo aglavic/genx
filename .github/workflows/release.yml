@@ -208,6 +208,8 @@ jobs:
         # update bundle version
         plutil -replace CFBundleShortVersionString -string "$GENX_VERSION" ./genx.app/Contents/Info.plist
         plutil -replace CFBundleVersion -string "$GENX_VERSION-$(git rev-parse --short "$GITHUB_SHA")" ./genx.app/Contents/Info.plist
+        plutil -replace CFBundleIdentifier -string "com.isa.genx" ./genx.app/Contents/Info.plist
+        plutil -replace BundleInstallScriptTimeout -integer 600 ./genx.app/Contents/Info.plist
         # sign the library
         codesign --deep --force --options=runtime --entitlements ../mac_build/entitlements.plist --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B --timestamp genx.app
     - name: Package app pkg
@@ -215,8 +217,15 @@ jobs:
         cd genx
         GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
         cd dist
-        ditto ./genx.app /tmp/genx/Applications/genx.app
-        productbuild  --component './genx.app' /Applications --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 --version "$GENX_VERSION" "GenX3-$GENX_VERSION-Installer.pkg"
+        mkdir payload
+        mkdir payload/Applications
+        mv ./genx.app payload/Applications/
+        pkgbuild --root payload --scripts ../mac_build/scripts \
+          --identifier com.isa.genx --install-location / \
+          genx-component.pkg        
+        productbuild  --package genx-component.pkg \
+          --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
+          --version "$GENX_VERSION" "GenX3-$GENX_VERSION-Installer.pkg"
     - name: Notarize app
       env:
         NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
@@ -303,7 +312,6 @@ jobs:
         cd genx
         GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
         cd dist
-        # ditto ./genx.app /tmp/genx/Applications/genx.app
         mkdir payload
         mkdir payload/Applications
         mv ./genx.app payload/Applications/

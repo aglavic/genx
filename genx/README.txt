@@ -14,7 +14,8 @@ A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
 Changes 3.8.6
 =============
- * Allow Mac OS GUI to open files directly as expected
+ * Allow Mac OS GUI to open files directly as expected and add genx executable to PATH
+ * Implement Mac OS automatic update capability and remove previous version on install
  * Improve Linux mime-type handling
  * Update snap build environment
 
