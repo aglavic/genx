@@ -303,9 +303,15 @@ jobs:
         cd genx
         GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
         cd dist
-        ditto ./genx.app /tmp/genx/Applications/genx.app
-        productbuild  --component './genx.app' /Applications \
-          --scripts ../mac_build/scripts --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
+        # ditto ./genx.app /tmp/genx/Applications/genx.app
+        mkdir payload
+        mkdir payload/Applications
+        mv ./genx.app payload/Applications/
+        pkgbuild --root payload --scripts ../mac_build/scripts \
+          --identifier com.isa.genx --install-location / \
+          genx-component.pkg        
+        productbuild  --package genx-component.pkg \
+          --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
           --version "$GENX_VERSION" "GenX3-$GENX_VERSION-M1-Installer.pkg"
     - name: Notarize app
       env:
