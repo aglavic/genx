@@ -50,6 +50,7 @@ cp ../debian_build/*.xml "${NAME}.orig/usr/share/mime/packages/"
 
 cd ${NAME}
 cp ../../debian_build/control debian/
+cp ../../debian_build/copyright debian/
 cp ../../debian_build/postinst debian/
 cp ../../debian_build/postrm debian/
 
