@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP="/Applications/genx.app"
-LINK_PATH="/usr/local/bin/genx"
+LINK="/usr/local/bin/genx"
 
 # Remove previous app bundle if present
 if [ -d "$APP" ]; then
