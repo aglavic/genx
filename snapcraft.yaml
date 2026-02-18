@@ -1,4 +1,5 @@
 name: genx
+title: GenX 3
 adopt-info: genx
 summary: GenX 3 - Reflectometry and surface diffraction refinement
 description: |
@@ -18,6 +19,12 @@ description: |
   
   Naturally a program does not become better if I do not get feedback from you! 
   If you found a bug or want to have something included in the program submit a ticket on Github at https://github.com/aglavic/genx/issues/ .
+contact: Artur Glavic <artur.glavic@psi.ch>
+license: GPL-3.0+
+donation: Artur Glavic <artur.glavic@psi.ch>
+issues: https://github.com/aglavic/genx/issues
+source-code: https://github.com/aglavic/genx
+website: https://aglavic.github.io/genx
 base: core24
 confinement: strict
 grade: stable
@@ -32,7 +39,7 @@ parts:
     python-packages:
       - wheel
       - numba
-      - bumps==1.0.2
+      - bumps
       - pint
       - vtk
       - pymysql
@@ -40,6 +47,8 @@ parts:
       - svgwrite
       - matplotlib
       - platformdirs
+      - pyparsing
+      - python-dateutil
     build-packages:
       - git
     stage-packages:
@@ -51,7 +60,6 @@ parts:
       - libicu74
     build-environment:
       - PARTS_PYTHON_VENV_ARGS: "--system-site-packages"
-      - PYTHONPATH: "$SNAP/lib/python3.12/site-packages:$SNAP/usr/lib/python3/dist-packages:$PYTHONPATH"
     override-pull: |
       craftctl default
       mkdir repo
@@ -73,6 +81,7 @@ apps:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
       PYTHONPATH: "$SNAP/lib/python3.12/site-packages:$SNAP/usr/lib/python3/dist-packages:$PYTHONPATH"
+      LD_LIBRARY_PATH: "$LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy"
 
 plugs:
   desktop:
