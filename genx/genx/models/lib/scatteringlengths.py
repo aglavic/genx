@@ -272,6 +272,13 @@ class ElementComplex(complex):
     def __rmul__(self, other):
         return self.__mul__(other)
 
+    def __truediv__(self, other):
+        output = super().__mul__(other)
+        if type(other) in [float, int]:
+            output = super().__new__(ElementComplex, output)
+            output.composition = tuple((value/other, element) for value, element in self.composition)
+        return output
+
     def __add__(self, other):
         output = super().__add__(other)
         if type(other) is ElementComplex:
@@ -286,7 +293,7 @@ class FormFactor(Database):
     return a function of sin(theta)/lambda
     """
 
-    def __init__(self, wavelength, f_calc):
+    def __init__(self, wavelength, f_calc, weights=None):
         """__init__(self, wavelength, f_calc) --> None
 
         wavelength [float] the wavelength of the radiation in AA, f_calc a
@@ -295,6 +302,7 @@ class FormFactor(Database):
         Database.__init__(self)
         object.__setattr__(self, "wavelength", wavelength)
         object.__setattr__(self, "f_calc", f_calc)
+        object.__setattr__(self, "_weights", weights)
 
     def set_wavelength(self, wavelength):
         """set_wavelength(self, wavelength) --> None
@@ -312,8 +320,7 @@ class FormFactor(Database):
             #    change_proxyobject(stored_vals[key], f)
             # Removing a bug with proxy adding does not work properly
             for key in stored_vals:
-                f = object.__getattribute__(self, "lookup_value")(key)
-                stored_vals[key] = ElementComplex(f, key)
+                stored_vals[key] = object.__getattribute__(self, "lookup_value")(key)
 
     def __getattribute__(self, name):
         """__getattribute__(self, name) --> value
@@ -331,10 +338,15 @@ class FormFactor(Database):
 
         looks up a value in the external database
         """
+        weights = object.__getattribute__(self, "_weights")
         wl = object.__getattribute__(self, "wavelength")
         # f = Proxy((object.__getattribute__(self, 'f_calc')(name, wl)))
         # Removing a bug with proxy adding does not work properly
         f = object.__getattribute__(self, "f_calc")(name, wl)
+        if weights is None:
+            f = ElementComplex(f, name)
+        elif name in weights:
+            f = ElementComplex(f, name)*(0.6022141/weights[name])
         return f
 
 
@@ -356,6 +368,21 @@ class ScatteringLength(Database):
             if type(value) in [float, complex]:
                 ele_vals[key] = ElementComplex(value, key)
         object.__setattr__(self, "stored_values", ele_vals)
+
+    @classmethod
+    def with_weights(cls, values, weights):
+        """
+        Create a new database the uses weight normalized scattering factors for use with g/cm³ density.
+        """
+        self = object.__new__(cls)
+        Database.__init__(self)
+
+        ele_vals = {}
+        for key, value in values.items():
+            if type(value) in [float, complex] and key in weights:
+                ele_vals[key] = ElementComplex(value, key) * (0.6022141 / weights[key])
+        object.__setattr__(self, "stored_values", ele_vals)
+        return self
 
     def lookup_value(self, name):
         raise LookupError("The element %s does not exist in the database" % name)
