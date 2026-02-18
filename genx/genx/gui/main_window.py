@@ -31,14 +31,9 @@ from ..core.colors import COLOR_CYCLES
 from ..core.custom_logging import iprint, numpy_set_options
 from ..plugins import add_on_framework as add_on
 from ..version import __version__ as program_version
-from . import custom_ids, datalist, help
-from . import images as img
-from . import parametergrid, pubgraph_dialog, solvergui
-from .batch_dialog import BatchDialog
 from .custom_events import *
-from .exception_handling import CatchModelError, GuiExceptionHandler
-from .message_dialogs import ShowNotificationDialog, ShowQuestionDialog
-from .online_update import VersionInfoDialog, check_version
+from . import images as img
+
 
 _path = os.path.dirname(__file__)
 if _path[-4:] == ".zip":
@@ -1121,7 +1116,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def _set_status_text(self, text):
         wx.CallAfter(self.main_frame_statusbar.SetStatusText, text)
 
-    def catch_error(self, action="execution", step=None, verbose=True) -> CatchModelError:
+    def catch_error(self, action="execution", step=None, verbose=True):
         if verbose:
             return CatchModelError(self, action=action, step=step, status_update=self._set_status_text)
         else:
@@ -2542,6 +2537,8 @@ class GenxApp(wx.App):
         """
         Create a custom logging handler that opens a message dialog on critical (unhandled) exceptions.
         """
+        global CatchModelError, GuiExceptionHandler
+        from .exception_handling import CatchModelError, GuiExceptionHandler
         self._exception_handler = GuiExceptionHandler(self)
         logging.getLogger().addHandler(self._exception_handler)
 
@@ -2581,17 +2578,29 @@ class GenxApp(wx.App):
         gc.DrawText(txt, (w - tw) // 2, 0)
         dc.SelectObject(wx.NullBitmap)
 
+    def lazy_imoprts(self):
+        global custom_ids, datalist, help, parametergrid, pubgraph_dialog, solvergui, BatchDialog, \
+            ShowNotificationDialog, ShowQuestionDialog, VersionInfoDialog, check_version
+        from . import custom_ids, datalist, help
+        from . import parametergrid, pubgraph_dialog, solvergui
+        from .batch_dialog import BatchDialog
+        from .message_dialogs import ShowNotificationDialog, ShowQuestionDialog
+        from .online_update import VersionInfoDialog, check_version
+
     def OnInit(self):
         first_init = self._first_init
         if first_init:
             locale = wx.Locale(wx.LANGUAGE_ENGLISH_US)
             self.locale = locale
             self._first_init = False
-        self.ConnectExceptionHandler()
         self.ShowSplash()
+        self.ConnectExceptionHandler()
+        self.WriteSplash("loading genx UI modules...")
+        self.lazy_imoprts()
+
         debug("entering init phase")
 
-        self.WriteSplash("initializeing main window...")
+        self.WriteSplash("initializeing main window...", progress=0.15)
         main_frame = GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
         self.SetTopWindow(main_frame)
         main_frame.SetMinSize(wx.Size(600, 400))
