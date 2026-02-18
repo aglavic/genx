@@ -17,9 +17,17 @@ import bumps
 from bumps.dream.stats import var_stats
 if bumps.__version__.startswith("0."):
     from bumps.fitproblem import BaseFitProblem, FitProblem, nllf_scale
-else:
+elif tuple(bumps.__version__.split('.'))<('1','0','3'):
     from bumps.parameter import unique
     from bumps.fitproblem import FitProblem, nllf_scale
+else:
+    # Adapt to changed signature of nllf_scale function
+    from bumps.parameter import unique
+    from bumps.fitproblem import FitProblem, nllf_scale as _nllf_scale
+    def nllf_scale(problem, norm=True):
+        dof = problem.dof if norm else 1
+        npars = max(len(problem.getp()), 1)
+        return _nllf_scale(dof, npars, norm=norm)
 from bumps.fitters import FITTERS, FitDriver
 from bumps.formatnum import format_uncertainty
 from bumps.monitor import TimedUpdate

@@ -9,7 +9,15 @@ import wx
 
 from bumps import __version__ as bumps_version
 from bumps.dream.corrplot import _hists
-from bumps.fitproblem import nllf_scale
+if tuple(bumps_version.split('.'))<('1','0','3'):
+    from bumps.fitproblem import nllf_scale
+else:
+    # Adapt to changed signature of nllf_scale function
+    from bumps.fitproblem import nllf_scale as _nllf_scale
+    def nllf_scale(problem, norm=True):
+        dof = problem.dof if norm else 1
+        npars = max(len(problem.getp()), 1)
+        return _nllf_scale(dof, npars, norm=norm)
 from bumps.formatnum import format_uncertainty
 from bumps.monitor import TimedUpdate
 from matplotlib.colors import LogNorm
