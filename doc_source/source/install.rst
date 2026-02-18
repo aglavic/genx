@@ -30,13 +30,17 @@ The anaconda environment packages that are known to work can be found in
 Linux
 =====
 
-Install the requirements, at least wxPython, from your package manager (Ubuntu ``python3-wxgtk4.0``).
+Install the wxPython from your package manager (Ubuntu ``python3-wxgtk4.0``) as the pip build often fails.
 Then either install from source or, if you are using Ubuntu or a derivative, you can use the pre build .deb packages
-for your system python version.
+for your system python version. The main benefit of the .deb package is mime-type and menu integration.
 
 .. note::
     For compatibility with Ubuntu 24.04 the python3-numba package will no longer be installed automatically.
     I highly recommend installing it manually as it has significant impact on simulation performance.
+
+
+Debian package
+--------------
 
 As an example, installation in Ubuntu 24.04 could look like this:
 
@@ -48,6 +52,17 @@ As an example, installation in Ubuntu 24.04 could look like this:
     sudo apt -f install
     sudo apt install python3-pip
     python3 -m pip install --break-system-packages numba pint orsopy svgwrite pymysql bumps
+
+Virtual environment
+-------------------
+More reliable and probably working on most Linux distributions:
+
+.. code-block:: bash
+    sudo apt update
+    sudo apt install python3-venv python3-wxgtk4.0
+    python3 -m venv --system-site-packages genx_environment_path
+    source genx_environment_path/bin/activate
+    pip install genx3
 
 Snap
 ----
@@ -136,6 +151,7 @@ Using Minconda
 From source
 ===========
 
+Since PyPI installation is very stable now, I do not recommend using this method.
 `Download <https://github.com/aglavic/genx/releases/latest>`_ the source distribution GenX-3.X.X.tar.gz
 and unpack it. Run the file scripts/genx directly:
 
@@ -143,7 +159,7 @@ and unpack it. Run the file scripts/genx directly:
 
     tar -xvzf GenX-3.X.X.tar.gz
     cd GenX-3.X.X
-    python3 scripts/genx
+    python3 -m genx
 
 You can also install it in your python 3 environment as user ``pip3 install --user genx3`` or
 system wide ``sudo pip3 install genx3`` as well as the optional requiremetns and run:
