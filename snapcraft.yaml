@@ -75,6 +75,7 @@ apps:
       LC_ALL: en_US.UTF-8
       PYTHONPATH: "$SNAP/lib/python3.12/site-packages:$SNAP/usr/lib/python3/dist-packages:$PYTHONPATH"
       LD_LIBRARY_PATH: "$LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy"
+    desktop: meta/gui/genx.desktop
 
 plugs:
   desktop:

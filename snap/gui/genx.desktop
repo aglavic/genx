@@ -11,4 +11,4 @@ Type=Application
 Exec=genx %f
 Categories=WX;Science;
 X-KDE-StartupNotify=true
-MimeType=application/genx;text/orso;application/orso
+MimeType=application/genx;text/orso;application/orso;

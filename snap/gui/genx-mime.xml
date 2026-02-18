@@ -5,6 +5,7 @@
      <glob pattern="*.gx"/>
      <glob pattern="*.hgx"/>
    </mime-type>
+
    <mime-type type="text/orso">
      <comment>Open Reflectometry Standars Organization text file</comment>
         <magic priority="50">
@@ -12,6 +13,7 @@
         </magic>
      <glob pattern="*.ort"/>
    </mime-type>
+
    <mime-type type="application/orso">
      <comment>Open Reflectometry Standars Organization binary file</comment>
      <glob pattern="*.orb"/>
