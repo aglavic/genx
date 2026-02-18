@@ -13,7 +13,9 @@ genx_modules += ['genx.gui.plotpanel', 'genx.gui.plotpanel_wx']
 a = Analysis(['scripts/genx_mac'],
              pathex=[os.path.abspath(os.path.curdir)],
              binaries=[("/usr/local/Cellar/libomp/21.1.8/lib/libomp.dylib", ".")],
-             datas=[('genx', 'genx_source/genx')],
+             datas=[('genx', 'genx_source/genx'),
+                    ('mac_build/genx.icns', '.'),
+                    ('mac_build/orso.icns', '.')],
              hiddenimports= genx_modules+[
                  'numpy', 'pymysql', 'numba', 'requests',
                  'scipy._lib.array_api_compat.numpy.fft', 'scipy.special._special_ufuncs',
@@ -72,7 +74,7 @@ app = BUNDLE(coll,
              'CFBundleDocumentTypes': [
                 {
                     'CFBundleTypeName': 'GenX Model File',
-                    'CFBundleTypeIconFile': 'mac_build/genx.icns',
+                    'CFBundleTypeIconFile': 'genx.icns',
                      'CFBundleTypeExtensions': ['hgx', 'gx'],
                     'LSHandlerRank': 'Owner',
                     'CFBundleTypeRole' : 'Editor',
@@ -80,7 +82,7 @@ app = BUNDLE(coll,
                 },
                 {
                     'CFBundleTypeName': 'ORSO reflectivity for GenX',
-                    'CFBundleTypeIconFile': 'mac_build/genx.icns',
+                    'CFBundleTypeIconFile': 'orso.icns',
                      'CFBundleTypeExtensions': ['ort', 'orb'],
                     'LSHandlerRank': 'Default',
                     'CFBundleTypeRole' : 'Viewer',
