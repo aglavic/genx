@@ -988,10 +988,10 @@ class Model(H5HintedExport):
         """
         par_dict = get_parameters(self.script_module, numeric_types_only=True)
         if len(par_dict) == 0:
-            par_dict = self.get_possible_set_functions()
+            par_dict = self.get_possible_set_functions(numeric_types_only=True)
         return par_dict
 
-    def get_possible_set_functions(self) -> dict:
+    def get_possible_set_functions(self, numeric_types_only=False) -> dict:
         """
         Returns all the parameters that can be fitted given by the old style of defining parameters GenX2.4.X
         """
@@ -1052,6 +1052,11 @@ class Model(H5HintedExport):
                 if isinstance(obj, tuple_of_classes):
                     if obj.__class__.__name__ not in par_dict:
                         par_dict[obj.__class__.__name__] = {}
+                    # TODO: Collect just parameter names to get rid of set function nomenclature
+                    # if numeric_types_only and hasattr(obj, '_parameter_info'):
+                    #     parinfo = obj._parameter_info()
+                    #     par_dict[obj.__class__.__name__].__setitem__(name, [key for key, field in parinfo.items() if field.type is float])
+                    # else:
                     par_dict[obj.__class__.__name__].__setitem__(
                         name, [member for member in dir(obj) if member.startswith(self.opt.set_func)]
                     )
