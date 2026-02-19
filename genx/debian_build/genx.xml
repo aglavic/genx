@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-   <mime-type type="application/genx">
+   <mime-type type="application/x-genx">
      <comment>GenX simulation file</comment>
      <glob pattern="*.gx"/>
      <glob pattern="*.hgx"/>
    </mime-type>
-   <mime-type type="text/orso">
+
+   <mime-type type="text/x-orso">
      <comment>Open Reflectometry Standars Organization text file</comment>
         <magic priority="50">
             <match type="string" value="# # ORSO reflectivity data file" offset="0"/>
         </magic>
      <glob pattern="*.ort"/>
    </mime-type>
-   <mime-type type="application/orso">
+
+   <mime-type type="application/x-orso">
      <comment>Open Reflectometry Standars Organization binary file</comment>
      <glob pattern="*.orb"/>
    </mime-type>

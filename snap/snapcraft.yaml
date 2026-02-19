@@ -29,6 +29,9 @@ parts:
   genx:
     plugin: python
     source: ./genx
+    organize:
+      debian_build/genx.xml: meta/gui/mime/genx.xml
+      debian_build/genx.png: meta/gui/genx.png
     python-packages:
       - wheel
       - numba
@@ -62,8 +65,6 @@ parts:
       cd ..
       rm -rf repo
       cp setup_snap.cfg setup.cfg
-
-
 
 apps:
   genx:
