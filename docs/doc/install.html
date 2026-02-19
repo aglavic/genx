@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Installation &#8212; GenX 3.8.6 documentation</title>
+    <title>Installation &#8212; GenX 3.8.7 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to GenX’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.8.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.8.7 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
       </ul>
     </div>  
@@ -68,14 +68,16 @@ The anaconda environment packages that are known to work can be found in
 </section>
 <section id="linux">
 <h2>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
-<p>Install the requirements, at least wxPython, from your package manager (Ubuntu <code class="docutils literal notranslate"><span class="pre">python3-wxgtk4.0</span></code>).
+<p>Install the wxPython from your package manager (Ubuntu <code class="docutils literal notranslate"><span class="pre">python3-wxgtk4.0</span></code>) as the pip build often fails.
 Then either install from source or, if you are using Ubuntu or a derivative, you can use the pre build .deb packages
-for your system python version.</p>
+for your system python version. The main benefit of the .deb package is mime-type and menu integration.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For compatibility with Ubuntu 24.04 the python3-numba package will no longer be installed automatically.
 I highly recommend installing it manually as it has significant impact on simulation performance.</p>
 </div>
+<section id="debian-package">
+<h3>Debian package<a class="headerlink" href="#debian-package" title="Permalink to this headline">¶</a></h3>
 <p>As an example, installation in Ubuntu 24.04 could look like this:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt update
 wget https://github.com/aglavic/genx/releases/download/v3.6.26/GenX-3.6.26_py312.deb
@@ -85,6 +87,11 @@ sudo apt install python3-pip
 python3 -m pip install --break-system-packages numba pint orsopy svgwrite pymysql bumps
 </pre></div>
 </div>
+</section>
+<section id="virtual-environment">
+<h3>Virtual environment<a class="headerlink" href="#virtual-environment" title="Permalink to this headline">¶</a></h3>
+<p>More reliable and probably working on most Linux distributions:</p>
+</section>
 <section id="snap">
 <h3>Snap<a class="headerlink" href="#snap" title="Permalink to this headline">¶</a></h3>
 <p>The most convenient way to install GenX on Linux is the <a class="reference external" href="https://snapcraft.io/genx">snap package</a>.
@@ -93,6 +100,9 @@ It ships all requirements and should work on any distribution where the snap pac
 See <a class="reference external" href="https://snapcraft.io/docs/installing-snapd">https://snapcraft.io/docs/installing-snapd</a> for instructions how to install snapd on your distribution.</p>
 <p>To install via snap use:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo snap install genx
+<span class="c1"># if you want file associations to work, also run this</span>
+sudo cp /snap/genx/current/meta/gui/mime/*.xml /usr/share/mime/packages
+sudo update-mime-database /usr/share/mime
 </pre></div>
 </div>
 <p>The encapsulation of snap packages means, that they are more compatible over various Linux distros but sometimes
@@ -170,11 +180,12 @@ This can become handy if you need to selec specific library versions, PATH or LD
 </section>
 <section id="from-source">
 <h2>From source<a class="headerlink" href="#from-source" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/aglavic/genx/releases/latest">Download</a> the source distribution GenX-3.X.X.tar.gz
+<p>Since PyPI installation is very stable now, I do not recommend using this method.
+<a class="reference external" href="https://github.com/aglavic/genx/releases/latest">Download</a> the source distribution GenX-3.X.X.tar.gz
 and unpack it. Run the file scripts/genx directly:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tar -xvzf GenX-3.X.X.tar.gz
 <span class="nb">cd</span> GenX-3.X.X
-python3 scripts/genx
+python3 -m genx
 </pre></div>
 </div>
 <p>You can also install it in your python 3 environment as user <code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">--user</span> <span class="pre">genx3</span></code> or
@@ -236,6 +247,8 @@ anaconda distribution contains all packages.</p>
 <li><a class="reference internal" href="#windows">Windows</a></li>
 <li><a class="reference internal" href="#mac-os">Mac OS</a></li>
 <li><a class="reference internal" href="#linux">Linux</a><ul>
+<li><a class="reference internal" href="#debian-package">Debian package</a></li>
+<li><a class="reference internal" href="#virtual-environment">Virtual environment</a></li>
 <li><a class="reference internal" href="#snap">Snap</a></li>
 <li><a class="reference internal" href="#clusters">Clusters</a><ul>
 <li><a class="reference internal" href="#using-system-python">Using system python</a></li>
@@ -294,7 +307,7 @@ anaconda distribution contains all packages.</p>
         <li class="right" >
           <a href="index.html" title="Welcome to GenX’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.8.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">GenX 3.8.7 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
       </ul>
     </div>
