@@ -43,7 +43,6 @@ class TestDataLoaders(unittest.TestCase):
         # use all wildcards provided by the auto loaded to try to open files in the data folder
         files = []
         auto =self.data_loaders['auto']
-        print(auto.wildcard)
         for wc in auto.wildcard.split(';'):
             files += list(DATA_DIR.glob(wc))
         for i,fi in enumerate(set(files)):

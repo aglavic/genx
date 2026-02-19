@@ -32,7 +32,8 @@ class Plugin(Template):
         Loads the data from filename into the data_item_number.
         """
         try:
-            lines = open(filename, "r").readlines()
+            with open(filename, "r") as fh:
+                lines = fh.readlines()
         except Exception as e:
             ShowWarningDialog(
                 self.parent,
