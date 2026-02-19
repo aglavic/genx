@@ -63,11 +63,11 @@ parts:
       rm -rf repo
       cp setup_snap.cfg setup.cfg
     override-build: |
-      craftctl default
-      
+      craftctl default      
       # install icon + mime
       install -D -m644 debian_build/genx.png $CRAFT_PART_INSTALL/meta/gui/genx.png      
-      install -D -m644 debian_build/genx.xml $CRAFT_PART_INSTALL/meta/gui/mime/genx.xml
+      install -D -m644 debian_build/genx.xml $CRAFT_PART_INSTALL/meta/gui/mime/application-x-genx.xml
+      find $CRAFT_PART_INSTALL/meta -maxdepth 3 -type f
 
 apps:
   genx:
