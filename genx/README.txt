@@ -15,6 +15,10 @@ A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 Changes 3.8.7
 =============
  * Fix Mac OS file icons for genx and orso files
+ * Fix compatibility with bumps version 1.0.3
+ * Improve startup time to splash screen
+ * Fix mass density profile calculation if bw/fw instead of bc/fp data libraries were used
+ * Add tests for several example file types (please feel free to send me your example datasets as well)
 
 Changes 3.8.6
 =============
