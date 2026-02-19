@@ -77,6 +77,9 @@ To install via snap use:
 .. code-block:: bash
 
     sudo snap install genx
+    # if you want file associations to work, also run this
+    sudo cp /snap/genx/current/meta/gui/mime/*.xml /usr/share/mime/packages
+    sudo update-mime-database /usr/share/mime
 
 The encapsulation of snap packages means, that they are more compatible over various Linux distros but sometimes
 limit functionality. For the most part this could be circumvented in my tests. There is currently one know limitation
