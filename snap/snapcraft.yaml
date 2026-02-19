@@ -66,7 +66,8 @@ parts:
       craftctl default      
       # install icon + mime
       install -D -m644 debian_build/genx.png $CRAFT_PART_INSTALL/meta/gui/genx.png      
-      install -D -m644 debian_build/genx.xml $CRAFT_PART_INSTALL/meta/gui/mime/application-x-genx.xml
+      install -D -m644 debian_build/application-x-genx.xml $CRAFT_PART_INSTALL/meta/gui/mime/application-x-genx.xml
+      install -D -m644 debian_build/application-x-orso.xml $CRAFT_PART_INSTALL/meta/gui/mime/application-x-orso.xml
       find $CRAFT_PART_INSTALL/meta -maxdepth 3 -type f
 
 apps:
