@@ -43,12 +43,13 @@ class TestDataLoaders(unittest.TestCase):
         # use all wildcards provided by the auto loaded to try to open files in the data folder
         files = []
         auto =self.data_loaders['auto']
+        print(auto.wildcard)
         for wc in auto.wildcard.split(';'):
             files += list(DATA_DIR.glob(wc))
-        for i,fi in enumerate(files):
+        for i,fi in enumerate(set(files)):
             data = DataSet()
-            with self.subTest(msg=str(fi.name)):
-                auto.LoadData(data, str(fi))
+            auto.LoadData(data, str(fi))
+            with self.subTest(msg=f'{fi.name} by {auto._last_loader_used}'):
                 self.assertTrue(len(data.x_raw)>0)
                 self.assertEqual(len(data.x_raw), len(data.y_raw))
                 self.assertEqual(len(data.x_raw), len(data.error_raw))

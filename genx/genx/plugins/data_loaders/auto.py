@@ -36,6 +36,7 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
     if flexible columns are used they are part of the inheritance and can only use the
     columns defined in the ResolutionPlugin class.
     """
+    _last_loader_used = ''
 
     def __init__(self, parent):
         ResolutionPlugin.__init__(self, parent)
@@ -55,11 +56,14 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
     def LoadData(self, dataset, filename, data_id=0):
         for li in self.loaders:
             if li.CanOpen(filename):
+                self._last_loader_used = li.__module__
                 return li.LoadData(dataset, filename, data_id=data_id)
         if self.res_col < 0:
             self.x_col = self.q_col
             self.y_col = self.I_col
             self.e_col = self.eI_col
+            self._last_loader_used = DefaultPlugin.__module__
             return DefaultPlugin.LoadData(self, dataset, filename)
         else:
+            self._last_loader_used = ResolutionPlugin.__module__
             return ResolutionPlugin.LoadData(self, dataset, filename)
