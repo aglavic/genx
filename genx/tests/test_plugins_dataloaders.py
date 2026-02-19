@@ -2,17 +2,55 @@
 Test of data loader plugins.
 """
 
-import os
 import unittest
 
-from genx import api
+from pathlib import Path
+from os import sep
 
-# TODO: Get test data for all loaders and put in test folder
-EXAMPLE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "genx", "examples")
+from genx.data import DataSet
+from genx.plugins.utils import PluginHandler
+
+DATA_DIR = Path(__file__).absolute().parent/"data"
+
+class Dummy:
+    def SetStatusText(self, message):
+        pass
 
 class TestDataLoaders(unittest.TestCase):
-    def test_data_loaders(self):
-        model, optimizer, refl = api.Reflectivity.create_new("spec_nx")
+    @classmethod
+    def setUpClass(cls):
+        head = DATA_DIR.parent.parent
+        cls._handler = PluginHandler(None, str(head / "genx" / "plugins")+sep, "data_loaders")
+        cls.data_loaders = {}
+        parent = Dummy()
+        for dl in cls._handler.get_possible_plugins():
+            try:
+                cls._handler.load_plugin(dl)
+                cls._handler.loaded_plugins[dl].parent = parent
+                cls.data_loaders[dl] = cls._handler.loaded_plugins[dl]
+            except Exception as error:
+                print(error)
 
-        api.data_loader.d17_legacy.LoadData(model.data[0], os.path.join(EXAMPLE_DIR, "D17_SiO.out"))
-        api.data_loader.default.LoadData(model.data[0], os.path.join(EXAMPLE_DIR, "xray-tutorial.dat"))
+    def test_d17_legacy(self):
+        data = DataSet()
+        self.data_loaders['d17_legacy'].LoadData(data, DATA_DIR / "D17_SiO.out")
+
+    def test_default(self):
+        data = DataSet()
+        self.data_loaders['default'].LoadData(data,DATA_DIR / "xray-tutorial.dat")
+
+    def test_auto(self):
+        # use all wildcards provided by the auto loaded to try to open files in the data folder
+        files = []
+        auto =self.data_loaders['auto']
+        for wc in auto.wildcard.split(';'):
+            files += list(DATA_DIR.glob(wc))
+        for i,fi in enumerate(files):
+            data = DataSet()
+            with self.subTest(msg=str(fi.name)):
+                auto.LoadData(data, str(fi))
+                self.assertTrue(len(data.x_raw)>0)
+                self.assertEqual(len(data.x_raw), len(data.y_raw))
+                self.assertEqual(len(data.x_raw), len(data.error_raw))
+                self.assertEqual(len(data.extra_data_raw.keys()), len(data.extra_commands.keys()))
+                self.assertEqual(len(data.extra_data_raw.keys()), len(data.extra_data.keys()))

@@ -78,7 +78,8 @@ def ReadXpert(file_name):
     """
     Read the data of a philips X'Pert diffractometer file, exported as text files.
     """
-    raw_data = open(file_name, "r").read()
+    with open(file_name, "r") as fh:
+        raw_data = fh.read()
     while len(raw_data) > 0 and raw_data[0] != "<":
         # some files are written using UTF-8 BOM format that has extra bytes before the text starts
         # this will ignore any characters at the beginning that are not "<", the tag opening for XML

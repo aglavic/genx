@@ -12,6 +12,7 @@ See the other data loaders for detailed explanation.
 
 from .amor import Plugin as AmorPlugin
 from .d17_cosmos import Plugin as D17Plugin
+from .d17_legacy import Plugin as D17LegPlugin
 from .default import Plugin as DefaultPlugin
 from .resolution import Plugin as ResolutionPlugin
 from .sns_mr import Plugin as SNSPlugin
@@ -39,7 +40,7 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
     def __init__(self, parent):
         ResolutionPlugin.__init__(self, parent)
         self.res_col = -1
-        self.loaders = [AmorPlugin(None), SNSPlugin(None), D17Plugin(None)]
+        self.loaders = [AmorPlugin(None), SNSPlugin(None), D17Plugin(None), D17LegPlugin(None)]
         if ORSOPlugin:
             self.loaders.append(ORSOPlugin(None))
         self.loaders += [SIXPlugin(None), XRDMLPlugin(None), RASPlugin(None), NJAPlugin(None), BrukerPlugin(None)]

@@ -343,10 +343,11 @@ class FormFactor(Database):
         # f = Proxy((object.__getattribute__(self, 'f_calc')(name, wl)))
         # Removing a bug with proxy adding does not work properly
         f = object.__getattribute__(self, "f_calc")(name, wl)
-        if weights is None:
-            f = ElementComplex(f, name)
-        elif name in weights:
-            f = ElementComplex(f, name)*(0.6022141/weights[name])
+        if isinstance(f, complex):
+            if weights is None:
+                f = ElementComplex(f, name)
+            elif name in weights:
+                f = ElementComplex(f, name)*(0.6022141/weights[name])
         return f
 
 

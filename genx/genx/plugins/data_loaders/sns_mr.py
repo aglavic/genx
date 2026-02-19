@@ -42,7 +42,8 @@ class Plugin(Template):
     def CanOpen(self, file_path):
         if not Template.CanOpen(self, file_path):
             return False
-        l1 = open(file_path, "r", encoding="utf-8").readline()
+        with open(file_path, "r", encoding="utf-8") as fh:
+            l1 = fh.readline()
         return l1.startswith("# Datafile created by QuickNXS")
 
     def LoadData(self, dataset, filename, data_id=0):
