@@ -30,8 +30,7 @@ parts:
     plugin: python
     source: ./genx
     organize:
-      debian_build/genx.xml: meta/gui/mime/genx.xml
-      debian_build/genx.png: meta/gui/genx.png
+      meta/gui/genx.xml: meta/gui/mime/genx.xml
     python-packages:
       - wheel
       - numba
