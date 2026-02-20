@@ -17,6 +17,14 @@ if TYPE_CHECKING:
     from ...add_ons.SimpleReflectivity import Plugin as SRPlugin
 
 
+def sanetize_name(name):
+    if name:
+        name = name.replace('\t', '_').replace(' ', '_').replace('.', 'p').replace('-', 'm')
+        if not name.isidentifier():
+            name = None
+    return name
+
+
 @dataclass
 class InstrumentInformation:
     probe: str
@@ -34,12 +42,16 @@ class LayerData:
     sigma: float
     name: Optional[str]
 
+    def __post_init__(self):
+        self.name = sanetize_name(self.name)
 
 @dataclass
 class StackData:
     layers: List[LayerData]
     name: Optional[str]
 
+    def __post_init__(self):
+        self.name = sanetize_name(self.name)
 
 @dataclass
 class LayerModel:
