@@ -120,7 +120,7 @@ class H5HintedExport(H5Savable):
 
     def init_defaults(self):
         """Allows the class to automatically initialize the exported parameters from their defaults"""
-        for attr, typ in get_type_hints(self).items():
+        for attr, typ in get_type_hints(self.__class__).items():
             if attr in self._export_ignore or attr.startswith("_"):
                 continue
             if not hasattr(self.__class__, attr):
@@ -139,7 +139,7 @@ class H5HintedExport(H5Savable):
             -H5Savable derived classes will be written in sub-group
              using their write_h5group method and h5group_name attribute
         """
-        for attr, typ in get_type_hints(self).items():
+        for attr, typ in get_type_hints(self.__class__).items():
             if attr in self._export_ignore or attr.startswith("_"):
                 continue
             value = getattr(self, attr)
@@ -194,7 +194,7 @@ class H5HintedExport(H5Savable):
                fallback and only debug info is provided
             2. Otherwise a warning message for missing parameter is given and attribute is not set at all
         """
-        for attr, typ in get_type_hints(self).items():
+        for attr, typ in get_type_hints(self.__class__).items():
             if attr in self._export_ignore or attr.startswith("_"):
                 continue
             if hasattr(self.__class__, attr):

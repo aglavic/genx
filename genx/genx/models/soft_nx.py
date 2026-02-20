@@ -648,9 +648,9 @@ class TestSoftNX(ModelTestCase):
 
     def test_sld(self):
         sample = Sample(
-            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, f=2e-5 + 1e-7j, b=3e-6, dens=0.1, magn=0.1, magn_ang=24.0)])],
-            Ambient=Layer(b=1e-7, dens=0.1),
-            Substrate=Layer(b=4e-6, dens=0.1),
+            Stacks=[Stack(Layers=[Layer(d=150, sigma=2.0, sld_x=2e-5 + 1e-7j, sld_n=3e-6, sld_m=1e-6, magn_ang=24.0)])],
+            Ambient=Layer(sld_n=1e-7),
+            Substrate=Layer(sld_n=4e-6),
         )
         instrument = Instrument(
             probe=Probe.xray,

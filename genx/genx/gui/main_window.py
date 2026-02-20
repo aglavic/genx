@@ -2630,8 +2630,8 @@ class GenxApp(wx.App):
                     def __call__(self, *args, **opts):
                         if inspect.stack()[1][3] != "<lambda>":
                             self.WriteSplash(
-                                f"compiling numba functions {self.update_counter}/21",
-                                progress=0.25 + 0.5 * (self.update_counter - 1) / 21.0,
+                                f"compiling numba functions {self.update_counter}/22",
+                                progress=0.25 + 0.5 * (self.update_counter - 1) / 22.0,
                             )
                             self.update_counter += 1
                             wx.YieldIfNeeded()
