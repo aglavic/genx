@@ -58,6 +58,7 @@ Virtual environment
 More reliable and probably working on most Linux distributions:
 
 .. code-block:: bash
+
     sudo apt update
     sudo apt install python3-venv python3-wxgtk4.0
     python3 -m venv --system-site-packages genx_environment_path
