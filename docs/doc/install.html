@@ -91,6 +91,13 @@ python3 -m pip install --break-system-packages numba pint orsopy svgwrite pymysq
 <section id="virtual-environment">
 <h3>Virtual environment<a class="headerlink" href="#virtual-environment" title="Permalink to this headline">¶</a></h3>
 <p>More reliable and probably working on most Linux distributions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt update
+sudo apt install python3-venv python3-wxgtk4.0
+python3 -m venv --system-site-packages genx_environment_path
+<span class="nb">source</span> genx_environment_path/bin/activate
+pip install genx3
+</pre></div>
+</div>
 </section>
 <section id="snap">
 <h3>Snap<a class="headerlink" href="#snap" title="Permalink to this headline">¶</a></h3>
