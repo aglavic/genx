@@ -10,7 +10,7 @@ genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/plugins/*/help_m
 genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/models/*.py')]
 genx_modules += ['genx.gui.plotpanel', 'genx.gui.plotpanel_wx']
 
-libomp_path = glob("/opt/homebrew/Cellar/libomp/*/lib/libomp.dylib")[0]
+libomp_path = glob("/usr/local/Cellar/libomp/*/lib/libomp.dylib")[0]
 
 a = Analysis(['scripts/genx_mac'],
              pathex=[os.path.abspath(os.path.curdir)],
