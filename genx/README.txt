@@ -12,6 +12,13 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.8
+=============
+ * Fix Mac OS fitting crash due to incompatibility with new numpy version (#21, thanks to kibbi10)
+ * Fix incompatibility with Python 3.14 typing system
+ * Fix potential issues with names in ORSO model analyzer
+ * Reallow ReflFunction energy dependent scattering factors for f/fm1/fm2 parameters in mag_refl model
+
 Changes 3.8.7
 =============
  * Fix Mac OS file icons for genx and orso files
