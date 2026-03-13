@@ -218,10 +218,10 @@ class Layer(refl.ReflBase):
     dens: float = 1.0
     sigma: float = 0.0
 
-    f: complex = 1e-20j
+    f: Union[complex, ReflFunction] = 1e-20j
     fr: Union[complex, ReflFunction] = 0j
-    fm1: complex = 0j
-    fm2: complex = 0j
+    fm1: Union[complex, ReflFunction] = 0j
+    fm2: Union[complex, ReflFunction] = 0j
     resdens: float = 1.0
     resmag: float = 1.0
 
