@@ -10,9 +10,11 @@ genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/plugins/*/help_m
 genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/models/*.py')]
 genx_modules += ['genx.gui.plotpanel', 'genx.gui.plotpanel_wx']
 
+libomp_path = glob("/opt/homebrew/Cellar/libomp/*/lib/libomp.dylib")[0]
+
 a = Analysis(['scripts/genx_mac'],
              pathex=[os.path.abspath(os.path.curdir)],
-             binaries=[("/usr/local/Cellar/libomp/21.1.8/lib/libomp.dylib", ".")],
+             binaries=[(libomp_path, ".")],
              datas=[('genx', 'genx_source/genx'),
                     ('mac_build/genx.icns', '.'),
                     ('mac_build/orso.icns', '.')],
