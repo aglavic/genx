@@ -1015,11 +1015,11 @@ class DiffEv(GenxOptimizer):
         vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
-        index1 = int(random.rand(1) * self.n_pop)
-        index2 = int(random.rand(1) * len(self.par_evals))
+        index1 = int(random.rand() * self.n_pop)
+        index2 = int(random.rand() * len(self.par_evals))
         # Make sure it is not the same vector
         # while index2 == index1:
-        #    index2 = int(random.rand(1)*self.n_pop)
+        #    index2 = int(random.rand()*self.n_pop)
 
         # Calculate the mutation vector according to the best/1 scheme
         mut_vec = (
@@ -1032,7 +1032,7 @@ class DiffEv(GenxOptimizer):
         # given by the recombination constant kr
         recombine = random.rand(self.n_dim) < self.kr_vec[index]
         # Make sure at least one parameter is changed
-        recombine[int(random.rand(1) * self.n_dim)] = 1
+        recombine[int(random.rand() * self.n_dim)] = 1
         # Make the recombination
         trial = where(recombine, mut_vec, vec)
 
@@ -1053,11 +1053,11 @@ class DiffEv(GenxOptimizer):
         vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
-        index1 = int(random.rand(1) * self.n_pop)
-        index2 = int(random.rand(1) * self.n_pop)
+        index1 = int(random.rand() * self.n_pop)
+        index2 = int(random.rand() * self.n_pop)
         # Make sure it is not the same vector
         while index2 == index1:
-            index2 = int(random.rand(1) * self.n_pop)
+            index2 = int(random.rand() * self.n_pop)
 
         # Calculate the mutation vector according to the best/1 scheme
         mut_vec = self.best_vec + self.opt.km * (self.pop_vec[index1] - self.pop_vec[index2])
@@ -1066,7 +1066,7 @@ class DiffEv(GenxOptimizer):
         # given by the recombination constant kr
         recombine = random.rand(self.n_dim) < self.opt.kr
         # Make sure at least one parameter is changed
-        recombine[int(random.rand(1) * self.n_dim)] = 1
+        recombine[int(random.rand() * self.n_dim)] = 1
         # Make the recombination
         trial = where(recombine, mut_vec, vec)
 
@@ -1088,13 +1088,13 @@ class DiffEv(GenxOptimizer):
         vec = self.pop_vec[index]
         # Create mutation vector
         # Select two random vectors for the mutation
-        index1 = int(random.rand(1) * self.n_pop)
-        index2 = int(random.rand(1) * self.n_pop)
+        index1 = int(random.rand() * self.n_pop)
+        index2 = int(random.rand() * self.n_pop)
         # Make sure it is not the same vector
         while index2 == index1:
-            index2 = int(random.rand(1) * self.n_pop)
+            index2 = int(random.rand() * self.n_pop)
 
-        if random.rand(1) < self.pf:
+        if random.rand() < self.pf:
             # Calculate the mutation vector according to the best/1 scheme
             trial = self.best_vec + self.opt.km * (self.pop_vec[index1] - self.pop_vec[index2])
         else:
@@ -1118,14 +1118,14 @@ class DiffEv(GenxOptimizer):
         vec = self.pop_vec[index]
         # Create mutation vector
         # Select three random vectors for the mutation
-        index1 = int(random.rand(1) * self.n_pop)
-        index2 = int(random.rand(1) * self.n_pop)
+        index1 = int(random.rand() * self.n_pop)
+        index2 = int(random.rand() * self.n_pop)
         # Make sure it is not the same vector
         while index2 == index1:
-            index2 = int(random.rand(1) * self.n_pop)
-        index3 = int(random.rand(1) * self.n_pop)
+            index2 = int(random.rand() * self.n_pop)
+        index3 = int(random.rand() * self.n_pop)
         while index3 == index1 or index3 == index2:
-            index3 = int(random.rand(1) * self.n_pop)
+            index3 = int(random.rand() * self.n_pop)
 
         # Calculate the mutation vector according to the rand/1 scheme
         mut_vec = self.pop_vec[index3] + self.opt.km * (self.pop_vec[index1] - self.pop_vec[index2])
@@ -1134,7 +1134,7 @@ class DiffEv(GenxOptimizer):
         # given by the recombination constant kr
         recombine = random.rand(self.n_dim) < self.opt.kr
         # Make sure at least one parameter is changed
-        recombine[int(random.rand(1) * self.n_dim)] = 1
+        recombine[int(random.rand() * self.n_dim)] = 1
         # Make the recombination
         trial = where(recombine, mut_vec, vec)
 
@@ -1153,16 +1153,16 @@ class DiffEv(GenxOptimizer):
         """
         # Create mutation vector
         # Select two random vectors for the mutation
-        index1 = int(random.rand(1) * self.n_pop)
-        index2 = int(random.rand(1) * self.n_pop)
+        index1 = int(random.rand() * self.n_pop)
+        index2 = int(random.rand() * self.n_pop)
         # Make sure it is not the same vector
         while index2 == index1:
-            index2 = int(random.rand(1) * self.n_pop)
-        index0 = int(random.rand(1) * self.n_pop)
+            index2 = int(random.rand() * self.n_pop)
+        index0 = int(random.rand() * self.n_pop)
         while index0 == index1 or index0 == index2:
-            index0 = int(random.rand(1) * self.n_pop)
+            index0 = int(random.rand() * self.n_pop)
 
-        if random.rand(1) < self.pf:
+        if random.rand() < self.pf:
             # Calculate the mutation vector according to the best/1 scheme
             trial = self.pop_vec[index0] + self.opt.km * (self.pop_vec[index1] - self.pop_vec[index2])
         else:
