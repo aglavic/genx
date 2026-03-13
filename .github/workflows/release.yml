@@ -30,7 +30,7 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "windows"]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: genx_release
@@ -51,7 +51,7 @@ jobs:
         python update_version.py
         iscc genx.iss
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: windows-dist
         path: |
@@ -62,7 +62,7 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install dependencies
       run: |
         sudo apt update
@@ -111,7 +111,7 @@ jobs:
         packages-dir: dist_server/
         skip-existing: true
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ubuntu-22-dist
         path: |
@@ -123,7 +123,7 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install dependencies
       run: |
         sudo apt update
@@ -140,7 +140,7 @@ jobs:
         DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
         mv dist/*.deb $DEST_PATH
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ubuntu-24-dist
         path: |
@@ -151,7 +151,7 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", ]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
@@ -235,7 +235,7 @@ jobs:
 #    - name: Setup tmate session for debug
 #      uses: mxschmitt/action-tmate@v3
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: mac-dist
         path: |
@@ -246,7 +246,7 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
@@ -328,7 +328,7 @@ jobs:
       run: |
         xcrun notarytool submit genx/dist/GenX3*.pkg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: mac-dist-m1
         path: |
@@ -340,20 +340,20 @@ jobs:
     needs: [build-ubuntu-24, build-ubuntu-22, build-windows, build-macos, build-macos-m1]
     
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/checkout@v6
+    - uses: actions/download-artifact@v8
       with:
         name: ubuntu-24-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: ubuntu-22-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: windows-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: mac-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: mac-dist-m1
     - name: Create release notes
@@ -376,20 +376,20 @@ jobs:
     needs: [build-ubuntu-24, build-ubuntu-22, build-windows, build-macos, build-macos-m1]
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/checkout@v6
+    - uses: actions/download-artifact@v8
       with:
         name: ubuntu-24-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: ubuntu-22-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: windows-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: mac-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: mac-dist-m1
     - name: Install dependencies
