@@ -610,19 +610,22 @@ class DataSet(H5HintedExport):
         if not isinstance(other, DataSet):
             return False
 
-        result = self.use == other.use
-        result &= (array(self.x_raw) == array(other.x_raw)).all()
-        result &= (array(self.y_raw) == array(other.y_raw)).all()
-        result &= (array(self.error_raw) == array(other.error_raw)).all()
-        for key, value in self.extra_data_raw.items():
-            result &= (array(value) == array(other.extra_data_raw[key])).all()
-            result &= self.extra_commands[key] == other.extra_commands[key]
-        result &= self.x_command == other.x_command
-        result &= self.y_command == other.y_command
-        result &= self.error_command == other.error_command
-        result &= self.name == other.name
-
-        return result
+        try:
+            result = self.use == other.use
+            result &= (array(self.x_raw) == array(other.x_raw)).all()
+            result &= (array(self.y_raw) == array(other.y_raw)).all()
+            result &= (array(self.error_raw) == array(other.error_raw)).all()
+            for key, value in self.extra_data_raw.items():
+                result &= (array(value) == array(other.extra_data_raw[key])).all()
+                result &= self.extra_commands[key] == other.extra_commands[key]
+            result &= self.x_command == other.x_command
+            result &= self.y_command == other.y_command
+            result &= self.error_command == other.error_command
+            result &= self.name == other.name
+        except ValueError:
+            return False
+        else:
+            return result
 
     def __repr__(self):
         output = "DataSet(name=%-15s, show=%s, use=%s, error=%s)" % (self.name, self.show, self.use, self.use_error)

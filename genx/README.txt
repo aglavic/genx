@@ -12,6 +12,10 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.9
+=============
+ * Fix a bug where the batch fitting failed if not all datasets had the same number of points
+
 Changes 3.8.8
 =============
  * Fix Mac OS fitting crash due to incompatibility with new numpy version (#21, thanks to kibbi10)
