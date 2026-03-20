@@ -36,9 +36,9 @@ class Plugin(Template):
         page3 = CustomManipulationPage(wizard, self)
         page4 = SetNamePage(wizard, self)
 
-        wx.adv.WizardPageSimple_Chain(page1, page2)
-        wx.adv.WizardPageSimple_Chain(page2, page3)
-        wx.adv.WizardPageSimple_Chain(page3, page4)
+        wx.adv.WizardPageSimple.Chain(page1, page2)
+        wx.adv.WizardPageSimple.Chain(page2, page3)
+        wx.adv.WizardPageSimple.Chain(page3, page4)
 
         wizard.FitToPage(page1)
         # print dir(wizard)
@@ -68,8 +68,7 @@ class Plugin(Template):
         """Function to load the spec scans as a list of scan numbers"""
         # self.dataset = data.DataSet()
         try:
-            self.scan = self.specfile[scanlist]
-            self.dataset.set_extra_data("values", self.scan.values)
+            self.scan = self.specfile[scanlist[0]]
         except Exception as e:
             iprint("Could not load the desired scans")
             iprint("Error: ", e.__str__())
@@ -120,6 +119,13 @@ class Plugin(Template):
                 self.dataset.error_raw = yvals[2]
         elif self.error_val != "None" and self.error_val != "":
             self.dataset.error_raw = yvals[1]
+
+        for key, val in self.scan.values.items():
+            if key in [self.mon_val, self.error_val, self.det_val, self.x_val] or val.shape!=yvals[0].shape:
+                continue
+            sanit_key = key.strip().replace('-', '_').replace(' ', '_').replace('/', '_')
+            if sanit_key.isidentifier():
+                self.dataset.set_extra_data(sanit_key, yvals[1])
 
         # self.dataset.x_raw = self.scan.values[self.x_val]
         self.dataset.x_raw = xval
@@ -198,7 +204,7 @@ class LoadSpecScanPage(wx.adv.WizardPageSimple):
     def OnScanSelected(self, evt):
         """A scan has been seelcted"""
         # check so at least one scan is selected
-        if len(self.scanchooser.GetChecked()) > 0:
+        if len(self.scanchooser.GetCheckedItems()) > 0:
             self.SetControlEnable(wx.ID_FORWARD, True)
         else:
             self.SetControlEnable(wx.ID_FORWARD, False)
@@ -440,7 +446,7 @@ class SetNamePage(wx.adv.WizardPageSimple):
         self.manipSizer.Add(wx.StaticText(self, -1, "Name: "), 0, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 10)
         self.xCtrl = wx.TextCtrl(self, -1, value="Name")
         self.manipSizer.Add(self.xCtrl, 0, wx.EXPAND | wx.ALL, 10)
-        self.sizer.Add(self.manipSizer, 0, wx.EXPAND | wx.ALIGN_CENTRE | wx.ALL)
+        self.sizer.Add(self.manipSizer, 0, wx.EXPAND | wx.ALL)
 
         self.Bind(wx.adv.EVT_WIZARD_PAGE_CHANGING, self.OnWizPageChanging)
 

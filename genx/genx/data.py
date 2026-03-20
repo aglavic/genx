@@ -461,6 +461,8 @@ class DataSet(H5HintedExport):
 
         extra_results = {}
         for key in self.extra_commands.keys():
+            if key not in command_dict:
+                continue
             value = command_dict[key]
             if command_dict[key] != "":
                 try:
