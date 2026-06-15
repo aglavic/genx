@@ -215,6 +215,6 @@ dependencies:
   - zstandard=0.25.0=py313h5fd188c_1
   - zstd=1.5.7=hbeecb71_2
   - pip:
-      - orsopy==1.2.3
+      - orsopy>=1.2.3
       - pyyaml==6.0.3
       - scipy==1.16.3

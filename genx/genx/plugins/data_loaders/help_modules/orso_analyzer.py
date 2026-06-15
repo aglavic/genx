@@ -207,7 +207,13 @@ class OrsoHeaderAnalyzer:
                 repetitions.append(1)
                 stacks.append(StackData(layers=[self.get_layer_data(si)], name=None))
             else:
-                stacks[-1].layers.append(self.get_layer_data(si))
+                try:
+                    stacks[-1].layers.append(self.get_layer_data(si))
+                except Exception:
+                    logging.warning('Error when resolving layer in sample model from header, replace by empty',
+                                    exc_info=True)
+                    name = getattr(si, 'original_name', None) or getattr(si.material, 'original_name', None)
+                    stacks[-1].layers.append(LayerData(formula=None, dens=0.1, f=0j, b=0j, d=10., sigma=0., name=name))
 
         # make sure we remove ambient and substrate from a single repetition stack
         if repetitions[0] != 1:
