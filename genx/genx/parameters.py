@@ -17,6 +17,41 @@ class SortSplitItem(Enum):
     CLASS = auto()
 
 
+class ParameterRow(list):
+    """
+    Representing a sinigle row of the Parameters table. Preserves fixed length
+    and type of items upon asignment.
+    """
+    init_data: Tuple[str, float, bool, float, float, str] = ("", 0.0, False, 0.0, 0.0, "None")
+    data_types = (str, float, bool, float, float, str)
+
+    def __init__(self, item):
+        plen = len(self.init_data)
+        if not len(item) == plen:
+            raise ValueError(f"All parameter rows must have {plen} items")
+        super().__init__(item)
+
+    @classmethod
+    def empty(cls):
+        return cls(cls.init_data)
+
+    def __setitem__(self, key, value):
+        super().__setitem__(key, self.data_types[key](value))
+
+    # forbid methods that change the length
+    def pop(self, key=None):
+        raise ValueError("Parameters are fixed legnth")
+    def extend(self, iterable):
+        if len(self)==6:
+            # edge case of pickle using extend to build the item
+            raise ValueError("Parameters are fixed legnth")
+        else:
+            super().extend(iterable)
+    def append(self, item):
+        raise ValueError("Parameters are fixed legnth")
+    def insert(self, index, item):
+        raise ValueError("Parameters are fixed legnth")
+
 class Parameters(H5Savable):
     """
     Class for storing the fitting parameters in GenX
@@ -24,10 +59,9 @@ class Parameters(H5Savable):
 
     h5group_name = "parameters"
     data_labels: Tuple[str] = ("Parameter", "Value", "Fit", "Min", "Max", "Error")
-    init_data: Tuple[str, float, bool, float, float, str] = ("", 0.0, False, 0.0, 0.0, "None")
 
     def __init__(self):
-        self._data = [list(self.init_data)]
+        self._data = [ParameterRow.empty()]
 
     @property
     def data(self) -> list:
@@ -35,10 +69,7 @@ class Parameters(H5Savable):
 
     @data.setter
     def data(self, value):
-        plen = len(self.init_data)
-        if not all([len(item) == plen for item in value]):
-            raise ValueError(f"All parameter rows must have {plen} items")
-        self._data = list(value)
+        self._data = [ParameterRow(item) for item in value]
 
     def write_h5group(self, group):
         """
@@ -180,7 +211,7 @@ class Parameters(H5Savable):
 
     def insert_row(self, row):
         """Insert a new row at row(int)."""
-        self.data.insert(row, list(self.init_data))
+        self.data.insert(row, ParameterRow.empty())
 
     def move_row_up(self, row):
         self.move_row(row, -1)
@@ -241,7 +272,7 @@ class Parameters(H5Savable):
                 inserts.append(i)
             cls = next_obj
         for i in reversed(inserts):
-            self.data.insert(i, list(self.init_data))
+            self.data.insert(i, ParameterRow.empty())
 
     def strip(self):
         # remove empty parameters at beginning and end
@@ -251,7 +282,7 @@ class Parameters(H5Savable):
             self.data.pop()
 
     def append(self, parameter=None, model=None):
-        data = list(self.init_data)
+        data = ParameterRow.empty()
         out = ConnectedParameter(self, data)
         out._model = model
         if parameter is not None:
