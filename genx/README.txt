@@ -17,6 +17,7 @@ Changes 3.8.11
  * Fix a bug where spec_adaptive model did not deal with negative magnetization values correctly for n
    pol simulations. (#23)
  * Fix issue where changing some model configuration after a fit lead to errors in the script (np.float64).
+ * Fix incompatibility with bumps library version >=1.0.4.
 
 Changes 3.8.10
 ==============

@@ -8,7 +8,10 @@ else:
         dof = problem.dof if norm else 1
         npars = max(len(problem.getp()), 1)
         return _nllf_scale(dof, npars, norm=norm)
-from bumps.formatnum import format_uncertainty
+try:
+    from bumps.formatnum import format_uncertainty
+except ModuleNotFoundError:
+    from bumps.dream.stats import format_uncertainty
 from bumps.monitor import TimedUpdate
 
 
