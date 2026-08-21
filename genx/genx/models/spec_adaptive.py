@@ -638,8 +638,10 @@ def calculate_segmentation(sample):
         i = j
     rho_nsf_out = array(rho_nsf_out)
     rho_sf_out = array(rho_sf_out)
-    rho_m_out = sqrt(rho_nsf_out**2 + rho_sf_out**2).tolist()
-    magn_ang_out = (arctan2(rho_nsf_out, -rho_sf_out) * 180.0 / pi - 90.0).tolist()
+    # absolute value of magnetization, keeping the sign of the non spin-flip part to work with npol
+    rho_m_out = (np.sign(rho_nsf_out)*sqrt(rho_nsf_out**2 + rho_sf_out**2)).tolist()
+    # correct the angle to take negative rho_m_out values into account
+    magn_ang_out = (((arctan2(rho_nsf_out, -rho_sf_out) * 180.0 / pi - 90.0)+(rho_nsf_out<0)*180)%360).tolist()
     return (d_segments[1:], rho_x_out[1:], rho_n_out[1:], rho_m_out[1:], xs_ai_out[1:], magn_ang_out[1:])
 
 
