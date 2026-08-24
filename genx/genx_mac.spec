@@ -19,7 +19,7 @@ a = Analysis(['scripts/genx_mac'],
                     ('mac_build/genx.icns', '.'),
                     ('mac_build/orso.icns', '.')],
              hiddenimports= genx_modules+[
-                 'numpy', 'pymysql', 'numba', 'requests',
+                 'numpy', 'pymysql', 'numba', 'requests', 'bumps.dream.util',
                  'scipy._lib.array_api_compat.numpy.fft', 'scipy.special._special_ufuncs',
                  'scipy.special.cython_special', 'xml.dom.minidom',
                  'vtk', 'vtkmodules', 'vtkmodules.all', 'vtkmodules.util.colors',

@@ -188,7 +188,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         if clear:
             # Start by deleting all rows:
             msg = gridlib.GridTableMessage(
-                self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, self.parent.GetNumberRows(), self.parent.GetNumberRows()
+                self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 0, self.parent.GetNumberRows()
             )
             self.pars = parameters.Parameters()
             self.GetView().ProcessTableMessage(msg)
