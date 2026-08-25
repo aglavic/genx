@@ -106,10 +106,10 @@ class ParameterDataTable(gridlib.GridTableBase):
     def UpdateView(self):
         delta_length = 1 + self.GetNumberRows() - self.parent.GetNumberRows()
         if delta_length > 0:
-            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 1, delta_length)
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_INSERTED, 0, delta_length)
             self.GetView().ProcessTableMessage(msg)
         elif delta_length < 0:
-            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1, -delta_length)
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 0, -delta_length)
             self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
         self.parent._grid_changed()
@@ -210,7 +210,7 @@ class ParameterDataTable(gridlib.GridTableBase):
             diff_rows = self.GetNumberRows() - self.parent.GetNumberRows() + 1
             if diff_rows < 0:
                 # rows were deleted
-                msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1, abs(diff_rows))
+                msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 0, abs(diff_rows))
                 self.GetView().ProcessTableMessage(msg)
             elif diff_rows > 0:
                 # rows were added

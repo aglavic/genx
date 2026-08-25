@@ -2579,6 +2579,9 @@ class GenxApp(wx.App):
         dc.SelectObject(wx.NullBitmap)
 
     def lazy_imoprts(self):
+        debug('enter lazy_imports')
+        # suppress converter debug messages when importing h5py (indirectly)
+        logging.getLogger('h5py').setLevel(logging.WARNING)
         global custom_ids, datalist, help, parametergrid, pubgraph_dialog, solvergui, BatchDialog, \
             ShowNotificationDialog, ShowQuestionDialog, VersionInfoDialog, check_version
         from . import custom_ids, datalist, help
@@ -2586,6 +2589,7 @@ class GenxApp(wx.App):
         from .batch_dialog import BatchDialog
         from .message_dialogs import ShowNotificationDialog, ShowQuestionDialog
         from .online_update import VersionInfoDialog, check_version
+        debug('leave lazy_imports')
 
     def OnInit(self):
         first_init = self._first_init
@@ -2643,10 +2647,10 @@ class GenxApp(wx.App):
                 numba.jit = real_jit
 
         if self.open_file is None:
-            self.splash.Destroy()
-            if first_init:
+            if first_init and main_frame.wstartup.show_profiles:
+                self.splash.Destroy()
                 main_frame.startup_dialog(config_path)
-            self.ShowSplash()
+                self.WriteSplash = lambda *args, **kwargs: None
         else:
             wx.CallAfter(self.WriteSplash, f"loading file {os.path.basename(self.open_file)}...", progress=0.8)
             if self.open_file.endswith(".ort"):
@@ -2668,7 +2672,8 @@ class GenxApp(wx.App):
         if time.time() - main_frame.opt.last_update_check > (7 * 24 * 3600):
             wx.CallAfter(self.WriteSplash, "checking for update...", progress=0.95)
             wx.CallAfter(main_frame.check_for_update)
-        wx.CallAfter(self.splash.Destroy)
+        if not (first_init and main_frame.wstartup.show_profiles):
+            wx.CallAfter(self.splash.Destroy)
         wx.CallLater(100, main_frame.model_control.SetModelSaved)
         return 1
 
