@@ -28,9 +28,13 @@ class _GenxCacheLocator(nc._SourceFileBackedLocatorMixin, nc._CacheLocator):
         debug(f"    source stamp is {self.get_source_stamp()}")
 
     def get_source_stamp(self):
-        # overwrite numba behavior to make sure the actual file times are used and not the executable
-        st = os.stat(self._py_file)
-        return st.st_mtime, st.st_size
+        try:
+            # overwrite numba behavior to make sure the actual file times are used and not the executable
+            st = os.stat(self._py_file)
+            return st.st_mtime, st.st_size
+        except FileNotFoundError:
+            # in binary pyinstaller distributions the module path might not actually exist, fall back to numba method
+            return super().get_source_stamp()
 
     def get_cache_path(self):
         return self._cache_path
