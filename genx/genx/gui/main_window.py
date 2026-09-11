@@ -2259,6 +2259,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         """
         Event handler for only evaluating the Sim function - no recompiling
         """
+        from numpy import isnan
         self.flag_simulating = True
         self.main_frame_statusbar.SetStatusText("Simulating...", 1)
         # Compile is not necessary when using simulate...
@@ -2271,7 +2272,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             data = self.model_control.get_data()
             sims2 = [di.y_sim for di in data]
             _post_sim_plot_event(self, self.model_control.get_model(), "Evaluation")
-            diffs = [(si1 != si2).any() for si1, si2 in zip(sims1, sims2)]
+            diffs = [not ((si1 == si2)|(isnan(si1) & isnan(si2))).all() for si1, si2 in zip(sims1, sims2)]
             if any(diffs):
                 ShowNotificationDialog(
                     self,
