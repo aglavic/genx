@@ -71,6 +71,9 @@ def get_mat_api(frm: Formula):
         return None
 
 
+def cap_first(string):
+    return string[0].upper() + string[1:]
+
 class Instrument(ReflBase):
     """
     Specify parameters of the probe and reflectometry instrument in SimpleReflectivity.
@@ -250,9 +253,9 @@ class SampleTable(gridlib.GridTableBase):
     def ResetModel(self, first=False):
         old_len = len(self.layers)
 
-        self.ambient = [None, "Formula", "SLD", False, "0.0", False, "0.0", False, "0", False, "0"]
+        self.ambient = ["Amb", "Formula", "SLD", False, "0.0", False, "0.0", False, "0", False, "0"]
         self.substrate = [
-            None,
+            "Sub",
             "Formula",
             Formula([["Si", 1.0]]),
             False,
@@ -364,7 +367,7 @@ class SampleTable(gridlib.GridTableBase):
             if col in [7, 8, 9, 10]:
                 return None
             return self.ambient[col]
-        elif row == self.GetNumberRows() - 2:
+        elif row == (self.GetNumberRows() - 2):
             if col in [7, 8]:
                 return None
             return self.substrate[col]
@@ -461,9 +464,10 @@ class SampleTable(gridlib.GridTableBase):
         self.updateModel()
 
     def updateModel(self, evt=None):
-        model_code = self.getModelCode()
+        model_code, mix_lines = self.getModelCode()
         evt = update_model_event()
         evt.script = model_code
+        evt.mix_lines = mix_lines
         try:
             wx.PostEvent(self.parent, evt)
         except RuntimeError:
@@ -715,7 +719,7 @@ class SampleTable(gridlib.GridTableBase):
                 output += "magn=%s, " % layer[6]
                 out_param["dens"] = dens
                 out_param["magn"] = float(eval(layer[6]))
-        else:
+        else: # selection is mixure
             try:
                 SLD1 = float(eval(layer[2]))
                 SLD2 = float(eval(layer[4]))
@@ -724,12 +728,15 @@ class SampleTable(gridlib.GridTableBase):
                 SLD2 = 0.0
                 layer[2] = "0.0"
                 layer[4] = "0.0"
-            frac = float(eval(layer[6])) / 100.0
+            perc = float(eval(layer[6]))
+            frac = perc / 100.0
             output += "f=(%s*%s+(1-%s)*%s), " % (frac, SLD1, frac, SLD2)
             output += "b=(%s*%s+(1-%s)*%s), " % (frac, SLD1, frac, SLD2)
+            self._mix_lines.append(f"{layer[0]}.setF(0.01*cp.mix_{layer[0]}*{SLD1} + (1-0.01*cp.mix_{layer[0]})*{SLD2})")
+            self._mix_lines.append(f"{layer[0]}.setB(0.01*cp.mix_{layer[0]}*{SLD1} + (1-0.01*cp.mix_{layer[0]})*{SLD2})")
             output += "dens=0.1, magn=0.0, "
             out_param["dens"] = 0.1
-            out_param["magn"] = 0.0
+            out_param["magn"] = perc
         output += "d=%s, " % layer[8]
         output += "sigma=%s, " % layer[10]
         output += "xs_ai=0.0, magn_ang=0.0)"
@@ -744,19 +751,27 @@ class SampleTable(gridlib.GridTableBase):
         Generate the python code for the current sample structure.
         """
         grid_parameters = self.parent.plugin.GetModel().get_parameters()
+        mix_params = [] # used for user parameters to fit composition
+        self._mix_lines = []
 
         script = "# BEGIN Sample DO NOT CHANGE\n"
         li, oi = self.getLayerCode(self.ambient)
         script += "Amb = %s\n" % li
         for pi, fi in [(3, "dens"), (5, "magn")]:
             if pi == 5 and self.ambient[1] == "Mixure":
+                value = oi[fi]
+                mixvar = "mix_"+"Amb"
+                mix_params.append((mixvar, value))
                 if not self.ambient[5]:
                     continue
-                fi = "dens"
-            value = oi[fi]
-            minval = value * 0.5
-            maxval = value * 2.0
-            func_name = "Amb." + _set_func_prefix + fi.capitalize()
+                minval = 0.
+                maxval = 100.
+                func_name = "cp."+_set_func_prefix+cap_first(mixvar)
+            else:
+                value = oi[fi]
+                minval = value * 0.5
+                maxval = value * 2.0
+                func_name = "Amb." + _set_func_prefix + fi.capitalize()
             grid_parameters.set_fit_state_by_name(func_name, 0.0, 0, 0.0, 0.0)
             grid_parameters.set_fit_state_by_name(func_name, value, int(self.ambient[pi]), minval, maxval)
 
@@ -765,13 +780,19 @@ class SampleTable(gridlib.GridTableBase):
             script += "%s = %s\n" % (layer[0], li)
             for pi, fi in [(3, "dens"), (5, "magn"), (7, "d"), (9, "sigma")]:
                 if pi == 5 and layer[1] == "Mixure":
+                    value = oi[fi]
+                    mixvar = "mix_"+layer[0]
+                    mix_params.append((mixvar, value))
                     if not layer[5]:
                         continue
-                    fi = "dens"
-                value = oi[fi]
-                minval = value * 0.5
-                maxval = value * 2.0
-                func_name = layer[0] + "." + _set_func_prefix + fi.capitalize()
+                    minval = 0.
+                    maxval = 100.
+                    func_name = "cp." + _set_func_prefix + cap_first(mixvar)
+                else:
+                    value = oi[fi]
+                    minval = value * 0.5
+                    maxval = value * 2.0
+                    func_name = layer[0] + "." + _set_func_prefix + fi.capitalize()
                 grid_parameters.set_fit_state_by_name(func_name, 0.0, 0, 0.0, 0.0)
                 grid_parameters.set_fit_state_by_name(func_name, value, int(layer[pi]), minval, maxval)
 
@@ -779,13 +800,19 @@ class SampleTable(gridlib.GridTableBase):
         script += "\nSub = %s\n" % li
         for pi, fi in [(3, "dens"), (5, "magn"), (9, "sigma")]:
             if pi == 5 and self.substrate[1] == "Mixure":
+                value = oi[fi]
+                mixvar = "mix_"+"Sub"
+                mix_params.append((mixvar, value))
                 if not self.substrate[5]:
                     continue
-                fi = "dens"
-            value = oi[fi]
-            minval = value * 0.5
-            maxval = value * 2.0
-            func_name = "Sub." + _set_func_prefix + fi.capitalize()
+                minval = 0.
+                maxval = 100.
+                func_name = "cp."+_set_func_prefix+cap_first(mixvar)
+            else:
+                value = oi[fi]
+                minval = value * 0.5
+                maxval = value * 2.0
+                func_name = "Sub." + _set_func_prefix + fi.capitalize()
             grid_parameters.set_fit_state_by_name(func_name, 0.0, 0, 0.0, 0.0)
             grid_parameters.set_fit_state_by_name(func_name, value, int(self.substrate[pi]), minval, maxval)
 
@@ -804,13 +831,16 @@ class SampleTable(gridlib.GridTableBase):
             "\nsample = model.Sample(Stacks = [Bot, ML, Top], Ambient = Amb, Substrate = Sub)\n"
             "# END Sample\n\n"
             "# BEGIN Parameters DO NOT CHANGE\n"
+            "cp = UserVars()\n"
         )
+        for mv, val in mix_params:
+            script += f"cp.new_var('{mv}', {val})\n"
         # store data used for the last script for reuse on update
         self._last_layer_data = [list(self.ambient)]
         for li in self.layers:
             self._last_layer_data.append(list(li))
         self._last_layer_data.append(list(self.substrate))
-        return script
+        return script, self._mix_lines
 
     def delete_grid_items(self, name):
         # remove fit grid entries corresponding to a renamed layer
@@ -852,20 +882,8 @@ class SampleTable(gridlib.GridTableBase):
                     data[4] = str(new_dens)
                 if magn is not None and data[5]:
                     data[6] = str(float(magn))
-        elif dens is not None:
-            # FIXIT: now yet working as calculation compares with current value
-            SLD1 = float(eval(ref_data[2]))
-            SLD2 = float(eval(ref_data[4]))
-            frac = float(eval(ref_data[6])) / 100.0
-            new_dens = (frac * SLD1 + (1 - frac) * SLD2) * dens / 0.1
-            if data[3]:
-                # SLD-2 was fitted
-                sld2_fraction = new_dens - frac * SLD1
-                data[4] = str(sld2_fraction / (1.0 - frac))
-            if data[5]:
-                # percentage was fitted
-                new_frac = (new_dens - SLD2) / (SLD1 - SLD2)
-                data[6] = str(new_frac * 100.0)
+        elif magn is not None and data[5]:
+            data[6] = str(float(magn))
         if d is not None and data[7]:
             data[8] = str(float(d))
         if sigma is not None and data[9]:
@@ -917,7 +935,7 @@ class SamplePanel(wx.Panel):
         self.grid = SampleGrid(self, -1, style=wx.NO_BORDER)
         self.sample_table = SampleTable(self, self.grid)
 
-        self.last_sample_script = ""  # self.sample_table.getModelCode()
+        self.last_sample_script = ("", [])  # self.sample_table.getModelCode()
         self.Bind(EVT_UPDATE_MODEL, self.UpdateModel)
         boxhor.Add(self.grid, 1, wx.EXPAND)
         boxver.Add(boxhor, 1, wx.EXPAND)
@@ -1036,10 +1054,11 @@ class SamplePanel(wx.Panel):
     def UpdateModel(self, evt=None, first=False, re_color=False):
         coords = self.inst_params["coords"]
         if evt in [None, "inst"]:
-            sample_script = self.last_sample_script
+            sample_script, mix_lines = self.last_sample_script
         else:
             sample_script = evt.script
-            self.last_sample_script = sample_script
+            mix_lines = evt.mix_lines
+            self.last_sample_script = sample_script, mix_lines
         script = (
             "from numpy import *\n"
             "import models.spec_nx as model\n"
@@ -1058,13 +1077,14 @@ class SamplePanel(wx.Panel):
         # add sample description code
         script += sample_script
         script += (
-            "cp = UserVars()\n"
             "# END Parameters\n\n"
             "SLD = []\n"
             "def Sim(data):\n"
             "    I = []\n"
             "    SLD[:] = []\n"
         )
+        if mix_lines:
+            script += "    "+"\n    ".join(mix_lines) + "\n"
         datasets = self.model.data
         from genx import data
 
@@ -1262,6 +1282,11 @@ class SamplePanel(wx.Panel):
                     name, param = pi.split(".", 1)
                 except ValueError:
                     continue
+
+                if name == 'cp' and param.startswith(_set_func_prefix+"Mix_"):
+                    name = param.split('Mix_', 1)[1]
+                    param = _set_func_prefix + "Magn"
+                    print(name, param, val)
 
                 if name in layers:
                     if param == _set_func_prefix + "Dens":
@@ -1785,11 +1810,11 @@ class Plugin(framework.Template):
     def OnFitParametersUpdated(self, event):
         grid_parameters = self.GetModel().get_parameters()
         keys = grid_parameters.get_fit_pars()[1]
-        values = event.values
-        parameters = [(key, value, None, None, None, None) for key, value in zip(keys, values)]
-        self.sample_widget.CheckGridUpdate(parameters=parameters)
-        self.sample_widget.Update(update_script=False)
         if event.permanent_change:
+            values = event.values
+            parameters = [(key, value, None, None, None, None) for key, value in zip(keys, values)]
+            self.sample_widget.CheckGridUpdate(parameters=parameters)
+            self.sample_widget.Update(update_script=False)
             for pi, val in zip(keys, values):
                 try:
                     name, param = pi.split(".", 1)
@@ -1891,9 +1916,9 @@ class Plugin(framework.Template):
 
         table = self.sample_widget.sample_table
         table.ambient = layers["Amb"]
-        table.ambient[0] = None
+        table.ambient[0] = "Amb"
         table.substrate = layers["Sub"]
-        table.substrate[0] = None
+        table.substrate[0] = "Sub"
         table.repetitions = repetitions
         layers = [layers[key] for key in layer_order if not key in ["Amb", "Sub"]]
 
