@@ -38,6 +38,14 @@ class ParameterRow(list):
     def __setitem__(self, key, value):
         super().__setitem__(key, self.data_types[key](value))
 
+    def __copy__(self):
+        from copy import copy
+        return ParameterRow(copy(list(self)))
+
+    def __deepcopy__(self, memo):
+        from copy import deepcopy
+        return ParameterRow(deepcopy(list(self), memo))
+
     # forbid methods that change the length
     def pop(self, key=None):
         raise ValueError("Parameters are fixed legnth")
