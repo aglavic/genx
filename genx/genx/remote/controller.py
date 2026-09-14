@@ -171,6 +171,8 @@ class RemoteController(ModelController):
         elif isinstance(res, messaging.ModelTransfer):
             info("Setting a new model")
             self.model = res.model
+            self.model.reset()
+            self.model.simulate()
             self.optimizer.opt = res.fitparams
             self.optimizer.WriteConfig()
         elif isinstance(res, messaging.EchoMessage):

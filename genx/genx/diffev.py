@@ -1375,8 +1375,8 @@ def set_numba_single():
 def parallel_init(pkl_str: str, numba_procs=None, use_mpi=False, overwrite_single=False, log_queue=None):
     """
     parallel initialization of a pool of processes. The function takes a
-    pickle safe copy of the model and resets the script module and the compiles
-    the script and creates function to set the variables.
+    pickle safe copy of the model and resets the script module and then compiles
+    the script and creates a function to set the variables.
     """
     if log_queue:
         custom_logging.setup_mp(log_queue)
