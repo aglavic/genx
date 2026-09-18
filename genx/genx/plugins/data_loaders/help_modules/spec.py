@@ -508,11 +508,11 @@ class SpecScan:
         if __verbose__:
             iprint("---- %s" % line.strip())
 
-        sline = line.strip().split()
+        sline = line.strip().split(None, 3)
 
         self.scan = int(sline[1])
         self.scan_type = sline[2]
-        self.scan_command = " ".join(sline[2:])
+        self.scan_command = f'{sline[2]} {sline[3]}'
 
         self.header = line
         self.comments = ""
@@ -611,22 +611,27 @@ class SpecScan:
 
         while (line[0:2] != "#S") & (line != "") & (line[0:4] != "# CM"):
             if line[0] != "#":
-                datum = array([])
+                datum = []
                 d = line.strip().split()
                 if len(d) != 0:
-                    for i in range(len(d)):
-                        v = array([float(d[i])])
-                        datum = concatenate((datum, v), 1)
+                    for i, di in enumerate(d):
+                        v = float(di)
+                        datum.append(v)
 
                     if self.data.size == 0:
-                        self.data = datum
+                        self.data = array(datum)
                     else:
                         self.data = vstack((self.data, datum))
 
             elif line[0:2] == "#C":
-                self.comments = self.comments + line
+                self.comments += line
+                if "Line:" in line:
+                    # comment specifies following comment lines to ignore in data readin
+                    for i in range(int(line.split("Line:")[1].strip())):
+                        line = specfile._getLine()
+                        self.comments += line
             else:
-                self.header = self.header + line
+                self.header += line
 
             line = specfile._getLine()
 
@@ -638,7 +643,7 @@ class SpecScan:
                 iprint("---- Removing rows %s from data." % str(mask))
             self.data = np.delete(self.data, mask, axis=0)
 
-        self.scanno = numpy.ones(self.data.shape[0], dtype=numpy.int) * self.scan
+        self.scanno = numpy.ones(self.data.shape[0], dtype=int) * self.scan
         self.scandatum = arange(self.data.shape[0])
 
         # Run the extension post processing scripts

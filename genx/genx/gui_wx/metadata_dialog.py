@@ -45,7 +45,7 @@ class MetaDataDialog(wx.Dialog):
         try:
             from orsopy import fileio
 
-            self.orso_repr = [fileio.Orso(**deepcopy(di.meta)) for di in self.datasets]
+            self.orso_repr = [fileio.Orso.from_dict(deepcopy(di.meta)) for di in self.datasets]
         except Exception:
             self.orso_repr = [None for di in self.datasets]
         self.build_tree(selected)
@@ -144,7 +144,7 @@ class MetaDataDialog(wx.Dialog):
 
                 from orsopy import fileio
 
-                item = fileio.Orso(**prev_dict)
+                item = fileio.Orso.from_dict(prev_dict)
                 for key in self.activated_leaf[1:-1]:
                     item = getattr(item, key, None)
                     if item is None:
@@ -265,7 +265,7 @@ class MetaDataDialog(wx.Dialog):
         try:
             from orsopy import fileio
 
-            self.orso_repr = [fileio.Orso(**di.meta) for di in self.datasets]
+            self.orso_repr = [fileio.Orso.from_dict(di.meta) for di in self.datasets]
         except Exception:
             self.orso_repr = [None for di in self.datasets]
         self.tree.DeleteAllItems()

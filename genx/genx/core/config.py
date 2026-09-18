@@ -340,7 +340,7 @@ class Configurable:
 
     def __init__(self, config_class: Type[BaseConfig] = None):
         if config_class is None:
-            hints = get_type_hints(self)
+            hints = get_type_hints(self.__class__)
             config_class = hints.get("opt", None)
 
         if not issubclass(config_class, BaseConfig):

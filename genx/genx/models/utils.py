@@ -160,10 +160,8 @@ __bc_dict__ = sl.load_bdabax(__MODULE_DIR__ + "/databases/DeBe_NeutronNews.dat")
 bc = sl.ScatteringLength(__bc_dict__)
 # print 'Loading atomic weights'
 __w_dict__ = sl.load_atomic_weights_dabax(__MODULE_DIR__ + "/databases/AtomicWeights.dat")
-# print 'Making bw dict'
-__bw_dict__ = sl.create_scatt_weight(__bc_dict__, __w_dict__)
 # print 'Making bw scattering lengths'
-bw = sl.ScatteringLength(__bw_dict__)
+bw = sl.ScatteringLength.with_weights(__bc_dict__, __w_dict__)
 
 __lookup_bl__ = sl.create_bl_lookup(__MODULE_DIR__ + "/databases/geant4/g4xs_", __bc_dict__)
 
@@ -174,12 +172,9 @@ def create_bl(wavelength):
 
 bl = create_bl(1.79819)
 
-# print 'Making fw scattering lengths'
-__lookup_fw__ = sl.create_fw_lookup(__lookup_fp__, __w_dict__)
-
 
 def create_fw(wavelength):
-    return sl.FormFactor(wavelength, __lookup_fw__)
+    return sl.FormFactor(wavelength, __lookup_fp__, weights=__w_dict__)
 
 
 fw = create_fw(1.54)

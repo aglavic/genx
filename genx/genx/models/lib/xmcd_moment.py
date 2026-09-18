@@ -661,6 +661,7 @@ class SpectrumComponent(refl.ReflBase):
         self.gsm = gsm
 
         self.w = np.zeros(len(gsm))
+        self._w_attrs = {}
         for i in range(len(self.gsm)):
             self._make_w_fields(i)
 
@@ -670,6 +671,20 @@ class SpectrumComponent(refl.ReflBase):
 
         return self
 
+    def __getattr__(self, attr):
+        if attr.startswith('w') and len(attr)==4:
+            idx = self._w_attrs[attr]
+            return self.w[idx]
+        else:
+            return super().__getattr__(attr)
+
+    def __setattr__(self, attr, value):
+        if attr.startswith('w') and len(attr)==4:
+            idx = self._w_attrs[attr]
+            self.w[idx] = value
+        else:
+            super().__setattr__(attr, value)
+
     def _make_w_fields(self, w_index):
         new_field = field(default=0.0)
         xyz = self.gsm[w_index]
@@ -678,20 +693,22 @@ class SpectrumComponent(refl.ReflBase):
 
         def set_func(value):
             self.w[w_index] = value
-        def get_func(value):
+        def get_func():
             return self.w[w_index]
 
         set_func.__name__ = "set" + new_field.name.capitalize()
         get_func.__name__ = "get" + new_field.name.capitalize()
         setattr(self, set_func.__name__, set_func)
-        setattr(self, new_field.name, property(get_func, set_func))
+        setattr(self, get_func.__name__, get_func)
+        #setattr(self, new_field.name, property(get_func, set_func))
 
         from dataclasses import _FIELD, _FIELDS  # noqa
 
         new_field._field_type = _FIELD
         updt_fields = getattr(self, _FIELDS) | {new_field.name: new_field}
         setattr(self, _FIELDS, updt_fields)
-        setattr(self, new_field.name, 0.0)
+        #setattr(self, new_field.name, 0.0)
+        self._w_attrs[new_field.name] = w_index
 
 
 @dataclass

@@ -31,8 +31,8 @@ cp ../debian_build/*.desktop "${NAME}.orig/usr/share/applications/"
 #   menu
 mkdir -p "${NAME}/usr/share/pixmaps/"
 mkdir -p "${NAME}.orig/usr/share/pixmaps/"
-cp ../debian_build/*.xpm "${NAME}/usr/share/pixmaps/"
-cp ../debian_build/*.xpm "${NAME}.orig/usr/share/pixmaps/"
+cp ../debian_build/genx.png "${NAME}/usr/share/pixmaps/"
+cp ../debian_build/genx.png "${NAME}.orig/usr/share/pixmaps/"
 
 #   mime
 mkdir -p "${NAME}/tmp/genx_icons"
@@ -50,6 +50,7 @@ cp ../debian_build/*.xml "${NAME}.orig/usr/share/mime/packages/"
 
 cd ${NAME}
 cp ../../debian_build/control debian/
+cp ../../debian_build/copyright debian/
 cp ../../debian_build/postinst debian/
 cp ../../debian_build/postrm debian/
 

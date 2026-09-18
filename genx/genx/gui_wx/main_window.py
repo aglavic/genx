@@ -31,7 +31,7 @@ config_path = os.path.abspath(platformdirs.user_data_dir("GenX3", "ArturGlavic")
 profile_dest = os.path.abspath(os.path.join(config_path, "profiles"))
 profile_src = os.path.abspath(os.path.join(_path, "..", "profiles"))
 info(
-    f"Paths are:\n        config_path={config_path}\n       profile_dest={profile_dest}\n        profile_src{profile_src}"
+    f"Paths are:\n        config_path={config_path}\n       profile_dest={profile_dest}\n        profile_src={profile_src}"
 )
 version_file = os.path.join(config_path, "genx.version")
 if not os.path.exists(config_path):
@@ -143,6 +143,7 @@ class GUIConfig(conf_mod.BaseConfig):
     solver_update_time: float = 1.5
     editor: str = None
     last_update_check: float = 0.0
+    single_instance: bool = False
 
 
 @dataclass
@@ -170,6 +171,7 @@ class ORSOFileDialogHook(wx.FileDialogCustomizeHook):
 class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     opt: GUIConfig
     script_file: str = None
+    single_instance_server = None
 
     def __init__(self, parent: wx.App, dpi_overwrite=None):
         self._init_phase = True
@@ -354,6 +356,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             for p in [self.plot_data, self.plot_fom, self.plot_pars, self.plot_fomscan]:
                 p.ReadConfig()
 
+        self.mb_checkables[custom_ids.MenuId.SET_SINGLE].Check(self.opt.single_instance)
+        if self.opt.single_instance:
+            self.single_instance_activate()
+
         debug("finished setup of MainFrame")
 
     def create_menu(self):
@@ -527,6 +533,13 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_set.AppendSeparator()
         mb_set.Append(custom_ids.MenuId.SET_PROFILE, "Startup Profile...", "")
         mb_set.Append(custom_ids.MenuId.SET_EDITOR, "Select External Editor...", "")
+        self.mb_checkables[custom_ids.MenuId.SET_SINGLE] = mb_set.Append(
+            custom_ids.MenuId.SET_SINGLE,
+            "Single Instance",
+            "Keep only one instance of GenX, subsequent calls raise the window and load a given file",
+            wx.ITEM_CHECK,
+        )
+
         mfmb.Append(mb_set, "Settings")
         help_menu = wx.Menu()
         help_menu.Append(custom_ids.MenuId.HELP_MODEL, "Models Help...", "Show help for the models")
@@ -611,6 +624,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.Bind(wx.EVT_MENU, self.eh_data_plots, id=custom_ids.MenuId.SET_PLOT)
         self.Bind(wx.EVT_MENU, self.eh_show_startup_dialog, id=custom_ids.MenuId.SET_PROFILE)
         self.Bind(wx.EVT_MENU, self.eh_mb_select_editor, id=custom_ids.MenuId.SET_EDITOR)
+        self.Bind(wx.EVT_MENU, self.eh_on_toggle_single_instance, id=custom_ids.MenuId.SET_SINGLE)
         self.Bind(wx.EVT_MENU, self.eh_mb_models_help, id=custom_ids.MenuId.HELP_MODEL)
         self.Bind(wx.EVT_MENU, self.eh_mb_fom_help, id=custom_ids.MenuId.HELP_FOM)
         self.Bind(wx.EVT_MENU, self.eh_mb_plugins_help, id=custom_ids.MenuId.HELP_PLUGINS)
@@ -761,7 +775,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def scan_parameter(self, row):
         """
-        Scans the parameter in row row [int] from max to min in the number
+        Scans the parameter in row [int] from max to min in the number
         of steps given by dialog input.
         """
         self.model_control.compile_if_needed()
@@ -781,6 +795,44 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                 self.sep_plot_notebook.SetSelection(3)
 
         dlg.Destroy()
+
+    def eh_on_toggle_single_instance(self, evnt):
+        if self.mb_checkables[custom_ids.MenuId.SET_SINGLE].IsChecked():
+            self.single_instance_activate()
+            self.opt.single_instance = True
+        else:
+            self.single_isntance_deactivate()
+            self.opt.single_instance = False
+
+    def single_instance_activate(self):
+        with self.catch_error(action="single_instance_activate", step=f"activating single instance mode"):
+            if self.single_instance_server is not None:
+                return
+            from .single_instance import SingleInstanceServer
+            self.single_instance_server = SingleInstanceServer(on_message=self.single_instance_callback)
+            self.single_instance_server.start()
+
+    def single_isntance_deactivate(self):
+        with self.catch_error(action="single_instance_activate", step=f"deactivating single instance mode"):
+            self.single_instance_server.stop()
+            self.single_instance_server = None
+
+    def single_instance_callback(self, message: List[str]):
+        self.Iconize(False)
+        self.SetFocus()
+        self.Raise()
+        if len(message)>0:
+            if not self.model_control.saved:
+                ans = ShowQuestionDialog(
+                    self, "If you continue any changes in your model will not be saved.","Model not saved"
+                    )
+                if not ans:
+                    return
+
+            if message[0].endswith(".ort"):
+                wx.CallAfter(self.new_from_file, message)
+            else:
+                wx.CallAfter(self.open_model, message[0])
 
     def __set_properties(self):
         self.main_frame_fom_text = wx.StaticText(
@@ -1181,6 +1233,48 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         debug("open_model: post new model event")
         _post_new_model_event(self, self.model_control.get_model())
         self.update_title()
+
+    def apply_sample_model(self, header_analyzed):
+        if "SimpleReflectivity" in self.plugin_control.plugin_handler.loaded_plugins:
+            from ..plugins.add_ons.SimpleReflectivity import Plugin as SRPlugin
+
+            refl: SRPlugin = self.plugin_control.GetPlugin("SimpleReflectivity")
+            with self.catch_error(action="build_model", step=f"Building new model from metadata") as mng:
+                header_analyzed.build_simple_sample(refl)
+        else:
+            from ..plugins.add_ons.Reflectivity import Plugin as ReflPlugin
+
+            if not "Reflectivity" in self.plugin_control.plugin_handler.loaded_plugins:
+                self.plugin_control.plugin_handler.load_plugin("Reflectivity")
+            # create a new script with the reflectivity plugin
+            refl: ReflPlugin = self.plugin_control.GetPlugin("Reflectivity")
+
+            with self.catch_error(action="build_model", step=f"Building new model from metadata") as mng:
+                header_analyzed.build_sample(refl)
+
+    def replace_sample_model(self, path):
+        debug("replace_sample_model: extract ORSO model")
+        from genx.plugins.data_loaders.help_modules.orso_analyzer import OrsoHeaderAnalyzer
+
+        if path.endswith('.ort'):
+            from orsopy.fileio import load_orso
+            with self.catch_error(action="load_file", step=f"Extracint header information from ORSO file"):
+                ds0 = load_orso(path)[0]
+            with self.catch_error(action="analyze_metatdata", step=f"Using ModelLanguage to build model") as mng:
+                header_analyzed = OrsoHeaderAnalyzer.from_orso(ds0.info)
+        elif path.endswith('.orb'):
+            from orsopy.fileio import load_nexus
+            with self.catch_error(action="load_file", step=f"Extracint header information from ORSO file"):
+                ds0 = load_nexus(path)[0]
+            with self.catch_error(action="analyze_metatdata", step=f"Using ModelLanguage to build model") as mng:
+                header_analyzed = OrsoHeaderAnalyzer.from_orso(ds0.info)
+        else:
+            with self.catch_error(action="analyze_metatdata", step=f"Using ModelLanguage to build model") as mng:
+                yaml_data = open(path, 'r').read()
+                header_analyzed = OrsoHeaderAnalyzer.from_yaml(yaml_data)
+
+        if mng.successful:
+            self.apply_sample_model(header_analyzed)
 
     def open_model(self, path):
         debug("open_model: clear model")
@@ -1681,6 +1775,10 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         if self.script_file:
             os.remove(self.script_file)
             self.script_file = None
+
+        if self.single_instance_server:
+            self.single_instance_server.stop()
+            self.single_instance_server = None
 
         self.Destroy()
 
@@ -2219,6 +2317,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         """
         Event handler for only evaluating the Sim function - no recompiling
         """
+        from numpy import isnan
         self.flag_simulating = True
         self.main_frame_statusbar.SetStatusText("Simulating...", 1)
         # Compile is not necessary when using simulate...
@@ -2231,7 +2330,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             data = self.model_control.get_data()
             sims2 = [di.y_sim for di in data]
             _post_sim_plot_event(self, self.model_control.get_model(), "Evaluation")
-            diffs = [(si1 != si2).any() for si1, si2 in zip(sims1, sims2)]
+            diffs = [not ((si1 == si2)|(isnan(si1) & isnan(si2))).all() for si1, si2 in zip(sims1, sims2)]
             if any(diffs):
                 ShowNotificationDialog(
                     self,
@@ -2468,6 +2567,16 @@ class GenxFileDropTarget(wx.FileDropTarget):
                     return False
             self.parent.new_from_file(filenames)
             return True
+        if model_file.lower().endswith(".yaml") or model_file.lower().endswith(".yml"):
+            # Check so the model is saved before quitting
+            if not self.parent.model_control.saved:
+                ans = ShowQuestionDialog(
+                    self.parent, "Do you want to replace your sample model from ORSO model language?", "Replace Sample"
+                )
+                if not ans:
+                    return False
+            self.parent.replace_sample_model(model_file)
+            return True
         return False
 
 
@@ -2487,6 +2596,8 @@ class GenxApp(wx.App):
         """
         Create a custom logging handler that opens a message dialog on critical (unhandled) exceptions.
         """
+        global CatchModelError, GuiExceptionHandler
+        from .exception_handling import CatchModelError, GuiExceptionHandler
         self._exception_handler = GuiExceptionHandler(self)
         logging.getLogger().addHandler(self._exception_handler)
 
@@ -2526,6 +2637,19 @@ class GenxApp(wx.App):
         gc.DrawText(txt, (w - tw) // 2, 0)
         dc.SelectObject(wx.NullBitmap)
 
+    def lazy_imoprts(self):
+        debug('enter lazy_imports')
+        # suppress converter debug messages when importing h5py (indirectly)
+        logging.getLogger('h5py').setLevel(logging.WARNING)
+        global custom_ids, datalist, help, parametergrid, pubgraph_dialog, solvergui, BatchDialog, \
+            ShowNotificationDialog, ShowQuestionDialog, VersionInfoDialog, check_version
+        from . import custom_ids, datalist, help
+        from . import parametergrid, pubgraph_dialog, solvergui
+        from .batch_dialog import BatchDialog
+        from .message_dialogs import ShowNotificationDialog, ShowQuestionDialog
+        from .online_update import VersionInfoDialog, check_version
+        debug('leave lazy_imports')
+
     def OnInit(self):
         first_init = self._first_init
         if first_init:
@@ -2537,7 +2661,7 @@ class GenxApp(wx.App):
         self.ConnectExceptionHandler()
         debug("entering init phase")
 
-        self.WriteSplash("initializeing main window...")
+        self.WriteSplash("initializeing main window...", progress=0.15)
         main_frame = GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
         self.SetTopWindow(main_frame)
         main_frame.SetMinSize(wx.Size(600, 400))
@@ -2567,8 +2691,8 @@ class GenxApp(wx.App):
                     def __call__(self, *args, **opts):
                         if inspect.stack()[1][3] != "<lambda>":
                             self.WriteSplash(
-                                f"compiling numba functions {self.update_counter}/21",
-                                progress=0.25 + 0.5 * (self.update_counter - 1) / 21.0,
+                                f"compiling numba functions {self.update_counter}/22",
+                                progress=0.25 + 0.5 * (self.update_counter - 1) / 22.0,
                             )
                             self.update_counter += 1
                             wx.YieldIfNeeded()
@@ -2580,10 +2704,10 @@ class GenxApp(wx.App):
                 numba.jit = real_jit
 
         if self.open_file is None:
-            self.splash.Destroy()
-            if first_init:
+            if first_init and main_frame.wstartup.show_profiles:
+                self.splash.Destroy()
                 main_frame.startup_dialog(config_path)
-            self.ShowSplash()
+                self.WriteSplash = lambda *args, **kwargs: None
         else:
             wx.CallAfter(self.WriteSplash, f"loading file {os.path.basename(self.open_file)}...", progress=0.8)
             if self.open_file.endswith(".ort"):
@@ -2605,7 +2729,8 @@ class GenxApp(wx.App):
         if time.time() - main_frame.opt.last_update_check > (7 * 24 * 3600):
             wx.CallAfter(self.WriteSplash, "checking for update...", progress=0.95)
             wx.CallAfter(main_frame.check_for_update)
-        wx.CallAfter(self.splash.Destroy)
+        if not (first_init and main_frame.wstartup.show_profiles):
+            wx.CallAfter(self.splash.Destroy)
         wx.CallLater(100, main_frame.model_control.SetModelSaved)
         return 1
 
@@ -2624,6 +2749,15 @@ class GenxApp(wx.App):
         import sys
 
         subprocess.Popen([sys.executable, "-m", "genx.run"])
+
+    def MacOpenFiles(self, fileNames):
+        debug(f'Received new files to open {fileNames}')
+        main_frame = self.GetTopWindow()
+        if fileNames[0].endswith(".ort"):
+            wx.CallAfter(main_frame.plugin_control.LoadDefaultPlugins)
+            wx.CallAfter(main_frame.new_from_file, fileNames)
+        else:
+            wx.CallAfter(main_frame.open_model, fileNames[0])
 
 
 class StartUpConfigDialog(wx.Dialog):

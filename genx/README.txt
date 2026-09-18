@@ -1,4 +1,4 @@
-This package contains GenX 3.7 a program to refine x-ray and neutron reflectivity as well as
+This package contains GenX 3.8 a program to refine x-ray and neutron reflectivity as well as
 surface x-ray diffraction using differential evolution. It can also serve as a general fitting program.
 
 Support
@@ -11,6 +11,69 @@ References
 ==========
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
+
+Changes 3.9.0
+=============
+ * Change SimpleReflectivity behavior for fitting mixures. Now the model uses a custom parameter,
+   so update after the fit works properly and change to advanced Reflectivity plugin keeps the mix parameter available
+   (#11)
+ * Fix some bugs causing crashes of newer wxPython library versions
+ * Fix bug where the evaluate option would report parameter definition issues if simulation included NaN values
+ * Fix a UI issue where changing instrument parameters would wrongly update the model to fail in certain cases
+
+Changes 3.8.11
+==============
+ * Fix a bug where spec_adaptive model did not deal with negative magnetization values correctly for n
+   pol simulations. (#23)
+ * Fix issue where changing some model configuration after a fit lead to errors in the script (np.float64).
+ * Fix incompatibility with bumps library version >=1.0.4.
+
+Changes 3.8.10
+==============
+ * Fix a bug caused by orsopy library trying to download database from wrong location
+ * When parsing ORSO model language layers that can't be resolved, replace with empty layer
+ * Fix an issue in the specloader
+
+Changes 3.8.9
+=============
+ * Fix a bug where the batch fitting failed if not all datasets had the same number of points
+
+Changes 3.8.8
+=============
+ * Fix Mac OS fitting crash due to incompatibility with new numpy version (#21, thanks to kibbi10)
+ * Fix incompatibility with Python 3.14 typing system
+ * Fix potential issues with names in ORSO model analyzer
+ * Reallow ReflFunction energy dependent scattering factors for f/fm1/fm2 parameters in mag_refl model
+
+Changes 3.8.7
+=============
+ * Fix Mac OS file icons for genx and orso files
+ * Fix compatibility with bumps version 1.0.3
+ * Improve startup time to splash screen
+ * Fix mass density profile calculation if bw/fw instead of bc/fp data libraries were used
+ * Add tests for several example file types (please feel free to send me your example datasets as well)
+
+Changes 3.8.6
+=============
+ * Allow Mac OS GUI to open files directly as expected and add genx executable to PATH
+ * Implement Mac OS automatic update capability and remove previous version on install
+ * Improve Linux mime-type handling
+ * Update snap build environment
+
+Changes 3.8.5
+=============
+ * Fix a file missing from the last commit that would crash the program during startup
+
+Changes 3.8.4
+=============
+ * Add the option to keep only one instance of GenX GUI at a time (see Settings Menu)
+ * Fix bug where saving a model with Levenberg-Marquardt optimizer active would corrupt the file
+
+Changes 3.8.3
+=============
+ * Possibility to import and export the sample model from ORSO model language
+ * Export SLD always using single column spacers for compatibility with matlab
+ * Improve plugin loader resility when accountering an error
 
 Changes 3.8.2
 =============

@@ -270,7 +270,6 @@ class PluginController(Configurable):
                 if plugin in existing_plugins:
                     try:
                         self.plugin_handler.load_plugin(plugin)
-                        self.RegisterPlugin(plugin)
                     except Exception:
                         outp = io.StringIO()
                         traceback.print_exc(200, outp)
@@ -281,6 +280,8 @@ class PluginController(Configurable):
                     not_found.append(plugin)
         if not_loadable:
             text = "Can NOT load plugin "
+            if not_found:
+                text = 'Could not find plugin "%s"\n\n' % ";".join(not_found) + text
             tbtext = "\nPython traceback below:\n\n"
             for pi, tbti in not_loadable:
                 text += pi+'; '

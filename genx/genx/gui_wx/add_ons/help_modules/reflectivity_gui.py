@@ -676,7 +676,7 @@ class SamplePanel(wx.Panel):
             return self.UpdateInstrumentConfigurationNew(
                 editable, eval_func, grid_parameters, model_inst_params, old_vals, states, vals
             )
-        self.instruments = {}
+        # self.instruments = {}
         for inst_name in vals:
             new_instrument = False
             if inst_name not in self.instruments:
@@ -710,7 +710,7 @@ class SamplePanel(wx.Panel):
     def UpdateInstrumentConfigurationNew(
         self, editable, eval_func, grid_parameters, model_inst_params, old_vals, states, vals
     ):
-        self.instruments = {}
+        # self.instruments = {}
         for inst_name in vals:
             new_instrument = False
             if inst_name not in self.instruments:
@@ -1847,3 +1847,16 @@ class ParameterExpressionDialog(wx.Dialog):
         evalstring = "%s.%s(%s)" % (objstr, funcstr, set_expression)
 
         return evalstring
+
+class ORSOExportDialogHook(wx.FileDialogCustomizeHook):
+    export_compact = False
+
+    def __init__(self):
+        super().__init__()
+
+    def AddCustomControls(self, customizer):
+        self.checkbox = customizer.AddCheckBox("Compact view without explicit stacks")
+        self.checkbox.SetValue(self.export_compact)
+
+    def TransferDataFromCustomControls(self):
+        self.export_compact = self.checkbox.GetValue()

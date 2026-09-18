@@ -10,12 +10,16 @@ genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/plugins/*/help_m
 genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/models/*.py')]
 genx_modules += ['genx.gui.plotpanel', 'genx.gui.plotpanel_wx']
 
+libomp_path = glob("/usr/local/Cellar/libomp/*/lib/libomp.dylib")[0]
+
 a = Analysis(['scripts/genx_mac'],
              pathex=[os.path.abspath(os.path.curdir)],
-             binaries=[("/usr/local/Cellar/libomp/21.1.8/lib/libomp.dylib", ".")],
-             datas=[('genx', 'genx_source/genx')],
+             binaries=[(libomp_path, ".")],
+             datas=[('genx', 'genx_source/genx'),
+                    ('mac_build/genx.icns', '.'),
+                    ('mac_build/orso.icns', '.')],
              hiddenimports= genx_modules+[
-                 'numpy', 'pymysql', 'numba', 'requests',
+                 'numpy', 'pymysql', 'numba', 'requests', 'bumps.dream.util',
                  'scipy._lib.array_api_compat.numpy.fft', 'scipy.special._special_ufuncs',
                  'scipy.special.cython_special', 'xml.dom.minidom',
                  'vtk', 'vtkmodules', 'vtkmodules.all', 'vtkmodules.util.colors',
@@ -72,7 +76,7 @@ app = BUNDLE(coll,
              'CFBundleDocumentTypes': [
                 {
                     'CFBundleTypeName': 'GenX Model File',
-                    'CFBundleTypeIconFile': 'mac_build/genx.icns',
+                    'CFBundleTypeIconFile': 'genx.icns',
                      'CFBundleTypeExtensions': ['hgx', 'gx'],
                     'LSHandlerRank': 'Owner',
                     'CFBundleTypeRole' : 'Editor',
@@ -80,7 +84,7 @@ app = BUNDLE(coll,
                 },
                 {
                     'CFBundleTypeName': 'ORSO reflectivity for GenX',
-                    'CFBundleTypeIconFile': 'mac_build/genx.icns',
+                    'CFBundleTypeIconFile': 'orso.icns',
                      'CFBundleTypeExtensions': ['ort', 'orb'],
                     'LSHandlerRank': 'Default',
                     'CFBundleTypeRole' : 'Viewer',

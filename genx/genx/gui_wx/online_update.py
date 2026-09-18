@@ -73,10 +73,20 @@ class VersionInfoDialog(wx.Dialog):
         btn_box = wx.BoxSizer(wx.HORIZONTAL)
         vbox.Add(btn_box)
         self.download_link = None
+        self.download_suffix = None
         if sys.platform.startswith("win") and info["setup_file"]:
             # assume Windows users have installed from setup
             self.download_link = info["setup_file"]
             self.download_size = info["setup_file_size"]
+            self.download_suffix = ".exe"
+            btn = wx.Button(self, label="Download and Install...")
+            btn_box.Add(btn)
+            self.Bind(wx.EVT_BUTTON, self.download_and_install, btn)
+        elif sys.platform == "darwin" and info["pkg_file"]:
+            # assume macOS users have installed from pkg installer
+            self.download_link = info["pkg_file"]
+            self.download_size = info["pkg_file_size"]
+            self.download_suffix = ".pkg"
             btn = wx.Button(self, label="Download and Install...")
             btn_box.Add(btn)
             self.Bind(wx.EVT_BUTTON, self.download_and_install, btn)
@@ -112,7 +122,9 @@ class VersionInfoDialog(wx.Dialog):
         dia.Show()
         with http.get(self.download_link, allow_redirects=True, stream=True) as res:
             res.raise_for_status()
-            with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".exe", prefix="genx_setup_") as tmp:
+            with tempfile.NamedTemporaryFile(
+                "wb", delete=False, suffix=self.download_suffix or ".bin", prefix="genx_setup_"
+            ) as tmp:
                 debug(f"Save to temporary file f{tmp.name}")
                 s = 0
                 for chunk in res.iter_content(chunk_size=8192):
@@ -122,7 +134,10 @@ class VersionInfoDialog(wx.Dialog):
                     tmp.write(chunk)
         debug(f"Calling setup file f{tmp.name}")
         dia.Destroy()
-        subprocess.Popen(tmp.name)
+        if sys.platform == "darwin":
+            subprocess.Popen(["open", tmp.name])
+        else:
+            subprocess.Popen(tmp.name)
         debug(f"Started process f{tmp.name}")
         self.EndModal(wx.ID_DELETE)
 
@@ -167,11 +182,20 @@ class VersionInfoDialog(wx.Dialog):
         http.mount("https://", adapter)
 
         response = http.get(GITHUB_URL).json()
-        output = dict(date=response["published_at"], version=response["name"][1:], setup_file=None, deb_file=None)
+        output = dict(
+            date=response["published_at"],
+            version=response["name"][1:],
+            setup_file=None,
+            deb_file=None,
+            pkg_file=None,
+        )
         for asset in response["assets"]:
             if asset["name"].endswith(".exe"):
                 output["setup_file"] = asset["browser_download_url"]
                 output["setup_file_size"] = asset["size"]
+            elif asset["name"].endswith("M1-Installer.pkg"):
+                output["pkg_file"] = asset["browser_download_url"]
+                output["pkg_file_size"] = asset["size"]
             elif asset["name"].endswith("py38.deb"):
                 output["deb_file"] = asset["browser_download_url"]
         tags = requests.get(GITHUB_TAGS).json()

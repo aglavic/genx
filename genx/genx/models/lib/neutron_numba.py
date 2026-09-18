@@ -5,7 +5,6 @@ import numba
 
 from numpy import array, complex128, empty, float64, hstack
 
-##################### not yet correct ###############################
 
 
 @numba.jit(

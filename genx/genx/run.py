@@ -26,6 +26,15 @@ def start_interactive(args):
     """
     debug("enter start_interactive")
     activate_excepthook()
+    # Check if single instance is running
+    from .gui.single_instance import SingleInstanceClient
+    sc = SingleInstanceClient()
+    if sc.is_server_running():
+        if args.infile:
+            sc.send_message([args.infile])
+        else:
+            sc.send_message([])
+        sys.exit(0)
     # Fix blurry text on Windows 10
     import ctypes
 
@@ -413,7 +422,7 @@ def compile_numba(cache_dir=None):
 
             def __call__(self, *args, **opts):
                 if inspect.stack()[1][3] != "<lambda>":
-                    print(f"compiling numba functions {self.update_counter}/21")
+                    print(f"compiling numba functions {self.update_counter}/22")
                     self.update_counter += 1
                 return real_jit(*args, **opts)
 

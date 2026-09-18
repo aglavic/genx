@@ -21,9 +21,10 @@ import wx.grid as gridlib
 
 from wx.adv import Wizard, WizardPageSimple
 
+from genx.core.custom_logging import iprint
 from genx.exceptions import GenxError
 from ..custom_events import (EVT_PARAMETER_GRID_CHANGE, EVT_UPDATE_MODEL, EVT_UPDATE_PARAMETERS,
-                                    EVT_UPDATE_SCRIPT, skips_event, update_model_event)
+                             EVT_UPDATE_SCRIPT, skips_event, update_model_event)
 from ..images import getopenBitmap, getplottingBitmap
 from ..parametergrid import ValueCellRenderer
 from genx.model import Model
@@ -68,6 +69,9 @@ def get_mat_api(frm: Formula):
         debug("Error in SLD DB query", exc_info=True)
         return None
 
+
+def cap_first(string):
+    return string[0].upper() + string[1:]
 
 class Instrument(ReflBase):
     """
@@ -248,9 +252,9 @@ class SampleTable(gridlib.GridTableBase):
     def ResetModel(self, first=False):
         old_len = len(self.layers)
 
-        self.ambient = [None, "Formula", "SLD", False, "0.0", False, "0.0", False, "0", False, "0"]
+        self.ambient = ["Amb", "Formula", "SLD", False, "0.0", False, "0.0", False, "0", False, "0"]
         self.substrate = [
-            None,
+            "Sub",
             "Formula",
             Formula([["Si", 1.0]]),
             False,
@@ -309,13 +313,12 @@ class SampleTable(gridlib.GridTableBase):
 
         if not first:
             diff = old_len - len(self.layers)
-            for i in range(abs(diff)):
-                if diff < 0:
-                    msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, 1)
-                    self.GetView().ProcessTableMessage(msg)
-                elif diff > 0:
-                    msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1, 1)
-                    self.GetView().ProcessTableMessage(msg)
+            if diff < 0:
+                msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, abs(diff))
+                self.GetView().ProcessTableMessage(msg)
+            elif diff > 0:
+                msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 0, diff)
+                self.GetView().ProcessTableMessage(msg)
             msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
             self.GetView().ForceRefresh()
@@ -363,7 +366,7 @@ class SampleTable(gridlib.GridTableBase):
             if col in [7, 8, 9, 10]:
                 return None
             return self.ambient[col]
-        elif row == self.GetNumberRows() - 2:
+        elif row == (self.GetNumberRows() - 2):
             if col in [7, 8]:
                 return None
             return self.substrate[col]
@@ -460,9 +463,10 @@ class SampleTable(gridlib.GridTableBase):
         self.updateModel()
 
     def updateModel(self, evt=None):
-        model_code = self.getModelCode()
+        model_code, mix_lines = self.getModelCode()
         evt = update_model_event()
         evt.script = model_code
+        evt.mix_lines = mix_lines
         try:
             wx.PostEvent(self.parent, evt)
         except RuntimeError:
@@ -621,7 +625,7 @@ class SampleTable(gridlib.GridTableBase):
         newlayer[0] = self.get_valid_name(newlayer[0])
         self.layers.insert(model_row, newlayer)
 
-        msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, 1)
+        msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1)
         self.GetView().ProcessTableMessage(msg)
         msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
@@ -633,15 +637,14 @@ class SampleTable(gridlib.GridTableBase):
         diff = len(self.layers) - len(data)
         self.layers = list(data)
 
-        for i in range(abs(diff)):
-            if diff < 0:
-                # list of layers is longer than previous table data
-                msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, 1, 1)
-                self.GetView().ProcessTableMessage(msg)
-            elif diff > 0:
-                # list of layers is shorter than previous table data
-                msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 1, 1)
-                self.GetView().ProcessTableMessage(msg)
+        if diff < 0:
+            # list of layers is longer than previous table data
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, abs(diff))
+            self.GetView().ProcessTableMessage(msg)
+        elif diff > 0:
+            # list of layers is shorter than previous table data
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 0, diff)
+            self.GetView().ProcessTableMessage(msg)
         msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         self.GetView().ProcessTableMessage(msg)
         self.GetView().ForceRefresh()
@@ -715,7 +718,7 @@ class SampleTable(gridlib.GridTableBase):
                 output += "magn=%s, " % layer[6]
                 out_param["dens"] = dens
                 out_param["magn"] = float(eval(layer[6]))
-        else:
+        else: # selection is mixure
             try:
                 SLD1 = float(eval(layer[2]))
                 SLD2 = float(eval(layer[4]))
@@ -724,12 +727,15 @@ class SampleTable(gridlib.GridTableBase):
                 SLD2 = 0.0
                 layer[2] = "0.0"
                 layer[4] = "0.0"
-            frac = float(eval(layer[6])) / 100.0
+            perc = float(eval(layer[6]))
+            frac = perc / 100.0
             output += "f=(%s*%s+(1-%s)*%s), " % (frac, SLD1, frac, SLD2)
             output += "b=(%s*%s+(1-%s)*%s), " % (frac, SLD1, frac, SLD2)
+            self._mix_lines.append(f"{layer[0]}.setF(0.01*cp.mix_{layer[0]}*{SLD1} + (1-0.01*cp.mix_{layer[0]})*{SLD2})")
+            self._mix_lines.append(f"{layer[0]}.setB(0.01*cp.mix_{layer[0]}*{SLD1} + (1-0.01*cp.mix_{layer[0]})*{SLD2})")
             output += "dens=0.1, magn=0.0, "
             out_param["dens"] = 0.1
-            out_param["magn"] = 0.0
+            out_param["magn"] = perc
         output += "d=%s, " % layer[8]
         output += "sigma=%s, " % layer[10]
         output += "xs_ai=0.0, magn_ang=0.0)"
@@ -744,19 +750,27 @@ class SampleTable(gridlib.GridTableBase):
         Generate the python code for the current sample structure.
         """
         grid_parameters = self.parent.plugin.GetModel().get_parameters()
+        mix_params = [] # used for user parameters to fit composition
+        self._mix_lines = []
 
         script = "# BEGIN Sample DO NOT CHANGE\n"
         li, oi = self.getLayerCode(self.ambient)
         script += "Amb = %s\n" % li
         for pi, fi in [(3, "dens"), (5, "magn")]:
             if pi == 5 and self.ambient[1] == "Mixure":
+                value = oi[fi]
+                mixvar = "mix_"+"Amb"
+                mix_params.append((mixvar, value))
                 if not self.ambient[5]:
                     continue
-                fi = "dens"
-            value = oi[fi]
-            minval = value * 0.5
-            maxval = value * 2.0
-            func_name = "Amb." + _set_func_prefix + fi.capitalize()
+                minval = 0.
+                maxval = 100.
+                func_name = "cp."+_set_func_prefix+cap_first(mixvar)
+            else:
+                value = oi[fi]
+                minval = value * 0.5
+                maxval = value * 2.0
+                func_name = "Amb." + _set_func_prefix + fi.capitalize()
             grid_parameters.set_fit_state_by_name(func_name, 0.0, 0, 0.0, 0.0)
             grid_parameters.set_fit_state_by_name(func_name, value, int(self.ambient[pi]), minval, maxval)
 
@@ -765,13 +779,19 @@ class SampleTable(gridlib.GridTableBase):
             script += "%s = %s\n" % (layer[0], li)
             for pi, fi in [(3, "dens"), (5, "magn"), (7, "d"), (9, "sigma")]:
                 if pi == 5 and layer[1] == "Mixure":
+                    value = oi[fi]
+                    mixvar = "mix_"+layer[0]
+                    mix_params.append((mixvar, value))
                     if not layer[5]:
                         continue
-                    fi = "dens"
-                value = oi[fi]
-                minval = value * 0.5
-                maxval = value * 2.0
-                func_name = layer[0] + "." + _set_func_prefix + fi.capitalize()
+                    minval = 0.
+                    maxval = 100.
+                    func_name = "cp." + _set_func_prefix + cap_first(mixvar)
+                else:
+                    value = oi[fi]
+                    minval = value * 0.5
+                    maxval = value * 2.0
+                    func_name = layer[0] + "." + _set_func_prefix + fi.capitalize()
                 grid_parameters.set_fit_state_by_name(func_name, 0.0, 0, 0.0, 0.0)
                 grid_parameters.set_fit_state_by_name(func_name, value, int(layer[pi]), minval, maxval)
 
@@ -779,13 +799,19 @@ class SampleTable(gridlib.GridTableBase):
         script += "\nSub = %s\n" % li
         for pi, fi in [(3, "dens"), (5, "magn"), (9, "sigma")]:
             if pi == 5 and self.substrate[1] == "Mixure":
+                value = oi[fi]
+                mixvar = "mix_"+"Sub"
+                mix_params.append((mixvar, value))
                 if not self.substrate[5]:
                     continue
-                fi = "dens"
-            value = oi[fi]
-            minval = value * 0.5
-            maxval = value * 2.0
-            func_name = "Sub." + _set_func_prefix + fi.capitalize()
+                minval = 0.
+                maxval = 100.
+                func_name = "cp."+_set_func_prefix+cap_first(mixvar)
+            else:
+                value = oi[fi]
+                minval = value * 0.5
+                maxval = value * 2.0
+                func_name = "Sub." + _set_func_prefix + fi.capitalize()
             grid_parameters.set_fit_state_by_name(func_name, 0.0, 0, 0.0, 0.0)
             grid_parameters.set_fit_state_by_name(func_name, value, int(self.substrate[pi]), minval, maxval)
 
@@ -804,13 +830,16 @@ class SampleTable(gridlib.GridTableBase):
             "\nsample = model.Sample(Stacks = [Bot, ML, Top], Ambient = Amb, Substrate = Sub)\n"
             "# END Sample\n\n"
             "# BEGIN Parameters DO NOT CHANGE\n"
+            "cp = UserVars()\n"
         )
+        for mv, val in mix_params:
+            script += f"cp.new_var('{mv}', {val})\n"
         # store data used for the last script for reuse on update
         self._last_layer_data = [list(self.ambient)]
         for li in self.layers:
             self._last_layer_data.append(list(li))
         self._last_layer_data.append(list(self.substrate))
-        return script
+        return script, self._mix_lines
 
     def delete_grid_items(self, name):
         # remove fit grid entries corresponding to a renamed layer
@@ -852,20 +881,8 @@ class SampleTable(gridlib.GridTableBase):
                     data[4] = str(new_dens)
                 if magn is not None and data[5]:
                     data[6] = str(float(magn))
-        elif dens is not None:
-            # FIXIT: now yet working as calculation compares with current value
-            SLD1 = float(eval(ref_data[2]))
-            SLD2 = float(eval(ref_data[4]))
-            frac = float(eval(ref_data[6])) / 100.0
-            new_dens = (frac * SLD1 + (1 - frac) * SLD2) * dens / 0.1
-            if data[3]:
-                # SLD-2 was fitted
-                sld2_fraction = new_dens - frac * SLD1
-                data[4] = str(sld2_fraction / (1.0 - frac))
-            if data[5]:
-                # percentage was fitted
-                new_frac = (new_dens - SLD2) / (SLD1 - SLD2)
-                data[6] = str(new_frac * 100.0)
+        elif magn is not None and data[5]:
+            data[6] = str(float(magn))
         if d is not None and data[7]:
             data[8] = str(float(d))
         if sigma is not None and data[9]:
@@ -917,7 +934,7 @@ class SamplePanel(wx.Panel):
         self.grid = SampleGrid(self, -1, style=wx.NO_BORDER)
         self.sample_table = SampleTable(self, self.grid)
 
-        self.last_sample_script = ""  # self.sample_table.getModelCode()
+        self.last_sample_script = ("", [])  # self.sample_table.getModelCode()
         self.Bind(EVT_UPDATE_MODEL, self.UpdateModel)
         boxhor.Add(self.grid, 1, wx.EXPAND)
         boxver.Add(boxhor, 1, wx.EXPAND)
@@ -1036,10 +1053,11 @@ class SamplePanel(wx.Panel):
     def UpdateModel(self, evt=None, first=False, re_color=False):
         coords = self.inst_params["coords"]
         if evt in [None, "inst"]:
-            sample_script = self.last_sample_script
+            sample_script, mix_lines = self.last_sample_script
         else:
             sample_script = evt.script
-            self.last_sample_script = sample_script
+            mix_lines = evt.mix_lines
+            self.last_sample_script = sample_script, mix_lines
         script = (
             "from numpy import *\n"
             "import models.spec_nx as model\n"
@@ -1058,13 +1076,14 @@ class SamplePanel(wx.Panel):
         # add sample description code
         script += sample_script
         script += (
-            "cp = UserVars()\n"
             "# END Parameters\n\n"
             "SLD = []\n"
             "def Sim(data):\n"
             "    I = []\n"
             "    SLD[:] = []\n"
         )
+        if mix_lines:
+            script += "    "+"\n    ".join(mix_lines) + "\n"
         datasets = self.model.data
         from genx import data
 
@@ -1263,6 +1282,11 @@ class SamplePanel(wx.Panel):
                 except ValueError:
                     continue
 
+                if name == 'cp' and param.startswith(_set_func_prefix+"Mix_"):
+                    name = param.split('Mix_', 1)[1]
+                    param = _set_func_prefix + "Magn"
+                    print(name, param, val)
+
                 if name in layers:
                     if param == _set_func_prefix + "Dens":
                         self.sample_table.update_layer_parameters(name, dens=val)
@@ -1411,6 +1435,15 @@ class Plugin(framework.Template):
 
         # Create a menu for handling the plugin
         menu = self.NewMenu("Reflec")
+        self.mb_import_sample = wx.MenuItem(
+            menu, wx.NewId(), "Import Sample...", "Import a sample model from ORSO yaml format", wx.ITEM_NORMAL
+        )
+        menu.Append(self.mb_import_sample)
+        self.mb_export_sample = wx.MenuItem(
+            menu, wx.NewId(), "Export Sample...", "Export the sample model to ORSO yaml format", wx.ITEM_NORMAL
+        )
+        menu.Append(self.mb_export_sample)
+        menu.AppendSeparator()
         self.mb_export_sld = wx.MenuItem(
             menu, wx.NewId(), "Export SLD...", "Export the SLD to a ASCII file", wx.ITEM_NORMAL
         )
@@ -1454,6 +1487,8 @@ class Plugin(framework.Template):
             self.OnNewModel(None)
 
         # self.mb_autoupdate_sld.SetCheckable(True)
+        self.parent.Bind(wx.EVT_MENU, self.OnImportSample, self.mb_import_sample)
+        self.parent.Bind(wx.EVT_MENU, self.OnExportSample, self.mb_export_sample)
         self.parent.Bind(wx.EVT_MENU, self.OnExportSLD, self.mb_export_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnAutoUpdateSLD, self.mb_autoupdate_sld)
         self.parent.Bind(wx.EVT_MENU, self.OnShowImagSLD, self.mb_show_imag_sld)
@@ -1531,6 +1566,42 @@ class Plugin(framework.Template):
         self.sld_plot.opt.use_mass_density = self.mb_use_mass_density.IsChecked()
         self.sld_plot.WriteConfig()
         self.sld_plot.Plot()
+
+    def OnImportSample(self, evt):
+        dlg = wx.FileDialog(
+            self.parent,
+            message="Import Sample Model from ...",
+            defaultFile="",
+            wildcard="ORSO model (*.yml/*.yaml/*.ort/*.orb)|*.yml;*.yaml;*.ort;*.orb",
+            style=wx.FD_OPEN | wx.FD_CHANGE_DIR,
+        )
+        if dlg.ShowModal() == wx.ID_OK:
+            fname = dlg.GetPath()
+            self.parent.replace_sample_model(fname)
+
+    def OnExportSample(self, evt):
+        dlg = wx.FileDialog(
+            self.parent,
+            message="Export Sample Model to ...",
+            defaultFile="",
+            wildcard="ORSO model (*.yml/*.yaml)|*.yml;*.yaml",
+            style=wx.FD_SAVE | wx.FD_CHANGE_DIR,
+        )
+        customizeHook = ORSOExportDialogHook()
+        dlg.SetCustomizeHook(customizeHook)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            fname = dlg.GetPath()
+            if not (fname.endswith(".yml") or fname.endswith(".yaml")):
+                fname = fname+'.yaml'
+            result = True
+            if os.path.exists(fname):
+                filepath, filename = os.path.split(fname)
+                result = self.ShowQuestionDialog(
+                    "The file %s already exists." " Do" " you wish to overwrite it?" % filename
+                )
+            if result:
+                self.GetModel().export_simple_model(fname, compact=customizeHook.export_compact)
 
     def OnExportSLD(self, evt):
         dlg = wx.FileDialog(
@@ -1738,11 +1809,11 @@ class Plugin(framework.Template):
     def OnFitParametersUpdated(self, event):
         grid_parameters = self.GetModel().get_parameters()
         keys = grid_parameters.get_fit_pars()[1]
-        values = event.values
-        parameters = [(key, value, None, None, None, None) for key, value in zip(keys, values)]
-        self.sample_widget.CheckGridUpdate(parameters=parameters)
-        self.sample_widget.Update(update_script=False)
         if event.permanent_change:
+            values = event.values
+            parameters = [(key, value, None, None, None, None) for key, value in zip(keys, values)]
+            self.sample_widget.CheckGridUpdate(parameters=parameters)
+            self.sample_widget.Update(update_script=False)
             for pi, val in zip(keys, values):
                 try:
                     name, param = pi.split(".", 1)
@@ -1844,9 +1915,9 @@ class Plugin(framework.Template):
 
         table = self.sample_widget.sample_table
         table.ambient = layers["Amb"]
-        table.ambient[0] = None
+        table.ambient[0] = "Amb"
         table.substrate = layers["Sub"]
-        table.substrate[0] = None
+        table.substrate[0] = "Sub"
         table.repetitions = repetitions
         layers = [layers[key] for key in layer_order if not key in ["Amb", "Sub"]]
 

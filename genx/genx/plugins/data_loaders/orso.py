@@ -46,7 +46,8 @@ class Plugin(Template):
         ):
             return h5py.is_hdf5(file_path)
         else:
-            l1 = open(file_path, "r", encoding="utf-8").readline()
+            with open(file_path, "r", encoding="utf-8") as fh:
+                l1 = fh.readline()
             return l1.startswith("# # ORSO")
 
     def LoadCached(self, file_path):

@@ -5,7 +5,7 @@ Test all reflectivity models generically and discover all models implementing te
 import os
 import unittest
 
-from numpy import linspace, testing
+from numpy import testing
 
 from genx import api
 from genx.models.lib.testing import ModelTestCases

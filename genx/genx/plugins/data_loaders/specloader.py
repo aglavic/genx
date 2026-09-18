@@ -47,8 +47,7 @@ class Plugin(Template):
         """Function to load the spec scans as a list of scan numbers"""
         # self.dataset = data.DataSet()
         try:
-            self.scan = self.specfile[scanlist]
-            self.dataset.set_extra_data("values", self.scan.values)
+            self.scan = self.specfile[scanlist[0]]
         except Exception as e:
             iprint("Could not load the desired scans")
             iprint("Error: ", e.__str__())
@@ -99,6 +98,13 @@ class Plugin(Template):
                 self.dataset.error_raw = yvals[2]
         elif self.error_val != "None" and self.error_val != "":
             self.dataset.error_raw = yvals[1]
+
+        for key, val in self.scan.values.items():
+            if key in [self.mon_val, self.error_val, self.det_val, self.x_val] or val.shape != yvals[0].shape:
+                continue
+            sanit_key = key.strip().replace("-", "_").replace(" ", "_").replace("/", "_")
+            if sanit_key.isidentifier():
+                self.dataset.set_extra_data(sanit_key, yvals[1])
 
         # self.dataset.x_raw = self.scan.values[self.x_val]
         self.dataset.x_raw = xval

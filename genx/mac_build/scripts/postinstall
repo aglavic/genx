@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euo pipefail
+
+APP_PATH="/Applications/genx.app/Contents/MacOS/genx"
+LINK_PATH="/usr/local/bin/genx"
+
+# Ensure /usr/local/bin exists (it should, but be safe)
+mkdir -p /usr/local/bin
+
+# Create or update symlink
+ln -sf "$APP_PATH" "$LINK_PATH"
+
+# Correct ownership (root:wheel for system tools)
+chown -h root:wheel "$LINK_PATH"
+chmod 755 "$APP_PATH"
+
+exit 0

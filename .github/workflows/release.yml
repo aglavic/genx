@@ -30,7 +30,7 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "windows"]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: genx_release
@@ -43,7 +43,7 @@ jobs:
         pyinstaller genx.spec
     - name: Download and Install Inno Setup installer
       run: |
-        curl -L -o installer.exe http://files.jrsoftware.org/is/6/innosetup-6.1.2.exe
+        curl -L -o installer.exe https://github.com/jrsoftware/issrc/releases/download/is-6_7_1/innosetup-6.7.1.exe
         ./installer.exe /verysilent /allusers /dir=inst
     - name: Build setup file
       run: |
@@ -51,7 +51,7 @@ jobs:
         python update_version.py
         iscc genx.iss
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: windows-dist
         path: |
@@ -62,7 +62,7 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install dependencies
       run: |
         sudo apt update
@@ -111,7 +111,7 @@ jobs:
         packages-dir: dist_server/
         skip-existing: true
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ubuntu-22-dist
         path: |
@@ -123,7 +123,7 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "linux"]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install dependencies
       run: |
         sudo apt update
@@ -140,7 +140,7 @@ jobs:
         DEST_PATH=$(ls dist/*.deb | sed -e "s/genx/GenX-$GENX_VERSION/g")
         mv dist/*.deb $DEST_PATH
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ubuntu-24-dist
         path: |
@@ -148,20 +148,20 @@ jobs:
 
   build-macos:
     runs-on: macos-15-intel
-    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", ]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
     - name: Install dependencies
       run: |
         brew install libomp
-        python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
+        python3 -m pip install "bumps==1.0.3" orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install platformdirs h5py pymysql numba==0.62.1 requests svgwrite pint docutils
-        python3 -m pip install wxpython
+        python3 -m pip install "wxpython<4.3.0"
         python3 -m pip install vtk
         python3 -m pip list
     - name: Build with pyinstaller
@@ -208,6 +208,8 @@ jobs:
         # update bundle version
         plutil -replace CFBundleShortVersionString -string "$GENX_VERSION" ./genx.app/Contents/Info.plist
         plutil -replace CFBundleVersion -string "$GENX_VERSION-$(git rev-parse --short "$GITHUB_SHA")" ./genx.app/Contents/Info.plist
+        plutil -replace CFBundleIdentifier -string "com.isa.genx" ./genx.app/Contents/Info.plist
+        plutil -replace BundleInstallScriptTimeout -integer 600 ./genx.app/Contents/Info.plist
         # sign the library
         codesign --deep --force --options=runtime --entitlements ../mac_build/entitlements.plist --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B --timestamp genx.app
     - name: Package app pkg
@@ -215,8 +217,15 @@ jobs:
         cd genx
         GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
         cd dist
-        ditto ./genx.app /tmp/genx/Applications/genx.app
-        productbuild  --component './genx.app' /Applications --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 --version "$GENX_VERSION" "GenX3-$GENX_VERSION-Installer.pkg"
+        mkdir payload
+        mkdir payload/Applications
+        mv ./genx.app payload/Applications/
+        pkgbuild --root payload --scripts ../mac_build/scripts \
+          --identifier com.isa.genx --install-location / \
+          genx-component.pkg        
+        productbuild  --package genx-component.pkg \
+          --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
+          --version "$GENX_VERSION" "GenX3-$GENX_VERSION-Installer.pkg"
     - name: Notarize app
       env:
         NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
@@ -226,7 +235,7 @@ jobs:
 #    - name: Setup tmate session for debug
 #      uses: mxschmitt/action-tmate@v3
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: mac-dist
         path: |
@@ -237,17 +246,17 @@ jobs:
     if: ${{ (github.event_name != 'workflow_dispatch') || (contains(fromJson('["all", "mac"]'), github.event.inputs.build-items)) }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
     - name: Install dependencies
       run: |
         brew install libomp
-        python3 -m pip install bumps orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
+        python3 -m pip install "bumps==1.0.3" orsopy pyinstaller pyinstaller-hooks-contrib pyyaml
         python3 -m pip install numpy scipy matplotlib
         python3 -m pip install platformdirs h5py pymysql numba requests svgwrite pint docutils
-        python3 -m pip install wxpython
+        python3 -m pip install "wxpython<4.3.0"
         python3 -m pip install vtk
         python3 -m pip list
     - name: Build with pyinstaller
@@ -294,6 +303,8 @@ jobs:
         # update bundle version
         plutil -replace CFBundleShortVersionString -string "$GENX_VERSION" ./genx.app/Contents/Info.plist
         plutil -replace CFBundleVersion -string "$GENX_VERSION-$(git rev-parse --short "$GITHUB_SHA")" ./genx.app/Contents/Info.plist
+        plutil -replace CFBundleIdentifier -string "com.isa.genx" ./genx.app/Contents/Info.plist
+        plutil -replace BundleInstallScriptTimeout -integer 600 ./genx.app/Contents/Info.plist
         # sign the library
         codesign --deep --force --options=runtime --entitlements ../mac_build/entitlements.plist --sign 3E686E9BA077D29822A983870E2C2CD0BBA3441B --timestamp genx.app
     - name: Package app pkg
@@ -301,8 +312,15 @@ jobs:
         cd genx
         GENX_VERSION=$(python -c "from genx.version import __version__;print(__version__)")
         cd dist
-        ditto ./genx.app /tmp/genx/Applications/genx.app
-        productbuild  --component './genx.app' /Applications --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 --version "$GENX_VERSION" "GenX3-$GENX_VERSION-M1-Installer.pkg"
+        mkdir payload
+        mkdir payload/Applications
+        mv ./genx.app payload/Applications/
+        pkgbuild --root payload --scripts ../mac_build/scripts \
+          --identifier com.isa.genx --install-location / \
+          genx-component.pkg        
+        productbuild  --package genx-component.pkg \
+          --sign 7D17CD031AF9F7302CE6D0C2E0E168D5EA78D8A2 \
+          --version "$GENX_VERSION" "GenX3-$GENX_VERSION-M1-Installer.pkg"
     - name: Notarize app
       env:
         NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
@@ -310,7 +328,7 @@ jobs:
       run: |
         xcrun notarytool submit genx/dist/GenX3*.pkg --apple-id "$NOTARIZATION_USERNAME" --password "$NOTARIZATION_PASSWORD" --team-id 8CX8K63BQM --wait
     - name: Archive distribution
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: mac-dist-m1
         path: |
@@ -322,20 +340,20 @@ jobs:
     needs: [build-ubuntu-24, build-ubuntu-22, build-windows, build-macos, build-macos-m1]
     
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/checkout@v6
+    - uses: actions/download-artifact@v8
       with:
         name: ubuntu-24-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: ubuntu-22-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: windows-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: mac-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: mac-dist-m1
     - name: Create release notes
@@ -358,20 +376,20 @@ jobs:
     needs: [build-ubuntu-24, build-ubuntu-22, build-windows, build-macos, build-macos-m1]
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/checkout@v6
+    - uses: actions/download-artifact@v8
       with:
         name: ubuntu-24-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: ubuntu-22-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: windows-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: mac-dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: mac-dist-m1
     - name: Install dependencies

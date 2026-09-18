@@ -66,7 +66,8 @@ class LMOptimizer(GenxOptimizer):
         GenxOptimizer.__init__(self)
         self.model = Model()
         self.fom_log = array([[0, 0]])[0:0]
-        self.covar = None
+        self.covar = array([])
+        self.start_guess = array([])
 
     def pickle_string(self, clear_evals: bool = False):
         return pickle.dumps(self)
