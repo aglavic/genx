@@ -39,6 +39,7 @@ class ParameterDataTable(gridlib.GridTableBase):
         gridlib.GridTableBase.__init__(self)
         self.parent = parent
         self.pars = parameters.Parameters()
+        self._notified_rows = 0
 
         self.data_types = [
             gridlib.GRID_VALUE_STRING,
@@ -186,20 +187,25 @@ class ParameterDataTable(gridlib.GridTableBase):
         pars has to an instance of Parameters.
         """
         if clear:
-            # Start by deleting all rows:
-            msg = gridlib.GridTableMessage(
-                self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 0, self.parent.GetNumberRows()
-            )
+            # Start by deleting all rows (only if we have told the grid about any):
+            rows_to_delete = self._notified_rows
             self.pars = parameters.Parameters()
-            self.GetView().ProcessTableMessage(msg)
+            if rows_to_delete > 0:
+                msg = gridlib.GridTableMessage(
+                    self, gridlib.GRIDTABLE_NOTIFY_ROWS_DELETED, 0, rows_to_delete
+                )
+                self.GetView().ProcessTableMessage(msg)
+            self._notified_rows = 0
             msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)
 
             self.GetView().ForceRefresh()
 
             self.pars = pars
-            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, self.pars.get_len_rows() + 1)
+            new_rows = self.pars.get_len_rows() + 1
+            msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, new_rows)
             self.GetView().ProcessTableMessage(msg)
+            self._notified_rows = new_rows
 
             msg = gridlib.GridTableMessage(self, gridlib.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
             self.GetView().ProcessTableMessage(msg)

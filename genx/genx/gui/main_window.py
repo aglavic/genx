@@ -11,6 +11,7 @@ import sys
 import tempfile
 import time
 import webbrowser
+from contextlib import suppress
 
 from copy import deepcopy
 from dataclasses import dataclass
@@ -2555,11 +2556,21 @@ class GenxApp(wx.App):
         except ImportError:
             pass
 
+    def _safe_destroy_splash(self):
+        with suppress(RuntimeError):
+            self.splash.Destroy()
+
     def WriteSplash(self, text, progress=0.0):
-        image = self.splash.GetBitmap()
+        try:
+            image = self.splash.GetBitmap()
+        except RuntimeError:
+            return
         self._draw_bmp(image, text, progress=progress)
-        self.splash.Refresh()
-        self.splash.Update()
+        try:
+            self.splash.Refresh()
+            self.splash.Update()
+        except RuntimeError:
+            return
         wx.YieldIfNeeded()
 
     @staticmethod
@@ -2649,7 +2660,8 @@ class GenxApp(wx.App):
 
         if self.open_file is None:
             if first_init and main_frame.wstartup.show_profiles:
-                self.splash.Destroy()
+                with suppress(RuntimeError):
+                    self.splash.Destroy()
                 main_frame.startup_dialog(config_path)
                 self.WriteSplash = lambda *args, **kwargs: None
         else:
@@ -2662,7 +2674,7 @@ class GenxApp(wx.App):
                 wx.CallAfter(main_frame.open_model, self.open_file)
             wx.CallAfter(self.WriteSplash, "display main window...", progress=0.9)
             wx.CallAfter(main_frame.Show)
-            wx.CallAfter(self.splash.Destroy)
+            wx.CallAfter(self._safe_destroy_splash)
             return 1
 
         debug("init complete")
@@ -2674,7 +2686,7 @@ class GenxApp(wx.App):
             wx.CallAfter(self.WriteSplash, "checking for update...", progress=0.95)
             wx.CallAfter(main_frame.check_for_update)
         if not (first_init and main_frame.wstartup.show_profiles):
-            wx.CallAfter(self.splash.Destroy)
+            wx.CallAfter(self._safe_destroy_splash)
         wx.CallLater(100, main_frame.model_control.SetModelSaved)
         return 1
 
