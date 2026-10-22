@@ -408,8 +408,8 @@ class ModelControlGUI(wx.EvtHandler):
                 "The loaded fom function, "
                 + fom_func_name
                 + ", does not exist "
-                + "in the local fom_funcs file. The fom fucntion has been"
-                + " temporary added to the list of availabe fom functions",
+                + "in the local fom_funcs file. The fom function has been"
+                + " temporary added to the list of available fom functions",
             )
             fom_funcs.func_names.append(fom_func_name)
             exectext = "fom_funcs." + fom_func_name + " = self.parent.model.fom_func"

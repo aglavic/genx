@@ -1,6 +1,6 @@
 r"""
 .. module:: materials
-   :synopsis: Classes to work with differnt materials in scattering experiments
+   :synopsis: Classes to work with different materials in scattering experiments
 
 """
 

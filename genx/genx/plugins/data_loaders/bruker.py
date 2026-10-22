@@ -100,7 +100,7 @@ class Plugin(Template):
             if att_idx is not None:
                 # measurement reports attenuators
                 dataset.set_extra_data("atten", atten)
-            # Run the commands on the data - this also sets the x,y, error memebers
+            # Run the commands on the data - this also sets the x,y, error members
             # of that data item.
             dataset.run_command()
 

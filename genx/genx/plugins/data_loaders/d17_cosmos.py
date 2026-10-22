@@ -82,7 +82,7 @@ class Plugin(Template):
                     "The data file does not contain"
                     + "enough number of columns. It has "
                     + str(load_array.shape[1])
-                    + " columns. Rember that the column index start at zero!",
+                    + " columns. Remember that the column index start at zero!",
                 )
                 # Okay now we have showed a dialog lets bail out ...
                 return
@@ -104,7 +104,7 @@ class Plugin(Template):
             dataset.error_raw = load_array[:, self.eI_col]
             dataset.set_extra_data("res", load_array[:, self.res_col], "res/(2.*sqrt(2.*log(2)))")
             dataset.res = load_array[:, self.res_col] * 1.0
-            # Run the commands on the data - this also sets the x,y, error memebers
+            # Run the commands on the data - this also sets the x,y, error members
             # of that data item.
             dataset.run_command()
 

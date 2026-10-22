@@ -8,7 +8,7 @@ In the following, the merged data set consisting of all data sets
 that are marked for use is denoted as <var>Y</var> and the corresponding
 simulation is denoted as <var>S</var>. A single element of these arrays
 is indicated by a subscript <var>i</var>. In the same manner, the
-independent variable (denoted as <var>x</var> in the data strucure) is called
+independent variable (denoted as <var>x</var> in the data structure) is called
 <var>X</var>. The error array is denoted <var>E</var>. Finally the total number
 of data points is given by <var>N</var> and <var>p</p> is the number of free parameters
 in the fit.<br>
@@ -190,7 +190,7 @@ except:
 
 
 # ==============================================================================
-# BEGIN FOM function defintions
+# BEGIN FOM function definitions
 def _div_dof(func):
     # decorator to set function attribute
     func.__div_dof__ = True

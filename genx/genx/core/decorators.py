@@ -1,5 +1,5 @@
 """
-Module for usefull decorators e.g. for logging function calls, input and output.
+Module for useful decorators e.g. for logging function calls, input and output.
 """
 
 import inspect

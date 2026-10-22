@@ -143,7 +143,7 @@ class DataSet(H5HintedExport):
         self.y_raw = new_set.y_raw
         self.error_raw = new_set.error_raw
 
-        # The dictonaries for the extra data
+        # The dictionaries for the extra data
         try:
             self.extra_data = new_set.extra_data
         except AttributeError:
@@ -224,15 +224,15 @@ class DataSet(H5HintedExport):
             raise LookupError("Can not find extra data with name %s" % name)
         return self.extra_data[name]
 
-    # TODO: Remove load and save methods from dataset, should be handled soley by data loaders
+    # TODO: Remove load and save methods from dataset, should be handled solely by data loaders
     def loadfile(self, filename, sep="\t", pos=0):
         """
         Function to load data from a file.
         Note that the data should be in ASCII format and it can
-        be gzipped (handled automagically if the filname ends with .gz
+        be gzipped (handled automagically if the filename ends with .gz
         Possible extras:
         comments - string of chars that shows that a line is a comment
-        delimeter - chars that are spacers between values default None
+        delimiter - chars that are spacers between values default None
             all whitespaces
         skiprows - number of rows to skip before starting to read the data
         """
@@ -241,7 +241,7 @@ class DataSet(H5HintedExport):
             return False
         try:
             A = loadtxt(filename)
-            # , comments = '#', delimeter = None, skiprows = 0
+            # , comments = '#', delimiter = None, skiprows = 0
         except:
             iprint("Can't read the file %s, check the format" % filename)
         else:
@@ -256,7 +256,7 @@ class DataSet(H5HintedExport):
                 self.y = A[:, ycol]
                 self.error = A[:, ecol]
                 self.y_sim = array([])
-                iprint("Sucessfully loaded %i datapoints" % (A.shape[0]))
+                iprint("Successfully loaded %i datapoints" % (A.shape[0]))
                 return True
             else:
                 iprint(
@@ -273,7 +273,7 @@ class DataSet(H5HintedExport):
         if self.x.shape == self.y_sim.shape and self.y.shape == self.error.shape and self.x.shape == self.y.shape:
             header = (
                 f'Dataset "{self.name}" exported from GenX3 on {time.ctime()}\n'
-                f"Column lables:\n"
+                f"Column labels:\n"
                 f"x                 I_simulated         I                   error(I)"
             )
             savetxt(filename, c_[self.x, self.y_sim, self.y, self.error], header=header, fmt="%.13e")
@@ -487,7 +487,7 @@ class DataSet(H5HintedExport):
 
     def get_commands(self):
         """
-        Returns the commnds as a dictonary with items x, y, z
+        Returns the commands as a dictionary with items x, y, z
         """
         cmds = {"x": self.x_command, "y": self.y_command, "e": self.error_command}
         for key in self.extra_commands:
@@ -496,7 +496,7 @@ class DataSet(H5HintedExport):
 
     def set_commands(self, command_dict):
         """
-        Sets the commands in the data accroding to values in command dict
+        Sets the commands in the data according to values in command dict
         See get_commands for more details
         """
         if command_dict["x"] != "":
@@ -519,7 +519,7 @@ class DataSet(H5HintedExport):
 
     def get_sim_plot_items(self):
         """
-        Returns a dictonary of color [tuple], symbol [string],
+        Returns a dictionary of color [tuple], symbol [string],
         sybolsize [float], linetype [string], linethickness [float].
         Used for plotting the simulation.
         """
@@ -533,7 +533,7 @@ class DataSet(H5HintedExport):
 
     def get_data_plot_items(self):
         """
-        Returns a dictonary of color [tuple], symbol [string],
+        Returns a dictionary of color [tuple], symbol [string],
         sybolsize [float], linetype [string], linethickness [float].
         Used for plotting the data.
         """
@@ -547,9 +547,9 @@ class DataSet(H5HintedExport):
 
     def set_data_plot_items(self, pars):
         """
-        Sets the plotting parameters for the data by a dictonary of the
+        Sets the plotting parameters for the data by a dictionary of the
         same structure as in get_data_plot_items(). If one of items in the
-        pars [dictonary] is None that item will be skipped, i.e. keep its old
+        pars [dictionary] is None that item will be skipped, i.e. keep its old
         value.
         """
         gscope=globals()
@@ -566,9 +566,9 @@ class DataSet(H5HintedExport):
 
     def set_sim_plot_items(self, pars):
         """
-        Sets the plotting parameters for the data by a dictonary of the
+        Sets the plotting parameters for the data by a dictionary of the
         same structure as in get_data_plot_items(). If one of items in the
-        pars [dictonary] is None that item will be skipped, i.e. keep its old
+        pars [dictionary] is None that item will be skipped, i.e. keep its old
         value.
         """
         gscope=globals()
@@ -801,14 +801,14 @@ class DataList(H5Savable):
     def __iter__(self):
         """__iter__(self) --> iterator
 
-        Opertor definition. Good to have in case one needs to loop over
+        Operator definition. Good to have in case one needs to loop over
         all datasets
         """
         return self.items.__iter__()
 
     def __len__(self):
         """
-        Returns the nmber of datasers in the list.
+        Returns the number of datasers in the list.
         """
         return self.items.__len__()
 
@@ -858,7 +858,7 @@ class DataList(H5Savable):
 
     def move_down(self, pos):
         """
-        Move the dataset at postion pos down one step. If it is at the bottom
+        Move the dataset at position pos down one step. If it is at the bottom
         it will not be moved.
         """
         if pos != len(self.items):
@@ -867,7 +867,7 @@ class DataList(H5Savable):
 
     def update_data(self):
         """
-        Calcultes all the values for the current items.
+        Calculates all the values for the current items.
         """
         [item.run_command() for item in self.items]
 
@@ -883,7 +883,7 @@ class DataList(H5Savable):
         """
         set_simulated_data(self, sim_data) --> None
 
-        Sets the simualted data in the data. Note this will depend on the
+        Sets the simulated data in the data. Note this will depend on the
         flag use in the data.
         """
         [self.items[i].set_simulated_data(sim_data[i]) for i in range(self.get_len())]
@@ -952,7 +952,7 @@ class DataList(H5Savable):
 
     def export_data_to_files(self, basename, indices=None):
         """
-        saves the data to files with base name basename and extentions .dat
+        saves the data to files with base name basename and extensions .dat
         If indices are used only the data given in the list indices are
         exported.
         """
@@ -971,11 +971,11 @@ class DataList(H5Savable):
 
     def get_data_as_asciitable(self, indices=None):
         """
-        Yields the data sets as a ascii table with tab seperated values.
+        Yields the data sets as a ascii table with tab separated values.
         This makes it possible to export the data to for example spreadsheets.
         Each data set will be four columns with x, Meas, Meas error and Calc.
         If none is given all the data sets are transformed otherwise incdices
-        shouldbe a list.
+        should be a list.
         """
 
         if indices:
@@ -991,7 +991,7 @@ class DataList(H5Savable):
         # Find the maximum extent of the data sets
         maxlen = max([len(item.y_sim) for item in self.items])
 
-        # Create the funtion that actually do the exporting
+        # Create the function that actually do the exporting
         def exportFunc(index, row):
             item = self.items[index]
             if row < len(item.x):

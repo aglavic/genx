@@ -94,7 +94,7 @@ class Plugin(Template):
                         "The data file does not contain"
                         + "enough number of columns. It has "
                         + str(load_array[1])
-                        + " columns. Rember that the column index start at zero!",
+                        + " columns. Remember that the column index start at zero!",
                     )
                     # Okay now we have showed a dialog lets bail out ...
                     return
@@ -109,9 +109,9 @@ class Plugin(Template):
                     lamda = 4.0 * np.pi / load_array[:, self.x_col] * np.sin(load_array[:, self.ai_col])
                     dataset.set_extra_data("ai", load_array[:, self.ai_col], "ai")
                     dataset.set_extra_data("wavelength", lamda, "wavelength")
-                # Name the dataset accordign to file name
+                # Name the dataset according to file name
                 dataset.name = name
-                # Run the commands on the data - this also sets the x,y, error memebers
+                # Run the commands on the data - this also sets the x,y, error members
                 # of that data item.
                 dataset.run_command()
 

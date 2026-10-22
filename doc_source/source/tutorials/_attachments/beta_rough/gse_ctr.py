@@ -1,5 +1,5 @@
 ''' <h1>gsecars ctr data loader </h1>
-Loads the data from whitespace seperated column formatted ascii data files.
+Loads the data from whitespace separated column formatted ascii data files.
 It is intended for surface x-ray diffraction data where the data sets consists
 of rod scans along the l-direction (perpendicular to the surface). The plugin
 sorts each rod with equal h and k values into one data sets. The l-direction 
@@ -10,7 +10,7 @@ The default columns are the following:<br>
 6th column L of first Bragg peak, 7th column L spacing of Bragg peaks
  The other settings are just as in the default data loader.<p>
 
-The h,k values is stored as extra data in data.extra_data dictonary as
+The h,k values is stored as extra data in data.extra_data dictionary as
 h and k. 
 '''
 
@@ -56,7 +56,7 @@ class Plugin(Template):
                      self.l_col, self.I_col, self.eI_col, self.LB_col, self.dL_col):
                 ShowWarningDialog(self.parent, 'The data file does not contain'\
                         + 'enough number of columns. It has ' + str(load_array.shape[1])\
-                        + ' columns. Rember that the column index start at zero!')
+                        + ' columns. Remember that the column index start at zero!')
                 # Okay now we have showed a dialog lets bail out ...
                 return
             # The data is set by the default Template.__init__ function, neat hu
@@ -83,7 +83,7 @@ class Plugin(Template):
                 self.data[-1].x_raw = tmp['l']
                 self.data[-1].y_raw =tmp['I']
                 self.data[-1].error_raw = tmp['eI']
-                # Run the commands on the data - this also sets the x,y, error memebers
+                # Run the commands on the data - this also sets the x,y, error members
                 # of that data item.
                 self.data[-1].run_command()
                 self.data[-1].set_extra_data('h', tmp['h'], 'h')

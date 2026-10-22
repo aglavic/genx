@@ -1,6 +1,6 @@
 """
 Library that contains the the class Model. This
-is a general class that store and binds togheter all the other
+is a general class that store and binds together all the other
 classes that is part of model parameters, such as data and parameters.
 """
 
@@ -51,7 +51,7 @@ class StartupScript(BaseConfig):
 @dataclass
 class ModelParameters(BaseConfig):
     section = "parameters"
-    registred_classes: list = field(default_factory=list)
+    registered_classes: list = field(default_factory=list)
     set_func: str = "set"
 
 
@@ -232,7 +232,7 @@ class Model(H5HintedExport):
         self.saved = True
 
     def __getstate__(self):
-        # generate a pickleable object for thie model, it cannot contain dynamically generated functions
+        # generate a pickleable object for this model, it cannot contain dynamically generated functions
         state = self.__dict__.copy()
         if "fom_mask_func" in state:
             del state["fom_mask_func"]
@@ -278,7 +278,7 @@ class Model(H5HintedExport):
 
         # Check so the model data is not overwritten
         if name == "data" or name == "script" or name == "parameters":
-            raise GenxIOError("It not alllowed to save a subfile with name: %s" % name)
+            raise GenxIOError("It not allowed to save a subfile with name: %s" % name)
 
         try:
             savefile.writestr(name, text)
@@ -317,7 +317,7 @@ class Model(H5HintedExport):
 
     def compile_script(self):
         """
-        compile the script in a seperate module.
+        compile the script in a separate module.
         """
         self._reset_module()
         # Testing to see if this works under windows
@@ -338,7 +338,7 @@ class Model(H5HintedExport):
 
     def eval_in_model(self, codestring):
         """
-        Excecute the code in codestring in the namespace of model module
+        Execute the code in codestring in the namespace of model module
         """
         result = eval(codestring, self.script_module.__dict__)
         return result
@@ -412,7 +412,7 @@ class Model(H5HintedExport):
 
     def evaluate_fit_func(self, get_elements=False):
         """
-        Evalute the Simulation fucntion and returns the fom. Use this one
+        Evaluate the Simulation function and returns the fom. Use this one
         for fitting. Use evaluate_sim_func(self) for updating of plots
         and such.
         """
@@ -426,7 +426,7 @@ class Model(H5HintedExport):
 
     def evaluate_sim_func(self):
         """
-        Evalute the Simulation function and updates the data simulated data
+        Evaluate the Simulation function and updates the data simulated data
         as well as the fom of the model. Use this one for calculating data to
         update plots, simulations and such.
         """
@@ -901,7 +901,7 @@ class Model(H5HintedExport):
     @staticmethod
     def update_dictionary(to_update, to_include):
         """
-        Updates the entries in one dictrionary recursively to keep existing sub-keys.
+        Updates the entries in one dictionary recursively to keep existing sub-keys.
         """
         for key, value in to_include.items():
             if key in to_update and isinstance(to_update[key], dict):
@@ -960,7 +960,7 @@ class Model(H5HintedExport):
 
     def _read_from_file(self, filename):
         """
-        Reads the entrie file into string and returns it.
+        Reads the entries file into string and returns it.
         """
         try:
             with open(filename, "r", encoding="utf-8") as loadfile:
@@ -1023,10 +1023,10 @@ class Model(H5HintedExport):
             pars = []
 
         # First find the classes that exists..
-        # and defined in self.registred_classes
+        # and defined in self.registered_classes
         # In addition, any class derived from ModelParamBase is found.
         classes = [ModelParamBase]
-        for c in self.opt.registred_classes + pars:
+        for c in self.opt.registered_classes + pars:
             try:
                 ctemp = self.eval_in_model(c)
             except Exception:
@@ -1234,7 +1234,7 @@ class Model(H5HintedExport):
 
     def plot(self, data_labels=None, sim_labels=None):
         """
-        Plot all datasets in the model wtih matplotlib similar to the display in the GUI.
+        Plot all datasets in the model with matplotlib similar to the display in the GUI.
         data_labels and sim_labels are lists of strings for each curve,
         if none is supplied the curve label is created from the dataset names and index.
         """
@@ -1242,7 +1242,7 @@ class Model(H5HintedExport):
         return self.data.plot(data_labels=data_labels, sim_labels=sim_labels)
 
     def __eq__(self, other: "Model"):
-        # compare relevant parts of model object agains another
+        # compare relevant parts of model object against another
         return self.data == other.data and self.script == other.script and self.parameters == other.parameters
 
     def __repr__(self):

@@ -9,7 +9,7 @@ _ctype = np.complex128
 
 
 def ass_P(k, d, ctype=_ctype):
-    """Assamble the propagation matrix for the layers"""
+    """Assemble the propagation matrix for the layers"""
     P = np.zeros((2, 2) + k.shape, dtype=ctype)
     P[0, 0] = np.exp(-1.0j * k * d)
     P[1, 1] = 1.0 / P[0, 0]
@@ -109,7 +109,7 @@ def ReflQ_mag(Q, lamda, n, d, sigma, n_u, dd_u, sigma_u, n_l, dd_l, sigma_l):
 
 
 def ReflQ_ref(Q, lamda, n, d, sigma):
-    # Length of k-vector in vaccum
+    # Length of k-vector in vacuum
     d = d[1:-1]
     sigma = sigma[:-1]
     Q0 = 4 * np.pi / lamda

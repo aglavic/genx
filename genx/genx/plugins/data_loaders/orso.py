@@ -110,10 +110,10 @@ class Plugin(Template):
                 if not colname.isidentifier() or colname in ["lambda", "x", "y", "error", "res"]:
                     colname = "col_" + re.sub("[^0-9a-zA-Z_]", "", colname)
                 dataset.set_extra_data(colname, np.asarray(col), colname)
-            # Name the dataset accordign to file name
+            # Name the dataset according to file name
             if orso_dataset.info.data_set:
                 dataset.name = str(orso_dataset.info.data_set)
-            # Run the commands on the data - this also sets the x,y, error memebers
+            # Run the commands on the data - this also sets the x,y, error members
             # of that data item.
             dataset.run_command()
 

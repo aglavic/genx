@@ -78,7 +78,7 @@ class ProgressMonitor(TimedUpdate):
 
 
 class HeaderCopyGrid(wx.grid.Grid):
-    """Grid calss that copies the column and row headers together with the data."""
+    """Grid class that copies the column and row headers together with the data."""
 
     def __init__(self, *args, **opts):
         wx.grid.Grid.__init__(self, *args, **opts)

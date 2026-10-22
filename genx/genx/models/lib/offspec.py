@@ -323,7 +323,7 @@ def DWBA_Interdiff(qx, qz, lamda, n, z, sigma, sigmaid, eta, h, eta_z,
     if use_fixed_q:
         global q_eta_max, q_min_fixed
         if (max(abs(qx)) * eta + 2 * dqmin) > q_eta_max:
-            # model paramters are outside of fixed range, expand the range
+            # model parameters are outside of fixed range, expand the range
             q_eta_max = 2.0* (max(abs(qx)) * eta + 2 * dqmin)
             q_min_fixed = None
             make_F_fixed.cache_clear()

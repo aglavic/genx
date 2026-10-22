@@ -1,6 +1,6 @@
 r"""
 .. module:: island_lattice.py
-   :synopsis: Models to calcualte the reflectivity from a 2D island array
+   :synopsis: Models to calculate the reflectivity from a 2D island array
 
 This module provide functions to calculate the reflectivity from gratings using the distorted wave Born approximation
 (DWBA) and the kinematical theory.
@@ -48,7 +48,7 @@ class Stack(HasParameters):
         HasParameters.__init__(self, **kwargs)
 
     def build_layer_list(self, parameters, kwargs):
-        """Builds an array for layer parameters by looping trough the stacks and layers
+        """Builds an array for layer parameters by looping through the stacks and layers
 
         Parameters:
             parameters(list of string): name of a valid layer parameters
@@ -134,13 +134,13 @@ class Instrument(HasParameters):
         HasParameters.__init__(self, **kwargs)
 
     def reflectometer_3axis_kinout(self, q):
-        """Tranforms q values to k_in and k_out vectors for a reflectometer setup with a sample rotation circle.
+        """Transforms q values to k_in and k_out vectors for a reflectometer setup with a sample rotation circle.
 
         Parameters:
             q(array): an array for qx, qy and qz, size (3xM)
 
         Returns:
-            k_in (array): The incomming wavevector, size (3xM)
+            k_in (array): The incoming wavevector, size (3xM)
             k_out (array): The outgoing wavevector, size (3xM)
         """
         qx = q[0]

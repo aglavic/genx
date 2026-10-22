@@ -9,7 +9,7 @@ from wx.lib.newevent import NewEvent
 from ..core.decorators import decorator
 
 
-# a decorator to make sure events processed by a method are skiped first
+# a decorator to make sure events processed by a method are skipped first
 @decorator
 def skips_event(function, *args, **kwargs):
     event = args[1]

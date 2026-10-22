@@ -577,7 +577,7 @@ class ComplexArray(Complex):
 
 
 def get_parameters(obj, numeric_types_only=False, group_parameters=True):
-    """Searches obj for members that are inherited from Parameters or HasParameters and places them in a dictonary.
+    """Searches obj for members that are inherited from Parameters or HasParameters and places them in a dictionary.
 
     Parameters:
         obj: An object that has __dict__ (as all classes has.
@@ -585,7 +585,7 @@ def get_parameters(obj, numeric_types_only=False, group_parameters=True):
         group_parameters (bool): Flag to control if parameters should be grouped by type, default True.
 
     Returns:
-        par_dict (dict): A Dictonary with class names as keys and items as lists of parameter names.
+        par_dict (dict): A Dictionary with class names as keys and items as lists of parameter names.
     """
     par_dict = {}
 

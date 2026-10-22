@@ -1168,7 +1168,7 @@ class DataParameterPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
         self.plugin = plugin
         boxver = wx.BoxSizer(wx.VERTICAL)
-        # Indention for a command - used to separate commands and data
+        # Indentation for a command - used to separate commands and data
         self.command_indent = "<pre>   "
         self.script_update_func = None
         self.parameterlist = []
@@ -1220,7 +1220,7 @@ class DataParameterPanel(wx.Panel):
     def GetDataList(self):
         """SetDataList(self) --> list
 
-        Retrives the data list
+        Retrieves the data list
         """
         return self.datalist
 
@@ -1234,7 +1234,7 @@ class DataParameterPanel(wx.Panel):
     def GetParameterList(self):
         """SetParameterList(self) --> list
 
-        Retrives the parameter list
+        Retrieves the parameter list
         """
         return self.parameterlist
 

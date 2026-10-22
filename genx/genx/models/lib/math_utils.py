@@ -1,5 +1,5 @@
 """
-A library for various math utilites that is good to have to calculate
+A library for various math utilities that is good to have to calculate
 various scattering patterns that do not exist in the standard numpy or
 scipy packages.
 """
@@ -288,7 +288,7 @@ def det4(A):
 
 def roots4thdegree(a, b, c, d, e):
     """Function that solves a fourth degree polynomial according to
-    Ferraris solution alogirthm from: http://en.wikipedia.org/wiki/Quartic_function
+    Ferraris solution algorithm from: http://en.wikipedia.org/wiki/Quartic_function
     a*x**4 + b*x**3 + c*x**2 + d*x + e = 0
     """
     alpha = -3 * b**2 / 8 / a**2 + c / a

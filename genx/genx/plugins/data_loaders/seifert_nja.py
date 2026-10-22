@@ -14,7 +14,7 @@ from ..utils import ShowWarningDialog
 try:
     import wx
 except ImportError:
-    # in case of console usinge withou wx beeing installed put a mock class/module
+    # in case of console usinge without wx being installed put a mock class/module
     class void:
         pass
 
@@ -82,7 +82,7 @@ class Plugin(Template):
                     self.parent,
                     "The data file does not contain enough number of columns. It has "
                     + str(load_array.shape[1])
-                    + " columns. Rember that the column index start at zero!",
+                    + " columns. Remember that the column index start at zero!",
                 )
                 self.SetStatusText("Could not load data - not enough columns")
                 return

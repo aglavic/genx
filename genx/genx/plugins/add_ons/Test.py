@@ -16,4 +16,4 @@ class Plugin(framework.Template):
         inputpanel = self.NewInputFolder("Test")
         datapanel = self.NewDataFolder("Test")
         menu = self.NewMenu("Test")
-        iprint("Everyting tested, should be visible :-)")
+        iprint("Everything tested, should be visible :-)")

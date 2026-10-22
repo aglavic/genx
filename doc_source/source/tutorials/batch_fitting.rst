@@ -41,7 +41,7 @@ You can manually define a some kind of physical value (e.g. a temperature) to ea
 second column. (This has to be a real number.)
 With the meta data that is extracted from the ORSO datafile header it is also possible to automatically generate
 this column from an entry in the header.
-For this press the **Extract Value** button and select the correct parameter from the hirachy using a
+For this press the **Extract Value** button and select the correct parameter from the hierarchy using a
 double-click.
 Only number values are allowed:
 
@@ -51,7 +51,7 @@ Fit the batch sequence
 **********************
 
 Before starting the fit, make sure the optimizer parameters in :menuselection:`Settings-->Optimizer` are correct
-for a performant refinement and define adequat breaking conditions. It is advisable to fit one of the
+for a performant refinement and define adequate breaking conditions. It is advisable to fit one of the
 datasets to see how large to set the size of **Max. Generations** and possibly to define a
 **parameter spread to stop**, e.g. 0.1 %.
 
@@ -67,7 +67,7 @@ During the fit you should see something like this:
 .. note::
     The check box **Keep result values from last** will start the next dataset with the parameter results
     from the previous one. Otherwise the values will be reset to the one used when starting the fits.
-    With **Adjust boundaries around last values** you can also ajust the min- and max-value settings
+    With **Adjust boundaries around last values** you can also adjust the min- and max-value settings
     to be centered around the starting value. This can be useful in situations where you know that
     a parameter will change significantly over the entire sequence but want to limit the range of variation
     during a single fit for better convergence.

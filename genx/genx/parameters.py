@@ -20,7 +20,7 @@ class SortSplitItem(Enum):
 class ParameterRow(list):
     """
     Representing a sinigle row of the Parameters table. Preserves fixed length
-    and type of items upon asignment.
+    and type of items upon assignment.
     """
     init_data: Tuple[str, float, bool, float, float, str] = ("", 0.0, False, 0.0, 0.0, "None")
     data_types = (str, float, bool, float, float, str)
@@ -48,17 +48,17 @@ class ParameterRow(list):
 
     # forbid methods that change the length
     def pop(self, key=None):
-        raise ValueError("Parameters are fixed legnth")
+        raise ValueError("Parameters are fixed length")
     def extend(self, iterable):
         if len(self)==6:
             # edge case of pickle using extend to build the item
-            raise ValueError("Parameters are fixed legnth")
+            raise ValueError("Parameters are fixed length")
         else:
             super().extend(iterable)
     def append(self, item):
-        raise ValueError("Parameters are fixed legnth")
+        raise ValueError("Parameters are fixed length")
     def insert(self, index, item):
-        raise ValueError("Parameters are fixed legnth")
+        raise ValueError("Parameters are fixed length")
 
 class Parameters(H5Savable):
     """
@@ -155,7 +155,7 @@ class Parameters(H5Savable):
         return state
 
     def set_fit_state_by_name(self, name, value, state, min_val, max_val):
-        """Set the fit state by name accoring to the following states
+        """Set the fit state by name according to the following states
         0 -- remove from grid.
         1 -- add if not exist, set parameter to be fitted (True)
         2 -- add if not exist, set parameter to not be fitted (False)
@@ -412,7 +412,7 @@ class Parameters(H5Savable):
     def _parse_ascii_input(text: str) -> Union[list, None]:
         """
         Parses an ascii string to a parameter table. returns a list table if
-        sucessful otherwise it returns None
+        successful otherwise it returns None
         """
         table = []
         lines = text.split("\n")

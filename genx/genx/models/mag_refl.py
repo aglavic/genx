@@ -63,16 +63,16 @@ Instrument
     deviation of that gaussian.
 ``restype``
     Describes the rype of the resolution calculated. One of the
-    alterantives: 'no conv', 'fast conv', 'full conv and varying res.' or
+    alternatives: 'no conv', 'fast conv', 'full conv and varying res.' or
     'fast conv + varying res.'. The respective numbers 0-3 also works. Note
-    that fast convolution only alllows a single value into res wheras the
+    that fast convolution only allows a single value into res whereas the
     other can also take an array with the same length as the x-data (varying
     resolution)
 ``respoints``
     The number of points to include in the resolution calculation. This is
     only used for 'full conv and vaying res.' and 'fast conv + varying res'
 ``resintrange``
-    Number of standard deviatons to integrate the resolution fucntion times
+    Number of standard deviatons to integrate the resolution function times
     the relfectivty over
 ``footype``
     Which type of footprint correction is to be applied to the simulation.
@@ -152,7 +152,7 @@ class FootType(AltStrEnum):
 @dataclass
 class Layer(refl.ReflBase):
     """
-    Representing a layer in the sample structur.
+    Representing a layer in the sample structure.
 
     ``d``
        The thickness of the layer in AA (Angstroms = 1e-10m)
@@ -311,7 +311,7 @@ class Instrument(refl.ReflBase):
     Specify parameters of the probe and reflectometry instrument.
 
     ``probe``
-        Defines the theory (model) that should calcualte the reflectivity.
+        Defines the theory (model) that should calculate the reflectivity.
         Should be one of: 'x-ray anis.', 'x-ray simpl. anis.', 'x-ray',
         'neutron pol', 'neutron pol tof' or 'neutron pol spin flip'.
         Neutron models use either Parratt's formaism (non spin-flip models) or
@@ -340,10 +340,10 @@ class Instrument(refl.ReflBase):
         The incident angle of the neutrons, only valid in tof mode
     ``restype``
         Describes the rype of the resolution calculated. One of the
-        alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
+        alternatives: 'no conv', 'fast conv', 'full conv and varying res.',
         'fast conv + varying res.', 'full conv and varying res. (dx/x)', 'fast
         conv + varying res. (dx/x)'. The respective numbers 0-3 also works. Note
-        that fast convolution only alllows a single value into res wheras the
+        that fast convolution only allows a single value into res wheraes the
         other can also take an array with the same length as the x-data (varying
         resolution)
     ``res``
@@ -423,7 +423,7 @@ class Stack(refl.StackBase):
     A collection of Layer objects that can be repeated.
 
     ``Layers``
-       A ``list`` consiting of ``Layers`` in the stack the first item is
+       A ``list`` consisting of ``Layers`` in the stack the first item is
        the layer closest to the bottom
     ``Repetitions``
        The number of repsetions of the stack
@@ -439,13 +439,13 @@ class Sample(refl.SampleBase):
     Describe global sample by listing ambient, substrate and layer parameters.
 
     ``Stacks``
-       A ``list`` consiting of ``Stacks`` in the stacks the first item is
+       A ``list`` consisting of ``Stacks`` in the stacks the first item is
        the layer closest to the bottom
     ``Ambient``
-       A ``Layer`` describing the Ambient (enviroment above the sample).
+       A ``Layer`` describing the Ambient (environment above the sample).
        Only the scattering lengths and density of the layer is used.
     ``Substrate``
-       A ``Layer`` describing the substrate (enviroment below the sample).
+       A ``Layer`` describing the substrate (environment below the sample).
        Only the scattering lengths, density and roughness of the layer is
        used.
     ``slicing``
@@ -684,7 +684,7 @@ def OffSpecular(TwoThetaQz, ThetaQx, sample: Sample, instrument: Instrument):
 
 def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     """Calculates the scatteringlength density as at the positions z
-    if item is None or "all" the function returns a dictonary of values.
+    if item is None or "all" the function returns a dictionary of values.
     Otherwise it returns the item as identified by its string.
 
     # BEGIN Parameters
@@ -818,7 +818,7 @@ def neturon_sld(abs_xs, b, dens, wl):
 
 
 def compose_sld_anal(z, sample: Sample, instrument: Instrument):
-    """Compose a analytical profile funciton"""
+    """Compose a analytical profile function"""
 
     def sld_interface(z, drho_jm1_l, drho_j, drho_j_u, sigma_jm1_l, sigma_j, sigma_j_u, dd_jm1_l, dd_j_u):
         """Calculate the sld of one interface"""
@@ -1466,7 +1466,7 @@ def analytical_reflectivity(
         elif pol == XRayPol.pi_sigma:
             R = abs(W[0, 1]) ** 2
         else:
-            raise ValueError("Variable pol has an unvalid value")
+            raise ValueError("Variable pol has an invalid value")
         # Override if we should return the complex amplitude (in this case a 2x2 matrix)
         if not return_amplitude:
             R = W
@@ -1571,7 +1571,7 @@ def analytical_reflectivity(
             )
             R = (Rp - Rm) / (Rp + Rm)
         else:
-            raise ValueError("Variable pol has an unvalid value")
+            raise ValueError("Variable pol has an invalid value")
 
     elif theory == ProbeTheory.npol:
         # neutron spin-pol calcs
@@ -1630,7 +1630,7 @@ def analytical_reflectivity(
         # neutron spin-flip calcs
         wl = instrument.wavelength
         Q = 4 * pi / wl * sin(theta * pi / 180)
-        # Check if we have calcluated the same sample previous:
+        # Check if we have calculated the same sample previous:
         Q_ok = False
         if NBuffer.TwoThetaQz is not None:
             Q_ok = NBuffer.TwoThetaQz.shape == Q.shape
@@ -1784,7 +1784,7 @@ def slicing_reflectivity(sample: Sample, instrument: Instrument, theta, TwoTheta
         elif pol == XRayPol.pi_sigma:
             R = abs(W[0, 1]) ** 2
         else:
-            raise ValueError("Variable pol has an unvalid value")
+            raise ValueError("Variable pol has an invalid value")
         if not return_amplitude:
             R = W
     elif theory == ProbeTheory.xray_simple_aniso:
@@ -1816,7 +1816,7 @@ def slicing_reflectivity(sample: Sample, instrument: Instrument, theta, TwoTheta
             # Hack to check kinematical approx
             R = (Rp - Rm) / (Rp + Rm)
         else:
-            raise ValueError("Variable pol has an unvalid value")
+            raise ValueError("Variable pol has an invalid value")
     elif theory == ProbeTheory.npol:
         lamda = instrument.wavelength
         sl_n = sl_n * 1e-5
@@ -1851,7 +1851,7 @@ def slicing_reflectivity(sample: Sample, instrument: Instrument, theta, TwoTheta
         sl_n = sl_n * 1e-5
         abs_n = abs_n * 1e-8
         Q = 4 * pi / lamda * sin(theta * pi / 180)
-        # Check if we have calcluated the same sample previous:
+        # Check if we have calculated the same sample previous:
         Q_ok = False
         if NBuffer.TwoThetaQz is not None:
             Q_ok = NBuffer.TwoThetaQz.shape == Q.shape
@@ -1946,7 +1946,7 @@ def footprint_correction(instrument: Instrument, theta):
     elif footype == FootType.square:
         foocor = SquareIntensity(theta, samlen, beamw)
     else:
-        raise ValueError("Variable footype has an unvalid value")
+        raise ValueError("Variable footype has an invalid value")
     return foocor
 
 
@@ -1961,7 +1961,7 @@ def convolute_reflectivity(R, instrument: Instrument, foocor, TwoThetaQz, weight
     elif restype == ResType.full_conv_var:
         R = ConvoluteResolutionVector(TwoThetaQz, R[:] * foocor, weight)
     else:
-        raise ValueError("Variable restype has an unvalid value")
+        raise ValueError("Variable restype has an invalid value")
     return R
 
 

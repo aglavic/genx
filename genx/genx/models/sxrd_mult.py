@@ -66,7 +66,7 @@ class SLSample:
             sym_list = [sxrd.SymTrans()]
 
         if min([type(sym) == type(sxrd.SymTrans()) for sym in sym_list]) == 0:
-            raise TypeError("All members in the symmetry list has to" " be a memeber of class SymTrans")
+            raise TypeError("All members in the symmetry list has to" " be a member of class SymTrans")
 
         self.bulk_sym = sym_list
 
@@ -115,7 +115,7 @@ class SLSample:
             ),
             1,
         )
-        # Putting it all togheter
+        # Putting it all together
         fb = f_u / denom * delta_funcs
 
         return fb
@@ -198,17 +198,17 @@ class Superlattice:
         return f_u, t_lay * np.ones(l.shape)
 
     def calc_fa(self, n, h, k, l):
-        """Calculate the strucutre factor for a a layer
+        """Calculate the structure factor for a a layer
         n is the thickness of the bilayer in units of slabs"""
         pass
 
     def calc_fb(self, n, h, k, l):
-        """Calcualte the structure factor for a b layer
+        """Calculate the structure factor for a b layer
         n is the thickness of the bilayer in units of slabs"""
         pass
 
     def calc_fsl(self, unit_cell, h, k, l):
-        """Calculate the strucutre factor for the entire
+        """Calculate the structure factor for the entire
         superlattice.
         """
         raise NotImplementedError("calc_fsl has to be implemented in " "a Superlattices subclass")
@@ -243,7 +243,7 @@ class SLStandard(Superlattice):
         # standard deviations in the averaging
         lower = np.floor(n_mean - 3.0 * stand_dev)
         lower = np.int(min(lower, n_mean - 1))
-        # We can't have a negative thickness, altough we remove
+        # We can't have a negative thickness, although we remove
         # the gaussian distribution How does this affect the theoretical
         # assumptions?
         if lower < 1:
@@ -257,7 +257,7 @@ class SLStandard(Superlattice):
 
     def calc_i(self, h, k, l):
         """Function to calculate the form factor from a superlattice"""
-        # Create the different thicknesses to avarage over
+        # Create the different thicknesses to average over
         na, pa = self.thick_prob(self.na, self.sigmaa)
         nb, pb = self.thick_prob(self.nb, self.sigmab)
         tmp = np.array([self.calc_fa(n, h, k, l) for n in na])

@@ -15,7 +15,7 @@ class SettingsDialog(wx.Dialog):
         Configuration dialog for BaseConfig based classes.
 
         The apply_callback is a function that is called with a dictionary of updated options that
-        can be evaluated. It returns a bool to determin if the dialog should apply these options to the
+        can be evaluated. It returns a bool to determine if the dialog should apply these options to the
         config object.
         """
         wx.Dialog.__init__(self, parent, -1, title, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)

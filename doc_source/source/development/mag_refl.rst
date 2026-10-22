@@ -40,7 +40,7 @@ Optical constants
 -----------------
 
 f
-     The ordinary (tabualted) scattering length. For example ``fp.Fe`` for pure Fe, ``0.5*fp.Fe + fp.O*0.5`` for
+     The ordinary (tabulated) scattering length. For example ``fp.Fe`` for pure Fe, ``0.5*fp.Fe + fp.O*0.5`` for
      FeO (this should be in atomic percent).
 b
      The neutron scattering length, inserted as for f

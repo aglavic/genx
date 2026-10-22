@@ -26,7 +26,7 @@ class Plugin(framework.Template):
         self.menu.Append(self.mb_export_ba)
         self.parent.Bind(wx.EVT_MENU, self.OnExportBA, self.mb_export_ba)
 
-        self.StatusMessage("Sucessfully loaded Exporter...")
+        self.StatusMessage("Successfully loaded Exporter...")
 
     def OnExportBA(self, event):
         """Export layer model to BornAgain script."""

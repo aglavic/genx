@@ -111,13 +111,13 @@ class ModelScriptInteractor:
         return names
 
     def get_sim_methods_info(self, name):
-        """Get the simualtion method info of interactor (object) with name
+        """Get the simulation method info of interactor (object) with name
 
         Parameters:
             name (string): name of the interactor (object).
 
         Returns:
-            sim_method_info (list of SimMethodInfo): The information about the simualtion method
+            sim_method_info (list of SimMethodInfo): The information about the simulation method
         """
         interactor = self.get_interactor_by_name(name)
         return interactor.get_sim_methods_info()
@@ -190,7 +190,7 @@ class ModelScriptInteractor:
         return code
 
     def split_section(self, code, multiline):
-        """Splits the code into chuncks, one chunk one object, that can be parsed by the respective
+        """Splits the code into chunks, one chunk one object, that can be parsed by the respective
         ObjectScriptInteractor.
 
         If multiline is True then an empty line will signify switching of object.
@@ -218,7 +218,7 @@ class ModelScriptInteractor:
     def parse_code(self, code):
         """Parses the code to create the different objects.
 
-        If a ObjectScriptInteractor is of multiline type it is expected that the definitons are seperated by an extra
+        If a ObjectScriptInteractor is of multiline type it is expected that the definitions are separated by an extra
         newline.
 
         Parameters:
@@ -258,7 +258,7 @@ class ModelScriptInteractor:
         # print code_section
         chunks = self.split_section(code_section, False)
         interactors = []
-        # Skipt the first row this is the definition of the custom parameters object
+        # Skip the first row this is the definition of the custom parameters object
         for chunk in chunks[1:]:
             interactors.append(CustomParameterInteractor())
             interactors[-1].parse_code(chunk)
@@ -764,7 +764,7 @@ class DataSetSimulationInteractor(ScriptInteractor):
             self.expression_list[-1].parse_code(line.strip())
         sim_code = lines[-1]
         # print sim_code
-        # Remove the I.append stuff and the last paranthesis
+        # Remove the I.append stuff and the last parenthesis
         sim_code = sim_code[sim_code.index("(") + 1 : -1]
         # Parse the name of the object
         ind = sim_code.index(".")
@@ -807,7 +807,7 @@ class ObjectScriptInteractor(ScriptInteractor):
         self.units = self.class_impl.__units__
         self.validators = self.create_validators()
 
-        # Add the choice dictonary (parameter key and its choices a list of the element)
+        # Add the choice dictionary (parameter key and its choices a list of the element)
         if hasattr(self.class_impl, "__choices__"):
             self.choices = self.class_impl.__choices__
         else:
@@ -1195,7 +1195,7 @@ class SimulationListCtrl(wx.Panel):
         self.ds_sim_list = self.model_script_interactor.data_sections_interactors
         self.plugin = plugin
         boxver = wx.BoxSizer(wx.VERTICAL)
-        # Indention for a command - used to seperate commands and data
+        # Indentation for a command - used to separate commands and data
         self.command_indent = "<pre>   "
         self.script_update_func = None
 
@@ -2962,11 +2962,11 @@ class SimulationExpressionDialog(wx.Dialog):
     """A dialog to edit the Simulation expression"""
 
     def __init__(self, parent, model, data_set_sim_interactor, script_interactor):
-        """Creates a SimualtionExpressionDialog.
+        """Creates a SimulationExpressionDialog.
 
         Parameters:
             model - a Model object.
-            data_set_sim_interactor: A Data Set Simualtion interactor
+            data_set_sim_interactor: A Data Set Simulation interactor
             script_interactor: A script interactor
         """
 

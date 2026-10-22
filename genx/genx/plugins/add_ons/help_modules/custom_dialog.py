@@ -222,7 +222,7 @@ class NoMatchTextObjectValidator(wx.Validator):
 class NoMatchValidTextObjectValidator(wx.Validator):
     """This validator is used to ensure that the user has entered something
     into the text object editor dialog's text field. It should not match
-    a name in stringlist and it should be a valid varaible name. I.e
+    a name in stringlist and it should be a valid variable name. I.e
     is should start with a letter and can only contains ordinary
     letters as in string.letters as well as numbers as in string.digits
     or _
@@ -304,7 +304,7 @@ class NoMatchValidTextObjectValidator(wx.Validator):
         elif sum([char in self.allowed_chars for char in text]) != len(text) or text[0] in string.digits:
             debug("Not a valid name")
             wx.MessageBox(
-                "Not a vaild name. Names can only contain letters"
+                "Not a valid name. Names can only contain letters"
                 ", digits and underscores(_) and not start with a digit.",
                 "Bad Input",
             )
@@ -492,7 +492,7 @@ class ComplexObjectValidator(wx.Validator):
             textCtrl.Refresh()
             return False
         try:
-            # Have to do it differentily to work with proxys
+            # Have to do it differentily to work with proxies
             # self.value=complex(self.eval_func(text))
             if is_reflfunction(val):
                 val = val.validate()
@@ -569,11 +569,11 @@ class ValidateBaseDialog(wx.Dialog):
 
         Pars should contain a list of names.
         Vals should be a dictionary of names and values for the different parameters one wish to set.
-        editable_pars should be a dictonary indicating if the parameter should be editable, a missing value
+        editable_pars should be a dictionary indicating if the parameter should be editable, a missing value
         is interpreted that the parameter is editable.
         Groups should either be false or consist of a list of lists which
         in turn consist of the (name, value) tuples where the first item
-        in the list should be a string describing the group. This will be layed out
+        in the list should be a string describing the group. This will be laid out
         with subboxes. An example:
         groups = [['Standard', [('f', 25), ('sigma', 7)]], ['Neutron', [('b', 3.0)]]]
 
@@ -673,7 +673,7 @@ class ValidateBaseDialog(wx.Dialog):
         p = {}
         for par in list(self.validators.keys()):
             if type(self.validators[par]) == type([]):
-                # have to pad teh text to make it a string inside a string...
+                # have to pad the text to make it a string inside a string...
                 # text = '\''
                 text = self.validators[par][self.tc[par].GetSelection()]
                 # text += '\''
@@ -705,7 +705,7 @@ class NormalEditMixin:
             validator = validator[:]
             ctrl = wx.Choice(parent, -1, choices=validator)
             # Since we work with strings we have to find the right
-            # strings positons to initilize the choice box.
+            # strings positions to initialize the choice box.
             pos = 0
             if type(val) == type(""):
                 pos = validator.index(val)
@@ -761,11 +761,11 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
         The upper dictionary level should contain the object names.
         Groups should either be false or a consist of a list of lists which
         in turn consist of the (name, value) tuples where the first item
-        in the list should be a string describing the group. This will be layed out
+        in the list should be a string describing the group. This will be laid out
         with subboxes. An example:
         groups = [['Standard', ('f', 25), ('sigma', 7)], ['Neutron', ('b', 3.0)]]
 
-        Note validators, values and units should be dictonaries of values!
+        Note validators, values and units should be dictionaries of values!
         """
         wx.Dialog.__init__(self, parent, -1, title)
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
@@ -922,18 +922,18 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
 
     def RemovePage(self, name):
         """Remove a page from the notebook"""
-        sucess = False
+        success = False
         index = -1
         if name in self.fixed_pages:
-            return sucess
+            return success
         for i in range(self.main_sizer.GetPageCount()):
             if self.main_sizer.GetPageText(i) == name:
-                sucess = True
+                success = True
                 index = i
-        if sucess:
+        if success:
             self.main_sizer.DeletePage(index)
             self.vals.pop(name)
-        return sucess
+        return success
 
     def GetValues(self):
         """Extracts values from the text controls and returns is as a
@@ -944,7 +944,7 @@ class ValidateBaseNotebookDialog(ValidateBaseDialog):
             p[page] = {}
             for par in list(self.validators.keys()):
                 if type(self.validators[par]) == type([]):
-                    # have to pad teh text to make it a string inside a string...
+                    # have to pad the text to make it a string inside a string...
                     # text = '\''
                     text = self.validators[par][self.text_controls[page][par].GetSelection()]
                     # text += '\''
@@ -990,7 +990,7 @@ class FitEditMixIn:
             validator = validator[:]
             ctrl = wx.Choice(parent, -1, choices=validator)
             # Since we work with strings we have to find the right
-            # strings positons to initilize the choice box.
+            # strings positions to initialize the choice box.
             pos = 0
             if type(val) == type(""):
                 try:
@@ -1253,7 +1253,7 @@ class ParameterExpressionCombo(wx.ComboCtrl):
             self.sim_func()
 
     def OnPopUpItemSelected(self, event):
-        """Event handler for selcting a parameters get function.
+        """Event handler for selecting a parameters get function.
 
         :param event:
         :return:

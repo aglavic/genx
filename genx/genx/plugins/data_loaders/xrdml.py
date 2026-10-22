@@ -61,7 +61,7 @@ class Plugin(Template):
             dataset.x_raw = ds[0]
             dataset.y_raw = ds[1]
             dataset.error_raw = ds[2]
-            # Run the commands on the data - this also sets the x,y, error memebers
+            # Run the commands on the data - this also sets the x,y, error members
             # of that data item.
             dataset.run_command()
 

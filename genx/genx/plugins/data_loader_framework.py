@@ -68,7 +68,7 @@ class Template:
 
     def LoadDataFile(self, selected_items):
         """
-        Selected items is the selcted items in the items in the current DataList
+        Selected items is the selected items in the items in the current DataList
         into which data from file(s) should be loaded. Note that the default
         implementation only allows the loading of a single file!
         Overriding this function in subclasses can of course change this
@@ -135,7 +135,7 @@ class Template:
     def LoadData(self, dataset, file_path, data_id=0):
         """
         This file should load a single data file into data object of
-        the model. Please overide this function. It is called by the
+        the model. Please override this function. It is called by the
         LoadFile function.
         """
         pass

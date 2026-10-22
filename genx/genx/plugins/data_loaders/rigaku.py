@@ -231,7 +231,7 @@ class Plugin(Template):
                 dataset.set_extra_data("atten", load_array[:, 2])
                 dataset.y_command = "y*atten"
                 dataset.error_command = "e*atten"
-            # Run the commands on the data - this also sets the x,y, error memebers
+            # Run the commands on the data - this also sets the x,y, error members
             # of that data item.
             dataset.run_command()
 
@@ -286,7 +286,7 @@ class Plugin(Template):
                 dataset.set_extra_data("atten", load_array[:, 2])
                 dataset.y_command = "y*atten"
                 dataset.error_command = "e*atten"
-            # Run the commands on the data - this also sets the x,y, error memebers
+            # Run the commands on the data - this also sets the x,y, error members
             # of that data item.
             dataset.run_command()
 

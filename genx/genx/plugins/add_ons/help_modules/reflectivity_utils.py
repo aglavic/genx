@@ -311,7 +311,7 @@ class SampleHandler:
 
     def deleteItem(self, pos):
         """
-        Delete item pos in the lsit if the item is a stack all the Layers
+        Delete item pos in the list if the item is a stack all the Layers
         are deleted as well.
         """
         if pos in self.names:
@@ -586,9 +586,9 @@ class SampleBuilder:
                 stop_index = line - 1
                 break
 
-        # Check so everything have preceeded well
+        # Check so everything have proceeded well
         if stop_index < 0 and start_index < 0:
-            raise LookupError("Code segement: %s could not be found" % descriptor)
+            raise LookupError("Code segment: %s could not be found" % descriptor)
 
         # Find the tablevel
         # tablevel = len([' ' for char in script_lines[stop_index+1]\
@@ -606,7 +606,7 @@ class SampleBuilder:
         """find_code_segment(self, code, descriptor) --> string
 
         Finds a segment of code between BEGIN descriptor and END descriptor
-        returns a LookupError if the segement can not be found
+        returns a LookupError if the segment can not be found
         """
 
         return find_code_segment(code, descriptor)
@@ -657,9 +657,9 @@ class SampleBuilder:
                 stop_index = line - 1
                 break
 
-        # Check so everything have preceeded well
+        # Check so everything have proceeded well
         if stop_index < 0 and start_index < 0:
-            raise LookupError("Code segement: %s could not be found" % number)
+            raise LookupError("Code segment: %s could not be found" % number)
 
         script = "".join(script_lines[: start_index - 1])
         script += "".join(script_lines[stop_index + 2 :])
@@ -688,7 +688,7 @@ class SampleBuilder:
         code = "cp = UserVars()\n"
         code += "".join([line + "\n" for line in parameter_list])
         script = self.insert_code_segment(script, "Parameters", code)
-        # Expressions evaluted during simulations (parameter couplings) script creation
+        # Expressions evaluated during simulations (parameter couplings) script creation
         for i, exps in enumerate(expression_list):
             exp = [ex + "\n" for ex in exps]
             exp.append("d = data[%i]\n" % i)
@@ -800,7 +800,7 @@ def find_code_segment(code, descriptor):
     """find_code_segment(code, descriptor) --> string
 
     Finds a segment of code between BEGIN descriptor and END descriptor
-    returns a LookupError if the segement can not be found
+    returns a LookupError if the segment can not be found
     """
     found = 0
     script_lines = code.splitlines(True)
@@ -820,6 +820,6 @@ def find_code_segment(code, descriptor):
         text += line
 
     if found != 2:
-        raise LookupError("Code segement: %s could not be found" % descriptor)
+        raise LookupError("Code segment: %s could not be found" % descriptor)
 
     return text

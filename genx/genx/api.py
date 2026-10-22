@@ -312,7 +312,7 @@ class Reflectivity(SampleBuilder):
 
     def new_model(self, modelname="spec_nx"):
         """Init the script in the model to yield the
-        correct script for initilization
+        correct script for initialization
         """
         modelname = "models." + modelname
         model_data = self.GetModel().get_data()
@@ -564,7 +564,7 @@ class Reflectivity(SampleBuilder):
 
     @property
     def widget(self):
-        # alternative widget to the model view with reflectivity controlls
+        # alternative widget to the model view with reflectivity controls
         import ipywidgets as ipw
 
         model = self.GetModel()

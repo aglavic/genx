@@ -1,6 +1,6 @@
 """
 ==========================================================
-:mod:`resolution` Data loader that includes the resoultion
+:mod:`resolution` Data loader that includes the resolution
 ==========================================================
 
 Loads files in a four column format where the fourth column contains the resolution of the experiment.
@@ -75,7 +75,7 @@ class Plugin(Template):
                     "The data file does not contain"
                     + "enough number of columns. It has "
                     + str(load_array.shape[1])
-                    + " columns. Rember that the column index start at zero!",
+                    + " columns. Remember that the column index start at zero!",
                 )
                 # Okay now we have showed a dialog lets bail out ...
                 return
@@ -88,13 +88,13 @@ class Plugin(Template):
             dataset.y_raw = load_array[:, self.I_col]
             dataset.error_raw = load_array[:, self.eI_col]
             dataset.set_extra_data("res", load_array[:, self.res_col], "res")
-            # Run the commands on the data - this also sets the x,y, error memebers
+            # Run the commands on the data - this also sets the x,y, error members
             # of that data item.
             dataset.run_command()
 
             # insert metadata into ORSO compatible fields
             dataset.meta["data_source"]["facility"] = "GenX resolution data loader"
-            dataset.meta["data_source"]["experiment"]["instrument"] = "unkown"
+            dataset.meta["data_source"]["experiment"]["instrument"] = "unknown"
             dataset.meta["data_source"]["import_columns"] = dict(
                 x=self.q_col, y=self.I_col, error=self.eI_col, res=self.res_col
             )

@@ -93,7 +93,7 @@ def ass_P(k_p, k_m, d):
 
 
 def Refl(Q, Vp, Vm, d, M_ang, sigma=None, return_int=True):
-    """A quicker implementation than the ordinary slow implementaion in Refl
+    """A quicker implementation than the ordinary slow implementation in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
         and J.A.C. Bland Phys rev. B. vol 46 3391 (1992)
         The algorithm assumes that the first element in the arrays represents
@@ -163,7 +163,7 @@ def Refl(Q, Vp, Vm, d, M_ang, sigma=None, return_int=True):
 def Refl_int_lay(
     Q, V0, Vmag, d, M_ang, sigma, dmag_u, dd_u, M_ang_u, sigma_u, dmag_l, dd_l, M_ang_l, sigma_l, return_int=True
 ):
-    """A quicker implementation than the ordinary slow implementaion in Refl
+    """A quicker implementation than the ordinary slow implementation in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
         and J.A.C. Bland Phys rev. B. vol 46 3391 (1992)
         The algorithm assumes that the last element in the arrays represents

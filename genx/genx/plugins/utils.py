@@ -22,7 +22,7 @@ except ImportError:
 class PluginHandler:
     """Class that takes care of the loading/unloading of the plugins.
     This is used in the main GUI. Should not be tinkered with.
-    The plugin module can only conatain files wich are real plugins i.e.
+    The plugin module can only contain files which are real plugins i.e.
     that implements the class Template. Of course it is possible to have
     subdirectories that has support libraries.
 
@@ -86,7 +86,7 @@ class PluginHandler:
         module = self._load_module(self.plugin_folder + "." + plugin_name)
         # Create the Plugin object from the module
         plugin = module.Plugin(self.parent)
-        # Add it to our dictonary over loaded plugins
+        # Add it to our dictionary over loaded plugins
         self.loaded_plugins[plugin_name] = plugin
 
     def is_loaded(self, plugin_name):

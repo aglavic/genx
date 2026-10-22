@@ -3,10 +3,10 @@
 LayerGraphics
 =============
 
-A plugin to create sketch graphics to vizualize the layer structure.
+A plugin to create sketch graphics to visualize the layer structure.
 The result is an SVG image with automatically generated colors and sizes.
 
-Thicknesses can either be linear or mapped through a scaling funciton to
+Thicknesses can either be linear or mapped through a scaling function to
 avoid large variation if thicknesses are too different.
 """
 
@@ -273,7 +273,7 @@ class SVGenerator:
         x0, y0 = point0
         dx = self.move_3d
         vx, vy = self.vanishing_point
-        relx = dx / (vx - x0)  # releative movement towrads vanishing point
+        relx = dx / (vx - x0)  # relative movement towrads vanishing point
         dy = (vy - y0) * relx
         return ((x0 + dx) * px, (y0 + dy) * py)
 

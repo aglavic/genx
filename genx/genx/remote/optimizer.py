@@ -1,5 +1,5 @@
 """
-A remote client that performs model refinement on a mashine running genx.server.
+A remote client that performs model refinement on a machine running genx.server.
 
 Currently, only differential evolution is supported.
 """

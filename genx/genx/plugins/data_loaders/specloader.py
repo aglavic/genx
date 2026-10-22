@@ -186,7 +186,7 @@ class LoadSpecScanPage(wx.adv.WizardPageSimple):
 
         self.SetControlEnable(wx.ID_FORWARD, False)
 
-        # Load the defualt spec file -  if exists
+        # Load the default spec file -  if exists
         if default_filename:
             self.filebrowser.SetValue(default_filename)
             self.load_file(default_filename)
@@ -398,7 +398,7 @@ class CustomManipulationPage(wx.adv.WizardPageSimple):
         self.errorCtrl.ChangeValue(com["e"])
 
     def set_manip(self, choices):
-        """Sets the manipulations to defualt values as given by
+        """Sets the manipulations to default values as given by
         the choices in the form (x, det, mon, error)
         """
         iprint(choices)
@@ -506,4 +506,4 @@ if __name__ == "__main__":
     wizard.FitToPage(page2)
     # print dir(wizard)
     if wizard.RunWizard(page2):
-        iprint("Sucess")
+        iprint("Success")

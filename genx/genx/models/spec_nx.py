@@ -84,7 +84,7 @@ class Polarization(AltStrEnum):
 @dataclass
 class Layer(refl.ReflBase):
     """
-    Representing a layer in the sample structur.
+    Representing a layer in the sample structure.
 
     ``d``
         The thickness of the layer in AA (Angstroms = 1e-10m)
@@ -104,7 +104,7 @@ class Layer(refl.ReflBase):
     ``magn``
         The magnetic moment per formula unit (same formula unit as b and dens refer to)
     ``magn_ang``
-        The angle of the magnetic moment in degress. 0 degrees correspond to
+        The angle of the magnetic moment in degrees. 0 degrees correspond to
         a moment collinear with the neutron spin. Only used if probe is neutron spin-flip.
     """
 
@@ -155,7 +155,7 @@ class Stack(refl.StackBase):
     A collection of Layer objects that can be repeated.
 
     ``Layers``
-       A ``list`` consiting of ``Layers`` in the stack the first item is
+       A ``list`` consisting of ``Layers`` in the stack the first item is
        the layer closest to the bottom
     ``Repetitions``
        The number of repsetions of the stack
@@ -171,13 +171,13 @@ class Sample(refl.SampleBase):
     Describe global sample by listing ambient, substrate and layer parameters.
 
     ``Stacks``
-       A ``list`` consiting of ``Stacks`` in the stacks the first item is
+       A ``list`` consisting of ``Stacks`` in the stacks the first item is
        the layer closest to the bottom
     ``Ambient``
-       A ``Layer`` describing the Ambient (enviroment above the sample).
+       A ``Layer`` describing the Ambient (environment above the sample).
        Only the scattering lengths and density of the layer is used.
     ``Substrate``
-       A ``Layer`` describing the substrate (enviroment below the sample).
+       A ``Layer`` describing the substrate (environment below the sample).
        Only the scattering lengths, density and roughness of the layer is
        used.
     ``crop_sld``
@@ -200,7 +200,7 @@ class Instrument(refl.ReflBase):
     Specify parameters of the probe and reflectometry instrument.
 
     ``probe``
-        Describes the radiation and measurments used, it is one of:
+        Describes the radiation and measurements used, it is one of:
         'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip',
         'neutron tof', 'neutron pol tof'.
         The calculations for x-rays uses ``f`` for the scattering length for
@@ -228,10 +228,10 @@ class Instrument(refl.ReflBase):
         The incident angle of the neutrons, only valid in tof mode
     ``restype``
         Describes the rype of the resolution calculated. One of the
-        alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
+        alternatives: 'no conv', 'fast conv', 'full conv and varying res.',
         'fast conv + varying res.', 'full conv and varying res. (dx/x)', 'fast
         conv + varying res. (dx/x)'. The respective numbers 0-3 also works. Note
-        that fast convolution only alllows a single value into res wheras the
+        that fast convolution only allows a single value into res whereas the
         other can also take an array with the same length as the x-data (varying
         resolution)
     ``res``
@@ -367,7 +367,7 @@ def resolutioncorr(R, TwoThetaQz, foocor, instrument: Instrument, weight):
 
 
 def resolution_init(TwoThetaQz, instrument: Instrument):
-    """Inits the dependet variable with regards to coordinates and resolution."""
+    """Inits the dependent variable with regards to coordinates and resolution."""
     global __xlabel__
     __xlabel__ = "q [Å$^{-1}$]"
 
@@ -390,7 +390,7 @@ def resolution_init(TwoThetaQz, instrument: Instrument):
         # if there is no tth offset, nothing to be done for Q
         if instrument.tthoff == 0:
             Q = TwoThetaQz
-        # for tof the q-values are not angles but wavelenght, so tth-offset is a scaling factor
+        # for tof the q-values are not angles but wavelength, so tth-offset is a scaling factor
         elif instrument.probe in [Probe.ntof, Probe.ntofpol]:
             ai = instrument.incangle
             # if ai is an array, make sure it gets repeated for every resolution point
@@ -494,7 +494,7 @@ def specular_calcs(TwoThetaQz, sample: Sample, instrument: Instrument, return_in
             raise ValueError("The value of the polarization is WRONG." " It should be uu(0) or dd(1)")
     # Spin flip
     elif ptype == Probe.npolsf:
-        # Check if we have calcluated the same sample previous:
+        # Check if we have calculated the same sample previous:
         if Buffer.TwoThetaQz is not None:
             Q_ok = Buffer.TwoThetaQz.shape == Q.shape
             if Q_ok:
@@ -674,7 +674,7 @@ def OffSpecular(TwoThetaQz, ThetaQx, sample: Sample, instrument: Instrument):
 
 def SLD_calculations(z, item, sample: Sample, inst: Instrument):
     """Calculates the scatteringlength density as at the positions z
-    if item is None or "all" the function returns a dictonary of values.
+    if item is None or "all" the function returns a dictionary of values.
     Otherwise, it returns the item as identified by its string.
 
     # BEGIN Parameters

@@ -52,7 +52,7 @@ _rough_mapping = {RoughType.gauss: 0, RoughType.linear: 1, RoughType.exp1: 2, Ro
 @dataclass
 class Layer(refl.ReflBase):
     """
-    Representing a layer in the sample structur.
+    Representing a layer in the sample structure.
 
     ``d``
         The thickness of the layer in AA (Angstroms = 1e-10m)
@@ -66,10 +66,10 @@ class Layer(refl.ReflBase):
     ``magn``
         The magnetic moment per formula unit (same formula unit as b and dens refer to)
     ``magn_ang``
-        The angle of the magnetic moment in degress. 0 degrees correspond to
+        The angle of the magnetic moment in degrees. 0 degrees correspond to
         a moment collinear with the neutron spin.
     ``magn_void``
-       If true this layer has no magnetization. In case of *sigma_mag* beging larger than 0, the additional
+       If true this layer has no magnetization. In case of *sigma_mag* begin larger than 0, the additional
        roughness is only applied to the magnetic layer and inside this layer follows the chemical profile.
     ``sigma_mag``
        A different roughness parameter for the magnetization of the layer, 0 is ignored
@@ -126,7 +126,7 @@ class Stack(refl.StackBase):
     A collection of Layer objects that can be repeated.
 
     ``Layers``
-       A ``list`` consiting of ``Layers`` in the stack the first item is
+       A ``list`` consisting of ``Layers`` in the stack the first item is
        the layer closest to the bottom
     ``Repetitions``
        The number of repsetions of the stack
@@ -150,13 +150,13 @@ class Sample(refl.SampleBase):
     Describe global sample by listing ambient, substrate and layer parameters.
 
     ``Stacks``
-       A ``list`` consiting of ``Stacks`` in the stacks the first item is
+       A ``list`` consisting of ``Stacks`` in the stacks the first item is
        the layer closest to the bottom
     ``Ambient``
-       A ``Layer`` describing the Ambient (enviroment above the sample).
+       A ``Layer`` describing the Ambient (environment above the sample).
        Only the scattering lengths and density of the layer is used.
     ``Substrate``
-       A ``Layer`` describing the substrate (enviroment below the sample).
+       A ``Layer`` describing the substrate (environment below the sample).
        Only the scattering lengths, density and roughness of the layer is
        used.
     ``minimal_steps``
@@ -236,7 +236,7 @@ class Instrument(NXInstrument):
     ``tthoff``
         Linear offset to the scattering angle calibration
     ``probe``
-        Describes the radiation and measurments used, it is one of:
+        Describes the radiation and measurements used, it is one of:
         'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip',
         'neutron tof', 'neutron pol tof'.
         The calculations for x-rays uses ``f`` for the scattering length for
@@ -251,10 +251,10 @@ class Instrument(NXInstrument):
         The incident angle of the neutrons, only valid in tof mode
     ``restype``
         Describes the rype of the resolution calculated. One of the
-        alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
+        alternatives: 'no conv', 'fast conv', 'full conv and varying res.',
         'fast conv + varying res.', 'full conv and varying res. (dx/x)', 'fast
         conv + varying res. (dx/x)'. The respective numbers 0-3 also works. Note
-        that fast convolution only alllows a single value into res wheras the
+        that fast convolution only allows a single value into res whereas the
         other can also take an array with the same length as the x-data (varying
         resolution)
     ``res``
@@ -313,7 +313,7 @@ def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
     """For details see spec_nx implementation with more comments.
 
     This implements the concepts of [1] by correcting the q-position for spin-flip and
-    adding a magnetic sld to all layers along the external field diretion.
+    adding a magnetic sld to all layers along the external field direction.
 
     [1] Brian B. Maranville et al., "Polarized specular neutron reflectivity", J. Appl. Cryst. (2016). 49, 1121–1129
     """
@@ -358,7 +358,7 @@ def specular_calc_zeemann(TwoThetaQz, sample: Sample, instrument: Instrument):
     #                       1.0J*abs_xs*wl/4/pi)
     sld = spec_nx.neutron_sld(abs_xs, dens, fb, wl)
 
-    # Check if we have calcluated the same sample previous:
+    # Check if we have calculated the same sample previous:
     if Buffer.TwoThetaQz is not None:
         Q_ok = Buffer.TwoThetaQz.shape == Q.shape
         if Q_ok:
@@ -455,7 +455,7 @@ def PolSpecular(TwoThetaQz, p1, p2, F1, F2, sample: Sample, instrument: Instrume
 
 def SLD_calculations(z, item, sample, inst):
     """Calculates the scatteringlength density as at the positions z
-    if item is None or "all" the function returns a dictonary of values.
+    if item is None or "all" the function returns a dictionary of values.
     Otherwise, it returns the item as identified by its string.
 
     # BEGIN Parameters

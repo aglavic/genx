@@ -112,7 +112,7 @@ more about that later.
 .. note::
     If the menu entry :menuselection:`Model-->Simulate Automatically` is checked, any change of parameter
     values will instantly be modeled and shown in the plot. Using the mouse scroll wheel on an active
-    value entry will change the value slightly and can thus be used to manually tweek results.
+    value entry will change the value slightly and can thus be used to manually tweak results.
 
 
 Starting the fit
@@ -143,7 +143,7 @@ red dot is the current best value. So it is save to assume that there will be NO
 are very small.
 
 .. note::
-    This is the basis for the fit paramter *parameter spread to stop* that was introduced in version 3.5.0.
+    This is the basis for the fit parameter *parameter spread to stop* that was introduced in version 3.5.0.
     With this you can define a value of the parameter with the largest relative spread during the refinement.
     If the population has a spread that is lower, the fit will be stopped automatically, assuming that
     convergence has been reached. (Safe values are between 0.1% and 1.0%.)
@@ -154,7 +154,7 @@ idea to change the boundaries, within physically reasonable values.
 Stopping the fit
 ----------------
 The fit is halted by pressing the stop button, not so difficult. It can take some time before the system responds,
-depending on how demanding the calculations are. Then a dialog pops up asking whether or not to update the gird values
+depending on how demanding the calculations are. Then a dialog pops up asking whether or not to update the grid values
 with the fitted ones, see below.
 (Since version 3.5.0 the change can be undone afterwards.)
 
@@ -165,7 +165,7 @@ fitting, the fit will be reinitialized and everything will be started from the b
 .. note::
     Remember that the Differential Evolution algorithm has a random component. For this reason not every run
     from the same starting parameters converges on the same values. It can therefore be helpful for complicated
-    models to restart a fit to get out of a local minimum. (Or tweek some parameters manuallly and start again.)
+    models to restart a fit to get out of a local minimum. (Or tweak some parameters manually and start again.)
 
 Analyze the Fit
 ===============

@@ -40,7 +40,7 @@ So what does all this mean? Here is a short explanations
 * :dens:
     The density of formula units in units per Angstroms. Note the units!
 * :magn_ang:
-    The angle of the magnetic moment in degres. 0 degrees correspond to a moment collinear with the neutron spin.
+    The angle of the magnetic moment in degrees. 0 degrees correspond to a moment collinear with the neutron spin.
     (Only used in *neutron pol spin flip* calculations.)
 * :magn:
     The magnetic moment per formula unit (same formula unit as *b* and *dens* refer to)
@@ -123,7 +123,7 @@ we import the calculations from Data 0. Click on the choice box at the top right
 calculations are imported. Click on Ok.
 
 Next, choose different plot colors for the second dataset by clicking the *Plot settings* button in the data
-toolbar and choose differnt options for the simulation (here we chose green with 4px data points).
+toolbar and choose different options for the simulation (here we chose green with 4px data points).
 Perhaps the names are not so exciting, Data 0 and Data 1. They can be renamed by a slow double click on the
 name in data tab. Perhaps *spin-up* and *spin-down* is more appropriate.
 

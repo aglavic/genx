@@ -31,7 +31,7 @@ from .custom_events import (delete_parameters, grid_change, inset_parameter, mov
 class ParameterDataTable(gridlib.GridTableBase):
     """
     Class for the datatable which is used by the grid.
-    Mostly a compatability layer between the Parameters class
+    Mostly a compatibility layer between the Parameters class
     and the grid.
     """
 
@@ -1032,7 +1032,7 @@ class ParameterGrid(wx.Panel, Configurable):
         self.table.InsertRow(row)
 
     def eh_delete_row(self, event):
-        """Event handler for deleteing a row
+        """Event handler for deleting a row
 
         :param event:
         :return:
@@ -1527,8 +1527,8 @@ class ParameterGrid(wx.Panel, Configurable):
 
     def SetEvalFunc(self, func):
         """
-        Sets the fucntion that evaluates the expression that is exexuted in the
-        model. The fucntion should take a string as input.
+        Sets the function that evaluates the expression that is executed in the
+        model. The function should take a string as input.
         """
         self.evalf = func
 

@@ -29,7 +29,7 @@ class GenxOptimizer(Configurable, H5HintedExport, metaclass=ABCMeta):
     @property
     @abstractmethod
     def n_fom_evals(self) -> int:
-        """Returns teh number of FOM evaluations"""
+        """Returns the number of FOM evaluations"""
 
     @abstractmethod
     def pickle_string(self, clear_evals: bool = False):

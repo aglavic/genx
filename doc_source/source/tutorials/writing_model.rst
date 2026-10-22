@@ -142,7 +142,7 @@ simple to use. As a more elaborate solution for the previous simple example we c
 This code is quite similar to the first version but encapsulates all necessary information in one class.
 It starts with the definition of the class ``Gauss``.
 The use of the ``@dataclass`` decorator and derivation from ``ModelParamBase`` ensures that the parameters are
-automatically set and validated during instanciation and that GenX recognizes the class for setting parameters
+automatically set and validated during instantiation and that GenX recognizes the class for setting parameters
 in the Grid. The class also contains a method to calculate a Gaussian with the these attributes.
 After the class definition an instance (object), ``Peak1``, of the Gauss class is created. Then the ``Sim`` function
 is defined as in the previous example but with the function call exchanged to ``Peak1.Simulate(data[0].x)`` in order

@@ -25,7 +25,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.model_config.sections(), [])
 
         with self.assertRaises(GenxIOError):
-            config.load_default("none existant path")
+            config.load_default("none existent path")
 
     def test_write_default(self):
         config = c.Config()
@@ -191,17 +191,17 @@ class TestBaseConfig(unittest.TestCase):
         self.assertEqual(len(cfg.get_fields(["p_bool", "none"])), 1)
 
     def test_gparm(self):
-        res = self.test_class.GParam(13, pmin=53, pmax=12, label="hello world", descriptoin="this is a parameter")
+        res = self.test_class.GParam(13, pmin=53, pmax=12, label="hello world", description="this is a parameter")
         self.assertEqual(res.default, 13)
         self.assertEqual(
-            res.metadata["genx"], {"pmin": 53, "pmax": 12, "label": "hello world", "descriptoin": "this is a parameter"}
+            res.metadata["genx"], {"pmin": 53, "pmax": 12, "label": "hello world", "description": "this is a parameter"}
         )
 
-        res = self.test_class.GChoice(13, [13, 14, 15], label="hello world", descriptoin="this is a parameter")
+        res = self.test_class.GChoice(13, [13, 14, 15], label="hello world", description="this is a parameter")
         self.assertEqual(res.default, 13)
         self.assertEqual(
             res.metadata["genx"],
-            {"selection": [13, 14, 15], "label": "hello world", "descriptoin": "this is a parameter"},
+            {"selection": [13, 14, 15], "label": "hello world", "description": "this is a parameter"},
         )
 
     def test_merged(self):

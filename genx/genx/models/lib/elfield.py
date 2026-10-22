@@ -4,7 +4,7 @@ from genx.core.custom_logging import iprint
 
 
 def IntElfield(theta, lamda, n, d):
-    # Length of k-vector in vaccum
+    # Length of k-vector in vacuum
     k = 2 * pi / lamda
     # Calculates the wavevector in each layer
     Qj = 2 * k * sqrt(n[:, newaxis] ** 2 - cos(theta * pi / 180) ** 2)
@@ -37,7 +37,7 @@ def IntElfield(theta, lamda, n, d):
 
 
 def AmpElfield_q(k, kx, lamda, n, d):
-    # Length of k-vector in vaccum
+    # Length of k-vector in vacuum
     k = 2 * pi / lamda
     # Calculates the wavevector in each layer
     # Qj=2*k*sqrt(n[:,newaxis]**2-cos(theta*pi/180)**2)
@@ -61,7 +61,7 @@ def AmpElfield_q(k, kx, lamda, n, d):
     for i in range(0, len(rp)):
         E_p.append(1 / tp[i] * (E_p[i] * exp(-1.0j * D[i] * Qj[i] / 2) + E_m[i] * rp[i] * exp(1.0j * D[i] * Qj[i] / 2)))
         E_m.append(1 / tp[i] * (E_m[i] * exp(1.0j * D[i] * Qj[i] / 2) + E_p[i] * rp[i] * exp(-1.0j * D[i] * Qj[i] / 2)))
-    # Added 020905 for testing another T amplitude (The Transmitted amp. trough the interface)
+    # Added 020905 for testing another T amplitude (The Transmitted amp. through the interface)
     # print E_p
     # End old version
     E_p = array(E_p)
@@ -88,7 +88,7 @@ def AmpElfield_q(k, kx, lamda, n, d):
     E_m = array(E_m)
     q = Qj / 2  # Old ver. replaced 020905 with:
     # return (E_p[:-1]/E_p[0],E_m[:-1]/E_p[0],q[:-1]) # Last correspond to kz
-    # testar amplitud i lager j+1 istallet
+    # testar amplitude i lager j+1 istallet
     return E_p[1:] / E_p[0], E_m[1:] / E_p[0], q[1:]  # Last correspond to kz
 
 
@@ -161,7 +161,7 @@ def AmpElfield_test(th, lam, n, d, dz=0.1):
     R = abs(R0) ** 2
     T = abs(TN) ** 2
 
-    # Calc el. fileds as a function of z
+    # Calc el. fields as a function of z
     Rlay = R0
     Tlay = 1.0
     z = array([0])

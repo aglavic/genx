@@ -132,7 +132,7 @@ class ActionHistory:
 
     def remove_actions(self, start, length=1):
         """
-        Undo the last 'start' actions, skipe 'length'
+        Undo the last 'start' actions, skip 'length'
         redo actions and then redo the residual actions.
         """
         current_undo = len(self.redo_stack)
@@ -150,7 +150,7 @@ class ActionHistory:
             try:
                 redone_action.append(self.redo())
             except Exception as e:
-                # there was an error during a redo, hald the process and
+                # there was an error during a redo, hold the process and
                 # revert to previous state
                 for _ in reversed(redone_action):
                     self.undo()

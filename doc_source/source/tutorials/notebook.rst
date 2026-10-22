@@ -12,10 +12,10 @@ to work on data analysis and write code interactively while being able to reprod
 and display results nicely.
 
 While the main strength of GenX is the interactive development of models using a graphical user
-interface while keeping the felxibility of a modifyable model script, GenX also supports to
+interface while keeping the felxibility of a modifiable model script, GenX also supports to
 use the essential features via an API interface that includes special jupyter notebook support.
 
-While it is possible to build models via this API it is mostly intended to run and anlyze already
+While it is possible to build models via this API it is mostly intended to run and analyze already
 existing model, e.g. to perform statistical analysis of the results.
 
 Examples

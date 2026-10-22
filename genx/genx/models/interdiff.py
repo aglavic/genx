@@ -68,7 +68,7 @@ class FootType(AltStrEnum):
 @dataclass
 class Layer(refl.ReflBase):
     """
-    Representing a layer in the sample structur.
+    Representing a layer in the sample structure.
 
     ``d``
        The thickness of the layer in AA (Angstroms = 1e-10m)
@@ -120,7 +120,7 @@ class Stack(refl.StackBase):
     A collection of Layer objects that can be repeated.
 
     ``Layers``
-       A ``list`` consiting of ``Layers`` in the stack the first item is
+       A ``list`` consisting of ``Layers`` in the stack the first item is
        the layer closest to the bottom
     ``Repetitions``
        The number of repsetions of the stack
@@ -136,13 +136,13 @@ class Sample(refl.SampleBase):
     Describe global sample by listing ambient, substrate and layer parameters.
 
     ``Stacks``
-       A ``list`` consiting of ``Stacks`` in the stacks the first item is
+       A ``list`` consisting of ``Stacks`` in the stacks the first item is
        the layer closest to the bottom
     ``Ambient``
-       A ``Layer`` describing the Ambient (enviroment above the sample).
+       A ``Layer`` describing the Ambient (environment above the sample).
        Only the scattering lengths and density of the layer is used.
     ``Substrate``
-       A ``Layer`` describing the substrate (enviroment below the sample).
+       A ``Layer`` describing the substrate (environment below the sample).
        Only the scattering lengths, density and roughness of the layer is
        used.
     ``eta_z``
@@ -187,10 +187,10 @@ class Instrument(refl.ReflBase):
         reflectivity
     ``restype``
         Describes the rype of the resolution calculated. One of the
-        alterantives: 'no conv', 'fast conv', 'full conv and varying res.',
+        alternatives: 'no conv', 'fast conv', 'full conv and varying res.',
         'fast conv + varying res.', 'full conv and varying res. (dx/x)', 'fast
         conv + varying res. (dx/x)'. The respective numbers 0-3 also works. Note
-        that fast convolution only alllows a single value into res wheras the
+        that fast convolution only allows a single value into res whereas the
         other can also take an array with the same length as the x-data (varying
         resolution)
     ``res``
@@ -210,7 +210,7 @@ class Instrument(refl.ReflBase):
         smearing the simulation with the resolution function but also the specular
         to off-specular scattering ratio.
     ``dettype``
-        Type of detector resolution to use, either 'slit' or 'gauss' is suppported.
+        Type of detector resolution to use, either 'slit' or 'gauss' is supported.
         'slit' corresponds to a uniform distribution with width of *detres* while
         'gauus' is a gaussisan with sigma of *detres*.
     ``footype``

@@ -48,7 +48,7 @@ def ass_X_interfacelayer4(k_b, k_u, k_l, dd_u, dd_l, sigma, sigma_l, sigma_u, dt
     """Function that creates a interfacelayer at the top and bottom
     of the layer. with correlated roughness for the interface layers and the
     additional roughness of sigma_l and sigma_u.
-    The subscripts b, l and u reffers to bulk, lower and upper respectively.
+    The subscripts b, l and u refers to bulk, lower and upper respectively.
 
     v 0.4
     """
@@ -188,7 +188,7 @@ def ass_X_interfacelayer3(k_b, k_u, k_l, dd_u, dd_l, sigma, sigma_l, sigma_u, dt
     """Function that creates a interfacelayer at the top and bottom
     of the layer. with correlated roughness for the interface layers and the
     additional roughness of sigma_l and sigma_u.
-    The subscripts b, l and u reffers to bulk, lower and upper respectively.
+    The subscripts b, l and u refers to bulk, lower and upper respectively.
 
     v 0.3
     """
@@ -321,7 +321,7 @@ def ass_X_interfacelayer(k_b, k_u, k_l, dd_u, dd_l, sigma, sigma_l, sigma_u, dty
     """Function that creates a interfacelayer at the top and bottom
     of the layer. with correlated roughness for the interface layers and the
     additional roughness of sigma_l and sigma_u.
-    The subscripts b, l and u reffers to bulk, lower and upper respectively.
+    The subscripts b, l and u refers to bulk, lower and upper respectively.
 
     v 0.2
     """
@@ -461,7 +461,7 @@ def ass_X_interfacelayer1(k_b, k_u, k_l, dd_u, dd_l, sigma, sigma_l, sigma_u, dt
     """Function that creates a interfacelayer at the top and bottom
     of the layer. with correlated roughness for the interface layers and the
     additional roughness of sigma_l and sigma_u.
-    The subscripts b, l and u reffers to bulk, lower and upper respectively.
+    The subscripts b, l and u refers to bulk, lower and upper respectively.
 
     v 0.1
     """
