@@ -710,7 +710,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def OnInputPageChanged(self, evt):
         tpage, fpage = evt.GetSelection(), evt.GetOldSelection()
         # check for odd case, that either page does not exist anymore
-        if max(tpage, fpage) >= self.input_notebook.GetPageCount():
+        if max(tpage, fpage) >= self.input_notebook.GetPageCount() or fpage<0:
             evt.Skip()
             return
         if fpage != tpage and self.input_notebook.GetPageText(fpage) == "Script":

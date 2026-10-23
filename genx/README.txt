@@ -12,6 +12,10 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.13
+==============
+ * Fix minor UI issue raising error when SimpleReflectivity was used.
+
 Changes 3.8.12
 ==============
  * This may be the last release in the 3.8 series before a major UI change. If you have urgent bug-fixes,
