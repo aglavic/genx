@@ -81,6 +81,13 @@ def ConvoluteFast(Q, I, dQ, range=3):
     )[resvector.shape[0] : -resvector.shape[0]]
     return Iconv
 
+# Fast convlution of gate resolution function - constant resolution
+# constant spacing between data!
+def ConvoluteFastGate(X, I, DeltaX):
+    Xstep = X[1]-X[0]
+    step_width = max(1, int(round(DeltaX/Xstep)))
+    Iconv = convolve(I, ones(step_width)/step_width, mode="same")
+    return Iconv
 
 # Fast convolution - varying resolution
 # constant spacing between the dat.

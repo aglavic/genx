@@ -16,6 +16,7 @@ Classes
 from dataclasses import dataclass, field, fields
 from typing import List
 
+from scipy.special import erf
 import numpy as np
 
 # import all special footprint functions
@@ -54,6 +55,9 @@ class ResType(AltStrEnum):
     fast_conv_var = "fast conv + varying res."
     full_conv_abs = "full conv and varying res."
 
+class DetResType(AltStrEnum):
+    slit = "slit"
+    gauss = "gauss"
 
 class FootType(AltStrEnum):
     none = "no corr"
@@ -176,6 +180,8 @@ class Instrument(refl.ReflBase):
         or 1 (tth) can be used.
     ``I0``
         The incident intensity (a scaling factor)
+    ``I0_offspec``
+        Artificially scale off-specular scattering, should not be necessary.
     ``Ibkg``
         The background intensity. Added as a constant value to the calculated
         reflectivity
@@ -199,6 +205,14 @@ class Instrument(refl.ReflBase):
     ``resintrange``
         Number of standard deviatons to integrate the resolution function times
         the reflectivity over
+    ``detres``
+        Resolution on the detector side. In contrast to res this not only determines
+        smearing the simulation with the resolution function but also the specular
+        to off-specular scattering ratio.
+    ``dettype``
+        Type of detector resolution to use, either 'slit' or 'gauss' is suppported.
+        'slit' corresponds to a uniform distribution with width of *detres* while
+        'gauus' is a gaussisan with sigma of *detres*.
     ``footype``
         Which type of footprint correction is to be applied to the simulation.
         One of: 'no corr', 'gauss beam' or 'square beam'. Alternatively, the
@@ -212,6 +226,8 @@ class Instrument(refl.ReflBase):
         The number terms taken into account in the taylor expansion of the
         fourier integral of the correlation function. More terms more accurate
         calculation but also much slower.
+        If the number is negative, the Fourier integral will be calculated on a pre-defined
+        grid, improving performance for simulations with fixed Hurst parameter *h*.
     """
 
     wavelength: float = 1.54
@@ -222,6 +238,7 @@ class Instrument(refl.ReflBase):
     restype: ResType = "no conv"
     res: float = 0.001
     detres: float = 0.01
+    dettype: DetResType = "gauss"
     respoints: int = 5
     resintrange: float = 2.0
     footype: FootType = "no corr"
@@ -250,7 +267,7 @@ class Instrument(refl.ReflBase):
 
     Groups = [
         ("Radiation", ["wavelength", "I0", "I0_offspec", "Ibkg"]),
-        ("Resolution", ["restype", "res", "detres", "respoints", "resintrange"]),
+        ("Resolution", ["restype", "res", "dettype", "detres", "respoints", "resintrange"]),
         ("X-Coordinates", ["coords"]),
         ("DWBA", ["taylor_n"]),
         ("Footprint", ["footype", "beamw", "samplelen"]),
@@ -326,9 +343,20 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
         raise ValueError("The choice of resolution type, restype," "is WRONG")
     return R + instrument.Ibkg
 
+sigma_deg2rad = sqrt(12.)*pi/180.
+delta_deg2rad = pi/180.
+
+def smeared_gate(z, Delta, sigma):
+    """
+    Smeared gate function as result of convolution of gate and gaussain.
+    """
+    denum = sqrt(2)*sigma
+    left = erf((z+Delta/2.)/denum)
+    right = erf((z-Delta/2.)/denum)
+    return (left-right)/2.
 
 def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample: Sample, instrument: Instrument):
-    """Function that simulates the off-specular signal (not implemented)
+    """Function that simulates the off-specular signal
 
     # BEGIN Parameters
     TwoThetaQz 1.0
@@ -392,8 +420,9 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample: Sample, instrument: In
     eta_z = sample.eta_z
 
     (I, alpha, omega) = offspec.DWBA_Interdiff(
-        qx, qz, lamda, n, z, sigmar, sigmai, eta, h, eta_z, d, taylor_n=instrument.taylor_n
-    )
+        qx, qz, lamda, n, z, sigmar, sigmai, eta, h, eta_z, d, taylor_n=int(abs(instrument.taylor_n)),
+        use_fixed_q=(instrument.taylor_n<0)
+        )
     I = real(I) * ((alphaR1 > 0) & (betaR1 > 0)) * instrument.I0
 
     # FootprintCorrections
@@ -410,35 +439,54 @@ def OffSpecularMingInterdiff(TwoThetaQz, ThetaQx, sample: Sample, instrument: In
     elif isinstance(footype, footprint_module.Footprint):
         foocor = footype(alphaR1, samlen)
     else:
-        raise ValueError("The choice of footprint correction, footype," "is WRONG")
-    # off-specular footprint correction of a homogeneous beam larger than the sample would be 1
-    I *= foocor / alphaR1 * tth / 2.0
-
-    restype = instrument.restype
-    if restype == ResType.none:
-        # if no resolution is defined, don't include specular peak
-        return I * instrument.I0_offspec + instrument.Ibkg
+        raise ValueError("The choice of footprint correction, footype, is WRONG")
+    I *= foocor
 
     # include specular peak
     Ibgk = instrument.Ibkg
     instrument.Ibkg = 0.0
-    # instrument.restype = ResType(0)
-    if isinstance(tth, ndarray):
-        Ispec = Specular(array(tth, dtype=float64), sample, instrument)
-    else:
-        Ispec = Specular(array([tth], dtype=float64), sample, instrument)[0]
+    Ispec = Specular(alphaR1*2., sample, instrument)
     instrument.Ibkg = Ibgk
-    # instrument.restype = restype
 
-    if instrument.coords == Coords.tth:
-        spec_peak = Ispec * exp(-0.5 * (TwoThetaQz / 2.0 - ThetaQx) ** 2 / instrument.detres**2)
+    if instrument.dettype == DetResType.gauss:
+        # Gaussian detector resolution function
+        # Convolution of beam and detector resolution is Gaussian
+        spec_sigma = np.sqrt((instrument.res/2.0)**2 + (instrument.detres/2.0)**2)
+        # Detector resolution better than beam reduces specular intensity, too.
+        # It is applied inversely to off-specular intensity, assuming the same instrument configuration was used
+        # for specular measurements that determined I0.
+        I_scale = np.sqrt(1 + instrument.res**2/instrument.detres**2)
+        if instrument.coords == Coords.tth:
+            spec_peak = Ispec * exp(-0.5 * (TwoThetaQz / 2.0 - ThetaQx) ** 2 / spec_sigma**2)
+        else:
+            # angular resolution converted to qx grid
+            qx_res = k * (cos(tth / 2) - cos(tth / 2 * (1 + spec_sigma / qz)))
+            spec_peak = Ispec * exp(-0.5 * ThetaQx**2 / qx_res**2)
+        off_spec_scale = instrument.detres * sigma_deg2rad * I_scale
     else:
-        # angular resolution converted to qx grid
-        qx_res = k * (cos(tth / 2) - cos(tth / 2 * (1 + instrument.detres / qz)))
-        spec_peak = Ispec * exp(-0.5 * ThetaQx**2 / qx_res**2)
+        # Slit (uniform) detector resolution function
+        # Convolution of beam and detector resolution is smeard window
+        if instrument.coords == Coords.tth:
+            spec_peak = Ispec * smeared_gate((TwoThetaQz / 2.0 - ThetaQx), instrument.detres/2.0, instrument.res/2.0)
+        else:
+            raise NotImplementedError("Slit detector resolution not implemented for qx coordinates")
+        I_scale = 1./smeared_gate(0., instrument.detres/2.0, instrument.res/2.0)
+        spec_peak *= I_scale
+        off_spec_scale = instrument.detres * delta_deg2rad * I_scale
 
-    # TODO: Make correct convolution of off-specular intensity and absolute scale
-    return spec_peak + I * instrument.I0_offspec * instrument.detres * 1e3 + Ibgk
+    restype = instrument.restype
+    if restype != ResType.none:
+        # Always use fast convolution for off-specular scans
+        if longitudinal:
+            # Resolution for lognitudinal scan set the same as for specular
+            I = ConvoluteFast(2.0*alphaR1, I, instrument.res, range=instrument.resintrange)
+        elif instrument.dettype == DetResType.gauss:
+            I = ConvoluteFast(alphaR1, I, spec_sigma, range=instrument.resintrange)
+        else:
+            I = ConvoluteFastGate(alphaR1, I, instrument.detres/2.0)
+
+    # Simulation is intensiy / radian on slitted detector, correct for solid angle of actual detector
+    return spec_peak + I * instrument.I0_offspec * off_spec_scale + Ibgk
 
 
 def SLD_calculations(z, item, sample: Sample, inst: Instrument):
