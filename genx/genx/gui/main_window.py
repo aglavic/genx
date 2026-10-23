@@ -710,10 +710,12 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def OnInputPageChanged(self, evt):
         tpage, fpage = evt.GetSelection(), evt.GetOldSelection()
         # check for odd case, that either page does not exist anymore
-        if self.input_notebook.GetPageCount() >= max(tpage, fpage):
+        if max(tpage, fpage) >= self.input_notebook.GetPageCount():
+            evt.Skip()
             return
         if fpage != tpage and self.input_notebook.GetPageText(fpage) == "Script":
             self.model_control.set_model_script(self.script_editor.GetText())
+            evt.Skip()
 
     def scan_parameter(self, row):
         """
@@ -2556,11 +2558,21 @@ class GenxApp(wx.App):
             pass
 
     def WriteSplash(self, text, progress=0.0):
-        image = self.splash.GetBitmap()
-        self._draw_bmp(image, text, progress=progress)
-        self.splash.Refresh()
-        self.splash.Update()
-        wx.YieldIfNeeded()
+        try:
+            image = self.splash.GetBitmap()
+            self._draw_bmp(image, text, progress=progress)
+            self.splash.Refresh()
+            self.splash.Update()
+            wx.YieldIfNeeded()
+        except RuntimeError:
+            debug(f"Failed to write message to Splash:\n   {text}", exc_info=True)
+
+    def _safe_destroy_splash(self):
+        try:
+            self.splash.Destroy()
+        except RuntimeError:
+            pass
+        self.splash = None
 
     @staticmethod
     def _draw_bmp(bmp, txt, progress=0.0):
@@ -2649,7 +2661,7 @@ class GenxApp(wx.App):
 
         if self.open_file is None:
             if first_init and main_frame.wstartup.show_profiles:
-                self.splash.Destroy()
+                self._safe_destroy_splash()
                 main_frame.startup_dialog(config_path)
                 self.WriteSplash = lambda *args, **kwargs: None
         else:
@@ -2662,7 +2674,7 @@ class GenxApp(wx.App):
                 wx.CallAfter(main_frame.open_model, self.open_file)
             wx.CallAfter(self.WriteSplash, "display main window...", progress=0.9)
             wx.CallAfter(main_frame.Show)
-            wx.CallAfter(self.splash.Destroy)
+            wx.CallAfter(self._safe_destroy_splash)
             return 1
 
         debug("init complete")
@@ -2674,7 +2686,7 @@ class GenxApp(wx.App):
             wx.CallAfter(self.WriteSplash, "checking for update...", progress=0.95)
             wx.CallAfter(main_frame.check_for_update)
         if not (first_init and main_frame.wstartup.show_profiles):
-            wx.CallAfter(self.splash.Destroy)
+            wx.CallAfter(self._safe_destroy_splash)
         wx.CallLater(100, main_frame.model_control.SetModelSaved)
         return 1
 
