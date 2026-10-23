@@ -95,7 +95,7 @@ The logarithmic R2 factor is a modification of the crystallographic R2 factor, c
 
 
 <h4>sintth4</h4>
-Gives the average of the absolute differences scaled with a sin(2&theta;)<sup>4</sup> term (2&theta; = tth). For reflectivity data, this will divide away the Fresnel reflectivity. <br>
+Gives the average of the absolute differences scaled with a sin(2&theta/2;)<sup>4</sup> term (2&theta; = tth). For reflectivity data, this will divide away the Fresnel reflectivity. For historical reasons the function name suggests tth not th scaling.<br>
 <br><huge>
     FOM<sub>sintth4</sub> = 1/(N-p) &times;
     &#8721;<sub><var>i</var></sub>

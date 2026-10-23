@@ -12,6 +12,17 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.12
+==============
+ * This may be the last release in the 3.8 series before a major UI change. If you have urgent bug-fixes,
+   please let me know ASAP.
+ * Since this version, the off-specular x-ray model interdiff is again fully supported. This update adds a
+   corrected intensity scaling, proper handling of detector resolution and large performance improvement.
+ * Fix some issues with the grid UI and instrument dialog model updates.
+ * Fix some issues/crashes based on wxPython 4.3.x and bumps 1.0.3. At least on Windows 4.3.x has other issues
+   that seem to be library related.
+ * Fix broken remote fitting.
+
 Changes 3.8.11
 ==============
  * Fix a bug where spec_adaptive model did not deal with negative magnetization values correctly for n
