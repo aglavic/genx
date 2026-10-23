@@ -712,19 +712,24 @@ class SamplePanel(wx.Panel):
     ):
         # self.instruments = {}
         for inst_name in vals:
+            # iterate over all instruments in the dialog
             new_instrument = False
             if inst_name not in self.instruments:
                 # A new instrument must be created:
                 self.instruments[inst_name] = self.model.Instrument()
                 new_instrument = True
-            inst = self.instruments[inst_name]
+            inst = self.instruments[inst_name] # the original instrument object
             for name, value_info in inst._parameter_info().items():
                 if not states[inst_name][name]:
+                    # If the value is not in the grid, do the update
                     orig_type = value_info.type
                     if orig_type is str or issubclass(orig_type, AltStrEnum):
                         e_value = vals[inst_name][name]
+                        self.instruments[inst_name]._ca[name] = repr(e_value)
                     else:
                         e_value = eval_func(vals[inst_name][name])
+                        # keep string for original calculations
+                        self.instruments[inst_name]._ca[name] = vals[inst_name][name]
                     setattr(self.instruments[inst_name], name, orig_type(e_value))
                 elif states[inst_name][name] != 3:
                     setattr(self.instruments[inst_name], name, old_vals[inst_name][name])
