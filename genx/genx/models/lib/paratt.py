@@ -7,12 +7,12 @@ from numpy import array, complex128, cos, exp, newaxis, pi, sqrt
 from genx.core.custom_logging import iprint
 
 
-# "Ordinary" implementaion of Parrats recursion formula
+# "Ordinary" implementation of Parrats recursion formula
 # theta-vector, lamda- can be a vector,n-1Dvector, d-1Dvector, sigma-1Dvector
 def Refl(theta, lamda, n, d, sigma, return_int=True):
     d = d[1:-1]
     sigma = sigma[:-1]
-    # Length of k-vector in vaccum
+    # Length of k-vector in vacuum
     k = 2 * math.pi / lamda
     # Calculates the wavevector in each layer
     Qj = 2 * n[-1] * k * sqrt(n[:, newaxis] ** 2 / n[-1] ** 2 - cos(theta * math.pi / 180) ** 2)
@@ -37,10 +37,10 @@ def Refl(theta, lamda, n, d, sigma, return_int=True):
         return r
 
 
-# "Ordinary" implementaion of Parrats recursion formula
+# "Ordinary" implementation of Parrats recursion formula
 # Q-vector,n-1Dvector, d-1Dvector, sigma-1Dvector
 def ReflQ(Q, lamda, n, d, sigma, return_int=True):
-    # Length of k-vector in vaccum
+    # Length of k-vector in vacuum
     d = d[1:-1]
     sigma = sigma[:-1]
     Q0 = 4 * pi / lamda
@@ -77,7 +77,7 @@ def ReflQ(Q, lamda, n, d, sigma, return_int=True):
 def Refl_nvary2(theta, lamda, n_vector, d, sigma, return_int=True):
     d = d[1:-1]
     sigma = sigma[:-1]
-    # Length of k-vector in vaccum
+    # Length of k-vector in vacuum
     k = 2 * math.pi / lamda
     # Calculates the wavevector in each layer
     # print n_func
@@ -189,7 +189,7 @@ def reflq_pseudo_kin(q, lamda, n, d, sigma, return_int=True):
 
 def reflq_sra(q, lamda, n, d, sigma, return_int=True):
     """Single reflection approximation calculation of the reflectivity"""
-    # Length of k-vector in vaccum
+    # Length of k-vector in vacuum
     d = d[1:-1]
     sigma = sigma[:-1]
     q0 = 4 * pi / lamda

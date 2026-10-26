@@ -24,7 +24,7 @@ try:
     import numba.cuda
 
 
-    numba.cuda.detect()  # display the cuda device used, in case something whent wrong and simulator is on
+    numba.cuda.detect()  # display the cuda device used, in case something went wrong and simulator is on
 except:
     HAS_CUDA = False
 else:

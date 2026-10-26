@@ -210,7 +210,7 @@ class BaseConfig(ABC):
         Can be replaced by dictionary in sub-classes to define how to group parameters in display and
         configuration dialog entries.
         If a list entry contains a list of strings it is used to group the values horizontally.
-        A list of 4 items with the second beeing a boolean is interpreted as a choice between two parameters:
+        A list of 4 items with the second being a boolean is interpreted as a choice between two parameters:
             [{Choice Group Label}, bool-first is active, first value, second value]
         """
         res = list(self.asdict().keys())
@@ -233,7 +233,7 @@ class BaseConfig(ABC):
             return out
 
     @staticmethod
-    def GParam(default, pmin=None, pmax=None, label=None, descriptoin=None):
+    def GParam(default, pmin=None, pmax=None, label=None, description=None):
         # allow to add some metadata to the parameter to use in dialog generation
         gmeta = {}
         if pmin is not None:
@@ -242,12 +242,12 @@ class BaseConfig(ABC):
             gmeta["pmax"] = pmax
         if label is not None:
             gmeta["label"] = label
-        if descriptoin is not None:
-            gmeta["descriptoin"] = descriptoin
+        if description is not None:
+            gmeta["description"] = description
         return dataclasses.field(default=default, metadata={"genx": gmeta})
 
     @staticmethod
-    def GChoice(default, selection, label=None, descriptoin=None):
+    def GChoice(default, selection, label=None, description=None):
         """
         Allow to add some metadata to the parameter to use in dialog generation,
         selection is a list of alloweed string values for this parameter.
@@ -255,8 +255,8 @@ class BaseConfig(ABC):
         gmeta = {"selection": selection}
         if label is not None:
             gmeta["label"] = label
-        if descriptoin is not None:
-            gmeta["descriptoin"] = descriptoin
+        if description is not None:
+            gmeta["description"] = description
         return dataclasses.field(default=default, metadata={"genx": gmeta})
 
     def __or__(self, other):
@@ -267,7 +267,7 @@ class MergedConfig(BaseConfig):
     """
     A config-like object that combines two or more config objects.
 
-    Attribut access is passed to the child objects.
+    Attribute access is passed to the child objects.
     """
 
     section = None
@@ -356,11 +356,11 @@ class Configurable:
         self.UpdateConfigValues()
 
     def WriteConfig(self, default=False):
-        """Writes the varaibles to be stored to the config"""
+        """Writes the variables to be stored to the config"""
         self.opt.save_config(default=default)
 
     def UpdateConfigValues(self):
         """
-        Sub-classes can overwrite this method to preform some action after
+        Sub-classes can overwrite this method to perform some action after
         a configuration has been loaded.
         """

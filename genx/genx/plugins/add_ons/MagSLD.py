@@ -3,7 +3,7 @@
 MagSLD
 ======
 
-A plugin to show a second y-axis in the SLD plot that gives the magnetization corresponging
+A plugin to show a second y-axis in the SLD plot that gives the magnetization corresponding
 to the magnetic SLD and to calculate the integrated magnetic moment surface density. 
 
 Written by Artur Glavic

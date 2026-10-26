@@ -37,7 +37,7 @@ class VTKview(wxVTKRenderWindow):
         self.show_bulk = True
         self.arrows_for_atoms = 0.0  # if >0, add arrows for dx,dy,dz
 
-        # Some defualts
+        # Some defaults
         self.radius = 1.0
         self.theta_res = 15
         self.phi_res = 15
@@ -137,7 +137,7 @@ class VTKview(wxVTKRenderWindow):
             self.Render()
 
     def OnViewZ(self, event):
-        """Alings the view with the z axis"""
+        """Aligns the view with the z axis"""
         if self._CurrentRenderer:
             self._CurrentCamera.SetFocalPoint(0, 0, 0)
             self._CurrentCamera.SetPosition(0.0, 0.0, 1.0)
@@ -202,7 +202,7 @@ class VTKview(wxVTKRenderWindow):
         self.Render()
 
     def OnLeftDown(self, event):
-        """Overriding the defualt on left down"""
+        """Overriding the default on left down"""
         if self.cursor_mode == "zoom":
             self._Mode = "Zoom"
         elif self.cursor_mode == "pan":
@@ -241,7 +241,7 @@ class VTKview(wxVTKRenderWindow):
                 self.highlight(actor)
 
     def OnRightDown(self, event):
-        """Overriding defualt Pick Actor"""
+        """Overriding default Pick Actor"""
         if not self._Mode:
             if event.ControlDown():
                 self._Mode = "Rotate"
@@ -263,7 +263,7 @@ class VTKview(wxVTKRenderWindow):
 
     def _get_col(self, element):
         """Translate element to color according to element dict."""
-        # We need to take care if the eleemnt is an ion.
+        # We need to take care if the element is an ion.
         # the two last chars are on the form Xp or Xm where X is a digit
         element = element.lower()
         if len(element) > 2:

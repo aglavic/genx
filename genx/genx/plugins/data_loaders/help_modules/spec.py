@@ -150,7 +150,7 @@ def removeIllegals(key):
 
 
 def splitSpecString(ips):
-    """Split a spec string which is formated with two spaces"""
+    """Split a spec string which is formatted with two spaces"""
     ops = []
     for o in ips.split("  "):
         if o != "":
@@ -235,7 +235,7 @@ class SpecDataFile:
         self._loadSpecFile()
 
     def setMode(self, mode="concatenate"):
-        """Set the modee to deal with multiple scans
+        """Set the mode to deal with multiple scans
 
         mode : string
            If mode is 'concatenate' then concatenate scans together.
@@ -355,7 +355,7 @@ class SpecDataFile:
                 raise Exception("Scan %s is not in datafile ....." % item)
 
     def __getitem__(self, item):
-        """Convinience routine to use [] to get scan"""
+        """Convenience routine to use [] to get scan"""
         if item < 0:
             # Indexes the scan backwards from the highest number.
             items = list(self.findex.keys())
@@ -379,7 +379,7 @@ class SpecDataFile:
         setting 'setkeys = True' will set attributes to the
         specdata item of all the motors and counters
 
-        The mask can be used to detete bad points. This should be a list of datum
+        The mask can be used to delete bad points. This should be a list of datum
         (data point numbers) which should be excluded. If the "item" is a list of
         scans (that will be concatenated or binned together) this should be a list
         containing either None for no removal of data points or a list of points to
@@ -530,7 +530,7 @@ class SpecScan:
         for ext in specfile.userExtensions:
             ext.initSpecScan(self)
 
-        # Finally overide any assigments with values passed as keyword arguments
+        # Finally override any assignments with values passed as keyword arguments
         for arg in kwargs:
             setattr(self, arg, kwargs[arg])
 
@@ -626,7 +626,7 @@ class SpecScan:
             elif line[0:2] == "#C":
                 self.comments += line
                 if "Line:" in line:
-                    # comment specifies following comment lines to ignore in data readin
+                    # comment specifies following comment lines to ignore in data reading
                     for i in range(int(line.split("Line:")[1].strip())):
                         line = specfile._getLine()
                         self.comments += line
@@ -696,7 +696,7 @@ class SpecScan:
 
         Note:
         This routine only bins the "data" portion of the scan. It returns the
-        origional scans motors etc.
+        original scans motors etc.
 
         """
         # First check if scans are the same.

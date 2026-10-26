@@ -4,7 +4,7 @@ ParameterVault
 ==============
 
 A plugin that allows the user to quickly store parameter grid values and the corresponding
-simulation to compare different fits agains each other. 
+simulation to compare different fits against each other.
 
 Written by Artur Glavic
 Last Changes 04/22/15
@@ -32,7 +32,7 @@ class Plugin(framework.Template):
 
     @property
     def refplugin(self):
-        # check if reflectivity plugin is None or destoryed, try to connect
+        # check if reflectivity plugin is None or destroyed, try to connect
         if not self._refplugin:
             self._init_refplugin()
         return self._refplugin
@@ -340,7 +340,7 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def _GetSelectedItems(self):
         """_GetSelectedItems(self) --> indices [list of integers]
         Function that yields a list of the currently selected items
-        position in the list. In order of selction, i.e. no order.
+        position in the list. In order of selection, i.e. no order.
         """
         indices = [self.GetFirstSelected()]
         while indices[-1] != -1:
@@ -352,7 +352,7 @@ class ParameterList(wx.ListCtrl, ListCtrlAutoWidthMixin):
 
     def _CheckSelected(self, indices):
         """_CheckSelected(self, indices) --> bool
-        Checks so at least data sets are selcted, otherwise show a dialog box
+        Checks so at least data sets are selected, otherwise show a dialog box
         and return False
         """
         # Check so that one dataset is selected

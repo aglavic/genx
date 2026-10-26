@@ -19,7 +19,7 @@ GenX3-3.X.X-M1-Installer.pkg and GenX3-3.X.X-Installer.pkg packages that can dir
 trouble with this distribution you can try installing from source. (And create a trouble ticket, please.)
 
 Since a while the use of packages for wxPython from PyPI is possible, too. So system python3 with pip should be
-sufficent to install all requirements. (See instructions below.)
+sufficient to install all requirements. (See instructions below.)
 
 If this fails, too, install the required python 3 packages, especially wxPython manually.
 I would advice using a new Anaconda environment. Afterwards you can install GenX from source.
@@ -85,7 +85,7 @@ To install via snap use:
 The encapsulation of snap packages means, that they are more compatible over various Linux distros but sometimes
 limit functionality. For the most part this could be circumvented in my tests. There is currently one know limitation
 when using GenX installed through snap via X11-forwarding over SSH. In this case, it is possible to work around the
-display accesss error by creating a manual link via:
+display access error by creating a manual link via:
 
 .. code-block:: bash
 
@@ -103,7 +103,7 @@ On the other hand, fitting with GenX from command line does not require the wx o
 
 In case the cluster does not provide a python installation that is new enough (>=3.6), you can try to
 make use of the Miniconda distribution, all required software can be installed as a user without too much
-background knowladge of Linux configurations.
+background knowledge of Linux configurations.
 
 Using system python
 ...................

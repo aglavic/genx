@@ -26,7 +26,7 @@ class GenXMessage(ABC):
     Base class for all messages. Does handle reading the
     header strings and unpacking the objects from the message body.
 
-    The message classes are data classes with arbitray information
+    The message classes are data classes with arbitrary information
     as fields that all get send. Any other methods may be provided
     to work with the data.
 
@@ -48,7 +48,7 @@ class GenXMessage(ABC):
     def make_header(self) -> bytes:
         """
         Messages do not have to provide a header but it may be
-        usefull if information about the data should be used
+        useful if information about the data should be used
         while it is transmitted.
         """
         return b""
@@ -85,7 +85,7 @@ class GenXMessage(ABC):
             data_string += await io.read(data_length - len(data_string))
         data_string = zlib.decompress(data_string)
         res = loads(data_string)
-        debug(f"GenXMessage of type {type(res)} sucessfully unpacked")
+        debug(f"GenXMessage of type {type(res)} successfully unpacked")
         return res
 
 

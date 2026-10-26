@@ -84,7 +84,7 @@ Changes 3.8.3
 Changes 3.8.2
 =============
  * Change XRDML reader to keep angle instead of converting to Q
- * Add option to convert all ORSO .ort output to Q as specified in the standart
+ * Add option to convert all ORSO .ort output to Q as specified in the standard
  * Fix SLD graph reporting magnetization components if model is not neutron spin-flip (#19)
 
 Changes 3.8.1
@@ -104,7 +104,7 @@ Changes 3.8.0
 
 Changes 3.7.15
 ==============
- * Fix SimpleReflectivity error when seleccting a cell in the multilayer header part #
+ * Fix SimpleReflectivity error when selecting a cell in the multilayer header part #
  * Fix bumps parameter statistics window wrongly assigning results to parameters.
  * Add 1d plot for the individual parameters shown in the statistics dialog graph.
 
@@ -149,7 +149,7 @@ Changes 3.7.9
 
 Changes 3.7.8
 =============
- * Fix version file not being commited into repository after update.
+ * Fix version file not being committed into repository after update.
 
 Changes 3.7.7
 =============
@@ -178,7 +178,7 @@ Changes 3.7.4
 Changes 3.7.3
 =============
  * Add possibility of longitudinal scans to off-specular simulation (interdiff)
- * Add detector resolution and off-specular scaling factor to interdiff model, absolut scaling needs correction
+ * Add detector resolution and off-specular scaling factor to interdiff model, absolute scaling needs correction
 
 Changes 3.7.2
 =============
@@ -201,7 +201,7 @@ Changes 3.7.0
  * Implement new python dataclass based model parameterization. The GUI will detect any parameter in the model
    based on the base class which allows more flexibility in model modification and improves general maintainability.
  * Add code signature to Mac OS distribution to remove need for user to ignore security warnings on installation/run.
-   The distribution now uses package installers ".pkg" instead of ".dmg", no more warnings should occure for first start.
+   The distribution now uses package installers ".pkg" instead of ".dmg", no more warnings should occur for first start.
    (Thanks to the international scattering alliance for support in creating the certificate.)
  * Add feature to invert sample structure for measurements from two sides of the surface. To use
    set in the script "sample = -sample". If you use both in one model, don't forget to invert back after
@@ -218,7 +218,7 @@ Changes 3.6.28
 
 Changes 3.6.27
 ==============
- * Fix bug when using log function within column calulation that prohibited use of D17 dataloader.
+ * Fix bug when using log function within column calculation that prohibited use of D17 dataloader.
 
 Changes 3.6.26
 ==============
@@ -226,13 +226,13 @@ Changes 3.6.26
  * Update of SNAP builde system, should allow use with Waylend and fix some other minor issues.
  * Update of Windows build libraries for additional functionality.
  * Add debian build for newer Ubuntu versions (22.04 / 24.04). See documentation for installation details.
- * Add a GUI dialog when critical python errors occure that required console/logging to be noticed before.
+ * Add a GUI dialog when critical python errors occur that required console/logging to be noticed before.
  * Fix incompatibility with numpy 2.x due to bool/numpy.bool confusion.
 
 Changes 3.6.25
 ==============
  * Fix bug in MagSLD where magnetization was reported 10x too high in graph (see Ticket #205).
- * Fix inconsistent behavor for x-values <=0 (see Ticket #201).
+ * Fix inconsistent behavior for x-values <=0 (see Ticket #201).
 
 Changes 3.6.24
 ==============
@@ -332,7 +332,7 @@ Changes 3.6.9
  * Try to fix some plot drawing issues on some Linux systems with Wayland backend.
  * Open GenX model files on drag&drop to the window (if not above data list)
  * Fix GUI not remembering a model is unchanged after loading from a file
- * Fix bug where the parametr grid could be wrong after loading a model while value editor was active
+ * Fix bug where the parameter grid could be wrong after loading a model while value editor was active
 
 Changes 3.6.8
 =============
@@ -372,7 +372,7 @@ Changes 3.6.2
    To use you have to select instrument probe as "neutron pol spin-flip" and change the simulation function
    from "Specular" to "PolSpecular". This function has 4 additional parameters; p1, p2, F1, F2 for 
    polarizer, analyzer and filpper efficiencies. For definition see https://doi.org/10.1063/1.1150060
- * Update UserFuncs pluging to work with type-annotated functions to generate user dialogs automatically.
+ * Update UserFuncs plugin to work with type-annotated functions to generate user dialogs automatically.
    The SXRD.hgx example shows a usage for storing XYZ files.
  * Add entry to the **Help** menu to open example files, directly jumping to the right directory.
    About dialog now shows the path where configuration files are stored.
@@ -382,7 +382,7 @@ Changes 3.6.1
 =============
  * Add a batch processing interface to the GUI. This can be accessed through the File dialog. See
    new **Batch Fitting** section of the documentation.
- * Add generic definition for plot x- and y-labels. Build-in models define the values depending on last simulated
+ * Add generic definition for plot x- and y-labels. Built-in models define the values depending on last simulated
    scans and user can always overwrite in script with **__xlabel__** and **__ylabel__** special variables.
  * Add detailed documentation about SLD plot configuration and batch processing
  * Add more unit tests for models and loading/saving
@@ -463,7 +463,7 @@ Changes 3.5.2
 =============
  * Add a new modeling option to spec_inhom model that allows automatic generation
    of neutron super-mirror structures from user defined Stack parameters.
- * Captuer model errors during fit that did not occure on first evaluation.
+ * Captuer model errors during fit that did not occur on first evaluation.
 
 Changes 3.5.1
 =============
@@ -481,7 +481,7 @@ Changes 3.5.0
  * Start logfile from GUI and show dialog with logged messages (Help menu)
  * Load multiple datasets from suitable data loaders (orso+xrdml)
  * Configure new reflectivity model from metadata read from .ort files (radiation, resolution etc.)
- * New option to automatically stop a fit when relative parameter spreads a reduced below a threashold value.
+ * New option to automatically stop a fit when relative parameter spreads a reduced below a threshold value.
    Setting the parameter to e.g. 1% will stop once the parameter that varies the largest fraction of its fit
    range has a spread of less than 1% within the population. Seems very stable and is helpful for long-running
    fits with MPI that can't be stopped manually, well. (Thanks to Larry Anovitz for the idea.)
@@ -640,7 +640,7 @@ Changes 3.2.2
  * Update windows build to python 3.9 and wxPython 4.1.1 to better support High DPI displays
  * Improve value entry in parameter grid (ENTER/TAB key, mouse scrolling)
  * Prevent parameter grid entry resizing to prevent non-intentional layout issues
- * Automatize PyPI releases
+ * Automate PyPI releases
 
 Changes 3.2.1
 =============
@@ -710,7 +710,7 @@ Changes 3.0.6
 
 Changes 3.0.5
 =============
- * Fix some handling of fomulas and material in SimpleLayer and SimpleReflectivity plugin
+ * Fix some handling of formulas and material in SimpleLayer and SimpleReflectivity plugin
 
 Changes 3.0.4
 =============
@@ -772,7 +772,7 @@ Changes in 2.4.5
  * Fixed bug that the SLD for neutrons were scaled with wl**2/2/pi.
  * Problem with the precision in some neutron calculations solved.
  * Numbers in the grid can be given in scientific/exponential notation, for example 1e5.
- * Problems with fractional numbers using "." on systems with defualt deciaml seprator as "," solved.
+ * Problems with fractional numbers using "." on systems with default decimal separator as "," solved.
  * Scan FOM not always functioning with blank rows in the grid solved.
 
 Changes in 2.4.2
@@ -796,7 +796,7 @@ Changes 2.3.6
 =============
  * Fixed bug regarding the definition of instruments (not working) in the Reflectivity plugin.
  * Fixed bug that caused an error when trying to fit the number of repetitions.
- * Fixed bug regardgin q=0 simualtions - the models now throws an error for q = 0.
+ * Fixed bug regardgin q=0 simulations - the models now throws an error for q = 0.
  * Fixed bug in the buffering of spin flip calculations (caused an error when trying to simulate data sets with differing number of x-values).
  * Fixed not working choice boxes in the Calculation dialog.
  * Added an data loader for four column data which also includes the resolution.

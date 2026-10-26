@@ -120,8 +120,8 @@ imported directly in the unit of counts one would put into the *e* entry::
 
     * **rms(e1,e2,e2,...)** calculates the Root Mean Square of a set of error values. This is useful
       when combining statistical errors from different sources.
-      (Like the ones calculated withe the two functions below.)
-    * **fpe(max_x,rel_e)** get the estimated foot print error that results from imperfect beam homogenity
+      (Like the ones calculated with the two functions below.)
+    * **fpe(max_x,rel_e)** get the estimated foot print error that results from imperfect beam homogeneity
       in a angular-dispersive reflectivity experiment. Providing a relative error *rel_e* and maximum x-value
       with footprint influence *max_x* the absolute error on y is calculated.
     * **dydx()** calculates the numerical slope dy/dx for each datapoint. This can be used to estimate an

@@ -4,7 +4,7 @@ the sample and hiding all complex GenX functionality<p>
 
 The plugin consists of the following components:
 <h2>Sample tab</h2>
-This tab has the definiton for the layers in a table.
+This tab has the definition for the layers in a table.
 
 <h2>SLD tab</h2>
 This shows the real and imaginary part of the scattering length as a function
@@ -76,7 +76,7 @@ class Instrument(ReflBase):
     Specify parameters of the probe and reflectometry instrument in SimpleReflectivity.
 
     ``probe``
-        Describes the radiation and measurments used, it is one of:
+        Describes the radiation and measurements used, it is one of:
         'x-ray', 'neutron', 'neutron pol', 'neutron pol spin flip',
         'neutron tof', 'neutron pol tof'.
         The calculations for x-rays uses ``f`` for the scattering length for
@@ -207,7 +207,7 @@ BOT_LAYER = 2
 class SampleTable(gridlib.GridTableBase):
     _columns = [
         ("Layer", gridlib.GRID_VALUE_STRING),
-        ("Formula Params:\n" "---------------" "\nMixure Params:", gridlib.GRID_VALUE_CHOICE + ":Formula,Mixure"),
+        ("Formula Params:\n" "---------------" "\nMixture Params:", gridlib.GRID_VALUE_CHOICE + ":Formula,Mixture"),
         ("Chem. Formula\n" "-------------" "\nSLD-1 [10⁻⁶Å⁻²]", gridlib.GRID_VALUE_STRING),
         ("", gridlib.GRID_VALUE_BOOL, False),
         ("Density [g/cm³]\n" "---------------" "\nSLD-2 [10⁻⁶Å⁻²]", gridlib.GRID_VALUE_STRING),
@@ -223,7 +223,7 @@ class SampleTable(gridlib.GridTableBase):
 
     defaults = {
         "Formula": ["Layer", "Formula", "SLD", False, "2.0", False, "0.0", True, "10.0", False, "5.0", ML_LAYER],
-        "Mixure": ["MixLayer", "Mixure", "6.0", False, "2.0", False, "100", True, "10.0", False, "5.0", ML_LAYER],
+        "Mixture": ["MixLayer", "Mixture", "6.0", False, "2.0", False, "100", True, "10.0", False, "5.0", ML_LAYER],
     }
 
     repetitions = 1
@@ -518,9 +518,9 @@ class SampleTable(gridlib.GridTableBase):
                     attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
                     # If layer is defined as fraction, only allow fitting of either
                     # density 2 or fraction.
-                    if self.ambient[1] == "Mixure" and col == 3 and self.ambient[5]:
+                    if self.ambient[1] == "Mixture" and col == 3 and self.ambient[5]:
                         attr.SetReadOnly()
-                    elif self.ambient[1] == "Mixure" and col == 5 and self.ambient[3]:
+                    elif self.ambient[1] == "Mixture" and col == 5 and self.ambient[3]:
                         attr.SetReadOnly()
                 else:
                     attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
@@ -534,9 +534,9 @@ class SampleTable(gridlib.GridTableBase):
                     attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_BOTTOM)
                     # If layer is defined as fraction, only allow fitting of either
                     # density 2 or fraction.
-                    if self.substrate[1] == "Mixure" and col == 3 and self.substrate[5]:
+                    if self.substrate[1] == "Mixture" and col == 3 and self.substrate[5]:
                         attr.SetReadOnly()
-                    elif self.substrate[1] == "Mixure" and col == 5 and self.substrate[3]:
+                    elif self.substrate[1] == "Mixture" and col == 5 and self.substrate[3]:
                         attr.SetReadOnly()
                 else:
                     attr.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
@@ -552,9 +552,9 @@ class SampleTable(gridlib.GridTableBase):
                 attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
                 # If layer is defined as fraction, only allow fitting of either
                 # density 2 or fraction.
-                if self.layers[row - 1][1] == "Mixure" and col == 3 and self.layers[row - 1][5]:
+                if self.layers[row - 1][1] == "Mixture" and col == 3 and self.layers[row - 1][5]:
                     attr.SetReadOnly()
-                elif self.layers[row - 1][1] == "Mixure" and col == 5 and self.layers[row - 1][3]:
+                elif self.layers[row - 1][1] == "Mixture" and col == 5 and self.layers[row - 1][3]:
                     attr.SetReadOnly()
             if self.layers[row - 1][11] == TOP_LAYER:
                 attr.SetBackgroundColour("#ccffcc")
@@ -1353,7 +1353,7 @@ def find_code_segment(code, descriptor):
     """find_code_segment(code, descriptor) --> string
 
     Finds a segment of code between BEGIN descriptor and END descriptor
-    returns a LookupError if the segement can not be found
+    returns a LookupError if the segment can not be found
     """
     found = 0
     script_lines = code.splitlines(True)
@@ -1373,7 +1373,7 @@ def find_code_segment(code, descriptor):
         text += line
 
     if found != 2:
-        raise LookupError("Code segement: %s could not be found" % descriptor)
+        raise LookupError("Code segment: %s could not be found" % descriptor)
 
     return text
 
@@ -1635,7 +1635,7 @@ class Plugin(framework.Template):
         p2 = WizarSelectionPage(
             wiz,
             ["auto"] + dls,
-            "Selecte Data Loader\n",
+            "Select Data Loader\n",
             "How to import data into GenX. "
             "\nIf your instrument is not listed "
             "use the default/resolution loader. "
@@ -1924,7 +1924,7 @@ def analyze_layer_txt(name, txt):
         output.append(False)
         output.append(str(eval(items["magn"])))
     elif "+" in items["b"] and "*" in items["b"]:
-        output.append("Mixure")
+        output.append("Mixture")
         part1, part2 = items["b"].strip("()").split("+", 1)
         frac = float(part1.split("*")[0]) * 100
         SLD1 = float(part1.split("*")[1])

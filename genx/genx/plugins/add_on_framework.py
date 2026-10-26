@@ -86,7 +86,7 @@ class Template:
 
     def NewMenu(self, name):
         """
-        Creates an top menu that can be used to control the plugin. Remeber
+        Creates an top menu that can be used to control the plugin. Remember
         to also implement RemoveMenu in the Destroy method.
         """
         menu = wx.Menu()
@@ -132,7 +132,7 @@ class Template:
     def GetModel(self):
         """
         Returns the model currently in use. This is a pointer to the model
-        object thus it will automatically always conatin the newest information.
+        object thus it will automatically always contain the newest information.
         """
         return self.parent.model_control.get_model()
 

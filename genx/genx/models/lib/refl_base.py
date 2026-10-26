@@ -4,14 +4,14 @@ The new implementation is based on python dataclasses.
 
 Classes:
 ReflFunction - A function class that can be used as a parameter in the other classes.
-is_reflfunction - Funtion that checks if an object belongs to the class ReflFunction
+is_reflfunction - Function that checks if an object belongs to the class ReflFunction
 ReflBase - Base class for all the physical classes.
 LayerBase - Base Layer class.
 StackBase - Base Stack class.
 SampleBase - Base Sample class.
 InstrumentBase - Base Instrument class.
 
-A model should derive its own data classes as base classe of the above like:
+A model should derive its own data classes as base class of the above like:
 ::
     @dataclass
     class Instrument(ReflBase):
@@ -120,7 +120,7 @@ class SampleBase(ReflBase):
         """
         The negative of the sample is a representation with inverted layer
         order. This is useful for measurements from the substrate side.
-        It takes care of swapping the roughness indices to stay between the same adjecent layers.
+        It takes care of swapping the roughness indices to stay between the same adjacent layers.
         """
         # use a shallow copy as only the bool flag is inverted
         output = self.copy()

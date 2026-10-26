@@ -1,6 +1,6 @@
 r"""
 .. module:: grating
-   :synopsis: Models to calcualte the reflectivity from a grating
+   :synopsis: Models to calculate the reflectivity from a grating
 
 .. moduleauthor:: Matts Björck <matts.bjorck@gmail.com>
 
@@ -92,7 +92,7 @@ def coherent_nonspec_refl(k_in, k_out, lamda, vf_layers, v_mean, d, kin=False, s
                                 potential for the layers, size MxN.
         v_mean (array): The mean scattering potential for the layers, size N.
         d (array): The thickness of layers. First layer is the substrate, size N.
-        kin (bool): Flag for the use of kinematical theory (defualt: False)
+        kin (bool): Flag for the use of kinematical theory (default: False)
         spec_refl (bool): Flag for the return of the specular reflected amplitude.
 
     Returns:
@@ -170,7 +170,7 @@ def is_spec(k_in, k_out):
 
 
 def ftz_layer(qz, d):
-    """The one-diminesional fourier transform for a homogenous layer of thickness d"""
+    """The one-diminesional fourier transform for a homogeneous layer of thickness d"""
     return (1.0 - np.exp(1.0j * qz * d)) / -1.0j / qz
 
 
@@ -198,7 +198,7 @@ def assemble_vf_func(vf_list):
 
 
 def mult(factor, func):
-    """Multilies factor with func"""
+    """Multiplies factor with func"""
 
     def mult_func(*args, **kwargs):
         return factor * func(*args, **kwargs)
@@ -237,7 +237,7 @@ def jinc(x):
 
 
 def calc_kin_kout(h, qz_max, qz_step, a, lamda):
-    """Calcualtes the k_in and k_out vectors for a reflectivity setup, assumin qy=0.
+    """Calculates the k_in and k_out vectors for a reflectivity setup, assuming qy=0.
 
     Parameters:
         h(int): The inplane reflection index.
@@ -264,7 +264,7 @@ def calc_kin_kout(h, qz_max, qz_step, a, lamda):
 
 def ReflQ_ref(Q, lamda, n, d):
     """Parratt's recursion algorithm used as reference method in tests"""
-    # Length of k-vector in vaccum
+    # Length of k-vector in vacuum
     d = d[1:-1]
     Q0 = 4 * np.pi / lamda
     # Calculates the wavevector in each layer

@@ -321,7 +321,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_file.Append(custom_ids.MenuId.SAVE_MODEL, "Save...\tCtrl+S", "Saves the current model")
         mb_file.Append(custom_ids.MenuId.SAVE_MODEL_AS, "Save As...", "Saves the active model with a new name")
         mb_file.AppendSeparator()
-        mb_file.Append(custom_ids.MenuId.MODEL_BATCH, "Batch dialog...", "Run sequencial refinements of many datasets")
+        mb_file.Append(custom_ids.MenuId.MODEL_BATCH, "Batch dialog...", "Run sequential refinements of many datasets")
         mb_file.AppendSeparator()
         mb_import = wx.Menu()
         mb_import.Append(custom_ids.MenuId.IMPORT_DATA, "Import Data...\tCtrl+D", "Import data to the active data set")
@@ -415,7 +415,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         self.mb_checkables[custom_ids.MenuId.USE_TOGGLE_SHOW] = mb_view.Append(
             custom_ids.MenuId.USE_TOGGLE_SHOW,
             "Use Toggle Show",
-            "Set if the plotted data shold be toggled or selected by the mouse",
+            "Set if the plotted data should be toggled or selected by the mouse",
             wx.ITEM_CHECK,
         )
         mb_view.AppendSeparator()
@@ -448,7 +448,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
         mb_fit.Append(
             custom_ids.MenuId.EVAL_MODEL,
             "&Evaluate\tF5",
-            "Evaluate the Sim function twice and compre result to find inconsitancy",
+            "Evaluate the Sim function twice and compare result to find inconsistency",
         )
         self.mb_checkables[custom_ids.MenuId.TOGGLE_CUDA] = mb_fit.Append(
             custom_ids.MenuId.TOGGLE_CUDA, "Use CUDA", "Make use of Nvidia GPU computing with CUDA", wx.ITEM_CHECK
@@ -902,7 +902,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def Show(self, **kwargs):
         """
-        Overiding the default method since any resizing has to come AFTER
+        Overriding the default method since any resizing has to come AFTER
         the calls to Show
         """
         display_size = wx.DisplaySize()
@@ -1349,7 +1349,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             wx.CallAfter(_post_sim_plot_event, self, self.model_control.get_model(), "Simulation")
             wx.CallAfter(self.plugin_control.OnSimulate, None)
             if not from_thread:
-                self.main_frame_statusbar.SetStatusText("Simulation Sucessful", 1)
+                self.main_frame_statusbar.SetStatusText("Simulation suxcessful", 1)
 
     def set_possible_parameters_in_grid(self):
         # Now we should find the parameters that we can use to
@@ -1501,7 +1501,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self,
             message="New from file",
             defaultFile="",
-            wildcard="Suppoerted types (*.ort/*.orb)|*.ort;*.orb",
+            wildcard="Supported types (*.ort/*.orb)|*.ort;*.orb",
             style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_CHANGE_DIR,
         )
         if dlg.ShowModal() == wx.ID_OK:
@@ -1595,7 +1595,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
     def eh_mb_export_orso(self, event):
         """
         Exports the data to one file per data set with a basename with
-        extention given by a save dialog.
+        extension given by a save dialog.
         """
         dlg = wx.FileDialog(
             self,
@@ -1799,7 +1799,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
 
     def eh_mb_fit_resume(self, event):
         """
-        Event handler to resume the fitting routine. No initilization.
+        Event handler to resume the fitting routine. No initialization.
         """
         with self.catch_error(action="fit_resume", step=f"resume fit"):
             self.model_control.ResumeFit()
@@ -1975,7 +1975,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
                     self, "The file %s already exists. Do you wish to overwrite it?" % filename, "Overwrite?"
                 )
             if result:
-                with self.catch_error(action="saveas", step=f"saveing file as {os.path.basename(fname)}"):
+                with self.catch_error(action="saveas", step=f"saving file as {os.path.basename(fname)}"):
                     if len(self.model_control.controller.model_store) > 0:
                         prog = wx.ProgressDialog("Saving...", f"Writing to file\n{fname}\n", maximum=100, parent=self)
 
@@ -2429,7 +2429,7 @@ class GenxMainWindow(wx.Frame, conf_mod.Configurable):
             self.main_frame_statusbar.SetStatusText("Replaces %d occurancies of  %s" % (i, event.GetFindString()), 1)
 
         else:
-            raise ValueError(f"Faulty event supplied in find and repalce functionallity: {event}")
+            raise ValueError(f"Faulty event supplied in find and replace functionality: {event}")
         # This will scroll the editor to the right position so we can see
         # the text
         self.script_editor.EnsureCaretVisible()
@@ -2617,7 +2617,7 @@ class GenxApp(wx.App):
 
         debug("entering init phase")
 
-        self.WriteSplash("initializeing main window...", progress=0.15)
+        self.WriteSplash("initializing main window...", progress=0.15)
         main_frame = GenxMainWindow(self, dpi_overwrite=self.dpi_overwrite)
         self.SetTopWindow(main_frame)
         main_frame.SetMinSize(wx.Size(600, 400))
@@ -2824,7 +2824,7 @@ class StartUpConfigDialog(wx.Dialog):
 class GenericModelEvent(wx.CommandEvent):
     """
     Event class for a new model - for updating
-    of the paramters, plots and script.
+    of the parameters, plots and script.
     """
 
     def __init__(self, evt_type, evt_id, model):

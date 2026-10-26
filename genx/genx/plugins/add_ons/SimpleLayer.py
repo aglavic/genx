@@ -133,7 +133,7 @@ class SimplePluginInterface(PluginInterface):
             return
         g = self._plugin.sample_widget.grid
         t = self._plugin.sample_widget.sample_table
-        if layer_type == "Mixure":
+        if layer_type == "Mixture":
             col = g.GetGridCursorCol()
             if not col in [2, 4]:
                 ShowInfoDialog(panel, "Select SLD cell to apply material to")
@@ -155,7 +155,7 @@ class Plugin(framework.Template):
 
     @property
     def refplugin(self):
-        # check if reflectivity plugin is None or destoryed, try to connect
+        # check if reflectivity plugin is None or destroyed, try to connect
         if not self._refplugin:
             self._init_refplugin()
         return self._refplugin
@@ -163,7 +163,7 @@ class Plugin(framework.Template):
     def __init__(self, parent):
         framework.Template.__init__(self, parent)
         self.parent = parent
-        # on the right side, add a list of materials with their density to selct from
+        # on the right side, add a list of materials with their density to select from
         materials_panel = self.NewDataFolder("Materials")
         materials_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.materials_panel = wx.Panel(materials_panel)
@@ -310,7 +310,7 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def _GetSelectedItems(self):
         """_GetSelectedItems(self) --> indices [list of integers]
         Function that yields a list of the currently selected items
-        position in the list. In order of selction, i.e. no order.
+        position in the list. In order of selection, i.e. no order.
         """
         indices = [self.GetFirstSelected()]
         while indices[-1] != -1:
@@ -322,7 +322,7 @@ class MaterialsList(wx.ListCtrl, ListCtrlAutoWidthMixin):
 
     def _CheckSelected(self, indices):
         """_CheckSelected(self, indices) --> bool
-        Checks so at least data sets are selcted, otherwise show a dialog box
+        Checks so at least data sets are selected, otherwise show a dialog box
         and return False
         """
         # Check so that one dataset is selected

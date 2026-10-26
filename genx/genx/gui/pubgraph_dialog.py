@@ -102,7 +102,7 @@ class PublicationConfig(BaseConfig):
     section = "publication graph"
 
     width: float = 3.39
-    heigth: float = 2.36
+    height: float = 2.36
     font_size: int = int(matplotlib.rcParams["font.size"])
     font_familty: int = wx.FONTFAMILY_DEFAULT
     font_face: str = matplotlib.rcParams["font.sans-serif"][0]
@@ -229,7 +229,7 @@ class PublicationDialog(wx.Dialog, Configurable):
             style=wx.SP_ARROW_KEYS|wx.TE_PROCESS_ENTER
         )
         self.height = wx.SpinCtrlDouble(
-            right_panel, min=0.1, max=30.0, initial=self.opt.heigth, inc=0.01,
+            right_panel, min=0.1, max=30.0, initial=self.opt.height, inc=0.01,
             style=wx.SP_ARROW_KEYS|wx.TE_PROCESS_ENTER
         )
         hbox2.Add(wx.StaticText(right_panel, label="Width (inches)"))
@@ -334,7 +334,7 @@ class PublicationDialog(wx.Dialog, Configurable):
     def OnStoreDefaults(self, event):
         self.opt.start_text = repr(self.tinput.GetText().splitlines())
         self.opt.width = self.width.GetValue()
-        self.opt.heigth = self.height.GetValue()
+        self.opt.height = self.height.GetValue()
 
         font = self.font.GetSelectedFont()
         self.opt.font_size = font.GetPointSize()

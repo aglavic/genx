@@ -312,7 +312,7 @@ class DiffEv(GenxOptimizer):
 
     def connect_model(self, model_obj):
         """
-        Connects the model [model] to this object. Retrives the function
+        Connects the model [model] to this object. Retrieves the function
         that sets the variables  and stores a reference to the model.
         """
         # Retrieve parameters from the model
@@ -331,7 +331,7 @@ class DiffEv(GenxOptimizer):
     def init_fitting(self, model_obj):
         """
         Function to run before a new fit is started with start_fit.
-        It initilaize the population and sets the limits on the number
+        It initialaize the population and sets the limits on the number
         of generation and the population size.
         """
         self.connect_model(model_obj)
@@ -370,7 +370,7 @@ class DiffEv(GenxOptimizer):
         self.n_fom = 0
 
         if rank == 0:
-            self.text_output("DE initilized")
+            self.text_output("DE initialized")
 
         # Remember that everything has been setup ok
         self.setup_ok = True
@@ -392,7 +392,7 @@ class DiffEv(GenxOptimizer):
 
     def start_fit(self, model_obj):
         """
-        Starts fitting in a seperate thred.
+        Starts fitting in a separate thread.
         """
         if not self.running:
             # Initialize the parameters to fit
@@ -410,7 +410,7 @@ class DiffEv(GenxOptimizer):
 
     def stop_fit(self):
         """
-        Stops the fit if it has been started in a seperate theres
+        Stops the fit if it has been started in a separate thread
         by start_fit.
         """
         if self.running:
@@ -454,8 +454,8 @@ class DiffEv(GenxOptimizer):
             self.optimize()
         except Exception as e:
             self.running = False
-            self.error = f"An error occured in the model while executing:\n{e!r}"
-            debug("An error occured in the model while executing", exc_info=True)
+            self.error = f"An error occurred in the model while executing:\n{e!r}"
+            debug("An error occurred in the model while executing", exc_info=True)
             self.new_best = self.start_guess
             self.fitting_ended()
 
@@ -719,7 +719,7 @@ class DiffEv(GenxOptimizer):
 
     def calc_fom(self, vec):
         """
-        Function to calcuate the figure of merit for parameter vector
+        Function to calculate the figure of merit for parameter vector
         vec.
         """
         # Set the parameter values
@@ -748,7 +748,7 @@ class DiffEv(GenxOptimizer):
     def setup_parallel(self):
         """setup_parallel(self) --> None
 
-        setup for parallel proccesing. Creates a pool of workers with
+        setup for parallel processing. Creates a pool of workers with
         as many cpus there is available
         """
         # check if CUDA has been activated
@@ -883,7 +883,7 @@ class DiffEv(GenxOptimizer):
     def simplex_old_init_new_generation(self, gen):
         """It will run the simplex method every simplex_interval
         generation with a fracitonal step given by simple_step
-        on the best indivual as well a random fraction of simplex_n individuals.
+        on the best individual as well a random fraction of simplex_n individuals.
         """
         iprint("Inits new generation")
         if gen % self.simplex_interval == 0:
@@ -1449,7 +1449,7 @@ def parallel_calc_fom(vec):
 
 def _calc_fom(model_obj: Model, vec, param_funcs):
     """
-    Function to calcuate the figure of merit for parameter vector
+    Function to calculate the figure of merit for parameter vector
     vec.
     """
     # Set the parameter values
@@ -1460,7 +1460,7 @@ def _calc_fom(model_obj: Model, vec, param_funcs):
 
 class CircBuffer:
     """A buffer with a fixed length to store the logging data from the diffev
-    class. Initilized to a maximumlength after which it starts to overwrite
+    class. Initialized to a maximumlength after which it starts to overwrite
     the data again.
     """
 

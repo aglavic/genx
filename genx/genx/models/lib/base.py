@@ -135,7 +135,7 @@ class ModelParamMeta(type):
 class ModelParamBase(metaclass=ModelParamMeta):
     """
     Base class for all reflectometry dataclass objects. It uses the ReflMeta class to
-    allow arbitrary ununsed keyword arguments (for switching models) and stores
+    allow arbitrary unused keyword arguments (for switching models) and stores
     the call strings used when creating a class instance to allow re-creation
     within the GUI.
 

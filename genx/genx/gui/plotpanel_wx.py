@@ -46,7 +46,7 @@ class BasePlotConfig(BaseConfig):
 
 class PlotPanel(wx.Panel, Configurable):
     """
-    Base class for the plotting in GenX - all the basic functionallity
+    Base class for the plotting in GenX - all the basic functionality
     should be implemented in this class. The plots should be derived from
     this class. These classes should implement an update method to update
     the plots.
@@ -668,7 +668,7 @@ class ParsPanelConfig(BasePlotConfig):
 
 class ParsPlotPanel(PlotPanel):
     """
-    Class to plot the diffrent parametervalus during a fit.
+    Class to plot the different parametervalus during a fit.
     """
 
     def __init__(self, parent, id=-1, color=None, dpi=None, style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):

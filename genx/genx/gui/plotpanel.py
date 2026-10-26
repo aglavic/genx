@@ -1,5 +1,5 @@
 """
-A extension of panel that implements matplotlib plotting libary.
+A extension of panel that implements matplotlib plotting library.
 """
 
 import warnings
@@ -56,7 +56,7 @@ class BasePlotConfig(BaseConfig):
 # ==============================================================================
 class PlotPanel(wx.Panel, Configurable):
     """
-    Base class for the plotting in GenX - all the basic functionallity
+    Base class for the plotting in GenX - all the basic functionality
     should be implemented in this class. The plots should be derived from
     this class. These classes should implement an update method to update
     the plots.
@@ -206,7 +206,7 @@ class PlotPanel(wx.Panel, Configurable):
 
     def SetAutoScale(self, state):
         """
-        Sets autoscale of the main axes wheter or not it should autoscale
+        Sets autoscale of the main axes whether or not it should autoscale
         when plotting
         """
         # self.ax.set_autoscale_on(state)
@@ -412,7 +412,7 @@ class PlotPanel(wx.Panel, Configurable):
 
     def SetCallbackWindow(self, window):
         """
-        Sets the callback window that should recieve the events from
+        Sets the callback window that should receive the events from
         picking.
         """
 
@@ -517,7 +517,7 @@ class PlotPanel(wx.Panel, Configurable):
             self.canvas.ReleaseMouse()
             del self.overlay
             if self.zooming and self.cur_rect:
-                # Note: The coordinte system for matplotlib have a different
+                # Note: The coordinate system for matplotlib have a different
                 # direction of the y-axis and a different origin!
                 size = self.canvas.GetClientSize()
                 start = self.ax.transData.inverted().transform(
@@ -1042,7 +1042,7 @@ class DataPlotPanel(PlotPanel):
             # self.ax = self.figure.add_subplot(111)
             self.create_axes()
 
-        # This will be somewhat inefficent since everything is updated
+        # This will be somewhat inefficient since everything is updated
         # at once would be better to update the things that has changed...
 
         while len(self.ax.lines) > 0:
@@ -1380,7 +1380,7 @@ class DataPlotPanel(PlotPanel):
     def OnSimPlotEvent(self, event):
         """OnSimPlotEvent(self, event) --> None
 
-        Event handler funciton for connection to simulation events
+        Event handler function for connection to simulation events
         i.e. update the plot with the data + simulation
         """
         model: Model = event.GetModel()
@@ -1478,7 +1478,7 @@ class ParsPanelConfig(BasePlotConfig):
 class ParsPlotPanel(PlotPanel):
     """ParsPlotPanel
 
-    Class to plot the diffrent parametervalus during a fit.
+    Class to plot the different parametervalus during a fit.
     """
 
     def __init__(self, parent, id=-1, color=None, dpi=None, style=wx.NO_FULL_REPAINT_ON_RESIZE, **kwargs):

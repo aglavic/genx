@@ -47,7 +47,7 @@ Slab
    The occupancy of the atom
 ``m``
    The multiplicity of the site, defined as in the international tables
-   of crystallogrphy. Note that it is plane goups and NOT space groups
+   of crystallogrphy. Note that it is plane groups and NOT space groups
    that will produce valid results.
 
 ``[Slab].copy()``
@@ -65,7 +65,7 @@ Slab
 ``[Slab][id]``
     Locates atom that has id ``id``. Returns an AtomGroup
 ``id``
-   Uniqe string identifer for one atom
+   Unique string identifier for one atom
 
 Sample
 ~~~~~~
@@ -74,7 +74,7 @@ Sample
 ``inst``
    Instrument object for the sample
 ``bulk_slab``
-   The Slab that describes the bulk strucutre
+   The Slab that describes the bulk structure
 ``slabs``
    A list ([]) of slabs for the surface structure
 ``unit_cell``
@@ -86,12 +86,12 @@ Sample
 ``bulk_sym``
    A list ([]) of SymTrans objects describing the bulk symmetry. Default
    value - an empty list will implement a p1 symmetry, that is no
-   symetry operations at all.
+   symmetry operations at all.
 
 ``[Sample].calc_f(h, k, l)``
     Calculates the total structure factor (complex number) from the the
-    surface and bulk strucutre. Returns an array of the same size as h, k,
-    l. (h, k, l should be of the same legth and is given in coordinates of
+    surface and bulk structure. Returns an array of the same size as h, k,
+    l. (h, k, l should be of the same length and is given in coordinates of
     the reciprocal lattice as defnined by the uit_cell coords)
 ``[Sample].turbo_calc_f(h, k, l)``
     A faster version of ``calc_f`` which uses inline c code to increase
@@ -157,7 +157,7 @@ class Sample:
         if type(slabs) != type([]):
             raise TypeError("The surface slabs has to contained in a list")
         if min([type(slab) == type(Slab()) for slab in slabs]) == 0:
-            raise TypeError("All members in the slabs list has to be a memeber of class Slab")
+            raise TypeError("All members in the slabs list has to be a member of class Slab")
         self.slabs = slabs
 
     def set_surface_sym(self, sym_list):
@@ -174,7 +174,7 @@ class Sample:
             sym_list = [SymTrans()]
 
         if min([type(sym) == type(SymTrans()) for sym in sym_list]) == 0:
-            raise TypeError("All members in the symmetry list has to be a memeber of class SymTrans")
+            raise TypeError("All members in the symmetry list has to be a member of class SymTrans")
 
         self.surface_sym = sym_list
 
@@ -192,7 +192,7 @@ class Sample:
             sym_list = [SymTrans()]
 
         if min([type(sym) == type(SymTrans()) for sym in sym_list]) == 0:
-            raise TypeError("All members in the symmetry list has to be a memeber of class SymTrans")
+            raise TypeError("All members in the symmetry list has to be a member of class SymTrans")
 
         self.bulk_sym = sym_list
 
@@ -305,13 +305,13 @@ class Sample:
             ),
             1,
         )
-        # Putting it all togheter
+        # Putting it all together
         fb = f_u / denom * delta_funcs
 
         return fb
 
     def calc_rhos(self, x, y, z, sb=0.8):
-        """Calcualte the electron density of the unitcell"""
+        """Calculate the electron density of the unitcell"""
         px, py, pz, u, oc, el = self._surf_pars()
         rhos = self._get_rho(el)
 
@@ -392,7 +392,7 @@ class Sample:
         evaluated before.
 
         element - element string
-        f - dictonary for lookup
+        f - dictionary for lookup
         s - sintheta_over_lambda array
         """
         return _fatom_eval(inst, f, element, s)
@@ -658,7 +658,7 @@ class Slab:
         """
         if type(expression) == type(np.array([])) or type(expression) == type(list([])):
             if len(expression) != len(self.id):
-                raise ValueError("The length of experssion is wrong" ", it should match the number of atoms")
+                raise ValueError("The length of expression is wrong" ", it should match the number of atoms")
             ag = AtomGroup()
             [ag.add_atom(self, str(id)) for id, add in zip(self.id, expression) if add]
             return ag
@@ -712,7 +712,7 @@ class Slab:
 
     def __getitem__(self, id):
         """
-        Locate id in slab with a dictonary style.
+        Locate id in slab with a dictionary style.
         Returns a AtomGroup instance
         """
         return AtomGroup(self, id)
@@ -751,7 +751,7 @@ class Slab:
 
     def _make_get_func(self, par, pos):
         """
-        Cerates a set function for member par at pos.
+        Creates a set function for member par at pos.
         Returns a function.
         """
 
@@ -789,7 +789,7 @@ class AtomGroup:
             self.add_atom(slab, id)
 
     def _set_func(self, par):
-        """create a function that sets all atom paramater par"""
+        """create a function that sets all atom parameter par"""
         funcs = [getattr(slab, "set" + id + par) for id, slab in zip(self.ids, self.slabs)]
 
         def set_pars(val):
@@ -798,7 +798,7 @@ class AtomGroup:
         return set_pars
 
     def _get_func(self, par):
-        """create a function that gets all atom paramater par"""
+        """create a function that gets all atom parameter par"""
         funcs = [getattr(slab, "get" + id + par) for id, slab in zip(self.ids, self.slabs)]
 
         def get_pars():
@@ -827,7 +827,7 @@ class AtomGroup:
     def _copy(self):
         """
         Creates a copy of self And looses all connection to the
-        previously created compositions conenctions
+        previously created compositions connections
         """
         cpy = AtomGroup()
         cpy.ids = self.ids[:]
@@ -841,7 +841,7 @@ class AtomGroup:
         in the atomic groups. Note that this does not affect
         the slabs global occupancy. If self_copy is True the
         returned value will be a copy of self.
-        If exculive is true reomves all methods from the
+        If exculive is true removes all methods from the
         previous AtomGroups that are coupled.
         """
         if not type(self) == type(other):
@@ -977,7 +977,7 @@ class AtomGroup:
 
     def __add__(self, other):
         """
-        Adds two Atomic groups togheter
+        Adds two Atomic groups together
         """
         if not type(other) == type(self):
             raise TypeError("Adding wrong type to an AtomGroup has to be an" "AtomGroup")
@@ -1029,7 +1029,7 @@ class Instrument:
 
     def set_inten(self, inten):
         """
-        Set the incomming intensity
+        Set the incoming intensity
         """
         self.inten = inten
 
@@ -1071,7 +1071,7 @@ class Instrument:
 
     def set_alpha(self, alpha):
         """
-        Sets the freezed angle. The meaning of this angle varies depening
+        Sets the freezed angle. The meaning of this angle varies depending
         of the geometry parameter.
 
         geo =  "alpha_in fixed", alpha = alpha_in
@@ -1109,7 +1109,7 @@ class Instrument:
 
 
 # ==============================================================================
-# Utillity functions
+# Utility functions
 def scale_sim(data, sim_list, scale_func=None):
     """
     Scale the data according to a miminimazation of
@@ -1162,7 +1162,7 @@ def _fatom_eval(inst, f, element, s):
     evaluated before.
 
     element - element string
-    f - dictonary for lookup
+    f - dictionary for lookup
     s - sintheta_over_lambda array
     """
     try:

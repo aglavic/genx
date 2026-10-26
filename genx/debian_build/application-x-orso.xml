@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
    <mime-type type="application/x-orso">
-     <comment>Open Reflectometry Standars Organization file</comment>
+     <comment>Open Reflectometry Standards Organization file</comment>
      <magic priority="50">
         <match type="string" value="# # ORSO reflectivity data file" offset="0"/>
      </magic>

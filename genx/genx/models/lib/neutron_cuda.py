@@ -52,7 +52,7 @@ def dot4(A, B, D):
     **JIT_OPTIONS
 )
 def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
-    """A quicker implementation than the ordinary slow implementaion in Refl
+    """A quicker implementation than the ordinary slow implementation in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
         and J.A.C. Bland Phys rev. B. vol 46 3391 (1992)
         The algorithm assumes that the first element in the arrays represents
@@ -195,7 +195,7 @@ def ReflNBSigma(Q, Vp, Vm, d, M_ang, sigma, Rout, PX):
     **JIT_OPTIONS
 )
 def ReflNB(Q, Vp, Vm, d, M_ang, Rout, PX):
-    """A quicker implementation than the ordinary slow implementaion in Refl
+    """A quicker implementation than the ordinary slow implementation in Refl
     Calculates spin-polarized reflectivity according to S.J. Blundell
         and J.A.C. Bland Phys rev. B. vol 46 3391 (1992)
         The algorithm assumes that the first element in the arrays represents

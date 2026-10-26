@@ -583,7 +583,7 @@ class Spectrum2p(refl.ReflBase):
         """Calculates the spectra from one component
 
         Parameters:
-            e (float array): The energy values where the spectra are to be calcualted.
+            e (float array): The energy values where the spectra are to be calculated.
             comp (SpectralComponent): The spectral component.
             a (int): The polarization of the exciting light.
 
@@ -721,7 +721,7 @@ class Background2p(refl.ReflBase):
         sigma (float): The width of the error function (std in eV).
         pre_edge (float): The width of the pre edge region (eV).
         post_edge (float): The width of the post edge region (eV).
-        de (float): The sampling spacing for the recalcualted table (eV).
+        de (float): The sampling spacing for the recalculated table (eV).
         kk_emax (float): The maximum energy values taken from the tables in eV. The value should be well above the K edge.
         element (string): The element to which the background applies. Used to find theoretical f values (from the nist database), position of the L2/L3 edge and Z (number of electrons).
         parent (Spectra2p): The parent spectra to which the Background applies.
@@ -747,8 +747,8 @@ class Background2p(refl.ReflBase):
     Note that this implementation does incorporates exchange split levels.
 
     The parameters relating to KK transform are:
-        * sigma_tab (float): The width of the error function applied to the table (std in eV), defualt value 1 eV.
-        * edge_offset_tab (float): The offset of the stored tabulated data to the read data (eV), defualt value 40 eV.
+        * sigma_tab (float): The width of the error function applied to the table (std in eV), default value 1 eV.
+        * edge_offset_tab (float): The offset of the stored tabulated data to the read data (eV), default value 40 eV.
 
     Fitting parameters
         * el3
@@ -1111,7 +1111,7 @@ def create_interval(x, x_min, x_max):
 
 
 def step_func(x, x0, sigma):
-    """Defines the step funciton (erf) of the L2/L3 edges
+    """Defines the step function (erf) of the L2/L3 edges
 
         x (array of floats):
         x0 (float):
@@ -1149,7 +1149,7 @@ def kk_int(e, f2, Z=0, e_min=None, e_max=None):
         Newville, M. and Olmsted Cross J. DIFFKK Manual. Downloaded from http://cars9.uchicago.edu/dafs/diffkk/diffkk.pdf
         20140902.
 
-        X-ray data booklet, CXRO, Lawrence Berkley National Laboratory, Downloaded from http://xdb.lbl.gov 20140902.
+        X-ray data booklet, CXRO, Lawrence Berkeley National Laboratory, Downloaded from http://xdb.lbl.gov 20140902.
 
     """
     ekk = e

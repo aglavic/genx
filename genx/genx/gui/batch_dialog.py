@@ -23,7 +23,7 @@ def get_value_from_path(data, path):
 
 
 class CopyGrid(wx.grid.Grid):
-    """Grid calss that copies all data on ctrl+C, no matter the selection."""
+    """Grid class that copies all data on ctrl+C, no matter the selection."""
 
     def __init__(self, *args, **opts):
         wx.grid.Grid.__init__(self, *args, **opts)

@@ -46,7 +46,7 @@ class Stack(HasParameters):
         HasParameters.__init__(self, **kwargs)
 
     def build_layer_list(self, parameters, kwargs):
-        """Builds an array for layer parameters by looping trough the stacks and layers
+        """Builds an array for layer parameters by looping through the stacks and layers
 
         Parameters:
             parameters(list of string): name of a valid layer parameters

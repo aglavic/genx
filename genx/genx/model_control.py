@@ -432,7 +432,7 @@ class ModelController:
             try:
                 exec(f"from {solver_module} import {solver_class}", gscope, lscope)
             except ImportError:
-                warning(f"Could not import solver {solver_class} from moudle {solver_module}")
+                warning(f"Could not import solver {solver_class} from module {solver_module}")
             else:
                 prev_optimizer = self.optimizer
                 exec(f"self.optimizer={solver_class}()", gscope, lscope)

@@ -50,7 +50,7 @@ def start_interactive(args):
         filename = os.path.abspath(args.infile)
         # if getattr(sys, 'frozen', False):
         # make sure the path is set to the program executable in a frozen binary
-        # this fixes unnecessery re-compiles of numba functions on Windows
+        # this fixes unnecessary re-compiles of numba functions on Windows
         #    os.chdir(os.path.dirname(os.path.abspath(sys.executable)))
         #    debug(f'changed curdir to {os.path.abspath(os.path.curdir)}')
     else:
@@ -91,9 +91,9 @@ def create_simulated_data(args):
     # io.load_opt_config(opt, config)
     iprint("File loaded")
 
-    iprint("Simualting..")
+    iprint("Simulating..")
     mod.simulate()
-    iprint("Storing simualted data")
+    iprint("Storing simulated data")
     for data_set in mod.data:
         data_set.y_raw = poisson.rvs(data_set.y_sim)
         data_set.y_command = "y"
@@ -169,7 +169,7 @@ def modify_file(args):
 
     elif args.save_datafile:
         save_datafile = os.path.abspath(args.save_datafile)
-        iprint("Simualting..")
+        iprint("Simulating..")
         mod.simulate()
         if 0 > args.data_set or args.data_set >= len(mod.data):
             iprint("The selected data set does not exist - select one between 0 and %d" % (len(mod.data) - 1))
@@ -429,7 +429,7 @@ def compile_numba(cache_dir=None):
 
         numba.jit = real_jit
     except Exception as e:
-        print("An exception occured when trying to compile the numba functions:")
+        print("An exception occurred when trying to compile the numba functions:")
         print(e)
         return 1
     return 0

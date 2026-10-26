@@ -44,7 +44,7 @@ __ylabel__ = "Instnsity [a.u.]"
 @dataclass
 class Layer(NXLayer):
     """
-    Representing a layer in the sample structur.
+    Representing a layer in the sample structure.
 
     ``b``
        The neutron scattering length per formula unit in fm (fermi meter =
@@ -58,7 +58,7 @@ class Layer(NXLayer):
     ``dens``
        The density of formula units in units per Angstroms. Note the units!
     ``magn_ang``
-       The angle of the magnetic moment in degress. 0 degrees correspond to
+       The angle of the magnetic moment in degrees. 0 degrees correspond to
        a moment collinear with the neutron spin.
     ``magn``
        The magnetic moment per formula unit (same formula unit as b and dens
@@ -107,7 +107,7 @@ class Stack(refl.StackBase):
     A collection of Layer objects that can be repeated.
 
     ``Layers``
-       A ``list`` consiting of ``Layer``s in the stack the first item is
+       A ``list`` consisting of ``Layer``s in the stack the first item is
        the layer closest to the bottom
     ``Repetitions``
        The number of repsetions of the stack or m-value for analytical super-mirror model.
@@ -121,12 +121,12 @@ class Stack(refl.StackBase):
        density increase from bottom to top
     ``beta_sm``
        Parameter used to model neutron super-mirror coatings. There are two models implemented.
-       If *beta_sm* is positive, a simplified analystical model from J. Schelten and K. Mika (Nuc. Inst. Metho. 160 (1979))
-       is used and the parameter represents the quality paramter for super-mirror sequences.
+       If *beta_sm* is positive, a simplified analytical model from J. Schelten and K. Mika (Nuc. Inst. Metho. 160 (1979))
+       is used and the parameter represents the quality parameter for super-mirror sequences.
        A super-mirror sequence is generated and Repetitions is interpreted as the m-value for
        the sequence to calculate actual repetitions automatically.
 
-       If *beta_sm* is negative it is interpretated as the zeta parameter of an iterative build-up of super-mirror
+       If *beta_sm* is negative it is interpreted as the zeta parameter of an iterative build-up of super-mirror
        layers using the method described by J.B. Hayter and H.A. Mook (J. Appl. Cryst. (1989), 22, 35-41). Here,
        the actual given number of repetitions are used to build up a super-mirror from the critical edge
        upowards. The m-value follows from the number of repetitions, material parameters and zeta.
@@ -149,7 +149,7 @@ class Stack(refl.StackBase):
 
     Layers: List[Layer] = field(default_factory=list)
     Repetitions: float = 1.0
-    sigma_gtype: SigmaGradientType = 0  # model for this increas (rel lin, rel sqrt, abs lin, abs sqrt)
+    sigma_gtype: SigmaGradientType = 0  # model for this increase (rel lin, rel sqrt, abs lin, abs sqrt)
     sigma_gradient: float = 0.0  # amount of increase in roughness from bottom to top
     d_gradient: float = 0.0  # change in thickness bottom to top
     dens_gradient: float = 0.0  # change in density bottom to top
@@ -297,19 +297,19 @@ class Sample(refl.SampleBase):
     Describe global sample by listing ambient, substrate and layer parameters.
 
     ``Stacks``
-       A ``list`` consiting of ``Stack``s in the stacks the first item is
+       A ``list`` consisting of ``Stack``s in the stacks the first item is
        the layer closest to the bottom
     ``Ambient``
-       A ``Layer`` describing the Ambient (enviroment above the sample).
+       A ``Layer`` describing the Ambient (environment above the sample).
        Only the scattering lengths and density of the layer is used.
     ``Substrate``
-       A ``Layer`` describing the substrate (enviroment below the sample).
+       A ``Layer`` describing the substrate (environment below the sample).
        Only the scattering lengths, density and roughness of the layer is
        used.
     ``sigma_inhom``
        Width of the thickness distribution
     ``lscale_inhom``
-       For empirical PLD model this defines the width of the increas peak
+       For empirical PLD model this defines the width of the increase peak
     ``flatwidth_inhom``
        For empirical PLD model this defines the trnsition from flat to increased probability.
     ``steps_inhom``
@@ -370,7 +370,7 @@ def Specular(TwoThetaQz, sample: Sample, instrument: Instrument):
     lorentz_scale = sample.lscale_inhom
     flat_width = np.maximum(1e-4, sample.flatwidth_inhom * 0.01)
     type_inhom = sample.type_inhom
-    # Define the thicknesses to calculate and their propability
+    # Define the thicknesses to calculate and their probability
     if sigma_d == 0:  # no inhomogeniety
         d_fact = array([1.0])
         P = array([1.0])

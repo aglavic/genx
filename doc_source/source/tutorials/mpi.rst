@@ -24,7 +24,7 @@ Command line arguments
 The arguments to GenX can be viewed by executing the program with the ``--help`` option.
 
 .. note::
-    All commands should work from the source folder without installation by using ``python scripts/genx`` as execuable.
+    All commands should work from the source folder without installation by using ``python scripts/genx`` as executable.
 
 ::
 
@@ -111,7 +111,7 @@ the following command can be executed.
 
    INFO: Saving the initial model to C:\Users\Artur\genx\genx\test.hgx
    INFO: Fitting starting...
-   INFO: DE initilized
+   INFO: DE initialized
    INFO: Setting up a pool of workers ...
    INFO: Starting the fit...
    INFO: Starting a pool with 8 workers ...
@@ -172,7 +172,7 @@ the output during refinement will look something like this:
     The fit can be stopped before the breaking conditions using ``q``. To deactivate the interactive
     view use the ``--no-curses`` option.
 
-    Stopping with q only works on UNIX without curses if ``<enter>`` is pressed afterwords. This can
+    Stopping with q only works on UNIX without curses if ``<enter>`` is pressed afterwards. This can
     also be used to stop a MPI refinement at any time.
 
 Using MPI
@@ -207,7 +207,7 @@ or ``mpiexec`` has to be used. The argument ``-np`` defines how many processes t
 
    INFO: Saving the initial model to /mnt/c/Users/Artur/genx/genx/test.hgx
    INFO: Fitting starting...
-   INFO: DE initilized
+   INFO: DE initialized
    INFO: Inits mpi with 2 processes ...
    INFO: Starting the fit...
    INFO: Calculating start FOM ...
@@ -282,7 +282,7 @@ connections from **localhost** on port **3000**.
 You can choose to listen on any incoming network interfaces by supplying **0.0.0.0** as ``address`` but this is
 not very secure as anyone on the local network would be able to connect to this client.
 The communication protocol does use a simple password authentication but communication is not encrypted so
-it is adviced to keep the port open only locally and using ssh tunnel (-L option) to connect from you machine.
+it is advised to keep the port open only locally and using ssh tunnel (-L option) to connect from you machine.
 
 ::
 

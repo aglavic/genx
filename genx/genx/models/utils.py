@@ -11,8 +11,8 @@ Classes
 UserVars
 ~~~~~~~~
 This class is used to contain user defined variables which is problem
-specific and do not warrant a completly new model library. It is
-contstructed as: ``vars = UserVars()``.
+specific and do not warrant a completely new model library. It is
+constructed as: ``vars = UserVars()``.
 
 A new variable is created by calling the new_var method:
 ``vars.new_var('my_var', 10.0)``
@@ -22,9 +22,9 @@ The methods in this class are:
 ``__init__(self)``
    Create a new variable container
 ``new_var(self, name, value)``
-   Create a new varaible with name [string] name and value value [float]
+   Create a new variable with name [string] name and value value [float]
 
-The created varaibles are accesed through the as [Uservars].set[Name]
+The created variables are accessed through the as [Uservars].set[Name]
 and [Uservars].get[Name]. In the example above this would read:
 
 ``vars.setMy_var(20)`` to set a value and ``vars.getMy_vars()`` to
@@ -32,7 +32,7 @@ retrieve the value.
 
 Scattering factor databases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The following databases exist in GenX. All databases are accesed through
+The following databases exist in GenX. All databases are accessed through
 ``[name].[element]`` for example: ``fp.fe``
 
 fp

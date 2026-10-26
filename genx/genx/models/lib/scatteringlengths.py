@@ -1,5 +1,5 @@
 """ A library for handling optical constants and scattering lengths
-in an efficent way. Based on a base class database which is subclassed
+in an efficient way. Based on a base class database which is subclassed
 for each case.
 Programmer: Matts Bjorck
 Last changed: 2009-03-19
@@ -34,7 +34,7 @@ class Func(object):
 
 
 class Proxy(object):
-    """Proxy class borrowed from ASPN Recipe 496741 at adress
+    """Proxy class borrowed from ASPN Recipe 496741 at address
     http://code.activestate.com/recipes/496741/
     """
 
@@ -166,7 +166,7 @@ class Proxy(object):
                 namespace[name] = make_method(name)
         return type("%s(%s)" % (cls.__name__, theclass.__name__), (cls,), namespace)
 
-    # And, this is the old way. Which I stck with for compatiblity reasons
+    # And, this is the old way. Which I stck with for compatibility reasons
     _create_class_proxy = classmethod(_create_class_proxy)
 
     def __new__(cls, obj, *args, **kwargs):
@@ -201,7 +201,7 @@ def change_proxyobject(proxy, obj):
 
 # ==============================================================================
 class Database(object):
-    """A database class where object memebers are dynamically acessed
+    """A database class where object members are dynamically accessed
     and stored. I.e. the constants are only looked up when needed.
     """
 
@@ -212,7 +212,7 @@ class Database(object):
     def __getattribute__(self, name):
         """__getattr__(self, name) --> object
 
-        Looks up and returns the attribure name
+        Looks up and returns the attribute name
         """
         if name.startswith("__"):
             return object.__getattribute__(self, name)
@@ -233,9 +233,9 @@ class Database(object):
     def __setattr__(self, name, value):
         """__setattr__(self, name) --> None
 
-        Just overlaoding the setattribute so a object cant be set.
+        Just overlaoding the setattribute so a object can't be set.
         """
-        raise TypeError("This object does not support assignements")
+        raise TypeError("This object does not support assignments")
 
     def lookup_value(self, name):
         """lookup_value(self, name) --> object
@@ -361,7 +361,7 @@ class ScatteringLength(Database):
     def __init__(self, values):
         """__init__(self, values) --> None
 
-        values is a dictonary of key value pairs that are used in the database.
+        values is a dictionary of key value pairs that are used in the database.
         """
         Database.__init__(self)
         ele_vals = {}
@@ -394,9 +394,9 @@ class ScatteringLength(Database):
 
 
 def load_f0dabax(filename, create_rho=False):
-    """load_dabax(filename) --> f0 (dictonary)
+    """load_dabax(filename) --> f0 (dictionary)
 
-    loads a dabax file with f0 values and return a dictonary with
+    loads a dabax file with f0 values and return a dictionary with
     f0(sin(theta)/lambda) for the element given by the key name.
     """
 
@@ -477,12 +477,12 @@ def create_fp_lookup(path):
         energy = 1239.842 / wavelength * 10
         if energy >= e[-2] or energy <= e[1]:
             raise ValueError(
-                "The energy/wavelength is outside the databse"
+                "The energy/wavelength is outside the database"
                 + "range, the energy should be inside [%f,%f] " % (e[1], e[-2])
             )
         pos1 = np.argmin(abs(e - energy))
         # Is the energy point to the right or left of the current point
-        # If it is ontop it doesn't matter since the interpolation will be exact at
+        # If it is on top it doesn't matter since the interpolation will be exact at
         # the endpoints
         if (e[pos1] - energy) > 0:
             pos2 = pos1 - 1
@@ -520,12 +520,12 @@ def create_bl_lookup(path, b_dict):
 
         if energy >= e[-2] or energy <= e[1]:
             raise ValueError(
-                "The energy/wavelength is outside the databse"
+                "The energy/wavelength is outside the database"
                 + "range, the energy should be inside [%f,%f] " % (e[1], e[-2])
             )
         pos1 = np.argmin(abs(e - energy))
         # Is the energy point to the right or left of the current point
-        # If it is ontop it doesn't matter since the interpolation will be exact at
+        # If it is on top it doesn't matter since the interpolation will be exact at
         # the endpoints
         if (e[pos1] - energy) > 0:
             pos2 = pos1 - 1
@@ -565,7 +565,7 @@ def create_fpdisp_lookup(path):
 def create_f_lookup(lookup_fp, f0):
     """create_f_lookup(lookup_fp, f0) --> lookup_func(name, wavelength)
 
-    combines a f0 dictonary [dict] witht the lookup function for the
+    combines a f0 dictionary [dict] with the lookup function for the
      anoumoulous scattering factors. Note that it is assumed that lookup_fp
     is a function on the form lookup_fp(name, wavelength) --> f1 - 1.0Jf2
     where name is the name of the element!
@@ -576,7 +576,7 @@ def create_f_lookup(lookup_fp, f0):
         f = f0 + f1 + 1.0J*f2 of element name. This dispersive part
         is independent on the ionicity but f0 not.
         """
-        # Check if name corrspond to an ion
+        # Check if name corresponds to an ion
         element = None
         if len(name) > 1:
             if name[-2].isdigit():
@@ -600,7 +600,7 @@ def create_f_lookup(lookup_fp, f0):
 def create_rho_lookup(lookup_fp, rho0, f0):
     """create_rho_lookup(lookup_fp, rho0, f0) --> lookup_func(name, wavelength)
 
-    combines a rho0 dictonary [dict] with the lookup function for the
+    combines a rho0 dictionary [dict] with the lookup function for the
      anoumoulous scattering factors. Note that it is assumed that lookup_fp
     is a function on the form lookup_fp(name, wavelength) --> f1 - 1.0Jf2
     where name is the name of the element!
@@ -611,7 +611,7 @@ def create_rho_lookup(lookup_fp, rho0, f0):
         its formfactor, f = f0 + f1 + 1.0J*f2, of element name.
         The dispersive part is independent on the ionicity but f0 not.
         """
-        # Check if name corrspond to an ion
+        # Check if name corresponds to an ion
         element = None
         if len(name) > 1:
             if name[-2].isdigit():
@@ -635,7 +635,7 @@ def create_rho_lookup(lookup_fp, rho0, f0):
 def create_fw_lookup(lookup_fp, weight):
     """create_fw_lookup(lookup_fp, weight) --> lookup_func(name, wavelength)
 
-    combines a f0 dictonary [dict] witht the lookup function for the
+    combines a f0 dictionary [dict] with the lookup function for the
      anoumoulous scattering factors. Note that it is assumed that lookup_fp
     is a function on the form lookup_fp(name, wavelength) --> f1 - 1.0Jf2
     where name is the name of the element!
@@ -654,14 +654,14 @@ def create_fw_lookup(lookup_fp, weight):
 
 
 def load_bdabax(filename):
-    """load_bdabax(filename) --> b (dictonary)
+    """load_bdabax(filename) --> b (dictionary)
 
     loads a dabax file with b (sld for neutrons) values
-    and return a dictonary with b for the elements and isotopes
+    and return a dictionary with b for the elements and isotopes
     given by the key name.
     """
     temp_dict = read_dabax(filename)
-    # We are intrested in the scatttering lengths
+    # We are interested in the scatttering lengths
     b_c = {}
     for key in temp_dict:
         val = temp_dict[key][1] + temp_dict[key][2] * 1.0j
@@ -690,12 +690,12 @@ def load_fdabax(filename):
         energy = 1239.842 / wavelength * 10 / 1e3  # keV
         if energy >= e[-2] or energy <= e[1]:
             raise ValueError(
-                "The energy/wavelength is outside the databse"
+                "The energy/wavelength is outside the database"
                 + "range, the energy should be inside [%f,%f] " % (e[1], e[-2])
             )
         pos1 = np.argmin(abs(e - energy))
         # Is the energy point to the right or left of the current point
-        # If it is ontop it doesn't matter since the interpolation will be exact at
+        # If it is on top it doesn't matter since the interpolation will be exact at
         # the endpoints
         if (e[pos1] - energy) > 0:
             pos2 = pos1 - 1
@@ -713,7 +713,7 @@ def load_fdabax(filename):
 def read_dabax(filename):
     """read_dabax_dict(filename) --> temp_dict [dict]
 
-    Loads an entire dabax file to a dictonary. Scan names are the
+    Loads an entire dabax file to a dictionary. Scan names are the
     keys.
     """
 
@@ -750,16 +750,16 @@ def read_dabax(filename):
 
 
 def load_atomic_weights_dabax(filename):
-    """load__atomic_weights_dabax(filename) --> w (dictonary)
+    """load__atomic_weights_dabax(filename) --> w (dictionary)
 
     loads a dabax file with w (sld for neutrons) values
-    and return one dictonary with the atomic weights for the elements
+    and return one dictionary with the atomic weights for the elements
     by the key name. Note that all isotopes are includes with the an
     i in front of them.
     """
 
     temp_dict = read_dabax(filename)
-    # We are intrested in the scatttering lengths
+    # We are interested in the scatttering lengths
     w_mean = {}
     for key in temp_dict:
         if key[0].isdigit():

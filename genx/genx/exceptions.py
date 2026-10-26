@@ -26,7 +26,7 @@ class GenxOptionError(IndexError, GenxError):
         self.section = section
         self.option = option
         text = (
-            "Error in trying to loacate values in GenX configuration."
+            "Error in trying to locate values in GenX configuration."
             + "\nCould not locate the section: "
             + self.section
             + " or option: "
@@ -52,7 +52,7 @@ class ParameterError(ValueError, GenxError):
         parameter: the name of the parameter
         parameter_number: the position of the parameter in the list
         error_mesage: pythons error from the original exception
-        int: where the error occured
+        int: where the error occurred
             -1 : undefined
              0 : an not find the parameter
              1 : can not evaluate i.e. set the parameter
@@ -78,7 +78,7 @@ class ParameterError(ValueError, GenxError):
             text += "is smaller than the value in the min column\n"
         elif self.what == 4:
             text = (
-                "There are no parameter selcted to be fitted.\n"
+                "There are no parameter selected to be fitted.\n"
                 + "Select the parameters you want to fit by checking the "
                 + "boxes in the fit column, folder grid"
             )
@@ -99,7 +99,7 @@ class ModelError(RuntimeError, GenxError):
         where: integer describing where the error was raised.
                 -1: undef
                  0: compile error
-                 1: evaulation error
+                 1: evaluation error
         """
         self.where = where
         text = ""

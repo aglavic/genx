@@ -3,7 +3,7 @@
 :mod:`default` Default data loader
 ==================================
 
-Loads the data from whitespace seperated column formatted ascii data files.
+Loads the data from whitespace separated column formatted ascii data files.
 The module allows the specification of which columns that correspond to the
 x, y and y_error columns in the data file. 
 If y_error is not used the it can safely be set to the same column as y.
@@ -24,7 +24,7 @@ from ..utils import ShowWarningDialog
 try:
     import wx
 except ImportError:
-    # in case of console usinge withou wx beeing installed put a mock class/module
+    # in case of console usinge without wx being installed put a mock class/module
     class void:
         pass
 
@@ -69,7 +69,7 @@ class Plugin(Template):
                     self.parent,
                     "The data file does not contain enough number of columns. It has "
                     + str(load_array.shape[1])
-                    + " columns. Rember that the column index start at zero!",
+                    + " columns. Remember that the column index start at zero!",
                 )
                 self.SetStatusText("Could not load data - not enough columns")
                 return

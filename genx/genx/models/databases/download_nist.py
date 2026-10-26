@@ -14,8 +14,8 @@ import numpy
 
 
 def get_html_code(Z):
-    adress = "http://physics.nist.gov/cgi-bin/ffast/ffast.pl?Z=%d&Formula=&gtype=4&lower=&upper=&density=&frames=no" % Z
-    f = urllib.request.urlopen(adress)
+    address = "http://physics.nist.gov/cgi-bin/ffast/ffast.pl?Z=%d&Formula=&gtype=4&lower=&upper=&density=&frames=no" % Z
+    f = urllib.request.urlopen(address)
     return f.readlines()
 
 

@@ -1,5 +1,5 @@
 """
-Entry point to run genx directly from the packge. Allows to use:
+Entry point to run genx directly from the package. Allows to use:
 $ python -m genx
 """
 

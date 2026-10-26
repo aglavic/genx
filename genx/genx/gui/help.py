@@ -117,7 +117,7 @@ class PluginHelpDialog(wx.Frame):
     def on_choice(self, event):
         """on_choice(self, event) --> None
 
-        Callback for a choice selction in the choice window
+        Callback for a choice selection in the choice window
         """
         sub_module = self.choice.GetStringSelection()
         if self.sub_modules:
@@ -156,7 +156,7 @@ class PluginHelpDialog(wx.Frame):
                 mod = __import__("genx.%s" % module, globals(), locals(), [""])
         except Exception as e:
             docs = "Could not load docstring for %s." % sub_module
-            docs += "\n The following exception occured: %s" % str(e)
+            docs += "\n The following exception occurred: %s" % str(e)
         else:
             if mod.__doc__ is None:
                 docs = "No documentation available for module."

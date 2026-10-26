@@ -61,7 +61,7 @@ class Plugin(framework.Template):
         self.menu = self.NewMenu("User funcs")
         self.userfunc_arguments = {}
         self.parent = parent
-        self.StatusMessage("Sucessfully loaded UserFuncs...")
+        self.StatusMessage("Successfully loaded UserFuncs...")
 
     def OnSimulate(self, event):
         """OnSimulate(self, event) --> None
@@ -148,7 +148,7 @@ class Plugin(framework.Template):
             )
             self.StatusMessage("error in function %s" % fname)
         else:
-            self.StatusMessage("%s sucessfully evaluated" % fname)
+            self.StatusMessage("%s successfully evaluated" % fname)
 
     def get_filename(self, argname):
         dia = wx.FileDialog(self.parent, f"Select file for {argname}", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
@@ -208,6 +208,6 @@ class Plugin(framework.Template):
                 )
                 self.StatusMessage("error in function %s" % fname)
             else:
-                self.StatusMessage("%s sucessfully evaluated" % fname)
+                self.StatusMessage("%s successfully evaluated" % fname)
             finally:
                 model.unset_script_variable("_call_pars")

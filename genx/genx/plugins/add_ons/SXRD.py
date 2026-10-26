@@ -322,7 +322,7 @@ class Plugin(framework.Template):
         self.update_widgets()
         self.update_domain_view()
 
-    def OnSelectionChanged(self, evnet):
+    def OnSelectionChanged(self, event):
         """Callback when the selection in the sample widget has changed"""
         self.update_domain_view()
 

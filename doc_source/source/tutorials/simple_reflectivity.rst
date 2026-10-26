@@ -33,7 +33,7 @@ At the bottom is a table with the sample structure. Each model has one Ambient l
 a set of central layers (white) that can be repeated if Repetition is >1, a set of bottom layers (purple) that
 are not repeated and finally a substrate at the bottom.
 Each of the layers have the same set of parameters (besides thickness that is missing for Ambient and Substrate)
-whose meaning depends on the selection in the Second column (Formula/Mixure).
+whose meaning depends on the selection in the Second column (Formula/Mixture).
 
 .. image:: _attachments/simple_reflectivity/InitialTable.JPG
 
@@ -57,7 +57,7 @@ These parameters are:
     * :σ [Å]:
         Roughness of this layer.
 
-* Mixure (of two materials)
+* Mixture (of two materials)
 
     * :Layer:
         User defined name for each layer, has to be unique
@@ -93,9 +93,9 @@ in the toolbar. The dialog allows to choose:
 * :wavelength:
     The wavelength used, if not measureing time of flight neutrons
 * :I0:
-    Initial intensity, for nomalized data this should be 1.0
+    Initial intensity, for normalized data this should be 1.0
 * :coords:
-    Coordinats of the x-axes, angle 2-Theta or wavevector transfer q
+    Coordinates of the x-axes, angle 2-Theta or wavevector transfer q
 * :Ibkg:
     Constant experimental background (value at high q)
 * :res:
@@ -148,7 +148,7 @@ number of generations to be computed. At the end your result should look like th
 
 .. image:: _attachments/simple_reflectivity/ModelFitted.JPG
 
-Thei FOM for refinement can be chosen from the dialog accessed through :menuselection:`Settings-->Optimizer`.
+The FOM for refinement can be chosen from the dialog accessed through :menuselection:`Settings-->Optimizer`.
 Most of the settings in this dialog are for advanced users to optimize the fitting performance and can be ignored.
 
 .. image:: _attachments/simple_reflectivity/OptimizerSettings.JPG

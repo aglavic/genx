@@ -80,7 +80,7 @@ class Formula(list):
         Format should be:
         {Element 1}{frac 1}{Element 2}{frac 2} like Fe2O3, SiO2 or H2O
 
-        Fractions of 1 may be ommited and non-natural isotopes are
+        Fractions of 1 may be omitted and non-natural isotopes are
         entered with ^{N} before an element like ^{56}Fe2O3.
         """
         string = estr.replace(" ", "").replace("\t", "").replace("\n", "")
@@ -295,7 +295,7 @@ class Formula(list):
     def equivalent(self, other):
         """
         Returns if formula contains equivalent elemental composition,
-        ignores the size of the fomula unit. For equality use ==.
+        ignores the size of the formula unit. For equality use ==.
         """
         cmpo = Formula(other)
         return self.elements() == other.elements() and self.fractions() == other.fractions()
@@ -321,7 +321,7 @@ class Formula(list):
         return atom_string in atomic_data
 
     def describe(self):
-        """Return a multile string with written element content."""
+        """Return a multiple string with written element content."""
         output = ""
         for ei, (element, number) in enumerate(self):
             if "[" in element:

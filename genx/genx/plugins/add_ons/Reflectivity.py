@@ -8,9 +8,9 @@ always possible to go in and edit the script manually. <p>
 
 The plugin consists of the following components:
 <h2>Sample tab</h2>
-This tab has the definitons for the layers and stacks. 
+This tab has the definitions for the layers and stacks.
 remember that a layer has to be inside a stack. 
-Also, the name of the layers must be uniqe and can not be change
+Also, the name of the layers must be unique and can not be change
 after the layer has been created. The functions of the buttons 
 from left to right are:
 <dl>
@@ -433,7 +433,7 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
             wx.CallAfter(self.sld_plot.Plot)
 
     def OnGridChange(self, event):
-        """Updates the simualtion panel when the grid changes
+        """Updates the simulation panel when the grid changes
 
         :param event:
         :return:
@@ -443,13 +443,13 @@ class Plugin(framework.Template, SampleBuilder, wx.EvtHandler):
     def InstrumentNameChange(self, old_name, new_name):
         """OnInstrumentNameChange --> None
 
-        Exchanges old_name to new name in the simulaitons.
+        Exchanges old_name to new name in the simulations.
         """
         self.simulation_widget.InstrumentNameChange(old_name, new_name)
 
     def CreateNewModel(self, modelname="models.spec_nx"):
         """Init the script in the model to yield the
-        correct script for initilization
+        correct script for initialization
         """
         model_data = self.GetModel().get_data()
         nb_data_sets = len(model_data)

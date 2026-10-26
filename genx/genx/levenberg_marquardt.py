@@ -87,7 +87,7 @@ class LMOptimizer(GenxOptimizer):
 
     def connect_model(self, model_obj: Model):
         """
-        Connects the model [model] to this object. Retrives the function
+        Connects the model [model] to this object. Retrieves the function
         that sets the variables  and stores a reference to the model.
         """
         # Retrieve parameters from the model
@@ -113,7 +113,7 @@ class LMOptimizer(GenxOptimizer):
 
     def calc_fom(self, vec):
         """
-        Function to calcuate the figure of merit for parameter vector
+        Function to calculate the figure of merit for parameter vector
         vec.
         """
         if self._stop_fit:

@@ -14,7 +14,7 @@ inst = model.Instrument(footype = 'gauss beam',probe = 'neutron pol spin flip',b
                         pol = 'uu',wavelength = 4.4,respoints = 15,Ibkg = 0.0,I0 = 2,samplelen = 50.0,
                         restype = 'full conv and varying res.',coords = 'q',res = 0.001,incangle = 0.0)
 fp.set_wavelength(inst.wavelength)
-#Compability issues for pre-fw created gx files
+#Compatibility issues for pre-fw created gx files
 try:
 	 fw
 except:

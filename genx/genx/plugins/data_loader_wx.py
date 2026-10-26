@@ -39,7 +39,7 @@ class PluginController:
         except Exception as S:
             iprint("Could not locate the data loader parameter or the data loader. Error:")
             iprint(S.__str__())
-            iprint("Proceeding with laoding the default data loader.")
+            iprint("Proceeding with loading the default data loader.")
             self.LoadPlugin("default")
 
     def LoadPlugin(self, plugin):

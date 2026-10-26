@@ -2,7 +2,7 @@
 Library for GUI+interface layer for the data class. 
 Implements one Controller and a customiized ListController
 for data. The class that should be used for the outside world
-is the DataListController. This has a small toolbar ontop.
+is the DataListController. This has a small toolbar on top.
 """
 
 from dataclasses import dataclass
@@ -106,7 +106,7 @@ class DataController:
         """get_items_plotsettings(self, pos) --> (sim_list, data_list)
         Used as an interface between the DataList and GUI eventhandler
         for the PlotSettings dialog.
-        returns a two lists of dictonaries for the plot settings.
+        returns a two lists of dictionaries for the plot settings.
         """
         sim_list = [self.data[i].get_sim_plot_items() for i in pos]
         data_list = [self.data[i].get_data_plot_items() for i in pos]
@@ -116,7 +116,7 @@ class DataController:
         """test_commands(self, pos) --> result string
         Function to test the commands to check for errors in them.
         I.e. safe execution. If the string is empty everything is ok other
-        wise the string will contain information about the FIRST error occured.
+        wise the string will contain information about the FIRST error occurred.
         """
         for i in pos:
             result = self.data[i].try_commands(command)
@@ -126,7 +126,7 @@ class DataController:
         return result
 
     def run_commands(self, command, pos):
-        """run_commands(self, commnd, pos) --> string
+        """run_commands(self, command, pos) --> string
         Function that runs the command [dict] for items in position pos. The
         string contains information if something went wrong. Should be impossible.
         """
@@ -136,7 +136,7 @@ class DataController:
                 self.data[i].set_commands(command)
                 self.data[i].run_command()
             except Exception as e:
-                result += "Error occured for data set %i: " % i + e.__str__()
+                result += "Error occurred for data set %i: " % i + e.__str__()
                 break
         return result
 
@@ -156,7 +156,7 @@ class DataController:
 
     def get_items_commands(self, pos):
         """get_items_commands(self, pos) --> list of dicts
-        Returns a list of dictonaries with keys x,y,z containing strings
+        Returns a list of dictionaries with keys x,y,z containing strings
         of commands which can be executed. pos is a list of integer.
         """
         command_list = [self.data[i].get_commands() for i in pos]
@@ -188,7 +188,7 @@ class DataController:
     def toggle_show_data(self, positions):
         """toggle_show_data(self, pos) --> None
         toggles the show value for the data elements at positions.
-        positions should be an iteratable yielding integers
+        positions should be an iterable yielding integers
         , i.e. list of integers
         """
         [self.data.toggle_show(pos) for pos in positions]
@@ -196,7 +196,7 @@ class DataController:
     def toggle_use_data(self, positions):
         """toggle_use_data(self, pos) --> None
         toggles the use_data value for the data elements at positions.
-        positions should be an iteratable yielding integers
+        positions should be an iterable yielding integers
         , i.e. list of integers
         """
         [self.data.toggle_use(pos) for pos in positions]
@@ -204,7 +204,7 @@ class DataController:
     def toggle_use_error(self, positions):
         """toggle_use_error(self, pos) --> None
         toggles the use_data value for the data elements at positions.
-        positions should be an iteratable yielding integers
+        positions should be an iterable yielding integers
         , i.e. list of integers
         """
         [self.data.toggle_use_error(pos) for pos in positions]
@@ -342,12 +342,12 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         self.Bind(wx.EVT_LIST_BEGIN_LABEL_EDIT, self.OnBeginEdit)
         self.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.OnEndEdit)
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
-        # For binding selction showing data sets
+        # For binding selection showing data sets
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelectionChanged)
         self.ReadConfig()
 
     def SetShowToggle(self, toggle):
-        """Sets the selction type of the show. If toggle is true
+        """Sets the selection type of the show. If toggle is true
         then the selection is via toggle if false via selection of
         data set only.
         """
@@ -418,7 +418,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
     def _GetSelectedItems(self):
         """_GetSelectedItems(self) --> indices [list of integers]
         Function that yields a list of the currently selected items
-        position in the list. In order of selction, i.e. no order.
+        position in the list. In order of selection, i.e. no order.
         """
         indices = [self.GetFirstSelected()]
         while indices[-1] != -1:
@@ -441,7 +441,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         new_model=False,
     ):
         """
-        Internal funciton to send an event to update data
+        Internal function to send an event to update data
         """
         # Send an event that a new data set ahs been loaded
         evt = DataListEvent(data_list_type, self.GetId(), self.data_cont.get_data())
@@ -460,7 +460,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
 
     def _CheckSelected(self, indices):
         """_CheckSelected(self, indices) --> bool
-        Checks so at least data sets are selcted, otherwise show a dialog box
+        Checks so at least data sets are selected, otherwise show a dialog box
         and return False
         """
         # Check so that one dataset is selected
@@ -559,7 +559,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
     def load_from_files(self, files, do_update=True):
         offset = self.data_cont.get_count()
         while offset > 0 and not self.data_cont.has_data(offset - 1):
-            # if there is a dataset but no data points it gets re-used
+            # if there is a dataset but no data points it gets reused
             offset -= 1
         i = 0
         for fi in files:
@@ -654,7 +654,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
 
         (sim_list, data_list) = self.data_cont.get_items_plotsettings(indices)
         # Find which values are the same for all lists in sim and data.
-        # Note that the lists are treated seperately...
+        # Note that the lists are treated separately...
         sim_par = sim_list[0].copy()
         data_par = data_list[0].copy()
         keys = list(sim_par.keys())
@@ -707,7 +707,7 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         """
         indices = self._GetSelectedItems()
         self.data_cont.toggle_use_error(indices)
-        self._UpdateData("Use error in data set toggeled", data_changed=True)
+        self._UpdateData("Use error in data set toggled", data_changed=True)
         # Forces update of list control
         self.SetItemCount(self.data_cont.get_count())
 
@@ -722,21 +722,21 @@ class VirtualDataList(wx.ListCtrl, ListCtrlAutoWidthMixin, Configurable):
         if not self._CheckSelected(indices):
             return None
 
-        # Get the commands for the selcted values
+        # Get the commands for the selected values
         commands = self.data_cont.get_items_commands(indices)
         # Get all commands
         all_commands = self.data_cont.get_items_commands(list(range(self.data_cont.get_count())))
         all_names = self.data_cont.get_items_names()
 
         # Find which values are the same for all lists in sim and data.
-        # Note that the lists are treated seperately...
+        # Note that the lists are treated separately...
         command_par = commands[0].copy()
 
         for command_dict in commands:
             # Iterate through the keys and mark the one that are
             # not identical with None!
             for key in command_dict:
-                # Check if the key exist in my commmand dict
+                # Check if the key exist in my command dict
                 if key in command_par:
                     # Check so the command is the same
                     if not command_dict[key] == command_par[key]:
@@ -867,7 +867,7 @@ class DataListControl(wx.Panel):
         newid = wx.NewId()
         self.toolbar.AddTool(
             newid,
-            label="Datset information",
+            label="Dataset information",
             bitmap=wx.Bitmap(img.info.GetImage().Scale(tb_bmp_size, tb_bmp_size)),
             shortHelp="Show the meta data information for the selected dataset",
         )
@@ -1014,10 +1014,10 @@ class PlotSettingsDialog(wx.Dialog):
         # The Choics boxes for line type
         self.line_type = ["", "-", ":", "--", ".-", None]
         line_type = ["No line", "full", "dotted", "dashed", "dash dotted", " "]
-        # Create sim choice and set the current selcetion
+        # Create sim choice and set the current selection
         self.sim_linetype_choice = wx.Choice(self, -1, choices=line_type)
         self.sim_linetype_choice.SetSelection(self._get_first_match(sim_pars["linetype"], self.line_type))
-        # Create data choice and set the current selcetion
+        # Create data choice and set the current selection
         self.data_linetype_choice = wx.Choice(self, -1, choices=line_type)
         self.data_linetype_choice.SetSelection(self._get_first_match(data_pars["linetype"], self.line_type))
         # Add them to the grid sizer
@@ -1046,10 +1046,10 @@ class PlotSettingsDialog(wx.Dialog):
         # The Choics boxes for symbol type
         self.symbol_type = ["", "s", "o", ".", "d", "<", None]
         symbol_type = ["No symbol", "squares", "circles", "dots", "diamonds", "triangle", " "]
-        # Create sim choice and set the current selcetion
+        # Create sim choice and set the current selection
         self.sim_symboltype_choice = wx.Choice(self, -1, choices=symbol_type)
         self.sim_symboltype_choice.SetSelection(self._get_first_match(sim_pars["symbol"], self.symbol_type))
-        # Create data choice and set the current selcetion
+        # Create data choice and set the current selection
         self.data_symboltype_choice = wx.Choice(self, -1, choices=symbol_type)
         self.data_symboltype_choice.SetSelection(self._get_first_match(data_pars["symbol"], self.symbol_type))
         # Add them to the grid sizer
@@ -1114,7 +1114,7 @@ class PlotSettingsDialog(wx.Dialog):
 
         Set the function that should be executed when the apply button
         is pressed the function should be on the form:
-        func(sim_par, data_par), the *_par is dictonaries that can be passed
+        func(sim_par, data_par), the *_par is dictionaries that can be passed
         to data.
         """
 
@@ -1132,7 +1132,7 @@ class PlotSettingsDialog(wx.Dialog):
 
     def GetSimPar(self):
         """GetSimPar(self) --> sim_par [dict]
-        Returns a dictonary containing the present values of the choosen
+        Returns a dictionary containing the present values of the chosen
         values for the simulation.
         """
         # Do some checking so that None is returned if an "invalid" choice
@@ -1157,7 +1157,7 @@ class PlotSettingsDialog(wx.Dialog):
 
     def GetDataPar(self):
         """GetdataPar(self) --> data_par [dict]
-        Returns a dictonary containing the present values of the choosen
+        Returns a dictionary containing the present values of the chosen
         values for the data.
         """
         # Do some checking so that None is returned if an "invalid" choice
@@ -1191,13 +1191,13 @@ class CalcDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, -1, "Data Calculations")
         self.SetAutoLayout(True)
 
-        # Some initlization, shold be function inorder for full function
+        # Some initlization, should be function inorder for full function
         # of the dialog box
         self.command_runner = None
         self.command_tester = None
 
         # self.data_list = ['Data1', 'data2']
-        # Define the availabel data sets and their commands
+        # Define the available data sets and their commands
         self.data_list = data_names
         self.data_commands = data_commands
 
@@ -1216,7 +1216,7 @@ class CalcDialog(wx.Dialog):
 
         # Make the choice boxes we want to have:
 
-        # check wheter or not the user has put any thing for predefined
+        # check whether or not the user has put any thing for predefined
         # commands
         if predef_commands and predef_commands_names:
             self.predef_list = predef_commands_names
@@ -1240,7 +1240,7 @@ class CalcDialog(wx.Dialog):
 
         # Do the labels first
         command_names_standard = ["x", "y", "e"]
-        # We should for simplicity and layout beuty treat x,y,e seperate from
+        # We should for simplicity and layout beuty treat x,y,e separate from
         # the rest
         self.command_ctrl = {}
         for name, index in zip(command_names_standard, list(range(len(command_names_standard)))):
@@ -1325,7 +1325,7 @@ class CalcDialog(wx.Dialog):
             ShowWarningDialog(
                 self,
                 "The data operations for the"
-                + "following memebers of the data set could not be copied: "
+                + "following members of the data set could not be copied: "
                 + " ,".join(failed),
                 "Copy failed",
             )
@@ -1449,7 +1449,7 @@ class CreateSimDataWizard(wizard.Wizard):
             self.scrollPanel.SetupScrolling()
 
     def min_max_values_valid(self):
-        """checks so that min and max values are vaild floats
+        """checks so that min and max values are valid floats
 
         :return:
         """
