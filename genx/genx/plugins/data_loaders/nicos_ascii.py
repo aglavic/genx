@@ -66,6 +66,15 @@ class Plugin(Template):
         self.y_col = 1
         self.e_col = 2
 
+    def CanOpen(self, filename):
+        if not Template.CanOpen(self, filename):
+            return False
+        try:
+            with open(filename, 'r', encoding=LOCALE_ENCODING) as fh:
+                return fh.readline().startswith('### NICOS data file, created at')
+        except FileNotFoundError:
+            return False
+
     def getCategory(self, text):
         for cat, txt in INFO_CATEGORIES:
             if text == txt:
