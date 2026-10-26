@@ -26,7 +26,7 @@ from .rigaku import Plugin as RASPlugin
 from .seifert_nja import Plugin as NJAPlugin
 from .sinq_six import Plugin as SIXPlugin
 from .xrdml import Plugin as XRDMLPlugin
-
+from .nicos_ascii import Plugin as NicosAsciiPlugin
 
 class Plugin(ResolutionPlugin, DefaultPlugin):
     """
@@ -41,7 +41,7 @@ class Plugin(ResolutionPlugin, DefaultPlugin):
     def __init__(self, parent):
         ResolutionPlugin.__init__(self, parent)
         self.res_col = -1
-        self.loaders = [AmorPlugin(None), SNSPlugin(None), D17Plugin(None), D17LegPlugin(None)]
+        self.loaders = [AmorPlugin(None), SNSPlugin(None), NicosAsciiPlugin(None), D17Plugin(None), D17LegPlugin(None)]
         if ORSOPlugin:
             self.loaders.append(ORSOPlugin(None))
         self.loaders += [SIXPlugin(None), XRDMLPlugin(None), RASPlugin(None), NJAPlugin(None), BrukerPlugin(None)]
