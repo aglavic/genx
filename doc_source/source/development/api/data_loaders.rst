@@ -29,6 +29,10 @@ Data Loader Plugins
     :members:
     :undoc-members:
 
+.. automodule:: genx.plugins.data_loaders.nicos_ascii
+    :members:
+    :undoc-members:
+
 .. automodule:: genx.plugins.data_loaders.orso
     :members:
     :undoc-members:
