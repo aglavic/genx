@@ -18,6 +18,7 @@ description: |
   
   Naturally a program does not become better if I do not get feedback from you! 
   If you found a bug or want to have something included in the program submit a ticket on Github at https://github.com/aglavic/genx/issues/ .
+license: GPL-3.0-or-later
 base: core24
 confinement: strict
 grade: stable
