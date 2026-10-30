@@ -163,7 +163,7 @@ In order to see anything the scaling has to change from linear to logarithmic. R
 
 This should make the plot a bit clearer. However, we still have a bunch of lines on top of each other.
 
-Lets make som of the data sets non-active. Mark all data sets in the right data list except the first one,
+Lets make some of the data sets non-active. Mark all data sets in the right data list except the first one,
 right click and choose Toggle show. This turn on and off the plotting of the selected data sets. Toggle Active
 sets a flag whether or not to the data should be simulated. Naturally this flag must be read and used in the simulation
 function to have an effect.
@@ -182,7 +182,7 @@ other you can just expand the list, to simulate lets say 3 UC:
     sample = model.Sample(inst, bulk, [laouc, laouc, laouc], unitcell)
 
 
-Another possiblity is to use the smart list functionality that python offers, which makes the following
+Another possibility is to use the smart list functionality that python offers, which makes the following
 code equivalent to the top one::
 
     # 7 Creating the sample with one unit cell
@@ -400,7 +400,7 @@ but they also probably create hard to track error - so they should be used wisel
 
 General coupling
 ================
-As you probably understand the concept with AtomGroup`s cant take you all the way to complete generality.
+As you probably understand the concept with AtomGroup`s can't take you all the way to complete generality.
 This naturally more complicated but incredibly powerful as _anything_ can be implemented. The class which is
 used a container class for this is called `UserVars`. To use it you have to import it by inserting the following text
 (preferably in the top of the script)

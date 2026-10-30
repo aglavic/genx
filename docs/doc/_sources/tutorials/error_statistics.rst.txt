@@ -41,7 +41,7 @@ After choosing these parameters, press the *Run Analysis* button to perform the 
 with good statistics this can take several minutes.
 
 After the run has finished the left side of the dialog will be populated with a normalized covariance matrix
-as well as the fitted parameter values and uncertainties on the left. Colors indicate the amound of
+as well as the fitted parameter values and uncertainties on the left. Colors indicate the amount of
 cross-correlation between two parameters.
 For well behaved models the diagonal elements of the normalized matrix should approach 1 for good statistics,
 indicating that the covariance indices correspond to the estimated parameter uncertainty.
@@ -60,7 +60,7 @@ graph can be changed to any pair of different parameters by double clicking on t
     :width: 60%
 
 After the evaluation you can copy-paste the table into e.g. Excel and the error values are stored
-in the GenX paramter table for export. If you export to the new ORSO *.ort* format the full
+in the GenX parameter table for export. If you export to the new ORSO *.ort* format the full
 error estimation, including covariance matrix, will be written to the file header information.
 
 .. note::
@@ -70,7 +70,7 @@ error estimation, including covariance matrix, will be written to the file heade
     Depending on the experiment this may be non-trivial but it is common practice and often a good assumption to
     use the square root of the actual counts and propagate these errors when e.g. scaling the data.
 
-    If the errors are only known to a common factor (e.g. sqrt(I) where I has an unkown normalization) an established
+    If the errors are only known to a common factor (e.g. sqrt(I) where I has an unknown normalization) an established
     approach is to scale the resulting parameter uncertainties by sqrt(Chi²) to correct for this common factor.
     There is a check-box in the GenX dialog to apply this correction. It is up to the user to decide if this
     correction is to be used.

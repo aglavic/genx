@@ -12,12 +12,12 @@ What they are
 A plugin is an extension of GenX which can dynamically (that is while the program is running)
 be loaded and unloaded. A plugin framework exist in most programs in order to make them extensible.
 It also helps the developers to have reusable code. GenX has been designed so that it should work for
-many problems, while the problem specific interfaces are available thorugh such plugins.
+many problems, while the problem specific interfaces are available through such plugins.
 For GenX there are in principal three different plugins.
 
   1. **Models:** This is the model that simulates a certain physical effect, for example x-ray reflectivity.
      They are not listed directly in the GUI since they are loaded by the "model script" in GenX.
-     While it is in priciple possible to write a model fully inside one script, it is recommanded to
+     While it is in principle possible to write a model fully inside one script, it is recommended to
      build on existing model files to separate the simulation script from the model.
 
   2. **Data loaders:** The first "real" plugin. This plugin allows for different sources
@@ -88,7 +88,7 @@ SimpleLayer
 A small interface to quickly define SLD layer parameters from structure or density and chemical composition.
 It stores the defined materials for quicker use in future models. In the add material dialog there
 are some options to query only databases for a given chemical formula.
-If materials are definde, the SimpleReflectivity plugin will automatically select their density
+If materials are defined, the SimpleReflectivity plugin will automatically select their density
 for newly provided chemical formulas.
 
 Exporter

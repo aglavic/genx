@@ -34,11 +34,11 @@ reflectometry does not measure the geometry directly but correlations between in
 translation invariant.
 The user will therefore have to choose a reference interface that is kept fixed for this modeling.
 
-After fitting the model and caluculating the errors on parameters (see :ref:`tutorial-error-statistics`) activate
+After fitting the model and calculating the errors on parameters (see :ref:`tutorial-error-statistics`) activate
 the menu :menuselection:`Reflec-->Uncertainty Profile...`.
 A dialog will ask to enter the reference interface (python style index 0=Substrate, -1=Surface) and the number
 of samples.
-GenX will then simulate your model while choosing number of samples random parameter sets choosen from a gaussian
+GenX will then simulate your model while choosing number of samples random parameter sets chosen from a gaussian
 distribution.
 The SLD will be calculated for the reference interface at z=0 and the SLD plot will show the fit result (line)
 together with two bands of uncertainty as partially transparent curves.
@@ -56,7 +56,7 @@ a reference surface of -1 (left) and 0 (right):
 Custom filter
 *************
 
-If the buildin options to display the profiles do not fit your needs you can modify the displayed
+If the building options to display the profiles do not fit your needs you can modify the displayed
 datasets and components within the model script.
 The recent reflectivity model ``Sim`` function will start like this:
 
@@ -72,9 +72,9 @@ The recent reflectivity model ``Sim`` function will start like this:
         if _sim: SLD.append(sample.SimSLD(None, None, inst))
         # END Dataset 0
 
-If the model ist simulated (not fit) the ``_sim`` variable will be set to **True** resulting in the global list ``SLD``
+If the model is simulated (not fit) the ``_sim`` variable will be set to **True** resulting in the global list ``SLD``
 to be populated. It will have one entry for each dataset in the model.
-Each entry (retuned by ``sample.SimSLD``) is a dictionary containting each of the SLD lines as well as the **z**-values
+Each entry (returned by ``sample.SimSLD``) is a dictionary containing each of the SLD lines as well as the **z**-values
 and the **SLD unit**.
 The dictionary keys are used in the plot legend, so you can see in the graph which items carry the information that
 is relevant.
@@ -101,5 +101,5 @@ The resulting graph is shown below:
 
 .. note::
     This user filtering is not supported by the SLD export facility that expects all information for
-    each of the datasets. Before exproting SLD you should thus comment out this section and
+    each of the datasets. Before exporting SLD you should thus comment out this section and
     simulate the data again.

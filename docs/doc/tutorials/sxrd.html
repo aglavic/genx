@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Surface X-diffraction tutorial &#8212; GenX 3.8.13 documentation</title>
+    <title>Surface X-diffraction tutorial &#8212; GenX 3.8.14 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -37,7 +37,7 @@
         <li class="right" >
           <a href="orso_integration.html" title="ORSO Integration"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Surface X-diffraction tutorial</a></li> 
       </ul>
@@ -205,7 +205,7 @@ result list <code class="docutils literal notranslate"><span class="pre">I</span
 <p>In order to see anything the scaling has to change from linear to logarithmic. Right click on the plot and choose
 <span class="menuselection">y-scale‣log</span>.</p>
 <p>This should make the plot a bit clearer. However, we still have a bunch of lines on top of each other.</p>
-<p>Lets make som of the data sets non-active. Mark all data sets in the right data list except the first one,
+<p>Lets make some of the data sets non-active. Mark all data sets in the right data list except the first one,
 right click and choose Toggle show. This turn on and off the plotting of the selected data sets. Toggle Active
 sets a flag whether or not to the data should be simulated. Naturally this flag must be read and used in the simulation
 function to have an effect.</p>
@@ -219,7 +219,7 @@ other you can just expand the list, to simulate lets say 3 UC:</p>
 <span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="p">[</span><span class="n">laouc</span><span class="p">,</span> <span class="n">laouc</span><span class="p">,</span> <span class="n">laouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Another possiblity is to use the smart list functionality that python offers, which makes the following
+<p>Another possibility is to use the smart list functionality that python offers, which makes the following
 code equivalent to the top one:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 7 Creating the sample with one unit cell</span>
 <span class="n">sample</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">bulk</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="p">[</span><span class="n">laouc</span><span class="p">],</span> <span class="n">unitcell</span><span class="p">)</span>
@@ -411,7 +411,7 @@ but they also probably create hard to track error - so they should be used wisel
 </section>
 <section id="general-coupling">
 <h2>General coupling<a class="headerlink" href="#general-coupling" title="Permalink to this headline">¶</a></h2>
-<p>As you probably understand the concept with AtomGroup`s cant take you all the way to complete generality.
+<p>As you probably understand the concept with AtomGroup`s can’t take you all the way to complete generality.
 This naturally more complicated but incredibly powerful as _anything_ can be implemented. The class which is
 used a container class for this is called <cite>UserVars</cite>. To use it you have to import it by inserting the following text
 (preferably in the top of the script)</p>
@@ -586,7 +586,7 @@ be used to save the XYZ data to.</p>
         <li class="right" >
           <a href="orso_integration.html" title="ORSO Integration"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Surface X-diffraction tutorial</a></li> 
       </ul>

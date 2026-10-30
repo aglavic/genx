@@ -8,7 +8,7 @@ Main window
 ===========
 The main window in GenX is the main work area. It consists of three notebooks separated by resizeable
 boundaries. The leftmost is the Data notebook. The upper right one is the Plot notebook and the lower right
-is the Model/Fit notebook. If you choose the *wide screen* option when selecting the startup profile, an addditional
+is the Model/Fit notebook. If you choose the *wide screen* option when selecting the startup profile, an additional
 second plotting area will appear on the right and a nostbook for plugins below the Data notebook.
 The following sections will briefly go through the different notebooks to give a
 quick tour of the program.
@@ -69,7 +69,7 @@ Pars
      :math:`p_{i,norm} = (p_i - p_{i,min})/(p_{i,max} - p_{i,min})` where :math:`p_i` is parameter number :math:`i`
      and :math:`min`, :math:`max`
      is the minimum and maximum allowed value for that parameter. This can be use to monitor the evolution of the
-     fitting algorithm and make a decision when to stop it. (When you cant see the blue bars there will be also very
+     fitting algorithm and make a decision when to stop it. (When you can't see the blue bars there will be also very
      little change in the parameter values)
 
      .. image:: _attachments/gui/pars.png

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Writing a custom model &#8212; GenX 3.8.13 documentation</title>
+    <title>Writing a custom model &#8212; GenX 3.8.14 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="diffev.html" title="Fitting with Differential Evolution"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a custom model</a></li> 
       </ul>
@@ -183,7 +183,7 @@ simple to use. As a more elaborate solution for the previous simple example we c
 <p>This code is quite similar to the first version but encapsulates all necessary information in one class.
 It starts with the definition of the class <code class="docutils literal notranslate"><span class="pre">Gauss</span></code>.
 The use of the <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator and derivation from <code class="docutils literal notranslate"><span class="pre">ModelParamBase</span></code> ensures that the parameters are
-automatically set and validated during instanciation and that GenX recognizes the class for setting parameters
+automatically set and validated during instantiation and that GenX recognizes the class for setting parameters
 in the Grid. The class also contains a method to calculate a Gaussian with the these attributes.
 After the class definition an instance (object), <code class="docutils literal notranslate"><span class="pre">Peak1</span></code>, of the Gauss class is created. Then the <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function
 is defined as in the previous example but with the function call exchanged to <code class="docutils literal notranslate"><span class="pre">Peak1.Simulate(data[0].x)</span></code> in order
@@ -303,7 +303,7 @@ distribution or on <a class="reference external" href="https://github.com/aglavi
         <li class="right" >
           <a href="diffev.html" title="Fitting with Differential Evolution"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Writing a custom model</a></li> 
       </ul>

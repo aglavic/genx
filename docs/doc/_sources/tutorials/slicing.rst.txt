@@ -39,7 +39,7 @@ going to the Simulations tab and push on the blue nut in the toolbar.
 Modifying the script
 ====================
 The script has to be modified. First of a function that calculates the sld function should be defines.
-Here I have used a function that does it both for neutrons and x-rays. First, however, wee need to import
+Here I have used a function that does it both for neutrons and x-rays. First, however, we need to import
 array handling routines.
 
 ::
@@ -94,7 +94,7 @@ The entire script should look something like this:
                             pol = 'uu',wavelength = 1.54,respoints = 5,Ibkg = 0.0,I0 = 1.0,
                             samplelen = 10.0,restype = 'no conv',coords = 'tth',res = 0.001,incangle = 0.0)
     fp.set_wavelength(inst.wavelength)
-    #Compability issues for pre-fw created gx files
+    #Compatibility issues for pre-fw created gx files
     try:
              fw
     except:

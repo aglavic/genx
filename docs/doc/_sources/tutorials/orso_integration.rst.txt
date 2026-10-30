@@ -26,7 +26,7 @@ selecting one dataset and clicking the information button:
 
 .. image:: _attachments/orso_integration/info_button.png
 
-This will open the `Dataset information` dialog with a hirachical structure on the left and text display
+This will open the `Dataset information` dialog with a hierarchical structure on the left and text display
 on the right hand side.
 When opening the SiO layer neutron example, you can see such structure:
 
@@ -36,7 +36,7 @@ This can be quite useful in reviewing some instrument parameters or finding the 
 measurement corresponds to.
 
 It is possible to edit the leaf notes directly by double-click. A right click on a parent node
-allows to insert new items accoring to ORSO specification.
+allows to insert new items according to ORSO specification.
 
 New Model from File
 ===================
@@ -46,10 +46,10 @@ information from the header. For this use the menu :menuselection:`File-->New fr
 
 By default this defines the instrument parameters (neutron/x-ray etc.).
 If a model according to the `ORSO model language <https://www.reflectometry.org/advanced_and_expert_level/file_format/simple_model>`__
-has been provided by the user, GenX will already use the information to buid the sample.
+has been provided by the user, GenX will already use the information to build the sample.
 
 If this options is used to with a `*.ort` file exported by GenX, the model is directly loaded and parameters
-arc configured accoring to the specification.
+arc configured according to the specification.
 
 
 Exported Fit
@@ -58,9 +58,9 @@ Exported Fit
 When exporting data for publication using the ORSO format, a typical header would look like this.
 In addition to all header data from the imported measurement, GenX adds the **analysis** section.
 It includes not only the fit script but all fit parameters, uncertainties as well as a model
-accoring to the `ORSO model language <https://www.reflectometry.org/advanced_and_expert_level/file_format/simple_model>`__.
+according to the `ORSO model language <https://www.reflectometry.org/advanced_and_expert_level/file_format/simple_model>`__.
 
-(In this example, a full statistical analysis accoring to :ref:`tutorial-error-statistics` was performed.)
+(In this example, a full statistical analysis according to :ref:`tutorial-error-statistics` was performed.)
 
 .. code:: yaml
 

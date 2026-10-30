@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>A model for fitting the spectral response &#8212; GenX 3.8.13 documentation</title>
+    <title>A model for fitting the spectral response &#8212; GenX 3.8.14 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
     
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="data_loaders.html" title="Data Loader Plugins"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../development.html" >Development documentation</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../genx_package.html" accesskey="U">GenX Python Package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">A model for fitting the spectral response</a></li> 
@@ -502,7 +502,7 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 <dd class="field-even"><p>float</p>
 </dd>
 <dt class="field-odd">param de</dt>
-<dd class="field-odd"><p>The sampling spacing for the recalcualted table (eV).</p>
+<dd class="field-odd"><p>The sampling spacing for the recalculated table (eV).</p>
 </dd>
 <dt class="field-even">type de</dt>
 <dd class="field-even"><p>float</p>
@@ -541,8 +541,8 @@ are calculated, which is the difference between the tabulated and the current, o
 <p>Note that this implementation does incorporates exchange split levels.</p>
 <dl class="simple">
 <dt>The parameters relating to KK transform are:</dt><dd><ul class="simple">
-<li><p>sigma_tab (float): The width of the error function applied to the table (std in eV), defualt value 1 eV.</p></li>
-<li><p>edge_offset_tab (float): The offset of the stored tabulated data to the read data (eV), defualt value 40 eV.</p></li>
+<li><p>sigma_tab (float): The width of the error function applied to the table (std in eV), default value 1 eV.</p></li>
+<li><p>edge_offset_tab (float): The offset of the stored tabulated data to the read data (eV), default value 40 eV.</p></li>
 </ul>
 </dd>
 <dt>Fitting parameters</dt><dd><ul class="simple">
@@ -562,7 +562,7 @@ are calculated, which is the difference between the tabulated and the current, o
 <li><p><strong>sigma</strong> (<em>float</em>) – The width of the error function (std in eV).</p></li>
 <li><p><strong>pre_edge</strong> (<em>float</em>) – The width of the pre edge region (eV).</p></li>
 <li><p><strong>post_edge</strong> (<em>float</em>) – The width of the post edge region (eV).</p></li>
-<li><p><strong>de</strong> (<em>float</em>) – The sampling spacing for the recalcualted table (eV).</p></li>
+<li><p><strong>de</strong> (<em>float</em>) – The sampling spacing for the recalculated table (eV).</p></li>
 <li><p><strong>kk_emax</strong> (<em>float</em>) – The maximum energy values taken from the tables in eV. The value should be well above the K edge.</p></li>
 <li><p><strong>element</strong> (<em>string</em>) – The element to which the background applies. Used to find theoretical f values (from the nist database), position of the L2/L3 edge and Z (number of electrons).</p></li>
 <li><p><strong>parent</strong> (<em>Spectra2p</em>) – The parent spectra to which the Background applies.</p></li>
@@ -584,8 +584,8 @@ are calculated, which is the difference between the tabulated and the current, o
 <p>Note that this implementation does incorporates exchange split levels.</p>
 <dl class="simple">
 <dt>The parameters relating to KK transform are:</dt><dd><ul class="simple">
-<li><p>sigma_tab (float): The width of the error function applied to the table (std in eV), defualt value 1 eV.</p></li>
-<li><p>edge_offset_tab (float): The offset of the stored tabulated data to the read data (eV), defualt value 40 eV.</p></li>
+<li><p>sigma_tab (float): The width of the error function applied to the table (std in eV), default value 1 eV.</p></li>
+<li><p>edge_offset_tab (float): The offset of the stored tabulated data to the read data (eV), default value 40 eV.</p></li>
 </ul>
 </dd>
 <dt>Fitting parameters</dt><dd><ul class="simple">
@@ -821,7 +821,7 @@ parameters <span class="math notranslate nohighlight">\(w^{xyz}_\mathrm{Spectrum
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>e</strong> (<em>float array</em>) – The energy values where the spectra are to be calcualted.</p></li>
+<li><p><strong>e</strong> (<em>float array</em>) – The energy values where the spectra are to be calculated.</p></li>
 <li><p><strong>comp</strong> (<em>SpectralComponent</em>) – The spectral component.</p></li>
 <li><p><strong>a</strong> (<em>int</em>) – The polarization of the exciting light.</p></li>
 </ul>
@@ -947,7 +947,7 @@ array of floats: The real part of the scattering length, f1, (electrons).</p>
 <p class="rubric">References</p>
 <p>Newville, M. and Olmsted Cross J. DIFFKK Manual. Downloaded from <a class="reference external" href="http://cars9.uchicago.edu/dafs/diffkk/diffkk.pdf">http://cars9.uchicago.edu/dafs/diffkk/diffkk.pdf</a>
 20140902.</p>
-<p>X-ray data booklet, CXRO, Lawrence Berkley National Laboratory, Downloaded from <a class="reference external" href="http://xdb.lbl.gov">http://xdb.lbl.gov</a> 20140902.</p>
+<p>X-ray data booklet, CXRO, Lawrence Berkeley National Laboratory, Downloaded from <a class="reference external" href="http://xdb.lbl.gov">http://xdb.lbl.gov</a> 20140902.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -959,7 +959,7 @@ array of floats: The real part of the scattering length, f1, (electrons).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.lib.xmcd_moment.step_func">
 <span class="sig-prename descclassname"><span class="pre">genx.models.lib.xmcd_moment.</span></span><span class="sig-name descname"><span class="pre">step_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.lib.xmcd_moment.step_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Defines the step funciton (erf) of the L2/L3 edges</p>
+<dd><p>Defines the step function (erf) of the L2/L3 edges</p>
 <blockquote>
 <div><p>x (array of floats):
 x0 (float):
@@ -1083,7 +1083,7 @@ of the Gaussian component.</p>
         <li class="right" >
           <a href="data_loaders.html" title="Data Loader Plugins"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../development.html" >Development documentation</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../genx_package.html" >GenX Python Package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">A model for fitting the spectral response</a></li> 

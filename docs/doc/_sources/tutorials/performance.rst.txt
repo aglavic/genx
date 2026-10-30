@@ -16,7 +16,7 @@ on generic one-size-fits-all solution is possible.
 In this chapter I will therefore explain what has been implemented in GenX to try to
 optimize the general model performance (mostly for reflectivity) and the different
 options in the optimizer settings you can use to tune the calculation to your
-sepcific model.
+specific model.
 
 Main factors determining performance
 ====================================
@@ -28,8 +28,8 @@ Especially in Python with the so-called "Global Interpreter Lock" (GIL) there is
 state between threads running on different cores.
 
 While GenX tries to optimize the time consuming parts of a model execution using
-algorithms optimized for numpy and scipy functions, the resuling speed of models
-are typically 5-10x slower than implmentation in compiled languages like C++.
+algorithms optimized for numpy and scipy functions, the resulting speed of models
+are typically 5-10x slower than implementation in compiled languages like C++.
 
 Since version 3.0.2, the core functions for reflectivity have been ported to the
 just-in-time (JIT) compiler package numba, which lead to single thread speedups
@@ -41,11 +41,11 @@ For the single calculations used during simulation, GenX does not provide any
 further flexibility to alter the computation. The only exception is the
 use of CUDA (NVidia GPU computation framework) that can be activated
 in the GUI "Fit" menu.
-The impact of this setting is strongly model dependant. With many
+The impact of this setting is strongly model dependent. With many
 datapoints (resolution convolution included) and large amount of layers
-the speed can be comparible with strong multicore CPUs while requiring less system resources.
+the speed can be comparable with strong multicore CPUs while requiring less system resources.
 Because of several caveats and the need to re-compile the JIT code every time GenX
-is started I would not recommand this in most cases, at the moment.
+is started I would not recommend this in most cases, at the moment.
 
 Fitting the model
 -----------------
@@ -68,7 +68,7 @@ In GenX this means, that the parallel computation provided by the
 numba JIT functions is less effective is the model is a small number of
 layers and if the number of datapoints is small. So in the case of
 simple and fast models the multiprocessing of the differential evolution
-optimizer can lead to much higher preformance.
+optimizer can lead to much higher performance.
 GenX does automatically reduce the number of cores used by numba functions
 when the process number in the optimizer settings is increased (simulations
 still use the maximum available cores). Transfer to the processes also has

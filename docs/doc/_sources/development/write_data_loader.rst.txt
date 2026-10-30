@@ -76,7 +76,7 @@ As ``frame`` a class deriving from Template can use ``self.parent``.
 The default as example
 ======================
 Here we will display the current default data loader as an example, as of 2009-04-25, for
-the mose current version look at ``genx/plugins/data_loaders/default.py``.
+the most current version look at ``genx/plugins/data_loaders/default.py``.
 ::
 
     import numpy as np
@@ -113,7 +113,7 @@ the mose current version look at ``genx/plugins/data_loaders/default.py``.
                 if load_array.shape[1]-1 < max(self.x_col, self.y_col, self.e_col):
                     ShowWarningDialog(self.parent, 'The data file does not contain'\
                             + 'enough number of columns. It has ' + str(load_array[1])\
-                            + ' columns. Rember that the column index start at zero!')
+                            + ' columns. Remember that the column index start at zero!')
                     # Okay now we have showed a dialog lets bail out ...
                     return
                 # The data is set by the default Template.__init__ function, neat hu
@@ -122,7 +122,7 @@ the mose current version look at ``genx/plugins/data_loaders/default.py``.
                 self.data[data_item_number].x_raw = load_array[:, self.x_col]
                 self.data[data_item_number].y_raw = load_array[:, self.y_col]
                 self.data[data_item_number].error_raw = load_array[:, self.e_col]
-                # Run the commands on the data - this also sets the x,y, error memebers
+                # Run the commands on the data - this also sets the x,y, error members
                 # of that data item.
                 self.data[data_item_number].run_command()
 

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>GenX Reflectivity Models &#8212; GenX 3.8.13 documentation</title>
+    <title>GenX Reflectivity Models &#8212; GenX 3.8.14 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../development.html" title="Development documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" accesskey="U">Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">GenX Reflectivity Models</a></li> 
       </ul>
@@ -58,7 +58,7 @@ non-spin flip as well as neutron spin-flip reflectivity.</p>
 <section id="layer">
 <h4>Layer<a class="headerlink" href="#layer" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">Layer(d=0.0</span> <span class="pre">(AA),</span> <span class="pre">dens=1.0</span> <span class="pre">(at./AA),</span> <span class="pre">sigma=0.0</span> <span class="pre">(AA),</span> <span class="pre">f=1e-20j</span> <span class="pre">(el./at.),</span> <span class="pre">b=0j</span> <span class="pre">(fm/at.),</span> <span class="pre">xs_ai=0.0</span> <span class="pre">(barn/at.),</span> <span class="pre">magn=0.0</span> <span class="pre">(mu_B/at.),</span> <span class="pre">magn_ang=0.0</span> <span class="pre">(deg.))</span></code></p>
-<p>Representing a layer in the sample structur.</p>
+<p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">d</span></code></dt><dd><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
 </dd>
@@ -77,7 +77,7 @@ cross section in barns for neutrons</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">magn</span></code></dt><dd><p>The magnetic moment per formula unit (same formula unit as b and dens refer to)</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degress. 0 degrees correspond to
+<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degrees. 0 degrees correspond to
 a moment collinear with the neutron spin. Only used if probe is neutron spin-flip.</p>
 </dd>
 </dl>
@@ -87,7 +87,7 @@ a moment collinear with the neutron spin. Only used if probe is neutron spin-fli
 <p><code class="docutils literal notranslate"><span class="pre">Stack(Layers=&lt;factory&gt;,</span> <span class="pre">Repetitions=1)</span></code></p>
 <p>A collection of Layer objects that can be repeated.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack</p>
@@ -99,13 +99,13 @@ the layer closest to the bottom</p>
 <p><code class="docutils literal notranslate"><span class="pre">Sample(Stacks=&lt;factory&gt;,</span> <span class="pre">Ambient=&lt;factory&gt;,</span> <span class="pre">Substrate=&lt;factory&gt;,</span> <span class="pre">crop_sld=0)</span></code></p>
 <p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
@@ -121,7 +121,7 @@ them by one layer of same thickness.</p>
 <p><code class="docutils literal notranslate"><span class="pre">Instrument(probe='x-ray',</span> <span class="pre">wavelength=1.54</span> <span class="pre">(Å),</span> <span class="pre">I0=1.0</span> <span class="pre">(arb.),</span> <span class="pre">Ibkg=0.0</span> <span class="pre">(arb.),</span> <span class="pre">pol='uu',</span> <span class="pre">coords='2θ',</span> <span class="pre">tthoff=0.0</span> <span class="pre">(°),</span> <span class="pre">incangle=0.5</span> <span class="pre">(°),</span> <span class="pre">restype='no</span> <span class="pre">conv',</span> <span class="pre">res=0.001</span> <span class="pre">([coord]),</span> <span class="pre">respoints=5</span> <span class="pre">(pts.),</span> <span class="pre">resintrange=2.0</span> <span class="pre">([coord]),</span> <span class="pre">footype='no</span> <span class="pre">corr',</span> <span class="pre">beamw=0.01</span> <span class="pre">(mm),</span> <span class="pre">samplelen=10.0</span> <span class="pre">(mm))</span></code></p>
 <p>Specify parameters of the probe and reflectometry instrument.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Describes the radiation and measurments used, it is one of:
+<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Describes the radiation and measurements used, it is one of:
 ‘x-ray’, ‘neutron’, ‘neutron pol’, ‘neutron pol spin flip’,
 ‘neutron tof’, ‘neutron pol tof’.
 The calculations for x-rays uses <code class="docutils literal notranslate"><span class="pre">f</span></code> for the scattering length for
@@ -149,10 +149,10 @@ or 1 (tth) can be used.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">incangle</span></code></dt><dd><p>The incident angle of the neutrons, only valid in tof mode</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">restype</span></code></dt><dd><p>Describes the rype of the resolution calculated. One of the
-alterantives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
+alternatives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
 ‘fast conv + varying res.’, ‘full conv and varying res. (dx/x)’, ‘fast
 conv + varying res. (dx/x)’. The respective numbers 0-3 also works. Note
-that fast convolution only alllows a single value into res wheras the
+that fast convolution only allows a single value into res whereas the
 other can also take an array with the same length as the x-data (varying
 resolution)</p>
 </dd>
@@ -272,7 +272,7 @@ TwoThetaQz 3.0
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_nx.</span></span><span class="sig-name descname"><span class="pre">Instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.Probe" title="genx.models.spec_nx.Probe"><span class="pre">genx.models.spec_nx.Probe</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'x-ray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.54</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ibkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.Polarization" title="genx.models.spec_nx.Polarization"><span class="pre">genx.models.spec_nx.Polarization</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'uu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.Coords" title="genx.models.spec_nx.Coords"><span class="pre">genx.models.spec_nx.Coords</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'2θ'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tthoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incangle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.ResType" title="genx.models.spec_nx.ResType"><span class="pre">genx.models.spec_nx.ResType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'no</span> <span class="pre">conv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respoints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resintrange</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">footype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.FootType" title="genx.models.spec_nx.FootType"><span class="pre">genx.models.spec_nx.FootType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'no</span> <span class="pre">corr'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beamw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samplelen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_nx.Instrument" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specify parameters of the probe and reflectometry instrument.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Describes the radiation and measurments used, it is one of:
+<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Describes the radiation and measurements used, it is one of:
 ‘x-ray’, ‘neutron’, ‘neutron pol’, ‘neutron pol spin flip’,
 ‘neutron tof’, ‘neutron pol tof’.
 The calculations for x-rays uses <code class="docutils literal notranslate"><span class="pre">f</span></code> for the scattering length for
@@ -300,10 +300,10 @@ or 1 (tth) can be used.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">incangle</span></code></dt><dd><p>The incident angle of the neutrons, only valid in tof mode</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">restype</span></code></dt><dd><p>Describes the rype of the resolution calculated. One of the
-alterantives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
+alternatives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
 ‘fast conv + varying res.’, ‘full conv and varying res. (dx/x)’, ‘fast
 conv + varying res. (dx/x)’. The respective numbers 0-3 also works. Note
-that fast convolution only alllows a single value into res wheras the
+that fast convolution only allows a single value into res whereas the
 other can also take an array with the same length as the x-data (varying
 resolution)</p>
 </dd>
@@ -426,7 +426,7 @@ standard deviation. For ‘square beam’ it is the full width of the beam.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.spec_nx.Layer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_nx.</span></span><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-20j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs_ai</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn_ang</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_nx.Layer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Representing a layer in the sample structur.</p>
+<dd><p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">d</span></code></dt><dd><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
 </dd>
@@ -445,7 +445,7 @@ cross section in barns for neutrons</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">magn</span></code></dt><dd><p>The magnetic moment per formula unit (same formula unit as b and dens refer to)</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degress. 0 degrees correspond to
+<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degrees. 0 degrees correspond to
 a moment collinear with the neutron spin. Only used if probe is neutron spin-flip.</p>
 </dd>
 </dl>
@@ -714,7 +714,7 @@ F2 0.
 <dt class="sig sig-object py" id="genx.models.spec_nx.SLD_calculations">
 <span class="sig-prename descclassname"><span class="pre">genx.models.spec_nx.</span></span><span class="sig-name descname"><span class="pre">SLD_calculations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.Sample" title="genx.models.spec_nx.Sample"><span class="pre">genx.models.spec_nx.Sample</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.Instrument" title="genx.models.spec_nx.Instrument"><span class="pre">genx.models.spec_nx.Instrument</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_nx.SLD_calculations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the scatteringlength density as at the positions z
-if item is None or “all” the function returns a dictonary of values.
+if item is None or “all” the function returns a dictionary of values.
 Otherwise, it returns the item as identified by its string.</p>
 <p># BEGIN Parameters
 z data.x
@@ -727,13 +727,13 @@ item ‘Re’
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_nx.</span></span><span class="sig-name descname"><span class="pre">Sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Stacks:</span> <span class="pre">List[genx.models.spec_nx.Stack]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ambient:</span> <span class="pre">genx.models.spec_nx.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Substrate:</span> <span class="pre">genx.models.spec_nx.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop_sld:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_nx.Sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
@@ -808,7 +808,7 @@ TwoThetaQz data.x
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_nx.</span></span><span class="sig-name descname"><span class="pre">Stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Layers:</span> <span class="pre">List[genx.models.spec_nx.Layer]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Repetitions:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_nx.Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>A collection of Layer objects that can be repeated.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack</p>
@@ -875,7 +875,7 @@ the layer closest to the bottom</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.spec_nx.resolution_init">
 <span class="sig-prename descclassname"><span class="pre">genx.models.spec_nx.</span></span><span class="sig-name descname"><span class="pre">resolution_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">TwoThetaQz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instrument</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.Instrument" title="genx.models.spec_nx.Instrument"><span class="pre">genx.models.spec_nx.Instrument</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_nx.resolution_init" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inits the dependet variable with regards to coordinates and resolution.</p>
+<dd><p>Inits the dependent variable with regards to coordinates and resolution.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -914,7 +914,7 @@ parameterization that is more suitable for soft-matter applications.</p>
 <section id="id3">
 <h4>Layer<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">Layer(sigma=0.0</span> <span class="pre">(AA),</span> <span class="pre">d=0.0</span> <span class="pre">(AA),</span> <span class="pre">sld_n=1e-20j</span> <span class="pre">(1e-6</span> <span class="pre">1/AA^2),</span> <span class="pre">sld_x=0j</span> <span class="pre">(1e-6</span> <span class="pre">1/AA^2),</span> <span class="pre">sld_m=0.0</span> <span class="pre">(1e-6</span> <span class="pre">1/AA^2),</span> <span class="pre">magn_ang=0.0</span> <span class="pre">(deg.))</span></code></p>
-<p>Representing a layer in the sample structur.</p>
+<p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">d</span></code></dt><dd><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
 </dd>
@@ -927,7 +927,7 @@ Angstroms.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">sld_m</span></code></dt><dd><p>The neutron magnetic scattering length density in 1e-6 1/AA^2</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degress. 0 degrees correspond to
+<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degrees. 0 degrees correspond to
 a moment collinear with the neutron spin. Only used if probe is neutron spin-flip.</p>
 </dd>
 </dl>
@@ -937,7 +937,7 @@ a moment collinear with the neutron spin. Only used if probe is neutron spin-fli
 <p><code class="docutils literal notranslate"><span class="pre">Stack(Layers=&lt;factory&gt;,</span> <span class="pre">Repetitions=1)</span></code></p>
 <p>A collection of Layer objects that can be repeated.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack</p>
@@ -949,13 +949,13 @@ the layer closest to the bottom</p>
 <p><code class="docutils literal notranslate"><span class="pre">Sample(Stacks=&lt;factory&gt;,</span> <span class="pre">Ambient=&lt;factory&gt;,</span> <span class="pre">Substrate=&lt;factory&gt;,</span> <span class="pre">crop_sld=0)</span></code></p>
 <p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
@@ -1013,7 +1013,7 @@ TwoThetaQz 3.0
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.soft_nx.Layer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.soft_nx.</span></span><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-20j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld_m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn_ang</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.soft_nx.Layer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Representing a layer in the sample structur.</p>
+<dd><p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">d</span></code></dt><dd><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
 </dd>
@@ -1026,7 +1026,7 @@ Angstroms.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">sld_m</span></code></dt><dd><p>The neutron magnetic scattering length density in 1e-6 1/AA^2</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degress. 0 degrees correspond to
+<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degrees. 0 degrees correspond to
 a moment collinear with the neutron spin. Only used if probe is neutron spin-flip.</p>
 </dd>
 </dl>
@@ -1126,7 +1126,7 @@ ThetaQx data.x
 <dt class="sig sig-object py" id="genx.models.soft_nx.SLD_calculations">
 <span class="sig-prename descclassname"><span class="pre">genx.models.soft_nx.</span></span><span class="sig-name descname"><span class="pre">SLD_calculations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.soft_nx.Sample" title="genx.models.soft_nx.Sample"><span class="pre">genx.models.soft_nx.Sample</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_nx.Instrument" title="genx.models.spec_nx.Instrument"><span class="pre">genx.models.spec_nx.Instrument</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.soft_nx.SLD_calculations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the scatteringlength density as at the positions z
-if item is None or “all” the function returns a dictonary of values.
+if item is None or “all” the function returns a dictionary of values.
 Otherwise it returns the item as identified by its string.</p>
 <p># BEGIN Parameters
 z data.x
@@ -1139,13 +1139,13 @@ item ‘Re’
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.soft_nx.</span></span><span class="sig-name descname"><span class="pre">Sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Stacks:</span> <span class="pre">List[genx.models.soft_nx.Stack]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ambient:</span> <span class="pre">genx.models.soft_nx.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Substrate:</span> <span class="pre">genx.models.soft_nx.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop_sld:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.soft_nx.Sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
@@ -1201,7 +1201,7 @@ TwoThetaQz data.x
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.soft_nx.</span></span><span class="sig-name descname"><span class="pre">Stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Layers:</span> <span class="pre">List[genx.models.soft_nx.Layer]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Repetitions:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.soft_nx.Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>A collection of Layer objects that can be repeated.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack</p>
@@ -1264,7 +1264,7 @@ and/or magnetism is better described separately than within one slap model. The 
 <section id="id7">
 <h4>Layer<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">Layer(sigma=0.0</span> <span class="pre">(AA),</span> <span class="pre">dens=1.0</span> <span class="pre">(at./AA),</span> <span class="pre">d=0.0</span> <span class="pre">(AA),</span> <span class="pre">f=1e-20j</span> <span class="pre">(el./at.),</span> <span class="pre">b=0j</span> <span class="pre">(fm/at.),</span> <span class="pre">xs_ai=0.0</span> <span class="pre">(barn/at.),</span> <span class="pre">rough_type='gauss',</span> <span class="pre">magn=0.0</span> <span class="pre">(mu_B/at.),</span> <span class="pre">magn_ang=0.0</span> <span class="pre">(deg.),</span> <span class="pre">magn_void=False,</span> <span class="pre">sigma_mag=0.0</span> <span class="pre">(AA))</span></code></p>
-<p>Representing a layer in the sample structur.</p>
+<p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">d</span></code></dt><dd><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
 </dd>
@@ -1277,10 +1277,10 @@ and/or magnetism is better described separately than within one slap model. The 
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">magn</span></code></dt><dd><p>The magnetic moment per formula unit (same formula unit as b and dens refer to)</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degress. 0 degrees correspond to
+<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degrees. 0 degrees correspond to
 a moment collinear with the neutron spin.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_void</span></code></dt><dd><p>If true this layer has no magnetization. In case of <em>sigma_mag</em> beging larger than 0, the additional
+<dt><code class="docutils literal notranslate"><span class="pre">magn_void</span></code></dt><dd><p>If true this layer has no magnetization. In case of <em>sigma_mag</em> begin larger than 0, the additional
 roughness is only applied to the magnetic layer and inside this layer follows the chemical profile.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">sigma_mag</span></code></dt><dd><p>A different roughness parameter for the magnetization of the layer, 0 is ignored</p>
@@ -1301,7 +1301,7 @@ cross-section in barns for neutrons</p>
 <p><code class="docutils literal notranslate"><span class="pre">Stack(Layers=&lt;factory&gt;,</span> <span class="pre">Repetitions=1,</span> <span class="pre">Element=0)</span></code></p>
 <p>A collection of Layer objects that can be repeated.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack</p>
@@ -1320,13 +1320,13 @@ For layers that have no contribution at a certain depth one can add a layer with
 <p><code class="docutils literal notranslate"><span class="pre">Sample(Stacks=&lt;factory&gt;,</span> <span class="pre">Ambient=&lt;factory&gt;,</span> <span class="pre">Substrate=&lt;factory&gt;,</span> <span class="pre">minimal_steps=0.5,</span> <span class="pre">max_diff_n=0.01,</span> <span class="pre">max_diff_x=0.01,</span> <span class="pre">smoothen=False,</span> <span class="pre">crop_sigma=False)</span></code></p>
 <p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
@@ -1365,7 +1365,7 @@ reflectivity</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">tthoff</span></code></dt><dd><p>Linear offset to the scattering angle calibration</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Describes the radiation and measurments used, it is one of:
+<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Describes the radiation and measurements used, it is one of:
 ‘x-ray’, ‘neutron’, ‘neutron pol’, ‘neutron pol spin flip’,
 ‘neutron tof’, ‘neutron pol tof’.
 The calculations for x-rays uses <code class="docutils literal notranslate"><span class="pre">f</span></code> for the scattering length for
@@ -1380,10 +1380,10 @@ flip model.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">incangle</span></code></dt><dd><p>The incident angle of the neutrons, only valid in tof mode</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">restype</span></code></dt><dd><p>Describes the rype of the resolution calculated. One of the
-alterantives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
+alternatives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
 ‘fast conv + varying res.’, ‘full conv and varying res. (dx/x)’, ‘fast
 conv + varying res. (dx/x)’. The respective numbers 0-3 also works. Note
-that fast convolution only alllows a single value into res wheras the
+that fast convolution only allows a single value into res whereas the
 other can also take an array with the same length as the x-data (varying
 resolution)</p>
 </dd>
@@ -1474,7 +1474,7 @@ reflectivity</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">tthoff</span></code></dt><dd><p>Linear offset to the scattering angle calibration</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Describes the radiation and measurments used, it is one of:
+<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Describes the radiation and measurements used, it is one of:
 ‘x-ray’, ‘neutron’, ‘neutron pol’, ‘neutron pol spin flip’,
 ‘neutron tof’, ‘neutron pol tof’.
 The calculations for x-rays uses <code class="docutils literal notranslate"><span class="pre">f</span></code> for the scattering length for
@@ -1489,10 +1489,10 @@ flip model.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">incangle</span></code></dt><dd><p>The incident angle of the neutrons, only valid in tof mode</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">restype</span></code></dt><dd><p>Describes the rype of the resolution calculated. One of the
-alterantives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
+alternatives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
 ‘fast conv + varying res.’, ‘full conv and varying res. (dx/x)’, ‘fast
 conv + varying res. (dx/x)’. The respective numbers 0-3 also works. Note
-that fast convolution only alllows a single value into res wheras the
+that fast convolution only allows a single value into res whereas the
 other can also take an array with the same length as the x-data (varying
 resolution)</p>
 </dd>
@@ -1555,7 +1555,7 @@ the energy loss/gain from spin-flip in a magnetic field.)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.spec_adaptive.Layer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_adaptive.</span></span><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-20j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs_ai</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rough_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_adaptive.RoughType" title="genx.models.spec_adaptive.RoughType"><span class="pre">genx.models.spec_adaptive.RoughType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gauss'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn_ang</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn_void</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_adaptive.Layer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Representing a layer in the sample structur.</p>
+<dd><p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">d</span></code></dt><dd><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
 </dd>
@@ -1568,10 +1568,10 @@ the energy loss/gain from spin-flip in a magnetic field.)</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">magn</span></code></dt><dd><p>The magnetic moment per formula unit (same formula unit as b and dens refer to)</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degress. 0 degrees correspond to
+<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degrees. 0 degrees correspond to
 a moment collinear with the neutron spin.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_void</span></code></dt><dd><p>If true this layer has no magnetization. In case of <em>sigma_mag</em> beging larger than 0, the additional
+<dt><code class="docutils literal notranslate"><span class="pre">magn_void</span></code></dt><dd><p>If true this layer has no magnetization. In case of <em>sigma_mag</em> begin larger than 0, the additional
 roughness is only applied to the magnetic layer and inside this layer follows the chemical profile.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">sigma_mag</span></code></dt><dd><p>A different roughness parameter for the magnetization of the layer, 0 is ignored</p>
@@ -1708,7 +1708,7 @@ F2 0.
 <dt class="sig sig-object py" id="genx.models.spec_adaptive.SLD_calculations">
 <span class="sig-prename descclassname"><span class="pre">genx.models.spec_adaptive.</span></span><span class="sig-name descname"><span class="pre">SLD_calculations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_adaptive.SLD_calculations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the scatteringlength density as at the positions z
-if item is None or “all” the function returns a dictonary of values.
+if item is None or “all” the function returns a dictionary of values.
 Otherwise, it returns the item as identified by its string.</p>
 <p># BEGIN Parameters
 z data.x
@@ -1721,13 +1721,13 @@ item ‘Re’
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_adaptive.</span></span><span class="sig-name descname"><span class="pre">Sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Stacks:</span> <span class="pre">List[genx.models.spec_adaptive.Stack]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ambient:</span> <span class="pre">genx.models.spec_adaptive.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Substrate:</span> <span class="pre">genx.models.spec_adaptive.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimal_steps:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_diff_n:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_diff_x:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothen:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop_sigma:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_adaptive.Sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
@@ -1813,7 +1813,7 @@ TwoThetaQz data.x
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_adaptive.</span></span><span class="sig-name descname"><span class="pre">Stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Layers:</span> <span class="pre">List[genx.models.spec_adaptive.Layer]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Repetitions:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Element:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_adaptive.Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>A collection of Layer objects that can be repeated.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack</p>
@@ -1920,7 +1920,7 @@ elements.</p>
 <span class="sig-prename descclassname"><span class="pre">genx.models.spec_adaptive.</span></span><span class="sig-name descname"><span class="pre">specular_calc_zeemann</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">TwoThetaQz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_adaptive.Sample" title="genx.models.spec_adaptive.Sample"><span class="pre">genx.models.spec_adaptive.Sample</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">instrument</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.spec_adaptive.Instrument" title="genx.models.spec_adaptive.Instrument"><span class="pre">genx.models.spec_adaptive.Instrument</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_adaptive.specular_calc_zeemann" title="Permalink to this definition">¶</a></dt>
 <dd><p>For details see spec_nx implementation with more comments.</p>
 <p>This implements the concepts of [1] by correcting the q-position for spin-flip and
-adding a magnetic sld to all layers along the external field diretion.</p>
+adding a magnetic sld to all layers along the external field direction.</p>
 <p>[1] Brian B. Maranville et al., “Polarized specular neutron reflectivity”, J. Appl. Cryst. (2016). 49, 1121–1129</p>
 </dd></dl>
 
@@ -1942,7 +1942,7 @@ the sample surface and gradients in the roughness and thickness over a repetitio
 <section id="id12">
 <h4>Layer<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">Layer(d=0.0</span> <span class="pre">(AA),</span> <span class="pre">dens=1.0</span> <span class="pre">(at./AA),</span> <span class="pre">sigma=0.0</span> <span class="pre">(AA),</span> <span class="pre">f=1e-20j</span> <span class="pre">(el./at.),</span> <span class="pre">b=0j</span> <span class="pre">(fm/at.),</span> <span class="pre">xs_ai=0.0</span> <span class="pre">(barn/at.),</span> <span class="pre">magn=0.0</span> <span class="pre">(mu_B/at.),</span> <span class="pre">magn_ang=0.0</span> <span class="pre">(deg.),</span> <span class="pre">sigma_gradient=0.0</span> <span class="pre">(1),</span> <span class="pre">d_gradient=0.0</span> <span class="pre">(1))</span></code></p>
-<p>Representing a layer in the sample structur.</p>
+<p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">b</span></code></dt><dd><p>The neutron scattering length per formula unit in fm (fermi meter =
 1e-15m)</p>
@@ -1955,7 +1955,7 @@ formula unit.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dens</span></code></dt><dd><p>The density of formula units in units per Angstroms. Note the units!</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degress. 0 degrees correspond to
+<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degrees. 0 degrees correspond to
 a moment collinear with the neutron spin.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">magn</span></code></dt><dd><p>The magnetic moment per formula unit (same formula unit as b and dens
@@ -1978,7 +1978,7 @@ cross section in barns for neutrons</p>
 <p><code class="docutils literal notranslate"><span class="pre">Stack(Layers=&lt;factory&gt;,</span> <span class="pre">Repetitions=1.0,</span> <span class="pre">sigma_gtype=0,</span> <span class="pre">sigma_gradient=0.0,</span> <span class="pre">d_gradient=0.0,</span> <span class="pre">dens_gradient=0.0,</span> <span class="pre">beta_sm=0.0,</span> <span class="pre">sm_scale=1.0)</span></code></p>
 <p>A collection of Layer objects that can be repeated.</p>
 <dl>
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <a href="#id14"><span class="problematic" id="id15">``</span></a>Layer``s in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <a href="#id14"><span class="problematic" id="id15">``</span></a>Layer``s in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack or m-value for analytical super-mirror model.</p>
@@ -1992,11 +1992,11 @@ the layer closest to the bottom</p>
 <dt><code class="docutils literal notranslate"><span class="pre">dens_gradient</span></code></dt><dd><p>density increase from bottom to top</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">beta_sm</span></code></dt><dd><p>Parameter used to model neutron super-mirror coatings. There are two models implemented.
-If <em>beta_sm</em> is positive, a simplified analystical model from J. Schelten and K. Mika (Nuc. Inst. Metho. 160 (1979))
-is used and the parameter represents the quality paramter for super-mirror sequences.
+If <em>beta_sm</em> is positive, a simplified analytical model from J. Schelten and K. Mika (Nuc. Inst. Metho. 160 (1979))
+is used and the parameter represents the quality parameter for super-mirror sequences.
 A super-mirror sequence is generated and Repetitions is interpreted as the m-value for
 the sequence to calculate actual repetitions automatically.</p>
-<p>If <em>beta_sm</em> is negative it is interpretated as the zeta parameter of an iterative build-up of super-mirror
+<p>If <em>beta_sm</em> is negative it is interpreted as the zeta parameter of an iterative build-up of super-mirror
 layers using the method described by J.B. Hayter and H.A. Mook (J. Appl. Cryst. (1989), 22, 35-41). Here,
 the actual given number of repetitions are used to build up a super-mirror from the critical edge
 upowards. The m-value follows from the number of repetitions, material parameters and zeta.</p>
@@ -2020,19 +2020,19 @@ differences introduced by the manufacturing process due to imperfect calibration
 <p><code class="docutils literal notranslate"><span class="pre">Sample(Stacks=&lt;factory&gt;,</span> <span class="pre">Ambient=&lt;factory&gt;,</span> <span class="pre">Substrate=&lt;factory&gt;,</span> <span class="pre">crop_sld=200,</span> <span class="pre">sigma_inhom=0.0,</span> <span class="pre">lscale_inhom=0.9,</span> <span class="pre">flatwidth_inhom=0.3,</span> <span class="pre">steps_inhom=20,</span> <span class="pre">type_inhom='empiric</span> <span class="pre">PLD')</span></code></p>
 <p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <a href="#id17"><span class="problematic" id="id18">``</span></a>Stack``s in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <a href="#id17"><span class="problematic" id="id18">``</span></a>Stack``s in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">sigma_inhom</span></code></dt><dd><p>Width of the thickness distribution</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">lscale_inhom</span></code></dt><dd><p>For empirical PLD model this defines the width of the increas peak</p>
+<dt><code class="docutils literal notranslate"><span class="pre">lscale_inhom</span></code></dt><dd><p>For empirical PLD model this defines the width of the increase peak</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">flatwidth_inhom</span></code></dt><dd><p>For empirical PLD model this defines the trnsition from flat to increased probability.</p>
 </dd>
@@ -2075,7 +2075,7 @@ more detailed description of the empirical PLD model and an example application.
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.spec_inhom.Layer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_inhom.</span></span><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-20j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs_ai</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn_ang</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_gradient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_gradient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_inhom.Layer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Representing a layer in the sample structur.</p>
+<dd><p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">b</span></code></dt><dd><p>The neutron scattering length per formula unit in fm (fermi meter =
 1e-15m)</p>
@@ -2088,7 +2088,7 @@ formula unit.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dens</span></code></dt><dd><p>The density of formula units in units per Angstroms. Note the units!</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degress. 0 degrees correspond to
+<dt><code class="docutils literal notranslate"><span class="pre">magn_ang</span></code></dt><dd><p>The angle of the magnetic moment in degrees. 0 degrees correspond to
 a moment collinear with the neutron spin.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">magn</span></code></dt><dd><p>The magnetic moment per formula unit (same formula unit as b and dens
@@ -2167,19 +2167,19 @@ F2 0.
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_inhom.</span></span><span class="sig-name descname"><span class="pre">Sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Stacks:</span> <span class="pre">List[genx.models.spec_inhom.Stack]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ambient:</span> <span class="pre">genx.models.spec_inhom.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Substrate:</span> <span class="pre">genx.models.spec_inhom.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop_sld:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_inhom:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lscale_inhom:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatwidth_inhom:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_inhom:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_inhom:</span> <span class="pre">genx.models.spec_inhom.InhomType</span> <span class="pre">=</span> <span class="pre">'empiric</span> <span class="pre">PLD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_inhom.Sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <a href="#id19"><span class="problematic" id="id20">``</span></a>Stack``s in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <a href="#id19"><span class="problematic" id="id20">``</span></a>Stack``s in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">sigma_inhom</span></code></dt><dd><p>Width of the thickness distribution</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">lscale_inhom</span></code></dt><dd><p>For empirical PLD model this defines the width of the increas peak</p>
+<dt><code class="docutils literal notranslate"><span class="pre">lscale_inhom</span></code></dt><dd><p>For empirical PLD model this defines the width of the increase peak</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">flatwidth_inhom</span></code></dt><dd><p>For empirical PLD model this defines the trnsition from flat to increased probability.</p>
 </dd>
@@ -2288,7 +2288,7 @@ layer thicknesses as found for e.g. large PLD samples.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.spec_inhom.</span></span><span class="sig-name descname"><span class="pre">Stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Layers:</span> <span class="pre">List[genx.models.spec_inhom.Layer]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Repetitions:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_gtype:</span> <span class="pre">genx.models.spec_inhom.SigmaGradientType</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_gradient:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_gradient:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens_gradient:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_sm:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sm_scale:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.spec_inhom.Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>A collection of Layer objects that can be repeated.</p>
 <dl>
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <a href="#id21"><span class="problematic" id="id22">``</span></a>Layer``s in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <a href="#id21"><span class="problematic" id="id22">``</span></a>Layer``s in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack or m-value for analytical super-mirror model.</p>
@@ -2302,11 +2302,11 @@ the layer closest to the bottom</p>
 <dt><code class="docutils literal notranslate"><span class="pre">dens_gradient</span></code></dt><dd><p>density increase from bottom to top</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">beta_sm</span></code></dt><dd><p>Parameter used to model neutron super-mirror coatings. There are two models implemented.
-If <em>beta_sm</em> is positive, a simplified analystical model from J. Schelten and K. Mika (Nuc. Inst. Metho. 160 (1979))
-is used and the parameter represents the quality paramter for super-mirror sequences.
+If <em>beta_sm</em> is positive, a simplified analytical model from J. Schelten and K. Mika (Nuc. Inst. Metho. 160 (1979))
+is used and the parameter represents the quality parameter for super-mirror sequences.
 A super-mirror sequence is generated and Repetitions is interpreted as the m-value for
 the sequence to calculate actual repetitions automatically.</p>
-<p>If <em>beta_sm</em> is negative it is interpretated as the zeta parameter of an iterative build-up of super-mirror
+<p>If <em>beta_sm</em> is negative it is interpreted as the zeta parameter of an iterative build-up of super-mirror
 layers using the method described by J.B. Hayter and H.A. Mook (J. Appl. Cryst. (1989), 22, 35-41). Here,
 the actual given number of repetitions are used to build up a super-mirror from the critical edge
 upowards. The m-value follows from the number of repetitions, material parameters and zeta.</p>
@@ -2439,7 +2439,7 @@ version. Should only be used by expert users.</p>
 <section id="id24">
 <h4>Layer<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">Layer(d=0.0</span> <span class="pre">(AA),</span> <span class="pre">dens=1.0</span> <span class="pre">(at./AA),</span> <span class="pre">sigma=0.0</span> <span class="pre">(AA),</span> <span class="pre">f=1e-20j</span> <span class="pre">(el./at.),</span> <span class="pre">fr=0j</span> <span class="pre">(el.),</span> <span class="pre">fm1=0j</span> <span class="pre">(el./mu_B),</span> <span class="pre">fm2=0j</span> <span class="pre">(el./mu_B^2),</span> <span class="pre">resdens=1.0</span> <span class="pre">(rel.),</span> <span class="pre">resmag=1.0</span> <span class="pre">(rel.),</span> <span class="pre">dd_l=0.0</span> <span class="pre">(AA),</span> <span class="pre">dd_u=0.0</span> <span class="pre">(AA),</span> <span class="pre">dmag_l=0.0</span> <span class="pre">(rel.),</span> <span class="pre">dmag_u=0.0</span> <span class="pre">(rel.),</span> <span class="pre">sigma_ml=0.0</span> <span class="pre">(AA),</span> <span class="pre">sigma_mu=0.0</span> <span class="pre">(AA),</span> <span class="pre">b=0j</span> <span class="pre">(fm/at.),</span> <span class="pre">xs_ai=0.0</span> <span class="pre">(barn/at.),</span> <span class="pre">magn=0.0</span> <span class="pre">(mu_B/at.),</span> <span class="pre">magn_ang=0.0</span> <span class="pre">(deg.),</span> <span class="pre">magn_theta=0.0)</span></code></p>
-<p>Representing a layer in the sample structur.</p>
+<p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">d</span></code></dt><dd><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
 </dd>
@@ -2506,7 +2506,7 @@ corresponds to an out-of-plane magnetic moment.</p>
 <p><code class="docutils literal notranslate"><span class="pre">Instrument(probe='x-ray',</span> <span class="pre">wavelength=1.54</span> <span class="pre">(Å),</span> <span class="pre">I0=1.0</span> <span class="pre">(arb.),</span> <span class="pre">Ibkg=0.0</span> <span class="pre">(arb.),</span> <span class="pre">xpol='tot',</span> <span class="pre">npol='uu',</span> <span class="pre">coords='2θ',</span> <span class="pre">incangle=0.5</span> <span class="pre">(°),</span> <span class="pre">restype='no</span> <span class="pre">conv',</span> <span class="pre">res=0.001</span> <span class="pre">([coord]),</span> <span class="pre">respoints=5</span> <span class="pre">(pts.),</span> <span class="pre">resintrange=2.0</span> <span class="pre">([coord]),</span> <span class="pre">footype='no</span> <span class="pre">corr',</span> <span class="pre">beamw=0.01</span> <span class="pre">(mm),</span> <span class="pre">samplelen=10.0</span> <span class="pre">(mm))</span></code></p>
 <p>Specify parameters of the probe and reflectometry instrument.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Defines the theory (model) that should calcualte the reflectivity.
+<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Defines the theory (model) that should calculate the reflectivity.
 Should be one of: ‘x-ray anis.’, ‘x-ray simpl. anis.’, ‘x-ray’,
 ‘neutron pol’, ‘neutron pol tof’ or ‘neutron pol spin flip’.
 Neutron models use either Parratt’s formaism (non spin-flip models) or
@@ -2535,10 +2535,10 @@ or 1 (tth) can be used.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">incangle</span></code></dt><dd><p>The incident angle of the neutrons, only valid in tof mode</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">restype</span></code></dt><dd><p>Describes the rype of the resolution calculated. One of the
-alterantives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
+alternatives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
 ‘fast conv + varying res.’, ‘full conv and varying res. (dx/x)’, ‘fast
 conv + varying res. (dx/x)’. The respective numbers 0-3 also works. Note
-that fast convolution only alllows a single value into res wheras the
+that fast convolution only allows a single value into res wheraes the
 other can also take an array with the same length as the x-data (varying
 resolution)</p>
 </dd>
@@ -2572,7 +2572,7 @@ standard deviation. For ‘square beam’ it is the full width of the beam.</p>
 <p><code class="docutils literal notranslate"><span class="pre">Stack(Layers=&lt;factory&gt;,</span> <span class="pre">Repetitions=1)</span></code></p>
 <p>A collection of Layer objects that can be repeated.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack</p>
@@ -2584,13 +2584,13 @@ the layer closest to the bottom</p>
 <p><code class="docutils literal notranslate"><span class="pre">Sample(Stacks=&lt;factory&gt;,</span> <span class="pre">Ambient=&lt;factory&gt;,</span> <span class="pre">Substrate=&lt;factory&gt;,</span> <span class="pre">slicing=False,</span> <span class="pre">slice_depth=1.0</span> <span class="pre">(AA),</span> <span class="pre">sld_mult=4.0,</span> <span class="pre">sld_buffer=20.0,</span> <span class="pre">sld_delta=5.0,</span> <span class="pre">compress=True,</span> <span class="pre">dsld_max=0.1,</span> <span class="pre">dsld_offdiag_max=0.1,</span> <span class="pre">dmag_max=0.01,</span> <span class="pre">dsld_n_max=0.01,</span> <span class="pre">dabs_n_max=0.01)</span></code></p>
 <p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
@@ -2696,7 +2696,7 @@ TwoThetaQz 3.0
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.mag_refl.</span></span><span class="sig-name descname"><span class="pre">Instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.ProbeTheory" title="genx.models.mag_refl.ProbeTheory"><span class="pre">genx.models.mag_refl.ProbeTheory</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'x-ray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.54</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ibkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xpol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.XRayPol" title="genx.models.mag_refl.XRayPol"><span class="pre">genx.models.mag_refl.XRayPol</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.NeutronPol" title="genx.models.mag_refl.NeutronPol"><span class="pre">genx.models.mag_refl.NeutronPol</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'uu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.Coords" title="genx.models.mag_refl.Coords"><span class="pre">genx.models.mag_refl.Coords</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'2θ'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incangle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.ResType" title="genx.models.mag_refl.ResType"><span class="pre">genx.models.mag_refl.ResType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'no</span> <span class="pre">conv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respoints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resintrange</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">footype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.FootType" title="genx.models.mag_refl.FootType"><span class="pre">genx.models.mag_refl.FootType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'no</span> <span class="pre">corr'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beamw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samplelen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.mag_refl.Instrument" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specify parameters of the probe and reflectometry instrument.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Defines the theory (model) that should calcualte the reflectivity.
+<dt><code class="docutils literal notranslate"><span class="pre">probe</span></code></dt><dd><p>Defines the theory (model) that should calculate the reflectivity.
 Should be one of: ‘x-ray anis.’, ‘x-ray simpl. anis.’, ‘x-ray’,
 ‘neutron pol’, ‘neutron pol tof’ or ‘neutron pol spin flip’.
 Neutron models use either Parratt’s formaism (non spin-flip models) or
@@ -2725,10 +2725,10 @@ or 1 (tth) can be used.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">incangle</span></code></dt><dd><p>The incident angle of the neutrons, only valid in tof mode</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">restype</span></code></dt><dd><p>Describes the rype of the resolution calculated. One of the
-alterantives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
+alternatives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’,
 ‘fast conv + varying res.’, ‘full conv and varying res. (dx/x)’, ‘fast
 conv + varying res. (dx/x)’. The respective numbers 0-3 also works. Note
-that fast convolution only alllows a single value into res wheras the
+that fast convolution only allows a single value into res wheraes the
 other can also take an array with the same length as the x-data (varying
 resolution)</p>
 </dd>
@@ -2851,7 +2851,7 @@ standard deviation. For ‘square beam’ it is the full width of the beam.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="genx.models.mag_refl.Layer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.mag_refl.</span></span><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">genx.models.lib.refl_base.ReflFunction</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-20j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">genx.models.lib.refl_base.ReflFunction</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fm1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">genx.models.lib.refl_base.ReflFunction</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fm2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">genx.models.lib.refl_base.ReflFunction</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resdens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resmag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dd_l</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dd_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmag_l</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmag_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_ml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs_ai</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn_ang</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magn_theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.mag_refl.Layer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Representing a layer in the sample structur.</p>
+<dd><p>Representing a layer in the sample structure.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">d</span></code></dt><dd><p>The thickness of the layer in AA (Angstroms = 1e-10m)</p>
 </dd>
@@ -3296,7 +3296,7 @@ ThetaQx data.x
 <dt class="sig sig-object py" id="genx.models.mag_refl.SLD_calculations">
 <span class="sig-prename descclassname"><span class="pre">genx.models.mag_refl.</span></span><span class="sig-name descname"><span class="pre">SLD_calculations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.Sample" title="genx.models.mag_refl.Sample"><span class="pre">genx.models.mag_refl.Sample</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.Instrument" title="genx.models.mag_refl.Instrument"><span class="pre">genx.models.mag_refl.Instrument</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.mag_refl.SLD_calculations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the scatteringlength density as at the positions z
-if item is None or “all” the function returns a dictonary of values.
+if item is None or “all” the function returns a dictionary of values.
 Otherwise it returns the item as identified by its string.</p>
 <p># BEGIN Parameters
 z data.x
@@ -3309,13 +3309,13 @@ item “Re sld_c”
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.mag_refl.</span></span><span class="sig-name descname"><span class="pre">Sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Stacks:</span> <span class="pre">List[genx.models.mag_refl.Stack]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ambient:</span> <span class="pre">genx.models.mag_refl.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Substrate:</span> <span class="pre">genx.models.mag_refl.Layer</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slicing:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_depth:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld_mult:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld_buffer:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">20.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld_delta:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dsld_max:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dsld_offdiag_max:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmag_max:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dsld_n_max:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dabs_n_max:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.mag_refl.Sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Describe global sample by listing ambient, substrate and layer parameters.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Stacks</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Stacks</span></code> in the stacks the first item is
 the layer closest to the bottom</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (enviroment above the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the Ambient (environment above the sample).
 Only the scattering lengths and density of the layer is used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (enviroment below the sample).
+<dt><code class="docutils literal notranslate"><span class="pre">Substrate</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">Layer</span></code> describing the substrate (environment below the sample).
 Only the scattering lengths, density and roughness of the layer is
 used.</p>
 </dd>
@@ -3479,7 +3479,7 @@ TwoThetaQz data.x
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">genx.models.mag_refl.</span></span><span class="sig-name descname"><span class="pre">Stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Layers:</span> <span class="pre">List[genx.models.mag_refl.Layer]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Repetitions:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**user_kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.mag_refl.Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>A collection of Layer objects that can be repeated.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consiting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
+<dt><code class="docutils literal notranslate"><span class="pre">Layers</span></code></dt><dd><p>A <code class="docutils literal notranslate"><span class="pre">list</span></code> consisting of <code class="docutils literal notranslate"><span class="pre">Layers</span></code> in the stack the first item is
 the layer closest to the bottom</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">Repetitions</span></code></dt><dd><p>The number of repsetions of the stack</p>
@@ -3668,7 +3668,7 @@ the layer closest to the bottom</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="genx.models.mag_refl.compose_sld_anal">
 <span class="sig-prename descclassname"><span class="pre">genx.models.mag_refl.</span></span><span class="sig-name descname"><span class="pre">compose_sld_anal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.Sample" title="genx.models.mag_refl.Sample"><span class="pre">genx.models.mag_refl.Sample</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">instrument</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#genx.models.mag_refl.Instrument" title="genx.models.mag_refl.Instrument"><span class="pre">genx.models.mag_refl.Instrument</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genx.models.mag_refl.compose_sld_anal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compose a analytical profile funciton</p>
+<dd><p>Compose a analytical profile function</p>
 </dd></dl>
 
 <dl class="py function">
@@ -3735,16 +3735,16 @@ This assumes a gaussian reloution function and <code class="docutils literal not
 deviation of that gaussian.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">restype</span></code></dt><dd><p>Describes the rype of the resolution calculated. One of the
-alterantives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’ or
+alternatives: ‘no conv’, ‘fast conv’, ‘full conv and varying res.’ or
 ‘fast conv + varying res.’. The respective numbers 0-3 also works. Note
-that fast convolution only alllows a single value into res wheras the
+that fast convolution only allows a single value into res whereas the
 other can also take an array with the same length as the x-data (varying
 resolution)</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">respoints</span></code></dt><dd><p>The number of points to include in the resolution calculation. This is
 only used for ‘full conv and vaying res.’ and ‘fast conv + varying res’</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">resintrange</span></code></dt><dd><p>Number of standard deviatons to integrate the resolution fucntion times
+<dt><code class="docutils literal notranslate"><span class="pre">resintrange</span></code></dt><dd><p>Number of standard deviatons to integrate the resolution function times
 the relfectivty over</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">footype</span></code></dt><dd><p>Which type of footprint correction is to be applied to the simulation.
@@ -3871,7 +3871,7 @@ standard deviation. For ‘square beam’ it is the full width of the beam.</p>
         <li class="right" >
           <a href="../development.html" title="Development documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../development.html" >Development documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">GenX Reflectivity Models</a></li> 
       </ul>

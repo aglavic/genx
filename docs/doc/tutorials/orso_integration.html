@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>ORSO Integration &#8212; GenX 3.8.13 documentation</title>
+    <title>ORSO Integration &#8212; GenX 3.8.14 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="batch_fitting.html" title="Batch Fitting"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">ORSO Integration</a></li> 
       </ul>
@@ -68,14 +68,14 @@ and check the results.</p>
 amount of information is available. You can browse through the metadata using the Data panel,
 selecting one dataset and clicking the information button:</p>
 <img alt="../_images/info_button.png" src="../_images/info_button.png" />
-<p>This will open the <cite>Dataset information</cite> dialog with a hirachical structure on the left and text display
+<p>This will open the <cite>Dataset information</cite> dialog with a hierarchical structure on the left and text display
 on the right hand side.
 When opening the SiO layer neutron example, you can see such structure:</p>
 <img alt="../_images/dataset_information.png" src="../_images/dataset_information.png" />
 <p>This can be quite useful in reviewing some instrument parameters or finding the sample a certain
 measurement corresponds to.</p>
 <p>It is possible to edit the leaf notes directly by double-click. A right click on a parent node
-allows to insert new items accoring to ORSO specification.</p>
+allows to insert new items according to ORSO specification.</p>
 </section>
 <section id="new-model-from-file">
 <h2>New Model from File<a class="headerlink" href="#new-model-from-file" title="Permalink to this headline">¶</a></h2>
@@ -83,17 +83,17 @@ allows to insert new items accoring to ORSO specification.</p>
 information from the header. For this use the menu <span class="menuselection">File‣New from file…</span>.</p>
 <p>By default this defines the instrument parameters (neutron/x-ray etc.).
 If a model according to the <a class="reference external" href="https://www.reflectometry.org/advanced_and_expert_level/file_format/simple_model">ORSO model language</a>
-has been provided by the user, GenX will already use the information to buid the sample.</p>
+has been provided by the user, GenX will already use the information to build the sample.</p>
 <p>If this options is used to with a <cite>*.ort</cite> file exported by GenX, the model is directly loaded and parameters
-arc configured accoring to the specification.</p>
+arc configured according to the specification.</p>
 </section>
 <section id="exported-fit">
 <h2>Exported Fit<a class="headerlink" href="#exported-fit" title="Permalink to this headline">¶</a></h2>
 <p>When exporting data for publication using the ORSO format, a typical header would look like this.
 In addition to all header data from the imported measurement, GenX adds the <strong>analysis</strong> section.
 It includes not only the fit script but all fit parameters, uncertainties as well as a model
-accoring to the <a class="reference external" href="https://www.reflectometry.org/advanced_and_expert_level/file_format/simple_model">ORSO model language</a>.</p>
-<p>(In this example, a full statistical analysis accoring to <a class="reference internal" href="error_statistics.html#tutorial-error-statistics"><span class="std std-ref">Error Statistics from bumps library</span></a> was performed.)</p>
+according to the <a class="reference external" href="https://www.reflectometry.org/advanced_and_expert_level/file_format/simple_model">ORSO model language</a>.</p>
+<p>(In this example, a full statistical analysis according to <a class="reference internal" href="error_statistics.html#tutorial-error-statistics"><span class="std std-ref">Error Statistics from bumps library</span></a> was performed.)</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># ORSO reflectivity data file | 1.1 standard | YAML encoding | https://www.reflectometry.org/</span><span class="w"></span>
 <span class="nt">data_source</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">owner</span><span class="p">:</span><span class="w"></span>
@@ -344,7 +344,7 @@ accoring to the <a class="reference external" href="https://www.reflectometry.or
         <li class="right" >
           <a href="batch_fitting.html" title="Batch Fitting"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">ORSO Integration</a></li> 
       </ul>

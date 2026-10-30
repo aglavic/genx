@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>The SLD graph &#8212; GenX 3.8.13 documentation</title>
+    <title>The SLD graph &#8212; GenX 3.8.14 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="slicing.html" title="Model analytical functions by slicing"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">The SLD graph</a></li> 
       </ul>
@@ -93,11 +93,11 @@ a fit. While this results in an intuitive display of real-space geometry one has
 reflectometry does not measure the geometry directly but correlations between interfaces and the results are thus
 translation invariant.
 The user will therefore have to choose a reference interface that is kept fixed for this modeling.</p>
-<p>After fitting the model and caluculating the errors on parameters (see <a class="reference internal" href="error_statistics.html#tutorial-error-statistics"><span class="std std-ref">Error Statistics from bumps library</span></a>) activate
+<p>After fitting the model and calculating the errors on parameters (see <a class="reference internal" href="error_statistics.html#tutorial-error-statistics"><span class="std std-ref">Error Statistics from bumps library</span></a>) activate
 the menu <span class="menuselection">Reflec‣Uncertainty Profile…</span>.
 A dialog will ask to enter the reference interface (python style index 0=Substrate, -1=Surface) and the number
 of samples.
-GenX will then simulate your model while choosing number of samples random parameter sets choosen from a gaussian
+GenX will then simulate your model while choosing number of samples random parameter sets chosen from a gaussian
 distribution.
 The SLD will be calculated for the reference interface at z=0 and the SLD plot will show the fit result (line)
 together with two bands of uncertainty as partially transparent curves.
@@ -109,7 +109,7 @@ a reference surface of -1 (left) and 0 (right):</p>
 </section>
 <section id="custom-filter">
 <h2>Custom filter<a class="headerlink" href="#custom-filter" title="Permalink to this headline">¶</a></h2>
-<p>If the buildin options to display the profiles do not fit your needs you can modify the displayed
+<p>If the building options to display the profiles do not fit your needs you can modify the displayed
 datasets and components within the model script.
 The recent reflectivity model <code class="docutils literal notranslate"><span class="pre">Sim</span></code> function will start like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SLD</span> <span class="o">=</span> <span class="p">[]</span>
@@ -123,9 +123,9 @@ The recent reflectivity model <code class="docutils literal notranslate"><span c
     <span class="c1"># END Dataset 0</span>
 </pre></div>
 </div>
-<p>If the model ist simulated (not fit) the <code class="docutils literal notranslate"><span class="pre">_sim</span></code> variable will be set to <strong>True</strong> resulting in the global list <code class="docutils literal notranslate"><span class="pre">SLD</span></code>
+<p>If the model is simulated (not fit) the <code class="docutils literal notranslate"><span class="pre">_sim</span></code> variable will be set to <strong>True</strong> resulting in the global list <code class="docutils literal notranslate"><span class="pre">SLD</span></code>
 to be populated. It will have one entry for each dataset in the model.
-Each entry (retuned by <code class="docutils literal notranslate"><span class="pre">sample.SimSLD</span></code>) is a dictionary containting each of the SLD lines as well as the <strong>z</strong>-values
+Each entry (returned by <code class="docutils literal notranslate"><span class="pre">sample.SimSLD</span></code>) is a dictionary containing each of the SLD lines as well as the <strong>z</strong>-values
 and the <strong>SLD unit</strong>.
 The dictionary keys are used in the plot legend, so you can see in the graph which items carry the information that
 is relevant.</p>
@@ -147,7 +147,7 @@ The resulting graph is shown below:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This user filtering is not supported by the SLD export facility that expects all information for
-each of the datasets. Before exproting SLD you should thus comment out this section and
+each of the datasets. Before exporting SLD you should thus comment out this section and
 simulate the data again.</p>
 </div>
 </section>
@@ -215,7 +215,7 @@ simulate the data again.</p>
         <li class="right" >
           <a href="slicing.html" title="Model analytical functions by slicing"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.13 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">The SLD graph</a></li> 
       </ul>
