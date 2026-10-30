@@ -64,7 +64,7 @@ class Plugin(Template):
         self.metainfo = {}
         self.x_col = 0
         self.y_col = 1
-        self.e_col = 2
+        self.t_col = 0
 
     def CanOpen(self, filename):
         if not Template.CanOpen(self, filename):
@@ -129,12 +129,15 @@ class Plugin(Template):
             dataset.name = name
             x_raw = []
             y_raw = []
+            det_raw = {}
+            t_raw = []
             data_source = dataset.meta['data_source']
             data_source['import_columns'] = {
                 'x': self.x_col,
                 'y': self.y_col,
-                'error': self.e_col
+                't': self.t_col
             }
+            data_source['experiment']['probe'] = 'neutron'
             for line in f:
                 lin = line.strip()
                 if lin.startswith('###'):
@@ -180,10 +183,22 @@ class Plugin(Template):
                             data_source['experiment']['instrument'] = value
                         elif key.endswith('_facility'):
                             data_source['facility'] = value
+                        elif key=='image_anode' and value=='Cu':
+                            data_source['measurement']['instrument_settings']['wavelength'] = {
+                                'magnitude': 1.54056,
+                                'unit': 'angstrom',
+                                }
+                        if key.startswith('xrr_'):
+                            data_source['experiment']['probe'] = 'x-ray'
                     elif entry == 'data':
                         # get header lines devices and units
                         if not scanheader:
                             devs, dets = self.getDevicesDetectors(line[1:])
+                            for di in dets:
+                                if not 'file' in di:
+                                    di = di.replace('.', '_')
+                                    det_raw[di] = []
+                            det_name = dets[self.y_col]
                             self.devs = [self.DevFake(dev) for dev in devs]
                             self.dets = [self.DevFake(det) for det in dets]
                         else:
@@ -207,17 +222,35 @@ class Plugin(Template):
                     devvals, detvals = self.getDevicesDetectors(line)
                     x_raw.append(devvals[self.x_col])
                     y_raw.append(detvals[self.y_col])
+                    t_raw.append(detvals[self.t_col])
+                    for i, di in enumerate(dets):
+                        if not 'file' in di:
+                            di = di.replace('.', '_')
+                            det_raw[di].append(detvals[i])
                     # values = {dev.name: (None, val)
                     #           for dev, val in zip(self.devs, devvals)}
                     # results = {det.name: [val]
                     #            for det, val in zip(self.dets, detvals)}
 
             dataset.x_raw = np.array(x_raw, dtype=float)
+            data_source['measurement']['instrument_settings']['incident_angle'] = {
+                'min': float(dataset.x_raw.min()/2.),
+                'max': float(dataset.x_raw.max()/2.),
+                'unit': 'deg'
+                }
             dataset.y_raw = np.array(y_raw, dtype=float)
+            for i, di in enumerate(dets):
+                if not 'file' in di:
+                    di = di.replace('.', '_')
+                    dataset.extra_data_raw[di] = np.array(det_raw[di], dtype=float)
+                    dataset.extra_commands[di] = di
             dataset.error_raw = dataset.y_raw * np.nan
+            dataset.y_command = f'{dets[self.y_col]}/{dets[self.t_col]}'
+            dataset.error_command = f'sqrt({dets[self.y_col]})/{dets[self.t_col]}'
 
             # Run the commands on the data - this also sets the x,y, error
             # members of the data item.
+            dataset.run_extra_commands()
             dataset.run_command()
             # ShowWarningDialog(self.parent, f'metainfo: {dataset.meta}')
 
@@ -230,14 +263,14 @@ class Plugin(Template):
         col_values = {
             'y': self.y_col,
             'x': self.x_col,
-            # 'y error': self.e_col,
+            't': self.t_col,
         }
         dlg = SettingsDialog(self.parent, col_values)
         if dlg.ShowModal() == wx.ID_OK:
             col_values = dlg.GetColumnValues()
             self.y_col = col_values['y']
             self.x_col = col_values['x']
-            # self.e_col = col_values["y error"]
+            self.t_col = col_values["t"]
         dlg.Destroy()
 
 
