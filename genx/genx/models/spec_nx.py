@@ -722,7 +722,7 @@ def SLD_calculations(z, item, sample: Sample, inst: Instrument):
         magn = array(parameters.magn, dtype=float64)
         # Transform to radians
         magn_ang = array(parameters.magn_ang, dtype=float64) * pi / 180.0
-        mag_sld = 2.645 * magn * dens * 10.0
+        mag_sld = muB_to_SL*1e6 * magn * dens
         mag_sld_x = mag_sld * cos(magn_ang)
         mag_sld_y = mag_sld * sin(magn_ang)
         sld_unit = r"10^{-6}\AA^{-2}"

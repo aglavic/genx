@@ -7,7 +7,10 @@ N_a = 6.022_140_76e23  # 1/mol
 
 AA_to_eV = 12_398.41984 # x-ray energy conversion [eV/Å] ( h * c / 1Å)
 
-M_to_SLD = 2.853e-6  # m/A/Å² conversion M [A/m] to SLD [Å^-2]
+M_to_SLD = 2.853e-6  # m/A/1e-6Å² conversion M [A/m] to SLD [1e-6Å^-2] = |gamma_n|*r_e/2/muB
+                     # this value is historical and the latest one based on updated gyromagnetic ratio
+                     # would be 2.9064236e-6, instead.
+                     # See https://physics.nist.gov/cgi-bin/cuu/Value?munsmun
 ApM_to_emucc = 1e-3  # conversion M [A/m] to M [emu/cm³]
 Memu_to_SLD = M_to_SLD * ApM_to_emucc
 muB = 9.2740101e-24  # Bohr magneton [A·m^2]

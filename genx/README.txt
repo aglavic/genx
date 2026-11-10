@@ -12,6 +12,12 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.15
+==============
+ * Add import of muB magnetization values from ORSO files.
+ * Add comment to documantation explaining the discrapency of magnetic SLD conversion from the
+   latest accepted value based on current neutron gyromagnetic ratio.
+
 Changes 3.8.14
 ==============
  * New data loader for scans generated via NICOS added (thanks to J. Kröger)

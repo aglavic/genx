@@ -39,6 +39,7 @@ class LayerData:
     f: complex
     b: complex
     d: float
+    mu: float
     sigma: float
     name: Optional[str]
 
@@ -157,6 +158,7 @@ class OrsoHeaderAnalyzer:
     @staticmethod
     def get_layer_data(layer) -> LayerData:
         layer.material.generate_density()
+        mu =0.
         if getattr(layer.material, 'formula', None):
             formula = Formula.from_str(layer.material.formula)
             if layer.material.number_density:
@@ -172,6 +174,8 @@ class OrsoHeaderAnalyzer:
                     dens = 0.1
             b = formula.b()
             f = formula.f()
+            if getattr(layer.material, 'magnetic_moment', None) and layer.material.magnetic_moment.unit=='muB':
+                mu = layer.material.magnetic_moment.magnitude
         else:
             formula = None
             b = layer.material.get_sld()*1e6
@@ -180,7 +184,7 @@ class OrsoHeaderAnalyzer:
         name = getattr(layer, 'original_name', None) or getattr(layer.material, 'original_name', None)
         d = layer.thickness.as_unit("angstrom")
         sigma = layer.roughness.as_unit("angstrom")
-        return LayerData(dens=dens, formula=formula, b=b, f=f, d=d, sigma=sigma, name=name)
+        return LayerData(dens=dens, formula=formula, b=b, f=f, d=d, mu=mu, sigma=sigma, name=name)
 
     def analyze_model(self):
         from orsopy.fileio import model_language
@@ -242,7 +246,7 @@ class OrsoHeaderAnalyzer:
                 False,
                 str(dens),
                 False,
-                "0.0",
+                str(layer.mu),
                 False,
                 str(layer.d),
                 False,
