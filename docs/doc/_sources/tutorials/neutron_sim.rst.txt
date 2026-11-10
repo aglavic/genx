@@ -90,6 +90,11 @@ for the parameters.
 
 Click on the simulate button again and have look at some Kiessig fringes.
 
+.. note::
+  GenX uses the historic value of :math:`D_m = \frac{|\gamma_n| r_e}{2\mu_B} = 2.853 x 10^{-12} \frac{m}{A\cdot Å^2}` to convert magnetization to
+  magnetic SLD. This is according to convention used in the field and other software like SasView. The latest
+  value would be :math:`2.9064236  x 10^{-12}`.
+
 Polarized Neutron Reflectivity
 ==============================
 Lets start the polarized neutron reflectivity by turning the polarization on in the calculations. Go to the

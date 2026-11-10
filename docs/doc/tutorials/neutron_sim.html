@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Neutron reflectivity tutorial &#8212; GenX 3.8.14 documentation</title>
+    <title>Neutron reflectivity tutorial &#8212; GenX 3.8.15 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -14,6 +14,7 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="shortcut icon" href="../_static/genx.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -36,7 +37,7 @@
         <li class="right" >
           <a href="xrr_fitting.html" title="Fitting of x-ray reflectivity data"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.15 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" accesskey="U">Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Neutron reflectivity tutorial</a></li> 
       </ul>
@@ -154,6 +155,12 @@ can add a layer (First button with one layer and a plus), call it Fe for example
 for the parameters.</p>
 <img alt="../_images/neutrons1_6.jpg" src="../_images/neutrons1_6.jpg" />
 <p>Click on the simulate button again and have look at some Kiessig fringes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>GenX uses the historic value of <span class="math notranslate nohighlight">\(D_m = \frac{|\gamma_n| r_e}{2\mu_B} = 2.853 x 10^{-12} \frac{m}{A\cdot Å^2}\)</span> to convert magnetization to
+magnetic SLD. This is according to convention used in the field and other software like SasView. The latest
+value would be <span class="math notranslate nohighlight">\(2.9064236  x 10^{-12}\)</span>.</p>
+</div>
 </section>
 <section id="polarized-neutron-reflectivity">
 <h2>Polarized Neutron Reflectivity<a class="headerlink" href="#polarized-neutron-reflectivity" title="Permalink to this headline">¶</a></h2>
@@ -280,7 +287,7 @@ alternative with a much simpler user interface.</p>
         <li class="right" >
           <a href="xrr_fitting.html" title="Fitting of x-ray reflectivity data"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.14 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GenX 3.8.15 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../tutorials.html" >Tutorials</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Neutron reflectivity tutorial</a></li> 
       </ul>
