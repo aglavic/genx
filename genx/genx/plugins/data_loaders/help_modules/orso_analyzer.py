@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, List, Optional
 from orsopy import fileio
 
 from ...add_ons.help_modules.materials_db import MASS_DENSITY_CONVERSION, Formula
+from ....models.lib.physical_constants import Memu_to_SLD, muB, ApM_to_emucc, M_to_SLD, muB_to_SL
+
 
 if TYPE_CHECKING:
     # make sure the wx based plugins don't need to be imported at runtime
@@ -174,13 +176,25 @@ class OrsoHeaderAnalyzer:
                     dens = 0.1
             b = formula.b()
             f = formula.f()
-            if getattr(layer.material, 'magnetic_moment', None) and layer.material.magnetic_moment.unit=='muB':
-                mu = layer.material.magnetic_moment.magnitude
+            if getattr(layer.material, 'magnetic_moment', None):
+                if layer.material.magnetic_moment.unit=='muB':
+                    mu = layer.material.magnetic_moment.magnitude
+                elif layer.material.magnetic_moment.unit=='A/m':
+                    mu = layer.material.magnetic_moment.magnitude/muB/dens/1e24
+                elif layer.material.magnetic_moment.unit=='emu/cm**3':
+                    mu = layer.material.magnetic_moment.magnitude*ApM_to_emucc/muB/dens/1e24
         else:
             formula = None
             b = layer.material.get_sld()*1e6
             f = layer.material.get_sld()*1e6
             dens = 0.1
+            if getattr(layer.material, 'magnetic_moment', None):
+                if layer.material.magnetic_moment.unit=='muB':
+                    logging.warning('Magnetic moment unit muB not supported without chemical formula')
+                elif layer.material.magnetic_moment.unit=='A/m':
+                    mu = layer.material.magnetic_moment.magnitude*M_to_SLD/muB_to_SL/dens
+                elif layer.material.magnetic_moment.unit=='emu/cm**3':
+                    mu = layer.material.magnetic_moment.magnitude*Memu_to_SLD/muB_to_SL/dens
         name = getattr(layer, 'original_name', None) or getattr(layer.material, 'original_name', None)
         d = layer.thickness.as_unit("angstrom")
         sigma = layer.roughness.as_unit("angstrom")
@@ -254,6 +268,7 @@ class OrsoHeaderAnalyzer:
                 pos,
             ]
         else:
+            # for the SLD version the mu value is directly in SLD, not muB
             return [
                 layer.name,
                 "Formula",
@@ -261,7 +276,7 @@ class OrsoHeaderAnalyzer:
                 False,
                 str(layer.b.real if self.instrument.probe != "x-ray" else layer.f.real),
                 False,
-                "0.0",
+                str(layer.mu),
                 False,
                 str(layer.d),
                 False,
@@ -355,11 +370,12 @@ class OrsoHeaderAnalyzer:
         if self.layer_model:
             lm = self.layer_model
             tmp = refl.sampleh.sample.Ambient
-            tmp.b, tmp.f, tmp.dens = lm.ambient.b, lm.ambient.f, lm.ambient.dens
+            tmp.b, tmp.f, tmp.dens, tmp.magn = lm.ambient.b, lm.ambient.f, lm.ambient.dens, lm.ambient.mu
             tmp._ca["f"] = lm.ambient.f
             tmp._ca["b"] = lm.ambient.b
             tmp = refl.sampleh.sample.Substrate
-            tmp.b, tmp.f, tmp.dens, tmp.sigma = lm.substrate.b, lm.substrate.f, lm.substrate.dens, lm.substrate.sigma
+            tmp.b, tmp.f, tmp.dens = lm.substrate.b, lm.substrate.f, lm.substrate.dens
+            tmp.sigma, tmp.magn = lm.substrate.sigma, lm.substrate.mu
             tmp._ca["f"] = lm.substrate.f
             tmp._ca["b"] = lm.substrate.b
 
@@ -391,7 +407,7 @@ class OrsoHeaderAnalyzer:
                     layer_obj = stack_obj.Layers[0]
 
                     layer_obj.b, layer_obj.f, layer_obj.dens = layer.b, layer.f, layer.dens
-                    layer_obj.d, layer_obj.sigma = layer.d, layer.sigma
+                    layer_obj.d, layer_obj.sigma, layer_obj.magn = layer.d, layer.sigma, layer.mu
                     layer_obj._ca["b"] = layer.b
                     layer_obj._ca["f"] = layer.f
 

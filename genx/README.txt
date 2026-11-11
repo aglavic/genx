@@ -12,6 +12,11 @@ References
 If you use the program please give reference to the following publication:
 A. Glavic and M. Björck J. Appl. Cryst. 55, 1063-1071 (2022).
 
+Changes 3.8.16
+==============
+ * Fix that magnetic data import from ORSO only worked in SimpleReflectivity.
+ * Add import of magnetization in untis of emu/cm**3 and A/m.
+
 Changes 3.8.15
 ==============
  * Add import of muB magnetization values from ORSO files.
