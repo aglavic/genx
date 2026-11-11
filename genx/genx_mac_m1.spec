@@ -10,12 +10,19 @@ genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/plugins/*/help_m
 genx_modules += [si[:-3].replace('/', '.') for si in glob('genx/models/*.py')]
 genx_modules += ['genx.gui.plotpanel', 'genx.gui.plotpanel_wx']
 
+import subprocess
+
+llvm_prefix = subprocess.check_output(
+    ["brew", "--prefix", "llvm@18"], text=True
+).strip()
+
 libomp_path = glob("/opt/homebrew/Cellar/libomp/*/lib/libomp.dylib")[0]
 
 a = Analysis(['scripts/genx_mac'],
              pathex=[os.path.abspath(os.path.curdir)],
-             binaries=[("/opt/homebrew/Cellar/llvm@15/15.0.7/lib/c++/libc++.1.dylib", "."),
-                       (libomp_path, ".")],
+             binaries=[
+                 (os.path.join(llvm_prefix, "lib/c++/libc++.1.dylib"), "."),
+                 (libomp_path, ".")],
              datas=[('genx', 'genx_source/genx'),
                     ('mac_build/genx.icns', '.'),
                     ('mac_build/orso.icns', '.')],
